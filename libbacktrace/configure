@@ -13220,7 +13220,6 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
 GFORTRAN="$GFORTRAN"
-GCJ="$GCJ"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout

@@ -2990,9 +2990,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 		   && !gimple_vdef (stmt)
 		   && !gimple_vuse (stmt))
 	    continue;
-	  else if (is_gimple_call (stmt)
-		   && gimple_call_internal_p (stmt)
-		   && gimple_call_internal_fn (stmt) == IFN_GOACC_DIM_POS)
+	  else if (gimple_call_internal_p (stmt, IFN_GOACC_DIM_POS))
 	    continue;
 	  else if (gimple_code (stmt) == GIMPLE_RETURN)
 	    continue;

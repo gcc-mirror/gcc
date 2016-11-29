@@ -6,6 +6,9 @@
 /* Define to 1 if you have the `acosl' function. */
 #undef HAVE_ACOSL
 
+/* Define to 1 if you have the `aligned_alloc' function. */
+#undef HAVE_ALIGNED_ALLOC
+
 /* Define to 1 if you have the `asinf' function. */
 #undef HAVE_ASINF
 
@@ -180,7 +183,7 @@
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 
-/* Define if gets is available in <stdio.h>. */
+/* Define if gets is available in <stdio.h> before C++14. */
 #undef HAVE_GETS
 
 /* Define to 1 if you have the `hypot' function. */
@@ -285,6 +288,9 @@
 /* Define if mbstate_t exists in wchar.h. */
 #undef HAVE_MBSTATE_T
 
+/* Define to 1 if you have the `memalign' function. */
+#undef HAVE_MEMALIGN
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -308,6 +314,9 @@
 
 /* Define if poll is available in <poll.h>. */
 #undef HAVE_POLL
+
+/* Define to 1 if you have the `posix_memalign' function. */
+#undef HAVE_POSIX_MEMALIGN
 
 /* Define to 1 if you have the `powf' function. */
 #undef HAVE_POWF
@@ -504,6 +513,9 @@
 
 /* Define to 1 if you have the `_acosl' function. */
 #undef HAVE__ACOSL
+
+/* Define to 1 if you have the `_aligned_malloc' function. */
+#undef HAVE__ALIGNED_MALLOC
 
 /* Define to 1 if you have the `_asinf' function. */
 #undef HAVE__ASINF
@@ -965,9 +977,14 @@
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK
 
-/* Define if all C++11 overloads are available in <math.h>.  */
+/* Define if all C++11 floating point overloads are available in <math.h>.  */
 #if __cplusplus >= 201103L
-#undef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
+#endif
+
+/* Define if all C++11 integral type overloads are available in <math.h>.  */
+#if __cplusplus >= 201103L
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
 #endif
 
 #if defined (HAVE__ACOSF) && ! defined (HAVE_ACOSF)

@@ -19,6 +19,6 @@ TEST ()
   __asm__( "kmovw %1, %0" : "=k" (k2) : "r" (2) );
 
   k3 = _mm512_kunpackb (k1, k2);
-  if (k3 != 0x201)
+  if (k3 != 0x102)
     abort ();
 }

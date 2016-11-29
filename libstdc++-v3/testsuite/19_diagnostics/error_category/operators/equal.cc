@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-additional-options "-static-libgcc" { target *-*-mingw* } }
 // 2007-08-22 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -24,8 +24,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::test_category c1;
   __gnu_test::test_derived_category c2;
   VERIFY( c1 == c1 );

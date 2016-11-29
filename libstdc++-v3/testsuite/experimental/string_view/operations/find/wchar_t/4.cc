@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::experimental::wstring_view::size_type csize_type;
   csize_type npos = std::experimental::wstring_view::npos;
 

@@ -35,7 +35,6 @@ typedef test_container<int, random_access_iterator_wrapper> Rcontainer;
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
   int array[]={1};
   Fcontainer fcon(array, array);
   Bcontainer bcon(array, array);
@@ -48,7 +47,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
   int array[] = {1};
   Fcontainer fcon(array, array + 1);
   Bcontainer bcon(array, array + 1);
@@ -64,7 +62,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
   int array[] = {1, 2, 3, 4, 5};
   Fcontainer fcon(array, array + 5);
   Bcontainer bcon(array, array + 5);
@@ -83,7 +80,6 @@ test3()
 void
 test4()
 {
-  bool test __attribute__((unused)) = true;
   int array[] = {1, 2, 3, 4};
   Fcontainer fcon(array, array + 4);
   Bcontainer bcon(array, array + 4);  
@@ -106,7 +102,6 @@ test4()
 void
 test5()
 {
-  bool test __attribute__((unused)) = true;
   int array[] = {1, 2, 3, 4};
   Rcontainer con(array, array + 4);
   std::rotate(con.begin(), con.it(2), con.end());

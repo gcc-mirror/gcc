@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-12-03  Edward M. Smith-Rowland <3dw4rd@verizon.net>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<double> wt = {0.5, 1.0, 2.5, 1.5, 0.5};
   std::discrete_distribution<> u(wt.begin(), wt.end());
   std::vector<double> probablility = u.probabilities();

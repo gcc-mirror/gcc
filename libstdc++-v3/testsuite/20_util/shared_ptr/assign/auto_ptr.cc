@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
+// { dg-options "-Wno-deprecated" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -62,7 +63,6 @@ int
 test01()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<A> a(new A);
   std::auto_ptr<B> b(new B);

@@ -70,7 +70,6 @@ static void drain(std::auto_ptr<T>)
 int
 test07()
 {
-  bool test __attribute__((unused)) = true;
   reset_count_struct __attribute__((unused)) reset;
 
   drain(source<A>());

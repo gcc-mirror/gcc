@@ -57,6 +57,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct hash;
 
+  template<typename _Tp, typename = void>
+    struct __poison_hash
+    {
+    private:
+      // Private rather than deleted to be non-trivially-copyable.
+      __poison_hash(__poison_hash&&);
+      ~__poison_hash();
+    };
+
+  template<typename _Tp>
+    struct __poison_hash<_Tp, __void_t<decltype(hash<_Tp>()(declval<_Tp>()))>>
+    {
+    };
+
   // Helper struct for SFINAE-poisoning non-enum types.
   template<typename _Tp, bool = is_enum<_Tp>::value>
     struct __hash_enum
@@ -186,6 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return hash(&__val, sizeof(__val), __hash); }
   };
 
+  // A hash function similar to FNV-1a (see PR59406 for how it differs).
   struct _Fnv_hash_impl
   {
     static size_t

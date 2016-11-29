@@ -29,7 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-#if defined(VTHREADS) || defined(__PikeOS__)
+#if defined(VTHREADS) || defined(__PikeOS__) || defined(__DJGPP__)
 
 /* Sockets not supported on these platforms.  */
 #undef HAVE_SOCKETS

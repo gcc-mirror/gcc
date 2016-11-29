@@ -44,18 +44,28 @@ extern int target_flags_explicit;
 
 /* Masks that affect tuning.
 
-   PTF_AVOID_BRANCHLIKELY
+   PTF_AVOID_BRANCHLIKELY_SPEED
 	Set if it is usually not profitable to use branch-likely instructions
-	for this target, typically because the branches are always predicted
-	taken and so incur a large overhead when not taken.
+	for this target when optimizing code for speed, typically because
+	the branches are always predicted taken and so incur a large overhead
+	when not taken.
+
+   PTF_AVOID_BRANCHLIKELY_SIZE
+	As above but when optimizing for size.
+
+   PTF_AVOID_BRANCHLIKELY_ALWAYS
+	As above but regardless of whether we optimize for speed or size.
 
    PTF_AVOID_IMADD
 	Set if it is usually not profitable to use the integer MADD or MSUB
 	instructions because of the overhead of getting the result out of
 	the HI/LO registers.  */
 
-#define PTF_AVOID_BRANCHLIKELY	0x1
-#define PTF_AVOID_IMADD		0x2
+#define PTF_AVOID_BRANCHLIKELY_SPEED	0x1
+#define PTF_AVOID_BRANCHLIKELY_SIZE	0x2
+#define PTF_AVOID_BRANCHLIKELY_ALWAYS	(PTF_AVOID_BRANCHLIKELY_SPEED | \
+					 PTF_AVOID_BRANCHLIKELY_SIZE)
+#define PTF_AVOID_IMADD			0x4
 
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
@@ -1459,7 +1469,7 @@ FP_ASM_SPEC "\
 #define DWARF_FRAME_RETURN_COLUMN RETURN_ADDR_REGNUM
 
 /* Before the prologue, RA lives in r31.  */
-#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (VOIDmode, RETURN_ADDR_REGNUM)
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)
 
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N) \
@@ -2975,6 +2985,32 @@ do {									\
 	     ptr_mode == DImode ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
 } while (0)
+
+/* Mark inline jump tables as data for the purpose of disassembly.  For
+   simplicity embed the jump table's label number in the local symbol
+   produced so that multiple jump tables within a single function end
+   up marked with unique symbols.  Retain the alignment setting from
+   `elfos.h' as we are replacing the definition from there.  */
+
+#undef ASM_OUTPUT_BEFORE_CASE_LABEL
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(STREAM, PREFIX, NUM, TABLE)	\
+  do									\
+    {									\
+      ASM_OUTPUT_ALIGN ((STREAM), 2);					\
+      if (JUMP_TABLES_IN_TEXT_SECTION)					\
+	mips_set_text_contents_type (STREAM, "__jump_", NUM, FALSE);	\
+    }									\
+  while (0);
+
+/* Reset text marking to code after an inline jump table.  Like with
+   the beginning of a jump table use the label number to keep symbols
+   unique.  */
+
+#define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE)				\
+  do									\
+    if (JUMP_TABLES_IN_TEXT_SECTION)					\
+      mips_set_text_contents_type (STREAM, "__jend_", NUM, TRUE);	\
+  while (0);
 
 /* This is how to output an assembler line
    that says to advance the location counter

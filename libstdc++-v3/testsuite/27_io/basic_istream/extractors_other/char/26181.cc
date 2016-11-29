@@ -23,7 +23,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   typedef istringstream::pos_type pos_type;
 

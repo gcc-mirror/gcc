@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* Make sure to keep in sync with libgfortran/io/io.h (st_parameter_*).  */
 #ifndef IOPARM_common_libreturn_mask
 #define IOPARM_common_libreturn_mask	3
 #define IOPARM_common_libreturn_ok	0
@@ -50,6 +51,9 @@ IOPARM (open,    round,		1 << 20, char2)
 IOPARM (open,    sign,		1 << 21, char1)
 IOPARM (open,    asynchronous,	1 << 22, char2)
 IOPARM (open,    newunit,	1 << 23, pint4)
+IOPARM (open,    readonly,	1 << 24, int4)
+IOPARM (open,    cc,		1 << 25, char2)
+IOPARM (open,    share,		1 << 26, char1)
 IOPARM (close,   common,	0,	 common)
 IOPARM (close,   status,	1 << 7,  char1)
 IOPARM (filepos, common,	0,	 common)
@@ -88,13 +92,13 @@ IOPARM (inquire, pending,	1 << 5,  pint4)
 IOPARM (inquire, size,		1 << 6,  pintio)
 IOPARM (inquire, id,		1 << 7,  pint4)
 IOPARM (inquire, iqstream,	1 << 8,  char1)
+IOPARM (inquire, share,		1 << 9,  char2)
+IOPARM (inquire, cc,		1 << 10, char1)
 IOPARM (wait,    common,	0,	 common)
 IOPARM (wait,    id,		1 << 7,  pint4)
-#ifndef IOPARM_dt_list_format
+IOPARM (dt,      common,	0,	 common)
 #define IOPARM_dt_list_format		(1 << 7)
 #define IOPARM_dt_namelist_read_mode	(1 << 8)
-#endif
-IOPARM (dt,      common,	0,	 common)
 IOPARM (dt,      rec,		1 << 9,  intio)
 IOPARM (dt,      size,		1 << 10, pintio)
 IOPARM (dt,      iolength,	1 << 11, pintio)
@@ -103,7 +107,6 @@ IOPARM (dt,      format,	1 << 12, char1)
 IOPARM (dt,      advance,	1 << 13, char2)
 IOPARM (dt,      internal_unit,	1 << 14, char1)
 IOPARM (dt,      namelist_name,	1 << 15, char2)
-IOPARM (dt,      u,		0,	 pad)
 IOPARM (dt,      id,		1 << 16, pint4)
 IOPARM (dt,      pos,		1 << 17, intio)
 IOPARM (dt,      asynchronous, 	1 << 18, char1)
@@ -113,3 +116,7 @@ IOPARM (dt,      delim,		1 << 21, char2)
 IOPARM (dt,      pad,		1 << 22, char1)
 IOPARM (dt,      round,		1 << 23, char2)
 IOPARM (dt,      sign,		1 << 24, char1)
+#define IOPARM_dt_f2003		      (1 << 25)
+#define IOPARM_dt_dtio		      (1 << 26)
+#define IOPARM_dt_default_exp	      (1 << 27)
+IOPARM (dt,      u,		0,	 pad)

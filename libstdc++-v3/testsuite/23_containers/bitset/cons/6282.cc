@@ -26,10 +26,9 @@
 
 // boundary condition:  a zero-sized set
 // libstdc++/6282
-bool test02(void)
+void test02(void)
 {
   using std::char_traits;  using std::allocator;
-  bool test __attribute__((unused)) = true;
 
   std::bitset<0>  z1;
   VERIFY( z1.any() == false );
@@ -53,7 +52,6 @@ bool test02(void)
 
   VERIFY( z1.to_ulong() == 0 );
   VERIFY( (z1.to_string<char,char_traits<char>,allocator<char> >().empty() ));
-  return test;
 }
 
 int main()

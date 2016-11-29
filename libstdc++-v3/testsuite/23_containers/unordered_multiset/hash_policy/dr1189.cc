@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2010-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
 //
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
@@ -24,9 +24,7 @@
 // DR 1189. Awkward interface for changing the number of buckets
 // in an unordered associative container
 void test01() 
-{ 
-  bool test __attribute__((unused)) = true;
-  
+{
   std::unordered_multiset<int> ms1;
   ms1.reserve(10);
   VERIFY( ms1.bucket_count() >= 10 );

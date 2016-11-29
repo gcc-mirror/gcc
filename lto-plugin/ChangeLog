@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR driver/68463

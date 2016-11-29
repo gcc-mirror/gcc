@@ -414,10 +414,14 @@ extern const struct sanitizer_opts_s
   const char *const name;
   unsigned int flag;
   size_t len;
+  bool can_recover;
 } sanitizer_opts[];
 
 extern void add_misspelling_candidates (auto_vec<char *> *candidates,
 					const struct cl_option *option,
 					const char *base_option);
+extern const char *candidates_list_and_hint (const char *arg, char *&str,
+					     const auto_vec <const char *> &
+					     candidates);
 
 #endif

@@ -1509,6 +1509,7 @@
       case LT: case LE: case LEU: case LTU:
 	if (GET_MODE_CLASS (GET_MODE (op0)) != MODE_INT)
 	  break;
+	/* FALLTHRU */
       case NE:
 	new_code = reverse_condition (code);
 	break;
@@ -3043,7 +3044,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  rtx prev_set_t_insn = NULL_RTX;
+  rtx_insn *prev_set_t_insn = NULL;
 
   if (!arith_reg_operand (operands[3], SImode))
     {
@@ -3104,7 +3105,7 @@
 		 && ! reg_referenced_p (get_t_reg_rtx (),
 					PATTERN (prev_set_t_insn))))
 	    {
-	      prev_set_t_insn = NULL_RTX;
+	      prev_set_t_insn = NULL;
 	      tmp_t_reg = gen_reg_rtx (SImode);
 	      emit_insn (gen_move_insn (tmp_t_reg, get_t_reg_rtx ()));
 	    } 
@@ -3173,7 +3174,7 @@
   if (INTVAL (operands[2]) > 1)
     {
       const rtx shift_count = GEN_INT (INTVAL (operands[2]) - 1);
-      rtx prev_set_t_insn = NULL_RTX;
+      rtx_insn *prev_set_t_insn = NULL;
       rtx tmp_t_reg = NULL_RTX;
 
       /* If we're going to emit a shift sequence that clobbers the T_REG,
@@ -3204,7 +3205,7 @@
 		 && ! reg_referenced_p (get_t_reg_rtx (),
 					PATTERN (prev_set_t_insn))))
 	    {
-	      prev_set_t_insn = NULL_RTX;
+	      prev_set_t_insn = NULL;
 	      tmp_t_reg = gen_reg_rtx (SImode);
 	      emit_insn (gen_move_insn (tmp_t_reg, get_t_reg_rtx ()));
 	    } 
@@ -4517,7 +4518,7 @@
   "TARGET_SH1 && ! TARGET_ZDCBRANCH"
   [(const_int 0)]
 {
-  rtx skip_neg_label = gen_label_rtx ();
+  rtx_code_label *skip_neg_label = gen_label_rtx ();
 
   emit_move_insn (operands[0], operands[1]);
 
@@ -4544,7 +4545,7 @@
   "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
-  rtx skip_neg_label = gen_label_rtx ();
+  rtx_code_label *skip_neg_label = gen_label_rtx ();
 
   emit_move_insn (operands[0], operands[1]);
 
@@ -7178,7 +7179,8 @@
 		      (label_ref (match_operand 1 "" ""))))
    (use (label_ref (match_operand 2 "" "")))]
   "TARGET_SH2
-   && (! INSN_UID (operands[1]) || prev_real_insn (operands[1]) == insn)"
+   && (! INSN_UID (operands[1])
+       || prev_real_insn (as_a<rtx_insn *> (operands[1])) == insn)"
   "braf	%0%#"
   [(set_attr "needs_delay_slot" "yes")
    (set_attr "type" "jump_ind")])
@@ -7454,7 +7456,7 @@
   [(match_operand 0 "" "") (match_operand 1 "" "")]
   ""
 {
-  rtx gotoffsym, insn;
+  rtx gotoffsym;
   rtx t = (!can_create_pseudo_p ()
 	   ? operands[0]
 	   : gen_reg_rtx (GET_MODE (operands[0])));
@@ -7465,7 +7467,7 @@
   gotoffsym = gen_sym2GOTOFF (operands[1]);
   PUT_MODE (gotoffsym, Pmode);
   emit_move_insn (t, gotoffsym);
-  insn = emit_move_insn (operands[0], gen_rtx_PLUS (Pmode, t, picreg));
+  rtx_insn *insn = emit_move_insn (operands[0], gen_rtx_PLUS (Pmode, t, picreg));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
@@ -8523,6 +8525,24 @@
   [(set_attr "type" "arith") ;; poor approximation
    (set_attr "length" "4")])
 
+(define_insn_and_split "*cset_zero"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(if_then_else:SI (match_operand 1 "treg_set_expr_not_const01")
+			 (match_dup 0) (const_int 0)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && TARGET_ZDCBRANCH && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(if_then_else:SI (match_dup 1) (match_dup 0) (const_int 0)))]
+{
+  sh_treg_insns ti = sh_split_treg_set_expr (operands[1], curr_insn);
+  if (ti.remove_trailing_nott ())
+    operands[1] = gen_rtx_EQ (SImode, get_t_reg_rtx (), const0_rtx);
+  else
+    operands[1] = gen_rtx_EQ (SImode, get_t_reg_rtx (), const1_rtx);
+})
+
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "register_operand")
 	(match_operator:SI 1 "ordered_comparison_operator"
@@ -8805,7 +8825,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  rtx skip_label = gen_label_rtx ();
+  rtx_code_label *skip_label = gen_label_rtx ();
   emit_move_insn (operands[0], operands[1]);
 
   rtx cmp_val = operands[2];

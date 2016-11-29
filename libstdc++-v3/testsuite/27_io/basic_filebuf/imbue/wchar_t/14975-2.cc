@@ -30,9 +30,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// No asserts, avoid leaking the semaphore if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 
 // libstdc++/14975
@@ -40,7 +37,7 @@ bool test01()
 {
   using namespace std;
   using namespace __gnu_test;
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   locale loc_us = locale(ISO_8859(1,en_US));
 
@@ -53,7 +50,7 @@ bool test01()
   semaphore s1;
 
   int child = fork();
-  VERIFY( child != -1 );
+  test &= bool( child != -1 );
 
   if (child == 0)
     {
@@ -68,8 +65,8 @@ bool test01()
   wfilebuf fb;
   fb.pubimbue(loc_us);
   wfilebuf* ret = fb.open(name, ios_base::out);
-  VERIFY( ret != 0 );
-  VERIFY( fb.is_open() );
+  test &= bool( ret != 0 );
+  test &= bool( fb.is_open() );
 
   s1.wait();
 

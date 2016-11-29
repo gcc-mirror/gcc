@@ -27,6 +27,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "optabs.h"		/* For GEN_FCN.  */
 #include "diagnostic-core.h"
 #include "stor-layout.h"

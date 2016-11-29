@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // 2008-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -51,6 +50,7 @@ void test01()
   static_assert(test_category<is_integral, double>(false), "");
   static_assert(test_category<is_integral, long double>(false), "");
 
+#ifndef __STRICT_ANSI__
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
   static_assert(test_category<is_integral, __int128>(true), "");
@@ -59,6 +59,7 @@ void test01()
 
 #ifdef _GLIBCXX_USE_FLOAT128
   static_assert(test_category<is_integral, __float128>(false), "");
+#endif
 #endif
 
   // Sanity check.

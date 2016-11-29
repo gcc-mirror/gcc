@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -37,7 +37,6 @@ private:
 // Operations on empty function<> objects
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::bind;
   using std::ref;
   ::X x;

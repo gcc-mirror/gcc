@@ -79,8 +79,6 @@ namespace __gnu_test
   template<typename _Tp>
     void use_erased_local_iterator()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -106,8 +104,6 @@ namespace __gnu_test
   template<typename _Tp>
     void use_invalid_local_iterator()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -132,8 +128,6 @@ namespace __gnu_test
   template<typename _Tp>
     void invalid_local_iterator_compare()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -165,8 +159,6 @@ namespace __gnu_test
   template<typename _Tp>
     void invalid_local_iterator_range()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::multimap<int, int> a,b;
   a.insert(std::make_pair(2,0));
   b.insert(std::make_pair(1,0));

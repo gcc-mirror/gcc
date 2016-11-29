@@ -2,6 +2,7 @@
    in one pass together with normal local variables.  */
 /* { dg-do compile } */
 /* { dg-options "-O0 -fomit-frame-pointer" } */
+/* { dg-require-effective-target ptr32plus } */
 
 extern void bar (void *, void *, void *);
 void foo (void)

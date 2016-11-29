@@ -114,7 +114,6 @@ template<class charT, class traits, class Allocator>
 
 int test01(void)
 {
-  bool test __attribute__((unused)) = true;
   std::string 	str_0("costa rica");
   std::string 	str_1("costa marbella");
   std::string 	str_2("cost");

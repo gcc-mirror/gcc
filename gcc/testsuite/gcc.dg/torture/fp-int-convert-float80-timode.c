@@ -7,10 +7,11 @@
 #include "fp-int-convert.h"
 
 #define FLOAT80_MANT_DIG 64
+#define FLOAT80_MAX_EXP 16384
 
 int
 main (void)
 {
-  TEST_I_F(TItype, UTItype, __float80, FLOAT80_MANT_DIG);
+  TEST_I_F(TItype, UTItype, __float80, FLOAT80_MANT_DIG, FLOAT80_MAX_EXP);
   exit (0);
 }

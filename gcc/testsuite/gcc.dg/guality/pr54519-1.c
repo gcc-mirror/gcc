@@ -1,6 +1,6 @@
 /* PR debug/54519 */
 /* { dg-do run } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fno-ipa-vrp" } */
 
 __attribute__((noinline, noclone)) void
 fn1 (int x)

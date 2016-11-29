@@ -27,8 +27,6 @@ void test01()
 {
   using namespace std;
   typedef istreambuf_iterator<char> iterator_type;
-  
-  bool test __attribute__((unused)) = true;
 
   // cache the num_get facet
   istringstream iss;

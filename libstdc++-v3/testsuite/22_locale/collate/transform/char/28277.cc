@@ -34,8 +34,6 @@ void test01()
   using namespace std;
   typedef collate<char>::string_type string_type;
 
-  bool test __attribute__((unused)) = true;
-
   // basic construction
   locale loc_c = locale::classic();
 

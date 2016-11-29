@@ -850,6 +850,12 @@ requirements of the license of GCC.
     <listitem><para>Add additional overloads.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2062">2062</link>:
+	<emphasis>2062. Effect contradictions w/o no-throw guarantee of <code>std::function</code> swaps</emphasis>
+    </term>
+    <listitem><para>Add <code>noexcept</code> to swap functions.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2063">2063</link>:
 	<emphasis>Contradictory requirements for string move assignment</emphasis>
     </term>
@@ -892,6 +898,12 @@ requirements of the license of GCC.
     <listitem><para>Adjust constraints to allow safe conversions.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2127">2127</link>:
+	<emphasis>Move-construction with <code>raw_storage_iterator</code></emphasis>
+    </term>
+    <listitem><para>Add assignment operator taking an rvalue.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2132">2132</link>:
 	<emphasis><code>std::function</code> ambiguity</emphasis>
     </term>
@@ -928,6 +940,13 @@ requirements of the license of GCC.
     <listitem><para>Add <code>emplace</code> and <code>emplace_back</code> member functions.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2192">2192</link>:
+	<emphasis>Validity and return type of <code>std::abs(0u)</code> is unclear</emphasis>
+    </term>
+    <listitem><para>Move all declarations to a common header and remove the
+    generic <code>abs</code> which accepted unsigned arguments.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2196">2196</link>:
 	<emphasis>Specification of <code>is_*[copy/move]_[constructible/assignable]</code> unclear for non-referencable types</emphasis>
     </term>
@@ -940,6 +959,13 @@ requirements of the license of GCC.
     <listitem><para>The <code>tuple_size</code> and <code>tuple_element</code>
     partial specializations are defined in <code>&lt;utility&gt;</code> which
     is included by <code>&lt;array&gt;</code>.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2296">2296</link>:
+	<emphasis><code>std::addressof</code> should be constexpr</emphasis>
+    </term>
+    <listitem><para>Use <code>__builtin_addressof</code> and add
+    <code>constexpr</code> to <code>addressof</code> for C++17 and later.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2313">2313</link>:
@@ -1017,6 +1043,13 @@ requirements of the license of GCC.
     <listitem><para>Define the typedefs.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2442">2442</link>:
+       <emphasis><code>call_once()</code> shouldn't <code>DECAY_COPY()</code></emphasis>
+    </term>
+    <listitem><para>Remove indirection through call wrapper that made copies
+    of arguments and forward arguments straight to <code>std::invoke</code>.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2454">2454</link>:
        <emphasis>Add <code>raw_storage_iterator::base()</code> member
        </emphasis>
@@ -1052,11 +1085,35 @@ requirements of the license of GCC.
     <listitem><para>Divide by the object type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2484">2484</link>:
+       <emphasis><code>rethrow_if_nested()</code>  is doubly unimplementable
+       </emphasis>
+    </term>
+    <listitem><para>Avoid using <code>dynamic_cast</code> when it would be
+    ill-formed.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2583">2583</link>:
+       <emphasis>There is no way to supply an allocator for <code>basic_string(str, pos)</code>
+       </emphasis>
+    </term>
+    <listitem><para>Add new constructor
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2684">2684</link>:
        <emphasis><code>priority_queue</code> lacking comparator typedef
        </emphasis>
     </term>
     <listitem><para>Define the <code>value_compare</code> typedef.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2770">2770</link>:
+       <emphasis><code>tuple_size&lt;const T&gt;</code> specialization is not
+	 SFINAE compatible and breaks decomposition declarations
+       </emphasis>
+    </term>
+    <listitem><para>Safely detect <code>tuple_size&lt;T&gt;::value</code> and
+      only use it if valid.
     </para></listitem></varlistentry>
 
   </variablelist>

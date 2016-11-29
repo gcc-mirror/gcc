@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-02-17  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -32,14 +31,13 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef char CharT;
   typedef std::regex_traits<CharT> traits;
 
-	traits t;
-	traits::string_type G = "abc";
-	traits::string_type H = "def";
-	traits::string_type J = "ABC";
+  traits t;
+  traits::string_type G = "abc";
+  traits::string_type H = "def";
+  traits::string_type J = "ABC";
 
   VERIFY( G < H );
   VERIFY( t.transform_primary(G.begin(), G.end())

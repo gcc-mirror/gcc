@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2009-06-10  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
@@ -27,8 +27,6 @@
 // Tests default constructor of the match_result class.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::cmatch cm;
   VERIFY( cm.size() == 0 );
   VERIFY( !cm.ready() );
@@ -36,8 +34,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::smatch sm;
   VERIFY( sm.size() == 0 );
   VERIFY( !sm.ready() );

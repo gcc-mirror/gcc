@@ -26,7 +26,6 @@
 // filebufs.
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
   const char name_01[] = "wistream_extractor_other-1.txt"; //read 
   const char name_02[] = "wistream_extractor_other-2.txt"; //write
 
@@ -36,12 +35,11 @@ void test02()
   VERIFY( fbin.is_open() );
   VERIFY( fbout.is_open() );
 
-  if (test)
-    {
-      std::wistream is(&fbin);
-      is.unsetf(std::ios_base::skipws);
-      is >> &fbout;
-    }
+  {
+    std::wistream is(&fbin);
+    is.unsetf(std::ios_base::skipws);
+    is >> &fbout;
+  }
 
   fbout.close();
   fbin.close();

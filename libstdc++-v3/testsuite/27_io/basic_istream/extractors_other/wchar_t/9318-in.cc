@@ -44,8 +44,6 @@ private:
 
 void test09()
 {
-  bool test __attribute__((unused)) = true;
-  
   std::wistringstream stream(L"Bad Moon Rising");
   Outbuf buf;
   stream >> &buf;

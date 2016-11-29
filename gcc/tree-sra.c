@@ -687,7 +687,7 @@ sra_deinitialize (void)
 
 static bool constant_decl_p (tree decl)
 {
-  return TREE_CODE (decl) == VAR_DECL && DECL_IN_CONSTANT_POOL (decl);
+  return VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl);
 }
 
 /* Remove DECL from candidates for SRA and write REASON to the dump file if
@@ -1680,7 +1680,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 
   misalign = (misalign + offset) & (align - 1);
   if (misalign != 0)
-    align = (misalign & -misalign);
+    align = least_bit_hwi (misalign);
   if (align != TYPE_ALIGN (exp_type))
     exp_type = build_aligned_type (exp_type, align);
 
@@ -1965,7 +1965,7 @@ find_var_candidates (void)
 
   FOR_EACH_LOCAL_DECL (cfun, i, var)
     {
-      if (TREE_CODE (var) != VAR_DECL)
+      if (!VAR_P (var))
         continue;
 
       ret |= maybe_add_sra_candidate (var);
@@ -2653,8 +2653,7 @@ analyze_all_variable_accesses (void)
       {
 	tree var = candidate (i);
 
-	if (TREE_CODE (var) == VAR_DECL
-	    && scalarizable_type_p (TREE_TYPE (var)))
+	if (VAR_P (var) && scalarizable_type_p (TREE_TYPE (var)))
 	  {
 	    if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
 		<= max_scalarization_size)
@@ -3224,7 +3223,7 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	return SRA_AM_MODIFIED;
     }
 
-  if (vec_safe_length (CONSTRUCTOR_ELTS (gimple_assign_rhs1 (stmt))) > 0)
+  if (CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt)) > 0)
     {
       /* I have never seen this code path trigger but if it can happen the
 	 following should handle it gracefully.  */
@@ -5001,7 +5000,7 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
 							   NULL);
 		DECL_ARTIFICIAL (vexpr) = 1;
 		TREE_TYPE (vexpr) = TREE_TYPE (name);
-		DECL_MODE (vexpr) = DECL_MODE (adj->base);
+		SET_DECL_MODE (vexpr, DECL_MODE (adj->base));
 		gsi_insert_before (gsip, def_temp, GSI_SAME_STMT);
 	      }
 	    if (vexpr)

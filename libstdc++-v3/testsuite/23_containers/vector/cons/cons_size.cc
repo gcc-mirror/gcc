@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<__gnu_test::NonCopyConstructible> v(1000);
   VERIFY( std::distance(v.begin(), v.end()) == 1000 );
   for(auto it = v.begin(); it != v.end(); ++it)

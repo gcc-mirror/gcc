@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-thread-fence "" }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
@@ -23,7 +23,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   std::atomic_flag f = ATOMIC_FLAG_INIT;
 
   f.clear(); // set to false

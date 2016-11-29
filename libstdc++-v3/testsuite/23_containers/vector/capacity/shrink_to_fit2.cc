@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -25,8 +25,6 @@ using __gnu_test::propagating_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef propagating_allocator<int, true> alloc_type;
   alloc_type alloc(5);
 
@@ -40,8 +38,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef propagating_allocator<int, false> alloc_type;
   alloc_type alloc(5);
 

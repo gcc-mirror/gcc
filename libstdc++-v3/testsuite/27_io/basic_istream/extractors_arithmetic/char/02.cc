@@ -25,9 +25,8 @@
 #include <testsuite_hooks.h>
  
 // elaborated test for ints
-bool test02()
+void test02()
 {
-  bool test __attribute__((unused)) = true;
   const std::string str_01("20000AB");
   std::stringbuf strb_01(str_01, std::ios_base::in);
   std::istream is(&strb_01);
@@ -37,7 +36,6 @@ bool test02()
   VERIFY( n == 20000 );
   char c = is.peek();
   VERIFY( c == 65 );
-  return test;
 }
 
 int main()

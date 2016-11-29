@@ -102,6 +102,12 @@ gfc_op2string (gfc_intrinsic_op op)
     case INTRINSIC_NONE:
       return "none";
 
+    /* DTIO  */
+    case INTRINSIC_FORMATTED:
+      return "formatted";
+    case INTRINSIC_UNFORMATTED:
+      return "unformatted";
+
     default:
       break;
     }
@@ -153,7 +159,7 @@ gfc_match_member_sep(gfc_symbol *sym)
     return MATCH_YES;
 
   /* Beware ye who enter here.  */
-  if (!gfc_option.flag_dec_structure || !sym)
+  if (!flag_dec_structure || !sym)
     return MATCH_NO;
 
   tsym = NULL;
@@ -954,6 +960,19 @@ gfc_match_intrinsic_op (gfc_intrinsic_op *result)
 	    }
 	  break;
 
+	case 'x':
+	  if (gfc_next_ascii_char () == 'o'
+	      && gfc_next_ascii_char () == 'r'
+	      && gfc_next_ascii_char () == '.')
+	    {
+              if (!gfc_notify_std (GFC_STD_LEGACY, ".XOR. operator at %C"))
+                return MATCH_ERROR;
+	      /* Matched ".xor." - equivalent to ".neqv.".  */
+	      *result = INTRINSIC_NEQV;
+	      return MATCH_YES;
+	    }
+	  break;
+
 	default:
 	  break;
 	}
@@ -1616,6 +1635,9 @@ gfc_match_if (gfc_statement *if_type)
   match ("where", match_simple_where, ST_WHERE)
   match ("write", gfc_match_write, ST_WRITE)
 
+  if (flag_dec)
+    match ("type", gfc_match_print, ST_WRITE)
+
   /* The gfc_match_assignment() above may have returned a MATCH_NO
      where the assignment was to a named constant.  Check that
      special case here.  */
@@ -1983,6 +2005,7 @@ gfc_match_type_spec (gfc_typespec *ts)
 {
   match m;
   locus old_locus;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
 
   gfc_clear_ts (ts);
   gfc_gobble_whitespace ();
@@ -2004,13 +2027,6 @@ gfc_match_type_spec (gfc_typespec *ts)
     {
       ts->type = BT_INTEGER;
       ts->kind = gfc_default_integer_kind;
-      goto kind_selector;
-    }
-
-  if (gfc_match ("real") == MATCH_YES)
-    {
-      ts->type = BT_REAL;
-      ts->kind = gfc_default_real_kind;
       goto kind_selector;
     }
 
@@ -2047,6 +2063,103 @@ gfc_match_type_spec (gfc_typespec *ts)
       goto kind_selector;
     }
 
+  /* REAL is a real pain because it can be a type, intrinsic subprogram,
+     or list item in a type-list of an OpenMP reduction clause.  Need to
+     differentiate REAL([KIND]=scalar-int-initialization-expr) from
+     REAL(A,[KIND]) and REAL(KIND,A).  */
+
+  m = gfc_match (" %n", name);
+  if (m == MATCH_YES && strcmp (name, "real") == 0)
+    {
+      char c;
+      gfc_expr *e;
+      locus where;
+
+      ts->type = BT_REAL;
+      ts->kind = gfc_default_real_kind;
+
+      gfc_gobble_whitespace ();
+
+      /* Prevent REAL*4, etc.  */
+      c = gfc_peek_ascii_char ();
+      if (c == '*')
+	{
+	  gfc_error ("Invalid type-spec at %C");
+	  return MATCH_ERROR;
+	}
+
+      /* Found leading colon in REAL::, a trailing ')' in for example
+	 TYPE IS (REAL), or REAL, for an OpenMP list-item.  */
+      if (c == ':' || c == ')' || (flag_openmp && c == ','))
+	return MATCH_YES;
+
+      /* Found something other than the opening '(' in REAL(...  */
+      if (c != '(')
+	return MATCH_NO;
+      else
+	gfc_next_char (); /* Burn the '('. */
+
+      /* Look for the optional KIND=. */
+      where = gfc_current_locus;
+      m = gfc_match ("%n", name);
+      if (m == MATCH_YES)
+	{
+	  gfc_gobble_whitespace ();
+	  c = gfc_next_char ();
+	  if (c == '=')
+	    {
+	      if (strcmp(name, "a") == 0)
+		return MATCH_NO;
+	      else if (strcmp(name, "kind") == 0)
+		goto found;
+	      else
+		return MATCH_ERROR;
+	    }
+	  else
+	    gfc_current_locus = where;
+	}
+      else
+	gfc_current_locus = where;
+
+found:
+
+      m = gfc_match_init_expr (&e);
+      if (m == MATCH_NO || m == MATCH_ERROR)
+	return MATCH_NO;
+
+      /* If a comma appears, it is an intrinsic subprogram. */
+      gfc_gobble_whitespace ();
+      c = gfc_peek_ascii_char ();
+      if (c == ',')
+	{
+	  gfc_free_expr (e);
+	  return MATCH_NO;
+	}
+
+      /* If ')' appears, we have REAL(initialization-expr), here check for
+	 a scalar integer initialization-expr and valid kind parameter. */
+      if (c == ')')
+	{
+	  if (e->ts.type != BT_INTEGER || e->rank > 0)
+	    {
+	      gfc_free_expr (e);
+	      return MATCH_NO;
+	    }
+
+	  gfc_next_char (); /* Burn the ')'. */
+	  ts->kind = (int) mpz_get_si (e->value.integer);
+	  if (gfc_validate_kind (BT_REAL, ts->kind , true) == -1)
+	    {
+	      gfc_error ("Invalid type-spec at %C");
+	      return MATCH_ERROR;
+	    }
+
+	  gfc_free_expr (e);
+
+	  return MATCH_YES;
+	}
+    }
+
   /* If a type is not matched, simply return MATCH_NO.  */
   gfc_current_locus = old_locus;
   return MATCH_NO;
@@ -2054,6 +2167,8 @@ gfc_match_type_spec (gfc_typespec *ts)
 kind_selector:
 
   gfc_gobble_whitespace ();
+
+  /* This prevents INTEGER*4, etc.  */
   if (gfc_peek_ascii_char () == '*')
     {
       gfc_error ("Invalid type-spec at %C");
@@ -2062,13 +2177,9 @@ kind_selector:
 
   m = gfc_match_kind_spec (ts, false);
 
+  /* No kind specifier found.  */
   if (m == MATCH_NO)
-    m = MATCH_YES;		/* No kind specifier found.  */
-
-  /* gfortran may have matched REAL(a=1), which is the keyword form of the
-     intrinsic procedure.  */
-  if (ts->type == BT_REAL && m == MATCH_ERROR)
-    m = MATCH_NO;
+    m = MATCH_YES;
 
   return m;
 }
@@ -2676,21 +2787,25 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	  || o->head->op == EXEC_OMP_DO_SIMD
 	  || o->head->op == EXEC_OMP_PARALLEL_DO_SIMD))
     {
-      int collapse = 1;
+      int count = 1;
       gcc_assert (o->head->next != NULL
 		  && (o->head->next->op == EXEC_DO
 		      || o->head->next->op == EXEC_DO_WHILE)
 		  && o->previous != NULL
 		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL
-	  && o->previous->tail->ext.omp_clauses->collapse > 1)
-	collapse = o->previous->tail->ext.omp_clauses->collapse;
-      if (st == ST_EXIT && cnt <= collapse)
+      if (o->previous->tail->ext.omp_clauses != NULL)
+	{
+	  if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	    count = o->previous->tail->ext.omp_clauses->collapse;
+	  if (o->previous->tail->ext.omp_clauses->orderedc)
+	    count = o->previous->tail->ext.omp_clauses->orderedc;
+	}
+      if (st == ST_EXIT && cnt <= count)
 	{
 	  gfc_error ("EXIT statement at %C terminating !$OMP DO loop");
 	  return MATCH_ERROR;
 	}
-      if (st == ST_CYCLE && cnt < collapse)
+      if (st == ST_CYCLE && cnt < count)
 	{
 	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
 		     " !$OMP DO loop");
@@ -2725,20 +2840,92 @@ gfc_match_cycle (void)
 }
 
 
-/* Match a number or character constant after an (ERROR) STOP or PAUSE
-   statement.  */
+/* Match a stop-code after an (ERROR) STOP or PAUSE statement.  The
+   requirements for a stop-code differ in the standards.
+
+Fortran 95 has
+
+   R840 stop-stmt  is STOP [ stop-code ]
+   R841 stop-code  is scalar-char-constant
+                   or digit [ digit [ digit [ digit [ digit ] ] ] ]
+
+Fortran 2003 matches Fortran 95 except R840 and R841 are now R849 and R850.
+Fortran 2008 has
+
+   R855 stop-stmt     is STOP [ stop-code ]
+   R856 allstop-stmt  is ALL STOP [ stop-code ]
+   R857 stop-code     is scalar-default-char-constant-expr
+                      or scalar-int-constant-expr
+
+For free-form source code, all standards contain a statement of the form:
+
+   A blank shall be used to separate names, constants, or labels from
+   adjacent keywords, names, constants, or labels.
+
+A stop-code is not a name, constant, or label.  So, under Fortran 95 and 2003,
+
+  STOP123
+
+is valid, but it is invalid Fortran 2008.  */
 
 static match
 gfc_match_stopcode (gfc_statement st)
 {
-  gfc_expr *e;
+  gfc_expr *e = NULL;
   match m;
+  bool f95, f03;
 
-  e = NULL;
+  /* Set f95 for -std=f95.  */
+  f95 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77
+				 | GFC_STD_F2008_OBS);
+
+  /* Set f03 for -std=f2003.  */
+  f03 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77 
+				 | GFC_STD_F2008_OBS | GFC_STD_F2003);
+
+  /* Look for a blank between STOP and the stop-code for F2008 or later.  */
+  if (gfc_current_form != FORM_FIXED && !(f95 || f03))
+    {
+      char c = gfc_peek_ascii_char ();
+
+      /* Look for end-of-statement.  There is no stop-code.  */
+      if (c == '\n' || c == '!' || c == ';')
+        goto done;
+
+      if (c != ' ')
+	{
+	  gfc_error ("Blank required in %s statement near %C",
+		     gfc_ascii_statement (st));
+	  return MATCH_ERROR;
+	}
+    }
 
   if (gfc_match_eos () != MATCH_YES)
     {
-      m = gfc_match_init_expr (&e);
+      int stopcode;
+      locus old_locus;
+
+      /* First look for the F95 or F2003 digit [...] construct.  */
+      old_locus = gfc_current_locus;
+      m = gfc_match_small_int (&stopcode);
+      if (m == MATCH_YES && (f95 || f03))
+	{
+	  if (stopcode < 0)
+	    {
+	      gfc_error ("STOP code at %C cannot be negative");
+	      return MATCH_ERROR;
+	    }
+
+	  if (stopcode > 99999)
+	    {
+	      gfc_error ("STOP code at %C contains too many digits");
+	      return MATCH_ERROR;
+	    }
+	}
+
+      /* Reset the locus and now load gfc_expr.  */
+      gfc_current_locus = old_locus;
+      m = gfc_match_expr (&e);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
@@ -2779,6 +2966,22 @@ gfc_match_stopcode (gfc_statement st)
 
   if (e != NULL)
     {
+      gfc_simplify_expr (e, 0);
+
+      /* Test for F95 and F2003 style STOP stop-code.  */
+      if (e->expr_type != EXPR_CONSTANT && (f95 || f03))
+	{
+	  gfc_error ("STOP code at %L must be a scalar CHARACTER constant or "
+		     "digit[digit[digit[digit[digit]]]]", &e->where);
+	  goto cleanup;
+	}
+
+      /* Use the machinery for an initialization expression to reduce the
+	 stop-code to a constant.  */
+      gfc_init_expr_flag = true;
+      gfc_reduce_init_expr (e);
+      gfc_init_expr_flag = false;
+
       if (!(e->ts.type == BT_CHARACTER || e->ts.type == BT_INTEGER))
 	{
 	  gfc_error ("STOP code at %L must be either INTEGER or CHARACTER type",
@@ -2788,8 +2991,7 @@ gfc_match_stopcode (gfc_statement st)
 
       if (e->rank != 0)
 	{
-	  gfc_error ("STOP code at %L must be scalar",
-		     &e->where);
+	  gfc_error ("STOP code at %L must be scalar", &e->where);
 	  goto cleanup;
 	}
 
@@ -2801,14 +3003,15 @@ gfc_match_stopcode (gfc_statement st)
 	  goto cleanup;
 	}
 
-      if (e->ts.type == BT_INTEGER
-	  && e->ts.kind != gfc_default_integer_kind)
+      if (e->ts.type == BT_INTEGER && e->ts.kind != gfc_default_integer_kind)
 	{
 	  gfc_error ("STOP code at %L must be default integer KIND=%d",
 		     &e->where, (int) gfc_default_integer_kind);
 	  goto cleanup;
 	}
     }
+
+done:
 
   switch (st)
     {
@@ -5683,6 +5886,7 @@ gfc_match_select_type (void)
   char name[GFC_MAX_SYMBOL_LEN];
   bool class_array;
   gfc_symbol *sym;
+  gfc_namespace *ns = gfc_current_ns;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -5692,11 +5896,13 @@ gfc_match_select_type (void)
   if (m != MATCH_YES)
     return m;
 
+  gfc_current_ns = gfc_build_block_ns (ns);
   m = gfc_match (" %n => %e", name, &expr2);
   if (m == MATCH_YES)
     {
-      expr1 = gfc_get_expr();
+      expr1 = gfc_get_expr ();
       expr1->expr_type = EXPR_VARIABLE;
+      expr1->where = expr2->where;
       if (gfc_get_sym_tree (name, NULL, &expr1->symtree, false))
 	{
 	  m = MATCH_ERROR;
@@ -5717,7 +5923,11 @@ gfc_match_select_type (void)
     {
       m = gfc_match (" %e ", &expr1);
       if (m != MATCH_YES)
-	return m;
+	{
+	  std::swap (ns, gfc_current_ns);
+	  gfc_free_namespace (ns);
+	  return m;
+	}
     }
 
   m = gfc_match (" )%t");
@@ -5733,19 +5943,19 @@ gfc_match_select_type (void)
      allowed by the standard.
      TODO: see if it is sufficient to exclude component and substring
      references.  */
-  class_array = expr1->expr_type == EXPR_VARIABLE
-		  && expr1->ts.type == BT_CLASS
-		  && CLASS_DATA (expr1)
-		  && (strcmp (CLASS_DATA (expr1)->name, "_data") == 0)
-		  && (CLASS_DATA (expr1)->attr.dimension
-		      || CLASS_DATA (expr1)->attr.codimension)
-		  && expr1->ref
-		  && expr1->ref->type == REF_ARRAY
-		  && expr1->ref->next == NULL;
+  class_array = (expr1->expr_type == EXPR_VARIABLE
+		 && expr1->ts.type == BT_CLASS
+		 && CLASS_DATA (expr1)
+		 && (strcmp (CLASS_DATA (expr1)->name, "_data") == 0)
+		 && (CLASS_DATA (expr1)->attr.dimension
+		     || CLASS_DATA (expr1)->attr.codimension)
+		 && expr1->ref
+		 && expr1->ref->type == REF_ARRAY
+		 && expr1->ref->next == NULL);
 
   /* Check for F03:C811.  */
   if (!expr2 && (expr1->expr_type != EXPR_VARIABLE
-		  || (!class_array && expr1->ref != NULL)))
+		 || (!class_array && expr1->ref != NULL)))
     {
       gfc_error ("Selector in SELECT TYPE at %C is not a named variable; "
 		 "use associate-name=>");
@@ -5759,12 +5969,16 @@ gfc_match_select_type (void)
   new_st.ext.block.ns = gfc_current_ns;
 
   select_type_push (expr1->symtree->n.sym);
+  gfc_current_ns = ns;
 
   return MATCH_YES;
 
 cleanup:
   gfc_free_expr (expr1);
   gfc_free_expr (expr2);
+  gfc_undo_symbols ();
+  std::swap (ns, gfc_current_ns);
+  gfc_free_namespace (ns);
   return m;
 }
 
@@ -6010,6 +6224,7 @@ match_simple_where (void)
 
   c->next = XCNEW (gfc_code);
   *c->next = new_st;
+  c->next->loc = gfc_current_locus;
   gfc_clear_new_st ();
 
   new_st.op = EXEC_WHERE;
@@ -6066,8 +6281,12 @@ gfc_match_where (gfc_statement *st)
   c = gfc_get_code (EXEC_WHERE);
   c->expr1 = expr;
 
+  /* Put in the assignment.  It will not be processed by add_statement, so we
+     need to copy the location here. */
+
   c->next = XCNEW (gfc_code);
   *c->next = new_st;
+  c->next->loc = gfc_current_locus;
   gfc_clear_new_st ();
 
   new_st.op = EXEC_WHERE;

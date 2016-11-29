@@ -37,8 +37,6 @@ void test03()
   stringbuf_type strbuf01;
   istream_type iss(&strbuf01);
 
-  bool test __attribute__((unused)) = true;
-
   try 
     { 
       int i;

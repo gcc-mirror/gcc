@@ -3,7 +3,7 @@
 
 typedef __Float64x1_t float64x1_t;
 
-typedef long int64_t;
+typedef long long int64_t;
 
 extern int64_t bar (float64x1_t f);
 

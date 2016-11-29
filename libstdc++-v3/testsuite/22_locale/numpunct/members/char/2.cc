@@ -29,8 +29,6 @@
 void test02()
 {
   using namespace std;
-  
-  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();

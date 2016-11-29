@@ -1,5 +1,5 @@
+// { dg-do run { target c++11 } }
 // { dg-require-atomic-builtins "" }
-// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //
@@ -26,8 +26,6 @@
 // pointer arithimetic vs. atomic<_Tp*> specialization
 int main(void)
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
 
   typedef int 	value_type;

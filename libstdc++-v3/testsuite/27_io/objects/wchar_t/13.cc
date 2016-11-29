@@ -32,8 +32,7 @@
 void test13()
 {
   using namespace std;
-  
-  bool test __attribute__((unused)) = true;
+
   const char* name = "tmp_13";
 
   locale loc(locale("se_NO.UTF-8"));

@@ -87,8 +87,6 @@ along with GCC; see the file COPYING3.  If not see
    fixed gap between segments.  */
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 
-#define IX86_MAYBE_NO_LIBGCC_TFMODE
-
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
 

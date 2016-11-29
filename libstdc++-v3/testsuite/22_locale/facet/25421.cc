@@ -26,7 +26,6 @@
 // libstdc++/25421
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   try

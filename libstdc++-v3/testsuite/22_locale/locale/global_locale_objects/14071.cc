@@ -30,7 +30,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const locale loc_is = locale(ISO_8859(1,is_IS));
   const locale loc_en = locale(ISO_8859(1,en_US));

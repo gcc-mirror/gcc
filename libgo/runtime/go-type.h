@@ -257,6 +257,33 @@ struct __go_map_type
 
   /* The map value type.  */
   const struct __go_type_descriptor *__val_type;
+
+  /* The map bucket type.  */
+  const struct __go_type_descriptor *__bucket_type;
+
+  /* The map header type.  */
+  const struct __go_type_descriptor *__hmap_type;
+
+  /* The size of the key slot.  */
+  uint8_t __key_size;
+
+  /* Whether to store a pointer to key rather than the key itself.  */
+  uint8_t __indirect_key;
+
+  /* The size of the value slot.  */
+  uint8_t __value_size;
+
+  /* Whether to store a pointer to value rather than the value itself.  */
+  uint8_t __indirect_value;
+
+  /* The size of a bucket.  */
+  uint16_t __bucket_size;
+
+  /* Whether the key type is reflexive--whether k==k for all keys.  */
+  _Bool __reflexive_key;
+
+  /* Whether we should update the key when overwriting an entry.  */
+  _Bool __need_key_update;
 };
 
 /* A pointer type.  */
@@ -314,10 +341,11 @@ __go_is_pointer_type (const struct __go_type_descriptor *td)
 /* Call a type hash function, given the __hashfn value.  */
 
 static inline uintptr_t
-__go_call_hashfn (const FuncVal *hashfn, const void *p, uintptr_t size)
+__go_call_hashfn (const FuncVal *hashfn, const void *p, uintptr_t seed,
+		  uintptr_t size)
 {
-  uintptr_t (*h) (const void *, uintptr_t) = (void *) hashfn->fn;
-  return __builtin_call_with_static_chain (h (p, size), hashfn);
+  uintptr_t (*h) (const void *, uintptr_t, uintptr_t) = (void *) hashfn->fn;
+  return __builtin_call_with_static_chain (h (p, seed, size), hashfn);
 }
 
 /* Call a type equality function, given the __equalfn value.  */
@@ -334,29 +362,25 @@ extern _Bool
 __go_type_descriptors_equal(const struct __go_type_descriptor*,
 			    const struct __go_type_descriptor*);
 
-extern uintptr_t __go_type_hash_identity (const void *, uintptr_t);
+extern uintptr_t __go_type_hash_identity (const void *, uintptr_t, uintptr_t);
 extern const FuncVal __go_type_hash_identity_descriptor;
 extern _Bool __go_type_equal_identity (const void *, const void *, uintptr_t);
 extern const FuncVal __go_type_equal_identity_descriptor;
-extern uintptr_t __go_type_hash_string (const void *, uintptr_t);
+extern uintptr_t __go_type_hash_string (const void *, uintptr_t, uintptr_t);
 extern const FuncVal __go_type_hash_string_descriptor;
 extern _Bool __go_type_equal_string (const void *, const void *, uintptr_t);
 extern const FuncVal __go_type_equal_string_descriptor;
-extern uintptr_t __go_type_hash_float (const void *, uintptr_t);
+extern uintptr_t __go_type_hash_float (const void *, uintptr_t, uintptr_t);
 extern const FuncVal __go_type_hash_float_descriptor;
 extern _Bool __go_type_equal_float (const void *, const void *, uintptr_t);
 extern const FuncVal __go_type_equal_float_descriptor;
-extern uintptr_t __go_type_hash_complex (const void *, uintptr_t);
+extern uintptr_t __go_type_hash_complex (const void *, uintptr_t, uintptr_t);
 extern const FuncVal __go_type_hash_complex_descriptor;
 extern _Bool __go_type_equal_complex (const void *, const void *, uintptr_t);
 extern const FuncVal __go_type_equal_complex_descriptor;
-extern uintptr_t __go_type_hash_interface (const void *, uintptr_t);
+extern uintptr_t __go_type_hash_interface (const void *, uintptr_t, uintptr_t);
 extern const FuncVal __go_type_hash_interface_descriptor;
 extern _Bool __go_type_equal_interface (const void *, const void *, uintptr_t);
 extern const FuncVal __go_type_equal_interface_descriptor;
-extern uintptr_t __go_type_hash_error (const void *, uintptr_t);
-extern const FuncVal __go_type_hash_error_descriptor;
-extern _Bool __go_type_equal_error (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_error_descriptor;
 
 #endif /* !defined(LIBGO_GO_TYPE_H) */

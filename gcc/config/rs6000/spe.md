@@ -2314,6 +2314,18 @@
     }
 })
 
+(define_insn "*frob_<SPE64:mode>_ti_8"
+  [(set (match_operand:SPE64 0 "nonimmediate_operand" "=r")
+        (subreg:SPE64 (match_operand:TI 1 "input_operand" "r") 8))]
+  "(TARGET_E500_DOUBLE && <SPE64:MODE>mode == DFmode)
+   || (TARGET_SPE && <SPE64:MODE>mode != DFmode)"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergelo %0,%Y1,%Z1";
+  else
+    return "evmergelo %0,%Z1,%Y1";
+})
+
 (define_insn "*frob_tf_ti"
   [(set (match_operand:TF 0 "gpc_reg_operand" "=r")
         (subreg:TF (match_operand:TI 1 "gpc_reg_operand" "r") 0))]
@@ -3464,7 +3476,7 @@
 ;; Out-of-line prologues and epilogues.
 (define_insn "*save_gpregs_spe"
   [(match_parallel 0 "any_parallel_operand"
-		   [(clobber (reg:P 65))
+		   [(clobber (reg:P LR_REGNO))
 		    (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		    (use (reg:P 11))
 		    (set (match_operand:V2SI 2 "memory_operand" "=m")
@@ -3476,7 +3488,7 @@
 
 (define_insn "*restore_gpregs_spe"
  [(match_parallel 0 "any_parallel_operand"
-		  [(clobber (reg:P 65))
+		  [(clobber (reg:P LR_REGNO))
 		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		   (use (reg:P 11))
 		   (set (match_operand:V2SI 2 "gpc_reg_operand" "=r")
@@ -3489,7 +3501,7 @@
 (define_insn "*return_and_restore_gpregs_spe"
  [(match_parallel 0 "any_parallel_operand"
 		  [(return)
-		   (clobber (reg:P 65))
+		   (clobber (reg:P LR_REGNO))
 		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		   (use (reg:P 11))
 		   (set (match_operand:V2SI 2 "gpc_reg_operand" "=r")

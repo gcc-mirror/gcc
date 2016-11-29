@@ -23,9 +23,8 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::const_reference cref;
   typedef std::string::reference ref;
@@ -148,7 +147,6 @@ bool test01(void)
   str05.append(str05.begin(), str05.begin() + str05.find('r')); 
   VERIFY( str05 ==  "point bolivar, texaspoint boliva" );
   VERIFY( str05 != str01 );
-  return test;
 }
 
 int main()

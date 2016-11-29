@@ -618,8 +618,10 @@ static inline int *
 mul_highpart_cost_ptr (bool speed, machine_mode mode)
 {
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
+  int m = mode - MIN_MODE_INT;
+  gcc_assert (m < NUM_MODE_INT);
 
-  return &this_target_expmed->x_mul_highpart_cost[speed][mode - MIN_MODE_INT];
+  return &this_target_expmed->x_mul_highpart_cost[speed][m];
 }
 
 /* Set the COST for computing the high part of a multiplication in MODE

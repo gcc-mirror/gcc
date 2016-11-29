@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2007-11-01  Paolo Carlini  <pcarlini@suse.de
 
@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::pair<const int, const int> z = std::minmax(1, 2);
   std::pair<const int, const int> w = std::minmax(4, 3);
   VERIFY( z.first == 1 );

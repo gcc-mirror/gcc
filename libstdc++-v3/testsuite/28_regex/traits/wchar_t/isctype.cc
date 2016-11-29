@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-additional-options "-DNEWLINE_IN_CLASS_BLANK" { target newlib } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
@@ -29,7 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
 

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "gimple-ssa.h"
 #include "expmed.h"
@@ -911,7 +912,7 @@ can_escape (tree expr)
   base = get_base_address (expr);
   if (DECL_P (base)
       && !may_be_aliased (base)
-      && !(TREE_CODE (base) == VAR_DECL
+      && !(VAR_P (base)
 	   && !DECL_EXTERNAL (base)
 	   && !TREE_STATIC (base)
 	   && local_variable_can_escape (base)))
@@ -2999,11 +3000,11 @@ static void
 dse_step3 ()
 {
   basic_block bb;
-  sbitmap unreachable_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   sbitmap_iterator sbi;
   bitmap all_ones = NULL;
   unsigned int i;
 
+  auto_sbitmap unreachable_blocks (last_basic_block_for_fn (cfun));
   bitmap_ones (unreachable_blocks);
 
   FOR_ALL_BB_FN (bb, cfun)
@@ -3058,7 +3059,6 @@ dse_step3 ()
 
   if (all_ones)
     BITMAP_FREE (all_ones);
-  sbitmap_free (unreachable_blocks);
 }
 
 
@@ -3298,12 +3298,19 @@ dse_step5 (void)
 		  bitmap_clear (v);
 		}
 	      else if (insn_info->read_rec
-                       || insn_info->non_frame_wild_read)
+		       || insn_info->non_frame_wild_read
+		       || insn_info->frame_read)
 		{
-		  if (dump_file && !insn_info->non_frame_wild_read)
-		    fprintf (dump_file, "regular read\n");
-                  else if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "non-frame wild read\n");
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      if (!insn_info->non_frame_wild_read
+			  && !insn_info->frame_read)
+			fprintf (dump_file, "regular read\n");
+		      if (insn_info->non_frame_wild_read)
+			fprintf (dump_file, "non-frame wild read\n");
+		      if (insn_info->frame_read)
+			fprintf (dump_file, "frame read\n");
+		    }
 		  scan_reads (insn_info, v, NULL);
 		}
 	    }

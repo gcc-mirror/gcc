@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-10-27  Paolo Carlini  <paolo.carlini@oracle.com> 
 //
@@ -41,7 +41,6 @@ namespace
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::rvalstruct;
 
   typedef std::unordered_multiset<rvalstruct> Set;
@@ -58,7 +57,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::rvalstruct;
 
   typedef std::unordered_multiset<rvalstruct> Set;

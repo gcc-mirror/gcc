@@ -44,7 +44,7 @@ class F
 {
 public:
   int nelems;
-  int elems[];
+  int elems[];   // { dg-error "not at end" }
   int *
   m_fn1 ()
   {
@@ -88,7 +88,7 @@ public:
       m_impl->~any_incrementable_iterator_interface ();
   }
   G m_buffer;
-  any_incrementable_iterator_interface *m_impl;
+  any_incrementable_iterator_interface *m_impl;   // { dg-message "next member" }
 };
 template <class Reference> class K : public I<any_iterator<Reference> >
 {

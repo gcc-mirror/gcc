@@ -1173,7 +1173,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   unsigned est_niter, prob_entry, scale_unrolled, scale_rest, freq_e, freq_h;
   unsigned new_est_niter, i, prob;
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
-  sbitmap wont_exit;
   auto_vec<edge> to_remove;
 
   est_niter = expected_loop_iterations (loop);
@@ -1307,14 +1306,13 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   /* Unroll the loop and remove the exits in all iterations except for the
      last one.  */
-  wont_exit = sbitmap_alloc (factor);
+  auto_sbitmap wont_exit (factor);
   bitmap_ones (wont_exit);
   bitmap_clear_bit (wont_exit, factor - 1);
 
   ok = gimple_duplicate_loop_to_header_edge
 	  (loop, loop_latch_edge (loop), factor - 1,
 	   wont_exit, new_exit, &to_remove, DLTHE_FLAG_UPDATE_FREQ);
-  free (wont_exit);
   gcc_assert (ok);
 
   FOR_EACH_VEC_ELT (to_remove, i, e)

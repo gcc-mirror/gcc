@@ -32,8 +32,6 @@ void test01()
 {
   using namespace std;
   typedef istreambuf_iterator<char> iterator_type;
-  
-  bool test __attribute__((unused)) = true;
 
   istringstream iss;
   iss.imbue(locale(iss.getloc(), new Punct));

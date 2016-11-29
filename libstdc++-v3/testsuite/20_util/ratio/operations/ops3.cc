@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ratio_multiply<
     std::ratio<2, INTMAX_MAX>,
     std::ratio<INTMAX_MAX, 2>>::type r1;
@@ -45,9 +43,7 @@ test01()
 
 void
 test02()
-{  
-  bool test __attribute__((unused)) = true;
-  
+{
   std::ratio_divide<
     std::ratio<INTMAX_MAX, 2>,
     std::ratio<INTMAX_MAX, 2>>::type r1;

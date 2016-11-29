@@ -25,7 +25,6 @@ void
 test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wstring s(L"john coltrane, a love supreme");
   wistringstream  iss(s);

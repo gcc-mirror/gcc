@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++14" }
+// { dg-do compile { target c++14 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 

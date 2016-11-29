@@ -39,8 +39,6 @@ int main (void)
   return 0;
 }
 
-/* The order of computation should not be changed for cond_expr, therefore, 
-   it cannot be vectorized in reduction.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { ! vect_max_reduc } } } } */
 
 

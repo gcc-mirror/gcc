@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2016 Free Software Foundation, Inc.
 //
@@ -43,7 +43,6 @@ template<typename T>
 void
 test05()
 {
-  bool test __attribute((unused)) = false;
   using std::max_align_t;
   using std::uintptr_t;
   void* p = nullptr;

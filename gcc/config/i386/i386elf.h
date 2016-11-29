@@ -101,5 +101,3 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE

@@ -38,7 +38,7 @@
 
 #define __cpp_lib_math_special_functions 201603L
 
-#if __STDCPP_WANT_MATH_SPEC_FUNCS__ == 0
+#if __cplusplus <= 201403L && __STDCPP_WANT_MATH_SPEC_FUNCS__ == 0
 # error include <cmath> and define __STDCPP_WANT_MATH_SPEC_FUNCS__
 #endif
 

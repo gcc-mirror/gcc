@@ -28,7 +28,6 @@ void
 test10()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   typedef string string_type;
   typedef stringbuf stringbuf_type;
   typedef istream istream_type;
@@ -40,23 +39,19 @@ test10()
   
   istr.ignore(0);
   if (istr.gcount() != 0) 
-    test = false;
-  VERIFY( test );
+    VERIFY( false );
   
   istr.ignore(0, 'b');
   if (istr.gcount() != 0) 
-    test = false;
-  VERIFY( test );
+    VERIFY( false );
   
   istr.ignore();	// Advance to next position.
   istr.ignore(0, 'b');
   if ((n=istr.gcount()) != 0) 
-    test = false;
-  VERIFY( test );
+    VERIFY( false );
   
   if (istr.peek() != 'b')
-    test = false;
-  VERIFY( test );
+    VERIFY( false );
 }
 
 int 

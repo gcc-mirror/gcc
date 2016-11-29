@@ -23,8 +23,6 @@
 // DR 455. cerr::tie() and wcerr::tie() are overspecified.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( std::wcerr.tie() == &std::wcout );
 }
 

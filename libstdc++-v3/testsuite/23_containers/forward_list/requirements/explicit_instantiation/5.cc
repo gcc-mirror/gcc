@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -22,7 +21,7 @@
 #include <forward_list>
 #include <testsuite_allocator.h>
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // libstdc++/50118
 template class std::forward_list<int, __gnu_test::ExplicitConsAlloc<int>>;

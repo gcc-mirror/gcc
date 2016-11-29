@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
@@ -26,7 +26,6 @@
 // DR 2020
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
 
   constexpr duration<int> d0(12);

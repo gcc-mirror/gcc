@@ -83,6 +83,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
   // (Used by the next specializations of std::tr1::hash.)
 
+  // N.B. These functions should work on unsigned char, otherwise they do not
+  // correctly implement the FNV-1a algorithm (see PR59406).
+  // The existing behaviour is retained for backwards compatibility.
+
   /// Dummy generic implementation (for sizeof(size_t) != 4, 8).
   template<size_t>
     struct _Fnv_hash_base

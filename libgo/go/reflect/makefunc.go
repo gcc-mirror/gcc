@@ -63,7 +63,7 @@ func MakeFunc(typ Type, fn func(args []Value) (results []Value)) Value {
 		method: -1,
 	}
 
-	makeFuncFFI(ftyp, unsafe.Pointer(impl))
+	makeFuncFFI(makeCIF(ftyp), unsafe.Pointer(impl))
 
 	return Value{t, unsafe.Pointer(&impl), flag(Func) | flagIndir}
 }
@@ -102,7 +102,7 @@ func makeMethodValue(op string, v Value) Value {
 		rcvr:   rcvr,
 	}
 
-	makeFuncFFI(ftyp, unsafe.Pointer(fv))
+	makeFuncFFI(makeCIF(ftyp), unsafe.Pointer(fv))
 
 	return Value{ft, unsafe.Pointer(&fv), v.flag&flagRO | flag(Func) | flagIndir}
 }
@@ -128,7 +128,7 @@ func makeValueMethod(v Value) Value {
 		rcvr:   v,
 	}
 
-	makeFuncFFI(ftyp, unsafe.Pointer(impl))
+	makeFuncFFI(makeCIF(ftyp), unsafe.Pointer(impl))
 
 	return Value{t, unsafe.Pointer(&impl), v.flag&flagRO | flag(Func) | flagIndir}
 }

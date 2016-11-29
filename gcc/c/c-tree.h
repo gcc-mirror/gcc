@@ -230,6 +230,7 @@ enum c_typespec_keyword {
   cts_dfloat32,
   cts_dfloat64,
   cts_dfloat128,
+  cts_floatn_nx,
   cts_fract,
   cts_accum,
   cts_auto_type
@@ -266,6 +267,7 @@ enum c_declspec_word {
   cdw_saturating,
   cdw_alignas,
   cdw_address_space,
+  cdw_gimple,
   cdw_number_of_elements /* This one must always be the last
 			    enumerator.  */
 };
@@ -289,12 +291,17 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
+  /* The pass to start compiling a __GIMPLE function with.  */
+  char *gimple_pass;
   /* The base-2 log of the greatest alignment required by an _Alignas
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
   int align_log;
   /* For the __intN declspec, this stores the index into the int_n_* arrays.  */
   int int_n_idx;
+  /* For the _FloatN and _FloatNx declspec, this stores the index into
+     the floatn_nx_types array.  */
+  int floatn_nx_idx;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
   /* Any type specifier keyword used such as "int", not reflecting
@@ -358,6 +365,8 @@ struct c_declspecs {
   /* Whether any alignment specifier (even with zero alignment) was
      specified.  */
   BOOL_BITFIELD alignas_p : 1;
+  /* Whether any __GIMPLE specifier was specified.  */
+  BOOL_BITFIELD gimple_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -678,6 +687,7 @@ extern tree c_finish_transaction (location_t, tree, int);
 extern bool c_tree_equal (tree, tree);
 extern tree c_build_function_call_vec (location_t, vec<location_t>, tree,
 				       vec<tree, va_gc> *, vec<tree, va_gc> *);
+extern tree c_omp_clause_copy_ctor (tree, tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

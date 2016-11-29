@@ -44,8 +44,6 @@ test_set(std::vector<unsigned>& v, unsigned size)
 void
 do_test01(unsigned size)
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<unsigned> v, s;
 
   for (unsigned j = 0; j < size; ++j)

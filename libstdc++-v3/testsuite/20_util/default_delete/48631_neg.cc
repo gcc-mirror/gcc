@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11 " }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -27,4 +26,4 @@ struct D : B { };
 D d;
 std::default_delete<B[]> db;
 typedef decltype(db(&d)) type; // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 106 }
+// { dg-error "no type" "" { target *-*-* } 108 }

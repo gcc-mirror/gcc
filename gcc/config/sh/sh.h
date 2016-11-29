@@ -333,6 +333,63 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 #define SH_DIV_STRATEGY_DEFAULT SH_DIV_CALL_DIV1
 #endif
 
+#ifdef __cplusplus
+
+/* Atomic model.  */
+struct sh_atomic_model
+{
+  enum enum_type
+  {
+    none = 0,
+    soft_gusa,
+    hard_llcs,
+    soft_tcb,
+    soft_imask,
+
+    num_models
+  };
+
+  /*  If strict is set, disallow mixing of different models, as it would
+      happen on SH4A.  */
+  bool strict;
+  enum_type type;
+
+  /* Name string as it was specified on the command line.  */
+  const char* name;
+
+  /* Name string as it is used in C/C++ defines.  */
+  const char* cdef_name;
+
+  /* GBR offset variable for TCB model.  */
+  int tcb_gbr_offset;
+};
+
+extern const sh_atomic_model& selected_atomic_model (void);
+
+/* Shortcuts to check the currently selected atomic model.  */
+#define TARGET_ATOMIC_ANY \
+  (selected_atomic_model ().type != sh_atomic_model::none)
+
+#define TARGET_ATOMIC_STRICT \
+  (selected_atomic_model ().strict)
+
+#define TARGET_ATOMIC_SOFT_GUSA \
+  (selected_atomic_model ().type == sh_atomic_model::soft_gusa)
+
+#define TARGET_ATOMIC_HARD_LLCS \
+  (selected_atomic_model ().type == sh_atomic_model::hard_llcs)
+
+#define TARGET_ATOMIC_SOFT_TCB \
+  (selected_atomic_model ().type == sh_atomic_model::soft_tcb)
+
+#define TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX \
+  GEN_INT (selected_atomic_model ().tcb_gbr_offset)
+
+#define TARGET_ATOMIC_SOFT_IMASK \
+  (selected_atomic_model ().type == sh_atomic_model::soft_imask)
+
+#endif // __cplusplus
+
 #define SUBTARGET_OVERRIDE_OPTIONS (void) 0
 
 

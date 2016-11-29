@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::set<int> a,b;
   a.insert(2);
   b.insert(1);

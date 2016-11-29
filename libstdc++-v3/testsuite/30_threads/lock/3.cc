@@ -1,7 +1,6 @@
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++11 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
+// { dg-require-effective-target c++11 }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
@@ -35,7 +34,6 @@ struct user_lock
 
   void lock()
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( !is_locked );
     is_locked = true;
   }
@@ -45,7 +43,6 @@ struct user_lock
 
   void unlock()
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( is_locked );
     is_locked = false;
   }
@@ -56,8 +53,6 @@ private:
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::mutex m1;

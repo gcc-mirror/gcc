@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1" } */
 
 extern void abort ();
 extern void arf ();
@@ -49,5 +49,5 @@ L9:
 /* The second test of (code1 != 53) and the test (D18670 <= 2) are
    both totally subsumed by earlier tests and thus should be folded
    away using VRP.  */
-/* { dg-final { scan-tree-dump-times "Folding predicate" 2 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "if" 3 "vrp1" } } */
 

@@ -386,7 +386,7 @@ clear_bb_flags (void)
 {
   basic_block bb;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bb->flags &= BB_FLAGS_TO_PRESERVE;
 }
 
@@ -1066,6 +1066,18 @@ initialize_original_copy_tables (void)
   loop_copy = new hash_table<bb_copy_hasher> (10);
 }
 
+/* Reset the data structures to maintain mapping between blocks and
+   its copies.  */
+
+void
+reset_original_copy_tables (void)
+{
+  gcc_assert (original_copy_bb_pool);
+  bb_original->empty ();
+  bb_copy->empty ();
+  loop_copy->empty ();
+}
+
 /* Free the data structures to maintain mapping between blocks and
    its copies.  */
 void
@@ -1075,7 +1087,7 @@ free_original_copy_tables (void)
   delete bb_copy;
   bb_copy = NULL;
   delete bb_original;
-  bb_copy = NULL;
+  bb_original = NULL;
   delete loop_copy;
   loop_copy = NULL;
   delete original_copy_bb_pool;

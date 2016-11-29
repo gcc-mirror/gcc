@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-12-03  Edward M. Smith-Rowland <3dw4rd@verizon.net>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::piecewise_linear_distribution<> u;
   std::vector<double> interval = u.intervals();
   std::vector<double> density = u.densities();

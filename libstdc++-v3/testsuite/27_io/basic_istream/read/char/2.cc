@@ -28,8 +28,6 @@
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::string str_00("Red_Garland_Qunitet-Soul_Junction");
   char c_array[str_00.size() + 4];
 

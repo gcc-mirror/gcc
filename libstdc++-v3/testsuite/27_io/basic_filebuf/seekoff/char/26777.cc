@@ -20,9 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// No asserts, avoid leaking the semaphores if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 #include <fstream>
 #include <sstream>
@@ -39,7 +36,7 @@ bool test01()
   using namespace std;
   using namespace __gnu_test;
 
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   const char* name = "tmp_fifo6";
 
@@ -50,13 +47,13 @@ bool test01()
   semaphore s1, s2;
 
   int child = fork();
-  VERIFY( child != -1 );
+  test &= bool( child != -1 );
 
   if (child == 0)
     {
       filebuf fbout;
       fbout.open(name, ios_base::in | ios_base::out);
-      VERIFY( fbout.is_open() );
+      test &= bool( fbout.is_open() );
       fbout.sputn("Whatever", 8);
       fbout.pubsync();
       s1.signal();
@@ -79,7 +76,7 @@ bool test01()
   oss << &fbin;
   fbin.close();
 
-  VERIFY( oss.str() == "Whatever" );
+  test &= bool( oss.str() == "Whatever" );
 
   return test;
 }

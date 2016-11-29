@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -126,8 +126,6 @@ namespace std
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::basic_string_view<A<B>> str02;
   typedef std::experimental::basic_string_view< A<B> >::size_type size_type_o;
   size_type_o sz03;

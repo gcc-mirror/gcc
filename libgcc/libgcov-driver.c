@@ -872,8 +872,8 @@ struct gcov_root __gcov_root;
 struct gcov_master __gcov_master = 
   {GCOV_VERSION, 0};
 
-static void
-gcov_exit (void)
+void
+__gcov_exit (void)
 {
   __gcov_dump_one (&__gcov_root);
   if (__gcov_root.next)
@@ -906,7 +906,6 @@ __gcov_init (struct gcov_info *info)
 		__gcov_master.root->prev = &__gcov_root;
 	      __gcov_master.root = &__gcov_root;
 	    }
-	  atexit (gcov_exit);
 	}
 
       info->next = __gcov_root.list;

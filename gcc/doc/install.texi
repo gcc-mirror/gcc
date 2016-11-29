@@ -338,10 +338,6 @@ Necessary when generating manpages from Texinfo manuals.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
 
-@item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
-
-Necessary to build libgcj, the GCJ runtime.
-
 @end table
 
 Several support libraries are necessary to build GCC, some are required,
@@ -502,28 +498,6 @@ Useful when submitting patches for the GCC source code.
 Necessary when applying patches, created with @command{diff}, to one's
 own sources.
 
-@item ecj1
-@itemx gjavah
-
-If you wish to modify @file{.java} files in libjava, you will need to
-configure with @option{--enable-java-maintainer-mode}, and you will need
-to have executables named @command{ecj1} and @command{gjavah} in your path.
-The @command{ecj1} executable should run the Eclipse Java compiler via
-the GCC-specific entry point.  You can download a suitable jar from
-@uref{ftp://sourceware.org/pub/java/}, or by running the script
-@command{contrib/download_ecj}.
-
-@item antlr.jar version 2.7.1 (or later)
-@itemx antlr binary
-
-If you wish to build the @command{gjdoc} binary in libjava, you will
-need to have an @file{antlr.jar} library available. The library is
-searched for in system locations but can be specified with
-@option{--with-antlr-jar=} instead.  When configuring with
-@option{--enable-java-maintainer-mode}, you will need to have one of
-the executables named @command{cantlr}, @command{runantlr} or
-@command{antlr} in your path.
-
 @end table
 
 @html
@@ -554,9 +528,9 @@ tarballs compressed with @command{gzip} or
 Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The source distribution includes the C, C++, Objective-C, Fortran, Java,
+The source distribution includes the C, C++, Objective-C, Fortran,
 and Ada (in the case of GCC 3.1 and later) compilers, as well as
-runtime libraries for C++, Objective-C, Fortran, and Java.
+runtime libraries for C++, Objective-C, and Fortran.
 For previous versions these were downloadable as separate components such
 as the core GCC distribution, which included the C language front end and
 shared components, and language-specific distributions including the
@@ -938,7 +912,7 @@ only for the listed packages.  For other packages, only static libraries
 will be built.  Package names currently recognized in the GCC tree are
 @samp{libgcc} (also known as @samp{gcc}), @samp{libstdc++} (not
 @samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc},
-@samp{ada}, @samp{libada}, @samp{libjava}, @samp{libgo}, and @samp{libobjc}.
+@samp{ada}, @samp{libada}, @samp{libgo}, and @samp{libobjc}.
 Note @samp{libiberty} does not support shared libraries at all.
 
 Use @option{--disable-shared} to build only static libraries.  Note that
@@ -1107,19 +1081,59 @@ sysv, aix.
 
 @item --with-multilib-list=@var{list}
 @itemx --without-multilib-list
-Specify what multilibs to build.
-Currently only implemented for arm*-*-*, sh*-*-* and x86-64-*-linux*.
+Specify what multilibs to build.  @var{list} is a comma separated list of
+values, possibly consisting of a single value.  Currently only implemented
+for arm*-*-*, sh*-*-* and x86-64-*-linux*.  The accepted values and meaning
+for each target is given below.
 
 @table @code
 @item arm*-*-*
-@var{list} is either @code{default} or @code{aprofile}.  Specifying
-@code{default} is equivalent to omitting this option while specifying
-@code{aprofile} builds multilibs for each combination of ISA (@code{-marm} or
-@code{-mthumb}), architecture (@code{-march=armv7-a}, @code{-march=armv7ve},
-or @code{-march=armv8-a}), FPU available (none, @code{-mfpu=vfpv3-d16},
-@code{-mfpu=neon}, @code{-mfpu=vfpv4-d16}, @code{-mfpu=neon-vfpv4} or
-@code{-mfpu=neon-fp-armv8} depending on architecture) and floating-point ABI
-(@code{-mfloat-abi=softfp} or @code{-mfloat-abi=hard}).
+@var{list} is one of@code{default}, @code{aprofile} or @code{rmprofile}.
+Specifying @code{default} is equivalent to omitting this option, ie. only the
+default runtime library will be enabled.  Specifying @code{aprofile} or
+@code{rmprofile} builds multilibs for a combination of ISA, architecture,
+FPU available and floating-point ABI.
+
+The table below gives the combination of ISAs, architectures, FPUs and
+floating-point ABIs for which multilibs are built for each accepted value.
+
+@multitable @columnfractions .15 .28 .30
+@item Option @tab aprofile @tab rmprofile
+@item ISAs
+@tab @code{-marm} and @code{-mthumb}
+@tab @code{-mthumb}
+@item Architectures@*@*@*@*@*@*
+@tab default architecture@*
+@code{-march=armv7-a}@*
+@code{-march=armv7ve}@*
+@code{-march=armv8-a}@*@*@*
+@tab default architecture@*
+@code{-march=armv6s-m}@*
+@code{-march=armv7-m}@*
+@code{-march=armv7e-m}@*
+@code{-march=armv8-m.base}@*
+@code{-march=armv8-m.main}@*
+@code{-march=armv7}
+@item FPUs@*@*@*@*@*
+@tab none@*
+@code{-mfpu=vfpv3-d16}@*
+@code{-mfpu=neon}@*
+@code{-mfpu=vfpv4-d16}@*
+@code{-mfpu=neon-vfpv4}@*
+@code{-mfpu=neon-fp-armv8}
+@tab none@*
+@code{-mfpu=vfpv3-d16}@*
+@code{-mfpu=fpv4-sp-d16}@*
+@code{-mfpu=fpv5-sp-d16}@*
+@code{-mfpu=fpv5-d16}@*
+@item floating-point@/ ABIs@*@*
+@tab @code{-mfloat-abi=soft}@*
+@code{-mfloat-abi=softfp}@*
+@code{-mfloat-abi=hard}
+@tab @code{-mfloat-abi=soft}@*
+@code{-mfloat-abi=softfp}@*
+@code{-mfloat-abi=hard}
+@end multitable
 
 @item sh*-*-*
 @var{list} is a comma separated list of CPU names.  These must be of the
@@ -1182,7 +1196,7 @@ Use little endian by default.  Provide a multilib for big endian.
 @item --enable-threads
 Specify that the target
 supports threads.  This affects the Objective-C compiler and runtime
-library, and exception handling for other languages like C++ and Java.
+library, and exception handling for other languages like C++.
 On some systems, this is the default.
 
 In general, the best (and, in many cases, the only known) threading
@@ -1199,7 +1213,7 @@ This is an alias for @option{--enable-threads=single}.
 Specify that
 @var{lib} is the thread support library.  This affects the Objective-C
 compiler and runtime library, and exception handling for other languages
-like C++ and Java.  The possibilities for @var{lib} are:
+like C++.  The possibilities for @var{lib} are:
 
 @table @code
 @item aix
@@ -1447,7 +1461,7 @@ addition, @samp{libstdc++}'s include files will be installed into
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
 parallel.  This is currently supported by @samp{libgfortran},
-@samp{libjava}, @samp{libstdc++}, and @samp{libobjc}.
+@samp{libstdc++}, and @samp{libobjc}.
 
 @item @anchor{WithAixSoname}--with-aix-soname=@samp{aix}, @samp{svr4} or @samp{both}
 Traditional AIX shared library versioning (versioned @code{Shared Object}
@@ -1567,7 +1581,7 @@ grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
 @code{all}, @code{ada}, @code{c}, @code{c++}, @code{fortran},
-@code{go}, @code{java}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
+@code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{all}, then all
 default languages available in the @file{gcc} sub-tree will be configured.
@@ -2021,12 +2035,6 @@ explicitly specify the directory where they are installed.  The
 shorthand for
 @option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
 @option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
-
-@item --with-hsa-kmt-lib=@var{pathname}
-
-If you configure GCC with HSA offloading but do not have the HSA
-KMT library installed in a standard location then you can
-explicitly specify the directory where it resides.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2137,240 +2145,6 @@ When you use this option, you should ensure that @var{dir} includes
 @command{ranlib} and @command{strip} if necessary, and possibly
 @command{objdump}.  Otherwise, GCC may use an inconsistent set of
 tools.
-@end table
-
-@subheading Java-Specific Options
-
-The following option applies to the build of the Java front end.
-
-@table @code
-@item --disable-libgcj
-Specify that the run-time libraries
-used by GCJ should not be built.  This is useful in case you intend
-to use GCJ with some other run-time, or you're going to install it
-separately, or it just happens not to build on your particular
-machine.  In general, if the Java front end is enabled, the GCJ
-libraries will be enabled too, unless they're known to not work on
-the target platform.  If GCJ is enabled but @samp{libgcj} isn't built, you
-may need to port it; in this case, before modifying the top-level
-@file{configure.ac} so that @samp{libgcj} is enabled by default on this platform,
-you may use @option{--enable-libgcj} to override the default.
-
-@end table
-
-The following options apply to building @samp{libgcj}.
-
-@subsubheading General Options
-
-@table @code
-@item --enable-java-maintainer-mode
-By default the @samp{libjava} build will not attempt to compile the
-@file{.java} source files to @file{.class}.  Instead, it will use the
-@file{.class} files from the source tree.  If you use this option you
-must have executables named @command{ecj1} and @command{gjavah} in your path
-for use by the build.  You must use this option if you intend to
-modify any @file{.java} files in @file{libjava}.
-
-@item --with-java-home=@var{dirname}
-This @samp{libjava} option overrides the default value of the
-@samp{java.home} system property.  It is also used to set
-@samp{sun.boot.class.path} to @file{@var{dirname}/lib/rt.jar}.  By
-default @samp{java.home} is set to @file{@var{prefix}} and
-@samp{sun.boot.class.path} to
-@file{@var{datadir}/java/libgcj-@var{version}.jar}.
-
-@item --with-ecj-jar=@var{filename}
-This option can be used to specify the location of an external jar
-file containing the Eclipse Java compiler.  A specially modified
-version of this compiler is used by @command{gcj} to parse
-@file{.java} source files.  If this option is given, the
-@samp{libjava} build will create and install an @file{ecj1} executable
-which uses this jar file at runtime.
-
-If this option is not given, but an @file{ecj.jar} file is found in
-the topmost source tree at configure time, then the @samp{libgcj}
-build will create and install @file{ecj1}, and will also install the
-discovered @file{ecj.jar} into a suitable place in the install tree.
-
-If @file{ecj1} is not installed, then the user will have to supply one
-on his path in order for @command{gcj} to properly parse @file{.java}
-source files.  A suitable jar is available from
-@uref{ftp://sourceware.org/pub/java/}.
-
-@item --disable-getenv-properties
-Don't set system properties from @env{GCJ_PROPERTIES}.
-
-@item --enable-hash-synchronization
-Use a global hash table for monitor locks.  Ordinarily,
-@samp{libgcj}'s @samp{configure} script automatically makes
-the correct choice for this option for your platform.  Only use
-this if you know you need the library to be configured differently.
-
-@item --enable-interpreter
-Enable the Java interpreter.  The interpreter is automatically
-enabled by default on all platforms that support it.  This option
-is really only useful if you want to disable the interpreter
-(using @option{--disable-interpreter}).
-
-@item --disable-java-net
-Disable java.net.  This disables the native part of java.net only,
-using non-functional stubs for native method implementations.
-
-@item --disable-jvmpi
-Disable JVMPI support.
-
-@item --disable-libgcj-bc
-Disable BC ABI compilation of certain parts of libgcj.  By default,
-some portions of libgcj are compiled with @option{-findirect-dispatch}
-and @option{-fno-indirect-classes}, allowing them to be overridden at
-run-time.
-
-If @option{--disable-libgcj-bc} is specified, libgcj is built without
-these options.  This allows the compile-time linker to resolve
-dependencies when statically linking to libgcj.  However it makes it
-impossible to override the affected portions of libgcj at run-time.
-
-@item --enable-reduced-reflection
-Build most of libgcj with @option{-freduced-reflection}.  This reduces
-the size of libgcj at the expense of not being able to do accurate
-reflection on the classes it contains.  This option is safe if you
-know that code using libgcj will never use reflection on the standard
-runtime classes in libgcj (including using serialization, RMI or CORBA).
-
-@item --with-ecos
-Enable runtime eCos target support.
-
-@item --without-libffi
-Don't use @samp{libffi}.  This will disable the interpreter and JNI
-support as well, as these require @samp{libffi} to work.
-
-@item --enable-libgcj-debug
-Enable runtime debugging code.
-
-@item --enable-libgcj-multifile
-If specified, causes all @file{.java} source files to be
-compiled into @file{.class} files in one invocation of
-@samp{gcj}.  This can speed up build time, but is more
-resource-intensive.  If this option is unspecified or
-disabled, @samp{gcj} is invoked once for each @file{.java}
-file to compile into a @file{.class} file.
-
-@item --with-libiconv-prefix=DIR
-Search for libiconv in @file{DIR/include} and @file{DIR/lib}.
-
-@item --enable-sjlj-exceptions
-Force use of the @code{setjmp}/@code{longjmp}-based scheme for exceptions.
-@samp{configure} ordinarily picks the correct value based on the platform.
-Only use this option if you are sure you need a different setting.
-
-@item --with-system-zlib
-Use installed @samp{zlib} rather than that included with GCC@.
-
-@item --with-win32-nlsapi=ansi, unicows or unicode
-Indicates how MinGW @samp{libgcj} translates between UNICODE
-characters and the Win32 API@.
-
-@item --enable-java-home
-If enabled, this creates a JPackage compatible SDK environment during install.
-Note that if --enable-java-home is used, --with-arch-directory=ARCH must also
-be specified.
-
-@item --with-arch-directory=ARCH
-Specifies the name to use for the @file{jre/lib/ARCH} directory in the SDK
-environment created when --enable-java-home is passed. Typical names for this
-directory include i386, amd64, ia64, etc.
-
-@item --with-os-directory=DIR
-Specifies the OS directory for the SDK include directory. This is set to auto
-detect, and is typically 'linux'.
-
-@item --with-origin-name=NAME
-Specifies the JPackage origin name. This defaults to the 'gcj' in
-java-1.5.0-gcj.
-
-@item --with-arch-suffix=SUFFIX
-Specifies the suffix for the sdk directory. Defaults to the empty string.
-Examples include '.x86_64' in 'java-1.5.0-gcj-1.5.0.0.x86_64'.
-
-@item --with-jvm-root-dir=DIR
-Specifies where to install the SDK. Default is $(prefix)/lib/jvm.
-
-@item --with-jvm-jar-dir=DIR
-Specifies where to install jars. Default is $(prefix)/lib/jvm-exports.
-
-@item --with-python-dir=DIR
-Specifies where to install the Python modules used for aot-compile. DIR should
-not include the prefix used in installation. For example, if the Python modules
-are to be installed in /usr/lib/python2.5/site-packages, then
---with-python-dir=/lib/python2.5/site-packages should be passed. If this is
-not specified, then the Python modules are installed in $(prefix)/share/python.
-
-@item --enable-aot-compile-rpm
-Adds aot-compile-rpm to the list of installed scripts.
-
-@item --enable-browser-plugin
-Build the gcjwebplugin web browser plugin.
-
-@item --enable-static-libjava
-Build static libraries in libjava. The default is to only build shared
-libraries.
-
-@table @code
-@item ansi
-Use the single-byte @code{char} and the Win32 A functions natively,
-translating to and from UNICODE when using these functions.  If
-unspecified, this is the default.
-
-@item unicows
-Use the @code{WCHAR} and Win32 W functions natively.  Adds
-@code{-lunicows} to @file{libgcj.spec} to link with @samp{libunicows}.
-@file{unicows.dll} needs to be deployed on Microsoft Windows 9X machines
-running built executables.  @file{libunicows.a}, an open-source
-import library around Microsoft's @code{unicows.dll}, is obtained from
-@uref{http://libunicows.sourceforge.net/}, which also gives details
-on getting @file{unicows.dll} from Microsoft.
-
-@item unicode
-Use the @code{WCHAR} and Win32 W functions natively.  Does @emph{not}
-add @code{-lunicows} to @file{libgcj.spec}.  The built executables will
-only run on Microsoft Windows NT and above.
-@end table
-@end table
-
-@subsubheading AWT-Specific Options
-
-@table @code
-@item --with-x
-Use the X Window System.
-
-@item --enable-java-awt=PEER(S)
-Specifies the AWT peer library or libraries to build alongside
-@samp{libgcj}.  If this option is unspecified or disabled, AWT
-will be non-functional.  Current valid values are @option{gtk} and
-@option{xlib}.  Multiple libraries should be separated by a
-comma (i.e.@: @option{--enable-java-awt=gtk,xlib}).
-
-@item --enable-gtk-cairo
-Build the cairo Graphics2D implementation on GTK@.
-
-@item --enable-java-gc=TYPE
-Choose garbage collector.  Defaults to @option{boehm} if unspecified.
-
-@item --disable-gtktest
-Do not try to compile and run a test GTK+ program.
-
-@item --disable-glibtest
-Do not try to compile and run a test GLIB program.
-
-@item --with-libart-prefix=PFX
-Prefix where libart is installed (optional).
-
-@item --with-libart-exec-prefix=PFX
-Exec prefix where libart is installed (optional).
-
-@item --disable-libarttest
-Do not try to compile and run a test libart program.
-
 @end table
 
 @subsubheading Overriding @command{configure} test results
@@ -2653,13 +2427,6 @@ native compiler.  You can then use the native GCC compiler to build the
 cross compiler.  The installed native compiler needs to be GCC version
 2.95 or later.
 
-If the cross compiler is to be built with support for the Java
-programming language and the ability to compile .java source files is
-desired, the installed native compiler used to build the cross
-compiler needs to be the same GCC version as the cross compiler.  In
-addition the cross compiler needs to be configured with
-@option{--with-ecj-jar=@dots{}}.
-
 Assuming you have already installed a native copy of GCC and configured
 your cross compiler, issue the command @command{make}, which performs the
 following steps:
@@ -2862,7 +2629,7 @@ on a simulator as described at @uref{http://gcc.gnu.org/simtest-howto.html}.
 
 In order to run sets of tests selectively, there are targets
 @samp{make check-gcc} and language specific @samp{make check-c},
-@samp{make check-c++}, @samp{make check-fortran}, @samp{make check-java},
+@samp{make check-c++}, @samp{make check-fortran},
 @samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
 @samp{make check-lto}
 in the @file{gcc} subdirectory of the object directory.  You can also
@@ -2960,19 +2727,6 @@ supported in the @file{gcc} subdirectory.  (To see how this works, try
 typing @command{echo} before the example given here.)
 
 
-@section Additional testing for Java Class Libraries
-
-The Java runtime tests can be executed via @samp{make check}
-in the @file{@var{target}/libjava/testsuite} directory in
-the build tree.
-
-The @uref{http://sourceware.org/mauve/,,Mauve Project} provides
-a suite of tests for the Java Class Libraries.  This suite can be run
-as part of libgcj testing by placing the Mauve tree within the libjava
-testsuite at @file{libjava/testsuite/libjava.mauve/mauve}, or by
-specifying the location of that tree when invoking @samp{make}, as in
-@samp{make MAUVEDIR=~/mauve check}.
-
 @section How to interpret test results
 
 The result of running the testsuite are various @file{*.sum} and @file{*.log}
@@ -3057,7 +2811,7 @@ you specified with the @option{--prefix} to configure (or
 @file{/usr/local} by default).  (If you specified @option{--bindir},
 that directory will be used instead; otherwise, if you specified
 @option{--exec-prefix}, @file{@var{exec-prefix}/bin} will be used.)
-Headers for the C++ and Java libraries are installed in
+Headers for the C++ library are installed in
 @file{@var{prefix}/include}; libraries in @file{@var{libdir}}
 (normally @file{@var{prefix}/lib}); internal parts of the compiler in
 @file{@var{libdir}/gcc} and @file{@var{libexecdir}/gcc}; documentation
@@ -3237,7 +2991,7 @@ HP-UX:
 Solaris 2 (SPARC, Intel):
 @itemize
 @item
-@uref{http://www.opencsw.org/,,OpenCSW}
+@uref{https://www.opencsw.org/,,OpenCSW}
 
 @item
 @uref{http://jupiterrise.com/tgcware/,,TGCware}
@@ -3706,9 +3460,9 @@ The version of binutils installed in @file{/usr/bin} probably works
 with this release of GCC@.  Bootstrapping against the latest GNU
 binutils and/or the version found in @file{/usr/ports/devel/binutils} has
 been known to enable additional features and improve overall testsuite
-results.  However, it is currently known that boehm-gc (which itself
-is required for java) may not configure properly on FreeBSD prior to
-the FreeBSD 7.0 release with GNU binutils after 2.16.1.
+results.  However, it is currently known that boehm-gc may not configure
+properly on FreeBSD prior to the FreeBSD 7.0 release with GNU binutils
+after 2.16.1.
 
 @html
 <hr />
@@ -3806,8 +3560,7 @@ with the one implemented under HP-UX 11 using secondary definitions.
 GCC 3.0 and up support HP-UX 11.  GCC 2.95.x is not supported and cannot
 be used to compile GCC 3.0 and up.
 
-The libffi and libjava libraries haven't been ported to 64-bit HP-UX@
-and don't build.
+The libffi library haven't been ported to 64-bit HP-UX@ and doesn't build.
 
 Refer to @uref{binaries.html,,binaries} for information about obtaining
 precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
@@ -3820,11 +3573,7 @@ unbundled compiler, or a binary distribution of GCC@.
 
 It is possible to build GCC 3.3 starting with the bundled HP compiler,
 but the process requires several steps.  GCC 3.3 can then be used to
-build later versions.  The fastjar program contains ISO C code and
-can't be built with the HP bundled compiler.  This problem can be
-avoided by not building the Java language.  For example, use the
-@option{--enable-languages="c,c++,f77,objc"} option in your configure
-command.
+build later versions.
 
 There are several possible approaches to building the distribution.
 Binutils can be built first using the HP tools.  Then, the GCC
@@ -4306,7 +4055,7 @@ The assembler from GNU binutils 2.17 and earlier has a bug in the way
 it sorts relocations for REL targets (o32, o64, EABI).  This can cause
 bad code to be generated for simple C++ programs.  Also the linker
 from GNU binutils versions prior to 2.17 has a bug which causes the
-runtime linker stubs in very large programs, like @file{libgcj.so}, to
+runtime linker stubs in very large programs to
 be incorrectly generated.  GNU Binutils 2.18 and later (and snapshots
 made after Nov. 9, 2006) should be free from both of these problems.
 
@@ -4511,7 +4260,7 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 9 has been removed in GCC 4.10.  Support for Solaris
+Support for Solaris 9 has been removed in GCC 5.  Support for Solaris
 8 has been removed in GCC 4.8.  Support for Solaris 7 has been removed
 in GCC 4.6.
 
@@ -4524,8 +4273,8 @@ you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
 The Solaris 2 @command{/bin/sh} will often fail to configure
-@samp{libstdc++-v3}, @samp{boehm-gc} or @samp{libjava}.  We therefore
-recommend using the following initial sequence of commands
+@samp{libstdc++-v3}or @samp{boehm-gc}.  We therefore recommend using the
+following initial sequence of commands
 
 @smallexample
 % CONFIG_SHELL=/bin/ksh
@@ -4583,11 +4332,11 @@ features, so better stay with Solaris @command{ld}.  To use the LTO linker
 plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
 binutils @emph{must} be configured with @option{--enable-largefile}.
 
-To enable symbol versioning in @samp{libstdc++} with Solaris @command{ld},
+To enable symbol versioning in @samp{libstdc++} with the Solaris linker,
 you need to have any version of GNU @command{c++filt}, which is part of
 GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
-appropriate version is found.  Solaris @command{c++filt} from the Solaris Studio
-compilers does @emph{not} work.
+appropriate version is found.  Solaris @command{c++filt} from the Solaris
+Studio compilers does @emph{not} work.
 
 Sun bug 4927647 sometimes causes random spurious testsuite failures
 related to missing diagnostic output.  This bug doesn't affect GCC

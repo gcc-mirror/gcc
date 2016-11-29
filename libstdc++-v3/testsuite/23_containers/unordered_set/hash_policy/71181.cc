@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <unordered_set>
 
@@ -24,7 +24,6 @@
 template<typename _USet>
   void test(int threshold)
   {
-    bool test __attribute__((unused)) = true;
     _USet us;
     auto nb_reserved = us.bucket_count();
     us.reserve(nb_reserved);

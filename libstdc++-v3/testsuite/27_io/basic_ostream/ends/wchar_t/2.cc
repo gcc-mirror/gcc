@@ -28,7 +28,6 @@ void test02()
   using namespace std;
   typedef wostringstream::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
   wostringstream osst_01;
   const wstring str_00(L"herbie_hancock");
   int_type len1 = str_00.size();

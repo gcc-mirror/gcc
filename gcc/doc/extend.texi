@@ -60,6 +60,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Type Attributes::     Specifying attributes of types.
 * Label Attributes::    Specifying attributes on labels.
 * Enumerator Attributes:: Specifying attributes on enumerators.
+* Statement Attributes:: Specifying attributes on statements.
 * Attribute Syntax::    Formal syntax for attributes.
 * Function Prototypes:: Prototype declarations and old-style definitions.
 * C++ Comments::        C++ comments are recognized.
@@ -927,6 +928,8 @@ examine and set these two fictitious variables with your debugger.
 @node Floating Types
 @section Additional Floating Types
 @cindex additional floating types
+@cindex @code{_Float@var{n}} data types
+@cindex @code{_Float@var{n}x} data types
 @cindex @code{__float80} data type
 @cindex @code{__float128} data type
 @cindex @code{__ibm128} data type
@@ -935,9 +938,19 @@ examine and set these two fictitious variables with your debugger.
 @cindex @code{W} floating point suffix
 @cindex @code{Q} floating point suffix
 
-As an extension, GNU C supports additional floating
+ISO/IEC TS 18661-3:2015 defines C support for additional floating
+types @code{_Float@var{n}} and @code{_Float@var{n}x}, and GCC supports
+these type names; the set of types supported depends on the target
+architecture.  These types are not supported when compiling C++.
+Constants with these types use suffixes @code{f@var{n}} or
+@code{F@var{n}} and @code{f@var{n}x} or @code{F@var{n}x}.  These type
+names can be used together with @code{_Complex} to declare complex
+types.
+
+As an extension, GNU C and GNU C++ support additional floating
 types, @code{__float80} and @code{__float128} to support 80-bit
-(@code{XFmode}) and 128-bit (@code{TFmode}) floating types.
+(@code{XFmode}) and 128-bit (@code{TFmode}) floating types; these are
+aliases for the type names @code{_Float64x} and @code{_Float128}.
 Support for additional types includes the arithmetic operators:
 add, subtract, multiply, divide; unary arithmetic operators;
 relational operators; equality operators; and conversions to and from
@@ -954,9 +967,11 @@ typedef _Complex float __attribute__((mode(TC))) _Complex128;
 typedef _Complex float __attribute__((mode(XC))) _Complex80;
 @end smallexample
 
-In order to use @code{__float128} and @code{__ibm128} on PowerPC Linux
+In order to use @code{_Float128}, @code{__float128} and
+@code{__ibm128} on PowerPC Linux
 systems, you must use the @option{-mfloat128}. It is expected in
-future versions of GCC that @code{__float128} will be enabled
+future versions of GCC that @code{_Float128} and @code{__float128}
+will be enabled
 automatically.  In addition, there are currently problems in using the
 complex @code{__float128} type.  When these problems are fixed, you
 would use the following syntax to declare @code{_Complex128} to be a
@@ -976,7 +991,14 @@ Not all targets support additional floating-point types.
 IA-64 targets.  The @code{__float128} type is supported on hppa HP-UX.
 The @code{__float128} type is supported on PowerPC 64-bit Linux
 systems by default if the vector scalar instruction set (VSX) is
-enabled.
+enabled.  The @code{_Float128} type is supported on all systems where
+@code{__float128} is supported or where @code{long double} has the
+IEEE binary128 format.  The @code{_Float64x} type is supported on all
+systems where @code{__float128} is supported.  The @code{_Float32}
+type is supported on all systems supporting IEEE binary32; the
+@code{_Float64} and @code{Float32x} types are supported on all systems
+supporting IEEE binary64.  GCC does not currently support
+@code{_Float16} or @code{_Float128x} on any systems.
 
 On the PowerPC, @code{__ibm128} provides access to the IBM extended
 double format, and it is intended to be used by the library functions
@@ -2240,6 +2262,7 @@ GCC also supports attributes on
 variable declarations (@pxref{Variable Attributes}),
 labels (@pxref{Label Attributes}),
 enumerators (@pxref{Enumerator Attributes}),
+statements (@pxref{Statement Attributes}),
 and types (@pxref{Type Attributes}).
 
 There is some overlap between the purposes of attributes and pragmas
@@ -2484,8 +2507,6 @@ that deallocates the same resource, both functions typically have the
 same priority.  The priorities for constructor and destructor
 functions are the same as those specified for namespace-scope C++
 objects (@pxref{C++ Attributes}).
-
-These attributes are not currently implemented for Objective-C@.
 
 @item deprecated
 @itemx deprecated (@var{msg})
@@ -2852,6 +2873,12 @@ semantically equivalent function.
 If @option{-finstrument-functions} is given, profiling function calls are
 generated at entry and exit of most user-compiled functions.
 Functions with this attribute are not so instrumented.
+
+@item no_profile_instrument_function
+@cindex @code{no_profile_instrument_function} function attribute
+The @code{no_profile_instrument_function} attribute on functions is used
+to inform the compiler that it should not process any profile feedback based
+optimization code instrumentation.
 
 @item no_reorder
 @cindex @code{no_reorder} function attribute
@@ -5454,11 +5481,6 @@ Enable/disable the generation of the CLD before string moves.
 Enable/disable the generation of the @code{sin}, @code{cos}, and
 @code{sqrt} instructions on the 387 floating-point unit.
 
-@item fused-madd
-@itemx no-fused-madd
-@cindex @code{target("fused-madd")} function attribute, x86
-Enable/disable the generation of the fused multiply/add instructions.
-
 @item ieee-fp
 @itemx no-ieee-fp
 @cindex @code{target("ieee-fp")} function attribute, x86
@@ -5536,8 +5558,8 @@ attributes are currently defined generically for variables.
 Other attributes are defined for variables on particular target
 systems.  Other attributes are available for functions
 (@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
-enumerators (@pxref{Enumerator Attributes}), and for types
-(@pxref{Type Attributes}).
+enumerators (@pxref{Enumerator Attributes}), statements
+(@pxref{Statement Attributes}), and for types (@pxref{Type Attributes}).
 Other front ends might define more attributes
 (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
@@ -5554,6 +5576,7 @@ attributes.
 * MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
 * MSP430 Variable Attributes::
+* Nvidia PTX Variable Attributes::
 * PowerPC Variable Attributes::
 * RL78 Variable Attributes::
 * SPU Variable Attributes::
@@ -5951,6 +5974,33 @@ memory-mapped peripherals that may lie outside the io address range.
 volatile int porta __attribute__((address (0x600)));
 @end smallexample
 
+@item absdata
+@cindex @code{absdata} variable attribute, AVR
+Variables in static storage and with the @code{absdata} attribute can
+be accessed by the @code{LDS} and @code{STS} instructions which take
+absolute addresses.
+
+@itemize @bullet
+@item
+This attribute is only supported for the reduced AVR Tiny core
+like ATtiny40.
+
+@item
+You must make sure that respective data is located in the
+address range @code{0x40}@dots{}@code{0xbf} accessible by
+@code{LDS} and @code{STS}.  One way to achieve this as an
+appropriate linker description file.
+
+@item
+If the location does not fit the address range of @code{LDS}
+and @code{STS}, there is currently (Binutils 2.26) just an unspecific
+warning like
+@quotation
+@code{module.c:(.text+0x1c): warning: internal error: out of range error}
+@end quotation
+
+@end itemize
+
 @end table
 
 @node Blackfin Variable Attributes
@@ -6208,6 +6258,20 @@ same name (@pxref{MSP430 Function Attributes}).
 These attributes can be applied to both functions and variables.
 @end table
 
+@node Nvidia PTX Variable Attributes
+@subsection Nvidia PTX Variable Attributes
+
+These variable attributes are supported by the Nvidia PTX back end:
+
+@table @code
+@item shared
+@cindex @code{shared} attribute, Nvidia PTX
+Use this attribute to place a variable in the @code{.shared} memory space.
+This memory space is private to each cooperative thread array; only threads
+within one thread block refer to the same instance of the variable.
+The runtime does not initialize variables in this memory space.
+@end table
+
 @node PowerPC Variable Attributes
 @subsection PowerPC Variable Attributes
 
@@ -6318,7 +6382,8 @@ attributes of types.  Some type attributes apply only to @code{struct}
 and @code{union} types, while others can apply to any type defined
 via a @code{typedef} declaration.  Other attributes are defined for
 functions (@pxref{Function Attributes}), labels (@pxref{Label 
-Attributes}), enumerators (@pxref{Enumerator Attributes}), and for
+Attributes}), enumerators (@pxref{Enumerator Attributes}), 
+statements (@pxref{Statement Attributes}), and for
 variables (@pxref{Variable Attributes}).
 
 The @code{__attribute__} keyword is followed by an attribute specification
@@ -6828,7 +6893,8 @@ GCC allows attributes to be set on C labels.  @xref{Attribute Syntax}, for
 details of the exact syntax for using attributes.  Other attributes are 
 available for functions (@pxref{Function Attributes}), variables 
 (@pxref{Variable Attributes}), enumerators (@pxref{Enumerator Attributes}),
-and for types (@pxref{Type Attributes}).
+statements (@pxref{Statement Attributes}), and for types
+(@pxref{Type Attributes}).
 
 This example uses the @code{cold} label attribute to indicate the 
 @code{ErrorHandling} branch is unlikely to be taken and that the
@@ -6881,8 +6947,8 @@ with computed goto or @code{asm goto}.
 GCC allows attributes to be set on enumerators.  @xref{Attribute Syntax}, for
 details of the exact syntax for using attributes.  Other attributes are
 available for functions (@pxref{Function Attributes}), variables
-(@pxref{Variable Attributes}), labels (@pxref{Label Attributes}),
-and for types (@pxref{Type Attributes}).
+(@pxref{Variable Attributes}), labels (@pxref{Label Attributes}), statements
+(@pxref{Statement Attributes}), and for types (@pxref{Type Attributes}).
 
 This example uses the @code{deprecated} enumerator attribute to indicate the
 @code{oldval} enumerator is deprecated:
@@ -6913,6 +6979,46 @@ do instead.  Note that the warnings only occurs for uses.
 
 @end table
 
+@node Statement Attributes
+@section Statement Attributes
+@cindex Statement Attributes
+
+GCC allows attributes to be set on null statements.  @xref{Attribute Syntax},
+for details of the exact syntax for using attributes.  Other attributes are
+available for functions (@pxref{Function Attributes}), variables
+(@pxref{Variable Attributes}), labels (@pxref{Label Attributes}), enumerators
+(@pxref{Enumerator Attributes}), and for types (@pxref{Type Attributes}).
+
+This example uses the @code{fallthrough} statement attribute to indicate that
+the @option{-Wimplicit-fallthrough} warning should not be emitted:
+
+@smallexample
+switch (cond)
+  @{
+  case 1:
+    bar (1);
+    __attribute__((fallthrough));
+  case 2:
+    @dots{}
+  @}
+@end smallexample
+
+@table @code
+@item fallthrough
+@cindex @code{fallthrough} statement attribute
+The @code{fallthrough} attribute with a null statement serves as a
+fallthrough statement.  It hints to the compiler that a statement
+that falls through to another case label, or user-defined label
+in a switch statement is intentional and thus the
+@option{-Wimplicit-fallthrough} warning must not trigger.  The
+fallthrough attribute may appear at most once in each attribute
+list, and may not be mixed with other attributes.  It can only
+be used in a switch statement (the compiler will issue an error
+otherwise), after a preceding statement and before a logically
+succeeding case label, or user-defined label.
+
+@end table
+
 @node Attribute Syntax
 @section Attribute Syntax
 @cindex attribute syntax
@@ -6940,6 +7046,8 @@ and enumerated types.
 applying to labels.
 @xref{Enumerator Attributes}, for details of the semantics of attributes
 applying to enumerators.
+@xref{Statement Attributes}, for details of the semantics of attributes
+applying to statements.
 
 An @dfn{attribute specifier} is of the form
 @code{__attribute__ ((@var{attribute-list}))}.  An @dfn{attribute list}
@@ -7004,6 +7112,10 @@ The attribute goes after the enumeration constant, before @code{=}, if
 present.  The optional attribute in the enumerator appertains to the
 enumeration constant.  It is not possible to place the attribute after
 the constant expression, if present.
+
+@subsubheading Statement Attributes
+In GNU C, an attribute specifier list may appear as part of a null
+statement.  The attribute goes before the semicolon.
 
 @subsubheading Type Attributes
 
@@ -9459,7 +9571,7 @@ the pointer points.
 @end smallexample
 
 The object pointed to by the first argument must be of integer or pointer
-type.  It must not be a Boolean type.
+type.  It must not be a boolean type.
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
 as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
@@ -9745,7 +9857,7 @@ they are not scaled by the size of the type to which the pointer points.
 @end smallexample
 
 The object pointed to by the first argument must be of integer or pointer
-type.  It must not be a Boolean type.  All memory orders are valid.
+type.  It must not be a boolean type.  All memory orders are valid.
 
 @end deftypefn
 
@@ -9854,10 +9966,10 @@ together with checking whether the operations overflowed.
 @deftypefn {Built-in Function} bool __builtin_add_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
 @deftypefnx {Built-in Function} bool __builtin_sadd_overflow (int a, int b, int *res)
 @deftypefnx {Built-in Function} bool __builtin_saddl_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_saddll_overflow (long long int a, long long int b, long int *res)
+@deftypefnx {Built-in Function} bool __builtin_saddll_overflow (long long int a, long long int b, long long int *res)
 @deftypefnx {Built-in Function} bool __builtin_uadd_overflow (unsigned int a, unsigned int b, unsigned int *res)
 @deftypefnx {Built-in Function} bool __builtin_uaddl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_uaddll_overflow (unsigned long long int a, unsigned long long int b, unsigned long int *res)
+@deftypefnx {Built-in Function} bool __builtin_uaddll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
 
 These built-in functions promote the first two operands into infinite precision signed
 type and perform addition on those promoted operands.  The result is then
@@ -9869,7 +9981,7 @@ behavior for all argument values.
 
 The first built-in function allows arbitrary integral types for operands and
 the result type must be pointer to some integral type other than enumerated or
-Boolean type, the rest of the built-in functions have explicit integer types.
+boolean type, the rest of the built-in functions have explicit integer types.
 
 The compiler will attempt to use hardware instructions to implement
 these built-in functions where possible, like conditional jump on overflow
@@ -9880,10 +9992,10 @@ after addition, conditional jump on carry etc.
 @deftypefn {Built-in Function} bool __builtin_sub_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
 @deftypefnx {Built-in Function} bool __builtin_ssub_overflow (int a, int b, int *res)
 @deftypefnx {Built-in Function} bool __builtin_ssubl_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_ssubll_overflow (long long int a, long long int b, long int *res)
+@deftypefnx {Built-in Function} bool __builtin_ssubll_overflow (long long int a, long long int b, long long int *res)
 @deftypefnx {Built-in Function} bool __builtin_usub_overflow (unsigned int a, unsigned int b, unsigned int *res)
 @deftypefnx {Built-in Function} bool __builtin_usubl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_usubll_overflow (unsigned long long int a, unsigned long long int b, unsigned long int *res)
+@deftypefnx {Built-in Function} bool __builtin_usubll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform subtraction, subtract the second argument
@@ -9894,10 +10006,10 @@ from the first one, instead of addition.
 @deftypefn {Built-in Function} bool __builtin_mul_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
 @deftypefnx {Built-in Function} bool __builtin_smul_overflow (int a, int b, int *res)
 @deftypefnx {Built-in Function} bool __builtin_smull_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_smulll_overflow (long long int a, long long int b, long int *res)
+@deftypefnx {Built-in Function} bool __builtin_smulll_overflow (long long int a, long long int b, long long int *res)
 @deftypefnx {Built-in Function} bool __builtin_umul_overflow (unsigned int a, unsigned int b, unsigned int *res)
 @deftypefnx {Built-in Function} bool __builtin_umull_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_umulll_overflow (unsigned long long int a, unsigned long long int b, unsigned long int *res)
+@deftypefnx {Built-in Function} bool __builtin_umulll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform multiplication, instead of addition.
@@ -9915,7 +10027,7 @@ These built-in functions are similar to @code{__builtin_add_overflow},
 @code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
 they don't store the result of the arithmetic operation anywhere and the
 last argument is not a pointer, but some expression with integral type other
-than enumerated or Boolean type.
+than enumerated or boolean type.
 
 The built-in functions promote the first two operands into infinite precision signed type
 and perform addition on those promoted operands. The result is then
@@ -10003,10 +10115,17 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @findex __builtin___fprintf_chk
 @findex __builtin___vfprintf_chk
 
-GCC implements a limited buffer overflow protection mechanism
-that can prevent some buffer overflow attacks.
+GCC implements a limited buffer overflow protection mechanism that can
+prevent some buffer overflow attacks by determining the sizes of objects
+into which data is about to be written and preventing the writes when
+the size isn't sufficient.  The built-in functions described below yield
+the best results when used together and when optimization is enabled.
+For example, to detect object sizes across function boundaries or to
+follow pointer assignments through non-trivial control flow they rely
+on various optimization passes enabled with @option{-O2}.  However, to
+a limited extent, they can be used without optimization as well.
 
-@deftypefn {Built-in Function} {size_t} __builtin_object_size (void * @var{ptr}, int @var{type})
+@deftypefn {Built-in Function} {size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
 is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  @code{__builtin_object_size} never evaluates
@@ -10829,6 +10948,13 @@ that are recognized in any mode since ISO C90 reserves these names for
 the purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
 
+There are also built-in functions @code{__builtin_fabsf@var{n}},
+@code{__builtin_fabsf@var{n}x}, @code{__builtin_copysignf@var{n}} and
+@code{__builtin_copysignf@var{n}x}, corresponding to the TS 18661-3
+functions @code{fabsf@var{n}}, @code{fabsf@var{n}x},
+@code{copysignf@var{n}} and @code{copysignf@var{n}x}, for supported
+types @code{_Float@var{n}} and @code{_Float@var{n}x}.
+
 There are also GNU extension functions @code{clog10}, @code{clog10f} and
 @code{clog10l} which names are reserved by ISO C99 for future use.
 All these functions have versions prefixed with @code{__builtin_}.
@@ -11367,6 +11493,16 @@ Similar to @code{__builtin_huge_val}, except the return
 type is @code{long double}.
 @end deftypefn
 
+@deftypefn {Built-in Function} _Float@var{n} __builtin_huge_valf@var{n} (void)
+Similar to @code{__builtin_huge_val}, except the return type is
+@code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n}x __builtin_huge_valf@var{n}x (void)
+Similar to @code{__builtin_huge_val}, except the return type is
+@code{_Float@var{n}x}.
+@end deftypefn
+
 @deftypefn {Built-in Function} int __builtin_fpclassify (int, int, int, int, int, ...)
 This built-in implements the C99 fpclassify functionality.  The first
 five int arguments should be the target library's notion of the
@@ -11403,6 +11539,16 @@ This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
 @deftypefn {Built-in Function} {long double} __builtin_infl (void)
 Similar to @code{__builtin_inf}, except the return
 type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n} __builtin_inff@var{n} (void)
+Similar to @code{__builtin_inf}, except the return
+type is @code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n} __builtin_inff@var{n}x (void)
+Similar to @code{__builtin_inf}, except the return
+type is @code{_Float@var{n}x}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_isinf_sign (...)
@@ -11451,6 +11597,16 @@ Similar to @code{__builtin_nan}, except the return type is @code{float}.
 Similar to @code{__builtin_nan}, except the return type is @code{long double}.
 @end deftypefn
 
+@deftypefn {Built-in Function} _Float@var{n} __builtin_nanf@var{n} (const char *str)
+Similar to @code{__builtin_nan}, except the return type is
+@code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n}x __builtin_nanf@var{n}x (const char *str)
+Similar to @code{__builtin_nan}, except the return type is
+@code{_Float@var{n}x}.
+@end deftypefn
+
 @deftypefn {Built-in Function} double __builtin_nans (const char *str)
 Similar to @code{__builtin_nan}, except the significand is forced
 to be a signaling NaN@.  The @code{nans} function is proposed by
@@ -11463,6 +11619,16 @@ Similar to @code{__builtin_nans}, except the return type is @code{float}.
 
 @deftypefn {Built-in Function} {long double} __builtin_nansl (const char *str)
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n} __builtin_nansf@var{n} (const char *str)
+Similar to @code{__builtin_nans}, except the return type is
+@code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n}x __builtin_nansf@var{n}x (const char *str)
+Similar to @code{__builtin_nans}, except the return type is
+@code{_Float@var{n}x}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_ffs (int x)
@@ -12545,6 +12711,14 @@ __builtin_avr_insert_bits (0xffff3210, bits, val)
 // reverse the bit order of bits
 __builtin_avr_insert_bits (0x01234567, bits, 0)
 @end smallexample
+
+@smallexample
+void __builtin_avr_nops (unsigned count)
+@end smallexample
+
+@noindent
+Insert @code{count} @code{NOP} instructions.
+The number of instructions must be a compile-time integer constant.
 
 @node Blackfin Built-in Functions
 @subsection Blackfin Built-in Functions
@@ -14902,6 +15076,23 @@ int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal128 value);
 int __builtin_dfp_dtstsfi_ov_dd (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov_td (unsigned int comparison, _Decimal128 value);
+
+unsigned int scalar_extract_exp (double source);
+unsigned long long int scalar_extract_sig (double source);
+
+double
+scalar_insert_exp (unsigned long long int significand, unsigned long long int exponent);
+
+int scalar_cmp_exp_gt (double arg1, double arg2);
+int scalar_cmp_exp_lt (double arg1, double arg2);
+int scalar_cmp_exp_eq (double arg1, double arg2);
+int scalar_cmp_exp_unordered (double arg1, double arg2);
+
+int scalar_test_data_class (float source, unsigned int condition);
+int scalar_test_data_class (double source, unsigned int condition);
+
+int scalar_test_neg (float source);
+int scalar_test_neg (double source);
 @end smallexample
 
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
@@ -14911,6 +15102,50 @@ The @code{__builtin_darn} function provides a 64-bit conditioned
 random number.  The @code{__builtin_darn_raw} function provides a
 64-bit raw random number.  The @code{__builtin_darn_32} function
 provides a 32-bit random number.
+
+The @code{scalar_extract_sig} and @code{scalar_insert_exp}
+functions require a 64-bit environment supporting ISA 3.0 or later.
+The @code{scalar_extract_exp} and @code{vec_extract_sig} built-in
+functions return the significand and exponent respectively of their
+@code{source} arguments.  The
+@code{scalar_insert_exp} built-in function returns a double-precision
+floating point value that is constructed by assembling the values of its
+@code{significand} and @code{exponent} arguments.  The sign of the
+result is copied from the most significant bit of the
+@code{significand} argument.  The significand and exponent components
+of the result are composed of the least significant 11 bits of the
+@code{significand} argument and the least significant 52 bits of the
+@code{exponent} argument.
+
+The @code{scalar_cmp_exp_gt}, @code{scalar_cmp_exp_lt},
+@code{scalar_cmp_exp_eq}, and @code{scalar_cmp_exp_unordered} built-in
+functions return a non-zero value if @code{arg1} is greater than, less
+than, equal to, or not comparable to @code{arg2} respectively.  The
+arguments are not comparable if one or the other equals NaN (not a
+number). 
+
+The @code{scalar_test_data_class} built-in functions return a non-zero
+value if any of the condition tests enabled by the value of the
+@code{condition} variable are true.  The
+@code{condition} argument must be an unsigned integer with value not
+exceeding 127.  The
+@code{condition} argument is encoded as a bitmask with each bit
+enabling the testing of a different condition, as characterized by the
+following:
+@smallexample
+0x40    Test for NaN
+0x20    Test for +Infinity
+0x10    Test for -Infinity
+0x08    Test for +Zero
+0x04    Test for -Zero
+0x02    Test for +Denormal
+0x01    Test for -Denormal
+@end smallexample
+
+If all of the enabled test conditions are false, the return value is 0.
+
+The @code{scalar_test_neg} built-in functions return a non-zero value
+if their @code{source} argument holds a negative value.
 
 The @code{__builtin_dfp_dtstsfi_lt} function returns a non-zero value
 if and only if the number of signficant digits of its @code{value} argument
@@ -14943,6 +15178,139 @@ The @code{__builtin_dfp_dtstsfi_ov_dd} and
 @code{__builtin_dfp_dtstsfi_ov_td} functions behave similarly, but
 require that the type of the @code{value} argument be
 @code{__Decimal64} and @code{__Decimal128} respectively.
+
+The following built-in functions are also available for the PowerPC family
+of processors, starting with ISA 3.0 or later
+(@option{-mcpu=power9}).  These string functions are described
+separately in order to group the descriptions closer to the function
+prototypes:
+@smallexample
+int vec_all_nez (vector signed char, vector signed char);
+int vec_all_nez (vector unsigned char, vector unsigned char);
+int vec_all_nez (vector signed short, vector signed short);
+int vec_all_nez (vector unsigned short, vector unsigned short);
+int vec_all_nez (vector signed int, vector signed int);
+int vec_all_nez (vector unsigned int, vector unsigned int);
+
+int vec_any_eqz (vector signed char, vector signed char);
+int vec_any_eqz (vector unsigned char, vector unsigned char);
+int vec_any_eqz (vector signed short, vector signed short);
+int vec_any_eqz (vector unsigned short, vector unsigned short);
+int vec_any_eqz (vector signed int, vector signed int);
+int vec_any_eqz (vector unsigned int, vector unsigned int);
+
+vector bool char vec_cmpnez (vector signed char arg1, vector signed char arg2);
+vector bool char vec_cmpnez (vector unsigned char arg1, vector unsigned char arg2);
+vector bool short vec_cmpnez (vector signed short arg1, vector signed short arg2);
+vector bool short vec_cmpnez (vector unsigned short arg1, vector unsigned short arg2);
+vector bool int vec_cmpnez (vector signed int arg1, vector signed int arg2);
+vector bool int vec_cmpnez (vector unsigned int, vector unsigned int);
+
+signed int vec_cntlz_lsbb (vector signed char);
+signed int vec_cntlz_lsbb (vector unsigned char);
+
+signed int vec_cnttz_lsbb (vector signed char);
+signed int vec_cnttz_lsbb (vector unsigned char);
+
+vector signed char vec_xl_len (signed char *addr, size_t len);
+vector unsigned char vec_xl_len (unsigned char *addr, size_t len);
+vector signed int vec_xl_len (signed int *addr, size_t len);
+vector unsigned int vec_xl_len (unsigned int *addr, size_t len);
+vector signed __int128 vec_xl_len (signed __int128 *addr, size_t len);
+vector unsigned __int128 vec_xl_len (unsigned __int128 *addr, size_t len);
+vector signed long long vec_xl_len (signed long long *addr, size_t len);
+vector unsigned long long vec_xl_len (unsigned long long *addr, size_t len);
+vector signed short vec_xl_len (signed short *addr, size_t len);
+vector unsigned short vec_xl_len (unsigned short *addr, size_t len);
+vector double vec_xl_len (double *addr, size_t len);
+vector float vec_xl_len (float *addr, size_t len);
+
+void vec_xst_len (vector signed char data, signed char *addr, size_t len);
+void vec_xst_len (vector unsigned char data, unsigned char *addr, size_t len);
+void vec_xst_len (vector signed int data, signed int *addr, size_t len);
+void vec_xst_len (vector unsigned int data, unsigned int *addr, size_t len);
+void vec_xst_len (vector unsigned __int128 data, unsigned __int128 *addr, size_t len);
+void vec_xst_len (vector signed long long data, signed long long *addr, size_t len);
+void vec_xst_len (vector unsigned long long data, unsigned long long *addr, size_t len);
+void vec_xst_len (vector signed short data, signed short *addr, size_t len);
+void vec_xst_len (vector unsigned short data, unsigned short *addr, size_t len);
+void vec_xst_len (vector signed __int128 data, signed __int128 *addr, size_t len);
+void vec_xst_len (vector double data, double *addr, size_t len);
+void vec_xst_len (vector float data, float *addr, size_t len);
+
+signed char vec_xlx (unsigned int index, vector signed char data);
+unsigned char vec_xlx (unsigned int index, vector unsigned char data);
+signed short vec_xlx (unsigned int index, vector signed short data);
+unsigned short vec_xlx (unsigned int index, vector unsigned short data);
+signed int vec_xlx (unsigned int index, vector signed int data);
+unsigned int vec_xlx (unsigned int index, vector unsigned int data);
+float vec_xlx (unsigned int index, vector float data);
+
+signed char vec_xrx (unsigned int index, vector signed char data);
+unsigned char vec_xrx (unsigned int index, vector unsigned char data);
+signed short vec_xrx (unsigned int index, vector signed short data);
+unsigned short vec_xrx (unsigned int index, vector unsigned short data);
+signed int vec_xrx (unsigned int index, vector signed int data);
+unsigned int vec_xrx (unsigned int index, vector unsigned int data);
+float vec_xrx (unsigned int index, vector float data);
+@end smallexample
+
+The @code{vec_all_nez}, @code{vec_any_eqz}, and @code{vec_cmpnez}
+perform pairwise comparisons between the elements at the same
+positions within their two vector arguments.
+The @code{vec_all_nez} function returns a
+non-zero value if and only if all pairwise comparisons are not
+equal and no element of either vector argument contains a zero.
+The @code{vec_any_eqz} function returns a
+non-zero value if and only if at least one pairwise comparison is equal
+or if at least one element of either vector argument contains a zero.
+The @code{vec_cmpnez} function returns a vector of the same type as
+its two arguments, within which each element consists of all ones to
+denote that either the corresponding elements of the incoming arguments are
+not equal or that at least one of the corresponding elements contains
+zero.  Otherwise, the element of the returned vector contains all zeros.
+
+The @code{vec_cntlz_lsbb} function returns the count of the number of
+consecutive leading byte elements (starting from position 0 within the
+supplied vector argument) for which the least-significant bit
+equals zero.  The @code{vec_cnttz_lsbb} function returns the count of
+the number of consecutive trailing byte elements (starting from
+position 15 and counting backwards within the supplied vector
+argument) for which the least-significant bit equals zero.
+
+The @code{vec_xl_len} and @code{vec_xst_len} functions require a
+64-bit environment supporting ISA 3.0 or later.  The @code{vec_xl_len}
+function loads a variable length vector from memory.  The
+@code{vec_xst_len} function stores a variable length vector to memory.
+With both the @code{vec_xl_len} and @code{vec_xst_len} functions, the
+@code{addr} argument represents the memory address to or from which
+data will be transferred, and the
+@code{len} argument represents the number of bytes to be
+transferred, as computed by the C expression @code{min((len & 0xff), 16)}.
+If this expression's value is not a multiple of the vector element's
+size, the behavior of this function is undefined.
+In the case that the underlying computer is configured to run in
+big-endian mode, the data transfer moves bytes 0 to @code{(len - 1)} of
+the corresponding vector.  In little-endian mode, the data transfer
+moves bytes @code{(16 - len)} to @code{15} of the corresponding
+vector.  For the load function, any bytes of the result vector that
+are not loaded from memory are set to zero.
+The value of the @code{addr} argument need not be aligned on a
+multiple of the vector's element size.
+
+The @code{vec_xlx} and @code{vec_xrx} functions extract the single
+element selected by the @code{index} argument from the vector
+represented by the @code{data} argument.  The @code{index} argument
+always specifies a byte offset, regardless of the size of the vector
+element.  With @code{vec_xlx}, @code{index} is the offset of the first
+byte of the element to be extracted.  With @code{vec_xrx}, @code{index}
+represents the last byte of the element to be extracted, measured
+from the right end of the vector.  In other words, the last byte of
+the element to be extracted is found at position @code{(15 - index)}.
+There is no requirement that @code{index} be a multiple of the vector
+element size.  However, if the size of the vector element added to
+@code{index} is greater than 15, the content of the returned value is
+undefined.
 
 The following built-in functions are available for the PowerPC family
 of processors when hardware decimal floating point
@@ -15284,6 +15652,9 @@ vector float vec_ceil (vector float);
 
 vector signed int vec_cmpb (vector float, vector float);
 
+vector bool char vec_cmpeq (vector bool char, vector bool char);
+vector bool short vec_cmpeq (vector bool short, vector bool short);
+vector bool int vec_cmpeq (vector bool int, vector bool int);
 vector bool char vec_cmpeq (vector signed char, vector signed char);
 vector bool char vec_cmpeq (vector unsigned char, vector unsigned char);
 vector bool short vec_cmpeq (vector signed short, vector signed short);
@@ -17200,6 +17571,8 @@ int vec_any_lt (vector unsigned long long, vector unsigned long long);
 int vec_any_ne (vector long long, vector long long);
 int vec_any_ne (vector unsigned long long, vector unsigned long long);
 
+vector bool long long vec_cmpeq (vector bool long long, vector bool long long);
+
 vector long long vec_eqv (vector long long, vector long long);
 vector long long vec_eqv (vector bool long long, vector long long);
 vector long long vec_eqv (vector long long, vector bool long long);
@@ -17533,6 +17906,11 @@ If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
 are available:
 
 @smallexample
+vector bool char vec_cmpne (vector bool char, vector bool char);
+vector bool short vec_cmpne (vector bool short, vector bool short);
+vector bool int vec_cmpne (vector bool int, vector bool int);
+vector bool long long vec_cmpne (vector bool long long, vector bool long long);
+
 vector long long vec_vctz (vector long long);
 vector unsigned long long vec_vctz (vector unsigned long long);
 vector int vec_vctz (vector int);
@@ -17638,6 +18016,66 @@ The @code{vec_absd}, @code{vec_absdb}, @code{vec_absdh}, and
 differences of the pairs of vector elements supplied in its two vector
 arguments, placing the absolute differences into the corresponding
 elements of the vector result.
+
+The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
+@smallexample
+__vector int
+vec_extract_exp (__vector float source);
+__vector long long int
+vec_extract_exp (__vector double source);
+
+__vector int
+vec_extract_sig (__vector float source);
+__vector long long int
+vec_extract_sig (__vector double source);
+
+__vector float
+vec_insert_exp (__vector unsigned int significands,  __vector unsigned int exponents);
+__vector double
+vec_insert_exp (__vector unsigned long long int significands,
+                __vector unsigned long long int exponents);
+
+__vector int vec_test_data_class (__vector float source, unsigned int condition);
+__vector long long int vec_test_data_class (__vector double source, unsigned int condition);
+@end smallexample
+
+The @code{vec_extract_sig} and @code{vec_extract_exp} built-in
+functions return vectors representing the significands and exponents
+of their @code{source} arguments respectively.  The
+@code{vec_insert_exp} built-in functions return a vector of single- or
+double-precision floating
+point values constructed by assembling the values of their
+@code{significands} and @code{exponents} arguments into the
+corresponding elements of the returned vector.  The sign of each
+element of the result is copied from the most significant bit of the
+corresponding entry within the @code{significands} argument.  The
+significand and exponent components of each element of the result are
+composed of the least significant bits of the corresponding
+@code{significands} element and the least significant bits of the
+corresponding @code{exponents} element.
+
+The @code{vec_test_data_class} built-in function returns a vector
+representing the results of testing the @code{source} vector for the
+condition selected by the @code{condition} argument.  The
+@code{condition} argument must be an unsigned integer with value not
+exceeding 127.  The
+@code{condition} argument is encoded as a bitmask with each bit
+enabling the testing of a different condition, as characterized by the
+following:
+@smallexample
+0x40    Test for NaN
+0x20    Test for +Infinity
+0x10    Test for -Infinity
+0x08    Test for +Zero
+0x04    Test for -Zero
+0x02    Test for +Denormal
+0x01    Test for -Denormal
+@end smallexample
+
+If any of the enabled test conditions is true, the corresponding entry
+in the result vector is -1.  Otherwise (all of the enabled test
+conditions are false), the corresponding entry of the result vector is 0.
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
@@ -18397,9 +18835,7 @@ v2si __builtin_vis_fpminu32 (v2si, v2si);
 @subsection SPU Built-in Functions
 
 GCC provides extensions for the SPU processor as described in the
-Sony/Toshiba/IBM SPU Language Extensions Specification, which can be
-found at @uref{http://cell.scei.co.jp/} or
-@uref{http://www.ibm.com/developerworks/power/cell/}.  GCC's
+Sony/Toshiba/IBM SPU Language Extensions Specification.  GCC's
 implementation differs in several ways.
 
 @itemize @bullet
@@ -21141,7 +21577,6 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 * Namespace Association:: Strong using-directives for namespace association.
 * Type Traits::         Compiler support for type traits.
 * C++ Concepts::        Improved support for generic programming.
-* Java Exceptions::     Tweaking exception handling to work with Java.
 * Deprecated Features:: Things will disappear from G++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 @end menu
@@ -21686,14 +22121,6 @@ Some_Class  B  __attribute__ ((init_priority (543)));
 Note that the particular values of @var{priority} do not matter; only their
 relative ordering.
 
-@item java_interface
-@cindex @code{java_interface} type attribute
-
-This type attribute informs C++ that the class is a Java interface.  It may
-only be applied to classes declared within an @code{extern "Java"} block.
-Calls to methods declared in this interface are dispatched using GCJ's
-interface table mechanism, instead of regular virtual table dispatch.
-
 @item warn_unused
 @cindex @code{warn_unused} type attribute
 
@@ -22000,41 +22427,6 @@ A binary type trait: true whenever the type arguments are the same.
 
 @end table
 
-
-@node Java Exceptions
-@section Java Exceptions
-
-The Java language uses a slightly different exception handling model
-from C++.  Normally, GNU C++ automatically detects when you are
-writing C++ code that uses Java exceptions, and handle them
-appropriately.  However, if C++ code only needs to execute destructors
-when Java exceptions are thrown through it, GCC guesses incorrectly.
-Sample problematic code is:
-
-@smallexample
-  struct S @{ ~S(); @};
-  extern void bar();    // @r{is written in Java, and may throw exceptions}
-  void foo()
-  @{
-    S s;
-    bar();
-  @}
-@end smallexample
-
-@noindent
-The usual effect of an incorrect guess is a link failure, complaining of
-a missing routine called @samp{__gxx_personality_v0}.
-
-You can inform the compiler that Java exceptions are to be used in a
-translation unit, irrespective of what it might think, by writing
-@samp{@w{#pragma GCC java_exceptions}} at the head of the file.  This
-@samp{#pragma} must appear before any functions that throw or catch
-exceptions, or run destructors when exceptions are thrown through them.
-
-You cannot mix Java and C++ exceptions in the same translation unit.  It
-is believed to be safe to throw a C++ exception from one file through
-another file compiled for the Java exception model, or vice versa, but
-there may be bugs in this area.
 
 @node Deprecated Features
 @section Deprecated Features

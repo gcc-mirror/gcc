@@ -27,6 +27,7 @@
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -2717,6 +2718,7 @@ bfin_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	&& REG_P (XEXP (x, 0))
 	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict, mode, POST_INC))
       return true;
+    break;
   case PRE_DEC:
     if (LEGITIMATE_MODE_FOR_AUTOINC_P (mode)
 	&& XEXP (x, 0) == stack_pointer_rtx
@@ -3301,13 +3303,14 @@ bfin_issue_rate (void)
 }
 
 static int
-bfin_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+bfin_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		  unsigned int)
 {
   enum attr_type dep_insn_type;
   int dep_insn_code_number;
 
   /* Anti and output dependencies have zero cost.  */
-  if (REG_NOTE_KIND (link) != 0)
+  if (dep_type != 0)
     return 0;
 
   dep_insn_code_number = recog_memoized (dep_insn);
@@ -3429,7 +3432,8 @@ hwloop_optimize (hwloop_info loop)
   basic_block bb;
   rtx_insn *insn, *last_insn;
   rtx loop_init, start_label, end_label;
-  rtx iter_reg, scratchreg, scratch_init, scratch_init_insn;
+  rtx iter_reg, scratchreg, scratch_init;
+  rtx_insn *scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;
   rtx seq_end;
   rtx_insn *seq;
@@ -3450,7 +3454,7 @@ hwloop_optimize (hwloop_info loop)
 
   scratchreg = NULL_RTX;
   scratch_init = iter_reg;
-  scratch_init_insn = NULL_RTX;
+  scratch_init_insn = NULL;
   if (!PREG_P (iter_reg) && loop->incoming_src)
     {
       basic_block bb_in = loop->incoming_src;
@@ -3974,7 +3978,7 @@ bfin_gen_bundles (void)
       for (insn = BB_HEAD (bb);; insn = next)
 	{
 	  int at_end;
-	  rtx delete_this = NULL_RTX;
+	  rtx_insn *delete_this = NULL;
 
 	  if (NONDEBUG_INSN_P (insn))
 	    {
@@ -4451,7 +4455,7 @@ workaround_speculation (void)
 	      || cbranch_predicted_taken_p (insn)))
 	{
 	  rtx_insn *target = JUMP_LABEL_AS_INSN (insn);
-	  rtx label = target;
+	  rtx_insn *label = target;
 	  rtx_insn *next_tgt;
 
 	  cycles_since_jump = 0;
@@ -5803,6 +5807,9 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY bfin_return_in_memory
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	bfin_legitimate_address_p

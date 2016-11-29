@@ -60,6 +60,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_error_condition_enum<errc>
     : public true_type { };
 
+#if __cplusplus > 201402L
+  template <typename _Tp>
+    constexpr bool is_error_code_enum_v = is_error_code_enum<_Tp>::value;
+  template <typename _Tp>
+    constexpr bool is_error_condition_enum_v =
+      is_error_condition_enum<_Tp>::value;
+#endif // C++17
   inline namespace _V2 {
 
   /// error_category

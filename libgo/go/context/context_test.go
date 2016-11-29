@@ -255,6 +255,12 @@ func TestDeadline(t *testing.T) {
 	o = otherContext{c}
 	c, _ = WithDeadline(o, time.Now().Add(4*time.Second))
 	testDeadline(c, "WithDeadline+otherContext+WithDeadline", 2*time.Second, t)
+
+	c, _ = WithDeadline(Background(), time.Now().Add(-time.Millisecond))
+	testDeadline(c, "WithDeadline+inthepast", time.Second, t)
+
+	c, _ = WithDeadline(Background(), time.Now())
+	testDeadline(c, "WithDeadline+now", time.Second, t)
 }
 
 func TestTimeout(t *testing.T) {
@@ -375,7 +381,7 @@ func TestAllocs(t *testing.T) {
 				<-c.Done()
 			},
 			limit:      8,
-			gccgoLimit: 15,
+			gccgoLimit: 18,
 		},
 		{
 			desc: "WithCancel(bg)",

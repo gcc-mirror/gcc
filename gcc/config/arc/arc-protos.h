@@ -52,7 +52,6 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
 #endif /* TREE_CODE */
 
 
-extern void arc_init (void);
 extern unsigned int arc_compute_frame_size (int);
 extern bool arc_ccfsm_branch_deleted_p (void);
 extern void arc_ccfsm_record_branch_deleted (void);
@@ -109,7 +108,7 @@ extern rtx arc_regno_use_in (unsigned int, rtx);
 extern int arc_attr_type (rtx_insn *);
 extern bool arc_scheduling_not_expected (void);
 extern bool arc_sets_cc_p (rtx_insn *insn);
-extern int arc_label_align (rtx label);
+extern int arc_label_align (rtx_insn *label);
 extern bool arc_need_delay (rtx_insn *insn);
 extern bool arc_text_label (rtx_insn *insn);
 
@@ -123,3 +122,4 @@ extern int arc_return_slot_offset (void);
 extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
 extern bool insn_is_tls_gd_dispatch (rtx_insn *);
+extern void arc_cpu_cpp_builtins (cpp_reader *);

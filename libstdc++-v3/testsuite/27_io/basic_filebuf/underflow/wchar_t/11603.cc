@@ -166,7 +166,6 @@ public:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   filebuf fbout;
   fbout.open("tmp_11603", ios_base::out);

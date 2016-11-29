@@ -27,8 +27,6 @@ struct big { char array[256]; };
 // __per_type_pool_policy
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef big value_type;
 
   using __gnu_cxx::__pool;

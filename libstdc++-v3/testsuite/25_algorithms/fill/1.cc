@@ -39,7 +39,6 @@ public:
 // fill
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const int val = 1;

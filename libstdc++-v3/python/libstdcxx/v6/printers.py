@@ -126,9 +126,19 @@ class UniquePointerPrinter:
         self.val = val
 
     def to_string (self):
-        v = self.val['_M_t']['_M_head_impl']
+        impl_type = self.val.type.fields()[0].type.tag
+        if impl_type.startswith('std::__uniq_ptr_impl<'): # New implementation
+            v = self.val['_M_t']['_M_t']['_M_head_impl']
+        elif impl_type.startswith('std::tuple<'):
+            v = self.val['_M_t']['_M_head_impl']
+        else:
+            raise ValueError("Unsupported implementation for unique_ptr: %s" % self.val.type.fields()[0].type.tag)
         return ('std::unique_ptr<%s> containing %s' % (str(v.type.target()),
                                                        str(v)))
+
+def get_value_from_aligned_membuf(buf, valtype):
+    """Returns the value held in a __gnu_cxx::__aligned_membuf."""
+    return buf['_M_storage'].address.cast(valtype.pointer()).dereference()
 
 def get_value_from_list_node(node):
     """Returns the value held in an _List_node<_Val>"""
@@ -139,9 +149,8 @@ def get_value_from_list_node(node):
             return node['_M_data']
         elif member == '_M_storage':
             # C++11 implementation, node stores value in __aligned_membuf
-            p = node['_M_storage']['_M_storage'].address
-            p = p.cast(node.type.template_argument(0).pointer())
-            return p.dereference()
+            valtype = node.type.template_argument(0)
+            return get_value_from_aligned_membuf(node['_M_storage'], valtype)
     except:
         pass
     raise ValueError("Unsupported implementation for %s" % str(node.type))
@@ -461,9 +470,8 @@ def get_value_from_Rb_tree_node(node):
             return node['_M_value_field']
         elif member == '_M_storage':
             # C++11 implementation, node stores value in __aligned_membuf
-            p = node['_M_storage']['_M_storage'].address
-            p = p.cast(node.type.template_argument(0).pointer())
-            return p.dereference()
+            valtype = node.type.template_argument(0)
+            return get_value_from_aligned_membuf(node['_M_storage'], valtype)
     except:
         pass
     raise ValueError("Unsupported implementation for %s" % str(node.type))
@@ -879,9 +887,10 @@ class StdForwardListPrinter:
 class SingleObjContainerPrinter(object):
     "Base class for printers of containers of single objects"
 
-    def __init__ (self, val, viz):
+    def __init__ (self, val, viz, hint = None):
         self.contained_value = val
         self.visualizer = viz
+        self.hint = hint
 
     def _recognize(self, type):
         """Return TYPE as a string after applying type printers"""
@@ -916,14 +925,14 @@ class SingleObjContainerPrinter(object):
         # if contained value is a map we want to display in the same way
         if hasattr (self.visualizer, 'children') and hasattr (self.visualizer, 'display_hint'):
             return self.visualizer.display_hint ()
-        return None
+        return self.hint
 
 
 class StdExpAnyPrinter(SingleObjContainerPrinter):
-    "Print a std::experimental::any"
+    "Print a std::any or std::experimental::any"
 
     def __init__ (self, typename, val):
-        self.typename = 'std::experimental::any'
+        self.typename = re.sub('^std::experimental::fundamentals_v\d::', 'std::experimental::', typename, 1)
         self.val = val
         self.contained_type = None
         contained_value = None
@@ -932,11 +941,11 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
         if mgr != 0:
             func = gdb.block_for_pc(int(mgr.cast(gdb.lookup_type('intptr_t'))))
             if not func:
-                raise ValueError("Invalid function pointer in std::experimental::any")
+                raise ValueError("Invalid function pointer in %s" % self.typename)
             rx = r"""({0}::_Manager_\w+<.*>)::_S_manage\({0}::_Op, {0} const\*, {0}::_Arg\*\)""".format(typename)
             m = re.match(rx, func.function.name)
             if not m:
-                raise ValueError("Unknown manager function in std::experimental::any")
+                raise ValueError("Unknown manager function in %s" % self.typename)
 
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
             mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
@@ -948,7 +957,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             elif '::_Manager_external' in mgrname:
                 valptr = self.val['_M_storage']['_M_ptr']
             else:
-                raise ValueError("Unknown manager function in std::experimental::any")
+                raise ValueError("Unknown manager function in %s" % self.typename)
             contained_value = valptr.cast(self.contained_type.pointer()).dereference()
             visualizer = gdb.default_visualizer(contained_value)
         super(StdExpAnyPrinter, self).__init__ (contained_value, visualizer)
@@ -963,11 +972,11 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
         return desc + valtype
 
 class StdExpOptionalPrinter(SingleObjContainerPrinter):
-    "Print a std::experimental::optional"
+    "Print a std::optional or std::experimental::optional"
 
     def __init__ (self, typename, val):
         valtype = self._recognize (val.type.template_argument(0))
-        self.typename = "std::experimental::optional<%s>" % valtype
+        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, 1)
         self.val = val
         contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
         visualizer = gdb.default_visualizer (val['_M_payload'])
@@ -980,8 +989,86 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
             return self.typename + " containing " + self.visualizer.to_string ()
         return self.typename
 
+class StdVariantPrinter(SingleObjContainerPrinter):
+    "Print a std::variant"
+
+    def __init__(self, typename, val):
+        alternatives = self._template_args(val)
+        self.typename = "%s<%s>" % (typename, ', '.join([self._recognize(alt) for alt in alternatives]))
+        self.index = val['_M_index']
+        if self.index >= len(alternatives):
+            self.contained_type = None
+            contained_value = None
+            visualizer = None
+        else:
+            self.contained_type = alternatives[int(self.index)]
+            addr = val['_M_union']['_M_first']['_M_storage'].address
+            contained_value = addr.cast(self.contained_type.pointer()).dereference()
+            visualizer = gdb.default_visualizer(contained_value)
+        super (StdVariantPrinter, self).__init__(contained_value, visualizer, 'array')
+
+    @staticmethod
+    def _template_args(val):
+        n = 0
+        args = []
+        while True:
+            try:
+                args.append(val.type.template_argument(n))
+            except:
+                return args
+            n += 1
+
+    def to_string(self):
+        if self.contained_value is None:
+            return "%s [no contained value]" % self.typename
+        if hasattr(self.visualizer, 'children'):
+            return "%s [index %d] containing %s" % (self.typename, self.index, self.visualizer.to_string())
+        return "%s [index %d]" % (self.typename, self.index)
+
+class StdNodeHandlePrinter(SingleObjContainerPrinter):
+    "Print a container node handle"
+
+    def __init__(self, typename, val):
+        self.value_type = val.type.template_argument(1)
+        nodetype = val.type.template_argument(2).template_argument(0)
+        self.is_rb_tree_node = nodetype.name.startswith('std::_Rb_tree_node')
+        self.is_map_node = val.type.template_argument(0) != self.value_type
+        nodeptr = val['_M_ptr']
+        if nodeptr:
+            if self.is_rb_tree_node:
+                contained_value = get_value_from_Rb_tree_node(nodeptr.dereference())
+            else:
+                contained_value = get_value_from_aligned_membuf(nodeptr['_M_storage'],
+                                                                self.value_type)
+            visualizer = gdb.default_visualizer(contained_value)
+        else:
+            contained_value = None
+            visualizer = None
+        optalloc = val['_M_alloc']
+        self.alloc = optalloc['_M_payload'] if optalloc['_M_engaged'] else None
+        super(StdNodeHandlePrinter, self).__init__(contained_value, visualizer,
+                                                   'array')
+
+    def to_string(self):
+
+        desc = 'node handle for '
+        if not self.is_rb_tree_node:
+            desc += 'unordered '
+        if self.is_map_node:
+            desc += 'map';
+        else:
+            desc += 'set';
+
+        if self.contained_value:
+            desc += ' with element'
+            if hasattr(self.visualizer, 'children'):
+                return "%s = %s" % (desc, self.visualizer.to_string())
+            return desc
+        else:
+            return 'empty %s' % desc
+
 class StdExpStringViewPrinter:
-    "Print a std::experimental::basic_string_view"
+    "Print a std::basic_string_view or std::experimental::basic_string_view"
 
     def __init__ (self, typename, val):
         self.val = val
@@ -1226,6 +1313,7 @@ def register_type_printers(obj):
 
     for pfx in ('', 'w'):
         add_one_type_printer(obj, 'basic_string', pfx + 'string')
+        add_one_type_printer(obj, 'basic_string_view', pfx + 'string_view')
         add_one_type_printer(obj, 'basic_ios', pfx + 'ios')
         add_one_type_printer(obj, 'basic_streambuf', pfx + 'streambuf')
         add_one_type_printer(obj, 'basic_istream', pfx + 'istream')
@@ -1259,6 +1347,9 @@ def register_type_printers(obj):
     add_one_type_printer(obj, 'fpos', 'streampos')
     add_one_type_printer(obj, 'basic_string', 'u16string')
     add_one_type_printer(obj, 'basic_string', 'u32string')
+
+    add_one_type_printer(obj, 'basic_string_view', 'u16string_view')
+    add_one_type_printer(obj, 'basic_string_view', 'u32string_view')
 
     for dur in ('nanoseconds', 'microseconds', 'milliseconds',
                 'seconds', 'minutes', 'hours'):
@@ -1317,11 +1408,14 @@ def register_type_printers(obj):
             'unordered_multiset<{1}>')
 
     # strip the "fundamentals_v1" inline namespace from these types
+    add_one_template_type_printer(obj, 'any<T>',
+            'experimental::fundamentals_v\d::any<(.*)>',
+            'experimental::any<\\1>')
     add_one_template_type_printer(obj, 'optional<T>',
-            'experimental::fundamentals_v1::optional<(.*)>',
+            'experimental::fundamentals_v\d::optional<(.*)>',
             'experimental::optional<\\1>')
     add_one_template_type_printer(obj, 'basic_string_view<C>',
-            'experimental::fundamentals_v1::basic_string_view<(.*), std::char_traits<\\1> >',
+            'experimental::fundamentals_v\d::basic_string_view<(.*), std::char_traits<\\1> >',
             'experimental::basic_string_view<\\1>')
 
 def register_libstdcxx_printers (obj):
@@ -1357,6 +1451,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_container('std::', 'bitset', StdBitsetPrinter)
     libstdcxx_printer.add_container('std::', 'deque', StdDequePrinter)
     libstdcxx_printer.add_container('std::', 'list', StdListPrinter)
+    libstdcxx_printer.add_container('std::__cxx11::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::', 'map', StdMapPrinter)
     libstdcxx_printer.add_container('std::', 'multimap', StdMapPrinter)
     libstdcxx_printer.add_container('std::', 'multiset', StdSetPrinter)
@@ -1385,7 +1480,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add('std::__debug::unique_ptr', UniquePointerPrinter)
     libstdcxx_printer.add('std::__debug::vector', StdVectorPrinter)
 
-    # These are the TR1 and C++0x printers.
+    # These are the TR1 and C++11 printers.
     # For array - the default GDB pretty-printer seems reasonable.
     libstdcxx_printer.add_version('std::', 'shared_ptr', SharedPointerPrinter)
     libstdcxx_printer.add_version('std::', 'weak_ptr', SharedPointerPrinter)
@@ -1411,7 +1506,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::tr1::', 'unordered_multiset',
                                   Tr1UnorderedSetPrinter)
 
-    # These are the C++0x printer registrations for -D_GLIBCXX_DEBUG cases.
+    # These are the C++11 printer registrations for -D_GLIBCXX_DEBUG cases.
     # The tr1 namespace printers do not seem to have any debug
     # equivalents, so do no register them.
     libstdcxx_printer.add('std::__debug::unordered_map',
@@ -1437,6 +1532,18 @@ def build_libstdcxx_dictionary ():
                                   'path', StdExpPathPrinter)
     libstdcxx_printer.add_version('std::experimental::filesystem::v1::__cxx11::',
                                   'path', StdExpPathPrinter)
+
+    # C++17 components
+    libstdcxx_printer.add_version('std::',
+                                  'any', StdExpAnyPrinter)
+    libstdcxx_printer.add_version('std::',
+                                  'optional', StdExpOptionalPrinter)
+    libstdcxx_printer.add_version('std::',
+                                  'basic_string_view', StdExpStringViewPrinter)
+    libstdcxx_printer.add_version('std::',
+                                  'variant', StdVariantPrinter)
+    libstdcxx_printer.add_version('std::',
+                                  '_Node_handle', StdNodeHandlePrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)

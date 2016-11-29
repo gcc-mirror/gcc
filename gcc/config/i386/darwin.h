@@ -112,8 +112,9 @@ extern int darwin_emit_branch_islands;
   DARWIN_CC1_SPEC
 
 #undef ASM_SPEC
-#define ASM_SPEC "-arch %(darwin_arch) -force_cpusubtype_ALL \
-  %{static}"
+#define ASM_SPEC "-arch %(darwin_arch) \
+  " ASM_OPTIONS " -force_cpusubtype_ALL \
+  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
 
 #define DARWIN_ARCH_SPEC "%{m64:x86_64;:i386}"
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC

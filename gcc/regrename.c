@@ -24,6 +24,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -481,7 +482,7 @@ rename_chains (void)
       if (fixed_regs[reg] || global_regs[reg]
 	  || (!HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed
 	      && reg == HARD_FRAME_POINTER_REGNUM)
-	  || (HARD_FRAME_POINTER_REGNUM && frame_pointer_needed
+	  || (HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed
 	      && reg == FRAME_POINTER_REGNUM))
 	continue;
 
@@ -1655,6 +1656,7 @@ build_def_use (basic_block bb)
 	     (6) For any non-earlyclobber write we find in an operand, make
 	         a new chain or mark the hard register as live.
 	     (7) For any REG_UNUSED, close any chains we just opened.
+	     (8) For any REG_CFA_RESTORE, kill any chain containing it.
 
 	     We cannot deal with situations where we track a reg in one mode
 	     and see a reference in another mode; these will cause the chain
@@ -1867,6 +1869,12 @@ build_def_use (basic_block bb)
 		scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
 			  OP_IN);
 	      }
+
+	  /* Step 8: Kill the chains involving register restores.  Those
+	     should restore _that_ register.  */
+	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	    if (REG_NOTE_KIND (note) == REG_CFA_RESTORE)
+	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, mark_all_read, OP_IN);
 	}
       else if (DEBUG_INSN_P (insn)
 	       && !VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)))

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -22,7 +21,7 @@
 #include <unordered_set>
 #include <testsuite_allocator.h>
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // libstdc++/50118
 template class std::unordered_set<int, std::hash<int>, std::equal_to<int>,

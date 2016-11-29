@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-skip-if "" { powerpc-ibm-aix* } { "*" } { "" } }
 !
 ! PR 56500: [OOP] "IMPLICIT CLASS(...)" wrongly rejected
 !

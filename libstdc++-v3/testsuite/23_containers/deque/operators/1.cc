@@ -25,8 +25,6 @@
 // libstdc++/6503
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<int> d(2);       
   typedef std::deque<int>::iterator iter;         
   typedef std::deque<int>::const_iterator constiter;

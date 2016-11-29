@@ -1,6 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-flto" }
--- { dg-require-effective-target lto }
+-- { dg-options "-flto" { target lto } }
 
 package body Lto17 is
 

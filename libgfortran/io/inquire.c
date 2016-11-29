@@ -41,7 +41,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
 
-  if (iqp->common.unit == GFC_INTERNAL_UNIT)
+  if (iqp->common.unit == GFC_INTERNAL_UNIT ||
+	iqp->common.unit == GFC_INTERNAL_UNIT4 ||
+	(u != NULL && u->internal_unit_kind != 0))
     generate_error (&iqp->common, LIBERROR_INQUIRE_INTERNAL_UNIT, NULL);
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
@@ -426,6 +428,58 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
     
 	  cf_strcpy (iqp->iqstream, iqp->iqstream_len, p);
 	}
+
+      if ((cf2 & IOPARM_INQUIRE_HAS_SHARE) != 0)
+	{
+	  if (u == NULL)
+	    p = "UNKNOWN";
+	  else
+	    switch (u->flags.share)
+	      {
+		case SHARE_DENYRW:
+		  p = "DENYRW";
+		  break;
+		case SHARE_DENYNONE:
+		  p = "DENYNONE";
+		  break;
+		case SHARE_UNSPECIFIED:
+		  p = "NODENY";
+		  break;
+		default:
+		  internal_error (&iqp->common,
+		      "inquire_via_unit(): Bad share");
+		  break;
+	      }
+
+	  cf_strcpy (iqp->share, iqp->share_len, p);
+	}
+
+      if ((cf2 & IOPARM_INQUIRE_HAS_CC) != 0)
+	{
+	  if (u == NULL)
+	    p = "UNKNOWN";
+	  else
+	    switch (u->flags.cc)
+	      {
+		case CC_FORTRAN:
+		  p = "FORTRAN";
+		  break;
+		case CC_LIST:
+		  p = "LIST";
+		  break;
+		case CC_NONE:
+		  p = "NONE";
+		  break;
+		case CC_UNSPECIFIED:
+		  p = "UNKNOWN";
+		  break;
+		default:
+		  internal_error (&iqp->common, "inquire_via_unit(): Bad cc");
+		  break;
+	      }
+
+	  cf_strcpy (iqp->cc, iqp->cc_len, p);
+	}
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_POSITION) != 0)
@@ -669,6 +723,12 @@ inquire_via_filename (st_parameter_inquire *iqp)
 
       if ((cf2 & IOPARM_INQUIRE_HAS_IQSTREAM) != 0)
 	cf_strcpy (iqp->iqstream, iqp->iqstream_len, "UNKNOWN");
+
+      if ((cf2 & IOPARM_INQUIRE_HAS_SHARE) != 0)
+	cf_strcpy (iqp->share, iqp->share_len, "UNKNOWN");
+
+      if ((cf2 & IOPARM_INQUIRE_HAS_CC) != 0)
+	cf_strcpy (iqp->cc, iqp->cc_len, "UNKNOWN");
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_POSITION) != 0)

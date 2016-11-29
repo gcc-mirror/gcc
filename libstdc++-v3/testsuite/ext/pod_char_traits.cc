@@ -32,7 +32,7 @@ int main()
   typedef character<value_type, int_type>	char_type;
   typedef std::char_traits<char_type> 		traits_type;
 
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   // 1 char_type <-> value_type conversions
   value_type uc1 = 'c';

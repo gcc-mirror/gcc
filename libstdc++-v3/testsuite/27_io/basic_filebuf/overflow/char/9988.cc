@@ -38,7 +38,6 @@ public:
 void test15()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   OverBuf fb;
   fb.open(name_08, ios_base::out | ios_base::trunc);

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -45,7 +45,6 @@ private:
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::test_container;
   using __gnu_test::input_iterator_wrapper;
 

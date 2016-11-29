@@ -28,8 +28,8 @@ subdirectories that contain parts of GCC and its runtime libraries:
 
 @table @file
 @item boehm-gc
-The Boehm conservative garbage collector, used as part of the Java
-runtime library.
+The Boehm conservative garbage collector, optionally used as part of
+the ObjC runtime library when configured with @option{--enable-objc-gc}.
 
 @item config
 Autoconf macros and Makefile fragments used throughout the tree.
@@ -76,7 +76,7 @@ The C preprocessor library.
 The Decimal Float support library.
 
 @item libffi
-The @code{libffi} library, used as part of the Java runtime library.
+The @code{libffi} library, used as part of the Go runtime library.
 
 @item libgcc
 The GCC runtime library.
@@ -100,9 +100,6 @@ about this library.
 @item libitm
 The runtime support library for transactional memory.
 
-@item libjava
-The Java runtime library.
-
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
 
@@ -122,9 +119,8 @@ Plugin used by the linker if link-time optimizations are enabled.
 Scripts used by the @code{gccadmin} account on @code{gcc.gnu.org}.
 
 @item zlib
-The @code{zlib} compression library, used by the Java front end, as
-part of the Java runtime library, and for compressing and uncompressing
-GCC's intermediate language in LTO object files.
+The @code{zlib} compression library, used for compressing and
+uncompressing GCC's intermediate language in LTO object files.
 @end table
 
 The build system in the top level directory, including how recursion
@@ -629,8 +625,8 @@ for some purposes such as arguments to @option{--enable-languages}.
 If defined, this variable lists (space-separated) language front ends
 other than C that this front end requires to be enabled (with the
 names given being their @code{language} settings).  For example, the
-Java front end depends on the C++ front end, so sets
-@samp{lang_requires=c++}.
+Obj-C++ front end depends on the C++ and ObjC front ends, so sets
+@samp{lang_requires="objc c++"}.
 @item subdir_requires
 If defined, this variable lists (space-separated) front end directories
 other than C that this front end requires to be present.  For example,
@@ -862,7 +858,6 @@ here; FIXME: document the others.
 * Test Directives:: Directives used within DejaGnu tests.
 * Ada Tests::       The Ada language testsuites.
 * C Tests::         The C language testsuites.
-* libgcj Tests::    The Java library testsuites.
 * LTO Testing::     Support for testing link-time optimizations.
 * gcov Testing::    Support for testing gcov.
 * profopt Testing:: Support for testing profile-directed optimizations.
@@ -1321,6 +1316,25 @@ Target supports array and structure sizes that are 32 bits or longer.
 
 @item 4byte_wchar_t
 Target has @code{wchar_t} that is at least 4 bytes.
+
+@item float@var{n}
+Target has the @code{_Float@var{n}} type.
+
+@item float@var{n}x
+Target has the @code{_Float@var{n}x} type.
+
+@item float@var{n}_runtime
+Target has the @code{_Float@var{n}} type, including runtime support
+for any options added with @code{dg-add-options}.
+
+@item float@var{n}x_runtime
+Target has the @code{_Float@var{n}x} type, including runtime support
+for any options added with @code{dg-add-options}.
+
+@item floatn_nx_runtime
+Target has runtime support for any options added with
+@code{dg-add-options} for any @code{_Float@var{n}} or
+@code{_Float@var{n}x} type.
 @end table
 
 @subsubsection Fortran-specific attributes
@@ -1341,6 +1355,10 @@ Target supports Fortran @code{real} kinds larger than @code{real(8)}.
 @table @code
 @item vect_condition
 Target supports vector conditional operations.
+
+@item vect_cond_mixed
+Target supports vector conditional operations where comparison operands
+have different type from the value operands.
 
 @item vect_double
 Target supports hardware vectors of @code{double}.
@@ -1575,6 +1593,13 @@ options, including @code{-mfp16-format=ieee} if necessary to obtain the
 Test system supports executing Neon half-precision float instructions.
 (Implies previous.)
 
+@item arm_fp16_alternative_ok
+ARM target supports the ARM FP16 alternative format.  Some multilibs
+may be incompatible with the options needed.
+
+@item arm_fp16_none_ok
+ARM target supports specifying none as the ARM FP16 format.
+
 @item arm_thumb1_ok
 ARM target generates Thumb-1 code for @code{-mthumb}.
 
@@ -1599,6 +1624,7 @@ ARM target supports @code{-mfpu=neon-fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1a_neon_ok
+@anchor{arm_v8_1a_neon_ok}
 ARM target supports options to generate ARMv8.1 Adv.SIMD instructions.
 Some multilibs may be incompatible with these options.
 
@@ -1609,6 +1635,28 @@ arm_v8_1a_neon_ok.
 
 @item arm_acq_rel
 ARM target supports acquire-release instructions.
+
+@item arm_v8_2a_fp16_scalar_ok
+@anchor{arm_v8_2a_fp16_scalar_ok}
+ARM target supports options to generate instructions for ARMv8.2 and
+scalar instructions from the FP16 extension.  Some multilibs may be
+incompatible with these options.
+
+@item arm_v8_2a_fp16_scalar_hw
+ARM target supports executing instructions for ARMv8.2 and scalar
+instructions from the FP16 extension.  Some multilibs may be
+incompatible with these options.  Implies arm_v8_2a_fp16_neon_ok.
+
+@item arm_v8_2a_fp16_neon_ok
+@anchor{arm_v8_2a_fp16_neon_ok}
+ARM target supports options to generate instructions from ARMv8.2 with
+the FP16 extension.  Some multilibs may be incompatible with these
+options.  Implies arm_v8_2a_fp16_scalar_ok.
+
+@item arm_v8_2a_fp16_neon_hw
+ARM target supports executing instructions from ARMv8.2 with the FP16
+extension.  Some multilibs may be incompatible with these options.
+Implies arm_v8_2a_fp16_neon_ok and arm_v8_2a_fp16_scalar_hw.
 
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
@@ -1621,6 +1669,10 @@ and @code{MOVT} instructions available.
 @item arm_thumb1_cbz_ok
 ARM target generates Thumb-1 code for @code{-mthumb} with
 @code{CBZ} and @code{CBNZ} instructions available.
+
+@item arm_divmod_simode
+ARM target for which divmod transform is disabled, if it supports hardware
+div instruction.
 
 @end table
 
@@ -1795,6 +1847,13 @@ Target requires a command line argument to enable a SIMD instruction set.
 
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
+
+@item divmod
+Target supporting hardware divmod insn or divmod libcall.
+
+@item divmod_simode
+Target supporting hardware divmod insn or divmod libcall for SImode.
+
 @end table
 
 @subsubsection Environment attributes
@@ -2124,12 +2183,35 @@ the @ref{arm_neon_fp16_ok,,arm_neon_fp16_ok effective target keyword}.
 arm vfp3 floating point support; see
 the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
 
+@item arm_v8_1a_neon
+Add options for ARMv8.1 with Adv.SIMD support, if this is supported
+by the target; see the @ref{arm_v8_1a_neon_ok,,arm_v8_1a_neon_ok}
+effective target keyword.
+
+@item arm_v8_2a_fp16_scalar
+Add options for ARMv8.2 with scalar FP16 support, if this is
+supported by the target; see the
+@ref{arm_v8_2a_fp16_scalar_ok,,arm_v8_2a_fp16_scalar_ok} effective
+target keyword.
+
+@item arm_v8_2a_fp16_neon
+Add options for ARMv8.2 with Adv.SIMD FP16 support, if this is
+supported by the target; see the
+@ref{arm_v8_2a_fp16_neon_ok,,arm_v8_2a_fp16_neon_ok} effective target
+keyword.
+
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
 locally when using pic/PIC passes in the testsuite.
 
 @item c99_runtime
 Add the target-specific flags needed to access the C99 runtime.
+
+@item float@var{n}
+Add the target-specific flags needed to use the @code{_Float@var{n}} type.
+
+@item float@var{n}x
+Add the target-specific flags needed to use the @code{_Float@var{n}x} type.
 
 @item ieee
 Add the target-specific flags needed to enable full IEEE
@@ -2403,10 +2485,6 @@ The tests are organized by directory, each directory corresponding to
 a chapter of the Ada Reference Manual.  So for example, @file{c9} corresponds
 to chapter 9, which deals with tasking features of the language.
 
-There is also an extra chapter called @file{gcc} containing a template for
-creating new executable tests, although this is deprecated in favor of
-the @file{gnat.dg} testsuite.
-
 The tests are run using two @command{sh} scripts: @file{run_acats} and
 @file{run_all.sh}.  To run the tests using a simulator or a cross
 target, see the small
@@ -2516,29 +2594,6 @@ Test the testsuite itself using @file{gcc.test-framework/test-framework.exp}.
 
 FIXME: merge in @file{testsuite/README.gcc} and discuss the format of
 test cases and magic comments more.
-
-@node libgcj Tests
-@section The Java library testsuites.
-
-Runtime tests are executed via @samp{make check} in the
-@file{@var{target}/libjava/testsuite} directory in the build
-tree.  Additional runtime tests can be checked into this testsuite.
-
-Regression testing of the core packages in libgcj is also covered by the
-Mauve testsuite.  The @uref{http://sourceware.org/mauve/,,Mauve Project}
-develops tests for the Java Class Libraries.  These tests are run as part
-of libgcj testing by placing the Mauve tree within the libjava testsuite
-sources at @file{libjava/testsuite/libjava.mauve/mauve}, or by specifying
-the location of that tree when invoking @samp{make}, as in
-@samp{make MAUVEDIR=~/mauve check}.
-
-To detect regressions, a mechanism in @file{mauve.exp} compares the
-failures for a test run against the list of expected failures in
-@file{libjava/testsuite/libjava.mauve/xfails} from the source hierarchy.
-Update this file when adding new failing tests to Mauve, or when fixing
-bugs in libgcj that had caused Mauve test failures.
-
-We encourage developers to contribute test cases to Mauve.
 
 @node LTO Testing
 @section Support for testing link-time optimizations

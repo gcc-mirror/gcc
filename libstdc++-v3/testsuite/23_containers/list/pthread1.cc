@@ -18,8 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* } }
-// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* } }
-// { dg-options "-pthreads" { target *-*-solaris* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* } }
 
 // This multi-threading C++/STL/POSIX code adheres to rules outlined here:
 // http://www.sgi.com/tech/stl/thread_safety.html

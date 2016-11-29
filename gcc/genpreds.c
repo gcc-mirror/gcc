@@ -51,12 +51,12 @@ validate_exp (rtx exp, const char *name, file_location loc)
     case IF_THEN_ELSE:
       if (validate_exp (XEXP (exp, 2), name, loc))
 	return true;
-      /* else fall through */
+      /* fall through */
     case AND:
     case IOR:
       if (validate_exp (XEXP (exp, 1), name, loc))
 	return true;
-      /* else fall through */
+      /* fall through */
     case NOT:
       return validate_exp (XEXP (exp, 0), name, loc);
 
@@ -74,7 +74,7 @@ validate_exp (rtx exp, const char *name, file_location loc)
 	      }
 	  }
       }
-      /* fall through */
+      gcc_fallthrough ();
 
       /* These need no special checking.  */
     case MATCH_OPERAND:
@@ -154,7 +154,7 @@ write_predicate_subfunction (struct pred_data *p)
   printf ("static inline int\n"
 	  "%s_1 (rtx op, machine_mode mode ATTRIBUTE_UNUSED)\n",
 	  p->name);
-  print_md_ptr_loc (p->c_block);
+  rtx_reader_ptr->print_md_ptr_loc (p->c_block);
   if (p->c_block[0] == '{')
     fputs (p->c_block, stdout);
   else
@@ -174,12 +174,12 @@ needs_variable (rtx exp, const char *var)
     case IF_THEN_ELSE:
       if (needs_variable (XEXP (exp, 2), var))
 	return true;
-      /* else fall through */
+      /* fall through */
     case AND:
     case IOR:
       if (needs_variable (XEXP (exp, 1), var))
 	return true;
-      /* else fall through */
+      /* fall through */
     case NOT:
       return needs_variable (XEXP (exp, 0), var);
 
@@ -538,7 +538,7 @@ write_predicate_expr (rtx exp)
       break;
 
     case MATCH_TEST:
-      print_c_condition (XSTR (exp, 0));
+      rtx_reader_ptr->print_c_condition (XSTR (exp, 0));
       break;
 
     default:
@@ -1204,7 +1204,8 @@ write_tm_constrs_h (void)
 
   printf ("\
 /* Generated automatically by the program '%s'\n\
-   from the machine description file '%s'.  */\n\n", progname, in_fname);
+   from the machine description file '%s'.  */\n\n", progname,
+	  rtx_reader_ptr->get_top_level_filename ());
 
   puts ("\
 #ifndef GCC_TM_CONSTRS_H\n\
@@ -1403,7 +1404,8 @@ write_tm_preds_h (void)
 
   printf ("\
 /* Generated automatically by the program '%s'\n\
-   from the machine description file '%s'.  */\n\n", progname, in_fname);
+   from the machine description file '%s'.  */\n\n", progname,
+	  rtx_reader_ptr->get_top_level_filename ());
 
   puts ("\
 #ifndef GCC_TM_PREDS_H\n\
@@ -1552,7 +1554,8 @@ write_insn_preds_c (void)
 
   printf ("\
 /* Generated automatically by the program '%s'\n\
-   from the machine description file '%s'.  */\n\n", progname, in_fname);
+   from the machine description file '%s'.  */\n\n", progname,
+	  rtx_reader_ptr->get_top_level_filename ());
 
   puts ("\
 #include \"config.h\"\n\
@@ -1566,6 +1569,7 @@ write_insn_preds_c (void)
 #include \"varasm.h\"\n\
 #include \"stor-layout.h\"\n\
 #include \"calls.h\"\n\
+#include \"memmodel.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\

@@ -266,6 +266,7 @@
     case SYMBOL_REF :
       if (SYMBOL_REF_TLS_MODEL (op))
 	return 0;
+      return 1;
     case LABEL_REF :
       return 1;
     case CONST :
@@ -450,6 +451,9 @@
 
 (define_predicate "equality_comparison_operator"
   (match_code "eq, ne"))
+
+(define_predicate "ge_lt_comparison_operator"
+  (match_code "ge, lt"))
 
 (define_predicate "brcc_nolimm_operator"
   (ior (match_test "REG_P (XEXP (op, 1))")

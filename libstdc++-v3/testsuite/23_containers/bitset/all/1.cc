@@ -25,8 +25,6 @@
 // DR 693. std::bitset::all() missing.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<0> z1;
   VERIFY( z1.all() );
   z1.set();

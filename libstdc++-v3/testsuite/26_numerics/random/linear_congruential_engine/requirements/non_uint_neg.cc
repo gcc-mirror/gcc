@@ -18,14 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
-// { dg-error "not a valid type" "" { target *-*-* } 31 }
 
 // 26.4.3.1 class template linear_congruential_engine [rand.eng.lcong]
 // 26.4.2.2 Concept RandomNumberEngine [rand.concept.eng]
 
 #include <random>
 
-std::linear_congruential_engine<double, 48271, 0, 2147483647> x;
+std::linear_congruential_engine<double, 48271, 0, 2147483647> x; // { dg-error "not a valid type" }

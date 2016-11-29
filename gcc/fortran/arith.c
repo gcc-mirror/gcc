@@ -1521,7 +1521,7 @@ eval_intrinsic (gfc_intrinsic_op op,
 	  break;
 	}
 
-    /* Fall through  */
+    gcc_fallthrough ();
     /* Numeric binary  */
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
@@ -2072,11 +2072,11 @@ gfc_int2real (gfc_expr *src, int kind)
 
   if (warn_conversion
       && wprecision_int_real (src->value.integer, result->value.real))
-    gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
-		     "from %qs to %qs at %L",
-		     gfc_typename (&src->ts),
-		     gfc_typename (&result->ts),
-		     &src->where);
+    gfc_warning (OPT_Wconversion, "Change of value in conversion "
+		 "from %qs to %qs at %L",
+		 gfc_typename (&src->ts),
+		 gfc_typename (&result->ts),
+		 &src->where);
 
   return result;
 }
@@ -2369,10 +2369,10 @@ gfc_complex2real (gfc_expr *src, int kind)
       /* See if we discarded an imaginary part.  */
       if (mpfr_cmp_si (mpc_imagref (src->value.complex), 0) != 0)
 	{
-	  gfc_warning_now (w, "Non-zero imaginary part discarded "
-			   "in conversion from %qs to %qs at %L",
-			   gfc_typename(&src->ts), gfc_typename (&result->ts),
-			   &src->where);
+	  gfc_warning (w, "Non-zero imaginary part discarded "
+		       "in conversion from %qs to %qs at %L",
+		       gfc_typename(&src->ts), gfc_typename (&result->ts),
+		       &src->where);
 	  did_warn = true;
 	}
 

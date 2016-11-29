@@ -287,6 +287,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	CASE_CONVERT:
 	  if (tree_contains_chrecs (op1, NULL))
 	    return chrec_dont_know;
+	  /* FALLTHRU */
 
 	default:
 	  if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
@@ -304,6 +305,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
     CASE_CONVERT:
       if (tree_contains_chrecs (op0, NULL))
 	return chrec_dont_know;
+      /* FALLTHRU */
 
     default:
       switch (TREE_CODE (op1))
@@ -329,6 +331,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	CASE_CONVERT:
 	  if (tree_contains_chrecs (op1, NULL))
 	    return chrec_dont_know;
+	  /* FALLTHRU */
 
 	default:
 	  {
@@ -423,6 +426,7 @@ chrec_fold_multiply (tree type,
 	CASE_CONVERT:
 	  if (tree_contains_chrecs (op1, NULL))
 	    return chrec_dont_know;
+	  /* FALLTHRU */
 
 	default:
 	  if (integer_onep (op1))
@@ -439,6 +443,7 @@ chrec_fold_multiply (tree type,
     CASE_CONVERT:
       if (tree_contains_chrecs (op0, NULL))
 	return chrec_dont_know;
+      /* FALLTHRU */
 
     default:
       if (integer_onep (op0))
@@ -461,6 +466,7 @@ chrec_fold_multiply (tree type,
 	CASE_CONVERT:
 	  if (tree_contains_chrecs (op1, NULL))
 	    return chrec_dont_know;
+	  /* FALLTHRU */
 
 	default:
 	  if (integer_onep (op1))
@@ -484,7 +490,6 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
 {
   bool overflow;
   unsigned int i;
-  tree res;
 
   /* Handle the most frequent cases.  */
   if (k == 0)
@@ -492,18 +497,20 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
   if (k == 1)
     return fold_convert (type, n);
 
+  widest_int num = wi::to_widest (n);
+
   /* Check that k <= n.  */
-  if (wi::ltu_p (n, k))
+  if (wi::ltu_p (num, k))
     return NULL_TREE;
 
   /* Denominator = 2.  */
-  wide_int denom = wi::two (TYPE_PRECISION (TREE_TYPE (n)));
+  widest_int denom = 2;
 
   /* Index = Numerator-1.  */
-  wide_int idx = wi::sub (n, 1);
+  widest_int idx = num - 1;
 
   /* Numerator = Numerator*Index = n*(n-1).  */
-  wide_int num = wi::smul (n, idx, &overflow);
+  num = wi::smul (num, idx, &overflow);
   if (overflow)
     return NULL_TREE;
 
@@ -522,9 +529,10 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
     }
 
   /* Result = Numerator / Denominator.  */
-  wide_int di_res = wi::udiv_trunc (num, denom);
-  res = wide_int_to_tree (type, di_res);
-  return int_fits_type_p (res, type) ? res : NULL_TREE;
+  num = wi::udiv_trunc (num, denom);
+  if (! wi::fits_to_tree_p (num, type))
+    return NULL_TREE;
+  return wide_int_to_tree (type, num);
 }
 
 /* Helper function.  Use the Newton's interpolating formula for
@@ -934,7 +942,7 @@ chrec_contains_symbols (const_tree chrec)
     return false;
 
   if (TREE_CODE (chrec) == SSA_NAME
-      || TREE_CODE (chrec) == VAR_DECL
+      || VAR_P (chrec)
       || TREE_CODE (chrec) == PARM_DECL
       || TREE_CODE (chrec) == FUNCTION_DECL
       || TREE_CODE (chrec) == LABEL_DECL
@@ -1026,6 +1034,7 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
       if (!evolution_function_is_invariant_rec_p (TREE_OPERAND (chrec, 1),
 						  loopnum))
 	return false;
+      /* FALLTHRU */
 
     case 1:
       if (!evolution_function_is_invariant_rec_p (TREE_OPERAND (chrec, 0),
@@ -1533,12 +1542,15 @@ for_each_scev_op (tree *scev, bool (*cbck) (tree *, void *), void *data)
     {
     case 3:
       for_each_scev_op (&TREE_OPERAND (*scev, 2), cbck, data);
+      /* FALLTHRU */
 
     case 2:
       for_each_scev_op (&TREE_OPERAND (*scev, 1), cbck, data);
+      /* FALLTHRU */
 
     case 1:
       for_each_scev_op (&TREE_OPERAND (*scev, 0), cbck, data);
+      /* FALLTHRU */
 
     default:
       cbck (scev, data);

@@ -56,8 +56,6 @@ namespace __gnu_cxx
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_cxx::hash_map<std::string, int> Map;
   typedef Map::iterator       iterator;
   typedef Map::const_iterator const_iterator;

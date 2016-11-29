@@ -5787,8 +5787,9 @@ package body Sem_Ch12 is
      (Formal_Pack : Entity_Id;
       Actual_Pack : Entity_Id)
    is
-      E1 : Entity_Id := First_Entity (Actual_Pack);
-      E2 : Entity_Id := First_Entity (Formal_Pack);
+      E1      : Entity_Id := First_Entity (Actual_Pack);
+      E2      : Entity_Id := First_Entity (Formal_Pack);
+      Prev_E1 : Entity_Id;
 
       Expr1 : Node_Id;
       Expr2 : Node_Id;
@@ -5954,6 +5955,7 @@ package body Sem_Ch12 is
    --  Start of processing for Check_Formal_Package_Instance
 
    begin
+      Prev_E1 := E1;
       while Present (E1) and then Present (E2) loop
          exit when Ekind (E1) = E_Package
            and then Renamed_Entity (E1) = Renamed_Entity (Actual_Pack);
@@ -5983,6 +5985,14 @@ package body Sem_Ch12 is
          if No (E1) then
             return;
 
+         --  Entities may be declared without full declaration, such as
+         --  itypes and predefined operators (concatenation for arrays, eg).
+         --  Skip it and keep the formal entity to find a later match for it.
+
+         elsif No (Parent (E2)) and then Ekind (E1) /= Ekind (E2) then
+            E1 := Prev_E1;
+            goto Next_E;
+
          --  If the formal entity comes from a formal declaration, it was
          --  defaulted in the formal package, and no check is needed on it.
 
@@ -5990,6 +6000,13 @@ package body Sem_Ch12 is
                          N_Formal_Object_Declaration,
                          N_Formal_Type_Declaration)
          then
+            --  If the formal is a tagged type the corresponding class-wide
+            --  type has been generated as well, and it must be skipped.
+
+            if Is_Type (E2) and then Is_Tagged_Type (E2) then
+               Next_Entity (E2);
+            end if;
+
             goto Next_E;
 
          --  Ditto for defaulted formal subprograms.
@@ -6144,6 +6161,7 @@ package body Sem_Ch12 is
          end if;
 
          <<Next_E>>
+            Prev_E1 := E1;
             Next_Entity (E1);
             Next_Entity (E2);
       end loop;
@@ -8930,7 +8948,6 @@ package body Sem_Ch12 is
       Gen_Body : Node_Id;
       Gen_Decl : Node_Id)
    is
-
       function In_Same_Scope (Gen_Id, Act_Id : Node_Id) return Boolean;
       --  Check if the generic definition and the instantiation come from
       --  a common scope, in which case the instance must be frozen after
@@ -8972,12 +8989,12 @@ package body Sem_Ch12 is
       ---------------
 
       function True_Sloc (N, Act_Unit : Node_Id) return Source_Ptr is
-         Res : Source_Ptr;
          N1  : Node_Id;
+         Res : Source_Ptr;
 
       begin
          Res := Sloc (N);
-         N1 := N;
+         N1  := N;
          while Present (N1) and then N1 /= Act_Unit loop
             if Sloc (N1) > Res then
                Res := Sloc (N1);
@@ -8995,11 +9012,11 @@ package body Sem_Ch12 is
       Par       : constant Entity_Id := Scope (Gen_Id);
       Gen_Unit  : constant Node_Id   :=
                     Unit (Cunit (Get_Source_Unit (Gen_Decl)));
-      Orig_Body : Node_Id := Gen_Body;
-      F_Node    : Node_Id;
-      Body_Unit : Node_Id;
 
+      Body_Unit  : Node_Id;
+      F_Node     : Node_Id;
       Must_Delay : Boolean;
+      Orig_Body  : Node_Id := Gen_Body;
 
    --  Start of processing for Install_Body
 
@@ -9062,13 +9079,13 @@ package body Sem_Ch12 is
 
       Must_Delay :=
         (Gen_Unit = Act_Unit
-          and then (Nkind_In (Gen_Unit, N_Package_Declaration,
-                                        N_Generic_Package_Declaration)
+          and then (Nkind_In (Gen_Unit, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
                      or else (Gen_Unit = Body_Unit
                                and then True_Sloc (N, Act_Unit)
                                           < Sloc (Orig_Body)))
           and then Is_In_Main_Unit (Original_Node (Gen_Unit))
-          and then (In_Same_Scope (Gen_Id, Act_Id)));
+          and then In_Same_Scope (Gen_Id, Act_Id));
 
       --  If this is an early instantiation, the freeze node is placed after
       --  the generic body. Otherwise, if the generic appears in an instance,
@@ -12896,7 +12913,6 @@ package body Sem_Ch12 is
       end if;
 
       Current_Unit := Parent (N);
-
       while Present (Current_Unit)
         and then Nkind (Current_Unit) /= N_Compilation_Unit
       loop
@@ -14243,7 +14259,6 @@ package body Sem_Ch12 is
             then
                Copy_Dimensions (N2, N);
             end if;
-
          end Set_Global_Type;
 
          ------------------
@@ -14319,7 +14334,7 @@ package body Sem_Ch12 is
                   if Is_Global (Entity (Original_Node (N2))) then
                      N2 := Original_Node (N2);
                      Set_Associated_Node (N, N2);
-                     Set_Global_Type (N, N2);
+                     Set_Global_Type     (N, N2);
 
                   --  Renaming is local, and will be resolved in instance
 
@@ -14361,7 +14376,7 @@ package body Sem_Ch12 is
             if Is_Global (Entity (Parent (N2))) then
                Change_Selected_Component_To_Expanded_Name (Parent (N));
                Set_Associated_Node (Parent (N), Parent (N2));
-               Set_Global_Type (Parent (N), Parent (N2));
+               Set_Global_Type     (Parent (N), Parent (N2));
                Save_Entity_Descendants (N);
 
             --  If this is a reference to the current generic entity, replace
@@ -14420,7 +14435,7 @@ package body Sem_Ch12 is
                if Is_Global (Entity (Name (Parent (N2)))) then
                   Change_Selected_Component_To_Expanded_Name (Parent (N));
                   Set_Associated_Node (Parent (N), Name (Parent (N2)));
-                  Set_Global_Type (Parent (N), Name (Parent (N2)));
+                  Set_Global_Type     (Parent (N), Name (Parent (N2)));
                   Save_Entity_Descendants (N);
 
                else

@@ -30,6 +30,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <sstream>
 
 #if defined(HAVE_UNORDERED_MAP)
 

@@ -56,8 +56,6 @@ void operator delete(void *ptr, std::size_t) throw()
 // http://gcc.gnu.org/ml/libstdc++/2007-09/msg00006.html
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<std::vector<int> > *v;
   VERIFY( zero_sized_news == 0 );
 

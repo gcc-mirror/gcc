@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_as_tuple();
 
   VERIFY( std::get<0>(std::forward_as_tuple(-1)) == -1 );

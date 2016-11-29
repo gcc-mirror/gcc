@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef filebuf::pos_type pos_type;
   const char name[] = "tmp_seekoff-4.tst";

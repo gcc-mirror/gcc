@@ -247,10 +247,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       push(value_type&& __x)
       { c.push_back(std::move(__x)); }
 
+#if __cplusplus > 201402L
+      template<typename... _Args>
+	decltype(auto)
+	emplace(_Args&&... __args)
+	{ return c.emplace_back(std::forward<_Args>(__args)...); }
+#else
       template<typename... _Args>
         void
         emplace(_Args&&... __args)
 	{ c.emplace_back(std::forward<_Args>(__args)...); }
+#endif
 #endif
 
       /**
@@ -462,28 +469,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	explicit
 	priority_queue(const _Alloc& __a)
-	: c(__a) { }
+	: c(__a), comp() { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, const _Alloc& __a)
-	: c(__x, __a) { }
+	: c(__a), comp(__x) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, const _Sequence& __c,
 		       const _Alloc& __a)
-	: c(__x, __c, __a) { }
+	: c(__c, __a), comp(__x) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, _Sequence&& __c, const _Alloc& __a)
-	: c(__x, std::move(__c), __a) { }
+	: c(std::move(__c), __a), comp(__x) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const priority_queue& __q, const _Alloc& __a)
-	: c(__q.c, __a) { }
+	: c(__q.c, __a), comp(__q.comp) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(priority_queue&& __q, const _Alloc& __a)
-	: c(std::move(__q.c), __a) { }
+	: c(std::move(__q.c), __a), comp(std::move(__q.comp)) { }
 #endif
 
       /**

@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-darwin* } { "*" } { "" } } */
 /* { dg-require-visibility "" } */
-/* { dg-final { scan-hidden "foo" } } */
+/* { dg-final { scan-hidden "foo" { xfail *-*-aix* } } } */
 
 extern int foo __attribute__ ((visibility ("hidden")));
 int f () {

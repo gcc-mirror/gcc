@@ -8,7 +8,6 @@
 #include "arch.h"
 #include "malloc.h"
 #include "go-type.h"
-#include "interface.h"
 
 /* Implement unsafe_NewArray, called from the reflect package.  */
 

@@ -1932,13 +1932,11 @@ package body Sem_Ch5 is
         and then (Nkind (Parent (N)) /= N_Quantified_Expression
                    or else Operating_Mode = Check_Semantics)
 
-        --  Do not perform this expansion in SPARK mode, since the formal
-        --  verification directly deals with the source form of the iterator.
-        --  Ditto for ASIS and when expansion is disabled, where the temporary
-        --  may hide the transformation of a selected component into a prefixed
-        --  function call, and references need to see the original expression.
+        --  Do not perform this expansion for ASIS and when expansion is
+        --  disabled, where the temporary may hide the transformation of a
+        --  selected component into a prefixed function call, and references
+        --  need to see the original expression.
 
-        and then not GNATprove_Mode
         and then Expander_Active
       then
          declare

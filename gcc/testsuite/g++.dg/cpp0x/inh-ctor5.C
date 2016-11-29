@@ -15,7 +15,7 @@ void test() {
   D1 e;		    // { dg-error "deleted" } D1 has no default constructor
 }
 struct D2 : B2 {
-  using B2::B2;	    // { dg-error "no match" } implicitly declares D2(double)
+  using B2::B2;	    // { dg-error "B1::B1" }
   B1 b;
 };
 D2 f(1.0);	    // { dg-error "deleted" } B1 has no default constructor

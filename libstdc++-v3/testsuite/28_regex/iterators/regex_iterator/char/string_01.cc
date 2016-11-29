@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-07-20  Tim Shen <timshen91@gmail.com>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::basic_regex<char> re("asdf");
   const char s[] = "ffasdf88asdf99asdf00asdf77";
   int cnt = 0;

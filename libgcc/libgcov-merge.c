@@ -38,11 +38,6 @@ void __gcov_merge_single (gcov_type *counters  __attribute__ ((unused)),
                           unsigned n_counters __attribute__ ((unused))) {}
 #endif
 
-#ifdef L_gcov_merge_delta
-void __gcov_merge_delta (gcov_type *counters  __attribute__ ((unused)),
-                         unsigned n_counters __attribute__ ((unused))) {}
-#endif
-
 #else
 
 #ifdef L_gcov_merge_add
@@ -126,46 +121,6 @@ __gcov_merge_single (gcov_type *counters, unsigned n_counters)
     }
 }
 #endif /* L_gcov_merge_single */
-
-#ifdef L_gcov_merge_delta
-/* The profile merging function for choosing the most common
-   difference between two consecutive evaluations of the value.  It is
-   given an array COUNTERS of N_COUNTERS old counters and it reads the
-   same number of counters from the gcov file.  The counters are split
-   into 4-tuples where the members of the tuple have meanings:
-
-   -- the last value of the measured entity
-   -- the stored candidate on the most common difference
-   -- counter
-   -- total number of evaluations of the value  */
-void
-__gcov_merge_delta (gcov_type *counters, unsigned n_counters)
-{
-  unsigned i, n_measures;
-  gcov_type value, counter, all;
-
-  gcc_assert (!(n_counters % 4));
-  n_measures = n_counters / 4;
-  for (i = 0; i < n_measures; i++, counters += 4)
-    {
-      /* last = */ gcov_get_counter ();
-      value = gcov_get_counter_target ();
-      counter = gcov_get_counter ();
-      all = gcov_get_counter ();
-
-      if (counters[1] == value)
-        counters[2] += counter;
-      else if (counter > counters[2])
-        {
-          counters[1] = value;
-          counters[2] = counter - counters[2];
-        }
-      else
-        counters[2] -= counter;
-      counters[3] += all;
-    }
-}
-#endif /* L_gcov_merge_delta */
 
 #ifdef L_gcov_merge_icall_topn
 /* The profile merging function used for merging indirect call counts

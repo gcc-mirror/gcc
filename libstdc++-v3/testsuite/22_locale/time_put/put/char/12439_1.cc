@@ -44,7 +44,6 @@ protected:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   ostringstream stream;
   time_t tt = time(0);

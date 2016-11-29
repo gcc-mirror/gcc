@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2008-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -24,9 +24,7 @@
 
 // DR 776. Undescribed assign function of std::array.
 void test01()
-{ 
-  bool test __attribute__((unused)) = true;
-
+{
   const size_t len = 3;
   typedef std::array<int, len> array_type;
 

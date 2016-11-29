@@ -40,7 +40,6 @@ protected:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   Buf fb;
   locale loc_us = locale(ISO_8859(1,en_US));

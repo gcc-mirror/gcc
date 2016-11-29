@@ -1,6 +1,0 @@
-Makefile.in
-.deps
-.libs
-libgcjwebplugin_la-gcjwebplugin.lo
-libgcjwebplugin.la
-Makefile

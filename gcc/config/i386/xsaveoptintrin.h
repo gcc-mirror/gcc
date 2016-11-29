@@ -38,7 +38,7 @@ extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _xsaveopt (void *__P, long long __M)
 {
-  return __builtin_ia32_xsaveopt (__P, __M);
+  __builtin_ia32_xsaveopt (__P, __M);
 }
 
 #ifdef __x86_64__
@@ -46,7 +46,7 @@ extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _xsaveopt64 (void *__P, long long __M)
 {
-  return __builtin_ia32_xsaveopt64 (__P, __M);
+  __builtin_ia32_xsaveopt64 (__P, __M);
 }
 #endif
 

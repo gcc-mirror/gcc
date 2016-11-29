@@ -1,4 +1,5 @@
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
+// { dg-do run { target c++11 } }
 //
 // Copyright (C) 2016 Free Software Foundation, Inc.
 //
@@ -3609,7 +3610,6 @@ template<typename Tp, unsigned int Num>
   void
   test(const testcase_conf_hyperg<Tp> (&data)[Num], Tp toler)
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);

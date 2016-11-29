@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 //
 // 2010-06-10  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -28,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::regex_iterator<wchar_t*> it;
 	std::wcregex_iterator cit;
 	std::wsregex_iterator sit;

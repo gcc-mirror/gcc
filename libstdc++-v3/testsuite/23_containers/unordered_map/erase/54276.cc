@@ -16,13 +16,11 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <set>
 #include <unordered_map>
 #include <testsuite_hooks.h>
-
-bool test __attribute__((unused)) = true;
 
 struct A
 {

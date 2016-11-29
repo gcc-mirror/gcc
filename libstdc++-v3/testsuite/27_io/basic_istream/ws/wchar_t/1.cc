@@ -24,8 +24,6 @@
 
 void test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   const wchar_t str_lit01[] = L"  venice ";
   const std::wstring str01(L" santa barbara ");
   std::wstring str02(str_lit01);

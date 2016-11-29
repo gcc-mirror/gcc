@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -21,8 +21,6 @@
 // NB: This file is for testing memory with NO OTHER INCLUDES.
 
 #include <memory>
-
-// { dg-do compile }
 
 template<typename Ptr>
 void test01()

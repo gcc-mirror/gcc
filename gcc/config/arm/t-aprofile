@@ -49,38 +49,33 @@ MULTILIB_DIRNAMES      += fpv3 simdv1 fpv4 simdvfpv4 simdv8
 MULTILIB_OPTIONS       += mfloat-abi=softfp/mfloat-abi=hard
 MULTILIB_DIRNAMES      += softfp hard
 
-# We don't build no-float libraries with an FPU.
-MULTILIB_EXCEPTIONS    += *mfpu=vfpv3-d16
-MULTILIB_EXCEPTIONS    += *mfpu=neon
-MULTILIB_EXCEPTIONS    += *mfpu=vfpv4-d16
-MULTILIB_EXCEPTIONS    += *mfpu=neon-vfpv4
-MULTILIB_EXCEPTIONS    += *mfpu=neon-fp-armv8
 
-# We don't build libraries requiring an FPU at the CPU/Arch/ISA level.
-MULTILIB_EXCEPTIONS    += mfloat-abi=*
-MULTILIB_EXCEPTIONS    += mfpu=*
-MULTILIB_EXCEPTIONS    += mthumb/mfloat-abi=*
-MULTILIB_EXCEPTIONS    += mthumb/mfpu=*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/mfloat-abi=*
-MULTILIB_EXCEPTIONS    += *march=armv7ve/mfloat-abi=*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/mfloat-abi=*
+# Option combinations to build library with
 
-# Ensure the correct FPU variants apply to the correct base architectures.
-MULTILIB_EXCEPTIONS    += *march=armv7ve/*mfpu=vfpv3-d16*
-MULTILIB_EXCEPTIONS    += *march=armv7ve/*mfpu=neon/*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=vfpv3-d16*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=neon/*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=vfpv4-d16*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=neon-vfpv4*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=vfpv4-d16*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=neon-vfpv4*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=neon-fp-armv8*
-MULTILIB_EXCEPTIONS    += *march=armv7ve/*mfpu=neon-fp-armv8*
+# Default CPU/Arch (ARM is implicitly included because it uses the default
+# multilib)
+MULTILIB_REQUIRED      += mthumb
+
+# ARMv7-A
+MULTILIB_REQUIRED      += *march=armv7-a
+MULTILIB_REQUIRED      += *march=armv7-a/mfpu=vfpv3-d16/mfloat-abi=*
+MULTILIB_REQUIRED      += *march=armv7-a/mfpu=neon/mfloat-abi=*
+
+# ARMv7VE
+MULTILIB_REQUIRED      += *march=armv7ve
+MULTILIB_REQUIRED      += *march=armv7ve/mfpu=vfpv4-d16/mfloat-abi=*
+MULTILIB_REQUIRED      += *march=armv7ve/mfpu=neon-vfpv4/mfloat-abi=*
+
+# ARMv8-A
+MULTILIB_REQUIRED      += *march=armv8-a
+MULTILIB_REQUIRED      += *march=armv8-a/mfpu=neon-fp-armv8/mfloat-abi=*
+
 
 # CPU Matches
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a8
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a9
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a5
+MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a7
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a15
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a12
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a17
@@ -97,6 +92,7 @@ MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73.cortex-a35
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73.cortex-a53
 MULTILIB_MATCHES       += march?armv8-a=mcpu?exynos-m1
+MULTILIB_MATCHES       += march?armv8-a=mcpu?falkor
 MULTILIB_MATCHES       += march?armv8-a=mcpu?qdf24xx
 MULTILIB_MATCHES       += march?armv8-a=mcpu?xgene1
 
@@ -104,13 +100,20 @@ MULTILIB_MATCHES       += march?armv8-a=mcpu?xgene1
 MULTILIB_MATCHES       += march?armv8-a=march?armv8-a+crc
 MULTILIB_MATCHES       += march?armv8-a=march?armv8.1-a
 MULTILIB_MATCHES       += march?armv8-a=march?armv8.1-a+crc
+MULTILIB_MATCHES       += march?armv8-a=march?armv8.2-a
+MULTILIB_MATCHES       += march?armv8-a=march?armv8.2-a+fp16
 
 # FPU matches
 MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3
 MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-fp16
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-fp16-d16
+MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-d16-fp16
+MULTILIB_MATCHES       += mfpu?neon=mfpu?neon-fp16
 MULTILIB_MATCHES       += mfpu?vfpv4-d16=mfpu?vfpv4
+MULTILIB_MATCHES       += mfpu?vfpv4-d16=mfpu?fpv5-d16
+MULTILIB_MATCHES       += mfpu?vfpv4-d16=mfpu?fp-armv8
 MULTILIB_MATCHES       += mfpu?neon-fp-armv8=mfpu?crypto-neon-fp-armv8
+MULTILIB_MATCHES       += mfpu?vfp=mfpu?vfpv2
+MULTILIB_MATCHES       += mfpu?neon=mfpu?neon-vfpv3
 
 
 # Map all requests for vfpv3 with a later CPU to vfpv3-d16 v7-a.
@@ -127,10 +130,6 @@ MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv8
 MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv8-a/mfpu.vfpv3-d16/mfloat-abi.softfp
 MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.hard
 MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.softfp
-MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7-a/mfpu.fp-armv8/mfloat-abi.hard
-MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7-a/mfpu.fp-armv8/mfloat-abi.softfp
-MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7-a/mfpu.vfpv4/mfloat-abi.hard
-MULTILIB_REUSE	      += march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7-a/mfpu.vfpv4/mfloat-abi.softfp
 
 
 MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.hard=march.armv7ve/mfpu.neon/mfloat-abi.hard
@@ -143,10 +142,6 @@ MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.hard=march.armv7-a/mf
 MULTILIB_REUSE	      += march.armv7-a/mfpu.neon/mfloat-abi.softfp=march.armv7-a/mfpu.neon-fp-armv8/mfloat-abi.softfp
 
 
-MULTILIB_REUSE	      += march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.hard=march.armv7ve/mfpu.fp-armv8/mfloat-abi.hard
-MULTILIB_REUSE	      += march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.softfp=march.armv7ve/mfpu.fp-armv8/mfloat-abi.softfp
-MULTILIB_REUSE	      += march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.hard=march.armv8-a/mfpu.vfpv4/mfloat-abi.hard
-MULTILIB_REUSE	      += march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.softfp=march.armv8-a/mfpu.vfpv4/mfloat-abi.softfp
 MULTILIB_REUSE	      += march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.hard=march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.hard
 MULTILIB_REUSE	      += march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.softfp=march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.softfp
 
@@ -166,10 +161,6 @@ MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthu
 MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.vfpv3-d16/mfloat-abi.softfp
 MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.hard
 MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.vfpv4-d16/mfloat-abi.softfp
-MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.fp-armv8/mfloat-abi.hard
-MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.fp-armv8/mfloat-abi.softfp
-MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv7-a/mfpu.vfpv4/mfloat-abi.hard
-MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.vfpv4/mfloat-abi.softfp
 
 
 MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.hard=mthumb/march.armv7ve/mfpu.neon/mfloat-abi.hard
@@ -182,10 +173,6 @@ MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.hard=mthumb/ma
 MULTILIB_REUSE	      += mthumb/march.armv7-a/mfpu.neon/mfloat-abi.softfp=mthumb/march.armv7-a/mfpu.neon-fp-armv8/mfloat-abi.softfp
 
 
-MULTILIB_REUSE	      += mthumb/march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.hard=mthumb/march.armv7ve/mfpu.fp-armv8/mfloat-abi.hard
-MULTILIB_REUSE	      += mthumb/march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.softfp=mthumb/march.armv7ve/mfpu.fp-armv8/mfloat-abi.softfp
-MULTILIB_REUSE	      += mthumb/march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.hard=mthumb/march.armv8-a/mfpu.vfpv4/mfloat-abi.hard
-MULTILIB_REUSE	      += mthumb/march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.vfpv4/mfloat-abi.softfp
 MULTILIB_REUSE	      += mthumb/march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.hard=mthumb/march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.hard
 MULTILIB_REUSE	      += mthumb/march.armv7ve/mfpu.vfpv4-d16/mfloat-abi.softfp=mthumb/march.armv8-a/mfpu.vfpv4-d16/mfloat-abi.softfp
 

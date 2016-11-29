@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11 -D_GLIBCXX_DEBUG" }
+// { dg-options "-D_GLIBCXX_DEBUG" }
+// { dg-do run { target c++11 } }
 
 #include <algorithm>
 #include <functional>
@@ -38,8 +39,6 @@ struct X
 void
 test01()
 {
-  bool test __attribute((unused)) = true;
-
   // Test with range that is partitioned, but not sorted.
   X seq[] = { 1, 3, 5, 7, 1, 6, 4, 2 };
   test_container<X, forward_iterator_wrapper> c(seq);

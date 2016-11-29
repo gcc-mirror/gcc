@@ -26,8 +26,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2004-09/msg00243.html
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::constraint_wstringbuf sbuf;
   VERIFY( sbuf.check_pointers() );
 }

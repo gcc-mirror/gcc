@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -28,8 +28,6 @@ struct D : public B {};
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   D *d = new D;
   std::unique_ptr<D> p1(d);
   std::unique_ptr<D> p2(new D);

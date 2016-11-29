@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
 // Use smaller statistics when running on simulators, so it takes less time.
 // For e.g. cris-elf, mipsisa32r2el-elf, powerpc-eabi and i386-linux-gnu,
 // this test fails for SAMPLES=30000.
-// { dg-options "-std=gnu++11 -DSAMPLES=35000" { target simulator } }
+// { dg-options "-DSAMPLES=35000" { target simulator } }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
@@ -27,7 +27,6 @@
 void
 test_bit_string_set()
 {
-  bool test __attribute__((unused)) = true;
   const unsigned long N = SAMPLES;
   const unsigned long k = N/100;
   std::vector<std::string> set;

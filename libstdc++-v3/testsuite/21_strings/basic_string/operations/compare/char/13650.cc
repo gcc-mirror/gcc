@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const char lit_01[] = { 'w', 'e', '\0', 'r', 'd' };
   const char lit_02[] = { 'w', 'e', 'i', '\0', 'd' };

@@ -28,7 +28,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00326.html
 void test06()
 {
-  bool test __attribute__((unused)) = true;
   const char carray01[] = "mos def & talib kweli are black star";
 
   // normal

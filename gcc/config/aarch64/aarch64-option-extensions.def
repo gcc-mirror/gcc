@@ -59,3 +59,5 @@ AARCH64_OPT_EXTENSION("lse", AARCH64_FL_LSE, 0, 0, "atomics")
 /* Enabling "fp16" also enables "fp".
    Disabling "fp16" just disables "fp16".  */
 AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP, 0, "fp16")
+
+#undef AARCH64_OPT_EXTENSION

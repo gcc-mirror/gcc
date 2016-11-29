@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2011-04-27  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -93,8 +93,6 @@ private:
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   noexcept_move_copy nemc1;
   auto nemc2 __attribute__((unused)) = std::move_if_noexcept(nemc1);
   VERIFY( nemc1 == false );

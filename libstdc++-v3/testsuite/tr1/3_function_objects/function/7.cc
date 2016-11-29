@@ -24,8 +24,6 @@
 
 using namespace __gnu_test;
 
-bool test __attribute__((unused)) = true;
-
 // Put reference_wrappers to function pointers into function<> wrappers
 void test07()
 {

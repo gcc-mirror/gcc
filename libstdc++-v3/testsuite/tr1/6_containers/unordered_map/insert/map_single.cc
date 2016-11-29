@@ -27,8 +27,6 @@
 #include <tr1/unordered_map>
 #include "testsuite_hooks.h"
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   typedef std::tr1::unordered_map<std::string, int> Map;

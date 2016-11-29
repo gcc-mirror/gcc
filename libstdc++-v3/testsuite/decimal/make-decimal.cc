@@ -55,7 +55,6 @@ using namespace std::decimal;
 void
 make_decimal_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a, b, c, d;
   float x __attribute__((mode(SD)));
   int i;
@@ -80,7 +79,6 @@ make_decimal_32 (void)
 void
 make_decimal_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a, b, c, d;
   float x __attribute__((mode(DD)));
   int i;
@@ -105,7 +103,6 @@ make_decimal_64 (void)
 void
 make_decimal_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a, b, c, d;
   float x __attribute__((mode(TD)));
   int i;

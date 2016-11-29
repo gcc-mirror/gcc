@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-add-options ieee }
 
 // 2010-02-25  Ed Smith-Rowland
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( std::numeric_limits<bool>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<char>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<signed char>::max_digits10 == 0 );

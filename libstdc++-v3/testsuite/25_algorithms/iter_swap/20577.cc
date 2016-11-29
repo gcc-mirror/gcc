@@ -22,8 +22,6 @@
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<bool> v;
   v.push_back(true);
   v.push_back(false);
@@ -34,8 +32,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> v;
   v.push_back(1);
   v.push_back(2);
@@ -52,8 +48,6 @@ void swap(X&, X&)
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   int_swap_count = 0;
   X i, j;
   std::iter_swap(&i, &j);

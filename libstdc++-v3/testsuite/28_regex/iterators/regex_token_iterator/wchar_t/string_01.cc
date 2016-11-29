@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-07-20  Tim Shen <timshen91@gmail.com>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::basic_regex<wchar_t> re(L" ");
   const wchar_t s[] = L"Quick brown fox.";
   int cnt = 0;

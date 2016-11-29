@@ -48,8 +48,6 @@ prepare(wstring::size_type len, unsigned nchunks, wchar_t delim)
 void
 check(wistream& stream, const wstring& str, unsigned nchunks, wchar_t delim)
 {
-  bool test __attribute__((unused)) = true;
-
   static wchar_t buf[1000000];
   wstring::size_type index = 0, index_new = 0;
   unsigned n = 0;

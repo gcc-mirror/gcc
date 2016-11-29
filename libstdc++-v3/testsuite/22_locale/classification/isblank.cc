@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options " -std=gnu++11 " }
+// { dg-do run { target c++11 } }
 
 // 22.3.3.1 Character classification [classification]
 
@@ -27,7 +27,6 @@ typedef char char_type;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   VERIFY( std::isblank(' ', std::locale::classic()) );
   VERIFY( std::isblank('\t', std::locale::classic()) );
 }
@@ -36,7 +35,6 @@ void
 test02()
 {
 #ifdef _GLIBCXX_USE_WCHAR_T
-  bool test __attribute__((unused)) = true;
   VERIFY( std::isblank(L' ', std::locale::classic()) );
   VERIFY( std::isblank(L'\t', std::locale::classic()) );
 #endif

@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11 -lstdc++fs" }
+// { dg-options "-lstdc++fs" }
+// { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
 #include <experimental/filesystem>
@@ -27,31 +28,73 @@ using std::experimental::filesystem::path;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   VERIFY( exists(path{"/"}) );
   VERIFY( exists(path{"/."}) );
   VERIFY( exists(path{"."}) );
   VERIFY( exists(path{".."}) );
   VERIFY( exists(std::experimental::filesystem::current_path()) );
+
+  std::error_code ec = std::make_error_code(std::errc::invalid_argument);
+  VERIFY( exists(path{"/"}, ec) );
+  VERIFY( !ec );
+  VERIFY( exists(path{"/."}, ec) );
+  VERIFY( !ec );
+  VERIFY( exists(path{"."}, ec) );
+  VERIFY( !ec );
+  VERIFY( exists(path{".."}, ec) );
+  VERIFY( !ec );
+  VERIFY( exists(std::experimental::filesystem::current_path(), ec) );
+  VERIFY( !ec );
 }
 
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   path rel = __gnu_test::nonexistent_path();
   VERIFY( !exists(rel) );
+
+  std::error_code ec = std::make_error_code(std::errc::invalid_argument);
+  VERIFY( !exists(rel, ec) );
+  VERIFY( !ec ); // DR 2725
 }
 
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   path abs = absolute(__gnu_test::nonexistent_path());
   VERIFY( !exists(abs) );
+
+  std::error_code ec = std::make_error_code(std::errc::invalid_argument);
+  VERIFY( !exists(abs, ec) );
+  VERIFY( !ec ); // DR 2725
+}
+
+void
+test04()
+{
+  using perms = std::experimental::filesystem::perms;
+  path p = __gnu_test::nonexistent_path();
+  create_directory(p);
+  permissions(p, perms::all | perms::remove_perms);
+
+  auto unr = p / "unreachable";
+  std::error_code ec;
+  VERIFY( !exists(unr, ec) );
+  VERIFY( ec == std::errc::permission_denied );
+  ec.clear();
+  try
+  {
+    exists(unr);
+  }
+  catch(const std::experimental::filesystem::filesystem_error& ex)
+  {
+    ec = ex.code();
+    VERIFY( ex.path1() == unr );
+  }
+  VERIFY( ec == std::errc::permission_denied );
+
+  permissions(p, perms::owner_all);
+  remove(p);
 }
 
 int
@@ -60,4 +103,5 @@ main()
   test01();
   test02();
   test03();
+  test04();
 }

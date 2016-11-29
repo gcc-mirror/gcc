@@ -67,7 +67,6 @@ mark_dfs_back_edges (void)
   int sp;
   int prenum = 1;
   int postnum = 1;
-  sbitmap visited;
   bool found = false;
 
   /* Allocate the preorder and postorder number arrays.  */
@@ -79,7 +78,7 @@ mark_dfs_back_edges (void)
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -138,7 +137,6 @@ mark_dfs_back_edges (void)
   free (pre);
   free (post);
   free (stack);
-  sbitmap_free (visited);
 
   return found;
 }
@@ -642,7 +640,6 @@ post_order_compute (int *post_order, bool include_entry_exit,
   edge_iterator *stack;
   int sp;
   int post_order_num = 0;
-  sbitmap visited;
   int count;
 
   if (include_entry_exit)
@@ -653,7 +650,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -726,7 +723,6 @@ post_order_compute (int *post_order, bool include_entry_exit,
     }
 
   free (stack);
-  sbitmap_free (visited);
   return post_order_num;
 }
 
@@ -820,7 +816,6 @@ inverted_post_order_compute (int *post_order,
   edge_iterator *stack;
   int sp;
   int post_order_num = 0;
-  sbitmap visited;
 
   if (flag_checking)
     verify_no_unreachable_blocks ();
@@ -830,7 +825,7 @@ inverted_post_order_compute (int *post_order,
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -956,7 +951,6 @@ inverted_post_order_compute (int *post_order,
   post_order[post_order_num++] = EXIT_BLOCK;
 
   free (stack);
-  sbitmap_free (visited);
   return post_order_num;
 }
 
@@ -981,7 +975,6 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
   int sp;
   int pre_order_num = 0;
   int rev_post_order_num = n_basic_blocks_for_fn (cfun) - 1;
-  sbitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
@@ -999,7 +992,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
     rev_post_order_num -= NUM_FIXED_BLOCKS;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -1056,7 +1049,6 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
     }
 
   free (stack);
-  sbitmap_free (visited);
 
   if (include_entry_exit)
     {
@@ -1569,7 +1561,7 @@ single_pred_before_succ_order (void)
   basic_block *order = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   unsigned n = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
   unsigned np, i;
-  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
 
 #define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
 #define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
@@ -1603,7 +1595,6 @@ single_pred_before_succ_order (void)
       n -= np;
     }
 
-  sbitmap_free (visited);
   gcc_assert (n == 0);
   return order;
 

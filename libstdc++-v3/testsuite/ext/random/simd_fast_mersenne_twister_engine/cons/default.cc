@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-little-endian "" }
 //
@@ -49,8 +49,6 @@ void run_test(std::initializer_list<typename SFMT::result_type> vals)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::sfmt19937 e;
 
   VERIFY( e.min() == 0 );

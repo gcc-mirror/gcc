@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "optabs.h"
@@ -213,7 +214,7 @@ static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
 static int sh_register_move_cost (machine_mode, reg_class_t, reg_class_t);
-static int sh_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int sh_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx_insn *, int, int, int *sort_p);
 static short find_set_regmode_weight (rtx, machine_mode);
@@ -2664,6 +2665,7 @@ output_branch (int logic, rtx_insn *insn, rtx *operands)
 
 	  return "";
 	}
+      /* FALLTHRU */
       /* When relaxing, handle this like a short branch.  The linker
 	 will fix it up if it still doesn't fit after relaxation.  */
     case 2:
@@ -2689,7 +2691,7 @@ output_branch (int logic, rtx_insn *insn, rtx *operands)
 
 	  return "";
 	}
-      /* When relaxing, fall through.  */
+      /* FALLTHRU */
     case 4:
       {
 	char buffer[10];
@@ -3199,6 +3201,12 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	 vector-move, so we have to provide the correct cost in the number
 	 of move insns to load/store the reg of the mode in question.  */
     case SET:
+      if (sh_movt_set_dest (x) != NULL || sh_movrt_set_dest (x) != NULL)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
       if (register_operand (SET_DEST (x), VOIDmode)
 	    && (register_operand (SET_SRC (x), VOIDmode)
 		|| satisfies_constraint_Z (SET_SRC (x))))
@@ -3454,7 +3462,7 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
-      /* Fall through to shiftcosts.  */
+      /* FALLTHRU */
     case ASHIFT:
     case ASHIFTRT:
       {
@@ -4062,12 +4070,14 @@ gen_shl_and (rtx dest, rtx left_rtx, rtx mask_rtx, rtx source)
       }
     case 4:
       shift_gen_fun = gen_shifty_op;
+      /* FALLTHRU */
     case 3:
       /* If the topmost bit that matters is set, set the topmost bits
 	 that don't matter.  This way, we might be able to get a shorter
 	 signed constant.  */
       if (mask & ((HOST_WIDE_INT) 1 << (31 - total_shift)))
 	mask |= (HOST_WIDE_INT) ((HOST_WIDE_INT_M1U) << (31 - total_shift));
+      /* FALLTHRU */
     case 2:
       /* Don't expand fine-grained when combining, because that will
          make the pattern fail.  */
@@ -4640,6 +4650,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 		  align_insn = scan;
 		  need_align = false;
 		}
+	      /* FALLTHRU */
 	    case DImode:
 	      for (lab = p->label; lab; lab = LABEL_REFS (lab))
 		scan = emit_label_after (lab, scan);
@@ -5503,7 +5514,8 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 
   else if (optimize && need_block >= 0)
     {
-      rtx_insn *next = next_active_insn (next_active_insn (dest));
+      rtx_insn *next = next_active_insn (as_a<rtx_insn *> (dest));
+      next = next_active_insn (next);
       if (next && JUMP_P (next)
 	  && GET_CODE (PATTERN (next)) == SET
 	  && recog_memoized (next) == CODE_FOR_jump_compact)
@@ -5694,7 +5706,7 @@ barrier_align (rtx_insn *barrier_or_label)
 	      ? 1 : align_jumps_log);
     }
 
-  rtx next = next_active_insn (barrier_or_label);
+  rtx_insn *next = next_active_insn (barrier_or_label);
 
   if (! next)
     return 0;
@@ -6395,9 +6407,8 @@ split_branches (rtx_insn *first)
 		/* We can't use JUMP_LABEL here because it might be undefined
 		   when not optimizing.  */
 		/* A syntax error might cause beyond to be NULL_RTX.  */
-		beyond
-		  = next_active_insn (XEXP (XEXP (SET_SRC (PATTERN (insn)), 1),
-					    0));
+		rtx temp = XEXP (XEXP (SET_SRC (PATTERN (insn)), 1), 0);
+		beyond = next_active_insn (as_a<rtx_insn *> (temp));
 
 		if (beyond
 		    && (JUMP_P (beyond)
@@ -6545,7 +6556,7 @@ final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 		    (asm_out_file, "L", CODE_LABEL_NUMBER (XEXP (note, 0)));
 		  break;
 		}
-	      /* else FALLTHROUGH */
+	      /* FALLTHROUGH */
 	    case CALL:
 	      asm_fprintf (asm_out_file, "\t.uses %LL%d\n",
 			   CODE_LABEL_NUMBER (XEXP (note, 0)));
@@ -9455,12 +9466,12 @@ sh_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
    the same cost as a data-dependence.  The return value should be
    the new value for COST.  */
 static int
-sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
-		rtx_insn *dep_insn, int cost)
+sh_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		unsigned int)
 {
   rtx reg, use_pat;
 
-  if (REG_NOTE_KIND (link) == 0)
+  if (dep_type == 0)
     {
       if (recog_memoized (insn) < 0
 	  || recog_memoized (dep_insn) < 0)
@@ -9577,7 +9588,7 @@ sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
   /* An anti-dependence penalty of two applies if the first insn is a double
      precision fadd / fsub / fmul.  */
   else if (!TARGET_SH4_300
-	   && REG_NOTE_KIND (link) == REG_DEP_ANTI
+	   && dep_type == REG_DEP_ANTI
 	   && recog_memoized (dep_insn) >= 0
 	   && (get_attr_type (dep_insn) == TYPE_DFP_ARITH
 	       || get_attr_type (dep_insn) == TYPE_DFP_MUL)
@@ -11703,13 +11714,15 @@ sh_is_nott_insn (const rtx_insn* i)
 rtx
 sh_movt_set_dest (const rtx_insn* i)
 {
-  if (i == NULL)
-    return NULL;
+  return i == NULL ? NULL : sh_movt_set_dest (PATTERN (i));
+}
 
-  const_rtx p = PATTERN (i);
-  return GET_CODE (p) == SET
-	 && arith_reg_dest (XEXP (p, 0), SImode)
-	 && t_reg_operand (XEXP (p, 1), VOIDmode) ? XEXP (p, 0) : NULL;
+rtx
+sh_movt_set_dest (const_rtx pat)
+{
+  return GET_CODE (pat) == SET
+	 && arith_reg_dest (XEXP (pat, 0), SImode)
+	 && t_reg_operand (XEXP (pat, 1), VOIDmode) ? XEXP (pat, 0) : NULL;
 }
 
 /* Given an insn, check whether it's a 'movrt' kind of insn, i.e. an insn
@@ -11718,18 +11731,20 @@ sh_movt_set_dest (const rtx_insn* i)
 rtx
 sh_movrt_set_dest (const rtx_insn* i)
 {
-  if (i == NULL)
-    return NULL;
+  return i == NULL ? NULL : sh_movrt_set_dest (PATTERN (i));
+}
 
-  const_rtx p = PATTERN (i);
-
+rtx
+sh_movrt_set_dest (const_rtx pat)
+{
   /* The negc movrt replacement is inside a parallel.  */
-  if (GET_CODE (p) == PARALLEL)
-    p = XVECEXP (p, 0, 0);
+  if (GET_CODE (pat) == PARALLEL)
+    pat = XVECEXP (pat, 0, 0);
 
-  return GET_CODE (p) == SET
-	 && arith_reg_dest (XEXP (p, 0), SImode)
-	 && negt_reg_operand (XEXP (p, 1), VOIDmode) ? XEXP (p, 0) : NULL;
+  return GET_CODE (pat) == SET
+	 && arith_reg_dest (XEXP (pat, 0), SImode)
+	 && negt_reg_operand (XEXP (pat, 1), VOIDmode) ? XEXP (pat, 0) : NULL;
+
 }
 
 /* Given an insn and a reg number, tell whether the reg dies or is unused

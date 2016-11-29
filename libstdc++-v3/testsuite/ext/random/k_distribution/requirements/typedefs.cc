@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2012-09-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>

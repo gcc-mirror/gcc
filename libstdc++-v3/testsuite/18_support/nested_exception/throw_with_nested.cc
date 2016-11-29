@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
@@ -30,7 +30,7 @@ struct uninheritable final { };
 
 void test01() 
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
 
   try
   {
@@ -53,7 +53,7 @@ void test01()
 
 void test02() 
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
 
   try
   {
@@ -76,7 +76,7 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
 
   try
   {

@@ -17,8 +17,8 @@
 
 // 20.8.9 Function template bind
 
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-options "-fno-show-column" }
+// { dg-do compile { target c++11 } }
 
 #include <functional>
 
@@ -48,7 +48,8 @@ void test02()
   std::bind(&Inc::f, Inc(), std::ref(dummy))(); // { dg-error  "no match" }
 }
 
-// { dg-excess-errors "reasons for deduction/substitution failures" }
+// Ignore the reasons for deduction/substitution failure in the headers.
+// { dg-prune-output "/include/(functional|bits/invoke.h):" }
 
 int main()
 {

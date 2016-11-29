@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -25,8 +25,6 @@
 #include <vector>
 #include <utility>
 #include <testsuite_hooks.h>
-
-bool test __attribute__((unused)) = true;
 
 void
 test1()

@@ -26,8 +26,6 @@
 // libstdc++/14252
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::streamoff off01 = 10;
   std::streamoff off02 = 2;
   std::streamoff off03 = 2004;

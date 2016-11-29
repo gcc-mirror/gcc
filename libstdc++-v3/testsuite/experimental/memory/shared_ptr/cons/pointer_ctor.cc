@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
@@ -23,46 +23,35 @@
 #include <testsuite_hooks.h>
 
 struct A { };
-struct B : A { };
 
 // 8.2.1.1 shared_ptr constructors [memory.smartptr.shared.const]
 
 // Construction from pointer
-int
+void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
-  A * const a = 0;
+  A * const a = new A;
   std::experimental::shared_ptr<A> p(a);
-  VERIFY( p.get() == 0 );
+  VERIFY( p.get() == a );
   VERIFY( p.use_count() == 1 );
-  return 0;
 }
 
-int
+void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A[5];
   std::experimental::shared_ptr<A[5]> p(a);
   VERIFY( p.get() == a );
   VERIFY( p.use_count() == 1 );
-  return 0;
 }
 
-int
+void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
-  B * const b = new B[5];
-  std::experimental::shared_ptr<A[5]> p(b);
-  VERIFY( p.get() == b );
+  A * const a = new A[5];
+  std::experimental::shared_ptr<A[]> p(a);
+  VERIFY( p.get() == a );
   VERIFY( p.use_count() == 1 );
-
-  return 0;
 }
 
 int

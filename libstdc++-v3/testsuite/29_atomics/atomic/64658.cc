@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do run { target c++11 } }
 // { dg-require-atomic-builtins "" }
-// { dg-options "-std=gnu++11" }
 
 #include <atomic>
 #include <testsuite_hooks.h>

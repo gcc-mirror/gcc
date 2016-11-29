@@ -1,4 +1,4 @@
-// { dg-options " -std=gnu++11 " }
+// { dg-do run { target c++11 } }
 
 // 2014-04-16 Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   size_t space = 100;
   void* ptr = new char[space];
   char* const orig_ptr = static_cast<char*>(ptr);

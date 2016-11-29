@@ -320,8 +320,6 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       if ((code == LSHIFT_EXPR || code == RSHIFT_EXPR)
 	  && TREE_CODE (orig_op1) != INTEGER_CST
 	  && TREE_CODE (op1) == INTEGER_CST
-	  && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
-	      || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
 	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
 	  && c_inhibit_evaluation_warnings == 0)
 	{
@@ -330,13 +328,23 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 			(code == LSHIFT_EXPR
 			 ? G_("left shift count is negative")
 			 : G_("right shift count is negative")));
-	  else if (compare_tree_int (op1,
-				     TYPE_PRECISION (TREE_TYPE (orig_op0)))
-		   >= 0)
+	  else if ((TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+		    || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
+		   && compare_tree_int (op1,
+					TYPE_PRECISION (TREE_TYPE (orig_op0)))
+		      >= 0)
 	    warning_at (loc, OPT_Wshift_count_overflow,
 			(code == LSHIFT_EXPR
 			 ? G_("left shift count >= width of type")
 			 : G_("right shift count >= width of type")));
+	  else if (TREE_CODE (TREE_TYPE (orig_op0)) == VECTOR_TYPE
+		   && compare_tree_int (op1,
+					TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig_op0))))
+		      >= 0)
+	    warning_at (loc, OPT_Wshift_count_overflow,
+			code == LSHIFT_EXPR
+			? G_("left shift count >= width of vector element")
+			: G_("right shift count >= width of vector element"));
 	}
       if (code == LSHIFT_EXPR
 	  /* If either OP0 has been folded to INTEGER_CST...  */

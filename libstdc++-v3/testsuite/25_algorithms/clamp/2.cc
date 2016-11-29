@@ -29,8 +29,6 @@ const T A<T>::a = T(3);
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( 3 == std::clamp(A<int>::a, 2, 4) );
   VERIFY( 2 == std::clamp(A<int>::a, 1, 2) );
   VERIFY( 4 == std::clamp(A<int>::a, 4, 6) );

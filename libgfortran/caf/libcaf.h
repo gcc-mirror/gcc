@@ -90,6 +90,81 @@ typedef struct caf_vector_t {
 }
 caf_vector_t;
 
+typedef enum caf_ref_type_t {
+  /* Reference a component of a derived type, either regular one or an
+     allocatable or pointer type.  For regular ones idx in caf_reference_t is
+     set to -1.  */
+  CAF_REF_COMPONENT,
+  /* Reference an allocatable array.  */
+  CAF_REF_ARRAY,
+  /* Reference a non-allocatable/non-pointer array.  */
+  CAF_REF_STATIC_ARRAY
+} caf_ref_type_t;
+
+typedef enum caf_array_ref_t {
+  /* No array ref.  This terminates the array ref.  */
+  CAF_ARR_REF_NONE = 0,
+  /* Reference array elements given by a vector.  Only for this mode
+     caf_reference_t.u.a.dim[i].v is valid.  */
+  CAF_ARR_REF_VECTOR,
+  /* A full array ref (:).  */
+  CAF_ARR_REF_FULL,
+  /* Reference a range on elements given by start, end and stride.  */
+  CAF_ARR_REF_RANGE,
+  /* Only a single item is referenced given in the start member.  */
+  CAF_ARR_REF_SINGLE,
+  /* An array ref of the kind (i:), where i is an arbitrary valid index in the
+     array.  The index i is given in the start member.  */
+  CAF_ARR_REF_OPEN_END,
+  /* An array ref of the kind (:i), where the lower bound of the array ref
+     is given by the remote side.  The index i is given in the end member.  */
+  CAF_ARR_REF_OPEN_START
+} caf_array_ref_t;
+
+/* References to remote components of a derived type.  */
+typedef struct caf_reference_t {
+  /* A pointer to the next ref or NULL.  */
+  struct caf_reference_t *next;
+  /* The type of the reference.  */
+  /* caf_ref_type_t, replaced by int to allow specification in fortran FE.  */
+  int type;
+  /* The size of an item referenced in bytes.  I.e. in an array ref this is
+     the factor to advance the array pointer with to get to the next item.
+     For component refs this gives just the size of the element referenced.  */
+  size_t item_size;
+  union {
+    struct {
+      /* The offset (in bytes) of the component in the derived type.  */
+      ptrdiff_t offset;
+      /* The offset (in bytes) to the caf_token associated with this
+	 component.  NULL, when not allocatable/pointer ref.  */
+      ptrdiff_t caf_token_offset;
+    } c;
+    struct {
+      /* The mode of the array ref.  See CAF_ARR_REF_*.  */
+      /* caf_array_ref_t, replaced by unsigend char to allow specification in
+	 fortran FE.  */
+      unsigned char mode[GFC_MAX_DIMENSIONS];
+      /* The type of a static array.  Unset for array's with descriptors.  */
+      int static_array_type;
+      /* Subscript refs (s) or vector refs (v).  */
+      union {
+	struct {
+	  /* The start and end boundary of the ref and the stride.  */
+	  index_type start, end, stride;
+	} s;
+	struct {
+	  /* nvec entries of kind giving the elements to reference.  */
+	  void *vector;
+	  /* The number of entries in vector.  */
+	  size_t nvec;
+	  /* The integer kind used for the elements in vector.  */
+	  int kind;
+	} v;
+      } dim[GFC_MAX_DIMENSIONS];
+    } a;
+  } u;
+} caf_reference_t;
 
 void _gfortran_caf_init (int *, char ***);
 void _gfortran_caf_finalize (void);
@@ -97,8 +172,8 @@ void _gfortran_caf_finalize (void);
 int _gfortran_caf_this_image (int);
 int _gfortran_caf_num_images (int, int);
 
-void *_gfortran_caf_register (size_t, caf_register_t, caf_token_t *, int *,
-			      char *, int);
+void _gfortran_caf_register (size_t, caf_register_t, caf_token_t *,
+			     gfc_descriptor_t *, int *, char *, int);
 void _gfortran_caf_deregister (caf_token_t *, int *, char *, int);
 
 void _gfortran_caf_sync_all (int *, char *, int);
@@ -129,6 +204,18 @@ void _gfortran_caf_send (caf_token_t, size_t, int, gfc_descriptor_t *,
 void _gfortran_caf_sendget (caf_token_t, size_t, int, gfc_descriptor_t *,
 			    caf_vector_t *, caf_token_t, size_t, int,
 			    gfc_descriptor_t *, caf_vector_t *, int, int, bool);
+
+void _gfortran_caf_get_by_ref (caf_token_t token, int image_idx,
+	gfc_descriptor_t *dst, caf_reference_t *refs, int dst_kind,
+	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat);
+void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
+	gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind,
+	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat);
+void _gfortran_caf_sendget_by_ref (
+	caf_token_t dst_token, int dst_image_index, caf_reference_t *dst_refs,
+	caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
+	int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
+	int *src_stat);
 
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);

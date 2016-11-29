@@ -28,7 +28,6 @@ test02()
 {
   using namespace std;
   wistringstream in(L"80.21 56.89 12.3");
-  bool test __attribute__((unused)) = true;
   int i = 0;
   double x;
 

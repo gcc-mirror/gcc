@@ -30,7 +30,6 @@ void test01()
   using namespace std;
   typedef std::collate<char>::string_type string_type;
 
-  bool test __attribute__((unused)) = true;
   string str;
   locale loc_c = locale::classic();
 

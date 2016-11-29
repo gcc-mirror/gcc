@@ -27,7 +27,6 @@ class mybuf : public std::basic_streambuf<wchar_t>
 
 void test11()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   wchar_t arr[10];
   mybuf sbuf;

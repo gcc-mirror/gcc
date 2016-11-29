@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 

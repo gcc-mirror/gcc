@@ -30,7 +30,6 @@ typedef test_container<int, input_iterator_wrapper> Container;
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
   int array[] = {0};
   Container con1(array, array);
   Container con2(array, array);
@@ -40,7 +39,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
   int array[] = {0, 1};
   Container con1(array, array);
   Container con2(array, array + 2);
@@ -50,7 +48,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
   int array[] = {0, 1};
   Container con1(array, array + 2);
   Container con2(array, array);
@@ -60,7 +57,6 @@ test3()
 void
 test4()
 {
-  bool test __attribute__((unused)) = true;
   int array1[] = {1, 2, 3, 4, 6, 8, 9};
   int array2[] = {2, 4, 6, 8};
   Container con1(array1, array1 + 7);
@@ -71,7 +67,6 @@ test4()
 void
 test5()
 {
-  bool test __attribute__((unused)) = true;
   int array1[] = {1, 2, 3, 5};
   int array2[] = {2, 4, 6, 8};
   Container con1(array1, array1 + 4);

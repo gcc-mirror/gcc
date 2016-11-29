@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
@@ -34,8 +34,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A[5];
   const std::experimental::shared_ptr<A[5]> p(a);
   VERIFY( p.get() == a );
@@ -64,8 +62,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A[5];
   const std::experimental::shared_ptr<A[5]> p(a);
   VERIFY( p.get() == a );
@@ -75,8 +71,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A[5];
   const std::experimental::shared_ptr<A[5]> p(a);
   VERIFY( &p[0].i == &a[0].i );

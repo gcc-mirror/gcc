@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do compile }
+// { dg-do compile { target c++14 } }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.
 //
@@ -26,5 +25,5 @@ void test01()
   using std::experimental::any_cast;
 
   const any y(1);
-  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 368 }
+  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 359 }
 }

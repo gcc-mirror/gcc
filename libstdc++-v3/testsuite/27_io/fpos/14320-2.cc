@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;  
 
   typedef istreambuf_iterator<char>::difference_type Distance;
   typedef numeric_limits<Distance> Limits;

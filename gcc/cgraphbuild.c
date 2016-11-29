@@ -77,7 +77,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 	  ctx->varpool_node->create_reference (node, IPA_REF_ADDR);
 	}
 
-      if (TREE_CODE (decl) == VAR_DECL)
+      if (VAR_P (decl))
 	{
 	  varpool_node *vnode = varpool_node::get_create (decl);
 	  ctx->varpool_node->create_reference (vnode, IPA_REF_ADDR);
@@ -114,7 +114,7 @@ record_type_list (cgraph_node *node, tree list)
       if (TREE_CODE (type) == ADDR_EXPR)
 	{
 	  type = TREE_OPERAND (type, 0);
-	  if (TREE_CODE (type) == VAR_DECL)
+	  if (VAR_P (type))
 	    {
 	      varpool_node *vnode = varpool_node::get_create (type);
 	      node->create_reference (vnode, IPA_REF_ADDR);
@@ -219,7 +219,7 @@ mark_address (gimple *stmt, tree addr, tree, void *data)
       node->mark_address_taken ();
       ((symtab_node *)data)->create_reference (node, IPA_REF_ADDR, stmt);
     }
-  else if (addr && TREE_CODE (addr) == VAR_DECL
+  else if (addr && VAR_P (addr)
 	   && (TREE_STATIC (addr) || DECL_EXTERNAL (addr)))
     {
       varpool_node *vnode = varpool_node::get_create (addr);
@@ -244,8 +244,7 @@ mark_load (gimple *stmt, tree t, tree, void *data)
       node->mark_address_taken ();
       ((symtab_node *)data)->create_reference (node, IPA_REF_ADDR, stmt);
     }
-  else if (t && TREE_CODE (t) == VAR_DECL
-	   && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+  else if (t && VAR_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       varpool_node *vnode = varpool_node::get_create (t);
 
@@ -260,8 +259,7 @@ static bool
 mark_store (gimple *stmt, tree t, tree, void *data)
 {
   t = get_base_address (t);
-  if (t && TREE_CODE (t) == VAR_DECL
-      && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+  if (t && VAR_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       varpool_node *vnode = varpool_node::get_create (t);
 
@@ -369,7 +367,7 @@ pass_build_cgraph_edges::execute (function *fun)
 
   /* Look for initializers of constant variables and private statics.  */
   FOR_EACH_LOCAL_DECL (fun, ix, decl)
-    if (TREE_CODE (decl) == VAR_DECL
+    if (VAR_P (decl)
 	&& (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
 	&& !DECL_HAS_VALUE_EXPR_P (decl)
 	&& TREE_TYPE (decl) != error_mark_node)

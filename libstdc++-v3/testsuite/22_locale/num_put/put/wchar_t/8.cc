@@ -39,7 +39,6 @@ struct Ctype: std::ctype<wchar_t>
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream oss;
   oss.imbue(locale(locale::classic(), new Ctype));

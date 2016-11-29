@@ -171,7 +171,6 @@ std::locale::id gnu_facet::id;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const std::string name_no("*");
   const std::string name_c("C");
 

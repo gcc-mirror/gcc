@@ -3,3 +3,5 @@ CRTSTUFF_T_CFLAGS += -mlongcalls
 CRTSTUFF_T_CFLAGS_S += -mlongcalls
 
 HOST_LIBGCC2_CFLAGS += -mlongcalls
+
+LIB2ADDEH_XTENSA_UNWIND_DW2_FDE = $(srcdir)/unwind-dw2-fde.c

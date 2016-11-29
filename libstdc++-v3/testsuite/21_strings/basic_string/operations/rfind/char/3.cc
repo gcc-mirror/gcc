@@ -21,9 +21,8 @@
 #include <testsuite_hooks.h>
 
 // 21.3.6.6 basic_string::find_last_not_of
-bool test03()
+void test03()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   std::string::size_type pos;
   csize_type npos = std::string::npos;
@@ -55,7 +54,6 @@ bool test03()
   VERIFY( pos == 0 );
   pos = z.find_last_not_of("Xa");
   VERIFY( pos == 1 );
-  return test;
 }
 int main()
 {

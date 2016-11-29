@@ -34,7 +34,6 @@ cons08()
 {
   typedef _Tp list_type;
   typedef typename list_type::iterator iterator;
-  bool test __attribute__((unused)) = true;
   const std::size_t LIST_SIZE = 5;
   const int INIT_VALUE = 7;
   std::size_t count = 0;

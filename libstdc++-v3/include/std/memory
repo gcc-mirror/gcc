@@ -76,7 +76,6 @@
 #  include <bits/stl_function.h>  // std::less
 #  include <bits/uses_allocator.h>
 #  include <type_traits>
-#  include <functional>
 #  include <debug/debug.h>
 #  include <bits/unique_ptr.h>
 #  include <bits/shared_ptr.h>

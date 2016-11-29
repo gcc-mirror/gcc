@@ -1,6 +1,6 @@
 /* PR target/pr65105 */
 /* { dg-do compile { target { ia32 } } } */
-/* { dg-options "-O2 -march=slm -msse4.2" } */
+/* { dg-options "-O2 -march=slm -msse4.2 -mno-stackrealign" } */
 /* { dg-final { scan-assembler "pand" } } */
 /* { dg-final { scan-assembler "por" } } */
 /* { dg-final { scan-assembler "ptest" } } */

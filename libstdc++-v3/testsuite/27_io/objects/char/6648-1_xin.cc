@@ -23,7 +23,6 @@
 // Interactive tests: each one (run alone) must terminate upon a single '\n'.
 void test08()
 {
-  bool test __attribute__((unused)) = true;
   char buff[2048];
   std::cout << "Enter name: ";
   std::cin.getline(buff, 2048);

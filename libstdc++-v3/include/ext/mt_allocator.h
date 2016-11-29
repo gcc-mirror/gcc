@@ -691,6 +691,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__n > this->max_size())
 	std::__throw_bad_alloc();
 
+#if __cpp_aligned_new
+      // Types with extended alignment are handled by operator new/delete.
+      if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	{
+	  std::align_val_t __al = std::align_val_t(alignof(_Tp));
+	  return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp), __al));
+	}
+#endif
+
       __policy_type::_S_initialize_once();
 
       // Requests larger than _M_max_bytes are handled by operator
@@ -737,6 +746,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__builtin_expect(__p != 0, true))
 	{
+#if __cpp_aligned_new
+	  // Types with extended alignment are handled by operator new/delete.
+	  if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	    {
+	      ::operator delete(__p, std::align_val_t(alignof(_Tp)));
+	      return;
+	    }
+#endif
+
 	  // Requests larger than _M_max_bytes are handled by
 	  // operators new/delete directly.
 	  __pool_type& __pool = __policy_type::_S_get_pool();

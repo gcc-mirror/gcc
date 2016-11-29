@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
 //
@@ -29,8 +29,6 @@ struct X
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   X x;
   std::string s(x);
   std::bitset<32> b1(static_cast<const char*>(x));

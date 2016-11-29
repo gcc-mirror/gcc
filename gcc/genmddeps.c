@@ -19,6 +19,8 @@
 #include "system.h"
 #include "coretypes.h"
 #include "errors.h"
+#include "statistics.h"
+#include "vec.h"
 #include "read-md.h"
 
 
@@ -47,7 +49,8 @@ main (int argc, const char **argv)
   progname = "genmddeps";
   include_callback = add_filedep;
 
-  if (!read_md_files (argc, argv, NULL, NULL))
+  noop_reader reader;
+  if (!reader.read_md_files (argc, argv, NULL))
     return FATAL_EXIT_CODE;
 
   *last = NULL;

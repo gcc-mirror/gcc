@@ -610,6 +610,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 	if (l != 0)
 	  break;
 	s += sizeof(unsigned long);
+	/* FALLTHRU */
       case 2:
 	l = u.l[i++];
 	if (l != 0)
@@ -732,6 +733,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 	if (l != 0)
 	  break;
 	s += sizeof(unsigned long);
+	/* FALLTHROUGH */
       case 2:
 	l = u.l[i++];
 	if (l != 0)
@@ -748,6 +750,101 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 
 #undef N
   }
+}
+
+#elif defined (__ARM_NEON) && defined (__ARM_64BIT_STATE)
+#include "arm_neon.h"
+
+/* This doesn't have to be the exact page size, but no system may use
+   a size smaller than this.  ARMv8 requires a minimum page size of
+   4k.  The impact of being conservative here is a small number of
+   cases will take the slightly slower entry path into the main
+   loop.  */
+
+#define AARCH64_MIN_PAGE_SIZE 4096
+
+static const uchar *
+search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  const uint8x16_t repl_nl = vdupq_n_u8 ('\n');
+  const uint8x16_t repl_cr = vdupq_n_u8 ('\r');
+  const uint8x16_t repl_bs = vdupq_n_u8 ('\\');
+  const uint8x16_t repl_qm = vdupq_n_u8 ('?');
+  const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
+
+#ifdef __AARCH64EB
+  const int16x8_t shift = {8, 8, 8, 8, 0, 0, 0, 0};
+#else
+  const int16x8_t shift = {0, 0, 0, 0, 8, 8, 8, 8};
+#endif
+
+  unsigned int found;
+  const uint8_t *p;
+  uint8x16_t data;
+  uint8x16_t t;
+  uint16x8_t m;
+  uint8x16_t u, v, w;
+
+  /* Align the source pointer.  */
+  p = (const uint8_t *)((uintptr_t)s & -16);
+
+  /* Assuming random string start positions, with a 4k page size we'll take
+     the slow path about 0.37% of the time.  */
+  if (__builtin_expect ((AARCH64_MIN_PAGE_SIZE
+			 - (((uintptr_t) s) & (AARCH64_MIN_PAGE_SIZE - 1)))
+			< 16, 0))
+    {
+      /* Slow path: the string starts near a possible page boundary.  */
+      uint32_t misalign, mask;
+
+      misalign = (uintptr_t)s & 15;
+      mask = (-1u << misalign) & 0xffff;
+      data = vld1q_u8 (p);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+      t = vandq_u8 (t, xmask);
+      m = vpaddlq_u8 (t);
+      m = vshlq_u16 (m, shift);
+      found = vaddvq_u16 (m);
+      found &= mask;
+      if (found)
+	return (const uchar*)p + __builtin_ctz (found);
+    }
+  else
+    {
+      data = vld1q_u8 ((const uint8_t *) s);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+      if (__builtin_expect (vpaddd_u64 ((uint64x2_t)t), 0))
+	goto done;
+    }
+
+  do
+    {
+      p += 16;
+      data = vld1q_u8 (p);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+    } while (!vpaddd_u64 ((uint64x2_t)t));
+
+done:
+  /* Now that we've found the terminating substring, work out precisely where
+     we need to stop.  */
+  t = vandq_u8 (t, xmask);
+  m = vpaddlq_u8 (t);
+  m = vshlq_u16 (m, shift);
+  found = vaddvq_u16 (m);
+  return (((((uintptr_t) p) < (uintptr_t) s) ? s : (const uchar *)p)
+	  + __builtin_ctz (found));
 }
 
 #elif defined (__ARM_NEON)
@@ -1247,7 +1344,7 @@ forms_identifier_p (cpp_reader *pfile, int first,
       cppchar_t s;
       buffer->cur += 2;
       if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
-			  state, &s))
+			  state, &s, NULL, NULL))
 	return true;
       buffer->cur -= 2;
     }
@@ -2031,6 +2128,261 @@ save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
   store_comment (pfile, token);
 }
 
+/* Returns true if comment at COMMENT_START is a recognized FALLTHROUGH
+   comment.  */
+
+static bool
+fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
+{
+  const unsigned char *from = comment_start + 1;
+
+  switch (CPP_OPTION (pfile, cpp_warn_implicit_fallthrough))
+    {
+      /* For both -Wimplicit-fallthrough=0 and -Wimplicit-fallthrough=5 we
+	 don't recognize any comments.  The latter only checks attributes,
+	 the former doesn't warn.  */
+    case 0:
+    default:
+      return false;
+      /* -Wimplicit-fallthrough=1 considers any comment, no matter what
+	 content it has.  */
+    case 1:
+      return true;
+    case 2:
+      /* -Wimplicit-fallthrough=2 looks for (case insensitive)
+	 .*falls?[ \t-]*thr(u|ough).* regex.  */
+      for (; (size_t) (pfile->buffer->cur - from) >= sizeof "fallthru" - 1;
+	   from++)
+	{
+	  /* Is there anything like strpbrk with upper boundary, or
+	     memchr looking for 2 characters rather than just one?  */
+	  if (from[0] != 'f' && from[0] != 'F')
+	    continue;
+	  if (from[1] != 'a' && from[1] != 'A')
+	    continue;
+	  if (from[2] != 'l' && from[2] != 'L')
+	    continue;
+	  if (from[3] != 'l' && from[3] != 'L')
+	    continue;
+	  from += sizeof "fall" - 1;
+	  if (from[0] == 's' || from[0] == 'S')
+	    from++;
+	  while (*from == ' ' || *from == '\t' || *from == '-')
+	    from++;
+	  if (from[0] != 't' && from[0] != 'T')
+	    continue;
+	  if (from[1] != 'h' && from[1] != 'H')
+	    continue;
+	  if (from[2] != 'r' && from[2] != 'R')
+	    continue;
+	  if (from[3] == 'u' || from[3] == 'U')
+	    return true;
+	  if (from[3] != 'o' && from[3] != 'O')
+	    continue;
+	  if (from[4] != 'u' && from[4] != 'U')
+	    continue;
+	  if (from[5] != 'g' && from[5] != 'G')
+	    continue;
+	  if (from[6] != 'h' && from[6] != 'H')
+	    continue;
+	  return true;
+	}
+      return false;
+    case 3:
+    case 4:
+      break;
+    }
+
+  /* Whole comment contents:
+     -fallthrough
+     @fallthrough@
+   */
+  if (*from == '-' || *from == '@')
+    {
+      size_t len = sizeof "fallthrough" - 1;
+      if ((size_t) (pfile->buffer->cur - from - 1) < len)
+	return false;
+      if (memcmp (from + 1, "fallthrough", len))
+	return false;
+      if (*from == '@')
+	{
+	  if (from[len + 1] != '@')
+	    return false;
+	  len++;
+	}
+      from += 1 + len;
+    }
+  /* Whole comment contents (regex):
+     lint -fallthrough[ \t]*
+   */
+  else if (*from == 'l')
+    {
+      size_t len = sizeof "int -fallthrough" - 1;
+      if ((size_t) (pfile->buffer->cur - from - 1) < len)
+	return false;
+      if (memcmp (from + 1, "int -fallthrough", len))
+	return false;
+      from += 1 + len;
+      while (*from == ' ' || *from == '\t')
+	from++;
+    }
+  /* Whole comment contents (regex):
+     [ \t]*FALLTHR(U|OUGH)[ \t]*
+   */
+  else if (CPP_OPTION (pfile, cpp_warn_implicit_fallthrough) == 4)
+    {
+      while (*from == ' ' || *from == '\t')
+	from++;
+      if ((size_t) (pfile->buffer->cur - from)  < sizeof "FALLTHRU" - 1)
+	return false;
+      if (memcmp (from, "FALLTHR", sizeof "FALLTHR" - 1))
+	return false;
+      from += sizeof "FALLTHR" - 1;
+      if (*from == 'U')
+	from++;
+      else if ((size_t) (pfile->buffer->cur - from)  < sizeof "OUGH" - 1)
+	return false;
+      else if (memcmp (from, "OUGH", sizeof "OUGH" - 1))
+	return false;
+      else
+	from += sizeof "OUGH" - 1;
+      while (*from == ' ' || *from == '\t')
+	from++;
+    }
+  /* Whole comment contents (regex):
+     [ \t.!]*(ELSE,? |INTENTIONAL(LY)? )?FALL(S | |-)?THR(OUGH|U)[ \t.!]*(-[^\n\r]*)?
+     [ \t.!]*(Else,? |Intentional(ly)? )?Fall((s | |-)[Tt]|t)hr(ough|u)[ \t.!]*(-[^\n\r]*)?
+     [ \t.!]*([Ee]lse,? |[Ii]ntentional(ly)? )?fall(s | |-)?thr(ough|u)[ \t.!]*(-[^\n\r]*)?
+   */
+  else
+    {
+      while (*from == ' ' || *from == '\t' || *from == '.' || *from == '!')
+	from++;
+      unsigned char f = *from;
+      bool all_upper = false;
+      if (f == 'E' || f == 'e')
+	{
+	  if ((size_t) (pfile->buffer->cur - from)
+	      < sizeof "else fallthru" - 1)
+	    return false;
+	  if (f == 'E' && memcmp (from + 1, "LSE", sizeof "LSE" - 1) == 0)
+	    all_upper = true;
+	  else if (memcmp (from + 1, "lse", sizeof "lse" - 1))
+	    return false;
+	  from += sizeof "else" - 1;
+	  if (*from == ',')
+	    from++;
+	  if (*from != ' ')
+	    return false;
+	  from++;
+	  if (all_upper && *from == 'f')
+	    return false;
+	  if (f == 'e' && *from == 'F')
+	    return false;
+	  f = *from;
+	}
+      else if (f == 'I' || f == 'i')
+	{
+	  if ((size_t) (pfile->buffer->cur - from)
+	      < sizeof "intentional fallthru" - 1)
+	    return false;
+	  if (f == 'I' && memcmp (from + 1, "NTENTIONAL",
+				  sizeof "NTENTIONAL" - 1) == 0)
+	    all_upper = true;
+	  else if (memcmp (from + 1, "ntentional",
+			   sizeof "ntentional" - 1))
+	    return false;
+	  from += sizeof "intentional" - 1;
+	  if (*from == ' ')
+	    {
+	      from++;
+	      if (all_upper && *from == 'f')
+		return false;
+	    }
+	  else if (all_upper)
+	    {
+	      if (memcmp (from, "LY F", sizeof "LY F" - 1))
+		return false;
+	      from += sizeof "LY " - 1;
+	    }
+	  else
+	    {
+	      if (memcmp (from, "ly ", sizeof "ly " - 1))
+		return false;
+	      from += sizeof "ly " - 1;
+	    }
+	  if (f == 'i' && *from == 'F')
+	    return false;
+	  f = *from;
+	}
+      if (f != 'F' && f != 'f')
+	return false;
+      if ((size_t) (pfile->buffer->cur - from) < sizeof "fallthru" - 1)
+	return false;
+      if (f == 'F' && memcmp (from + 1, "ALL", sizeof "ALL" - 1) == 0)
+	all_upper = true;
+      else if (all_upper)
+	return false;
+      else if (memcmp (from + 1, "all", sizeof "all" - 1))
+	return false;
+      from += sizeof "fall" - 1;
+      if (*from == (all_upper ? 'S' : 's') && from[1] == ' ')
+	from += 2;
+      else if (*from == ' ' || *from == '-')
+	from++;
+      else if (*from != (all_upper ? 'T' : 't'))
+	return false;
+      if ((f == 'f' || *from != 'T') && (all_upper || *from != 't'))
+	return false;
+      if ((size_t) (pfile->buffer->cur - from) < sizeof "thru" - 1)
+	return false;
+      if (memcmp (from + 1, all_upper ? "HRU" : "hru", sizeof "hru" - 1))
+	{
+	  if ((size_t) (pfile->buffer->cur - from) < sizeof "through" - 1)
+	    return false;
+	  if (memcmp (from + 1, all_upper ? "HROUGH" : "hrough",
+		      sizeof "hrough" - 1))
+	    return false;
+	  from += sizeof "through" - 1;
+	}
+      else
+	from += sizeof "thru" - 1;
+      while (*from == ' ' || *from == '\t' || *from == '.' || *from == '!')
+	from++;
+      if (*from == '-')
+	{
+	  from++;
+	  if (*comment_start == '*')
+	    {
+	      do
+		{
+		  while (*from && *from != '*'
+			 && *from != '\n' && *from != '\r')
+		    from++;
+		  if (*from != '*' || from[1] == '/')
+		    break;
+		  from++;
+		}
+	      while (1);
+	    }
+	  else
+	    while (*from && *from != '\n' && *from != '\r')
+	      from++;
+	}
+    }
+  /* C block comment.  */
+  if (*comment_start == '*')
+    {
+      if (*from != '*' || from[1] != '/')
+	return false;
+    }
+  /* C++ line comment.  */
+  else if (*from != '\n')
+    return false;
+
+  return true;
+}
+
 /* Allocate COUNT tokens for RUN.  */
 void
 _cpp_init_tokenrun (tokenrun *run, unsigned int count)
@@ -2310,6 +2662,7 @@ _cpp_lex_direct (cpp_reader *pfile)
   cppchar_t c;
   cpp_buffer *buffer;
   const unsigned char *comment_start;
+  bool fallthrough_comment = false;
   cpp_token *result = pfile->cur_token++;
 
  fresh_line:
@@ -2336,6 +2689,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    }
 	  return result;
 	}
+      if (buffer != pfile->buffer)
+	fallthrough_comment = false;
       if (!pfile->keep_tokens)
 	{
 	  pfile->cur_run = &pfile->base_run;
@@ -2442,6 +2797,10 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  result->flags |= NAMED_OP;
 	  result->type = (enum cpp_ttype) result->val.node.node->directive_index;
 	}
+
+      /* Signal FALLTHROUGH comment followed by another token.  */
+      if (fallthrough_comment)
+	result->flags |= PREV_FALLTHROUGH;
       break;
 
     case '\'':
@@ -2527,11 +2886,17 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  break;
 	}
 
+      if (fallthrough_comment_p (pfile, comment_start))
+	fallthrough_comment = true;
+
       if (!pfile->state.save_comments)
 	{
 	  result->flags |= PREV_WHITE;
 	  goto update_tokens_line;
 	}
+
+      if (fallthrough_comment)
+	result->flags |= PREV_FALLTHROUGH;
 
       /* Save the comment as a token in its own right.  */
       save_comment (pfile, result, comment_start, c);
@@ -2717,6 +3082,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  }
 	buffer->cur++;
       }
+      /* FALLTHRU */
 
     default:
       create_literal (pfile, result, buffer->cur - 1, 1, CPP_OTHER);
@@ -3322,7 +3688,7 @@ cpp_token_val_index (const cpp_token *tok)
 	return CPP_TOKEN_FLD_SOURCE;
       else if (tok->type == CPP_PRAGMA)
 	return CPP_TOKEN_FLD_PRAGMA;
-      /* else fall through */
+      /* fall through */
     default:
       return CPP_TOKEN_FLD_NONE;
     }

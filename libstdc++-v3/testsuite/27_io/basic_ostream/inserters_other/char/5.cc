@@ -40,8 +40,6 @@ std::ios_base& func3(std::ios_base&)
 template<typename T>
 void test(T& (*f)(T&))
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::sync_streambuf buf;
   std::ostream os(&buf);
   

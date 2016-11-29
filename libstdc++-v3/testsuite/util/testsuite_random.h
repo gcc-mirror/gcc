@@ -39,7 +39,6 @@ namespace __gnu_test
     void
     testDiscreteDist(Distribution& f, Pdf pdf)
     {
-      bool test __attribute__((unused)) = true;
       double count[BINS], p[BINS];
 
       for (unsigned long i = 0; i < BINS; i++)

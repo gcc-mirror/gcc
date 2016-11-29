@@ -189,9 +189,9 @@
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<8))")))
 
 (define_constraint "Csp"
-  "Integer constant in the range -6 @dots{} 6."
+  "Integer constant in the range -11 @dots{} 6."
   (and (match_code "const_int")
-       (match_test "IN_RANGE (ival, -6, 6)")))
+       (match_test "IN_RANGE (ival, -11, 6)")))
 
 (define_constraint "Cxf"
   "32-bit integer constant where at least one nibble is 0xf."

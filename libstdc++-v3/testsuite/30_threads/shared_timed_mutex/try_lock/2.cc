@@ -1,7 +1,6 @@
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++14 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++14 -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++14 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-solaris* powerpc-ibm-aix* } }
+// { dg-require-effective-target c++14 }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
@@ -30,7 +29,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::shared_timed_mutex mutex_type;
 
   try

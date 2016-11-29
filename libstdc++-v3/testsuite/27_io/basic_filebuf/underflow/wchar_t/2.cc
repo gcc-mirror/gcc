@@ -30,7 +30,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   const char name[] = "tmp_underflow-2.tst";
 
   const char cstr[] =

@@ -13,8 +13,7 @@ void g_np_1()
   for (i = 0; i < 1024; i++)
     arr[i] = i;
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copy(res)
+  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
     #pragma acc loop gang reduction(+:res)
     for (i = 0; i < 1024; i++)
@@ -28,8 +27,7 @@ void g_np_1()
 
   res = hres = 1;
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copy(res)
+  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
     #pragma acc loop gang reduction(*:res)
     for (i = 0; i < 12; i++)
@@ -53,8 +51,7 @@ void gv_np_1()
   for (i = 0; i < 1024; i++)
     arr[i] = i;
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copy(res)
+  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
     #pragma acc loop gang vector reduction(+:res)
     for (i = 0; i < 1024; i++)
@@ -78,8 +75,7 @@ void gw_np_1()
   for (i = 0; i < 1024; i++)
     arr[i] = i;
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copy(res)
+  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
     #pragma acc loop gang worker reduction(+:res)
     for (i = 0; i < 1024; i++)
@@ -103,8 +99,7 @@ void gwv_np_1()
   for (i = 0; i < 1024; i++)
     arr[i] = i;
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copy(res)
+  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
     #pragma acc loop gang worker vector reduction(+:res)
     for (i = 0; i < 1024; i++)
@@ -128,8 +123,7 @@ void gwv_np_2()
   for (i = 0; i < 32768; i++)
     arr[i] = i;
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copy(res)
+  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
     #pragma acc loop gang reduction(+:res)
     for (j = 0; j < 32; j++)
@@ -161,7 +155,7 @@ void gwv_np_3()
     arr[i] = i;
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copyin(arr) copy(res)
+		       copyin(arr)
   {
     #pragma acc loop gang reduction(+:res)
     for (j = 0; j < 32; j++)
@@ -191,8 +185,7 @@ void gwv_np_4()
   for (i = 0; i < 32768; i++)
     arr[i] = i;
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-		       copy(res, mres)
+  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
   {
     #pragma acc loop gang reduction(+:res) reduction(max:mres)
     for (j = 0; j < 32; j++)

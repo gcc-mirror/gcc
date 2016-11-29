@@ -10,7 +10,10 @@
 void *
 memmove (void *__dest, __const void *__src, size_t __n)
 {
-  register unsigned long int __d0, __d1, __d2;
+#if __cplusplus <= 201402L
+  register
+#endif
+  unsigned long int __d0, __d1, __d2;
   if (__dest < __src)
     __asm__ __volatile__
       ("cld\n\t"

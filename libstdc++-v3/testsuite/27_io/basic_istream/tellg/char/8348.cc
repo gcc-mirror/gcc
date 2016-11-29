@@ -28,7 +28,6 @@
 void test06(void)
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   string num1("555");
 
   // tellg
@@ -37,11 +36,11 @@ void test06(void)
     iss.tellg();
     int asNum = 0;
     iss >> asNum;
-    VERIFY( test = iss.eof() );
-    VERIFY( test = !iss.fail() );
+    VERIFY( iss.eof() );
+    VERIFY( !iss.fail() );
     iss.clear();
     iss.tellg();
-    VERIFY( test = !iss.fail() );
+    VERIFY( !iss.fail() );
   }
 
   // seekg
@@ -50,10 +49,10 @@ void test06(void)
     iss.tellg();
     int asNum = 0;
     iss >> asNum;
-    VERIFY( test = iss.eof() );
-    VERIFY( test = !iss.fail() );
+    VERIFY( iss.eof() );
+    VERIFY( !iss.fail() );
     iss.seekg(0, ios_base::beg);
-    VERIFY( test = !iss.fail() );
+    VERIFY( !iss.fail() );
   }
 
   // seekg
@@ -62,10 +61,10 @@ void test06(void)
     istream::pos_type pos1 = iss.tellg();
     int asNum = 0;
     iss >> asNum;
-    VERIFY( test = iss.eof() );
-    VERIFY( test = !iss.fail() );
+    VERIFY( iss.eof() );
+    VERIFY( !iss.fail() );
     iss.seekg(pos1);
-    VERIFY( test = !iss.fail() );
+    VERIFY( !iss.fail() );
   }
 }
 

@@ -35,8 +35,6 @@ using __gnu_test::destructor;
 
 typedef std::deque<object_counter>   gdeque;
 
-bool test __attribute__((unused)) = true;
-
 // 23.2.1     required types
 //
 // A missing required type will cause a compile failure.

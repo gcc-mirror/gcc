@@ -37,7 +37,6 @@ static void handle_pragma_vtable (cpp_reader *);
 static void handle_pragma_unit (cpp_reader *);
 static void handle_pragma_interface (cpp_reader *);
 static void handle_pragma_implementation (cpp_reader *);
-static void handle_pragma_java_exceptions (cpp_reader *);
 
 static void init_operators (void);
 static void copy_lang_type (tree);
@@ -71,9 +70,6 @@ struct impl_files
 };
 
 static struct impl_files *impl_file_chain;
-
-/* True if we saw "#pragma GCC java_exceptions".  */
-bool pragma_java_exceptions;
 
 void
 cxx_finish (void)
@@ -210,7 +206,6 @@ init_cp_pragma (void)
   c_register_pragma (0, "implementation", handle_pragma_implementation);
   c_register_pragma ("GCC", "interface", handle_pragma_interface);
   c_register_pragma ("GCC", "implementation", handle_pragma_implementation);
-  c_register_pragma ("GCC", "java_exceptions", handle_pragma_java_exceptions);
 }
 
 /* TRUE if a code represents a statement.  */
@@ -427,18 +422,6 @@ handle_pragma_implementation (cpp_reader* /*dfile*/)
     }
 }
 
-/* Indicate that this file uses Java-personality exception handling.  */
-static void
-handle_pragma_java_exceptions (cpp_reader* /*dfile*/)
-{
-  tree x;
-  if (pragma_lex (&x) != CPP_EOF)
-    warning (0, "junk at end of #pragma GCC java_exceptions");
-
-  choose_personality_routine (lang_java);
-  pragma_java_exceptions = true;
-}
-
 /* Issue an error message indicating that the lookup of NAME (an
    IDENTIFIER_NODE) failed.  Returns the ERROR_MARK_NODE.  */
 
@@ -580,8 +563,6 @@ retrofit_lang_decl (tree t)
     SET_DECL_LANGUAGE (t, lang_cplusplus);
   else if (current_lang_name == lang_name_c)
     SET_DECL_LANGUAGE (t, lang_c);
-  else if (current_lang_name == lang_name_java)
-    SET_DECL_LANGUAGE (t, lang_java);
   else
     gcc_unreachable ();
 

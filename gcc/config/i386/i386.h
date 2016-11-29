@@ -81,6 +81,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX512VBMI_P(x)	TARGET_ISA_AVX512VBMI_P(x)
 #define TARGET_AVX512IFMA	TARGET_ISA_AVX512IFMA
 #define TARGET_AVX512IFMA_P(x)	TARGET_ISA_AVX512IFMA_P(x)
+#define TARGET_AVX5124FMAPS	TARGET_ISA_AVX5124FMAPS
+#define TARGET_AVX5124FMAPS_P(x) TARGET_ISA_AVX5124FMAPS_P(x)
+#define TARGET_AVX5124VNNIW	TARGET_ISA_AVX5124VNNIW
+#define TARGET_AVX5124VNNIW_P(x) TARGET_ISA_AVX5124VNNIW_P(x)
 #define TARGET_FMA	TARGET_ISA_FMA
 #define TARGET_FMA_P(x)	TARGET_ISA_FMA_P(x)
 #define TARGET_SSE4A	TARGET_ISA_SSE4A
@@ -152,8 +156,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_PREFETCHWT1_P(x)	TARGET_ISA_PREFETCHWT1_P(x)
 #define TARGET_MPX	TARGET_ISA_MPX
 #define TARGET_MPX_P(x)	TARGET_ISA_MPX_P(x)
-#define TARGET_PCOMMIT	TARGET_ISA_PCOMMIT
-#define TARGET_PCOMMIT_P(x)	TARGET_ISA_PCOMMIT_P(x)
 #define TARGET_CLWB	TARGET_ISA_CLWB
 #define TARGET_CLWB_P(x)	TARGET_ISA_CLWB_P(x)
 #define TARGET_MWAITX	TARGET_ISA_MWAITX
@@ -481,8 +483,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_OPT_AGU ix86_tune_features[X86_TUNE_OPT_AGU]
 #define TARGET_AVOID_LEA_FOR_ADDR \
 	ix86_tune_features[X86_TUNE_AVOID_LEA_FOR_ADDR]
-#define TARGET_VECTORIZE_DOUBLE \
-	ix86_tune_features[X86_TUNE_VECTORIZE_DOUBLE]
 #define TARGET_SOFTWARE_PREFETCHING_BENEFICIAL \
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
 #define TARGET_AVX128_OPTIMAL \
@@ -689,17 +689,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
 
-
-/* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
-   FPU, assume that the fpcw is set to extended precision; when using
-   only SSE, rounding is correct; when using both SSE and the FPU,
-   the rounding precision is indeterminate, since either may be chosen
-   apparently at random.  */
-#define TARGET_FLT_EVAL_METHOD						\
-  (TARGET_80387								\
-   ? (TARGET_MIX_SSE_I387 ? -1						\
-      : (TARGET_SSE_MATH ? (TARGET_SSE2 ? 0 : -1) : 2))			\
-   : 0)
 
 /* Whether to allow x87 floating-point arithmetic on MODE (one of
    SFmode, DFmode and XFmode) in the current excess precision
@@ -1093,7 +1082,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
    || MASK_REGNO_P (REGNO) || BND_REGNO_P (REGNO)			\
-   ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
+   ? (COMPLEX_MODE_P (MODE) ? 2 :					\
+      (((MODE == V64SFmode) || (MODE == V64SImode)) ? 4 : 1))		\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
       : ((MODE) == XCmode						\
@@ -1369,6 +1359,7 @@ enum reg_class
   FLOAT_INT_SSE_REGS,
   MASK_EVEX_REGS,
   MASK_REGS,
+  MOD4_SSE_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -1429,6 +1420,7 @@ enum reg_class
    "FLOAT_INT_SSE_REGS",		\
    "MASK_EVEX_REGS",			\
    "MASK_REGS",				\
+   "MOD4_SSE_REGS"			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1469,9 +1461,10 @@ enum reg_class
 {   0x11ffff,    0x1fe0,    0x0 },       /* FLOAT_INT_REGS */            \
 { 0x1ff100ff,0xffffffe0,   0x1f },       /* INT_SSE_REGS */              \
 { 0x1ff1ffff,0xffffffe0,   0x1f },       /* FLOAT_INT_SSE_REGS */        \
-       { 0x0,       0x0, 0x1fc0 },       /* MASK_EVEX_REGS */           \
+       { 0x0,       0x0, 0x1fc0 },       /* MASK_EVEX_REGS */            \
        { 0x0,       0x0, 0x1fe0 },       /* MASK_REGS */                 \
-{ 0xffffffff,0xffffffff,0x1ffff }                                        \
+{ 0x1fe00000,0xffffe000,   0x1f },       /* MOD4_SSE_REGS */		 \
+{ 0xffffffff,0xffffffff,0x1ffff }		\
 }
 
 /* The same information, inverted:
@@ -1536,6 +1529,16 @@ enum reg_class
 
 #define BND_REG_P(X) (REG_P (X) && BND_REGNO_P (REGNO (X)))
 #define BND_REGNO_P(N) IN_RANGE ((N), FIRST_BND_REG, LAST_BND_REG)
+
+#define MOD4_SSE_REG_P(X) (REG_P (X) && MOD4_SSE_REGNO_P (REGNO (X)))
+#define MOD4_SSE_REGNO_P(N) ((N) == XMM0_REG  \
+			     || (N) == XMM4_REG  \
+			     || (N) == XMM8_REG  \
+			     || (N) == XMM12_REG \
+			     || (N) == XMM16_REG \
+			     || (N) == XMM20_REG \
+			     || (N) == XMM24_REG \
+			     || (N) == XMM28_REG)
 
 /* First floating point reg */
 #define FIRST_FLOAT_REG FIRST_STACK_REG
@@ -1950,8 +1953,18 @@ typedef struct ix86_args {
 
 /* MOVE_MAX_PIECES is the number of bytes at a time which we can
    move efficiently, as opposed to  MOVE_MAX which is the maximum
-   number of bytes we can move with a single instruction.  */
-#define MOVE_MAX_PIECES UNITS_PER_WORD
+   number of bytes we can move with a single instruction.
+
+   ??? We should use TImode in 32-bit mode and use OImode or XImode
+   if they are available.  But since by_pieces_ninsns determines the
+   widest mode with MAX_FIXED_MODE_SIZE, we can only use TImode in
+   64-bit mode.  */
+#define MOVE_MAX_PIECES \
+  ((TARGET_64BIT \
+    && TARGET_SSE2 \
+    && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
+    && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+   ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a movmem or libcall instead.
@@ -2170,7 +2183,7 @@ extern int const x86_64_ms_sysv_extra_clobbered_registers[12];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
+  gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
 
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\

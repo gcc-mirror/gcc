@@ -17,6 +17,8 @@ struct hfa_dx4_t hfa_dx4 = {1234.123, 2345.234, 3456.345, 4567.456};
 struct hfa_ldx3_t hfa_ldx3 = {123456.7890, 234567.8901, 345678.9012};
 struct hfa_ffs_t hfa_ffs;
 union hfa_union_t hfa_union;
+struct hfa_f16x2_t hfa_f16x2 = {2.0f, 4.0f};
+struct hfa_f16x3_t hfa_f16x3 = {2.0f, 4.0f, 8.0f};
 
 #define HAS_DATA_INIT_FUNC
 void init_data ()
@@ -43,5 +45,8 @@ void init_data ()
   ANON     (struct hfa_fx1_t  , hfa_fx1  , STACK+24, 4)
   ANON     (struct hfa_fx2_t  , hfa_fx2  , STACK+32, 5)
   ANON     (struct hfa_dx2_t  , hfa_dx2  , STACK+40, 6)
-  LAST_ANON(double            , 1.0      , STACK+56, 7)
+  /* HFA of __fp16 passed on stack, directed __fp16 test is va_arg-10.c.  */
+  ANON     (struct hfa_f16x2_t, hfa_f16x2, STACK+56, 7)
+  ANON     (struct hfa_f16x3_t, hfa_f16x3, STACK+64, 8)
+  LAST_ANON(double            , 1.0      , STACK+72, 9)
 #endif

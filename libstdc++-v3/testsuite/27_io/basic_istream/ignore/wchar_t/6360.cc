@@ -26,7 +26,6 @@ void
 test08()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wstringstream ss(L"abcd" L"\xFF" L"1234ina donna coolbrith");  
   wchar_t c;

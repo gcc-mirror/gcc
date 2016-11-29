@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //
@@ -29,8 +28,6 @@ struct simple
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   constexpr simple s { 5 };
   constexpr auto s2  __attribute__((unused)) = std::move_if_noexcept(s);
 }

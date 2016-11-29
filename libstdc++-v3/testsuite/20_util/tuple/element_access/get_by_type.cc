@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -27,8 +27,6 @@ using namespace std;
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
-
   int j=1;
   const int k=2;
   tuple<int,int &,const int&> a(0,j,k);

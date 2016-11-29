@@ -26,8 +26,6 @@
 // In the occasion of libstdc++/25896
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::tr1::unordered_set<std::string> Set;
   typedef Set::iterator       iterator;
   typedef Set::const_iterator const_iterator;

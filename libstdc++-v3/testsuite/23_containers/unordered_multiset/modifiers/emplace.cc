@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -48,8 +48,6 @@ struct PathPointEqual
   bool operator() (const PathPoint& __lhs, const PathPoint& __rhs) const
   { return __lhs.getType() == __rhs.getType(); }
 };
-
-bool test __attribute__((unused)) = true;
 
 void test01()
 {

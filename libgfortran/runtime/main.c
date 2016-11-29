@@ -119,8 +119,6 @@ init (void)
     set_fpu ();
 
   init_compile_options ();
-
-  random_seed_i4 (NULL, NULL, NULL);
 }
 
 

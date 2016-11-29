@@ -42,7 +42,6 @@ public:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true; 
 
   comma_ctype obj;
   const ctype_base::mask* tmp = obj.get_classic_table();

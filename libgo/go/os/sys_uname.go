@@ -4,6 +4,8 @@
 
 // For systems which only store the hostname in uname (Solaris).
 
+// +build solaris irix rtems
+
 package os
 
 import "syscall"

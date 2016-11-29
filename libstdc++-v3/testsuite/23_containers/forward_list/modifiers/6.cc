@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //
@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<int> fl1(1, 5), fl2(1, 4), fl3(1, 3),
                          fl4(1, 2), fl5(1, 1), fl6(1, 0);
 

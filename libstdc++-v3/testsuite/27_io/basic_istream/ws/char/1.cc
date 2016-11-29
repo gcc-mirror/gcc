@@ -26,8 +26,6 @@
 
 void test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   const char str_lit01[] = "  venice ";
   const std::string str01(" santa barbara ");
   std::string str02(str_lit01);

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
 //
@@ -23,8 +23,6 @@
 // PR libstdc++/42352
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::list<int> l{3, 2, 4, 1, 5, 9, 0, 8, 6, 7};
 
   l.sort();
@@ -38,8 +36,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::list<int> l{3, 2, 4, 1, 5, 9, 0, 8, 6, 7};
 
   struct compare

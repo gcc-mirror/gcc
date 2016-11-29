@@ -645,6 +645,7 @@ baseline_dir
 HWCAP_FLAGS
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
+LONG_DOUBLE_COMPAT_FLAGS
 ENABLE_CXX11_ABI_FALSE
 ENABLE_CXX11_ABI_TRUE
 glibcxx_cxx98_abi
@@ -11596,7 +11597,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11599 "configure"
+#line 11600 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11702,7 +11703,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11705 "configure"
+#line 11706 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15388,7 +15389,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15391 "configure"
+#line 15392 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15423,7 +15424,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15426 "configure"
+#line 15427 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15458,7 +15459,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15461 "configure"
+#line 15462 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15494,7 +15495,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15497 "configure"
+#line 15498 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15538,10 +15539,12 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-  # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test "$glibcxx_cv_atomic_bool" = yes \
+  # Set atomicity_dir to builtins if all but the long long test above passes,
+  # or if the builtins were already chosen (e.g. by configure.host).
+  if { test "$glibcxx_cv_atomic_bool" = yes \
      && test "$glibcxx_cv_atomic_short" = yes \
-     && test "$glibcxx_cv_atomic_int" = yes; then
+     && test "$glibcxx_cv_atomic_int" = yes; } \
+     || test "$atomicity_dir" = "cpu/generic/atomicity_builtins"; then
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
 
@@ -15573,7 +15576,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15576 "configure"
+#line 15579 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15615,7 +15618,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15618 "configure"
+#line 15621 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15649,7 +15652,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15652 "configure"
+#line 15655 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -18173,6 +18176,10 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
+  # Use C++11 because a conforming <stdio.h> won't define gets for C++14,
+  # and we don't need a declaration for C++14 anyway.
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gets declaration" >&5
 $as_echo_n "checking for gets declaration... " >&6; }
@@ -18207,6 +18214,7 @@ $as_echo "#define HAVE_GETS 1" >>confdefs.h
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_gets" >&5
 $as_echo "$glibcxx_cv_gets" >&6; }
 
+  CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -18228,11 +18236,11 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   case "$host" in
     *-*-solaris2.*)
-      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
-      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> overloads" >&5
-$as_echo_n "checking for C++11 <math.h> overloads... " >&6; }
-      if test "${glibcxx_cv_math11_overload+set}" = set; then :
+      # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> floating point overloads" >&5
+$as_echo_n "checking for C++11 <math.h> floating point overloads... " >&6; }
+      if test "${glibcxx_cv_math11_fp_overload+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -18247,9 +18255,9 @@ else
 
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_math11_overload=no
+  glibcxx_cv_math11_fp_overload=no
 else
-  glibcxx_cv_math11_overload=yes
+  glibcxx_cv_math11_fp_overload=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
@@ -18259,12 +18267,74 @@ fi
       # autoheader cannot handle indented templates.
 
 
-      if test $glibcxx_cv_math11_overload = yes; then
-        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO 1" >>confdefs.h
+      if test $glibcxx_cv_math11_fp_overload = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO_FP 1" >>confdefs.h
 
       fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_overload" >&5
-$as_echo "$glibcxx_cv_math11_overload" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_fp_overload" >&5
+$as_echo "$glibcxx_cv_math11_fp_overload" >&6; }
+
+      # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> integral type overloads" >&5
+$as_echo_n "checking for C++11 <math.h> integral type overloads... " >&6; }
+      if test "${glibcxx_cv_math11_int_overload+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+	   namespace std {
+	     template<typename _Tp>
+	       struct __is_integer;
+	     template<>
+	       struct __is_integer<int>
+	       {
+	         enum { __value = 1 };
+	       };
+	   }
+	   namespace __gnu_cxx {
+	     template<bool, typename>
+	       struct __enable_if;
+	     template<typename _Tp>
+	       struct __enable_if<true, _Tp>
+	       { typedef _Tp __type; };
+	   }
+	   namespace std {
+	     template<typename _Tp>
+	       constexpr typename __gnu_cxx::__enable_if
+	       		 <__is_integer<_Tp>::__value, double>::__type
+	       log2(_Tp __x)
+	       { return __builtin_log2(__x); }
+	   }
+	   int
+	   main (void)
+	   {
+	     int i = 1000;
+	     return std::log2(i);
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_math11_int_overload=no
+else
+  glibcxx_cv_math11_int_overload=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+      # autoheader cannot handle indented templates.
+
+
+      if test $glibcxx_cv_math11_int_overload = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO_INT 1" >>confdefs.h
+
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_int_overload" >&5
+$as_echo "$glibcxx_cv_math11_int_overload" >&6; }
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
@@ -27972,6 +28042,19 @@ _ACEOF
 fi
 done
 
+  for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
 
   # For iconv support.
 
@@ -28808,6 +28891,8 @@ else
 
 
     $as_echo "#define HAVE_ICONV 1" >>confdefs.h
+
+    $as_echo "#define HAVE_MEMALIGN 1" >>confdefs.h
 
   else
 
@@ -79051,7 +79136,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:22:0
+libtool_VERSION=6:23:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -79327,6 +79412,7 @@ $as_echo "${default_libstdcxx_abi}" >&6; }
 
 
 ac_ldbl_compat=no
+LONG_DOUBLE_COMPAT_FLAGS="-mlong-double-64"
 case "$target" in
   powerpc*-*-linux* | \
   sparc*-*-linux* | \
@@ -79358,8 +79444,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo "#define _GLIBCXX_LONG_DOUBLE_COMPAT 1" >>confdefs.h
 
     port_specific_symbol_files="\$(top_srcdir)/config/os/gnu-linux/ldbl-extra.ver"
+    case "$target" in
+      powerpc*-*-linux*)
+	LONG_DOUBLE_COMPAT_FLAGS="$LONG_DOUBLE_COMPAT_FLAGS -mno-gnu-attribute" ;;
+    esac
   fi
 esac
+
 
 
 # Check if assembler supports disabling hardware capability support.
@@ -79449,8 +79540,7 @@ $as_echo "$ac_cv_x86_rdrand" >&6; }
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 
-  if $GLIBCXX_IS_NATIVE ; then
-    # Do checks for resource limit functions.
+  # Do checks for resource limit functions.
 
   setrlimit_have_headers=yes
   for ac_header in unistd.h sys/time.h sys/resource.h
@@ -79679,6 +79769,7 @@ $as_echo "#define _GLIBCXX_RES_LIMITS 1" >>confdefs.h
 $as_echo "$ac_res_limits" >&6; }
 
 
+  if $GLIBCXX_IS_NATIVE ; then
     # Look for setenv, so that extended locale tests can be performed.
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for setenv declaration" >&5
@@ -80027,6 +80118,7 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+       #include <limits.h>
        #include <stdlib.h>
        #include <unistd.h>
 
@@ -80059,6 +80151,7 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+       #include <limits.h>
        #include <stdlib.h>
        #include <unistd.h>
 
@@ -82202,7 +82295,6 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
 GFORTRAN="$GFORTRAN"
-GCJ="$GCJ"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout

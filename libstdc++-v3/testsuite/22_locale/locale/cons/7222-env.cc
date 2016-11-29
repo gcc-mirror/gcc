@@ -29,8 +29,6 @@
 // libstdc++/7222
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc_1 = std::locale("");
   std::locale loc_2 = std::locale("");
   VERIFY( loc_1 == loc_2 );

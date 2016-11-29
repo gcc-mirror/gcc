@@ -68,7 +68,6 @@ private:
 int 
 test05()
 {
-  bool test __attribute__((unused)) = true;
   reset_count_struct __attribute__((unused)) reset;
 
   pimpl<A>();

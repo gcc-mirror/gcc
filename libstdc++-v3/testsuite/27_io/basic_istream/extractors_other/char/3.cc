@@ -25,8 +25,7 @@
 
 void test03() 
 {
-  using namespace std;  
-  bool test __attribute__((unused)) = true;
+  using namespace std;
 
   // template<_CharT, _Traits>
   //  basic_istream& operator>>(ios_base& (*pf) (ios_base&))

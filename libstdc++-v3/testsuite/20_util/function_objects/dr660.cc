@@ -23,8 +23,6 @@
 // DR 660. Missing Bitwise Operations.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (int i1 = 0; i1 < 1000; ++i1)
     for (int i2 = 0; i2 < 1000; ++i2)
       {

@@ -24,8 +24,6 @@
 // libstdc++/12065
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::streampos p(0);
   const std::streampos q(0);
   std::streamoff o(0);

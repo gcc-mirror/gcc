@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -28,8 +28,6 @@ struct C : public B1, public B2 { };
 
 void test()
 {
-  bool test __attribute__((unused)) = true;
-
   // 1
   {
     typedef std::tr2::direct_bases<A>::type tl;

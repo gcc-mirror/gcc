@@ -37,8 +37,6 @@ void test05()
   typedef filebuf::int_type 	int_type;
   typedef filebuf::traits_type 	traits_type;
 
-  bool test __attribute__((unused)) = true;
-
   // int_type sbumpc()
   // if read_cur not avail returns uflow(), else return *read_cur & increment
 

@@ -65,6 +65,23 @@ test##NAME (TYPE x01, TYPE x02, TYPE x03, TYPE x04,		\
   check##NAME (x14, 14);					\
   check##NAME (x15, 15);					\
   check##NAME (x16, 16);					\
+}								\
+								\
+void								\
+testva##NAME (int n, ...)					\
+{								\
+  int i;							\
+  va_list ap;							\
+  if (test_va)							\
+    {								\
+      va_start (ap, n);						\
+      for (i = 0; i < n; i++)					\
+	{							\
+	  TYPE t = va_arg (ap, TYPE);				\
+	  check##NAME (t, i+1);					\
+	}							\
+      va_end (ap);						\
+    }								\
 }
 
 #ifndef SKIP_COMPLEX

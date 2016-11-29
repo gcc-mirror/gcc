@@ -9,8 +9,8 @@ C { dg-options "-ff2c -w -O0" }
       real(8)    a8, b8, c8
       integer(4) i, j, k
       integer(8) i8, j8, k8
-      complex    u, v, w, c_to_c
-      complex(8) u8, v8, w8, c_to_c8
+      complex    u, v, w
+      complex(8) u8, v8, w8
 
       a = 42.0
       b = 0.0
@@ -39,13 +39,13 @@ C { dg-options "-ff2c -w -O0" }
       u = (-1.0, 2.0)
       v = (1.0, -2.0)
       w = u
-      v = c_to_c (%VAL (u), %REF (w), %LOC (w))
+      call c_to_c (v, %VAL (u), %REF (w), %LOC (w))
       if ((4.0 * u).ne.v) call abort ()
 
       u8 = (-1.0, 2.0)
       v8 = (1.0, -2.0)
       w8 = u8
-      v8 = c_to_c8 (%VAL (u8), %REF (w8), %LOC (w8))
+      call c_to_c8 (v8, %VAL (u8), %REF (w8), %LOC (w8))
       if ((4.0 * u8).ne.v8) call abort ()
 
       stop

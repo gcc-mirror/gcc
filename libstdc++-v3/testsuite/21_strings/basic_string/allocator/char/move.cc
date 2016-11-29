@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <string>
 #include <testsuite_hooks.h>
@@ -30,7 +30,6 @@ using __gnu_test::uneq_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef uneq_allocator<C> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -42,7 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef uneq_allocator<C> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v1(alloc_type(1));

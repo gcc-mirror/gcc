@@ -53,7 +53,6 @@ namespace __gnu_test
 
     rvalstruct(rvalstruct&& in)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( in.valid == true );
       val = in.val;
       in.valid = false;
@@ -66,7 +65,6 @@ namespace __gnu_test
     rvalstruct&
     operator=(rvalstruct&& in)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( this != &in );
       VERIFY( in.valid == true );
       val = in.val;
@@ -87,7 +85,6 @@ namespace __gnu_test
   void
   swap(rvalstruct& lhs, rvalstruct& rhs)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( lhs.valid && rhs.valid );
     int temp = lhs.val;
     lhs.val = rhs.val;
@@ -112,14 +109,12 @@ namespace __gnu_test
 
     copycounter(const copycounter& in) : val(in.val), valid(true)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( in.valid == true );
       ++copycount;
     }
 
     copycounter(copycounter&& in) noexcept
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( in.valid == true );
       val = in.val;
       in.valid = false;
@@ -137,7 +132,6 @@ namespace __gnu_test
     bool
     operator=(const copycounter& in)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( in.valid == true );
       ++copycount;
       val = in.val;
@@ -148,7 +142,6 @@ namespace __gnu_test
     copycounter&
     operator=(copycounter&& in)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY(in.valid == true);
       val = in.val;
       in.valid = false;
@@ -173,7 +166,6 @@ namespace __gnu_test
   inline void
   swap(copycounter& lhs, copycounter& rhs)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( lhs.valid && rhs.valid );
     int temp = lhs.val;
     lhs.val = rhs.val;
@@ -192,14 +184,12 @@ namespace __gnu_test
     rvalstruct_compare_by_value(const rvalstruct_compare_by_value& rh)
     : val(rh.val), ok(rh.ok)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY(rh.ok);
     }
 
     rvalstruct_compare_by_value&
     operator=(const rvalstruct_compare_by_value& rh)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( rh.ok );
       val = rh.val;
       ok = rh.ok;
@@ -209,7 +199,6 @@ namespace __gnu_test
     rvalstruct_compare_by_value(rvalstruct_compare_by_value&& rh)
     : val(rh.val), ok(rh.ok)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( rh.ok );
       rh.ok = false;
     }
@@ -217,7 +206,6 @@ namespace __gnu_test
     rvalstruct_compare_by_value&
     operator=(rvalstruct_compare_by_value&& rh)
     {
-      bool test __attribute__((unused)) = true;
       VERIFY( rh.ok );
       val = rh.val;
       ok = rh.ok;
@@ -230,7 +218,6 @@ namespace __gnu_test
   operator<(rvalstruct_compare_by_value lh,
 	    rvalstruct_compare_by_value rh)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( rh.ok );
     VERIFY( lh.ok );
     return lh.val < rh.val;
@@ -240,7 +227,6 @@ namespace __gnu_test
   order(rvalstruct_compare_by_value lh,
 	rvalstruct_compare_by_value rh)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( rh.ok );
     VERIFY( lh.ok );
     return lh.val < rh.val;

@@ -74,8 +74,6 @@
 // Make sure all the standard streams are defined.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   char array1[20];
   typedef std::ios::traits_type ctraits_type;
   ctraits_type::int_type i = 15;

@@ -66,7 +66,6 @@ void test05()
   typedef std::filebuf::off_type 	off_type;
   typedef size_t 			size_type;
 
-  bool test __attribute__((unused)) = true;
   std::filebuf 				f_tmp;
   std::streamoff  			strmof_1, strmof_2;
 

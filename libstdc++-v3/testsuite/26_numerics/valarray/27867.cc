@@ -22,8 +22,6 @@
 // libstdc++/27867
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::valarray<int> v1(100, 1);
   std::valarray<int> v2(100, 1);
   std::valarray<bool> v3(true, 1);

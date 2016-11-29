@@ -24,8 +24,6 @@
 template<typename T>
   void do_test01()
   {
-    bool test __attribute__((unused)) = true;
-
     if (std::numeric_limits<T>::has_quiet_NaN)
       {
 	std::complex<T> c1(T(0), std::numeric_limits<T>::quiet_NaN());

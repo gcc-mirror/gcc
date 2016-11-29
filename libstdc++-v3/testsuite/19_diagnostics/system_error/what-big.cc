@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -26,7 +26,6 @@ void test01()
 {
   typedef std::system_error test_type;
 
-  bool test __attribute__((unused)) = true;
   const std::string xxx(10000, 'x');
   test_type t(std::error_code(), xxx);
   VERIFY( std::string(t.what()).find(xxx) != std::string::npos );

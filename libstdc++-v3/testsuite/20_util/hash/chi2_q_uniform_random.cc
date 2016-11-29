@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
 // Use smaller statistics when running on simulators, so it takes less time.
 // For powerpc-eabi, SAMPLES=30000 fails.
-// { dg-options "-std=gnu++11 -DSAMPLES=35000" { target simulator } }
+// { dg-options "-DSAMPLES=35000" { target simulator } }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
@@ -26,7 +26,6 @@
 void
 test_uniform_random()
 {
-  bool test __attribute__((unused)) = true;
   std::srand(137);
   std::unordered_set<std::string> set;
   std::string s;

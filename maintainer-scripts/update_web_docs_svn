@@ -28,6 +28,8 @@ MANUALS="cpp
   libiberty
   porting"
 
+CSS=/gcc.css
+
 WWWBASE=/www/gcc/htdocs
 WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
 WWWPREPROCESS='/www/gcc/bin/preprocess -r'
@@ -156,7 +158,7 @@ for file in $MANUALS; do
     if [ "$file" = "gnat_ugn" ]; then
       includes="$includes -I gcc/gcc/ada -I gcc/gcc/ada/doc/gnat_ugn"
     fi
-    makeinfo --html $includes -o ${file} ${filename}
+    makeinfo --html --css-ref $CSS $includes -o ${file} ${filename}
     tar cf ${file}-html.tar ${file}/*.html
     texi2dvi $includes -o ${file}.dvi ${filename} </dev/null >/dev/null && dvips -o ${file}.ps ${file}.dvi
     texi2pdf $includes -o ${file}.pdf ${filename} </dev/null

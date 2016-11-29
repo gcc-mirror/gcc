@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
 //
@@ -47,8 +47,6 @@ namespace std
 // libstdc++/39881
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::error_condition ec1(my_err);
   VERIFY( ec1 == make_error_condition(my_err) );
 }

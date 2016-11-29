@@ -61,7 +61,6 @@ int
 test06()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::auto_ptr<A> A_from_A(new A);
   std::auto_ptr<A> A_from_A_ptr(A_from_A.release());

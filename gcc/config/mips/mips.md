@@ -120,6 +120,8 @@
 
   ;; MIPS16 constant pools.
   UNSPEC_ALIGN
+  UNSPEC_CONSTTABLE
+  UNSPEC_CONSTTABLE_END
   UNSPEC_CONSTTABLE_INT
   UNSPEC_CONSTTABLE_FLOAT
 
@@ -151,6 +153,9 @@
 
   ;; Stack checking.
   UNSPEC_PROBE_STACK_RANGE
+
+  ;; The `.insn' pseudo-op.
+  UNSPEC_INSN_PSEUDO
 ])
 
 (define_constants
@@ -6396,7 +6401,7 @@
 (define_insn "casesi_internal_mips16_<mode>"
   [(set (pc)
      (if_then_else
-       (leu (match_operand:SI 0 "register_operand" "d")
+       (ltu (match_operand:SI 0 "register_operand" "d")
 	    (match_operand:SI 1 "arith_operand" "dI"))
        (unspec:P
         [(match_dup 0)
@@ -6419,14 +6424,14 @@
     {
     case HImode:
       output_asm_insn ("sll\t%5, %0, 1", operands);
-      output_asm_insn ("la\t%4, %2", operands);
+      output_asm_insn ("<d>la\t%4, %2", operands);
       output_asm_insn ("<d>addu\t%5, %4, %5", operands);
       output_asm_insn ("lh\t%5, 0(%5)", operands);
       break;
-    
+
     case SImode:
       output_asm_insn ("sll\t%5, %0, 2", operands);
-      output_asm_insn ("la\t%4, %2", operands);
+      output_asm_insn ("<d>la\t%4, %2", operands);
       output_asm_insn ("<d>addu\t%5, %4, %5", operands);
       output_asm_insn ("lw\t%5, 0(%5)", operands);
       break;
@@ -6434,12 +6439,18 @@
     default:
       gcc_unreachable ();
     }
-  
-  output_asm_insn ("addu\t%4, %4, %5", operands);
-  
-  return "j\t%4";
+
+  output_asm_insn ("<d>addu\t%4, %4, %5", operands);
+
+  if (GENERATE_MIPS16E)
+    return "jrc\t%4";
+  else
+    return "jr\t%4";
 }
-  [(set_attr "insn_count" "16")])
+  [(set (attr "insn_count")
+	(if_then_else (match_test "GENERATE_MIPS16E")
+		      (const_string "10")
+		      (const_string "11")))])
 
 ;; For TARGET_USE_GOT, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
@@ -7174,6 +7185,14 @@
       return "#nop";
   }
   [(set_attr "type"	"nop")])
+
+;; The `.insn' pseudo-op.
+(define_insn "insn_pseudo"
+  [(unspec_volatile [(const_int 0)] UNSPEC_INSN_PSEUDO)]
+  ""
+  ".insn"
+  [(set_attr "mode" "none")
+   (set_attr "insn_count" "0")])
 
 ;; MIPS4 Conditional move instructions.
 
@@ -7307,6 +7326,22 @@
 ;;
 ;;  ....................
 ;;
+
+(define_insn "consttable"
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "")]
+		    UNSPEC_CONSTTABLE)]
+  ""
+  ""
+  [(set_attr "mode" "none")
+   (set_attr "insn_count" "0")])
+
+(define_insn "consttable_end"
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "")]
+		    UNSPEC_CONSTTABLE_END)]
+  ""
+  ""
+  [(set_attr "mode" "none")
+   (set_attr "insn_count" "0")])
 
 (define_insn "consttable_tls_reloc"
   [(unspec_volatile [(match_operand 0 "tls_reloc_operand" "")

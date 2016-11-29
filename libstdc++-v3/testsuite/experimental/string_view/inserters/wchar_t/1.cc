@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -30,11 +30,9 @@
 #include <iostream>
 #include <testsuite_hooks.h>
 
-bool
+void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::experimental::wstring_view::size_type csize_type;
   typedef std::experimental::wstring_view::const_reference cref;
   typedef std::experimental::wstring_view::reference ref;
@@ -61,8 +59,6 @@ test01()
   
   std::experimental::wstring_view hello_world;
   std::wcout << hello_world;
-
-  return test;
 }
 
 int

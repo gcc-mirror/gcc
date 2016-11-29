@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 //
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //
@@ -43,8 +43,7 @@ namespace
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
-  
+ 
   unordered_multiset<pair<int, int>, pair_hash, pair_equal_to> mset;
   vector<int> values;
 

@@ -38,7 +38,6 @@ const int B3[] = {9, 9, 8, 8, 8, 8, 7, 6, 6, 1, 1, 1, 1, 1};
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   list<int>::iterator pos;
@@ -54,7 +53,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   list<int>::iterator pos;
@@ -70,7 +68,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   list<int>::iterator pos;

@@ -36,8 +36,6 @@ void test05()
   typedef filebuf::int_type 	int_type;
   typedef filebuf::traits_type 	traits_type;
 
-  bool test __attribute__((unused)) = true;
-
   streamsize 			strmsz_1, strmsz_2;
   char carray2[8192] = "";
   int_type 			c2, c4;

@@ -800,8 +800,7 @@ test02()
 
   <listitem><para><emphasis> Use implementation-specific properties of anonymous
     namespaces. </emphasis>
-    See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html"> this post
-    </link>
+    See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html">this post</link>.
     This method fails the <emphasis>correctness</emphasis> criteria.</para></listitem>
 
   <listitem><para><emphasis>Extension: allow reopening on namespaces</emphasis>: This would
@@ -817,8 +816,8 @@ test02()
     recompilation</emphasis> requirement, because we would only be able to
     support option (1) or (2).</para></listitem>
 
-  <listitem><para><emphasis>Extension: use link name</emphasis>: This option involves
-    complicated re-naming between debug-mode and release-mode
+  <listitem><para><emphasis>Extension: use link name</emphasis>: This option
+    involves complicated re-naming between debug-mode and release-mode
     components at compile time, and then a g++ extension called <emphasis>
     link name </emphasis> to recover the original names at link time. There
     are two drawbacks to this approach. One, it's very verbose,
@@ -827,8 +826,8 @@ test02()
     functions taking no arguments in mixed-mode settings resulting in
     equivalent link names, <code> vector::push_back() </code> being
     one example.
-    See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">link
-    name</link> </para></listitem>
+    See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">proof-of-concept using link
+    name</link>. </para></listitem>
 </itemizedlist>
 
 <para>Other options may exist for implementing the debug mode, many of

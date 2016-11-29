@@ -6249,12 +6249,42 @@
    (set_attr "length" "4")])
 
 (define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+			  (match_operand:SI 3 "mem_shadd_operand" ""))
+		 (match_operand:SI 1 "register_operand" "r")))]
+  ""
+  "*
+{
+  int shift_val = exact_log2 (INTVAL (operands[3]));
+  operands[3] = GEN_INT (shift_val);
+  return \"{sh%o3addl %2,%1,%0|shladd,l %2,%o3,%1,%0}\";
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
+
+(define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (ashift:DI (match_operand:DI 2 "register_operand" "r")
 			    (match_operand:DI 3 "shadd_operand" ""))
 		 (match_operand:DI 1 "register_operand" "r")))]
   "TARGET_64BIT"
   "shladd,l %2,%o3,%1,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (mult:DI (match_operand:DI 2 "register_operand" "r")
+			  (match_operand:DI 3 "mem_shadd_operand" ""))
+		 (match_operand:DI 1 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "*
+{
+  int shift_val = exact_log2 (INTVAL (operands[3]));
+  operands[3] = GEN_INT (shift_val);
+  return \"shladd,l %2,%o3,%1,%0\";
+}"
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 

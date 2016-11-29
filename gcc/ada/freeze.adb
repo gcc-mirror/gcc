@@ -1408,7 +1408,7 @@ package body Freeze is
          --  care of all overridings and is done only once.
 
          if Present (Overridden_Operation (Prim))
-            and then Comes_From_Source (Prim)
+           and then Comes_From_Source (Prim)
          then
             Update_Primitives_Mapping (Overridden_Operation (Prim), Prim);
 
@@ -1444,9 +1444,7 @@ package body Freeze is
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
          Prim := Node (Op_Node);
-         if not Comes_From_Source (Prim)
-           and then Present (Alias (Prim))
-         then
+         if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
             A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
 
@@ -7663,18 +7661,37 @@ package body Freeze is
       --  Check for shaving
 
       if Comes_From_Source (Typ) then
-         if Orig_Lo < Expr_Value_R (Lo) then
-            Error_Msg_N
-              ("declared low bound of type & is outside type range??", Typ);
-            Error_Msg_N
-              ("\low bound adjusted up by delta (RM 3.5.9(13))??", Typ);
-         end if;
 
-         if Orig_Hi > Expr_Value_R (Hi) then
-            Error_Msg_N
-              ("declared high bound of type & is outside type range??", Typ);
-            Error_Msg_N
-              ("\high bound adjusted down by delta (RM 3.5.9(13))??", Typ);
+         --  In SPARK mode the given bounds must be strictly representable
+
+         if SPARK_Mode = On then
+            if Orig_Lo < Expr_Value_R (Lo) then
+               Error_Msg_NE
+                 ("declared low bound of type & is outside type range",
+                  Lo, Typ);
+            end if;
+
+            if Orig_Hi > Expr_Value_R (Hi) then
+               Error_Msg_NE
+                 ("declared high bound of type & is outside type range",
+                  Hi, Typ);
+            end if;
+
+         else
+            if Orig_Lo < Expr_Value_R (Lo) then
+               Error_Msg_N
+                 ("declared low bound of type & is outside type range??", Typ);
+               Error_Msg_N
+                 ("\low bound adjusted up by delta (RM 3.5.9(13))??", Typ);
+            end if;
+
+            if Orig_Hi > Expr_Value_R (Hi) then
+               Error_Msg_N
+                 ("declared high bound of type & is outside type range??",
+                  Typ);
+               Error_Msg_N
+                 ("\high bound adjusted down by delta (RM 3.5.9(13))??", Typ);
+            end if;
          end if;
       end if;
    end Freeze_Fixed_Point_Type;

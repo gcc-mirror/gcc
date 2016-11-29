@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "params.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "lto-partition.h"

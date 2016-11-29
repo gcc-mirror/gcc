@@ -27,8 +27,6 @@
 void test01()
 {
   // non POD types
-  bool test __attribute__((unused)) = true;
-  
   std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > vec01;
   typedef std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> >::size_type size_type;
 

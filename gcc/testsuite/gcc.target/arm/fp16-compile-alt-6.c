@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_fp16_alternative_ok } */
 /* { dg-options "-mfp16-format=alternative" } */
 
 /* This number is the maximum value representable in the alternative

@@ -156,15 +156,16 @@ variants.  And for some targets it is better to reuse an existing multilib
 than to fall back to default multilib when there is no corresponding multilib.
 This can be done by adding reuse rules to @code{MULTILIB_REUSE}.
 
-A reuse rule is comprised of two parts connected by equality sign.  The left part
-is option set used to build multilib and the right part is option set that will
-reuse this multilib.  The order of options in the left part matters and should be
-same with those specified in @code{MULTILIB_REQUIRED} or aligned with order in
-@code{MULTILIB_OPTIONS}.  There is no such limitation for options in right part
-as we don't build multilib from them.  But the equality sign in both parts should
-be replaced with period.
+A reuse rule is comprised of two parts connected by equality sign.  The left
+part is the option set used to build multilib and the right part is the option
+set that will reuse this multilib.  Both parts should only use options
+specified in @code{MULTILIB_OPTIONS} and the equality signs found in options
+name should be replaced with periods.  The order of options in the left part
+matters and should be same with those specified in @code{MULTILIB_REQUIRED} or
+aligned with the order in @code{MULTILIB_OPTIONS}.  There is no such limitation
+for options in the right part as we don't build multilib from them.
 
-The @code{MULTILIB_REUSE} is different from @code{MULTILIB_MATCHES} in that it
+@code{MULTILIB_REUSE} is different from @code{MULTILIB_MATCHES} in that it
 sets up relations between two option sets rather than two options.  Here is an
 example to demo how we reuse libraries built in Thumb mode for applications built
 in ARM mode:

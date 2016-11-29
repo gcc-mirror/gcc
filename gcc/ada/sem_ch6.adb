@@ -274,16 +274,16 @@ package body Sem_Ch6 is
       LocX : constant Source_Ptr := Sloc (Expr);
       Spec : constant Node_Id    := Specification (N);
 
-      Def_Id : Entity_Id;
+      Asp      : Node_Id;
+      Def_Id   : Entity_Id;
+      New_Body : Node_Id;
+      New_Spec : Node_Id;
+      Orig_N   : Node_Id;
+      Ret      : Node_Id;
 
       Prev : Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
-
-      New_Body : Node_Id;
-      New_Spec : Node_Id;
-      Ret      : Node_Id;
-      Asp      : Node_Id;
 
    begin
       --  This is one of the occasions on which we transform the tree during
@@ -392,12 +392,11 @@ package body Sem_Ch6 is
          Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
          Rewrite (N, New_Body);
 
-         --  Correct the parent pointer of the aspect specification list to
-         --  reference the rewritten node.
+         --  Remove any existing aspects from the original node because the act
+         --  of rewriting cases the list to be shared between the two nodes.
 
-         if Has_Aspects (N) then
-            Set_Parent (Aspect_Specifications (N), N);
-         end if;
+         Orig_N := Original_Node (N);
+         Remove_Aspects (Orig_N);
 
          --  Propagate any pragmas that apply to the expression function to the
          --  proper body when the expression function acts as a completion.
@@ -405,6 +404,14 @@ package body Sem_Ch6 is
 
          Relocate_Pragmas_To_Body (N);
          Analyze (N);
+
+         --  Once the aspects of the generated body has been analyzed, create a
+         --  copy for ASIS purposes and assciate it with the original node.
+
+         if Has_Aspects (N) then
+            Set_Aspect_Specifications (Orig_N,
+              New_Copy_List_Tree (Aspect_Specifications (N)));
+         end if;
 
          --  Prev is the previous entity with the same name, but it is can
          --  be an unrelated spec that is not completed by the expression
@@ -451,15 +458,21 @@ package body Sem_Ch6 is
 
          Rewrite (N, Make_Subprogram_Declaration (Loc, Specification => Spec));
 
-         --  Correct the parent pointer of the aspect specification list to
-         --  reference the rewritten node.
+         --  Remove any existing aspects from the original node because the act
+         --  of rewriting cases the list to be shared between the two nodes.
 
-         if Has_Aspects (N) then
-            Set_Parent (Aspect_Specifications (N), N);
-         end if;
+         Orig_N := Original_Node (N);
+         Remove_Aspects (Orig_N);
 
          Analyze (N);
-         Def_Id := Defining_Entity (N);
+
+         --  Once the aspects of the generated spec has been analyzed, create a
+         --  copy for ASIS purposes and assciate it with the original node.
+
+         if Has_Aspects (N) then
+            Set_Aspect_Specifications (Orig_N,
+              New_Copy_List_Tree (Aspect_Specifications (N)));
+         end if;
 
          --  If aspect SPARK_Mode was specified on the body, it needs to be
          --  repeated both on the generated spec and the body.
@@ -471,6 +484,8 @@ package body Sem_Ch6 is
             Set_Analyzed (Asp, False);
             Set_Aspect_Specifications (New_Body, New_List (Asp));
          end if;
+
+         Def_Id := Defining_Entity (N);
 
          --  Within a generic pre-analyze the original expression for name
          --  capture. The body is also generated but plays no role in
@@ -7307,11 +7322,9 @@ package body Sem_Ch6 is
    --------------------------
 
    procedure Create_Extra_Formals (E : Entity_Id) is
-      Formal      : Entity_Id;
       First_Extra : Entity_Id := Empty;
-      Last_Extra  : Entity_Id;
-      Formal_Type : Entity_Id;
-      P_Formal    : Entity_Id := Empty;
+      Formal      : Entity_Id;
+      Last_Extra  : Entity_Id := Empty;
 
       function Add_Extra_Formal
         (Assoc_Entity : Entity_Id;
@@ -7377,6 +7390,11 @@ package body Sem_Ch6 is
          return EF;
       end Add_Extra_Formal;
 
+      --  Local variables
+
+      Formal_Type : Entity_Id;
+      P_Formal    : Entity_Id := Empty;
+
    --  Start of processing for Create_Extra_Formals
 
    begin
@@ -7402,7 +7420,6 @@ package body Sem_Ch6 is
          P_Formal := First_Formal (Alias (E));
       end if;
 
-      Last_Extra := Empty;
       Formal := First_Formal (E);
       while Present (Formal) loop
          Last_Extra := Formal;
@@ -7548,6 +7565,7 @@ package body Sem_Ch6 is
             Result_Subt : constant Entity_Id := Etype (E);
             Full_Subt   : constant Entity_Id := Available_View (Result_Subt);
             Formal_Typ  : Entity_Id;
+            Subp_Decl   : Node_Id;
 
             Discard : Entity_Id;
             pragma Warnings (Off, Discard);
@@ -7629,6 +7647,26 @@ package body Sem_Ch6 is
               (Formal_Typ, From_Limited_With (Result_Subt));
 
             Layout_Type (Formal_Typ);
+
+            --  Force the definition of the Itype in case of internal function
+            --  calls within the same or nested scope.
+
+            if Is_Subprogram_Or_Generic_Subprogram (E) then
+               Subp_Decl := Parent (E);
+
+               --  The insertion point for an Itype reference should be after
+               --  the unit declaration node of the subprogram. An exception
+               --  to this are inherited operations from a parent type in which
+               --  case the derived type acts as their parent.
+
+               if Nkind_In (Subp_Decl, N_Function_Specification,
+                                       N_Procedure_Specification)
+               then
+                  Subp_Decl := Parent (Subp_Decl);
+               end if;
+
+               Build_Itype_Reference (Formal_Typ, Subp_Decl);
+            end if;
 
             Discard :=
               Add_Extra_Formal

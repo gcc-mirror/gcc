@@ -35,7 +35,6 @@ void test05()
   typedef filebuf::int_type 	int_type;
   typedef filebuf::traits_type 	traits_type;
 
-  bool test __attribute__((unused)) = true;
   int_type 			c2;
 
   // int_type snextc()

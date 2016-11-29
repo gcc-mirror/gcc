@@ -100,13 +100,13 @@
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
 #include "output.h"
 #include "expr.h"
 #include "params.h"
-#include "toplev.h" /* user_defined_section_attribute */
 #include "tree-pass.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
@@ -2354,7 +2354,10 @@ reorder_basic_blocks_simple (void)
      To start with, everything points to itself, nothing is assigned yet.  */
 
   FOR_ALL_BB_FN (bb, cfun)
-    bb->aux = bb;
+    {
+      bb->aux = bb;
+      bb->flags &= ~BB_VISITED;
+    }
 
   EXIT_BLOCK_PTR_FOR_FN (cfun)->aux = 0;
 
@@ -2583,11 +2586,101 @@ make_pass_reorder_blocks (gcc::context *ctxt)
   return new pass_reorder_blocks (ctxt);
 }
 
+/* Duplicate a block (that we already know ends in a computed jump) into its
+   predecessors, where possible.  Return whether anything is changed.  */
+static bool
+maybe_duplicate_computed_goto (basic_block bb, int max_size)
+{
+  if (single_pred_p (bb))
+    return false;
+
+  /* Make sure that the block is small enough.  */
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    if (INSN_P (insn))
+      {
+	max_size -= get_attr_min_length (insn);
+	if (max_size < 0)
+	   return false;
+      }
+
+  bool changed = false;
+  edge e;
+  edge_iterator ei;
+  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
+    {
+      basic_block pred = e->src;
+
+      /* Do not duplicate BB into PRED if that is the last predecessor, or if
+	 we cannot merge a copy of BB with PRED.  */
+      if (single_pred_p (bb)
+	  || !single_succ_p (pred)
+	  || e->flags & EDGE_COMPLEX
+	  || pred->index < NUM_FIXED_BLOCKS
+	  || (JUMP_P (BB_END (pred)) && !simplejump_p (BB_END (pred)))
+	  || (JUMP_P (BB_END (pred)) && CROSSING_JUMP_P (BB_END (pred))))
+	{
+	  ei_next (&ei);
+	  continue;
+	}
+
+      if (dump_file)
+	fprintf (dump_file, "Duplicating computed goto bb %d into bb %d\n",
+		 bb->index, e->src->index);
+
+      /* Remember if PRED can be duplicated; if so, the copy of BB merged
+	 with PRED can be duplicated as well.  */
+      bool can_dup_more = can_duplicate_block_p (pred);
+
+      /* Make a copy of BB, merge it into PRED.  */
+      basic_block copy = duplicate_block (bb, e, NULL);
+      emit_barrier_after_bb (copy);
+      reorder_insns_nobb (BB_HEAD (copy), BB_END (copy), BB_END (pred));
+      merge_blocks (pred, copy);
+
+      changed = true;
+
+      /* Try to merge the resulting merged PRED into further predecessors.  */
+      if (can_dup_more)
+	maybe_duplicate_computed_goto (pred, max_size);
+    }
+
+  return changed;
+}
+
 /* Duplicate the blocks containing computed gotos.  This basically unfactors
    computed gotos that were factored early on in the compilation process to
-   speed up edge based data flow.  We used to not unfactoring them again,
-   which can seriously pessimize code with many computed jumps in the source
-   code, such as interpreters.  See e.g. PR15242.  */
+   speed up edge based data flow.  We used to not unfactor them again, which
+   can seriously pessimize code with many computed jumps in the source code,
+   such as interpreters.  See e.g. PR15242.  */
+static void
+duplicate_computed_gotos (function *fun)
+{
+  /* We are estimating the length of uncond jump insn only once
+     since the code for getting the insn length always returns
+     the minimal length now.  */
+  if (uncond_jump_length == 0)
+    uncond_jump_length = get_uncond_jump_length ();
+
+  /* Never copy a block larger than this.  */
+  int max_size
+    = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
+
+  bool changed = false;
+
+  /* Try to duplicate all blocks that end in a computed jump and that
+     can be duplicated at all.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    if (computed_jump_p (BB_END (bb)) && can_duplicate_block_p (bb))
+      changed |= maybe_duplicate_computed_goto (bb, max_size);
+
+  /* Duplicating blocks will redirect edges and may cause hot blocks
+    previously reached by both hot and cold blocks to become dominated
+    only by cold blocks.  */
+  if (changed)
+    fixup_partitions ();
+}
 
 namespace {
 
@@ -2630,125 +2723,8 @@ pass_duplicate_computed_gotos::gate (function *fun)
 unsigned int
 pass_duplicate_computed_gotos::execute (function *fun)
 {
-  basic_block bb, new_bb;
-  bitmap candidates;
-  int max_size;
-  bool changed = false;
+  duplicate_computed_gotos (fun);
 
-  if (n_basic_blocks_for_fn (fun) <= NUM_FIXED_BLOCKS + 1)
-    return 0;
-
-  clear_bb_flags ();
-  cfg_layout_initialize (0);
-
-  /* We are estimating the length of uncond jump insn only once
-     since the code for getting the insn length always returns
-     the minimal length now.  */
-  if (uncond_jump_length == 0)
-    uncond_jump_length = get_uncond_jump_length ();
-
-  max_size
-    = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
-  candidates = BITMAP_ALLOC (NULL);
-
-  /* Look for blocks that end in a computed jump, and see if such blocks
-     are suitable for unfactoring.  If a block is a candidate for unfactoring,
-     mark it in the candidates.  */
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      rtx_insn *insn;
-      edge e;
-      edge_iterator ei;
-      int size, all_flags;
-
-      /* Build the reorder chain for the original order of blocks.  */
-      if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (fun))
-	bb->aux = bb->next_bb;
-
-      /* Obviously the block has to end in a computed jump.  */
-      if (!computed_jump_p (BB_END (bb)))
-	continue;
-
-      /* Only consider blocks that can be duplicated.  */
-      if (CROSSING_JUMP_P (BB_END (bb))
-	  || !can_duplicate_block_p (bb))
-	continue;
-
-      /* Make sure that the block is small enough.  */
-      size = 0;
-      FOR_BB_INSNS (bb, insn)
-	if (INSN_P (insn))
-	  {
-	    size += get_attr_min_length (insn);
-	    if (size > max_size)
-	       break;
-	  }
-      if (size > max_size)
-	continue;
-
-      /* Final check: there must not be any incoming abnormal edges.  */
-      all_flags = 0;
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	all_flags |= e->flags;
-      if (all_flags & EDGE_COMPLEX)
-	continue;
-
-      bitmap_set_bit (candidates, bb->index);
-    }
-
-  /* Nothing to do if there is no computed jump here.  */
-  if (bitmap_empty_p (candidates))
-    goto done;
-
-  /* Duplicate computed gotos.  */
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      if (bb->flags & BB_VISITED)
-	continue;
-
-      bb->flags |= BB_VISITED;
-
-      /* BB must have one outgoing edge.  That edge must not lead to
-	 the exit block or the next block.
-	 The destination must have more than one predecessor.  */
-      if (!single_succ_p (bb)
-	  || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (fun)
-	  || single_succ (bb) == bb->next_bb
-	  || single_pred_p (single_succ (bb)))
-	continue;
-
-      /* The successor block has to be a duplication candidate.  */
-      if (!bitmap_bit_p (candidates, single_succ (bb)->index))
-	continue;
-
-      /* Don't duplicate a partition crossing edge, which requires difficult
-         fixup.  */
-      if (JUMP_P (BB_END (bb)) && CROSSING_JUMP_P (BB_END (bb)))
-	continue;
-
-      new_bb = duplicate_block (single_succ (bb), single_succ_edge (bb), bb);
-      new_bb->aux = bb->aux;
-      bb->aux = new_bb;
-      new_bb->flags |= BB_VISITED;
-      changed = true;
-    }
-
- done:
-  if (changed)
-    {
-      /* Duplicating blocks above will redirect edges and may cause hot
-	 blocks previously reached by both hot and cold blocks to become
-	 dominated only by cold blocks.  */
-      fixup_partitions ();
-
-      /* Merge the duplicated blocks into predecessors, when possible.  */
-      cfg_layout_finalize ();
-      cleanup_cfg (0);
-    }
-  else
-    cfg_layout_finalize ();
-
-  BITMAP_FREE (candidates);
   return 0;
 }
 
@@ -2890,7 +2866,7 @@ pass_partition_blocks::gate (function *fun)
 	     we are going to omit the reordering.  */
 	  && optimize_function_for_speed_p (fun)
 	  && !DECL_COMDAT_GROUP (current_function_decl)
-	  && !user_defined_section_attribute);
+	  && !lookup_attribute ("section", DECL_ATTRIBUTES (fun->decl)));
 }
 
 unsigned

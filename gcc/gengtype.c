@@ -175,6 +175,7 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
 	{
 	case TYPE_UNDEFINED:
 	  nb_undefined++;
+	  break;
 	case TYPE_SCALAR:
 	  nb_scalar++;
 	  break;
@@ -743,10 +744,11 @@ new_structure (const char *name, enum typekind kind, struct fileloc *pos,
   type_p s = NULL;
   lang_bitmap bitmap = get_lang_bitmap (pos->file);
   bool isunion = (kind == TYPE_UNION);
+  type_p *p = &structures;
 
   gcc_assert (union_or_struct_p (kind));
 
-  for (si = structures; si != NULL; si = si->next)
+  for (si = structures; si != NULL; p = &si->next, si = *p)
     if (strcmp (name, si->u.s.tag) == 0 && UNION_P (si) == isunion)
       {
 	type_p ls = NULL;
@@ -792,8 +794,7 @@ new_structure (const char *name, enum typekind kind, struct fileloc *pos,
       type_count++;
       s = XCNEW (struct type);
       s->state_number = -type_count;
-      s->next = structures;
-      structures = s;
+      *p = s;
     }
 
   if (s->u.s.lang_struct && (s->u.s.lang_struct->u.s.bitmap & bitmap))
@@ -828,21 +829,20 @@ find_structure (const char *name, enum typekind kind)
 {
   type_p s;
   bool isunion = (kind == TYPE_UNION);
+  type_p *p = &structures;
 
   gcc_assert (kind == TYPE_UNDEFINED || union_or_struct_p (kind));
 
-  for (s = structures; s != NULL; s = s->next)
+  for (s = structures; s != NULL; p = &s->next, s = *p)
     if (strcmp (name, s->u.s.tag) == 0 && UNION_P (s) == isunion)
       return s;
 
   type_count++;
   s = XCNEW (struct type);
-  s->next = structures;
   s->state_number = -type_count;
-  structures = s;
   s->kind = kind;
   s->u.s.tag = name;
-  structures = s;
+  *p = s;
   return s;
 }
 
@@ -1709,14 +1709,14 @@ open_base_files (void)
       "config.h", "system.h", "coretypes.h", "backend.h", "predict.h", "tree.h",
       "rtl.h", "gimple.h", "fold-const.h", "insn-codes.h", "splay-tree.h",
       "alias.h", "insn-config.h", "flags.h", "expmed.h", "dojump.h",
-      "explow.h", "calls.h", "cilk.h", "emit-rtl.h", "varasm.h", "stmt.h",
-      "expr.h", "alloc-pool.h", "cselib.h", "insn-addr.h", "optabs.h",
-      "libfuncs.h", "debug.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
-      "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",
-      "tree-phinodes.h", "ssa-iterators.h", "stringpool.h", "tree-ssanames.h",
-      "tree-ssa-loop.h", "tree-ssa-loop-ivopts.h", "tree-ssa-loop-manip.h",
-      "tree-ssa-loop-niter.h", "tree-into-ssa.h", "tree-dfa.h", 
-      "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
+      "explow.h", "calls.h", "cilk.h", "memmodel.h", "emit-rtl.h", "varasm.h",
+      "stmt.h", "expr.h", "alloc-pool.h", "cselib.h", "insn-addr.h",
+      "optabs.h", "libfuncs.h", "debug.h", "internal-fn.h", "gimple-fold.h",
+      "tree-eh.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",
+      "tree-vrp.h", "tree-phinodes.h", "ssa-iterators.h", "stringpool.h",
+      "tree-ssanames.h", "tree-ssa-loop.h", "tree-ssa-loop-ivopts.h",
+      "tree-ssa-loop-manip.h", "tree-ssa-loop-niter.h", "tree-into-ssa.h",
+      "tree-dfa.h", "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
       "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
       "ipa-prop.h", "ipa-inline.h", "dwarf2out.h", "omp-low.h", NULL

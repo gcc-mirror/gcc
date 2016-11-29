@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::pair<const int, int> Pair;
   std::unordered_map<int, int> um1, um2;
   VERIFY( um1 == um2 );

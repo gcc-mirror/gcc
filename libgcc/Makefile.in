@@ -43,6 +43,11 @@ enable_vtable_verify = @enable_vtable_verify@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
 with_aix_soname = @with_aix_soname@
+enable_execute_stack = @enable_execute_stack@
+unwind_header = @unwind_header@
+md_unwind_header = @md_unwind_header@
+sfp_machine_header = @sfp_machine_header@
+thread_header = @thread_header@
 
 host_noncanonical = @host_noncanonical@
 real_host_noncanonical = @real_host_noncanonical@
@@ -250,10 +255,6 @@ LIB2FUNCS_ST = _eprintf __gcc_bcmp
 # List of functions not to build from libgcc2.c.
 LIB2FUNCS_EXCLUDE =
 
-# These might cause a divide overflow trap and so are compiled with
-# unwinder info.
-LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
-
 # List of extra C and assembler files to add to static and shared libgcc2.
 # Assembler files should have names ending in `.S'.
 LIB2ADD = 
@@ -345,6 +346,21 @@ SHLIBUNWIND_INSTALL =
 tmake_file = @tmake_file@
 include $(srcdir)/empty.mk $(tmake_file)
 
+# Create links to files specified in config.host.
+LIBGCC_LINKS = enable-execute-stack.c unwind.h md-unwind-support.h \
+               sfp-machine.h gthr-default.h
+
+enable-execute-stack.c: $(srcdir)/$(enable_execute_stack)
+	-$(LN_S) $< $@
+unwind.h: $(srcdir)/$(unwind_header)
+	-$(LN_S) $< $@
+md-unwind-support.h: $(srcdir)/config/$(md_unwind_header)
+	-$(LN_S) $< $@
+sfp-machine.h: $(srcdir)/config/$(sfp_machine_header)
+	-$(LN_S) $< $@
+gthr-default.h: $(srcdir)/$(thread_header)
+	-$(LN_S) $< $@
+
 # Collect target defines and headers from config.host.
 libgcc_tm_defines = @tm_defines@
 libgcc_tm_file = @tm_file@
@@ -414,8 +430,9 @@ lib2funcs = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _cmpdi2 _ucmpdi2	   \
 	    _negvsi2 _negvdi2 _ctors _ffssi2 _ffsdi2 _clz _clzsi2 _clzdi2  \
 	    _ctzsi2 _ctzdi2 _popcount_tab _popcountsi2 _popcountdi2	   \
 	    _paritysi2 _paritydi2 _powisf2 _powidf2 _powixf2 _powitf2	   \
-	    _mulsc3 _muldc3 _mulxc3 _multc3 _divsc3 _divdc3 _divxc3	   \
-	    _divtc3 _bswapsi2 _bswapdi2 _clrsbsi2 _clrsbdi2
+	    _mulhc3 _mulsc3 _muldc3 _mulxc3 _multc3 _divhc3 _divsc3	   \
+	    _divdc3 _divxc3 _divtc3 _bswapsi2 _bswapdi2 _clrsbsi2	   \
+	    _clrsbdi2
 
 # The floating-point conversion routines that involve a single-word integer.
 # XX stands for the integer mode.
@@ -434,7 +451,8 @@ endif
 
 # These might cause a divide overflow trap and so are compiled with
 # unwinder info.
-LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
+LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _divmoddi4 \
+		    _udivdi3 _umoddi3 _udivmoddi4 _udiv_w_sdiv
 
 # Remove any objects from lib2funcs and LIB2_DIVMOD_FUNCS that are
 # defined as optimized assembly code in LIB1ASMFUNCS or as C code
@@ -856,12 +874,20 @@ include $(iterator)
 
 # Build libgcov components.
 
-LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_single _gcov_merge_delta	\
+LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_single			\
 	_gcov_merge_ior _gcov_merge_time_profile _gcov_merge_icall_topn
-LIBGCOV_PROFILER = _gcov_interval_profiler _gcov_pow2_profiler		\
-	_gcov_one_value_profiler _gcov_indirect_call_profiler		\
- 	_gcov_average_profiler _gcov_ior_profiler			\
-	_gcov_indirect_call_profiler_v2 _gcov_time_profiler		\
+LIBGCOV_PROFILER = _gcov_interval_profiler				\
+	_gcov_interval_profiler_atomic					\
+	_gcov_pow2_profiler						\
+	_gcov_pow2_profiler_atomic					\
+	_gcov_one_value_profiler					\
+	_gcov_one_value_profiler_atomic					\
+	_gcov_average_profiler						\
+	_gcov_average_profiler_atomic					\
+	_gcov_ior_profiler						\
+	_gcov_ior_profiler_atomic					\
+	_gcov_indirect_call_profiler_v2					\
+	_gcov_time_profiler						\
 	_gcov_indirect_call_topn_profiler
 LIBGCOV_INTERFACE = _gcov_dump _gcov_flush _gcov_fork			\
 	_gcov_execl _gcov_execlp					\
@@ -1060,10 +1086,10 @@ all: $(extra-parts)
 $(libgcc-objects) $(libgcc-s-objects) $(libgcc-eh-objects) \
 	$(libgcov-objects) \
 	$(libunwind-objects) $(libunwind-s-objects) \
-	$(EXTRA_PARTS): libgcc_tm.h
+	$(EXTRA_PARTS): $(LIBGCC_LINKS) libgcc_tm.h
 
 # Copy unwind.h to the place where gcc will look for it at build-time
-install-unwind_h-forbuild:
+install-unwind_h-forbuild: unwind.h
 	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \
 	cp unwind.h $$dest; \
 	chmod a+r $$dest; \

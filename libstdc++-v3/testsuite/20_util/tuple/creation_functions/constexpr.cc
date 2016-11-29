@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -24,9 +23,6 @@
 // changes this test may begin to fail.
 
 #include <tuple>
-
-bool test __attribute__((unused)) = true;
-
 
 // make_tuple
 void

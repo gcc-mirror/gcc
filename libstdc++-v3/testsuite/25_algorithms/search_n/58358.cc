@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 25.1.9 [lib.alg.search]
 
@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> a{2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
   int count = 0;
   std::search_n(a.begin(), a.end(), 10, 1,

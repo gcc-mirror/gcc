@@ -1,3 +1,26 @@
+2016-09-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR documentation/50642 
+	* update_web_docs_svn (CSS): Introduce.
+	Have generated files refer to it.
+
+2016-08-17  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Describe the script. Add sample usage
+	of the script.
+
+2016-08-03  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: New file.
+
+2016-07-26  Richard Biener  <rguenther@suse.de>
+
+	* update_version_svn: Ignore the GCC 4.9 branch.
+
+2016-07-26  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Remove entry for the GCC 4.9 branch.
+
 2016-06-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* generate_libstdcxx_web_docs: Use realpath to get absolute path.

@@ -344,14 +344,17 @@ c_pretty_printer::simple_type_specifier (tree t)
       else
 	{
 	  int prec = TYPE_PRECISION (t);
+	  tree common_t;
 	  if (ALL_FIXED_POINT_MODE_P (TYPE_MODE (t)))
-	    t = c_common_type_for_mode (TYPE_MODE (t), TYPE_SATURATING (t));
+	    common_t = c_common_type_for_mode (TYPE_MODE (t),
+					       TYPE_SATURATING (t));
 	  else
-	    t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
-	  if (TYPE_NAME (t))
+	    common_t = c_common_type_for_mode (TYPE_MODE (t),
+					       TYPE_UNSIGNED (t));
+	  if (common_t && TYPE_NAME (common_t))
 	    {
-	      simple_type_specifier (t);
-	      if (TYPE_PRECISION (t) != prec)
+	      simple_type_specifier (common_t);
+	      if (TYPE_PRECISION (common_t) != prec)
 		{
 		  pp_colon (this);
 		  pp_decimal_int (this, prec);
@@ -1045,6 +1048,16 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
     pp_string (pp, "dd");
   else if (TREE_TYPE (r) == dfloat32_type_node)
     pp_string (pp, "df");
+  else if (TREE_TYPE (r) != double_type_node)
+    for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+      if (TREE_TYPE (r) == FLOATN_NX_TYPE_NODE (i))
+	{
+	  pp_character (pp, 'f');
+	  pp_decimal_int (pp, floatn_nx_types[i].n);
+	  if (floatn_nx_types[i].extended)
+	    pp_character (pp, 'x');
+	  break;
+	}
 }
 
 /* Print out a FIXED value as a decimal-floating-constant.  */
@@ -1662,7 +1675,7 @@ c_pretty_printer::postfix_expression (tree e)
           id_expression (TREE_OPERAND (e, 0));
 	  break;
 	}
-      /* else fall through.  */
+      /* fall through.  */
 
     default:
       primary_expression (e);

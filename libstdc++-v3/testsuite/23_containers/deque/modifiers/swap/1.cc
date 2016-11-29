@@ -33,7 +33,6 @@ namespace std
 // Should use deque specialization for swap.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::deque<T> A;
   std::deque<T> B;
   swap_calls = 0;
@@ -44,7 +43,6 @@ void test01()
 // Should use deque specialization for swap.
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   deque<T> A;
   deque<T> B;

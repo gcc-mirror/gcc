@@ -89,6 +89,7 @@
 #undef TARGET_DEBUG_UNWIND_INFO
 #define TARGET_DEBUG_UNWIND_INFO  rs6000_xcoff_debug_unwind_info
 #define TARGET_ASM_OUTPUT_ANCHOR  rs6000_xcoff_asm_output_anchor
+#define TARGET_ASM_GLOBALIZE_DECL_NAME  rs6000_xcoff_asm_globalize_decl_name
 #define TARGET_ASM_GLOBALIZE_LABEL  rs6000_xcoff_asm_globalize_label
 #define TARGET_ASM_INIT_SECTIONS  rs6000_xcoff_asm_init_sections
 #define TARGET_ASM_RELOC_RW_MASK  rs6000_xcoff_reloc_rw_mask
@@ -102,6 +103,7 @@
 #ifdef HAVE_AS_TLS
 #define TARGET_ENCODE_SECTION_INFO rs6000_xcoff_encode_section_info
 #endif
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON  rs6000_xcoff_asm_output_aligned_decl_common
 
 /* FP save and restore routines.  */
 #define	SAVE_FP_PREFIX "._savef"
@@ -169,7 +171,7 @@
       fputs ("\t.extern .", FILE);					\
       RS6000_OUTPUT_BASENAME (FILE, buffer);				\
       putc ('\n', FILE);						\
-      fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);		\
+      fprintf (FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);		\
     }									\
 }
 
@@ -216,18 +218,6 @@
    to define a global common symbol.  */
 
 #define COMMON_ASM_OP "\t.comm "
-
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)	\
-  do { fputs (COMMON_ASM_OP, (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       if ((ALIGN) > 32)				\
-	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", (SIZE), \
-		  floor_log2 ((ALIGN) / BITS_PER_UNIT)); \
-       else if ((SIZE) > 4)				\
-         fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",3\n", (SIZE)); \
-       else						\
-	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)); \
-  } while (0)
 
 /* This says how to output an assembler line
    to define a local common symbol.
@@ -312,6 +302,9 @@
 
 #define EH_FRAME_THROUGH_COLLECT2 1
 #define EH_TABLES_CAN_BE_READ_ONLY 1
+
+/* AIX Assembler implicitly assumes DWARF 64 bit extension in 64 bit mode.  */
+#define DWARF_OFFSET_SIZE PTR_SIZE
 
 #define ASM_OUTPUT_DWARF_PCREL(FILE,SIZE,LABEL) \
   rs6000_asm_output_dwarf_pcrel ((FILE), (SIZE), (LABEL));

@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const char* lit01 = "stereolab on the bolsinga tip";
   const std::string str01(lit01);
 

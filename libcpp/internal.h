@@ -754,7 +754,9 @@ struct normalize_state
 extern bool _cpp_valid_ucn (cpp_reader *, const unsigned char **,
 			    const unsigned char *, int,
 			    struct normalize_state *state,
-			    cppchar_t *);
+			    cppchar_t *,
+			    source_range *char_range,
+			    cpp_string_location_reader *loc_reader);
 extern void _cpp_destroy_iconv (cpp_reader *);
 extern unsigned char *_cpp_convert_input (cpp_reader *, const char *,
 					  unsigned char *, size_t, size_t,

@@ -23,8 +23,6 @@
 // libstdc++/24064
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std::tr1;
   using std::allocator;
   using std::pair;

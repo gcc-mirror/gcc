@@ -4,6 +4,8 @@
 
 package runtime
 
+import "unsafe"
+
 // The Error interface identifies a run time error.
 type Error interface {
 	error
@@ -107,10 +109,8 @@ type errorCString struct{ cstr uintptr }
 
 func (e errorCString) RuntimeError() {}
 
-func cstringToGo(uintptr) string
-
 func (e errorCString) Error() string {
-	return "runtime error: " + cstringToGo(e.cstr)
+	return "runtime error: " + gostringnocopy((*byte)(unsafe.Pointer(e.cstr)))
 }
 
 // For calling from C.
@@ -133,13 +133,16 @@ type stringer interface {
 	String() string
 }
 
-func typestring(interface{}) string
+func typestring(x interface{}) string {
+	e := efaceOf(&x)
+	return *e._type.string
+}
 
 // For calling from C.
 // Prints an argument passed to panic.
 // There's room for arbitrary complexity here, but we keep it
 // simple and handle just a few important cases: int, string, and Stringer.
-func Printany(i interface{}) {
+func printany(i interface{}) {
 	switch v := i.(type) {
 	case nil:
 		print("nil")

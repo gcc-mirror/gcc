@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::map<int, int> m;
 
   VERIFY( (m.max_size() == std::allocator<std::_Rb_tree_node<

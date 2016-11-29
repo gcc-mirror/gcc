@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
@@ -24,7 +23,6 @@
 
 #include <string>
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests basic_regex assignment operator from a C++ string;
 void test01()

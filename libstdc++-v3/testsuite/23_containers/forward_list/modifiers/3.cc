@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<int> fl({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();
@@ -52,8 +50,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<int> fl({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();

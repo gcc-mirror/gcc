@@ -16,17 +16,15 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <string>
 #include <testsuite_hooks.h>
 
 using namespace std;
 
-int test01(void)
+void test01(void)
 {
-  bool test = true;
-
   string s1 = { 'a', 'b', 'c' };
   VERIFY(s1 == "abc");
 
@@ -60,8 +58,6 @@ int test01(void)
   i2 = i1+6;
   s1.replace(i1, i2, { 'y', 'z' });
   VERIFY(s1 == "mnyzo");
-
-  return test;
 }
 
 int main()

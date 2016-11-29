@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++11 -funsigned-char -fshort-enums" }
-// { dg-options "-std=gnu++11 -funsigned-char -fshort-enums -Wl,--no-enum-size-warning" { target arm*-*-linux-* } }
-// { dg-do compile }
+// { dg-options "-funsigned-char -fshort-enums" }
+// { dg-do compile { target c++11 } }
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
@@ -60,6 +59,7 @@ void test01()
   typedef make_unsigned<test_enum>::type  	  test24_type;
   static_assert(is_same<test24_type, unsigned short>::value, "");
 
+#ifndef __STRICT_ANSI__
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
   typedef make_unsigned<unsigned __int128>::type  test25_type;
@@ -67,5 +67,6 @@ void test01()
 
   typedef make_unsigned<__int128>::type  	  test26_type;
   static_assert(is_same<test26_type, unsigned __int128>::value, "");
+#endif
 #endif
 }

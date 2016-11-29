@@ -19,7 +19,6 @@
 #include "defs.h"
 #include "malloc.h"
 #include "go-type.h"
-#include "go-defer.h"
 
 #ifdef USING_SPLIT_STACK
 
@@ -62,7 +61,6 @@ static void gtraceback(G*);
 #endif
 
 static __thread G *g;
-static __thread M *m;
 
 #ifndef SETCONTEXT_CLOBBERS_TLS
 
@@ -158,6 +156,26 @@ fixcontext(ucontext_t *c)
 
 #endif
 
+// ucontext_arg returns a properly aligned ucontext_t value.  On some
+// systems a ucontext_t value must be aligned to a 16-byte boundary.
+// The g structure that has fields of type ucontext_t is defined in
+// Go, and Go has no simple way to align a field to such a boundary.
+// So we make the field larger in runtime2.go and pick an appropriate
+// offset within the field here.
+static ucontext_t*
+ucontext_arg(void** go_ucontext)
+{
+	uintptr_t p = (uintptr_t)go_ucontext;
+	size_t align = __alignof__(ucontext_t);
+	if(align > 16) {
+		// We only ensured space for up to a 16 byte alignment
+		// in libgo/go/runtime/runtime2.go.
+		runtime_throw("required alignment of ucontext_t too large");
+	}
+	p = (p + align - 1) &~ (uintptr_t)(align - 1);
+	return (ucontext_t*)p;
+}
+
 // We can not always refer to the TLS variables directly.  The
 // compiler will call tls_get_addr to get the address of the variable,
 // and it may hold it in a register across a call to schedule.  When
@@ -179,14 +197,15 @@ M* runtime_m(void) __attribute__ ((noinline, no_split_stack));
 M*
 runtime_m(void)
 {
-	return m;
+	if(g == nil)
+		return nil;
+	return g->m;
 }
 
-// Set m and g.
+// Set g.
 void
-runtime_setmg(M* mp, G* gp)
+runtime_setg(G* gp)
 {
-	m = mp;
 	g = gp;
 }
 
@@ -227,13 +246,16 @@ static void
 kickoff(void)
 {
 	void (*fn)(void*);
+	void *param;
 
 	if(g->traceback != nil)
 		gtraceback(g);
 
 	fn = (void (*)(void*))(g->entry);
-	fn(g->param);
-	runtime_goexit();
+	param = g->param;
+	g->param = nil;
+	fn(param);
+	runtime_goexit1();
 }
 
 // Switch context to a different goroutine.  This is like longjmp.
@@ -242,12 +264,12 @@ void
 runtime_gogo(G* newg)
 {
 #ifdef USING_SPLIT_STACK
-	__splitstack_setcontext(&newg->stack_context[0]);
+	__splitstack_setcontext(&newg->stackcontext[0]);
 #endif
 	g = newg;
 	newg->fromgogo = true;
-	fixcontext(&newg->context);
-	setcontext(&newg->context);
+	fixcontext(ucontext_arg(&newg->context[0]));
+	setcontext(ucontext_arg(&newg->context[0]));
 	runtime_throw("gogo setcontext returned");
 }
 
@@ -261,42 +283,47 @@ runtime_mcall(void (*pfn)(G*))
 {
 	M *mp;
 	G *gp;
+#ifndef USING_SPLIT_STACK
+	void *afterregs;
+#endif
 
 	// Ensure that all registers are on the stack for the garbage
 	// collector.
 	__builtin_unwind_init();
 
-	mp = m;
 	gp = g;
+	mp = gp->m;
 	if(gp == mp->g0)
 		runtime_throw("runtime: mcall called on m->g0 stack");
 
 	if(gp != nil) {
 
 #ifdef USING_SPLIT_STACK
-		__splitstack_getcontext(&g->stack_context[0]);
+		__splitstack_getcontext(&g->stackcontext[0]);
 #else
-		gp->gcnext_sp = &pfn;
+		// We have to point to an address on the stack that is
+		// below the saved registers.
+		gp->gcnextsp = &afterregs;
 #endif
 		gp->fromgogo = false;
-		getcontext(&gp->context);
+		getcontext(ucontext_arg(&gp->context[0]));
 
 		// When we return from getcontext, we may be running
-		// in a new thread.  That means that m and g may have
-		// changed.  They are global variables so we will
-		// reload them, but the addresses of m and g may be
-		// cached in our local stack frame, and those
-		// addresses may be wrong.  Call functions to reload
-		// the values for this thread.
-		mp = runtime_m();
+		// in a new thread.  That means that g may have
+		// changed.  It is a global variables so we will
+		// reload it, but the address of g may be cached in
+		// our local stack frame, and that address may be
+		// wrong.  Call the function to reload the value for
+		// this thread.
 		gp = runtime_g();
+		mp = gp->m;
 
 		if(gp->traceback != nil)
 			gtraceback(gp);
 	}
 	if (gp == nil || !gp->fromgogo) {
 #ifdef USING_SPLIT_STACK
-		__splitstack_setcontext(&mp->g0->stack_context[0]);
+		__splitstack_setcontext(&mp->g0->stackcontext[0]);
 #endif
 		mp->g0->entry = (byte*)pfn;
 		mp->g0->param = gp;
@@ -306,8 +333,8 @@ runtime_mcall(void (*pfn)(G*))
 		// the getcontext call just above.
 		g = mp->g0;
 
-		fixcontext(&mp->g0->context);
-		setcontext(&mp->g0->context);
+		fixcontext(ucontext_arg(&mp->g0->context[0]));
+		setcontext(ucontext_arg(&mp->g0->context[0]));
 		runtime_throw("runtime: mcall function returned");
 	}
 }
@@ -324,52 +351,16 @@ runtime_mcall(void (*pfn)(G*))
 //
 // Design doc at http://golang.org/s/go11sched.
 
-typedef struct Sched Sched;
-struct Sched {
-	Lock;
-
-	uint64	goidgen;
-	M*	midle;	 // idle m's waiting for work
-	int32	nmidle;	 // number of idle m's waiting for work
-	int32	nmidlelocked; // number of locked m's waiting for work
-	int32	mcount;	 // number of m's that have been created
-	int32	maxmcount;	// maximum number of m's allowed (or die)
-
-	P*	pidle;  // idle P's
-	uint32	npidle;
-	uint32	nmspinning;
-
-	// Global runnable queue.
-	G*	runqhead;
-	G*	runqtail;
-	int32	runqsize;
-
-	// Global cache of dead G's.
-	Lock	gflock;
-	G*	gfree;
-
-	uint32	gcwaiting;	// gc is waiting to run
-	int32	stopwait;
-	Note	stopnote;
-	uint32	sysmonwait;
-	Note	sysmonnote;
-	uint64	lastpoll;
-
-	int32	profilehz;	// cpu profiling rate
-};
-
 enum
 {
-	// The max value of GOMAXPROCS.
-	// There are no fundamental restrictions on the value.
-	MaxGomaxprocs = 1<<8,
-
-	// Number of goroutine ids to grab from runtime_sched.goidgen to local per-P cache at once.
+	// Number of goroutine ids to grab from runtime_sched->goidgen to local per-P cache at once.
 	// 16 seems to provide enough amortization, but other than that it's mostly arbitrary number.
 	GoidCacheBatch = 16,
 };
 
-Sched	runtime_sched;
+extern Sched* runtime_getsched() __asm__ (GOSYM_PREFIX "runtime.getsched");
+
+Sched*	runtime_sched;
 int32	runtime_gomaxprocs;
 uint32	runtime_needextram = 1;
 M	runtime_m0;
@@ -442,10 +433,13 @@ bool runtime_isstarted;
 void
 runtime_schedinit(void)
 {
+	M *m;
 	int32 n, procs;
 	String s;
 	const byte *p;
 	Eface i;
+
+	runtime_sched = runtime_getsched();
 
 	m = &runtime_m0;
 	g = &runtime_g0;
@@ -455,7 +449,7 @@ runtime_schedinit(void)
 
 	initcontext();
 
-	runtime_sched.maxmcount = 10000;
+	runtime_sched->maxmcount = 10000;
 	runtime_precisestack = 0;
 
 	// runtime_symtabinit();
@@ -476,20 +470,20 @@ runtime_schedinit(void)
 	runtime_goenvs();
 	runtime_parsedebugvars();
 
-	runtime_sched.lastpoll = runtime_nanotime();
+	runtime_sched->lastpoll = runtime_nanotime();
 	procs = 1;
 	s = runtime_getenv("GOMAXPROCS");
 	p = s.str;
 	if(p != nil && (n = runtime_atoi(p, s.len)) > 0) {
-		if(n > MaxGomaxprocs)
-			n = MaxGomaxprocs;
+		if(n > _MaxGomaxprocs)
+			n = _MaxGomaxprocs;
 		procs = n;
 	}
-	runtime_allp = runtime_malloc((MaxGomaxprocs+1)*sizeof(runtime_allp[0]));
+	runtime_allp = runtime_malloc((_MaxGomaxprocs+1)*sizeof(runtime_allp[0]));
 	procresize(procs);
 
 	// Can not enable GC until all roots are registered.
-	// mstats.enablegc = 1;
+	// mstats()->enablegc = 1;
 }
 
 extern void main_init(void) __asm__ (GOSYM_PREFIX "__go_init_main");
@@ -530,9 +524,9 @@ static struct __go_channel_type chan_bool_type_descriptor =
       /* __hash */
       0, /* This value doesn't matter.  */
       /* __hashfn */
-      &__go_type_hash_error_descriptor,
+      NULL,
       /* __equalfn */
-      &__go_type_equal_error_descriptor,
+      NULL,
       /* __gc */
       NULL, /* This value doesn't matter */
       /* __reflection */
@@ -548,7 +542,8 @@ static struct __go_channel_type chan_bool_type_descriptor =
     CHANNEL_BOTH_DIR
   };
 
-extern Hchan *__go_new_channel (ChanType *, uintptr);
+extern Hchan *makechan (ChanType *, int64)
+  __asm__ (GOSYM_PREFIX "runtime.makechan");
 extern void closechan(Hchan *) __asm__ (GOSYM_PREFIX "runtime.closechan");
 
 static void
@@ -583,21 +578,21 @@ runtime_main(void* dummy __attribute__((unused)))
 	runtime_lockOSThread();
 	
 	// Defer unlock so that runtime.Goexit during init does the unlock too.
-	d.__pfn = initDone;
-	d.__next = g->defer;
-	d.__arg = (void*)-1;
-	d.__panic = g->panic;
-	d.__retaddr = nil;
-	d.__makefunc_can_recover = 0;
-	d.__frame = &frame;
-	d.__special = true;
-	g->defer = &d;
+	d.pfn = (uintptr)(void*)initDone;
+	d.link = g->_defer;
+	d.arg = (void*)-1;
+	d._panic = g->_panic;
+	d.retaddr = 0;
+	d.makefunccanrecover = 0;
+	d.frame = &frame;
+	d.special = true;
+	g->_defer = &d;
 
-	if(m != &runtime_m0)
+	if(g->m != &runtime_m0)
 		runtime_throw("runtime_main not on m0");
 	__go_go(runtime_MHeap_Scavenger, nil);
 
-	runtime_main_init_done = __go_new_channel(&chan_bool_type_descriptor, 0);
+	runtime_main_init_done = makechan(&chan_bool_type_descriptor, 0);
 
 	_cgo_notify_runtime_init_done();
 
@@ -605,15 +600,15 @@ runtime_main(void* dummy __attribute__((unused)))
 
 	closechan(runtime_main_init_done);
 
-	if(g->defer != &d || d.__pfn != initDone)
+	if(g->_defer != &d || (void*)d.pfn != initDone)
 		runtime_throw("runtime: bad defer entry after init");
-	g->defer = d.__next;
+	g->_defer = d.link;
 	runtime_unlockOSThread();
 
 	// For gccgo we have to wait until after main is initialized
 	// to enable GC, because initializing main registers the GC
 	// roots.
-	mstats.enablegc = 1;
+	mstats()->enablegc = 1;
 
 	if(runtime_isarchive) {
 		// This is not a complete program, but is instead a
@@ -629,7 +624,7 @@ runtime_main(void* dummy __attribute__((unused)))
 	// another goroutine at the same time as main returns,
 	// let the other goroutine finish printing the panic trace.
 	// Once it does, it will exit. See issue 3934.
-	if(runtime_panicking)
+	if(runtime_panicking())
 		runtime_park(nil, nil, "panicwait");
 
 	runtime_exit(0);
@@ -638,102 +633,43 @@ runtime_main(void* dummy __attribute__((unused)))
 }
 
 void
-runtime_goroutineheader(G *gp)
-{
-	const char *status;
-	int64 waitfor;
-
-	switch(gp->status) {
-	case Gidle:
-		status = "idle";
-		break;
-	case Grunnable:
-		status = "runnable";
-		break;
-	case Grunning:
-		status = "running";
-		break;
-	case Gsyscall:
-		status = "syscall";
-		break;
-	case Gwaiting:
-		if(gp->waitreason)
-			status = gp->waitreason;
-		else
-			status = "waiting";
-		break;
-	default:
-		status = "???";
-		break;
-	}
-
-	// approx time the G is blocked, in minutes
-	waitfor = 0;
-	if((gp->status == Gwaiting || gp->status == Gsyscall) && gp->waitsince != 0)
-		waitfor = (runtime_nanotime() - gp->waitsince) / (60LL*1000*1000*1000);
-
-	if(waitfor < 1)
-		runtime_printf("goroutine %D [%s]:\n", gp->goid, status);
-	else
-		runtime_printf("goroutine %D [%s, %D minutes]:\n", gp->goid, status, waitfor);
-}
-
-void
-runtime_printcreatedby(G *g)
-{
-	if(g != nil && g->gopc != 0 && g->goid != 1) {
-		String fn;
-		String file;
-		intgo line;
-
-		if(__go_file_line(g->gopc - 1, -1, &fn, &file, &line)) {
-			runtime_printf("created by %S\n", fn);
-			runtime_printf("\t%S:%D\n", file, (int64) line);
-		}
-	}
-}
-
-struct Traceback
-{
-	G* gp;
-	Location locbuf[TracebackMaxFrames];
-	int32 c;
-};
-
-void
 runtime_tracebackothers(G * volatile me)
 {
 	G * volatile gp;
 	Traceback tb;
 	int32 traceback;
+	Slice slice;
 	volatile uintptr i;
 
 	tb.gp = me;
 	traceback = runtime_gotraceback(nil);
 	
 	// Show the current goroutine first, if we haven't already.
-	if((gp = m->curg) != nil && gp != me) {
+	if((gp = g->m->curg) != nil && gp != me) {
 		runtime_printf("\n");
 		runtime_goroutineheader(gp);
 		gp->traceback = &tb;
 
 #ifdef USING_SPLIT_STACK
-		__splitstack_getcontext(&me->stack_context[0]);
+		__splitstack_getcontext(&me->stackcontext[0]);
 #endif
-		getcontext(&me->context);
+		getcontext(ucontext_arg(&me->context[0]));
 
 		if(gp->traceback != nil) {
 		  runtime_gogo(gp);
 		}
 
-		runtime_printtrace(tb.locbuf, tb.c, false);
+		slice.__values = &tb.locbuf[0];
+		slice.__count = tb.c;
+		slice.__capacity = tb.c;
+		runtime_printtrace(slice, nil);
 		runtime_printcreatedby(gp);
 	}
 
 	runtime_lock(&allglock);
 	for(i = 0; i < runtime_allglen; i++) {
 		gp = runtime_allg[i];
-		if(gp == me || gp == m->curg || gp->status == Gdead)
+		if(gp == me || gp == g->m->curg || gp->atomicstatus == _Gdead)
 			continue;
 		if(gp->issystem && traceback < 2)
 			continue;
@@ -749,25 +685,28 @@ runtime_tracebackothers(G * volatile me)
 		// This means that if g is running or in a syscall, we
 		// can't reliably print a stack trace.  FIXME.
 
-		if(gp->status == Grunning) {
+		if(gp->atomicstatus == _Grunning) {
 			runtime_printf("\tgoroutine running on other thread; stack unavailable\n");
 			runtime_printcreatedby(gp);
-		} else if(gp->status == Gsyscall) {
+		} else if(gp->atomicstatus == _Gsyscall) {
 			runtime_printf("\tgoroutine in C code; stack unavailable\n");
 			runtime_printcreatedby(gp);
 		} else {
 			gp->traceback = &tb;
 
 #ifdef USING_SPLIT_STACK
-			__splitstack_getcontext(&me->stack_context[0]);
+			__splitstack_getcontext(&me->stackcontext[0]);
 #endif
-			getcontext(&me->context);
+			getcontext(ucontext_arg(&me->context[0]));
 
 			if(gp->traceback != nil) {
 				runtime_gogo(gp);
 			}
 
-			runtime_printtrace(tb.locbuf, tb.c, false);
+			slice.__values = &tb.locbuf[0];
+			slice.__count = tb.c;
+			slice.__capacity = tb.c;
+			runtime_printtrace(slice, nil);
 			runtime_printcreatedby(gp);
 		}
 	}
@@ -778,8 +717,8 @@ static void
 checkmcount(void)
 {
 	// sched lock is held
-	if(runtime_sched.mcount > runtime_sched.maxmcount) {
-		runtime_printf("runtime: program exceeds %d-thread limit\n", runtime_sched.maxmcount);
+	if(runtime_sched->mcount > runtime_sched->maxmcount) {
+		runtime_printf("runtime: program exceeds %d-thread limit\n", runtime_sched->maxmcount);
 		runtime_throw("thread exhaustion");
 	}
 }
@@ -794,8 +733,12 @@ gtraceback(G* gp)
 
 	traceback = gp->traceback;
 	gp->traceback = nil;
+	if(gp->m != nil)
+		runtime_throw("gtraceback: m is not nil");
+	gp->m = traceback->gp->m;
 	traceback->c = runtime_callers(1, traceback->locbuf,
 		sizeof traceback->locbuf / sizeof traceback->locbuf[0], false);
+	gp->m = nil;
 	runtime_gogo(traceback->gp);
 }
 
@@ -804,13 +747,13 @@ mcommoninit(M *mp)
 {
 	// If there is no mcache runtime_callers() will crash,
 	// and we are most likely in sysmon thread so the stack is senseless anyway.
-	if(m->mcache)
+	if(g->m->mcache)
 		runtime_callers(1, mp->createstack, nelem(mp->createstack), false);
 
 	mp->fastrand = 0x49f6428aUL + mp->id + runtime_cputicks();
 
-	runtime_lock(&runtime_sched);
-	mp->id = runtime_sched.mcount++;
+	runtime_lock(&runtime_sched->lock);
+	mp->id = runtime_sched->mcount++;
 	checkmcount();
 	runtime_mpreinit(mp);
 
@@ -820,7 +763,7 @@ mcommoninit(M *mp)
 	// runtime_NumCgoCall() iterates over allm w/o schedlock,
 	// so we need to publish it safely.
 	runtime_atomicstorep(&runtime_allm, mp);
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 }
 
 // Mark gp ready to run.
@@ -828,16 +771,24 @@ void
 runtime_ready(G *gp)
 {
 	// Mark runnable.
-	m->locks++;  // disable preemption because it can be holding p in a local var
-	if(gp->status != Gwaiting) {
-		runtime_printf("goroutine %D has status %d\n", gp->goid, gp->status);
-		runtime_throw("bad g->status in ready");
+	g->m->locks++;  // disable preemption because it can be holding p in a local var
+	if(gp->atomicstatus != _Gwaiting) {
+		runtime_printf("goroutine %D has status %d\n", gp->goid, gp->atomicstatus);
+		runtime_throw("bad g->atomicstatus in ready");
 	}
-	gp->status = Grunnable;
-	runqput(m->p, gp);
-	if(runtime_atomicload(&runtime_sched.npidle) != 0 && runtime_atomicload(&runtime_sched.nmspinning) == 0)  // TODO: fast atomic
+	gp->atomicstatus = _Grunnable;
+	runqput((P*)g->m->p, gp);
+	if(runtime_atomicload(&runtime_sched->npidle) != 0 && runtime_atomicload(&runtime_sched->nmspinning) == 0)  // TODO: fast atomic
 		wakep();
-	m->locks--;
+	g->m->locks--;
+}
+
+void goready(G*, int) __asm__ (GOSYM_PREFIX "runtime.goready");
+
+void
+goready(G* gp, int traceskip __attribute__ ((unused)))
+{
+	runtime_ready(gp);
 }
 
 int32
@@ -847,15 +798,15 @@ runtime_gcprocs(void)
 
 	// Figure out how many CPUs to use during GC.
 	// Limited by gomaxprocs, number of actual CPUs, and MaxGcproc.
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	n = runtime_gomaxprocs;
 	if(n > runtime_ncpu)
 		n = runtime_ncpu > 0 ? runtime_ncpu : 1;
 	if(n > MaxGcproc)
 		n = MaxGcproc;
-	if(n > runtime_sched.nmidle+1) // one M is currently running
-		n = runtime_sched.nmidle+1;
-	runtime_unlock(&runtime_sched);
+	if(n > runtime_sched->nmidle+1) // one M is currently running
+		n = runtime_sched->nmidle+1;
+	runtime_unlock(&runtime_sched->lock);
 	return n;
 }
 
@@ -864,14 +815,14 @@ needaddgcproc(void)
 {
 	int32 n;
 
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	n = runtime_gomaxprocs;
 	if(n > runtime_ncpu)
 		n = runtime_ncpu;
 	if(n > MaxGcproc)
 		n = MaxGcproc;
-	n -= runtime_sched.nmidle+1; // one M is currently running
-	runtime_unlock(&runtime_sched);
+	n -= runtime_sched->nmidle+1; // one M is currently running
+	runtime_unlock(&runtime_sched->lock);
 	return n > 0;
 }
 
@@ -881,10 +832,10 @@ runtime_helpgc(int32 nproc)
 	M *mp;
 	int32 n, pos;
 
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	pos = 0;
 	for(n = 1; n < nproc; n++) {  // one M is currently running
-		if(runtime_allp[pos]->mcache == m->mcache)
+		if(runtime_allp[pos]->mcache == g->m->mcache)
 			pos++;
 		mp = mget();
 		if(mp == nil)
@@ -894,7 +845,7 @@ runtime_helpgc(int32 nproc)
 		pos++;
 		runtime_notewakeup(&mp->park);
 	}
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 }
 
 // Similar to stoptheworld but best-effort and can be called several times.
@@ -912,8 +863,8 @@ runtime_freezetheworld(void)
 	// so try several times
 	for(i = 0; i < 5; i++) {
 		// this should tell the scheduler to not start any new goroutines
-		runtime_sched.stopwait = 0x7fffffff;
-		runtime_atomicstore((uint32*)&runtime_sched.gcwaiting, 1);
+		runtime_sched->stopwait = 0x7fffffff;
+		runtime_atomicstore((uint32*)&runtime_sched->gcwaiting, 1);
 		// this should stop running goroutines
 		if(!preemptall())
 			break;  // no running goroutines
@@ -926,45 +877,45 @@ runtime_freezetheworld(void)
 }
 
 void
-runtime_stoptheworld(void)
+runtime_stopTheWorldWithSema(void)
 {
 	int32 i;
 	uint32 s;
 	P *p;
 	bool wait;
 
-	runtime_lock(&runtime_sched);
-	runtime_sched.stopwait = runtime_gomaxprocs;
-	runtime_atomicstore((uint32*)&runtime_sched.gcwaiting, 1);
+	runtime_lock(&runtime_sched->lock);
+	runtime_sched->stopwait = runtime_gomaxprocs;
+	runtime_atomicstore((uint32*)&runtime_sched->gcwaiting, 1);
 	preemptall();
 	// stop current P
-	m->p->status = Pgcstop;
-	runtime_sched.stopwait--;
-	// try to retake all P's in Psyscall status
+	((P*)g->m->p)->status = _Pgcstop;
+	runtime_sched->stopwait--;
+	// try to retake all P's in _Psyscall status
 	for(i = 0; i < runtime_gomaxprocs; i++) {
 		p = runtime_allp[i];
 		s = p->status;
-		if(s == Psyscall && runtime_cas(&p->status, s, Pgcstop))
-			runtime_sched.stopwait--;
+		if(s == _Psyscall && runtime_cas(&p->status, s, _Pgcstop))
+			runtime_sched->stopwait--;
 	}
 	// stop idle P's
 	while((p = pidleget()) != nil) {
-		p->status = Pgcstop;
-		runtime_sched.stopwait--;
+		p->status = _Pgcstop;
+		runtime_sched->stopwait--;
 	}
-	wait = runtime_sched.stopwait > 0;
-	runtime_unlock(&runtime_sched);
+	wait = runtime_sched->stopwait > 0;
+	runtime_unlock(&runtime_sched->lock);
 
 	// wait for remaining P's to stop voluntarily
 	if(wait) {
-		runtime_notesleep(&runtime_sched.stopnote);
-		runtime_noteclear(&runtime_sched.stopnote);
+		runtime_notesleep(&runtime_sched->stopnote);
+		runtime_noteclear(&runtime_sched->stopnote);
 	}
-	if(runtime_sched.stopwait)
+	if(runtime_sched->stopwait)
 		runtime_throw("stoptheworld: not stopped");
 	for(i = 0; i < runtime_gomaxprocs; i++) {
 		p = runtime_allp[i];
-		if(p->status != Pgcstop)
+		if(p->status != _Pgcstop)
 			runtime_throw("stoptheworld: not stopped");
 	}
 }
@@ -972,28 +923,28 @@ runtime_stoptheworld(void)
 static void
 mhelpgc(void)
 {
-	m->helpgc = -1;
+	g->m->helpgc = -1;
 }
 
 void
-runtime_starttheworld(void)
+runtime_startTheWorldWithSema(void)
 {
 	P *p, *p1;
 	M *mp;
 	G *gp;
 	bool add;
 
-	m->locks++;  // disable preemption because it can be holding p in a local var
+	g->m->locks++;  // disable preemption because it can be holding p in a local var
 	gp = runtime_netpoll(false);  // non-blocking
 	injectglist(gp);
 	add = needaddgcproc();
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	if(newprocs) {
 		procresize(newprocs);
 		newprocs = 0;
 	} else
 		procresize(runtime_gomaxprocs);
-	runtime_sched.gcwaiting = 0;
+	runtime_sched->gcwaiting = 0;
 
 	p1 = nil;
 	while((p = pidleget()) != nil) {
@@ -1003,25 +954,25 @@ runtime_starttheworld(void)
 			pidleput(p);
 			break;
 		}
-		p->m = mget();
-		p->link = p1;
+		p->m = (uintptr)mget();
+		p->link = (uintptr)p1;
 		p1 = p;
 	}
-	if(runtime_sched.sysmonwait) {
-		runtime_sched.sysmonwait = false;
-		runtime_notewakeup(&runtime_sched.sysmonnote);
+	if(runtime_sched->sysmonwait) {
+		runtime_sched->sysmonwait = false;
+		runtime_notewakeup(&runtime_sched->sysmonnote);
 	}
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 
 	while(p1) {
 		p = p1;
-		p1 = p1->link;
+		p1 = (P*)p1->link;
 		if(p->m) {
-			mp = p->m;
-			p->m = nil;
+			mp = (M*)p->m;
+			p->m = 0;
 			if(mp->nextp)
-				runtime_throw("starttheworld: inconsistent mp->nextp");
-			mp->nextp = p;
+				runtime_throw("startTheWorldWithSema: inconsistent mp->nextp");
+			mp->nextp = (uintptr)p;
 			runtime_notewakeup(&mp->park);
 		} else {
 			// Start M to run P.  Do not start another M below.
@@ -1040,15 +991,18 @@ runtime_starttheworld(void)
 		// the maximum number of procs.
 		newm(mhelpgc, nil);
 	}
-	m->locks--;
+	g->m->locks--;
 }
 
 // Called to start an M.
 void*
 runtime_mstart(void* mp)
 {
+	M *m;
+
 	m = (M*)mp;
 	g = m->g0;
+	g->m = m;
 
 	initcontext();
 
@@ -1059,15 +1013,15 @@ runtime_mstart(void* mp)
 	// Once we call schedule we're never coming back,
 	// so other calls can reuse this stack space.
 #ifdef USING_SPLIT_STACK
-	__splitstack_getcontext(&g->stack_context[0]);
+	__splitstack_getcontext(&g->stackcontext[0]);
 #else
-	g->gcinitial_sp = &mp;
-	// Setting gcstack_size to 0 is a marker meaning that gcinitial_sp
+	g->gcinitialsp = &mp;
+	// Setting gcstacksize to 0 is a marker meaning that gcinitialsp
 	// is the top of the stack, not the bottom.
-	g->gcstack_size = 0;
-	g->gcnext_sp = &mp;
+	g->gcstacksize = 0;
+	g->gcnextsp = &mp;
 #endif
-	getcontext(&g->context);
+	getcontext(ucontext_arg(&g->context[0]));
 
 	if(g->entry != nil) {
 		// Got here from mcall.
@@ -1097,14 +1051,14 @@ runtime_mstart(void* mp)
 	}
 	
 	if(m->mstartfn)
-		m->mstartfn();
+		((void (*)(void))m->mstartfn)();
 
 	if(m->helpgc) {
 		m->helpgc = 0;
 		stopm();
 	} else if(m != &runtime_m0) {
-		acquirep(m->nextp);
-		m->nextp = nil;
+		acquirep((P*)m->nextp);
+		m->nextp = 0;
 	}
 	schedule();
 
@@ -1127,12 +1081,12 @@ struct CgoThreadStart
 // Allocate a new m unassociated with any thread.
 // Can use p for allocation context if needed.
 M*
-runtime_allocm(P *p, int32 stacksize, byte** ret_g0_stack, size_t* ret_g0_stacksize)
+runtime_allocm(P *p, int32 stacksize, byte** ret_g0_stack, uintptr* ret_g0_stacksize)
 {
 	M *mp;
 
-	m->locks++;  // disable GC because it can be called from sysmon
-	if(m->p == nil)
+	g->m->locks++;  // disable GC because it can be called from sysmon
+	if(g->m->p == 0)
 		acquirep(p);  // temporarily borrow p for mallocs in this function
 #if 0
 	if(mtype == nil) {
@@ -1145,10 +1099,11 @@ runtime_allocm(P *p, int32 stacksize, byte** ret_g0_stack, size_t* ret_g0_stacks
 	mp = runtime_mal(sizeof *mp);
 	mcommoninit(mp);
 	mp->g0 = runtime_malg(stacksize, ret_g0_stack, ret_g0_stacksize);
+	mp->g0->m = mp;
 
-	if(p == m->p)
+	if(p == (P*)g->m->p)
 		releasep();
-	m->locks--;
+	g->m->locks--;
 
 	return mp;
 }
@@ -1235,26 +1190,26 @@ runtime_needm(void)
 	// after exitsyscall makes sure it is okay to be
 	// running at all (that is, there's no garbage collection
 	// running right now).
-	mp->needextram = mp->schedlink == nil;
-	unlockextra(mp->schedlink);
+	mp->needextram = mp->schedlink == 0;
+	unlockextra((M*)mp->schedlink);
 
-	// Install m and g (= m->curg).
-	runtime_setmg(mp, mp->curg);
+	// Install g (= m->curg).
+	runtime_setg(mp->curg);
 
 	// Initialize g's context as in mstart.
 	initcontext();
-	g->status = Gsyscall;
+	g->atomicstatus = _Gsyscall;
 	g->entry = nil;
 	g->param = nil;
 #ifdef USING_SPLIT_STACK
-	__splitstack_getcontext(&g->stack_context[0]);
+	__splitstack_getcontext(&g->stackcontext[0]);
 #else
-	g->gcinitial_sp = &mp;
+	g->gcinitialsp = &mp;
 	g->gcstack = nil;
-	g->gcstack_size = 0;
-	g->gcnext_sp = &mp;
+	g->gcstacksize = 0;
+	g->gcnextsp = &mp;
 #endif
-	getcontext(&g->context);
+	getcontext(ucontext_arg(&g->context[0]));
 
 	if(g->entry != nil) {
 		// Got here from mcall.
@@ -1284,7 +1239,8 @@ runtime_newextram(void)
 	M *mp, *mnext;
 	G *gp;
 	byte *g0_sp, *sp;
-	size_t g0_spsize, spsize;
+	uintptr g0_spsize, spsize;
+	ucontext_t *uc;
 
 	// Create extra goroutine locked to extra m.
 	// The goroutine is the context in which the cgo callback will run.
@@ -1293,25 +1249,27 @@ runtime_newextram(void)
 	// the goroutine stack ends.
 	mp = runtime_allocm(nil, StackMin, &g0_sp, &g0_spsize);
 	gp = runtime_malg(StackMin, &sp, &spsize);
-	gp->status = Gdead;
+	gp->atomicstatus = _Gdead;
+	gp->m = mp;
 	mp->curg = gp;
-	mp->locked = LockInternal;
+	mp->locked = _LockInternal;
 	mp->lockedg = gp;
 	gp->lockedm = mp;
-	gp->goid = runtime_xadd64(&runtime_sched.goidgen, 1);
+	gp->goid = runtime_xadd64(&runtime_sched->goidgen, 1);
 	// put on allg for garbage collector
 	allgadd(gp);
 
 	// The context for gp will be set up in runtime_needm.  But
 	// here we need to set up the context for g0.
-	getcontext(&mp->g0->context);
-	mp->g0->context.uc_stack.ss_sp = g0_sp;
-	mp->g0->context.uc_stack.ss_size = g0_spsize;
-	makecontext(&mp->g0->context, kickoff, 0);
+	uc = ucontext_arg(&mp->g0->context[0]);
+	getcontext(uc);
+	uc->uc_stack.ss_sp = g0_sp;
+	uc->uc_stack.ss_size = (size_t)g0_spsize;
+	makecontext(uc, kickoff, 0);
 
 	// Add m to the extra list.
 	mnext = lockextra(true);
-	mp->schedlink = mnext;
+	mp->schedlink = (uintptr)mnext;
 	unlockextra(mp);
 }
 
@@ -1347,16 +1305,16 @@ runtime_dropm(void)
 	runtime_unminit();
 
 	// Clear m and g, and return m to the extra list.
-	// After the call to setmg we can only call nosplit functions.
-	mp = m;
-	runtime_setmg(nil, nil);
+	// After the call to setg we can only call nosplit functions.
+	mp = g->m;
+	runtime_setg(nil);
 
-	mp->curg->status = Gdead;
+	mp->curg->atomicstatus = _Gdead;
 	mp->curg->gcstack = nil;
-	mp->curg->gcnext_sp = nil;
+	mp->curg->gcnextsp = nil;
 
 	mnext = lockextra(true);
-	mp->schedlink = mnext;
+	mp->schedlink = (uintptr)mnext;
 	unlockextra(mp);
 }
 
@@ -1417,7 +1375,7 @@ countextra()
 			continue;
 		}
 		c = 0;
-		for(mc = mp; mc != nil; mc = mc->schedlink)
+		for(mc = mp; mc != nil; mc = (M*)mc->schedlink)
 			c++;
 		runtime_atomicstorep(&runtime_extram, mp);
 		return c;
@@ -1431,8 +1389,8 @@ newm(void(*fn)(void), P *p)
 	M *mp;
 
 	mp = runtime_allocm(p, -1, nil, nil);
-	mp->nextp = p;
-	mp->mstartfn = fn;
+	mp->nextp = (uintptr)p;
+	mp->mstartfn = (uintptr)(void*)fn;
 
 	runtime_newosproc(mp);
 }
@@ -1442,20 +1400,24 @@ newm(void(*fn)(void), P *p)
 static void
 stopm(void)
 {
+	M* m;
+
+	m = g->m;
 	if(m->locks)
 		runtime_throw("stopm holding locks");
 	if(m->p)
 		runtime_throw("stopm holding p");
 	if(m->spinning) {
 		m->spinning = false;
-		runtime_xadd(&runtime_sched.nmspinning, -1);
+		runtime_xadd(&runtime_sched->nmspinning, -1);
 	}
 
 retry:
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	mput(m);
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 	runtime_notesleep(&m->park);
+	m = g->m;
 	runtime_noteclear(&m->park);
 	if(m->helpgc) {
 		runtime_gchelper();
@@ -1463,14 +1425,14 @@ retry:
 		m->mcache = nil;
 		goto retry;
 	}
-	acquirep(m->nextp);
-	m->nextp = nil;
+	acquirep((P*)m->nextp);
+	m->nextp = 0;
 }
 
 static void
 mspinning(void)
 {
-	m->spinning = true;
+	g->m->spinning = true;
 }
 
 // Schedules some M to run the p (creates an M if necessary).
@@ -1481,18 +1443,18 @@ startm(P *p, bool spinning)
 	M *mp;
 	void (*fn)(void);
 
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	if(p == nil) {
 		p = pidleget();
 		if(p == nil) {
-			runtime_unlock(&runtime_sched);
+			runtime_unlock(&runtime_sched->lock);
 			if(spinning)
-				runtime_xadd(&runtime_sched.nmspinning, -1);
+				runtime_xadd(&runtime_sched->nmspinning, -1);
 			return;
 		}
 	}
 	mp = mget();
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 	if(mp == nil) {
 		fn = nil;
 		if(spinning)
@@ -1505,7 +1467,7 @@ startm(P *p, bool spinning)
 	if(mp->nextp)
 		runtime_throw("startm: m has p");
 	mp->spinning = spinning;
-	mp->nextp = p;
+	mp->nextp = (uintptr)p;
 	runtime_notewakeup(&mp->park);
 }
 
@@ -1514,39 +1476,39 @@ static void
 handoffp(P *p)
 {
 	// if it has local work, start it straight away
-	if(p->runqhead != p->runqtail || runtime_sched.runqsize) {
+	if(p->runqhead != p->runqtail || runtime_sched->runqsize) {
 		startm(p, false);
 		return;
 	}
 	// no local work, check that there are no spinning/idle M's,
 	// otherwise our help is not required
-	if(runtime_atomicload(&runtime_sched.nmspinning) + runtime_atomicload(&runtime_sched.npidle) == 0 &&  // TODO: fast atomic
-		runtime_cas(&runtime_sched.nmspinning, 0, 1)) {
+	if(runtime_atomicload(&runtime_sched->nmspinning) + runtime_atomicload(&runtime_sched->npidle) == 0 &&  // TODO: fast atomic
+		runtime_cas(&runtime_sched->nmspinning, 0, 1)) {
 		startm(p, true);
 		return;
 	}
-	runtime_lock(&runtime_sched);
-	if(runtime_sched.gcwaiting) {
-		p->status = Pgcstop;
-		if(--runtime_sched.stopwait == 0)
-			runtime_notewakeup(&runtime_sched.stopnote);
-		runtime_unlock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
+	if(runtime_sched->gcwaiting) {
+		p->status = _Pgcstop;
+		if(--runtime_sched->stopwait == 0)
+			runtime_notewakeup(&runtime_sched->stopnote);
+		runtime_unlock(&runtime_sched->lock);
 		return;
 	}
-	if(runtime_sched.runqsize) {
-		runtime_unlock(&runtime_sched);
+	if(runtime_sched->runqsize) {
+		runtime_unlock(&runtime_sched->lock);
 		startm(p, false);
 		return;
 	}
 	// If this is the last running P and nobody is polling network,
 	// need to wakeup another M to poll network.
-	if(runtime_sched.npidle == (uint32)runtime_gomaxprocs-1 && runtime_atomicload64(&runtime_sched.lastpoll) != 0) {
-		runtime_unlock(&runtime_sched);
+	if(runtime_sched->npidle == (uint32)runtime_gomaxprocs-1 && runtime_atomicload64(&runtime_sched->lastpoll) != 0) {
+		runtime_unlock(&runtime_sched->lock);
 		startm(p, false);
 		return;
 	}
 	pidleput(p);
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 }
 
 // Tries to add one more P to execute G's.
@@ -1555,7 +1517,7 @@ static void
 wakep(void)
 {
 	// be conservative about spinning threads
-	if(!runtime_cas(&runtime_sched.nmspinning, 0, 1))
+	if(!runtime_cas(&runtime_sched->nmspinning, 0, 1))
 		return;
 	startm(nil, true);
 }
@@ -1565,8 +1527,10 @@ wakep(void)
 static void
 stoplockedm(void)
 {
+	M *m;
 	P *p;
 
+	m = g->m;
 	if(m->lockedg == nil || m->lockedg->lockedm != m)
 		runtime_throw("stoplockedm: inconsistent locking");
 	if(m->p) {
@@ -1577,11 +1541,12 @@ stoplockedm(void)
 	incidlelocked(1);
 	// Wait until another thread schedules lockedg again.
 	runtime_notesleep(&m->park);
+	m = g->m;
 	runtime_noteclear(&m->park);
-	if(m->lockedg->status != Grunnable)
+	if(m->lockedg->atomicstatus != _Grunnable)
 		runtime_throw("stoplockedm: not runnable");
-	acquirep(m->nextp);
-	m->nextp = nil;
+	acquirep((P*)m->nextp);
+	m->nextp = 0;
 }
 
 // Schedules the locked m to run the locked gp.
@@ -1592,14 +1557,14 @@ startlockedm(G *gp)
 	P *p;
 
 	mp = gp->lockedm;
-	if(mp == m)
+	if(mp == g->m)
 		runtime_throw("startlockedm: locked to me");
 	if(mp->nextp)
 		runtime_throw("startlockedm: m has p");
 	// directly handoff current P to the locked m
 	incidlelocked(-1);
 	p = releasep();
-	mp->nextp = p;
+	mp->nextp = (uintptr)p;
 	runtime_notewakeup(&mp->park);
 	stopm();
 }
@@ -1611,18 +1576,18 @@ gcstopm(void)
 {
 	P *p;
 
-	if(!runtime_sched.gcwaiting)
+	if(!runtime_sched->gcwaiting)
 		runtime_throw("gcstopm: not waiting for gc");
-	if(m->spinning) {
-		m->spinning = false;
-		runtime_xadd(&runtime_sched.nmspinning, -1);
+	if(g->m->spinning) {
+		g->m->spinning = false;
+		runtime_xadd(&runtime_sched->nmspinning, -1);
 	}
 	p = releasep();
-	runtime_lock(&runtime_sched);
-	p->status = Pgcstop;
-	if(--runtime_sched.stopwait == 0)
-		runtime_notewakeup(&runtime_sched.stopnote);
-	runtime_unlock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
+	p->status = _Pgcstop;
+	if(--runtime_sched->stopwait == 0)
+		runtime_notewakeup(&runtime_sched->stopnote);
+	runtime_unlock(&runtime_sched->lock);
 	stopm();
 }
 
@@ -1633,19 +1598,19 @@ execute(G *gp)
 {
 	int32 hz;
 
-	if(gp->status != Grunnable) {
-		runtime_printf("execute: bad g status %d\n", gp->status);
+	if(gp->atomicstatus != _Grunnable) {
+		runtime_printf("execute: bad g status %d\n", gp->atomicstatus);
 		runtime_throw("execute: bad g status");
 	}
-	gp->status = Grunning;
+	gp->atomicstatus = _Grunning;
 	gp->waitsince = 0;
-	m->p->schedtick++;
-	m->curg = gp;
-	gp->m = m;
+	((P*)g->m->p)->schedtick++;
+	g->m->curg = gp;
+	gp->m = g->m;
 
 	// Check whether the profiler needs to be turned on or off.
-	hz = runtime_sched.profilehz;
-	if(m->profilehz != hz)
+	hz = runtime_sched->profilehz;
+	if(g->m->profilehz != hz)
 		runtime_resetcpuprofiler(hz);
 
 	runtime_gogo(gp);
@@ -1661,78 +1626,78 @@ findrunnable(void)
 	int32 i;
 
 top:
-	if(runtime_sched.gcwaiting) {
+	if(runtime_sched->gcwaiting) {
 		gcstopm();
 		goto top;
 	}
 	if(runtime_fingwait && runtime_fingwake && (gp = runtime_wakefing()) != nil)
 		runtime_ready(gp);
 	// local runq
-	gp = runqget(m->p);
+	gp = runqget((P*)g->m->p);
 	if(gp)
 		return gp;
 	// global runq
-	if(runtime_sched.runqsize) {
-		runtime_lock(&runtime_sched);
-		gp = globrunqget(m->p, 0);
-		runtime_unlock(&runtime_sched);
+	if(runtime_sched->runqsize) {
+		runtime_lock(&runtime_sched->lock);
+		gp = globrunqget((P*)g->m->p, 0);
+		runtime_unlock(&runtime_sched->lock);
 		if(gp)
 			return gp;
 	}
 	// poll network
 	gp = runtime_netpoll(false);  // non-blocking
 	if(gp) {
-		injectglist(gp->schedlink);
-		gp->status = Grunnable;
+		injectglist((G*)gp->schedlink);
+		gp->atomicstatus = _Grunnable;
 		return gp;
 	}
 	// If number of spinning M's >= number of busy P's, block.
 	// This is necessary to prevent excessive CPU consumption
 	// when GOMAXPROCS>>1 but the program parallelism is low.
-	if(!m->spinning && 2 * runtime_atomicload(&runtime_sched.nmspinning) >= runtime_gomaxprocs - runtime_atomicload(&runtime_sched.npidle))  // TODO: fast atomic
+	if(!g->m->spinning && 2 * runtime_atomicload(&runtime_sched->nmspinning) >= runtime_gomaxprocs - runtime_atomicload(&runtime_sched->npidle))  // TODO: fast atomic
 		goto stop;
-	if(!m->spinning) {
-		m->spinning = true;
-		runtime_xadd(&runtime_sched.nmspinning, 1);
+	if(!g->m->spinning) {
+		g->m->spinning = true;
+		runtime_xadd(&runtime_sched->nmspinning, 1);
 	}
 	// random steal from other P's
 	for(i = 0; i < 2*runtime_gomaxprocs; i++) {
-		if(runtime_sched.gcwaiting)
+		if(runtime_sched->gcwaiting)
 			goto top;
 		p = runtime_allp[runtime_fastrand1()%runtime_gomaxprocs];
-		if(p == m->p)
+		if(p == (P*)g->m->p)
 			gp = runqget(p);
 		else
-			gp = runqsteal(m->p, p);
+			gp = runqsteal((P*)g->m->p, p);
 		if(gp)
 			return gp;
 	}
 stop:
 	// return P and block
-	runtime_lock(&runtime_sched);
-	if(runtime_sched.gcwaiting) {
-		runtime_unlock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
+	if(runtime_sched->gcwaiting) {
+		runtime_unlock(&runtime_sched->lock);
 		goto top;
 	}
-	if(runtime_sched.runqsize) {
-		gp = globrunqget(m->p, 0);
-		runtime_unlock(&runtime_sched);
+	if(runtime_sched->runqsize) {
+		gp = globrunqget((P*)g->m->p, 0);
+		runtime_unlock(&runtime_sched->lock);
 		return gp;
 	}
 	p = releasep();
 	pidleput(p);
-	runtime_unlock(&runtime_sched);
-	if(m->spinning) {
-		m->spinning = false;
-		runtime_xadd(&runtime_sched.nmspinning, -1);
+	runtime_unlock(&runtime_sched->lock);
+	if(g->m->spinning) {
+		g->m->spinning = false;
+		runtime_xadd(&runtime_sched->nmspinning, -1);
 	}
 	// check all runqueues once again
 	for(i = 0; i < runtime_gomaxprocs; i++) {
 		p = runtime_allp[i];
 		if(p && p->runqhead != p->runqtail) {
-			runtime_lock(&runtime_sched);
+			runtime_lock(&runtime_sched->lock);
 			p = pidleget();
-			runtime_unlock(&runtime_sched);
+			runtime_unlock(&runtime_sched->lock);
 			if(p) {
 				acquirep(p);
 				goto top;
@@ -1741,21 +1706,21 @@ stop:
 		}
 	}
 	// poll network
-	if(runtime_xchg64(&runtime_sched.lastpoll, 0) != 0) {
-		if(m->p)
+	if(runtime_xchg64(&runtime_sched->lastpoll, 0) != 0) {
+		if(g->m->p)
 			runtime_throw("findrunnable: netpoll with p");
-		if(m->spinning)
+		if(g->m->spinning)
 			runtime_throw("findrunnable: netpoll with spinning");
 		gp = runtime_netpoll(true);  // block until new work is available
-		runtime_atomicstore64(&runtime_sched.lastpoll, runtime_nanotime());
+		runtime_atomicstore64(&runtime_sched->lastpoll, runtime_nanotime());
 		if(gp) {
-			runtime_lock(&runtime_sched);
+			runtime_lock(&runtime_sched->lock);
 			p = pidleget();
-			runtime_unlock(&runtime_sched);
+			runtime_unlock(&runtime_sched->lock);
 			if(p) {
 				acquirep(p);
-				injectglist(gp->schedlink);
-				gp->status = Grunnable;
+				injectglist((G*)gp->schedlink);
+				gp->atomicstatus = _Grunnable;
 				return gp;
 			}
 			injectglist(gp);
@@ -1770,17 +1735,17 @@ resetspinning(void)
 {
 	int32 nmspinning;
 
-	if(m->spinning) {
-		m->spinning = false;
-		nmspinning = runtime_xadd(&runtime_sched.nmspinning, -1);
+	if(g->m->spinning) {
+		g->m->spinning = false;
+		nmspinning = runtime_xadd(&runtime_sched->nmspinning, -1);
 		if(nmspinning < 0)
 			runtime_throw("findrunnable: negative nmspinning");
 	} else
-		nmspinning = runtime_atomicload(&runtime_sched.nmspinning);
+		nmspinning = runtime_atomicload(&runtime_sched->nmspinning);
 
 	// M wakeup policy is deliberately somewhat conservative (see nmspinning handling),
 	// so see if we need to wakeup another P here.
-	if (nmspinning == 0 && runtime_atomicload(&runtime_sched.npidle) > 0)
+	if (nmspinning == 0 && runtime_atomicload(&runtime_sched->npidle) > 0)
 		wakep();
 }
 
@@ -1794,16 +1759,16 @@ injectglist(G *glist)
 
 	if(glist == nil)
 		return;
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	for(n = 0; glist; n++) {
 		gp = glist;
-		glist = gp->schedlink;
-		gp->status = Grunnable;
+		glist = (G*)gp->schedlink;
+		gp->atomicstatus = _Grunnable;
 		globrunqput(gp);
 	}
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 
-	for(; n && runtime_sched.npidle; n--)
+	for(; n && runtime_sched->npidle; n--)
 		startm(nil, false);
 }
 
@@ -1815,11 +1780,11 @@ schedule(void)
 	G *gp;
 	uint32 tick;
 
-	if(m->locks)
+	if(g->m->locks)
 		runtime_throw("schedule: holding locks");
 
 top:
-	if(runtime_sched.gcwaiting) {
+	if(runtime_sched->gcwaiting) {
 		gcstopm();
 		goto top;
 	}
@@ -1828,19 +1793,19 @@ top:
 	// Check the global runnable queue once in a while to ensure fairness.
 	// Otherwise two goroutines can completely occupy the local runqueue
 	// by constantly respawning each other.
-	tick = m->p->schedtick;
+	tick = ((P*)g->m->p)->schedtick;
 	// This is a fancy way to say tick%61==0,
 	// it uses 2 MUL instructions instead of a single DIV and so is faster on modern processors.
-	if(tick - (((uint64)tick*0x4325c53fu)>>36)*61 == 0 && runtime_sched.runqsize > 0) {
-		runtime_lock(&runtime_sched);
-		gp = globrunqget(m->p, 1);
-		runtime_unlock(&runtime_sched);
+	if(tick - (((uint64)tick*0x4325c53fu)>>36)*61 == 0 && runtime_sched->runqsize > 0) {
+		runtime_lock(&runtime_sched->lock);
+		gp = globrunqget((P*)g->m->p, 1);
+		runtime_unlock(&runtime_sched->lock);
 		if(gp)
 			resetspinning();
 	}
 	if(gp == nil) {
-		gp = runqget(m->p);
-		if(gp && m->spinning)
+		gp = runqget((P*)g->m->p);
+		if(gp && g->m->spinning)
 			runtime_throw("schedule: spinning with local work");
 	}
 	if(gp == nil) {
@@ -1863,10 +1828,26 @@ top:
 void
 runtime_park(bool(*unlockf)(G*, void*), void *lock, const char *reason)
 {
-	if(g->status != Grunning)
+	if(g->atomicstatus != _Grunning)
 		runtime_throw("bad g status");
-	m->waitlock = lock;
-	m->waitunlockf = unlockf;
+	g->m->waitlock = lock;
+	g->m->waitunlockf = unlockf;
+	g->waitreason = runtime_gostringnocopy((const byte*)reason);
+	runtime_mcall(park0);
+}
+
+void gopark(FuncVal *, void *, String, byte, int)
+  __asm__ ("runtime.gopark");
+
+void
+gopark(FuncVal *unlockf, void *lock, String reason,
+       byte traceEv __attribute__ ((unused)),
+       int traceskip __attribute__ ((unused)))
+{
+	if(g->atomicstatus != _Grunning)
+		runtime_throw("bad g status");
+	g->m->waitlock = lock;
+	g->m->waitunlockf = unlockf == nil ? nil : (void*)unlockf->fn;
 	g->waitreason = reason;
 	runtime_mcall(park0);
 }
@@ -1887,21 +1868,38 @@ runtime_parkunlock(Lock *lock, const char *reason)
 	runtime_park(parkunlock, lock, reason);
 }
 
+void goparkunlock(Lock *, String, byte, int)
+  __asm__ (GOSYM_PREFIX "runtime.goparkunlock");
+
+void
+goparkunlock(Lock *lock, String reason, byte traceEv __attribute__ ((unused)),
+	     int traceskip __attribute__ ((unused)))
+{
+	if(g->atomicstatus != _Grunning)
+		runtime_throw("bad g status");
+	g->m->waitlock = lock;
+	g->m->waitunlockf = parkunlock;
+	g->waitreason = reason;
+	runtime_mcall(park0);
+}
+
 // runtime_park continuation on g0.
 static void
 park0(G *gp)
 {
+	M *m;
 	bool ok;
 
-	gp->status = Gwaiting;
+	m = g->m;
+	gp->atomicstatus = _Gwaiting;
 	gp->m = nil;
 	m->curg = nil;
 	if(m->waitunlockf) {
-		ok = m->waitunlockf(gp, m->waitlock);
+		ok = ((bool (*)(G*, void*))m->waitunlockf)(gp, m->waitlock);
 		m->waitunlockf = nil;
 		m->waitlock = nil;
 		if(!ok) {
-			gp->status = Grunnable;
+			gp->atomicstatus = _Grunnable;
 			execute(gp);  // Schedule it back, never returns.
 		}
 	}
@@ -1916,7 +1914,7 @@ park0(G *gp)
 void
 runtime_gosched(void)
 {
-	if(g->status != Grunning)
+	if(g->atomicstatus != _Grunning)
 		runtime_throw("bad g status");
 	runtime_mcall(runtime_gosched0);
 }
@@ -1925,12 +1923,15 @@ runtime_gosched(void)
 void
 runtime_gosched0(G *gp)
 {
-	gp->status = Grunnable;
+	M *m;
+
+	m = g->m;
+	gp->atomicstatus = _Grunnable;
 	gp->m = nil;
 	m->curg = nil;
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	globrunqput(gp);
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 	if(m->lockedg) {
 		stoplockedm();
 		execute(gp);  // Never returns.
@@ -1942,38 +1943,42 @@ runtime_gosched0(G *gp)
 // Need to mark it as nosplit, because it runs with sp > stackbase (as runtime_lessstack).
 // Since it does not return it does not matter.  But if it is preempted
 // at the split stack check, GC will complain about inconsistent sp.
-void runtime_goexit(void) __attribute__ ((noinline));
+void runtime_goexit1(void) __attribute__ ((noinline));
 void
-runtime_goexit(void)
+runtime_goexit1(void)
 {
-	if(g->status != Grunning)
+	if(g->atomicstatus != _Grunning)
 		runtime_throw("bad g status");
 	runtime_mcall(goexit0);
 }
 
-// runtime_goexit continuation on g0.
+// runtime_goexit1 continuation on g0.
 static void
 goexit0(G *gp)
 {
-	gp->status = Gdead;
+	M *m;
+
+	m = g->m;
+	gp->atomicstatus = _Gdead;
 	gp->entry = nil;
 	gp->m = nil;
 	gp->lockedm = nil;
 	gp->paniconfault = 0;
-	gp->defer = nil; // should be true already but just in case.
-	gp->panic = nil; // non-nil for Goexit during panic. points at stack-allocated data.
-	gp->writenbuf = 0;
-	gp->writebuf = nil;
-	gp->waitreason = nil;
+	gp->_defer = nil; // should be true already but just in case.
+	gp->_panic = nil; // non-nil for Goexit during panic. points at stack-allocated data.
+	gp->writebuf.__values = nil;
+	gp->writebuf.__count = 0;
+	gp->writebuf.__capacity = 0;
+	gp->waitreason = runtime_gostringnocopy(nil);
 	gp->param = nil;
 	m->curg = nil;
 	m->lockedg = nil;
-	if(m->locked & ~LockExternal) {
+	if(m->locked & ~_LockExternal) {
 		runtime_printf("invalid m->locked = %d\n", m->locked);
 		runtime_throw("internal lockOSThread error");
 	}	
 	m->locked = 0;
-	gfput(m->p, gp);
+	gfput((P*)m->p, gp);
 	schedule();
 }
 
@@ -1986,15 +1991,16 @@ goexit0(G *gp)
 // make g->sched refer to the caller's stack segment, because
 // entersyscall is going to return immediately after.
 
-void runtime_entersyscall(void) __attribute__ ((no_split_stack));
-static void doentersyscall(void) __attribute__ ((no_split_stack, noinline));
+void runtime_entersyscall(int32) __attribute__ ((no_split_stack));
+static void doentersyscall(uintptr, uintptr)
+  __attribute__ ((no_split_stack, noinline));
 
 void
-runtime_entersyscall()
+runtime_entersyscall(int32 dummy __attribute__ ((unused)))
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext(&g->gcregs);
+	getcontext(ucontext_arg(&g->gcregs[0]));
 
 	// Do the work in a separate function, so that this function
 	// doesn't save any registers on its own stack.  If this
@@ -2005,84 +2011,99 @@ runtime_entersyscall()
 	// callee-saved registers to access the TLS variable g.  We
 	// don't want to put the ucontext_t on the stack because it is
 	// large and we can not split the stack here.
-	doentersyscall();
+	doentersyscall((uintptr)runtime_getcallerpc(&dummy),
+		       (uintptr)runtime_getcallersp(&dummy));
 }
 
 static void
-doentersyscall()
+doentersyscall(uintptr pc, uintptr sp)
 {
-	// Disable preemption because during this function g is in Gsyscall status,
+	// Disable preemption because during this function g is in _Gsyscall status,
 	// but can have inconsistent g->sched, do not let GC observe it.
-	m->locks++;
+	g->m->locks++;
 
 	// Leave SP around for GC and traceback.
 #ifdef USING_SPLIT_STACK
-	g->gcstack = __splitstack_find(nil, nil, &g->gcstack_size,
-				       &g->gcnext_segment, &g->gcnext_sp,
-				       &g->gcinitial_sp);
+	{
+	  size_t gcstacksize;
+	  g->gcstack = __splitstack_find(nil, nil, &gcstacksize,
+					 &g->gcnextsegment, &g->gcnextsp,
+					 &g->gcinitialsp);
+	  g->gcstacksize = (uintptr)gcstacksize;
+	}
 #else
 	{
 		void *v;
 
-		g->gcnext_sp = (byte *) &v;
+		g->gcnextsp = (byte *) &v;
 	}
 #endif
 
-	g->status = Gsyscall;
+	g->syscallsp = sp;
+	g->syscallpc = pc;
 
-	if(runtime_atomicload(&runtime_sched.sysmonwait)) {  // TODO: fast atomic
-		runtime_lock(&runtime_sched);
-		if(runtime_atomicload(&runtime_sched.sysmonwait)) {
-			runtime_atomicstore(&runtime_sched.sysmonwait, 0);
-			runtime_notewakeup(&runtime_sched.sysmonnote);
+	g->atomicstatus = _Gsyscall;
+
+	if(runtime_atomicload(&runtime_sched->sysmonwait)) {  // TODO: fast atomic
+		runtime_lock(&runtime_sched->lock);
+		if(runtime_atomicload(&runtime_sched->sysmonwait)) {
+			runtime_atomicstore(&runtime_sched->sysmonwait, 0);
+			runtime_notewakeup(&runtime_sched->sysmonnote);
 		}
-		runtime_unlock(&runtime_sched);
+		runtime_unlock(&runtime_sched->lock);
 	}
 
-	m->mcache = nil;
-	m->p->m = nil;
-	runtime_atomicstore(&m->p->status, Psyscall);
-	if(runtime_atomicload(&runtime_sched.gcwaiting)) {
-		runtime_lock(&runtime_sched);
-		if (runtime_sched.stopwait > 0 && runtime_cas(&m->p->status, Psyscall, Pgcstop)) {
-			if(--runtime_sched.stopwait == 0)
-				runtime_notewakeup(&runtime_sched.stopnote);
+	g->m->mcache = nil;
+	((P*)(g->m->p))->m = 0;
+	runtime_atomicstore(&((P*)g->m->p)->status, _Psyscall);
+	if(runtime_atomicload(&runtime_sched->gcwaiting)) {
+		runtime_lock(&runtime_sched->lock);
+		if (runtime_sched->stopwait > 0 && runtime_cas(&((P*)g->m->p)->status, _Psyscall, _Pgcstop)) {
+			if(--runtime_sched->stopwait == 0)
+				runtime_notewakeup(&runtime_sched->stopnote);
 		}
-		runtime_unlock(&runtime_sched);
+		runtime_unlock(&runtime_sched->lock);
 	}
 
-	m->locks--;
+	g->m->locks--;
 }
 
 // The same as runtime_entersyscall(), but with a hint that the syscall is blocking.
 void
-runtime_entersyscallblock(void)
+runtime_entersyscallblock(int32 dummy __attribute__ ((unused)))
 {
 	P *p;
 
-	m->locks++;  // see comment in entersyscall
+	g->m->locks++;  // see comment in entersyscall
 
 	// Leave SP around for GC and traceback.
 #ifdef USING_SPLIT_STACK
-	g->gcstack = __splitstack_find(nil, nil, &g->gcstack_size,
-				       &g->gcnext_segment, &g->gcnext_sp,
-				       &g->gcinitial_sp);
+	{
+	  size_t gcstacksize;
+	  g->gcstack = __splitstack_find(nil, nil, &gcstacksize,
+					 &g->gcnextsegment, &g->gcnextsp,
+					 &g->gcinitialsp);
+	  g->gcstacksize = (uintptr)gcstacksize;
+	}
 #else
-	g->gcnext_sp = (byte *) &p;
+	g->gcnextsp = (byte *) &p;
 #endif
 
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext(&g->gcregs);
+	getcontext(ucontext_arg(&g->gcregs[0]));
 
-	g->status = Gsyscall;
+	g->syscallpc = (uintptr)runtime_getcallerpc(&dummy);
+	g->syscallsp = (uintptr)runtime_getcallersp(&dummy);
+
+	g->atomicstatus = _Gsyscall;
 
 	p = releasep();
 	handoffp(p);
 	if(g->isbackground)  // do not consider blocked scavenger for deadlock detection
 		incidlelocked(1);
 
-	m->locks--;
+	g->m->locks--;
 }
 
 // The goroutine g exited its system call.
@@ -2090,33 +2111,34 @@ runtime_entersyscallblock(void)
 // This is called only from the go syscall library, not
 // from the low-level system calls used by the runtime.
 void
-runtime_exitsyscall(void)
+runtime_exitsyscall(int32 dummy __attribute__ ((unused)))
 {
 	G *gp;
 
-	m->locks++;  // see comment in entersyscall
-
 	gp = g;
+	gp->m->locks++;  // see comment in entersyscall
+
 	if(gp->isbackground)  // do not consider blocked scavenger for deadlock detection
 		incidlelocked(-1);
 
-	g->waitsince = 0;
+	gp->waitsince = 0;
 	if(exitsyscallfast()) {
 		// There's a cpu for us, so we can run.
-		m->p->syscalltick++;
-		gp->status = Grunning;
+		((P*)gp->m->p)->syscalltick++;
+		gp->atomicstatus = _Grunning;
 		// Garbage collector isn't running (since we are),
 		// so okay to clear gcstack and gcsp.
 #ifdef USING_SPLIT_STACK
 		gp->gcstack = nil;
 #endif
-		gp->gcnext_sp = nil;
-		runtime_memclr(&gp->gcregs, sizeof gp->gcregs);
-		m->locks--;
+		gp->gcnextsp = nil;
+		runtime_memclr(&gp->gcregs[0], sizeof gp->gcregs);
+		gp->syscallsp = 0;
+		gp->m->locks--;
 		return;
 	}
 
-	m->locks--;
+	gp->m->locks--;
 
 	// Call the scheduler.
 	runtime_mcall(exitsyscall0);
@@ -2130,42 +2152,47 @@ runtime_exitsyscall(void)
 #ifdef USING_SPLIT_STACK
 	gp->gcstack = nil;
 #endif
-	gp->gcnext_sp = nil;
-	runtime_memclr(&gp->gcregs, sizeof gp->gcregs);
+	gp->gcnextsp = nil;
+	runtime_memclr(&gp->gcregs[0], sizeof gp->gcregs);
 
-	// Don't refer to m again, we might be running on a different
-	// thread after returning from runtime_mcall.
-	runtime_m()->p->syscalltick++;
+	gp->syscallsp = 0;
+
+	// Note that this gp->m might be different than the earlier
+	// gp->m after returning from runtime_mcall.
+	((P*)gp->m->p)->syscalltick++;
 }
 
 static bool
 exitsyscallfast(void)
 {
+	G *gp;
 	P *p;
 
+	gp = g;
+
 	// Freezetheworld sets stopwait but does not retake P's.
-	if(runtime_sched.stopwait) {
-		m->p = nil;
+	if(runtime_sched->stopwait) {
+		gp->m->p = 0;
 		return false;
 	}
 
 	// Try to re-acquire the last P.
-	if(m->p && m->p->status == Psyscall && runtime_cas(&m->p->status, Psyscall, Prunning)) {
+	if(gp->m->p && ((P*)gp->m->p)->status == _Psyscall && runtime_cas(&((P*)gp->m->p)->status, _Psyscall, _Prunning)) {
 		// There's a cpu for us, so we can run.
-		m->mcache = m->p->mcache;
-		m->p->m = m;
+		gp->m->mcache = ((P*)gp->m->p)->mcache;
+		((P*)gp->m->p)->m = (uintptr)gp->m;
 		return true;
 	}
 	// Try to get any other idle P.
-	m->p = nil;
-	if(runtime_sched.pidle) {
-		runtime_lock(&runtime_sched);
+	gp->m->p = 0;
+	if(runtime_sched->pidle) {
+		runtime_lock(&runtime_sched->lock);
 		p = pidleget();
-		if(p && runtime_atomicload(&runtime_sched.sysmonwait)) {
-			runtime_atomicstore(&runtime_sched.sysmonwait, 0);
-			runtime_notewakeup(&runtime_sched.sysmonnote);
+		if(p && runtime_atomicload(&runtime_sched->sysmonwait)) {
+			runtime_atomicstore(&runtime_sched->sysmonwait, 0);
+			runtime_notewakeup(&runtime_sched->sysmonnote);
 		}
-		runtime_unlock(&runtime_sched);
+		runtime_unlock(&runtime_sched->lock);
 		if(p) {
 			acquirep(p);
 			return true;
@@ -2179,20 +2206,22 @@ exitsyscallfast(void)
 static void
 exitsyscall0(G *gp)
 {
+	M *m;
 	P *p;
 
-	gp->status = Grunnable;
+	m = g->m;
+	gp->atomicstatus = _Grunnable;
 	gp->m = nil;
 	m->curg = nil;
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	p = pidleget();
 	if(p == nil)
 		globrunqput(gp);
-	else if(runtime_atomicload(&runtime_sched.sysmonwait)) {
-		runtime_atomicstore(&runtime_sched.sysmonwait, 0);
-		runtime_notewakeup(&runtime_sched.sysmonnote);
+	else if(runtime_atomicload(&runtime_sched->sysmonwait)) {
+		runtime_atomicstore(&runtime_sched->sysmonwait, 0);
+		runtime_notewakeup(&runtime_sched->sysmonnote);
 	}
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 	if(p) {
 		acquirep(p);
 		execute(gp);  // Never returns.
@@ -2204,6 +2233,28 @@ exitsyscall0(G *gp)
 	}
 	stopm();
 	schedule();  // Never returns.
+}
+
+void syscall_entersyscall(void)
+  __asm__(GOSYM_PREFIX "syscall.Entersyscall");
+
+void syscall_entersyscall(void) __attribute__ ((no_split_stack));
+
+void
+syscall_entersyscall()
+{
+  runtime_entersyscall(0);
+}
+
+void syscall_exitsyscall(void)
+  __asm__(GOSYM_PREFIX "syscall.Exitsyscall");
+
+void syscall_exitsyscall(void) __attribute__ ((no_split_stack));
+
+void
+syscall_exitsyscall()
+{
+  runtime_exitsyscall(0);
 }
 
 // Called from syscall package before fork.
@@ -2227,7 +2278,7 @@ syscall_runtime_AfterFork(void)
 {
 	int32 hz;
 
-	hz = runtime_sched.profilehz;
+	hz = runtime_sched->profilehz;
 	if(hz != 0)
 		runtime_resetcpuprofiler(hz);
 	runtime_m()->locks--;
@@ -2235,7 +2286,7 @@ syscall_runtime_AfterFork(void)
 
 // Allocate a new g, with a stack big enough for stacksize bytes.
 G*
-runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
+runtime_malg(int32 stacksize, byte** ret_stack, uintptr* ret_stacksize)
 {
 	G *newg;
 
@@ -2243,11 +2294,13 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 	if(stacksize >= 0) {
 #if USING_SPLIT_STACK
 		int dont_block_signals = 0;
+		size_t ss_stacksize;
 
 		*ret_stack = __splitstack_makecontext(stacksize,
-						      &newg->stack_context[0],
-						      ret_stacksize);
-		__splitstack_block_signals_context(&newg->stack_context[0],
+						      &newg->stackcontext[0],
+						      &ss_stacksize);
+		*ret_stacksize = (uintptr)ss_stacksize;
+		__splitstack_block_signals_context(&newg->stackcontext[0],
 						   &dont_block_signals, nil);
 #else
                 // In 64-bit mode, the maximum Go allocation space is
@@ -2257,7 +2310,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
                 // 32-bit mode, the Go allocation space is all of
                 // memory anyhow.
 		if(sizeof(void*) == 8) {
-			void *p = runtime_SysAlloc(stacksize, &mstats.other_sys);
+			void *p = runtime_SysAlloc(stacksize, &mstats()->other_sys);
 			if(p == nil)
 				runtime_throw("runtime: cannot allocate memory for goroutine stack");
 			*ret_stack = (byte*)p;
@@ -2265,39 +2318,12 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 			*ret_stack = runtime_mallocgc(stacksize, 0, FlagNoProfiling|FlagNoGC);
 			runtime_xadd(&runtime_stacks_sys, stacksize);
 		}
-		*ret_stacksize = stacksize;
-		newg->gcinitial_sp = *ret_stack;
-		newg->gcstack_size = (size_t)stacksize;
+		*ret_stacksize = (uintptr)stacksize;
+		newg->gcinitialsp = *ret_stack;
+		newg->gcstacksize = (uintptr)stacksize;
 #endif
 	}
 	return newg;
-}
-
-/* For runtime package testing.  */
-
-
-// Create a new g running fn with siz bytes of arguments.
-// Put it on the queue of g's waiting to run.
-// The compiler turns a go statement into a call to this.
-// Cannot split the stack because it assumes that the arguments
-// are available sequentially after &fn; they would not be
-// copied if a stack split occurred.  It's OK for this to call
-// functions that split the stack.
-void runtime_testing_entersyscall(int32)
-  __asm__ (GOSYM_PREFIX "runtime.entersyscall");
-void
-runtime_testing_entersyscall(int32 dummy __attribute__ ((unused)))
-{
-	runtime_entersyscall();
-}
-
-void runtime_testing_exitsyscall(int32)
-  __asm__ (GOSYM_PREFIX "runtime.exitsyscall");
-
-void
-runtime_testing_exitsyscall(int32 dummy __attribute__ ((unused)))
-{
-	runtime_exitsyscall();
 }
 
 G*
@@ -2310,38 +2336,41 @@ __go_go(void (*fn)(void*), void* arg)
 
 //runtime_printf("newproc1 %p %p narg=%d nret=%d\n", fn->fn, argp, narg, nret);
 	if(fn == nil) {
-		m->throwing = -1;  // do not dump full stacks
+		g->m->throwing = -1;  // do not dump full stacks
 		runtime_throw("go of nil func value");
 	}
-	m->locks++;  // disable preemption because it can be holding p in a local var
+	g->m->locks++;  // disable preemption because it can be holding p in a local var
 
-	p = m->p;
+	p = (P*)g->m->p;
 	if((newg = gfget(p)) != nil) {
 #ifdef USING_SPLIT_STACK
 		int dont_block_signals = 0;
 
-		sp = __splitstack_resetcontext(&newg->stack_context[0],
+		sp = __splitstack_resetcontext(&newg->stackcontext[0],
 					       &spsize);
-		__splitstack_block_signals_context(&newg->stack_context[0],
+		__splitstack_block_signals_context(&newg->stackcontext[0],
 						   &dont_block_signals, nil);
 #else
-		sp = newg->gcinitial_sp;
-		spsize = newg->gcstack_size;
+		sp = newg->gcinitialsp;
+		spsize = newg->gcstacksize;
 		if(spsize == 0)
 			runtime_throw("bad spsize in __go_go");
-		newg->gcnext_sp = sp;
+		newg->gcnextsp = sp;
 #endif
 	} else {
-		newg = runtime_malg(StackMin, &sp, &spsize);
+		uintptr malsize;
+
+		newg = runtime_malg(StackMin, &sp, &malsize);
+		spsize = (size_t)malsize;
 		allgadd(newg);
 	}
 
 	newg->entry = (byte*)fn;
 	newg->param = arg;
 	newg->gopc = (uintptr)__builtin_return_address(0);
-	newg->status = Grunnable;
+	newg->atomicstatus = _Grunnable;
 	if(p->goidcache == p->goidcacheend) {
-		p->goidcache = runtime_xadd64(&runtime_sched.goidgen, GoidCacheBatch);
+		p->goidcache = runtime_xadd64(&runtime_sched->goidgen, GoidCacheBatch);
 		p->goidcacheend = p->goidcache + GoidCacheBatch;
 	}
 	newg->goid = p->goidcache++;
@@ -2352,20 +2381,19 @@ __go_go(void (*fn)(void*), void* arg)
 		byte * volatile vsp = sp;
 		size_t volatile vspsize = spsize;
 		G * volatile vnewg = newg;
+		ucontext_t * volatile uc;
 
-		getcontext(&vnewg->context);
-		vnewg->context.uc_stack.ss_sp = vsp;
-#ifdef MAKECONTEXT_STACK_TOP
-		vnewg->context.uc_stack.ss_sp += vspsize;
-#endif
-		vnewg->context.uc_stack.ss_size = vspsize;
-		makecontext(&vnewg->context, kickoff, 0);
+		uc = ucontext_arg(&vnewg->context[0]);
+		getcontext(uc);
+		uc->uc_stack.ss_sp = vsp;
+		uc->uc_stack.ss_size = vspsize;
+		makecontext(uc, kickoff, 0);
 
 		runqput(p, vnewg);
 
-		if(runtime_atomicload(&runtime_sched.npidle) != 0 && runtime_atomicload(&runtime_sched.nmspinning) == 0 && fn != runtime_main)  // TODO: fast atomic
+		if(runtime_atomicload(&runtime_sched->npidle) != 0 && runtime_atomicload(&runtime_sched->nmspinning) == 0 && fn != runtime_main)  // TODO: fast atomic
 			wakep();
-		m->locks--;
+		g->m->locks--;
 		return vnewg;
 	}
 }
@@ -2400,19 +2428,19 @@ allgadd(G *gp)
 static void
 gfput(P *p, G *gp)
 {
-	gp->schedlink = p->gfree;
+	gp->schedlink = (uintptr)p->gfree;
 	p->gfree = gp;
 	p->gfreecnt++;
 	if(p->gfreecnt >= 64) {
-		runtime_lock(&runtime_sched.gflock);
+		runtime_lock(&runtime_sched->gflock);
 		while(p->gfreecnt >= 32) {
 			p->gfreecnt--;
 			gp = p->gfree;
-			p->gfree = gp->schedlink;
-			gp->schedlink = runtime_sched.gfree;
-			runtime_sched.gfree = gp;
+			p->gfree = (G*)gp->schedlink;
+			gp->schedlink = (uintptr)runtime_sched->gfree;
+			runtime_sched->gfree = gp;
 		}
-		runtime_unlock(&runtime_sched.gflock);
+		runtime_unlock(&runtime_sched->gflock);
 	}
 }
 
@@ -2425,20 +2453,20 @@ gfget(P *p)
 
 retry:
 	gp = p->gfree;
-	if(gp == nil && runtime_sched.gfree) {
-		runtime_lock(&runtime_sched.gflock);
-		while(p->gfreecnt < 32 && runtime_sched.gfree) {
+	if(gp == nil && runtime_sched->gfree) {
+		runtime_lock(&runtime_sched->gflock);
+		while(p->gfreecnt < 32 && runtime_sched->gfree) {
 			p->gfreecnt++;
-			gp = runtime_sched.gfree;
-			runtime_sched.gfree = gp->schedlink;
-			gp->schedlink = p->gfree;
+			gp = runtime_sched->gfree;
+			runtime_sched->gfree = (G*)gp->schedlink;
+			gp->schedlink = (uintptr)p->gfree;
 			p->gfree = gp;
 		}
-		runtime_unlock(&runtime_sched.gflock);
+		runtime_unlock(&runtime_sched->gflock);
 		goto retry;
 	}
 	if(gp) {
-		p->gfree = gp->schedlink;
+		p->gfree = (G*)gp->schedlink;
 		p->gfreecnt--;
 	}
 	return gp;
@@ -2450,15 +2478,15 @@ gfpurge(P *p)
 {
 	G *gp;
 
-	runtime_lock(&runtime_sched.gflock);
+	runtime_lock(&runtime_sched->gflock);
 	while(p->gfreecnt) {
 		p->gfreecnt--;
 		gp = p->gfree;
-		p->gfree = gp->schedlink;
-		gp->schedlink = runtime_sched.gfree;
-		runtime_sched.gfree = gp;
+		p->gfree = (G*)gp->schedlink;
+		gp->schedlink = (uintptr)runtime_sched->gfree;
+		runtime_sched->gfree = gp;
 	}
-	runtime_unlock(&runtime_sched.gflock);
+	runtime_unlock(&runtime_sched->gflock);
 }
 
 void
@@ -2477,28 +2505,32 @@ runtime_Gosched(void)
 
 // Implementation of runtime.GOMAXPROCS.
 // delete when scheduler is even stronger
-int32
-runtime_gomaxprocsfunc(int32 n)
-{
-	int32 ret;
 
-	if(n > MaxGomaxprocs)
-		n = MaxGomaxprocs;
-	runtime_lock(&runtime_sched);
-	ret = runtime_gomaxprocs;
+intgo runtime_GOMAXPROCS(intgo)
+  __asm__(GOSYM_PREFIX "runtime.GOMAXPROCS");
+
+intgo
+runtime_GOMAXPROCS(intgo n)
+{
+	intgo ret;
+
+	if(n > _MaxGomaxprocs)
+		n = _MaxGomaxprocs;
+	runtime_lock(&runtime_sched->lock);
+	ret = (intgo)runtime_gomaxprocs;
 	if(n <= 0 || n == ret) {
-		runtime_unlock(&runtime_sched);
+		runtime_unlock(&runtime_sched->lock);
 		return ret;
 	}
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 
-	runtime_semacquire(&runtime_worldsema, false);
-	m->gcing = 1;
-	runtime_stoptheworld();
-	newprocs = n;
-	m->gcing = 0;
-	runtime_semrelease(&runtime_worldsema);
-	runtime_starttheworld();
+	runtime_acquireWorldsema();
+	g->m->gcing = 1;
+	runtime_stopTheWorldWithSema();
+	newprocs = (int32)n;
+	g->m->gcing = 0;
+	runtime_releaseWorldsema();
+	runtime_startTheWorldWithSema();
 
 	return ret;
 }
@@ -2509,22 +2541,22 @@ runtime_gomaxprocsfunc(int32 n)
 static void
 lockOSThread(void)
 {
-	m->lockedg = g;
-	g->lockedm = m;
+	g->m->lockedg = g;
+	g->lockedm = g->m;
 }
 
 void	runtime_LockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.LockOSThread");
 void
 runtime_LockOSThread(void)
 {
-	m->locked |= LockExternal;
+	g->m->locked |= _LockExternal;
 	lockOSThread();
 }
 
 void
 runtime_lockOSThread(void)
 {
-	m->locked += LockInternal;
+	g->m->locked += _LockInternal;
 	lockOSThread();
 }
 
@@ -2535,9 +2567,9 @@ runtime_lockOSThread(void)
 static void
 unlockOSThread(void)
 {
-	if(m->locked != 0)
+	if(g->m->locked != 0)
 		return;
-	m->lockedg = nil;
+	g->m->lockedg = nil;
 	g->lockedm = nil;
 }
 
@@ -2546,23 +2578,23 @@ void	runtime_UnlockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.UnlockOSThread"
 void
 runtime_UnlockOSThread(void)
 {
-	m->locked &= ~LockExternal;
+	g->m->locked &= ~_LockExternal;
 	unlockOSThread();
 }
 
 void
 runtime_unlockOSThread(void)
 {
-	if(m->locked < LockInternal)
+	if(g->m->locked < _LockInternal)
 		runtime_throw("runtime: internal error: misuse of lockOSThread/unlockOSThread");
-	m->locked -= LockInternal;
+	g->m->locked -= _LockInternal;
 	unlockOSThread();
 }
 
 bool
 runtime_lockedOSThread(void)
 {
-	return g->lockedm != nil && m->lockedg != nil;
+	return g->lockedm != nil && g->m->lockedg != nil;
 }
 
 int32
@@ -2580,8 +2612,8 @@ runtime_gcount(void)
 	// Compromise solution is to introduce per-P counters of active goroutines.
 	for(i = 0; i < runtime_allglen; i++) {
 		gp = runtime_allg[i];
-		s = gp->status;
-		if(s == Grunnable || s == Grunning || s == Gsyscall || s == Gwaiting)
+		s = gp->atomicstatus;
+		if(s == _Grunnable || s == _Grunning || s == _Gsyscall || s == _Gwaiting)
 			n++;
 	}
 	runtime_unlock(&allglock);
@@ -2591,15 +2623,12 @@ runtime_gcount(void)
 int32
 runtime_mcount(void)
 {
-	return runtime_sched.mcount;
+	return runtime_sched->mcount;
 }
 
 static struct {
-	Lock;
-	void (*fn)(uintptr*, int32);
+	uint32 lock;
 	int32 hz;
-	uintptr pcbuf[TracebackMaxFrames];
-	Location locbuf[TracebackMaxFrames];
 } prof;
 
 static void System(void) {}
@@ -2609,11 +2638,14 @@ static void GC(void) {}
 void
 runtime_sigprof()
 {
-	M *mp = m;
+	M *mp = g->m;
 	int32 n, i;
 	bool traceback;
+	uintptr pcbuf[TracebackMaxFrames];
+	Location locbuf[TracebackMaxFrames];
+	Slice stk;
 
-	if(prof.fn == nil || prof.hz == 0)
+	if(prof.hz == 0)
 		return;
 
 	if(mp == nil)
@@ -2627,12 +2659,6 @@ runtime_sigprof()
 	if(mp->mcache == nil)
 		traceback = false;
 
-	runtime_lock(&prof);
-	if(prof.fn == nil) {
-		runtime_unlock(&prof);
-		mp->mallocing--;
-		return;
-	}
 	n = 0;
 
 	if(runtime_atomicload(&runtime_in_callers) > 0) {
@@ -2644,56 +2670,68 @@ runtime_sigprof()
 	}
 
 	if(traceback) {
-		n = runtime_callers(0, prof.locbuf, nelem(prof.locbuf), false);
+		n = runtime_callers(0, locbuf, nelem(locbuf), false);
 		for(i = 0; i < n; i++)
-			prof.pcbuf[i] = prof.locbuf[i].pc;
+			pcbuf[i] = locbuf[i].pc;
 	}
 	if(!traceback || n <= 0) {
 		n = 2;
-		prof.pcbuf[0] = (uintptr)runtime_getcallerpc(&n);
+		pcbuf[0] = (uintptr)runtime_getcallerpc(&n);
 		if(mp->gcing || mp->helpgc)
-			prof.pcbuf[1] = (uintptr)GC;
+			pcbuf[1] = (uintptr)GC;
 		else
-			prof.pcbuf[1] = (uintptr)System;
+			pcbuf[1] = (uintptr)System;
 	}
-	prof.fn(prof.pcbuf, n);
-	runtime_unlock(&prof);
+
+	if (prof.hz != 0) {
+		stk.__values = &pcbuf[0];
+		stk.__count = n;
+		stk.__capacity = n;
+
+		// Simple cas-lock to coordinate with setcpuprofilerate.
+		while (!runtime_cas(&prof.lock, 0, 1)) {
+			runtime_osyield();
+		}
+		if (prof.hz != 0) {
+			runtime_cpuprofAdd(stk);
+		}
+		runtime_atomicstore(&prof.lock, 0);
+	}
+
 	mp->mallocing--;
 }
 
 // Arrange to call fn with a traceback hz times a second.
 void
-runtime_setcpuprofilerate(void (*fn)(uintptr*, int32), int32 hz)
+runtime_setcpuprofilerate_m(int32 hz)
 {
 	// Force sane arguments.
 	if(hz < 0)
 		hz = 0;
-	if(hz == 0)
-		fn = nil;
-	if(fn == nil)
-		hz = 0;
 
 	// Disable preemption, otherwise we can be rescheduled to another thread
 	// that has profiling enabled.
-	m->locks++;
+	g->m->locks++;
 
 	// Stop profiler on this thread so that it is safe to lock prof.
 	// if a profiling signal came in while we had prof locked,
 	// it would deadlock.
 	runtime_resetcpuprofiler(0);
 
-	runtime_lock(&prof);
-	prof.fn = fn;
+	while (!runtime_cas(&prof.lock, 0, 1)) {
+		runtime_osyield();
+	}
 	prof.hz = hz;
-	runtime_unlock(&prof);
-	runtime_lock(&runtime_sched);
-	runtime_sched.profilehz = hz;
-	runtime_unlock(&runtime_sched);
+	runtime_atomicstore(&prof.lock, 0);
+
+	runtime_lock(&runtime_sched->lock);
+	runtime_sched->profilehz = hz;
+	runtime_unlock(&runtime_sched->lock);
 
 	if(hz != 0)
 		runtime_resetcpuprofiler(hz);
 
-	m->locks--;
+	g->m->locks--;
 }
 
 // Change number of processors.  The world is stopped, sched is locked.
@@ -2701,12 +2739,13 @@ static void
 procresize(int32 new)
 {
 	int32 i, old;
-	bool empty;
+	bool pempty;
 	G *gp;
 	P *p;
+	intgo j;
 
 	old = runtime_gomaxprocs;
-	if(old < 0 || old > MaxGomaxprocs || new <= 0 || new >MaxGomaxprocs)
+	if(old < 0 || old > _MaxGomaxprocs || new <= 0 || new >_MaxGomaxprocs)
 		runtime_throw("procresize: invalid arg");
 	// initialize new P's
 	for(i = 0; i < new; i++) {
@@ -2714,12 +2753,15 @@ procresize(int32 new)
 		if(p == nil) {
 			p = (P*)runtime_mallocgc(sizeof(*p), 0, FlagNoInvokeGC);
 			p->id = i;
-			p->status = Pgcstop;
+			p->status = _Pgcstop;
+			p->deferpool.__values = &p->deferpoolbuf[0];
+			p->deferpool.__count = 0;
+			p->deferpool.__capacity = nelem(p->deferpoolbuf);
 			runtime_atomicstorep(&runtime_allp[i], p);
 		}
 		if(p->mcache == nil) {
 			if(old==0 && i==0)
-				p->mcache = m->mcache;  // bootstrap
+				p->mcache = g->m->mcache;  // bootstrap
 			else
 				p->mcache = runtime_allocmcache();
 		}
@@ -2729,58 +2771,62 @@ procresize(int32 new)
 	// collect all runnable goroutines in global queue preserving FIFO order
 	// FIFO order is required to ensure fairness even during frequent GCs
 	// see http://golang.org/issue/7126
-	empty = false;
-	while(!empty) {
-		empty = true;
+	pempty = false;
+	while(!pempty) {
+		pempty = true;
 		for(i = 0; i < old; i++) {
 			p = runtime_allp[i];
 			if(p->runqhead == p->runqtail)
 				continue;
-			empty = false;
+			pempty = false;
 			// pop from tail of local queue
 			p->runqtail--;
-			gp = p->runq[p->runqtail%nelem(p->runq)];
+			gp = (G*)p->runq[p->runqtail%nelem(p->runq)];
 			// push onto head of global queue
-			gp->schedlink = runtime_sched.runqhead;
-			runtime_sched.runqhead = gp;
-			if(runtime_sched.runqtail == nil)
-				runtime_sched.runqtail = gp;
-			runtime_sched.runqsize++;
+			gp->schedlink = runtime_sched->runqhead;
+			runtime_sched->runqhead = (uintptr)gp;
+			if(runtime_sched->runqtail == 0)
+				runtime_sched->runqtail = (uintptr)gp;
+			runtime_sched->runqsize++;
 		}
 	}
 	// fill local queues with at most nelem(p->runq)/2 goroutines
 	// start at 1 because current M already executes some G and will acquire allp[0] below,
 	// so if we have a spare G we want to put it into allp[1].
-	for(i = 1; (uint32)i < (uint32)new * nelem(p->runq)/2 && runtime_sched.runqsize > 0; i++) {
-		gp = runtime_sched.runqhead;
-		runtime_sched.runqhead = gp->schedlink;
-		if(runtime_sched.runqhead == nil)
-			runtime_sched.runqtail = nil;
-		runtime_sched.runqsize--;
+	for(i = 1; (uint32)i < (uint32)new * nelem(p->runq)/2 && runtime_sched->runqsize > 0; i++) {
+		gp = (G*)runtime_sched->runqhead;
+		runtime_sched->runqhead = gp->schedlink;
+		if(runtime_sched->runqhead == 0)
+			runtime_sched->runqtail = 0;
+		runtime_sched->runqsize--;
 		runqput(runtime_allp[i%new], gp);
 	}
 
 	// free unused P's
 	for(i = new; i < old; i++) {
 		p = runtime_allp[i];
+		for(j = 0; j < p->deferpool.__count; j++) {
+			((struct _defer**)p->deferpool.__values)[j] = nil;
+		}
+		p->deferpool.__count = 0;
 		runtime_freemcache(p->mcache);
 		p->mcache = nil;
 		gfpurge(p);
-		p->status = Pdead;
+		p->status = _Pdead;
 		// can't free P itself because it can be referenced by an M in syscall
 	}
 
-	if(m->p)
-		m->p->m = nil;
-	m->p = nil;
-	m->mcache = nil;
+	if(g->m->p)
+		((P*)g->m->p)->m = 0;
+	g->m->p = 0;
+	g->m->mcache = nil;
 	p = runtime_allp[0];
-	p->m = nil;
-	p->status = Pidle;
+	p->m = 0;
+	p->status = _Pidle;
 	acquirep(p);
 	for(i = new-1; i > 0; i--) {
 		p = runtime_allp[i];
-		p->status = Pidle;
+		p->status = _Pidle;
 		pidleput(p);
 	}
 	runtime_atomicstore((uint32*)&runtime_gomaxprocs, new);
@@ -2790,47 +2836,52 @@ procresize(int32 new)
 static void
 acquirep(P *p)
 {
+	M *m;
+
+	m = g->m;
 	if(m->p || m->mcache)
 		runtime_throw("acquirep: already in go");
-	if(p->m || p->status != Pidle) {
-		runtime_printf("acquirep: p->m=%p(%d) p->status=%d\n", p->m, p->m ? p->m->id : 0, p->status);
+	if(p->m || p->status != _Pidle) {
+		runtime_printf("acquirep: p->m=%p(%d) p->status=%d\n", p->m, p->m ? ((M*)p->m)->id : 0, p->status);
 		runtime_throw("acquirep: invalid p state");
 	}
 	m->mcache = p->mcache;
-	m->p = p;
-	p->m = m;
-	p->status = Prunning;
+	m->p = (uintptr)p;
+	p->m = (uintptr)m;
+	p->status = _Prunning;
 }
 
 // Disassociate p and the current m.
 static P*
 releasep(void)
 {
+	M *m;
 	P *p;
 
-	if(m->p == nil || m->mcache == nil)
+	m = g->m;
+	if(m->p == 0 || m->mcache == nil)
 		runtime_throw("releasep: invalid arg");
-	p = m->p;
-	if(p->m != m || p->mcache != m->mcache || p->status != Prunning) {
+	p = (P*)m->p;
+	if((M*)p->m != m || p->mcache != m->mcache || p->status != _Prunning) {
 		runtime_printf("releasep: m=%p m->p=%p p->m=%p m->mcache=%p p->mcache=%p p->status=%d\n",
 			m, m->p, p->m, m->mcache, p->mcache, p->status);
 		runtime_throw("releasep: invalid p state");
 	}
-	m->p = nil;
+	m->p = 0;
 	m->mcache = nil;
-	p->m = nil;
-	p->status = Pidle;
+	p->m = 0;
+	p->status = _Pidle;
 	return p;
 }
 
 static void
 incidlelocked(int32 v)
 {
-	runtime_lock(&runtime_sched);
-	runtime_sched.nmidlelocked += v;
+	runtime_lock(&runtime_sched->lock);
+	runtime_sched->nmidlelocked += v;
 	if(v > 0)
 		checkdead();
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 }
 
 // Check for deadlock situation.
@@ -2850,18 +2901,18 @@ checkdead(void)
 	}
 
 	// -1 for sysmon
-	run = runtime_sched.mcount - runtime_sched.nmidle - runtime_sched.nmidlelocked - 1 - countextra();
+	run = runtime_sched->mcount - runtime_sched->nmidle - runtime_sched->nmidlelocked - 1 - countextra();
 	if(run > 0)
 		return;
 	// If we are dying because of a signal caught on an already idle thread,
 	// freezetheworld will cause all running threads to block.
 	// And runtime will essentially enter into deadlock state,
 	// except that there is a thread that will call runtime_exit soon.
-	if(runtime_panicking > 0)
+	if(runtime_panicking() > 0)
 		return;
 	if(run < 0) {
 		runtime_printf("runtime: checkdead: nmidle=%d nmidlelocked=%d mcount=%d\n",
-			runtime_sched.nmidle, runtime_sched.nmidlelocked, runtime_sched.mcount);
+			runtime_sched->nmidle, runtime_sched->nmidlelocked, runtime_sched->mcount);
 		runtime_throw("checkdead: inconsistent counts");
 	}
 	grunning = 0;
@@ -2870,10 +2921,10 @@ checkdead(void)
 		gp = runtime_allg[i];
 		if(gp->isbackground)
 			continue;
-		s = gp->status;
-		if(s == Gwaiting)
+		s = gp->atomicstatus;
+		if(s == _Gwaiting)
 			grunning++;
-		else if(s == Grunnable || s == Grunning || s == Gsyscall) {
+		else if(s == _Grunnable || s == _Grunning || s == _Gsyscall) {
 			runtime_unlock(&allglock);
 			runtime_printf("runtime: checkdead: find g %D in status %d\n", gp->goid, s);
 			runtime_throw("checkdead: runnable g");
@@ -2882,7 +2933,7 @@ checkdead(void)
 	runtime_unlock(&allglock);
 	if(grunning == 0)  // possible if main goroutine calls runtime_Goexit()
 		runtime_throw("no goroutines (main called runtime.Goexit) - deadlock!");
-	m->throwing = -1;  // do not dump full stacks
+	g->m->throwing = -1;  // do not dump full stacks
 	runtime_throw("all goroutines are asleep - deadlock!");
 }
 
@@ -2905,23 +2956,23 @@ sysmon(void)
 			delay = 10*1000;
 		runtime_usleep(delay);
 		if(runtime_debug.schedtrace <= 0 &&
-			(runtime_sched.gcwaiting || runtime_atomicload(&runtime_sched.npidle) == (uint32)runtime_gomaxprocs)) {  // TODO: fast atomic
-			runtime_lock(&runtime_sched);
-			if(runtime_atomicload(&runtime_sched.gcwaiting) || runtime_atomicload(&runtime_sched.npidle) == (uint32)runtime_gomaxprocs) {
-				runtime_atomicstore(&runtime_sched.sysmonwait, 1);
-				runtime_unlock(&runtime_sched);
-				runtime_notesleep(&runtime_sched.sysmonnote);
-				runtime_noteclear(&runtime_sched.sysmonnote);
+			(runtime_sched->gcwaiting || runtime_atomicload(&runtime_sched->npidle) == (uint32)runtime_gomaxprocs)) {  // TODO: fast atomic
+			runtime_lock(&runtime_sched->lock);
+			if(runtime_atomicload(&runtime_sched->gcwaiting) || runtime_atomicload(&runtime_sched->npidle) == (uint32)runtime_gomaxprocs) {
+				runtime_atomicstore(&runtime_sched->sysmonwait, 1);
+				runtime_unlock(&runtime_sched->lock);
+				runtime_notesleep(&runtime_sched->sysmonnote);
+				runtime_noteclear(&runtime_sched->sysmonnote);
 				idle = 0;
 				delay = 20;
 			} else
-				runtime_unlock(&runtime_sched);
+				runtime_unlock(&runtime_sched->lock);
 		}
 		// poll network if not polled for more than 10ms
-		lastpoll = runtime_atomicload64(&runtime_sched.lastpoll);
+		lastpoll = runtime_atomicload64(&runtime_sched->lastpoll);
 		now = runtime_nanotime();
 		if(lastpoll != 0 && lastpoll + 10*1000*1000 < now) {
-			runtime_cas64(&runtime_sched.lastpoll, lastpoll, now);
+			runtime_cas64(&runtime_sched->lastpoll, lastpoll, now);
 			gp = runtime_netpoll(false);  // non-blocking
 			if(gp) {
 				// Need to decrement number of idle locked M's
@@ -2958,7 +3009,7 @@ struct Pdesc
 	uint32	syscalltick;
 	int64	syscallwhen;
 };
-static Pdesc pdesc[MaxGomaxprocs];
+static Pdesc pdesc[_MaxGomaxprocs];
 
 static uint32
 retake(int64 now)
@@ -2975,7 +3026,7 @@ retake(int64 now)
 			continue;
 		pd = &pdesc[i];
 		s = p->status;
-		if(s == Psyscall) {
+		if(s == _Psyscall) {
 			// Retake P from syscall if it's there for more than 1 sysmon tick (at least 20us).
 			t = p->syscalltick;
 			if(pd->syscalltick != t) {
@@ -2987,7 +3038,7 @@ retake(int64 now)
 			// but on the other hand we want to retake them eventually
 			// because they can prevent the sysmon thread from deep sleep.
 			if(p->runqhead == p->runqtail &&
-				runtime_atomicload(&runtime_sched.nmspinning) + runtime_atomicload(&runtime_sched.npidle) > 0 &&
+				runtime_atomicload(&runtime_sched->nmspinning) + runtime_atomicload(&runtime_sched->npidle) > 0 &&
 				pd->syscallwhen + 10*1000*1000 > now)
 				continue;
 			// Need to decrement number of idle locked M's
@@ -2995,12 +3046,12 @@ retake(int64 now)
 			// Otherwise the M from which we retake can exit the syscall,
 			// increment nmidle and report deadlock.
 			incidlelocked(-1);
-			if(runtime_cas(&p->status, s, Pidle)) {
+			if(runtime_cas(&p->status, s, _Pidle)) {
 				n++;
 				handoffp(p);
 			}
 			incidlelocked(1);
-		} else if(s == Prunning) {
+		} else if(s == _Prunning) {
 			// Preempt G if it's running for more than 10ms.
 			t = p->schedtick;
 			if(pd->schedtick != t) {
@@ -3044,14 +3095,14 @@ runtime_schedtrace(bool detailed)
 	if(starttime == 0)
 		starttime = now;
 
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	runtime_printf("SCHED %Dms: gomaxprocs=%d idleprocs=%d threads=%d idlethreads=%d runqueue=%d",
-		(now-starttime)/1000000, runtime_gomaxprocs, runtime_sched.npidle, runtime_sched.mcount,
-		runtime_sched.nmidle, runtime_sched.runqsize);
+		(now-starttime)/1000000, runtime_gomaxprocs, runtime_sched->npidle, runtime_sched->mcount,
+		runtime_sched->nmidle, runtime_sched->runqsize);
 	if(detailed) {
 		runtime_printf(" gcwaiting=%d nmidlelocked=%d nmspinning=%d stopwait=%d sysmonwait=%d\n",
-			runtime_sched.gcwaiting, runtime_sched.nmidlelocked, runtime_sched.nmspinning,
-			runtime_sched.stopwait, runtime_sched.sysmonwait);
+			runtime_sched->gcwaiting, runtime_sched->nmidlelocked, runtime_sched->nmspinning,
+			runtime_sched->stopwait, runtime_sched->sysmonwait);
 	}
 	// We must be careful while reading data from P's, M's and G's.
 	// Even if we hold schedlock, most data can be changed concurrently.
@@ -3060,7 +3111,7 @@ runtime_schedtrace(bool detailed)
 		p = runtime_allp[i];
 		if(p == nil)
 			continue;
-		mp = p->m;
+		mp = (M*)p->m;
 		h = runtime_atomicload(&p->runqhead);
 		t = runtime_atomicload(&p->runqtail);
 		if(detailed)
@@ -3080,11 +3131,11 @@ runtime_schedtrace(bool detailed)
 		}
 	}
 	if(!detailed) {
-		runtime_unlock(&runtime_sched);
+		runtime_unlock(&runtime_sched->lock);
 		return;
 	}
 	for(mp = runtime_allm; mp; mp = mp->alllink) {
-		p = mp->p;
+		p = (P*)mp->p;
 		gp = mp->curg;
 		lockedg = mp->lockedg;
 		id1 = -1;
@@ -3100,19 +3151,19 @@ runtime_schedtrace(bool detailed)
 			" locks=%d dying=%d helpgc=%d spinning=%d blocked=%d lockedg=%D\n",
 			mp->id, id1, id2,
 			mp->mallocing, mp->throwing, mp->gcing, mp->locks, mp->dying, mp->helpgc,
-			mp->spinning, m->blocked, id3);
+			mp->spinning, mp->blocked, id3);
 	}
 	runtime_lock(&allglock);
 	for(gi = 0; gi < runtime_allglen; gi++) {
 		gp = runtime_allg[gi];
 		mp = gp->m;
 		lockedm = gp->lockedm;
-		runtime_printf("  G%D: status=%d(%s) m=%d lockedm=%d\n",
-			gp->goid, gp->status, gp->waitreason, mp ? mp->id : -1,
+		runtime_printf("  G%D: status=%d(%S) m=%d lockedm=%d\n",
+			gp->goid, gp->atomicstatus, gp->waitreason, mp ? mp->id : -1,
 			lockedm ? lockedm->id : -1);
 	}
 	runtime_unlock(&allglock);
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 }
 
 // Put mp on midle list.
@@ -3120,9 +3171,9 @@ runtime_schedtrace(bool detailed)
 static void
 mput(M *mp)
 {
-	mp->schedlink = runtime_sched.midle;
-	runtime_sched.midle = mp;
-	runtime_sched.nmidle++;
+	mp->schedlink = runtime_sched->midle;
+	runtime_sched->midle = (uintptr)mp;
+	runtime_sched->nmidle++;
 	checkdead();
 }
 
@@ -3133,9 +3184,9 @@ mget(void)
 {
 	M *mp;
 
-	if((mp = runtime_sched.midle) != nil){
-		runtime_sched.midle = mp->schedlink;
-		runtime_sched.nmidle--;
+	if((mp = (M*)runtime_sched->midle) != nil){
+		runtime_sched->midle = mp->schedlink;
+		runtime_sched->nmidle--;
 	}
 	return mp;
 }
@@ -3145,13 +3196,13 @@ mget(void)
 static void
 globrunqput(G *gp)
 {
-	gp->schedlink = nil;
-	if(runtime_sched.runqtail)
-		runtime_sched.runqtail->schedlink = gp;
+	gp->schedlink = 0;
+	if(runtime_sched->runqtail)
+		((G*)runtime_sched->runqtail)->schedlink = (uintptr)gp;
 	else
-		runtime_sched.runqhead = gp;
-	runtime_sched.runqtail = gp;
-	runtime_sched.runqsize++;
+		runtime_sched->runqhead = (uintptr)gp;
+	runtime_sched->runqtail = (uintptr)gp;
+	runtime_sched->runqsize++;
 }
 
 // Put a batch of runnable goroutines on the global runnable queue.
@@ -3159,13 +3210,13 @@ globrunqput(G *gp)
 static void
 globrunqputbatch(G *ghead, G *gtail, int32 n)
 {
-	gtail->schedlink = nil;
-	if(runtime_sched.runqtail)
-		runtime_sched.runqtail->schedlink = ghead;
+	gtail->schedlink = 0;
+	if(runtime_sched->runqtail)
+		((G*)runtime_sched->runqtail)->schedlink = (uintptr)ghead;
 	else
-		runtime_sched.runqhead = ghead;
-	runtime_sched.runqtail = gtail;
-	runtime_sched.runqsize += n;
+		runtime_sched->runqhead = (uintptr)ghead;
+	runtime_sched->runqtail = (uintptr)gtail;
+	runtime_sched->runqsize += n;
 }
 
 // Try get a batch of G's from the global runnable queue.
@@ -3176,24 +3227,24 @@ globrunqget(P *p, int32 max)
 	G *gp, *gp1;
 	int32 n;
 
-	if(runtime_sched.runqsize == 0)
+	if(runtime_sched->runqsize == 0)
 		return nil;
-	n = runtime_sched.runqsize/runtime_gomaxprocs+1;
-	if(n > runtime_sched.runqsize)
-		n = runtime_sched.runqsize;
+	n = runtime_sched->runqsize/runtime_gomaxprocs+1;
+	if(n > runtime_sched->runqsize)
+		n = runtime_sched->runqsize;
 	if(max > 0 && n > max)
 		n = max;
 	if((uint32)n > nelem(p->runq)/2)
 		n = nelem(p->runq)/2;
-	runtime_sched.runqsize -= n;
-	if(runtime_sched.runqsize == 0)
-		runtime_sched.runqtail = nil;
-	gp = runtime_sched.runqhead;
-	runtime_sched.runqhead = gp->schedlink;
+	runtime_sched->runqsize -= n;
+	if(runtime_sched->runqsize == 0)
+		runtime_sched->runqtail = 0;
+	gp = (G*)runtime_sched->runqhead;
+	runtime_sched->runqhead = gp->schedlink;
 	n--;
 	while(n--) {
-		gp1 = runtime_sched.runqhead;
-		runtime_sched.runqhead = gp1->schedlink;
+		gp1 = (G*)runtime_sched->runqhead;
+		runtime_sched->runqhead = gp1->schedlink;
 		runqput(p, gp1);
 	}
 	return gp;
@@ -3204,9 +3255,9 @@ globrunqget(P *p, int32 max)
 static void
 pidleput(P *p)
 {
-	p->link = runtime_sched.pidle;
-	runtime_sched.pidle = p;
-	runtime_xadd(&runtime_sched.npidle, 1);  // TODO: fast atomic
+	p->link = runtime_sched->pidle;
+	runtime_sched->pidle = (uintptr)p;
+	runtime_xadd(&runtime_sched->npidle, 1);  // TODO: fast atomic
 }
 
 // Try get a p from pidle list.
@@ -3216,10 +3267,10 @@ pidleget(void)
 {
 	P *p;
 
-	p = runtime_sched.pidle;
+	p = (P*)runtime_sched->pidle;
 	if(p) {
-		runtime_sched.pidle = p->link;
-		runtime_xadd(&runtime_sched.npidle, -1);  // TODO: fast atomic
+		runtime_sched->pidle = p->link;
+		runtime_xadd(&runtime_sched->npidle, -1);  // TODO: fast atomic
 	}
 	return p;
 }
@@ -3236,7 +3287,7 @@ retry:
 	h = runtime_atomicload(&p->runqhead);  // load-acquire, synchronize with consumers
 	t = p->runqtail;
 	if(t - h < nelem(p->runq)) {
-		p->runq[t%nelem(p->runq)] = gp;
+		p->runq[t%nelem(p->runq)] = (uintptr)gp;
 		runtime_atomicstore(&p->runqtail, t+1);  // store-release, makes the item available for consumption
 		return;
 	}
@@ -3260,17 +3311,17 @@ runqputslow(P *p, G *gp, uint32 h, uint32 t)
 	if(n != nelem(p->runq)/2)
 		runtime_throw("runqputslow: queue is not full");
 	for(i=0; i<n; i++)
-		batch[i] = p->runq[(h+i)%nelem(p->runq)];
+		batch[i] = (G*)p->runq[(h+i)%nelem(p->runq)];
 	if(!runtime_cas(&p->runqhead, h, h+n))  // cas-release, commits consume
 		return false;
 	batch[n] = gp;
 	// Link the goroutines.
 	for(i=0; i<n; i++)
-		batch[i]->schedlink = batch[i+1];
+		batch[i]->schedlink = (uintptr)batch[i+1];
 	// Now put the batch on global queue.
-	runtime_lock(&runtime_sched);
+	runtime_lock(&runtime_sched->lock);
 	globrunqputbatch(batch[0], batch[n], n+1);
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 	return true;
 }
 
@@ -3287,7 +3338,7 @@ runqget(P *p)
 		t = p->runqtail;
 		if(t == h)
 			return nil;
-		gp = p->runq[h%nelem(p->runq)];
+		gp = (G*)p->runq[h%nelem(p->runq)];
 		if(runtime_cas(&p->runqhead, h, h+1))  // cas-release, commits consume
 			return gp;
 	}
@@ -3311,7 +3362,7 @@ runqgrab(P *p, G **batch)
 		if(n > nelem(p->runq)/2)  // read inconsistent h and t
 			continue;
 		for(i=0; i<n; i++)
-			batch[i] = p->runq[(h+i)%nelem(p->runq)];
+			batch[i] = (G*)p->runq[(h+i)%nelem(p->runq)];
 		if(runtime_cas(&p->runqhead, h, h+n))  // cas-release, commits consume
 			break;
 	}
@@ -3340,7 +3391,7 @@ runqsteal(P *p, P *p2)
 	if(t - h + n >= nelem(p->runq))
 		runtime_throw("runqsteal: runq overflow");
 	for(i=0; i<n; i++, t++)
-		p->runq[t%nelem(p->runq)] = batch[i];
+		p->runq[t%nelem(p->runq)] = (uintptr)batch[i];
 	runtime_atomicstore(&p->runqtail, t);  // store-release, makes the item available for consumption
 	return gp;
 }
@@ -3417,23 +3468,74 @@ runtime_testSchedLocalQueueSteal(void)
 	}
 }
 
-int32
-runtime_setmaxthreads(int32 in)
+intgo
+runtime_setmaxthreads(intgo in)
 {
-	int32 out;
+	intgo out;
 
-	runtime_lock(&runtime_sched);
-	out = runtime_sched.maxmcount;
-	runtime_sched.maxmcount = in;
+	runtime_lock(&runtime_sched->lock);
+	out = (intgo)runtime_sched->maxmcount;
+	runtime_sched->maxmcount = (int32)in;
 	checkmcount();
-	runtime_unlock(&runtime_sched);
+	runtime_unlock(&runtime_sched->lock);
 	return out;
+}
+
+static intgo
+procPin()
+{
+	M *mp;
+
+	mp = runtime_m();
+	mp->locks++;
+	return (intgo)(((P*)mp->p)->id);
+}
+
+static void
+procUnpin()
+{
+	runtime_m()->locks--;
+}
+
+intgo sync_runtime_procPin(void)
+  __asm__ (GOSYM_PREFIX "sync.runtime_procPin");
+
+intgo
+sync_runtime_procPin()
+{
+	return procPin();
+}
+
+void sync_runtime_procUnpin(void)
+  __asm__ (GOSYM_PREFIX  "sync.runtime_procUnpin");
+
+void
+sync_runtime_procUnpin()
+{
+	procUnpin();
+}
+
+intgo sync_atomic_runtime_procPin(void)
+  __asm__ (GOSYM_PREFIX "sync_atomic.runtime_procPin");
+
+intgo
+sync_atomic_runtime_procPin()
+{
+	return procPin();
+}
+
+void sync_atomic_runtime_procUnpin(void)
+  __asm__ (GOSYM_PREFIX  "sync_atomic.runtime_procUnpin");
+
+void
+sync_atomic_runtime_procUnpin()
+{
+	procUnpin();
 }
 
 void
 runtime_proc_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
 {
-	enqueue1(wbufp, (Obj){(byte*)&runtime_sched, sizeof runtime_sched, 0});
 	enqueue1(wbufp, (Obj){(byte*)&runtime_main_init_done, sizeof runtime_main_init_done, 0});
 }
 
@@ -3442,7 +3544,7 @@ runtime_proc_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj
 bool
 runtime_gcwaiting(void)
 {
-	return runtime_sched.gcwaiting;
+	return runtime_sched->gcwaiting;
 }
 
 // os_beforeExit is called from os.Exit(0).
@@ -3477,10 +3579,10 @@ sync_runtime_canSpin(intgo i)
 	// GOMAXPROCS>1 and there is at least one other running P and local runq is empty.
 	// As opposed to runtime mutex we don't do passive spinning here,
 	// because there can be work on global runq on on other Ps.
-	if (i >= ACTIVE_SPIN || runtime_ncpu <= 1 || runtime_gomaxprocs <= (int32)(runtime_sched.npidle+runtime_sched.nmspinning)+1) {
+	if (i >= ACTIVE_SPIN || runtime_ncpu <= 1 || runtime_gomaxprocs <= (int32)(runtime_sched->npidle+runtime_sched->nmspinning)+1) {
 		return false;
 	}
-	p = m->p;
+	p = (P*)g->m->p;
 	return p != nil && p->runqhead == p->runqtail;
 }
 
@@ -3494,4 +3596,37 @@ void
 sync_runtime_doSpin()
 {
 	runtime_procyield(ACTIVE_SPIN_CNT);
+}
+
+// For Go code to look at variables, until we port proc.go.
+
+extern M** runtime_go_allm(void)
+  __asm__ (GOSYM_PREFIX "runtime.allm");
+
+M**
+runtime_go_allm()
+{
+	return &runtime_allm;
+}
+
+extern Slice runtime_go_allgs(void)
+  __asm__ (GOSYM_PREFIX "runtime.allgs");
+
+Slice
+runtime_go_allgs()
+{
+	Slice s;
+
+	s.__values = runtime_allg;
+	s.__count = runtime_allglen;
+	s.__capacity = allgcap;
+	return s;
+}
+
+intgo NumCPU(void) __asm__ (GOSYM_PREFIX "runtime.NumCPU");
+
+intgo
+NumCPU()
+{
+	return (intgo)(runtime_ncpu);
 }

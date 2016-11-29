@@ -1117,7 +1117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  printf("NULL\n");
 	  return;
 	}
-      if (_S_concat == __r->_M_tag)
+      if (__detail::_S_concat == __r->_M_tag)
 	{
 	  _RopeConcatenation* __c = (_RopeConcatenation*)__r;
 	  _RopeRep* __left = __c->_M_left;

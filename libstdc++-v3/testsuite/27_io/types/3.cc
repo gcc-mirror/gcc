@@ -23,8 +23,6 @@
 
 void check(std::streamsize n)
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( std::streamsize(std::streamoff(n)) == n );
 }
 

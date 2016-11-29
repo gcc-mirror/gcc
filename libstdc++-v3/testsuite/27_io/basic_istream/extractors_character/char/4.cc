@@ -45,8 +45,6 @@ string prepare(string::size_type len, unsigned nchunks)
 
 void check(istream& stream, const string& str, unsigned nchunks)
 {
-  bool test __attribute__((unused)) = true;
-
   char* chunk = new char[str.size()];
   memset(chunk, 'X', str.size());
 

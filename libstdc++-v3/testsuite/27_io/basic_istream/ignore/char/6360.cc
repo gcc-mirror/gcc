@@ -28,7 +28,6 @@ void
 test08()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   stringstream ss("abcd" "\xFF" "1234ina donna coolbrith");  
   char c;

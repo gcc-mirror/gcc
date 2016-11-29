@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
@@ -24,8 +24,6 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-
-bool test __attribute__((unused)) = true;
 
 // Put reference_wrappers to function pointers into function<> wrappers
 void test07()

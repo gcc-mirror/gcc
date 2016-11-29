@@ -28,7 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale loc (locale("se_NO.UTF-8"));

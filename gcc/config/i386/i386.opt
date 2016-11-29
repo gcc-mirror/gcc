@@ -25,10 +25,16 @@ config/i386/i386-opts.h
 Variable
 HOST_WIDE_INT ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT
 
+Variable
+HOST_WIDE_INT ix86_isa_flags2 = 0
+
 ; A mask of ix86_isa_flags that includes bit X if X was set or cleared
 ; on the command line.
 Variable
 HOST_WIDE_INT ix86_isa_flags_explicit
+
+Variable
+HOST_WIDE_INT ix86_isa_flags2_explicit
 
 ; Additional target flags
 Variable
@@ -71,6 +77,10 @@ unsigned char prefetch_sse
 ;; branch cost
 TargetSave
 unsigned char branch_cost
+
+;; which flags were passed by the user
+TargetSave
+HOST_WIDE_INT x_ix86_isa_flags2_explicit
 
 ;; which flags were passed by the user
 TargetSave
@@ -687,6 +697,14 @@ mavx512vbmi
 Target Report Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation.
 
+mavx5124fmaps
+Target Report Mask(ISA_AVX5124FMAPS) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation.
+
+mavx5124vnniw
+Target Report Mask(ISA_AVX5124VNNIW) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation.
+
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation.
@@ -752,8 +770,8 @@ Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
 Support CLWB instruction.
 
 mpcommit
-Target Report Mask(ISA_PCOMMIT) Var(ix86_isa_flags) Save
-Support PCOMMIT instruction.
+Target Undocumented Warn(%<-mpcommit%> was deprecated)
+;; Deprecated
 
 mfxsr
 Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save

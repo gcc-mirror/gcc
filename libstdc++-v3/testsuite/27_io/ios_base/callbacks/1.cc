@@ -40,7 +40,6 @@ callb03(std::ios_base::event,  std::ios_base&, int)
 
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
   std::locale loc("C");
   std::stringbuf 	strbuf01;
   std::ios		ios01(&strbuf01);

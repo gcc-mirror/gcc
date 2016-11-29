@@ -31,7 +31,6 @@ void test01()
   typedef codecvt_base::result			result;
   typedef codecvt<char, char, mbstate_t> 	c_codecvt;
 
-  bool test __attribute__((unused)) = true;
   int 			size = 25;
   char* 		c_arr = new char[size];
   char*                 c_ref = new char[size];

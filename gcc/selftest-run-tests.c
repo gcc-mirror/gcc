@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "selftest.h"
+#include "tree.h"
+#include "target.h"
+#include "langhooks.h"
 
 /* This function needed to be split out from selftest.c as it references
    tests from the whole source tree, and so is within
@@ -40,6 +43,9 @@ selftest::run_tests ()
   /* Run all the tests, in hand-coded order of (approximate) dependencies:
      run the tests for lowest-level code first.  */
 
+  /* Sanity-check for selftests themselves.  */
+  selftest_c_tests ();
+
   /* Low-level data structures.  */
   bitmap_c_tests ();
   et_forest_c_tests ();
@@ -51,6 +57,7 @@ selftest::run_tests ()
   ggc_tests_c_tests ();
   sreal_c_tests ();
   fibonacci_heap_c_tests ();
+  typed_splay_tree_c_tests ();
 
   /* Mid-level data structures.  */
   input_c_tests ();
@@ -62,6 +69,7 @@ selftest::run_tests ()
      rely on.  */
   diagnostic_show_locus_c_tests ();
   diagnostic_c_tests ();
+  edit_context_c_tests ();
   fold_const_c_tests ();
   spellcheck_c_tests ();
   spellcheck_tree_c_tests ();
@@ -69,6 +77,21 @@ selftest::run_tests ()
 
   /* This one relies on most of the above.  */
   function_tests_c_tests ();
+
+  /* Run any target-specific selftests.  */
+  if (targetm.run_target_selftests)
+    targetm.run_target_selftests ();
+
+  store_merging_c_tests ();
+
+  /* Run any lang-specific selftests.  */
+  lang_hooks.run_lang_selftests ();
+
+  /* Force a GC at the end of the selftests, to shake out GC-related
+     issues.  For example, if any GC-managed items have buggy (or missing)
+     finalizers, this last collection will ensure that things that were
+     failed to be finalized can be detected by valgrind.  */
+  forcibly_ggc_collect ();
 
   /* Finished running tests.  */
   long finish_time = get_run_time ();

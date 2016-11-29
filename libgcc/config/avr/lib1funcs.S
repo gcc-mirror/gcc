@@ -958,7 +958,6 @@ DEFUN __muldi3
     wmov    A4, C4
     wmov    A6, C6
 
-    clr     __zero_reg__
     pop     r16
     pop     r17
     pop     r28

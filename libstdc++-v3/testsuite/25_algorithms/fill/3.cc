@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   char ca[1] = { '\0' };
   signed char sc = 1;
 

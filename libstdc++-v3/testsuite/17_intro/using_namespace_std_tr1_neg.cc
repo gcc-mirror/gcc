@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -66,4 +65,4 @@ namespace gnu
   using namespace std::tr1;  // { dg-error "is not a namespace-name" }
 }
 
-// { dg-error "expected namespace-name before" "" { target *-*-* } 66 } 
+// { dg-error "expected namespace-name before" "" { target *-*-* } 65 }

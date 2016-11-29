@@ -893,6 +893,7 @@ go_format_type (struct godump_container *container, tree type,
     case UNION_TYPE:
       is_union = true;
       /* Fall through to RECORD_TYPE case.  */
+      gcc_fallthrough ();
     case RECORD_TYPE:
       {
 	unsigned int prev_field_end;
@@ -1005,14 +1006,9 @@ go_format_type (struct godump_container *container, tree type,
 	      }
 	  }
 	/* Padding.  */
-	{
-	  unsigned int align_unit;
-
-	  align_unit = (is_anon_record_or_union) ? 1 : TYPE_ALIGN_UNIT (type);
-	  *p_art_i = go_append_padding
-	    (ob, prev_field_end, TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type)),
-	     align_unit, *p_art_i, &prev_field_end);
-	}
+	*p_art_i = go_append_padding (ob, prev_field_end,
+				      TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type)),
+				      1, *p_art_i, &prev_field_end);
 	/* Alignment.  */
 	if (!is_anon_record_or_union
 	    && known_alignment < TYPE_ALIGN_UNIT (type))

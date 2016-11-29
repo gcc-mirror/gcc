@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -52,8 +52,6 @@ struct fake_allocator
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<fake_allocator<X>> traits_type;
   traits_type::allocator_type a;
   X* p = traits_type::allocate(a, 1);

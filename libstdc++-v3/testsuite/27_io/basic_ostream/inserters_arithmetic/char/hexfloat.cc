@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 // { dg-xfail-run-if "PR libstdc++/64054" { *-*-solaris* } }
 
@@ -26,10 +26,6 @@
 #include <sstream>
 #include <string>
 #include <testsuite_hooks.h>
-
-#ifndef _GLIBCXX_ASSERT
-#  define TEST_NUMPUT_VERBOSE 1
-#endif
 
 #ifdef TEST_NUMPUT_VERBOSE
 #  include <iostream>

@@ -30,7 +30,6 @@
 template<typename T>
 void test_epsilon()
 {
-  bool test __attribute__((unused)) = true;
   T epsilon = std::numeric_limits<T>::epsilon();
   T one = 1;
 

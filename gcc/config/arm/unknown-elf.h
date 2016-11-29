@@ -88,10 +88,6 @@
     }									\
   while (0)
 
-#ifndef SUBTARGET_CPU_DEFAULT
-#define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
-#endif
-
 /* The libgcc udivmod functions may throw exceptions.  If newlib is
    configured to support long longs in I/O, then printf will depend on
    udivmoddi4, which will depend on the exception unwind routines,

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "cp-tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "intl.h"
@@ -855,7 +856,7 @@ involves_incomplete_p (tree type)
     case UNION_TYPE:
       if (!COMPLETE_TYPE_P (type))
 	return true;
-
+      /* Fall through.  */
     default:
       /* All other types do not involve incomplete class types.  */
       return false;
@@ -983,6 +984,14 @@ ptr_initializer (tinfo_s *ti, tree target)
     {
       flags |= 0x20;
       to = tx_unsafe_fn_variant (to);
+    }
+  if (flag_noexcept_type
+      && (TREE_CODE (to) == FUNCTION_TYPE
+	  || TREE_CODE (to) == METHOD_TYPE)
+      && TYPE_NOTHROW_P (to))
+    {
+      flags |= 0x40;
+      to = build_exception_variant (to, NULL_TREE);
     }
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, flags));
@@ -1293,7 +1302,8 @@ get_pseudo_ti_index (tree type)
 	  ix = TK_CLASS_TYPE;
 	  break;
 	}
-      else if (!BINFO_N_BASE_BINFOS (TYPE_BINFO (type)))
+      else if (!TYPE_BINFO (type)
+	       || !BINFO_N_BASE_BINFOS (TYPE_BINFO (type)))
 	{
 	  ix = TK_CLASS_TYPE;
 	  break;

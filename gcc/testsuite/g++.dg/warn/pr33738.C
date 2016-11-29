@@ -15,11 +15,11 @@ int GetM1() {
 
 int main() {
  a2 = static_cast<Alpha>(GetM1());
- if (a2 == -1) {	// { dg-warning "always false due" }
+ if (a2 == -1) {	// { dg-warning "always false due" "" { xfail *-*-* } } */
     link_error ();
  }
  a2 = static_cast<Alpha>(GetM1());
- if (-1 == a2) {	// { dg-warning "always false due" }
+ if (-1 == a2) {	// { dg-warning "always false due" "" { xfail *-*-* } } */
     link_error ();
  }
  return 0;

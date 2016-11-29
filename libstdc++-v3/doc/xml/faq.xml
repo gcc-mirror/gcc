@@ -328,7 +328,7 @@
     performance testing. Please consult the 
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/test.html">testing
     documentation</link> for GCC and
-    <link linkend="manual.intro.setup.test">Test</link> in the libstdc++
+    <link linkend="manual.intro.setup.test">Testing</link> in the libstdc++
     manual for more details.
     </para> 
     <para>

@@ -141,6 +141,7 @@
    UNSPEC_VMRGH_DIRECT
    UNSPEC_VMRGL_DIRECT
    UNSPEC_VSPLT_DIRECT
+   UNSPEC_VMRGEW_DIRECT
    UNSPEC_VSUMSWS_DIRECT
    UNSPEC_VADDCUQ
    UNSPEC_VADDEUQM
@@ -162,9 +163,7 @@
    UNSPECV_DSS
   ])
 
-;; Vec int modes
-(define_mode_iterator VI [V4SI V8HI V16QI])
-;; Like VI, but add ISA 2.07 integer vector ops
+;; Like VI, defined in vector.md, but add ISA 2.07 integer vector ops
 (define_mode_iterator VI2 [V4SI V8HI V16QI V2DI])
 ;; Short vec in modes
 (define_mode_iterator VIshort [V8HI V16QI])
@@ -371,7 +370,7 @@
 
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(reg:SI 109)] UNSPEC_GET_VRSAVE))]
+	(unspec:SI [(reg:SI VRSAVE_REGNO)] UNSPEC_GET_VRSAVE))]
   "TARGET_ALTIVEC"
 {
   if (TARGET_MACHO)
@@ -383,9 +382,9 @@
 
 (define_insn "*set_vrsave_internal"
   [(match_parallel 0 "vrsave_operation"
-     [(set (reg:SI 109)
+     [(set (reg:SI VRSAVE_REGNO)
 	   (unspec_volatile:SI [(match_operand:SI 1 "register_operand" "r")
-				(reg:SI 109)] UNSPECV_SET_VRSAVE))])]
+				(reg:SI VRSAVE_REGNO)] UNSPECV_SET_VRSAVE))])]
   "TARGET_ALTIVEC"
 {
   if (TARGET_MACHO)
@@ -397,7 +396,7 @@
 
 (define_insn "*save_world"
  [(match_parallel 0 "save_world_operation"
-                  [(clobber (reg:SI 65))
+                  [(clobber (reg:SI LR_REGNO))
                    (use (match_operand:SI 1 "call_operand" "s"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
  "bl %z1"
@@ -407,7 +406,7 @@
 (define_insn "*restore_world"
  [(match_parallel 0 "restore_world_operation"
                   [(return)
-		   (use (reg:SI 65))
+		   (use (reg:SI LR_REGNO))
                    (use (match_operand:SI 1 "call_operand" "s"))
                    (clobber (match_operand:SI 2 "gpc_reg_operand" "=r"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"
@@ -421,7 +420,7 @@
 ;; to describe the operation to dwarf2out_frame_debug_expr.
 (define_insn "*save_vregs_<mode>_r11"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 11))
       (use (reg:P 0))
@@ -435,7 +434,7 @@
 
 (define_insn "*save_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 12))
       (use (reg:P 0))
@@ -449,7 +448,7 @@
 
 (define_insn "*restore_vregs_<mode>_r11"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 11))
       (use (reg:P 0))
@@ -463,7 +462,7 @@
 
 (define_insn "*restore_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 12))
       (use (reg:P 0))
@@ -508,7 +507,7 @@
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
 		    (match_operand:VI 2 "register_operand" "v")]
 		   UNSPEC_VADDU))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "<VI_unit>"
   "vaddu<VI_char>s %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -518,7 +517,7 @@
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v")]
 		   UNSPEC_VADDS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
   "vadds<VI_char>s %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -554,7 +553,7 @@
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v")]
 		   UNSPEC_VSUBU))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
   "vsubu<VI_char>s %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -564,7 +563,7 @@
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v")]
 		   UNSPEC_VSUBS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
   "vsubs<VI_char>s %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -830,7 +829,7 @@
 		      (match_operand:V8HI 2 "register_operand" "v")
                       (match_operand:V4SI 3 "register_operand" "v")]
 		     UNSPEC_VMSUMUHS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vmsumuhs %0,%1,%2,%3"
   [(set_attr "type" "veccomplex")])
@@ -841,7 +840,7 @@
 		      (match_operand:V8HI 2 "register_operand" "v")
                       (match_operand:V4SI 3 "register_operand" "v")]
 		     UNSPEC_VMSUMSHS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vmsumshs %0,%1,%2,%3"
   [(set_attr "type" "veccomplex")])
@@ -902,7 +901,7 @@
 		      (match_operand:V8HI 2 "register_operand" "v")
                       (match_operand:V8HI 3 "register_operand" "v")]
 		     UNSPEC_VMHADDSHS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vmhaddshs %0,%1,%2,%3"
   [(set_attr "type" "veccomplex")])
@@ -913,7 +912,7 @@
 		      (match_operand:V8HI 2 "register_operand" "v")
                       (match_operand:V8HI 3 "register_operand" "v")]
 		     UNSPEC_VMHRADDSHS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vmhraddshs %0,%1,%2,%3"
   [(set_attr "type" "veccomplex")])
@@ -1340,6 +1339,15 @@
 }
   [(set_attr "type" "vecperm")])
 
+(define_insn "p8_vmrgew_v4sf_direct"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
+		      (match_operand:V4SF 2 "register_operand" "v")]
+		     UNSPEC_VMRGEW_DIRECT))]
+  "TARGET_P8_VECTOR"
+  "vmrgew %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
 (define_expand "vec_widen_umult_even_v16qi"
   [(use (match_operand:V8HI 0 "register_operand" ""))
    (use (match_operand:V16QI 1 "register_operand" ""))
@@ -1699,7 +1707,7 @@
         (unspec:V4SI [(match_operand:V16QI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VSUM4UBS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vsum4ubs %0,%1,%2"
   [(set_attr "type" "veccomplex")])
@@ -1709,7 +1717,7 @@
         (unspec:V4SI [(match_operand:VIshort 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VSUM4S))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vsum4s<VI_char>s %0,%1,%2"
   [(set_attr "type" "veccomplex")])
@@ -1722,7 +1730,7 @@
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VSUM2SWS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))
    (clobber (match_scratch:V4SI 3 "=v"))]
   "TARGET_ALTIVEC"
 {
@@ -1743,7 +1751,7 @@
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VSUMSWS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))
    (clobber (match_scratch:V4SI 3 "=v"))]
   "TARGET_ALTIVEC"
 {
@@ -1764,7 +1772,7 @@
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VSUMSWS_DIRECT))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vsumsws %0,%1,%2"
   [(set_attr "type" "veccomplex")])
@@ -2124,7 +2132,7 @@
         (unspec:V4SI [(match_operand:V4SF 1 "register_operand" "v")
                       (match_operand:QI 2 "immediate_operand" "i")]
 		     UNSPEC_VCTUXS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vctuxs %0,%1,%2"
   [(set_attr "type" "vecfloat")])
@@ -2134,7 +2142,7 @@
         (unspec:V4SI [(match_operand:V4SF 1 "register_operand" "v")
                       (match_operand:QI 2 "immediate_operand" "i")]
 		     UNSPEC_VCTSXS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vctsxs %0,%1,%2"
   [(set_attr "type" "vecfloat")])
@@ -2274,7 +2282,7 @@
 ;; Compare vectors producing a vector result and a predicate, setting CR6 to
 ;; indicate a combined status
 (define_insn "*altivec_vcmpequ<VI_char>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(eq:CC (match_operand:VI2 1 "register_operand" "v")
 			   (match_operand:VI2 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2286,7 +2294,7 @@
   [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpgts<VI_char>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(gt:CC (match_operand:VI2 1 "register_operand" "v")
 			   (match_operand:VI2 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2298,7 +2306,7 @@
   [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpgtu<VI_char>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(gtu:CC (match_operand:VI2 1 "register_operand" "v")
 			    (match_operand:VI2 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2310,7 +2318,7 @@
   [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpeqfp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(eq:CC (match_operand:V4SF 1 "register_operand" "v")
 			   (match_operand:V4SF 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2322,7 +2330,7 @@
   [(set_attr "type" "veccmp")])
 
 (define_insn "*altivec_vcmpgtfp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(gt:CC (match_operand:V4SF 1 "register_operand" "v")
 			   (match_operand:V4SF 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2334,7 +2342,7 @@
   [(set_attr "type" "veccmp")])
 
 (define_insn "*altivec_vcmpgefp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(ge:CC (match_operand:V4SF 1 "register_operand" "v")
 			   (match_operand:V4SF 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2346,7 +2354,7 @@
   [(set_attr "type" "veccmp")])
 
 (define_insn "altivec_vcmpbfp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(match_operand:V4SF 1 "register_operand" "v")
 		    (match_operand:V4SF 2 "register_operand" "v")]
 		   UNSPEC_VCMPBFP))
@@ -2359,7 +2367,7 @@
   [(set_attr "type" "veccmp")])
 
 (define_insn "altivec_mtvscr"
-  [(set (reg:SI 110)
+  [(set (reg:SI VSCR_REGNO)
 	(unspec_volatile:SI
 	 [(match_operand:V4SI 0 "register_operand" "v")] UNSPECV_MTVSCR))]
   "TARGET_ALTIVEC"
@@ -2368,7 +2376,7 @@
 
 (define_insn "altivec_mfvscr"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
-	(unspec_volatile:V8HI [(reg:SI 110)] UNSPECV_MFVSCR))]
+	(unspec_volatile:V8HI [(reg:SI VSCR_REGNO)] UNSPECV_MFVSCR))]
   "TARGET_ALTIVEC"
   "mfvscr %0"
   [(set_attr "type" "vecsimple")])
@@ -2757,7 +2765,8 @@
 		   (unspec:VI [(match_dup 2)
 			       (match_operand:VI 1 "register_operand" "v")]
 			      UNSPEC_VSUBS))
-              (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))])
+	      (set (reg:SI VSCR_REGNO)
+		   (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))])
    (set (match_operand:VI 0 "register_operand" "=v")
         (smax:VI (match_dup 1) (match_dup 3)))]
   "TARGET_ALTIVEC"
@@ -2776,12 +2785,12 @@
   rtx vtmp1 = gen_reg_rtx (V4SImode);
   rtx vtmp2 = gen_reg_rtx (<MODE>mode);
   rtx dest = gen_lowpart (V4SImode, vtmp2);
-  int elt = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (<MODE>mode) - 1 : 0;
+  int elt = VECTOR_ELT_ORDER_BIG ? GET_MODE_NUNITS (<MODE>mode) - 1 : 0;
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4s<VI_char>s (vtmp1, operands[1], vzero));
   emit_insn (gen_altivec_vsumsws_direct (dest, vtmp1, vzero));
-  rs6000_expand_vector_extract (operands[0], vtmp2, elt);
+  rs6000_expand_vector_extract (operands[0], vtmp2, GEN_INT (elt));
   DONE;
 })
 
@@ -3634,7 +3643,7 @@
 		      (match_operand:V1TI 2 "register_operand" "")
 		      (match_operand:QI 3 "const_0_to_1_operand" "")]
 		     UNSPEC_BCD_ADD_SUB))
-   (clobber (reg:CCFP 74))]
+   (clobber (reg:CCFP CR6_REGNO))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
   [(set_attr "length" "4")
@@ -3646,7 +3655,7 @@
 ;; probably should be one that can go in the VMX (Altivec) registers, so we
 ;; can't use DDmode or DFmode.
 (define_insn "*bcd<bcd_add_sub>_test"
-  [(set (reg:CCFP 74)
+  [(set (reg:CCFP CR6_REGNO)
 	(compare:CCFP
 	 (unspec:V2DF [(match_operand:V1TI 1 "register_operand" "v")
 		       (match_operand:V1TI 2 "register_operand" "v")
@@ -3665,7 +3674,7 @@
 		      (match_operand:V1TI 2 "register_operand" "v")
 		      (match_operand:QI 3 "const_0_to_1_operand" "i")]
 		     UNSPEC_BCD_ADD_SUB))
-   (set (reg:CCFP 74)
+   (set (reg:CCFP CR6_REGNO)
 	(compare:CCFP
 	 (unspec:V2DF [(match_dup 1)
 		       (match_dup 2)
@@ -3699,7 +3708,7 @@
   [(set_attr "type" "integer")])
 
 (define_expand "bcd<bcd_add_sub>_<code>"
-  [(parallel [(set (reg:CCFP 74)
+  [(parallel [(set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
 		    (unspec:V2DF [(match_operand:V1TI 1 "register_operand" "")
 				  (match_operand:V1TI 2 "register_operand" "")
@@ -3708,7 +3717,7 @@
 		    (match_dup 4)))
 	      (clobber (match_scratch:V1TI 5 ""))])
    (set (match_operand:SI 0 "register_operand" "")
-	(BCD_TEST:SI (reg:CCFP 74)
+	(BCD_TEST:SI (reg:CCFP CR6_REGNO)
 		     (const_int 0)))]
   "TARGET_P8_VECTOR"
 {
@@ -3727,8 +3736,8 @@
 				 (match_operand:V1TI 2 "register_operand" "")
 				 (match_operand:QI 3 "const_0_to_1_operand" "")]
 				UNSPEC_BCD_ADD_SUB))
-	      (clobber (reg:CCFP 74))])
-   (parallel [(set (reg:CCFP 74)
+	      (clobber (reg:CCFP CR6_REGNO))])
+   (parallel [(set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
 		    (unspec:V2DF [(match_dup 1)
 				  (match_dup 2)
@@ -3742,7 +3751,7 @@
 				 (match_dup 2)
 				 (match_dup 3)]
 				UNSPEC_BCD_ADD_SUB))
-	      (set (reg:CCFP 74)
+	      (set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
 		    (unspec:V2DF [(match_dup 1)
 				  (match_dup 2)

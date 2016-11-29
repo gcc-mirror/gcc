@@ -26,8 +26,6 @@
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::mbstate_t state_type;
   std::streamoff off01;
   

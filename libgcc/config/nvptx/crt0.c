@@ -24,6 +24,14 @@ int *__exitval_ptr;
 extern void __attribute__((noreturn)) exit (int status);
 extern int main (int, void **);
 
+/* Always setup soft stacks to allow testing with -msoft-stack but without
+   -mgomp.  32 is the maximum number of warps in a CTA: the definition here
+   must match the external declaration emitted by the compiler.  */
+void *__nvptx_stacks[32] __attribute__((shared,nocommon));
+
+/* Likewise for -muniform-simt.  */
+unsigned __nvptx_uni[32] __attribute__((shared,nocommon));
+
 void __attribute__((kernel))
 __main (int *rval_ptr, int argc, void **argv)
 {
@@ -32,6 +40,10 @@ __main (int *rval_ptr, int argc, void **argv)
      if we fail to reach exit properly.   */
   if (rval_ptr)
     *rval_ptr = 255;
+
+  static char stack[131072] __attribute__((aligned(8)));
+  __nvptx_stacks[0] = stack + sizeof stack;
+  __nvptx_uni[0] = 0;
 
   exit (main (argc, argv));
 }

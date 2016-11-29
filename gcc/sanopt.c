@@ -33,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "params.h"
 #include "tree-hash-traits.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
 
 
 /* This is used to carry information about basic blocks.  It is
@@ -208,8 +211,12 @@ imm_dom_path_with_freeing_call (basic_block bb, basic_block dom)
       for (gsi = gsi_start_bb (e->src); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
+	  gasm *asm_stmt;
 
-	  if (is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
+	  if ((is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
+	      || ((asm_stmt = dyn_cast <gasm *> (stmt))
+		  && (gimple_asm_clobbers_memory_p (asm_stmt)
+		      || gimple_asm_volatile_p (asm_stmt))))
 	    {
 	      pred_info->has_freeing_call_p = true;
 	      break;
@@ -538,6 +545,28 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
       if (asan_check_optimize && !nonfreeing_call_p (stmt))
 	info->freeing_call_events++;
 
+      /* If __asan_before_dynamic_init ("module"); is followed by
+	 __asan_after_dynamic_init (); without intervening memory loads/stores,
+	 there is nothing to guard, so optimize both away.  */
+      if (asan_check_optimize
+	  && gimple_call_builtin_p (stmt, BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT))
+	{
+	  use_operand_p use;
+	  gimple *use_stmt;
+	  if (single_imm_use (gimple_vdef (stmt), &use, &use_stmt))
+	    {
+	      if (is_gimple_call (use_stmt)
+		  && gimple_call_builtin_p (use_stmt,
+					    BUILT_IN_ASAN_AFTER_DYNAMIC_INIT))
+		{
+		  unlink_stmt_vdef (use_stmt);
+		  gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+		  gsi_remove (&gsi2, true);
+		  remove = true;
+		}
+	    }
+	}
+
       if (gimple_call_internal_p (stmt))
 	switch (gimple_call_internal_fn (stmt))
 	  {
@@ -661,8 +690,7 @@ pass_sanopt::execute (function *fun)
 	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  {
 	    gimple *stmt = gsi_stmt (gsi);
-	    if (is_gimple_call (stmt) && gimple_call_internal_p (stmt)
-		&& gimple_call_internal_fn (stmt) == IFN_ASAN_CHECK)
+	    if (gimple_call_internal_p (stmt, IFN_ASAN_CHECK))
 	      ++asan_num_accesses;
 	  }
     }
@@ -703,6 +731,9 @@ pass_sanopt::execute (function *fun)
 		  break;
 		case IFN_ASAN_CHECK:
 		  no_next = asan_expand_check_ifn (&gsi, use_calls);
+		  break;
+		case IFN_ASAN_MARK:
+		  no_next = asan_expand_mark_ifn (&gsi);
 		  break;
 		default:
 		  break;

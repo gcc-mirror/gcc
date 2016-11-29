@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do run }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
@@ -14,7 +13,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a moved_to of the GNU General Public License along
+// You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
@@ -29,8 +28,6 @@ auto is_odd_pair = [](const std::pair<const int, std::string>& p)
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::unordered_map<int, std::string> um{ { 10, "A" }, { 11, "B" },
 					   { 12, "C" }, { 14, "D" },
 					   { 15, "E" }, { 17, "F" },
@@ -44,8 +41,6 @@ test01()
 void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::unordered_multimap<int, std::string> umm{ { 20, "S" }, { 21, "T" },
 						 { 22, "U" }, { 22, "V" },
 						 { 23, "W" }, { 23, "X" },

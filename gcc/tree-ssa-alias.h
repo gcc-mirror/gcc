@@ -57,6 +57,8 @@ struct GTY(()) pt_solution
   /* Nonzero if the vars bitmap includes a anonymous variable used to
      represent storage pointed to by a restrict qualified pointer.  */
   unsigned int vars_contains_restrict : 1;
+  /* Nonzero if the vars bitmap includes an interposable variable.  */
+  unsigned int vars_contains_interposable : 1;
 
   /* Set of variables that this pointer may point to.  */
   bitmap vars;
@@ -146,7 +148,7 @@ extern void dump_alias_stats (FILE *);
 /* In tree-ssa-structalias.c  */
 extern unsigned int compute_may_aliases (void);
 extern bool pt_solution_empty_p (struct pt_solution *);
-extern bool pt_solution_singleton_p (struct pt_solution *, unsigned *);
+extern bool pt_solution_singleton_or_null_p (struct pt_solution *, unsigned *);
 extern bool pt_solution_includes_global (struct pt_solution *);
 extern bool pt_solution_includes (struct pt_solution *, const_tree);
 extern bool pt_solutions_intersect (struct pt_solution *, struct pt_solution *);

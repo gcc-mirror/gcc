@@ -39,8 +39,6 @@ void test05()
   typedef filebuf::pos_type 	pos_type;
   typedef filebuf::off_type 	off_type;
 
-  bool test __attribute__((unused)) = true;
-
   int_type c1;
   int_type c2;
   int_type c3;

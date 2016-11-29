@@ -34,7 +34,6 @@ void test05(void)
 {
   typedef std::istream::off_type off_type;
 
-  bool test __attribute__((unused)) = true;
   std::istream::pos_type pos01, pos02, pos03, pos04, pos05, pos06;
   std::ios_base::iostate state01, state02;
   const char str_lit01[] = "istream_seeks-1.tst";

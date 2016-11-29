@@ -69,6 +69,8 @@ void streamer_write_hwi_stream (struct lto_output_stream *, HOST_WIDE_INT);
 void streamer_write_gcov_count_stream (struct lto_output_stream *, gcov_type);
 void streamer_write_data_stream (struct lto_output_stream *, const void *,
 				 size_t);
+void streamer_write_wide_int (struct output_block *, const wide_int &);
+void streamer_write_widest_int (struct output_block *, const widest_int &);
 
 /* In data-streamer-in.c  */
 const char *streamer_read_string (struct data_in *, struct lto_input_block *);
@@ -81,6 +83,8 @@ const char *bp_unpack_string (struct data_in *, struct bitpack_d *);
 unsigned HOST_WIDE_INT streamer_read_uhwi (struct lto_input_block *);
 HOST_WIDE_INT streamer_read_hwi (struct lto_input_block *);
 gcov_type streamer_read_gcov_count (struct lto_input_block *);
+wide_int streamer_read_wide_int (struct lto_input_block *);
+widest_int streamer_read_widest_int (struct lto_input_block *);
 
 /* Returns a new bit-packing context for bit-packing into S.  */
 static inline struct bitpack_d

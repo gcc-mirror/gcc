@@ -4,8 +4,8 @@
 template <class T>
 struct A
 {
-  // { dg-final { scan-assembler "_ZNK1AIcE1pMUlvE_cvPFvvEEv" } }
-  // { dg-final { scan-assembler "_ZNK1AIiE1pMUlvE_cvPFvvEEv" } }
+  // { dg-final { scan-assembler "_ZNK1AIcE1pMUlvE_clEv" } }
+  // { dg-final { scan-assembler "_ZNK1AIiE1pMUlvE_clEv" } }
   void (*p)() = []{};
 };
 

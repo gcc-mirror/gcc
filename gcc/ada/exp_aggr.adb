@@ -1277,6 +1277,7 @@ package body Exp_Aggr is
          is
             Act_Aggr   : Node_Id;
             Act_Stmts  : List_Id;
+            Expr       : Node_Id;
             Fin_Call   : Node_Id;
             Hook_Clear : Node_Id;
 
@@ -1285,20 +1286,29 @@ package body Exp_Aggr is
             --  in-place expansion.
 
          begin
+            --  Duplicate the initialization expression in case the context is
+            --  a multi choice list or an "others" choice which plugs various
+            --  holes in the aggregate. As a result the expression is no longer
+            --  shared between the various components and is reevaluated for
+            --  each such component.
+
+            Expr := New_Copy_Tree (Init_Expr);
+            Set_Parent (Expr, Parent (Init_Expr));
+
             --  Perform a preliminary analysis and resolution to determine what
             --  the initialization expression denotes. An unanalyzed function
             --  call may appear as an identifier or an indexed component.
 
-            if Nkind_In (Init_Expr, N_Function_Call,
-                                    N_Identifier,
-                                    N_Indexed_Component)
-              and then not Analyzed (Init_Expr)
+            if Nkind_In (Expr, N_Function_Call,
+                               N_Identifier,
+                               N_Indexed_Component)
+              and then not Analyzed (Expr)
             then
-               Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
+               Preanalyze_And_Resolve (Expr, Comp_Typ);
             end if;
 
             In_Place_Expansion :=
-              Nkind (Init_Expr) = N_Function_Call
+              Nkind (Expr) = N_Function_Call
                 and then not Is_Limited_Type (Comp_Typ);
 
             --  The initialization expression is a controlled function call.
@@ -1315,7 +1325,7 @@ package body Exp_Aggr is
                --  generation of a transient scope, which leads to out-of-order
                --  adjustment and finalization.
 
-               Set_No_Side_Effect_Removal (Init_Expr);
+               Set_No_Side_Effect_Removal (Expr);
 
                --  When the transient component initialization is related to a
                --  range or an "others", keep all generated statements within
@@ -1341,7 +1351,7 @@ package body Exp_Aggr is
                Process_Transient_Component
                  (Loc        => Loc,
                   Comp_Typ   => Comp_Typ,
-                  Init_Expr  => Init_Expr,
+                  Init_Expr  => Expr,
                   Fin_Call   => Fin_Call,
                   Hook_Clear => Hook_Clear,
                   Aggr       => Act_Aggr,
@@ -1356,7 +1366,7 @@ package body Exp_Aggr is
             Initialize_Array_Component
               (Arr_Comp  => Arr_Comp,
                Comp_Typ  => Comp_Typ,
-               Init_Expr => Init_Expr,
+               Init_Expr => Expr,
                Stmts     => Stmts);
 
             --  At this point the array element is fully initialized. Complete

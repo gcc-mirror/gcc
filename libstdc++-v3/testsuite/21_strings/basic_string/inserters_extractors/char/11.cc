@@ -42,8 +42,6 @@ string prepare(string::size_type len, unsigned nchunks)
 
 void check(istream& stream, const string& str, unsigned nchunks)
 {
-  bool test __attribute__((unused)) = true;
-
   string chunk;
   string::size_type index = 0, index_new = 0;
   unsigned n = 0;

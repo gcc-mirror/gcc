@@ -14,18 +14,12 @@ package runtime
 #include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
-#include "interface.h"
 #include "go-type.h"
 
 // Map gccgo field names to gc field names.
-// Eface aka __go_empty_interface.
-#define type __type_descriptor
 // Type aka __go_type_descriptor
 #define kind __code
 #define string __reflection
-#define KindPtr GO_PTR
-#define KindNoPointers GO_NO_POINTERS
-#define kindMask GO_CODE_MASK
 
 // GCCGO SPECIFIC CHANGE
 //
@@ -54,11 +48,8 @@ package runtime
 
 // Mark mheap as 'no pointers', it does not contain interesting pointers but occupies ~45K.
 MHeap runtime_mheap;
-MStats mstats;
 
 int32	runtime_checking;
-
-extern MStats mstats;	// defined in zruntime_def_$GOOS_$GOARCH.go
 
 extern volatile intgo runtime_MemProfileRate
   __asm__ (GOSYM_PREFIX "runtime.MemProfileRate");
@@ -84,31 +75,32 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 	MLink *v, *next;
 	byte *tiny;
 	bool incallback;
+	MStats *pmstats;
 
 	if(size == 0) {
 		// All 0-length allocations use this pointer.
 		// The language does not require the allocations to
 		// have distinct values.
-		return &runtime_zerobase;
+		return runtime_getZerobase();
 	}
 
-	m = runtime_m();
 	g = runtime_g();
+	m = g->m;
 
 	incallback = false;
-	if(m->mcache == nil && g->ncgo > 0) {
+	if(m->mcache == nil && m->ncgo > 0) {
 		// For gccgo this case can occur when a cgo or SWIG function
 		// has an interface return type and the function
 		// returns a non-pointer, so memory allocation occurs
 		// after syscall.Cgocall but before syscall.CgocallDone.
 		// We treat it as a callback.
-		runtime_exitsyscall();
+		runtime_exitsyscall(0);
 		m = runtime_m();
 		incallback = true;
 		flag |= FlagNoInvokeGC;
 	}
 
-	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC)) {
+	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC) && m->preemptoff.len == 0) {
 		runtime_gosched();
 		m = runtime_m();
 	}
@@ -165,16 +157,16 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 					tiny = (byte*)ROUND((uintptr)tiny, 4);
 				else if((size&1) == 0)
 					tiny = (byte*)ROUND((uintptr)tiny, 2);
-				size1 = size + (tiny - c->tiny);
+				size1 = size + (tiny - (byte*)c->tiny);
 				if(size1 <= tinysize) {
 					// The object fits into existing tiny block.
 					v = (MLink*)tiny;
-					c->tiny += size1;
+					c->tiny = (byte*)c->tiny + size1;
 					c->tinysize -= size1;
 					m->mallocing = 0;
 					m->locks--;
 					if(incallback)
-						runtime_entersyscall();
+						runtime_entersyscall(0);
 					return v;
 				}
 			}
@@ -255,11 +247,12 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 
 	m->locks--;
 
-	if(!(flag & FlagNoInvokeGC) && mstats.heap_alloc >= mstats.next_gc)
+	pmstats = mstats();
+	if(!(flag & FlagNoInvokeGC) && pmstats->heap_alloc >= pmstats->next_gc)
 		runtime_gc(0);
 
 	if(incallback)
-		runtime_entersyscall();
+		runtime_entersyscall(0);
 
 	return v;
 }
@@ -281,7 +274,7 @@ largealloc(uint32 flag, uintptr *sizep)
 	s = runtime_MHeap_Alloc(&runtime_mheap, npages, 0, 1, !(flag & FlagNoZero));
 	if(s == nil)
 		runtime_throw("out of memory");
-	s->limit = (byte*)(s->start<<PageShift) + size;
+	s->limit = (uintptr)((byte*)(s->start<<PageShift) + size);
 	*sizep = npages<<PageShift;
 	v = (void*)(s->start << PageShift);
 	// setup for mark sweep
@@ -475,9 +468,9 @@ runtime_purgecachedstats(MCache *c)
 
 	// Protected by either heap or GC lock.
 	h = &runtime_mheap;
-	mstats.heap_alloc += c->local_cachealloc;
+	mstats()->heap_alloc += (intptr)c->local_cachealloc;
 	c->local_cachealloc = 0;
-	mstats.nlookup += c->local_nlookup;
+	mstats()->nlookup += c->local_nlookup;
 	c->local_nlookup = 0;
 	h->largefree += c->local_largefree;
 	c->local_largefree = 0;
@@ -488,13 +481,6 @@ runtime_purgecachedstats(MCache *c)
 		c->local_nsmallfree[i] = 0;
 	}
 }
-
-extern uintptr runtime_sizeof_C_MStats
-  __asm__ (GOSYM_PREFIX "runtime.Sizeof_C_MStats");
-
-// Size of the trailing by_size array differs between Go and C,
-// NumSizeClasses was changed, but we can not change Go struct because of backward compatibility.
-// sizeof_C_MStats is what C thinks about size of Go struct.
 
 // Initialized in mallocinit because it's defined in go/runtime/mem.go.
 
@@ -510,8 +496,6 @@ runtime_mallocinit(void)
 	uintptr limit;
 	uint64 i;
 	bool reserved;
-
-	runtime_sizeof_C_MStats = sizeof(MStats) - (NumSizeClasses - 61) * sizeof(mstats.by_size[0]);
 
 	p = nil;
 	p_size = 0;
@@ -688,7 +672,7 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 	if(n <= (uintptr)(h->arena_end - h->arena_used)) {
 		// Keep taking from our reservation.
 		p = h->arena_used;
-		runtime_SysMap(p, n, h->arena_reserved, &mstats.heap_sys);
+		runtime_SysMap(p, n, h->arena_reserved, &mstats()->heap_sys);
 		h->arena_used += n;
 		runtime_MHeap_MapBits(h);
 		runtime_MHeap_MapSpans(h);
@@ -706,14 +690,14 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 	// try to get memory at a location chosen by the OS
 	// and hope that it is in the range we allocated bitmap for.
 	p_size = ROUND(n, PageSize) + PageSize;
-	p = runtime_SysAlloc(p_size, &mstats.heap_sys);
+	p = runtime_SysAlloc(p_size, &mstats()->heap_sys);
 	if(p == nil)
 		return nil;
 
 	if(p < h->arena_start || (uintptr)(p+p_size - h->arena_start) >= MaxArena32) {
 		runtime_printf("runtime: memory allocated by OS (%p) not in usable range [%p,%p)\n",
 			p, h->arena_start, h->arena_start+MaxArena32);
-		runtime_SysFree(p, p_size, &mstats.heap_sys);
+		runtime_SysFree(p, p_size, &mstats()->heap_sys);
 		return nil;
 	}
 	
@@ -766,7 +750,7 @@ runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
 	runtime_lock(&persistent);
 	persistent.pos = (byte*)ROUND((uintptr)persistent.pos, align);
 	if(persistent.pos + size > persistent.end) {
-		persistent.pos = runtime_SysAlloc(PersistentAllocChunk, &mstats.other_sys);
+		persistent.pos = runtime_SysAlloc(PersistentAllocChunk, &mstats()->other_sys);
 		if(persistent.pos == nil) {
 			runtime_unlock(&persistent);
 			runtime_throw("runtime: cannot allocate memory");
@@ -776,10 +760,10 @@ runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
 	p = persistent.pos;
 	persistent.pos += size;
 	runtime_unlock(&persistent);
-	if(stat != &mstats.other_sys) {
+	if(stat != &mstats()->other_sys) {
 		// reaccount the allocation against provided stat
 		runtime_xadd64(stat, size);
-		runtime_xadd64(&mstats.other_sys, -(uint64)size);
+		runtime_xadd64(&mstats()->other_sys, -(uint64)size);
 	}
 	return p;
 }
@@ -893,30 +877,30 @@ runtime_mal(uintptr n)
 }
 
 func new(typ *Type) (ret *uint8) {
-	ret = runtime_mallocgc(typ->__size, (uintptr)typ | TypeInfo_SingleObject, typ->kind&KindNoPointers ? FlagNoScan : 0);
+	ret = runtime_mallocgc(typ->__size, (uintptr)typ | TypeInfo_SingleObject, typ->kind&kindNoPointers ? FlagNoScan : 0);
 }
 
 static void*
-cnew(const Type *typ, intgo n, int32 objtyp)
+runtime_docnew(const Type *typ, intgo n, int32 objtyp)
 {
 	if((objtyp&(PtrSize-1)) != objtyp)
 		runtime_throw("runtime: invalid objtyp");
 	if(n < 0 || (typ->__size > 0 && (uintptr)n > (MaxMem/typ->__size)))
 		runtime_panicstring("runtime: allocation size out of range");
-	return runtime_mallocgc(typ->__size*n, (uintptr)typ | objtyp, typ->kind&KindNoPointers ? FlagNoScan : 0);
+	return runtime_mallocgc(typ->__size*n, (uintptr)typ | objtyp, typ->kind&kindNoPointers ? FlagNoScan : 0);
 }
 
 // same as runtime_new, but callable from C
 void*
 runtime_cnew(const Type *typ)
 {
-	return cnew(typ, 1, TypeInfo_SingleObject);
+	return runtime_docnew(typ, 1, TypeInfo_SingleObject);
 }
 
 void*
 runtime_cnewarray(const Type *typ, intgo n)
 {
-	return cnew(typ, n, TypeInfo_Array);
+	return runtime_docnew(typ, n, TypeInfo_Array);
 }
 
 func GC() {
@@ -930,15 +914,15 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	const Type *fint;
 	const PtrType *ot;
 
-	if(obj.__type_descriptor == nil) {
+	if((Type*)obj._type == nil) {
 		runtime_printf("runtime.SetFinalizer: first argument is nil interface\n");
 		goto throw;
 	}
-	if((obj.__type_descriptor->kind&kindMask) != GO_PTR) {
-		runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *obj.__type_descriptor->__reflection);
+	if((((Type*)obj._type)->kind&kindMask) != GO_PTR) {
+		runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *((Type*)obj._type)->__reflection);
 		goto throw;
 	}
-	ot = (const PtrType*)obj.type;
+	ot = (const PtrType*)obj._type;
 	// As an implementation detail we do not run finalizers for zero-sized objects,
 	// because we use &runtime_zerobase for all such allocations.
 	if(ot->__element_type != nil && ot->__element_type->__size == 0)
@@ -950,49 +934,49 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	//		runtime.SetFinalizer(Foo, nil)
 	//	}
 	// See issue 7656.
-	if((byte*)obj.__object < runtime_mheap.arena_start || runtime_mheap.arena_used <= (byte*)obj.__object)
+	if((byte*)obj.data < runtime_mheap.arena_start || runtime_mheap.arena_used <= (byte*)obj.data)
 		return;
-	if(!runtime_mlookup(obj.__object, &base, &size, nil) || obj.__object != base) {
+	if(!runtime_mlookup(obj.data, &base, &size, nil) || obj.data != base) {
 		// As an implementation detail we allow to set finalizers for an inner byte
 		// of an object if it could come from tiny alloc (see mallocgc for details).
-		if(ot->__element_type == nil || (ot->__element_type->kind&KindNoPointers) == 0 || ot->__element_type->__size >= TinySize) {
-			runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block (%p)\n", obj.__object);
+		if(ot->__element_type == nil || (ot->__element_type->kind&kindNoPointers) == 0 || ot->__element_type->__size >= TinySize) {
+			runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block (%p)\n", obj.data);
 			goto throw;
 		}
 	}
-	if(finalizer.__type_descriptor != nil) {
+	if((Type*)finalizer._type != nil) {
 		runtime_createfing();
-		if((finalizer.__type_descriptor->kind&kindMask) != GO_FUNC)
+		if((((Type*)finalizer._type)->kind&kindMask) != GO_FUNC)
 			goto badfunc;
-		ft = (const FuncType*)finalizer.__type_descriptor;
+		ft = (const FuncType*)finalizer._type;
 		if(ft->__dotdotdot || ft->__in.__count != 1)
 			goto badfunc;
 		fint = *(Type**)ft->__in.__values;
-		if(__go_type_descriptors_equal(fint, obj.__type_descriptor)) {
+		if(__go_type_descriptors_equal(fint, (Type*)obj._type)) {
 			// ok - same type
-		} else if((fint->kind&kindMask) == GO_PTR && (fint->__uncommon == nil || fint->__uncommon->__name == nil || obj.type->__uncommon == nil || obj.type->__uncommon->__name == nil) && __go_type_descriptors_equal(((const PtrType*)fint)->__element_type, ((const PtrType*)obj.type)->__element_type)) {
+		} else if((fint->kind&kindMask) == GO_PTR && (fint->__uncommon == nil || fint->__uncommon->__name == nil || ((Type*)obj._type)->__uncommon == nil || ((Type*)obj._type)->__uncommon->__name == nil) && __go_type_descriptors_equal(((const PtrType*)fint)->__element_type, ((const PtrType*)obj._type)->__element_type)) {
 			// ok - not same type, but both pointers,
 			// one or the other is unnamed, and same element type, so assignable.
 		} else if((fint->kind&kindMask) == GO_INTERFACE && ((const InterfaceType*)fint)->__methods.__count == 0) {
 			// ok - satisfies empty interface
-		} else if((fint->kind&kindMask) == GO_INTERFACE && __go_convert_interface_2(fint, obj.__type_descriptor, 1) != nil) {
+		} else if((fint->kind&kindMask) == GO_INTERFACE && getitab(fint, (Type*)obj._type, true) != nil) {
 			// ok - satisfies non-empty interface
 		} else
 			goto badfunc;
 
-		ot = (const PtrType*)obj.__type_descriptor;
-		if(!runtime_addfinalizer(obj.__object, *(FuncVal**)finalizer.__object, ft, ot)) {
+		ot = (const PtrType*)obj._type;
+		if(!runtime_addfinalizer(obj.data, *(FuncVal**)finalizer.data, ft, ot)) {
 			runtime_printf("runtime.SetFinalizer: finalizer already set\n");
 			goto throw;
 		}
 	} else {
 		// NOTE: asking to remove a finalizer when there currently isn't one set is OK.
-		runtime_removefinalizer(obj.__object);
+		runtime_removefinalizer(obj.data);
 	}
 	return;
 
 badfunc:
-	runtime_printf("runtime.SetFinalizer: cannot pass %S to finalizer %S\n", *obj.__type_descriptor->__reflection, *finalizer.__type_descriptor->__reflection);
+	runtime_printf("runtime.SetFinalizer: cannot pass %S to finalizer %S\n", *((Type*)obj._type)->__reflection, *((Type*)finalizer._type)->__reflection);
 throw:
 	runtime_throw("runtime.SetFinalizer");
 }

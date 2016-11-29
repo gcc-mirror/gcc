@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2007-05-02  Benjamin Kosnik  <bkoz@redhat.com>
 //
@@ -24,7 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::enable_if;
 
   // Positive tests.

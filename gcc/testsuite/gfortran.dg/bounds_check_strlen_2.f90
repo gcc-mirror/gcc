@@ -11,8 +11,8 @@ CONTAINS
 
   SUBROUTINE test (str, n)
     IMPLICIT NONE
-    CHARACTER(len=n) :: str
     INTEGER :: n
+    CHARACTER(len=n) :: str
   END SUBROUTINE test
 
   SUBROUTINE test2 (str)

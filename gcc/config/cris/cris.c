@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -211,6 +212,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P cris_legitimate_address_p
@@ -541,11 +545,9 @@ cris_op_str (rtx x)
     {
     case PLUS:
       return "add";
-      break;
 
     case MINUS:
       return "sub";
-      break;
 
     case MULT:
       /* This function is for retrieving a part of an instruction name for
@@ -557,46 +559,36 @@ cris_op_str (rtx x)
 
     case DIV:
       return "div";
-      break;
 
     case AND:
       return "and";
-      break;
 
     case IOR:
       return "or";
-      break;
 
     case XOR:
       return "xor";
-      break;
 
     case NOT:
       return "not";
-      break;
 
     case ASHIFT:
       return "lsl";
-      break;
 
     case LSHIFTRT:
       return "lsr";
-      break;
 
     case ASHIFTRT:
       return "asr";
-      break;
 
     case UMIN:
       /* Used to control the sign/zero-extend character for the 'E' modifier.
 	 BOUND has none.  */
       cris_output_insn_is_bound = 1;
       return "bound";
-      break;
 
     default:
       return "Unknown operator";
-      break;
   }
 }
 
@@ -1282,8 +1274,7 @@ cris_return_address_on_stack_for_return (void)
     : cris_return_address_on_stack ();
 }
 
-/* This used to be the INITIAL_FRAME_POINTER_OFFSET worker; now only
-   handles FP -> SP elimination offset.  */
+/* This handles FP -> SP elimination offset.  */
 
 static int
 cris_initial_frame_pointer_offset (void)
@@ -2407,7 +2398,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
    insn for other reasons.  */
 
 bool
-cris_cc0_user_requires_cmp (rtx insn)
+cris_cc0_user_requires_cmp (rtx_insn *insn)
 {
   rtx_insn *cc0_user = NULL;
   rtx body;
@@ -2586,11 +2577,11 @@ cris_asm_output_ident (const char *string)
 /* The ASM_OUTPUT_CASE_END worker.  */
 
 void
-cris_asm_output_case_end (FILE *stream, int num, rtx table)
+cris_asm_output_case_end (FILE *stream, int num, rtx_insn *table)
 {
   /* Step back, over the label for the table, to the actual casejump and
      assert that we find only what's expected.  */
-  rtx whole_jump_insn = prev_nonnote_nondebug_insn (table);
+  rtx_insn *whole_jump_insn = prev_nonnote_nondebug_insn (table);
   gcc_assert (whole_jump_insn != NULL_RTX && LABEL_P (whole_jump_insn));
   whole_jump_insn = prev_nonnote_nondebug_insn (whole_jump_insn);
   gcc_assert (whole_jump_insn != NULL_RTX
@@ -2598,15 +2589,15 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
 		  || (TARGET_V32 && INSN_P (whole_jump_insn)
 		      && GET_CODE (PATTERN (whole_jump_insn)) == SEQUENCE)));
   /* Get the pattern of the casejump, so we can extract the default label.  */
-  whole_jump_insn = PATTERN (whole_jump_insn);
+  rtx whole_jump_pat = PATTERN (whole_jump_insn);
 
   if (TARGET_V32)
     {
       /* This can be a SEQUENCE, meaning the delay-slot of the jump is
 	 filled.  We also output the offset word a little differently.  */
       rtx parallel_jump
-	= (GET_CODE (whole_jump_insn) == SEQUENCE
-	   ? PATTERN (XVECEXP (whole_jump_insn, 0, 0)) : whole_jump_insn);
+	= (GET_CODE (whole_jump_pat) == SEQUENCE
+	   ? PATTERN (XVECEXP (whole_jump_pat, 0, 0)) : whole_jump_pat);
 
       asm_fprintf (stream,
 		   "\t.word %LL%d-.%s\n",
@@ -2621,7 +2612,7 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
 	       "\t.word %LL%d-%LL%d%s\n",
 	       CODE_LABEL_NUMBER (XEXP
 				  (XEXP
-				   (XEXP (XVECEXP (whole_jump_insn, 0, 0), 1), 
+				   (XEXP (XVECEXP (whole_jump_pat, 0, 0), 1),
 				    2), 0)),
 	       num,
 	       (TARGET_PDEBUG ? "; default" : ""));

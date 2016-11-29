@@ -27,8 +27,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
  
   const char * source = "Kesto";

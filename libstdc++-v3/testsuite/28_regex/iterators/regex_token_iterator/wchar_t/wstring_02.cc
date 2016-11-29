@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-namedlocale "en_US.UTF-8" }
 
 //
@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::setlocale(LC_ALL, "en_US.UTF-8");
 
   std::wstring str2 = L"öäü";

@@ -32,8 +32,6 @@ void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
-
   // construct a locale object with the C facet
   const locale& 	cloc = locale::classic();
   // sanity check the constructed locale has the normal facet

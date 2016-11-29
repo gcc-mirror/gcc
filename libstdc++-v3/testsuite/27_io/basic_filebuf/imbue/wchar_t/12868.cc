@@ -29,7 +29,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc_is(locale("is_IS.UTF-8"));
   

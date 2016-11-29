@@ -1201,7 +1201,7 @@ get_or_alloc_expr_for (tree t)
 }
 
 /* Return the folded version of T if T, when folded, is a gimple
-   min_invariant.  Otherwise, return T.  */
+   min_invariant or an SSA name.  Otherwise, return T.  */
 
 static pre_expr
 fully_constant_expression (pre_expr e)
@@ -1218,10 +1218,8 @@ fully_constant_expression (pre_expr e)
 	  return e;
 	if (is_gimple_min_invariant (res))
 	  return get_or_alloc_expr_for_constant (res);
-	/* We might have simplified the expression to a
-	   SSA_NAME for example from x_1 * 1.  But we cannot
-	   insert a PHI for x_1 unconditionally as x_1 might
-	   not be available readily.  */
+	if (TREE_CODE (res) == SSA_NAME)
+	  return get_or_alloc_expr_for_name (res);
 	return e;
       }
     case REFERENCE:
@@ -1464,7 +1462,20 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    constant = fully_constant_expression (expr);
 	    PRE_EXPR_NARY (expr) = nary;
 	    if (constant != expr)
-	      return constant;
+	      {
+		/* For non-CONSTANTs we have to make sure we can eventually
+		   insert the expression.  Which means we need to have a
+		   leader for it.  */
+		if (constant->kind != CONSTANT)
+		  {
+		    unsigned value_id = get_expr_value_id (constant);
+		    constant = find_leader_in_sets (value_id, set1, set2);
+		    if (constant)
+		      return constant;
+		  }
+		else
+		  return constant;
+	      }
 
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
 						    newnary->opcode,
@@ -2014,9 +2025,17 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 {
   bitmap_iterator bi;
   unsigned i;
+  pre_expr to_remove = NULL;
 
   FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
     {
+      /* Remove queued expr.  */
+      if (to_remove)
+	{
+	  bitmap_remove_from_set (set, to_remove);
+	  to_remove = NULL;
+	}
+
       pre_expr expr = expression_for_id (i);
       if (expr->kind == REFERENCE)
 	{
@@ -2030,7 +2049,7 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 					   block, gimple_bb (def_stmt)))
 		      || (gimple_bb (def_stmt) == block
 			  && value_dies_in_block_x (expr, block))))
-		bitmap_remove_from_set (set, expr);
+		to_remove = expr;
 	    }
 	}
       else if (expr->kind == NARY)
@@ -2042,9 +2061,13 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 	     as the available expression might be after the exit point.  */
 	  if (BB_MAY_NOTRETURN (block)
 	      && vn_nary_may_trap (nary))
-	    bitmap_remove_from_set (set, expr);
+	    to_remove = expr;
 	}
     }
+
+  /* Remove queued expr.  */
+  if (to_remove)
+    bitmap_remove_from_set (set, to_remove);
 }
 
 static sbitmap has_abnormal_preds;
@@ -2359,7 +2382,7 @@ compute_antic (void)
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   int postorder_num = inverted_post_order_compute (postorder);
 
-  sbitmap worklist = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
+  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
   bitmap_ones (worklist);
   while (changed)
     {
@@ -2409,7 +2432,6 @@ compute_antic (void)
     }
 
   sbitmap_free (has_abnormal_preds);
-  sbitmap_free (worklist);
   free (postorder);
 }
 
@@ -2869,7 +2891,24 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
       gimple_seq_discard (forced_stmts);
       return folded;
     }
-
+  /* Likewise if we simplified to sth not queued for insertion.  */
+  bool found = false;
+  gsi = gsi_last (forced_stmts);
+  for (; !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      tree forcedname = gimple_get_lhs (stmt);
+      if (forcedname == folded)
+	{
+	  found = true;
+	  break;
+	}
+    }
+  if (! found)
+    {
+      gimple_seq_discard (forced_stmts);
+      return folded;
+    }
   gcc_assert (TREE_CODE (folded) == SSA_NAME);
 
   /* If we have any intermediate expressions to the value sets, add them
@@ -3660,15 +3699,14 @@ compute_avail (void)
   basic_block *worklist;
   size_t sp = 0;
   unsigned i;
+  tree name;
 
   /* We pretend that default definitions are defined in the entry block.
      This includes function arguments and the static chain decl.  */
-  for (i = 1; i < num_ssa_names; ++i)
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
       pre_expr e;
-      if (!name
-	  || !SSA_NAME_IS_DEFAULT_DEF (name)
+      if (!SSA_NAME_IS_DEFAULT_DEF (name)
 	  || has_zero_uses (name)
 	  || virtual_operand_p (name))
 	continue;
@@ -4260,7 +4298,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	  if (sprime
 	      && TREE_CODE (sprime) == SSA_NAME
 	      && do_pre
-	      && flag_tree_loop_vectorize
+	      && (flag_tree_loop_vectorize || flag_tree_parallelize_loops > 1)
 	      && loop_outer (b->loop_father)
 	      && has_zero_uses (sprime)
 	      && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (sprime))
@@ -4405,26 +4443,36 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	  && !is_gimple_reg (gimple_assign_lhs (stmt))
 	  && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
 	      || is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
-        {
-          tree val;
+	{
+	  tree val;
 	  tree rhs = gimple_assign_rhs1 (stmt);
-          val = vn_reference_lookup (gimple_assign_lhs (stmt),
-                                     gimple_vuse (stmt), VN_WALK, NULL, false);
-          if (TREE_CODE (rhs) == SSA_NAME)
-            rhs = VN_INFO (rhs)->valnum;
-          if (val
-              && operand_equal_p (val, rhs, 0))
-            {
-              if (dump_file && (dump_flags & TDF_DETAILS))
-                {
-                  fprintf (dump_file, "Deleted redundant store ");
-                  print_gimple_stmt (dump_file, stmt, 0, 0);
-                }
+	  vn_reference_t vnresult;
+	  val = vn_reference_lookup (lhs, gimple_vuse (stmt), VN_WALKREWRITE,
+				     &vnresult, false);
+	  if (TREE_CODE (rhs) == SSA_NAME)
+	    rhs = VN_INFO (rhs)->valnum;
+	  if (val
+	      && operand_equal_p (val, rhs, 0))
+	    {
+	      /* We can only remove the later store if the former aliases
+		 at least all accesses the later one does or if the store
+		 was to readonly memory storing the same value.  */
+	      alias_set_type set = get_alias_set (lhs);
+	      if (! vnresult
+		  || vnresult->set == set
+		  || alias_set_subset_of (set, vnresult->set))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Deleted redundant store ");
+		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		    }
 
-              /* Queue stmt for removal.  */
-              el_to_remove.safe_push (stmt);
-	      continue;
-            }
+		  /* Queue stmt for removal.  */
+		  el_to_remove.safe_push (stmt);
+		  continue;
+		}
+	    }
 	}
 
       /* If this is a control statement value numbering left edges
@@ -4533,6 +4581,15 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 				       lang_hooks.decl_printable_name (fn, 2));
 		    }
 		  gimple_call_set_fndecl (call_stmt, fn);
+		  /* If changing the call to __builtin_unreachable
+		     or similar noreturn function, adjust gimple_call_fntype
+		     too.  */
+		  if (gimple_call_noreturn_p (call_stmt)
+		      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
+		      && TYPE_ARG_TYPES (TREE_TYPE (fn))
+		      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)))
+			  == void_type_node))
+		    gimple_call_set_fntype (call_stmt, TREE_TYPE (fn));
 		  maybe_remove_unused_call_args (cfun, call_stmt);
 		  gimple_set_modified (stmt, true);
 		}

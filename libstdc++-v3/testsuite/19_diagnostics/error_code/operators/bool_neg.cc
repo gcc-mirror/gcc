@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 // 2007-08-22 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
@@ -25,9 +24,7 @@
 int main()
 {
   std::error_code e;
-  int i = e; 
+  int i = e;  // { dg-error "cannot convert" }
 
   return i;
 }
-
-// { dg-error "cannot convert" "" { target *-*-* } 28 }

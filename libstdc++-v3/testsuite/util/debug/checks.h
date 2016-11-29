@@ -53,6 +53,19 @@ namespace __gnu_test
       }
     };
 
+  template<>
+    struct generate_unique<bool>
+    {
+      typedef bool value_type;
+
+      value_type build()
+      {
+	static value_type _S_;
+	_S_ = !_S_;
+	return _S_;
+      }
+    };
+
   template<typename _Tp1, typename _Tp2>
     struct generate_unique<std::pair<_Tp1, _Tp2> >
     {
@@ -75,8 +88,6 @@ namespace __gnu_test
     void
     check_assign1()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -105,8 +116,6 @@ namespace __gnu_test
     void
     check_assign2()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -134,8 +143,6 @@ namespace __gnu_test
     void
     check_assign3()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -163,8 +170,6 @@ namespace __gnu_test
     void
     check_construct1()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -188,8 +193,6 @@ namespace __gnu_test
     void
     check_construct2()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -213,8 +216,6 @@ namespace __gnu_test
     void
     check_construct3()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -287,8 +288,6 @@ namespace __gnu_test
     void
     check_insert1()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -316,8 +315,6 @@ namespace __gnu_test
     void
     check_insert2()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -345,8 +342,6 @@ namespace __gnu_test
     void
     check_insert3()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -374,8 +369,6 @@ namespace __gnu_test
     void
     check_insert4()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
@@ -401,8 +394,6 @@ namespace __gnu_test
   template<typename _Tp>
     void use_invalid_iterator()
     {
-      bool test __attribute__((unused)) = true;
-
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;

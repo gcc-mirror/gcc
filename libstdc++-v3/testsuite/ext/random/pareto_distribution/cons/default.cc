@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2012-09-21  Edward M. Smith-Rowland <3dw4rd@verizon.net>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::pareto_distribution<> u;
   VERIFY( u.alpha() == 1.0 );
   VERIFY( u.mu() == 1.0 );

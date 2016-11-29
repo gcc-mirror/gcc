@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "ira.h"
 #include "ira-int.h"
 #include "insn-attr.h"
@@ -3501,6 +3502,31 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
       if (!deps->readonly)
 	deps->last_args_size = insn;
     }
+
+  /* We must not mix prologue and epilogue insns.  See PR78029.  */
+  if (prologue_contains (insn))
+    {
+      add_dependence_list (insn, deps->last_epilogue, true, REG_DEP_ANTI, true);
+      if (!deps->readonly)
+	{
+	  if (deps->last_logue_was_epilogue)
+	    free_INSN_LIST_list (&deps->last_prologue);
+	  deps->last_prologue = alloc_INSN_LIST (insn, deps->last_prologue);
+	  deps->last_logue_was_epilogue = false;
+	}
+    }
+
+  if (epilogue_contains (insn))
+    {
+      add_dependence_list (insn, deps->last_prologue, true, REG_DEP_ANTI, true);
+      if (!deps->readonly)
+	{
+	  if (!deps->last_logue_was_epilogue)
+	    free_INSN_LIST_list (&deps->last_epilogue);
+	  deps->last_epilogue = alloc_INSN_LIST (insn, deps->last_epilogue);
+	  deps->last_logue_was_epilogue = true;
+	}
+    }
 }
 
 /* Return TRUE if INSN might not always return normally (e.g. call exit,
@@ -3906,6 +3932,9 @@ init_deps (struct deps_desc *deps, bool lazy_reg_last)
   deps->in_post_call_group_p = not_post_call;
   deps->last_debug_insn = 0;
   deps->last_args_size = 0;
+  deps->last_prologue = 0;
+  deps->last_epilogue = 0;
+  deps->last_logue_was_epilogue = false;
   deps->last_reg_pending_barrier = NOT_A_BARRIER;
   deps->readonly = 0;
 }
@@ -3992,8 +4021,14 @@ remove_from_deps (struct deps_desc *deps, rtx_insn *insn)
   removed = remove_from_dependence_list (insn, &deps->last_pending_memory_flush);
   deps->pending_flush_length -= removed;
 
+  unsigned to_clear = -1U;
   EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i, rsi)
     {
+      if (to_clear != -1U)
+	{
+	  CLEAR_REGNO_REG_SET (&deps->reg_last_in_use, to_clear);
+	  to_clear = -1U;
+	}
       struct deps_reg *reg_last = &deps->reg_last[i];
       if (reg_last->uses)
 	remove_from_dependence_list (insn, &reg_last->uses);
@@ -4005,8 +4040,10 @@ remove_from_deps (struct deps_desc *deps, rtx_insn *insn)
 	remove_from_dependence_list (insn, &reg_last->clobbers);
       if (!reg_last->uses && !reg_last->sets && !reg_last->implicit_sets
 	  && !reg_last->clobbers)
-        CLEAR_REGNO_REG_SET (&deps->reg_last_in_use, i);
+	to_clear = i;
     }
+  if (to_clear != -1U)
+    CLEAR_REGNO_REG_SET (&deps->reg_last_in_use, to_clear);
 
   if (CALL_P (insn))
     {

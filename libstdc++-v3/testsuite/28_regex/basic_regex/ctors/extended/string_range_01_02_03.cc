@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-06-16  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -29,16 +29,14 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
-	try
-	{
-		std::regex  re("a{1,2,3}", std::regex::extended);
-	}
-	catch (std::regex_error& ex)
-	{
-		VERIFY( ex.code() == std::regex_constants::error_brace );
-	}
+  try
+    {
+      std::regex  re("a{1,2,3}", std::regex::extended);
+    }
+  catch (std::regex_error& ex)
+    {
+      VERIFY( ex.code() == std::regex_constants::error_brace );
+    }
 }
 
 

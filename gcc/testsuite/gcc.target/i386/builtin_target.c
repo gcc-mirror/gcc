@@ -213,6 +213,10 @@ check_features (unsigned int ecx, unsigned int edx,
 	assert (__builtin_cpu_supports ("avx512ifma"));
       if (ecx & bit_AVX512VBMI)
 	assert (__builtin_cpu_supports ("avx512vbmi"));
+      if (edx & bit_AVX5124VNNIW)
+	assert (__builtin_cpu_supports ("avx5124vnniw"));
+      if (edx & bit_AVX5124FMAPS)
+	assert (__builtin_cpu_supports ("avx5124fmaps"));
     }
 }
 
@@ -310,6 +314,10 @@ quick_check ()
   assert (__builtin_cpu_supports ("avx2") >= 0);
 
   assert (__builtin_cpu_supports ("avx512f") >= 0);
+
+  assert (__builtin_cpu_supports ("avx5124vnniw") >= 0);
+
+  assert (__builtin_cpu_supports ("avx5124fmaps") >= 0);
 
   /* Check CPU type.  */
   assert (__builtin_cpu_is ("amd") >= 0);

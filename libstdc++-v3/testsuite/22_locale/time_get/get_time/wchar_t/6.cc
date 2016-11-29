@@ -24,7 +24,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef wstring::const_iterator iter_type;
   typedef time_get<wchar_t, iter_type> time_get_type;

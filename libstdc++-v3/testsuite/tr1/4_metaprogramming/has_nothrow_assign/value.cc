@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::has_nothrow_assign;
   using namespace __gnu_test;
 

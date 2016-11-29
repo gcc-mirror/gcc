@@ -64,7 +64,6 @@ public:
 int main()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   Derived2 d2;
   const Derived& dr = d2;
 

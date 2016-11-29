@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mpaired-single forbid_cpu=octeon.*" } */
+/* { dg-options "-mpaired-single forbid_cpu=octeon.* (REQUIRES_STDLIB)" } */
 
 /* Test MIPS paired-single comparisons */
 #include <stdlib.h>

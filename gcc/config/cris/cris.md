@@ -499,7 +499,8 @@
 {
   if (MEM_P (operands[0])
       && operands[1] != const0_rtx
-      && (!TARGET_V32 || (!REG_P (operands[1]) && can_create_pseudo_p ())))
+      && can_create_pseudo_p ()
+      && (!TARGET_V32 || !REG_P (operands[1])))
     operands[1] = copy_to_mode_reg (DImode, operands[1]);
 
   /* Some other ports (as of 2001-09-10 for example mcore and romp) also

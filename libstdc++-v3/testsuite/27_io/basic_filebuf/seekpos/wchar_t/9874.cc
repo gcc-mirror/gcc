@@ -35,7 +35,6 @@ void test01()
   typedef wfilebuf::int_type int_type;
   typedef vector<pair<pos_type, size_t> > vec_type;
 
-  bool test __attribute__((unused)) = true;
   const char name[] = "tmp_seekpos-9874.tst";
   const int_type eof = wfilebuf::traits_type::eof();
 

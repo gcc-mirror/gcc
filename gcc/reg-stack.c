@@ -161,6 +161,7 @@
 #include "tree.h"
 #include "df.h"
 #include "insn-config.h"
+#include "memmodel.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "recog.h"
 #include "varasm.h"
@@ -423,23 +424,25 @@ get_true_reg (rtx *pat)
 				  GET_MODE (subreg));
 	      return pat;
 	    }
+	  pat = &XEXP (*pat, 0);
+	  break;
 	}
       case FLOAT:
       case FIX:
       case FLOAT_EXTEND:
-	pat = & XEXP (*pat, 0);
+	pat = &XEXP (*pat, 0);
 	break;
 
       case UNSPEC:
 	if (XINT (*pat, 1) == UNSPEC_TRUNC_NOOP
 	    || XINT (*pat, 1) == UNSPEC_FILD_ATOMIC)
-	  pat = & XVECEXP (*pat, 0, 0);
+	  pat = &XVECEXP (*pat, 0, 0);
 	return pat;
 
       case FLOAT_TRUNCATE:
 	if (!flag_unsafe_math_optimizations)
 	  return pat;
-	pat = & XEXP (*pat, 0);
+	pat = &XEXP (*pat, 0);
 	break;
 
       default:

@@ -1,3 +1,4 @@
+// { dg-do run { target c++11 } }
 // { dg-require-c-std "" }
 // { dg-add-options ieee }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
@@ -39,7 +40,6 @@ test01()
   long double d = std::sph_neumann(n, xl);
   long double e = std::sph_neumannl(n, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

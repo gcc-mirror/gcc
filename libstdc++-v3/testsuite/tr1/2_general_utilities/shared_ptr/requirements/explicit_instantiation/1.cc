@@ -23,8 +23,7 @@
 // { dg-do compile }
 
 using namespace __gnu_test;
-using std::tr1::shared_ptr;
-template class shared_ptr<int>;
-template class shared_ptr<void>;
-template class shared_ptr<ClassType>;
-template class shared_ptr<IncompleteClass>;
+template class std::tr1::shared_ptr<int>;
+template class std::tr1::shared_ptr<void>;
+template class std::tr1::shared_ptr<ClassType>;
+template class std::tr1::shared_ptr<IncompleteClass>;

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-10-01  Tim Shen <timshen91@gmail.com>
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   string domain_name = "valid.hostname.org";
   /**
    * based on http://stackoverflow.com/questions/1418423/the-hostname-regex

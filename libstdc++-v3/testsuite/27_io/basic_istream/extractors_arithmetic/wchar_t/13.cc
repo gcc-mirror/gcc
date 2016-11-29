@@ -27,7 +27,6 @@
 void test13()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   const wchar_t* l2 = L"1.2345678901234567890123456789012345678901234567890123456"
                       L"  "
                       L"1246.9";

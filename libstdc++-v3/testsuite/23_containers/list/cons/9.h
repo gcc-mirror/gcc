@@ -32,7 +32,6 @@ template<typename _Tp>
 void
 cons09()
 {
-  bool test __attribute__((unused)) = true;
   typedef _Tp list_type;
   typedef typename list_type::iterator iterator;
 

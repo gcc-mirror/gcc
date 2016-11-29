@@ -29,8 +29,6 @@ struct B : A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::tr1::shared_ptr<A> p1;
   VERIFY( p1.use_count() == 0 );
   const std::tr1::shared_ptr<A> p2(p1);
@@ -42,8 +40,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<A> p1(new A);
   std::tr1::shared_ptr<A> p2(p1);
   p1.reset();
@@ -56,8 +52,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<A> p1(new A);
   std::tr1::shared_ptr<A> p2(p1);
   p2.reset(new B);

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2012-10-12  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::arcsine_distribution<double> u(-2.0, 3.0), v, w;
 
   VERIFY( u != v );

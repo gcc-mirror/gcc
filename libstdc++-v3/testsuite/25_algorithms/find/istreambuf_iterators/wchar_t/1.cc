@@ -25,7 +25,6 @@
 // In the occasion of libstdc++/25482
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef istreambuf_iterator<wchar_t> in_iterator_type;

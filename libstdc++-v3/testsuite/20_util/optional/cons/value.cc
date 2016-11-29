@@ -14,7 +14,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a moved_to of the GNU General Public License along
+// You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
@@ -254,5 +254,31 @@ int main()
     ox3 = 42;
     std::optional<X> ox4;
     ox4 = oi;
+  }
+  {
+    std::optional<int> oi = std::optional<short>();
+    VERIFY(!bool(oi));
+    std::optional<std::string> os = std::optional<const char*>();
+    VERIFY(!bool(os));
+    std::optional<std::optional<int>> ooi = std::optional<int>();
+    VERIFY(bool(ooi));
+    ooi = std::optional<int>();
+    VERIFY(bool(ooi));
+    ooi = std::optional<int>(42);
+    VERIFY(bool(ooi));
+    VERIFY(bool(*ooi));
+    std::optional<std::optional<int>> ooi2 = std::optional<short>();
+    VERIFY(bool(ooi2));
+    ooi2 = std::optional<short>();
+    VERIFY(bool(ooi2));
+    ooi2 = std::optional<short>(6);
+    VERIFY(bool(ooi2));
+    VERIFY(bool(*ooi2));
+    std::optional<std::optional<int>> ooi3 = std::optional<int>(42);
+    VERIFY(bool(ooi3));
+    VERIFY(bool(*ooi3));
+    std::optional<std::optional<int>> ooi4 = std::optional<short>(6);
+    VERIFY(bool(ooi4));
+    VERIFY(bool(*ooi4));
   }
 }

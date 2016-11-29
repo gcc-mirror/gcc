@@ -29,7 +29,6 @@
 void test13()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   const char* l2 = "1.2345678901234567890123456789012345678901234567890123456"
                    "  "
                    "1246.9";

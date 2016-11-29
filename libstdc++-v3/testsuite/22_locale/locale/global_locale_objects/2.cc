@@ -30,7 +30,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   const string ph(ISO_8859(1,en_PH));
   const string mx(ISO_8859(1,es_MX));

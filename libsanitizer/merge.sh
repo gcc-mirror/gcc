@@ -72,6 +72,10 @@ merge lib/sanitizer_common sanitizer_common
 merge lib/interception interception
 merge lib/ubsan ubsan
 
+# Need to merge lib/builtins/assembly.h file:
+mkdir -p builtins
+cp -v upstream/lib/builtins/assembly.h builtins/assembly.h
+
 rm -rf upstream
 
 # Update the MERGE file.

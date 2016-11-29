@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -24,9 +23,7 @@
 int test01()
 {
   std::error_condition e;
-  int i = e;
+  int i = e; // { dg-error "cannot convert" }
 
   return i;
 }
-
-// { dg-error "cannot convert" "" { target *-*-* } 27 }

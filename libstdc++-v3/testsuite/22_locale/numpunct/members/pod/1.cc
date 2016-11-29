@@ -34,8 +34,6 @@ void test01()
   typedef numpunct<pod_ushort>::string_type 	string_type;
   typedef basic_stringbuf<pod_ushort> 	stringbuf_type;
   typedef basic_ostream<pod_ushort> 		ostream_type;
-  
-  bool test __attribute__((unused)) = true;
 
   // Pre-cache sanity check.
   const locale 	loc(locale::classic(), new numpunct<pod_ushort>);

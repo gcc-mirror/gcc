@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 // GROUPS passed miscellaneous
 // test that use of `inline' is forbidden when it should be
-inline int i;// { dg-error "" } .*
+inline int i;// { dg-error "" "" { target c++14_down } } .*
 struct c { inline int i; };// { dg-error "" } .*
 int foo (inline int i);// { dg-error "" } .*
 inline class c; // { dg-error "'inline' can only be specified for functions" } inline

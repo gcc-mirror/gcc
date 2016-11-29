@@ -65,18 +65,19 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 	}
 	more = len(ci.callers) > 0
 
-	f, file, line := funcframe(pc, i)
-	if f == nil {
+	// Subtract 1 from PC to undo the 1 we added in callback in
+	// go-callers.c.
+	function, file, line := funcfileline(pc-1, int32(i))
+	if function == "" && file == "" {
 		return Frame{}, more
 	}
+	entry := funcentry(pc - 1)
+	f := &Func{name: function, entry: entry}
 
-	entry := f.Entry()
 	xpc := pc
 	if xpc > entry {
 		xpc--
 	}
-
-	function := f.Name()
 
 	frame = Frame{
 		PC:       xpc,
@@ -97,21 +98,29 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 
 // A Func represents a Go function in the running binary.
 type Func struct {
-	opaque struct{} // unexported field to disallow conversions
+	name  string
+	entry uintptr
 }
 
 // FuncForPC returns a *Func describing the function that contains the
 // given program counter address, or else nil.
-func FuncForPC(pc uintptr) *Func
+func FuncForPC(pc uintptr) *Func {
+	name, _, _ := funcfileline(pc, -1)
+	if name == "" {
+		return nil
+	}
+	entry := funcentry(pc)
+	return &Func{name: name, entry: entry}
+}
 
 // Name returns the name of the function.
 func (f *Func) Name() string {
-	return funcname_go(f)
+	return f.name
 }
 
 // Entry returns the entry address of the function.
 func (f *Func) Entry() uintptr {
-	return funcentry_go(f)
+	return f.entry
 }
 
 // FileLine returns the file name and line number of the
@@ -119,11 +128,10 @@ func (f *Func) Entry() uintptr {
 // The result will not be accurate if pc is not a program
 // counter within f.
 func (f *Func) FileLine(pc uintptr) (file string, line int) {
-	return funcline_go(f, pc)
+	_, file, line = funcfileline(pc, -1)
+	return file, line
 }
 
-// implemented in symtab.c
-func funcline_go(*Func, uintptr) (string, int)
-func funcname_go(*Func) string
-func funcentry_go(*Func) uintptr
-func funcframe(uintptr, int) (*Func, string, int)
+// implemented in go-caller.c
+func funcfileline(uintptr, int32) (string, string, int)
+func funcentry(uintptr) uintptr

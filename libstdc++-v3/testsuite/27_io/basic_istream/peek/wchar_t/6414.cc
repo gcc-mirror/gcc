@@ -27,7 +27,6 @@
 // fstreams
 void test04(void)
 {
-  bool test __attribute__((unused)) = true;
   std::wistream::pos_type pos01, pos02;
   const char str_lit01[] = "wistream_seeks-1.txt";
   std::wifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);

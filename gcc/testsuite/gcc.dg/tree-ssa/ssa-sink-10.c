@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-sink-details" } */
+/* { dg-options "-O2 -fdump-tree-sink-details -fno-tree-pre" } */
 
 int x[1024], y[1024], z[1024], w[1024];
 void foo (void)

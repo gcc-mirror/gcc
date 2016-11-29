@@ -43,7 +43,6 @@ L"aaaaaaaaaaaa\n"
 L"aaaaaaaaaaaaa\n"
 L"aaaaaaaaaaaaaa\n";
 
-  bool test __attribute__((unused)) = true;
   const std::streamsize it = 5;
   std::streamsize br = 0;
   wchar_t tmp[it];

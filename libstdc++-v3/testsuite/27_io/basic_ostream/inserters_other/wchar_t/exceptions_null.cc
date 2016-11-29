@@ -27,7 +27,6 @@
 void test1()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream stream;
   stream << static_cast<wstreambuf*>(0);
@@ -37,7 +36,6 @@ void test1()
 void test3()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream stream;
   stream.exceptions(ios_base::badbit);

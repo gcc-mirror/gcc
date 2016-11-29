@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -17,7 +16,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 #include <algorithm>
 #include <testsuite_iterators.h>

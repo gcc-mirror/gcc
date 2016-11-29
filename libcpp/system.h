@@ -375,9 +375,12 @@ extern void abort (void);
    ??? C99 designated initializers are not supported by most C++
    compilers, including G++.  -- gdr, 2005-05-18  */
 #if !defined(HAVE_DESIGNATED_INITIALIZERS)
+#ifdef __cplusplus
+#define HAVE_DESIGNATED_INITIALIZERS 0
+#else
 #define HAVE_DESIGNATED_INITIALIZERS \
-  (!defined(__cplusplus) \
-   && ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)))
+   ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+#endif
 #endif
 
 #ifndef offsetof

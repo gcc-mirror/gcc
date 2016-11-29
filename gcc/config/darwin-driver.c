@@ -73,7 +73,8 @@ darwin_find_version_from_kernel (void)
      component.  */
   if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not
-       support three-component system versions.  */
+       support three-component system versions.
+       FIXME: we should not assume this - a newer linker could be used.  */
     asprintf (&new_flag, "10.%d", major_vers - 4);
   else
     asprintf (&new_flag, "10.%d.%s", major_vers - 4, minor_vers);
@@ -293,5 +294,30 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	  generate_option (OPT_mmacosx_version_min_, vers_string, 1, CL_DRIVER,
 			  &(*decoded_options)[*decoded_options_count - 1]);
 	}
+    }
+  /* Create and push the major version for assemblers that need it.  */
+  if (vers_string != NULL)
+    {
+      char *asm_major = NULL;
+      char *first_period = strchr(vers_string, '.');
+      if (first_period != NULL)
+	{
+	  char *second_period = strchr(first_period+1, '.');
+	  if (second_period  != NULL)
+	    asm_major = xstrndup (vers_string, second_period-vers_string);
+	  else
+	    asm_major = xstrdup (vers_string);
+        }
+      /* Else we appear to have a weird macosx version with no major number.
+         Punt on this for now.  */
+      if (asm_major != NULL)
+        {
+	  ++*decoded_options_count;
+	  *decoded_options = XRESIZEVEC (struct cl_decoded_option,
+					 *decoded_options,
+					 *decoded_options_count);
+	  generate_option (OPT_asm_macosx_version_min_, asm_major, 1, CL_DRIVER,
+			  &(*decoded_options)[*decoded_options_count - 1]);
+        }
     }
 }

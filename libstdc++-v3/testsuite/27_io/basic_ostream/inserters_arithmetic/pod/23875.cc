@@ -23,7 +23,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_character.h>
 
-bool test __attribute__((unused)) = true;
 using __gnu_test::pod_ushort;
 
 namespace std

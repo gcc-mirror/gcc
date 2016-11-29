@@ -30,9 +30,7 @@ void test03()
   using namespace std;
   typedef ostreambuf_iterator<wchar_t> iterator_type;
 
-  bool test __attribute__((unused)) = true;
-
-   // create "C" time objects
+  // create "C" time objects
   const tm time1 = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
 
   // basic construction and sanity check

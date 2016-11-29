@@ -6,7 +6,7 @@
 // c++/67376 on gcc-patches for additional background.
 
 // { dg-do compile { target c++11 } }
-// { dg-options "-fdump-tree-optimized" }
+// { dg-options "-fdelete-null-pointer-checks -fdump-tree-optimized" }
 
 // Runtime assert.  Used for potentially invalid expressions.
 #define RA(e)  ((e) ? (void)0 : __builtin_abort ())

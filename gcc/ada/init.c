@@ -2109,7 +2109,7 @@ __gnat_install_handler (void)
     if ((strncmp (model, "Linux", 5) == 0)
         || (strncmp (model, "Windows", 7) == 0)
         || (strncmp (model, "SIMLINUX", 8) == 0) /* vx7 */
-        || (strncmp (model, "SIMWINDOWS", 10) == 0)) /* ditto */
+        || (strncmp (model, "SIMNT", 5) == 0)) /* ditto */
       __gnat_set_is_vxsim (TRUE);
   }
 #endif
@@ -2138,9 +2138,9 @@ __gnat_init_float (void)
 #endif
 #endif
 
-#if defined (__i386__) && !defined (VTHREADS)
+#if (defined (__i386__) || defined (__x86_64__)) && !defined (VTHREADS)
   /* This is used to properly initialize the FPU on an x86 for each
-     process thread. Is this needed for x86_64 ???  */
+     process thread. */
   asm ("finit");
 #endif
 
@@ -2513,6 +2513,14 @@ __gnat_install_handler (void)
   if (__gnat_get_interrupt_state (SIGBUS) != 's')
     sigaction (SIGBUS,  &act, NULL);
 
+  __gnat_handler_installed = 1;
+}
+
+#elif defined (__DJGPP__)
+
+void
+__gnat_install_handler ()
+{
   __gnat_handler_installed = 1;
 }
 

@@ -107,8 +107,8 @@ elif [ -d "$1" -o -d "$2" ] ; then
 	usage "Must specify either two directories or two files"
 fi
 
-sed 's/^XFAIL/FAIL/; s/^XPASS/PASS/' < "$1" | awk '/^Running target / {target = $3} { if (target != "unix") { sub(/: /, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp1
-sed 's/^XFAIL/FAIL/; s/^XPASS/PASS/' < "$2" | awk '/^Running target / {target = $3} { if (target != "unix") { sub(/: /, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp2
+sed 's/^XFAIL/FAIL/; s/^ERROR/FAIL/; s/^XPASS/PASS/' < "$1" | awk '/^Running target / {target = $3} { if (target != "unix") { sub(/: /, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp1
+sed 's/^XFAIL/FAIL/; s/^ERROR/FAIL/; s/^XPASS/PASS/' < "$2" | awk '/^Running target / {target = $3} { if (target != "unix") { sub(/: /, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp2
 
 before=$tmp1
 now=$tmp2

@@ -144,6 +144,9 @@ struct work_stuff
   string* previous_argument; /* The last function argument demangled.  */
   int nrepeats;         /* The number of times to repeat the previous
 			   argument.  */
+  int *proctypevec;     /* Indices of currently processed remembered typevecs.  */
+  int proctypevec_size;
+  int nproctypes;
 };
 
 #define PRINT_ANSI_QUALIFIERS (work -> options & DMGL_ANSI)
@@ -320,6 +323,12 @@ const struct demangler_engine libiberty_demanglers[] =
   }
   ,
   {
+    RUST_DEMANGLING_STYLE_STRING,
+    rust_demangling,
+    "Rust style demangling"
+  }
+  ,
+  {
     NULL, unknown_demangling, NULL
   }
 };
@@ -435,6 +444,10 @@ iterate_demangle_function (struct work_stuff *,
                            const char **, string *, const char *);
 
 static void remember_type (struct work_stuff *, const char *, int);
+
+static void push_processed_type (struct work_stuff *, int);
+
+static void pop_processed_type (struct work_stuff *);
 
 static void remember_Btype (struct work_stuff *, const char *, int, int);
 
@@ -867,10 +880,26 @@ cplus_demangle (const char *mangled, int options)
     work->options |= (int) current_demangling_style & DMGL_STYLE_MASK;
 
   /* The V3 ABI demangling is implemented elsewhere.  */
-  if (GNU_V3_DEMANGLING || AUTO_DEMANGLING)
+  if (GNU_V3_DEMANGLING || RUST_DEMANGLING || AUTO_DEMANGLING)
     {
       ret = cplus_demangle_v3 (mangled, work->options);
-      if (ret || GNU_V3_DEMANGLING)
+      if (GNU_V3_DEMANGLING)
+	return ret;
+
+      if (ret)
+	{
+	  /* Rust symbols are GNU_V3 mangled plus some extra subtitutions.
+	     The subtitutions are always smaller, so do in place changes.  */
+	  if (rust_is_mangled (ret))
+	    rust_demangle_sym (ret);
+	  else if (RUST_DEMANGLING)
+	    {
+	      free (ret);
+	      ret = NULL;
+	    }
+	}
+
+      if (ret || RUST_DEMANGLING)
 	return ret;
     }
 
@@ -896,6 +925,27 @@ cplus_demangle (const char *mangled, int options)
   return (ret);
 }
 
+char *
+rust_demangle (const char *mangled, int options)
+{
+  /* Rust symbols are GNU_V3 mangled plus some extra subtitutions.  */
+  char *ret = cplus_demangle_v3 (mangled, options);
+
+  /* The Rust subtitutions are always smaller, so do in place changes.  */
+  if (ret != NULL)
+    {
+      if (rust_is_mangled (ret))
+	rust_demangle_sym (ret);
+      else
+	{
+	  free (ret);
+	  ret = NULL;
+	}
+    }
+
+  return ret;
+}
+
 /* Demangle ada names.  The encoding is documented in gcc/ada/exp_dbug.ads.  */
 
 char *
@@ -904,7 +954,7 @@ ada_demangle (const char *mangled, int option ATTRIBUTE_UNUSED)
   int len0;
   const char* p;
   char *d;
-  char *demangled;
+  char *demangled = NULL;
   
   /* Discard leading _ada_, which is used for library level subprograms.  */
   if (strncmp (mangled, "_ada_", 5) == 0)
@@ -1149,6 +1199,7 @@ ada_demangle (const char *mangled, int option ATTRIBUTE_UNUSED)
   return demangled;
 
  unknown:
+  XDELETEVEC (demangled);
   len0 = strlen (mangled);
   demangled = XNEWVEC (char, len0 + 3);
 
@@ -1302,6 +1353,10 @@ work_stuff_copy_to_from (struct work_stuff *to, struct work_stuff *from)
       memcpy (to->btypevec[i], from->btypevec[i], len);
     }
 
+  if (from->proctypevec)
+    to->proctypevec =
+      XDUPVEC (int, from->proctypevec, from->proctypevec_size);
+
   if (from->ntmpl_args)
     to->tmpl_argvec = XNEWVEC (char *, from->ntmpl_args);
 
@@ -1330,11 +1385,17 @@ delete_non_B_K_work_stuff (struct work_stuff *work)
   /* Discard the remembered types, if any.  */
 
   forget_types (work);
-  if (work -> typevec != NULL)
+  if (work->typevec != NULL)
     {
-      free ((char *) work -> typevec);
-      work -> typevec = NULL;
-      work -> typevec_size = 0;
+      free ((char *) work->typevec);
+      work->typevec = NULL;
+      work->typevec_size = 0;
+    }
+  if (work->proctypevec != NULL)
+    {
+      free (work->proctypevec);
+      work->proctypevec = NULL;
+      work->proctypevec_size = 0;
     }
   if (work->tmpl_argvec)
     {
@@ -1636,12 +1697,13 @@ demangle_signature (struct work_stuff *work,
 					   0);
 	      if (!(work->constructor & 1))
 		expect_return_type = 1;
-	      (*mangled)++;
+	      if (!**mangled)
+		success = 0;
+	      else
+	        (*mangled)++;
 	      break;
 	    }
-	  else
-	    /* fall through */
-	    {;}
+	  /* fall through */
 
 	default:
 	  if (AUTO_DEMANGLING || GNU_DEMANGLING)
@@ -2117,6 +2179,8 @@ demangle_template (struct work_stuff *work, const char **mangled,
 	{
 	  int idx;
 	  (*mangled)++;
+	  if (**mangled == '\0')
+	    return (0);
 	  (*mangled)++;
 
 	  idx = consume_count_with_underscores (mangled);
@@ -2961,7 +3025,7 @@ gnu_special (struct work_stuff *work, const char **mangled, string *declp)
   int success = 1;
   const char *p;
 
-  if ((*mangled)[0] == '_'
+  if ((*mangled)[0] == '_' && (*mangled)[1] != '\0'
       && strchr (cplus_markers, (*mangled)[1]) != NULL
       && (*mangled)[2] == '_')
     {
@@ -2975,7 +3039,7 @@ gnu_special (struct work_stuff *work, const char **mangled, string *declp)
 		&& (*mangled)[3] == 't'
 		&& (*mangled)[4] == '_')
 	       || ((*mangled)[1] == 'v'
-		   && (*mangled)[2] == 't'
+		   && (*mangled)[2] == 't' && (*mangled)[3] != '\0'
 		   && strchr (cplus_markers, (*mangled)[3]) != NULL)))
     {
       /* Found a GNU style virtual table, get past "_vt<CPLUS_MARKER>"
@@ -3555,6 +3619,8 @@ static int
 do_type (struct work_stuff *work, const char **mangled, string *result)
 {
   int n;
+  int i;
+  int is_proctypevec;
   int done;
   int success;
   string decl;
@@ -3567,6 +3633,7 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 
   done = 0;
   success = 1;
+  is_proctypevec = 0;
   while (success && !done)
     {
       int member;
@@ -3627,8 +3694,15 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 	      success = 0;
 	    }
 	  else
-	    {
-	      remembered_type = work -> typevec[n];
+	    for (i = 0; i < work->nproctypes; i++)
+	      if (work -> proctypevec [i] == n)
+	        success = 0;
+
+	  if (success)
+	    {    
+	      is_proctypevec = 1;
+	      push_processed_type (work, n);
+	      remembered_type = work->typevec[n];
 	      mangled = &remembered_type;
 	    }
 	  break;
@@ -3735,11 +3809,12 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 		    break;
 		  }
 
-		if (*(*mangled)++ != 'F')
+		if (*(*mangled) != 'F')
 		  {
 		    success = 0;
 		    break;
 		  }
+		(*mangled)++;
 	      }
 	    if ((member && !demangle_nested_args (work, mangled, &decl))
 		|| **mangled != '_')
@@ -3849,6 +3924,9 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
   else
     string_delete (result);
   string_delete (&decl);
+
+  if (is_proctypevec)
+    pop_processed_type (work); 
 
   if (success)
     /* Assume an integral type, if we're not sure.  */
@@ -3993,6 +4071,7 @@ demangle_fund_type (struct work_stuff *work,
 	  success = 0;
 	  break;
 	}
+      /* fall through */
     case 'I':
       (*mangled)++;
       if (**mangled == '_')
@@ -4263,6 +4342,41 @@ do_arg (struct work_stuff *work, const char **mangled, string *result)
 }
 
 static void
+push_processed_type (struct work_stuff *work, int typevec_index)
+{
+  if (work->nproctypes >= work->proctypevec_size)
+    {
+      if (!work->proctypevec_size)
+	{
+	  work->proctypevec_size = 4;
+	  work->proctypevec = XNEWVEC (int, work->proctypevec_size);
+	}
+      else 
+	{
+	  if (work->proctypevec_size < 16)
+	    /* Double when small.  */
+	    work->proctypevec_size *= 2;
+	  else
+	    {
+	      /* Grow slower when large.  */
+	      if (work->proctypevec_size > (INT_MAX / 3) * 2)
+                xmalloc_failed (INT_MAX);
+              work->proctypevec_size = (work->proctypevec_size * 3 / 2);
+	    }   
+          work->proctypevec
+            = XRESIZEVEC (int, work->proctypevec, work->proctypevec_size);
+	}
+    }
+    work->proctypevec [work->nproctypes++] = typevec_index;
+}
+
+static void
+pop_processed_type (struct work_stuff *work)
+{
+  work->nproctypes--;
+}
+
+static void
 remember_type (struct work_stuff *work, const char *start, int len)
 {
   char *tem;
@@ -4526,10 +4640,13 @@ demangle_args (struct work_stuff *work, const char **mangled,
 		{
 		  string_append (declp, ", ");
 		}
+	      push_processed_type (work, t);  
 	      if (!do_arg (work, &tem, &arg))
 		{
+		  pop_processed_type (work);
 		  return (0);
 		}
+	      pop_processed_type (work);
 	      if (PRINT_ARG_TYPES)
 		{
 		  string_appends (declp, &arg);

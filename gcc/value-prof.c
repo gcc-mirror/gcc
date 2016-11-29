@@ -95,12 +95,6 @@ along with GCC; see the file COPYING3.  If not see
 
    Limitations / FIXME / TODO:
    * Only one histogram of each type can be associated with a statement.
-   * Currently, HIST_TYPE_CONST_DELTA is not implemented.
-     (This type of histogram was originally used to implement a form of
-     stride profiling based speculative prefetching to improve SPEC2000
-     scores for memory-bound benchmarks, mcf and equake.  However, this
-     was an RTL value-profiling transformation, and those have all been
-     removed.)
    * Some value profile transformations are done in builtins.c (?!)
    * Updating of histograms needs some TLC.
    * The value profiling code could be used to record analysis results
@@ -264,8 +258,8 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	{
 	   fprintf (dump_file, "pow2:%" PRId64
 		    " nonpow2:%" PRId64,
-		    (int64_t) hist->hvalue.counters[0],
-		    (int64_t) hist->hvalue.counters[1]);
+		    (int64_t) hist->hvalue.counters[1],
+		    (int64_t) hist->hvalue.counters[0]);
 	}
       fprintf (dump_file, ".\n");
       break;
@@ -306,19 +300,6 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
       fprintf (dump_file, ".\n");
       break;
 
-    case HIST_TYPE_CONST_DELTA:
-      fprintf (dump_file, "Constant delta ");
-      if (hist->hvalue.counters)
-	{
-	   fprintf (dump_file, "value:%" PRId64
-		    " match:%" PRId64
-		    " wrong:%" PRId64,
-		    (int64_t) hist->hvalue.counters[0],
-		    (int64_t) hist->hvalue.counters[1],
-		    (int64_t) hist->hvalue.counters[2]);
-	}
-      fprintf (dump_file, ".\n");
-      break;
     case HIST_TYPE_INDIR_CALL:
       fprintf (dump_file, "Indirect call ");
       if (hist->hvalue.counters)
@@ -424,10 +405,6 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple *stmt)
 	case HIST_TYPE_SINGLE_VALUE:
 	case HIST_TYPE_INDIR_CALL:
 	  ncounters = 3;
-	  break;
-
-	case HIST_TYPE_CONST_DELTA:
-	  ncounters = 4;
 	  break;
 
 	case HIST_TYPE_IOR:
@@ -1901,12 +1878,12 @@ stringop_block_profile (gimple *stmt, unsigned int *expected_align,
   else
     {
       gcov_type count;
-      int alignment;
+      unsigned int alignment;
 
       count = histogram->hvalue.counters[0];
       alignment = 1;
       while (!(count & alignment)
-	     && (alignment * 2 * BITS_PER_UNIT))
+	     && (alignment <= UINT_MAX / 2 / BITS_PER_UNIT))
 	alignment <<= 1;
       *expected_align = alignment * BITS_PER_UNIT;
       gimple_remove_histogram_value (cfun, stmt, histogram);
@@ -1950,7 +1927,8 @@ gimple_divmod_values_to_profile (gimple *stmt, histogram_values *values)
       /* For mod, check whether it is not often a noop (or replaceable by
 	 a few subtractions).  */
       if (gimple_assign_rhs_code (stmt) == TRUNC_MOD_EXPR
-	  && TYPE_UNSIGNED (type))
+	  && TYPE_UNSIGNED (type)
+	  && TREE_CODE (divisor) == SSA_NAME)
 	{
           tree val;
           /* Check for a special case where the divisor is power of 2.  */
@@ -2077,10 +2055,6 @@ gimple_find_values_to_profile (histogram_values *values)
 
 	case HIST_TYPE_SINGLE_VALUE:
 	  hist->n_counters = 3;
-	  break;
-
-	case HIST_TYPE_CONST_DELTA:
-	  hist->n_counters = 4;
 	  break;
 
  	case HIST_TYPE_INDIR_CALL:

@@ -25,15 +25,12 @@
 void test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   wistringstream istr(L"inside betty carter");
   wostringstream ostr;
   ostr << istr.rdbuf() << endl;
 
   if (ostr.rdstate() & ios_base::eofbit) 
-    test = false;
-
-  VERIFY( test );
+    VERIFY( false );
 }
 
 int 

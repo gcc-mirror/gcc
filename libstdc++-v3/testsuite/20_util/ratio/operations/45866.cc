@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 2010-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -26,8 +26,6 @@
 // libstdc++/45866
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::ratio<1, 4>::type r_type1;
   typedef std::ratio<3, 2>::type r_type2;
 

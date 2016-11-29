@@ -15,18 +15,19 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 #include <experimental/algorithm>
 #include <iterator>
 #include <sstream>
 #include <forward_list>
 #include <vector>
+#include <random>
+#include <algorithm>
 #include <testsuite_hooks.h>
 
 std::mt19937 rng;
 
-using std::experimental::sample;
 using std::istream_iterator;
 using std::ostream_iterator;
 
@@ -37,7 +38,7 @@ test01()
   int samp[10] = { };
 
   // population smaller than desired sample size
-  auto it = sample(pop, pop + 2, samp, 10, rng);
+  auto it = std::experimental::sample(pop, pop + 2, samp, 10, rng);
   VERIFY( it == samp + 2 );
   VERIFY( std::accumulate(samp, samp + 10, 0) == 3 );
 }
@@ -48,7 +49,7 @@ test02()
   const int pop[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
   int samp[10] = { };
 
-  auto it = sample(pop, std::end(pop), samp, 10, rng);
+  auto it = std::experimental::sample(pop, std::end(pop), samp, 10, rng);
   VERIFY( it == samp + 10 );
 
   std::sort(samp, it);
@@ -63,7 +64,9 @@ test03()
   int samp[5] = { };
 
   // input iterator for population
-  auto it = sample(istream_iterator<int>{pop}, {}, samp, 5, rng);
+  auto it = std::experimental::sample(istream_iterator<int>{pop}, {},
+                                      samp,
+                                      5, rng);
   VERIFY( it == samp + 5 );
 
   std::sort(samp, it);
@@ -78,7 +81,9 @@ test04()
   std::stringstream samp;
 
   // forward iterator for population and output iterator for result
-  sample(pop.begin(), pop.end(), ostream_iterator<int>{samp, " "}, 5, rng);
+  std::experimental::sample(pop.begin(), pop.end(),
+                            ostream_iterator<int>{samp, " "},
+                            5, rng);
 
   // samp.rdbuf()->pubseekoff(0, std::ios::beg);
   std::vector<int> v(istream_iterator<int>{samp}, {});

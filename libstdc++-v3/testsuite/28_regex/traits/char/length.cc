@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-02-17  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -34,16 +33,15 @@ test01()
 {
   typedef char CharT;
   typedef std::regex_traits<CharT> traits;
-  bool test __attribute__((unused)) = true;
   const CharT* p = "";
 
-	std::size_t i = traits::length(p);
+  std::size_t i = traits::length(p);
 
-	VERIFY( i == 0 );
+  VERIFY( i == 0 );
 }
 
 int main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <iconv.h>
 #endif
 
+static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
+
 /* Overwrite the given location/range within this text_info's rich_location.
    For use e.g. when implementing "+" in client format decoders.  */
 
@@ -292,6 +294,8 @@ pp_indent (pretty_printer *pp)
 	 integer.
    %Ns: likewise, but length specified as constant in the format string.
    Flag 'q': quote formatted text (must come immediately after '%').
+   %Z: Requires two arguments - array of int, and len. Prints elements
+   of the array.
 
    Arguments can be used sequentially, or through %N$ resp. *N$
    notation Nth argument after the format string.  If %N$ / *N$
@@ -555,8 +559,20 @@ pp_format (pretty_printer *pp, text_info *text)
 	  break;
 
 	case 'c':
-	  pp_character (pp, va_arg (*text->args_ptr, int));
-	  break;
+	  {
+	    /* When quoting, print alphanumeric, punctuation, and the space
+	       character unchanged, and all others in hexadecimal with the
+	       "\x" prefix.  Otherwise print them all unchanged.  */
+	    int chr = va_arg (*text->args_ptr, int);
+	    if (ISPRINT (chr) || !quote)
+	      pp_character (pp, chr);
+	    else
+	      {
+		const char str [2] = { chr, '\0' };
+		pp_quoted_string (pp, str, 1);
+	      }
+	    break;
+	  }
 
 	case 'd':
 	case 'i':
@@ -577,7 +593,10 @@ pp_format (pretty_printer *pp, text_info *text)
 	  break;
 
 	case 's':
-	  pp_string (pp, va_arg (*text->args_ptr, const char *));
+	  if (quote)
+	    pp_quoted_string (pp, va_arg (*text->args_ptr, const char *));
+	  else
+	    pp_string (pp, va_arg (*text->args_ptr, const char *));
 	  break;
 
 	case 'p':
@@ -592,6 +611,23 @@ pp_format (pretty_printer *pp, text_info *text)
 	    pp_integer_with_precision
 	      (pp, *text->args_ptr, precision, unsigned, "u");
 	  break;
+
+	case 'Z':
+	  {
+	    int *v = va_arg (*text->args_ptr, int *);
+	    unsigned len = va_arg (*text->args_ptr, unsigned); 
+
+	    for (unsigned i = 0; i < len; ++i)
+	      {
+		pp_scalar (pp, "%i", v[i]);
+		if (i < len - 1)
+		  {
+		    pp_comma (pp);
+		    pp_space (pp);
+		  }
+	      }
+	    break;
+	 }
 
 	case 'x':
 	  if (wide)
@@ -937,6 +973,41 @@ pp_string (pretty_printer *pp, const char *str)
 {
   gcc_checking_assert (str);
   pp_maybe_wrap_text (pp, str, str + strlen (str));
+}
+
+/* Append the leading N characters of STRING to the output area of
+   PRETTY-PRINTER, quoting in hexadecimal non-printable characters.
+   Setting N = -1 is as if N were set to strlen (STRING).  The STRING
+   may be line-wrapped if in appropriate mode.  */
+static void
+pp_quoted_string (pretty_printer *pp, const char *str, size_t n /* = -1 */)
+{
+  gcc_checking_assert (str);
+
+  const char *last = str;
+  const char *ps;
+
+  /* Compute the length if not specified.  */
+  if (n == (size_t) -1)
+    n = strlen (str);
+
+  for (ps = str; n; ++ps, --n)
+    {
+      if (ISPRINT (*ps))
+	  continue;
+
+      if (last < ps)
+	pp_maybe_wrap_text (pp, last, ps - 1);
+
+      /* Append the hexadecimal value of the character.  Allocate a buffer
+	 that's large enough for a 32-bit char plus the hex prefix.  */
+      char buf [11];
+      int n = sprintf (buf, "\\x%02x", (unsigned char)*ps);
+      pp_maybe_wrap_text (pp, buf, buf + n);
+      last = ps + 1;
+    }
+
+  pp_maybe_wrap_text (pp, last, ps);
 }
 
 /* Maybe print out a whitespace if needed.  */
@@ -1371,6 +1442,13 @@ test_pp_format ()
   assert_pp_format_colored (SELFTEST_LOCATION,
 			    "`\33[01m\33[Kfoo\33[m\33[K' 12345678", "%qs %x",
 			    "foo", 0x12345678);
+
+  /* Verify %Z.  */
+  int v[] = { 1, 2, 3 }; 
+  ASSERT_PP_FORMAT_3 ("1, 2, 3 12345678", "%Z %x", v, 3, 0x12345678);
+
+  int v2[] = { 0 }; 
+  ASSERT_PP_FORMAT_3 ("0 12345678", "%Z %x", v2, 1, 0x12345678);
 
   /* Verify that combinations work, along with unformatted text.  */
   assert_pp_format (SELFTEST_LOCATION,

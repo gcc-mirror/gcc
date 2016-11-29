@@ -59,7 +59,6 @@ struct reset_count_struct
 int test01()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::tr1::shared_ptr<A> a1;
   std::tr1::shared_ptr<A> a2(a1);
@@ -76,7 +75,6 @@ int
 test02()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::tr1::shared_ptr<A> a1(new A);
   std::tr1::shared_ptr<A> a2(a1);
@@ -93,7 +91,6 @@ int
 test03()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::tr1::shared_ptr<B> b(new B);
   std::tr1::shared_ptr<A> a(b);
@@ -110,7 +107,6 @@ int
 test04()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::tr1::shared_ptr<B> b(new B, &deleter);
   std::tr1::shared_ptr<A> a(b);

@@ -25,7 +25,6 @@
 // DR 596.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_file4";
 
   std::fstream scratch_file;

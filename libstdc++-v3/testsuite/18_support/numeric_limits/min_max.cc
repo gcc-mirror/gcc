@@ -61,7 +61,6 @@ DEFINE_EXTREMA(long double, LDBL_MIN, LDBL_MAX);
 template<typename T>
 void test_extrema()
 {
-  bool test __attribute__((unused)) = true;
   T limits_min = std::numeric_limits<T>::min();
   T limits_max = std::numeric_limits<T>::max();
   T extrema_min = extrema<T>::min;

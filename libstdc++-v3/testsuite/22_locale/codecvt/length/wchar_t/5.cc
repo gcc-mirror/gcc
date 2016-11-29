@@ -44,7 +44,6 @@ void test05()
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
   typedef char					ext_type;
 
-  bool test __attribute__((unused)) = true;
   const ext_type 	e_lit[] = { '\0', '\0', 'f', '\0' };
   int 			size = sizeof(e_lit);
 

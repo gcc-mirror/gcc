@@ -18,8 +18,7 @@
 // 20.7.11 Function template bind
 
 // PR c++/57899
-// { dg-do compile }
-// { dg-options -std=gnu++11 }
+// { dg-do compile { target c++11 } }
 
 #include <functional>
 using std::bind;

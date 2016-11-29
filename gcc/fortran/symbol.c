@@ -87,6 +87,15 @@ const mstring save_status[] =
     minit ("IMPLICIT-SAVE", SAVE_IMPLICIT),
 };
 
+/* Set the mstrings for DTIO procedure names.  */
+const mstring dtio_procs[] =
+{
+    minit ("_dtio_formatted_read", DTIO_RF),
+    minit ("_dtio_formatted_write", DTIO_WF),
+    minit ("_dtio_unformatted_read", DTIO_RUF),
+    minit ("_dtio_unformatted_write", DTIO_WUF),
+};
+
 /* This is to make sure the backend generates setup code in the correct
    order.  */
 
@@ -373,9 +382,10 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE",
     *proc_pointer = "PROCEDURE POINTER", *abstract = "ABSTRACT",
     *asynchronous = "ASYNCHRONOUS", *codimension = "CODIMENSION",
-    *contiguous = "CONTIGUOUS", *generic = "GENERIC";
+    *contiguous = "CONTIGUOUS", *generic = "GENERIC", *automatic = "AUTOMATIC";
   static const char *threadprivate = "THREADPRIVATE";
   static const char *omp_declare_target = "OMP DECLARE TARGET";
+  static const char *omp_declare_target_link = "OMP DECLARE TARGET LINK";
   static const char *oacc_declare_copyin = "OACC DECLARE COPYIN";
   static const char *oacc_declare_create = "OACC DECLARE CREATE";
   static const char *oacc_declare_deviceptr = "OACC DECLARE DEVICEPTR";
@@ -438,6 +448,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf (dummy, save);
       conf (in_common, save);
       conf (result, save);
+      conf (automatic, save);
 
       switch (attr->flavor)
 	{
@@ -454,7 +465,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	    gfc_error ("Namelist group name at %L cannot have the "
 		       "SAVE attribute", where);
 	    return false; 
-	    break;
 	  case FL_PROCEDURE:
 	    /* Conflicts between SAVE and PROCEDURE will be checked at
 	       resolution stage, see "resolve_fl_procedure".  */
@@ -473,11 +483,18 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (dummy, intrinsic);
   conf (dummy, threadprivate);
   conf (dummy, omp_declare_target);
+  conf (dummy, omp_declare_target_link);
   conf (pointer, target);
   conf (pointer, intrinsic);
   conf (pointer, elemental);
   conf (pointer, codimension);
   conf (allocatable, elemental);
+
+  conf (in_common, automatic);
+  conf (in_equivalence, automatic);
+  conf (result, automatic);
+  conf (use_assoc, automatic);
+  conf (dummy, automatic);
 
   conf (target, external);
   conf (target, intrinsic);
@@ -517,6 +534,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (in_equivalence, allocatable);
   conf (in_equivalence, threadprivate);
   conf (in_equivalence, omp_declare_target);
+  conf (in_equivalence, omp_declare_target_link);
   conf (in_equivalence, oacc_declare_create);
   conf (in_equivalence, oacc_declare_copyin);
   conf (in_equivalence, oacc_declare_deviceptr);
@@ -525,6 +543,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (dummy, result);
   conf (entry, result);
   conf (generic, result);
+  conf (generic, omp_declare_target);
+  conf (generic, omp_declare_target_link);
 
   conf (function, subroutine);
 
@@ -570,6 +590,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (cray_pointee, in_equivalence);
   conf (cray_pointee, threadprivate);
   conf (cray_pointee, omp_declare_target);
+  conf (cray_pointee, omp_declare_target_link);
   conf (cray_pointee, oacc_declare_create);
   conf (cray_pointee, oacc_declare_copyin);
   conf (cray_pointee, oacc_declare_deviceptr);
@@ -626,8 +647,11 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (procedure, entry)
 
   conf (proc_pointer, abstract)
+  conf (proc_pointer, omp_declare_target)
+  conf (proc_pointer, omp_declare_target_link)
 
   conf (entry, omp_declare_target)
+  conf (entry, omp_declare_target_link)
   conf (entry, oacc_declare_create)
   conf (entry, oacc_declare_copyin)
   conf (entry, oacc_declare_deviceptr)
@@ -669,6 +693,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (subroutine);
       conf2 (threadprivate);
       conf2 (omp_declare_target);
+      conf2 (omp_declare_target_link);
       conf2 (oacc_declare_create);
       conf2 (oacc_declare_copyin);
       conf2 (oacc_declare_deviceptr);
@@ -719,6 +744,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       if (!attr->proc_pointer)
 	conf2 (in_common);
 
+      conf2 (omp_declare_target_link);
+
       switch (attr->proc)
 	{
 	case PROC_ST_FUNCTION:
@@ -755,6 +782,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (threadprivate);
       conf2 (result);
       conf2 (omp_declare_target);
+      conf2 (omp_declare_target_link);
       conf2 (oacc_declare_create);
       conf2 (oacc_declare_copyin);
       conf2 (oacc_declare_deviceptr);
@@ -929,6 +957,21 @@ gfc_add_allocatable (symbol_attribute *attr, locus *where)
 
   attr->allocatable = 1;
   return check_conflict (attr, NULL, where);
+}
+
+
+bool
+gfc_add_automatic (symbol_attribute *attr, const char *name, locus *where)
+{
+  if (check_used (attr, name, where))
+    return false;
+
+  if (attr->automatic && !gfc_notify_std (GFC_STD_LEGACY,
+	"Duplicate AUTOMATIC attribute specified at %L", where))
+    return false;
+
+  attr->automatic = 1;
+  return check_conflict (attr, name, where);
 }
 
 
@@ -1265,6 +1308,22 @@ gfc_add_omp_declare_target (symbol_attribute *attr, const char *name,
     return true;
 
   attr->omp_declare_target = 1;
+  return check_conflict (attr, name, where);
+}
+
+
+bool
+gfc_add_omp_declare_target_link (symbol_attribute *attr, const char *name,
+				 locus *where)
+{
+
+  if (check_used (attr, name, where))
+    return false;
+
+  if (attr->omp_declare_target_link)
+    return true;
+
+  attr->omp_declare_target_link = 1;
   return check_conflict (attr, name, where);
 }
 
@@ -1880,6 +1939,8 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
   if (src->allocatable && !gfc_add_allocatable (dest, where))
     goto fail;
 
+  if (src->automatic && !gfc_add_automatic (dest, NULL, where))
+    goto fail;
   if (src->dimension && !gfc_add_dimension (dest, NULL, where))
     goto fail;
   if (src->codimension && !gfc_add_codimension (dest, NULL, where))
@@ -1905,6 +1966,9 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     goto fail;
   if (src->omp_declare_target
       && !gfc_add_omp_declare_target (dest, NULL, where))
+    goto fail;
+  if (src->omp_declare_target_link
+      && !gfc_add_omp_declare_target_link (dest, NULL, where))
     goto fail;
   if (src->oacc_declare_create
       && !gfc_add_oacc_declare_create (dest, NULL, where))
@@ -3991,6 +4055,10 @@ gfc_is_var_automatic (gfc_symbol *sym)
       && sym->ts.u.cl
       && !gfc_is_constant_expr (sym->ts.u.cl->length))
     return true;
+  /* Variables with explicit AUTOMATIC attribute.  */
+  if (sym->attr.automatic)
+      return true;
+
   return false;
 }
 
@@ -4865,7 +4933,7 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
       && !is_union1 && !is_union2)
     return (ts1->type == ts2->type);
 
-  if ((is_derived1 && is_derived2) || (is_union1 && is_union1))
+  if ((is_derived1 && is_derived2) || (is_union1 && is_union2))
     return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
 
   if (is_derived1 && is_class2)

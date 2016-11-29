@@ -17,7 +17,7 @@
 
 // 25.2.11 [alg.equal]
 
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 #include <algorithm>
 #include <testsuite_hooks.h>

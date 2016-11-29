@@ -165,7 +165,6 @@ get_attrs_for (const_tree x)
     {
     case FUNCTION_DECL:
       return TYPE_ATTRIBUTES (TREE_TYPE (x));
-      break;
 
     default:
       if (TYPE_P (x))
@@ -1546,7 +1545,7 @@ requires_barrier (basic_block entry_block, tree x, gimple *stmt)
       x = TREE_OPERAND (TMR_BASE (x), 0);
       if (TREE_CODE (x) == PARM_DECL)
 	return false;
-      gcc_assert (TREE_CODE (x) == VAR_DECL);
+      gcc_assert (VAR_P (x));
       /* FALLTHRU */
 
     case PARM_DECL:

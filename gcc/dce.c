@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "cfgrtl.h"
@@ -233,16 +234,17 @@ mark_nonreg_stores (rtx body, rtx_insn *insn, bool fast)
 }
 
 
-/* Return true if store to MEM, starting OFF bytes from stack pointer,
+/* Return true if a store to SIZE bytes, starting OFF bytes from stack pointer,
    is a call argument store, and clear corresponding bits from SP_BYTES
    bitmap if it is.  */
 
 static bool
-check_argument_store (rtx mem, HOST_WIDE_INT off, HOST_WIDE_INT min_sp_off,
-		      HOST_WIDE_INT max_sp_off, bitmap sp_bytes)
+check_argument_store (HOST_WIDE_INT size, HOST_WIDE_INT off,
+		      HOST_WIDE_INT min_sp_off, HOST_WIDE_INT max_sp_off,
+		      bitmap sp_bytes)
 {
   HOST_WIDE_INT byte;
-  for (byte = off; byte < off + GET_MODE_SIZE (GET_MODE (mem)); byte++)
+  for (byte = off; byte < off + size; byte++)
     {
       if (byte < min_sp_off
 	  || byte >= max_sp_off
@@ -467,8 +469,8 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	    break;
 	}
 
-      if (GET_MODE_SIZE (GET_MODE (mem)) == 0
-	  || !check_argument_store (mem, off, min_sp_off,
+      if (!MEM_SIZE_KNOWN_P (mem)
+	  || !check_argument_store (MEM_SIZE (mem), off, min_sp_off,
 				    max_sp_off, sp_bytes))
 	break;
 
@@ -586,6 +588,15 @@ delete_unmarked_insns (void)
 	     miscompile.  */
 	  if (!dbg_cnt (dce))
 	    continue;
+
+	  if (crtl->shrink_wrapped_separate
+	      && find_reg_note (insn, REG_CFA_RESTORE, NULL))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "DCE: NOT deleting insn %d, it's a "
+				    "callee-save restore\n", INSN_UID (insn));
+	      continue;
+	    }
 
 	  if (dump_file)
 	    fprintf (dump_file, "DCE: Deleting insn %d\n", INSN_UID (insn));

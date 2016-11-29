@@ -27,7 +27,6 @@ template<typename T>
   void test01_do(T a, T b)
   {
     using namespace std;
-    bool test __attribute__((unused)) = true;
     typedef complex<T> cplx;
 
     T eps = numeric_limits<T>::epsilon() * 100;

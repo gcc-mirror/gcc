@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do compile { target c++11 } }
+
 #include <tuple>
 using namespace std;
 
@@ -27,4 +29,3 @@ int main() {
     tuple<Something> t1;
     tuple<Something> t2 = t1;
 }
-

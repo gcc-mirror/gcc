@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-gdwarf-2 -dA -O0 -fno-merge-debug-strings" }
+// { dg-options "-gdwarf-2 -gno-strict-dwarf -dA -O0 -fno-merge-debug-strings" }
 
 class AAAA
 {

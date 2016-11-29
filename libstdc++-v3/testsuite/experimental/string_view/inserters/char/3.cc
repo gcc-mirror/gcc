@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -32,8 +32,6 @@
 void
 test09()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::string_view foo{"peace\0\0\0& love"};
 
   std::ostringstream oss1;

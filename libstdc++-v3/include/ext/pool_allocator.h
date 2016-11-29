@@ -219,6 +219,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__n > this->max_size())
 	    std::__throw_bad_alloc();
 
+	  const size_t __bytes = __n * sizeof(_Tp);
+
+#if __cpp_aligned_new
+	  if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	    {
+	      std::align_val_t __al = std::align_val_t(alignof(_Tp));
+	      return static_cast<_Tp*>(::operator new(__bytes, __al));
+	    }
+#endif
+
 	  // If there is a race through here, assume answer from getenv
 	  // will resolve in same direction.  Inspired by techniques
 	  // to efficiently support threading found in basic_string.h.
@@ -230,7 +240,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__atomic_add_dispatch(&_S_force_new, -1);
 	    }
 
-	  const size_t __bytes = __n * sizeof(_Tp);	      
 	  if (__bytes > size_t(_S_max_bytes) || _S_force_new > 0)
 	    __ret = static_cast<_Tp*>(::operator new(__bytes));
 	  else
@@ -259,6 +268,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__builtin_expect(__n != 0 && __p != 0, true))
 	{
+#if __cpp_aligned_new
+	  if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	    {
+	      ::operator delete(__p, std::align_val_t(alignof(_Tp)));
+	      return;
+	    }
+#endif
 	  const size_t __bytes = __n * sizeof(_Tp);
 	  if (__bytes > static_cast<size_t>(_S_max_bytes) || _S_force_new > 0)
 	    ::operator delete(__p);

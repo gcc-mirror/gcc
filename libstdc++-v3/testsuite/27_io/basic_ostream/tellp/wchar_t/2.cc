@@ -25,7 +25,6 @@ void test01()
   using namespace std;
   typedef std::wstringbuf::pos_type        pos_type;
   typedef std::wstringbuf::off_type        off_type;
-  bool test __attribute__((unused)) = true;
 
   // tellp
   wostringstream ost;

@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef string::const_iterator iter_type;
   typedef time_get<char, iter_type> time_get_type;

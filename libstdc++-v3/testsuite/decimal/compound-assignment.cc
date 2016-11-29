@@ -39,7 +39,6 @@ unsigned long long ull = 50;
 void
 compound_assignment_add_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = a; b += d32;  VERIFY (b == 1005);
@@ -56,7 +55,6 @@ compound_assignment_add_32 (void)
 void
 compound_assignment_subtract_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = a; b -= d32;  VERIFY (b == 995);
@@ -73,7 +71,6 @@ compound_assignment_subtract_32 (void)
 void
 compound_assignment_multiply_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = a; b *= d32;  VERIFY (b == 5000);
@@ -90,7 +87,6 @@ compound_assignment_multiply_32 (void)
 void
 compound_assignment_divide_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = a; b /= d32;  VERIFY (b == 200);
@@ -107,7 +103,6 @@ compound_assignment_divide_32 (void)
 void
 compound_assignment_add_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a; b += d32;  VERIFY (b == 1005);
@@ -124,7 +119,6 @@ compound_assignment_add_64 (void)
 void
 compound_assignment_subtract_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a; b -= d32;  VERIFY (b == 995);
@@ -141,7 +135,6 @@ compound_assignment_subtract_64 (void)
 void
 compound_assignment_multiply_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a; b *= d32;  VERIFY (b == 5000);
@@ -158,7 +151,6 @@ compound_assignment_multiply_64 (void)
 void
 compound_assignment_divide_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a; b /= d32;  VERIFY (b == 200);
@@ -175,7 +167,6 @@ compound_assignment_divide_64 (void)
 void
 compound_assignment_add_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a; b += d32;  VERIFY (b == 1005);
@@ -192,7 +183,6 @@ compound_assignment_add_128 (void)
 void
 compound_assignment_subtract_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a; b -= d32;  VERIFY (b == 995);
@@ -209,7 +199,6 @@ compound_assignment_subtract_128 (void)
 void
 compound_assignment_multiply_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a; b *= d32;  VERIFY (b == 5000);
@@ -226,7 +215,6 @@ compound_assignment_multiply_128 (void)
 void
 compound_assignment_divide_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a; b /= d32;  VERIFY (b == 200);

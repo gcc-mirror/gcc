@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -21,13 +21,10 @@
 
 #include <experimental/string_view>
 #include <vector>
-#include <testsuite_hooks.h>
 
 void
 test05()
 {
-  bool test [[gnu::unused]] = true;
-
   char const * s = 0;
   std::experimental::string_view zero_length_built_with_NULL(s, 0);
 }

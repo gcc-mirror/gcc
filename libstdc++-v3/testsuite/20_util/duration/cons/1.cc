@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
@@ -106,7 +106,6 @@ typedef type_emulator<double> dbl_emulator;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::chrono::duration;
   
   int r = 3;

@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
@@ -26,9 +25,8 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-using std::packaged_task;
-template class packaged_task<int()>;
-template class packaged_task<int&()>;
-template class packaged_task<void()>;
-template class packaged_task<ClassType(int)>;
-template class packaged_task<AbstractClass&(int)>;
+template class std::packaged_task<int()>;
+template class std::packaged_task<int&()>;
+template class std::packaged_task<void()>;
+template class std::packaged_task<ClassType(int)>;
+template class std::packaged_task<AbstractClass&(int)>;

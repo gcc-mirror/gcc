@@ -14,7 +14,7 @@ program test
   integer(8) :: i8
   character(len=19, kind=4) :: msg4
 
-  call co_sum("abc") ! { dg-error "must be a numeric type" }
+  call co_sum("abc") ! { dg-error "must have a numeric type" }
   call co_max(cmplx(1.0,0.0)) ! { dg-error "shall be of type integer, real or character" }
   call co_min(cmplx(0.0,1.0)) ! { dg-error "shall be of type integer, real or character" }
 

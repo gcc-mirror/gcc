@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -28,5 +27,5 @@ int main()
   return 0;
 }
 
-// { dg-error "deleted" "" { target *-*-* } 654 }
+// { dg-error "deleted" "" { target *-*-* } 659 }
 // { dg-prune-output "include" }

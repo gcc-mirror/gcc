@@ -20,8 +20,6 @@
 #include <algorithm>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 const int A[] = {1, 2, 3, 3, 3, 5, 8};
 const int C[] = {8, 5, 3, 3, 3, 2, 1};
 const int N = sizeof(A) / sizeof(int);

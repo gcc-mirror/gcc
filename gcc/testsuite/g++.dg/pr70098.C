@@ -2,8 +2,6 @@
 // { dg-do compile }
 // { dg-options -O2 }
 // { dg-require-effective-target c++11 }
-// { dg-xfail-if "PR70098" { lp64 && powerpc64_no_dm } }
-// { dg-prune-output ".*internal compiler error.*" }
 
 template < typename > struct traits;
 template < typename, int _Rows, int _Cols, int = 0, int = _Rows,

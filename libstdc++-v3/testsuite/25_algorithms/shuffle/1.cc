@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -27,8 +27,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (unsigned size = 0; size < 50; ++size)
     {
       std::vector<int> vref(size);

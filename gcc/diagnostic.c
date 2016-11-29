@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "diagnostic.h"
 #include "diagnostic-color.h"
+#include "edit-context.h"
 #include "selftest.h"
 
 #ifdef HAVE_TERMIOS_H
@@ -52,6 +53,10 @@ static bool diagnostic_impl (rich_location *, int, const char *,
 static bool diagnostic_n_impl (location_t, int, int, const char *,
 			       const char *, va_list *,
 			       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
+static bool diagnostic_n_impl_richloc (rich_location *, int, int, const char *,
+				       const char *, va_list *,
+				       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
+
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
@@ -147,7 +152,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
     context->classify_diagnostic[i] = DK_UNSPECIFIED;
   context->show_caret = false;
   diagnostic_set_caret_max_width (context, pp_line_cutoff (context->printer));
-  for (i = 0; i < rich_location::MAX_RANGES; i++)
+  for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     context->caret_chars[i] = '^';
   context->show_option_requested = false;
   context->abort_on_error = false;
@@ -171,6 +176,10 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->x_data = NULL;
   context->lock = 0;
   context->inhibit_notes_p = false;
+  context->colorize_source_p = false;
+  context->show_ruler_p = false;
+  context->parseable_fixits_p = false;
+  context->edit_context_ptr = NULL;
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -232,6 +241,12 @@ diagnostic_finish (diagnostic_context *context)
   context->printer->~pretty_printer ();
   XDELETE (context->printer);
   context->printer = NULL;
+
+  if (context->edit_context_ptr)
+    {
+      delete context->edit_context_ptr;
+      context->edit_context_ptr = NULL;
+    }
 }
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been
@@ -575,7 +590,7 @@ void
 default_diagnostic_finalizer (diagnostic_context *context,
 			      diagnostic_info *diagnostic)
 {
-  diagnostic_show_locus (context, diagnostic);
+  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   pp_destroy_prefix (context->printer);
   pp_flush (context->printer);
 }
@@ -755,10 +770,6 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
 	    }
 	    break;
 
-	  case fixit_hint::REMOVE:
-	    print_escaped_string (pp, "");
-	    break;
-
 	  case fixit_hint::REPLACE:
 	    {
 	      const fixit_replace *replace
@@ -866,13 +877,15 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 		}
 	    }
 	}
+
       /* This tests if the user provided the appropriate -Werror=foo
 	 option.  */
       if (diag_class == DK_UNSPECIFIED
-	  && context->classify_diagnostic[diagnostic->option_index] != DK_UNSPECIFIED)
-	{
-	  diagnostic->kind = context->classify_diagnostic[diagnostic->option_index];
-	}
+	  && (context->classify_diagnostic[diagnostic->option_index]
+	      != DK_UNSPECIFIED))
+	diagnostic->kind
+	  = context->classify_diagnostic[diagnostic->option_index];
+
       /* This allows for future extensions, like temporarily disabling
 	 warnings for ranges of source code.  */
       if (diagnostic->kind == DK_IGNORED)
@@ -943,6 +956,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   diagnostic_action_after_output (context, diagnostic->kind);
   diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;
+
+  if (context->edit_context_ptr)
+    context->edit_context_ptr->add_fixits (diagnostic->richloc);
 
   context->lock--;
 
@@ -1025,7 +1041,7 @@ diagnostic_append_note (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   pp_destroy_prefix (context->printer);
   pp_set_prefix (context->printer, saved_prefix);
-  diagnostic_show_locus (context, &diagnostic);
+  diagnostic_show_locus (context, &richloc, DK_NOTE);
   va_end (ap);
 }
 
@@ -1054,6 +1070,22 @@ diagnostic_impl (rich_location *richloc, int opt,
   return report_diagnostic (&diagnostic);
 }
 
+/* Same as diagonostic_n_impl taking rich_location instead of location_t.  */
+static bool
+diagnostic_n_impl_richloc (rich_location *richloc, int opt, int n,
+			   const char *singular_gmsgid,
+			   const char *plural_gmsgid,
+			   va_list *ap, diagnostic_t kind)
+{
+  diagnostic_info diagnostic;
+  diagnostic_set_info_translated (&diagnostic,
+                                  ngettext (singular_gmsgid, plural_gmsgid, n),
+                                  ap, richloc, kind);
+  if (kind == DK_WARNING)
+    diagnostic.option_index = opt;
+  return report_diagnostic (&diagnostic);
+} 
+
 /* Implement inform_n, warning_n, and error_n, as documented and
    defined below.  */
 static bool
@@ -1062,14 +1094,9 @@ diagnostic_n_impl (location_t location, int opt, int n,
 		   const char *plural_gmsgid,
 		   va_list *ap, diagnostic_t kind)
 {
-  diagnostic_info diagnostic;
   rich_location richloc (line_table, location);
-  diagnostic_set_info_translated (&diagnostic,
-                                  ngettext (singular_gmsgid, plural_gmsgid, n),
-                                  ap, &richloc, kind);
-  if (kind == DK_WARNING)
-    diagnostic.option_index = opt;
-  return report_diagnostic (&diagnostic);
+  return diagnostic_n_impl_richloc (&richloc, opt, n,
+				    singular_gmsgid, plural_gmsgid, ap, kind);
 }
 
 bool
@@ -1156,6 +1183,21 @@ warning_at_rich_loc (rich_location *richloc, int opt, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_WARNING);
+  va_end (ap);
+  return ret;
+}
+
+/* Same as warning_at_rich_loc but for plural variant.  */
+
+bool
+warning_at_rich_loc_n (rich_location *richloc, int opt, int n,
+		       const char *singular_gmsgid, const char *plural_gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, plural_gmsgid);
+  bool ret = diagnostic_n_impl_richloc (richloc, opt, n,
+					singular_gmsgid, plural_gmsgid,
+					&ap, DK_WARNING);
   va_end (ap);
   return ret;
 }
@@ -1494,7 +1536,7 @@ test_print_parseable_fixits_insert ()
   linemap_line_start (line_table, 5, 100);
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
   location_t where = linemap_position_for_column (line_table, 10);
-  richloc.add_fixit_insert (where, "added content");
+  richloc.add_fixit_insert_before (where, "added content");
 
   print_parseable_fixits (&pp, &richloc);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:10}:\"added content\"\n",

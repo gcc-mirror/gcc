@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   std::subtract_with_carry_engine<unsigned long, 24, 10, 24> u;
   std::subtract_with_carry_engine<unsigned long, 24, 10, 24> v;

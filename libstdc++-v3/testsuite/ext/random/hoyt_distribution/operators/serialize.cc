@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2012-10-12  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   __gnu_cxx::hoyt_distribution<double> u(0.05, 3.0), v;
   std::minstd_rand0 rng;

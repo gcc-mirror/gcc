@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <unordered_map>
 #include <memory>
@@ -46,7 +46,6 @@ template class std::unordered_map<T, T, hash, equal_to, SimpleAllocator<T>>;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef SimpleAllocator<T> alloc_type;
   typedef std::allocator_traits<alloc_type> traits_type;
   typedef std::unordered_map<T, T, hash, equal_to, alloc_type> test_type;

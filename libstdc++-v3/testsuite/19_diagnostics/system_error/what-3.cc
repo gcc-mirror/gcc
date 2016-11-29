@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -37,7 +37,6 @@ void allocate_on_stack(void)
 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
   const std::string s("CA ISO emergency once again:immediate power down");
   const char* strlit1 = "wish I lived in Palo Alto";
   const char* strlit2 = "...or Santa Barbara";

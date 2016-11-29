@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
@@ -28,7 +27,6 @@
 // Verifies the workings of the regex_traits translate_nocase function.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef char CharT;
 
   std::regex_traits<CharT> t;

@@ -162,7 +162,7 @@ main (int ac, char **av)
 
 	  len = strlen (arg);
 	  if (len > 0)
-		  len--;
+	    len--;
 	  end = arg + len;
 
 	  /* Always add a dir separator for the prefix list.  */

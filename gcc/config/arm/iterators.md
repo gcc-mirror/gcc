@@ -46,7 +46,7 @@
 (define_mode_iterator SIDI [SI DI])
 
 ;; A list of modes which the VFP unit can handle
-(define_mode_iterator SDF [(SF "TARGET_VFP") (DF "TARGET_VFP_DOUBLE")])
+(define_mode_iterator SDF [(SF "") (DF "TARGET_VFP_DOUBLE")])
 
 ;; Integer element sizes implemented by IWMMXT.
 (define_mode_iterator VMMX [V2SI V4HI V8QI])
@@ -119,6 +119,10 @@
 ;; All supported vector modes (except those with 64-bit integer elements).
 (define_mode_iterator VDQW [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF])
 
+;; All supported vector modes including 16-bit float modes.
+(define_mode_iterator VDQWH [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF
+			     V8HF V4HF])
+
 ;; Supported integer vector modes (not 64 bit elements).
 (define_mode_iterator VDQIW [V8QI V16QI V4HI V8HI V2SI V4SI])
 
@@ -140,6 +144,9 @@
 
 ;; Vector modes form int->float conversions.
 (define_mode_iterator VCVTI [V2SI V4SI])
+
+;; Vector modes for int->half conversions.
+(define_mode_iterator VCVTHI [V4HI V8HI])
 
 ;; Vector modes for doubleword multiply-accumulate, etc. insns.
 (define_mode_iterator VMD [V4HI V2SI V2SF])
@@ -174,6 +181,9 @@
 ;; Modes with 8-bit, 16-bit and 32-bit elements.
 (define_mode_iterator VU [V16QI V8HI V4SI])
 
+;; Vector modes for 16-bit floating-point support.
+(define_mode_iterator VH [V8HF V4HF])
+
 ;; Iterators used for fixed-point support.
 (define_mode_iterator FIXED [QQ HQ SQ UQQ UHQ USQ HA SA UHA USA])
 
@@ -192,13 +202,16 @@
 ;; Code iterators
 ;;----------------------------------------------------------------------------
 
-;; A list of condition codes used in compare instructions where 
-;; the carry flag from the addition is used instead of doing the 
+;; A list of condition codes used in compare instructions where
+;; the carry flag from the addition is used instead of doing the
 ;; compare a second time.
 (define_code_iterator LTUGEU [ltu geu])
 
 ;; The signed gt, ge comparisons
 (define_code_iterator GTGE [gt ge])
+
+;; The signed gt, ge, lt, le comparisons
+(define_code_iterator GLTE [gt ge lt le])
 
 ;; The unsigned gt, ge comparisons
 (define_code_iterator GTUGEU [gtu geu])
@@ -228,6 +241,12 @@
 ;; Binary operators whose second operand can be shifted.
 (define_code_iterator SHIFTABLE_OPS [plus minus ior xor and])
 
+;; Operations on the sign of a number.
+(define_code_iterator ABSNEG [abs neg])
+
+;; Conversions.
+(define_code_iterator FCVT [unsigned_float float])
+
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
 ;; a stack pointer opoerand.  The minus operation is a candidate for an rsub
 ;; and hence only plus is supported.
@@ -251,9 +270,13 @@
 (define_int_iterator VRINT [UNSPEC_VRINTZ UNSPEC_VRINTP UNSPEC_VRINTM
                             UNSPEC_VRINTR UNSPEC_VRINTX UNSPEC_VRINTA])
 
-(define_int_iterator NEON_VCMP [UNSPEC_VCEQ UNSPEC_VCGT UNSPEC_VCGE UNSPEC_VCLT UNSPEC_VCLE])
+(define_int_iterator NEON_VCMP [UNSPEC_VCEQ UNSPEC_VCGT UNSPEC_VCGE
+				UNSPEC_VCLT UNSPEC_VCLE])
 
 (define_int_iterator NEON_VACMP [UNSPEC_VCAGE UNSPEC_VCAGT])
+
+(define_int_iterator NEON_VAGLTE [UNSPEC_VCAGE UNSPEC_VCAGT
+				  UNSPEC_VCALE UNSPEC_VCALT])
 
 (define_int_iterator VCVT [UNSPEC_VRINTP UNSPEC_VRINTM UNSPEC_VRINTA])
 
@@ -323,6 +346,22 @@
 
 (define_int_iterator VCVT_US_N [UNSPEC_VCVT_S_N UNSPEC_VCVT_U_N])
 
+(define_int_iterator VCVT_HF_US_N [UNSPEC_VCVT_HF_S_N UNSPEC_VCVT_HF_U_N])
+
+(define_int_iterator VCVT_SI_US_N [UNSPEC_VCVT_SI_S_N UNSPEC_VCVT_SI_U_N])
+
+(define_int_iterator VCVT_HF_US [UNSPEC_VCVTA_S UNSPEC_VCVTA_U
+				 UNSPEC_VCVTM_S UNSPEC_VCVTM_U
+				 UNSPEC_VCVTN_S UNSPEC_VCVTN_U
+				 UNSPEC_VCVTP_S UNSPEC_VCVTP_U])
+
+(define_int_iterator VCVTH_US [UNSPEC_VCVTH_S UNSPEC_VCVTH_U])
+
+;; Operators for FP16 instructions.
+(define_int_iterator FP16_RND [UNSPEC_VRND UNSPEC_VRNDA
+			       UNSPEC_VRNDM UNSPEC_VRNDN
+			       UNSPEC_VRNDP UNSPEC_VRNDX])
+
 (define_int_iterator VQMOVN [UNSPEC_VQMOVN_S UNSPEC_VQMOVN_U])
 
 (define_int_iterator VMOVL [UNSPEC_VMOVL_S UNSPEC_VMOVL_U])
@@ -366,6 +405,8 @@
 
 (define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
 
+(define_int_iterator VFM_LANE_AS [UNSPEC_VFMA_LANE UNSPEC_VFMS_LANE])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -383,6 +424,10 @@
 ;; As above but in lower case.
 (define_mode_attr V_cvtto [(V2SI "v2sf") (V2SF "v2si")
                            (V4SI "v4sf") (V4SF "v4si")])
+
+;; (Opposite) mode to convert to/from for vector-half mode conversions.
+(define_mode_attr VH_CVTTO [(V4HI "V4HF") (V4HF "V4HI")
+			    (V8HI "V8HF") (V8HF "V8HI")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr V_elem [(V8QI "QI") (V16QI "QI")
@@ -427,12 +472,13 @@
 
 ;; Register width from element mode
 (define_mode_attr V_reg [(V8QI "P") (V16QI "q")
-                         (V4HI "P") (V8HI  "q")
-                         (V4HF "P") (V8HF  "q")
-                         (V2SI "P") (V4SI  "q")
-                         (V2SF "P") (V4SF  "q")
-                         (DI   "P") (V2DI  "q")
-                         (SF   "")  (DF    "P")])
+			 (V4HI "P") (V8HI  "q")
+			 (V4HF "P") (V8HF  "q")
+			 (V2SI "P") (V4SI  "q")
+			 (V2SF "P") (V4SF  "q")
+			 (DI   "P") (V2DI  "q")
+			 (SF   "")  (DF    "P")
+			 (HF   "")])
 
 ;; Wider modes with the same number of elements.
 (define_mode_attr V_widen [(V8QI "V8HI") (V4HI "V4SI") (V2SI "V2DI")])
@@ -448,7 +494,7 @@
 (define_mode_attr V_HALF [(V16QI "V8QI") (V8HI "V4HI")
 			  (V8HF "V4HF") (V4SI  "V2SI")
 			  (V4SF "V2SF") (V2DF "DF")
-                          (V2DI "DI")])
+			  (V2DI "DI") (V4HF "HF")])
 
 ;; Same, but lower-case.
 (define_mode_attr V_half [(V16QI "v8qi") (V8HI "v4hi")
@@ -475,9 +521,10 @@
 ;; Used for neon_vdup_lane, where the second operand is double-sized
 ;; even when the first one is quad.
 (define_mode_attr V_double_vector_mode [(V16QI "V8QI") (V8HI "V4HI")
-                                        (V4SI "V2SI") (V4SF "V2SF")
-                                        (V8QI "V8QI") (V4HI "V4HI")
-                                        (V2SI "V2SI") (V2SF "V2SF")])
+					(V4SI "V2SI") (V4SF "V2SF")
+					(V8QI "V8QI") (V4HI "V4HI")
+					(V2SI "V2SI") (V2SF "V2SF")
+					(V8HF "V4HF") (V4HF "V4HF")])
 
 ;; Mode of result of comparison operations (and bit-select operand 1).
 (define_mode_attr V_cmp_result [(V8QI "V8QI") (V16QI "V16QI")
@@ -496,18 +543,22 @@
 ;; Get element type from double-width mode, for operations where we 
 ;; don't care about signedness.
 (define_mode_attr V_if_elem [(V8QI "i8")  (V16QI "i8")
-                 (V4HI "i16") (V8HI  "i16")
-                             (V2SI "i32") (V4SI  "i32")
-                             (DI   "i64") (V2DI  "i64")
-                 (V2SF "f32") (V4SF  "f32")
-                 (SF "f32") (DF "f64")])
+			     (V4HI "i16") (V8HI  "i16")
+			     (V2SI "i32") (V4SI  "i32")
+			     (DI   "i64") (V2DI  "i64")
+			     (V2SF "f32") (V4SF  "f32")
+			     (SF   "f32") (DF    "f64")
+			     (HF   "f16") (V4HF  "f16")
+			     (V8HF "f16")])
 
 ;; Same, but for operations which work on signed values.
 (define_mode_attr V_s_elem [(V8QI "s8")  (V16QI "s8")
-                (V4HI "s16") (V8HI  "s16")
-                            (V2SI "s32") (V4SI  "s32")
-                            (DI   "s64") (V2DI  "s64")
-                (V2SF "f32") (V4SF  "f32")])
+			    (V4HI "s16") (V8HI  "s16")
+			    (V2SI "s32") (V4SI  "s32")
+			    (DI   "s64") (V2DI  "s64")
+			    (V2SF "f32") (V4SF  "f32")
+			    (HF   "f16") (V4HF  "f16")
+			    (V8HF "f16")])
 
 ;; Same, but for operations which work on unsigned values.
 (define_mode_attr V_u_elem [(V8QI "u8")  (V16QI "u8")
@@ -524,17 +575,22 @@
                              (V2SF "32") (V4SF "32")])
 
 (define_mode_attr V_sz_elem [(V8QI "8")  (V16QI "8")
-                 (V4HI "16") (V8HI  "16")
-                             (V2SI "32") (V4SI  "32")
-                             (DI   "64") (V2DI  "64")
+			     (V4HI "16") (V8HI  "16")
+			     (V2SI "32") (V4SI  "32")
+			     (DI   "64") (V2DI  "64")
 			     (V4HF "16") (V8HF "16")
-                 (V2SF "32") (V4SF  "32")])
+			     (V2SF "32") (V4SF  "32")])
 
 (define_mode_attr V_elem_ch [(V8QI "b")  (V16QI "b")
-                             (V4HI "h") (V8HI  "h")
-                             (V2SI "s") (V4SI  "s")
-                             (DI   "d") (V2DI  "d")
-                             (V2SF "s") (V4SF  "s")])
+			     (V4HI "h") (V8HI  "h")
+			     (V2SI "s") (V4SI  "s")
+			     (DI   "d") (V2DI  "d")
+			     (V2SF "s") (V4SF  "s")
+			     (V2SF "s") (V4SF  "s")])
+
+(define_mode_attr VH_elem_ch [(V4HI "s") (V8HI  "s")
+			      (V4HF "s") (V8HF  "s")
+			      (HF "s")])
 
 ;; Element sizes for duplicating ARM registers to all elements of a vector.
 (define_mode_attr VD_dup [(V8QI "8") (V4HI "16") (V2SI "32") (V2SF "32")])
@@ -570,29 +626,30 @@
 ;; This mode attribute is used to obtain the correct register constraints.
 
 (define_mode_attr scalar_mul_constraint [(V4HI "x") (V2SI "t") (V2SF "t")
-                                         (V8HI "x") (V4SI "t") (V4SF "t")])
+					 (V8HI "x") (V4SI "t") (V4SF "t")
+					 (V8HF "x") (V4HF "x")])
 
 ;; Predicates used for setting type for neon instructions
 
 (define_mode_attr Is_float_mode [(V8QI "false") (V16QI "false")
-                 (V4HI "false") (V8HI "false")
-                 (V2SI "false") (V4SI "false")
-                 (V4HF "true") (V8HF "true")
-                 (V2SF "true") (V4SF "true")
-                 (DI "false") (V2DI "false")])
+				 (V4HI "false") (V8HI "false")
+				 (V2SI "false") (V4SI "false")
+				 (V4HF "true") (V8HF "true")
+				 (V2SF "true") (V4SF "true")
+				 (DI "false") (V2DI "false")])
 
 (define_mode_attr Scalar_mul_8_16 [(V8QI "true") (V16QI "true")
-                   (V4HI "true") (V8HI "true")
-                   (V2SI "false") (V4SI "false")
-                   (V2SF "false") (V4SF "false")
-                   (DI "false") (V2DI "false")])
-
+				   (V4HI "true") (V8HI "true")
+				   (V2SI "false") (V4SI "false")
+				   (V2SF "false") (V4SF "false")
+				   (DI "false") (V2DI "false")])
 
 (define_mode_attr Is_d_reg [(V8QI "true") (V16QI "false")
-                            (V4HI "true") (V8HI  "false")
-                            (V2SI "true") (V4SI  "false")
-                            (V2SF "true") (V4SF  "false")
-                            (DI   "true") (V2DI  "false")])
+			    (V4HI "true") (V8HI  "false")
+			    (V2SI "true") (V4SI  "false")
+			    (V2SF "true") (V4SF  "false")
+			    (DI   "true") (V2DI  "false")
+			    (V4HF "true") (V8HF  "false")])
 
 (define_mode_attr V_mode_nunits [(V8QI "8") (V16QI "16")
 				 (V4HF "4") (V8HF "8")
@@ -637,12 +694,14 @@
 
 ;; Mode attribute used to build the "type" attribute.
 (define_mode_attr q [(V8QI "") (V16QI "_q")
-                     (V4HI "") (V8HI "_q")
-                     (V2SI "") (V4SI "_q")
+		     (V4HI "") (V8HI "_q")
+		     (V2SI "") (V4SI "_q")
 		     (V4HF "") (V8HF "_q")
-                     (V2SF "") (V4SF "_q")
-                     (DI "")   (V2DI "_q")
-                     (DF "")   (V2DF "_q")])
+		     (V2SF "") (V4SF "_q")
+		     (V4HF "") (V8HF "_q")
+		     (DI "")   (V2DI "_q")
+		     (DF "")   (V2DF "_q")
+		     (HF "")])
 
 (define_mode_attr pf [(V8QI "p") (V16QI "p") (V2SF "f") (V4SF "f")])
 
@@ -679,6 +738,16 @@
 (define_code_attr shift [(ashiftrt "ashr") (lshiftrt "lshr")])
 (define_code_attr shifttype [(ashiftrt "signed") (lshiftrt "unsigned")])
 
+;; String reprentations of operations on the sign of a number.
+(define_code_attr absneg_str [(abs "abs") (neg "neg")])
+
+;; Conversions.
+(define_code_attr FCVTI32typename [(unsigned_float "u32") (float "s32")])
+
+(define_code_attr float_sup [(unsigned_float "u") (float "s")])
+
+(define_code_attr float_SUP [(unsigned_float "U") (float "S")])
+
 ;;----------------------------------------------------------------------------
 ;; Int attributes
 ;;----------------------------------------------------------------------------
@@ -710,7 +779,13 @@
   (UNSPEC_VPMAX "s") (UNSPEC_VPMAX_U "u")
   (UNSPEC_VPMIN "s") (UNSPEC_VPMIN_U "u")
   (UNSPEC_VCVT_S "s") (UNSPEC_VCVT_U "u")
+  (UNSPEC_VCVTA_S "s") (UNSPEC_VCVTA_U "u")
+  (UNSPEC_VCVTM_S "s") (UNSPEC_VCVTM_U "u")
+  (UNSPEC_VCVTN_S "s") (UNSPEC_VCVTN_U "u")
+  (UNSPEC_VCVTP_S "s") (UNSPEC_VCVTP_U "u")
   (UNSPEC_VCVT_S_N "s") (UNSPEC_VCVT_U_N "u")
+  (UNSPEC_VCVT_HF_S_N "s") (UNSPEC_VCVT_HF_U_N "u")
+  (UNSPEC_VCVT_SI_S_N "s") (UNSPEC_VCVT_SI_U_N "u")
   (UNSPEC_VQMOVN_S "s") (UNSPEC_VQMOVN_U "u")
   (UNSPEC_VMOVL_S "s") (UNSPEC_VMOVL_U "u")
   (UNSPEC_VSHL_S "s") (UNSPEC_VSHL_U "u")
@@ -725,13 +800,30 @@
   (UNSPEC_VSHLL_S_N "s") (UNSPEC_VSHLL_U_N "u")
   (UNSPEC_VSRA_S_N "s") (UNSPEC_VSRA_U_N "u")
   (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
-
+  (UNSPEC_VCVTH_S "s") (UNSPEC_VCVTH_U "u")
 ])
 
+(define_int_attr vcvth_op
+ [(UNSPEC_VCVTA_S "a") (UNSPEC_VCVTA_U "a")
+  (UNSPEC_VCVTM_S "m") (UNSPEC_VCVTM_U "m")
+  (UNSPEC_VCVTN_S "n") (UNSPEC_VCVTN_U "n")
+  (UNSPEC_VCVTP_S "p") (UNSPEC_VCVTP_U "p")])
+
+(define_int_attr fp16_rnd_str
+  [(UNSPEC_VRND "rnd") (UNSPEC_VRNDA "rnda")
+   (UNSPEC_VRNDM "rndm") (UNSPEC_VRNDN "rndn")
+   (UNSPEC_VRNDP "rndp") (UNSPEC_VRNDX "rndx")])
+
+(define_int_attr fp16_rnd_insn
+  [(UNSPEC_VRND "vrintz") (UNSPEC_VRNDA "vrinta")
+   (UNSPEC_VRNDM "vrintm") (UNSPEC_VRNDN "vrintn")
+   (UNSPEC_VRNDP "vrintp") (UNSPEC_VRNDX "vrintx")])
+
 (define_int_attr cmp_op_unsp [(UNSPEC_VCEQ "eq") (UNSPEC_VCGT "gt")
-                              (UNSPEC_VCGE "ge") (UNSPEC_VCLE "le")
-                              (UNSPEC_VCLT "lt") (UNSPEC_VCAGE "ge")
-                              (UNSPEC_VCAGT "gt")])
+			      (UNSPEC_VCGE "ge") (UNSPEC_VCLE "le")
+			      (UNSPEC_VCLT "lt") (UNSPEC_VCAGE "ge")
+			      (UNSPEC_VCAGT "gt") (UNSPEC_VCALE "le")
+			      (UNSPEC_VCALT "lt")])
 
 (define_int_attr r [
   (UNSPEC_VRHADD_S "r") (UNSPEC_VRHADD_U "r")
@@ -847,3 +939,7 @@
 
 ;; Attributes for VQRDMLAH/VQRDMLSH
 (define_int_attr neon_rdma_as [(UNSPEC_VQRDMLAH "a") (UNSPEC_VQRDMLSH "s")])
+
+;; Attributes for VFMA_LANE/ VFMS_LANE
+(define_int_attr neon_vfm_lane_as
+ [(UNSPEC_VFMA_LANE "a") (UNSPEC_VFMS_LANE "s")])

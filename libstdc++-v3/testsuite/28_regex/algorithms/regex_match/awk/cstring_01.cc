@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-08-26  Tim Shen <timshen91@gmail.com>
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   regex("\\[", regex_constants::awk);
   VERIFY(regex_match_debug("\"", regex("[\\\"]", regex_constants::awk)));
   VERIFY(regex_match_debug("/", regex("/", regex_constants::awk)));

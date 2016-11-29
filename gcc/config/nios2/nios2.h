@@ -265,7 +265,7 @@ enum reg_class
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 /* Before the prologue, RA lives in r31.  */
-#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, RA_REGNO)
+#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, RA_REGNO)
 #define RETURN_ADDR_RTX(C,F) nios2_get_return_address (C)
 
 #define DWARF_FRAME_RETURN_COLUMN RA_REGNO

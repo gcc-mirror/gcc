@@ -24,8 +24,6 @@
 
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
-  
   // 27.3 - Standard iostream objects p 2
   // The objects are not destroyed during program execution.
   void* p1 = &std::wcout;

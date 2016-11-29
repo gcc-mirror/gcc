@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 //
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //
@@ -25,8 +25,7 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
-  
+ 
   unordered_multimap<int, int> mmap;
   vector<int> values;
 

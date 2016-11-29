@@ -64,19 +64,29 @@ struct D5: E1, E2, NE { char a[]; };
 
 ASSERT_AT_END (D5, a);   // { dg-warning "offsetof within non-standard-layout" }
 
-struct A2x {
+struct A2x_1 {
   size_t n;
-  size_t a[];   // { dg-error "not at end of .struct D6.| D7.| D8." }
+  size_t a[];   // { dg-error "not at end of .struct D6." }
+};
+
+struct A2x_2 {
+  size_t n;
+  size_t a[];   // { dg-error "not at end of .struct D7." }
+};
+
+struct A2x_3 {
+  size_t n;
+  size_t a[];   // { dg-error "not at end of .struct D8." }
 };
 
 // Verify that the flexible array member in A2x above is diagnosed
 // for each of the three struct defintions below which also derive
 // from another struct with a flexible array member.
-struct D6: A2x, E1, A1x { };
-struct D7: E1, A2x, E2, A1x { };
-struct D8: E1, E2, A2x, A1x { };
+struct D6: A2x_1, E1, A1x { };
+struct D7: E1, A2x_2, E2, A1x { };
+struct D8: E1, E2, A2x_3, A1x { };
 
-struct DA2x: A2x { };
+struct DA2x: A2x_1 { };
 
 struct D9: DA2x, E1, E2 { };
 
@@ -194,16 +204,27 @@ struct NE2: NE { };
 struct D28: NE1, AA6x { };
 struct D29: AA6x, NE1 { };
 
-// Verify that a flexible array member in a virtual base class is not
-// diagnosed.
 struct A7x {
   size_t n;
-  size_t a[];
+  size_t a[];               // { dg-error "flexible array member .A7x::a. not at end of .struct D33." }
 };
 
+// Verify that a flexible array member in a virtual base class is not
+// diagnosed.
 struct DA7xV1: virtual A7x { };
 struct DA7xV2: virtual A7x { };
 
 struct D30: DA7xV1, DA7xV2 { };
 struct D31: DA7xV1, DA7xV2 { };
 struct D32: D30, D31 { };
+
+// Verify the diagnostic when the flexible array is in an anonymous struct.
+struct A8x {
+  struct {                  // { dg-message "next member .A8x::<unnamed struct> A8x::<anonymous>. declared here" }
+    size_t n;
+    size_t a[];
+  };
+};
+
+struct D33:                 // { dg-message "in the definition of .struct D33." }
+  A7x, A8x { };

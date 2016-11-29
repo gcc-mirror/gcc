@@ -440,6 +440,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION default_libc_has_function
 
+/* The format string to which "%p" corresponds.  */
+#undef TARGET_LIBC_PRINTF_POINTER_FORMAT
+#define TARGET_LIBC_PRINTF_POINTER_FORMAT solaris_libc_printf_pointer_format
+
 extern GTY(()) tree solaris_pending_aligns;
 extern GTY(()) tree solaris_pending_inits;
 extern GTY(()) tree solaris_pending_finis;

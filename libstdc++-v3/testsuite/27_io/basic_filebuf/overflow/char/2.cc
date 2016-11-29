@@ -37,7 +37,6 @@ public:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   typedef OverBuf::traits_type  traits_type;
 
   OverBuf fb;

@@ -76,24 +76,27 @@ namespace __gnu_debug
     _Safe_unordered_container_base*
     _M_get_container() const noexcept;
 
-  public:
     /** Attaches this iterator to the given container, detaching it
      *	from whatever container it was attached to originally. If the
      *	new container is the NULL pointer, the iterator is left
      *	unattached.
      */
-    void _M_attach(_Safe_sequence_base* __seq, bool __constant);
+    void
+    _M_attach(_Safe_sequence_base* __seq, bool __constant);
 
     /** Likewise, but not thread-safe. */
-    void _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ();
+    void
+    _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ();
 
     /** Detach the iterator for whatever container it is attached to,
      *	if any.
     */
-    void _M_detach();
+    void
+    _M_detach();
 
     /** Likewise, but not thread-safe. */
-    void _M_detach_single() throw ();
+    void
+    _M_detach_single() throw ();
   };
 
   /**
@@ -116,7 +119,9 @@ namespace __gnu_debug
    */
   class _Safe_unordered_container_base : public _Safe_sequence_base
   {
+    friend class _Safe_local_iterator_base;
     typedef _Safe_sequence_base _Base;
+
   public:
     /// The list of mutable local iterators that reference this container
     _Safe_iterator_base* _M_local_iterators;
@@ -158,7 +163,7 @@ namespace __gnu_debug
     void
     _M_swap(_Safe_unordered_container_base& __x) noexcept;
 
-  public:
+  private:
     /** Attach an iterator to this container. */
     void
     _M_attach_local(_Safe_iterator_base* __it, bool __constant);

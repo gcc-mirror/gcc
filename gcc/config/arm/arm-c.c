@@ -21,6 +21,7 @@
 #include "coretypes.h"
 #include "target.h"
 #include "c-family/c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "c-family/c-pragma.h"
 #include "stringpool.h"
@@ -86,6 +87,9 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)
 		       || TARGET_ARM_ARCH_ISA_THUMB >=2));
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_NUMERIC_MAXMIN",
+		      TARGET_ARM_ARCH >= 8 && TARGET_NEON && TARGET_FPU_ARMV8);
+
   def_or_undef_macro (pfile, "__ARM_FEATURE_SIMD32", TARGET_INT_SIMD);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
@@ -128,7 +132,7 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   if (TARGET_SOFT_FLOAT)
     builtin_define ("__SOFTFP__");
 
-  def_or_undef_macro (pfile, "__VFP_FP__", TARGET_VFP);
+  builtin_define ("__VFP_FP__");
 
   if (TARGET_ARM_FP)
     builtin_define_with_int_value ("__ARM_FP", TARGET_ARM_FP);
@@ -141,6 +145,11 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 		      arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE);
   def_or_undef_macro (pfile, "__ARM_FP16_ARGS",
 		      arm_fp16_format != ARM_FP16_FORMAT_NONE);
+
+  def_or_undef_macro (pfile, "__ARM_FEATURE_FP16_SCALAR_ARITHMETIC",
+		      TARGET_VFP_FP16INST);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_FP16_VECTOR_ARITHMETIC",
+		      TARGET_NEON_FP16INST);
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_FMA", TARGET_FMA);
   def_or_undef_macro (pfile, "__ARM_NEON__", TARGET_NEON);

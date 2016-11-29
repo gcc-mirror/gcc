@@ -125,8 +125,6 @@ namespace std
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // non POD types : resize, capacity, reserve
   std::basic_string< A<B> > str02;
   typedef std::basic_string< A<B> >::size_type size_type_o;

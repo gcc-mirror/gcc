@@ -102,31 +102,28 @@ struct Sx17 {
   int a_0 [0];
 };
 
-// Empty structs are a GCC extension that (in C++ only) is treated
-// as if it had a single member of type char.  Therefore, a struct
+// An empty struct is treated as if it had a single member of type
+// char but the member cannot be accessed.  Therefore, a struct
 // containing a flexible array member followed by an empty struct
 // is diagnosed to prevent the former subobject from sharing space
 // with the latter.
 struct Sx18 {
   int a_x [];               // { dg-error "flexible array member" }
-  struct S { };
+  struct { /* empty */ } s;
 };
 
-// Anonymous structs and unions are another GCC extension.  Since
-// they cannot be named and thus used to store the size of a flexible
-// array member, a struct containing both is diagnosed as if
-// the flexible array member appeared alone.
+// Anonymous structs are a G++ extension.  Members of anonymous structs
+// are treated as if they were declared in the enclosing class.
 struct Sx19 {
-  struct S { };
-  union U { };
-  int a_x [];               // { dg-error "in an otherwise empty" }
+  struct { int i; };        // anonymous struct
+  int a_x [];
 };
 
-// Unlike in the case above, a named member of an anonymous struct
-// prevents a subsequent flexible array member from being diagnosed.
+// Unlike in the case above, a named struct is not anonymous and
+// so doesn't contribute its member to that of the enclosing struct.
 struct Sx20 {
-  struct S { } s;
-  int a_x [];
+  struct S { int i; };
+  int a_x [];               // { dg-error "in an otherwise empty" }
 };
 
 struct Sx21 {
@@ -298,6 +295,15 @@ struct Anon1 {
 
 ASSERT_AT_END (Anon1, good);
 
+struct NotAnon1 {
+  int n;
+  // The following is not an anonymous struct -- the type is unnamed
+  // but the object has a name.
+  struct {
+    int bad[];              // { dg-error "otherwise empty" }
+  } name;
+};
+
 struct Anon2 {
   struct {
     int n;
@@ -351,7 +357,6 @@ struct Anon7 {
   };
   int n;
 };
-
 
 struct Six {
   int i;

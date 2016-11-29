@@ -1,11 +1,17 @@
 /* { dg-do run } */
+
+#if __SIZEOF_INT__ < 4
+__extension__ typedef __INT32_TYPE__ int32_t;
+#else
+typedef int int32_t;
+#endif
  
 int a = 0;
 int b = 0;
 int c = 0;
-int e = 0;
+int32_t e = 0;
 int f = 0;
-int *g = &e;
+int32_t *g = &e;
  
 int fn1() { return b ? a : b; }
  

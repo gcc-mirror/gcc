@@ -14,7 +14,7 @@
 /* Hash function for float types.  */
 
 uintptr_t
-__go_type_hash_complex (const void *vkey, uintptr_t key_size)
+__go_type_hash_complex (const void *vkey, uintptr_t seed, uintptr_t key_size)
 {
   if (key_size == 8)
     {
@@ -31,7 +31,7 @@ __go_type_hash_complex (const void *vkey, uintptr_t key_size)
       cfi = cimagf (cf);
 
       if (isinf (cfr) || isinf (cfi))
-	return 0;
+	return seed;
 
       /* NaN != NaN, so the hash code of a NaN is irrelevant.  Make it
 	 random so that not all NaNs wind up in the same place.  */
@@ -40,14 +40,14 @@ __go_type_hash_complex (const void *vkey, uintptr_t key_size)
 
       /* Avoid negative zero.  */
       if (cfr == 0 && cfi == 0)
-	return 0;
+	return seed;
       else if (cfr == 0)
 	cf = cfi * I;
       else if (cfi == 0)
 	cf = cfr;
 
       memcpy (&fi, &cf, 8);
-      return (uintptr_t) cfi;
+      return (uintptr_t) cfi ^ seed;
     }
   else if (key_size == 16)
     {
@@ -64,21 +64,21 @@ __go_type_hash_complex (const void *vkey, uintptr_t key_size)
       cdi = cimag (cd);
 
       if (isinf (cdr) || isinf (cdi))
-	return 0;
+	return seed;
 
       if (isnan (cdr) || isnan (cdi))
 	return runtime_fastrand1 ();
 
       /* Avoid negative zero.  */
       if (cdr == 0 && cdi == 0)
-	return 0;
+	return seed;
       else if (cdr == 0)
 	cd = cdi * I;
       else if (cdi == 0)
 	cd = cdr;
 
       memcpy (&di, &cd, 16);
-      return di[0] ^ di[1];
+      return di[0] ^ di[1] ^ seed;
     }
   else
     runtime_throw ("__go_type_hash_complex: invalid complex size");

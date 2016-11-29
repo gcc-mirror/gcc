@@ -99,7 +99,7 @@ case ${host} in
 esac
 
 case ${host} in
-  aarch64*-*-linux*)
+  aarch64*-*-freebsd* | aarch64*-*-linux*)
     case ${target} in
       aarch64*-*-*)
 	host_extra_gcc_objs="driver-aarch64.o"

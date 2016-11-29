@@ -29,8 +29,6 @@ const int times = 10;
 
 void write_rewind(std::iostream& stream)
 {
-  bool test __attribute__((unused)) = true;
-
   for (int j = 0; j < times; j++) 
     {
       std::streampos begin = stream.tellp();
@@ -45,8 +43,6 @@ void write_rewind(std::iostream& stream)
 
 void check_contents(std::iostream& stream)
 {
-  bool test __attribute__((unused)) = true;
-
   stream.clear();
   stream.seekg(0, std::ios::beg);
   int i = 0;

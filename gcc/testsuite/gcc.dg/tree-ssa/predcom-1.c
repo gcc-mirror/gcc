@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-do run } */
-/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details" } */
+/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details -fno-tree-pre" } */
 
 void abort (void);
 
@@ -45,6 +45,6 @@ int main(void)
 /* Verify that both loops were transformed and unrolled.  */
 /* { dg-final { scan-tree-dump-times "Unrolling 2 times." 2 "pcom"} } */
 
-/* Also check that we undid the transformation previously made by PRE.  */
-/* { dg-final { scan-tree-dump-times "looparound ref" 1 "pcom"} } */
-
+/* Also check that we undid the transformation previously made by PRE.
+   ???  PRE now does the predictive commoning in count_averages.  */
+/* dg-final { scan-tree-dump-times "looparound ref" 1 "pcom" } */

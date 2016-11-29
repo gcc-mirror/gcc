@@ -90,66 +90,66 @@ namespace __debug
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
       // Iterators.
-      iterator
+      _GLIBCXX17_CONSTEXPR iterator
       begin() noexcept
       { return iterator(data()); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       begin() const noexcept
       { return const_iterator(data()); }
 
-      iterator
+      _GLIBCXX17_CONSTEXPR iterator
       end() noexcept
       { return iterator(data() + _Nm); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       end() const noexcept
       { return const_iterator(data() + _Nm); }
 
-      reverse_iterator 
+      _GLIBCXX17_CONSTEXPR reverse_iterator
       rbegin() noexcept
       { return reverse_iterator(end()); }
 
-      const_reverse_iterator 
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       rbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
-      reverse_iterator 
+      _GLIBCXX17_CONSTEXPR reverse_iterator
       rend() noexcept
       { return reverse_iterator(begin()); }
 
-      const_reverse_iterator 
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       rend() const noexcept
       { return const_reverse_iterator(begin()); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       cbegin() const noexcept
       { return const_iterator(data()); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       cend() const noexcept
       { return const_iterator(data() + _Nm); }
 
-      const_reverse_iterator 
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
-      const_reverse_iterator 
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
 
       // Capacity.
-      constexpr size_type 
+      constexpr size_type
       size() const noexcept { return _Nm; }
 
-      constexpr size_type 
+      constexpr size_type
       max_size() const noexcept { return _Nm; }
 
-      constexpr bool 
+      constexpr bool
       empty() const noexcept { return size() == 0; }
 
       // Element access.
-      reference
+      _GLIBCXX17_CONSTEXPR reference
       operator[](size_type __n) noexcept
       {
 	__glibcxx_check_subscript(__n);
@@ -164,7 +164,7 @@ namespace __debug
 	    _AT_Type::_S_ref(_M_elems, 0));
       }
 
-      reference
+      _GLIBCXX17_CONSTEXPR reference
       at(size_type __n)
       {
 	if (__n >= _Nm)
@@ -186,14 +186,14 @@ namespace __debug
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
-      reference 
+      _GLIBCXX17_CONSTEXPR reference
       front() noexcept
       {
 	__glibcxx_check_nonempty();
 	return *begin();
       }
 
-      constexpr const_reference 
+      constexpr const_reference
       front() const noexcept
       {
 	return _Nm ? _AT_Type::_S_ref(_M_elems, 0)
@@ -201,14 +201,14 @@ namespace __debug
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
-      reference 
+      _GLIBCXX17_CONSTEXPR reference
       back() noexcept
       {
 	__glibcxx_check_nonempty();
 	return _Nm ? *(end() - 1) : *end();
       }
 
-      constexpr const_reference 
+      constexpr const_reference
       back() const noexcept
       {
 	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
@@ -216,18 +216,18 @@ namespace __debug
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
-      pointer
+      _GLIBCXX17_CONSTEXPR pointer
       data() noexcept
       { return _AT_Type::_S_ptr(_M_elems); }
 
-      const_pointer
+      _GLIBCXX17_CONSTEXPR const_pointer
       data() const noexcept
       { return _AT_Type::_S_ptr(_M_elems); }
     };
 
   // Array comparisons.
   template<typename _Tp, std::size_t _Nm>
-    inline bool 
+    inline bool
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return std::equal(__one.begin(), __one.end(), __two.begin()); }
 
@@ -239,9 +239,9 @@ namespace __debug
   template<typename _Tp, std::size_t _Nm>
     inline bool
     operator<(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
-    { 
+    {
       return std::lexicographical_compare(__a.begin(), __a.end(),
-					  __b.begin(), __b.end()); 
+					  __b.begin(), __b.end());
     }
 
   template<typename _Tp, std::size_t _Nm>

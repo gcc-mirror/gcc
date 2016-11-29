@@ -39,7 +39,7 @@ public:
   bool
   check_pointers()
   { 
-    bool test __attribute__((unused)) = true;
+    bool test = true;
     test = (!this->pbase());
     test &= (!this->pptr());
     return test;
@@ -57,8 +57,6 @@ void test05()
   typedef std::filebuf::pos_type 	pos_type;
   typedef std::filebuf::off_type 	off_type;
   typedef size_t 			size_type;
-
-  bool test __attribute__((unused)) = true;
 
   {
     testbuf 				f_tmp;

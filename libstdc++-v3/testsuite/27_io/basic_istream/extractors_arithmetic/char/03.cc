@@ -24,19 +24,17 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-bool test03()
+void test03()
 {
   std::stringbuf sbuf;
   std::istream istr(&sbuf);
   std::ostream ostr(&sbuf);
 
-  bool test __attribute__((unused)) = true;
   long l01;
   ostr << "12220101";
   istr >> l01; // _M_in_end set completely incorrectly here.
   VERIFY( l01 == 12220101 );
   VERIFY( istr.rdstate() == std::ios_base::eofbit );
-  return test;
 }
 
 int main()

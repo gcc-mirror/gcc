@@ -32,7 +32,6 @@ using namespace std::decimal;
 void
 incdec32 (void)
 {
-  bool test __attribute__((unused)) = true;
   int ival;
   decimal32 a(11), b, c;
 
@@ -80,7 +79,6 @@ incdec32 (void)
 void
 incdec64 (void)
 {
-  bool test __attribute__((unused)) = true;
   int ival;
   decimal64 a(11), b, c;
 
@@ -128,7 +126,6 @@ incdec64 (void)
 void
 incdec128 (void)
 {
-  bool test __attribute__((unused)) = true;
   int ival;
   decimal128 a(11), b, c;
 

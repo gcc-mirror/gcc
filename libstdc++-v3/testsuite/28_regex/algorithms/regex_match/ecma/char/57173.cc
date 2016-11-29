@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-07-23  Tim Shen <timshen91@gmail.com>
@@ -34,8 +34,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::regex  re("/asdf(/.*)", std::regex::ECMAScript);
     std::string target("/asdf/qwerty");

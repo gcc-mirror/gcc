@@ -16,16 +16,9 @@ type GCStats struct {
 	NumGC          int64           // number of garbage collections
 	PauseTotal     time.Duration   // total pause for all collections
 	Pause          []time.Duration // pause history, most recent first
+	PauseEnd       []time.Time     // pause end times history, most recent first
 	PauseQuantiles []time.Duration
 }
-
-// Implemented in package runtime.
-func readGCStats(*[]time.Duration)
-func enableGC(bool) bool
-func setGCPercent(int) int
-func freeOSMemory()
-func setMaxStack(int) int
-func setMaxThreads(int) int
 
 // ReadGCStats reads statistics about garbage collection into stats.
 // The number of entries in the pause history is system-dependent;
@@ -38,24 +31,35 @@ func setMaxThreads(int) int
 func ReadGCStats(stats *GCStats) {
 	// Create a buffer with space for at least two copies of the
 	// pause history tracked by the runtime. One will be returned
-	// to the caller and the other will be used as a temporary buffer
-	// for computing quantiles.
+	// to the caller and the other will be used as transfer buffer
+	// for end times history and as a temporary buffer for
+	// computing quantiles.
 	const maxPause = len(((*runtime.MemStats)(nil)).PauseNs)
-	if cap(stats.Pause) < 2*maxPause {
-		stats.Pause = make([]time.Duration, 2*maxPause)
+	if cap(stats.Pause) < 2*maxPause+3 {
+		stats.Pause = make([]time.Duration, 2*maxPause+3)
 	}
 
-	// readGCStats fills in the pause history (up to maxPause entries)
-	// and then three more: Unix ns time of last GC, number of GC,
-	// and total pause time in nanoseconds. Here we depend on the
-	// fact that time.Duration's native unit is nanoseconds, so the
-	// pauses and the total pause time do not need any conversion.
+	// readGCStats fills in the pause and end times histories (up to
+	// maxPause entries) and then three more: Unix ns time of last GC,
+	// number of GC, and total pause time in nanoseconds. Here we
+	// depend on the fact that time.Duration's native unit is
+	// nanoseconds, so the pauses and the total pause time do not need
+	// any conversion.
 	readGCStats(&stats.Pause)
 	n := len(stats.Pause) - 3
 	stats.LastGC = time.Unix(0, int64(stats.Pause[n]))
 	stats.NumGC = int64(stats.Pause[n+1])
 	stats.PauseTotal = stats.Pause[n+2]
+	n /= 2 // buffer holds pauses and end times
 	stats.Pause = stats.Pause[:n]
+
+	if cap(stats.PauseEnd) < maxPause {
+		stats.PauseEnd = make([]time.Time, 0, maxPause)
+	}
+	stats.PauseEnd = stats.PauseEnd[:0]
+	for _, ns := range stats.Pause[n : n+n] {
+		stats.PauseEnd = append(stats.PauseEnd, time.Unix(0, int64(ns)))
+	}
 
 	if len(stats.PauseQuantiles) > 0 {
 		if n == 0 {
@@ -91,9 +95,9 @@ func (x byDuration) Less(i, j int) bool { return x[i] < x[j] }
 // at startup, or 100 if the variable is not set.
 // A negative percentage disables garbage collection.
 func SetGCPercent(percent int) int {
-	old := setGCPercent(percent)
+	old := setGCPercent(int32(percent))
 	runtime.GC()
-	return old
+	return int(old)
 }
 
 // FreeOSMemory forces a garbage collection followed by an
@@ -145,7 +149,9 @@ func SetMaxThreads(threads int) int {
 // that the runtime trigger only a panic, not a crash.
 // SetPanicOnFault applies only to the current goroutine.
 // It returns the previous setting.
-func SetPanicOnFault(enabled bool) bool
+func SetPanicOnFault(enabled bool) bool {
+	return setPanicOnFault(enabled)
+}
 
 // WriteHeapDump writes a description of the heap and the objects in
 // it to the given file descriptor.

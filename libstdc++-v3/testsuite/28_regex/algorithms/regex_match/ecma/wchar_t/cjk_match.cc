@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-10-18  Tim Shen <timshen91@gmail.com>
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const wchar_t * s = L"\u4f60\u597d\u002c\u0020\u4e16\u002b\u754c";
 
   wregex re(s);

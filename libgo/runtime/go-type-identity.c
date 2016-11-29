@@ -14,7 +14,7 @@
    true of, e.g., integers and pointers.  */
 
 uintptr_t
-__go_type_hash_identity (const void *key, uintptr_t key_size)
+__go_type_hash_identity (const void *key, uintptr_t seed, uintptr_t key_size)
 {
   uintptr_t ret;
   uintptr_t i;
@@ -34,12 +34,12 @@ __go_type_hash_identity (const void *key, uintptr_t key_size)
       __builtin_memcpy (&u.a[0], key, key_size);
 #endif
       if (sizeof (uintptr_t) >= 8)
-	return (uintptr_t) u.v;
+	return (uintptr_t) u.v ^ seed;
       else
-	return (uintptr_t) ((u.v >> 32) ^ (u.v & 0xffffffff));
+	return (uintptr_t) ((u.v >> 32) ^ (u.v & 0xffffffff)) ^ seed;
     }
 
-  ret = 5381;
+  ret = seed;
   for (i = 0, p = (const unsigned char *) key; i < key_size; i++, p++)
     ret = ret * 33 + *p;
   return ret;

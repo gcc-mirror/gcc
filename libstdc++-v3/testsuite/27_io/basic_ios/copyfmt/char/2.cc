@@ -29,8 +29,6 @@
 // copyfmt and locales.
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
 
   typedef std::ios_base::fmtflags fmtflags;

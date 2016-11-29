@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-09-14  Tim Shen <timshen91@gmail.com>
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   cmatch m;
 #define TEST(i, s) VERIFY(m[i].matched && string(m[i].first, m[i].second) == s)
   VERIFY(regex_search_debug("aaaa", m, regex("a*")));

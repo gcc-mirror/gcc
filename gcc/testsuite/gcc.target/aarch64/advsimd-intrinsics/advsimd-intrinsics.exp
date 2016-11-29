@@ -53,7 +53,10 @@ torture-init
 set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 # Make sure Neon flags are provided, if necessary.  Use fp16 if we can.
-if {[check_effective_target_arm_neon_fp16_ok]} then {
+# Use fp16 arithmetic operations if the hardware supports it.
+if {[check_effective_target_arm_v8_2a_fp16_neon_hw]} then {
+  set additional_flags [add_options_for_arm_v8_2a_fp16_neon ""]
+} elseif {[check_effective_target_arm_neon_fp16_ok]} then {
   set additional_flags [add_options_for_arm_neon_fp16 ""]
 } else {
   set additional_flags [add_options_for_arm_neon ""]

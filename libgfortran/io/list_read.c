@@ -84,7 +84,7 @@ push_char_default (st_parameter_dt *dtp, int c)
 
   if (dtp->u.p.saved_string == NULL)
     {
-      // Plain malloc should suffice here, zeroing not needed?
+      /* Plain malloc should suffice here, zeroing not needed?  */
       dtp->u.p.saved_string = xcalloc (SCRATCH_SIZE, 1);
       dtp->u.p.saved_length = SCRATCH_SIZE;
       dtp->u.p.saved_used = 0;
@@ -170,11 +170,11 @@ check_buffers (st_parameter_dt *dtp)
   int c;
 
   c = '\0';
-  if (dtp->u.p.last_char != EOF - 1)
+  if (dtp->u.p.current_unit->last_char != EOF - 1)
     {
       dtp->u.p.at_eol = 0;
-      c = dtp->u.p.last_char;
-      dtp->u.p.last_char = EOF - 1;
+      c = dtp->u.p.current_unit->last_char;
+      dtp->u.p.current_unit->last_char = EOF - 1;
       goto done;
     }
 
@@ -267,7 +267,7 @@ next_char_internal (st_parameter_dt *dtp)
 
   /* Get the next character and handle end-of-record conditions.  */
 
-  if (dtp->common.unit) /* Check for kind=4 internal unit.  */
+  if (is_char4_unit(dtp)) /* Check for kind=4 internal unit.  */
    length = sread (dtp->u.p.current_unit->s, &c, 1);
   else
    {
@@ -369,7 +369,7 @@ utf_done:
 static void
 unget_char (st_parameter_dt *dtp, int c)
 {
-  dtp->u.p.last_char = c;
+  dtp->u.p.current_unit->last_char = c;
 }
 
 
@@ -385,12 +385,12 @@ eat_spaces (st_parameter_dt *dtp)
      This is an optimization unique to character arrays with large
      character lengths (PR38199).  This code eliminates numerous calls
      to next_character.  */
-  if (is_array_io (dtp) && (dtp->u.p.last_char == EOF - 1))
+  if (is_array_io (dtp) && (dtp->u.p.current_unit->last_char == EOF - 1))
     {
       gfc_offset offset = stell (dtp->u.p.current_unit->s);
       gfc_offset i;
 
-      if (dtp->common.unit) /* kind=4 */
+      if (is_char4_unit(dtp)) /* kind=4 */
 	{
 	  for (i = 0; i < dtp->u.p.current_unit->bytes_left; i++)
 	    {
@@ -1374,7 +1374,16 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
  exp2:
   if (!isdigit (c))
-    goto bad_exponent;
+    {
+      /* Extension: allow default exponent of 0 when omitted.  */
+      if (dtp->common.flags & IOPARM_DT_DEFAULT_EXP)
+	{
+	  push_char (dtp, '0');
+	  goto done;
+	}
+      else
+	goto bad_exponent;
+    }
 
   push_char (dtp, c);
 
@@ -1816,7 +1825,16 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 
  exp2:
   if (!isdigit (c))
-    goto bad_exponent;
+    {
+      /* Extension: allow default exponent of 0 when omitted.  */
+      if (dtp->common.flags & IOPARM_DT_DEFAULT_EXP)
+	{
+	  push_char (dtp, '0');
+	  goto done;
+	}
+      else
+	goto bad_exponent;
+    }
 
   push_char (dtp, c);
 
@@ -2166,6 +2184,46 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
       /* Copy value back to temporary if needed.  */
       if (dtp->u.p.repeat_count > 0)
 	memcpy (dtp->u.p.value, p, size);
+      break;
+    case BT_CLASS:
+      {
+	  int unit = dtp->u.p.current_unit->unit_number;
+	  char iotype[] = "LISTDIRECTED";
+          gfc_charlen_type iotype_len = 12;
+	  char tmp_iomsg[IOMSG_LEN] = "";
+	  char *child_iomsg;
+	  gfc_charlen_type child_iomsg_len;
+	  int noiostat;
+	  int *child_iostat = NULL;
+	  gfc_array_i4 vlist;
+
+	  GFC_DESCRIPTOR_DATA(&vlist) = NULL;
+	  GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
+
+	  /* Set iostat, intent(out).  */
+	  noiostat = 0;
+	  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
+			  dtp->common.iostat : &noiostat;
+
+	  /* Set iomsge, intent(inout).  */
+	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
+	    {
+	      child_iomsg = dtp->common.iomsg;
+	      child_iomsg_len = dtp->common.iomsg_len;
+	    }
+	  else
+	    {
+	      child_iomsg = tmp_iomsg;
+	      child_iomsg_len = IOMSG_LEN;
+	    }
+
+	  /* Call the user defined formatted READ procedure.  */
+	  dtp->u.p.current_unit->child_dtio++;
+	  dtp->u.p.fdtio_ptr (p, &unit, iotype, &vlist,
+			      child_iostat, child_iomsg,
+			      iotype_len, child_iomsg_len);
+	  dtp->u.p.current_unit->child_dtio--;
+      }
       break;
     default:
       internal_error (&dtp->common, "Bad type for list read");
@@ -3205,6 +3263,53 @@ get_name:
 		  dtp->u.p.saved_string);
 
       goto nml_err_ret;
+    }
+  else if (nl->dtio_sub != NULL)
+    {
+      int unit = dtp->u.p.current_unit->unit_number;
+      char iotype[] = "NAMELIST";
+      gfc_charlen_type iotype_len = 8;
+      char tmp_iomsg[IOMSG_LEN] = "";
+      char *child_iomsg;
+      gfc_charlen_type child_iomsg_len;
+      int noiostat;
+      int *child_iostat = NULL;
+      gfc_array_i4 vlist;
+      gfc_class list_obj;
+      formatted_dtio dtio_ptr = (formatted_dtio)nl->dtio_sub;
+
+      GFC_DESCRIPTOR_DATA(&vlist) = NULL;
+      GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
+
+      list_obj.data = (void *)nl->mem_pos;
+      list_obj.vptr = nl->vtable;
+      list_obj.len = 0;
+
+      /* Set iostat, intent(out).  */
+      noiostat = 0;
+      child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
+		      dtp->common.iostat : &noiostat;
+
+      /* Set iomsg, intent(inout).  */
+      if (dtp->common.flags & IOPARM_HAS_IOMSG)
+	{
+	  child_iomsg = dtp->common.iomsg;
+	  child_iomsg_len = dtp->common.iomsg_len;
+	}
+      else
+	{
+	  child_iomsg = tmp_iomsg;
+	  child_iomsg_len = IOMSG_LEN;
+	}
+
+      /* Call the user defined formatted READ procedure.  */
+      dtp->u.p.current_unit->child_dtio++;
+      dtio_ptr ((void *)&list_obj, &unit, iotype, &vlist,
+		child_iostat, child_iomsg,
+		iotype_len, child_iomsg_len);
+      dtp->u.p.current_unit->child_dtio--;
+
+      return true;
     }
 
   /* Get the length, data length, base pointer and rank of the variable.

@@ -34,7 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #define CC1_SPEC                                \
   "%(cc1_n_flash) "                             \
   "%(cc1_errata_skip) "                         \
-  "%(cc1_rmw) "
+  "%(cc1_rmw) "                                 \
+  "%(cc1_absdata) "
 
 #undef  CC1PLUS_SPEC
 #define CC1PLUS_SPEC                                    \

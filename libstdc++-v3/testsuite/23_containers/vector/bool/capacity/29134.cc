@@ -24,8 +24,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using std::vector;
   using std::numeric_limits;
 

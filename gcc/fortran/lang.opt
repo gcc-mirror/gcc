@@ -209,6 +209,10 @@ Warray-temporaries
 Fortran Warning Var(warn_array_temporaries)
 Warn about creation of array temporaries.
 
+Wargument-mismatch
+Fortran Warning Var(warn_argument_mismatch) Init(1)
+Warn about type and rank mismatches between arguments and parameters.
+
 Wc-binding-type
 Fortran Var(warn_c_binding_type) Warning LangEnabledBy(Fortran,Wall)
 Warn if the type of a variable might be not interoperable with C.
@@ -421,12 +425,24 @@ Fortran RejectNegative
 Treat lines with 'D' in column one as comments.
 
 fdec
-Fortran
+Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-intrinsic-ints
+Fortran Var(flag_dec_intrinsic_ints)
+Enable kind-specific variants of integer intrinsic functions.
+
+fdec-math
+Fortran Var(flag_dec_math)
+Enable legacy math intrinsics for compatibility.
+
 fdec-structure
-Fortran
+Fortran Var(flag_dec_structure)
 Enable support for DEC STRUCTURE/RECORD.
+
+fdec-static
+Fortran Var(flag_dec_static)
+Enable DEC-style STATIC and AUTOMATIC attributes.
 
 fdefault-double-8
 Fortran Var(flag_default_double)
@@ -523,6 +539,10 @@ Specify that no implicit typing is allowed, unless overridden by explicit IMPLIC
 finit-character=
 Fortran RejectNegative Joined UInteger
 -finit-character=<n>	Initialize local character variables to ASCII value n.
+
+finit-derived
+Fortran Var(flag_init_derived)
+Initialize components of derived type variables according to other init flags.
 
 finit-integer=
 Fortran RejectNegative Joined

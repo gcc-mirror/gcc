@@ -2126,6 +2126,14 @@ package body Sem_Elab is
             end if;
 
             Par := Parent (Par);
+
+            --  If assertions are not enabled, the check pragma is rewritten
+            --  as an if_statement in sem_prag, to generate various warnings
+            --  on boolean expressions. Retrieve the original pragma.
+
+            if Nkind (Original_Node (Par)) = N_Pragma then
+               Par := Original_Node (Par);
+            end if;
          end loop;
 
          return False;

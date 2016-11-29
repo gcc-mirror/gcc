@@ -39,48 +39,50 @@ int main()
 
   int buckets;
 
-  // Add 1 to all counts, because the std::vector used internally by the
-  // hashtable creates and destroys a temporary object using the allocator.
+  // For C++11 and later add 1 to all counts, because the std::vector used
+  // internally by the hashtable creates and destroys a temporary object
+  // using its allocator.
+  const int extra = __cplusplus >= 201102L ? 1 : 0;
 
   tracker_allocator_counter::reset();
   {
     Container c;
     buckets = c.bucket_count();
-    ok = check_construct_destroy("empty container", buckets+1, 1) && ok;
+    ok = check_construct_destroy("empty container", buckets+extra, extra) && ok;
   }
-  ok = check_construct_destroy("empty container", buckets+1, buckets+1) && ok;
+  ok = check_construct_destroy("empty container", buckets+extra, buckets+extra) && ok;
 
 
   tracker_allocator_counter::reset();
   {
     Container c(arr10, arr10 + 10);
-    ok = check_construct_destroy("Construct from range", buckets+10+1, 1) && ok;
+    ok = check_construct_destroy("Construct from range", buckets+10+extra, extra) && ok;
   }
-  ok = check_construct_destroy("Construct from range", buckets+10+1, buckets+10+1) && ok;
+  ok = check_construct_destroy("Construct from range", buckets+10+extra, buckets+10+extra) && ok;
 
   tracker_allocator_counter::reset();
   {
     Container c(arr10, arr10 + 10);
     c.insert(arr10a[0]);
-    ok = check_construct_destroy("Insert element", buckets+11+1, 1) && ok;
+    ok = check_construct_destroy("Insert element", buckets+11+extra, extra) && ok;
   }
-  ok = check_construct_destroy("Insert element", buckets+11+1, buckets+11+1) && ok;
+  ok = check_construct_destroy("Insert element", buckets+11+extra, buckets+11+extra) && ok;
 
   tracker_allocator_counter::reset();
   {
     Container c(arr10, arr10 + 10);
     c.insert(arr10a, arr10a+3);
-    ok = check_construct_destroy("Insert short range", buckets+13+1, 1) && ok;
+    ok = check_construct_destroy("Insert short range", buckets+13+extra, extra) && ok;
   }
-  ok = check_construct_destroy("Insert short range", buckets+13+1, buckets+13+1) && ok;
+  ok = check_construct_destroy("Insert short range", buckets+13+extra, buckets+13+extra) && ok;
 
   tracker_allocator_counter::reset();
   {
     Container c(arr10, arr10 + 10);
     c.insert(arr10a, arr10a+10);
-    ok = check_construct_destroy("Insert long range", buckets+20+1, 1) && ok;
+    ok = check_construct_destroy("Insert long range", buckets+20+extra, extra) && ok;
   }
-  ok = check_construct_destroy("Insert long range", buckets+20+1, buckets+20+1) && ok;
+  ok = check_construct_destroy("Insert long range", buckets+20+extra, buckets+20+extra) && ok;
 
   return ok ? 0 : 1;
 }

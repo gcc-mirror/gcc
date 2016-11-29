@@ -632,10 +632,10 @@ dnl  baseline_dir
 dnl  baseline_subdir_switch
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
-  if $GLIBCXX_IS_NATIVE ; then
-    # Do checks for resource limit functions.
-    GLIBCXX_CHECK_SETRLIMIT
+  # Do checks for resource limit functions.
+  GLIBCXX_CHECK_SETRLIMIT
 
+  if $GLIBCXX_IS_NATIVE ; then
     # Look for setenv, so that extended locale tests can be performed.
     GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
   fi
@@ -2153,6 +2153,10 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
+  # Use C++11 because a conforming <stdio.h> won't define gets for C++14,
+  # and we don't need a declaration for C++14 anyway.
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
 
   AC_MSG_CHECKING([for gets declaration])
   AC_CACHE_VAL(glibcxx_cv_gets, [
@@ -2168,15 +2172,17 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
       )])
 
   if test $glibcxx_cv_gets = yes; then
-    AC_DEFINE(HAVE_GETS, 1, [Define if gets is available in <stdio.h>.])
+    AC_DEFINE(HAVE_GETS, 1, [Define if gets is available in <stdio.h> before C++14.])
   fi
   AC_MSG_RESULT($glibcxx_cv_gets)
 
+  CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
 
 dnl
-dnl Check whether required C++11 overloads are present in <math.h>.
+dnl Check whether required C++11 overloads for floating point and integral
+dnl types are present in <math.h>.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
@@ -2187,10 +2193,10 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
   case "$host" in
     *-*-solaris2.*)
-      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
-      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
-      AC_MSG_CHECKING([for C++11 <math.h> overloads])
-      AC_CACHE_VAL(glibcxx_cv_math11_overload, [
+      # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> floating point overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_fp_overload, [
 	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <math.h>
 	   #undef isfinite
@@ -2199,21 +2205,73 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 	     { return __builtin_isfinite(__x); }
 	   }
 	])],
-	[glibcxx_cv_math11_overload=no],
-	[glibcxx_cv_math11_overload=yes]
+	[glibcxx_cv_math11_fp_overload=no],
+	[glibcxx_cv_math11_fp_overload=yes]
       )])
 
       # autoheader cannot handle indented templates.
-      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO],
-        [/* Define if all C++11 overloads are available in <math.h>.  */
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_FP],
+        [/* Define if all C++11 floating point overloads are available in <math.h>.  */
 #if __cplusplus >= 201103L
-#undef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
 #endif])
 
-      if test $glibcxx_cv_math11_overload = yes; then
-        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO)
+      if test $glibcxx_cv_math11_fp_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_FP)
       fi
-      AC_MSG_RESULT([$glibcxx_cv_math11_overload])
+      AC_MSG_RESULT([$glibcxx_cv_math11_fp_overload])
+
+      # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> integral type overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_int_overload, [
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	  [#include <math.h>
+	   namespace std {
+	     template<typename _Tp>
+	       struct __is_integer;
+	     template<>
+	       struct __is_integer<int>
+	       {
+	         enum { __value = 1 };
+	       };
+	   }
+	   namespace __gnu_cxx {
+	     template<bool, typename>
+	       struct __enable_if;
+	     template<typename _Tp>
+	       struct __enable_if<true, _Tp>
+	       { typedef _Tp __type; };
+	   }
+	   namespace std {
+	     template<typename _Tp>
+	       constexpr typename __gnu_cxx::__enable_if
+	       		 <__is_integer<_Tp>::__value, double>::__type
+	       log2(_Tp __x)
+	       { return __builtin_log2(__x); }
+	   }
+	   int
+	   main (void)
+	   {
+	     int i = 1000;
+	     return std::log2(i);
+	   }
+	])],
+	[glibcxx_cv_math11_int_overload=no],
+	[glibcxx_cv_math11_int_overload=yes]
+      )])
+
+      # autoheader cannot handle indented templates.
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_INT],
+        [/* Define if all C++11 integral type overloads are available in <math.h>.  */
+#if __cplusplus >= 201103L
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
+#endif])
+
+      if test $glibcxx_cv_math11_int_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_INT)
+      fi
+      AC_MSG_RESULT([$glibcxx_cv_math11_int_overload])
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
@@ -3489,10 +3547,12 @@ EOF
   CXXFLAGS="$old_CXXFLAGS"
   AC_LANG_RESTORE
 
-  # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test "$glibcxx_cv_atomic_bool" = yes \
+  # Set atomicity_dir to builtins if all but the long long test above passes,
+  # or if the builtins were already chosen (e.g. by configure.host).
+  if { test "$glibcxx_cv_atomic_bool" = yes \
      && test "$glibcxx_cv_atomic_short" = yes \
-     && test "$glibcxx_cv_atomic_int" = yes; then
+     && test "$glibcxx_cv_atomic_int" = yes; } \
+     || test "$atomicity_dir" = "cpu/generic/atomicity_builtins"; then
     AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS, 1,
     [Define if the compiler supports C++11 atomics.])
     atomicity_dir=cpu/generic/atomicity_builtins
@@ -3696,7 +3756,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:22:0
+libtool_VERSION=6:23:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -4283,6 +4343,7 @@ dnl
   AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [
+       #include <limits.h>
        #include <stdlib.h>
        #include <unistd.h>
       ],

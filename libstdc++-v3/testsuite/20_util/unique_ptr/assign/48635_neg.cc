@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -43,10 +42,10 @@ void f()
   std::unique_ptr<int, D&> ud(nullptr, d);
   ub = std::move(ud); // { dg-error "no match" }
   ub2 = ud; // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 269 }
+// { dg-error "no type" "" { target *-*-* } 289 }
 
   std::unique_ptr<int[], B&> uba(nullptr, b);
   std::unique_ptr<int[], D&> uda(nullptr, d);
   uba = std::move(uda); // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 537 }
+// { dg-error "no type" "" { target *-*-* } 540 }
 }

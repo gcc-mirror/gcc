@@ -30,7 +30,6 @@
 void
 test07()
 {
-  bool test __attribute__((unused)) = true;
   const char* tfn = "istream_unformatted-1.txt";
   std::wifstream infile;
   infile.open(tfn);

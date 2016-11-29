@@ -27,6 +27,7 @@
 #include "tree.h"
 #include "df.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"
 #include "output.h"
@@ -623,6 +624,9 @@ moxie_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 #define TARGET_FUNCTION_ARG		moxie_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE	moxie_function_arg_advance
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P	moxie_legitimate_address_p

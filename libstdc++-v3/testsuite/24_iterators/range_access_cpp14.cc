@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
@@ -23,8 +22,6 @@
 #include <iterator>
 #include <vector>
 #include <testsuite_hooks.h>
-
-bool test __attribute__((unused)) = true;
 
 void
 test01()

@@ -25,8 +25,6 @@
 // libstdc++/11729
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<int> Vec;
   typedef Vec::reverse_iterator reverse_iterator;
   typedef Vec::const_reverse_iterator const_reverse_iterator;

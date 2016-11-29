@@ -489,6 +489,8 @@ simplify_transformation_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *
 	}
 
       result = op (result, gfc_copy_expr (a));
+      if (!result)
+	return result;
     }
 
   return result;
@@ -1704,6 +1706,150 @@ gfc_simplify_conjg (gfc_expr *e)
   return range_check (result, "CONJG");
 }
 
+/* Return the simplification of the constant expression in icall, or NULL
+   if the expression is not constant.  */
+
+static gfc_expr *
+simplify_trig_call (gfc_expr *icall)
+{
+  gfc_isym_id func = icall->value.function.isym->id;
+  gfc_expr *x = icall->value.function.actual->expr;
+
+  /* The actual simplifiers will return NULL for non-constant x.  */
+  switch (func)
+    {
+    case GFC_ISYM_ACOS:
+      return gfc_simplify_acos (x);
+    case GFC_ISYM_ASIN:
+      return gfc_simplify_asin (x);
+    case GFC_ISYM_ATAN:
+      return gfc_simplify_atan (x);
+    case GFC_ISYM_COS:
+      return gfc_simplify_cos (x);
+    case GFC_ISYM_COTAN:
+      return gfc_simplify_cotan (x);
+    case GFC_ISYM_SIN:
+      return gfc_simplify_sin (x);
+    case GFC_ISYM_TAN:
+      return gfc_simplify_tan (x);
+    default:
+      gfc_internal_error ("in simplify_trig_call(): Bad intrinsic");
+    }
+}
+
+/* Convert a floating-point number from radians to degrees.  */
+
+static void
+degrees_f (mpfr_t x, mp_rnd_t rnd_mode)
+{
+  mpfr_t tmp;
+  mpfr_init (tmp);
+
+  /* Set x = x % 2pi to avoid offsets with large angles.  */
+  mpfr_const_pi (tmp, rnd_mode);
+  mpfr_mul_ui (tmp, tmp, 2, rnd_mode);
+  mpfr_fmod (tmp, x, tmp, rnd_mode);
+
+  /* Set x = x * 180.  */
+  mpfr_mul_ui (x, x, 180, rnd_mode);
+
+  /* Set x = x / pi.  */
+  mpfr_const_pi (tmp, rnd_mode);
+  mpfr_div (x, x, tmp, rnd_mode);
+
+  mpfr_clear (tmp);
+}
+
+/* Convert a floating-point number from degrees to radians.  */
+
+static void
+radians_f (mpfr_t x, mp_rnd_t rnd_mode)
+{
+  mpfr_t tmp;
+  mpfr_init (tmp);
+
+  /* Set x = x % 360 to avoid offsets with large angles.  */
+  mpfr_set_ui (tmp, 360, rnd_mode);
+  mpfr_fmod (tmp, x, tmp, rnd_mode);
+
+  /* Set x = x * pi.  */
+  mpfr_const_pi (tmp, rnd_mode);
+  mpfr_mul (x, x, tmp, rnd_mode);
+
+  /* Set x = x / 180.  */
+  mpfr_div_ui (x, x, 180, rnd_mode);
+
+  mpfr_clear (tmp);
+}
+
+
+/* Convert argument to radians before calling a trig function.  */
+
+gfc_expr *
+gfc_simplify_trigd (gfc_expr *icall)
+{
+  gfc_expr *arg;
+
+  arg = icall->value.function.actual->expr;
+
+  if (arg->ts.type != BT_REAL)
+    gfc_internal_error ("in gfc_simplify_trigd(): Bad type");
+
+  if (arg->expr_type == EXPR_CONSTANT)
+    /* Convert constant to radians before passing off to simplifier.  */
+    radians_f (arg->value.real, GFC_RND_MODE);
+
+  /* Let the usual simplifier take over - we just simplified the arg.  */
+  return simplify_trig_call (icall);
+}
+
+/* Convert result of an inverse trig function to degrees.  */
+
+gfc_expr *
+gfc_simplify_atrigd (gfc_expr *icall)
+{
+  gfc_expr *result;
+
+  if (icall->value.function.actual->expr->ts.type != BT_REAL)
+    gfc_internal_error ("in gfc_simplify_atrigd(): Bad type");
+
+  /* See if another simplifier has work to do first.  */
+  result = simplify_trig_call (icall);
+
+  if (result && result->expr_type == EXPR_CONSTANT)
+    {
+      /* Convert constant to degrees after passing off to actual simplifier.  */
+      degrees_f (result->value.real, GFC_RND_MODE);
+      return result;
+    }
+
+  /* Let gfc_resolve_atrigd take care of the non-constant case.  */
+  return NULL;
+}
+
+/* Convert the result of atan2 to degrees.  */
+
+gfc_expr *
+gfc_simplify_atan2d (gfc_expr *y, gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->ts.type != BT_REAL || y->ts.type != BT_REAL)
+    gfc_internal_error ("in gfc_simplify_atan2d(): Bad type");
+
+  if (x->expr_type == EXPR_CONSTANT && y->expr_type == EXPR_CONSTANT)
+    {
+      result = gfc_simplify_atan2 (y, x);
+      if (result != NULL)
+	{
+	  degrees_f (result->value.real, GFC_RND_MODE);
+	  return result;
+	}
+    }
+
+  /* Let gfc_resolve_atan2d take care of the non-constant case.  */
+  return NULL;
+}
 
 gfc_expr *
 gfc_simplify_cos (gfc_expr *x)
@@ -1840,7 +1986,7 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
       shft = shft < 0 ? 1 - shft : shft;
 
       /* Special case: Shift to the original order!  */
-      if (shft % sz == 0)
+      if (sz == 0 || shft % sz == 0)
 	return a;
 
       result = gfc_copy_expr (a);
@@ -2371,7 +2517,7 @@ gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
   if (UNLIMITED_POLY (a) || UNLIMITED_POLY (mold))
     return NULL;
 
-  /* Return .false. if the dynamic type can never be the same.  */
+  /* Return .false. if the dynamic type can never be an extension.  */
   if ((a->ts.type == BT_CLASS && mold->ts.type == BT_CLASS
        && !gfc_type_is_extension_of
 			(mold->ts.u.derived->components->ts.u.derived,
@@ -2381,18 +2527,19 @@ gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
 			 mold->ts.u.derived->components->ts.u.derived))
       || (a->ts.type == BT_DERIVED && mold->ts.type == BT_CLASS
 	  && !gfc_type_is_extension_of
-			(a->ts.u.derived,
-			 mold->ts.u.derived->components->ts.u.derived)
-	  && !gfc_type_is_extension_of
 			(mold->ts.u.derived->components->ts.u.derived,
 			 a->ts.u.derived))
       || (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
 	  && !gfc_type_is_extension_of
 			(mold->ts.u.derived,
-			 a->ts.u.derived->components->ts.u.derived)))
+			 a->ts.u.derived->components->ts.u.derived)
+	  && !gfc_type_is_extension_of
+			(a->ts.u.derived->components->ts.u.derived,
+			 mold->ts.u.derived)))
     return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
 
-  if (mold->ts.type == BT_DERIVED
+  /* Return .true. if the dynamic type is guaranteed to be an extension.  */
+  if (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
       && gfc_type_is_extension_of (mold->ts.u.derived,
 				   a->ts.u.derived->components->ts.u.derived))
     return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, true);
@@ -5125,7 +5272,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 
   if (len ||
       (e->ts.u.cl->length &&
-       mpz_sgn (e->ts.u.cl->length->value.integer)) != 0)
+       mpz_sgn (e->ts.u.cl->length->value.integer) != 0))
     {
       const char *res = gfc_extract_int (n, &ncop);
       gcc_assert (res == NULL);
@@ -6242,6 +6389,41 @@ gfc_simplify_sum (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 
 
 gfc_expr *
+gfc_simplify_cotan (gfc_expr *x)
+{
+  gfc_expr *result;
+  mpc_t swp, *val;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+
+  switch (x->ts.type)
+    {
+    case BT_REAL:
+      mpfr_cot (result->value.real, x->value.real, GFC_RND_MODE);
+      break;
+
+    case BT_COMPLEX:
+      /* There is no builtin mpc_cot, so compute cot = cos / sin.  */
+      val = &result->value.complex;
+      mpc_init2 (swp, mpfr_get_default_prec ());
+      mpc_cos (swp, x->value.complex, GFC_MPC_RND_MODE);
+      mpc_sin (*val, x->value.complex, GFC_MPC_RND_MODE);
+      mpc_div (*val, swp, *val, GFC_MPC_RND_MODE);
+      mpc_clear (swp);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return range_check (result, "COTAN");
+}
+
+
+gfc_expr *
 gfc_simplify_tan (gfc_expr *x)
 {
   gfc_expr *result;
@@ -7044,9 +7226,17 @@ gfc_simplify_compiler_version (void)
 gfc_expr *
 simplify_ieee_selected_real_kind (gfc_expr *expr)
 {
-  gfc_actual_arglist *arg = expr->value.function.actual;
-  gfc_expr *p = arg->expr, *q = arg->next->expr,
-	   *rdx = arg->next->next->expr;
+  gfc_actual_arglist *arg;
+  gfc_expr *p = NULL, *q = NULL, *rdx = NULL;
+
+  arg = expr->value.function.actual;
+  p = arg->expr;
+  if (arg->next)
+    {
+      q = arg->next->expr;
+      if (arg->next->next)
+	rdx = arg->next->next->expr;
+    }
 
   /* Currently, if IEEE is supported and this module is built, it means
      all our floating-point types conform to IEEE. Hence, we simply handle

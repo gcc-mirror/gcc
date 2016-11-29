@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11 -lstdc++fs" }
+// { dg-options "-lstdc++fs" }
+// { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
 // 15.4 Copy [fs.op.copy_file]
@@ -28,7 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
   using std::experimental::filesystem::copy_options;
   std::error_code ec;
 
@@ -73,6 +73,9 @@ test01()
   VERIFY( !ec );
   VERIFY( exists(to) );
   VERIFY( file_size(to) == file_size(from) );
+
+  remove(from);
+  remove(to);
 }
 
 int

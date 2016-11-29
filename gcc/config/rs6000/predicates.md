@@ -147,6 +147,11 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 63")))
 
+;; Return 1 if op is an unsigned 7-bit constant integer.
+(define_predicate "u7bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 127)")))
+
 ;; Return 1 if op is a signed 8-bit constant integer.
 ;; Integer multiplication complete more quickly
 (define_predicate "s8bit_cint_operand"
@@ -734,15 +739,6 @@
   (and (match_operand 0 "memory_operand")
        (match_test "offsettable_nonstrict_memref_p (op)")))
 
-;; Return 1 if the operand is an offsettable memory operand for ISA 3.0
-;; scalar LXSD/STXSD that must have the bottom 2 bits 0 and no update
-;; form
-(define_predicate "offsettable_mem_14bit_operand"
-  (and (match_operand 0 "memory_operand")
-       (match_test "offsettable_nonstrict_memref_p (op)")
-       (match_test "mem_operand_gpr (op, mode)")
-       (not (match_test "update_address_mem  (op, mode)"))))
-
 ;; Return 1 if the operand is suitable for load/store quad memory.
 ;; This predicate only checks for non-atomic loads/stores (not lqarx/stqcx).
 (define_predicate "quad_memory_operand"
@@ -1175,6 +1171,12 @@
 ;; comparisons that generate a -1/0 mask.
 (define_predicate "fpmask_comparison_operator"
   (match_code "eq,gt,ge"))
+
+;; Return 1 if OP is a comparison operator suitable for vector/scalar
+;; comparisons that generate a 0/-1 mask (i.e. the inverse of
+;; fpmask_comparison_operator).
+(define_predicate "invert_fpmask_comparison_operator"
+  (match_code "ne,unlt,unle"))
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; insn, which is true if the corresponding bit in the CC register is set.
@@ -1842,7 +1844,7 @@
 ;; Match a GPR load (lbz, lhz, lwz, ld) that uses a combined address in the
 ;; memory field with both the addis and the memory offset.  Sign extension
 ;; is not handled here, since lha and lwa are not fused.
-;; With extended fusion, also match a FPR load (lfd, lfs) and float_extend
+;; With P9 fusion, also match a fpr/vector load and float_extend
 (define_predicate "fusion_addis_mem_combo_load"
   (match_code "mem,zero_extend,float_extend")
 {
@@ -1865,14 +1867,24 @@
     case SImode:
       break;
 
+    /* Do not fuse 64-bit DImode in 32-bit since it splits into two
+       separate instructions.  */
     case DImode:
       if (!TARGET_POWERPC64)
 	return 0;
       break;
 
+    /* ISA 2.08/power8 only had fusion of GPR loads.  */
     case SFmode:
-    case DFmode:
       if (!TARGET_P9_FUSION)
+	return 0;
+      break;
+
+    /* ISA 2.08/power8 only had fusion of GPR loads.  Do not allow 64-bit
+       DFmode in 32-bit if -msoft-float since it splits into two separate
+       instructions.  */
+    case DFmode:
+      if ((!TARGET_POWERPC64 && !TARGET_DF_FPR) || !TARGET_P9_FUSION)
 	return 0;
       break;
 
@@ -1918,20 +1930,21 @@
     case QImode:
     case HImode:
     case SImode:
+    case SFmode:
       break;
 
+    /* Do not fuse 64-bit DImode in 32-bit since it splits into two
+       separate instructions.  */
     case DImode:
       if (!TARGET_POWERPC64)
 	return 0;
       break;
 
-    case SFmode:
-      if (!TARGET_SF_FPR)
-	return 0;
-      break;
-
+    /* Do not allow 64-bit DFmode in 32-bit if -msoft-float since it splits
+       into two separate instructions.  Do allow fusion if we have hardware
+       floating point.  */
     case DFmode:
-      if (!TARGET_DF_FPR)
+      if (!TARGET_POWERPC64 && !TARGET_DF_FPR)
 	return 0;
       break;
 

@@ -35,9 +35,6 @@ void test01()
   typedef basic_stringbuf<pod_ushort> 	stringbuf_type;
   typedef basic_ostream<pod_ushort> 	ostream_type;
 
-  bool test __attribute__((unused)) = true;
-
-
   const string_type str01;
   stringbuf_type* strbuf01 = 0;
   stringbuf_type strbuf02(str01);

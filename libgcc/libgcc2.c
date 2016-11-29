@@ -680,7 +680,8 @@ __udiv_w_sdiv (UWtype *rp __attribute__ ((__unused__)),
 #endif
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
-     defined (L_umoddi3) || defined (L_moddi3))
+     defined (L_umoddi3) || defined (L_moddi3) || \
+     defined (L_divmoddi4))
 #define L_udivmoddi4
 #endif
 
@@ -937,7 +938,8 @@ __parityDI2 (UDWtype x)
 #ifdef TARGET_HAS_NO_HW_DIVIDE
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
-     defined (L_umoddi3) || defined (L_moddi3))
+     defined (L_umoddi3) || defined (L_moddi3) || \
+     defined (L_divmoddi4))
 static inline __attribute__ ((__always_inline__))
 #endif
 UDWtype
@@ -1004,7 +1006,8 @@ __udivmoddi4 (UDWtype n, UDWtype d, UDWtype *rp)
 #else
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
-     defined (L_umoddi3) || defined (L_moddi3))
+     defined (L_umoddi3) || defined (L_moddi3) || \
+     defined (L_divmoddi4))
 static inline __attribute__ ((__always_inline__))
 #endif
 UDWtype
@@ -1265,6 +1268,34 @@ __moddi3 (DWtype u, DWtype v)
   if (c)
     w = -w;
 
+  return w;
+}
+#endif
+
+#ifdef L_divmoddi4
+DWtype
+__divmoddi4 (DWtype u, DWtype v, DWtype *rp)
+{
+  Wtype c1 = 0, c2 = 0;
+  DWunion uu = {.ll = u};
+  DWunion vv = {.ll = v};
+  DWtype w;
+  DWtype r;
+
+  if (uu.s.high < 0)
+    c1 = ~c1, c2 = ~c2,
+    uu.ll = -uu.ll;
+  if (vv.s.high < 0)
+    c1 = ~c1,
+    vv.ll = -vv.ll;
+
+  w = __udivmoddi4 (uu.ll, vv.ll, (UDWtype*)&r);
+  if (c1)
+    w = -w;
+  if (c2)
+    r = -r;
+
+  *rp = r;
   return w;
 }
 #endif
@@ -1643,6 +1674,11 @@ FUNC (DWtype u)
     hi = -(UWtype) hi;
 
   UWtype count, shift;
+#if !defined (COUNT_LEADING_ZEROS_0) || COUNT_LEADING_ZEROS_0 != W_TYPE_SIZE
+  if (hi == 0)
+    count = W_TYPE_SIZE;
+  else
+#endif
   count_leading_zeros (count, hi);
 
   /* No leading bits means u == minimum.  */
@@ -1852,7 +1888,8 @@ NAME (TYPE x, int m)
 
 #endif
 
-#if ((defined(L_mulsc3) || defined(L_divsc3)) && LIBGCC2_HAS_SF_MODE) \
+#if((defined(L_mulhc3) || defined(L_divhc3)) && LIBGCC2_HAS_HF_MODE) \
+    || ((defined(L_mulsc3) || defined(L_divsc3)) && LIBGCC2_HAS_SF_MODE) \
     || ((defined(L_muldc3) || defined(L_divdc3)) && LIBGCC2_HAS_DF_MODE) \
     || ((defined(L_mulxc3) || defined(L_divxc3)) && LIBGCC2_HAS_XF_MODE) \
     || ((defined(L_multc3) || defined(L_divtc3)) && LIBGCC2_HAS_TF_MODE)
@@ -1861,30 +1898,36 @@ NAME (TYPE x, int m)
 #undef double
 #undef long
 
-#if defined(L_mulsc3) || defined(L_divsc3)
+#if defined(L_mulhc3) || defined(L_divhc3)
+# define MTYPE	HFtype
+# define CTYPE	HCtype
+# define MODE	hc
+# define CEXT	__LIBGCC_HF_FUNC_EXT__
+# define NOTRUNC (!__LIBGCC_HF_EXCESS_PRECISION__)
+#elif defined(L_mulsc3) || defined(L_divsc3)
 # define MTYPE	SFtype
 # define CTYPE	SCtype
 # define MODE	sc
 # define CEXT	__LIBGCC_SF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_SF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_SF_EXCESS_PRECISION__)
 #elif defined(L_muldc3) || defined(L_divdc3)
 # define MTYPE	DFtype
 # define CTYPE	DCtype
 # define MODE	dc
 # define CEXT	__LIBGCC_DF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_DF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_DF_EXCESS_PRECISION__)
 #elif defined(L_mulxc3) || defined(L_divxc3)
 # define MTYPE	XFtype
 # define CTYPE	XCtype
 # define MODE	xc
 # define CEXT	__LIBGCC_XF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_XF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_XF_EXCESS_PRECISION__)
 #elif defined(L_multc3) || defined(L_divtc3)
 # define MTYPE	TFtype
 # define CTYPE	TCtype
 # define MODE	tc
 # define CEXT	__LIBGCC_TF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_TF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_TF_EXCESS_PRECISION__)
 #else
 # error
 #endif
@@ -1922,7 +1965,7 @@ extern void *compile_type_assert[sizeof(INFINITY) == sizeof(MTYPE) ? 1 : -1];
 # define TRUNC(x)	__asm__ ("" : "=m"(x) : "m"(x))
 #endif
 
-#if defined(L_mulsc3) || defined(L_muldc3) \
+#if defined(L_mulhc3) || defined(L_mulsc3) || defined(L_muldc3) \
     || defined(L_mulxc3) || defined(L_multc3)
 
 CTYPE
@@ -1992,7 +2035,7 @@ CONCAT3(__mul,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 }
 #endif /* complex multiply */
 
-#if defined(L_divsc3) || defined(L_divdc3) \
+#if defined(L_divhc3) || defined(L_divsc3) || defined(L_divdc3) \
     || defined(L_divxc3) || defined(L_divtc3)
 
 CTYPE

@@ -26,7 +26,6 @@ template<typename T>
   void test01_do()
   {
     using namespace std;
-    bool test __attribute__((unused)) = true;
     
     VERIFY( pow(T(1.0), 0) == T(1.0) );
     VERIFY( pow(T(2.0), 0) == T(1.0) );

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-06-09  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -28,19 +28,17 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef char                          value_type;
   typedef std::basic_string<value_type> string_type;
   typedef std::sub_match<value_type*>   sub_match_type;
   value_type test_data[] = "cabbage";
 
-	sub_match_type sm;
-	sm.first = std::begin(test_data);
-	sm.second  = std::end(test_data) - 1;
-	sm.matched = true;
+  sub_match_type sm;
+  sm.first = std::begin(test_data);
+  sm.second  = std::end(test_data) - 1;
+  sm.matched = true;
 
-	string_type sm_string = sm;
+  string_type sm_string = sm;
 
-	VERIFY( sm_string == string_type(test_data) );
+  VERIFY( sm_string == string_type(test_data) );
 }

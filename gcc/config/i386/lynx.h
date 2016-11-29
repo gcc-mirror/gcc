@@ -85,5 +85,3 @@ along with GCC; see the file COPYING3.  If not see
    TLS is detected by configure.  We undefine it here.  */
 
 #undef HAVE_AS_TLS
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE

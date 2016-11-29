@@ -296,6 +296,10 @@ case "${host_os}" in
     os_include_dir="os/qnx/qnx6.1"
     c_model=c
     ;;
+  rtems*)
+    # Use libatomic if necessary and avoid libstdc++ specific atomicity support
+    atomicity_dir="cpu/generic/atomicity_builtins"
+    ;;
   solaris2)
     # This too-vague configuration does not provide enough information
     # to select a ctype include, and thus os_include_dir is a crap shoot.

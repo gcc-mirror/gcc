@@ -38,8 +38,6 @@ const unsigned int N5 = sizeof(A5) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<int>   vec_type;
   typedef vec_type::iterator iterator_type;
 
@@ -78,8 +76,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<std::vector<int> >   vec_type;
   typedef vec_type::iterator          iterator_type;
 

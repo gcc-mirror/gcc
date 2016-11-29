@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const std::locale c_loc = std::locale::classic();
 
   std::ios ios_01(0);

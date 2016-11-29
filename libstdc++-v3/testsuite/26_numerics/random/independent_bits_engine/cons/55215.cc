@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
@@ -40,8 +40,6 @@ int g(int x)
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const int f1 = f(0);
   const int f2 = f(0);
 

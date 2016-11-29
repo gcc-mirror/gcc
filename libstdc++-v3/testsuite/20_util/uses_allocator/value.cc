@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -38,7 +38,6 @@ struct UD { typedef MyDerivedAlloc  allocator_type; };
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::uses_allocator;
   using namespace __gnu_test;
 

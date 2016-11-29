@@ -54,7 +54,6 @@ void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_close_12790";
 
   Cvt* cvt = new Cvt;

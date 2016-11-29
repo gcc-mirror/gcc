@@ -84,6 +84,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
+  template<typename _T1>
+    inline void
+    _Construct_novalue(_T1* __p)
+    { ::new(static_cast<void*>(__p)) _T1; }
+
   /**
    * Destroy the object pointed to by a pointer type.
    */
@@ -125,6 +130,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                        _Value_type;
       std::_Destroy_aux<__has_trivial_destructor(_Value_type)>::
 	__destroy(__first, __last);
+    }
+
+  template<bool>
+    struct _Destroy_n_aux
+    {
+      template<typename _ForwardIterator, typename _Size>
+        static _ForwardIterator
+        __destroy_n(_ForwardIterator __first, _Size __count)
+	{
+	  for (; __count > 0; (void)++__first, --__count)
+	    std::_Destroy(std::__addressof(*__first));
+	  return __first;
+	}
+    };
+
+  template<>
+    struct _Destroy_n_aux<true>
+    {
+      template<typename _ForwardIterator, typename _Size>
+        static _ForwardIterator
+        __destroy_n(_ForwardIterator __first, _Size __count)
+      {
+	 std::advance(__first, __count);
+	 return __first;
+      }
+    };
+
+  /**
+   * Destroy a range of objects.  If the value_type of the object has
+   * a trivial destructor, the compiler should optimize all of this
+   * away, otherwise the objects' destructors must be invoked.
+   */
+  template<typename _ForwardIterator, typename _Size>
+    inline _ForwardIterator
+    _Destroy_n(_ForwardIterator __first, _Size __count)
+    {
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+                       _Value_type;
+      return std::_Destroy_n_aux<__has_trivial_destructor(_Value_type)>::
+	__destroy_n(__first, __count);
     }
 
   /**

@@ -26,10 +26,8 @@
 //   string& insert(size_type __p, const char* s, size_type n);
 //   string& insert(size_type __p, const char* s);
 // but now s points inside the _Rep
-int test02(void)
+void test02(void)
 {
-  bool test __attribute__((unused)) = true;
-
   std::string str01;
   const char* title = "Everything was beautiful, and nothing hurt";
   // Increasing size: str01 is reallocated every time.
@@ -72,7 +70,6 @@ int test02(void)
   str01.insert(0, str01.c_str());
   VERIFY( str01 == "Everything was beautiful, and nothing hurt"
 	  "Everything was beautiful, and nothing hurt");
-  return test;
 }
 
 int main()

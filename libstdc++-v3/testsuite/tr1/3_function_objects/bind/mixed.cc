@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2011-11-20 Jonathan Wakely <jwakely.gcc -at- gmail.com>
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
@@ -41,8 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b1 = std::bind(minus<int>(), 6, p2::_2);
   auto b2 = std::tr1::bind(minus<int>(), 6, p1::_2);
 
@@ -87,8 +85,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b1 = std::bind<int>(minus<int>(), 6, p2::_2);
   auto b2 = std::tr1::bind<int>(minus<int>(), 6, p1::_2);
 

@@ -28,7 +28,6 @@ void
 test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   const string name_c("C");
   const string str_unnamed("*");
   string str;

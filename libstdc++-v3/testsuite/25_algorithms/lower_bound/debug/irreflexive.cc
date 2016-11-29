@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
-// { dg-require-debug-mode "" }
 // { dg-do compile }
+// { dg-require-debug-mode "" }
 
 #include <algorithm>
 
@@ -42,6 +42,6 @@ struct A_int_comparer
 
 void test01()
 {
-  A as[] { 0, 1, 2, 3 };
+  A as[] = { 0, 1, 2, 3 };
   std::lower_bound(as, as + 4, 1, A_int_comparer());
 }

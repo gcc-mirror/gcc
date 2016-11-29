@@ -44,6 +44,9 @@ along with GCC; see the file COPYING3.  If not see
    default definitions or by checking if the predicate set that guards the
    defining paths is a superset of the use predicate.  */
 
+/* Max PHI args we can handle in pass.  */
+const unsigned max_phi_args = 32;
+
 /* Pointer set of potentially undefined ssa names, i.e.,
    ssa names that are defined by phi with operands that
    are not defined or potentially undefined.  */
@@ -212,6 +215,14 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	     can warn about.  */
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, op_iter, SSA_OP_USE)
 	    {
+	      /* BIT_INSERT_EXPR first operand should not be considered
+	         a use for the purpose of uninit warnings.  */
+	      if (gassign *ass = dyn_cast <gassign *> (stmt))
+		{
+		  if (gimple_assign_rhs_code (ass) == BIT_INSERT_EXPR
+		      && use_p->use == gimple_assign_rhs1_ptr (ass))
+		    continue;
+		}
 	      use = USE_FROM_PTR (use_p);
 	      if (always_executed)
 		warn_uninit (OPT_Wuninitialized, use, SSA_NAME_VAR (use),
@@ -244,7 +255,7 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	      tree base = get_base_address (rhs);
 
 	      /* Do not warn if it can be initialized outside this function.  */
-	      if (TREE_CODE (base) != VAR_DECL
+	      if (!VAR_P (base)
 		  || DECL_HARD_REGISTER (base)
 		  || is_global_var (base))
 		continue;
@@ -306,7 +317,7 @@ compute_uninit_opnds_pos (gphi *phi)
 
   n = gimple_phi_num_args (phi);
   /* Bail out for phi with too many args.  */
-  if (n > 32)
+  if (n > max_phi_args)
     return 0;
 
   for (i = 0; i < n; ++i)
@@ -1023,7 +1034,7 @@ prune_uninit_phi_opnds (gphi *phi, unsigned uninit_opnds, gphi *flag_def,
 {
   unsigned i;
 
-  for (i = 0; i < MIN (32, gimple_phi_num_args (flag_def)); i++)
+  for (i = 0; i < MIN (max_phi_args, gimple_phi_num_args (flag_def)); i++)
     {
       tree flag_arg;
 
@@ -1184,11 +1195,10 @@ prune_uninit_phi_opnds (gphi *phi, unsigned uninit_opnds, gphi *flag_def,
      transformation which eliminates the merge point thus makes
      path sensitive analysis unnecessary.)
 
-     NUM_PREDS is the number is the number predicate chains, PREDS is
-     the array of chains, PHI is the phi node whose incoming (undefined)
-     paths need to be pruned, and UNINIT_OPNDS is the bitmap holding
-     uninit operand positions.  VISITED_PHIS is the pointer set of phi
-     stmts being checked.  */
+     PHI is the phi node whose incoming (undefined) paths need to be
+     pruned, and UNINIT_OPNDS is the bitmap holding uninit operand
+     positions.  VISITED_PHIS is the pointer set of phi stmts being
+     checked.  */
 
 static bool
 use_pred_not_overlap_with_undef_path_pred (pred_chain_union preds,
@@ -2140,6 +2150,158 @@ normalize_preds (pred_chain_union preds, gimple *use_or_def, bool is_use)
   return norm_preds;
 }
 
+/* Return TRUE if PREDICATE can be invalidated by any individual
+   predicate in WORKLIST.  */
+
+static bool
+can_one_predicate_be_invalidated_p (pred_info predicate,
+				    vec<pred_info *> worklist)
+{
+  for (size_t i = 0; i < worklist.length (); ++i)
+    {
+      pred_info *p = worklist[i];
+
+      /* NOTE: This is a very simple check, and only understands an
+	 exact opposite.  So, [i == 0] is currently only invalidated
+	 by [.NOT. i == 0] or [i != 0].  Ideally we should also
+	 invalidate with say [i > 5] or [i == 8].  There is certainly
+	 room for improvement here.  */
+      if (pred_neg_p (predicate, *p))
+	return true;
+    }
+  return false;
+}
+
+/* Return TRUE if all USE_PREDS can be invalidated by some predicate
+   in WORKLIST.  */
+
+static bool
+can_chain_union_be_invalidated_p (pred_chain_union use_preds,
+				  vec<pred_info *> worklist)
+{
+  /* Remember:
+       PRED_CHAIN_UNION = PRED_CHAIN1 || PRED_CHAIN2 || PRED_CHAIN3
+       PRED_CHAIN = PRED_INFO1 && PRED_INFO2 && PRED_INFO3, etc.
+
+       We need to invalidate the entire PRED_CHAIN_UNION, which means,
+       invalidating every PRED_CHAIN in this union.  But to invalidate
+       an individual PRED_CHAIN, all we need to invalidate is _any_ one
+       PRED_INFO, by boolean algebra !PRED_INFO1 || !PRED_INFO2...  */
+  for (size_t i = 0; i < use_preds.length (); ++i)
+    {
+      pred_chain c = use_preds[i];
+      bool entire_pred_chain_invalidated = false;
+      for (size_t j = 0; j < c.length (); ++j)
+	if (can_one_predicate_be_invalidated_p (c[j], worklist))
+	  {
+	    entire_pred_chain_invalidated = true;
+	    break;
+	  }
+      if (!entire_pred_chain_invalidated)
+	return false;
+    }
+  return true;
+}
+
+/* Flatten out all the factors in all the pred_chain_union's in PREDS
+   into a WORKLIST of individual PRED_INFO's.
+
+   N is the number of pred_chain_union's in PREDS.
+
+   Since we are interested in the inverse of the PRED_CHAIN's, by
+   boolean algebra, an inverse turns those PRED_CHAINS into unions,
+   which means we can flatten all the factors out for easy access.  */
+
+static void
+flatten_out_predicate_chains (pred_chain_union preds[], size_t n,
+			      vec<pred_info *> *worklist)
+{
+  for (size_t i = 0; i < n; ++i)
+    {
+      pred_chain_union u = preds[i];
+      for (size_t j = 0; j < u.length (); ++j)
+	{
+	  pred_chain c = u[j];
+	  for (size_t k = 0; k < c.length (); ++k)
+	    worklist->safe_push (&c[k]);
+	}
+    }
+}
+
+/* Return TRUE if executing the path to some uninitialized operands in
+   a PHI will invalidate the use of the PHI result later on.
+
+   UNINIT_OPNDS is a bit vector specifying which PHI arguments have
+   arguments which are considered uninitialized.
+
+   USE_PREDS is the pred_chain_union specifying the guard conditions
+   for the use of the PHI result.
+
+   What we want to do is disprove each of the guards in the factors of
+   the USE_PREDS.  So if we have:
+
+   # USE_PREDS guards of:
+   #	1. i > 5 && i < 100
+   #	2. j > 10 && j < 88
+
+   Then proving that the control dependenies for the UNINIT_OPNDS are:
+
+   #      [i <= 5]
+   # .OR. [i >= 100]
+   #
+
+   ...we can prove that the 1st guard above in USE_PREDS is invalid.
+   Similarly for the 2nd guard.  We return TRUE if we can disprove
+   both of the guards in USE_PREDS above.  */
+
+static bool
+uninit_ops_invalidate_phi_use (gphi *phi, unsigned uninit_opnds,
+			       pred_chain_union use_preds)
+{
+  /* Look for the control dependencies of all the uninitialized
+     operands and build predicates describing them.  */
+  unsigned i;
+  pred_chain_union uninit_preds[max_phi_args];
+  memset (uninit_preds, 0, sizeof (pred_chain_union) * max_phi_args);
+  for (i = 0; i < MIN (max_phi_args, gimple_phi_num_args (phi)); i++)
+    {
+      if (!MASK_TEST_BIT (uninit_opnds, i))
+	continue;
+
+      edge e = gimple_phi_arg_edge (phi, i);
+      vec<edge> dep_chains[MAX_NUM_CHAINS];
+      auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
+      size_t num_chains = 0;
+      int num_calls = 0;
+
+      /* Build the control dependency chain for `i'...  */
+      if (compute_control_dep_chain (find_dom (e->src),
+				     e->src,
+				     dep_chains,
+				     &num_chains,
+				     &cur_chain,
+				     &num_calls))
+	{
+	  /* ...and convert it into a set of predicates.  */
+	  convert_control_dep_chain_into_preds (dep_chains, num_chains,
+						&uninit_preds[i]);
+	  for (size_t j = 0; j < num_chains; ++j)
+	    dep_chains[j].release ();
+	  simplify_preds (&uninit_preds[i], NULL, false);
+	  uninit_preds[i]
+	    = normalize_preds (uninit_preds[i], NULL, false);
+	}
+    }
+
+  /* Munge all the predicates into one worklist, and see if we can
+     invalidate all the chains in USE_PREDs with the predicates in
+     WORKLIST.  */
+  auto_vec<pred_info *> worklist;
+  flatten_out_predicate_chains (uninit_preds, i, &worklist);
+  bool ret = can_chain_union_be_invalidated_p (use_preds, worklist);
+  return ret;
+}
+
 /* Computes the predicates that guard the use and checks
    if the incoming paths that have empty (or possibly
    empty) definition can be pruned/filtered.  The function returns
@@ -2194,6 +2356,13 @@ is_use_properly_guarded (gimple *use_stmt,
   is_properly_guarded
     = use_pred_not_overlap_with_undef_path_pred (preds, phi, uninit_opnds,
 						 visited_phis);
+
+  /* We might be able to prove that if the control dependencies
+     for UNINIT_OPNDS are true, that the control dependencies for
+     USE_STMT can never be true.  */
+  if (!is_properly_guarded)
+    is_properly_guarded |= uninit_ops_invalidate_phi_use (phi, uninit_opnds,
+							  preds);
 
   if (is_properly_guarded)
     {

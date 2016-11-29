@@ -67,5 +67,3 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 #define HAVE_ENABLE_EXECUTE_STACK
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE

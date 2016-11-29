@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::mersenne_twister_engine<
     unsigned long, 32, 624, 397, 31,
     0x9908b0dful, 11,

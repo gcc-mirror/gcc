@@ -1237,7 +1237,7 @@
   "ld<four_s_if_si>_tls\t%0, %1, tls_ie_load(%2)"
   [(set_attr "type" "X1_2cycle")])
 
-(define_insn "*zero_extract<mode>"
+(define_insn_and_split "*zero_extract<mode>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
 	(zero_extract:I48MODE
          (match_operand:I48MODE 1 "reg_or_0_operand" "r")
@@ -1245,6 +1245,18 @@
          (match_operand:I48MODE 3 "u6bit_cint_operand" "n")))]
   ""
   "bfextu\t%0, %r1, %3, %3+%2-1"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extract:I48MODE
+                       (match_dup 1)
+                       (match_dup 2)
+                       (match_dup 3)))]
+{
+  HOST_WIDE_INT bit_width = INTVAL (operands[2]);
+  HOST_WIDE_INT bit_offset = INTVAL (operands[3]);
+
+  if (bit_offset + bit_width > 64)
+    operands[2] = GEN_INT (64 - bit_offset);
+}
   [(set_attr "type" "X0")])
 
 (define_insn "*sign_extract_low32"
@@ -1256,7 +1268,7 @@
   "INTVAL (operands[3]) == 0 && INTVAL (operands[2]) == 32"
   "addxi\t%0, %r1, 0")
 
-(define_insn "*sign_extract"
+(define_insn_and_split "*sign_extract"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
 	(sign_extract:I48MODE
          (match_operand:I48MODE 1 "reg_or_0_operand" "r")
@@ -1264,6 +1276,18 @@
          (match_operand:I48MODE 3 "u6bit_cint_operand" "n")))]
   ""
   "bfexts\t%0, %r1, %3, %3+%2-1"
+  "&& reload_completed"
+  [(set (match_dup 0) (sign_extract:I48MODE
+                       (match_dup 1)
+                       (match_dup 2)
+                       (match_dup 3)))]
+{
+  HOST_WIDE_INT bit_width = INTVAL (operands[2]);
+  HOST_WIDE_INT bit_offset = INTVAL (operands[3]);
+
+  if (bit_offset + bit_width > 64)
+    operands[2] = GEN_INT (64 - bit_offset);
+}
   [(set_attr "type" "X0")])
 
 
@@ -1798,19 +1822,20 @@
   [(set_attr "type" "Y0")])
 
 (define_expand "clzsi2"
-  [(set (match_dup 2)
-	(zero_extend:DI (match_operand:SI 1 "reg_or_0_operand" "")))
-   (set (match_dup 2)
-	(ashift:DI (match_dup 2)
-                   (const_int 32)))
-   (set (match_dup 2)
-	(clz:DI (match_dup 2)))
-   (set (match_operand:SI 0 "register_operand" "")
-	(subreg:SI (match_dup 2) 0))]
-   ""
-   {
-     operands[2] = gen_reg_rtx (DImode);
-   })
+  [(set (match_operand:SI 0 "register_operand" "=r")
+       (clz:SI (match_operand:SI 1 "reg_or_0_operand" "rO")))]
+  ""
+  {
+    rtx tmp1 = gen_reg_rtx (DImode);
+    rtx tmp2 = gen_reg_rtx (DImode);
+    rtx tmp3 = gen_reg_rtx (DImode);
+
+    emit_insn (gen_zero_extendsidi2 (tmp1, operands[1]));
+    emit_insn (gen_ashldi3 (tmp2, tmp1, (GEN_INT (32))));
+    emit_insn (gen_clzdi2 (tmp3, tmp2));
+    emit_move_insn (operands[0], gen_lowpart (SImode, tmp3));
+    DONE;
+  })
 
 (define_insn "ctz<mode>2"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
@@ -2747,6 +2772,12 @@
   ""
   "nop"
   [(set_attr "type" "Y01")])
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "raise; moveli zero, 6"
+  [(set_attr "type" "cannot_bundle")])
 
 
 ;;

@@ -27,7 +27,6 @@ void test01()
 {
   typedef std::ios_base::failure test_type;
 
-  bool test __attribute__((unused)) = true;
   const std::string xxx(10000, 'x');
   test_type t(xxx);
 #if _GLIBCXX_USE_CXX11_ABI

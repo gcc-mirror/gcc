@@ -351,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__size < __n)
 	this->append(__n - __size, __c);
       else if (__n < __size)
-	this->_M_erase(__n, __size - __n);
+	this->_M_set_length(__n);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -617,6 +617,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _Alloc& __a)
     : _M_dataplus(_S_construct(size_type(), _CharT(), __a), __a)
+    { }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>::
+    basic_string(const basic_string& __str, size_type __pos, const _Alloc& __a)
+    : _M_dataplus(_S_construct(__str._M_data()
+			       + __str._M_check(__pos,
+						"basic_string::basic_string"),
+			       __str._M_data() + __str._M_limit(__pos, npos)
+			       + __pos, __a), __a)
     { }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -1569,7 +1579,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
-#if _GLIBCXX_EXTERN_TEMPLATE > 0
+#if _GLIBCXX_EXTERN_TEMPLATE > 0 && __cplusplus <= 201402L
   extern template class basic_string<char>;
   extern template
     basic_istream<char>&

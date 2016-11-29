@@ -17,7 +17,7 @@
 
 // 20.7.11 Function template bind
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <functional>
 #include <testsuite_hooks.h>
@@ -42,70 +42,70 @@ using std::placeholders::_2;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind(X());
   VERIFY( b0() == 0 );
 
   const auto b1 = std::bind(X());
   VERIFY( b1() == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind(X());
   VERIFY( b2() == 2 );
 
   const volatile auto b3 = std::bind(X());
   VERIFY( b3() == 3 );
+#endif
 }
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind<int>(X());
   VERIFY( b0() == 0 );
 
   const auto b1 = std::bind<int>(X());
   VERIFY( b1() == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind<int>(X());
   VERIFY( b2() == 2 );
 
   const volatile auto b3 = std::bind<int>(X());
   VERIFY( b3() == 3 );
+#endif
 }
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind(X(), 0, _1, _2);
   VERIFY( b0(0, 0) == 0 );
 
   const auto b1 = std::bind(X(), _1, 0, _2);
   VERIFY( b1(0, 0) == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind(X(), _1, _2, 0);
   VERIFY( b2(0, 0) == 2 );
 
   const volatile auto b3 = std::bind(X(), _1, 0, _2);
   VERIFY( b3(0, 0) == 3 );
+#endif
 }
 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind<int>(X(), 0, _1, _2);
   VERIFY( b0(0, 0) == 0 );
 
   const auto b1 = std::bind<int>(X(), _1, 0, _2);
   VERIFY( b1(0, 0) == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind<int>(X(), _1, _2, 0);
   VERIFY( b2(0, 0) == 2 );
 
   const volatile auto b3 = std::bind<int>(X(), _1, 0, _2);
   VERIFY( b3(0, 0) == 3 );
+#endif
 }
 
 

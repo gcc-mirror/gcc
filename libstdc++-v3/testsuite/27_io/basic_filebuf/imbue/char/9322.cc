@@ -30,7 +30,6 @@
 void test07()
 {
   using std::locale;
-  bool test __attribute__((unused)) = true;
 
   locale loc;
   std::filebuf ob;

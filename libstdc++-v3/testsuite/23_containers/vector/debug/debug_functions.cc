@@ -22,7 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_debug;
 
   std::vector<int> v1(3, 1);
@@ -45,7 +44,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_debug;
 
   std::vector<int> v1(3, 1);

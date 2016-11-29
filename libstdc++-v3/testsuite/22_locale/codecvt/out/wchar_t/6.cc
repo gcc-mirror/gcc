@@ -50,7 +50,6 @@ void test06()
   typedef char					ext_type;
   typedef char_traits<char>			ext_traits;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   const int_type* 	i_lit = L"black pearl jasmine tea";
   const int_type*       ifrom_next;

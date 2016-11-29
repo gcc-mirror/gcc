@@ -1,5 +1,5 @@
+// { dg-do run { target c++11 } }
 // { dg-require-iconv "ISO-8859-1" }
-// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
@@ -53,8 +53,6 @@ void test01()
   typedef char						ext_type;
   typedef __gnu_cxx::encoding_state	       		state_type;
   typedef codecvt<int_type, ext_type, state_type>	unicode_codecvt;
-
-  bool test __attribute__((unused)) = true;
 
   // unicode_codecvt
   locale loc01(locale::classic());

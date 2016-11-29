@@ -21,4 +21,4 @@ foo (int *p, int q)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate r_.* != 0B to 0" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "vrp1" } } */

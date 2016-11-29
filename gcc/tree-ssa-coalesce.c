@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "predict.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "ssa.h"
 #include "tree-pretty-print.h"
@@ -955,12 +956,11 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
       if (bb == entry)
 	{
 	  unsigned i;
-	  for (i = 1; i < num_ssa_names; i++)
-	    {
-	      tree var = ssa_name (i);
+	  tree var;
 
-	      if (!var
-		  || !SSA_NAME_IS_DEFAULT_DEF (var)
+	  FOR_EACH_SSA_NAME (i, var, cfun)
+	    {
+	      if (!SSA_NAME_IS_DEFAULT_DEF (var)
 		  || !SSA_NAME_VAR (var)
 		  || VAR_P (SSA_NAME_VAR (var)))
 		continue;
@@ -1040,17 +1040,13 @@ create_default_def (tree var, void *arg ATTRIBUTE_UNUSED)
 /* Register VAR's default def in MAP.  */
 
 static void
-register_default_def (tree var, void *map_)
+register_default_def (tree var, void *arg ATTRIBUTE_UNUSED)
 {
-  var_map map = (var_map)map_;
-
   if (!is_gimple_reg (var))
     return;
 
   tree ssa = ssa_default_def (cfun, var);
   gcc_assert (ssa);
-
-  register_ssa_partition (map, ssa);
 }
 
 /* If VAR is an SSA_NAME associated with a PARM_DECL or a RESULT_DECL,
@@ -1088,7 +1084,6 @@ create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
   gimple *stmt;
   tree first;
   var_map map;
-  ssa_op_iter iter;
   int v1, v2, cost;
   unsigned i;
 
@@ -1096,7 +1091,7 @@ create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
 
   map = init_var_map (num_ssa_names);
 
-  for_all_parms (register_default_def, map);
+  for_all_parms (register_default_def, NULL);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1114,7 +1109,6 @@ create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
 
 	  res = gimple_phi_result (phi);
 	  ver = SSA_NAME_VERSION (res);
-	  register_ssa_partition (map, res);
 
 	  /* Register ssa_names and coalesces between the args and the result
 	     of all PHI.  */
@@ -1125,7 +1119,6 @@ create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
 	      if (TREE_CODE (arg) != SSA_NAME)
 		continue;
 
-	      register_ssa_partition (map, arg);
 	      if (gimple_can_coalesce_p (arg, res)
 		  || (e->flags & EDGE_ABNORMAL))
 		{
@@ -1151,10 +1144,6 @@ create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
 
 	  if (is_gimple_debug (stmt))
 	    continue;
-
-	  /* Register USE and DEF operands in each statement.  */
-	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, (SSA_OP_DEF|SSA_OP_USE))
-	    register_ssa_partition (map, var);
 
 	  /* Check for copy coalesces.  */
 	  switch (gimple_code (stmt))
@@ -1261,10 +1250,9 @@ create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
   /* Now process result decls and live on entry variables for entry into
      the coalesce list.  */
   first = NULL_TREE;
-  for (i = 1; i < num_ssa_names; i++)
+  FOR_EACH_SSA_NAME (i, var, cfun)
     {
-      var = ssa_name (i);
-      if (var != NULL_TREE && !virtual_operand_p (var))
+      if (!virtual_operand_p (var))
         {
 	  coalesce_with_default (var, cl, used_in_copy);
 
@@ -1806,6 +1794,7 @@ coalesce_ssa_name (void)
   bitmap used_in_copies = BITMAP_ALLOC (NULL);
   var_map map;
   unsigned int i;
+  tree a;
 
   cl = create_coalesce_list ();
   map = create_outofssa_var_map (cl, used_in_copies);
@@ -1817,12 +1806,9 @@ coalesce_ssa_name (void)
     {
       hash_table<ssa_name_var_hash> ssa_name_hash (10);
 
-      for (i = 1; i < num_ssa_names; i++)
+      FOR_EACH_SSA_NAME (i, a, cfun)
 	{
-	  tree a = ssa_name (i);
-
-	  if (a
-	      && SSA_NAME_VAR (a)
+	  if (SSA_NAME_VAR (a)
 	      && !DECL_IGNORED_P (SSA_NAME_VAR (a))
 	      && (!has_zero_uses (a) || !SSA_NAME_IS_DEFAULT_DEF (a)
 		  || !VAR_P (SSA_NAME_VAR (a))))

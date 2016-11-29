@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <map>
 #include <testsuite_hooks.h>
@@ -50,7 +50,6 @@ operator!=(const propagating_allocator<std::pair<const T, U>, false>&,
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<std::pair<const T, U>, false> alloc_type;
   typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -66,7 +65,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<std::pair<const T, U>, true> alloc_type;
   typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<double> wt = { 0.5, 1.0, 2.5, 1.5, 0.5 };
   std::discrete_distribution<int> u(wt.begin(), wt.end()), v, w;
 

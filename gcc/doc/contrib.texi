@@ -141,6 +141,9 @@ to 2013.
 Craig Burley for leadership of the G77 Fortran effort.
 
 @item
+Tobias Burnus for contributions to GNU Fortran.
+
+@item
 Stephan Buys for contributing Doxygen notes for libstdc++.
 
 @item
@@ -197,6 +200,9 @@ well as other miscellaneous build process and documentation clean-ups.
 Ralf Corsepius for SH testing and minor bug fixing.
 
 @item
+Fran@,{c}ois-Xavier Coudert for contributions to GNU Fortran.
+
+@item
 Stan Cox for care and feeding of the x86 port and lots of behind
 the scenes hacking.
 
@@ -222,6 +228,9 @@ Bud Davis for work on the G77 and GNU Fortran compilers.
 
 @item
 Mo DeJong for GCJ and libgcj bug fixes.
+
+@item
+Jerry DeLisle for contributions to GNU Fortran.
 
 @item
 DJ Delorie for the DJGPP port, build and libiberty maintenance,
@@ -972,6 +981,9 @@ Holger Teutsch provided the support for the Clipper CPU@.
 Gary Thomas for his ongoing work to make the PPC work for GNU/Linux.
 
 @item
+Paul Thomas for contributions to GNU Fortran.
+
+@item
 Philipp Thomas for random bug fixes throughout the compiler
 
 @item
@@ -1048,6 +1060,9 @@ value range propagation and other work, WE32k port.
 
 @item
 Ulrich Weigand for work on the s390 port.
+
+@item
+Janus Weil for contributions to GNU Fortran.
 
 @item
 Zack Weinberg for major work on cpplib and various other bug fixes.

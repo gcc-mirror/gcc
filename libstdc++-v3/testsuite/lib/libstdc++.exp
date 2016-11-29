@@ -136,6 +136,9 @@ proc libstdc++_init { testfile } {
 	if { [string match "powerpc-*-darwin*" $target_triplet] } {
 	    append DEFAULT_CXXFLAGS " -multiply_defined suppress"
 	} 
+	if { [string match "powerpc-ibm-aix*" $target_triplet] } {
+	    append DEFAULT_CXXFLAGS " -Wl,-bmaxdata:0x20000000"
+	} 
     }
     v3track DEFAULT_CXXFLAGS 2
 
@@ -236,7 +239,7 @@ proc libstdc++_init { testfile } {
 
     # Default settings.
     set cxx [transform "g++"]
-    set cxxflags "-D_GLIBCXX_ASSERT -fmessage-length=0"
+    set cxxflags "-fmessage-length=0"
     set cxxpchflags ""
     set cxxvtvflags ""
     set cxxldflags ""
@@ -636,8 +639,9 @@ proc v3-build_support { } {
 	set object_file [file tail $obj]
 	# Compile with "-w" so that warnings issued by the compiler
 	# do not prevent compilation.
+        # Disable LTO so that ar/ranlib don't need the LTO plugin.
 	if { [v3_target_compile $srcdir/util/$f $object_file "object" \
-		  [list "incdir=$srcdir" "additional_flags=-w"]]
+		  [list "incdir=$srcdir" "additional_flags=-w -fno-lto"]]
 	     != "" } {
 	    error "could not compile $f"
 	}
@@ -1924,6 +1928,8 @@ proc check_v3_target_little_endian { } {
     return $et_little_endian
 }
 
+# Return 1 if the Filesystem TS is supported, 0 otherwise.
+# Cache the result.
 proc check_v3_target_filesystem_ts { } {
     global cxxflags
     global DEFAULT_CXXFLAGS
@@ -1951,7 +1957,7 @@ proc check_v3_target_filesystem_ts { } {
 	set et_filesystem_ts 0
 
 	# Set up and preprocess a C++ test program that depends
-	# on debug mode activated.
+	# on the Filesystem TS feature-test macro being defined.
 	set src filesystem_ts[pid].cc
 
 	set f [open $src "w"]

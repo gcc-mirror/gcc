@@ -256,6 +256,7 @@ if $GLIBCXX_IS_NATIVE; then
   GCC_CHECK_TLS
 
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl)
+  AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
 
   # For iconv support.
   AM_ICONV
@@ -323,6 +324,7 @@ else
     AC_DEFINE(HAVE_TANHF)
 
     AC_DEFINE(HAVE_ICONV)
+    AC_DEFINE(HAVE_MEMALIGN)
   else
     GLIBCXX_CROSSCONFIG
   fi
@@ -373,6 +375,7 @@ GLIBCXX_ENABLE_LIBSTDCXX_DUAL_ABI([yes])
 GLIBCXX_DEFAULT_ABI
 
 ac_ldbl_compat=no
+LONG_DOUBLE_COMPAT_FLAGS="-mlong-double-64"
 case "$target" in
   powerpc*-*-linux* | \
   sparc*-*-linux* | \
@@ -387,8 +390,13 @@ case "$target" in
     AC_DEFINE([_GLIBCXX_LONG_DOUBLE_COMPAT],1,
 	      [Define if compatibility should be provided for -mlong-double-64.])
     port_specific_symbol_files="\$(top_srcdir)/config/os/gnu-linux/ldbl-extra.ver"
+    case "$target" in
+      powerpc*-*-linux*)
+	LONG_DOUBLE_COMPAT_FLAGS="$LONG_DOUBLE_COMPAT_FLAGS -mno-gnu-attribute" ;;
+    esac
   fi
 esac
+AC_SUBST(LONG_DOUBLE_COMPAT_FLAGS)
 GLIBCXX_CONDITIONAL(GLIBCXX_LDBL_COMPAT, test $ac_ldbl_compat = yes)
 
 # Check if assembler supports disabling hardware capability support.

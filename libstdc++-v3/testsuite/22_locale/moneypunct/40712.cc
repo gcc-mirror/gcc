@@ -27,7 +27,6 @@
 // libstdc++/40712
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale loc(locale("C"), ISO_8859(1,en_US), locale::monetary);

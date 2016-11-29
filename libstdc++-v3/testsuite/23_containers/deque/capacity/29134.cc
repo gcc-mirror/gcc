@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<int> d;
 
   VERIFY( d.max_size() == d.get_allocator().max_size() );

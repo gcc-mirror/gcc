@@ -5943,7 +5943,7 @@ package body Exp_Ch6 is
       Subp : Entity_Id;
       Scop : Entity_Id)
    is
-      Rec   : Node_Id;
+      Rec : Node_Id;
 
       procedure Expand_Internal_Init_Call;
       --  A call to an operation of the type may occur in the initialization
@@ -6006,7 +6006,7 @@ package body Exp_Ch6 is
       --  case this must be handled as an inter-object call.
 
       if not In_Open_Scopes (Scop)
-          or else (not Is_Entity_Name (Name (N)))
+        or else not Is_Entity_Name (Name (N))
       then
          if Nkind (Name (N)) = N_Selected_Component then
             Rec := Prefix (Name (N));
@@ -6020,8 +6020,9 @@ package body Exp_Ch6 is
             --  function of that enclosing type, and this is treated as an
             --  internal call.
 
-            pragma Assert (Is_Entity_Name (Name (N))
-                             and then Inside_Init_Proc);
+            pragma Assert
+              (Is_Entity_Name (Name (N)) and then Inside_Init_Proc);
+
             Expand_Internal_Init_Call;
             return;
          end if;
@@ -6044,7 +6045,6 @@ package body Exp_Ch6 is
            Name     => Name (N),
            Rec      => Rec,
            External => False);
-
       end if;
 
       --  Analyze and resolve the new call. The actuals have already been

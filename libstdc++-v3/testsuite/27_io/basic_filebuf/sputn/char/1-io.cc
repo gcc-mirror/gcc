@@ -40,7 +40,6 @@ void test05()
   typedef filebuf::traits_type 	traits_type;
   typedef size_t 			size_type;
 
-  bool test __attribute__((unused)) = true;
   streamsize 			strmsz_1, strmsz_2;
 
   // streamsize sputn(const char_typs* s, streamsize n)

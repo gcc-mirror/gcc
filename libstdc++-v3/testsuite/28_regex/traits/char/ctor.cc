@@ -1,5 +1,4 @@
-// { dg-do link }
-// { dg-options "-std=gnu++11" }
+// { dg-do link { target c++11 } }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
@@ -23,13 +22,11 @@
 // [28.7] class template regex_traits
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests default constructor of the regex_traits class.  There is only the
 // default constructor.
 void test01()
 {
-	bool test __attribute__((unused)) = true;
   typedef std::regex_traits<char> test_type;
 
   // required default constructor

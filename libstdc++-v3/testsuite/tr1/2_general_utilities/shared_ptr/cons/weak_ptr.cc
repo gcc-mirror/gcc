@@ -28,8 +28,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   std::tr1::shared_ptr<A> a1(a);
   std::tr1::weak_ptr<A> wa(a1);

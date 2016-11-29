@@ -22,8 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
 
@@ -58,8 +56,6 @@ void test01()
 void test02()
 {
 #ifdef _GLIBCXX_USE_WCHAR_T
-  bool test __attribute__((unused)) = true;
-
   // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
 

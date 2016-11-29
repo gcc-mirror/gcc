@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fno-tree-fre -fdump-tree-evrp" } */
 
 
 extern void abort (void) __attribute__ ((__noreturn__));
@@ -19,5 +19,5 @@ nonlocal_mentioned_p (rtx x)
 	abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate .*to 0" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "if" 0 "evrp" } } */
 

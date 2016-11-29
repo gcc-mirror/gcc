@@ -1,5 +1,10 @@
+#if __cplusplus > 201402L
+template <class T> T CoinMax(const T x1, const T x2); 
+template <class T> T CoinMin(const T x1, const T x2);
+#else
 template <class T> T CoinMax(register const T x1, register const T x2); 
 template <class T> T CoinMin(register const T x1, register const T x2);
+#endif
 class CoinIndexedVector;
 class ClpModel {
 protected:

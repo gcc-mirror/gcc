@@ -2,8 +2,8 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-pedantic" }
 
-enum {};            // { dg-warning "empty anonymous" }
+enum {};            // { dg-warning "empty unnamed" }
 
-enum class {};      // { dg-error "anonymous" }
+enum class {};      // { dg-error "unnamed" }
 
-enum class { x };   // { dg-error "anonymous" }
+enum class { x };   // { dg-error "unnamed" }

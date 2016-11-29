@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_build_cgraph_edges);
+  NEXT_PASS (pass_sprintf_length, false);
+  NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
   TERMINATE_PASS_LIST (all_lowering_passes)
 
   /* Interprocedural optimization passes.  */
@@ -54,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_build_ssa_passes);
   PUSH_INSERT_PASSES_WITHIN (pass_build_ssa_passes)
       NEXT_PASS (pass_fixup_cfg);
+      NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_warn_nonnull_compare);
       NEXT_PASS (pass_ubsan);
@@ -84,11 +87,13 @@ along with GCC; see the file COPYING3.  If not see
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
 	  NEXT_PASS (pass_forwprop);
+          NEXT_PASS (pass_early_thread_jumps);
 	  NEXT_PASS (pass_sra_early);
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
 	  NEXT_PASS (pass_fre);
+	  NEXT_PASS (pass_early_vrp);
 	  NEXT_PASS (pass_merge_phi);
           NEXT_PASS (pass_dse);
 	  NEXT_PASS (pass_cd_dce);
@@ -167,6 +172,7 @@ along with GCC; see the file COPYING3.  If not see
      passes are executed after partitioning and thus see just parts of the
      compiled unit.  */
   INSERT_PASSES_AFTER (all_late_ipa_passes)
+  NEXT_PASS (pass_materialize_all_clones);
   NEXT_PASS (pass_ipa_pta);
   NEXT_PASS (pass_dispatcher_calls);
   NEXT_PASS (pass_omp_simd_clone);
@@ -178,6 +184,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_oacc_device_lower);
+  NEXT_PASS (pass_omp_device_lower);
   NEXT_PASS (pass_omp_target_link);
   NEXT_PASS (pass_all_optimizations);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)
@@ -247,6 +254,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_laddress);
       NEXT_PASS (pass_lim);
       NEXT_PASS (pass_split_crit_edges);
+      NEXT_PASS (pass_walloca, false);
       NEXT_PASS (pass_pre);
       NEXT_PASS (pass_sink_code);
       NEXT_PASS (pass_sancov);
@@ -263,6 +271,10 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
+	  NEXT_PASS (pass_loop_split);
+	  /* All unswitching, final value replacement and splitting can expose
+	     empty loops.  Remove them now.  */
+	  NEXT_PASS (pass_cd_dce);
 	  NEXT_PASS (pass_record_bounds);
 	  NEXT_PASS (pass_loop_distribution);
 	  NEXT_PASS (pass_copy_prop);
@@ -303,6 +315,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_cse_reciprocals);
+      NEXT_PASS (pass_sprintf_length, true);
       NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_split_paths);
@@ -324,6 +337,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_fold_builtins);
       NEXT_PASS (pass_optimize_widening_mul);
+      NEXT_PASS (pass_store_merging);
       NEXT_PASS (pass_tail_calls);
       /* If DCE is not run before checking for uninitialized uses,
 	 we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).

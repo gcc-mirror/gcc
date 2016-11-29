@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   ostringstream oss;
   const num_put<char>& np = use_facet<num_put<char> >(oss.getloc());

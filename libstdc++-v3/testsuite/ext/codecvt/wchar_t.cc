@@ -39,7 +39,6 @@ void test01()
   typedef char_traits<int_type>			int_traits;
   typedef char_traits<ext_type>			ext_traits;
 
-  bool test __attribute__((unused)) = true;
   int 			size = 23;
   char  e_lit_base[96] __attribute__((aligned(__alignof__(ext_type)))) =
   {

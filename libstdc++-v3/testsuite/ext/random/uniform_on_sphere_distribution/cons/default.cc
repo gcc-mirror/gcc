@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2014-04-15  Ulrich Drepper  <drepper@gmail.com>
@@ -24,13 +24,10 @@
 // 26.5.1.6 Random number distribution requirements [rand.req.dist]
 
 #include <ext/random>
-#include <testsuite_hooks.h>
 
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::uniform_on_sphere_distribution<2> u2;
   __gnu_cxx::uniform_on_sphere_distribution<3> u3;
   __gnu_cxx::uniform_on_sphere_distribution<4, double> u4;

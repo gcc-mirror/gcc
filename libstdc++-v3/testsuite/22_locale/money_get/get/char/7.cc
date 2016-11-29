@@ -29,7 +29,6 @@
 void test07()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef istreambuf_iterator<char> InIt;
   InIt iend1, iend2, iend3;

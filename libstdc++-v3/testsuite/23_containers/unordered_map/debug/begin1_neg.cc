@@ -15,9 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
+// { dg-do run { target c++11 xfail *-*-* } }
 // { dg-require-debug-mode "" }
-// { dg-options "-std=gnu++11" }
-// { dg-do run { xfail *-*-* } }
 
 #include <unordered_map>
 

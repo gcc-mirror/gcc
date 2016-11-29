@@ -35,7 +35,6 @@ conversion_to_integral_32 (void)
 {
   #undef MAXVAL
   #define MAXVAL 999999LL
-  bool test __attribute__((unused)) = true;
   decimal32 a, b (1), c (-1), d (MAXVAL), e (-MAXVAL);
   long long ll;
 
@@ -51,7 +50,6 @@ conversion_to_integral_64 (void)
 {
   #undef MAXVAL
   #define MAXVAL 999999999999999LL
-  bool test __attribute__((unused)) = true;
   decimal64 a, b (1), c (-1), d (MAXVAL), e (-MAXVAL);
   long long ll;
 
@@ -67,7 +65,6 @@ conversion_to_integral_128 (void)
 {
   #undef MAXVAL
   #define MAXVAL LONG_LONG_MAX
-  bool test __attribute__((unused)) = true;
   decimal128 a, b (1), c (-1), d (MAXVAL), e (-MAXVAL);
   long long ll;
 

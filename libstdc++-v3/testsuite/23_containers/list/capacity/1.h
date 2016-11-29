@@ -33,7 +33,6 @@ template<typename _Tp>
 void
 capacity01()
 {
-  bool test __attribute__((unused)) = true;
   typedef _Tp list_type;
   typedef typename list_type::iterator iterator_type;
 

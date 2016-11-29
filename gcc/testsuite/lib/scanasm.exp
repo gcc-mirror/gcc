@@ -103,6 +103,7 @@ proc hidden-scan-for { symbol } {
     set objformat [gcc_target_object_format]
 
     switch $objformat {
+        coff     { return "$symbol\[,\d\]*hidden" }
         elf      { return "hidden\[ \t_\]*$symbol" }
         mach-o   { return "private_extern\[ \t_\]*_?$symbol" }
         default  { return "" }

@@ -44,3 +44,7 @@
    Nios II Processor Reference Handbook.  */
 #define TARGET_LINUX_ABI 1
 
+/* For Linux, we have access to kernel support for atomic operations,
+   add initialization for __sync_* builtins.  */
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS nios2_init_libfuncs

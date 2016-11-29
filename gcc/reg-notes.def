@@ -149,6 +149,11 @@ REG_NOTE (CFA_REGISTER)
    store of a register to an arbitrary (non-validated) memory address.  */
 REG_NOTE (CFA_EXPRESSION)
 
+/* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
+   for FRAME_RELATED_EXPR intuition.  The DWARF expression computes the value of
+   the given register.  */
+REG_NOTE (CFA_VAL_EXPRESSION)
+
 /* Attached to insns that are RTX_FRAME_RELATED_P, with the information
    that this is a restore operation, i.e. will result in DW_CFA_restore
    or the like.  Either the attached rtx, or the destination of the insn's

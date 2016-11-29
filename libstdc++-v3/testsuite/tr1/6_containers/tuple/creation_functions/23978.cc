@@ -29,8 +29,6 @@ using std::pair;
 // libstdc++/23978
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   pair<int, int> p(1, 2);
   int x = 0;
   int y = 0;

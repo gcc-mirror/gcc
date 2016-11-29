@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -38,8 +38,6 @@ pred(int i)
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   int true_out[1] = { -1 };
   int false_out[1] = { -1 };
   Icontainer in_con(array, array);
@@ -57,8 +55,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
-
   int true_out[1] = { -1 };
   int false_out[1] = { -1 };
   Icontainer in_con(array, array + 2);
@@ -78,8 +74,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   int true_out[3] = { -1, -1, -1 };
   int false_out[3] = { -1, -1, -1 };
   Icontainer in_con(array, array + 6);

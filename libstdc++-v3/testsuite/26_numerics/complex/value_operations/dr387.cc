@@ -25,8 +25,6 @@ template<typename T>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     const T r = 1.0;
     const T i = -1.0;
     const T v = 0.0;

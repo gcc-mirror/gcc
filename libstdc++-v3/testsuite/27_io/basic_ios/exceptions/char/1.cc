@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::ios_base::fmtflags fmtflags;
   typedef std::ios_base::iostate iostate;
   using std::ios_base;

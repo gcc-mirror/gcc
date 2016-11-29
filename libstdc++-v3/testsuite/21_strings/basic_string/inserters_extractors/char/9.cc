@@ -31,7 +31,6 @@
 // libstdc++/2830
 void test09()
 {
-  bool test __attribute__((unused)) = true;
   std::string blanks( 3, '\0');
   std::string foo = "peace";
   foo += blanks;

@@ -25,7 +25,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   const wchar_t str[] =
     L"Is this the real life?\n"

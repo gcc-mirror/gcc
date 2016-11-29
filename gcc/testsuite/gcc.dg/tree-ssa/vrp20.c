@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fwrapv -O1 -fno-tree-fre -ftree-vrp -fdump-tree-vrp1" } */
+/* { dg-options "-fwrapv -O1 -fno-tree-fre -fdisable-tree-evrp -ftree-vrp -fdump-tree-vrp1" } */
 
 extern void abort ();
 extern void exit (int);

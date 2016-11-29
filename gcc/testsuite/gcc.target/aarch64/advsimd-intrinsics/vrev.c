@@ -63,6 +63,10 @@ VECT_VAR_DECL(expected_vrev64,uint,32,2) [] = { 0xfffffff1, 0xfffffff0 };
 VECT_VAR_DECL(expected_vrev64,poly,8,8) [] = { 0xf7, 0xf6, 0xf5, 0xf4,
 					       0xf3, 0xf2, 0xf1, 0xf0 };
 VECT_VAR_DECL(expected_vrev64,poly,16,4) [] = { 0xfff3, 0xfff2, 0xfff1, 0xfff0 };
+#if defined (FP16_SUPPORTED)
+VECT_VAR_DECL (expected_vrev64, hfloat, 16, 4) [] = { 0xca80, 0xcb00,
+						      0xcb80, 0xcc00 };
+#endif
 VECT_VAR_DECL(expected_vrev64,hfloat,32,2) [] = { 0xc1700000, 0xc1800000 };
 VECT_VAR_DECL(expected_vrev64,int,8,16) [] = { 0xf7, 0xf6, 0xf5, 0xf4,
 					       0xf3, 0xf2, 0xf1, 0xf0,
@@ -86,6 +90,12 @@ VECT_VAR_DECL(expected_vrev64,poly,8,16) [] = { 0xf7, 0xf6, 0xf5, 0xf4,
 						0xfb, 0xfa, 0xf9, 0xf8 };
 VECT_VAR_DECL(expected_vrev64,poly,16,8) [] = { 0xfff3, 0xfff2, 0xfff1, 0xfff0,
 						0xfff7, 0xfff6, 0xfff5, 0xfff4 };
+#if defined (FP16_SUPPORTED)
+VECT_VAR_DECL (expected_vrev64, hfloat, 16, 8) [] = { 0xca80, 0xcb00,
+						      0xcb80, 0xcc00,
+						      0xc880, 0xc900,
+						      0xc980, 0xca00 };
+#endif
 VECT_VAR_DECL(expected_vrev64,hfloat,32,4) [] = { 0xc1700000, 0xc1800000,
 						  0xc1500000, 0xc1600000 };
 
@@ -104,6 +114,10 @@ void exec_vrev (void)
 
   /* Initialize input "vector" from "buffer".  */
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector, buffer);
+#if defined (FP16_SUPPORTED)
+  VLOAD (vector, buffer, , float, f, 16, 4);
+  VLOAD (vector, buffer, q, float, f, 16, 8);
+#endif
   VLOAD(vector, buffer, , float, f, 32, 2);
   VLOAD(vector, buffer, q, float, f, 32, 4);
 
@@ -187,6 +201,12 @@ void exec_vrev (void)
   CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vrev64, "");
   CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_vrev64, "");
 
+#if defined (FP16_SUPPORTED)
+  TEST_VREV (, float, f, 16, 4, 64);
+  TEST_VREV (q, float, f, 16, 8, 64);
+  CHECK_FP(TEST_MSG, float, 16, 4, PRIx32, expected_vrev64, "");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx32, expected_vrev64, "");
+#endif
   TEST_VREV(, float, f, 32, 2, 64);
   TEST_VREV(q, float, f, 32, 4, 64);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_vrev64, "");

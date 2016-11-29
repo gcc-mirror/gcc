@@ -24,6 +24,21 @@
 
 #include <memory>
 
+#include "mutex_pool.h"
+
+namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
+{
+  /* Returns different instances of __mutex depending on the passed index
+   * in order to limit contention.
+   */
+  __gnu_cxx::__mutex&
+  get_mutex(unsigned char i)
+  {
+    static __gnu_cxx::__mutex m[mask + 1];
+    return m[i];
+  }
+}
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -37,21 +52,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GTHREADS
   namespace
   {
-    const unsigned char mask = 0xf;
-    const unsigned char invalid = mask + 1;
-
     inline unsigned char key(const void* addr)
-    { return _Hash_impl::hash(addr) & mask; }
-
-    /* Returns different instances of __mutex depending on the passed address
-     * in order to limit contention.
-     */
-    __gnu_cxx::__mutex&
-    get_mutex(unsigned char i)
-    {
-      static __gnu_cxx::__mutex m[mask + 1];
-      return m[i];
-    }
+    { return _Hash_impl::hash(addr) & __gnu_internal::mask; }
   }
 
   _Sp_locker::_Sp_locker(const void* p)
@@ -59,10 +61,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if (__gthread_active_p())
       {
 	_M_key1 = _M_key2 = key(p);
-	get_mutex(_M_key1).lock();
+        __gnu_internal::get_mutex(_M_key1).lock();
       }
     else
-      _M_key1 = _M_key2 = invalid;
+      _M_key1 = _M_key2 = __gnu_internal::invalid;
   }
 
   _Sp_locker::_Sp_locker(const void* p1, const void* p2)
@@ -72,22 +74,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_key1 = key(p1);
 	_M_key2 = key(p2);
 	if (_M_key2 < _M_key1)
-	  get_mutex(_M_key2).lock();
-	get_mutex(_M_key1).lock();
+	  __gnu_internal::get_mutex(_M_key2).lock();
+	__gnu_internal::get_mutex(_M_key1).lock();
 	if (_M_key2 > _M_key1)
-	  get_mutex(_M_key2).lock();
+	  __gnu_internal::get_mutex(_M_key2).lock();
       }
     else
-      _M_key1 = _M_key2 = invalid;
+      _M_key1 = _M_key2 = __gnu_internal::invalid;
   }
 
   _Sp_locker::~_Sp_locker()
   {
-    if (_M_key1 != invalid)
+    if (_M_key1 != __gnu_internal::invalid)
       {
-	get_mutex(_M_key1).unlock();
+	__gnu_internal::get_mutex(_M_key1).unlock();
 	if (_M_key2 != _M_key1)
-	  get_mutex(_M_key2).unlock();
+	  __gnu_internal::get_mutex(_M_key2).unlock();
       }
   }
 #endif

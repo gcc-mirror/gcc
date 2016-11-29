@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-prune-output 1366 }
+// { dg-prune-output "no matching function .*_M_fill_insert" }
 
 #include <vector>
 

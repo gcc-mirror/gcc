@@ -164,6 +164,7 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	       -fmath-errno.  */
 	    if (flag_errno_math)
 	      break;
+	    gcc_fallthrough ();
 	  CASE_MATHFN (ACOS)
 	  CASE_MATHFN (ACOSH)
 	  CASE_MATHFN (ASIN)
@@ -184,6 +185,7 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	    /* The above functions are not safe to do this conversion.  */
 	    if (!flag_unsafe_math_optimizations)
 	      break;
+	    gcc_fallthrough ();
 	  CASE_MATHFN (SQRT)
 	  CASE_MATHFN (FABS)
 	  CASE_MATHFN (LOGB)
@@ -516,7 +518,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  /* Only convert nearbyint* if we can ignore math exceptions.  */
 	  if (flag_trapping_math)
 	    break;
-	  /* ... Fall through ...  */
+	  gcc_fallthrough ();
 	CASE_FLT_FN (BUILT_IN_RINT):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
 	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)

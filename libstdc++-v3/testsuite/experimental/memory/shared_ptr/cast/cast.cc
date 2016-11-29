@@ -1,5 +1,3 @@
-// { dg-options "-std=gnu++14" }
-
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -22,7 +20,7 @@
 #include <experimental/memory>
 #include <testsuite_tr1.h>
 
-// { dg-do compile }
+// { dg-do compile { target c++14 } }
 
 struct A { };
 

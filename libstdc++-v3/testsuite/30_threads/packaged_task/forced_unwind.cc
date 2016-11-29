@@ -1,7 +1,6 @@
 // { dg-do run { target *-*-linux* *-*-gnu* } }
-// { dg-options " -std=gnu++11 -pthread" { target *-*-linux* *-*-gnu* } }
-// { dg-require-cstdint "" }
-// { dg-require-gthreads "" }
+// { dg-options "-pthread" { target *-*-linux* *-*-gnu* *-*-solaris* } }
+// { dg-require-effective-target c++11 }
 // { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.

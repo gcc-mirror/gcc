@@ -47,8 +47,6 @@ void test06()
   using namespace std;
   typedef istreambuf_iterator<char> InIt;
 
-  bool test __attribute__((unused)) = true;
-
   locale loc(locale::classic(), new My_money_io);
 
   string bufferp("$1234.56");

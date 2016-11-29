@@ -29,7 +29,6 @@ void test01()
 {
 #if defined (_GLIBCXX_USE_LFS) && defined (_GLIBCXX_HAVE_LIMIT_FSIZE)
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef filebuf::pos_type 	pos_type;
   typedef filebuf::off_type 	off_type;

@@ -23,7 +23,6 @@
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   const std::string strue("true");
   const std::string sfalse("false");
   std::string str01;

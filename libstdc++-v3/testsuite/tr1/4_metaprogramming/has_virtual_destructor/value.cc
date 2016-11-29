@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::has_virtual_destructor;
   using namespace __gnu_test;
 

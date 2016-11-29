@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -28,7 +28,6 @@ using namespace std;
 // libstdc++/1972
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   string s("lack of sunlight, no water error");
 
   // 1
@@ -43,7 +42,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   string s("lack of sunlight error");
   system_error x(error_code(), s);
   

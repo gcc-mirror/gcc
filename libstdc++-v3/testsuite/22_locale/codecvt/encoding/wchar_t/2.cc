@@ -32,7 +32,6 @@ void test02()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
-  bool test __attribute__((unused)) = true;
 
   locale loc = locale(ISO_8859(1,en_US));
   locale::global(loc);

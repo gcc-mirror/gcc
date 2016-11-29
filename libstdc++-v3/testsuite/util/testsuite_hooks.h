@@ -21,10 +21,7 @@
 
 // This file provides the following:
 //
-// 1)  VERIFY(), via _GLIBCXX_ASSERT, from Brent Verner <brent@rcfile.org>.
-//   This file is included in the various testsuite programs to provide
-//   #define(able) assert() behavior for debugging/testing. It may be
-//   a suitable location for other furry woodland creatures as well.
+// 1)  VERIFY()
 //
 // 2)  set_memory_limits()
 //   set_memory_limits() uses setrlimit() to restrict dynamic memory
@@ -54,12 +51,16 @@
 #include <sys/stat.h>
 #endif
 
-#ifdef _GLIBCXX_ASSERT
-# include <cassert>
-# define VERIFY(fn) assert(fn)
-#else
-# define VERIFY(fn) test &= bool(fn)
-#endif
+#define VERIFY(fn)                                                      \
+  do                                                                    \
+  {                                                                     \
+    if (! (fn))								\
+      {									\
+	__builtin_printf("%s:%d: %s: Assertion '%s' failed.\n",		\
+			 __FILE__, __LINE__, __PRETTY_FUNCTION__, #fn); \
+	__builtin_abort();						\
+      }									\
+  } while (false)
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>

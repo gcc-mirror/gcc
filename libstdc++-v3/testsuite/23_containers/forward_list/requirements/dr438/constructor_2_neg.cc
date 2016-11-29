@@ -1,6 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
-// { dg-error "no matching" "" { target *-*-* } 28 }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
 //
@@ -25,5 +23,5 @@
 void f()
 {
   typedef std::forward_list<std::forward_list<std::pair<char, char> > > test_type;
-  test_type l('a', 'b');
+  test_type l('a', 'b'); // { dg-error "no matching" }
 }

@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -236,6 +237,9 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 
 #undef	TARGET_EXPAND_BUILTIN_VA_START
 #define	TARGET_EXPAND_BUILTIN_VA_START	iq2000_va_start
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	iq2000_legitimate_address_p
@@ -1240,7 +1244,7 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
       gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
 		  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
 
-      /* Drops through.  */
+      /* FALLTHRU */
     case BLKmode:
       if (type != NULL_TREE && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
 	cum->arg_words += (cum->arg_words & 1);
@@ -2616,6 +2620,7 @@ expand_one_builtin (enum insn_code icode, rtx target, tree exp,
     {
     case 0:
 	pat = GEN_FCN (icode) (target);
+	break;
     case 1:
       if (target)
 	pat = GEN_FCN (icode) (target, op[0]);
@@ -3304,7 +3309,7 @@ iq2000_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 	int num_words = (GET_MODE_SIZE (mode) > UNITS_PER_WORD) ? 2 : 1;
 
 	if (simple_memory_operand (x, mode))
-	  return COSTS_N_INSNS (num_words);
+	  return COSTS_N_INSNS (num_words) != 0;
 
 	* total = COSTS_N_INSNS (2 * num_words);
 	break;

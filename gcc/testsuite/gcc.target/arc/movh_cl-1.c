@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
 /* { dg-options "-mcpu=nps400 -O2 -mbitops" } */
 
 struct thing
@@ -10,6 +11,9 @@ struct thing
     {
       unsigned a : 1;
       unsigned b : 1;
+      unsigned c : 28;
+      unsigned d : 1;
+      unsigned e : 1;
     };
   };
 };
@@ -21,6 +25,14 @@ blah ()
 {
   struct thing xx;
   xx.a = xx.b = 1;
+  func (xx.raw);
+}
+
+void
+woof ()
+{
+  struct thing xx;
+  xx.d = xx.e = 1;
   func (xx.raw);
 }
 

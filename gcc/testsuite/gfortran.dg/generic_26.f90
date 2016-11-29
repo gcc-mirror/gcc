@@ -9,17 +9,17 @@ module a
 
   interface test
     procedure testAlloc
-    procedure testPtr   ! { dg-error "Ambiguous interfaces" }
+    procedure testPtr
   end interface
 
 contains
 
-  logical function testAlloc(obj)
+  logical function testAlloc(obj)    ! { dg-error "Ambiguous interfaces" }
     integer, allocatable :: obj
     testAlloc = .true.
   end function
   
-  logical function testPtr(obj)
+  logical function testPtr(obj)      ! { dg-error "Ambiguous interfaces" }
     integer, pointer :: obj
     testPtr = .false.
   end function

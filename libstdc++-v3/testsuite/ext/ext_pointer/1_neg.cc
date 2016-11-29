@@ -45,8 +45,6 @@ typedef _Pointer_adapter<_Relative_pointer_impl<const A> > const_A_pointer;
 
 
 void test01(void) {
-  bool test __attribute__((unused)) = true;
-
   A a;
   B b;
 

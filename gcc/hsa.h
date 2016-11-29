@@ -50,7 +50,6 @@ class hsa_insn_basic;
 class hsa_op_address;
 class hsa_op_reg;
 class hsa_bb;
-typedef hsa_insn_basic *hsa_insn_basic_p;
 
 /* Class representing an input argument, output argument (result) or a
    variable, that will eventually end up being a symbol directive.  */
@@ -72,7 +71,8 @@ struct hsa_symbol
   void fillup_for_decl (tree decl);
 
   /* Pointer to the original tree, which is PARM_DECL for input parameters and
-     RESULT_DECL for the output parameters.  */
+     RESULT_DECL for the output parameters.  Also can be CONST_DECL for Fortran
+     constants which need to be put into readonly segment.  */
   tree m_decl;
 
   /* Name of the symbol, that will be written into output and dumps.  Can be
@@ -259,10 +259,8 @@ private:
   /* Set definition where the register is defined.  */
   void set_definition (hsa_insn_basic *insn);
   /* Uses of the value while still in SSA.  */
-  auto_vec <hsa_insn_basic_p> m_uses;
+  auto_vec <hsa_insn_basic *> m_uses;
 };
-
-typedef class hsa_op_reg *hsa_op_reg_p;
 
 /* Report whether or not P is a register operand.  */
 
@@ -490,17 +488,12 @@ class hsa_insn_phi : public hsa_insn_basic
 public:
   hsa_insn_phi (unsigned nops, hsa_op_reg *dst);
 
-  void *operator new (size_t);
-
   /* Destination.  */
   hsa_op_reg *m_dest;
 
 private:
   /* Make the default constructor inaccessible.  */
   hsa_insn_phi () : hsa_insn_basic (1, HSA_OPCODE_PHI) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether or not P is a PHI node.  */
@@ -513,35 +506,56 @@ is_a_helper <hsa_insn_phi *>::test (hsa_insn_basic *p)
   return p->m_opcode == HSA_OPCODE_PHI;
 }
 
-/* HSA instruction for branches.  Currently we explicitely represent only
-   conditional branches.  */
-
+/* HSA instruction for  */
 class hsa_insn_br : public hsa_insn_basic
 {
 public:
-  hsa_insn_br (hsa_op_reg *ctrl);
+  hsa_insn_br (unsigned nops, int opc, BrigType16_t t, BrigWidth8_t width,
+	       hsa_op_base *arg0 = NULL, hsa_op_base *arg1 = NULL,
+	       hsa_op_base *arg2 = NULL, hsa_op_base *arg3 = NULL);
 
-  void *operator new (size_t);
-
-  /* Width as described in HSA documentation.  */
+  /* Number of work-items affected in the same way by the instruction.  */
   BrigWidth8_t m_width;
+
 private:
   /* Make the default constructor inaccessible.  */
-  hsa_insn_br () : hsa_insn_basic (1, BRIG_OPCODE_CBR) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
+  hsa_insn_br () : hsa_insn_basic (0, BRIG_OPCODE_BR) {}
 };
 
-/* Report whether P is a branching instruction.  */
+/* Return true if P is a branching/synchronization instruction.  */
 
 template <>
 template <>
 inline bool
 is_a_helper <hsa_insn_br *>::test (hsa_insn_basic *p)
 {
-  return p->m_opcode == BRIG_OPCODE_BR
-    || p->m_opcode == BRIG_OPCODE_CBR;
+  return p->m_opcode == BRIG_OPCODE_BARRIER
+    || p->m_opcode == BRIG_OPCODE_BR;
+}
+
+/* HSA instruction for conditional branches.  Structurally the same as
+   hsa_insn_br but we represent it specially because of inherent control
+   flow it represents.  */
+
+class hsa_insn_cbr : public hsa_insn_br
+{
+public:
+  hsa_insn_cbr (hsa_op_reg *ctrl);
+
+private:
+  /* Make the default constructor inaccessible.  */
+  hsa_insn_cbr () : hsa_insn_br (0, BRIG_OPCODE_CBR, BRIG_TYPE_B1,
+				 BRIG_WIDTH_1) {}
+};
+
+/* Report whether P is a contitional branching instruction.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <hsa_insn_cbr *>::test (hsa_insn_basic *p)
+{
+  return p->m_opcode == BRIG_OPCODE_CBR;
 }
 
 /* HSA instruction for switch branches.  */
@@ -553,8 +567,6 @@ public:
 
   /* Default destructor.  */
   ~hsa_insn_sbr ();
-
-  void *operator new (size_t);
 
   void replace_all_labels (basic_block old_bb, basic_block new_bb);
 
@@ -570,9 +582,6 @@ public:
 private:
   /* Make the default constructor inaccessible.  */
   hsa_insn_sbr () : hsa_insn_basic (1, BRIG_OPCODE_SBR) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether P is a switch branching instruction.  */
@@ -594,8 +603,6 @@ public:
 		hsa_op_base *arg0 = NULL, hsa_op_base *arg1 = NULL,
 		hsa_op_base *arg2 = NULL);
 
-  void *operator new (size_t);
-
   /* Source type should be derived from operand types.  */
 
   /* The comparison operation.  */
@@ -606,9 +613,6 @@ public:
 private:
   /* Make the default constructor inaccessible.  */
   hsa_insn_cmp () : hsa_insn_basic (1, BRIG_OPCODE_CMP) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether or not P is a comparison instruction.  */
@@ -627,8 +631,6 @@ class hsa_insn_mem : public hsa_insn_basic
 {
 public:
   hsa_insn_mem (int opc, BrigType16_t t, hsa_op_base *arg0, hsa_op_base *arg1);
-
-  void *operator new (size_t);
 
   /* Set alignment to VALUE.  */
 
@@ -652,9 +654,6 @@ protected:
 private:
   /* Make the default constructor inaccessible.  */
   hsa_insn_mem () : hsa_insn_basic (1, BRIG_OPCODE_LD) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether or not P is a memory instruction.  */
@@ -677,7 +676,6 @@ public:
 		   BrigType16_t t, BrigMemoryOrder memorder,
 		   hsa_op_base *arg0 = NULL, hsa_op_base *arg1 = NULL,
 		   hsa_op_base *arg2 = NULL, hsa_op_base *arg3 = NULL);
-  void *operator new (size_t);
 
   /* The operation itself.  */
   enum BrigAtomicOperation m_atomicop;
@@ -691,9 +689,6 @@ public:
 private:
   /* Make the default constructor inaccessible.  */
   hsa_insn_atomic () : hsa_insn_mem (1, BRIG_KIND_NONE, BRIG_TYPE_NONE) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether or not P is an atomic instruction.  */
@@ -709,20 +704,19 @@ is_a_helper <hsa_insn_atomic *>::test (hsa_insn_basic *p)
 
 /* HSA instruction for signal operations.  */
 
-class hsa_insn_signal : public hsa_insn_atomic
+class hsa_insn_signal : public hsa_insn_basic
 {
 public:
   hsa_insn_signal (int nops, int opc, enum BrigAtomicOperation sop,
-		   BrigType16_t t, hsa_op_base *arg0 = NULL,
-		   hsa_op_base *arg1 = NULL,
+		   BrigType16_t t, BrigMemoryOrder memorder,
+		   hsa_op_base *arg0 = NULL, hsa_op_base *arg1 = NULL,
 		   hsa_op_base *arg2 = NULL, hsa_op_base *arg3 = NULL);
 
-  void *operator new (size_t);
+  /* Things like acquire/release/aligned.  */
+  enum BrigMemoryOrder m_memory_order;
 
-private:
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
+  /* The operation itself.  */
+  enum BrigAtomicOperation m_signalop;
 };
 
 /* Report whether or not P is a signal instruction.  */
@@ -744,8 +738,6 @@ public:
   hsa_insn_seg (int opc, BrigType16_t destt, BrigType16_t srct,
 		BrigSegment8_t seg, hsa_op_base *arg0, hsa_op_base *arg1);
 
-  void *operator new (size_t);
-
   /* Source type.  Depends on the source addressing/segment.  */
   BrigType16_t m_src_type;
   /* The segment we are converting from or to.  */
@@ -753,9 +745,6 @@ public:
 private:
   /* Make the default constructor inaccessible.  */
   hsa_insn_seg () : hsa_insn_basic (1, BRIG_OPCODE_STOF) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether or not P is a segment conversion instruction.  */
@@ -812,8 +801,6 @@ public:
   /* Default destructor.  */
   ~hsa_insn_call ();
 
-  void *operator new (size_t);
-
   /* Called function.  */
   tree m_called_function;
 
@@ -840,9 +827,6 @@ public:
 private:
   /* Make the default constructor inaccessible.  */
   hsa_insn_call () : hsa_insn_basic (0, BRIG_OPCODE_CALL) {}
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether or not P is a call instruction.  */
@@ -866,17 +850,11 @@ class hsa_insn_arg_block : public hsa_insn_basic
 public:
   hsa_insn_arg_block (BrigKind brig_kind, hsa_insn_call * call);
 
-  void *operator new (size_t);
-
   /* Kind of argument block.  */
   BrigKind m_kind;
 
   /* Call instruction.  */
   hsa_insn_call *m_call_insn;
-private:
-  /* All objects are deallocated by destroying their pool, so make delete
-     inaccessible too.  */
-  void operator delete (void *) {}
 };
 
 /* Report whether or not P is a call block instruction.  */
@@ -900,8 +878,6 @@ public:
   /* Default destructor.  */
   ~hsa_insn_comment ();
 
-  void *operator new (size_t);
-
   char *m_comment;
 };
 
@@ -920,10 +896,18 @@ is_a_helper <hsa_insn_comment *>::test (hsa_insn_basic *p)
 class hsa_insn_queue: public hsa_insn_basic
 {
 public:
-  hsa_insn_queue (int nops, BrigOpcode opcode);
+  hsa_insn_queue (int nops, int opcode, BrigSegment segment,
+		  BrigMemoryOrder memory_order,
+		  hsa_op_base *arg0 = NULL, hsa_op_base *arg1 = NULL,
+		  hsa_op_base *arg2 = NULL, hsa_op_base *arg3 = NULL);
 
   /* Destructor.  */
   ~hsa_insn_queue ();
+
+  /* Segment used to refer to the queue.  Must be global or flat.  */
+  BrigSegment m_segment;
+  /* Memory order used to specify synchronization.  */
+  BrigMemoryOrder m_memory_order;
 };
 
 /* Report whether or not P is a queue instruction.  */
@@ -933,7 +917,12 @@ template <>
 inline bool
 is_a_helper <hsa_insn_queue *>::test (hsa_insn_basic *p)
 {
-  return (p->m_opcode == BRIG_OPCODE_ADDQUEUEWRITEINDEX);
+  return (p->m_opcode == BRIG_OPCODE_ADDQUEUEWRITEINDEX
+	  || p->m_opcode == BRIG_OPCODE_CASQUEUEWRITEINDEX
+	  || p->m_opcode == BRIG_OPCODE_LDQUEUEREADINDEX
+	  || p->m_opcode == BRIG_OPCODE_LDQUEUEWRITEINDEX
+	  || p->m_opcode == BRIG_OPCODE_STQUEUEREADINDEX
+	  || p->m_opcode == BRIG_OPCODE_STQUEUEWRITEINDEX);
 }
 
 /* HSA source type instruction.  */
@@ -944,9 +933,6 @@ public:
   hsa_insn_srctype (int nops, BrigOpcode opcode, BrigType16_t destt,
 		   BrigType16_t srct, hsa_op_base *arg0, hsa_op_base *arg1,
 		   hsa_op_base *arg2);
-
-  /* Pool allocator.  */
-  void *operator new (size_t);
 
   /* Source type.  */
   BrigType16_t m_source_type;
@@ -976,9 +962,6 @@ public:
 		   BrigType16_t srct, hsa_op_base *arg0, hsa_op_base *arg1,
 		   hsa_op_base *arg2);
 
-  /* Pool allocator.  */
-  void *operator new (size_t);
-
   /* Operand list for an operand of the instruction.  */
   hsa_op_operand_list *m_operand_list;
 
@@ -1003,9 +986,6 @@ class hsa_insn_cvt: public hsa_insn_basic
 {
 public:
   hsa_insn_cvt (hsa_op_with_type *dest, hsa_op_with_type *src);
-
-  /* Pool allocator.  */
-  void *operator new (size_t);
 };
 
 /* Report whether or not P is a convert instruction.  */
@@ -1028,9 +1008,6 @@ public:
 
   /* Required alignment of the allocation.  */
   BrigAlignment8_t m_align;
-
-  /* Pool allocator.  */
-  void *operator new (size_t);
 };
 
 /* Report whether or not P is an alloca instruction.  */
@@ -1054,6 +1031,9 @@ public:
 
   /* Append an instruction INSN into the basic block.  */
   void append_insn (hsa_insn_basic *insn);
+
+  /* Add a PHI instruction.  */
+  void append_phi (hsa_insn_phi *phi);
 
   /* The real CFG BB that this HBB belongs to.  */
   basic_block m_bb;
@@ -1217,7 +1197,7 @@ public:
   unsigned m_temp_symbol_count;
 
   /* SSA names mapping.  */
-  vec <hsa_op_reg_p> m_ssa_map;
+  vec <hsa_op_reg *> m_ssa_map;
 
   /* Flag whether a function needs update of dominators before RA.  */
   bool m_modified_cfg;
@@ -1239,9 +1219,9 @@ struct hsa_function_summary
   hsa_function_kind m_kind;
 
   /* Pointer to a cgraph node which is a HSA implementation of the function.
-     In case of the function is a HSA function, the binded function points
+     In case of the function is a HSA function, the bound function points
      to the host function.  */
-  cgraph_node *m_binded_function;
+  cgraph_node *m_bound_function;
 
   /* Identifies if the function is an HSA function or a host function.  */
   bool m_gpu_implementation_p;
@@ -1252,7 +1232,7 @@ struct hsa_function_summary
 
 inline
 hsa_function_summary::hsa_function_summary (): m_kind (HSA_NONE),
-  m_binded_function (NULL), m_gpu_implementation_p (false)
+  m_bound_function (NULL), m_gpu_implementation_p (false)
 {
 }
 
@@ -1270,6 +1250,9 @@ public:
 
   void link_functions (cgraph_node *gpu, cgraph_node *host,
 		       hsa_function_kind kind, bool gridified_kernel_p);
+
+private:
+  void process_gpu_implementation_attributes (tree gdecl);
 };
 
 /* OMP simple builtin describes behavior that should be done for

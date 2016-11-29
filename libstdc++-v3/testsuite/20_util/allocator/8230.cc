@@ -26,7 +26,7 @@
 // libstdc++/8230
 void test02()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   try 
     {
       std::allocator<int> alloc;

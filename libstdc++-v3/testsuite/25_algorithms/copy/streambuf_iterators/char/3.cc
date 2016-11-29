@@ -25,7 +25,6 @@
 // In the occasion of libstdc++/25482
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef ostreambuf_iterator<char> out_iterator_type;

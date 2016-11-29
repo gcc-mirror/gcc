@@ -10,4 +10,4 @@ foo (int a, int b)
       return a + b;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate a_.*to 1" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "if" 1 "vrp1" } } */

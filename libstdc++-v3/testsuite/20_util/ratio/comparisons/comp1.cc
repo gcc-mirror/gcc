@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
@@ -24,8 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
- 
   VERIFY(( std::ratio_equal<std::ratio<2,6>, std::ratio<1,3>>::value == 1 ));
   VERIFY(( std::ratio_equal<std::ratio<2,6>, std::ratio<1,4>>::value == 0 ));
   
@@ -38,8 +36,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
- 
   VERIFY( (std::ratio_less<std::ratio<1,4>, std::ratio<1,3>>::value == 1) );
   VERIFY( (std::ratio_less<std::ratio<-1,3>, std::ratio<1,3>>::value == 1) );
   

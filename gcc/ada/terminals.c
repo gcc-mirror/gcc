@@ -32,7 +32,7 @@
 /* First all usupported platforms. Add stubs for exported routines. */
 
 #if defined (VMS) || defined (__vxworks) || defined (__Lynx__) \
-  || defined (__ANDROID__) || defined (__PikeOS__)
+  || defined (__ANDROID__) || defined (__PikeOS__) || defined(__DJGPP__)
 
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 
@@ -289,34 +289,27 @@ is_gui_app (char *exe)
     {
     case IMAGE_SUBSYSTEM_UNKNOWN:
         return 1;
-        break;
 
     case IMAGE_SUBSYSTEM_NATIVE:
         return 1;
-        break;
 
     case IMAGE_SUBSYSTEM_WINDOWS_GUI:
         return 1;
-        break;
 
     case IMAGE_SUBSYSTEM_WINDOWS_CUI:
         return 0;
-        break;
 
     case IMAGE_SUBSYSTEM_OS2_CUI:
         return 0;
-        break;
 
     case IMAGE_SUBSYSTEM_POSIX_CUI:
         return 0;
-        break;
 
     default:
         /* Unknown, return GUI app to be preservative: if yes, it will be
            correctly launched, if no, it will be launched, and a console will
            be also displayed, which is not a big deal */
         return 1;
-        break;
     }
 
 }

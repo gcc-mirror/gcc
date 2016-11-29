@@ -31,8 +31,6 @@ using __gnu_cxx::__const_pointer_cast;
 
 void 
 test01() {
-  bool test __attribute__((unused)) = true;
-
   typedef _Pointer_adapter<_Relative_pointer_impl<int> >       pointer;
   typedef _Pointer_adapter<_Relative_pointer_impl<const int> > const_pointer;
 
@@ -100,8 +98,6 @@ void inc3(_Pointer_adapter<_Relative_pointer_impl<const A> > a) {
 }
 
 void test02() {
-  bool test __attribute__((unused)) = true;
-
   B b;
   b.i = 2;
   b.j = 2;
@@ -150,8 +146,6 @@ void test02() {
 }
 
 void test03() {
-  bool test __attribute__((unused)) = true;
-
   B b;
   B* bPtr = &b;
   A* aPtr __attribute__((unused)) = __static_pointer_cast<A*>(bPtr);
@@ -172,8 +166,6 @@ void test03() {
 // Confirm the usability of the __static_pointer_cast<> template function
 // to transform between _Pointer_adapter and standard versions.
 void test04() {
-  bool test __attribute__((unused)) = true;
-
   B b;
   B_pointer bPtr = &b;
 

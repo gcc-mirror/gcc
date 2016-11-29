@@ -37,7 +37,6 @@ gnu_filebuf buf(initial);
 // libstdc++/3045, in a vague way.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   int k1;
 
   // 1 normal

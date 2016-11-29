@@ -1132,6 +1132,7 @@ destroy_cpp_file (_cpp_file *file)
 {
   free ((void *) file->buffer_start);
   free ((void *) file->name);
+  free ((void *) file->path);
   free (file);
 }
 
@@ -1672,7 +1673,7 @@ static char *
 remap_filename (cpp_reader *pfile, _cpp_file *file)
 {
   const char *fname, *p;
-  char *new_dir;
+  char *new_dir, *p3;
   cpp_dir *dir;
   size_t index, len;
 
@@ -1701,9 +1702,15 @@ remap_filename (cpp_reader *pfile, _cpp_file *file)
 	return NULL;
 
       len = dir->len + (p - fname + 1);
-      new_dir = XNEWVEC (char, len + 1);
+      new_dir = XNEWVEC (char, len + 2);
+      p3 = new_dir + dir->len;
       memcpy (new_dir, dir->name, dir->len);
-      memcpy (new_dir + dir->len, fname, p - fname + 1);
+      if (dir->len && !IS_DIR_SEPARATOR (dir->name[dir->len - 1]))
+	{
+	  *p3++ = '/';
+	  len++;
+	}
+      memcpy (p3, fname, p - fname + 1);
       new_dir[len] = '\0';
 
       dir = make_cpp_dir (pfile, new_dir, dir->sysp);

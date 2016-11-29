@@ -81,6 +81,7 @@ init_c_lex (void)
   cb->read_pch = c_common_read_pch;
   cb->has_attribute = c_common_has_attribute;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
+  cb->get_suggestion = cb_get_suggestion;
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
@@ -349,7 +350,8 @@ c_common_has_attribute (cpp_reader *pfile)
 	      else if (is_attribute_p ("deprecated", attr_name))
 		result = 201309;
 	      else if (is_attribute_p ("maybe_unused", attr_name)
-		       || is_attribute_p ("nodiscard", attr_name))
+		       || is_attribute_p ("nodiscard", attr_name)
+		       || is_attribute_p ("fallthrough", attr_name))
 		result = 201603;
 	      if (result)
 		attr_name = NULL_TREE;
@@ -594,9 +596,21 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
     case CPP_MACRO_ARG:
       gcc_unreachable ();
 
-    /* CPP_COMMENT will appear when compiling with -C and should be
-       ignored.  */
-     case CPP_COMMENT:
+    /* CPP_COMMENT will appear when compiling with -C.  Ignore, except
+       when it is a FALLTHROUGH comment, in that case set
+       PREV_FALLTHROUGH flag on the next non-comment token.  */
+    case CPP_COMMENT:
+      if (tok->flags & PREV_FALLTHROUGH)
+	{
+	  do
+	    {
+	      tok = cpp_get_token_with_location (parse_in, loc);
+	      type = tok->type;
+	    }
+	  while (type == CPP_PADDING || type == CPP_COMMENT);
+	  add_flags |= PREV_FALLTHROUGH;
+	  goto retry_after_at;
+	}
        goto retry;
 
     default:
@@ -839,6 +853,26 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	type = c_common_type_for_mode (mode, 0);
 	gcc_assert (type);
       }
+    else if ((flags & (CPP_N_FLOATN | CPP_N_FLOATNX)) != 0)
+      {
+	unsigned int n = (flags & CPP_N_WIDTH_FLOATN_NX) >> CPP_FLOATN_SHIFT;
+	bool extended = (flags & CPP_N_FLOATNX) != 0;
+	type = NULL_TREE;
+	for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+	  if (floatn_nx_types[i].n == (int) n
+	      && floatn_nx_types[i].extended == extended)
+	    {
+	      type = FLOATN_NX_TYPE_NODE (i);
+	      break;
+	    }
+	if (type == NULL_TREE)
+	  {
+	    error ("unsupported non-standard suffix on floating constant");
+	    return error_mark_node;
+	  }
+	else
+	  pedwarn (input_location, OPT_Wpedantic, "non-standard suffix on floating constant");
+      }
     else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = long_double_type_node;
     else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL
@@ -867,6 +901,17 @@ interpret_float (const cpp_token *token, unsigned int flags,
       if (flags & CPP_N_IMAGINARY)
 	/* I or J suffix.  */
 	copylen--;
+      if (flags & CPP_N_FLOATNX)
+	copylen--;
+      if (flags & (CPP_N_FLOATN | CPP_N_FLOATNX))
+	{
+	  unsigned int n = (flags & CPP_N_WIDTH_FLOATN_NX) >> CPP_FLOATN_SHIFT;
+	  while (n > 0)
+	    {
+	      copylen--;
+	      n /= 10;
+	    }
+	}
     }
 
   copy = (char *) alloca (copylen + 1);
@@ -1097,13 +1142,16 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
   tree value;
   size_t concats = 0;
   struct obstack str_ob;
+  struct obstack loc_ob;
   cpp_string istr;
   enum cpp_ttype type = tok->type;
 
   /* Try to avoid the overhead of creating and destroying an obstack
      for the common case of just one string.  */
   cpp_string str = tok->val.str;
+  location_t init_loc = tok->src_loc;
   cpp_string *strs = &str;
+  location_t *locs = NULL;
 
   /* objc_at_sign_was_seen is only used when doing Objective-C string
      concatenation.  It is 'true' if we have seen an '@' before the
@@ -1142,16 +1190,21 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
 	  else
 	    error ("unsupported non-standard concatenation of string literals");
 	}
+      /* FALLTHROUGH */
 
     case CPP_STRING:
       if (!concats)
 	{
 	  gcc_obstack_init (&str_ob);
+	  gcc_obstack_init (&loc_ob);
 	  obstack_grow (&str_ob, &str, sizeof (cpp_string));
+	  obstack_grow (&loc_ob, &init_loc, sizeof (location_t));
 	}
 
       concats++;
       obstack_grow (&str_ob, &tok->val.str, sizeof (cpp_string));
+      obstack_grow (&loc_ob, &tok->src_loc, sizeof (location_t));
+
       if (objc_string)
 	objc_at_sign_was_seen = false;
       goto retry;
@@ -1164,7 +1217,10 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
   /* We have read one more token than we want.  */
   _cpp_backup_tokens (parse_in, 1);
   if (concats)
-    strs = XOBFINISH (&str_ob, cpp_string *);
+    {
+      strs = XOBFINISH (&str_ob, cpp_string *);
+      locs = XOBFINISH (&loc_ob, location_t *);
+    }
 
   if (concats && !objc_string && !in_system_header_at (input_location))
     warning (OPT_Wtraditional,
@@ -1176,6 +1232,12 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
     {
       value = build_string (istr.len, (const char *) istr.text);
       free (CONST_CAST (unsigned char *, istr.text));
+      if (concats)
+	{
+	  gcc_assert (locs);
+	  gcc_assert (g_string_concat_db);
+	  g_string_concat_db->record_string_concatenation (concats + 1, locs);
+	}
     }
   else
     {
@@ -1227,7 +1289,10 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
   *valp = fix_string_type (value);
 
   if (concats)
-    obstack_free (&str_ob, 0);
+    {
+      obstack_free (&str_ob, 0);
+      obstack_free (&loc_ob, 0);
+    }
 
   return objc_string ? CPP_OBJC_STRING : type;
 }

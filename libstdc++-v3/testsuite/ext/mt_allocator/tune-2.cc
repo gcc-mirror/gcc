@@ -32,8 +32,6 @@
 // __per_type_pool_policy
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_test::pod_int value_type;
 
   using __gnu_cxx::__pool;

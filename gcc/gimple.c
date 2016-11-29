@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "selftest.h"
 #include "gimple-pretty-print.h"
+#include "asan.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -373,6 +374,7 @@ gimple_build_call_from_tree (tree t)
     gimple_call_set_from_thunk (call, CALL_FROM_THUNK_P (t));
   gimple_call_set_va_arg_pack (call, CALL_EXPR_VA_ARG_PACK (t));
   gimple_call_set_nothrow (call, TREE_NOTHROW (t));
+  gimple_call_set_by_descriptor (call, CALL_EXPR_BY_DESCRIPTOR (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
   gimple_call_set_with_bounds (call, CALL_WITH_BOUNDS_P (t));
 
@@ -1385,6 +1387,9 @@ gimple_call_flags (const gimple *stmt)
 
   if (stmt->subcode & GF_CALL_NOTHROW)
     flags |= ECF_NOTHROW;
+
+  if (stmt->subcode & GF_CALL_BY_DESCRIPTOR)
+    flags |= ECF_BY_DESCRIPTOR;
 
   return flags;
 }
@@ -2625,6 +2630,8 @@ nonfreeing_call_p (gimple *call)
       {
       case IFN_ABNORMAL_DISPATCHER:
         return true;
+      case IFN_ASAN_MARK:
+	return tree_to_uhwi (gimple_call_arg (call, 0)) == ASAN_MARK_UNCLOBBER;
       default:
 	if (gimple_call_flags (call) & ECF_LEAF)
 	  return true;
@@ -2946,18 +2953,30 @@ preprocess_case_label_vec_for_gimple (vec<tree> labels,
 	    high = CASE_LOW (labels[len - 1]);
 	  if (tree_int_cst_equal (high, TYPE_MAX_VALUE (index_type)))
 	    {
+	      tree widest_label = labels[0];
 	      for (i = 1; i < len; i++)
 		{
 		  high = CASE_LOW (labels[i]);
 		  low = CASE_HIGH (labels[i - 1]);
 		  if (!low)
 		    low = CASE_LOW (labels[i - 1]);
+
+		  if (CASE_HIGH (labels[i]) != NULL_TREE
+		      && (CASE_HIGH (widest_label) == NULL_TREE
+			  || wi::gtu_p (wi::sub (CASE_HIGH (labels[i]),
+						 CASE_LOW (labels[i])),
+					wi::sub (CASE_HIGH (widest_label),
+						 CASE_LOW (widest_label)))))
+		    widest_label = labels[i];
+
 		  if (wi::add (low, 1) != high)
 		    break;
 		}
 	      if (i == len)
 		{
-		  tree label = CASE_LABEL (labels[0]);
+		  /* Designate the label with the widest range to be the
+		     default label.  */
+		  tree label = CASE_LABEL (widest_label);
 		  default_case = build_case_label (NULL_TREE, NULL_TREE,
 						   label);
 		}

@@ -28,6 +28,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"		/* For GEN_FCN.  */
 #include "regs.h"
@@ -3489,7 +3490,7 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
 
 /* Return align 2 (log base 2) if the next instruction of LABEL is 4 byte.  */
 int
-nds32_target_alignment (rtx label)
+nds32_target_alignment (rtx_insn *label)
 {
   rtx_insn *insn;
 
@@ -3546,9 +3547,6 @@ nds32_target_alignment (rtx label)
 
 #undef TARGET_CLASS_MAX_NREGS
 #define TARGET_CLASS_MAX_NREGS nds32_class_max_nregs
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_true
 
 #undef TARGET_REGISTER_PRIORITY
 #define TARGET_REGISTER_PRIORITY nds32_register_priority

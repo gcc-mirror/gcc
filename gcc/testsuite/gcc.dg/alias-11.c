@@ -24,7 +24,7 @@ dw_cfi_node *cie_cfi_head;
 unsigned fde_table_in_use;
 dw_fde_node *fde_table;
 
-__inline__ void
+static __inline__ void
 add_cfi (dw_cfi_node **list_head, dw_cfi_node *cfi)
 {
   dw_cfi_node **p;
@@ -35,7 +35,7 @@ add_cfi (dw_cfi_node **list_head, dw_cfi_node *cfi)
   *p = cfi;
 }
 
-__inline__ struct dw_cfi_struct *
+static __inline__ struct dw_cfi_struct *
 new_cfi (void)
 {
   dw_cfi_node *cfi = (dw_cfi_node *) malloc (sizeof (dw_cfi_node));

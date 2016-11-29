@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
-// { dg-do compile { xfail uclibc } }
+// { dg-do compile { target c++11 } }
 // { dg-excess-errors "" { target uclibc } }
 
 #include <cmath>
@@ -49,8 +48,6 @@ void isunordered() { }
 template <typename _Tp, typename _Up = _Tp>
   void test_c99_classify()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef _Tp fp_type_one;
     typedef _Up fp_type_two;
     fp_type_one f1 = 1.0;

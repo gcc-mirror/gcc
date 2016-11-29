@@ -21,8 +21,6 @@
 // libstdc++/57666
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::valarray<int> a(3), b(3), d1, d2;
   d1 = a;
   VERIFY( d1.size() == 3 );

@@ -30,7 +30,6 @@ public:
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
   derived_oss yy;
   yy << L"buena vista social club\n";
   VERIFY( yy.str() == std::wstring(L"buena vista social club\n") );

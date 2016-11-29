@@ -38,9 +38,6 @@ DEF_GCOV_COUNTER(GCOV_COUNTER_V_POW2, "pow2", _add)
 /* The most common value of expression.  */
 DEF_GCOV_COUNTER(GCOV_COUNTER_V_SINGLE, "single", _single)
 
-/* The most common difference between consecutive values of expression.  */
-DEF_GCOV_COUNTER(GCOV_COUNTER_V_DELTA, "delta", _delta)
-
 /* The most common indirect address.  */
 DEF_GCOV_COUNTER(GCOV_COUNTER_V_INDIR, "indirect_call", _single)
 

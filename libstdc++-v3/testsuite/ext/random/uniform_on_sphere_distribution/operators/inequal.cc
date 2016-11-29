@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2014-04-15  Ulrich Drepper  <drepper@gmail.com>
@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::uniform_on_sphere_distribution<3> u, v;
 
   VERIFY( !(u != v) );

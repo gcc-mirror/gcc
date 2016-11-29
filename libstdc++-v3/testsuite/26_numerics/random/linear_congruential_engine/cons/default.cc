@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::linear_congruential_engine<unsigned long, 48271, 0, 2147483647> x;
   VERIFY( x.min() == 1 );
   VERIFY( x.max() == 2147483647-1 );

@@ -466,8 +466,13 @@ namespace __gnu_test
     void
     bitwise_assignment_operators()
     {
+#if __cplusplus >= 201103L
+      _Tp a{};
+      _Tp b{};
+#else
       _Tp a = _Tp();
       _Tp b = _Tp();
+#endif
       a |= b; // set
       a &= ~b; // clear
       a ^= b;
@@ -837,7 +842,6 @@ namespace __gnu_test
 	    _Ttype __a(__v1);
 	    __v0 = __a;
 
-	    bool test __attribute__((unused)) = true;
 	    VERIFY( __v1 == __v0 );
 	  }
 	};
@@ -864,7 +868,6 @@ namespace __gnu_test
 	    __a = __v1;
 	    _Tvalue __vr = __a;
 
-	    bool test __attribute__((unused)) = true;
 	    VERIFY( __v1 == __vr );
 	  }
 	};

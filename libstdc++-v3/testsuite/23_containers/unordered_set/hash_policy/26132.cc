@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -26,8 +26,6 @@
 template<typename _USet>
   void test()
   {
-    bool test __attribute__((unused)) = true;
-
     for (float lf = 1.0; lf < 101.0; lf *= 10.0)
       for (int size = 1; size <= 6561; size *= 3)
 	{

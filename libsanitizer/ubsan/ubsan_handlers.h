@@ -146,7 +146,23 @@ struct NonNullArgData {
 /// \brief Handle passing null pointer to function with nonnull attribute.
 RECOVERABLE(nonnull_arg, NonNullArgData *Data)
 
+/// \brief Known CFI check kinds.
+/// Keep in sync with the enum of the same name in CodeGenFunction.h
+enum CFITypeCheckKind : unsigned char {
+  CFITCK_VCall,
+  CFITCK_NVCall,
+  CFITCK_DerivedCast,
+  CFITCK_UnrelatedCast,
+  CFITCK_ICall,
+};
+
 struct CFIBadIcallData {
+  SourceLocation Loc;
+  const TypeDescriptor &Type;
+};
+
+struct CFICheckFailData {
+  CFITypeCheckKind CheckKind;
   SourceLocation Loc;
   const TypeDescriptor &Type;
 };
@@ -154,6 +170,9 @@ struct CFIBadIcallData {
 /// \brief Handle control flow integrity failure for indirect function calls.
 RECOVERABLE(cfi_bad_icall, CFIBadIcallData *Data, ValueHandle Function)
 
+/// \brief Handle control flow integrity failures.
+RECOVERABLE(cfi_check_fail, CFICheckFailData *Data, ValueHandle Function,
+            uptr VtableIsValid)
 }
 
 #endif // UBSAN_HANDLERS_H

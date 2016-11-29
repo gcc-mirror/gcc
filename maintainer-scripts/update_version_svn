@@ -6,7 +6,7 @@
 # in the space separated list in $ADD_BRANCHES.
 
 SVNROOT=${SVNROOT:-"file:///svn/gcc"}
-IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2|3_3|3_4|4_0|4_1|4_2|4_3|4_4|4_5|4_6|4_7|4_8)-branch'
+IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2|3_3|3_4|4_0|4_1|4_2|4_3|4_4|4_5|4_6|4_7|4_8|4_9)-branch'
 ADD_BRANCHES='HEAD'
 
 # Run this from /tmp.

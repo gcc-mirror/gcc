@@ -30,14 +30,17 @@
 #include <debug/safe_unordered_base.h>
 #include <debug/safe_iterator.h>
 #include <debug/safe_local_iterator.h>
+#include <debug/vector>
 
 #include <cassert>
 #include <cstdio>
+#include <cctype> // for std::isspace
 
 #include <algorithm> // for std::min
-#include <functional> // for _Hash_impl
 
 #include <cxxabi.h> // for __cxa_demangle
+
+#include "mutex_pool.h"
 
 using namespace std;
 
@@ -47,12 +50,15 @@ namespace
    *  in order to limit contention without breaking current library binary
    *  compatibility. */
   __gnu_cxx::__mutex&
-  get_safe_base_mutex(void* __address)
+  get_safe_base_mutex(void* address)
   {
-    const size_t mask = 0xf;
-    static __gnu_cxx::__mutex safe_base_mutex[mask + 1];
-    const size_t index = _Hash_impl::hash(__address) & mask;
-    return safe_base_mutex[index];
+    // Use arbitrarily __gnu_debug::vector<int> as the container giving
+    // alignment of debug containers.
+    const auto alignbits = __builtin_ctz(alignof(__gnu_debug::vector<int>));
+    const unsigned char index
+      = (reinterpret_cast<std::size_t>(address) >> alignbits)
+      & __gnu_internal::mask;
+    return __gnu_internal::get_mutex(index);
   }
 
   void
@@ -70,8 +76,8 @@ namespace
   }
 
   void
-  swap_seq(__gnu_debug::_Safe_sequence_base& __lhs,
-	   __gnu_debug::_Safe_sequence_base& __rhs)
+  swap_seq_single(__gnu_debug::_Safe_sequence_base& __lhs,
+		  __gnu_debug::_Safe_sequence_base& __rhs)
   {
     swap(__lhs._M_version, __rhs._M_version);
     swap_its(__lhs, __lhs._M_iterators,
@@ -80,15 +86,56 @@ namespace
 	     __rhs, __rhs._M_const_iterators);
   }
 
+  template<typename _Action>
+    void
+    lock_and_run(__gnu_cxx::__mutex& lhs_mutex, __gnu_cxx::__mutex& rhs_mutex,
+		 _Action action)
+    {
+      // We need to lock both sequences to run action.
+      if (&lhs_mutex == &rhs_mutex)
+	{
+	  __gnu_cxx::__scoped_lock sentry(lhs_mutex);
+	  action();
+	}
+      else
+	{
+	  __gnu_cxx::__scoped_lock sentry1(&lhs_mutex < &rhs_mutex
+					   ? lhs_mutex : rhs_mutex);
+	  __gnu_cxx::__scoped_lock sentry2(&lhs_mutex < &rhs_mutex
+					   ? rhs_mutex : lhs_mutex);
+	  action();
+	}
+    }
+
   void
-  swap_ucont(__gnu_debug::_Safe_unordered_container_base& __lhs,
-	    __gnu_debug::_Safe_unordered_container_base& __rhs)
+  swap_seq(__gnu_cxx::__mutex& lhs_mutex,
+	   __gnu_debug::_Safe_sequence_base& lhs,
+	   __gnu_cxx::__mutex& rhs_mutex,
+	   __gnu_debug::_Safe_sequence_base& rhs)
   {
-    swap_seq(__lhs, __rhs);
+    lock_and_run(lhs_mutex, rhs_mutex,
+		 [&lhs, &rhs]() { swap_seq_single(lhs, rhs); });
+  }
+
+  void
+  swap_ucont_single(__gnu_debug::_Safe_unordered_container_base& __lhs,
+		    __gnu_debug::_Safe_unordered_container_base& __rhs)
+  {
+    swap_seq_single(__lhs, __rhs);
     swap_its(__lhs, __lhs._M_local_iterators,
 	     __rhs, __rhs._M_local_iterators);
     swap_its(__lhs, __lhs._M_const_local_iterators,
 	     __rhs, __rhs._M_const_local_iterators);
+  }
+
+  void
+  swap_ucont(__gnu_cxx::__mutex& lhs_mutex,
+	     __gnu_debug::_Safe_unordered_container_base& lhs,
+	     __gnu_cxx::__mutex& rhs_mutex,
+	     __gnu_debug::_Safe_unordered_container_base& rhs)
+  {
+    lock_and_run(lhs_mutex, rhs_mutex,
+		 [&lhs, &rhs]() { swap_ucont_single(lhs, rhs); });
   }
 
   void
@@ -242,25 +289,7 @@ namespace __gnu_debug
   void
   _Safe_sequence_base::
   _M_swap(_Safe_sequence_base& __x) noexcept
-  {
-    // We need to lock both sequences to swap
-    using namespace __gnu_cxx;
-    __mutex *__this_mutex = &_M_get_mutex();
-    __mutex *__x_mutex = &__x._M_get_mutex();
-    if (__this_mutex == __x_mutex)
-      {
-	__scoped_lock __lock(*__this_mutex);
-	swap_seq(*this, __x);
-      }
-    else
-      {
-	__scoped_lock __l1(__this_mutex < __x_mutex
-			     ? *__this_mutex : *__x_mutex);
-	__scoped_lock __l2(__this_mutex < __x_mutex
-			     ? *__x_mutex : *__this_mutex);
-	swap_seq(*this, __x);
-      }
-  }
+  { swap_seq(_M_get_mutex(), *this, __x._M_get_mutex(), __x); }
 
   __gnu_cxx::__mutex&
   _Safe_sequence_base::
@@ -384,7 +413,7 @@ namespace __gnu_debug
   __gnu_cxx::__mutex&
   _Safe_iterator_base::
   _M_get_mutex() throw ()
-  { return get_safe_base_mutex(_M_sequence); }
+  { return _M_sequence->_M_get_mutex(); }
 
   _Safe_unordered_container_base*
   _Safe_local_iterator_base::
@@ -462,25 +491,7 @@ namespace __gnu_debug
   void
   _Safe_unordered_container_base::
   _M_swap(_Safe_unordered_container_base& __x) noexcept
-  {
-    // We need to lock both containers to swap
-    using namespace __gnu_cxx;
-    __mutex *__this_mutex = &_M_get_mutex();
-    __mutex *__x_mutex = &__x._M_get_mutex();
-    if (__this_mutex == __x_mutex)
-      {
-	__scoped_lock __lock(*__this_mutex);
-	swap_ucont(*this, __x);
-      }
-    else
-      {
-	__scoped_lock __l1(__this_mutex < __x_mutex
-			     ? *__this_mutex : *__x_mutex);
-	__scoped_lock __l2(__this_mutex < __x_mutex
-			     ? *__x_mutex : *__this_mutex);
-	swap_ucont(*this, __x);
-      }
-  }
+  { swap_ucont(_M_get_mutex(), *this, __x._M_get_mutex(), __x); }
 
   void
   _Safe_unordered_container_base::
@@ -529,11 +540,6 @@ namespace
   using _Error_formatter = __gnu_debug::_Error_formatter;
   using _Parameter = __gnu_debug::_Error_formatter::_Parameter;
 
-  template<typename _Tp>
-    int
-    format_word(char* buf, int n, const char* fmt, _Tp s)
-    { return std::min(__builtin_snprintf(buf, n, fmt, s), n - 1); }
-
   void
   get_max_length(std::size_t& max_length)
   {
@@ -559,6 +565,11 @@ namespace
     bool	_M_first_line;
     bool	_M_wordwrap;
   };
+
+  template<size_t Length>
+    void
+    print_literal(PrintContext& ctx, const char(&word)[Length])
+    { print_word(ctx, word, Length - 1); }
 
   void
   print_word(PrintContext& ctx, const char* word,
@@ -610,27 +621,28 @@ namespace
       }
     else
       {
-	print_word(ctx, "\n", 1);
+	print_literal(ctx, "\n");
 	print_word(ctx, word, count);
       }
   }
 
-  void
-  print_type(PrintContext& ctx,
-	     const type_info* info,
-	     const char* unknown_name)
-  {
-    if (!info)
-      print_word(ctx, unknown_name);
-    else
-      {
-	int status;
-	char* demangled_name =
-	  __cxxabiv1::__cxa_demangle(info->name(), NULL, NULL, &status);
-	print_word(ctx, status == 0 ? demangled_name : info->name());
-	free(demangled_name);
-      }
-  }
+  template<size_t Length>
+    void
+    print_type(PrintContext& ctx,
+	       const type_info* info,
+	       const char(&unknown_name)[Length])
+    {
+      if (!info)
+	print_literal(ctx, unknown_name);
+      else
+	{
+	  int status;
+	  char* demangled_name =
+	    __cxxabiv1::__cxa_demangle(info->name(), NULL, NULL, &status);
+	  print_word(ctx, status == 0 ? demangled_name : info->name());
+	  free(demangled_name);
+	}
+    }
 
   bool
   print_field(PrintContext& ctx,
@@ -767,20 +779,18 @@ namespace
   {
     if (type._M_name)
       {
-	const int bufsize = 64;
-	char buf[bufsize];
-	int written
-	  = format_word(buf, bufsize, "\"%s\"", type._M_name);
-	print_word(ctx, buf, written);
+	print_literal(ctx, "\"");
+	print_word(ctx, type._M_name);
+	print_literal(ctx, "\"");
       }
 
-    print_word(ctx, " {\n");
+    print_literal(ctx, " {\n");
 
     if (type._M_type)
       {
-	print_word(ctx, "  type = ");
+	print_literal(ctx, "  type = ");
 	print_type(ctx, type._M_type, "<unknown type>");
-	print_word(ctx, ";\n");
+	print_literal(ctx, ";\n");
       }
   }
 
@@ -792,9 +802,9 @@ namespace
 
     if (inst._M_name)
       {
-	int written
-	  = format_word(buf, bufsize, "\"%s\" ", inst._M_name);
-	print_word(ctx, buf, written);
+	print_literal(ctx, "\"");
+	print_word(ctx, inst._M_name);
+	print_literal(ctx, "\" ");
       }
 
     int written
@@ -803,7 +813,7 @@ namespace
 
     if (inst._M_type)
       {
-	print_word(ctx, "  type = ");
+	print_literal(ctx, "  type = ");
 	print_type(ctx, inst._M_type, "<unknown type>");
       }
   }
@@ -821,36 +831,36 @@ namespace
 	{
 	  const auto& ite = variant._M_iterator;
 
-	  print_word(ctx, "iterator ");
+	  print_literal(ctx, "iterator ");
 	  print_description(ctx, ite);
 
 	  if (ite._M_type)
 	    {
 	      if (ite._M_constness != _Error_formatter::__unknown_constness)
 		{
-		  print_word(ctx, " (");
+		  print_literal(ctx, " (");
 		  print_field(ctx, param, "constness");
-		  print_word(ctx, " iterator)");
+		  print_literal(ctx, " iterator)");
 		}
 
-	      print_word(ctx, ";\n");
+	      print_literal(ctx, ";\n");
 	    }
 
 	  if (ite._M_state != _Error_formatter::__unknown_state)
 	    {
-	      print_word(ctx, "  state = ");
+	      print_literal(ctx, "  state = ");
 	      print_field(ctx, param, "state");
-	      print_word(ctx, ";\n");
+	      print_literal(ctx, ";\n");
 	    }
 
 	  if (ite._M_sequence)
 	    {
-	      print_word(ctx, "  references sequence ");
+	      print_literal(ctx, "  references sequence ");
 	      if (ite._M_seq_type)
 		{
-		  print_word(ctx, "with type '");
+		  print_literal(ctx, "with type '");
 		  print_field(ctx, param, "seq_type");
-		  print_word(ctx, "' ");
+		  print_literal(ctx, "' ");
 		}
 
 	      int written
@@ -858,34 +868,34 @@ namespace
 	      print_word(ctx, buf, written);
 	    }
 
-	  print_word(ctx, "}\n", 2);
+	  print_literal(ctx, "}\n");
 	}
 	break;
 
       case _Parameter::__sequence:
-	print_word(ctx, "sequence ");
+	print_literal(ctx, "sequence ");
 	print_description(ctx, variant._M_sequence);
 
 	if (variant._M_sequence._M_type)
-	  print_word(ctx, ";\n", 2);
+	  print_literal(ctx, ";\n");
 
-	print_word(ctx, "}\n", 2);
+	print_literal(ctx, "}\n");
 	break;
 
       case _Parameter::__instance:
-	print_word(ctx, "instance ");
+	print_literal(ctx, "instance ");
 	print_description(ctx, variant._M_instance);
 
 	if (variant._M_instance._M_type)
-	  print_word(ctx, ";\n", 2);
+	  print_literal(ctx, ";\n");
 
-	print_word(ctx, "}\n", 2);
+	print_literal(ctx, "}\n");
 	break;
 
       case _Parameter::__iterator_value_type:
-	print_word(ctx, "iterator::value_type ");
+	print_literal(ctx, "iterator::value_type ");
 	print_description(ctx, variant._M_iterator_value_type);
-	print_word(ctx, "}\n", 2);
+	print_literal(ctx, "}\n");
 	break;
 
       default:
@@ -1000,38 +1010,36 @@ namespace __gnu_debug
   void
   _Error_formatter::_M_error() const
   {
-    const int bufsize = 128;
-    char buf[bufsize];
-
     // Emit file & line number information
     bool go_to_next_line = false;
     PrintContext ctx;
     if (_M_file)
       {
-	int written = format_word(buf, bufsize, "%s:", _M_file);
-	print_word(ctx, buf, written);
+	print_word(ctx, _M_file);
+	print_literal(ctx, ":");
 	go_to_next_line = true;
       }
 
     if (_M_line > 0)
       {
+	char buf[64];
 	int written = __builtin_sprintf(buf, "%u:", _M_line);
 	print_word(ctx, buf, written);
 	go_to_next_line = true;
       }
 
     if (go_to_next_line)
-      print_word(ctx, "\n", 1);
+      print_literal(ctx, "\n");
 
     if (ctx._M_max_length)
       ctx._M_wordwrap = true;
 
-    print_word(ctx, "Error: ");
+    print_literal(ctx, "Error: ");
 
     // Print the error message
     assert(_M_text);
     print_string(ctx, _M_text, _M_parameters, _M_num_parameters);
-    print_word(ctx, ".\n", 2);
+    print_literal(ctx, ".\n");
 
     // Emit descriptions of the objects involved in the operation
     ctx._M_first_line = true;
@@ -1047,7 +1055,7 @@ namespace __gnu_debug
 	  case _Parameter::__iterator_value_type:
 	    if (!has_header)
 	      {
-		print_word(ctx, "\nObjects involved in the operation:\n");
+		print_literal(ctx, "\nObjects involved in the operation:\n");
 		has_header = true;
 	      }
 	    print_description(ctx, _M_parameters[i]);

@@ -115,7 +115,9 @@ enum processor_features
   FEATURE_AVX512ER,
   FEATURE_AVX512PF,
   FEATURE_AVX512VBMI,
-  FEATURE_AVX512IFMA
+  FEATURE_AVX512IFMA,
+  FEATURE_AVX5124VNNIW,
+  FEATURE_AVX5124FMAPS
 };
 
 struct __processor_model
@@ -359,6 +361,10 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	features |= (1 << FEATURE_AVX512IFMA);
       if (ecx & bit_AVX512VBMI)
 	features |= (1 << FEATURE_AVX512VBMI);
+      if (edx & bit_AVX5124VNNIW)
+	features |= (1 << FEATURE_AVX5124VNNIW);
+      if (edx & bit_AVX5124FMAPS)
+	features |= (1 << FEATURE_AVX5124FMAPS);
     }
 
   unsigned int ext_level;
@@ -381,20 +387,6 @@ get_available_features (unsigned int ecx, unsigned int edx,
   __cpu_model.__cpu_features[0] = features;
 }
 
-/* A noinline function calling __get_cpuid. Having many calls to
-   cpuid in one function in 32-bit mode causes GCC to complain:
-   "can't find a register in class CLOBBERED_REGS".  This is
-   related to PR rtl-optimization 44174. */
-
-static int __attribute__ ((noinline))
-__get_cpuid_output (unsigned int __level,
-		    unsigned int *__eax, unsigned int *__ebx,
-		    unsigned int *__ecx, unsigned int *__edx)
-{
-  return __get_cpuid (__level, __eax, __ebx, __ecx, __edx);
-}
-
-
 /* A constructor function that is sets __cpu_model and __cpu_features with
    the right values.  This needs to run only once.  This constructor is
    given the highest priority and it should run before constructors without
@@ -406,7 +398,7 @@ __cpu_indicator_init (void)
 {
   unsigned int eax, ebx, ecx, edx;
 
-  int max_level = 5;
+  int max_level;
   unsigned int vendor;
   unsigned int model, family, brand_id;
   unsigned int extended_model, extended_family;
@@ -416,7 +408,7 @@ __cpu_indicator_init (void)
     return 0;
 
   /* Assume cpuid insn present. Run in level 0 to get vendor id. */
-  if (!__get_cpuid_output (0, &eax, &ebx, &ecx, &edx))
+  if (!__get_cpuid (0, &eax, &ebx, &ecx, &edx))
     {
       __cpu_model.__cpu_vendor = VENDOR_OTHER;
       return -1;
@@ -431,7 +423,7 @@ __cpu_indicator_init (void)
       return -1;
     }
 
-  if (!__get_cpuid_output (1, &eax, &ebx, &ecx, &edx))
+  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
     {
       __cpu_model.__cpu_vendor = VENDOR_OTHER;
       return -1;

@@ -1932,10 +1932,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     conj(_Tp __x)
     { return __x; }
 
+_GLIBCXX_END_NAMESPACE_VERSION
+
 #if __cplusplus > 201103L
 
 inline namespace literals {
 inline namespace complex_literals {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_complex_udls 201309
 
@@ -1963,12 +1966,12 @@ inline namespace complex_literals {
   operator""il(unsigned long long __num)
   { return std::complex<long double>{0.0L, static_cast<long double>(__num)}; }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // inline namespace complex_literals
 } // inline namespace literals
 
 #endif // C++14
 
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif  // C++11

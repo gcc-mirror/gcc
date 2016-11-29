@@ -130,6 +130,7 @@ print_mcu (const avr_mcu_t *mcu)
 
   FILE *f = fopen (name ,"w");
 
+  bool absdata = 0 != (mcu->dev_attribute & AVR_ISA_LDS);
   bool errata_skip = 0 != (mcu->dev_attribute & AVR_ERRATA_SKIP);
   bool rmw = 0 != (mcu->dev_attribute & AVR_ISA_RMW);
   bool sp8 = 0 != (mcu->dev_attribute & AVR_SHORT_SP);
@@ -188,6 +189,10 @@ print_mcu (const avr_mcu_t *mcu)
   fprintf (f, "*cc1_errata_skip:\n%s\n\n", errata_skip
            ? "\t%{!mno-skip-bug: -mskip-bug}"
            : "\t%{!mskip-bug: -mno-skip-bug}");
+
+  fprintf (f, "*cc1_absdata:\n%s\n\n", absdata
+           ? "\t%{!mno-absdata: -mabsdata}"
+           : "\t%{mabsdata}");
 
   // avr-gcc specific specs for assembling / the assembler.
 

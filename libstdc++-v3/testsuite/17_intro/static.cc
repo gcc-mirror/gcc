@@ -1,6 +1,6 @@
-// { dg-do link }
+// { dg-do link { target c++11 } }
 // { dg-require-static-libstdcxx }
-// { dg-options "-static-libstdc++ -std=gnu++11" }
+// { dg-options "-static-libstdc++" }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //

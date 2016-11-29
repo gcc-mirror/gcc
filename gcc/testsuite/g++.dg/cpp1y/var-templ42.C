@@ -14,4 +14,4 @@ template <template <typename...> class F> struct A {
 template <typename F> auto valid_call(F f) -> decltype(f());
 constexpr auto valid_call(...) { return 0; }
 template <typename> struct no_type;
-static_assert(!valid_call(metafunction<no_type>),""); // { dg-error "" }
+static_assert(!valid_call(metafunction<no_type>),"");

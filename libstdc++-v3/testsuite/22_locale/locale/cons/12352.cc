@@ -94,8 +94,6 @@ void operator delete[](void* p, const std::nothrow_t&) throw()
 // libstdc++/12352
 void test01(int iters)
 {
-  bool test __attribute__((unused)) = true;
-
   for (int j = 0; j < iters; ++j)
     {
       for (int i = 0; i < 100; ++i)

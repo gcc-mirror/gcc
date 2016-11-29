@@ -29,8 +29,6 @@ const T A<T>::a = T(3);
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( 2 == std::min(A<int>::a, 2) );
   VERIFY( 3 == std::min(A<int>::a, 4) );
 

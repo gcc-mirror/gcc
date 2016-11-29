@@ -42,7 +42,6 @@ MyNP::do_thousands_sep() const
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const char lit[] = "0123 456\n"
                      ": 01 234 567:\n"
                      ":0123 456   :\n"

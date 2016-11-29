@@ -66,8 +66,7 @@ namespace __debug
 	friend class bitset;
 	reference();
 
-	reference(const _Base_ref& __base,
-		  bitset* __seq __attribute__((__unused__))) _GLIBCXX_NOEXCEPT
+	reference(const _Base_ref& __base, bitset* __seq) _GLIBCXX_NOEXCEPT
 	: _Base_ref(__base)
 	, _Safe_iterator_base(__seq, false)
 	{ }
@@ -81,7 +80,7 @@ namespace __debug
 	reference&
 	operator=(bool __x) _GLIBCXX_NOEXCEPT
 	{
-	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
+	  _GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
 	  *static_cast<_Base_ref*>(this) = __x;
@@ -91,10 +90,10 @@ namespace __debug
 	reference&
 	operator=(const reference& __x) _GLIBCXX_NOEXCEPT
 	{
-	  _GLIBCXX_DEBUG_VERIFY(! __x._M_singular(),
+	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular(),
 			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(__x));
-	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
+	  _GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
 	  *static_cast<_Base_ref*>(this) = __x;
@@ -104,7 +103,7 @@ namespace __debug
 	bool
 	operator~() const _GLIBCXX_NOEXCEPT
 	{
-	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
+	  _GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
 	  return ~(*static_cast<const _Base_ref*>(this));
@@ -112,7 +111,7 @@ namespace __debug
 
 	operator bool() const _GLIBCXX_NOEXCEPT
 	{
-	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
+	  _GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
 	  return *static_cast<const _Base_ref*>(this);
@@ -121,7 +120,7 @@ namespace __debug
 	reference&
 	flip() _GLIBCXX_NOEXCEPT
 	{
-	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
+	  _GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_flip)
 				._M_iterator(*this));
 	  _Base_ref::flip();

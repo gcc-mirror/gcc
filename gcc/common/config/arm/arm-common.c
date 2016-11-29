@@ -21,6 +21,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "common/common-target.h"
 #include "common/common-target-def.h"
@@ -95,6 +96,29 @@ arm_rewrite_mcpu (int argc, const char **argv)
 {
   gcc_assert (argc);
   return arm_rewrite_selected_cpu (argv[argc - 1]);
+}
+
+/* Called by the driver to check whether the target denoted by current
+   command line options is a Thumb-only target.  ARGV is an array of
+   -march and -mcpu values (ie. it contains the rhs after the equal
+   sign) and we use the last one of them to make a decision.  The
+   number of elements in ARGV is given in ARGC.  */
+const char *
+arm_target_thumb_only (int argc, const char **argv)
+{
+  unsigned int opt;
+
+  if (argc)
+    {
+      for (opt = 0; opt < (ARRAY_SIZE (arm_arch_core_flags)); opt++)
+	if ((strcmp (argv[argc - 1], arm_arch_core_flags[opt].name) == 0)
+	    && !ARM_FSET_HAS_CPU1(arm_arch_core_flags[opt].flags, FL_NOTM))
+	  return "-mthumb";
+
+      return NULL;
+    }
+  else
+    return NULL;
 }
 
 #undef ARM_CPU_NAME_LENGTH

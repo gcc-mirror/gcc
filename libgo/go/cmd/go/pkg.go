@@ -523,6 +523,11 @@ func disallowInternal(srcDir string, p *Package, stk *importStack) *Package {
 		return p
 	}
 
+	// We can't check standard packages with gccgo.
+	if buildContext.Compiler == "gccgo" && p.Standard {
+		return p
+	}
+
 	// The stack includes p.ImportPath.
 	// If that's the only thing on the stack, we started
 	// with a name given on the command line, not an
@@ -762,6 +767,13 @@ var cgoSyscallExclude = map[string]bool{
 // be the result of calling build.Context.Import.
 func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package {
 	p.copyBuild(bp)
+
+	// When using gccgo the go/build package will not be able to
+	// find a standard package.  It would be nicer to not get that
+	// error, but go/build doesn't know stdpkg.
+	if runtime.Compiler == "gccgo" && err != nil && p.Standard {
+		err = nil
+	}
 
 	// The localPrefix is the path we interpret ./ imports relative to.
 	// Synthesized main packages sometimes override this.
@@ -1581,7 +1593,7 @@ func computeBuildID(p *Package) {
 	// Include the content of runtime/internal/sys/zversion.go in the hash
 	// for package runtime. This will give package runtime a
 	// different build ID in each Go release.
-	if p.Standard && p.ImportPath == "runtime/internal/sys" {
+	if p.Standard && p.ImportPath == "runtime/internal/sys" && buildContext.Compiler != "gccgo" {
 		data, err := ioutil.ReadFile(filepath.Join(p.Dir, "zversion.go"))
 		if err != nil {
 			fatalf("go: %s", err)

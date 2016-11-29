@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::multimap<int, int> mm;
 
   VERIFY( (mm.max_size() == std::allocator<std::_Rb_tree_node<

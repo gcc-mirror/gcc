@@ -258,7 +258,7 @@ enum reg_class
     : (rtx) 0)
 
 /* Before the prologue, RA lives in r31.  */
-#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, GP_REG_FIRST + 31)
+#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, GP_REG_FIRST + 31)
 
 
 /* Register That Address the Stack Frame.  */

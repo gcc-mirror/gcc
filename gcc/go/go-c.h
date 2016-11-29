@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GO_EXTERN_C
 
+class Linemap;
+class Backend;
 
 /* Functions defined in the Go frontend proper called by the GCC
    interface.  */
@@ -31,10 +33,23 @@ extern int go_enable_optimize (const char*);
 
 extern void go_add_search_path (const char*);
 
-extern void go_create_gogo (int int_type_size, int pointer_size,
-			    const char* pkgpath, const char *prefix,
-			    const char *relative_import_path,
-			    bool check_divide_zero, bool check_divide_overflow);
+struct go_create_gogo_args
+{
+  int int_type_size;
+  int pointer_size;
+  const char* pkgpath;
+  const char* prefix;
+  const char* relative_import_path;
+  const char* c_header;
+  Backend* backend;
+  Linemap* linemap;
+  bool check_divide_by_zero;
+  bool check_divide_overflow;
+  bool compiling_runtime;
+  int debug_escape_level;
+};
+
+extern void go_create_gogo (const struct go_create_gogo_args*);
 
 extern void go_parse_input_files (const char**, unsigned int,
 				  bool only_check_syntax,
@@ -51,8 +66,6 @@ extern bool saw_errors (void);
 extern const char *go_localize_identifier (const char*);
 
 extern unsigned int go_field_alignment (tree);
-
-extern void go_trampoline_info (unsigned int *size, unsigned int *alignment);
 
 extern void go_imported_unsafe (void);
 

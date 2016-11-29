@@ -23,11 +23,10 @@
 #include <testsuite_hooks.h>
 
 template<typename T>
-bool
+void
 test03_check(T n)
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   stringbuf strbuf;
   ostream o(&strbuf);
@@ -44,8 +43,6 @@ test03_check(T n)
 
   o << oct << n << ' ' << hex << n;
   VERIFY ( strbuf.str() == expect );
-
-  return test;
 }
 
 void

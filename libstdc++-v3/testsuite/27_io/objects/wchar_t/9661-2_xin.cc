@@ -26,8 +26,6 @@ void test02()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
-
   wint_t c1 = fgetwc(stdin);
   wint_t c2 = wcin.rdbuf()->sputbackc(c1);
   VERIFY( c2 == c1 );

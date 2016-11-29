@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-07-07  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
@@ -28,8 +28,6 @@
 // Tests assign operator of the basic_regex class for moveable rvalues.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex src_re("aaba");
   const unsigned mark_count = src_re.mark_count();
   const std::regex::flag_type flags = src_re.flags();

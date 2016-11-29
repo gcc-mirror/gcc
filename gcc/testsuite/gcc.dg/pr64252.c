@@ -1,6 +1,7 @@
 /* PR target/64252 */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target int32plus } */
 
 typedef unsigned int V __attribute__((vector_size (32)));
 

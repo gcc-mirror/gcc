@@ -31,8 +31,6 @@ void test03()
   using namespace std;
   typedef istreambuf_iterator<char> iterator_type;
 
-  bool test __attribute__((unused)) = true;
-
   // basic construction
   locale loc_c = locale::classic();
   locale loc_de = locale(ISO_8859(15,de_DE));

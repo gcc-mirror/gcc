@@ -60,6 +60,7 @@ class dom_info
 {
 public:
   dom_info (function *, cdi_direction);
+  dom_info (vec <basic_block>, cdi_direction);
   ~dom_info ();
   void calc_dfs_tree ();
   void calc_idoms ();
@@ -68,6 +69,7 @@ public:
 private:
   void calc_dfs_tree_nonrec (basic_block);
   void compress (TBB);
+  void dom_init (void);
   TBB eval (TBB);
   void link_roots (TBB, TBB);
 
@@ -153,12 +155,12 @@ inline T *new_zero_array (size_t num)
   return result;
 }
 
-/* Allocate all needed memory in a pessimistic fashion (so we round up).  */
+/* Helper function for constructors to initialize a part of class members.  */
 
-dom_info::dom_info (function *fn, cdi_direction dir)
+void
+dom_info::dom_init (void)
 {
-  /* We need memory for n_basic_blocks nodes.  */
-  size_t num = m_n_basic_blocks = n_basic_blocks_for_fn (fn);
+  size_t num = m_n_basic_blocks;
   m_dfs_parent = new_zero_array <TBB> (num);
   m_dom = new_zero_array <TBB> (num);
 
@@ -177,13 +179,23 @@ dom_info::dom_info (function *fn, cdi_direction dir)
   m_set_chain = new_zero_array <TBB> (num);
   m_set_child = new_zero_array <TBB> (num);
 
-  unsigned last_bb_index = last_basic_block_for_fn (fn);
-  m_dfs_order = new_zero_array <TBB> (last_bb_index + 1);
-  m_dfs_last = &m_dfs_order[last_bb_index];
   m_dfs_to_bb = new_zero_array <basic_block> (num);
 
   m_dfsnum = 1;
   m_nodes = 0;
+}
+
+/* Allocate all needed memory in a pessimistic fashion (so we round up).  */
+
+dom_info::dom_info (function *fn, cdi_direction dir)
+{
+  m_n_basic_blocks = n_basic_blocks_for_fn (fn);
+
+  dom_init ();
+
+  unsigned last_bb_index = last_basic_block_for_fn (fn);
+  m_dfs_order = new_zero_array <TBB> (last_bb_index + 1);
+  m_dfs_last = &m_dfs_order[last_bb_index];
 
   switch (dir)
     {
@@ -198,6 +210,44 @@ dom_info::dom_info (function *fn, cdi_direction dir)
 	m_fake_exit_edge = BITMAP_ALLOC (NULL);
 	m_start_block = EXIT_BLOCK_PTR_FOR_FN (fn);
 	m_end_block = ENTRY_BLOCK_PTR_FOR_FN (fn);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+}
+
+/* Constructor for reducible region REGION.  */
+
+dom_info::dom_info (vec<basic_block> region, cdi_direction dir)
+{
+  m_n_basic_blocks = region.length ();
+  unsigned int nm1 = m_n_basic_blocks - 1;
+
+  dom_init ();
+
+  /* Determine max basic block index in region.  */
+  int max_index = region[0]->index;
+  for (size_t i = 1; i <= nm1; i++)
+    if (region[i]->index > max_index)
+      max_index = region[i]->index;
+  max_index += 1;  /* set index on the first bb out of region.  */
+
+  m_dfs_order = new_zero_array <TBB> (max_index + 1);
+  m_dfs_last = &m_dfs_order[max_index];
+
+  m_fake_exit_edge = NULL; /* Assume that region is reducible.  */
+
+  switch (dir)
+    {
+      case CDI_DOMINATORS:
+	m_reverse = false;
+	m_start_block = region[0];
+	m_end_block = region[nm1];
+	break;
+      case CDI_POST_DOMINATORS:
+	m_reverse = true;
+	m_start_block = region[nm1];
+	m_end_block = region[0];
 	break;
       default:
 	gcc_unreachable ();
@@ -252,6 +302,8 @@ dom_info::calc_dfs_tree_nonrec (basic_block bb)
 {
   edge_iterator *stack = new edge_iterator[m_n_basic_blocks + 1];
   int sp = 0;
+  unsigned d_i = dom_convert_dir_to_idx (m_reverse ? CDI_POST_DOMINATORS
+					 : CDI_DOMINATORS);
 
   /* Initialize the first edge.  */
   edge_iterator ei = m_reverse ? ei_start (bb->preds)
@@ -276,9 +328,10 @@ dom_info::calc_dfs_tree_nonrec (basic_block bb)
 	      bn = e->src;
 
 	      /* If the next node BN is either already visited or a border
-	         block the current edge is useless, and simply overwritten
-	         with the next edge out of the current node.  */
-	      if (bn == m_end_block || m_dfs_order[bn->index])
+		 block or out of region the current edge is useless, and simply
+		 overwritten with the next edge out of the current node.  */
+	      if (bn == m_end_block || bn->dom[d_i] == NULL
+		  || m_dfs_order[bn->index])
 		{
 		  ei_next (&ei);
 		  continue;
@@ -289,7 +342,8 @@ dom_info::calc_dfs_tree_nonrec (basic_block bb)
 	  else
 	    {
 	      bn = e->dest;
-	      if (bn == m_end_block || m_dfs_order[bn->index])
+	      if (bn == m_end_block || bn->dom[d_i] == NULL
+		  || m_dfs_order[bn->index])
 		{
 		  ei_next (&ei);
 		  continue;
@@ -347,7 +401,7 @@ dom_info::calc_dfs_tree ()
 
   calc_dfs_tree_nonrec (m_start_block);
 
-  if (m_reverse)
+  if (m_fake_exit_edge)
     {
       /* In the post-dom case we may have nodes without a path to EXIT_BLOCK.
          They are reverse-unreachable.  In the dom-case we disallow such
@@ -511,7 +565,7 @@ dom_info::calc_idoms ()
 				   : ei_start (bb->preds);
       edge_iterator einext;
 
-      if (m_reverse)
+      if (m_fake_exit_edge)
 	{
 	  /* If this block has a fake edge to exit, process that first.  */
 	  if (bitmap_bit_p (m_fake_exit_edge, bb->index))
@@ -622,6 +676,33 @@ compute_dom_fast_query (enum cdi_direction dir)
   dom_computed[dir_index] = DOM_OK;
 }
 
+/* Analogous to the previous function but compute the data for reducible
+   region REGION.  */
+
+static void
+compute_dom_fast_query_in_region (enum cdi_direction dir,
+				  vec<basic_block> region)
+{
+  int num = 0;
+  basic_block bb;
+  unsigned int dir_index = dom_convert_dir_to_idx (dir);
+
+  gcc_checking_assert (dom_info_available_p (dir));
+
+  if (dom_computed[dir_index] == DOM_OK)
+    return;
+
+  /* Assign dfs numbers for region nodes except for entry and exit nodes.  */
+  for (unsigned int i = 1; i < region.length () - 1; i++)
+    {
+      bb = region[i];
+      if (!bb->dom[dir_index]->father)
+	assign_dfs_numbers (bb->dom[dir_index], &num);
+    }
+
+  dom_computed[dir_index] = DOM_OK;
+}
+
 /* The main entry point into this module.  DIR is set depending on whether
    we want to compute dominators or postdominators.  */
 
@@ -668,6 +749,43 @@ calculate_dominance_info (cdi_direction dir)
   timevar_pop (TV_DOMINANCE);
 }
 
+/* Analogous to the previous function but compute dominance info for regions
+   which are single entry, multiple exit regions for CDI_DOMINATORs and
+   multiple entry, single exit regions for CDI_POST_DOMINATORs.  */
+
+void
+calculate_dominance_info_for_region (cdi_direction dir,
+				     vec<basic_block> region)
+{
+  unsigned int dir_index = dom_convert_dir_to_idx (dir);
+  basic_block bb;
+  unsigned int i;
+
+  if (dom_computed[dir_index] == DOM_OK)
+    return;
+
+  timevar_push (TV_DOMINANCE);
+  /* Assume that dom info is not partially computed.  */
+  gcc_assert (!dom_info_available_p (dir));
+
+  FOR_EACH_VEC_ELT (region, i, bb)
+    {
+      bb->dom[dir_index] = et_new_tree (bb);
+    }
+  dom_info di (region, dir);
+  di.calc_dfs_tree ();
+  di.calc_idoms ();
+
+  FOR_EACH_VEC_ELT (region, i, bb)
+    if (basic_block d = di.get_idom (bb))
+      et_set_father (bb->dom[dir_index], d->dom[dir_index]);
+
+  dom_computed[dir_index] = DOM_NO_FAST_QUERY;
+  compute_dom_fast_query_in_region (dir, region);
+
+  timevar_pop (TV_DOMINANCE);
+}
+
 /* Free dominance information for direction DIR.  */
 void
 free_dominance_info (function *fn, enum cdi_direction dir)
@@ -694,6 +812,32 @@ void
 free_dominance_info (enum cdi_direction dir)
 {
   free_dominance_info (cfun, dir);
+}
+
+/* Free dominance information for direction DIR in region REGION.  */
+
+void
+free_dominance_info_for_region (function *fn,
+				enum cdi_direction dir,
+				vec<basic_block> region)
+{
+  basic_block bb;
+  unsigned int i;
+  unsigned int dir_index = dom_convert_dir_to_idx (dir);
+
+  if (!dom_info_available_p (dir))
+    return;
+
+  FOR_EACH_VEC_ELT (region, i, bb)
+    {
+      et_free_tree_force (bb->dom[dir_index]);
+      bb->dom[dir_index] = NULL;
+    }
+  et_free_pools ();
+
+  fn->cfg->x_dom_computed[dir_index] = DOM_NONE;
+
+  fn->cfg->x_n_bbs_in_dom_tree[dir_index] = 0;
 }
 
 /* Return the immediate dominator of basic block BB.  */

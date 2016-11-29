@@ -20,8 +20,6 @@
 #include <algorithm>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 const int N = 200000;
 int A[N], s1[N];
 

@@ -188,6 +188,16 @@ static const directive dtable[] =
 DIRECTIVE_TABLE
 };
 #undef D
+
+/* A NULL-terminated array of directive names for use
+   when suggesting corrections for misspelled directives.  */
+#define D(name, t, origin, flags) #name,
+static const char * const directive_names[] = {
+DIRECTIVE_TABLE
+  NULL
+};
+#undef D
+
 #undef DIRECTIVE_TABLE
 
 /* Wrapper struct directive for linemarkers.
@@ -498,8 +508,35 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
       if (CPP_OPTION (pfile, lang) == CLK_ASM)
 	skip = 0;
       else if (!pfile->state.skipping)
-	cpp_error (pfile, CPP_DL_ERROR, "invalid preprocessing directive #%s",
-		   cpp_token_as_text (pfile, dname));
+	{
+	  const char *unrecognized
+	    = (const char *)cpp_token_as_text (pfile, dname);
+	  const char *hint = NULL;
+
+	  /* Call back into gcc to get a spelling suggestion.  Ideally
+	     we'd just use best_match from gcc/spellcheck.h (and filter
+	     out the uncommon directives), but that requires moving it
+	     to a support library.  */
+	  if (pfile->cb.get_suggestion)
+	    hint = pfile->cb.get_suggestion (pfile, unrecognized,
+					     directive_names);
+
+	  if (hint)
+	    {
+	      rich_location richloc (pfile->line_table, dname->src_loc);
+	      source_range misspelled_token_range
+		= get_range_from_loc (pfile->line_table, dname->src_loc);
+	      richloc.add_fixit_replace (misspelled_token_range, hint);
+	      cpp_error_at_richloc (pfile, CPP_DL_ERROR, &richloc,
+				    "invalid preprocessing directive #%s;"
+				    " did you mean #%s?",
+				    unrecognized, hint);
+	    }
+	  else
+	    cpp_error (pfile, CPP_DL_ERROR,
+		       "invalid preprocessing directive #%s",
+		       unrecognized);
+	}
     }
 
   pfile->directive = dir;

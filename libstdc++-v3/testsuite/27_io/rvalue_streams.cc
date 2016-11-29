@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 #include <sstream>
 #include <string>

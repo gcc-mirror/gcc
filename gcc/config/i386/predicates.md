@@ -53,11 +53,6 @@
   (and (match_code "reg")
        (match_test "EXT_REX_SSE_REGNO_P (REGNO (op))")))
 
-;; True if the operand is an AVX-512 mask register.
-(define_predicate "mask_reg_operand"
-  (and (match_code "reg")
-       (match_test "MASK_REGNO_P (REGNO (op))")))
-
 ;; Return true if op is a QImode register.
 (define_predicate "any_QIreg_operand"
   (and (match_code "reg")

@@ -58,6 +58,17 @@ typedef long long __m256i __attribute__ ((__vector_size__ (32),
 typedef double __m256d __attribute__ ((__vector_size__ (32),
 				       __may_alias__));
 
+/* Unaligned version of the same types.  */
+typedef float __m256_u __attribute__ ((__vector_size__ (32),
+				       __may_alias__,
+				       __aligned__ (1)));
+typedef long long __m256i_u __attribute__ ((__vector_size__ (32),
+					    __may_alias__,
+					    __aligned__ (1)));
+typedef double __m256d_u __attribute__ ((__vector_size__ (32),
+					 __may_alias__,
+					 __aligned__ (1)));
+
 /* Compare predicates for scalar and packed compare intrinsics.  */
 
 /* Equal (ordered, non-signaling)  */
@@ -857,25 +868,25 @@ _mm256_store_ps (float *__P, __m256 __A)
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_loadu_pd (double const *__P)
 {
-  return (__m256d) __builtin_ia32_loadupd256 (__P);
+  return *(__m256d_u *)__P;
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_storeu_pd (double *__P, __m256d __A)
 {
-  __builtin_ia32_storeupd256 (__P, (__v4df)__A);
+  *(__m256d_u *)__P = __A;
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_loadu_ps (float const *__P)
 {
-  return (__m256) __builtin_ia32_loadups256 (__P);
+  return *(__m256_u *)__P;
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_storeu_ps (float *__P, __m256 __A)
 {
-  __builtin_ia32_storeups256 (__P, (__v8sf)__A);
+  *(__m256_u *)__P = __A;
 }
 
 extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -891,15 +902,15 @@ _mm256_store_si256 (__m256i *__P, __m256i __A)
 }
 
 extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_loadu_si256 (__m256i const *__P)
+_mm256_loadu_si256 (__m256i_u const *__P)
 {
-  return (__m256i) __builtin_ia32_loaddqu256 ((char const *)__P);
+  return *__P;
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_storeu_si256 (__m256i *__P, __m256i __A)
+_mm256_storeu_si256 (__m256i_u *__P, __m256i __A)
 {
-  __builtin_ia32_storedqu256 ((char *)__P, (__v32qi)__A);
+  *__P = __A;
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))

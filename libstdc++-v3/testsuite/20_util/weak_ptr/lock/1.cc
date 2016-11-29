@@ -22,8 +22,7 @@
 #include <memory>
 #include <testsuite_tr1.h>
 
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 int main()
 {

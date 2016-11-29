@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
@@ -23,8 +23,6 @@
 
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   std::nested_exception e;
 
   VERIFY( e.nested_ptr() == 0 );
@@ -32,8 +30,6 @@ void test01()
 
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
-
   try
   {
     throw 42;

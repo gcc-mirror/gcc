@@ -39,7 +39,6 @@ struct Ctype: std::ctype<char>
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   ostringstream oss;
   oss.imbue(locale(locale::classic(), new Ctype));

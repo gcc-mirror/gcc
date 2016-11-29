@@ -1328,7 +1328,7 @@ pop_scope (void)
 		set_type_context (TREE_TYPE (p), context);
 	    }
 
-	  /* Fall through.  */
+	  gcc_fallthrough ();
 	  /* Parameters go in DECL_ARGUMENTS, not BLOCK_VARS, and have
 	     already been put there by store_parm_decls.  Unused-
 	     parameter warnings are handled by function.c.
@@ -1867,7 +1867,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	      /* If types don't match for a built-in, throw away the
 		 built-in.  No point in calling locate_old_decl here, it
 		 won't print anything.  */
-	      warning (0, "conflicting types for built-in function %q+D",
+	      warning (OPT_Wbuiltin_declaration_mismatch,
+		       "conflicting types for built-in function %q+D",
 		       newdecl);
 	      return false;
 	    }
@@ -2373,7 +2374,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       /* Since the type is OLDDECL's, make OLDDECL's size go with.  */
       DECL_SIZE (newdecl) = DECL_SIZE (olddecl);
       DECL_SIZE_UNIT (newdecl) = DECL_SIZE_UNIT (olddecl);
-      DECL_MODE (newdecl) = DECL_MODE (olddecl);
+      SET_DECL_MODE (newdecl, DECL_MODE (olddecl));
       if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
 	{
 	  SET_DECL_ALIGN (newdecl, DECL_ALIGN (olddecl));
@@ -2735,7 +2736,9 @@ warn_if_shadowing (tree new_decl)
   struct c_binding *b;
 
   /* Shadow warnings wanted?  */
-  if (!warn_shadow
+  if (!(warn_shadow
+        || warn_shadow_local
+        || warn_shadow_compatible_local)
       /* No shadow warnings for internally generated vars.  */
       || DECL_IS_BUILTIN (new_decl)
       /* No shadow warnings for vars made for inlining.  */
@@ -2759,9 +2762,23 @@ warn_if_shadowing (tree new_decl)
 	    break;
 	  }
 	else if (TREE_CODE (old_decl) == PARM_DECL)
-	  warned = warning (OPT_Wshadow,
-			    "declaration of %q+D shadows a parameter",
-			    new_decl);
+	  {
+	    enum opt_code warning_code;
+
+	    /* If '-Wshadow=compatible-local' is specified without other
+	       -Wshadow= flags, we will warn only when the types of the
+	       shadowing variable (i.e. new_decl) and the shadowed variable
+	       (old_decl) are compatible.  */
+	    if (warn_shadow)
+	      warning_code = OPT_Wshadow;
+	    else if (comptypes (TREE_TYPE (old_decl), TREE_TYPE (new_decl)))
+	      warning_code = OPT_Wshadow_compatible_local;
+	    else
+	      warning_code = OPT_Wshadow_local;
+	    warned = warning_at (DECL_SOURCE_LOCATION (new_decl), warning_code,
+				 "declaration of %qD shadows a parameter",
+				 new_decl);
+	  }
 	else if (DECL_FILE_SCOPE_P (old_decl))
 	  {
 	    /* Do not warn if a variable shadows a function, unless
@@ -2784,8 +2801,23 @@ warn_if_shadowing (tree new_decl)
 	    break;
 	  }
 	else
-	  warned = warning (OPT_Wshadow, "declaration of %q+D shadows a "
-			    "previous local", new_decl);
+	  {
+	    enum opt_code warning_code;
+
+	    /* If '-Wshadow=compatible-local' is specified without other
+	       -Wshadow= flags, we will warn only when the types of the
+	       shadowing variable (i.e. new_decl) and the shadowed variable
+	       (old_decl) are compatible.  */
+	    if (warn_shadow)
+	      warning_code = OPT_Wshadow;
+	    else if (comptypes (TREE_TYPE (old_decl), TREE_TYPE (new_decl)))
+	      warning_code = OPT_Wshadow_compatible_local;
+	    else
+	      warning_code = OPT_Wshadow_local;
+	    warned = warning_at (DECL_SOURCE_LOCATION (new_decl), warning_code,
+				 "declaration of %qD shadows a previous local",
+				 new_decl);
+	  }
 
 	if (warned)
 	  inform (DECL_SOURCE_LOCATION (old_decl),
@@ -3096,7 +3128,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	if (hint)
 	  {
 	    gcc_rich_location richloc (loc);
-	    richloc.add_fixit_misspelled_id (loc, hint);
+	    richloc.add_fixit_replace (hint);
 	    warned = pedwarn_at_rich_loc
 	      (&richloc, OPT_Wimplicit_function_declaration,
 	       "implicit declaration of function %qE; did you mean %qs?",
@@ -3109,7 +3141,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	if (hint)
 	  {
 	    gcc_rich_location richloc (loc);
-	    richloc.add_fixit_misspelled_id (loc, hint);
+	    richloc.add_fixit_replace (hint);
 	    warned = warning_at_rich_loc
 	      (&richloc, OPT_Wimplicit_function_declaration,
 	       G_("implicit declaration of function %qE;did you mean %qs?"),
@@ -3327,7 +3359,7 @@ implicitly_declare (location_t loc, tree functionid)
 
   if (decl)
     {
-      if (decl == error_mark_node)
+      if (TREE_CODE (decl) != FUNCTION_DECL)
 	return decl;
 
       /* FIXME: Objective-C has weird not-really-builtin functions
@@ -3437,7 +3469,7 @@ undeclared_variable (location_t loc, tree id)
       if (guessed_id)
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_misspelled_id (loc, guessed_id);
+	  richloc.add_fixit_replace (guessed_id);
 	  error_at_rich_loc (&richloc,
 			     "%qE undeclared here (not in a function);"
 			     " did you mean %qs?",
@@ -3455,7 +3487,7 @@ undeclared_variable (location_t loc, tree id)
 	  if (guessed_id)
 	    {
 	      gcc_rich_location richloc (loc);
-	      richloc.add_fixit_misspelled_id (loc, guessed_id);
+	      richloc.add_fixit_replace (guessed_id);
 	      error_at_rich_loc
 		(&richloc,
 		 "%qE undeclared (first use in this function);"
@@ -3490,7 +3522,7 @@ make_label (location_t location, tree name, bool defining,
 {
   tree label = build_decl (location, LABEL_DECL, name, void_type_node);
   DECL_CONTEXT (label) = current_function_decl;
-  DECL_MODE (label) = VOIDmode;
+  SET_DECL_MODE (label, VOIDmode);
 
   c_label_vars *label_vars = ggc_alloc<c_label_vars> ();
   label_vars->shadowed = NULL;
@@ -5102,7 +5134,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  vec<tree, va_gc> *v;
 
 	  /* Build "cleanup(&decl)" for the destructor.  */
-	  cleanup = build_unary_op (input_location, ADDR_EXPR, decl, 0);
+	  cleanup = build_unary_op (input_location, ADDR_EXPR, decl, false);
 	  vec_alloc (v, 1);
 	  v->quick_push (cleanup);
 	  cleanup = c_build_function_call_vec (DECL_SOURCE_LOCATION (decl),
@@ -5446,6 +5478,27 @@ warn_defaults_to (location_t location, int opt, const char *gmsgid, ...)
   diagnostic.option_index = opt;
   report_diagnostic (&diagnostic);
   va_end (ap);
+}
+
+/* Returns the smallest location != UNKNOWN_LOCATION in LOCATIONS,
+   considering only those c_declspec_words found in LIST, which
+   must be terminated by cdw_number_of_elements.  */
+
+static location_t
+smallest_type_quals_location (const location_t *locations,
+			      const c_declspec_word *list)
+{
+  location_t loc = UNKNOWN_LOCATION;
+  while (*list != cdw_number_of_elements)
+    {
+      location_t newloc = locations[*list];
+      if (loc == UNKNOWN_LOCATION
+	  || (newloc != UNKNOWN_LOCATION && newloc < loc))
+	loc = newloc;
+      list++;
+    }
+
+  return loc;
 }
 
 /* Given declspecs and a declarator,
@@ -6262,7 +6315,19 @@ grokdeclarator (const struct c_declarator *declarator,
 	       qualify the return type, not the function type.  */
 	    if (type_quals)
 	      {
-		int quals_used = type_quals;
+		const enum c_declspec_word ignored_quals_list[] =
+		  {
+		    cdw_const, cdw_volatile, cdw_restrict, cdw_address_space,
+		    cdw_atomic, cdw_number_of_elements
+		  };
+		location_t specs_loc
+		  = smallest_type_quals_location (declspecs->locations,
+						  ignored_quals_list);
+		if (specs_loc == UNKNOWN_LOCATION)
+		  specs_loc = declspecs->locations[cdw_typedef];
+		if (specs_loc == UNKNOWN_LOCATION)
+		  specs_loc = loc;
+
 		/* Type qualifiers on a function return type are
 		   normally permitted by the standard but have no
 		   effect, so give a warning at -Wreturn-type.
@@ -6272,13 +6337,14 @@ grokdeclarator (const struct c_declarator *declarator,
 		   DR#423 means qualifiers (other than _Atomic) are
 		   actually removed from the return type when
 		   determining the function type.  */
+		int quals_used = type_quals;
 		if (flag_isoc11)
 		  quals_used &= TYPE_QUAL_ATOMIC;
 		if (quals_used && VOID_TYPE_P (type) && really_funcdef)
-		  pedwarn (loc, 0,
+		  pedwarn (specs_loc, 0,
 			   "function definition has qualified void return type");
 		else
-		  warning_at (loc, OPT_Wignored_qualifiers,
+		  warning_at (specs_loc, OPT_Wignored_qualifiers,
 			   "type qualifiers ignored on function return type");
 
 		/* Ensure an error for restrict on invalid types; the
@@ -6710,6 +6776,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	    type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 	    TYPE_DOMAIN (type) = build_range_type (sizetype, size_zero_node,
 						   NULL_TREE);
+	    if (orig_qual_indirect == 0)
+	      orig_qual_type = NULL_TREE;
 	  }
 	type = c_build_qualified_type (type, type_quals, orig_qual_type,
 				       orig_qual_indirect);
@@ -7880,7 +7948,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  else if (!saw_named_field)
 	    {
 	      error_at (DECL_SOURCE_LOCATION (x),
-			"flexible array member in otherwise empty struct");
+			"flexible array member in a struct with no named "
+			"members");
 	      TREE_TYPE (x) = error_mark_node;
 	    }
 	}
@@ -7927,7 +7996,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	    {
 	      TREE_TYPE (field)
 		= c_build_bitfield_integer_type (width, TYPE_UNSIGNED (type));
-	      DECL_MODE (field) = TYPE_MODE (TREE_TYPE (field));
+	      SET_DECL_MODE (field, TYPE_MODE (TREE_TYPE (field)));
 	    }
 	  DECL_INITIAL (field) = 0;
 	}
@@ -9262,7 +9331,9 @@ finish_function (void)
 
   /* For GNU C extern inline functions disregard inline limits.  */
   if (DECL_EXTERNAL (fndecl)
-      && DECL_DECLARED_INLINE_P (fndecl))
+      && DECL_DECLARED_INLINE_P (fndecl)
+      && (flag_gnu89_inline
+	  || lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (fndecl))))
     DECL_DISREGARD_INLINE_LIMITS (fndecl) = 1;
 
   /* Genericize before inlining.  Delay genericizing nested functions
@@ -9799,6 +9870,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<float%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<long%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<long%> and %<_Decimal32%> in "
@@ -9852,6 +9931,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<short%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<short%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
                 error_at (loc,
 			  ("both %<short%> and %<_Decimal32%> in "
@@ -9896,6 +9983,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<signed%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<signed%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<signed%> and %<_Decimal32%> in "
@@ -9940,6 +10035,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<unsigned%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<unsigned%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<unsigned%> and %<_Decimal32%> in "
@@ -10044,6 +10147,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<_Sat%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<_Sat%> and %<_Decimal32%> in "
@@ -10077,8 +10188,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	}
       else
 	{
-	  /* "void", "_Bool", "char", "int", "float", "double", "_Decimal32",
-	     "__intN", "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
+	  /* "void", "_Bool", "char", "int", "float", "double",
+	     "_FloatN", "_FloatNx", "_Decimal32", "__intN",
+	     "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
 	     "__auto_type".  */
 	  if (specs->typespec_word != cts_none)
 	    {
@@ -10144,10 +10256,13 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<__int%d%> and %<short%> in "
 			   "declaration specifiers"),
 			  int_n_data[specs->int_n_idx].bitsize);
-	      else if (! int_n_enabled_p [specs->int_n_idx])
-		error_at (loc,
-			  "%<__int%d%> is not supported on this target",
-			  int_n_data[specs->int_n_idx].bitsize);
+	      else if (! int_n_enabled_p[specs->int_n_idx])
+		{
+		  specs->typespec_word = cts_int_n;
+		  error_at (loc,
+			    "%<__int%d%> is not supported on this target",
+			    int_n_data[specs->int_n_idx].bitsize);
+		}
 	      else
 		{
 		  specs->typespec_word = cts_int_n;
@@ -10300,6 +10415,72 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else
 		{
 		  specs->typespec_word = cts_double;
+		  specs->locations[cdw_typespec] = loc;
+		}
+	      return specs;
+	    CASE_RID_FLOATN_NX:
+	      specs->floatn_nx_idx = i - RID_FLOATN_NX_FIRST;
+	      if (!in_system_header_at (input_location))
+		pedwarn (loc, OPT_Wpedantic,
+			 "ISO C does not support the %<_Float%d%s%> type",
+			 floatn_nx_types[specs->floatn_nx_idx].n,
+			 (floatn_nx_types[specs->floatn_nx_idx].extended
+			  ? "x"
+			  : ""));
+
+	      if (specs->long_p)
+		error_at (loc,
+			  ("both %<long%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->short_p)
+		error_at (loc,
+			  ("both %<short%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->signed_p)
+		error_at (loc,
+			  ("both %<signed%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->unsigned_p)
+		error_at (loc,
+			  ("both %<unsigned%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->saturating_p)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx) == NULL_TREE)
+		{
+		  specs->typespec_word = cts_floatn_nx;
+		  error_at (loc,
+			    "%<_Float%d%s%> is not supported on this target",
+			    floatn_nx_types[specs->floatn_nx_idx].n,
+			    (floatn_nx_types[specs->floatn_nx_idx].extended
+			     ? "x"
+			     : ""));
+		}
+	      else
+		{
+		  specs->typespec_word = cts_floatn_nx;
 		  specs->locations[cdw_typespec] = loc;
 		}
 	      return specs;
@@ -10779,6 +10960,16 @@ finish_declspecs (struct c_declspecs *specs)
 			 ? complex_double_type_node
 			 : double_type_node);
 	}
+      break;
+    case cts_floatn_nx:
+      gcc_assert (!specs->long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p);
+      if (FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx) == NULL_TREE)
+	specs->type = integer_type_node;
+      else if (specs->complex_p)
+	specs->type = COMPLEX_FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx);
+      else
+	specs->type = FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx);
       break;
     case cts_dfloat32:
     case cts_dfloat64:

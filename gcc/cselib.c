@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -805,7 +806,6 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
 
       *off = GEN_INT (-GET_MODE_SIZE (memmode));
       return XEXP (x, 0);
-      break;
 
     case PRE_INC:
       if (memmode == VOIDmode)
@@ -945,7 +945,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
       return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
 
     case REG:
       return REGNO (x) == REGNO (y);
@@ -1154,7 +1154,7 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
       /* We don't hash on the address of the CODE_LABEL to avoid bootstrap
 	 differences and differences between each stage's debugging dumps.  */
       hash += (((unsigned int) LABEL_REF << 7)
-	       + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x)));
+	       + CODE_LABEL_NUMBER (label_ref_label (x)));
       return hash ? hash : (unsigned int) LABEL_REF;
 
     case SYMBOL_REF:
@@ -1618,6 +1618,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 	      else
 		return orig;
 	    }
+	return orig;
       }
 
     CASE_CONST_ANY:
@@ -2659,6 +2660,13 @@ cselib_process_insn (rtx_insn *insn)
       if (RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
 	  || !(RTL_CONST_OR_PURE_CALL_P (insn)))
 	cselib_invalidate_mem (callmem);
+      else
+	/* For const/pure calls, invalidate any argument slots because
+	   they are owned by the callee.  */
+	for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
+	  if (GET_CODE (XEXP (x, 0)) == USE
+	      && MEM_P (XEXP (XEXP (x, 0), 0)))
+	    cselib_invalidate_mem (XEXP (XEXP (x, 0), 0));
     }
 
   cselib_record_sets (insn);

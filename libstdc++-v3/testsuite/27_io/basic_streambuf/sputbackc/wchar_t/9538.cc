@@ -29,7 +29,6 @@ class MyTraits : public std::char_traits<wchar_t>
 public:
   static bool eq(wchar_t c1, wchar_t c2)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( c1 != L'X' );
     VERIFY( c2 != L'X' );
     return std::char_traits<wchar_t>::eq(c1, c2);
@@ -52,8 +51,6 @@ public:
 // libstdc++/9538
 void test08()
 {
-  bool test __attribute__((unused)) = true;
-
   MyBuf mb;
   mb.sputbackc(L'a');
 }

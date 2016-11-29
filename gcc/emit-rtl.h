@@ -104,7 +104,7 @@ struct GTY(()) rtl_data {
 
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
-  rtx_expr_list *x_stack_slot_list;
+  vec<rtx, va_gc> *x_stack_slot_list;
 
   /* List of empty areas in the stack frame.  */
   struct frame_space *frame_space_list;
@@ -254,6 +254,10 @@ struct GTY(()) rtl_data {
   /* True if we performed shrink-wrapping for the current function.  */
   bool shrink_wrapped;
 
+  /* True if we performed shrink-wrapping for separate components for
+     the current function.  */
+  bool shrink_wrapped_separate;
+
   /* Nonzero if function being compiled doesn't modify the stack pointer
      (ignoring the prologue and epilogue).  This is only valid after
      pass_stack_ptr_mod has run.  */
@@ -284,6 +288,9 @@ struct GTY(()) rtl_data {
      to eliminable regs (like the frame pointer) are set if an asm
      sets them.  */
   HARD_REG_SET asm_clobbers;
+
+  /* The highest address seen during shorten_branches.  */
+  int max_insn_address;
 };
 
 #define return_label (crtl->x_return_label)

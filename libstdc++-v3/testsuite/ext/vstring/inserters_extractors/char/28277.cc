@@ -32,7 +32,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   ostringstream oss_01;
   const __gnu_cxx::__vstring str_01(50, 'a');

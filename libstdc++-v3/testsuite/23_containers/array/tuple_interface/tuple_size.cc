@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -24,8 +23,7 @@
 
 void
 test01() 
-{ 
-  bool test __attribute__((unused)) = true;
+{
   using std::array;
   using std::tuple_size;
   // This relies on the fact that <utility> includes <type_traits>:

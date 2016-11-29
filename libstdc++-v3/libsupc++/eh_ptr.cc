@@ -63,33 +63,31 @@ static_assert( adjptr<__cxa_exception>()
 #endif
 }
 
-std::__exception_ptr::exception_ptr::exception_ptr() _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::exception_ptr() noexcept
 : _M_exception_object(0) { }
 
 
-std::__exception_ptr::exception_ptr::exception_ptr(void* obj)
-_GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::exception_ptr(void* obj) noexcept
 : _M_exception_object(obj)  { _M_addref(); }
 
 
-std::__exception_ptr::exception_ptr::exception_ptr(__safe_bool)
-_GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::exception_ptr(__safe_bool) noexcept
 : _M_exception_object(0) { }
 
 
 std::__exception_ptr::
-exception_ptr::exception_ptr(const exception_ptr& other) _GLIBCXX_USE_NOEXCEPT
+exception_ptr::exception_ptr(const exception_ptr& other) noexcept
 : _M_exception_object(other._M_exception_object)
 { _M_addref(); }
 
 
-std::__exception_ptr::exception_ptr::~exception_ptr() _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::~exception_ptr() noexcept
 { _M_release(); }
 
 
 std::__exception_ptr::exception_ptr&
 std::__exception_ptr::
-exception_ptr::operator=(const exception_ptr& other) _GLIBCXX_USE_NOEXCEPT
+exception_ptr::operator=(const exception_ptr& other) noexcept
 {
   exception_ptr(other).swap(*this);
   return *this;
@@ -97,7 +95,7 @@ exception_ptr::operator=(const exception_ptr& other) _GLIBCXX_USE_NOEXCEPT
 
 
 void
-std::__exception_ptr::exception_ptr::_M_addref() _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::_M_addref() noexcept
 {
   if (_M_exception_object)
     {
@@ -109,7 +107,7 @@ std::__exception_ptr::exception_ptr::_M_addref() _GLIBCXX_USE_NOEXCEPT
 
 
 void
-std::__exception_ptr::exception_ptr::_M_release() _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::_M_release() noexcept
 {
   if (_M_exception_object)
     {
@@ -128,13 +126,12 @@ std::__exception_ptr::exception_ptr::_M_release() _GLIBCXX_USE_NOEXCEPT
 
 
 void*
-std::__exception_ptr::exception_ptr::_M_get() const _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::_M_get() const noexcept
 { return _M_exception_object; }
 
 
 void
-std::__exception_ptr::exception_ptr::swap(exception_ptr &other)
-  _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::swap(exception_ptr &other) noexcept
 {
   void *tmp = _M_exception_object;
   _M_exception_object = other._M_exception_object;
@@ -144,27 +141,24 @@ std::__exception_ptr::exception_ptr::swap(exception_ptr &other)
 
 // Retained for compatibility with CXXABI_1.3.
 void
-std::__exception_ptr::exception_ptr::_M_safe_bool_dummy()
-  _GLIBCXX_USE_NOEXCEPT { }
+std::__exception_ptr::exception_ptr::_M_safe_bool_dummy() noexcept { }
 
 
 // Retained for compatibility with CXXABI_1.3.
 bool
-std::__exception_ptr::exception_ptr::operator!() const _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::operator!() const noexcept
 { return _M_exception_object == 0; }
 
 
 // Retained for compatibility with CXXABI_1.3.
-std::__exception_ptr::exception_ptr::operator __safe_bool() const
-_GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::operator __safe_bool() const noexcept
 {
   return _M_exception_object ? &exception_ptr::_M_safe_bool_dummy : 0;
 }
 
 
 const std::type_info*
-std::__exception_ptr::exception_ptr::__cxa_exception_type() const
-  _GLIBCXX_USE_NOEXCEPT
+std::__exception_ptr::exception_ptr::__cxa_exception_type() const noexcept
 {
   __cxa_exception *eh = __get_exception_header_from_obj (_M_exception_object);
   return eh->exceptionType;
@@ -172,19 +166,17 @@ std::__exception_ptr::exception_ptr::__cxa_exception_type() const
 
 
 bool std::__exception_ptr::operator==(const exception_ptr& lhs,
-				      const exception_ptr& rhs)
-  _GLIBCXX_USE_NOEXCEPT
+				      const exception_ptr& rhs) noexcept
 { return lhs._M_exception_object == rhs._M_exception_object; }
 
 
 bool std::__exception_ptr::operator!=(const exception_ptr& lhs,
-				      const exception_ptr& rhs)
-  _GLIBCXX_USE_NOEXCEPT
+				      const exception_ptr& rhs) noexcept
 { return !(lhs == rhs);}
 
 
 std::exception_ptr
-std::current_exception() _GLIBCXX_USE_NOEXCEPT
+std::current_exception() noexcept
 {
   __cxa_eh_globals *globals = __cxa_get_globals ();
   __cxa_exception *header = globals->caughtExceptions;

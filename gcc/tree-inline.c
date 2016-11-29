@@ -163,7 +163,7 @@ insert_debug_decl_map (copy_body_data *id, tree key, tree value)
     return;
 
   gcc_assert (TREE_CODE (key) == PARM_DECL);
-  gcc_assert (TREE_CODE (value) == VAR_DECL);
+  gcc_assert (VAR_P (value));
 
   if (!id->debug_map)
     id->debug_map = new hash_map<tree, tree>;
@@ -214,7 +214,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (name);
-	  DECL_MODE (vexpr) = DECL_MODE (SSA_NAME_VAR (name));
+	  SET_DECL_MODE (vexpr, DECL_MODE (SSA_NAME_VAR (name)));
 	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
 	  return vexpr;
@@ -228,7 +228,7 @@ remap_ssa_name (tree name, copy_body_data *id)
   var = SSA_NAME_VAR (name);
   if (!var
       || (!SSA_NAME_IS_DEFAULT_DEF (name)
-	  && TREE_CODE (var) == VAR_DECL
+	  && VAR_P (var)
 	  && !VAR_DECL_IS_VIRTUAL_OPERAND (var)
 	  && DECL_ARTIFICIAL (var)
 	  && DECL_IGNORED_P (var)
@@ -244,6 +244,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* At least IPA points-to info can be directly transferred.  */
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta
+	  && POINTER_TYPE_P (TREE_TYPE (name))
 	  && (pi = SSA_NAME_PTR_INFO (name))
 	  && !pi->pt.anything)
 	{
@@ -263,7 +264,7 @@ remap_ssa_name (tree name, copy_body_data *id)
      Replace the SSA name representing RESULT_DECL by variable during
      inlining:  this saves us from need to introduce PHI node in a case
      return value is just partly initialized.  */
-  if ((TREE_CODE (new_tree) == VAR_DECL || TREE_CODE (new_tree) == PARM_DECL)
+  if ((VAR_P (new_tree) || TREE_CODE (new_tree) == PARM_DECL)
       && (!SSA_NAME_VAR (name)
 	  || TREE_CODE (SSA_NAME_VAR (name)) != RESULT_DECL
 	  || !id->transform_return_to_modify))
@@ -276,6 +277,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* At least IPA points-to info can be directly transferred.  */
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta
+	  && POINTER_TYPE_P (TREE_TYPE (name))
 	  && (pi = SSA_NAME_PTR_INFO (name))
 	  && !pi->pt.anything)
 	{
@@ -605,8 +607,7 @@ can_be_nonlocal (tree decl, copy_body_data *id)
 
   /* Local static vars must be non-local or we get multiple declaration
      problems.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && !auto_var_in_fn_p (decl, id->src_fn))
+  if (VAR_P (decl) && !auto_var_in_fn_p (decl, id->src_fn))
     return true;
 
   return false;
@@ -628,9 +629,7 @@ remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	{
 	  /* We need to add this variable to the local decls as otherwise
 	     nothing else will do so.  */
-	  if (TREE_CODE (old_var) == VAR_DECL
-	      && ! DECL_EXTERNAL (old_var)
-	      && cfun)
+	  if (VAR_P (old_var) && ! DECL_EXTERNAL (old_var) && cfun)
 	    add_local_decl (cfun, old_var);
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
@@ -662,8 +661,7 @@ remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	  new_decls = new_var;
  
 	  /* Also copy value-expressions.  */
-	  if (TREE_CODE (new_var) == VAR_DECL
-	      && DECL_HAS_VALUE_EXPR_P (new_var))
+	  if (VAR_P (new_var) && DECL_HAS_VALUE_EXPR_P (new_var))
 	    {
 	      tree tem = DECL_VALUE_EXPR (new_var);
 	      bool old_regimplify = id->regimplify;
@@ -1047,6 +1045,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
   copy_body_data *id = (copy_body_data *) data;
   tree fn = id->src_fn;
   tree new_block;
+  bool copied = false;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
@@ -1243,10 +1242,40 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  *walk_subtrees = 0;
 	  return NULL;
 	}
+      else if (TREE_CODE (*tp) == COND_EXPR)
+	{
+	  tree cond = TREE_OPERAND (*tp, 0);
+	  walk_tree (&cond, copy_tree_body_r, data, NULL);
+	  tree folded = fold (cond);
+	  if (TREE_CODE (folded) == INTEGER_CST)
+	    {
+	      /* Only copy the taken branch; for a C++ base constructor clone
+		 inherited from a virtual base, copying the other branch leads
+		 to references to parameters that were optimized away.  */
+	      tree branch = (integer_nonzerop (folded)
+			     ? TREE_OPERAND (*tp, 1)
+			     : TREE_OPERAND (*tp, 2));
+	      tree type = TREE_TYPE (*tp);
+	      if (VOID_TYPE_P (type)
+		  || type == TREE_TYPE (branch))
+		{
+		  *tp = branch;
+		  return copy_tree_body_r (tp, walk_subtrees, data);
+		}
+	    }
+	  /* Avoid copying the condition twice.  */
+	  copy_tree_r (tp, walk_subtrees, NULL);
+	  TREE_OPERAND (*tp, 0) = cond;
+	  walk_tree (&TREE_OPERAND (*tp, 1), copy_tree_body_r, data, NULL);
+	  walk_tree (&TREE_OPERAND (*tp, 2), copy_tree_body_r, data, NULL);
+	  *walk_subtrees = 0;
+	  copied = true;
+	}
 
       /* Here is the "usual case".  Copy this tree node, and then
 	 tweak some special cases.  */
-      copy_tree_r (tp, walk_subtrees, NULL);
+      if (!copied)
+	copy_tree_r (tp, walk_subtrees, NULL);
 
       /* If EXPR has block defined, map it to newly constructed block.
          When inlining we want EXPRs without block appear in the block
@@ -1642,11 +1671,19 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    gimple_call_set_tail (call_stmt, false);
 	  if (gimple_call_from_thunk_p (call_stmt))
 	    gimple_call_set_from_thunk (call_stmt, false);
-	  if (gimple_call_internal_p (call_stmt)
-	      && IN_RANGE (gimple_call_internal_fn (call_stmt),
-			   IFN_GOMP_SIMD_ORDERED_START,
-			   IFN_GOMP_SIMD_ORDERED_END))
-	    DECL_STRUCT_FUNCTION (id->dst_fn)->has_simduid_loops = true;
+	  if (gimple_call_internal_p (call_stmt))
+	    switch (gimple_call_internal_fn (call_stmt))
+	      {
+	      case IFN_GOMP_SIMD_LANE:
+	      case IFN_GOMP_SIMD_VF:
+	      case IFN_GOMP_SIMD_LAST_LANE:
+	      case IFN_GOMP_SIMD_ORDERED_START:
+	      case IFN_GOMP_SIMD_ORDERED_END:
+		DECL_STRUCT_FUNCTION (id->dst_fn)->has_simduid_loops = true;
+	        break;
+	      default:
+		break;
+	      }
 	}
 
       /* Remap the region numbers for __builtin_eh_{pointer,filter},
@@ -2866,12 +2903,10 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
   if (TREE_CODE (t) == PARM_DECL && id->debug_map
       && (n = id->debug_map->get (t)))
     {
-      gcc_assert (TREE_CODE (*n) == VAR_DECL);
+      gcc_assert (VAR_P (*n));
       t = *n;
     }
-  else if (TREE_CODE (t) == VAR_DECL
-	   && !is_global_var (t)
-	   && !id->decl_map->get (t))
+  else if (VAR_P (t) && !is_global_var (t) && !id->decl_map->get (t))
     /* T is a non-localized variable.  */;
   else
     walk_tree (&t, remap_gimple_op_r, &wi, NULL);
@@ -3267,8 +3302,7 @@ initialize_inlined_parameters (copy_body_data *id, gimple *stmt,
   for (p = parms, i = 0; p; p = DECL_CHAIN (p), i++)
     {
       tree *varp = id->decl_map->get (p);
-      if (varp
-	  && TREE_CODE (*varp) == VAR_DECL)
+      if (varp && VAR_P (*varp))
 	{
 	  tree def = (gimple_in_ssa_p (cfun) && is_gimple_reg (p)
 		      ? ssa_default_def (id->src_cfun, p) : NULL);
@@ -4287,7 +4321,7 @@ add_local_variables (struct function *callee, struct function *caller,
         tree new_var = remap_decl (var, id);
 
         /* Remap debug-expressions.  */
-	if (TREE_CODE (new_var) == VAR_DECL
+	if (VAR_P (new_var)
 	    && DECL_HAS_DEBUG_EXPR_P (var)
 	    && new_var != var)
 	  {
@@ -4315,7 +4349,7 @@ reset_debug_binding (copy_body_data *id, tree srcvar, gimple_seq *bindings)
   if (!remappedvarp)
     return;
 
-  if (TREE_CODE (*remappedvarp) != VAR_DECL)
+  if (!VAR_P (*remappedvarp))
     return;
 
   if (*remappedvarp == id->retvar || *remappedvarp == id->retbnd)
@@ -5192,8 +5226,7 @@ replace_locals_op (tree *tp, int *walk_subtrees, void *data)
 	SSA_NAME_DEF_STMT (*tp) = gsi_stmt (wi->gsi);
     }
   /* Only a local declaration (variable or label).  */
-  else if ((TREE_CODE (expr) == VAR_DECL
-	    && !TREE_STATIC (expr))
+  else if ((VAR_P (expr) && !TREE_STATIC (expr))
 	   || TREE_CODE (expr) == LABEL_DECL)
     {
       /* Lookup the declaration.  */
@@ -6037,7 +6070,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	    ddecl = make_node (DEBUG_EXPR_DECL);
 	    DECL_ARTIFICIAL (ddecl) = 1;
 	    TREE_TYPE (ddecl) = TREE_TYPE (parm);
-	    DECL_MODE (ddecl) = DECL_MODE (parm);
+	    SET_DECL_MODE (ddecl, DECL_MODE (parm));
 	    vec_safe_push (*debug_args, DECL_ORIGIN (parm));
 	    vec_safe_push (*debug_args, ddecl);
 	  }
@@ -6069,7 +6102,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      parm = (**debug_args)[i];
 	      DECL_ARTIFICIAL (vexpr) = 1;
 	      TREE_TYPE (vexpr) = TREE_TYPE (parm);
-	      DECL_MODE (vexpr) = DECL_MODE (parm);
+	      SET_DECL_MODE (vexpr, DECL_MODE (parm));
 	      def_temp = gimple_build_debug_bind (var, vexpr, NULL);
 	      gsi_insert_before (&cgsi, def_temp, GSI_NEW_STMT);
 	      def_temp = gimple_build_debug_source_bind (vexpr, parm, NULL);

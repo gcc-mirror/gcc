@@ -39,6 +39,11 @@ set save-dg-do-what-default ${dg-do-what-default}
 global DEFAULT_VECTCFLAGS
 set DEFAULT_VECTCFLAGS ""
 
+# Set up a list of effective targets to run vector tests for all supported
+# targets.
+global EFFECTIVE_TARGETS
+set EFFECTIVE_TARGETS ""
+
 # These flags are used for all targets.
 lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fno-vect-cost-model"
 
@@ -58,10 +63,10 @@ lappend VECT_SLP_CFLAGS "-fdump-tree-slp-details"
 dg-init
 
 # Main loop.
-g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/{pr,simd}*.{c,cc,S} ]] \
-        "" $DEFAULT_VECTCFLAGS
-g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/slp-pr*.{c,cc,S} ]] \
-        "" $VECT_SLP_CFLAGS
+et-dg-runtest g++-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/{pr,simd}*.{c,cc,S} ]] "" $DEFAULT_VECTCFLAGS
+et-dg-runtest g++-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/slp-pr*.{c,cc,S} ]] "" $VECT_SLP_CFLAGS
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS
@@ -70,8 +75,8 @@ set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
 # --param max-aliased-vops=0
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "--param max-aliased-vops=0"
-g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/param-max-aliased*.\[cS\]]]  \
-        "" $DEFAULT_VECTCFLAGS
+et-dg-runtest g++-dg-runtest [lsort [glob -nocomplain \
+	$srcdir/$subdir/param-max-aliased*.\[cS\]]] "" $DEFAULT_VECTCFLAGS
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default} 

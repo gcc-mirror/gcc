@@ -26,7 +26,6 @@ std::wstringbuf strb_01(str_01);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::wstring 		str_tmp;
   std::streamsize 		strmsz_1, strmsz_2;
   typedef std::wstringbuf::int_type int_type;

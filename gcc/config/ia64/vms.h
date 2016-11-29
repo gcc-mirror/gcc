@@ -154,6 +154,3 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 /* Default values for _CRTL_VER and _VMS_VER.  */
 #define VMS_DEFAULT_CRTL_VER 80300000
 #define VMS_DEFAULT_VMS_VER 80300000
-
-#define IA64_NO_LIBGCC_XFMODE
-#define IA64_NO_LIBGCC_TFMODE

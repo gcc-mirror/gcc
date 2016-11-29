@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-06-21  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex  re("(a+)", std::regex::extended);
   const char target[] = "aa";
   std::cmatch m;

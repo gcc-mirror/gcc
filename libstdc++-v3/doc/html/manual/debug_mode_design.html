@@ -352,8 +352,7 @@ test02()
       declarations disallow specialization. This method fails
       the <span class="emphasis"><em>correctness</em></span> criteria.</p></li><li class="listitem"><p><span class="emphasis"><em> Use implementation-specific properties of anonymous
     namespaces. </em></span>
-    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html" target="_top"> this post
-    </a>
+    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html" target="_top">this post</a>.
     This method fails the <span class="emphasis"><em>correctness</em></span> criteria.</p></li><li class="listitem"><p><span class="emphasis"><em>Extension: allow reopening on namespaces</em></span>: This would
     allow the debug mode to effectively alias the
     namespace <code class="code">std</code> to an internal namespace, such
@@ -365,8 +364,8 @@ test02()
     instance, the program would have two <code class="code">std::cout</code>
     objects! This solution would fails the <span class="emphasis"><em>minimize
     recompilation</em></span> requirement, because we would only be able to
-    support option (1) or (2).</p></li><li class="listitem"><p><span class="emphasis"><em>Extension: use link name</em></span>: This option involves
-    complicated re-naming between debug-mode and release-mode
+    support option (1) or (2).</p></li><li class="listitem"><p><span class="emphasis"><em>Extension: use link name</em></span>: This option
+    involves complicated re-naming between debug-mode and release-mode
     components at compile time, and then a g++ extension called <span class="emphasis"><em>
     link name </em></span> to recover the original names at link time. There
     are two drawbacks to this approach. One, it's very verbose,
@@ -375,8 +374,8 @@ test02()
     functions taking no arguments in mixed-mode settings resulting in
     equivalent link names, <code class="code"> vector::push_back() </code> being
     one example.
-    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html" target="_top">link
-    name</a> </p></li></ul></div><p>Other options may exist for implementing the debug mode, many of
+    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html" target="_top">proof-of-concept using link
+    name</a>. </p></li></ul></div><p>Other options may exist for implementing the debug mode, many of
   which have probably been considered and others that may still be
   lurking. This list may be expanded over time to include other
   options that we could have implemented, but in all cases the full

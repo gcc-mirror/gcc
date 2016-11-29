@@ -33,7 +33,6 @@ const char name_02[] = "filebuf_members-1.txt";
 // Test member functions.
 void test_01() 
 {
-  bool test __attribute__((unused)) = true;
   const char* name_03 = "filebuf_members-3"; // empty file, need to create
 
   std::filebuf fb_01; // in 

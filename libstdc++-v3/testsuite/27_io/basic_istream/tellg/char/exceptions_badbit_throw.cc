@@ -26,7 +26,6 @@ using namespace std;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   __gnu_test::fail_streambuf bib;
   istream stream(&bib);
   stream.exceptions(ios_base::badbit);

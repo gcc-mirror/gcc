@@ -29,8 +29,6 @@ template<typename T>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     using std::tr1::is_same;
     using __gnu_test::test_relationship;
 

@@ -43,7 +43,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-#if __STDCPP_WANT_MATH_SPEC_FUNCS__
+#if _GLIBCXX_USE_STD_SPEC_FUNCS
 # define _GLIBCXX_MATH_NS ::std
 #elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
@@ -777,7 +777,7 @@ namespace tr1
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #undef _GLIBCXX_MATH_NS
-#if ! __STDCPP_WANT_MATH_SPEC_FUNCS__ && defined(_GLIBCXX_TR1_CMATH)
+#if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
 }

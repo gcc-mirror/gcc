@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "expmed.h"
 #include "optabs.h"
@@ -97,8 +98,7 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
   switch (code)
     {
     CASE_CONST_SCALAR_INT:
-      return immed_wide_int_const (wi::add (std::make_pair (x, mode), c),
-				   mode);
+      return immed_wide_int_const (wi::add (rtx_mode_t (x, mode), c), mode);
     case MEM:
       /* If this is a reference to the constant pool, try replacing it with
 	 a reference to a new constant.  If the resulting address isn't
@@ -106,12 +106,23 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
 	{
-	  tem = plus_constant (mode, get_pool_constant (XEXP (x, 0)), c);
-	  tem = force_const_mem (GET_MODE (x), tem);
-	  /* Targets may disallow some constants in the constant pool, thus
-	     force_const_mem may return NULL_RTX.  */
-	  if (tem && memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
-	    return tem;
+	  rtx cst = get_pool_constant (XEXP (x, 0));
+
+	  if (GET_CODE (cst) == CONST_VECTOR
+	      && GET_MODE_INNER (GET_MODE (cst)) == mode)
+	    {
+	      cst = gen_lowpart (mode, cst);
+	      gcc_assert (cst);
+	    }
+	  if (GET_MODE (cst) == VOIDmode || GET_MODE (cst) == mode)
+	    {
+	      tem = plus_constant (mode, cst, c);
+	      tem = force_const_mem (GET_MODE (x), tem);
+	      /* Targets may disallow some constants in the constant pool, thus
+		 force_const_mem may return NULL_RTX.  */
+	      if (tem && memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
+		return tem;
+	    }
 	}
       break;
 
@@ -309,7 +320,7 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
       break;
 
     case LABEL_REF:
-      temp = gen_rtx_LABEL_REF (to_mode, LABEL_REF_LABEL (x));
+      temp = gen_rtx_LABEL_REF (to_mode, label_ref_label (x));
       LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
       return temp;
 
@@ -484,9 +495,8 @@ memory_address_addr_space (machine_mode mode, rtx x, addr_space_t as)
   return x;
 }
 
-/* If REF is a MEM with an invalid address, change it into a valid address.
-   Pass through anything else unchanged.  REF must be an unshared rtx and
-   the function may modify it in-place.  */
+/* Convert a mem ref into one with a valid memory address.
+   Pass through anything else unchanged.  */
 
 rtx
 validize_mem (rtx ref)
@@ -498,7 +508,8 @@ validize_mem (rtx ref)
 				   MEM_ADDR_SPACE (ref)))
     return ref;
 
-  return replace_equiv_address (ref, XEXP (ref, 0), true);
+  /* Don't alter REF itself, since that is probably a stack slot.  */
+  return replace_equiv_address (ref, XEXP (ref, 0));
 }
 
 /* If X is a memory reference to a member of an object block, try rewriting
@@ -794,7 +805,6 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
       PROMOTE_MODE (mode, unsignedp, type);
       *punsignedp = unsignedp;
       return mode;
-      break;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
     case REFERENCE_TYPE:
@@ -802,7 +812,6 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
       *punsignedp = POINTERS_EXTEND_UNSIGNED;
       return targetm.addr_space.address_mode
 	       (TYPE_ADDR_SPACE (TREE_TYPE (type)));
-      break;
 #endif
 
     default:
@@ -1224,9 +1233,15 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
      example), so we must preventively align the value.  We leave space
      in SIZE for the hole that might result from the alignment operation.  */
 
-  extra = (required_align - BITS_PER_UNIT) / BITS_PER_UNIT;
-  size = plus_constant (Pmode, size, extra);
-  size = force_operand (size, NULL_RTX);
+  unsigned known_align = REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM);
+  if (known_align == 0)
+    known_align = BITS_PER_UNIT;
+  if (required_align > known_align)
+    {
+      extra = (required_align - known_align) / BITS_PER_UNIT;
+      size = plus_constant (Pmode, size, extra);
+      size = force_operand (size, NULL_RTX);
+    }
 
   if (flag_stack_usage_info && pstack_usage_size)
     *pstack_usage_size += extra;
@@ -1235,7 +1250,7 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
     size_align = BITS_PER_UNIT;
 
   /* Round the size to a multiple of the required stack alignment.
-     Since the stack if presumed to be rounded before this allocation,
+     Since the stack is presumed to be rounded before this allocation,
      this will maintain the required alignment.
 
      If the stack grows downward, we could save an insn by subtracting
@@ -1348,6 +1363,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	current_function_has_unbounded_dynamic_stack_size = 1;
     }
 
+  do_pending_stack_adjust ();
+
   final_label = NULL;
   final_target = NULL_RTX;
 
@@ -1404,8 +1421,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
       emit_label (available_label);
     }
-
-  do_pending_stack_adjust ();
 
  /* We ought to be called always on the toplevel and stack ought to be aligned
     properly.  */

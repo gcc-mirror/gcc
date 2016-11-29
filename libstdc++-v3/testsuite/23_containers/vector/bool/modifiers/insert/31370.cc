@@ -17,8 +17,8 @@
 
 // 23.2.5 class vector<bool> [lib.vector.bool]
 
-// { dg-skip-if "" { powerpc64-*-freebsd* } { "*" } { "" } }
 // { dg-do run { xfail *-*-darwin8.[0-4].* } }
+// { dg-skip-if "" { powerpc64-*-freebsd* } { "*" } { "" } }
 
 #include <vector>
 #include <stdexcept>
@@ -49,7 +49,6 @@ check_cap_eq_maxsize(const std::vector<bool>& x)
 // libstdc++/31370
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   int myexit = 0;
 
   try

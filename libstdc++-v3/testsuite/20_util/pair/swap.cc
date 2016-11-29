@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -24,7 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef __gnu_test::uneq_allocator<double> ua_type;
   ua_type one(1), two(2);
 

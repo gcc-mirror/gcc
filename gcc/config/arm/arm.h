@@ -49,15 +49,6 @@ extern char arm_arch_name[];
 
 #include "config/arm/arm-opts.h"
 
-enum target_cpus
-{
-#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
-  TARGET_CPU_##INTERNAL_IDENT,
-#include "arm-cores.def"
-#undef ARM_CORE
-  TARGET_CPU_generic
-};
-
 /* The processor for which instructions should be scheduled.  */
 extern enum processor_type arm_tune;
 
@@ -82,13 +73,12 @@ extern int arm_ccfsm_state;
 extern GTY(()) rtx arm_target_insn;
 /* Callback to output language specific object attributes.  */
 extern void (*arm_lang_output_object_attributes_hook)(void);
+
+/* This type is the user-visible __fp16.  We need it in a few places in
+   the backend.  Defined in arm-builtins.c.  */
+extern tree arm_fp16_type_node;
+
 
-/* Just in case configure has failed to define anything.  */
-#ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT TARGET_CPU_generic
-#endif
-
-
 #undef  CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)					\
 %{mfloat-abi=soft:%{mfloat-abi=hard:					\
@@ -134,7 +124,6 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
-#define TARGET_VFP		        (TARGET_FPU_MODEL == ARM_FP_MODEL_VFP)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
 #define TARGET_IWMMXT2			(arm_arch_iwmmxt2)
 #define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT)
@@ -172,50 +161,61 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    to be more careful with TARGET_NEON as noted below.  */
 
 /* FPU is has the full VFPv3/NEON register file of 32 D registers.  */
-#define TARGET_VFPD32 (TARGET_VFP && TARGET_FPU_REGS == VFP_REG_D32)
+#define TARGET_VFPD32 (TARGET_FPU_REGS == VFP_REG_D32)
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (TARGET_VFP && TARGET_FPU_REV >= 3)
+#define TARGET_VFP3 (TARGET_FPU_REV >= 3)
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (TARGET_VFP && TARGET_FPU_REV >= 5)
+#define TARGET_VFP5 (TARGET_FPU_REV >= 5)
 
 /* FPU only supports VFP single-precision instructions.  */
-#define TARGET_VFP_SINGLE (TARGET_VFP && TARGET_FPU_REGS == VFP_REG_SINGLE)
+#define TARGET_VFP_SINGLE (TARGET_FPU_REGS == VFP_REG_SINGLE)
 
 /* FPU supports VFP double-precision instructions.  */
-#define TARGET_VFP_DOUBLE (TARGET_VFP && TARGET_FPU_REGS != VFP_REG_SINGLE)
+#define TARGET_VFP_DOUBLE (TARGET_FPU_REGS != VFP_REG_SINGLE)
 
 /* FPU supports half-precision floating-point with NEON element load/store.  */
-#define TARGET_NEON_FP16						\
-  (TARGET_VFP								\
-   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON)		\
+#define TARGET_NEON_FP16					\
+  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON)		\
    && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
 
 /* FPU supports VFP half-precision floating-point.  */
 #define TARGET_FP16							\
-  (TARGET_VFP && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
+  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
+
+/* FPU supports converting between HFmode and DFmode in a single hardware
+   step.  */
+#define TARGET_FP16_TO_DOUBLE						\
+  (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (TARGET_VFP && TARGET_FPU_REV >= 4)
+#define TARGET_FMA (TARGET_FPU_REV >= 4)
 
 /* FPU is ARMv8 compatible.  */
-#define TARGET_FPU_ARMV8 (TARGET_VFP && TARGET_FPU_REV >= 8)
+#define TARGET_FPU_ARMV8 (TARGET_FPU_REV >= 8)
 
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO							\
-  (TARGET_VFP && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_CRYPTO))
+  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_CRYPTO))
 
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
    and TARGET_HARD_FLOAT to ensure that NEON instructions are
    available.  */
 #define TARGET_NEON							\
-  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP			\
+  (TARGET_32BIT && TARGET_HARD_FLOAT					\
    && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON))
 
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
+
+/* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
+#define TARGET_VFP_FP16INST \
+  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 && arm_fp16_inst)
+
+/* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
+#define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
 
 /* Q-bit is present.  */
 #define TARGET_ARM_QBIT \
@@ -247,21 +247,25 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HAVE_MEMORY_BARRIER (TARGET_HAVE_DMB || TARGET_HAVE_DMB_MCR)
 
 /* Nonzero if this chip supports ldrex and strex */
-#define TARGET_HAVE_LDREX        ((arm_arch6 && TARGET_ARM) || arm_arch7)
+#define TARGET_HAVE_LDREX        ((arm_arch6 && TARGET_ARM)	\
+				  || arm_arch7			\
+				  || (arm_arch8 && !arm_arch_notm))
 
 /* Nonzero if this chip supports LPAE.  */
 #define TARGET_HAVE_LPAE						\
   (arm_arch7 && ARM_FSET_HAS_CPU1 (insn_flags, FL_FOR_ARCH7VE))
 
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
-#define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM) || arm_arch7)
+#define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM)		\
+			     || arm_arch7			\
+			     || (arm_arch8 && !arm_arch_notm))
 
 /* Nonzero if this chip supports ldrexd and strexd.  */
 #define TARGET_HAVE_LDREXD (((arm_arch6k && TARGET_ARM) \
 			     || arm_arch7) && arm_arch_notm)
 
 /* Nonzero if this chip supports load-acquire and store-release.  */
-#define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8 && TARGET_32BIT)
+#define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8)
 
 /* Nonzero if this chip supports LDAEXD and STLEXD.  */
 #define TARGET_HAVE_LDACQEXD	(TARGET_ARM_ARCH >= 8	\
@@ -356,7 +360,6 @@ enum vfp_reg_type
 extern const struct arm_fpu_desc
 {
   const char *name;
-  enum arm_fp_model model;
   int rev;
   enum vfp_reg_type regs;
   arm_fpu_feature_set features;
@@ -365,7 +368,6 @@ extern const struct arm_fpu_desc
 /* Accessors.  */
 
 #define TARGET_FPU_NAME     (all_fpus[arm_fpu_index].name)
-#define TARGET_FPU_MODEL    (all_fpus[arm_fpu_index].model)
 #define TARGET_FPU_REV      (all_fpus[arm_fpu_index].rev)
 #define TARGET_FPU_REGS     (all_fpus[arm_fpu_index].regs)
 #define TARGET_FPU_FEATURES (all_fpus[arm_fpu_index].features)
@@ -455,6 +457,13 @@ extern int arm_arch8;
 
 /* Nonzero if this chip supports the ARM Architecture 8.1 extensions.  */
 extern int arm_arch8_1;
+
+/* Nonzero if this chip supports the ARM Architecture 8.2 extensions.  */
+extern int arm_arch8_2;
+
+/* Nonzero if this chip supports the FP16 instructions extension of ARM
+   Architecture 8.2.  */
+extern int arm_fp16_inst;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;
@@ -1203,7 +1212,7 @@ enum reg_class
    the data layout happens to be consistent for big-endian, so we explicitly allow
    that case.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (TARGET_VFP && TARGET_BIG_END					\
+  (TARGET_BIG_END						\
    && !(GET_MODE_SIZE (FROM) == 16 && GET_MODE_SIZE (TO) == 8)	\
    && (GET_MODE_SIZE (FROM) > UNITS_PER_WORD			\
        || GET_MODE_SIZE (TO) > UNITS_PER_WORD)			\
@@ -1254,8 +1263,7 @@ enum reg_class
    NO_REGS is returned.  */
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)		\
   /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_VFP && TARGET_HARD_FLOAT				\
-    && IS_VFP_CLASS (CLASS))					\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
    ? coproc_secondary_reload_class (MODE, X, FALSE)		\
    : (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)			\
    ? coproc_secondary_reload_class (MODE, X, TRUE)		\
@@ -1267,8 +1275,7 @@ enum reg_class
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
   /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_VFP && TARGET_HARD_FLOAT				\
-    && IS_VFP_CLASS (CLASS))					\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
     ? coproc_secondary_reload_class (MODE, X, FALSE) :		\
     (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS) ?			\
     coproc_secondary_reload_class (MODE, X, TRUE) :		\
@@ -1528,7 +1535,7 @@ typedef struct
    On the ARM, r0-r3 are used to pass args.  */
 #define FUNCTION_ARG_REGNO_P(REGNO)					\
    (IN_RANGE ((REGNO), 0, 3)						\
-    || (TARGET_AAPCS_BASED && TARGET_VFP && TARGET_HARD_FLOAT		\
+    || (TARGET_AAPCS_BASED && TARGET_HARD_FLOAT				\
 	&& IN_RANGE ((REGNO), FIRST_VFP_REGNUM, FIRST_VFP_REGNUM + 15))	\
     || (TARGET_IWMMXT_ABI						\
 	&& IN_RANGE ((REGNO), FIRST_IWMMXT_REGNUM, FIRST_IWMMXT_REGNUM + 9)))
@@ -2253,13 +2260,18 @@ extern const char *arm_rewrite_mcpu (int argc, const char **argv);
    "   :%{march=*:-march=%*}}"					\
    BIG_LITTLE_SPEC
 
+extern const char *arm_target_thumb_only (int argc, const char **argv);
+#define TARGET_MODE_SPEC_FUNCTIONS					\
+  { "target_mode_check", arm_target_thumb_only },
+
 /* -mcpu=native handling only makes sense with compiler running on
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define EXTRA_SPEC_FUNCTIONS						\
   { "local_cpu_detect", host_detect_local_cpu },			\
-  BIG_LITTLE_CPU_SPEC_FUNCTIONS
+  BIG_LITTLE_CPU_SPEC_FUNCTIONS						\
+  TARGET_MODE_SPEC_FUNCTIONS
 
 # define MCPU_MTUNE_NATIVE_SPECS					\
    " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
@@ -2267,13 +2279,28 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #else
 # define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS BIG_LITTLE_CPU_SPEC_FUNCTIONS
+# define EXTRA_SPEC_FUNCTIONS						\
+	BIG_LITTLE_CPU_SPEC_FUNCTIONS					\
+	TARGET_MODE_SPEC_FUNCTIONS
 #endif
 
-#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
+/* Automatically add -mthumb for Thumb-only targets if mode isn't specified
+   via the configuration option --with-mode or via the command line. The
+   function target_mode_check is called to do the check with either:
+   - an array of -march values if any is given;
+   - an array of -mcpu values if any is given;
+   - an empty array.  */
+#define TARGET_MODE_SPECS						\
+  " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:%*;mcpu=*:%*;:})}}"
+
+#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS TARGET_MODE_SPECS
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 /* For switching between functions with different target attributes.  */
 #define SWITCHABLE_TARGET 1
+
+/* Define SECTION_ARM_PURECODE as the ARM specific section attribute
+   representation for SHF_ARM_PURECODE in GCC.  */
+#define SECTION_ARM_PURECODE SECTION_MACH_DEP
 
 #endif /* ! GCC_ARM_H */

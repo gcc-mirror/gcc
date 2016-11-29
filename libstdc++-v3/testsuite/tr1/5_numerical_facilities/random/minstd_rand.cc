@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::minstd_rand a;
   for (int i = 0; i < 9999; ++i)
     a();

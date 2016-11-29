@@ -157,18 +157,11 @@ of the run-time system.
 */
 package runtime
 
+import "runtime/internal/sys"
+
 // Gosched yields the processor, allowing other goroutines to run.  It does not
 // suspend the current goroutine, so execution resumes automatically.
 func Gosched()
-
-// Goexit terminates the goroutine that calls it.  No other goroutine is affected.
-// Goexit runs all deferred calls before terminating the goroutine.
-//
-// Calling Goexit from the main goroutine terminates that goroutine
-// without func main returning. Since func main has not returned,
-// the program continues execution of other goroutines.
-// If all other goroutines exit, the program crashes.
-func Goexit()
 
 // Caller reports file and line number information about function invocations on
 // the calling goroutine's stack. The argument skip is the number of stack frames
@@ -272,33 +265,31 @@ func SetFinalizer(obj interface{}, finalizer interface{})
 // the actual system call.
 func KeepAlive(interface{})
 
-func getgoroot() string
-
 // GOROOT returns the root of the Go tree.
 // It uses the GOROOT environment variable, if set,
 // or else the root used during the Go build.
 func GOROOT() string {
-	s := getgoroot()
+	s := gogetenv("GOROOT")
 	if s != "" {
 		return s
 	}
-	return defaultGoroot
+	return sys.DefaultGoroot
 }
 
 // Version returns the Go tree's version string.
 // It is either the commit hash and date at the time of the build or,
 // when possible, a release tag like "go1.3".
 func Version() string {
-	return theVersion
+	return sys.TheVersion
 }
 
 // GOOS is the running program's operating system target:
 // one of darwin, freebsd, linux, and so on.
-const GOOS string = theGoos
+const GOOS string = sys.GOOS
 
 // GOARCH is the running program's architecture target:
 // 386, amd64, arm, or s390x.
-const GOARCH string = theGoarch
+const GOARCH string = sys.GOARCH
 
 // GCCGOTOOLDIR is the Tool Dir for the gccgo build
-const GCCGOTOOLDIR string = theGccgoToolDir
+const GCCGOTOOLDIR string = sys.GccgoToolDir

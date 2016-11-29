@@ -111,7 +111,7 @@ badthrow2 () throw (auto &)			// { dg-error "invalid use of|expected" }
 {
 }
 
-template <auto V = 4> struct G {};		// { dg-error "auto" }
+template <auto V = 4> struct G {};		// { dg-error "auto" "" { target { ! c++1z } } }
 
 template <typename T> struct H { H (); ~H (); };
 H<auto> h;					// { dg-error "invalid|initializer" }

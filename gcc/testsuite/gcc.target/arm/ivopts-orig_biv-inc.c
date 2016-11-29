@@ -15,4 +15,4 @@ unsigned char * foo(unsigned char *ReadPtr)
  return ReadPtr;
 }
 
-/* { dg-final { scan-tree-dump-times "original biv" 2 "ivopts"} } */
+/* { dg-final { scan-tree-dump-times "Incr POS: orig biv" 2 "ivopts"} } */

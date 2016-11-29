@@ -56,8 +56,6 @@ namespace __gnu_cxx
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_cxx::hash_set<std::string> Set;
   typedef Set::iterator       iterator;
   typedef Set::const_iterator const_iterator;

@@ -1,3 +1,288 @@
+2016-11-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/nvptx/critical.c: Delete to use generic implementation.
+
+2016-11-28  Jonas Hahnfeld  <Hahnfeld@itc.rwth-aachen.de>
+
+	* config/linux/affinity.c [!HAVE_PTHREAD_AFFINITY_NP]: Include
+	../../affinity.c as fallback.
+	* config/nvptx/affinity.c: Delete to use fallback implementation.
+
+2016-11-23  Alexander Monakov  <amonakov@ispras.ru>
+            Jakub Jelinek  <jakub@redhat.com>
+	    Dmitry Melnik  <dm@ispras.ru>
+
+	* Makefile.am (libgomp_la_SOURCES): Add atomic.c, icv.c, icv-device.c.
+	* Makefile.in. Regenerate.
+	* configure.ac [nvptx*-*-*] (libgomp_use_pthreads): Set and use it...
+	(LIBGOMP_USE_PTHREADS): ...here; new define.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* config/posix/affinity.c: Move to...
+	* affinity.c: ...here (new file).  Guard use of Pthreads-specific
+	interface by LIBGOMP_USE_PTHREADS. 
+	* critical.c: Split out GOMP_atomic_{start,end} into...
+	* atomic.c: ...here (new file).
+	* env.c: Split out ICV definitions into...
+	* icv.c: ...here (new file) and...
+	* icv-device.c: ...here. New file.
+	* config/linux/lock.c (gomp_init_lock_30): Move to generic lock.c.
+	(gomp_destroy_lock_30): Ditto.
+	(gomp_set_lock_30): Ditto.
+	(gomp_unset_lock_30): Ditto.
+	(gomp_test_lock_30): Ditto.
+	(gomp_init_nest_lock_30): Ditto.
+	(gomp_destroy_nest_lock_30): Ditto.
+	(gomp_set_nest_lock_30): Ditto.
+	(gomp_unset_nest_lock_30): Ditto.
+	(gomp_test_nest_lock_30): Ditto.
+	* lock.c: New.
+	* config/nvptx/lock.c: New.
+	* config/nvptx/bar.c: New.
+	* config/nvptx/bar.h: New.
+	* config/nvptx/doacross.h: New.
+	* config/nvptx/error.c: New.
+	* config/nvptx/icv-device.c: New.
+	* config/nvptx/mutex.h: New.
+	* config/nvptx/pool.h: New.
+	* config/nvptx/proc.c: New.
+	* config/nvptx/ptrlock.h: New.
+	* config/nvptx/sem.h: New.
+	* config/nvptx/simple-bar.h: New.
+	* config/nvptx/target.c: New.
+	* config/nvptx/task.c: New.
+	* config/nvptx/team.c: New.
+	* config/nvptx/time.c: New.
+	* config/posix/simple-bar.h: New.
+	* libgomp.h: Guard pthread.h inclusion.  Include simple-bar.h.
+	(gomp_num_teams_var): Declare.
+	(struct gomp_thread_pool): Change threads_dock member to
+	gomp_simple_barrier_t.
+	[__nvptx__] (gomp_thread): New implementation.
+	(gomp_thread_attr): Guard by LIBGOMP_USE_PTHREADS.
+	(gomp_thread_destructor): Ditto.
+	(gomp_init_thread_affinity): Ditto.
+	* team.c: Guard uses of Pthreads-specific interfaces by
+	LIBGOMP_USE_PTHREADS.  Adjust all uses of threads_dock.
+	(gomp_free_thread) [__nvptx__]: Do not call 'free'.
+	* config/nvptx/alloc.c: Delete.
+	* config/nvptx/barrier.c: Ditto.
+	* config/nvptx/fortran.c: Ditto.
+	* config/nvptx/iter.c: Ditto.
+	* config/nvptx/iter_ull.c: Ditto.
+	* config/nvptx/loop.c: Ditto.
+	* config/nvptx/loop_ull.c: Ditto.
+	* config/nvptx/ordered.c: Ditto.
+	* config/nvptx/parallel.c: Ditto.
+	* config/nvptx/priority_queue.c: Ditto.
+	* config/nvptx/sections.c: Ditto.
+	* config/nvptx/single.c: Ditto.
+	* config/nvptx/splay-tree.c: Ditto.
+	* config/nvptx/work.c: Ditto.
+	* testsuite/libgomp.fortran/fortran.exp (lang_link_flags): Pass
+	-foffload=-lgfortran in addition to -lgfortran.
+	* testsuite/libgomp.oacc-fortran/fortran.exp (lang_link_flags): Ditto.
+	* plugin/plugin-nvptx.c: Include <limits.h>.
+	(struct targ_fn_descriptor): Add new fields.
+	(struct ptx_device): Ditto.  Set them...
+	(nvptx_open_device): ...here.
+	(nvptx_adjust_launch_bounds): New.
+	(nvptx_host2dev): Allow NULL 'nvthd'.
+	(nvptx_dev2host): Ditto.
+	(GOMP_OFFLOAD_get_caps): Add GOMP_OFFLOAD_CAP_OPENMP_400.
+	(link_ptx): Adjust log sizes.
+	(nvptx_host2dev): Allow NULL 'nvthd'.
+	(nvptx_dev2host): Ditto.
+	(nvptx_set_clocktick): New.  Use it...
+	(GOMP_OFFLOAD_load_image): ...here.  Set new targ_fn_descriptor
+	fields.
+	(GOMP_OFFLOAD_dev2dev): New.
+	(nvptx_adjust_launch_bounds): New.
+	(nvptx_stacks_size): New.
+	(nvptx_stacks_alloc): New.
+	(nvptx_stacks_free): New.
+	(GOMP_OFFLOAD_run): New.
+	(GOMP_OFFLOAD_async_run): New (stub).
+
+2016-11-23  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/libgomp.hsa.c/bits-insns.c: New test.
+	* testsuite/libgomp.hsa.c/tiling-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/tiling-2.c: Likewise.
+
+2016-11-23  Martin Liska  <mliska@suse.cz>
+            Martin Jambor  <mjambor@suse.cz>
+
+	* plugin/hsa.h: New file.
+	* plugin/hsa_ext_finalize.h: New file.
+	* plugin/configfrag.ac: Remove hsa-kmt-lib test.  Added checks for
+	header file unistd.h, and functions secure_getenv, __secure_getenv,
+	getuid, geteuid, getgid and getegid.
+	* plugin/Makefrag.am (libgomp_plugin_hsa_la_CPPFLAGS): Added
+	-D_GNU_SOURCE.
+	* plugin/plugin-hsa.c: Include config.h, inttypes.h and stdbool.h.
+	Handle various cases of secure_getenv presence, add an implementation
+	when we can test effective UID and GID.
+	(struct hsa_runtime_fn_info): New structure.
+	(hsa_runtime_fn_info hsa_fns): New variable.
+	(hsa_runtime_lib): Likewise.
+	(support_cpu_devices): Likewise.
+	(init_enviroment_variables): Load newly introduced ENV
+	variables.
+	(hsa_warn): Call hsa run-time functions via hsa_fns structure.
+	(hsa_fatal): Likewise.
+	(DLSYM_FN): New macro.
+	(init_hsa_runtime_functions): New function.
+	(suitable_hsa_agent_p): Call hsa run-time functions via hsa_fns
+	structure.  Depending on environment, also allow CPU devices.
+	(init_hsa_context): Call hsa run-time functions via hsa_fns structure.
+	(get_kernarg_memory_region): Likewise.
+	(GOMP_OFFLOAD_init_device): Likewise.
+	(destroy_hsa_program): Likewise.
+	(init_basic_kernel_info): New function.
+	(GOMP_OFFLOAD_load_image): Use it.
+	(create_and_finalize_hsa_program): Call hsa run-time functions via
+	hsa_fns structure.
+	(create_single_kernel_dispatch): Likewise.
+	(release_kernel_dispatch): Likewise.
+	(init_single_kernel): Likewise.
+	(parse_target_attributes): Allow up multiple HSA grid dimensions.
+	(get_group_size): New function.
+	(run_kernel): Likewise.
+	(GOMP_OFFLOAD_run): Outline most functionality to run_kernel.
+	(GOMP_OFFLOAD_fini_device): Call hsa run-time functions via hsa_fns
+	structure.
+	* testsuite/lib/libgomp.exp: Remove hsa_kmt_lib support.
+	* testsuite/libgomp-test-support.exp.in: Likewise.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2016-11-15  Martin Jambor  <mjambor@suse.cz>
+            Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/libgomp.fortran/examples-4/device-1.f90 (e_57_1): Add
+	mapping clauses to target constructs.
+	* testsuite/libgomp.fortran/examples-4/device-3.f90 (e_57_3): Ditto.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
+2016-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp_lib.f90.in (openmp_version): Change to 201511 from 201307.
+	* omp_lib.h.in (openmp_version): Likewise.
+	* testsuite/libgomp.fortran/openmp_version-1.f: Expect 201511 instead
+	of 201307.
+	* testsuite/libgomp.fortran/openmp_version-2.f90: Likewise.
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90
+	(fib_wrapper): Add map(from: x) clause.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90
+	(e_53_2): Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-4.f90
+	(accum): Add map(tmp) clause.
+	* testsuite/libgomp.fortran/examples-4/declare_target-5.f90
+	(accum): Add map(tofrom: tmp) clause.
+	* testsuite/libgomp.fortran/examples-4/target_data-3.f90
+	(gramSchmidt): Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-2.f90 (dotprod): Add
+	map(tofrom: sum) clause.
+	* testsuite/libgomp.fortran/nestedfn5.f90 (foo): Add twice
+	map (alloc: a, l) clause.  Add defaultmap(tofrom: scalar) clause.
+	* testsuite/libgomp.fortran/pr66199-2.f90: Adjust for linear clause
+	only allowed on the loop iterator.
+	* testsuite/libgomp.fortran/target4.f90 (foo): Add map(t) clause.
+	* testsuite/libgomp.fortran/taskloop2.f90: New test.
+	* testsuite/libgomp.fortran/taskloop4.f90: New test.
+	* testsuite/libgomp.fortran/doacross1.f90: New test.
+	* testsuite/libgomp.fortran/doacross3.f90: New test.
+	* testsuite/libgomp.fortran/taskloop1.f90: New test.
+	* testsuite/libgomp.fortran/taskloop3.f90: New test.
+	* testsuite/libgomp.fortran/doacross2.f90: New test.
+	* testsuite/libgomp.c/doacross-1.c (main): Add missing
+	#pragma omp atomic read.
+	* testsuite/libgomp.c/doacross-2.c (main): Likewise.
+	* testsuite/libgomp.c/doacross-3.c (main): Likewise.
+
+2016-11-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Interrogate board attributes
+	to determine default geometry.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Set gang
+	dimension.
+
+2016-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.h: Use standard GPLv3 with runtime exception
+	boilerplate.
+
+2016-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* oacc-init.c (goacc_new_thread): Use sizeof of the appropriate
+	size when allocating new thread.
+
+2016-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/libgomp.c++/atomic-3.C: Use -Wno-deprecated.
+
+2016-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/71014
+	* testsuite/libgomp.fortran/pr71014.f90: New test.
+
+2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/70895
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Add explicit
+	firstprivate clauses.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Remove explicit
+	copy clauses.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-flt.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-dbl.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-dbl.c: Likewise.
+
+2016-08-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/70598
+	* testsuite/libgomp.oacc-fortran/host_data-1.f90: New test.
+
+2016-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58706
+	* testsuite/libgomp.c++/pr58706.C: New test.
+
+2016-08-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/routine-1-auto.C: New file.
+	* testsuite/libgomp.oacc-c++/routine-1-template-auto.C: Likewise.
+	* testsuite/libgomp.oacc-c++/routine-1-template-trailing-return-type.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/routine-1-template.C: Likewise.
+	* testsuite/libgomp.oacc-c++/routine-1-trailing-return-type.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-1.c: Adjust.
+
+	* testsuite/libgomp.oacc-c-c++-common/crash-1.c: Make it a "link"
+	test, and don't hardcode -O0.
+
+2016-08-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/crash-1.c: New.
+
 2016-07-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/zero_length_subarrays.c: New

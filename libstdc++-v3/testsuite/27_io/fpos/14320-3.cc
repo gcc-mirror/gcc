@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef std::istreambuf_iterator<char>::difference_type Distance;
   Distance d = 2;

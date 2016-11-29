@@ -42,8 +42,6 @@ wstring data(long len)
 
 void test01(int iter)
 {
-  bool test __attribute__((unused)) = true;
-
   for (long i = 0, j = 1; i < iter; ++i, j *= 3)
     {
       wistringstream isstr(data(j));

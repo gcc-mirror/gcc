@@ -44,7 +44,6 @@ void operator delete(void *v) throw()
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::allocator<gnu> obj;
 
   // NB: These should work for various size allocation and

@@ -31,7 +31,6 @@ template<typename _Tp>
 void
 cons07()
 {
-  bool test __attribute__((unused)) = true;
   const std::size_t BIG_LIST_SIZE = 11;
   const int BIG_INIT_VALUE = 7;
   const std::size_t SMALL_LIST_SIZE = 5;

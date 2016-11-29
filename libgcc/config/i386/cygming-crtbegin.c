@@ -73,18 +73,6 @@ __deregister_frame_info (__attribute__((unused)) const void *p)
 #endif
 #endif /* DWARF2_UNWIND_INFO */
 
-#if TARGET_USE_JCR_SECTION
-extern void _Jv_RegisterClasses (__attribute__((unused)) const void *)
-  TARGET_ATTRIBUTE_WEAK;
-
-#ifdef __x86_64__
-TARGET_ATTRIBUTE_WEAK void
-_Jv_RegisterClasses (__attribute__((unused)) const void *p)
-{
-}
-#endif
-#endif /* TARGET_USE_JCR_SECTION */
-
 #if defined(HAVE_LD_RO_RW_SECTION_MIXING)
 # define EH_FRAME_SECTION_CONST const
 #else
@@ -103,12 +91,6 @@ static struct object obj;
 /* Handle of libgcc's DLL reference.  */
 HANDLE hmod_libgcc;
 static void *  (*deregister_frame_fn) (const void *) = NULL;
-#endif
-
-#if TARGET_USE_JCR_SECTION
-static void *__JCR_LIST__[]
-  __attribute__ ((used, section(__LIBGCC_JCR_SECTION_NAME__), aligned(4)))
-  = { };
 #endif
 
 #ifdef __CYGWIN__
@@ -161,22 +143,6 @@ __gcc_register_frame (void)
     }
   if (register_frame_fn)
      register_frame_fn (__EH_FRAME_BEGIN__, &obj);
-#endif
-
-#if TARGET_USE_JCR_SECTION 
-  if (__JCR_LIST__[0])
-    {
-      void (*register_class_fn) (const void *);
-      HANDLE h = GetModuleHandle (LIBGCJ_SONAME);
-      if (h)
-	register_class_fn = (void (*) (const void *))
-			     GetProcAddress (h, "_Jv_RegisterClasses");
-      else
-	register_class_fn = _Jv_RegisterClasses;
-
-      if (register_class_fn)
-	register_class_fn (__JCR_LIST__);
-    }
 #endif
 
 #if DEFAULT_USE_CXA_ATEXIT

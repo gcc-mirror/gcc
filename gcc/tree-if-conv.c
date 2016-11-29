@@ -326,6 +326,7 @@ ifc_temp_var (tree type, tree expr, gimple_stmt_iterator *gsi)
 {
   tree new_name = make_temp_ssa_name (type, NULL, "_ifc_");
   gimple *stmt = gimple_build_assign (new_name, expr);
+  gimple_set_vuse (stmt, gimple_vuse (gsi_stmt (*gsi)));
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return new_name;
 }
@@ -1049,7 +1050,6 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
       return false;
-      break;
     }
 
   return true;
@@ -1309,6 +1309,38 @@ predicate_bbs (loop_p loop)
 	      && bb_predicate_gimplified_stmts (loop->latch) == NULL);
 }
 
+/* Build region by adding loop pre-header and post-header blocks.  */
+
+static vec<basic_block>
+build_region (struct loop *loop)
+{
+  vec<basic_block> region = vNULL;
+  basic_block exit_bb = NULL;
+
+  gcc_assert (ifc_bbs);
+  /* The first element is loop pre-header.  */
+  region.safe_push (loop_preheader_edge (loop)->src);
+
+  for (unsigned int i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = ifc_bbs[i];
+      region.safe_push (bb);
+      /* Find loop postheader.  */
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (loop_exit_edge_p (loop, e))
+	  {
+	      exit_bb = e->dest;
+	      break;
+	  }
+    }
+  /* The last element is loop post-header.  */
+  gcc_assert (exit_bb);
+  region.safe_push (exit_bb);
+  return region;
+}
+
 /* Return true when LOOP is if-convertible.  This is a helper function
    for if_convertible_loop_p.  REFS and DDRS are initialized and freed
    in if_convertible_loop_p.  */
@@ -1318,6 +1350,7 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 {
   unsigned int i;
   basic_block exit_bb = NULL;
+  vec<basic_block> region;
 
   if (find_data_references_in_loop (loop, refs) == chrec_dont_know)
     return false;
@@ -1370,8 +1403,15 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 	  = new hash_map<innermost_loop_behavior_hash, data_reference_p>;
   baseref_DR_map = new hash_map<tree_operand_hash, data_reference_p>;
 
-  calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* Compute post-dominator tree locally.  */
+  region = build_region (loop);
+  calculate_dominance_info_for_region (CDI_POST_DOMINATORS, region);
+
   predicate_bbs (loop);
+
+  /* Free post-dominator tree since it is not used after predication.  */
+  free_dominance_info_for_region (cfun, CDI_POST_DOMINATORS, region);
+  region.release ();
 
   for (i = 0; refs->iterate (i, &dr); i++)
     {
@@ -1709,6 +1749,14 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
   return cond;
 }
 
+/* Local valueization callback that follows all-use SSA edges.  */
+
+static tree
+ifcvt_follow_ssa_use_edges (tree val)
+{
+  return val;
+}
+
 /* Replace a scalar PHI node with a COND_EXPR using COND as condition.
    This routine can handle PHI nodes with more than two arguments.
 
@@ -1804,6 +1852,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 				    arg0, arg1);
       new_stmt = gimple_build_assign (res, rhs);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+      gimple_stmt_iterator new_gsi = gsi_for_stmt (new_stmt);
+      fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges);
       update_stmt (new_stmt);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1946,12 +1996,14 @@ predicate_all_scalar_phis (struct loop *loop)
       while (!gsi_end_p (phi_gsi))
 	{
 	  phi = phi_gsi.phi ();
-	  predicate_scalar_phi (phi, &gsi);
-	  release_phi_node (phi);
-	  gsi_next (&phi_gsi);
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    gsi_next (&phi_gsi);
+	  else
+	    {
+	      predicate_scalar_phi (phi, &gsi);
+	      remove_phi_node (&phi_gsi, false);
+	    }
 	}
-
-      set_phi_nodes (bb, NULL);
     }
 }
 
@@ -2218,11 +2270,18 @@ predicate_mem_writes (loop_p loop)
 		  = gimple_build_call_internal (IFN_MASK_LOAD, 3, addr,
 						ptr, mask);
 		gimple_call_set_lhs (new_stmt, lhs);
+		gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 	      }
 	    else
-	      new_stmt
-		= gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
-					      mask, rhs);
+	      {
+		new_stmt
+		  = gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
+						  mask, rhs);
+		gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+	      }
+
 	    gsi_replace (&gsi, new_stmt, true);
 	  }
 	else if (gimple_vdef (stmt))
@@ -2361,6 +2420,20 @@ combine_blocks (struct loop *loop)
     }
 
   merge_target_bb = loop->header;
+
+  /* Get at the virtual def valid for uses starting at the first block
+     we merge into the header.  Without a virtual PHI the loop has the
+     same virtual use on all stmts.  */
+  gphi *vphi = get_virtual_phi (loop->header);
+  tree last_vdef = NULL_TREE;
+  if (vphi)
+    {
+      last_vdef = gimple_phi_result (vphi);
+      for (gimple_stmt_iterator gsi = gsi_start_bb (loop->header);
+	   ! gsi_end_p (gsi); gsi_next (&gsi))
+	if (gimple_vdef (gsi_stmt (gsi)))
+	  last_vdef = gimple_vdef (gsi_stmt (gsi));
+    }
   for (i = 1; i < orig_loop_num_nodes; i++)
     {
       gimple_stmt_iterator gsi;
@@ -2371,6 +2444,24 @@ combine_blocks (struct loop *loop)
       if (bb == exit_bb || bb == loop->latch)
 	continue;
 
+      /* We release virtual PHIs late because we have to propagate them
+         out using the current VUSE.  The def might be the one used
+	 after the loop.  */
+      vphi = get_virtual_phi (bb);
+      if (vphi)
+	{
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  gimple *use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, gimple_phi_result (vphi))
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, last_vdef);
+	    }
+	  gsi = gsi_for_stmt (vphi); 
+	  remove_phi_node (&gsi, true);
+	}
+
       /* Make stmts member of loop->header and clear range info from all stmts
 	 in BB which is now no longer executed conditional on a predicate we
 	 could have derived it from.  */
@@ -2378,6 +2469,16 @@ combine_blocks (struct loop *loop)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  gimple_set_bb (stmt, merge_target_bb);
+	  /* Update virtual operands.  */
+	  if (last_vdef)
+	    {
+	      use_operand_p use_p = ssa_vuse_operand (stmt);
+	      if (use_p
+		  && USE_FROM_PTR (use_p) != last_vdef)
+		SET_USE (use_p, last_vdef);
+	      if (gimple_vdef (stmt))
+		last_vdef = gimple_vdef (stmt);
+	    }
 	  if (predicated[i])
 	    {
 	      ssa_op_iter i;
@@ -2389,7 +2490,7 @@ combine_blocks (struct loop *loop)
 
       /* Update stmt list.  */
       last = gsi_last_bb (merge_target_bb);
-      gsi_insert_seq_after (&last, bb_seq (bb), GSI_NEW_STMT);
+      gsi_insert_seq_after_without_update (&last, bb_seq (bb), GSI_NEW_STMT);
       set_bb_seq (bb, NULL);
 
       delete_basic_block (bb);
@@ -2399,9 +2500,29 @@ combine_blocks (struct loop *loop)
      This reduces the number of basic blocks to two, to please the
      vectorizer that handles only loops with two nodes.  */
   if (exit_bb
-      && exit_bb != loop->header
-      && can_merge_blocks_p (loop->header, exit_bb))
-    merge_blocks (loop->header, exit_bb);
+      && exit_bb != loop->header)
+    {
+      /* We release virtual PHIs late because we have to propagate them
+         out using the current VUSE.  The def might be the one used
+	 after the loop.  */
+      vphi = get_virtual_phi (exit_bb);
+      if (vphi)
+	{
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  gimple *use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, gimple_phi_result (vphi))
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, last_vdef);
+	    }
+	  gimple_stmt_iterator gsi = gsi_for_stmt (vphi); 
+	  remove_phi_node (&gsi, true);
+	}
+
+      if (can_merge_blocks_p (loop->header, exit_bb))
+	merge_blocks (loop->header, exit_bb);
+    }
 
   free (ifc_bbs);
   ifc_bbs = NULL;
@@ -2422,6 +2543,7 @@ version_loop_for_if_conversion (struct loop *loop)
   struct loop *new_loop;
   gimple *g;
   gimple_stmt_iterator gsi;
+  unsigned int save_length;
 
   g = gimple_build_call_internal (IFN_LOOP_VECTORIZED, 2,
 				  build_int_cst (integer_type_node, loop->num),
@@ -2429,8 +2551,9 @@ version_loop_for_if_conversion (struct loop *loop)
   gimple_call_set_lhs (g, cond);
 
   /* Save BB->aux around loop_version as that uses the same field.  */
-  void **saved_preds = XALLOCAVEC (void *, loop->num_nodes);
-  for (unsigned i = 0; i < loop->num_nodes; i++)
+  save_length = loop->inner ? loop->inner->num_nodes : loop->num_nodes;
+  void **saved_preds = XALLOCAVEC (void *, save_length);
+  for (unsigned i = 0; i < save_length; i++)
     saved_preds[i] = ifc_bbs[i]->aux;
 
   initialize_original_copy_tables ();
@@ -2439,7 +2562,7 @@ version_loop_for_if_conversion (struct loop *loop)
 			   REG_BR_PROB_BASE, true);
   free_original_copy_tables ();
 
-  for (unsigned i = 0; i < loop->num_nodes; i++)
+  for (unsigned i = 0; i < save_length; i++)
     ifc_bbs[i]->aux = saved_preds[i];
 
   if (new_loop == NULL)
@@ -2451,6 +2574,44 @@ version_loop_for_if_conversion (struct loop *loop)
   gimple_call_set_arg (g, 1, build_int_cst (integer_type_node, new_loop->num));
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
   update_ssa (TODO_update_ssa);
+  return true;
+}
+
+/* Return true when LOOP satisfies the follow conditions that will
+   allow it to be recognized by the vectorizer for outer-loop
+   vectorization:
+    - The loop is not the root node of the loop tree.
+    - The loop has exactly one inner loop.
+    - The loop has a single exit.
+    - The loop header has a single successor, which is the inner
+      loop header.
+    - Each of the inner and outer loop latches have a single
+      predecessor.
+    - The loop exit block has a single predecessor, which is the
+      inner loop's exit block.  */
+
+static bool
+versionable_outer_loop_p (struct loop *loop)
+{
+  if (!loop_outer (loop)
+      || !loop->inner
+      || loop->inner->next
+      || !single_exit (loop)
+      || !single_succ_p (loop->header)
+      || single_succ (loop->header) != loop->inner->header
+      || !single_pred_p (loop->latch)
+      || !single_pred_p (loop->inner->latch))
+    return false;
+  
+  basic_block outer_exit = single_pred (loop->latch);
+  basic_block inner_exit = single_pred (loop->inner->latch);
+
+  if (!single_pred_p (outer_exit) || single_pred (outer_exit) != inner_exit)
+    return false;
+
+  if (dump_file)
+    fprintf (dump_file, "Found vectorizable outer loop for versioning\n");
+
   return true;
 }
 
@@ -2623,7 +2784,7 @@ ifcvt_local_dce (basic_block bb)
    profitability analysis.  Returns non-zero todo flags when something
    changed.  */
 
-static unsigned int
+unsigned int
 tree_if_conversion (struct loop *loop)
 {
   unsigned int todo = 0;
@@ -2656,9 +2817,21 @@ tree_if_conversion (struct loop *loop)
 	  || loop->dont_vectorize))
     goto cleanup;
 
-  if ((any_pred_load_store || any_complicated_phi)
-      && !version_loop_for_if_conversion (loop))
-    goto cleanup;
+  /* Since we have no cost model, always version loops unless the user
+     specified -ftree-loop-if-convert or unless versioning is required.
+     Either version this loop, or if the pattern is right for outer-loop
+     vectorization, version the outer loop.  In the latter case we will
+     still if-convert the original inner loop.  */
+  if (any_pred_load_store
+      || any_complicated_phi
+      || flag_tree_loop_if_convert != 1)
+    {
+      struct loop *vloop
+	= (versionable_outer_loop_p (loop_outer (loop))
+	   ? loop_outer (loop) : loop);
+      if (!version_loop_for_if_conversion (vloop))
+	goto cleanup;
+    }
 
   /* Now all statements are if-convertible.  Combine all the basic
      blocks into one huge basic block doing the if-conversion
@@ -2669,8 +2842,6 @@ tree_if_conversion (struct loop *loop)
   ifcvt_local_dce (loop->header);
 
   todo |= TODO_cleanup_cfg;
-  mark_virtual_operands_for_renaming (cfun);
-  todo |= TODO_update_ssa_only_virtuals;
 
  cleanup:
   if (ifc_bbs)
@@ -2683,7 +2854,6 @@ tree_if_conversion (struct loop *loop)
       free (ifc_bbs);
       ifc_bbs = NULL;
     }
-  free_dominance_info (CDI_POST_DOMINATORS);
 
   return todo;
 }
@@ -2723,8 +2893,7 @@ pass_if_conversion::gate (function *fun)
 {
   return (((flag_tree_loop_vectorize || fun->has_force_vectorize_loops)
 	   && flag_tree_loop_if_convert != 0)
-	  || flag_tree_loop_if_convert == 1
-	  || flag_tree_loop_if_convert_stores == 1);
+	  || flag_tree_loop_if_convert == 1);
 }
 
 unsigned int
@@ -2736,22 +2905,11 @@ pass_if_conversion::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  /* If there are infinite loops, during CDI_POST_DOMINATORS computation
-     we can pick pretty much random bb inside of the infinite loop that
-     has the fake edge.  If we are unlucky enough, this can confuse the
-     add_to_predicate_list post-dominator check to optimize as if that
-     bb or some other one is a join block when it actually is not.
-     See PR70916.  */
-  connect_infinite_loops_to_exit ();
-
   FOR_EACH_LOOP (loop, 0)
     if (flag_tree_loop_if_convert == 1
-	|| flag_tree_loop_if_convert_stores == 1
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);
-
-  remove_fake_exit_edges ();
 
   if (flag_checking)
     {

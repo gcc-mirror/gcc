@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "optabs.h"
@@ -1070,6 +1071,9 @@ rl78_is_legitimate_constant (machine_mode mode ATTRIBUTE_UNUSED, rtx x ATTRIBUTE
 {
   return true;
 }
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P	rl78_as_legitimate_address
@@ -2774,7 +2778,7 @@ process_postponed_content_update (void)
    after WHERE.  If TO already contains FROM then do nothing.  Returns TO if
    BEFORE is true, FROM otherwise.  */
 static rtx
-gen_and_emit_move (rtx to, rtx from, rtx where, bool before)
+gen_and_emit_move (rtx to, rtx from, rtx_insn *where, bool before)
 {
   machine_mode mode = GET_MODE (to);
 
@@ -2829,7 +2833,7 @@ gen_and_emit_move (rtx to, rtx from, rtx where, bool before)
    copy it into NEWBASE and return the updated MEM.  Otherwise just
    return M.  Any needed insns are emitted before BEFORE.  */
 static rtx
-transcode_memory_rtx (rtx m, rtx newbase, rtx before)
+transcode_memory_rtx (rtx m, rtx newbase, rtx_insn *before)
 {
   rtx base, index, addendr;
   int addend = 0;
@@ -2930,7 +2934,7 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
 /* Copy SRC to accumulator (A or AX), placing any generated insns
    before BEFORE.  Returns accumulator RTX.  */
 static rtx
-move_to_acc (int opno, rtx before)
+move_to_acc (int opno, rtx_insn *before)
 {
   rtx src = OP (opno);
   machine_mode mode = GET_MODE (src);
@@ -2945,7 +2949,7 @@ move_to_acc (int opno, rtx before)
 }
 
 static void
-force_into_acc (rtx src, rtx before)
+force_into_acc (rtx src, rtx_insn *before)
 {
   machine_mode mode = GET_MODE (src);
   rtx move;
@@ -2964,7 +2968,7 @@ force_into_acc (rtx src, rtx before)
 /* Copy accumulator (A or AX) to DEST, placing any generated insns
    after AFTER.  Returns accumulator RTX.  */
 static rtx
-move_from_acc (unsigned int opno, rtx after)
+move_from_acc (unsigned int opno, rtx_insn *after)
 {
   rtx dest = OP (opno);
   machine_mode mode = GET_MODE (dest);
@@ -2978,7 +2982,7 @@ move_from_acc (unsigned int opno, rtx after)
 /* Copy accumulator (A or AX) to REGNO, placing any generated insns
    before BEFORE.  Returns reg RTX.  */
 static rtx
-move_acc_to_reg (rtx acc, int regno, rtx before)
+move_acc_to_reg (rtx acc, int regno, rtx_insn *before)
 {
   machine_mode mode = GET_MODE (acc);
   rtx reg;
@@ -2991,7 +2995,7 @@ move_acc_to_reg (rtx acc, int regno, rtx before)
 /* Copy SRC to X, placing any generated insns before BEFORE.
    Returns X RTX.  */
 static rtx
-move_to_x (int opno, rtx before)
+move_to_x (int opno, rtx_insn *before)
 {
   rtx src = OP (opno);
   machine_mode mode = GET_MODE (src);
@@ -3014,7 +3018,7 @@ move_to_x (int opno, rtx before)
 /* Copy OP (opno) to H or HL, placing any generated insns before BEFORE.
    Returns H/HL RTX.  */
 static rtx
-move_to_hl (int opno, rtx before)
+move_to_hl (int opno, rtx_insn *before)
 {
   rtx src = OP (opno);
   machine_mode mode = GET_MODE (src);
@@ -3037,7 +3041,7 @@ move_to_hl (int opno, rtx before)
 /* Copy OP (opno) to E or DE, placing any generated insns before BEFORE.
    Returns E/DE RTX.  */
 static rtx
-move_to_de (int opno, rtx before)
+move_to_de (int opno, rtx_insn *before)
 {
   rtx src = OP (opno);
   machine_mode mode = GET_MODE (src);
@@ -3150,8 +3154,8 @@ has_constraint (unsigned int opnum, enum constraint_num constraint)
 static void
 rl78_alloc_physical_registers_op2 (rtx_insn * insn)
 {
-  rtx prev;
-  rtx first;
+  rtx_insn *prev;
+  rtx_insn *first;
   bool hl_used;
   int tmp_id;
   rtx saved_op1;
@@ -3329,7 +3333,7 @@ rl78_alloc_physical_registers_cmp (rtx_insn * insn)
   int tmp_id;
   rtx saved_op1;
   rtx_insn *prev = prev_nonnote_nondebug_insn (insn);
-  rtx first;
+  rtx_insn *first;
 
   OP (1) = transcode_memory_rtx (OP (1), DE, insn);
   OP (2) = transcode_memory_rtx (OP (2), HL, insn);
@@ -3420,7 +3424,7 @@ static void
 rl78_alloc_physical_registers_umul (rtx_insn * insn)
 {
   rtx_insn *prev = prev_nonnote_nondebug_insn (insn);
-  rtx first;
+  rtx_insn *first;
   int tmp_id;
   rtx saved_op1;
 
@@ -3790,7 +3794,8 @@ static void
 rl78_calculate_death_notes (void)
 {
   char dead[FIRST_PSEUDO_REGISTER];
-  rtx insn, p, s, d;
+  rtx p, s, d;
+rtx_insn *insn;
   int i;
 
   memset (dead, 0, sizeof (dead));
@@ -3858,6 +3863,7 @@ rl78_calculate_death_notes (void)
 		 after this pass.  */
 	      break;
 	    }
+	  /* FALLTHRU */
 	case CALL_INSN:
 	  memset (dead, 0, sizeof (dead));
 	  break;
@@ -4652,7 +4658,7 @@ rl78_asm_ctor_dtor (rtx symbol, int priority, bool is_ctor)
     {
       /* This section of the function is based upon code copied
 	 from: gcc/varasm.c:get_cdtor_priority_section().  */
-      char buf[16];
+      char buf[18];
 
       sprintf (buf, "%s.%.5u", is_ctor ? ".ctors" : ".dtors",
 	       MAX_INIT_PRIORITY - priority);

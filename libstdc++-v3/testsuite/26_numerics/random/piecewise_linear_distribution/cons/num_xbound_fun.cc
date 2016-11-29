@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-12-03  Edward M. Smith-Rowland <3dw4rd@verizon.net>
@@ -56,8 +56,6 @@ private:
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   cosine_distribution cd(1.5, 3.0);
   std::piecewise_linear_distribution<> u(21, -10.0, 10.0, cd);
   std::vector<double> interval = u.intervals();

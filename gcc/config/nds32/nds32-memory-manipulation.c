@@ -27,6 +27,7 @@
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "explow.h"
 

@@ -17,8 +17,7 @@
 
 // 20.7.12 specialized algorithms
 
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 #include <memory>
 

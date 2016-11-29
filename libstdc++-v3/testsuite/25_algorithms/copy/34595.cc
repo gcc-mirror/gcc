@@ -38,8 +38,6 @@ public:
 // libstdc++/34595
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   int t[10] = {0,};
   Counting_output_iterator cnt;
   std::size_t res = std::copy(t+0, t+5, cnt).current_counter();

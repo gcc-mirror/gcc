@@ -25,7 +25,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wstringstream ostr1, ostr2, ostr3, ostr4;
 

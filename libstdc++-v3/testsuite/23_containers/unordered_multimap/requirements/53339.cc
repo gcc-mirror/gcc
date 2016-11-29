@@ -1,7 +1,5 @@
-// XFAIL because of PR libstdc++/55043 fix
-// { dg-do compile { xfail *-*-* } }
-// { dg-excess-errors "" }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
+// { dg-excess-errors "XFAIL because of PR libstdc++/55043 fix" }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //

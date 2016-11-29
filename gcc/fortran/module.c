@@ -740,6 +740,7 @@ gfc_match_submodule (void)
   match m;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_use_list *use_list;
+  bool seen_colon = false;
 
   if (!gfc_notify_std (GFC_STD_F2008, "SUBMODULE declaration at %C"))
     return MATCH_ERROR;
@@ -772,7 +773,7 @@ gfc_match_submodule (void)
 	}
       else
 	{
-	module_list = use_list;
+	  module_list = use_list;
 	  use_list->module_name = gfc_get_string (name);
 	  use_list->submodule_name = use_list->module_name;
 	}
@@ -780,8 +781,11 @@ gfc_match_submodule (void)
       if (gfc_match_char (')') == MATCH_YES)
 	break;
 
-      if (gfc_match_char (':') != MATCH_YES)
+      if (gfc_match_char (':') != MATCH_YES
+	  || seen_colon)
 	goto syntax;
+
+      seen_colon = true;
     }
 
   m = gfc_match (" %s%t", &gfc_new_block);
@@ -1988,7 +1992,8 @@ enum ab_attribute
   AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY, AB_OMP_DECLARE_TARGET,
   AB_ARRAY_OUTER_DEPENDENCY, AB_MODULE_PROCEDURE, AB_OACC_DECLARE_CREATE,
   AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
-  AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK
+  AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK,
+  AB_OMP_DECLARE_TARGET_LINK
 };
 
 static const mstring attr_bits[] =
@@ -2051,6 +2056,7 @@ static const mstring attr_bits[] =
     minit ("OACC_DECLARE_DEVICEPTR", AB_OACC_DECLARE_DEVICEPTR),
     minit ("OACC_DECLARE_DEVICE_RESIDENT", AB_OACC_DECLARE_DEVICE_RESIDENT),
     minit ("OACC_DECLARE_LINK", AB_OACC_DECLARE_LINK),
+    minit ("OMP_DECLARE_TARGET_LINK", AB_OMP_DECLARE_TARGET_LINK),
     minit (NULL, -1)
 };
 
@@ -2250,6 +2256,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_OACC_DECLARE_DEVICE_RESIDENT, attr_bits);
       if (attr->oacc_declare_link)
 	MIO_NAME (ab_attribute) (AB_OACC_DECLARE_LINK, attr_bits);
+      if (attr->omp_declare_target_link)
+	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_TARGET_LINK, attr_bits);
 
       mio_rparen ();
 
@@ -2418,6 +2426,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_OMP_DECLARE_TARGET:
 	      attr->omp_declare_target = 1;
+	      break;
+	    case AB_OMP_DECLARE_TARGET_LINK:
+	      attr->omp_declare_target_link = 1;
 	      break;
 	    case AB_ARRAY_OUTER_DEPENDENCY:
 	      attr->array_outer_dependency =1;
@@ -6919,8 +6930,17 @@ gfc_use_module (gfc_use_list *module)
     }
 
   if (module_fp == NULL)
-    gfc_fatal_error ("Can't open module file %qs for reading at %C: %s",
-		     filename, xstrerror (errno));
+    {
+      if (gfc_state_stack->state != COMP_SUBMODULE
+	  && module->submodule_name == NULL)
+	gfc_fatal_error ("Can't open module file %qs for reading at %C: %s",
+			 filename, xstrerror (errno));
+      else
+	gfc_fatal_error ("Module file %qs has not been generated, either "
+			 "because the module does not contain a MODULE "
+			 "PROCEDURE or there is an error in the module.",
+			 filename);
+    }
 
   /* Check that we haven't already USEd an intrinsic module with the
      same name.  */

@@ -1,6 +1,5 @@
-/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
-/* { dg-require-effective-target sse2 } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 --param min-insn-to-prefetch-ratio=6 -fdump-tree-aprefetch-details" } */
+/* { dg-do compile { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -march=amdfam10 --param simultaneous-prefetches=100 --param min-insn-to-prefetch-ratio=6 -fdump-tree-aprefetch-details" } */
 
 #define N 1000
 #define K 900
@@ -47,7 +46,3 @@ double test(void)
 
 /* { dg-final { scan-tree-dump-times "Issued prefetch" 5 "aprefetch" } } */
 /* { dg-final { scan-tree-dump-times "Issued nontemporal prefetch" 3 "aprefetch" } } */
-
-/* { dg-final { scan-assembler-times "prefetcht" 5 } } */
-/* { dg-final { scan-assembler-times "prefetchnta" 3 } } */
-

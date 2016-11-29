@@ -99,9 +99,9 @@ struct lra_reg
      *non-debug* insns.	 */
   int nrefs, freq;
   int last_reload;
-  /* Regno used to undo the inheritance.  It can be non-zero only
-     between couple of inheritance and undo inheritance passes.	 */
-  int restore_regno;
+  /* rtx used to undo the inheritance.  It can be non-null only
+     between subsequent inheritance and undo inheritance passes.  */
+  rtx restore_rtx;
   /* Value holding by register.	 If the pseudos have the same value
      they do not conflict.  */
   int val;
@@ -285,6 +285,7 @@ extern lra_insn_recog_data_t *lra_insn_recog_data;
 extern int lra_curr_reload_num;
 
 extern void lra_dump_bitmap_with_title (const char *, bitmap, int);
+extern hashval_t lra_rtx_hash (rtx x);
 extern void lra_push_insn (rtx_insn *);
 extern void lra_push_insn_by_uid (unsigned int);
 extern void lra_push_insn_and_update_insn_regno_info (rtx_insn *);

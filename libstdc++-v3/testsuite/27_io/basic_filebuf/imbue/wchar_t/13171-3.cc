@@ -28,7 +28,6 @@
 // libstdc++/13171
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale::global(locale(ISO_8859(15,fr_FR)));

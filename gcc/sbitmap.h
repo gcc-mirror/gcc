@@ -256,4 +256,29 @@ extern int bitmap_last_set_bit (const_sbitmap);
 
 extern void debug_bitmap (const_sbitmap);
 extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
+
+/* a class that ties the lifetime of a sbitmap to its scope.  */
+class auto_sbitmap
+{
+public:
+  explicit auto_sbitmap (unsigned int size) :
+    m_bitmap (sbitmap_alloc (size)) {}
+  ~auto_sbitmap () { sbitmap_free (m_bitmap); }
+
+  /* Allow calling sbitmap functions on our bitmap.  */
+  operator sbitmap () { return m_bitmap; }
+
+private:
+  /* Prevent making a copy that refers to our sbitmap.  */
+  auto_sbitmap (const auto_sbitmap &);
+  auto_sbitmap &operator = (const auto_sbitmap &);
+#if __cplusplus >= 201103L
+  auto_sbitmap (auto_sbitmap &&);
+  auto_sbitmap &operator = (auto_sbitmap &&);
+#endif
+
+  /* The bitmap we are managing.  */
+  sbitmap m_bitmap;
+};
+
 #endif /* ! GCC_SBITMAP_H */

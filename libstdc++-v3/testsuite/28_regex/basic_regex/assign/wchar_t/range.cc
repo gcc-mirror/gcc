@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
@@ -23,13 +22,11 @@
 // [28.8.3] class template basic_regex assign()
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests range assign of the basic_regex class.  
 void test01()
 {
   typedef std::basic_regex<wchar_t> test_type;
-  bool test __attribute__((unused)) = true;
 
   wchar_t s[] = L"a+b|c";
   test_type re;

@@ -1,4 +1,0 @@
-- add AppletStub and AppletContext to java.beans.Beans.instantiate().
-- make Introspector more efficient.
-- basic Introspection tests are in, but more tests are probably in order.
-- 1.2 support (waiting on java.lang.Package, mainly)

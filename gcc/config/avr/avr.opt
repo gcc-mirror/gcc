@@ -99,6 +99,10 @@ mfract-convert-truncate
 Target Report Mask(FRACT_CONV_TRUNC)
 Allow to use truncation instead of rounding towards zero for fractional fixed-point types.
 
+mabsdata
+Target Report Mask(ABSDATA)
+Assume that all data in static storage can be accessed by LDS / STS.  This option is only useful for reduced Tiny devices.
+
 nodevicelib
 Driver Target Report RejectNegative
 Do not link against the device-specific library lib<MCU>.a.

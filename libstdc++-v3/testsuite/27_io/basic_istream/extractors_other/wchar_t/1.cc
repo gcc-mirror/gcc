@@ -26,7 +26,6 @@ void test01()
 {
   typedef std::wios::traits_type ctraits_type;
 
-  bool test __attribute__((unused)) = true;
   const std::wstring str_01;
   const std::wstring str_02(L"art taylor kickin it on DAKAR");
   std::wstring strtmp;

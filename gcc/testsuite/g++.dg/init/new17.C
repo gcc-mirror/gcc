@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fstrict-aliasing -fdump-tree-optimized" }
+// { dg-options "-O2 -fstrict-aliasing -fno-store-merging -fdump-tree-optimized" }
 
 // Test that placement new does not introduce an unnecessary memory
 // barrier.

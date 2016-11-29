@@ -205,3 +205,47 @@ int test_percent_q_plus_d (void)
    { dg-end-multiline-output "" } */
   return local;
 }
+
+/* Test of many nested locations and fixits.  */
+
+void test_many_nested_locations (void)
+{
+  /* { dg-warning "test of 70 locations" }
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+    sed do eiusmod tempor incididunt ut labore et dolore magna
+    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+    ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+    aute irure dolor in reprehenderit in voluptate velit esse cillum
+    dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+    cupidatat non proident, sunt in culpa qui officia deserunt
+    mollit anim id est laborum.
+  */
+/* { dg-begin-multiline-output "" }
+   /*
+   ^
+     Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+     ^~~~~ ^~~~~ ^~~~~ ^~~ ^~~~  ^~~~~~~~~~~ ^~~~~~~~~~ ^~~~
+     LOREM IPSUM DOLOR SIT AMET  CONSECTETUR ADIPISCING ELIT
+     sed do eiusmod tempor incididunt ut labore et dolore magna
+     ^~~ ^~ ^~~~~~~ ^~~~~~ ^~~~~~~~~~ ^~ ^~~~~~ ^~ ^~~~~~ ^~~~~
+     SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE ET DOLORE MAGNA
+     aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+     ^~~~~~  ^~ ^~~~ ^~ ^~~~~ ^~~~~~  ^~~~ ^~~~~~~ ^~~~~~~~~~~~
+     ALIQUA  UT ENIM AD MINIM VENIAM  QUIS NOSTRUD EXERCITATION
+     ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+     ^~~~~~~ ^~~~~~~ ^~~~ ^~ ^~~~~~~ ^~ ^~ ^~~~~~~ ^~~~~~~~~  ^~~~
+     ULLAMCO LABORIS NISI UT ALIQUIP EX EA COMMODO CONSEQUAT  DUIS
+     aute irure dolor in reprehenderit in voluptate velit esse cillum
+     ^~~~ ^~~~~ ^~~~~ ^~ ^~~~~~~~~~~~~ ^~ ^~~~~~~~~ ^~~~~ ^~~~ ^~~~~~
+     AUTE IRURE DOLOR IN REPREHENDERIT IN VOLUPTATE VELIT ESSE CILLUM
+     dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+     ^~~~~~ ^~ ^~~~~~ ^~~~~ ^~~~~~~~  ^~~~~~~~~ ^~~~ ^~~~~~~~
+     DOLORE EU FUGIAT NULLA PARIATUR  EXCEPTEUR SINT OCCAECAT
+     cupidatat non proident, sunt in culpa qui officia deserunt
+     ^~~~~~~~~ ^~~ ^~~~~~~~  ^~~~ ^~ ^~~~~ ^~~ ^~~~~~~ ^~~~~~~~
+     CUPIDATAT NON PROIDENT  SUNT IN CULPA QUI OFFICIA DESERUNT
+     mollit anim id est laborum.
+     ^~~~~~ ^~~~ ^~ ^~~ ^~~~~~~
+     MOLLIT ANIM ID EST LABORUM
+   { dg-end-multiline-output "" } */
+}

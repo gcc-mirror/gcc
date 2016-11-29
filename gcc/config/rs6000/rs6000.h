@@ -363,6 +363,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define SET_TARGET_LINK_STACK(X) do { } while (0)
 #endif
 
+#ifndef TARGET_FLOAT128_ENABLE_TYPE
+#define TARGET_FLOAT128_ENABLE_TYPE 0
+#endif
+
 /* Return 1 for a symbol ref for a thread-local storage symbol.  */
 #define RS6000_SYMBOL_REF_TLS_P(RTX) \
   (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
@@ -438,23 +442,24 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    point.  KFmode was added as a way to represent IEEE 128-bit floating point,
    even if the default for long double is the IBM long double format.
    Similarly IFmode is the IBM long double format even if the default is IEEE
-   128-bit.  */
+   128-bit.  Don't allow IFmode if -msoft-float.  */
 #define FLOAT128_IEEE_P(MODE)						\
   ((TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
    || ((MODE) == KFmode) || ((MODE) == KCmode))
 
 #define FLOAT128_IBM_P(MODE)						\
   ((!TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
-   || ((MODE) == IFmode) || ((MODE) == ICmode))
+   || (TARGET_HARD_FLOAT && TARGET_FPRS					\
+       && ((MODE) == IFmode || (MODE) == ICmode)))
 
 /* Helper macros to say whether a 128-bit floating point type can go in a
    single vector register, or whether it needs paired scalar values.  */
-#define FLOAT128_VECTOR_P(MODE) (TARGET_FLOAT128 && FLOAT128_IEEE_P (MODE))
+#define FLOAT128_VECTOR_P(MODE) (TARGET_FLOAT128_TYPE && FLOAT128_IEEE_P (MODE))
 
 #define FLOAT128_2REG_P(MODE)						\
   (FLOAT128_IBM_P (MODE)						\
    || ((MODE) == TDmode)						\
-   || (!TARGET_FLOAT128 && FLOAT128_IEEE_P (MODE)))
+   || (!TARGET_FLOAT128_TYPE && FLOAT128_IEEE_P (MODE)))
 
 /* Return true for floating point that does not use a vector register.  */
 #define SCALAR_FLOAT_MODE_NOT_VECTOR_P(MODE)				\
@@ -602,8 +607,10 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_128	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
 				 && TARGET_POWERPC64)
 #define TARGET_VEXTRACTUB	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
-				 && TARGET_UPPER_REGS_DF \
 				 && TARGET_UPPER_REGS_DI && TARGET_POWERPC64)
+/* This wants to be set for p8 and newer.  On p7, overlapping unaligned
+   loads are slow. */
+#define TARGET_EFFICIENT_OVERLAPPING_UNALIGNED TARGET_EFFICIENT_UNALIGNED_VSX
 
 /* Byte/char syncs were added as phased in for ISA 2.06B, but are not present
    in power7, so conditionalize them on p8 features.  TImode syncs need quad
@@ -638,7 +645,7 @@ extern int rs6000_vector_align[];
 #define MASK_DIRECT_MOVE		OPTION_MASK_DIRECT_MOVE
 #define MASK_DLMZB			OPTION_MASK_DLMZB
 #define MASK_EABI			OPTION_MASK_EABI
-#define MASK_FLOAT128			OPTION_MASK_FLOAT128
+#define MASK_FLOAT128_TYPE		OPTION_MASK_FLOAT128_TYPE
 #define MASK_FPRND			OPTION_MASK_FPRND
 #define MASK_P8_FUSION			OPTION_MASK_P8_FUSION
 #define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
@@ -760,6 +767,16 @@ extern int rs6000_vector_align[];
 				 && TARGET_FPRS				\
 				 && TARGET_SINGLE_FLOAT			\
 				 && TARGET_DOUBLE_FLOAT)
+
+/* Macro to say whether we can do optimizations where we need to do parts of
+   the calculation in 64-bit GPRs and then is transfered to the vector
+   registers.  Do not allow -maltivec=be for these optimizations, because it
+   adds to the complexity of the code.  */
+#define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
+					 && TARGET_P8_VECTOR		\
+					 && TARGET_POWERPC64		\
+					 && TARGET_UPPER_REGS_DI	\
+					 && (rs6000_altivec_element_order != 2))
 
 /* Whether the various reciprocal divide/square root estimate instructions
    exist, and whether we should automatically generate code for the instruction
@@ -983,10 +1000,10 @@ enum data_align { align_abi, align_opt, align_both };
    aligned to 4 or 8 bytes.  */
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
-   || (SCALAR_FLOAT_MODE_NOT_VECTOR_P (MODE) && (ALIGN) < 32)		\
-   || (!TARGET_EFFICIENT_UNALIGNED_VSX                                  \
-       && ((VECTOR_MODE_P (MODE) || FLOAT128_VECTOR_P (MODE))		\
-	   && (((int)(ALIGN)) < VECTOR_ALIGN (MODE)))))
+   || (!TARGET_EFFICIENT_UNALIGNED_VSX					\
+       && ((SCALAR_FLOAT_MODE_NOT_VECTOR_P (MODE) && (ALIGN) < 32)	\
+	   || ((VECTOR_MODE_P (MODE) || FLOAT128_VECTOR_P (MODE))	\
+	       && (int) (ALIGN) < VECTOR_ALIGN (MODE)))))
 
 
 /* Standard register usage.  */
@@ -1111,7 +1128,7 @@ enum data_align { align_abi, align_opt, align_both };
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1,	   \
+   0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1,	   \
    /* AltiVec registers.  */			   \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -1262,10 +1279,14 @@ enum data_align { align_abi, align_opt, align_both };
    enough space to account for vectors in FP regs.  However, TFmode/TDmode
    should not use VSX instructions to do a caller save. */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)			\
-  (TARGET_VSX								\
-   && ((MODE) == VOIDmode || ALTIVEC_OR_VSX_VECTOR_MODE (MODE))		\
-   && FP_REGNO_P (REGNO)						\
+  ((NREGS) <= rs6000_hard_regno_nregs[MODE][REGNO]			\
+   ? (MODE)								\
+   : TARGET_VSX								\
+     && ((MODE) == VOIDmode || ALTIVEC_OR_VSX_VECTOR_MODE (MODE))	\
+     && FP_REGNO_P (REGNO)						\
    ? V2DFmode								\
+   : TARGET_E500_DOUBLE && (MODE) == SImode				\
+   ? SImode								\
    : TARGET_E500_DOUBLE && ((MODE) == VOIDmode || (MODE) == DFmode)	\
    ? DFmode								\
    : !TARGET_E500_DOUBLE && FLOAT128_IBM_P (MODE) && FP_REGNO_P (REGNO)	\
@@ -1584,6 +1605,10 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_wx,		/* FPR register for STFIWX */
   RS6000_CONSTRAINT_wy,		/* VSX register for SF */
   RS6000_CONSTRAINT_wz,		/* FPR register for LFIWZX */
+  RS6000_CONSTRAINT_wH,		/* Altivec register for 32-bit integers.  */
+  RS6000_CONSTRAINT_wI,		/* VSX register for 32-bit integers.  */
+  RS6000_CONSTRAINT_wJ,		/* VSX register for 8/16-bit integers.  */
+  RS6000_CONSTRAINT_wK,		/* Altivec register for 16/32-bit integers.  */
   RS6000_CONSTRAINT_MAX
 };
 
@@ -1701,25 +1726,35 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 
    On the RS/6000, the frame pointer is the same as the stack pointer,
    except for dynamic allocations.  So we start after the fixed area and
-   outgoing parameter area.  */
+   outgoing parameter area.
+
+   If the function uses dynamic stack space (CALLS_ALLOCA is set), that
+   space needs to be aligned to STACK_BOUNDARY, i.e. the sum of the
+   sizes of the fixed area and the parameter area must be a multiple of
+   STACK_BOUNDARY.  */
 
 #define STARTING_FRAME_OFFSET						\
   (FRAME_GROWS_DOWNWARD							\
    ? 0									\
-   : (RS6000_ALIGN (crtl->outgoing_args_size,				\
-		    (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)		\
-      + RS6000_SAVE_AREA))
+   : (cfun->calls_alloca						\
+      ? (RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA,	\
+		       (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8 ))	\
+      : (RS6000_ALIGN (crtl->outgoing_args_size,			\
+		       (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)		\
+	 + RS6000_SAVE_AREA)))
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.
 
    The default value for this macro is `STACK_POINTER_OFFSET' plus the
    length of the outgoing arguments.  The default is correct for most
-   machines.  See `function.c' for details.  */
+   machines.  See `function.c' for details.
+
+   This value must be a multiple of STACK_BOUNDARY (hard coded in
+   `emit-rtl.c').  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (crtl->outgoing_args_size,				\
-		 (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)		\
-   + (STACK_POINTER_OFFSET))
+  RS6000_ALIGN (crtl->outgoing_args_size + STACK_POINTER_OFFSET,	\
+		(TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -1810,7 +1845,7 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 			   : (FP_ARG_RETURN + AGGR_ARG_NUM_REG - 1))
 #define ALTIVEC_ARG_MAX_RETURN (DEFAULT_ABI != ABI_ELFv2		\
 				? (ALTIVEC_ARG_RETURN			\
-				   + (TARGET_FLOAT128 ? 1 : 0))		\
+				   + (TARGET_FLOAT128_TYPE ? 1 : 0))	\
 			        : (ALTIVEC_ARG_RETURN + AGGR_ARG_NUM_REG - 1))
 
 /* Flags for the call/call_value rtl operations set up by function_arg */
@@ -1947,7 +1982,7 @@ typedef struct rs6000_args
 #define TRAMPOLINE_SIZE rs6000_trampoline_size ()
 
 /* Definitions for __builtin_return_address and __builtin_frame_address.
-   __builtin_return_address (0) should give link register (65), enable
+   __builtin_return_address (0) should give link register (LR_REGNO), enable
    this.  */
 /* This should be uncommented, so that the link register is used, but
    currently this would result in unmatched insns and spilling fixed
@@ -2259,35 +2294,8 @@ extern int toc_initialized;
 
 #if RS6000_WEAK
 /* Used in lieu of ASM_WEAKEN_LABEL.  */
-#define	ASM_WEAKEN_DECL(FILE, DECL, NAME, VAL)			 	\
-  do									\
-    {									\
-      fputs ("\t.weak\t", (FILE));					\
-      RS6000_OUTPUT_BASENAME ((FILE), (NAME)); 				\
-      if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL			\
-	  && DEFAULT_ABI == ABI_AIX && DOT_SYMBOLS)			\
-	{								\
-	  if (TARGET_XCOFF)						\
-	    fputs ("[DS]", (FILE));					\
-	  fputs ("\n\t.weak\t.", (FILE));				\
-	  RS6000_OUTPUT_BASENAME ((FILE), (NAME)); 			\
-	}								\
-      fputc ('\n', (FILE));						\
-      if (VAL)								\
-	{								\
-	  ASM_OUTPUT_DEF ((FILE), (NAME), (VAL));			\
-	  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL		\
-	      && DEFAULT_ABI == ABI_AIX && DOT_SYMBOLS)			\
-	    {								\
-	      fputs ("\t.set\t.", (FILE));				\
-	      RS6000_OUTPUT_BASENAME ((FILE), (NAME));			\
-	      fputs (",.", (FILE));					\
-	      RS6000_OUTPUT_BASENAME ((FILE), (VAL));			\
-	      fputc ('\n', (FILE));					\
-	    }								\
-	}								\
-    }									\
-  while (0)
+#define        ASM_WEAKEN_DECL(FILE, DECL, NAME, VAL) \
+  rs6000_asm_weaken_decl ((FILE), (DECL), (NAME), (VAL))
 #endif
 
 #if HAVE_GAS_WEAKREF
@@ -2676,7 +2684,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_TYPE_MASK	0x0000000f	/* Mask to isolate types */
 
 #define RS6000_BTC_MISC		0x00000000	/* No special attributes.  */
-#define RS6000_BTC_CONST	0x00000100	/* uses no global state.  */
+#define RS6000_BTC_CONST	0x00000100	/* Neither uses, nor
+						   modifies global state.  */
 #define RS6000_BTC_PURE		0x00000200	/* reads global
 						   state/mem and does
 						   not modify global state.  */
@@ -2717,7 +2726,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
 #define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
 #define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
-#define RS6000_BTM_FLOAT128	MASK_FLOAT128	/* IEEE 128-bit float.  */
+#define RS6000_BTM_FLOAT128	MASK_FLOAT128_TYPE /* IEEE 128-bit float.  */
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2903,3 +2912,7 @@ extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
 #define TARGET_SUPPORTS_WIDE_INT 1
+
+#if (GCC_VERSION >= 3000)
+#pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
+#endif

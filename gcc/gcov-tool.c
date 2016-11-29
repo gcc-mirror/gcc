@@ -547,9 +547,11 @@ process_args (int argc, char **argv)
         case 'h':
           print_usage (false);
           /* Print_usage will exit.  */
+	  /* FALLTHRU */
         case 'v':
           print_version ();
           /* Print_version will exit.  */
+	  /* FALLTHRU */
         default:
           print_usage (true);
           /* Print_usage will exit.  */

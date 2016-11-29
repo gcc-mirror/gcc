@@ -26,8 +26,6 @@
 // General tests element access and manipulation
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   int A[] = { 0, 1, 2, 3, 4 };
   __gnu_cxx::_ExtPtr_allocator<int> alloc;
   std::vector<int,__gnu_cxx::_ExtPtr_allocator<int> > mv( A, A+5, alloc );

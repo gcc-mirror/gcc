@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-namedlocale "en_US.UTF-8" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
@@ -25,8 +25,6 @@
 // libstdc++/51288
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc_us = std::locale("en_US.UTF-8");
 
   std::ostringstream oss;

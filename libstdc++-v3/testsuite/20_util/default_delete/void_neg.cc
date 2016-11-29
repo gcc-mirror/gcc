@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -26,5 +25,5 @@ void test01()
 {
   std::default_delete<void> d;
   d(nullptr);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 72 }
+  // { dg-error "incomplete" "" { target *-*-* } 74 }
 }

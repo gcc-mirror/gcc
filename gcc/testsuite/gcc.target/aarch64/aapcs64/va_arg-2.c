@@ -19,6 +19,8 @@ signed short ss = 0xcba9;
 signed int ss_promoted = 0xffffcba9;
 float fp = 65432.12345f;
 double fp_promoted = (double)65432.12345f;
+__fp16 fp16 = 2.0f;
+__fp16 fp16_promoted = (double)2.0f;
 
 #define HAS_DATA_INIT_FUNC
 void init_data ()
@@ -64,9 +66,10 @@ void init_data ()
   ANON         (    long double   , 98765432123456789.987654321L,      STACK+80, 20)
   ANON         (             vf2_t, vf2   ,                            STACK+96, 21)
   ANON         (             vi4_t, vi4   ,                            STACK+112,22)
+  ANON_PROMOTED(         __fp16   , fp16  ,     double, fp16_promoted, STACK+128,23)
 #ifndef __AAPCS64_BIG_ENDIAN__
-  LAST_ANON    (         int      , 0xeeee,                            STACK+128,23)
+  LAST_ANON    (         int      , 0xeeee,                            STACK+136,24)
 #else
-  LAST_ANON    (         int      , 0xeeee,                            STACK+132,23)
+  LAST_ANON    (         int      , 0xeeee,                            STACK+140,24)
 #endif
 #endif

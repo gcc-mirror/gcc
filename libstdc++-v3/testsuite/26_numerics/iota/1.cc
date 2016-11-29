@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -31,8 +31,6 @@ const int N = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::iota(A, A + N, 1);
   VERIFY( std::equal(A, A + N, B) );
 

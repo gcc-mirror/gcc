@@ -30,7 +30,6 @@ void test06()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   char buffer[] = "xxxxxxxxxx";
   typedef filebuf::int_type	int_type;
   filebuf fbuf01;

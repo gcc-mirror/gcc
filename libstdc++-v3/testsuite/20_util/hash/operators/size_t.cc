@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2007-08-20  <benjamin@redhat.com>
 //
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
@@ -26,8 +26,6 @@ template<typename T>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef T 				value_type;
     typedef std::hash<value_type> 	hash_type;
     using std::size_t;

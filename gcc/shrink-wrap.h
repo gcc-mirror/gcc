@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 /* In shrink-wrap.c.  */
 extern bool requires_stack_frame_p (rtx_insn *, HARD_REG_SET, HARD_REG_SET);
 extern void try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq);
+extern void try_shrink_wrapping_separate (basic_block first_bb);
 #define SHRINK_WRAPPING_ENABLED \
   (flag_shrink_wrap && targetm.have_simple_return ())
 

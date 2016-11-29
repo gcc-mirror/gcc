@@ -28,7 +28,6 @@
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
   std::wstring str01 = L"geogaddi";
   std::wstring str02;
 

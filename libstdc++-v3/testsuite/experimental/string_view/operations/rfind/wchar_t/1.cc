@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -22,11 +22,9 @@
 
 // basic_string_view rfind
 
-bool
+void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::experimental::wstring_view::size_type csize_type;
   typedef std::experimental::wstring_view::const_reference cref;
   typedef std::experimental::wstring_view::reference ref;
@@ -85,8 +83,6 @@ test01()
   VERIFY( csz01 == csz02 );
   csz01 = str01.rfind(L'/');
   VERIFY( csz01 == npos );
-
-  return test;
 }
 
 int

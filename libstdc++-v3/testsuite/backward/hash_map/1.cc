@@ -66,7 +66,6 @@ namespace __gnu_cxx
 void test01()
 {
   const int Size = 5;
-  bool test __attribute__((unused)) = true;
 
   using std::string;
   using std::pair;

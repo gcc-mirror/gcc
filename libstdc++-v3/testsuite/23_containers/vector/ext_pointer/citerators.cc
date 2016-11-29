@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > v(7);
   VERIFY( v.cbegin() == v.begin() );
   VERIFY( v.cend() == v.end() );

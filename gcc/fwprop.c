@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
@@ -1050,9 +1051,7 @@ free_load_extend (rtx src, rtx_insn *insn)
   df_ref def, use;
 
   reg = XEXP (src, 0);
-#ifdef LOAD_EXTEND_OP
-  if (LOAD_EXTEND_OP (GET_MODE (reg)) != GET_CODE (src))
-#endif
+  if (load_extend_op (GET_MODE (reg)) != GET_CODE (src))
     return false;
 
   FOR_EACH_INSN_USE (use, insn)

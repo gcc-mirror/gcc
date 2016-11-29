@@ -16,17 +16,15 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <map>
 #include <testsuite_hooks.h>
 
 using namespace std;
 
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef multimap<int,double> Container;
   typedef Container::iterator iterator;
   typedef pair<iterator,iterator> itpair;
@@ -52,8 +50,6 @@ int test01()
   VERIFY(m.count(5) == 2);
   VERIFY(m.count(42) == 1);
   VERIFY(m.count(7) == 2);
-
-  return test;
 }
 
 int main()

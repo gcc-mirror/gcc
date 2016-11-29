@@ -1341,7 +1341,7 @@ package body Sem is
          --  unconditionally, and has no restore mechanism, because it is
          --  intended as a lowest-level Pure package.
 
-         Save_Max_Line   : constant Int := Style_Max_Line_Length;
+         Save_Max_Line : constant Int := Style_Max_Line_Length;
 
          List : Elist_Id;
 
@@ -1367,7 +1367,7 @@ package body Sem is
          --  Check for scope mismatch on exit from compilation
 
          pragma Assert (Current_Scope = Standard_Standard
-                          or else Comp_Unit = Cunit (Main_Unit));
+                         or else Comp_Unit = Cunit (Main_Unit));
 
          --  Then pop entry for Standard, and pop implicit types
 
@@ -1621,6 +1621,15 @@ package body Sem is
       return ss (Scope_Stack.Last);
    end sst;
 
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock is
+   begin
+      Scope_Stack.Locked := False;
+   end Unlock;
+
    ------------------------
    -- Walk_Library_Items --
    ------------------------
@@ -1766,6 +1775,13 @@ package body Sem is
             when N_Subunit =>
                pragma Assert (False, "subunit");
                null;
+
+            when N_Null_Statement =>
+
+               --  Do not call Action for an ignored ghost unit
+
+               pragma Assert (Is_Ignored_Ghost_Node (Original_Node (Item)));
+               return;
 
             when others =>
                pragma Assert (False);
@@ -2090,10 +2106,16 @@ package body Sem is
                         Unit (Library_Unit (Main_CU)));
                   end if;
 
-                  --  It's a spec, process it, and the units it depends on,
-                  --  unless it is a descendant of the main unit.  This can
-                  --  happen when the body of a parent depends on some other
-                  --  descendant.
+               --  It is a spec, process it, and the units it depends on,
+               --  unless it is a descendant of the main unit. This can happen
+               --  when the body of a parent depends on some other descendant.
+
+               when N_Null_Statement =>
+
+                  --  Ignore an ignored ghost unit
+
+                  pragma Assert (Is_Ignored_Ghost_Node (Original_Node (N)));
+                  null;
 
                when others =>
                   Par := Scope (Defining_Entity (Unit (CU)));

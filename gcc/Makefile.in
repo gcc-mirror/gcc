@@ -911,7 +911,8 @@ RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
-	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def
+	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def \
+	hsa-builtins.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
 TREE_CORE_H = tree-core.h coretypes.h all-tree.def tree.def \
@@ -1182,7 +1183,8 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/c-cilkplus.o \
-  c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o
+  c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o \
+  c-family/c-attribs.o c-family/c-warn.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
@@ -1295,7 +1297,10 @@ OBJS = \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-nonnull-compare.o \
 	gimple-ssa-split-paths.o \
+	gimple-ssa-store-merging.o \
 	gimple-ssa-strength-reduction.o \
+	gimple-ssa-sprintf.o \
+	gimple-ssa-warn-alloca.o \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
 	gimple-walk.o \
@@ -1399,6 +1404,7 @@ OBJS = \
 	postreload.o \
 	predict.o \
 	print-rtl.o \
+	print-rtl-function.o \
 	print-tree.o \
 	profile.o \
 	real.o \
@@ -1443,6 +1449,7 @@ OBJS = \
 	store-motion.o \
 	streamer-hooks.o \
 	stringpool.o \
+	substring-locations.o \
 	target-globals.o \
 	targhooks.o \
 	timevar.o \
@@ -1503,6 +1510,7 @@ OBJS = \
 	tree-ssa-loop-manip.o \
 	tree-ssa-loop-niter.o \
 	tree-ssa-loop-prefetch.o \
+	tree-ssa-loop-split.o \
 	tree-ssa-loop-unswitch.o \
 	tree-ssa-loop.o \
 	tree-ssa-math-opts.o \
@@ -1542,6 +1550,7 @@ OBJS = \
 	tree-vectorizer.o \
 	tree-vrp.o \
 	tree.o \
+	typed-splay-tree.o \
 	valtrack.o \
 	value-prof.o \
 	var-tracking.o \
@@ -1560,6 +1569,7 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
+	edit-context.o \
 	pretty-print.o intl.o \
 	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o
@@ -1866,6 +1876,15 @@ endif
 # This does the things that can't be done on the host machine.
 rest.cross: specs
 
+# GCC's selftests.
+# Specify a dummy input file to placate the driver.
+# Specify -nostdinc to work around missing WIND_BASE environment variable
+# required for *-wrs-vxworks-* targets.
+# Specify -o /dev/null so the output of -S is discarded. More importantly
+# It does not try to create a file with the name "null.s" on POSIX and
+# "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
+SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -fself-test -o /dev/null
+
 # Run the selftests during the build once we have a driver and a cc1,
 # so that self-test failures are caught as early as possible.
 # Use "s-selftest" to ensure that we only run the selftests if the
@@ -1873,18 +1892,19 @@ rest.cross: specs
 .PHONY: selftest
 selftest: s-selftest
 s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test
+	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS)
 	$(STAMP) $@
 
 # Convenience method for running selftests under gdb:
 .PHONY: selftest-gdb
 selftest-gdb: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test -wrapper gdb,--args
+	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS) \
+	  -wrapper gdb,--args
 
 # Convenience method for running selftests under valgrind:
 .PHONY: selftest-valgrind
 selftest-valgrind: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test \
+	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS) \
 	  -wrapper valgrind,--leak-check=full
 
 # Recompile all the language-independent object files.
@@ -2148,9 +2168,10 @@ s-bversion: BASE-VER
 
 CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
 
-pass-instances.def: $(srcdir)/passes.def $(srcdir)/gen-pass-instances.awk
+pass-instances.def: $(srcdir)/passes.def $(PASSES_EXTRA) \
+		    $(srcdir)/gen-pass-instances.awk
 	$(AWK) -f $(srcdir)/gen-pass-instances.awk \
-	  $(srcdir)/passes.def > pass-instances.def
+	  $(srcdir)/passes.def $(PASSES_EXTRA) > pass-instances.def
 
 $(out_object_file): $(out_file)
 	$(COMPILE) $<
@@ -2456,6 +2477,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-phinodes.c \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/tree-ssanames.h \
+  $(srcdir)/tree-vrp.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.c \
   $(srcdir)/lto-streamer.h \
@@ -2774,7 +2796,7 @@ build/gcov-iov$(build_exeext): build/gcov-iov.o
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) \
 		build/gcov-iov.o -o $@
 
-gcov-iov.h: s-iov
+gcov-iov.h: s-iov; @true
 s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
 	build/gcov-iov$(build_exeext) '$(BASEVER_c)' '$(DEVPHASE_c)' \
 	    > tmp-gcov-iov.h
@@ -3362,7 +3384,7 @@ s-params.options: $(srcdir)/params-options.h $(srcdir)/params.def
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \
   tree-ssa-alias.h $(INTERNAL_FN_H) gimple-fold.h tree-eh.h gimple-expr.h \
-  gimple.h is-a.h $(TREE_PASS_H) $(GCC_PLUGIN_H) \
+  gimple.h is-a.h memmodel.h $(TREE_PASS_H) $(GCC_PLUGIN_H) \
   $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) $(OPTS_H) $(PARAMS_H) \
   $(tm_file_list) $(tm_include_list) $(tm_p_file_list) $(tm_p_include_list) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \
@@ -3893,7 +3915,7 @@ check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
 # testsuites like objc or go.
 $(lang_checks_parallelized): check-% : site.exp
 	-rm -rf $(TESTSUITEDIR)/$*-parallel
-	@if [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
+	@if [ -n "$(filter -j%, $(MFLAGS))" ]; then \
 	  test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR) || true; \
 	  test -d $(TESTSUITEDIR)/$*-parallel || mkdir $(TESTSUITEDIR)/$*-parallel || true; \
 	  GCC_RUNTEST_PARALLELIZE_DIR=`${PWD_COMMAND}`/$(TESTSUITEDIR)/$(check_p_tool)-parallel ; \

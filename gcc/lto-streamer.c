@@ -267,23 +267,23 @@ struct tree_hash_entry
 
 struct tree_entry_hasher : nofree_ptr_hash <tree_hash_entry>
 {
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const tree_hash_entry *);
+  static inline bool equal (const tree_hash_entry *, const tree_hash_entry *);
 };
 
 inline hashval_t
-tree_entry_hasher::hash (const value_type *e)
+tree_entry_hasher::hash (const tree_hash_entry *e)
 {
   return htab_hash_pointer (e->key);
 }
 
 inline bool
-tree_entry_hasher::equal (const value_type *e1, const compare_type *e2)
+tree_entry_hasher::equal (const tree_hash_entry *e1, const tree_hash_entry *e2)
 {
   return (e1->key == e2->key);
 }
 
-static hash_table<tree_hash_entry> *tree_htab;
+static hash_table<tree_entry_hasher> *tree_htab;
 #endif
 
 /* Initialization common to the LTO reader and writer.  */
@@ -299,7 +299,7 @@ lto_streamer_init (void)
     streamer_check_handled_ts_structures ();
 
 #ifdef LTO_STREAMER_DEBUG
-  tree_htab = new hash_table<tree_hash_entry> (31);
+  tree_htab = new hash_table<tree_entry_hasher> (31);
 #endif
 }
 

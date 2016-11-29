@@ -55,8 +55,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-ssa-alias.h"
 #include "gimple-expr.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "optabs.h"
 #include "regs.h"
@@ -76,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "predict.h"
 #include "params.h"
+#include "real.h"
 
 
 bool
@@ -459,6 +462,94 @@ default_libgcc_floating_mode_supported_p (machine_mode mode)
     default:
       return false;
     }
+}
+
+/* Return the machine mode to use for the type _FloatN, if EXTENDED is
+   false, or _FloatNx, if EXTENDED is true, or VOIDmode if not
+   supported.  */
+machine_mode
+default_floatn_mode (int n, bool extended)
+{
+  if (extended)
+    {
+      machine_mode cand1 = VOIDmode, cand2 = VOIDmode;
+      switch (n)
+	{
+	case 32:
+#ifdef HAVE_DFmode
+	  cand1 = DFmode;
+#endif
+	  break;
+
+	case 64:
+#ifdef HAVE_XFmode
+	  cand1 = XFmode;
+#endif
+#ifdef HAVE_TFmode
+	  cand2 = TFmode;
+#endif
+	  break;
+
+	case 128:
+	  break;
+
+	default:
+	  /* Those are the only valid _FloatNx types.  */
+	  gcc_unreachable ();
+	}
+      if (cand1 != VOIDmode
+	  && REAL_MODE_FORMAT (cand1)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (cand1)
+	  && targetm.libgcc_floating_mode_supported_p (cand1))
+	return cand1;
+      if (cand2 != VOIDmode
+	  && REAL_MODE_FORMAT (cand2)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (cand2)
+	  && targetm.libgcc_floating_mode_supported_p (cand2))
+	return cand2;
+    }
+  else
+    {
+      machine_mode cand = VOIDmode;
+      switch (n)
+	{
+	case 16:
+	  /* Always enable _Float16 if we have basic support for the mode.
+	     Targets can control the range and precision of operations on
+	     the _Float16 type using TARGET_C_EXCESS_PRECISION.  */
+#ifdef HAVE_HFmode
+	  cand = HFmode;
+#endif
+	  break;
+
+	case 32:
+#ifdef HAVE_SFmode
+	  cand = SFmode;
+#endif
+	  break;
+
+	case 64:
+#ifdef HAVE_DFmode
+	  cand = DFmode;
+#endif
+	  break;
+
+	case 128:
+#ifdef HAVE_TFmode
+	  cand = TFmode;
+#endif
+	  break;
+
+	default:
+	  break;
+	}
+      if (cand != VOIDmode
+	  && REAL_MODE_FORMAT (cand)->ieee_bits == n
+	  && targetm.scalar_mode_supported_p (cand)
+	  && targetm.libgcc_floating_mode_supported_p (cand))
+	return cand;
+    }
+  return VOIDmode;
 }
 
 /* Make some target macros useable by target-independent code.  */
@@ -907,7 +998,7 @@ default_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
 extern bool
 default_lra_p (void)
 {
-  return false;
+  return true;
 }
 
 int
@@ -1419,6 +1510,36 @@ bool
 no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
 {
   return false;
+}
+
+/* Return the format string to which "%p" corresponds.  By default,
+   assume it corresponds to the C99 "%zx" format and set *FLAGS to
+   the empty string to indicate that format flags have no effect.
+   An example of an implementation that matches this description
+   is AIX.  */
+
+const char*
+default_printf_pointer_format (tree, const char **flags)
+{
+  *flags = "";
+
+  return "%zx";
+}
+
+/* For Glibc and uClibc targets also define the hook here because
+   otherwise it would have to be duplicated in each target's .c file
+   (such as in bfin/bfin.c and c6x/c6x.c, etc.)
+   Glibc and uClibc format pointers as if by "%zx" except for the null
+   pointer which outputs "(nil)".  It ignores the pound ('#') format
+   flag but interprets the space and plus flags the same as in the integer
+   directive.  */
+
+const char*
+linux_printf_pointer_format (tree arg, const char **flags)
+{
+  *flags = " +";
+
+  return arg && integer_zerop (arg) ? "(nil)" : "%#zx";
 }
 
 tree
@@ -2006,6 +2127,22 @@ default_max_noce_ifcvt_seq_cost (edge e)
     return PARAM_VALUE (param);
   else
     return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (3);
+}
+
+/* Default implementation of TARGET_MIN_ARITHMETIC_PRECISION.  */
+
+unsigned int
+default_min_arithmetic_precision (void)
+{
+  return WORD_REGISTER_OPERATIONS ? BITS_PER_WORD : BITS_PER_UNIT;
+}
+
+/* Default implementation of TARGET_C_EXCESS_PRECISION.  */
+
+enum flt_eval_method
+default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
+{
+  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
 }
 
 #include "gt-targhooks.h"

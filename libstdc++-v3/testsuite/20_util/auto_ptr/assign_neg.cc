@@ -47,6 +47,3 @@ main()
   test01();
   return 0;
 }
-// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 136 } 
-// { dg-error "note" "" { target *-*-* } 154 }
-// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 264 } 

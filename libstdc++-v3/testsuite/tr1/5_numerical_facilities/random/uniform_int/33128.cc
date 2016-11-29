@@ -24,8 +24,6 @@
 // libstdc++/33128
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::mt19937 rng;
   std::tr1::uniform_int<> six(1,6);
   std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_int<> >

@@ -22,7 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::wstringstream is01;
   const std::wstring str00; 
   const std::wstring str01 = L"123";

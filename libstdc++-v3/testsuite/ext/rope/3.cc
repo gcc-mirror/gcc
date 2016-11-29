@@ -79,7 +79,6 @@ void
 test01()
 {
   using namespace __gnu_cxx;
-  bool test __attribute__((unused)) = true;
 
   crope r;
   r = multiply(crope(base), 100000);

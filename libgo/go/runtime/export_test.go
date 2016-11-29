@@ -21,13 +21,10 @@ import (
 //var F64toint = f64toint
 //var Sqrt = sqrt
 
-func entersyscall(int32)
-func exitsyscall(int32)
-func golockedOSThread() bool
-
 var Entersyscall = entersyscall
 var Exitsyscall = exitsyscall
-var LockedOSThread = golockedOSThread
+
+// var LockedOSThread = lockedOSThread
 
 // var Xadduintptr = xadduintptr
 
@@ -38,33 +35,12 @@ type LFNode struct {
 	Pushcnt uintptr
 }
 
-func lfstackpush_go(head *uint64, node *LFNode)
-func lfstackpop_go(head *uint64) *LFNode
-
-var LFStackPush = lfstackpush_go
-var LFStackPop = lfstackpop_go
-
-type ParFor struct {
-	body   func(*ParFor, uint32)
-	done   uint32
-	Nthr   uint32
-	thrseq uint32
-	Cnt    uint32
-	wait   bool
+func LFStackPush(head *uint64, node *LFNode) {
+	lfstackpush(head, (*lfnode)(unsafe.Pointer(node)))
 }
 
-func newParFor(nthrmax uint32) *ParFor
-func parForSetup(desc *ParFor, nthr, n uint32, wait bool, body func(*ParFor, uint32))
-func parForDo(desc *ParFor)
-func parForIters(desc *ParFor, tid uintptr) (uintptr, uintptr)
-
-var NewParFor = newParFor
-var ParForSetup = parForSetup
-var ParForDo = parForDo
-
-func ParForIters(desc *ParFor, tid uint32) (uint32, uint32) {
-	begin, end := parForIters(desc, uintptr(tid))
-	return uint32(begin), uint32(end)
+func LFStackPop(head *uint64) *LFNode {
+	return (*LFNode)(unsafe.Pointer(lfstackpop(head)))
 }
 
 func GCMask(x interface{}) (ret []byte) {
@@ -90,7 +66,7 @@ func GCMask(x interface{}) (ret []byte) {
 //var IfaceHash = ifaceHash
 //var MemclrBytes = memclrBytes
 
-// var HashLoad = &hashLoad
+var HashLoad = &hashLoad
 
 // entry point for testing
 //func GostringW(w []uint16) (s string) {
@@ -102,20 +78,6 @@ func GCMask(x interface{}) (ret []byte) {
 //var Maxstring = &maxstring
 
 //type Uintreg uintreg
-
-//extern __go_open
-func open(path *byte, mode int32, perm int32) int32
-
-func Open(path *byte, mode int32, perm int32) int32 {
-	return open(path, mode, perm)
-}
-
-//extern close
-func close(int32) int32
-
-func Close(fd int32) int32 {
-	return close(fd)
-}
 
 /*
 func RunSchedLocalQueueTest() {
@@ -224,25 +186,13 @@ var IfaceHash = ifaceHash
 var MemclrBytes = memclrBytes
 */
 
-//extern read
-func read(fd int32, buf unsafe.Pointer, size int32) int32
+var Open = open
+var Close = closefd
+var Read = read
+var Write = write
 
-func Read(fd int32, buf unsafe.Pointer, size int32) int32 {
-	return read(fd, buf, size)
-}
-
-//extern write
-func write(fd int32, buf unsafe.Pointer, size int32) int32
-
-func Write(fd uintptr, buf unsafe.Pointer, size int32) int32 {
-	return write(int32(fd), buf, size)
-}
-
-func envs() []string
-func setenvs([]string)
-
-var Envs = envs
-var SetEnvs = setenvs
+func Envs() []string     { return envs }
+func SetEnvs(e []string) { envs = e }
 
 //var BigEndian = sys.BigEndian
 
@@ -287,7 +237,10 @@ var ForceGCPeriod = &forcegcperiod
 // SetTracebackEnv is like runtime/debug.SetTraceback, but it raises
 // the "environment" traceback level, so later calls to
 // debug.SetTraceback (e.g., from testing timeouts) can't lower it.
-func SetTracebackEnv(level string)
+func SetTracebackEnv(level string) {
+	setTraceback(level)
+	traceback_env = traceback_cache
+}
 
 /*
 var ReadUnaligned32 = readUnaligned32

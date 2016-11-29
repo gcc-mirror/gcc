@@ -260,4 +260,105 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 #endif /* (!defined __cplusplus || __cplusplus >= 201103L
 	   || defined __STDC_CONSTANT_MACROS) */
 
+#ifdef __STDC_WANT_IEC_60559_BFP_EXT__
+/* TS 18661-1 widths of integer types.  */
+
+#ifdef __INT8_TYPE__
+# undef INT8_WIDTH
+# define INT8_WIDTH 8
+#endif
+#ifdef __UINT8_TYPE__
+# undef UINT8_WIDTH
+# define UINT8_WIDTH 8
+#endif
+#ifdef __INT16_TYPE__
+# undef INT16_WIDTH
+# define INT16_WIDTH 16
+#endif
+#ifdef __UINT16_TYPE__
+# undef UINT16_WIDTH
+# define UINT16_WIDTH 16
+#endif
+#ifdef __INT32_TYPE__
+# undef INT32_WIDTH
+# define INT32_WIDTH 32
+#endif
+#ifdef __UINT32_TYPE__
+# undef UINT32_WIDTH
+# define UINT32_WIDTH 32
+#endif
+#ifdef __INT64_TYPE__
+# undef INT64_WIDTH
+# define INT64_WIDTH 64
+#endif
+#ifdef __UINT64_TYPE__
+# undef UINT64_WIDTH
+# define UINT64_WIDTH 64
+#endif
+
+#undef INT_LEAST8_WIDTH
+#define INT_LEAST8_WIDTH __INT_LEAST8_WIDTH__
+#undef UINT_LEAST8_WIDTH
+#define UINT_LEAST8_WIDTH __INT_LEAST8_WIDTH__
+#undef INT_LEAST16_WIDTH
+#define INT_LEAST16_WIDTH __INT_LEAST16_WIDTH__
+#undef UINT_LEAST16_WIDTH
+#define UINT_LEAST16_WIDTH __INT_LEAST16_WIDTH__
+#undef INT_LEAST32_WIDTH
+#define INT_LEAST32_WIDTH __INT_LEAST32_WIDTH__
+#undef UINT_LEAST32_WIDTH
+#define UINT_LEAST32_WIDTH __INT_LEAST32_WIDTH__
+#undef INT_LEAST64_WIDTH
+#define INT_LEAST64_WIDTH __INT_LEAST64_WIDTH__
+#undef UINT_LEAST64_WIDTH
+#define UINT_LEAST64_WIDTH __INT_LEAST64_WIDTH__
+
+#undef INT_FAST8_WIDTH
+#define INT_FAST8_WIDTH __INT_FAST8_WIDTH__
+#undef UINT_FAST8_WIDTH
+#define UINT_FAST8_WIDTH __INT_FAST8_WIDTH__
+#undef INT_FAST16_WIDTH
+#define INT_FAST16_WIDTH __INT_FAST16_WIDTH__
+#undef UINT_FAST16_WIDTH
+#define UINT_FAST16_WIDTH __INT_FAST16_WIDTH__
+#undef INT_FAST32_WIDTH
+#define INT_FAST32_WIDTH __INT_FAST32_WIDTH__
+#undef UINT_FAST32_WIDTH
+#define UINT_FAST32_WIDTH __INT_FAST32_WIDTH__
+#undef INT_FAST64_WIDTH
+#define INT_FAST64_WIDTH __INT_FAST64_WIDTH__
+#undef UINT_FAST64_WIDTH
+#define UINT_FAST64_WIDTH __INT_FAST64_WIDTH__
+
+#ifdef __INTPTR_TYPE__
+# undef INTPTR_WIDTH
+# define INTPTR_WIDTH __INTPTR_WIDTH__
+#endif
+#ifdef __UINTPTR_TYPE__
+# undef UINTPTR_WIDTH
+# define UINTPTR_WIDTH __INTPTR_WIDTH__
+#endif
+
+#undef INTMAX_WIDTH
+#define INTMAX_WIDTH __INTMAX_WIDTH__
+#undef UINTMAX_WIDTH
+#define UINTMAX_WIDTH __INTMAX_WIDTH__
+
+#undef PTRDIFF_WIDTH
+#define PTRDIFF_WIDTH __PTRDIFF_WIDTH__
+
+#undef SIG_ATOMIC_WIDTH
+#define SIG_ATOMIC_WIDTH __SIG_ATOMIC_WIDTH__
+
+#undef SIZE_WIDTH
+#define SIZE_WIDTH __SIZE_WIDTH__
+
+#undef WCHAR_WIDTH
+#define WCHAR_WIDTH __WCHAR_WIDTH__
+
+#undef WINT_WIDTH
+#define WINT_WIDTH __WINT_WIDTH__
+
+#endif
+
 #endif /* _GCC_STDINT_H */

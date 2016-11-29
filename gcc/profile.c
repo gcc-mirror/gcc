@@ -179,10 +179,6 @@ instrument_values (histogram_values values)
 	  gimple_gen_one_value_profiler (hist, t, 0);
 	  break;
 
-	case HIST_TYPE_CONST_DELTA:
-	  gimple_gen_const_delta_profiler (hist, t, 0);
-	  break;
-
  	case HIST_TYPE_INDIR_CALL:
  	case HIST_TYPE_INDIR_CALL_TOPN:
  	  gimple_gen_ic_profiler (hist, t, 0);
@@ -196,15 +192,9 @@ instrument_values (histogram_values values)
 	  gimple_gen_ior_profiler (hist, t, 0);
 	  break;
 
-  case HIST_TYPE_TIME_PROFILE:
-    {
-      basic_block bb =
-     split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
-      gimple_stmt_iterator gsi = gsi_start_bb (bb);
-
-      gimple_gen_time_profiler (t, 0, gsi);
-      break;
-    }
+	case HIST_TYPE_TIME_PROFILE:
+	  gimple_gen_time_profiler (t, 0);
+	  break;
 
 	default:
 	  gcc_unreachable ();
@@ -1046,7 +1036,7 @@ branch_prob (void)
 	       gsi_prev_nondebug (&gsi))
 	    {
 	      last = gsi_stmt (gsi);
-	      if (gimple_has_location (last))
+	      if (!RESERVED_LOCATION_P (gimple_location (last)))
 		break;
 	    }
 
@@ -1057,7 +1047,7 @@ branch_prob (void)
 	     is not computed twice.  */
 	  if (last
 	      && gimple_has_location (last)
-	      && LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
+	      && !RESERVED_LOCATION_P (e->goto_locus)
 	      && !single_succ_p (bb)
 	      && (LOCATION_FILE (e->goto_locus)
 	          != LOCATION_FILE (gimple_location (last))
@@ -1266,15 +1256,14 @@ branch_prob (void)
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
-	      if (gimple_has_location (stmt))
+	      if (!RESERVED_LOCATION_P (gimple_location (stmt)))
 		output_location (gimple_filename (stmt), gimple_lineno (stmt),
 				 &offset, bb);
 	    }
 
 	  /* Notice GOTO expressions eliminated while constructing the CFG.  */
 	  if (single_succ_p (bb)
-	      && LOCATION_LOCUS (single_succ_edge (bb)->goto_locus)
-		 != UNKNOWN_LOCATION)
+	      && !RESERVED_LOCATION_P (single_succ_edge (bb)->goto_locus))
 	    {
 	      expanded_location curr_location
 		= expand_location (single_succ_edge (bb)->goto_locus);
@@ -1310,7 +1299,7 @@ branch_prob (void)
     {
       unsigned n_instrumented;
 
-      gimple_init_edge_profiler ();
+      gimple_init_gcov_profiler ();
 
       n_instrumented = instrument_edges (el);
 

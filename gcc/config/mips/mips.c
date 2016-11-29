@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "gimple.h"
 #include "cfghooks.h"
 #include "df.h"
@@ -3395,10 +3396,11 @@ static GTY(()) rtx mips_tls_symbol;
    (either global dynamic or local dynamic).  V0 is an RTX for the
    return value location.  */
 
-static rtx
+static rtx_insn *
 mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
 {
-  rtx insn, loc, a0;
+  rtx loc, a0;
+  rtx_insn *insn;
 
   a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
 
@@ -3454,7 +3456,7 @@ mips_get_tp (void)
 static rtx
 mips_legitimize_tls_address (rtx loc)
 {
-  rtx dest, insn, v0, tp, tmp1, tmp2, eqv, offset;
+  rtx dest, v0, tp, tmp1, tmp2, eqv, offset;
   enum tls_model model;
 
   model = SYMBOL_REF_TLS_MODEL (loc);
@@ -3467,33 +3469,37 @@ mips_legitimize_tls_address (rtx loc)
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      v0 = gen_rtx_REG (Pmode, GP_RETURN);
-      insn = mips_call_tls_get_addr (loc, SYMBOL_TLSGD, v0);
-      dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (insn, dest, v0, loc);
-      break;
+      {
+	v0 = gen_rtx_REG (Pmode, GP_RETURN);
+	rtx_insn *insn = mips_call_tls_get_addr (loc, SYMBOL_TLSGD, v0);
+	dest = gen_reg_rtx (Pmode);
+	emit_libcall_block (insn, dest, v0, loc);
+	break;
+      }
 
     case TLS_MODEL_LOCAL_DYNAMIC:
-      v0 = gen_rtx_REG (Pmode, GP_RETURN);
-      insn = mips_call_tls_get_addr (loc, SYMBOL_TLSLDM, v0);
-      tmp1 = gen_reg_rtx (Pmode);
+      {
+	v0 = gen_rtx_REG (Pmode, GP_RETURN);
+	rtx_insn *insn = mips_call_tls_get_addr (loc, SYMBOL_TLSLDM, v0);
+	tmp1 = gen_reg_rtx (Pmode);
 
-      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
-	 share the LDM result with other LD model accesses.  */
-      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-			    UNSPEC_TLS_LDM);
-      emit_libcall_block (insn, tmp1, v0, eqv);
+	/* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	   share the LDM result with other LD model accesses.  */
+	eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+			      UNSPEC_TLS_LDM);
+	emit_libcall_block (insn, tmp1, v0, eqv);
 
-      offset = mips_unspec_address (loc, SYMBOL_DTPREL);
-      if (mips_split_p[SYMBOL_DTPREL])
-	{
-	  tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_DTPREL);
-	  dest = gen_rtx_LO_SUM (Pmode, tmp2, offset);
-	}
-      else
-	dest = expand_binop (Pmode, add_optab, tmp1, offset,
-			     0, 0, OPTAB_DIRECT);
-      break;
+	offset = mips_unspec_address (loc, SYMBOL_DTPREL);
+	if (mips_split_p[SYMBOL_DTPREL])
+	  {
+	    tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_DTPREL);
+	    dest = gen_rtx_LO_SUM (Pmode, tmp2, offset);
+	  }
+	else
+	  dest = expand_binop (Pmode, add_optab, tmp1, offset,
+			       0, 0, OPTAB_DIRECT);
+	break;
+      }
 
     case TLS_MODEL_INITIAL_EXEC:
       tp = mips_get_tp ();
@@ -3827,9 +3833,11 @@ mips16_constant_cost (int code, HOST_WIDE_INT x)
       /* Like LE, but reject the always-true case.  */
       if (x == -1)
 	return -1;
+      /* FALLTHRU */
     case LE:
       /* We add 1 to the immediate and use SLT.  */
       x += 1;
+      /* FALLTHRU */
     case XOR:
       /* We can use CMPI for an xor with an unsigned 16-bit X.  */
     case LT:
@@ -7438,7 +7446,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
   if (GET_CODE (fn) != SYMBOL_REF
       || !call_insn_operand (fn, VOIDmode))
     {
-      char buf[30];
+      char buf[32];
       rtx stub_fn, addr;
       rtx_insn *insn;
       bool lazy_p;
@@ -7634,7 +7642,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	    case DCmode:
 	      mips_output_64bit_xfer ('f', GP_RETURN + (8 / UNITS_PER_WORD),
 				      FP_REG_FIRST + 2);
-	      /* Fall though.  */
+	      /* FALLTHRU */
  	    case DFmode:
 	    case V2SFmode:
 	      gcc_assert (TARGET_PAIRED_SINGLE_FLOAT
@@ -9741,6 +9749,37 @@ mips_finish_declare_object (FILE *stream, tree decl, int top_level, int at_end)
     }
 }
 #endif
+
+/* Mark text contents as code or data, mainly for the purpose of correct
+   disassembly.  Emit a local symbol and set its type appropriately for
+   that purpose.  Also emit `.insn' if marking contents as code so that
+   the ISA mode is recorded and any padding that follows is disassembled
+   as correct instructions.  */
+
+void
+mips_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
+			     const char *prefix ATTRIBUTE_UNUSED,
+			     unsigned long num ATTRIBUTE_UNUSED,
+			     bool function_p ATTRIBUTE_UNUSED)
+{
+#ifdef ASM_OUTPUT_TYPE_DIRECTIVE
+  char buf[(sizeof (num) * 10) / 4 + 2];
+  const char *fnname;
+  char *sname;
+  rtx symbol;
+
+  sprintf (buf, "%lu", num);
+  symbol = XEXP (DECL_RTL (current_function_decl), 0);
+  fnname = targetm.strip_name_encoding (XSTR (symbol, 0));
+  sname = ACONCAT ((prefix, fnname, "_", buf, NULL));
+
+  ASM_OUTPUT_TYPE_DIRECTIVE (file, sname, function_p ? "function" : "object");
+  assemble_name (file, sname);
+  fputs (":\n", file);
+  if (function_p)
+    fputs ("\t.insn\n", file);
+#endif
+}
 
 /* Return the FOO in the name of the ".mdebug.FOO" section associated
    with the current ABI.  */
@@ -13579,12 +13618,9 @@ mips_output_jump (rtx *operands, int target_opno, int size_opno, bool link_p)
 	s += sprintf (s, ".option\tpic0\n\t");
 
       if (reg_p && mips_get_pic_call_symbol (operands, size_opno))
-	{
-	  s += sprintf (s, "%%*.reloc\t1f,R_MIPS_JALR,%%%d\n1:\t", size_opno);
-	  /* Not sure why this shouldn't permit a short delay but it did not
-	     allow it before so we still don't allow it.  */
-	  short_delay = "";
-	}
+	s += sprintf (s, "%%*.reloc\t1f,%s,%%%d\n1:\t",
+		      TARGET_MICROMIPS ? "R_MICROMIPS_JALR" : "R_MIPS_JALR",
+		      size_opno);
       else
 	s += sprintf (s, "%%*");
 
@@ -14451,13 +14487,9 @@ static struct
    is treated like input-dependence.  */
 
 static int
-mips_adjust_cost (rtx_insn *insn ATTRIBUTE_UNUSED, rtx link,
-		  rtx_insn *dep ATTRIBUTE_UNUSED, int cost)
+mips_adjust_cost (rtx_insn *, int dep_type, rtx_insn *, int cost, unsigned int)
 {
-  if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT
-      && TUNE_20KC)
-    return cost;
-  if (REG_NOTE_KIND (link) != 0)
+  if (dep_type != 0 && (dep_type != REG_DEP_OUTPUT || !TUNE_20KC))
     return 0;
   return cost;
 }
@@ -17127,15 +17159,22 @@ mips16_emit_constants_1 (machine_mode mode, rtx value, rtx_insn *insn)
   gcc_unreachable ();
 }
 
-/* Dump out the constants in CONSTANTS after INSN.  */
+/* Dump out the constants in CONSTANTS after INSN.  Record the initial
+   label number in the `consttable' and `consttable_end' insns emitted
+   at the beginning and the end of the constant pool respectively, so
+   that individual pools can be uniquely marked as data for the purpose
+   of disassembly.  */
 
 static void
 mips16_emit_constants (struct mips16_constant *constants, rtx_insn *insn)
 {
+  int label_num = constants ? CODE_LABEL_NUMBER (constants->label) : 0;
   struct mips16_constant *c, *next;
   int align;
 
   align = 0;
+  if (constants)
+    insn = emit_insn_after (gen_consttable (GEN_INT (label_num)), insn);
   for (c = constants; c != NULL; c = next)
     {
       /* If necessary, increase the alignment of PC.  */
@@ -17152,6 +17191,8 @@ mips16_emit_constants (struct mips16_constant *constants, rtx_insn *insn)
       next = c->next;
       free (c);
     }
+  if (constants)
+    insn = emit_insn_after (gen_consttable_end (GEN_INT (label_num)), insn);
 
   emit_barrier_after (insn);
 }
@@ -19011,6 +19052,46 @@ mips16_split_long_branches (void)
   while (something_changed);
 }
 
+/* Insert a `.insn' assembly pseudo-op after any labels followed by
+   a MIPS16 constant pool or no insn at all.  This is needed so that
+   targets that have been optimized away are still marked as code
+   and therefore branches that remained and point to them are known
+   to retain the ISA mode and as such can be successfully assembled.  */
+
+static void
+mips_insert_insn_pseudos (void)
+{
+  bool insn_pseudo_needed = TRUE;
+  rtx_insn *insn;
+
+  for (insn = get_last_insn (); insn != NULL_RTX; insn = PREV_INSN (insn))
+    switch (GET_CODE (insn))
+      {
+      case INSN:
+	if (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	    && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE)
+	  {
+	    insn_pseudo_needed = TRUE;
+	    break;
+	  }
+	/* Fall through.  */
+      case JUMP_INSN:
+      case CALL_INSN:
+      case JUMP_TABLE_DATA:
+	insn_pseudo_needed = FALSE;
+	break;
+      case CODE_LABEL:
+	if (insn_pseudo_needed)
+	  {
+	    emit_insn_after (gen_insn_pseudo (), insn);
+	    insn_pseudo_needed = FALSE;
+	  }
+	break;
+      default:
+	break;
+      }
+}
+
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
 
 static void
@@ -19046,6 +19127,7 @@ mips_machine_reorg2 (void)
        optimizations, but this should be an extremely rare case anyhow.  */
     mips_reorg_process_insns ();
   mips16_split_long_branches ();
+  mips_insert_insn_pseudos ();
   return 0;
 }
 
@@ -19655,8 +19737,15 @@ mips_option_override (void)
   if ((target_flags_explicit & MASK_BRANCHLIKELY) == 0)
     {
       if (ISA_HAS_BRANCHLIKELY
-	  && (optimize_size
-	      || (mips_tune_info->tune_flags & PTF_AVOID_BRANCHLIKELY) == 0))
+	  && ((optimize_size
+	       && (mips_tune_info->tune_flags
+		   & PTF_AVOID_BRANCHLIKELY_SIZE) == 0)
+	      || (!optimize_size
+		  && optimize > 0
+		  && (mips_tune_info->tune_flags
+		      & PTF_AVOID_BRANCHLIKELY_SPEED) == 0)
+	      || (mips_tune_info->tune_flags
+		  & PTF_AVOID_BRANCHLIKELY_ALWAYS) == 0))
 	target_flags |= MASK_BRANCHLIKELY;
       else
 	target_flags &= ~MASK_BRANCHLIKELY;
@@ -20214,16 +20303,32 @@ mips_need_noat_wrapper_p (rtx_insn *insn, rtx *opvec, int noperands)
   return false;
 }
 
-/* Implement FINAL_PRESCAN_INSN.  */
+/* Implement FINAL_PRESCAN_INSN.  Mark MIPS16 inline constant pools
+   as data for the purpose of disassembly.  For simplicity embed the
+   pool's initial label number in the local symbol produced so that
+   multiple pools within a single function end up marked with unique
+   symbols.  The label number is carried by the `consttable' insn
+   emitted at the beginning of each pool.  */
 
 void
 mips_final_prescan_insn (rtx_insn *insn, rtx *opvec, int noperands)
 {
+  if (INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+      && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE)
+    mips_set_text_contents_type (asm_out_file, "__pool_",
+				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 FALSE);
+
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))
     mips_push_asm_switch (&mips_noat);
 }
 
-/* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  */
+/* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  Reset text marking to
+   code after a MIPS16 inline constant pool.  Like with the beginning
+   of a pool table use the pool's initial label number to keep symbols
+   unique.  The label number is carried by the `consttable_end' insn
+   emitted at the end of each pool.  */
 
 static void
 mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
@@ -20231,6 +20336,13 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
 {
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))
     mips_pop_asm_switch (&mips_noat);
+
+  if (INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+      && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE_END)
+    mips_set_text_contents_type (asm_out_file, "__pend_",
+				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 TRUE);
 }
 
 /* Return the function that is used to expand the <u>mulsidi3 pattern.
@@ -20852,28 +20964,30 @@ mips_shift_truncation_mask (machine_mode mode)
 static void
 mips_prepare_pch_save (void)
 {
-  /* We are called in a context where the current MIPS16 vs. non-MIPS16
-     setting should be irrelevant.  The question then is: which setting
-     makes most sense at load time?
+  /* We are called in a context where the current compression vs.
+     non-compression setting should be irrelevant.  The question then is:
+     which setting makes most sense at load time?
 
-     The PCH is loaded before the first token is read.  We should never
-     have switched into MIPS16 mode by that point, and thus should not
-     have populated mips16_globals.  Nor can we load the entire contents
-     of mips16_globals from the PCH file, because mips16_globals contains
-     a combination of GGC and non-GGC data.
+     The PCH is loaded before the first token is read.  We should never have
+     switched into a compression mode by that point, and thus should not have
+     populated mips16_globals or micromips_globals.  Nor can we load the
+     entire contents of mips16_globals or micromips_globals from the PCH file,
+     because they contain a combination of GGC and non-GGC data.
 
      There is therefore no point in trying save the GGC part of
-     mips16_globals to the PCH file, or to preserve MIPS16ness across
-     the PCH save and load.  The loading compiler would not have access
-     to the non-GGC parts of mips16_globals (either from the PCH file,
-     or from a copy that the loading compiler generated itself) and would
-     have to call target_reinit anyway.
+     mips16_globals/micromips_globals to the PCH file, or to preserve a
+     compression setting across the PCH save and load.  The loading compiler
+     would not have access to the non-GGC parts of mips16_globals or
+     micromips_globals (either from the PCH file, or from a copy that the
+     loading compiler generated itself) and would have to call target_reinit
+     anyway.
 
-     It therefore seems best to switch back to non-MIPS16 mode at
-     save time, and to ensure that mips16_globals remains null after
-     a PCH load.  */
+     It therefore seems best to switch back to non-MIPS16 mode and
+     non-microMIPS mode to save time, and to ensure that mips16_globals and
+     micromips_globals remain null after a PCH load.  */
   mips_set_compression_mode (0);
   mips16_globals = 0;
+  micromips_globals = 0;
 }
 
 /* Generate or test for an insn that supports a constant permutation.  */
@@ -21995,9 +22109,9 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
   if (!TARGET_HARD_FLOAT_ABI)
     return;
-  tree exceptions_var = create_tmp_var (MIPS_ATYPE_USI);
-  tree fcsr_orig_var = create_tmp_var (MIPS_ATYPE_USI);
-  tree fcsr_mod_var = create_tmp_var (MIPS_ATYPE_USI);
+  tree exceptions_var = create_tmp_var_raw (MIPS_ATYPE_USI);
+  tree fcsr_orig_var = create_tmp_var_raw (MIPS_ATYPE_USI);
+  tree fcsr_mod_var = create_tmp_var_raw (MIPS_ATYPE_USI);
   tree get_fcsr = mips_builtin_decls[MIPS_GET_FCSR];
   tree set_fcsr = mips_builtin_decls[MIPS_SET_FCSR];
   tree get_fcsr_hold_call = build_call_expr (get_fcsr, 0);
@@ -22373,6 +22487,10 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK mips_hard_regno_scratch_ok
+
+/* The architecture reserves bit 0 for MIPS16 so use bit 1 for descriptors.  */
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 2
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

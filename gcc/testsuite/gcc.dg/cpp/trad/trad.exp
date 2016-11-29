@@ -29,7 +29,7 @@ load_lib gcc-dg.exp
 # If a testcase doesn't have special options, use these.
 global DEFAULT_TRADCPPFLAGS
 if ![info exists DEFAULT_TRADCPPFLAGS] then {
-    set DEFAULT_TRADCPPFLAGS " -traditional-cpp"
+    set DEFAULT_TRADCPPFLAGS " -traditional-cpp -I$srcdir/$subdir/"
 }
 
 # Initialize `dg'.

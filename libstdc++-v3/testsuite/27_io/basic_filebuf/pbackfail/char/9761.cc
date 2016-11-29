@@ -30,7 +30,6 @@ const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   filebuf fbuf;
   filebuf::int_type r1, r2;

@@ -26,7 +26,6 @@
 // libstdc++/24808
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::is_object;
   using namespace __gnu_test;
 

@@ -31,7 +31,6 @@ active_buffer(std::wios& stream)
 // libstdc++/2832
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::wstringbuf sbuf;
   std::wstreambuf* pbasebuf0 = &sbuf;
 

@@ -276,6 +276,8 @@ AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_blocks, struct stat.st_
 case "${host}--x${with_newlib}" in
   mips*--xyes)
     hardwire_newlib=1;;
+  nvptx*--xyes)
+    hardwire_newlib=1;;
 esac
 
 # Check for library functions.

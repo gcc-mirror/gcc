@@ -24,7 +24,6 @@
 // A few tests for equal_range, in the occasion of libstdc++/29385.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   set<int> s0;

@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* External variables defined in xtensa.c.  */
 
-extern unsigned xtensa_current_frame_size;
-
 /* Macros used in the machine description to select various Xtensa
    configuration options.  */
 #ifndef XCHAL_HAVE_MUL32_HIGH
@@ -477,14 +475,14 @@ enum reg_class
 /* Specify the initial difference between the specified pair of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   do {									\
-    compute_frame_size (get_frame_size ());				\
+    long frame_size = compute_frame_size (get_frame_size ());		\
     switch (FROM)							\
       {									\
       case FRAME_POINTER_REGNUM:					\
         (OFFSET) = 0;							\
 	break;								\
       case ARG_POINTER_REGNUM:						\
-        (OFFSET) = xtensa_current_frame_size;				\
+        (OFFSET) = frame_size;						\
 	break;								\
       default:								\
 	gcc_unreachable ();						\

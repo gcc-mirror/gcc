@@ -1507,9 +1507,6 @@ initialize_inline_failed (struct cgraph_edge *e)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
   else if (callee->local.redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-  else if (cfun && fn_contains_cilk_spawn_p (cfun))
-    /* We can't inline if the function is spawing a function.  */
-    e->inline_failed = CIF_CILK_SPAWN;
   else
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
   gcc_checking_assert (!e->call_stmt_cannot_inline_p
@@ -2183,28 +2180,33 @@ param_change_prob (gimple *stmt, int i)
 {
   tree op = gimple_call_arg (stmt, i);
   basic_block bb = gimple_bb (stmt);
-  tree base;
 
-  /* Global invariants neve change.  */
-  if (is_gimple_min_invariant (op))
+  if (TREE_CODE (op) == WITH_SIZE_EXPR)
+    op = TREE_OPERAND (op, 0);
+
+  tree base = get_base_address (op);
+
+  /* Global invariants never change.  */
+  if (is_gimple_min_invariant (base))
     return 0;
+
   /* We would have to do non-trivial analysis to really work out what
      is the probability of value to change (i.e. when init statement
      is in a sibling loop of the call). 
 
      We do an conservative estimate: when call is executed N times more often
      than the statement defining value, we take the frequency 1/N.  */
-  if (TREE_CODE (op) == SSA_NAME)
+  if (TREE_CODE (base) == SSA_NAME)
     {
       int init_freq;
 
       if (!bb->frequency)
 	return REG_BR_PROB_BASE;
 
-      if (SSA_NAME_IS_DEFAULT_DEF (op))
+      if (SSA_NAME_IS_DEFAULT_DEF (base))
 	init_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
       else
-	init_freq = gimple_bb (SSA_NAME_DEF_STMT (op))->frequency;
+	init_freq = gimple_bb (SSA_NAME_DEF_STMT (base))->frequency;
 
       if (!init_freq)
 	init_freq = 1;
@@ -2213,9 +2215,7 @@ param_change_prob (gimple *stmt, int i)
       else
 	return REG_BR_PROB_BASE;
     }
-
-  base = get_base_address (op);
-  if (base)
+  else
     {
       ao_ref refd;
       int max;
@@ -2256,7 +2256,6 @@ param_change_prob (gimple *stmt, int i)
       else
 	return REG_BR_PROB_BASE;
     }
-  return REG_BR_PROB_BASE;
 }
 
 /* Find whether a basic block BB is the final block of a (half) diamond CFG
@@ -2396,9 +2395,7 @@ find_foldable_builtin_expect (basic_block bb)
     {
       gimple *stmt = gsi_stmt (bsi);
       if (gimple_call_builtin_p (stmt, BUILT_IN_EXPECT)
-	  || (is_gimple_call (stmt)
-	      && gimple_call_internal_p (stmt)
-	      && gimple_call_internal_fn (stmt) == IFN_BUILTIN_EXPECT))
+	  || gimple_call_internal_p (stmt, IFN_BUILTIN_EXPECT))
         {
           tree var = gimple_call_lhs (stmt);
           tree arg = gimple_call_arg (stmt, 0);
@@ -4430,7 +4427,6 @@ write_inline_edge_summary (struct output_block *ob, struct cgraph_edge *e)
 void
 inline_write_summary (void)
 {
-  struct cgraph_node *node;
   struct output_block *ob = create_output_block (LTO_section_inline_summary);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
@@ -4449,19 +4445,16 @@ inline_write_summary (void)
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
-      if (cnode && (node = cnode)->definition && !node->alias)
+      if (cnode && cnode->definition && !cnode->alias)
 	{
-	  struct inline_summary *info = inline_summaries->get (node);
+	  struct inline_summary *info = inline_summaries->get (cnode);
 	  struct bitpack_d bp;
 	  struct cgraph_edge *edge;
 	  int i;
 	  size_time_entry *e;
 	  struct condition *c;
 
-	  streamer_write_uhwi (ob,
-			       lto_symtab_encoder_encode (encoder,
-							  
-							  node));
+	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, cnode));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
 	  streamer_write_hwi (ob, info->self_time);
@@ -4494,9 +4487,9 @@ inline_write_summary (void)
 	  write_predicate (ob, info->loop_iterations);
 	  write_predicate (ob, info->loop_stride);
 	  write_predicate (ob, info->array_index);
-	  for (edge = node->callees; edge; edge = edge->next_callee)
+	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
-	  for (edge = node->indirect_calls; edge; edge = edge->next_callee)
+	  for (edge = cnode->indirect_calls; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
 	}
     }

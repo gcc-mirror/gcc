@@ -59,6 +59,7 @@ CC_MODE (CC_DGEU);
 CC_MODE (CC_DGTU);
 CC_MODE (CC_C);
 CC_MODE (CC_N);
+CC_MODE (CC_V);
 
 /* Vector modes.  */
 VECTOR_MODES (INT, 4);        /*            V4QI V2HI */

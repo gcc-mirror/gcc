@@ -20,9 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// No asserts, avoid leaking the semaphores if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 #include <cstdio>
 #include <cstdlib>
@@ -41,7 +38,7 @@ bool test01()
   using namespace std;
   using namespace __gnu_test;
 
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   const char* name = "tmp_fifo5";
 
@@ -52,7 +49,7 @@ bool test01()
   semaphore s1, s2;
 
   int child = fork();
-  VERIFY( child != -1 );
+  test &= bool( child != -1 );
 
   if (child == 0)
     {
@@ -66,25 +63,25 @@ bool test01()
       exit(0);
     }
 
-  VERIFY( freopen(name, "r", stdin) );
+  test &= bool( freopen(name, "r", stdin) );
   s1.wait();
 
   wint_t c1 = fgetwc(stdin);
-  VERIFY( c1 != WEOF );
+  test &= bool( c1 != WEOF );
   wint_t c2 = wcin.rdbuf()->sputbackc(L'a');
-  VERIFY( c2 != WEOF );
-  VERIFY( c2 == L'a' );
+  test &= bool( c2 != WEOF );
+  test &= bool( c2 == L'a' );
   
   wint_t c3 = fgetwc(stdin);
-  VERIFY( c3 != WEOF );
-  VERIFY( c3 == c2 );
+  test &= bool( c3 != WEOF );
+  test &= bool( c3 == c2 );
   wint_t c4 = ungetwc(L'b', stdin);
-  VERIFY( c4 != WEOF );
-  VERIFY( c4 == L'b' );
+  test &= bool( c4 != WEOF );
+  test &= bool( c4 == L'b' );
   
   wint_t c5 = wcin.rdbuf()->sgetc();
-  VERIFY( c5 != WEOF );
-  VERIFY( c5 == c4 );
+  test &= bool( c5 != WEOF );
+  test &= bool( c5 == c4 );
   s2.signal();
   s1.wait();
 

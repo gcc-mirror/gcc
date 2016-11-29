@@ -124,7 +124,11 @@ static struct frame_hdr_cache_element
 {
   _Unwind_Ptr pc_low;
   _Unwind_Ptr pc_high;
+#if defined __FRV_FDPIC__ || defined __BFIN_FDPIC__
+  struct elf32_fdpic_loadaddr load_base;
+#else
   _Unwind_Ptr load_base;
+#endif
   const ElfW(Phdr) *p_eh_frame_hdr;
   const ElfW(Phdr) *p_dynamic;
   struct frame_hdr_cache_element *link;
@@ -163,7 +167,7 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
   struct unw_eh_callback_data *data = (struct unw_eh_callback_data *) ptr;
   const ElfW(Phdr) *phdr, *p_eh_frame_hdr, *p_dynamic;
   long n, match;
-#ifdef __FRV_FDPIC__
+#if defined __FRV_FDPIC__ || defined __BFIN_FDPIC__
   struct elf32_fdpic_loadaddr load_base;
 #else
   _Unwind_Ptr load_base;
@@ -347,7 +351,7 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 	    break;
 	  }
     }
-# elif defined __FRV_FDPIC__ && defined __linux__
+# elif (defined __FRV_FDPIC__ || defined __BFIN_FDPIC__) && defined __linux__
   data->dbase = load_base.got_value;
 # else
 #  error What is DW_EH_PE_datarel base on this platform?

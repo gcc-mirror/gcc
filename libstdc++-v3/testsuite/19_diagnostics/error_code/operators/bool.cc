@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
 // 2007-08-22 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -25,8 +25,6 @@
 // unspecified bool operator positive tests
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   // 1
   std::error_code e1;
   if (static_cast<bool>(e1))

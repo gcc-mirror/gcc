@@ -1018,6 +1018,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
+#if __cpp_aligned_new
+	if (alignof(value_type) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	  {
+	    const size_type __b = __n * sizeof(value_type);
+	    std::align_val_t __al = std::align_val_t(alignof(value_type));
+	    return static_cast<pointer>(::operator new(__b, __al));
+	  }
+#endif
+
 	if (__builtin_expect(__n == 1, true))
 	  return this->_M_allocate_single_object();
 	else
@@ -1036,6 +1045,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__builtin_expect(__p != 0, true))
 	  {
+#if __cpp_aligned_new
+	    // Types with extended alignment are handled by operator delete.
+	    if (alignof(value_type) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	      {
+		::operator delete(__p, std::align_val_t(alignof(value_type)));
+		return;
+	      }
+#endif
+
 	    if (__builtin_expect(__n == 1, true))
 	      this->_M_deallocate_single_object(__p);
 	    else

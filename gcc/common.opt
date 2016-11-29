@@ -58,10 +58,6 @@ int flag_incremental_link = 0
 Variable
 int flag_complex_method = 1
 
-; Nonzero if subexpressions must be evaluated from left-to-right.
-Variable
-int flag_evaluation_order = 0
-
 ; Language specific warning pass for unused results.
 Variable
 bool flag_warn_unused_result = false
@@ -228,7 +224,7 @@ unsigned int flag_sanitize
 
 ; What sanitizers should recover from errors
 Variable
-unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS
+unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
 fsanitize-coverage=trace-pc
 Common Report Var(flag_sanitize_coverage)
@@ -601,6 +597,13 @@ Whsa
 Common Var(warn_hsa) Init(1) Warning
 Warn when a function cannot be expanded to HSAIL.
 
+Wimplicit-fallthrough
+Common Alias(Wimplicit-fallthrough=,3,0) Warning
+
+Wimplicit-fallthrough=
+Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning
+Warn when a switch case falls through.
+
 Winline
 Common Var(warn_inline) Warning
 Warn when an inlined function cannot be inlined.
@@ -661,7 +664,25 @@ Warn about returning a pointer/reference to a local or temporary variable.
 
 Wshadow
 Common Var(warn_shadow) Warning
-Warn when one local variable shadows another.
+Warn when one variable shadows another.  Same as -Wshadow=global.
+
+Wshadow=global
+Common Warning Alias(Wshadow)
+Warn when one variable shadows another (globally).
+
+Wshadow=local
+Common Var(warn_shadow_local) Warning EnabledBy(Wshadow)
+Warn when one local variable shadows another local variable or parameter.
+
+Wshadow-local
+Common Warning Undocumented Alias(Wshadow=local)
+
+Wshadow=compatible-local
+Common Var(warn_shadow_compatible_local) Warning EnabledBy(Wshadow=local)
+Warn when one local variable shadows another local variable or parameter of compatible type.
+
+Wshadow-compatible-local
+Common Warning Undocumented Alias(Wshadow=compatible-local)
 
 Wstack-protector
 Common Var(warn_stack_protect) Warning
@@ -882,7 +903,8 @@ Driver Undocumented
 ;     identity, such as ia32 calling convention attributes (stdcall, etc.)
 ;     Default in G++ 6 (set in c_common_post_options).
 ;
-; 11: The version of the ABI that corrects mangling of sizeof... expressions.
+; 11: The version of the ABI that corrects mangling of sizeof... expressions
+;     and introduces new inheriting constructor handling.
 ;     Default in G++ 7.
 ;
 ; Additional positive integers will be assigned as new versions of
@@ -901,6 +923,9 @@ Align the start of functions.
 
 falign-functions=
 Common RejectNegative Joined UInteger Var(align_functions)
+
+flimit-function-alignment
+Common Report Var(flag_limit_function_alignment) Optimization Init(0)
 
 falign-jumps
 Common Report Var(align_jumps,0) Optimization UInteger
@@ -959,6 +984,9 @@ After diagnosing undefined behavior attempt to continue execution.
 fsanitize-recover
 Common Report
 This switch is deprecated; use -fsanitize-recover= instead.
+
+fsanitize-address-use-after-scope
+Common Driver Report Var(flag_sanitize_address_use_after_scope) Init(0)
 
 fsanitize-undefined-trap-on-error
 Common Driver Report Var(flag_sanitize_undefined_trap_on_error) Init(0)
@@ -1034,7 +1062,7 @@ Common Var(flag_check_new)
 Check the return value of new in C++.
 
 fchecking
-Common Var(flag_checking) Init(CHECKING_P)
+Common Var(flag_checking) Init(CHECKING_P ? ENABLE_EXTRA_CHECKING ? 2 : 1 : 0)
 Perform internal consistency checkings.
 
 fchecking=
@@ -1196,6 +1224,10 @@ fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
 Print fixit hints in machine-readable form.
 
+fdiagnostics-generate-patch
+Common Var(flag_diagnostics_generate_patch)
+Print fix-it hints to stderr in unified diff format.
+
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.
@@ -1296,6 +1328,21 @@ Enum(excess_precision) String(fast) Value(EXCESS_PRECISION_FAST)
 
 EnumValue
 Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
+
+; Whether we permit the extended set of values for FLT_EVAL_METHOD
+; introduced in ISO/IEC TS 18661-3, or limit ourselves to those in C99/C11.
+fpermitted-flt-eval-methods=
+Common Joined RejectNegative Enum(permitted_flt_eval_methods) Var(flag_permitted_flt_eval_methods) Init(PERMITTED_FLT_EVAL_METHODS_DEFAULT)
+-fpermitted-flt-eval-methods=[c11|ts-18661]	Specify which values of FLT_EVAL_METHOD are permitted.
+
+Enum
+Name(permitted_flt_eval_methods) Type(enum permitted_flt_eval_methods) UnknownError(unknown specification for the set of FLT_EVAL_METHOD values to permit %qs)
+
+EnumValue
+Enum(permitted_flt_eval_methods) String(c11) Value(PERMITTED_FLT_EVAL_METHODS_C11)
+
+EnumValue
+Enum(permitted_flt_eval_methods) String(ts-18661-3) Value(PERMITTED_FLT_EVAL_METHODS_TS_18661)
 
 ffast-math
 Common Optimization
@@ -1452,6 +1499,10 @@ fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1) Optimization
 Force bitfield accesses to match their type width.
 
+fstore-merging
+Common Report Var(flag_store_merging) Optimization
+Merge adjacent stores.
+
 fguess-branch-probability
 Common Report Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.
@@ -1493,8 +1544,8 @@ Common Report Var(flag_tree_loop_if_convert) Init(-1) Optimization
 Convert conditional jumps in innermost loops to branchless equivalents.
 
 ftree-loop-if-convert-stores
-Common Report Var(flag_tree_loop_if_convert_stores) Optimization
-Also if-convert conditional jumps containing memory writes.
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 ; -finhibit-size-directive inhibits output of .size for ELF.
 ; This is used only for compiling crtstuff.c,
@@ -1561,6 +1612,10 @@ fipa-cp-alignment
 Common Report Var(flag_ipa_cp_alignment) Optimization
 Perform alignment discovery and propagation to make Interprocedural constant propagation stronger.
 
+fipa-bit-cp
+Common Report Var(flag_ipa_bit_cp) Optimization
+Perform interprocedural bitwise constant propagation.
+
 fipa-profile
 Common Report Var(flag_ipa_profile) Init(0) Optimization
 Perform interprocedural profile propagation.
@@ -1582,7 +1637,7 @@ Common Report Var(flag_ipa_icf_functions) Optimization
 Perform Identical Code Folding for functions.
 
 fipa-icf-variables
-Common Report Var(flag_ipa_icf_variables)
+Common Report Var(flag_ipa_icf_variables) Optimization
 Perform Identical Code Folding for variables.
 
 fipa-reference
@@ -1596,6 +1651,10 @@ Does nothing. Preserved for backward compatibility.
 fipa-struct-reorg
 Common Ignore
 Does nothing. Preserved for backward compatibility.
+
+fipa-vrp
+Common Report Var(flag_ipa_vrp) Optimization
+Perform IPA Value Range Propagation.
 
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
@@ -1916,6 +1975,22 @@ fprofile-correction
 Common Report Var(flag_profile_correction)
 Enable correction of flow inconsistent profile data input.
 
+fprofile-update=
+Common Joined RejectNegative Enum(profile_update) Var(flag_profile_update) Init(PROFILE_UPDATE_SINGLE)
+-fprofile-update=[single|atomic|prefer-atomic]	Set the profile update method.
+
+Enum
+Name(profile_update) Type(enum profile_update) UnknownError(unknown profile update method %qs)
+
+EnumValue
+Enum(profile_update) String(single) Value(PROFILE_UPDATE_SINGLE)
+
+EnumValue
+Enum(profile_update) String(atomic) Value(PROFILE_UPDATE_ATOMIC)
+
+EnumValue
+Enum(profile_update) String(prefer-atomic) Value(PROFILE_UPDATE_PREFER_ATOMIC)
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations.
@@ -2168,6 +2243,10 @@ Common Report Var(flag_shrink_wrap) Optimization
 Emit function prologues only before parts of the function that need it,
 rather than at the top of the function.
 
+fshrink-wrap-separate
+Common Report Var(flag_shrink_wrap_separate) Init(1) Optimization
+Shrink-wrap parts of the prologue and epilogue separately.
+
 fsignaling-nans
 Common Report Var(flag_signaling_nans) Optimization SetByCombined
 Disable optimizations observable by IEEE signaling NaNs.
@@ -2283,6 +2362,10 @@ ftime-report
 Common Report Var(time_report)
 Report the time taken by each compiler pass.
 
+ftime-report-details
+Common Report Var(time_report_details)
+Record times taken by sub-phases separately.
+
 ftls-model=
 Common Joined RejectNegative Enum(tls_model) Var(flag_tls_default) Init(TLS_MODEL_GLOBAL_DYNAMIC)
 -ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]	Set the default thread-local storage code generation model.
@@ -2309,6 +2392,11 @@ Reorder top level functions, variables, and asms.
 ftracer
 Common Report Var(flag_tracer) Optimization
 Perform superblock formation via tail duplication.
+
+ftrampolines
+Common Report Var(flag_trampolines) Init(0)
+For targets that normally need trampolines for nested functions, always
+generate them instead of using descriptors.
 
 ; Zero means that floating-point math operations cannot generate a
 ; (user-visible) trap.  This is the case, for example, in nonstop
@@ -2530,6 +2618,10 @@ Allow math optimizations that may violate IEEE or ISO standards.
 funswitch-loops
 Common Report Var(flag_unswitch_loops) Optimization
 Perform loop unswitching.
+
+fsplit-loops
+Common Report Var(flag_split_loops) Optimization
+Perform loop splitting.
 
 funwind-tables
 Common Report Var(flag_unwind_tables) Optimization

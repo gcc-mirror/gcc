@@ -29,7 +29,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc = locale(ISO_8859(1,en_US));
   const ctype<wchar_t>& wct = use_facet<ctype<wchar_t> >(loc);

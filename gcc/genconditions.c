@@ -72,6 +72,7 @@ write_header (void)
 #include \"tm.h\"\n\
 #include \"insn-constants.h\"\n\
 #include \"rtl.h\"\n\
+#include \"memmodel.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"hard-reg-set.h\"\n\
 #include \"function.h\"\n\
@@ -123,7 +124,7 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
   const struct c_test *test = * (const struct c_test **) slot;
   const char *p;
 
-  print_md_ptr_loc (test->expr);
+  rtx_reader_ptr->print_md_ptr_loc (test->expr);
   fputs ("  { \"", stdout);
   for (p = test->expr; *p; p++)
     {
@@ -138,9 +139,9 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
     }
 
   fputs ("\",\n    __builtin_constant_p ", stdout);
-  print_c_condition (test->expr);
+  rtx_reader_ptr->print_c_condition (test->expr);
   fputs ("\n    ? (int) ", stdout);
-  print_c_condition (test->expr);
+  rtx_reader_ptr->print_c_condition (test->expr);
   fputs ("\n    : -1 },\n", stdout);
   return 1;
 }

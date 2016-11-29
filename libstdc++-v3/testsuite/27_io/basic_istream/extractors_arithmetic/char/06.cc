@@ -29,7 +29,6 @@
 void test06()
 {
   // default locale, grouping is turned off
-  bool test __attribute__((unused)) = true;
   unsigned int h4;
   char c;
   std::string s("205,199,144");

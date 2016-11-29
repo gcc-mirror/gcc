@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2009-12-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<0> bs0;
   VERIFY( bs0.to_ullong() == 0 );
 

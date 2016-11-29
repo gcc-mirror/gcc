@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-Wno-builtin-declaration-mismatch" }
 
 extern "C" void realloc();
 

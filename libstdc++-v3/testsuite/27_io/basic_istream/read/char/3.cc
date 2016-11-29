@@ -28,14 +28,12 @@ void
 test09()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   istringstream iss("Juana Briones");
   char tab[13];
   iss.read(tab, 13);
   if (!iss)
-    test = false;
-  VERIFY( test );
+    VERIFY( false );
 }
  
 int 

@@ -34,7 +34,6 @@
 void test13()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   streamsize sum = 0;
   wifstream ifs("wistream_unformatted-1.tst");
       

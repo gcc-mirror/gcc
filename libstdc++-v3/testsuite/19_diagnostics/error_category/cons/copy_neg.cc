@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 // 2007-08-22 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
@@ -24,8 +23,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::test_category c1;
   __gnu_test::test_category c2(c1); // { dg-error "deleted" }
 

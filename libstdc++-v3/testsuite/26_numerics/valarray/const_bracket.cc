@@ -20,7 +20,7 @@
 
 #include <valarray>
 
-// dg-do compile
+// { dg-do compile }
 
 template<typename P>
   void copy(P, std::size_t) { }

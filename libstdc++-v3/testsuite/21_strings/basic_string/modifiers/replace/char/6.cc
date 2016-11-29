@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string str01("Valle Del Salto");
   str01.replace(0, 5, str01.data() + 10, 5);
   VERIFY( str01 == "Salto Del Salto" );

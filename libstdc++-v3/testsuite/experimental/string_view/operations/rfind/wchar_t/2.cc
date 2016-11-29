@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -22,11 +22,9 @@
 
 // basic_string_view::find_last_of
 
-bool
+void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::wstring_view::size_type pos;
   std::experimental::wstring_view z(L"ab");
   pos = z.find_last_of(L"ab");
@@ -43,8 +41,6 @@ test02()
   VERIFY( pos == 1 );
   pos = z.find_last_of(L'X');
   VERIFY( pos == std::experimental::wstring_view::npos );
-
-  return test;
 }
 
 int

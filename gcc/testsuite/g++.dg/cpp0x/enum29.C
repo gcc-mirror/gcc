@@ -38,7 +38,7 @@ enum E0 { e0 = X0() };
 enum E1 { e1 = X1() };
 enum E2 { e2 = X2() };
 enum E3 { e3 = X3() };
-enum E4 { e4 = X4() };  // { dg-error "integer constant" }
+enum E4 { e4 = X4() };  // { dg-error "integral" }
 enum E5 { e5 = X5() };  // { dg-error "ambiguous" }
 
 enum F0 : int { f0 = X0() };

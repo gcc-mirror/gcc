@@ -24,8 +24,6 @@
 
 using namespace __gnu_test;
 
-bool test __attribute__((unused)) = true;
-
 // Operations on empty function<> objects
 void test01()
 {

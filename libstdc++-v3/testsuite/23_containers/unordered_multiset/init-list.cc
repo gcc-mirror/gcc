@@ -16,17 +16,15 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <unordered_set>
 #include <testsuite_hooks.h>
 
 using namespace std;
 
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   unordered_multiset<int> m({ 1, 5, 5, 37 });
   VERIFY(m.size() == 4);
   VERIFY(m.count(1) == 1);
@@ -48,8 +46,6 @@ int test01()
   VERIFY(m.count(102) == 1);
   VERIFY(m.count(42) == 2);
   VERIFY(m.count(1) == 0);
-
-  return test;
 }
 
 int main()

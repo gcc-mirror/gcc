@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const-call.h"
 #include "case-cfn-macros.h"
 #include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
+#include "builtins.h"
+#include "gimple-expr.h"
 
 /* Functions that test for certain constant types, abstracting away the
    decision about whether to check for overflow.  */
@@ -56,7 +58,8 @@ complex_cst_p (tree t)
 static inline bool
 host_size_t_cst_p (tree t, size_t *size_out)
 {
-  if (integer_cst_p (t)
+  if (types_compatible_p (size_type_node, TREE_TYPE (t))
+      && integer_cst_p (t)
       && wi::min_precision (t, UNSIGNED) <= sizeof (size_t) * CHAR_BIT)
     {
       *size_out = tree_to_uhwi (t);
@@ -69,7 +72,7 @@ host_size_t_cst_p (tree t, size_t *size_out)
    "equal" and > 0 means "more".  Canonicalize it to -1, 0 or 1 and
    return it in type TYPE.  */
 
-static inline tree
+tree
 build_cmp_result (tree type, int res)
 {
   return build_int_cst (type, res < 0 ? -1 : res > 0 ? 1 : 0);
@@ -1131,12 +1134,14 @@ fold_const_call (combined_fn fn, tree type, tree arg)
       return NULL_TREE;
 
     CASE_CFN_NAN:
+    CASE_FLT_FN_FLOATN_NX (CFN_BUILT_IN_NAN):
     case CFN_BUILT_IN_NAND32:
     case CFN_BUILT_IN_NAND64:
     case CFN_BUILT_IN_NAND128:
       return fold_const_builtin_nan (type, arg, true);
 
     CASE_CFN_NANS:
+    CASE_FLT_FN_FLOATN_NX (CFN_BUILT_IN_NANS):
       return fold_const_builtin_nan (type, arg, false);
 
     default:
@@ -1395,6 +1400,15 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	return build_cmp_result (type, strcmp (p0, p1));
       return NULL_TREE;
 
+    case CFN_BUILT_IN_STRCASECMP:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	{
+	  int r = strcmp (p0, p1);
+	  if (r == 0)
+	    return build_cmp_result (type, r);
+	}
+      return NULL_TREE;
+
     default:
       return fold_const_call_1 (fn, type, arg0, arg1);
     }
@@ -1452,6 +1466,36 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
       return NULL_TREE;
     }
 
+  switch (fn)
+    {
+    case CFN_BUILT_IN_MEMCHR:
+      {
+	char c;
+	if (integer_zerop (arg2)
+	    && !TREE_SIDE_EFFECTS (arg0)
+	    && !TREE_SIDE_EFFECTS (arg1))
+	  return build_int_cst (type, 0);
+
+	if (!tree_fits_uhwi_p (arg2) || !target_char_cst_p (arg1, &c))
+	  return NULL_TREE;
+
+	unsigned HOST_WIDE_INT length = tree_to_uhwi (arg2);
+	unsigned HOST_WIDE_INT string_length;
+	const char *p1 = c_getstr (arg0, &string_length);
+	if (p1)
+	  {
+	    const char *r
+	      = (const char *)memchr (p1, c, MIN (length, string_length));
+	    if (r == NULL && length <= string_length)
+	      return build_int_cst (type, 0);
+	  }
+
+	break;
+      }
+    default:
+      break;
+    }
+
   return NULL_TREE;
 }
 
@@ -1462,23 +1506,44 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   const char *p0, *p1;
-  size_t s2;
+  unsigned HOST_WIDE_INT s0, s1;
+  size_t s2 = 0;
   switch (fn)
     {
     case CFN_BUILT_IN_STRNCMP:
-      if ((p0 = c_getstr (arg0))
-	  && (p1 = c_getstr (arg1))
-	  && host_size_t_cst_p (arg2, &s2))
-	return build_int_cst (type, strncmp (p0, p1, s2));
-      return NULL_TREE;
-
+      {
+	bool const_size_p = host_size_t_cst_p (arg2, &s2);
+	if (const_size_p && s2 == 0
+	    && !TREE_SIDE_EFFECTS (arg0)
+	    && !TREE_SIDE_EFFECTS (arg1))
+	  return build_int_cst (type, 0);
+	else if (const_size_p
+		 && (p0 = c_getstr (arg0))
+		 && (p1 = c_getstr (arg1)))
+	  return build_int_cst (type, strncmp (p0, p1, s2));
+	return NULL_TREE;
+      }
+    case CFN_BUILT_IN_STRNCASECMP:
+      {
+	bool const_size_p = host_size_t_cst_p (arg2, &s2);
+	if (const_size_p && s2 == 0
+	    && !TREE_SIDE_EFFECTS (arg0)
+	    && !TREE_SIDE_EFFECTS (arg1))
+	  return build_int_cst (type, 0);
+	else if (const_size_p
+		 && (p0 = c_getstr (arg0))
+		 && (p1 = c_getstr (arg1))
+		 && strncmp (p0, p1, s2) == 0)
+	  return build_int_cst (type, 0);
+	return NULL_TREE;
+      }
     case CFN_BUILT_IN_BCMP:
     case CFN_BUILT_IN_MEMCMP:
-      if ((p0 = c_getstr (arg0))
-	  && (p1 = c_getstr (arg1))
+      if ((p0 = c_getstr (arg0, &s0))
+	  && (p1 = c_getstr (arg1, &s1))
 	  && host_size_t_cst_p (arg2, &s2)
-	  && s2 <= strlen (p0)
-	  && s2 <= strlen (p1))
+	  && s2 <= s0
+	  && s2 <= s1)
 	return build_cmp_result (type, memcmp (p0, p1, s2));
       return NULL_TREE;
 

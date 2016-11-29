@@ -1,7 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-skip-if "too much code for avr" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-skip-if "too much code for pdp11" { "pdp11-*-*" } { "*" } { "" } } */
-/* { dg-xfail-if "jump beyond 128K not supported" { xtensa*-*-* } { "-O0" } { "" } } */
 /* { dg-xfail-if "PR36698" { spu-*-* } { "-O0" } { "" } } */
 /* { dg-skip-if "" { m32c-*-* } { "*" } { "" } } */
 /* { dg-timeout-factor 4.0 } */

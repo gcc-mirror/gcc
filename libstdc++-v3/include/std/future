@@ -35,7 +35,6 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <functional>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
@@ -43,8 +42,10 @@
 #include <atomic>
 #include <bits/atomic_futex.h>
 #include <bits/functexcept.h>
+#include <bits/invoke.h>
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
+#include <bits/std_function.h>
 #include <bits/uses_allocator.h>
 #include <bits/allocated_ptr.h>
 #include <ext/aligned_buffer.h>
@@ -94,11 +95,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   class future_error : public logic_error
   {
-    error_code 			_M_code;
-
   public:
-    explicit future_error(error_code __ec)
-    : logic_error("std::future_error: " + __ec.message()), _M_code(__ec)
+    explicit
+    future_error(future_errc __errc)
+    : future_error(std::make_error_code(__errc))
     { }
 
     virtual ~future_error() noexcept;
@@ -108,6 +108,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     const error_code&
     code() const noexcept { return _M_code; }
+
+  private:
+    explicit
+    future_error(error_code __ec)
+    : logic_error("std::future_error: " + __ec.message()), _M_code(__ec)
+    { }
+
+    friend void __throw_future_error(int);
+
+    error_code 			_M_code;
   };
 
   // Forward declarations.
@@ -425,8 +435,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (static_cast<bool>(__res))
 	  {
-	    error_code __ec(make_error_code(future_errc::broken_promise));
-	    __res->_M_error = make_exception_ptr(future_error(__ec));
+	    __res->_M_error =
+	      make_exception_ptr(future_error(future_errc::broken_promise));
 	    // This function is only called when the last asynchronous result
 	    // provider is abandoning this shared state, so noone can be
 	    // trying to make the shared state ready at the same time, and
@@ -560,10 +570,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _Async_state_commonV2;
 #endif
 
-    template<typename _BoundFn, typename = typename _BoundFn::result_type>
+    template<typename _BoundFn,
+	     typename _Res = decltype(std::declval<_BoundFn&>()())>
       class _Deferred_state;
 
-    template<typename _BoundFn, typename = typename _BoundFn::result_type>
+    template<typename _BoundFn,
+	     typename _Res = decltype(std::declval<_BoundFn&>()())>
       class _Async_state_impl;
 
     template<typename _Signature>
@@ -766,7 +778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return std::move(this->_M_get_result()._M_value());
       }
 
-      shared_future<_Res> share();
+      shared_future<_Res> share() noexcept;
     };
 
   /// Partial specialization for future<R&>
@@ -809,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return this->_M_get_result()._M_get();
       }
 
-      shared_future<_Res&> share();
+      shared_future<_Res&> share() noexcept;
     };
 
   /// Explicit specialization for future<void>
@@ -852,7 +864,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         this->_M_get_result();
       }
 
-      shared_future<void> share();
+      shared_future<void> share() noexcept;
     };
 
 
@@ -992,18 +1004,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_state(std::move(__uf._M_state))
     { }
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2556. Wide contract for future::share()
   template<typename _Res>
     inline shared_future<_Res>
-    future<_Res>::share()
+    future<_Res>::share() noexcept
     { return shared_future<_Res>(std::move(*this)); }
 
   template<typename _Res>
     inline shared_future<_Res&>
-    future<_Res&>::share()
+    future<_Res&>::share() noexcept
     { return shared_future<_Res&>(std::move(*this)); }
 
   inline shared_future<void>
-  future<void>::share()
+  future<void>::share() noexcept
   { return shared_future<void>(std::move(*this)); }
 
   /// Primary template for promise
@@ -1403,35 +1417,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void
       _M_run(_Args&&... __args)
       {
-	// bound arguments decay so wrap lvalue references
-	auto __boundfn = std::__bind_simple(std::ref(_M_impl._M_fn),
-	    _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
+	auto __boundfn = [&] () -> typename result_of<_Fn(_Args&&...)>::type {
+	    return std::__invoke(_M_impl._M_fn, std::forward<_Args>(__args)...);
+	};
 	this->_M_set_result(_S_task_setter(this->_M_result, __boundfn));
       }
 
       virtual void
       _M_run_delayed(_Args&&... __args, weak_ptr<_State_base> __self)
       {
-	// bound arguments decay so wrap lvalue references
-	auto __boundfn = std::__bind_simple(std::ref(_M_impl._M_fn),
-	    _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
+	auto __boundfn = [&] () -> typename result_of<_Fn(_Args&&...)>::type {
+	    return std::__invoke(_M_impl._M_fn, std::forward<_Args>(__args)...);
+	};
 	this->_M_set_delayed_result(_S_task_setter(this->_M_result, __boundfn),
 				    std::move(__self));
       }
 
       virtual shared_ptr<_Task_state_base<_Res(_Args...)>>
       _M_reset();
-
-      template<typename _Tp>
-	static reference_wrapper<_Tp>
-	_S_maybe_wrap_ref(_Tp& __t)
-	{ return std::ref(__t); }
-
-      template<typename _Tp>
-	static
-	typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp>::type&&
-	_S_maybe_wrap_ref(_Tp&& __t)
-	{ return std::forward<_Tp>(__t); }
 
       struct _Impl : _Alloc
       {
@@ -1713,8 +1716,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __try
 	    {
-	      __state = __future_base::_S_make_async_state(std::__bind_simple(
-		  std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
+	      __state = __future_base::_S_make_async_state(
+		  std::thread::__make_invoker(std::forward<_Fn>(__fn),
+					      std::forward<_Args>(__args)...)
+		  );
 	    }
 #if __cpp_exceptions
 	  catch(const system_error& __e)
@@ -1727,8 +1732,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       if (!__state)
 	{
-	  __state = __future_base::_S_make_deferred_state(std::__bind_simple(
-              std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
+	  __state = __future_base::_S_make_deferred_state(
+	      std::thread::__make_invoker(std::forward<_Fn>(__fn),
+					  std::forward<_Args>(__args)...));
 	}
       return future<__async_result_of<_Fn, _Args...>>(__state);
     }

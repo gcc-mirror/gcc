@@ -45,7 +45,6 @@ extern "C" SANITIZER_INTERFACE_ATTRIBUTE void
 __ubsan_handle_cfi_bad_type(CFIBadTypeData *Data, ValueHandle Vtable);
 extern "C" SANITIZER_INTERFACE_ATTRIBUTE void
 __ubsan_handle_cfi_bad_type_abort(CFIBadTypeData *Data, ValueHandle Vtable);
-
 }
 
 #endif // UBSAN_HANDLERS_H

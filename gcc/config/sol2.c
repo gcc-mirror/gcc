@@ -24,11 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"
 #include "varasm.h"
 #include "output.h"
+
+#undef TARGET_PRINTF_POINTER_FORMAT
+#define TARGET_PRINTF_POINTER_FORMAT solaris_printf_pointer_format
 
 tree solaris_pending_aligns, solaris_pending_inits, solaris_pending_finis;
 
@@ -296,4 +300,15 @@ solaris_override_options (void)
      Don't emit DWARF3/4 unless specifically selected if so.  */
   if (!HAVE_LD_EH_FRAME_CIEV3 && !global_options_set.x_dwarf_version)
     dwarf_version = 2;
+}
+
+/* Solaris libc formats pointers as if by "%zx" with the pound ('#')
+   format flag having the same meaning as in the integer directive.  */
+
+const char*
+solaris_printf_pointer_format (tree, const char **flags)
+{
+  *flags = "#";
+
+  return "%zx";
 }

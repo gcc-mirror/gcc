@@ -30,7 +30,6 @@ std::wstringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::streamsize 		strmsz_1, strmsz_2;
   typedef std::wstringbuf::int_type int_type;
   typedef std::wstringbuf::traits_type traits_type;
@@ -66,7 +65,7 @@ void test04()
   // approp and returning the number of chars assigned
   strmsz_1 = strb_01.in_avail();
   strmsz_2 = strb_02.in_avail();
-  test = strmsz_1 != strmsz_2;
+  VERIFY( strmsz_1 != strmsz_2 );
   VERIFY( strmsz_1 != static_cast<std::streamsize>(str_01.length()) );
   // because now we've moved into string
   VERIFY( strmsz_2 != static_cast<std::streamsize>(str_02.length()) ); 

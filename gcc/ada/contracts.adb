@@ -40,6 +40,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
@@ -408,6 +409,22 @@ package body Contracts is
                                N_Task_Type_Declaration)
          then
             Analyze_Task_Contract (Defining_Entity (Decl));
+
+         --  For type declarations, we need to do the pre-analysis of
+         --  Iterable aspect specifications.
+         --  Other type aspects need to be resolved here???
+
+         elsif Nkind (Decl) = N_Private_Type_Declaration
+           and then Present (Aspect_Specifications (Decl))
+         then
+            declare
+               E  : constant Entity_Id := Defining_Identifier (Decl);
+               It : constant Node_Id   := Find_Aspect (E, Aspect_Iterable);
+            begin
+               if Present (It) then
+                  Validate_Iterable_Aspect (E, It);
+               end if;
+            end;
          end if;
 
          Next (Decl);
@@ -2013,11 +2030,13 @@ package body Contracts is
                   --  A protection field renaming appears as
                   --    Prot : ... := _object._object;
 
+                  --  A renamed private component is just a component of
+                  --  _object, with an arbitrary name.
+
                   elsif Ekind (Obj) = E_Variable
                     and then Nkind (Pref) = N_Identifier
                     and then Chars (Pref) = Name_uObject
                     and then Nkind (Sel) = N_Identifier
-                    and then Chars (Sel) = Name_uObject
                   then
                      return True;
                   end if;
@@ -2290,9 +2309,16 @@ package body Contracts is
                --  Certain internally generated object renamings such as those
                --  for discriminants and protection fields must be elaborated
                --  before the preconditions are evaluated, as their expressions
-               --  may mention the discriminants.
+               --  may mention the discriminants. The renamings include those
+               --  for private components so we need to find the last such.
 
                elsif Is_Prologue_Renaming (Decl) then
+                  while Present (Next (Decl))
+                    and then Is_Prologue_Renaming (Next (Decl))
+                  loop
+                     Next (Decl);
+                  end loop;
+
                   Insert_Node := Decl;
 
                --  Otherwise the declaration does not come from source. This

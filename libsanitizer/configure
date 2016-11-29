@@ -604,10 +604,10 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS
 TSAN_TARGET_DEPENDENT_OBJECTS
 LIBBACKTRACE_SUPPORTED_FALSE
 LIBBACKTRACE_SUPPORTED_TRUE
-OBSTACK_DEFS
 RPC_DEFS
 BACKTRACE_SUPPORTS_THREADS
 BACKTRACE_USES_MALLOC
@@ -16474,39 +16474,6 @@ fi
 RPC_DEFS=$rpc_defs
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking obstack params" >&5
-$as_echo_n "checking obstack params... " >&6; }
-if test "${libsanitizer_cv_sys_obstack+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  save_cppflags=$CPPFLAGS
-CPPFLAGS="-I${srcdir}/../include -o conftest.iii $CPPFLAGS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include "obstack.h"
-#ifdef _OBSTACK_SIZE_T
-_OBSTACK_SIZE_T
-#else
-int
-#endif
-
-_ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
-  libsanitizer_cv_sys_obstack=`sed -e '/^#/d;/^[	 ]*$/d' conftest.iii | sed -e '$!d;s/size_t/SIZE_T/'`
-else
-  libsanitizer_cv_sys_obstack=int
-fi
-rm -f conftest.err conftest.$ac_ext
-CPPFLAGS=$save_cppflags
-rm -f conftest.iii
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libsanitizer_cv_sys_obstack" >&5
-$as_echo "$libsanitizer_cv_sys_obstack" >&6; }
-OBSTACK_DEFS=-D_OBSTACK_SIZE_T=\"$libsanitizer_cv_sys_obstack\"
-
-
  if test "x${BACKTRACE_SUPPORTED}x${BACKTRACE_USES_MALLOC}" = "x1x0"; then
   LIBBACKTRACE_SUPPORTED_TRUE=
   LIBBACKTRACE_SUPPORTED_FALSE='#'
@@ -16529,6 +16496,7 @@ if test "x$TSAN_SUPPORTED" = "xyes"; then
   ac_config_files="$ac_config_files tsan/Makefile"
 
 fi
+
 
 
 
@@ -17273,7 +17241,6 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
 GFORTRAN="$GFORTRAN"
-GCJ="$GCJ"
 AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
 
 

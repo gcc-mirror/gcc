@@ -26,14 +26,12 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   // Empty string sanity check.
   std::string str01;
   std::string::iterator __i_start = str01.begin();
   std::string::iterator __i_end = str01.end();
   std::string::size_type len = str01.size();
-  test = __i_start == __i_end;
+  VERIFY( __i_start == __i_end );
   VERIFY( len == 0 );
 
   // Full string sanity check.

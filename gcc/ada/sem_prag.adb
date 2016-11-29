@@ -258,6 +258,13 @@ package body Sem_Prag is
    --  Subsidiary to all Find_Related_xxx routines. Emit an error on pragma
    --  Prag that duplicates previous pragma Prev.
 
+   function Find_Encapsulating_State
+     (States     : Elist_Id;
+      Constit_Id : Entity_Id) return Entity_Id;
+   --  Given the entity of a constituent Constit_Id, find the corresponding
+   --  encapsulating state which appears in States. The routine returns Empty
+   --  if no such state is found.
+
    function Find_Related_Context
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
@@ -3410,6 +3417,13 @@ package body Sem_Prag is
 
          Append_Elmt (Var_Id, Constits);
          Set_Encapsulating_State (Var_Id, Encap_Id);
+
+         --  A Part_Of constituent partially refines an abstract state. This
+         --  property does not apply to protected or task units.
+
+         if Ekind (Encap_Id) = E_Abstract_State then
+            Set_Has_Partial_Visible_Refinement (Encap_Id);
+         end if;
       end if;
 
       --  Emit a clarification message when the encapsulator is undefined,
@@ -7001,7 +7015,44 @@ package body Sem_Prag is
       -------------------------------------------
 
       procedure Process_Compile_Time_Warning_Or_Error is
+         Validation_Needed : Boolean := False;
+
+         function Check_Node (N : Node_Id) return Traverse_Result;
+         --  Tree visitor that checks if N is an attribute reference that can
+         --  be statically computed by the backend. Validation_Needed is set
+         --  to True if found.
+
+         ----------------
+         -- Check_Node --
+         ----------------
+
+         function Check_Node (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Attribute_Reference
+              and then Is_Entity_Name (Prefix (N))
+            then
+               declare
+                  Attr_Id : constant Attribute_Id :=
+                              Get_Attribute_Id (Attribute_Name (N));
+               begin
+                  if Attr_Id = Attribute_Alignment
+                    or else Attr_Id = Attribute_Size
+                  then
+                     Validation_Needed := True;
+                  end if;
+               end;
+            end if;
+
+            return OK;
+         end Check_Node;
+
+         procedure Check_Expression is new Traverse_Proc (Check_Node);
+
+         --  Local variables
+
          Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
+
+      --  Start of processing for Process_Compile_Time_Warning_Or_Error
 
       begin
          Check_Arg_Count (2);
@@ -7010,93 +7061,18 @@ package body Sem_Prag is
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
          if Compile_Time_Known_Value (Arg1x) then
-            if Is_True (Expr_Value (Get_Pragma_Arg (Arg1))) then
-               declare
-                  Str   : constant String_Id :=
-                            Strval (Get_Pragma_Arg (Arg2));
-                  Len   : constant Nat := String_Length (Str);
-                  Cont  : Boolean;
-                  Ptr   : Nat;
-                  CC    : Char_Code;
-                  C     : Character;
-                  Cent  : constant Entity_Id :=
-                            Cunit_Entity (Current_Sem_Unit);
+            Process_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
 
-                  Force : constant Boolean :=
-                            Prag_Id = Pragma_Compile_Time_Warning
-                              and then
-                                Is_Spec_Name (Unit_Name (Current_Sem_Unit))
-                              and then (Ekind (Cent) /= E_Package
-                                         or else not In_Private_Part (Cent));
-                  --  Set True if this is the warning case, and we are in the
-                  --  visible part of a package spec, or in a subprogram spec,
-                  --  in which case we want to force the client to see the
-                  --  warning, even though it is not in the main unit.
+         --  Register the expression for its validation after the backend has
+         --  been called if it has occurrences of attributes size or alignment
+         --  (because they may be statically computed by the backend and hence
+         --  the whole expression needs to be re-evaluated).
 
-               begin
-                  --  Loop through segments of message separated by line feeds.
-                  --  We output these segments as separate messages with
-                  --  continuation marks for all but the first.
+         else
+            Check_Expression (Arg1x);
 
-                  Cont := False;
-                  Ptr := 1;
-                  loop
-                     Error_Msg_Strlen := 0;
-
-                     --  Loop to copy characters from argument to error message
-                     --  string buffer.
-
-                     loop
-                        exit when Ptr > Len;
-                        CC := Get_String_Char (Str, Ptr);
-                        Ptr := Ptr + 1;
-
-                        --  Ignore wide chars ??? else store character
-
-                        if In_Character_Range (CC) then
-                           C := Get_Character (CC);
-                           exit when C = ASCII.LF;
-                           Error_Msg_Strlen := Error_Msg_Strlen + 1;
-                           Error_Msg_String (Error_Msg_Strlen) := C;
-                        end if;
-                     end loop;
-
-                     --  Here with one line ready to go
-
-                     Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
-
-                     --  If this is a warning in a spec, then we want clients
-                     --  to see the warning, so mark the message with the
-                     --  special sequence !! to force the warning. In the case
-                     --  of a package spec, we do not force this if we are in
-                     --  the private part of the spec.
-
-                     if Force then
-                        if Cont = False then
-                           Error_Msg_N ("<<~!!", Arg1);
-                           Cont := True;
-                        else
-                           Error_Msg_N ("\<<~!!", Arg1);
-                        end if;
-
-                     --  Error, rather than warning, or in a body, so we do not
-                     --  need to force visibility for client (error will be
-                     --  output in any case, and this is the situation in which
-                     --  we do not want a client to get a warning, since the
-                     --  warning is in the body or the spec private part).
-
-                     else
-                        if Cont = False then
-                           Error_Msg_N ("<<~", Arg1);
-                           Cont := True;
-                        else
-                           Error_Msg_N ("\<<~", Arg1);
-                        end if;
-                     end if;
-
-                     exit when Ptr > Len;
-                  end loop;
-               end;
+            if Validation_Needed then
+               Sem_Ch13.Validate_Compile_Time_Warning_Error (N);
             end if;
          end if;
       end Process_Compile_Time_Warning_Or_Error;
@@ -18717,7 +18693,7 @@ package body Sem_Prag is
 
             Add_Contract_Item (N, Item_Id);
 
-            --  A variable may act as consituent of a single concurrent type
+            --  A variable may act as constituent of a single concurrent type
             --  which in turn could be declared after the variable. Due to this
             --  discrepancy, the full analysis of indicator Part_Of is delayed
             --  until the end of the enclosing declarative region (see routine
@@ -19129,15 +19105,17 @@ package body Sem_Prag is
             --  the rep item chain, for processing when the type is frozen.
             --  This is accomplished by a call to Rep_Item_Too_Late. We also
             --  mark the type as having predicates.
-            --  If the current policy is Ignore mark the subtype accordingly.
-            --  In the case of predicates we consider them enabled unless an
-            --  Ignore is specified, to preserve existing warnings.
+
+            --  If the current policy for predicate checking is Ignore mark the
+            --  subtype accordingly. In the case of predicates we consider them
+            --  enabled unless Ignore is specified (either directly or with a
+            --  general Assertion_Policy pragma) to preserve existing warnings.
 
             Set_Has_Predicates (Typ);
             Set_Predicates_Ignored (Typ,
               Present (Check_Policy_List)
                 and then
-                  Policy_In_Effect (Name_Assertion_Policy) = Name_Ignore);
+                  Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 
@@ -23637,15 +23615,26 @@ package body Sem_Prag is
       --  The inputs and outputs of the subprogram spec synthesized from pragma
       --  Depends.
 
-      procedure Check_Dependency_Clause (Dep_Clause : Node_Id);
+      procedure Check_Dependency_Clause
+        (States     : Elist_Id;
+         Dep_Clause : Node_Id);
       --  Try to match a single dependency clause Dep_Clause against one or
       --  more refinement clauses found in list Refinements. Each successful
       --  match eliminates at least one refinement clause from Refinements.
+      --  States is a list of states appearing in dependencies obtained by
+      --  calling Get_States_Seen.
 
       procedure Check_Output_States;
       --  Determine whether pragma Depends contains an output state with a
       --  visible refinement and if so, ensure that pragma Refined_Depends
       --  mentions all its constituents as outputs.
+
+      function Get_States_Seen (Dependencies : List_Id) return Elist_Id;
+      --  Given a normalized list of dependencies obtained from calling
+      --  Normalize_Clauses, return a list containing the entities of all
+      --  states appearing in dependencies. It helps in checking refinements
+      --  involving a state and a corresponding constituent which is not a
+      --  direct constituent of the state.
 
       procedure Normalize_Clauses (Clauses : List_Id);
       --  Given a list of dependence or refinement clauses Clauses, normalize
@@ -23659,7 +23648,10 @@ package body Sem_Prag is
       -- Check_Dependency_Clause --
       -----------------------------
 
-      procedure Check_Dependency_Clause (Dep_Clause : Node_Id) is
+      procedure Check_Dependency_Clause
+        (States     : Elist_Id;
+         Dep_Clause : Node_Id)
+      is
          Dep_Input  : constant Node_Id := Expression (Dep_Clause);
          Dep_Output : constant Node_Id := First (Choices (Dep_Clause));
 
@@ -23676,7 +23668,7 @@ package body Sem_Prag is
             Ref_Item : Node_Id;
             Matched  : out Boolean);
          --  Try to match dependence item Dep_Item against refinement item
-         --  Ref_Item. To match against a possible null refinement (see 2, 7),
+         --  Ref_Item. To match against a possible null refinement (see 2, 9),
          --  set Ref_Item to Empty. Flag Matched is set to True when one of
          --  the following conformance scenarios is in effect:
          --    1) Both items denote null
@@ -23690,10 +23682,11 @@ package body Sem_Prag is
          --       and Ref_Item denotes null.
          --    9) Dep_Item is an abstract state with visible null refinement
          --       and Ref_Item is Empty (special case).
-         --   10) Dep_Item is an abstract state with visible non-null
-         --       refinement and Ref_Item denotes one of its constituents.
-         --   11) Dep_Item is an abstract state without a visible refinement
-         --       and Ref_Item denotes the same state.
+         --   10) Dep_Item is an abstract state with full or partial visible
+         --       non-null refinement and Ref_Item denotes one of its
+         --       constituents.
+         --   11) Dep_Item is an abstract state without a full visible
+         --       refinement and Ref_Item denotes the same state.
          --  When scenario 10 is in effect, the entity of the abstract state
          --  denoted by Dep_Item is added to list Refined_States.
 
@@ -23802,7 +23795,8 @@ package body Sem_Prag is
                      Matched := True;
 
                   --  An abstract state with visible non-null refinement
-                  --  matches one of its constituents.
+                  --  matches one of its constituents, or itself for an
+                  --  abstract state with partial visible refinement.
 
                   elsif Has_Non_Null_Visible_Refinement (Dep_Item_Id) then
                      if Is_Entity_Name (Ref_Item) then
@@ -23812,8 +23806,14 @@ package body Sem_Prag is
                                                   E_Constant,
                                                   E_Variable)
                           and then Present (Encapsulating_State (Ref_Item_Id))
-                          and then Encapsulating_State (Ref_Item_Id) =
-                                     Dep_Item_Id
+                          and then Find_Encapsulating_State
+                                     (States, Ref_Item_Id) = Dep_Item_Id
+                        then
+                           Record_Item (Dep_Item_Id);
+                           Matched := True;
+
+                        elsif not Has_Visible_Refinement (Dep_Item_Id)
+                          and then Ref_Item_Id = Dep_Item_Id
                         then
                            Record_Item (Dep_Item_Id);
                            Matched := True;
@@ -24041,9 +24041,9 @@ package body Sem_Prag is
 
       procedure Check_Output_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
-         --  Determine whether all constituents of state State_Id with visible
-         --  refinement are used as outputs in pragma Refined_Depends. Emit an
-         --  error if this is not the case.
+         --  Determine whether all constituents of state State_Id with full
+         --  visible refinement are used as outputs in pragma Refined_Depends.
+         --  Emit an error if this is not the case (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24051,9 +24051,11 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Refinement_Constituents (State_Id);
+                             Partial_Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
+            Only_Partial : constant Boolean :=
+                             not Has_Visible_Refinement (State_Id);
             Posted       : Boolean := False;
 
          begin
@@ -24062,9 +24064,28 @@ package body Sem_Prag is
                while Present (Constit_Elmt) loop
                   Constit_Id := Node (Constit_Elmt);
 
+                  --  Issue an error when a constituent of State_Id is used,
+                  --  and State_Id has only partial visible refinement
+                  --  (SPARK RM 7.2.4(3d)).
+
+                  if Only_Partial then
+                     if (Present (Body_Inputs)
+                          and then Appears_In (Body_Inputs, Constit_Id))
+                       or else
+                        (Present (Body_Outputs)
+                          and then Appears_In (Body_Outputs, Constit_Id))
+                     then
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_NE
+                          ("constituent & of state % cannot be used in "
+                           & "dependence refinement", N, Constit_Id);
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_N ("\use state % instead", N);
+                     end if;
+
                   --  The constituent acts as an input (SPARK RM 7.2.5(3))
 
-                  if Present (Body_Inputs)
+                  elsif Present (Body_Inputs)
                     and then Appears_In (Body_Inputs, Constit_Id)
                   then
                      Error_Msg_Name_1 := Chars (State_Id);
@@ -24147,6 +24168,55 @@ package body Sem_Prag is
             end loop;
          end if;
       end Check_Output_States;
+
+      ---------------------
+      -- Get_States_Seen --
+      ---------------------
+
+      function Get_States_Seen (Dependencies : List_Id) return Elist_Id is
+         States_Seen : Elist_Id := No_Elist;
+
+         procedure Get_State (Glob_Item : Node_Id);
+         --  Add global item to States_Seen when it corresponds to a state
+
+         ---------------
+         -- Get_State --
+         ---------------
+
+         procedure Get_State (Glob_Item : Node_Id) is
+            Id : Entity_Id;
+         begin
+            if Is_Entity_Name (Glob_Item) then
+               Id := Entity_Of (Glob_Item);
+
+               if Ekind (Id) = E_Abstract_State then
+                  Append_New_Elmt (Id, States_Seen);
+               end if;
+            end if;
+         end Get_State;
+
+         --  Local variables
+
+         Dep_Clause : Node_Id;
+         Dep_Input  : Node_Id;
+         Dep_Output : Node_Id;
+
+      --  Start of processing for Get_States_Seen
+
+      begin
+         Dep_Clause := First (Dependencies);
+         while Present (Dep_Clause) loop
+            Dep_Input  := Expression (Dep_Clause);
+            Dep_Output := First (Choices (Dep_Clause));
+
+            Get_State (Dep_Input);
+            Get_State (Dep_Output);
+
+            Next (Dep_Clause);
+         end loop;
+
+         return States_Seen;
+      end Get_States_Seen;
 
       -----------------------
       -- Normalize_Clauses --
@@ -24355,7 +24425,6 @@ package body Sem_Prag is
       Body_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
       Errors    : constant Nat       := Serious_Errors_Detected;
-      Clause    : Node_Id;
       Deps      : Node_Id;
       Dummy     : Boolean;
       Refs      : Node_Id;
@@ -24477,11 +24546,17 @@ package body Sem_Prag is
          --  and one input. Examine all clauses of pragma Depends looking for
          --  matching clauses in pragma Refined_Depends.
 
-         Clause := First (Dependencies);
-         while Present (Clause) loop
-            Check_Dependency_Clause (Clause);
-            Next (Clause);
-         end loop;
+         declare
+            States_Seen : constant Elist_Id := Get_States_Seen (Dependencies);
+            Clause      : Node_Id;
+
+         begin
+            Clause := First (Dependencies);
+            while Present (Clause) loop
+               Check_Dependency_Clause (States_Seen, Clause);
+               Next (Clause);
+            end loop;
+         end;
 
          if Serious_Errors_Detected = Errors then
             Report_Extra_Clauses;
@@ -24527,11 +24602,18 @@ package body Sem_Prag is
       --  These list contain the entities of all Input, In_Out, Output and
       --  Proof_In items defined in the corresponding Global pragma.
 
+      Repeat_Items : Elist_Id := No_Elist;
+      --  A list of all global items without full visible refinement found
+      --  in pragma Global. These states should be repeated in the global
+      --  refinement (SPARK RM 7.2.4(3c)) unless they have a partial visible
+      --  refinement, in which case they may be repeated (SPARK RM 7.2.4(3d)).
+
       Spec_Id : Entity_Id;
       --  The entity of the subprogram subject to pragma Refined_Global
 
       States : Elist_Id := No_Elist;
-      --  A list of all states with visible refinement found in pragma Global
+      --  A list of all states with full or partial visible refinement found in
+      --  pragma Global.
 
       procedure Check_In_Out_States;
       --  Determine whether the corresponding Global pragma mentions In_Out
@@ -24578,9 +24660,10 @@ package body Sem_Prag is
       --  and separate them in lists In_Items, In_Out_Items, Out_Items and
       --  Proof_In_Items. Flags Has_In_State, Has_In_Out_State, Has_Out_State
       --  and Has_Proof_In_State are set when there is at least one abstract
-      --  state with visible refinement available in the corresponding mode.
-      --  Flag Has_Null_State is set when at least state has a null refinement.
-      --  Mode enotes the current global mode in effect.
+      --  state with full or partial visible refinement available in the
+      --  corresponding mode. Flag Has_Null_State is set when at least state
+      --  has a null refinement. Mode denotes the current global mode in
+      --  effect.
 
       function Present_Then_Remove
         (List : Elist_Id;
@@ -24589,9 +24672,17 @@ package body Sem_Prag is
       --  remove it from List. This routine is used to strip lists In_Constits,
       --  In_Out_Constits and Out_Constits of valid constituents.
 
+      procedure Present_Then_Remove (List : Elist_Id; Item : Entity_Id);
+      --  Same as function Present_Then_Remove, but do not report the presence
+      --  of Item in List.
+
       procedure Report_Extra_Constituents;
       --  Emit an error for each constituent found in lists In_Constits,
       --  In_Out_Constits and Out_Constits.
+
+      procedure Report_Missing_Items;
+      --  Emit an error for each global item not repeated found in list
+      --  Repeat_Items.
 
       -------------------------
       -- Check_In_Out_States --
@@ -24614,7 +24705,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits      : constant Elist_Id :=
-                              Refinement_Constituents (State_Id);
+                              Partial_Refinement_Constituents (State_Id);
             Constit_Elmt  : Elmt_Id;
             Constit_Id    : Entity_Id;
             Has_Missing   : Boolean := False;
@@ -24681,15 +24772,24 @@ package body Sem_Prag is
                      N, State_Id);
                end if;
 
-            --  The state lacks a completion
+            --  The state lacks a completion. When full refinement is visible,
+            --  always emit an error (SPARK RM 7.2.4(3a)). When only partial
+            --  refinement is visible, emit an error if the abstract state
+            --  itself is not utilized (SPARK RM 7.2.4(3d)). In the case where
+            --  both are utilized, Check_State_And_Constituent_Use. will issue
+            --  the error.
 
             elsif not Input_Seen
-              and not In_Out_Seen
-              and not Output_Seen
-              and not Proof_In_Seen
+              and then not In_Out_Seen
+              and then not Output_Seen
+              and then not Proof_In_Seen
             then
-               SPARK_Msg_NE
-                 ("missing global refinement of state &", N, State_Id);
+               if Has_Visible_Refinement (State_Id)
+                 or else Contains (Repeat_Items, State_Id)
+               then
+                  SPARK_Msg_NE
+                    ("missing global refinement of state &", N, State_Id);
+               end if;
 
             --  Otherwise the state has a malformed completion where at least
             --  one of the constituents has a different mode.
@@ -24743,9 +24843,10 @@ package body Sem_Prag is
       procedure Check_Input_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether at least one constituent of state State_Id with
-         --  visible refinement is used and has mode Input. Ensure that the
-         --  remaining constituents do not have In_Out or Output modes. Emit an
-         --  error if this is not the case (SPARK RM 7.2.4(5)).
+         --  full or partial visible refinement is used and has mode Input.
+         --  Ensure that the remaining constituents do not have In_Out or
+         --  Output modes. Emit an error if this is not the case
+         --  (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24753,7 +24854,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Refinement_Constituents (State_Id);
+                             Partial_Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             In_Seen      : Boolean := False;
@@ -24792,9 +24893,17 @@ package body Sem_Prag is
                end loop;
             end if;
 
-            --  Not one of the constituents appeared as Input
+            --  Not one of the constituents appeared as Input. Always emit an
+            --  error when the full refinement is visible (SPARK RM 7.2.4(3a)).
+            --  When only partial refinement is visible, emit an error if the
+            --  abstract state itself is not utilized (SPARK RM 7.2.4(3d)). In
+            --  the case where both are utilized, an error will be issued in
+            --  Check_State_And_Constituent_Use.
 
-            if not In_Seen then
+            if not In_Seen
+              and then (Has_Visible_Refinement (State_Id)
+                         or else Contains (Repeat_Items, State_Id))
+            then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
                   & "constituent of mode `Input`", N, State_Id);
@@ -24823,8 +24932,11 @@ package body Sem_Prag is
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
 
-               --  Ensure that at least one of the constituents is utilized and
-               --  is of mode Input.
+               --  When full refinement is visible, ensure that at least one of
+               --  the constituents is utilized and is of mode Input. When only
+               --  partial refinement is visible, ensure that either one of
+               --  the constituents is utilized and is of mode Input, or the
+               --  abstract state is repeated and no constituent is utilized.
 
                if Ekind (Item_Id) = E_Abstract_State
                  and then Has_Non_Null_Visible_Refinement (Item_Id)
@@ -24843,9 +24955,9 @@ package body Sem_Prag is
 
       procedure Check_Output_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
-         --  Determine whether all constituents of state State_Id with visible
-         --  refinement are used and have mode Output. Emit an error if this is
-         --  not the case (SPARK RM 7.2.4(5)).
+         --  Determine whether all constituents of state State_Id with full
+         --  visible refinement are used and have mode Output. Emit an error
+         --  if this is not the case (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24853,7 +24965,9 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Refinement_Constituents (State_Id);
+                             Partial_Refinement_Constituents (State_Id);
+            Only_Partial : constant Boolean :=
+                             not Has_Visible_Refinement (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             Posted       : Boolean := False;
@@ -24864,7 +24978,27 @@ package body Sem_Prag is
                while Present (Constit_Elmt) loop
                   Constit_Id := Node (Constit_Elmt);
 
-                  if Present_Then_Remove (Out_Constits, Constit_Id) then
+                  --  Issue an error when a constituent of State_Id is utilized
+                  --  and State_Id has only partial visible refinement
+                  --  (SPARK RM 7.2.4(3d)).
+
+                  if Only_Partial then
+                     if Present_Then_Remove (Out_Constits, Constit_Id)
+                       or else Present_Then_Remove (In_Constits, Constit_Id)
+                       or else
+                         Present_Then_Remove (In_Out_Constits, Constit_Id)
+                       or else
+                         Present_Then_Remove (Proof_In_Constits, Constit_Id)
+                     then
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_NE
+                          ("constituent & of state % cannot be used in global "
+                           & "refinement", N, Constit_Id);
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_N ("\use state % instead", N);
+                     end if;
+
+                  elsif Present_Then_Remove (Out_Constits, Constit_Id) then
                      null;
 
                   --  The constituent appears in the global refinement, but has
@@ -24921,8 +25055,10 @@ package body Sem_Prag is
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
 
-               --  Ensure that all of the constituents are utilized and they
-               --  have mode Output.
+               --  When full refinement is visible, ensure that all of the
+               --  constituents are utilized and they have mode Output. When
+               --  only partial refinement is visible, ensure that no
+               --  constituent is utilized.
 
                if Ekind (Item_Id) = E_Abstract_State
                  and then Has_Non_Null_Visible_Refinement (Item_Id)
@@ -24942,9 +25078,10 @@ package body Sem_Prag is
       procedure Check_Proof_In_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether at least one constituent of state State_Id with
-         --  visible refinement is used and has mode Proof_In. Ensure that the
-         --  remaining constituents do not have Input, In_Out or Output modes.
-         --  Emit an error of this is not the case (SPARK RM 7.2.4(5)).
+         --  full or partial visible refinement is used and has mode Proof_In.
+         --  Ensure that the remaining constituents do not have Input, In_Out,
+         --  or Output modes. Emit an error if this is not the case
+         --  (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24952,7 +25089,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits      : constant Elist_Id :=
-                              Refinement_Constituents (State_Id);
+                              Partial_Refinement_Constituents (State_Id);
             Constit_Elmt  : Elmt_Id;
             Constit_Id    : Entity_Id;
             Proof_In_Seen : Boolean := False;
@@ -24985,9 +25122,17 @@ package body Sem_Prag is
                end loop;
             end if;
 
-            --  Not one of the constituents appeared as Proof_In
+            --  Not one of the constituents appeared as Proof_In. Always emit
+            --  an error when full refinement is visible (SPARK RM 7.2.4(3a)).
+            --  When only partial refinement is visible, emit an error if the
+            --  abstract state itself is not utilized (SPARK RM 7.2.4(3d)). In
+            --  the case where both are utilized, an error will be issued by
+            --  Check_State_And_Constituent_Use.
 
-            if not Proof_In_Seen then
+            if not Proof_In_Seen
+              and then (Has_Visible_Refinement (State_Id)
+                         or else Contains (Repeat_Items, State_Id))
+            then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
                   & "constituent of mode `Proof_In`", N, State_Id);
@@ -25016,8 +25161,11 @@ package body Sem_Prag is
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
 
-               --  Ensure that at least one of the constituents is utilized and
-               --  is of mode Proof_In
+               --  Ensure that at least one of the constituents is utilized
+               --  and is of mode Proof_In. When only partial refinement is
+               --  visible, ensure that either one of the constituents is
+               --  utilized and is of mode Proof_In, or the abstract state
+               --  is repeated and no constituent is utilized.
 
                if Ekind (Item_Id) = E_Abstract_State
                  and then Has_Non_Null_Visible_Refinement (Item_Id)
@@ -25072,20 +25220,40 @@ package body Sem_Prag is
                SPARK_Msg_N ("\expected mode %, found mode %", Item);
             end Inconsistent_Mode_Error;
 
+            --  Local variables
+
+            Enc_State : Entity_Id := Empty;
+            --  Encapsulating state for constituent, Empty otherwise
+
          --  Start of processing for Check_Refined_Global_Item
 
          begin
+            if Ekind_In (Item_Id, E_Abstract_State,
+                                  E_Constant,
+                                  E_Variable)
+            then
+               Enc_State := Find_Encapsulating_State (States, Item_Id);
+            end if;
+
             --  When the state or object acts as a constituent of another
             --  state with a visible refinement, collect it for the state
             --  completeness checks performed later on. Note that the item
             --  acts as a constituent only when the encapsulating state is
             --  present in pragma Global.
 
-            if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
-             and then Present (Encapsulating_State (Item_Id))
-             and then Has_Visible_Refinement (Encapsulating_State (Item_Id))
-             and then Contains (States, Encapsulating_State (Item_Id))
+            if Present (Enc_State)
+              and then (Has_Visible_Refinement (Enc_State)
+                         or else Has_Partial_Visible_Refinement (Enc_State))
+              and then Contains (States, Enc_State)
             then
+               --  If the state has only partial visible refinement, remove it
+               --  from the list of items that should be repeated from pragma
+               --  Global.
+
+               if not Has_Visible_Refinement (Enc_State) then
+                  Present_Then_Remove (Repeat_Items, Enc_State);
+               end if;
+
                if Global_Mode = Name_Input then
                   Append_New_Elmt (Item_Id, In_Constits);
 
@@ -25100,31 +25268,37 @@ package body Sem_Prag is
                end if;
 
             --  When not a constituent, ensure that both occurrences of the
-            --  item in pragmas Global and Refined_Global match.
-
-            elsif Contains (In_Items, Item_Id) then
-               if Global_Mode /= Name_Input then
-                  Inconsistent_Mode_Error (Name_Input);
-               end if;
-
-            elsif Contains (In_Out_Items, Item_Id) then
-               if Global_Mode /= Name_In_Out then
-                  Inconsistent_Mode_Error (Name_In_Out);
-               end if;
-
-            elsif Contains (Out_Items, Item_Id) then
-               if Global_Mode /= Name_Output then
-                  Inconsistent_Mode_Error (Name_Output);
-               end if;
-
-            elsif Contains (Proof_In_Items, Item_Id) then
-               null;
-
-            --  The item does not appear in the corresponding Global pragma,
-            --  it must be an extra (SPARK RM 7.2.4(3)).
+            --  item in pragmas Global and Refined_Global match. Also remove
+            --  it when present from the list of items that should be repeated
+            --  from pragma Global.
 
             else
-               SPARK_Msg_NE ("extra global item &", Item, Item_Id);
+               Present_Then_Remove (Repeat_Items, Item_Id);
+
+               if Contains (In_Items, Item_Id) then
+                  if Global_Mode /= Name_Input then
+                     Inconsistent_Mode_Error (Name_Input);
+                  end if;
+
+               elsif Contains (In_Out_Items, Item_Id) then
+                  if Global_Mode /= Name_In_Out then
+                     Inconsistent_Mode_Error (Name_In_Out);
+                  end if;
+
+               elsif Contains (Out_Items, Item_Id) then
+                  if Global_Mode /= Name_Output then
+                     Inconsistent_Mode_Error (Name_Output);
+                  end if;
+
+               elsif Contains (Proof_In_Items, Item_Id) then
+                  null;
+
+               --  The item does not appear in the corresponding Global pragma,
+               --  it must be an extra (SPARK RM 7.2.4(3)).
+
+               else
+                  SPARK_Msg_NE ("extra global item &", Item, Item_Id);
+               end if;
             end if;
          end Check_Refined_Global_Item;
 
@@ -25243,6 +25417,16 @@ package body Sem_Prag is
                end if;
             end if;
 
+            --  Record global items without full visible refinement found in
+            --  pragma Global which should be repeated in the global refinement
+            --  (SPARK RM 7.2.4(3c), SPARK RM 7.2.4(3d)).
+
+            if Ekind (Item_Id) /= E_Abstract_State
+              or else not Has_Visible_Refinement (Item_Id)
+            then
+               Append_New_Elmt (Item_Id, Repeat_Items);
+            end if;
+
             --  Add the item to the proper list
 
             if Item_Mode = Name_Input then
@@ -25342,6 +25526,12 @@ package body Sem_Prag is
          return False;
       end Present_Then_Remove;
 
+      procedure Present_Then_Remove (List : Elist_Id; Item : Entity_Id) is
+         Ignore : Boolean;
+      begin
+         Ignore := Present_Then_Remove (List, Item);
+      end Present_Then_Remove;
+
       -------------------------------
       -- Report_Extra_Constituents --
       -------------------------------
@@ -25384,11 +25574,39 @@ package body Sem_Prag is
          end if;
       end Report_Extra_Constituents;
 
+      --------------------------
+      -- Report_Missing_Items --
+      --------------------------
+
+      procedure Report_Missing_Items is
+         Item_Elmt : Elmt_Id;
+         Item_Id   : Entity_Id;
+
+      begin
+         --  Do not perform this check in an instance because it was already
+         --  performed successfully in the generic template.
+
+         if Is_Generic_Instance (Spec_Id) then
+            null;
+
+         else
+            if Present (Repeat_Items) then
+               Item_Elmt := First_Elmt (Repeat_Items);
+               while Present (Item_Elmt) loop
+                  Item_Id := Node (Item_Elmt);
+                  SPARK_Msg_NE ("missing global item &", N, Item_Id);
+                  Next_Elmt (Item_Elmt);
+               end loop;
+            end if;
+         end if;
+      end Report_Missing_Items;
+
       --  Local variables
 
-      Body_Decl : constant Node_Id := Find_Related_Declaration_Or_Body (N);
-      Errors    : constant Nat     := Serious_Errors_Detected;
-      Items     : Node_Id;
+      Body_Decl  : constant Node_Id := Find_Related_Declaration_Or_Body (N);
+      Errors     : constant Nat     := Serious_Errors_Detected;
+      Items      : Node_Id;
+      No_Constit : Boolean;
 
    --  Start of processing for Analyze_Refined_Global_In_Decl_Part
 
@@ -25438,10 +25656,10 @@ package body Sem_Prag is
       --  Non-instance case
 
       else
-         --  The corresponding Global pragma must mention at least one state
-         --  witha visible refinement at the point Refined_Global is processed.
-         --  States with null refinements need Refined_Global pragma
-         --  (SPARK RM 7.2.4(2)).
+         --  The corresponding Global pragma must mention at least one
+         --  state with a visible refinement at the point Refined_Global
+         --  is processed. States with null refinements need Refined_Global
+         --  pragma (SPARK RM 7.2.4(2)).
 
          if not Has_In_State
            and then not Has_In_Out_State
@@ -25487,6 +25705,16 @@ package body Sem_Prag is
          Check_Refined_Global_List (Items);
       end if;
 
+      --  Store the information that no constituent is used in the global
+      --  refinement, prior to calling checking procedures which remove items
+      --  from the list of constituents.
+
+      No_Constit :=
+        No (In_Constits)
+          and then No (In_Out_Constits)
+          and then No (Out_Constits)
+          and then No (Proof_In_Constits);
+
       --  For Input states with visible refinement, at least one constituent
       --  must be used as an Input in the global refinement.
 
@@ -25520,6 +25748,29 @@ package body Sem_Prag is
 
       if Serious_Errors_Detected = Errors then
          Report_Extra_Constituents;
+      end if;
+
+      --  Emit errors for all items in Global that are not repeated in the
+      --  global refinement and for which there is no full visible refinement
+      --  and, in the case of states with partial visible refinement, no
+      --  constituent is mentioned in the global refinement.
+
+      if Serious_Errors_Detected = Errors then
+         Report_Missing_Items;
+      end if;
+
+      --  Emit an error if no constituent is used in the global refinement
+      --  (SPARK RM 7.2.4(3f)). Emit this error last, in case a more precise
+      --  one may be issued by the checking procedures. Do not perform this
+      --  check in an instance because it was already performed successfully
+      --  in the generic template.
+
+      if Serious_Errors_Detected = Errors
+        and then not Is_Generic_Instance (Spec_Id)
+        and then not Has_Null_State
+        and then No_Constit
+      then
+         SPARK_Msg_N ("missing refinement", N);
       end if;
 
       <<Leave>>
@@ -26411,9 +26662,6 @@ package body Sem_Prag is
       Par_Subp    : Entity_Id;
       Adjust_Sloc : Boolean)
    is
-      Par_Formal  : Entity_Id;
-      Subp_Formal : Entity_Id;
-
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
       --  operation of root type, with corresponding entity for derived type,
@@ -26515,6 +26763,11 @@ package body Sem_Prag is
 
       procedure Replace_Condition_Entities is
         new Traverse_Proc (Replace_Entity);
+
+      --  Local variables
+
+      Par_Formal  : Entity_Id;
+      Subp_Formal : Entity_Id;
 
    --  Start of processing for Build_Class_Wide_Expression
 
@@ -27074,45 +27327,9 @@ package body Sem_Prag is
       Constits : Elist_Id;
       Context  : Node_Id)
    is
-      function Find_Encapsulating_State
-        (Constit_Id : Entity_Id) return Entity_Id;
-      --  Given the entity of a constituent, try to find a corresponding
-      --  encapsulating state that appears in the same context. The routine
-      --  returns Empty is no such state is found.
-
-      ------------------------------
-      -- Find_Encapsulating_State --
-      ------------------------------
-
-      function Find_Encapsulating_State
-        (Constit_Id : Entity_Id) return Entity_Id
-      is
-         State_Id : Entity_Id;
-
-      begin
-         --  Since a constituent may be part of a larger constituent set, climb
-         --  the encapsulating state chain looking for a state that appears in
-         --  the same context.
-
-         State_Id := Encapsulating_State (Constit_Id);
-         while Present (State_Id) loop
-            if Contains (States, State_Id) then
-               return State_Id;
-            end if;
-
-            State_Id := Encapsulating_State (State_Id);
-         end loop;
-
-         return Empty;
-      end Find_Encapsulating_State;
-
-      --  Local variables
-
       Constit_Elmt : Elmt_Id;
       Constit_Id   : Entity_Id;
       State_Id     : Entity_Id;
-
-   --  Start of processing for Check_State_And_Constituent_Use
 
    begin
       --  Nothing to do if there are no states or constituents
@@ -27132,7 +27349,7 @@ package body Sem_Prag is
          --  state that appears in the same context and if this is the case,
          --  emit an error (SPARK RM 7.2.6(7)).
 
-         State_Id := Find_Encapsulating_State (Constit_Id);
+         State_Id := Find_Encapsulating_State (States, Constit_Id);
 
          if Present (State_Id) then
             Error_Msg_Name_1 := Chars (Constit_Id);
@@ -27607,6 +27824,33 @@ package body Sem_Prag is
    begin
       return Num_Primitives (E mod 511);
    end Entity_Hash;
+
+   ------------------------------
+   -- Find_Encapsulating_State --
+   ------------------------------
+
+   function Find_Encapsulating_State
+     (States     : Elist_Id;
+      Constit_Id : Entity_Id) return Entity_Id
+   is
+      State_Id : Entity_Id;
+
+   begin
+      --  Since a constituent may be part of a larger constituent set, climb
+      --  the encapsulating state chain looking for a state that appears in
+      --  States.
+
+      State_Id := Encapsulating_State (Constit_Id);
+      while Present (State_Id) loop
+         if Contains (States, State_Id) then
+            return State_Id;
+         end if;
+
+         State_Id := Encapsulating_State (State_Id);
+      end loop;
+
+      return Empty;
+   end Find_Encapsulating_State;
 
    --------------------------
    -- Find_Related_Context --
@@ -28792,6 +29036,113 @@ package body Sem_Prag is
       --  Nothing else to do at the current time
 
    end Process_Compilation_Unit_Pragmas;
+
+   -------------------------------------------
+   -- Process_Compile_Time_Warning_Or_Error --
+   -------------------------------------------
+
+   procedure Process_Compile_Time_Warning_Or_Error
+     (N     : Node_Id;
+      Eloc  : Source_Ptr)
+   is
+      Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
+      Arg2  : constant Node_Id := Next (Arg1);
+
+   begin
+      Analyze_And_Resolve (Arg1x, Standard_Boolean);
+
+      if Compile_Time_Known_Value (Arg1x) then
+         if Is_True (Expr_Value (Arg1x)) then
+            declare
+               Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+               Pname   : constant Name_Id   := Pragma_Name (N);
+               Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
+               Str     : constant String_Id := Strval (Get_Pragma_Arg (Arg2));
+               Str_Len : constant Nat       := String_Length (Str);
+
+               Force : constant Boolean :=
+                         Prag_Id = Pragma_Compile_Time_Warning
+                           and then Is_Spec_Name (Unit_Name (Current_Sem_Unit))
+                           and then (Ekind (Cent) /= E_Package
+                                      or else not In_Private_Part (Cent));
+               --  Set True if this is the warning case, and we are in the
+               --  visible part of a package spec, or in a subprogram spec,
+               --  in which case we want to force the client to see the
+               --  warning, even though it is not in the main unit.
+
+               C    : Character;
+               CC   : Char_Code;
+               Cont : Boolean;
+               Ptr  : Nat;
+
+            begin
+               --  Loop through segments of message separated by line feeds.
+               --  We output these segments as separate messages with
+               --  continuation marks for all but the first.
+
+               Cont := False;
+               Ptr  := 1;
+               loop
+                  Error_Msg_Strlen := 0;
+
+                  --  Loop to copy characters from argument to error message
+                  --  string buffer.
+
+                  loop
+                     exit when Ptr > Str_Len;
+                     CC := Get_String_Char (Str, Ptr);
+                     Ptr := Ptr + 1;
+
+                     --  Ignore wide chars ??? else store character
+
+                     if In_Character_Range (CC) then
+                        C := Get_Character (CC);
+                        exit when C = ASCII.LF;
+                        Error_Msg_Strlen := Error_Msg_Strlen + 1;
+                        Error_Msg_String (Error_Msg_Strlen) := C;
+                     end if;
+                  end loop;
+
+                  --  Here with one line ready to go
+
+                  Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
+
+                  --  If this is a warning in a spec, then we want clients
+                  --  to see the warning, so mark the message with the
+                  --  special sequence !! to force the warning. In the case
+                  --  of a package spec, we do not force this if we are in
+                  --  the private part of the spec.
+
+                  if Force then
+                     if Cont = False then
+                        Error_Msg ("<<~!!", Eloc);
+                        Cont := True;
+                     else
+                        Error_Msg ("\<<~!!", Eloc);
+                     end if;
+
+                  --  Error, rather than warning, or in a body, so we do not
+                  --  need to force visibility for client (error will be
+                  --  output in any case, and this is the situation in which
+                  --  we do not want a client to get a warning, since the
+                  --  warning is in the body or the spec private part).
+
+                  else
+                     if Cont = False then
+                        Error_Msg ("<<~", Eloc);
+                        Cont := True;
+                     else
+                        Error_Msg ("\<<~", Eloc);
+                     end if;
+                  end if;
+
+                  exit when Ptr > Str_Len;
+               end loop;
+            end;
+         end if;
+      end if;
+   end Process_Compile_Time_Warning_Or_Error;
 
    ------------------------------------
    -- Record_Possible_Body_Reference --

@@ -74,7 +74,7 @@ ceil_log2 (unsigned HOST_WIDE_INT x)
 int
 exact_log2 (unsigned HOST_WIDE_INT x)
 {
-  if (x != (x & -x))
+  if (!pow2p_hwi (x))
     return -1;
   return floor_log2 (x);
 }
@@ -85,7 +85,7 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 int
 ctz_hwi (unsigned HOST_WIDE_INT x)
 {
-  return x ? floor_log2 (x & -x) : HOST_BITS_PER_WIDE_INT;
+  return x ? floor_log2 (least_bit_hwi (x)) : HOST_BITS_PER_WIDE_INT;
 }
 
 /* Similarly for most significant bits.  */
@@ -102,7 +102,7 @@ clz_hwi (unsigned HOST_WIDE_INT x)
 int
 ffs_hwi (unsigned HOST_WIDE_INT x)
 {
-  return 1 + floor_log2 (x & -x);
+  return 1 + floor_log2 (least_bit_hwi (x));
 }
 
 /* Return the number of set bits in X.  */

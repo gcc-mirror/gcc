@@ -1,5 +1,6 @@
-/* { dg-do compile { target aarch64*-*-* x86_64-*-* } } */
+/* { dg-do compile { target aarch64*-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-fdump-rtl-ce1 -O2 -w --param max-rtl-if-conversion-unpredictable-cost=100" } */
+/* { dg-additional-options "-march=i686" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 typedef struct cpp_reader cpp_reader;
 enum cpp_ttype

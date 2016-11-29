@@ -115,4 +115,4 @@ subroutine pr54992  ! This test remains as the original.
   bh => bhGet(b,instance=2)
   if (loc (b) .ne. loc(bh%hostNode)) call abort
 end
-! { dg-final { scan-tree-dump-times "builtin_free" 11 "original" } }
+! { dg-final { scan-tree-dump-times "builtin_free" 12 "original" } }

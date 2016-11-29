@@ -25,7 +25,6 @@
 // operator>>(basic_istream&, _CharT*)
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
   const std::wstring str_01(L"Consoli ");
 
   std::wstringbuf isbuf_01(str_01, std::ios_base::in);

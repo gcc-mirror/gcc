@@ -5,7 +5,7 @@
 ! Started out being in BLOCK DATA; however, blockdata variables must be in
 ! COMMON and therefore cannot have F95 style initializers....
  MODULE DATA
-  INTEGER :: I=1,J=2  ! { dg-error "Overlapping unequal initializers" }
-  EQUIVALENCE(I,J)
+  INTEGER :: I=1,J=2
+  EQUIVALENCE(I,J)  ! { dg-error "Overlapping unequal initializers" }
  END MODULE DATA
  END

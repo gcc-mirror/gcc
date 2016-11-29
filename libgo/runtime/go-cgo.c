@@ -6,11 +6,10 @@
 
 #include "runtime.h"
 #include "go-alloc.h"
-#include "interface.h"
-#include "go-panic.h"
 #include "go-type.h"
 
-extern void __go_receive (ChanType *, Hchan *, byte *);
+extern void chanrecv1 (ChanType *, Hchan *, void *)
+  __asm__ (GOSYM_PREFIX "runtime.chanrecv1");
 
 /* Prepare to call from code written in Go to code written in C or
    C++.  This takes the current goroutine out of the Go scheduler, as
@@ -36,7 +35,6 @@ void
 syscall_cgocall ()
 {
   M* m;
-  G* g;
 
   if (runtime_needextram && runtime_cas (&runtime_needextram, 1, 0))
     runtime_newextram ();
@@ -45,9 +43,8 @@ syscall_cgocall ()
 
   m = runtime_m ();
   ++m->ncgocall;
-  g = runtime_g ();
-  ++g->ncgo;
-  runtime_entersyscall ();
+  ++m->ncgo;
+  runtime_entersyscall (0);
 }
 
 /* Prepare to return to Go code from C/C++ code.  */
@@ -59,19 +56,19 @@ syscall_cgocalldone ()
 
   g = runtime_g ();
   __go_assert (g != NULL);
-  --g->ncgo;
-  if (g->ncgo == 0)
+  --g->m->ncgo;
+  if (g->m->ncgo == 0)
     {
       /* We are going back to Go, and we are not in a recursive call.
 	 Let the garbage collector clean up any unreferenced
 	 memory.  */
-      g->cgomal = NULL;
+      g->m->cgomal = NULL;
     }
 
   /* If we are invoked because the C function called _cgo_panic, then
      _cgo_panic will already have exited syscall mode.  */
-  if (g->status == Gsyscall)
-    runtime_exitsyscall ();
+  if (g->atomicstatus == _Gsyscall)
+    runtime_exitsyscall (0);
 
   runtime_unlockOSThread();
 }
@@ -91,15 +88,15 @@ syscall_cgocallback ()
       mp->dropextram = true;
     }
 
-  runtime_exitsyscall ();
+  runtime_exitsyscall (0);
 
-  if (runtime_g ()->ncgo == 0)
+  if (runtime_m ()->ncgo == 0)
     {
       /* The C call to Go came from a thread not currently running any
 	 Go.  In the case of -buildmode=c-archive or c-shared, this
 	 call may be coming in before package initialization is
 	 complete.  Wait until it is.  */
-      __go_receive (NULL, runtime_main_init_done, NULL);
+      chanrecv1 (NULL, runtime_main_init_done, NULL);
     }
 
   mp = runtime_m ();
@@ -117,9 +114,9 @@ syscall_cgocallbackdone ()
 {
   M *mp;
 
-  runtime_entersyscall ();
+  runtime_entersyscall (0);
   mp = runtime_m ();
-  if (mp->dropextram && runtime_g ()->ncgo == 0)
+  if (mp->dropextram && mp->ncgo == 0)
     {
       mp->dropextram = false;
       runtime_dropm ();
@@ -133,16 +130,16 @@ void *
 alloc_saved (size_t n)
 {
   void *ret;
-  G *g;
+  M *m;
   CgoMal *c;
 
   ret = __go_alloc (n);
 
-  g = runtime_g ();
+  m = runtime_m ();
   c = (CgoMal *) __go_alloc (sizeof (CgoMal));
-  c->next = g->cgomal;
+  c->next = m->cgomal;
   c->alloc = ret;
-  g->cgomal = c;
+  m->cgomal = c;
 
   return ret;
 }
@@ -156,9 +153,9 @@ _cgo_allocate (size_t n)
 {
   void *ret;
 
-  runtime_exitsyscall ();
+  runtime_exitsyscall (0);
   ret = alloc_saved (n);
-  runtime_entersyscall ();
+  runtime_entersyscall (0);
   return ret;
 }
 
@@ -171,17 +168,19 @@ _cgo_panic (const char *p)
   intgo len;
   unsigned char *data;
   String *ps;
-  struct __go_empty_interface e;
+  Eface e;
+  const struct __go_type_descriptor *td;
 
-  runtime_exitsyscall ();
+  runtime_exitsyscall (0);
   len = __builtin_strlen (p);
   data = alloc_saved (len);
   __builtin_memcpy (data, p, len);
   ps = alloc_saved (sizeof *ps);
   ps->str = data;
   ps->len = len;
-  e.__type_descriptor = &string_type_descriptor;
-  e.__object = ps;
+  td = &string_type_descriptor;
+  memcpy(&e._type, &td, sizeof td); /* This is a const_cast.  */
+  e.data = ps;
 
   /* We don't call runtime_entersyscall here, because normally what
      will happen is that we will walk up the stack to a Go deferred
@@ -191,7 +190,7 @@ _cgo_panic (const char *p)
      handle this by calling runtime_entersyscall in the personality
      function in go-unwind.c.  FIXME.  */
 
-  __go_panic (e);
+  runtime_panic (e);
 }
 
 /* Used for _cgo_wait_runtime_init_done.  This is based on code in

@@ -22,7 +22,6 @@
 
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   typedef wstringbuf::pos_type pos_type;
   typedef wstringbuf::off_type off_type;

@@ -366,6 +366,9 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2059" target="_top">2059</a>:
 	<span class="emphasis"><em>C++0x ambiguity problem with map::erase</em></span>
     </span></dt><dd><p>Add additional overloads.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2062" target="_top">2062</a>:
+	<span class="emphasis"><em>2062. Effect contradictions w/o no-throw guarantee of <code class="code">std::function</code> swaps</em></span>
+    </span></dt><dd><p>Add <code class="code">noexcept</code> to swap functions.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2063" target="_top">2063</a>:
 	<span class="emphasis"><em>Contradictory requirements for string move assignment</em></span>
     </span></dt><dd><p>Respect propagation trait for move assignment.
@@ -387,6 +390,9 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2118" target="_top">2118</a>:
 	<span class="emphasis"><em><code class="code">unique_ptr</code> for array does not support cv qualification conversion of actual argument</em></span>
     </span></dt><dd><p>Adjust constraints to allow safe conversions.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2127" target="_top">2127</a>:
+	<span class="emphasis"><em>Move-construction with <code class="code">raw_storage_iterator</code></em></span>
+    </span></dt><dd><p>Add assignment operator taking an rvalue.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2132" target="_top">2132</a>:
 	<span class="emphasis"><em><code class="code">std::function</code> ambiguity</em></span>
     </span></dt><dd><p>Constrain the constructor to only accept callable types.
@@ -405,6 +411,10 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2187" target="_top">2187</a>:
 	<span class="emphasis"><em><code class="code">vector&lt;bool&gt;</code> is missing <code class="code">emplace</code> and <code class="code">emplace_back</code> member functions</em></span>
     </span></dt><dd><p>Add <code class="code">emplace</code> and <code class="code">emplace_back</code> member functions.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2192" target="_top">2192</a>:
+	<span class="emphasis"><em>Validity and return type of <code class="code">std::abs(0u)</code> is unclear</em></span>
+    </span></dt><dd><p>Move all declarations to a common header and remove the
+    generic <code class="code">abs</code> which accepted unsigned arguments.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2196" target="_top">2196</a>:
 	<span class="emphasis"><em>Specification of <code class="code">is_*[copy/move]_[constructible/assignable]</code> unclear for non-referencable types</em></span>
     </span></dt><dd><p>Use the referenceable type concept.
@@ -413,6 +423,10 @@
     </span></dt><dd><p>The <code class="code">tuple_size</code> and <code class="code">tuple_element</code>
     partial specializations are defined in <code class="code">&lt;utility&gt;</code> which
     is included by <code class="code">&lt;array&gt;</code>.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2296" target="_top">2296</a>:
+	<span class="emphasis"><em><code class="code">std::addressof</code> should be constexpr</em></span>
+    </span></dt><dd><p>Use <code class="code">__builtin_addressof</code> and add
+    <code class="code">constexpr</code> to <code class="code">addressof</code> for C++17 and later.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2313" target="_top">2313</a>:
 	<span class="emphasis"><em><code class="code">tuple_size</code> should always derive from <code class="code">integral_constant&lt;size_t, N&gt;</code></em></span>
     </span></dt><dd><p>Update definitions of the partial specializations for const and volatile types.
@@ -452,6 +466,10 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2441" target="_top">2441</a>:
        <span class="emphasis"><em>Exact-width atomic typedefs should be provided</em></span>
     </span></dt><dd><p>Define the typedefs.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2442" target="_top">2442</a>:
+       <span class="emphasis"><em><code class="code">call_once()</code> shouldn't <code class="code">DECAY_COPY()</code></em></span>
+    </span></dt><dd><p>Remove indirection through call wrapper that made copies
+    of arguments and forward arguments straight to <code class="code">std::invoke</code>.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2454" target="_top">2454</a>:
        <span class="emphasis"><em>Add <code class="code">raw_storage_iterator::base()</code> member
        </em></span>
@@ -472,8 +490,23 @@
        <span class="emphasis"><em><code class="code">allocator_traits::max_size()</code> default behavior is incorrect
        </em></span>
     </span></dt><dd><p>Divide by the object type.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2484" target="_top">2484</a>:
+       <span class="emphasis"><em><code class="code">rethrow_if_nested()</code>  is doubly unimplementable
+       </em></span>
+    </span></dt><dd><p>Avoid using <code class="code">dynamic_cast</code> when it would be
+    ill-formed.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2583" target="_top">2583</a>:
+       <span class="emphasis"><em>There is no way to supply an allocator for <code class="code">basic_string(str, pos)</code>
+       </em></span>
+    </span></dt><dd><p>Add new constructor
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2684" target="_top">2684</a>:
        <span class="emphasis"><em><code class="code">priority_queue</code> lacking comparator typedef
        </em></span>
     </span></dt><dd><p>Define the <code class="code">value_compare</code> typedef.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2770" target="_top">2770</a>:
+       <span class="emphasis"><em><code class="code">tuple_size&lt;const T&gt;</code> specialization is not
+	 SFINAE compatible and breaks decomposition declarations
+       </em></span>
+    </span></dt><dd><p>Safely detect <code class="code">tuple_size&lt;T&gt;::value</code> and
+      only use it if valid.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="status.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>

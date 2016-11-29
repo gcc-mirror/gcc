@@ -23,8 +23,7 @@
 
 // libstdc++/23578
 void test01() 
-{ 
-  bool test __attribute__((unused)) = true;
+{
   typedef std::map<int, double> map_type;
 
   {

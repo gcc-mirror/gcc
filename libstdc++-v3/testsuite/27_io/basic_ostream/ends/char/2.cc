@@ -30,7 +30,6 @@ void test02()
   using namespace std;
   typedef ostringstream::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
   ostringstream osst_01;
   const string str_00("herbie_hancock");
   int_type len1 = str_00.size();

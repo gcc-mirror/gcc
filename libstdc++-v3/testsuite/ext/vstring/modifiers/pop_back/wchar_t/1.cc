@@ -16,16 +16,14 @@
 // <http://www.gnu.org/licenses/>.
 
 // 21.4.6.5 basic_string::pop_back
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>
 
 template<typename StrT>
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const StrT cstr(L"Badger");
   StrT str = cstr;
   str.pop_back();
@@ -33,8 +31,6 @@ int test01()
 
   str += cstr.back();
   VERIFY( str == cstr );
-
-  return test;
 }
 
 int main()

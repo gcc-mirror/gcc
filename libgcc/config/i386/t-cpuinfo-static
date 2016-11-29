@@ -1,0 +1,4 @@
+# If the compatibility cpuinfo symbols in shared libgcc_s are not needed
+# then they can be added to the static library only.
+
+LIB2ADD_ST += $(srcdir)/config/i386/cpuinfo.c

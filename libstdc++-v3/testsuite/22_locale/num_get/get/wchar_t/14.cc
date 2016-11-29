@@ -32,8 +32,6 @@ void test01()
 {
   using namespace std;
   typedef istreambuf_iterator<wchar_t> iterator_type;
-  
-  bool test __attribute__((unused)) = true;
 
   wistringstream iss;
   iss.imbue(locale(iss.getloc(), new Punct));

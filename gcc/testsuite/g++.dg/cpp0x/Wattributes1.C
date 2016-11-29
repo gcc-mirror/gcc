@@ -5,4 +5,4 @@
 #include <new>
 __attribute__((visibility("hidden")))void*operator new(std::size_t); // { dg-warning "visibility attribute ignored" }
 
-// { dg-message "previous declaration" "" { target *-*-* } 116 }
+// { dg-message "previous declaration" "" { target *-*-* } 120 }

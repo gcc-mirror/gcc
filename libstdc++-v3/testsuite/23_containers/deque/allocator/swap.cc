@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <deque>
 #include <testsuite_hooks.h>
@@ -45,7 +45,6 @@ operator!=(const propagating_allocator<T, false>&,
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<T, false> alloc_type;
   typedef std::deque<T, alloc_type> test_type;
   test_type v1(1, alloc_type(1));
@@ -59,7 +58,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<T, true> alloc_type;
   typedef std::deque<T, alloc_type> test_type;
   test_type v1(1, alloc_type(1));

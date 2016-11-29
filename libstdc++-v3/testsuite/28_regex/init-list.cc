@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -23,10 +23,8 @@
 
 using namespace std;
 
-int test01(void)
+void test01(void)
 {
-  bool test = true;
-
   regex r = { 'a', 'b', 'c' };
   cmatch res;
   VERIFY(regex_match ("abc", res, r));
@@ -35,8 +33,6 @@ int test01(void)
   r = { 'd', 'e', 'f' };
   VERIFY(regex_match ("def", res, r));
   VERIFY(!regex_match ("abc", res, r));
-
-  return test;
 }
 
 int main()

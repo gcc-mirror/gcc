@@ -28,7 +28,6 @@
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
   std::string str01 = "geogaddi";
   std::string str02;
 

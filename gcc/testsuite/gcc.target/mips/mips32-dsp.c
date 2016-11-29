@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP instructions */
 /* { dg-do compile } */
-/* { dg-options "-mgp32 -mdsp" } */
+/* { dg-options "-mgp32 -mdsp (REQUIRES_STDLIB)" } */
 /* { dg-final { scan-assembler "\taddq.ph\t" } } */
 /* { dg-final { scan-assembler "\taddq_s.ph\t" } } */
 /* { dg-final { scan-assembler "\taddq_s.w\t" } } */

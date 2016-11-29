@@ -48,6 +48,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 #elif defined(__rtems__)
+  // This code is only provided for reference.  RTEMS uses now the atomic
+  // builtins and libatomic.  See configure.host.
+  //
   // TAS/JBNE is unsafe on systems with strict priority-based scheduling.
   // Disable interrupts, which we can do only from supervisor mode.
   _Atomic_word

@@ -914,19 +914,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *   Returns a pointer such that [data(), data() + size()) is a valid
        *   range.  For a non-empty %vector, data() == &front().
        */
-#if __cplusplus >= 201103L
       _Tp*
-#else
-      pointer
-#endif
       data() _GLIBCXX_NOEXCEPT
       { return _M_data_ptr(this->_M_impl._M_start); }
 
-#if __cplusplus >= 201103L
       const _Tp*
-#else
-      const_pointer
-#endif
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data_ptr(this->_M_impl._M_start); }
 
@@ -960,7 +952,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { emplace_back(std::move(__x)); }
 
       template<typename... _Args>
+#if __cplusplus > 201402L
+        reference
+#else
 	void
+#endif
 	emplace_back(_Args&&... __args);
 #endif
 
@@ -1554,21 +1550,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 #endif
 
-#if __cplusplus >= 201103L
       template<typename _Up>
 	_Up*
-	_M_data_ptr(_Up* __ptr) const
+	_M_data_ptr(_Up* __ptr) const _GLIBCXX_NOEXCEPT
 	{ return __ptr; }
 
+#if __cplusplus >= 201103L
       template<typename _Ptr>
 	typename std::pointer_traits<_Ptr>::element_type*
 	_M_data_ptr(_Ptr __ptr) const
 	{ return empty() ? nullptr : std::__addressof(*__ptr); }
 #else
-      template<typename _Ptr>
-	_Ptr
-	_M_data_ptr(_Ptr __ptr) const
+      template<typename _Up>
+	_Up*
+	_M_data_ptr(_Up* __ptr) _GLIBCXX_NOEXCEPT
 	{ return __ptr; }
+
+      template<typename _Ptr>
+	value_type*
+	_M_data_ptr(_Ptr __ptr)
+	{ return __ptr.operator->(); }
+
+      template<typename _Ptr>
+	const value_type*
+	_M_data_ptr(_Ptr __ptr) const
+	{ return __ptr.operator->(); }
 #endif
     };
 

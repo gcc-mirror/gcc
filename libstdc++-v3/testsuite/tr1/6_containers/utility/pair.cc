@@ -33,7 +33,6 @@ struct blank_class
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
   typedef pair<int,int> test_pair_type;
   VERIFY(tuple_size<test_pair_type>::value == 2);
   // Test if tuple_element::type returns the correct type

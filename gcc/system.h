@@ -577,15 +577,21 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 
 /* 1 if we have C99 designated initializers.  */
 #if !defined(HAVE_DESIGNATED_INITIALIZERS)
+#ifdef __cplusplus
+#define HAVE_DESIGNATED_INITIALIZERS 0
+#else
 #define HAVE_DESIGNATED_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)) \
-   && !defined(__cplusplus))
+  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+#endif
 #endif
 
 #if !defined(HAVE_DESIGNATED_UNION_INITIALIZERS)
+#ifdef __cplusplus
+#define HAVE_DESIGNATED_UNION_INITIALIZERS (GCC_VERSION >= 4007)
+#else
 #define HAVE_DESIGNATED_UNION_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)) \
-   && (!defined(__cplusplus) || (GCC_VERSION >= 4007)))
+  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+#endif
 #endif
 
 #if HAVE_SYS_STAT_H
@@ -746,15 +752,30 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 #endif
 
+#if GCC_VERSION >= 7000 && defined(__has_attribute)
+# if __has_attribute(fallthrough)
+#  define gcc_fallthrough() __attribute__((fallthrough))
+# else
+#  define gcc_fallthrough()
+# endif
+#else
+# define gcc_fallthrough()
+#endif
+
 #if GCC_VERSION >= 3001
 #define STATIC_CONSTANT_P(X) (__builtin_constant_p (X) && (X))
 #else
 #define STATIC_CONSTANT_P(X) (false && (X))
 #endif
 
-/* Until we can use C++11's static_assert.  */
+/* static_assert (COND, MESSAGE) is available in C++11 onwards.  */
+#if __cplusplus >= 201103L
+#define STATIC_ASSERT(X) \
+  static_assert ((X), #X)
+#else
 #define STATIC_ASSERT(X) \
   typedef int assertion1[(X) ? 1 : -1] ATTRIBUTE_UNUSED
+#endif
 
 /* Provide a fake boolean type.  We make no attempt to use the
    C99 _Bool, as it may not be available in the bootstrap compiler,
@@ -881,7 +902,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	ASM_BYTE_OP MEMBER_TYPE_FORCES_BLK LIBGCC2_HAS_SF_MODE		\
 	LIBGCC2_HAS_DF_MODE LIBGCC2_HAS_XF_MODE LIBGCC2_HAS_TF_MODE	\
 	CLEAR_BY_PIECES_P MOVE_BY_PIECES_P SET_BY_PIECES_P		\
-	STORE_BY_PIECES_P
+	STORE_BY_PIECES_P TARGET_FLT_EVAL_METHOD
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */
@@ -971,7 +992,9 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	EXTRA_ADDRESS_CONSTRAINT CONST_DOUBLE_OK_FOR_CONSTRAINT_P	   \
 	CALLER_SAVE_PROFITABLE LARGEST_EXPONENT_IS_NORMAL		   \
 	ROUND_TOWARDS_ZERO SF_SIZE DF_SIZE XF_SIZE TF_SIZE LIBGCC2_TF_CEXT \
-	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE EH_FRAME_IN_DATA_SECTION
+	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE			   \
+	EH_FRAME_IN_DATA_SECTION TARGET_FLT_EVAL_METHOD_NON_DEFAULT	   \
+	JCR_SECTION_NAME TARGET_USE_JCR_SECTION
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

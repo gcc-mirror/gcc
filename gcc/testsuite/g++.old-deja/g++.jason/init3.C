@@ -10,7 +10,7 @@ class My_string {
 public:
    My_string(const char* string);
    My_string(const My_string &);
-   ~My_string() { delete str; }
+   ~My_string() { delete [] str; }
    char* char_p() { return str; }
 };
 

@@ -10,7 +10,7 @@ struct A
   static void (A::*pmf)() throw ();
 };
 
-void (A::* A::pmf)() = &A::g;
+void (A::* A::pmf)() throw() = &A::g;
 
 int main()
 {

@@ -64,7 +64,6 @@ void test05()
   typedef std::filebuf::off_type 	off_type;
   typedef size_t 			size_type;
 
-  bool test __attribute__((unused)) = true;
   std::filebuf 				f_tmp;
 
   fb_01.open(name_01, std::ios_base::in);

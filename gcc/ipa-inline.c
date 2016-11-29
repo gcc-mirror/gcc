@@ -108,6 +108,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "profile.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
@@ -365,11 +366,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   else if (!inline_summaries->get (callee)->inlinable)
     {
       e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
-      inlinable = false;
-    }
-  else if (inline_summaries->get (caller)->contains_cilk_spawn)
-    {
-      e->inline_failed = CIF_CILK_SPAWN;
       inlinable = false;
     }
   /* Don't inline a function with mismatched sanitization attributes. */

@@ -23,7 +23,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   using std::valarray;
   using std::slice;
   valarray<int> v(1, 10), w(2, 10);

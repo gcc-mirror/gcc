@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -40,7 +40,6 @@ test_value(int result, want_value expected);
 int
 test_value(int result, want_value expected)
 {
-  bool test [[gnu::unused]] = true;
   bool pass = false;
 
   switch (expected) {

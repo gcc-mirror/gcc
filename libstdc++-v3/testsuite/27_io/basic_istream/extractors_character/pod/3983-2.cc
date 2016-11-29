@@ -38,8 +38,6 @@ void test03()
   stringbuf_type strbuf01;
   istream_type iss(&strbuf01);
 
-  bool test __attribute__((unused)) = true;
-
   // input streams
   pod_ushort arr[6] = { { value_type('a') }, { value_type('b') }, 
 			{ value_type('c') }, { value_type('d') },

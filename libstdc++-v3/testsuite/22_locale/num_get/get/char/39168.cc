@@ -31,7 +31,6 @@ protected:
 // libstdc++/39168
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   typedef istreambuf_iterator<char> iterator_type;
 

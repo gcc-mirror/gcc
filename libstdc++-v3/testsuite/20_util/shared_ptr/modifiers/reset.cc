@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -37,8 +37,6 @@ long D::delete_count = 0;
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   std::shared_ptr<A> p1(a);
   std::shared_ptr<A> p2(p1);
@@ -52,8 +50,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   B * const b = new B;
   std::shared_ptr<A> p1(a);
@@ -68,8 +64,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::shared_ptr<A> p1;
     p1.reset(new B, D());

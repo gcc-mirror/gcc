@@ -27,7 +27,6 @@ void test01()
   using namespace std;
   typedef std::stringbuf::pos_type        pos_type;
   typedef std::stringbuf::off_type        off_type;
-  bool test __attribute__((unused)) = true;
 
   // tellp
   ostringstream ost;

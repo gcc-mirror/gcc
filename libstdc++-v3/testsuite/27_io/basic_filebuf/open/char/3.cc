@@ -30,7 +30,6 @@
 // Charles Leggett <CGLeggett@lbl.gov>
 void test_05()
 {
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_file5";
 
   std::fstream scratch_file;

@@ -15,13 +15,13 @@ foo (float f, double d, long double ld)
   /* Test the generic expansion of isinf_sign.  */
 
   if (__builtin_isinf_sign(f)
-      != (__builtin_isinf(f) ? (__builtin_signbitf(f) ? -1 : 1) : 0))
+      != (__builtin_isinf(f) ? (__builtin_signbit(f) ? -1 : 1) : 0))
     link_error (__LINE__);
   if (__builtin_isinf_sign(d)
       != (__builtin_isinf(d) ? (__builtin_signbit(d) ? -1 : 1) : 0))
     link_error (__LINE__);
   if (__builtin_isinf_sign(ld)
-      != (__builtin_isinf(ld) ? (__builtin_signbitl(ld) ? -1 : 1) : 0))
+      != (__builtin_isinf(ld) ? (__builtin_signbit(ld) ? -1 : 1) : 0))
     link_error (__LINE__);
 
 #ifdef __OPTIMIZE__

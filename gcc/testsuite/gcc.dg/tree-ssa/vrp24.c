@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fno-tree-forwprop -fdump-tree-vrp1-details" } */
 
 
 struct rtx_def;

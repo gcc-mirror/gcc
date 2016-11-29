@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "simple-object.h"
@@ -78,15 +79,6 @@ go_field_alignment (tree t)
 #endif
 
   return v / BITS_PER_UNIT;
-}
-
-/* Return the size and alignment of a trampoline.  */
-
-void
-go_trampoline_info (unsigned int *size, unsigned int *alignment)
-{
-  *size = TRAMPOLINE_SIZE;
-  *alignment = TRAMPOLINE_ALIGNMENT;
 }
 
 /* This is called by the Go frontend proper if the unsafe package was

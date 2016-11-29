@@ -88,18 +88,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tuple_size;
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2770. tuple_size<const T> specialization is not SFINAE compatible
+  template<typename _Tp, typename = void>
+    struct __tuple_size_cv_impl { };
+
+  template<typename _Tp>
+    struct __tuple_size_cv_impl<_Tp, __void_t<decltype(tuple_size<_Tp>::value)>>
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2313. tuple_size should always derive from integral_constant<size_t, N>
   template<typename _Tp>
-    struct tuple_size<const _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+    struct tuple_size<const _Tp> : __tuple_size_cv_impl<_Tp> { };
 
   template<typename _Tp>
-    struct tuple_size<volatile _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+    struct tuple_size<volatile _Tp> : __tuple_size_cv_impl<_Tp> { };
 
   template<typename _Tp>
-    struct tuple_size<const volatile _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+    struct tuple_size<const volatile _Tp> : __tuple_size_cv_impl<_Tp> { };
 
   /// Gives the type of the ith element of a given tuple type.
   template<std::size_t __i, typename _Tp>
@@ -336,27 +342,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
 
-  struct in_place_tag {
-    in_place_tag() = delete;
+  struct in_place_t {
+    explicit in_place_t() = default;
   };
 
-  struct __in_place;
-  template<typename _Tp> struct __in_place_type;
-  template<size_t _Idx> struct __in_place_index;
+  inline constexpr in_place_t in_place{};
 
-  using in_place_t = in_place_tag(&)(__in_place*);
-  template <class _Tp>
-    using in_place_type_t = in_place_tag(&)(__in_place_type<_Tp>*);
-  template <int _Idx>
-    using in_place_index_t = in_place_tag(&)(__in_place_index<_Idx>*);
+  template<typename _Tp> struct in_place_type_t
+  {
+    explicit in_place_type_t() = default;
+  };
 
-  inline in_place_tag in_place(__in_place*) {terminate();}
-  template <class _Tp>
-    in_place_tag in_place(__in_place_type<_Tp>*) {terminate();}
-  template <size_t _Idx>
-    in_place_tag in_place(__in_place_index<_Idx>*) {terminate();}
+  template<typename _Tp>
+    inline constexpr in_place_type_t<_Tp> in_place_type{};
 
-#endif
+  template<size_t _Idx> struct in_place_index_t
+  {
+    explicit in_place_index_t() = default;
+  };
+
+  template<size_t _Idx>
+    inline constexpr in_place_index_t<_Idx> in_place_index{};
+
+  template<typename>
+    struct __is_in_place_type_impl : false_type
+    { };
+
+  template<typename _Tp>
+    struct __is_in_place_type_impl<in_place_type_t<_Tp>> : true_type
+    { };
+
+  template<typename _Tp>
+    struct __is_in_place_type
+      : public __is_in_place_type_impl<_Tp>
+    { };
+
+#define  __cpp_lib_as_const 201510
+  template<typename _Tp>
+    constexpr add_const_t<_Tp>& as_const(_Tp& __t) noexcept { return __t; }
+
+  template<typename _Tp>
+    void as_const(const _Tp&&) = delete;
+
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

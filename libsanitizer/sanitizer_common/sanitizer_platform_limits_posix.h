@@ -18,7 +18,7 @@
 
 #if SANITIZER_FREEBSD
 // FreeBSD's dlopen() returns a pointer to an Obj_Entry structure that
-// incroporates the map structure.
+// incorporates the map structure.
 # define GET_LINK_MAP_BY_DLOPEN_HANDLE(handle) \
     ((link_map*)((handle) == nullptr ? nullptr : ((char*)(handle) + 544)))
 #else
@@ -75,12 +75,16 @@ namespace __sanitizer {
   const unsigned struct_kernel_stat_sz = 144;
   const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__mips__)
-  #if SANITIZER_WORDSIZE == 64
-  const unsigned struct_kernel_stat_sz = 216;
-  #else
-  const unsigned struct_kernel_stat_sz = 144;
-  #endif
+  const unsigned struct_kernel_stat_sz =
+                 SANITIZER_ANDROID ? FIRST_32_SECOND_64(104, 128) :
+                                     FIRST_32_SECOND_64(144, 216);
   const unsigned struct_kernel_stat64_sz = 104;
+#elif defined(__s390__) && !defined(__s390x__)
+  const unsigned struct_kernel_stat_sz = 64;
+  const unsigned struct_kernel_stat64_sz = 104;
+#elif defined(__s390x__)
+  const unsigned struct_kernel_stat_sz = 144;
+  const unsigned struct_kernel_stat64_sz = 0;
 #elif defined(__sparc__) && defined(__arch64__)
   const unsigned struct___old_kernel_stat_sz = 0;
   const unsigned struct_kernel_stat_sz = 104;
@@ -109,7 +113,7 @@ namespace __sanitizer {
 
 #if SANITIZER_LINUX || SANITIZER_FREEBSD
 
-#if defined(__powerpc64__)
+#if defined(__powerpc64__) || defined(__s390__)
   const unsigned struct___old_kernel_stat_sz = 0;
 #elif !defined(__sparc__)
   const unsigned struct___old_kernel_stat_sz = 32;
@@ -196,7 +200,7 @@ namespace __sanitizer {
     unsigned __seq;
     u64 __unused1;
     u64 __unused2;
-#elif defined(__mips__) || defined(__aarch64__)
+#elif defined(__mips__) || defined(__aarch64__) || defined(__s390x__)
     unsigned int mode;
     unsigned short __seq;
     unsigned short __pad1;
@@ -250,7 +254,7 @@ namespace __sanitizer {
     unsigned long shm_nattch;
     unsigned long __glibc_reserved1;
     unsigned long __glibc_reserved2;
-  #else    
+  #else
   #ifndef __powerpc__
     uptr shm_segsz;
   #elif !defined(__powerpc64__)
@@ -555,7 +559,11 @@ namespace __sanitizer {
   };
 
 #if SANITIZER_ANDROID
+# if SANITIZER_MIPS
+  typedef unsigned long __sanitizer_sigset_t[16/sizeof(unsigned long)];
+# else
   typedef unsigned long __sanitizer_sigset_t;
+# endif
 #elif SANITIZER_MAC
   typedef unsigned __sanitizer_sigset_t;
 #elif SANITIZER_LINUX
@@ -581,6 +589,15 @@ namespace __sanitizer {
     __sanitizer_sigset_t sa_mask;
     void (*sa_restorer)();
   };
+#elif SANITIZER_ANDROID && SANITIZER_MIPS32  // check this before WORDSIZE == 32
+  struct __sanitizer_sigaction {
+    unsigned sa_flags;
+    union {
+      void (*sigaction)(int sig, void *siginfo, void *uctx);
+      void (*handler)(int sig);
+    };
+    __sanitizer_sigset_t sa_mask;
+  };
 #elif SANITIZER_ANDROID && (SANITIZER_WORDSIZE == 32)
   struct __sanitizer_sigaction {
     union {
@@ -604,7 +621,11 @@ namespace __sanitizer {
     int sa_flags;
     __sanitizer_sigset_t sa_mask;
 #else
+#if defined(__s390x__)
+    int sa_resv;
+#else
     __sanitizer_sigset_t sa_mask;
+#endif
 #ifndef __mips__
 #if defined(__sparc__)
     unsigned long sa_flags;
@@ -619,6 +640,9 @@ namespace __sanitizer {
 #if defined(__mips__) && (SANITIZER_WORDSIZE == 32)
     int sa_resv[1];
 #endif
+#if defined(__s390x__)
+    __sanitizer_sigset_t sa_mask;
+#endif
   };
 #endif // !SANITIZER_ANDROID
 
@@ -626,7 +650,7 @@ namespace __sanitizer {
   typedef __sanitizer_sigset_t __sanitizer_kernel_sigset_t;
 #elif defined(__mips__)
   struct __sanitizer_kernel_sigset_t {
-    u8 sig[16];
+    uptr sig[2];
   };
 #else
   struct __sanitizer_kernel_sigset_t {
@@ -635,6 +659,17 @@ namespace __sanitizer {
 #endif
 
   // Linux system headers define the 'sa_handler' and 'sa_sigaction' macros.
+#if SANITIZER_MIPS
+  struct __sanitizer_kernel_sigaction_t {
+    unsigned int sa_flags;
+    union {
+      void (*handler)(int signo);
+      void (*sigaction)(int signo, void *info, void *ctx);
+    };
+    __sanitizer_kernel_sigset_t sa_mask;
+    void (*sa_restorer)(void);
+  };
+#else
   struct __sanitizer_kernel_sigaction_t {
     union {
       void (*handler)(int signo);
@@ -644,6 +679,7 @@ namespace __sanitizer {
     void (*sa_restorer)(void);
     __sanitizer_kernel_sigset_t sa_mask;
   };
+#endif
 
   extern uptr sig_ign;
   extern uptr sig_dfl;
@@ -779,7 +815,8 @@ namespace __sanitizer {
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID && \
   (defined(__i386) || defined(__x86_64) || defined(__mips64) || \
-    defined(__powerpc64__) || defined(__aarch64__) || defined(__arm__))
+    defined(__powerpc64__) || defined(__aarch64__) || defined(__arm__) || \
+    defined(__s390__))
   extern unsigned struct_user_regs_struct_sz;
   extern unsigned struct_user_fpregs_struct_sz;
   extern unsigned struct_user_fpxregs_struct_sz;

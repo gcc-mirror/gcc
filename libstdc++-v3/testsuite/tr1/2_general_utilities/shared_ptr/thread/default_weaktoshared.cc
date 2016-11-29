@@ -18,8 +18,7 @@
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* } }
-// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* } }
-// { dg-options "-pthreads" { target *-*-solaris* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* } }
 
 #include <tr1/memory>
 #include <tr1/random>
@@ -144,7 +143,6 @@ void* thread_hammer(void* opaque_weak)
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
   sp_vector_t obj_pool(POOL_SIZE);
 
   for(sp_vector_t::iterator cur = obj_pool.begin(); cur != obj_pool.end(); ++cur)

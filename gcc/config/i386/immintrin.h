@@ -68,6 +68,10 @@
 
 #include <avx512vbmivlintrin.h>
 
+#include <avx5124fmapsintrin.h>
+
+#include <avx5124vnniwintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>

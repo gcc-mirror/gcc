@@ -1702,6 +1702,17 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
 	  if (TREE_CODE (gnu_expr) == ADDR_EXPR)
 	    TREE_NO_TRAMPOLINE (gnu_expr) = TREE_CONSTANT (gnu_expr) = 1;
+
+	  /* On targets for which function symbols denote a descriptor, the
+	     code address is stored within the first slot of the descriptor
+	     so we do an additional dereference:
+	       result = *((result_type *) result)
+	     where we expect result to be of some pointer type already.  */
+	  if (targetm.calls.custom_function_descriptors == 0)
+	    gnu_result
+	      = build_unary_op (INDIRECT_REF, NULL_TREE,
+				convert (build_pointer_type (gnu_result_type),
+					 gnu_result));
 	}
 
       /* For 'Access, issue an error message if the prefix is a C++ method
@@ -1728,10 +1739,19 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	      /* Also check the inlining status.  */
 	      check_inlining_for_nested_subprog (TREE_OPERAND (gnu_expr, 0));
 
-	      /* Check that we're not violating the No_Implicit_Dynamic_Code
-		 restriction.  Be conservative if we don't know anything
-		 about the trampoline strategy for the target.  */
-	      Check_Implicit_Dynamic_Code_Allowed (gnat_node);
+	      /* Moreover, for 'Access or 'Unrestricted_Access with non-
+		 foreign-compatible representation, mark the ADDR_EXPR so
+		 that we can build a descriptor instead of a trampoline.  */
+	      if ((attribute == Attr_Access
+		   || attribute == Attr_Unrestricted_Access)
+		  && targetm.calls.custom_function_descriptors > 0
+		  && Can_Use_Internal_Rep (Etype (gnat_node)))
+		FUNC_ADDR_BY_DESCRIPTOR (gnu_expr) = 1;
+
+	      /* Otherwise, we need to check that we are not violating the
+		 No_Implicit_Dynamic_Code restriction.  */
+	      else if (targetm.calls.custom_function_descriptors != 0)
+	        Check_Implicit_Dynamic_Code_Allowed (gnat_node);
 	    }
 	}
       break;
@@ -4228,6 +4248,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   tree gnu_after_list = NULL_TREE;
   tree gnu_retval = NULL_TREE;
   tree gnu_call, gnu_result;
+  bool by_descriptor = false;
   bool went_into_elab_proc = false;
   bool pushed_binding_level = false;
   Entity_Id gnat_formal;
@@ -4267,7 +4288,15 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
      type the access type is pointing to.  Otherwise, get the formals from the
      entity being called.  */
   if (Nkind (Name (gnat_node)) == N_Explicit_Dereference)
-    gnat_formal = First_Formal_With_Extras (Etype (Name (gnat_node)));
+    {
+      gnat_formal = First_Formal_With_Extras (Etype (Name (gnat_node)));
+
+      /* If the access type doesn't require foreign-compatible representation,
+	 be prepared for descriptors.  */
+      if (targetm.calls.custom_function_descriptors > 0
+	  && Can_Use_Internal_Rep (Etype (Prefix (Name (gnat_node)))))
+	by_descriptor = true;
+    }
   else if (Nkind (Name (gnat_node)) == N_Attribute_Reference)
     /* Assume here that this must be 'Elab_Body or 'Elab_Spec.  */
     gnat_formal = Empty;
@@ -4670,6 +4699,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
   gnu_call
     = build_call_vec (gnu_result_type, gnu_subprog_addr, gnu_actual_vec);
+  CALL_EXPR_BY_DESCRIPTOR (gnu_call) = by_descriptor;
   set_expr_location_from_node (gnu_call, gnat_node);
 
   /* If we have created a temporary for the return value, initialize it.  */
@@ -6084,10 +6114,18 @@ gnat_to_gnu (Node_Id gnat_node)
       gnat_temp = Defining_Entity (gnat_node);
       gnu_result = alloc_stmt_list ();
 
-      /* Don't do anything if this renaming is handled by the front end or if
-	 we are just annotating types and this object has a composite or task
-	 type, don't elaborate it.  */
-      if (!Is_Renaming_Of_Object (gnat_temp)
+      /* Don't do anything if this renaming is handled by the front end and it
+	 does not need debug info.  Note that we consider renamings don't need
+	 debug info when optimizing: our way to describe them has a
+	 memory/elaboration footprint.
+
+	 Don't do anything neither if we are just annotating types and this
+	 object has a composite or task type, don't elaborate it.  */
+      if ((!Is_Renaming_Of_Object (gnat_temp)
+	   || (Needs_Debug_Info (gnat_temp)
+	       && !optimize
+	       && can_materialize_object_renaming_p
+		    (Renamed_Object (gnat_temp))))
 	  && ! (type_annotate_only
 		&& (Is_Array_Type (Etype (gnat_temp))
 		    || Is_Record_Type (Etype (gnat_temp))
@@ -6680,10 +6718,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* Instead of expanding overflow checks for addition, subtraction
 	   and multiplication itself, the front end will leave this to
-	   the back end when Backend_Overflow_Checks_On_Target is set.
-	   As the back end itself does not know yet how to properly
-	   do overflow checking, do it here.  The goal is to push
-	   the expansions further into the back end over time.  */
+	   the back end when Backend_Overflow_Checks_On_Target is set.  */
 	if (Do_Overflow_Check (gnat_node)
 	    && Backend_Overflow_Checks_On_Target
 	    && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
@@ -6754,7 +6789,11 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
+      /* Instead of expanding overflow checks for negation and absolute
+	 value itself, the front end will leave this to the back end
+	 when Backend_Overflow_Checks_On_Target is set.  */
       if (Do_Overflow_Check (gnat_node)
+	  && Backend_Overflow_Checks_On_Target
 	  && !TYPE_UNSIGNED (gnu_result_type)
 	  && !FLOAT_TYPE_P (gnu_result_type))
 	gnu_result
@@ -8937,8 +8976,9 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 					lhs, rhs);
       tree tgt = save_expr (call);
       gnu_expr = build1 (REALPART_EXPR, gnu_type, tgt);
-      check
-	= convert (boolean_type_node, build1 (IMAGPART_EXPR, gnu_type, tgt));
+      check = fold_build2 (NE_EXPR, boolean_type_node,
+			   build1 (IMAGPART_EXPR, gnu_type, tgt),
+			   build_int_cst (gnu_type, 0));
       return
 	emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
    }

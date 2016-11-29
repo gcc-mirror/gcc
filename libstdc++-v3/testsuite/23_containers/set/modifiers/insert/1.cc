@@ -25,7 +25,6 @@
 // and libstdc++/19433.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   set<int> s0, s1;

@@ -2,6 +2,8 @@
    not optimized away at -O0, and then confuses the target assembler.
    { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
+/* { dg-additional-options "-fopenacc-dim=32" } */
+
 #include <stdio.h>
 #include <openacc.h>
 

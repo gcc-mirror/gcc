@@ -1,7 +1,7 @@
 /* Test whether an AND mask or'ed with the know zero bits that equals a mode
    mask is a candidate for zero extendion.  */
 
-/* { dg-do compile { target x86_64-*-* s390*-*-* aarch64*-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* s390*-*-* aarch64*-*-* } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-O3 -dP" } */
 

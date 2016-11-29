@@ -22,8 +22,6 @@
 
 void test06()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ostringstream os ("foo", std::ios_base::app);
   os << "bar";
 

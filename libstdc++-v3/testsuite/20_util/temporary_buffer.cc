@@ -26,8 +26,6 @@ struct junk { char j[12]; };
 
 int main(void)
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::pair<junk*, std::ptrdiff_t> pair_type;
   pair_type results = std::get_temporary_buffer<junk>(5);
 

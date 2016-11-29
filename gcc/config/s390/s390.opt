@@ -62,13 +62,22 @@ EnumValue
 Enum(processor_type) String(g5) Value(PROCESSOR_9672_G5)
 
 EnumValue
+Enum(processor_type) String(arch3) Value(PROCESSOR_9672_G5)
+
+EnumValue
 Enum(processor_type) String(g6) Value(PROCESSOR_9672_G6)
 
 EnumValue
 Enum(processor_type) String(z900) Value(PROCESSOR_2064_Z900)
 
 EnumValue
+Enum(processor_type) String(arch5) Value(PROCESSOR_2064_Z900)
+
+EnumValue
 Enum(processor_type) String(z990) Value(PROCESSOR_2084_Z990)
+
+EnumValue
+Enum(processor_type) String(arch6) Value(PROCESSOR_2084_Z990)
 
 EnumValue
 Enum(processor_type) String(z9-109) Value(PROCESSOR_2094_Z9_109)
@@ -77,16 +86,31 @@ EnumValue
 Enum(processor_type) String(z9-ec) Value(PROCESSOR_2094_Z9_EC)
 
 EnumValue
+Enum(processor_type) String(arch7) Value(PROCESSOR_2094_Z9_EC)
+
+EnumValue
 Enum(processor_type) String(z10) Value(PROCESSOR_2097_Z10)
+
+EnumValue
+Enum(processor_type) String(arch8) Value(PROCESSOR_2097_Z10)
 
 EnumValue
 Enum(processor_type) String(z196) Value(PROCESSOR_2817_Z196)
 
 EnumValue
+Enum(processor_type) String(arch9) Value(PROCESSOR_2817_Z196)
+
+EnumValue
 Enum(processor_type) String(zEC12) Value(PROCESSOR_2827_ZEC12)
 
 EnumValue
+Enum(processor_type) String(arch10) Value(PROCESSOR_2827_ZEC12)
+
+EnumValue
 Enum(processor_type) String(z13) Value(PROCESSOR_2964_Z13)
+
+EnumValue
+Enum(processor_type) String(arch11) Value(PROCESSOR_2964_Z13)
 
 EnumValue
 Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly

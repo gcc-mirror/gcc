@@ -15,14 +15,20 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++14" }
-// { dg-do compile }
+// { dg-do compile { target c++14 } }
 
 #include <experimental/numeric>
 
-using std::experimental::fundamentals_v2::lcm;
+using std::experimental::fundamentals_v2::gcd;
 
-static_assert(lcm(21, 6) == 42, "");
-static_assert(lcm(41, 0) == 0, "LCD with zero is zero");
-static_assert(lcm(0, 7) == 0, "LCD with zero is zero");
-static_assert(lcm(0, 0) == 0, "no division by zero");
+static_assert( gcd(1071, 462) == 21, "" );
+static_assert( gcd(2000, 20) == 20, "" );
+static_assert( gcd(2011, 17) == 1, "GCD of two primes is 1" );
+static_assert( gcd(200, 200) == 200, "GCD of equal numbers is that number" );
+static_assert( gcd(0, 13) == 13, "GCD of any number and 0 is that number" );
+static_assert( gcd(29, 0) == 29, "GCD of any number and 0 is that number" );
+static_assert( gcd(0, 0) == 0, "" );
+
+static_assert(gcd(1u, 2) == 1, "unsigned and signed");
+static_assert(gcd(3, 4u) == 1, "signed and unsigned");
+static_assert(gcd(5u, 6u) == 1, "unsigned and unsigned");

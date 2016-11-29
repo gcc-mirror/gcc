@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "expr.h"
 #include "tree-pass.h"
@@ -103,6 +104,7 @@ initialize_uninitialized_regs (void)
 		  bitmap_set_bit (already_genned, regno);
 
 		  start_sequence ();
+		  emit_clobber (reg);
 		  emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
 		  move_insn = get_insns ();
 		  end_sequence ();

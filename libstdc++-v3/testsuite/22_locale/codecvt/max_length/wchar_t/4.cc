@@ -29,7 +29,6 @@
 void test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
 
   locale loc = locale("en_US.UTF-8");

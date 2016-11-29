@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
@@ -23,7 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
 
   typedef duration<std::int64_t, std::ratio<36 * 24 * 36525>> Years;

@@ -19,5 +19,4 @@ int main()
   return foo (0) + bar (0);
 }
 
-/* { dg-final { scan-ipa-dump "optimization flags are different" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 0" "icf"  } } */

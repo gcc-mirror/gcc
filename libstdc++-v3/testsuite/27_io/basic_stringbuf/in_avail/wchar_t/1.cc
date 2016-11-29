@@ -30,7 +30,6 @@ std::wstringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::streamoff  		strmof_1(-1), strmof_2;
 
   // GET

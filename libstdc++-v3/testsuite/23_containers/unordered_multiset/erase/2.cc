@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -35,8 +35,6 @@ namespace
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   typedef std::unordered_multiset<std::string> Mset;
   typedef Mset::iterator       iterator;
   typedef Mset::const_iterator const_iterator;

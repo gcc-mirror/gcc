@@ -25,7 +25,6 @@
 // libstdc++/22102
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::multiset<int>        Mset;
   typedef Mset::value_type          value_type;
   typedef Mset::iterator            iterator;

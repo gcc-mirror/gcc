@@ -49,7 +49,6 @@ void test03()
   typedef char					ext_type;
   typedef char_traits<char>			ext_traits;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "a";
   const int_type 	i_lit[] = { L'a', 0x20ac, 0x0 };
   const int_type*       ifrom_next;

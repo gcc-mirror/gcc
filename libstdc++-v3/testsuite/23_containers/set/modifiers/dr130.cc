@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2008-07-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
 //
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
@@ -25,7 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   set<int> s0;
@@ -47,7 +46,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   set<int> s0;

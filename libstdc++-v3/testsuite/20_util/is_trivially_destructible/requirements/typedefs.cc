@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 //
 // 2012-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -23,8 +23,6 @@
 // NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
 #include <type_traits>
-
-// { dg-do compile }
 
 void test01()
 {

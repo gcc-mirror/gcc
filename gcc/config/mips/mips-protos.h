@@ -271,6 +271,8 @@ extern void mips_declare_object (FILE *, const char *, const char *,
 				 const char *, ...) ATTRIBUTE_PRINTF_4;
 extern void mips_declare_object_name (FILE *, const char *, tree);
 extern void mips_finish_declare_object (FILE *, tree, int, int);
+extern void mips_set_text_contents_type (FILE *, const char *,
+					 unsigned long, bool);
 
 extern bool mips_small_data_pattern_p (rtx);
 extern rtx mips_rewrite_small_data (rtx);

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::exception_ptr p = std::make_exception_ptr(0);
 
   VERIFY( !(p == 0) );

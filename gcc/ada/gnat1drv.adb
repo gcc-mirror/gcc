@@ -343,7 +343,7 @@ procedure Gnat1drv is
          --  of compiler warnings, but these are being turned off by default,
          --  and CodePeer generates better messages (referencing original
          --  variables) this way.
-         --  Do this only is -gnatws is set (the default with -gnatcC), so that
+         --  Do this only if -gnatws is set (the default with -gnatcC), so that
          --  if warnings are enabled, we'll get better messages from GNAT.
 
          if Warning_Mode = Suppress then
@@ -870,6 +870,18 @@ procedure Gnat1drv is
       --  getting rid of those warnings if we can tell they are not needed.
 
       Checks.Validate_Alignment_Check_Warnings;
+
+      --  Validate compile time warnings and errors (using the values for size
+      --  and alignment annotated by the backend where possible). We need to
+      --  unlock temporarily these tables to reanalyze their expression.
+
+      Atree.Unlock;
+      Nlists.Unlock;
+      Sem.Unlock;
+      Sem_Ch13.Validate_Compile_Time_Warning_Errors;
+      Sem.Lock;
+      Nlists.Lock;
+      Atree.Lock;
 
       --  Validate unchecked conversions (using the values for size and
       --  alignment annotated by the backend where possible).

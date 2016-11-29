@@ -431,9 +431,10 @@ chkp_gimple_call_builtin_p (gimple *call,
 			    enum built_in_function code)
 {
   tree fndecl;
-  if (is_gimple_call (call)
+  if (gimple_call_builtin_p (call, BUILT_IN_MD)
       && (fndecl = targetm.builtin_chkp_function (code))
-      && gimple_call_fndecl (call) == fndecl)
+      && (DECL_FUNCTION_CODE (gimple_call_fndecl (call))
+	  == DECL_FUNCTION_CODE (fndecl)))
     return true;
   return false;
 }
@@ -1001,7 +1002,7 @@ chkp_register_var_initializer (tree var)
       || DECL_INITIAL (var) == error_mark_node)
     return false;
 
-  gcc_assert (TREE_CODE (var) == VAR_DECL);
+  gcc_assert (VAR_P (var));
   gcc_assert (DECL_INITIAL (var));
 
   if (TREE_STATIC (var)
@@ -2326,8 +2327,7 @@ chkp_retbnd_call_by_val (tree val)
   imm_use_iterator use_iter;
   use_operand_p use_p;
   FOR_EACH_IMM_USE_FAST (use_p, use_iter, val)
-    if (gimple_code (USE_STMT (use_p)) == GIMPLE_CALL
-	&& gimple_call_fndecl (USE_STMT (use_p)) == chkp_ret_bnd_fndecl)
+    if (chkp_gimple_call_builtin_p (USE_STMT (use_p), BUILT_IN_CHKP_BNDRET))
       return as_a <gcall *> (USE_STMT (use_p));
 
   return NULL;
@@ -2936,7 +2936,7 @@ chkp_make_static_bounds (tree obj)
 	 chkp_static_var_bounds map.  It allows to
 	 avoid duplicating bound vars for decls
 	 sharing assembler name.  */
-      if (TREE_CODE (obj) == VAR_DECL)
+      if (VAR_P (obj))
 	{
 	  tree name = DECL_ASSEMBLER_NAME (obj);
 	  slot = chkp_static_var_bounds->get (name);
@@ -2952,7 +2952,7 @@ chkp_make_static_bounds (tree obj)
     }
 
   /* Build decl for bounds var.  */
-  if (TREE_CODE (obj) == VAR_DECL)
+  if (VAR_P (obj))
     {
       if (DECL_IGNORED_P (obj))
 	{
@@ -3014,7 +3014,7 @@ chkp_make_static_bounds (tree obj)
   if (!chkp_static_var_bounds)
     chkp_static_var_bounds = new hash_map<tree, tree>;
 
-  if (TREE_CODE (obj) == VAR_DECL)
+  if (VAR_P (obj))
     {
       tree name = DECL_ASSEMBLER_NAME (obj);
       chkp_static_var_bounds->put (name, bnd_var);
@@ -3117,7 +3117,7 @@ chkp_get_bounds_for_decl_addr (tree decl)
 {
   tree bounds;
 
-  gcc_assert (TREE_CODE (decl) == VAR_DECL
+  gcc_assert (VAR_P (decl)
 	      || TREE_CODE (decl) == PARM_DECL
 	      || TREE_CODE (decl) == RESULT_DECL);
 
@@ -3144,7 +3144,7 @@ chkp_get_bounds_for_decl_addr (tree decl)
       return chkp_get_zero_bounds ();
 
   if (flag_chkp_use_static_bounds
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && (TREE_STATIC (decl)
 	      || DECL_EXTERNAL (decl)
 	      || TREE_PUBLIC (decl))
@@ -3164,7 +3164,7 @@ chkp_get_bounds_for_decl_addr (tree decl)
 	      || DECL_EXTERNAL (decl)
 	      || TREE_PUBLIC (decl))))
     {
-      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      gcc_assert (VAR_P (decl));
       bounds = chkp_generate_extern_var_bounds (decl);
     }
   else
@@ -3399,7 +3399,7 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
     }
   else
     {
-      gcc_assert (TREE_CODE (var) == VAR_DECL
+      gcc_assert (VAR_P (var)
 		  || TREE_CODE (var) == PARM_DECL
 		  || TREE_CODE (var) == RESULT_DECL
 		  || TREE_CODE (var) == STRING_CST
@@ -3562,7 +3562,7 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
     case MEM_REF:
     case VAR_DECL:
       if (BOUNDED_P (ptr_src))
-	if (TREE_CODE (ptr) == VAR_DECL && DECL_REGISTER (ptr))
+	if (VAR_P (ptr) && DECL_REGISTER (ptr))
 	  bounds = chkp_get_zero_bounds ();
 	else
 	  {
@@ -3581,7 +3581,7 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
 	  || TREE_CODE (addr) == TARGET_MEM_REF)
 	{
 	  if (BOUNDED_P (ptr_src))
-	    if (TREE_CODE (ptr) == VAR_DECL && DECL_REGISTER (ptr))
+	    if (VAR_P (ptr) && DECL_REGISTER (ptr))
 	      bounds = chkp_get_zero_bounds ();
 	    else
 	      {
@@ -4095,9 +4095,9 @@ chkp_copy_bounds_for_assign (gimple *assign, struct cgraph_edge *edge)
 	  struct cgraph_node *callee = cgraph_node::get_create (fndecl);
 	  struct cgraph_edge *new_edge;
 
-	  gcc_assert (fndecl == chkp_bndstx_fndecl
-		      || fndecl == chkp_bndldx_fndecl
-		      || fndecl == chkp_ret_bnd_fndecl);
+	  gcc_assert (chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDSTX)
+		      || chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDLDX)
+		      || chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDRET));
 
 	  new_edge = edge->caller->create_edge (callee,
 						as_a <gcall *> (stmt),

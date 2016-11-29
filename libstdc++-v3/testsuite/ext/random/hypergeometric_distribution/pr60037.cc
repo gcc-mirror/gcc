@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++11 -O0" }
+// { dg-options "-O0" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-cmath "" }
 

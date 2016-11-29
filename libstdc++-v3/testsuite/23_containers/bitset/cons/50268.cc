@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -23,8 +23,6 @@
 // libstdc++/50268
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<1> b1(3ULL);
   VERIFY( b1.count() == 1ULL );
 

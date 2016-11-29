@@ -78,7 +78,7 @@
     </row>
 
     <row>
-      <entry><literal>-pthread</literal> or <literal>-pthreads</literal></entry>
+      <entry><literal>-pthread</literal></entry>
       <entry>For ISO C++11
         <filename class="headerfile">&lt;thread&gt;</filename>,
         <filename class="headerfile">&lt;future&gt;</filename>,

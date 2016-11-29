@@ -84,7 +84,7 @@ static void chkp_collect_value (tree ssa_name, address_t &res);
 #define chkp_checku_fndecl \
   (targetm.builtin_chkp_function (BUILT_IN_CHKP_BNDCU))
 
-static vec<struct bb_checks, va_heap, vl_ptr> check_infos = vNULL;
+static vec<struct bb_checks, va_heap, vl_ptr> check_infos;
 
 /* Comparator for pol_item structures I1 and I2 to be used
    to find items with equal var.  Also used for polynomial
@@ -610,7 +610,7 @@ chkp_get_check_result (struct check_info *ci, tree bounds)
       chkp_collect_value (DECL_INITIAL (bnd_var), bound_val);
       if (ci->type == CHECK_UPPER_BOUND)
 	{
-	  if (TREE_CODE (var) == VAR_DECL)
+	  if (VAR_P (var))
 	    {
 	      if (DECL_SIZE (var)
 		  && !chkp_variable_size_type (TREE_TYPE (var)))
@@ -1236,6 +1236,8 @@ chkp_reduce_bounds_lifetime (void)
 		  gsi_move_before (&i, &gsi);
 		}
 
+	      gimple_set_vdef (stmt, NULL_TREE);
+	      gimple_set_vuse (stmt, NULL_TREE);
 	      update_stmt (stmt);
 	    }
 	}

@@ -79,6 +79,7 @@
    |mcpu=cortex-a73.cortex-a35				\
    |mcpu=cortex-a73.cortex-a53				\
    |mcpu=exynos-m1                                      \
+   |mcpu=falkor						\
    |mcpu=qdf24xx					\
    |mcpu=xgene1                                         \
    |mcpu=cortex-m1.small-multiply                       \
@@ -93,9 +94,11 @@
    |march=armv8-a+crc					\
    |march=armv8.1-a					\
    |march=armv8.1-a+crc					\
-   |march=armv8-m.base					\
+   |march=armv8.2-a					\
+   |march=armv8.2-a+fp16				\
+   |march=armv8-m.base|mcpu=cortex-m23			\
    |march=armv8-m.main					\
-   |march=armv8-m.main+dsp				\
+   |march=armv8-m.main+dsp|mcpu=cortex-m33		\
    :%{!r:--be8}}}"
 #else
 #define BE8_LINK_SPEC \
@@ -115,6 +118,7 @@
    |mcpu=cortex-a73.cortex-a35				\
    |mcpu=cortex-a73.cortex-a53				\
    |mcpu=exynos-m1                                      \
+   |mcpu=falkor						\
    |mcpu=qdf24xx					\
    |mcpu=xgene1                                         \
    |mcpu=cortex-m1.small-multiply                       \
@@ -130,9 +134,11 @@
    |march=armv8-a+crc					\
    |march=armv8.1-a					\
    |march=armv8.1-a+crc					\
-   |march=armv8-m.base					\
+   |march=armv8.2-a					\
+   |march=armv8.2-a+fp16				\
+   |march=armv8-m.base|mcpu=cortex-m23			\
    |march=armv8-m.main					\
-   |march=armv8-m.main+dsp				\
+   |march=armv8-m.main+dsp|mcpu=cortex-m33		\
    :%{!r:--be8}}}"
 #endif
 

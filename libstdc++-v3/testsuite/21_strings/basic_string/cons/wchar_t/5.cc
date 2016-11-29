@@ -26,8 +26,6 @@
 // libstdc++/8347
 void test05()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<wchar_t> empty;
   std::wstring empty2(empty.begin(), empty.end());
 

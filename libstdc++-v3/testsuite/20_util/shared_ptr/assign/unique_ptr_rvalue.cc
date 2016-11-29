@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -21,7 +20,6 @@
 // 20.7.12.2 Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
-#include <testsuite_hooks.h>
 
 struct A { };
 std::unique_ptr<A> source() { return std::unique_ptr<A>(); }
@@ -29,27 +27,19 @@ std::unique_ptr<A> source() { return std::unique_ptr<A>(); }
 // 20.7.12.2.3 shared_ptr assignment [util.smartptr.shared.assign]
 
 // Assignment from rvalue unique_ptr
-int
+void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a;
   a = source();
-
-  return 0;
 }
 
-int
+void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a;
   std::unique_ptr<A> u;
   a = std::move(u);
-
-  return 0;
 }
 
 int 

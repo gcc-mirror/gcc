@@ -27,7 +27,6 @@ template<typename T>
 void test_badbit()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc(locale::classic(), new __gnu_test::fail_num_get_char);
   istringstream stream("jaylib - champion sound");

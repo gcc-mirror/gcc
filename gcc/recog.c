@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -1792,6 +1793,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
 	     Match any memory and hope things are resolved after reload.  */
 	  incdec_ok = true;
+	  /* FALLTHRU */
 	default:
 	  cn = lookup_constraint (constraint);
 	  switch (get_constraint_type (cn))
@@ -2935,11 +2937,10 @@ split_insn (rtx_insn *insn)
 void
 split_all_insns (void)
 {
-  sbitmap blocks;
   bool changed;
   basic_block bb;
 
-  blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap blocks (last_basic_block_for_fn (cfun));
   bitmap_clear (blocks);
   changed = false;
 
@@ -2989,8 +2990,6 @@ split_all_insns (void)
     find_many_sub_basic_blocks (blocks);
 
   checking_verify_flow_info ();
-
-  sbitmap_free (blocks);
 }
 
 /* Same as split_all_insns, but do not expect CFG to be available.
@@ -3903,17 +3902,6 @@ make_pass_split_all_insns (gcc::context *ctxt)
   return new pass_split_all_insns (ctxt);
 }
 
-static unsigned int
-rest_of_handle_split_after_reload (void)
-{
-  /* If optimizing, then go ahead and split insns now.  */
-#ifndef STACK_REGS
-  if (optimize > 0)
-#endif
-    split_all_insns ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_split_after_reload =
@@ -3937,9 +3925,23 @@ public:
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      /* If optimizing, then go ahead and split insns now.  */
+      if (optimize > 0)
+	return true;
+
+#ifdef STACK_REGS
+      return true;
+#else
+      return false;
+#endif
+    }
+
   virtual unsigned int execute (function *)
     {
-      return rest_of_handle_split_after_reload ();
+      split_all_insns ();
+      return 0;
     }
 
 }; // class pass_split_after_reload

@@ -401,6 +401,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : integral_constant<bool, !ratio_less<_R1, _R2>::value>
     { };
 
+#if __cplusplus > 201402L
+  template <typename _R1, typename _R2>
+    constexpr bool ratio_equal_v = ratio_equal<_R1, _R2>::value;
+  template <typename _R1, typename _R2>
+    constexpr bool ratio_not_equal_v = ratio_not_equal<_R1, _R2>::value;
+  template <typename _R1, typename _R2>
+    constexpr bool ratio_less_v = ratio_less<_R1, _R2>::value;
+  template <typename _R1, typename _R2>
+    constexpr bool ratio_less_equal_v = ratio_less_equal<_R1, _R2>::value;
+  template <typename _R1, typename _R2>
+    constexpr bool ratio_greater_v = ratio_greater<_R1, _R2>::value;
+  template <typename _R1, typename _R2>
+    constexpr bool ratio_greater_equal_v
+    = ratio_greater_equal<_R1, _R2>::value;
+#endif // C++17
+
   template<typename _R1, typename _R2,
       bool = (_R1::num >= 0),
       bool = (_R2::num >= 0),

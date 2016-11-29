@@ -179,6 +179,7 @@ CXXABI_2.0 {
     __cxa_free_exception;
     __cxa_free_dependent_exception;
     __cxa_get_exception_ptr;
+    __cxa_init_primary_exception;
     __cxa_get_globals;
     __cxa_get_globals_fast;
     __cxa_guard_abort;
@@ -186,6 +187,7 @@ CXXABI_2.0 {
     __cxa_guard_release;
     __cxa_pure_virtual;
     __cxa_rethrow;
+    __cxa_thread_atexit;
     __cxa_throw;
     __cxa_type_match;
     __cxa_vec_cctor;
@@ -205,6 +207,7 @@ CXXABI_2.0 {
     # std::exception_ptr
     _ZNSt15__exception_ptr13exception_ptrC1Ev;
     _ZNSt15__exception_ptr13exception_ptrC2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC1EPv;
     _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
     _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
     _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
@@ -342,6 +345,21 @@ CXXABI_2.0 {
     _ZdlPv[jmy];
     # operator delete[](void*, std::size_t)
     _ZdaPv[jmy];
+
+    # __gnu_cxx::__freeres()
+    _ZN9__gnu_cxx9__freeresEv;
+
+    # C++17 aligned new/delete
+    _Znw[jmy]St11align_val_t;
+    _Znw[jmy]St11align_val_tRKSt9nothrow_t;
+    _Zna[jmy]St11align_val_t;
+    _Zna[jmy]St11align_val_tRKSt9nothrow_t;
+    _ZdlPvSt11align_val_t;
+    _ZdlPvSt11align_val_tRKSt9nothrow_t;
+    _ZdlPv[jmy]St11align_val_t;
+    _ZdaPvSt11align_val_t;
+    _ZdaPvSt11align_val_tRKSt9nothrow_t;
+    _ZdaPv[jmy]St11align_val_t;
 };
 
 # Symbols in the support library (libsupc++) supporting trans-mem.

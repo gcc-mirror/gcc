@@ -26,7 +26,6 @@
 
 void test08()
 {
-  bool test __attribute__((unused)) = true;
   char* pt = 0;
 
   // 2

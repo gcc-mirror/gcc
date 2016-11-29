@@ -30,8 +30,6 @@ const numpunct<char>& npunct = use_facet<numpunct<char> >(l1);
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   locale l2 = locale("C");
   const numpunct<char>& npunct2 = use_facet<numpunct<char> >(l2);
   char c __attribute__((unused)) = npunct2.thousands_sep();
@@ -49,8 +47,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   locale l2 = locale(ISO_8859(15,es_ES));
   const numpunct<char>& npunct3 = use_facet<numpunct<char> >(l2);
   char c __attribute__((unused)) = npunct3.thousands_sep();

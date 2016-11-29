@@ -550,6 +550,10 @@ AC_CACHE_CHECK([assembler for $1], [$2],
 ifelse([$7],,,[dnl
 if test $[$2] = yes; then
   $7
+fi])
+ifelse([$8],,,[dnl
+if test $[$2] != yes; then
+  $8
 fi])])
 
 dnl gcc_SUN_LD_VERSION

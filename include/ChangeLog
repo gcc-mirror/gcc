@@ -1,3 +1,64 @@
+2016-11-03  David Tolnay <dtolnay@gmail.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* demangle.h (DMGL_RUST): New macro.
+	(DMGL_STYLE_MASK): Add DMGL_RUST.
+	(demangling_styles): Add dlang_rust.
+	(RUST_DEMANGLING_STYLE_STRING): New macro.
+	(RUST_DEMANGLING): New macro.
+	(rust_demangle): New prototype.
+	(rust_is_mangled): Likewise.
+	(rust_demangle_sym): Likewise.
+
+2016-11-07  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_NOEXCEPT, DEMANGLE_COMPONENT_THROW_SPEC.
+
+2016-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (enum dwarf_calling_convention): Add new DWARF5
+	calling convention codes.
+	(enum dwarf_line_number_content_type): New.
+	(enum dwarf_location_list_entry_type): Add DWARF5 DW_LLE_*
+	codes.
+	(enum dwarf_source_language): Add new DWARF5 DW_LANG_* codes.
+	(enum dwarf_macro_record_type): Add DWARF5 DW_MACRO_* codes.
+	(enum dwarf_name_index_attribute): New.
+	(enum dwarf_range_list_entry): New.
+	(enum dwarf_unit_type): New.
+	* dwarf2.def: Add new DWARF5 DW_TAG_*, DW_FORM_*, DW_AT_*,
+	DW_OP_* and DW_ATE_* entries.
+
+2016-10-14  Pedro Alves  <palves@redhat.com>
+
+	* ansidecl.h [__cplusplus >= 201103 && GCC_VERSION < 4007] (FINAL,
+	OVERRIDE): Define as empty.
+	[__cplusplus < 201103 && GCC_VERSION < 4007] (FINAL): Define as
+	__final.
+	[__cplusplus < 201103 && GCC_VERSION >= 4007] (OVERRIDE): Define as
+	empty.
+
+2016-10-14  Pedro Alves  <palves@redhat.com>
+
+	* ansidecl.h (GCC_FINAL): Delete.
+	(OVERRIDE, FINAL): New, moved from gcc/coretypes.h.
+
+2016-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.def (DW_AT_string_length_bit_size,
+	DW_AT_string_length_byte_size): New attributes.
+
+2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/63240
+	* dwarf2.def (DW_AT_deleted, DW_AT_defaulted): New.
+	* dwarf2.h (enum dwarf_defaulted_attribute): New.
+
+2016-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* libiberty.h (MAX_ALLOCA_SIZE): New macro.
+
 2016-05-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gomp-constants.h (GOMP_VERSION): Increment to 1, add comment to

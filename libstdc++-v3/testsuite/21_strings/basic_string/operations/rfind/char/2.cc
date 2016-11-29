@@ -21,9 +21,8 @@
 #include <testsuite_hooks.h>
 
 // 21.3.6.4 basic_string::find_last_of
-bool test02()
+void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::string z("ab");
   std::string::size_type pos;
   pos = z.find_last_of("ab");
@@ -40,7 +39,6 @@ bool test02()
   VERIFY( pos == 1 );
   pos = z.find_last_of('X');
   VERIFY( pos == std::string::npos );
-  return test;
 }
 
 int main()

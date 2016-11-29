@@ -11,5 +11,4 @@ SUBROUTINE prtdata(ilen)
   cline(2) = cline(1)
   print *,c
 END SUBROUTINE prtdata
-! { dg-final { scan-tree-dump-not "__var_2" "original" } }
-! { dg-final { scan-tree-dump-times "__var_1" 3 "original" } }
+! { dg-final { scan-tree-dump-not "__var_" "original" } }

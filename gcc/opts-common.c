@@ -1069,6 +1069,38 @@ generate_option_input_file (const char *file,
   decoded->errors = 0;
 }
 
+/* Helper function for listing valid choices and hint for misspelled
+   value.  CANDIDATES is a vector containing all valid strings,
+   STR is set to a heap allocated string that contains all those
+   strings concatenated, separated by spaces, and the return value
+   is the closest string from those to ARG, or NULL if nothing is
+   close enough.  Callers should XDELETEVEC (STR) after using it
+   to avoid memory leaks.  */
+
+const char *
+candidates_list_and_hint (const char *arg, char *&str,
+			  const auto_vec <const char *> &candidates)
+{
+  size_t len = 0;
+  int i;
+  const char *candidate;
+  char *p;
+
+  FOR_EACH_VEC_ELT (candidates, i, candidate)
+    len += strlen (candidate) + 1;
+
+  str = p = XNEWVEC (char, len);
+  FOR_EACH_VEC_ELT (candidates, i, candidate)
+    {
+      len = strlen (candidate);
+      memcpy (p, candidate, len);
+      p[len] = ' ';
+      p += len + 1;
+    }
+  p[-1] = '\0';
+  return find_closest_string (arg, &candidates);
+}
+
 /* Perform diagnostics for read_cmdline_option and control_warning_option
    functions.  Returns true if an error has been diagnosed.
    LOC and LANG_MASK arguments like in read_cmdline_option.
@@ -1108,38 +1140,27 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
     {
       const struct cl_enum *e = &cl_enums[option->var_enum];
       unsigned int i;
-      size_t len;
-      char *s, *p;
+      char *s;
 
       if (e->unknown_error)
 	error_at (loc, e->unknown_error, arg);
       else
 	error_at (loc, "unrecognized argument in option %qs", opt);
 
-      len = 0;
-      for (i = 0; e->values[i].arg != NULL; i++)
-	len += strlen (e->values[i].arg) + 1;
-
       auto_vec <const char *> candidates;
-      s = XALLOCAVEC (char, len);
-      p = s;
       for (i = 0; e->values[i].arg != NULL; i++)
 	{
 	  if (!enum_arg_ok_for_language (&e->values[i], lang_mask))
 	    continue;
-	  size_t arglen = strlen (e->values[i].arg);
-	  memcpy (p, e->values[i].arg, arglen);
-	  p[arglen] = ' ';
-	  p += arglen + 1;
 	  candidates.safe_push (e->values[i].arg);
 	}
-      p[-1] = 0;
-      const char *hint = find_closest_string (arg, &candidates);
+      const char *hint = candidates_list_and_hint (arg, s, candidates);
       if (hint)
 	inform (loc, "valid arguments to %qs are: %s; did you mean %qs?",
 		option->opt_text, s, hint);
       else
 	inform (loc, "valid arguments to %qs are: %s", option->opt_text, s);
+      XDELETEVEC (s);
 
       return true;
     }

@@ -394,6 +394,6 @@ ialias(omp_get_place_proc_ids)
 
 #else
 
-#include "../posix/affinity.c"
+#include "../../affinity.c"
 
 #endif

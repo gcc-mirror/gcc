@@ -32,7 +32,6 @@ void test02()
 {
   using namespace std;
   typedef wfilebuf::int_type int_type;
-  bool test __attribute__((unused)) = true;
   const char name[] = "tmp_seekoff-2.tst";
 
   locale loc = locale("se_NO.UTF-8");

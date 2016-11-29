@@ -56,6 +56,7 @@ extern "C" {
   // __sanitizer_get_number_of_counters bytes long and 8-aligned.
   uintptr_t
   __sanitizer_update_counter_bitset_and_clear_counters(uint8_t *bitset);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

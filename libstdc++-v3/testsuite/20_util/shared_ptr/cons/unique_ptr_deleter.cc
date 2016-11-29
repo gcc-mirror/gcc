@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -37,8 +37,6 @@ int D::count = 0;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<A, D> up(new A, D());
   {
       std::shared_ptr<A> sp(std::move(up));
@@ -52,8 +50,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   D::count = 0;
   std::unique_ptr<A, D> up;
   {

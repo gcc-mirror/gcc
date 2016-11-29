@@ -21,7 +21,6 @@
 // libstdc++/29354
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   typedef stringbuf::pos_type pos_type;
   typedef stringbuf::off_type off_type;

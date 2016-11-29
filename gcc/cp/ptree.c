@@ -236,6 +236,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "chain", TREE_CHAIN (node), indent+4);
       break;
     case TEMPLATE_PARM_INDEX:
+      print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);
       indent_to (file, indent + 3);
       fprintf (file, "index %d level %d orig_level %d",
 	       TEMPLATE_PARM_IDX (node), TEMPLATE_PARM_LEVEL (node),

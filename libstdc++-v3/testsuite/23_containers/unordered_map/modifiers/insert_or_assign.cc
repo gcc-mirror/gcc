@@ -21,9 +21,6 @@
 #include <unordered_map>
 #include <testsuite_hooks.h>
 
-
-bool test __attribute__((unused)) = true;
-
 struct Val
 {
   bool moved_from_ctor = false;

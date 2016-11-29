@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2007-10-26  Paolo Carlini  <pcarlini@suse.de>
 
@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::pair<int, char> pair_type;
   __gnu_cxx::malloc_allocator<pair_type> alloc1;
 

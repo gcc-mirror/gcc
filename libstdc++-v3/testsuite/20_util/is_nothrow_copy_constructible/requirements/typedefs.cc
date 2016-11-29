@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004-2016 Free Software Foundation, Inc.
@@ -22,8 +22,6 @@
 // NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
 #include <type_traits>
-
-// { dg-do compile }
 
 void test01()
 {

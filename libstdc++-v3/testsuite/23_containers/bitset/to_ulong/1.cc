@@ -26,7 +26,6 @@
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   std::bitset<5>      b;
   std::stringstream   ss("101");
   ss.exceptions(std::ios_base::eofbit);

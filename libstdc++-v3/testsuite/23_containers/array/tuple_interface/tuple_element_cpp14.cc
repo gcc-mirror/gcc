@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++14" }
+// { dg-do compile { target c++14 } }
 //
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
@@ -25,7 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const size_t len = 3;

@@ -28,8 +28,6 @@ void test02()
   using namespace std;
   typedef ostreambuf_iterator<char> iterator_type;
 
-  bool test __attribute__((unused)) = true;
-
   // basic construction
   locale loc_c = locale::classic();
 

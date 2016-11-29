@@ -47,9 +47,19 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Target specific assembler settings.  */
-
+/* Rewrite -march=arch* options to the original CPU name in order to
+   make it work with older binutils.  */
 #undef  ASM_SPEC
-#define ASM_SPEC "%{m31&m64}%{mesa&mzarch}%{march=*}"
+#define ASM_SPEC					\
+  "%{m31&m64}%{mesa&mzarch}%{march=z*}"			\
+  "%{march=arch3:-march=g5}"				\
+  "%{march=arch5:-march=z900}"				\
+  "%{march=arch6:-march=z990}"				\
+  "%{march=arch7:-march=z9-ec}"				\
+  "%{march=arch8:-march=z10}"				\
+  "%{march=arch9:-march=z196}"				\
+  "%{march=arch10:-march=zEC12}"			\
+  "%{march=arch11:-march=z13}"
 
 
 /* Target specific linker settings.  */

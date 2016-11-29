@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2014-07-11  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::logistic_distribution<> u;
   VERIFY( u.a() == 0.0 );
   VERIFY( u.b() == 1.0 );

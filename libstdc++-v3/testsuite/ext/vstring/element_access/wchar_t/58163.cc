@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11 -D_GLIBCXX_DEBUG_PEDANTIC" }
+// { dg-do run { target c++11 } }
+// { dg-options "-D_GLIBCXX_DEBUG_PEDANTIC" }
 // { dg-require-string-conversions "" }
 
 #include <ext/vstring.h>
@@ -24,8 +25,6 @@
 // PR c++/58163
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const __gnu_cxx::__wvstring cs;
         __gnu_cxx::__wvstring  s;
 

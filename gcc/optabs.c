@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "predict.h"
 #include "tm_p.h"
 #include "expmed.h"
@@ -1711,8 +1712,9 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	{
 	  if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
 	    {
-	      temp = emit_move_insn (target ? target : product, product);
-	      set_dst_reg_note (temp,
+	      rtx_insn *move = emit_move_insn (target ? target : product,
+					       product);
+	      set_dst_reg_note (move,
 				REG_EQUAL,
 				gen_rtx_fmt_ee (MULT, mode,
 						copy_rtx (op0),
@@ -2381,18 +2383,26 @@ expand_parity (machine_mode mode, rtx op0, rtx target)
 
 	      last = get_last_insn ();
 
-	      if (target == 0)
-		target = gen_reg_rtx (mode);
+	      if (target == 0 || GET_MODE (target) != wider_mode)
+		target = gen_reg_rtx (wider_mode);
+
 	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
 	      temp = expand_unop (wider_mode, popcount_optab, xop0, NULL_RTX,
 				  true);
 	      if (temp != 0)
 		temp = expand_binop (wider_mode, and_optab, temp, const1_rtx,
 				     target, true, OPTAB_DIRECT);
-	      if (temp == 0)
-		delete_insns_since (last);
 
-	      return temp;
+	      if (temp)
+		{
+		  if (mclass != MODE_INT
+		      || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
+		    return convert_to_mode (mode, temp, 0);
+		  else
+		    return gen_lowpart (mode, temp);
+		}
+	      else
+		delete_insns_since (last);
 	    }
 	}
     }
@@ -3671,10 +3681,9 @@ emit_libcall_block_1 (rtx_insn *insns, rtx target, rtx result, rtx equiv,
 }
 
 void
-emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
+emit_libcall_block (rtx_insn *insns, rtx target, rtx result, rtx equiv)
 {
-  emit_libcall_block_1 (safe_as_a <rtx_insn *> (insns),
-			target, result, equiv, false);
+  emit_libcall_block_1 (insns, target, result, equiv, false);
 }
 
 /* Nonzero if we can perform a comparison of mode MODE straightforwardly.
@@ -3716,13 +3725,17 @@ can_compare_p (enum rtx_code code, machine_mode mode,
 }
 
 /* This function is called when we are going to emit a compare instruction that
-   compares the values found in *PX and *PY, using the rtl operator COMPARISON.
-
-   *PMODE is the mode of the inputs (in case they are const_int).
-   *PUNSIGNEDP nonzero says that the operands are unsigned;
-   this matters if they need to be widened (as given by METHODS).
+   compares the values found in X and Y, using the rtl operator COMPARISON.
 
    If they have mode BLKmode, then SIZE specifies the size of both operands.
+
+   UNSIGNEDP nonzero says that the operands are unsigned;
+   this matters if they need to be widened (as given by METHODS).
+
+   *PTEST is where the resulting comparison RTX is returned or NULL_RTX
+   if we failed to produce one.
+
+   *PMODE is the mode of the inputs (in case they are const_int).
 
    This function performs all the setup necessary so that the caller only has
    to emit a single comparison insn.  This setup can involve doing a BLKmode
@@ -5269,14 +5282,15 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
   return code;
 }
 
-/* Return comparison rtx for COND. Use UNSIGNEDP to select signed or
-   unsigned operators.  OPNO holds an index of the first comparison
-   operand in insn with code ICODE.  Do not generate compare instruction.  */
+/* Return a comparison rtx of mode CMP_MODE for COND.  Use UNSIGNEDP to
+   select signed or unsigned operators.  OPNO holds the index of the
+   first comparison operand for insn ICODE.  Do not generate the
+   compare instruction itself.  */
 
 static rtx
-vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
-		    bool unsignedp, enum insn_code icode,
-		    unsigned int opno)
+vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
+		    tree t_op0, tree t_op1, bool unsignedp,
+		    enum insn_code icode, unsigned int opno)
 {
   struct expand_operand ops[2];
   rtx rtx_op0, rtx_op1;
@@ -5304,7 +5318,7 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
   create_input_operand (&ops[1], rtx_op1, m1);
   if (!maybe_legitimize_operands (icode, opno, 2, ops))
     gcc_unreachable ();
-  return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
+  return gen_rtx_fmt_ee (rcode, cmp_mode, ops[0].value, ops[1].value);
 }
 
 /* Checks if vec_perm mask SEL is a constant equivalent to a shift of the first
@@ -5623,9 +5637,15 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
-    return 0;
+    {
+      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+	icode = get_vcond_eq_icode (mode, cmp_op_mode);
+      if (icode == CODE_FOR_nothing)
+	return 0;
+    }
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 4);
+  comparison = vector_compare_rtx (VOIDmode, tcode, op0a, op0b, unsignedp,
+				   icode, 4);
   rtx_op1 = expand_normal (op1);
   rtx_op2 = expand_normal (op2);
 
@@ -5662,9 +5682,15 @@ expand_vec_cmp_expr (tree type, tree exp, rtx target)
 
   icode = get_vec_cmp_icode (vmode, mask_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
-    return 0;
+    {
+      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+	icode = get_vec_cmp_eq_icode (vmode, mask_mode);
+      if (icode == CODE_FOR_nothing)
+	return 0;
+    }
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 2);
+  comparison = vector_compare_rtx (mask_mode, tcode, op0a, op0b,
+				   unsignedp, icode, 2);
   create_output_operand (&ops[0], target, mask_mode);
   create_fixed_operand (&ops[1], comparison);
   create_fixed_operand (&ops[2], XEXP (comparison, 0));

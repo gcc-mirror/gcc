@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   __gnu_test::fail_streambuf b;
   std::istream strm (&b);

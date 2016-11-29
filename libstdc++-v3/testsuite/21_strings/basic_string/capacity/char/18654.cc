@@ -32,7 +32,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef string::size_type size_type;
 

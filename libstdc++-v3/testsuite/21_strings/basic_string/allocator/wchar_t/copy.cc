@@ -15,22 +15,21 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <string>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
  
-#if _GLIBCXX_USE_CXX11_ABI && defined(_GLIBCXX_USE_WCHAR_T)
-using C = char;
-const C c = 'a';
+#if _GLIBCXX_USE_CXX11_ABI
+using C = wchar_t;
+const C c = L'a';
 using traits = std::char_traits<C>;
 
 using __gnu_test::propagating_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<C, false> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -48,7 +47,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<C, true> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -66,7 +64,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<C, true> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v1(alloc_type(1));

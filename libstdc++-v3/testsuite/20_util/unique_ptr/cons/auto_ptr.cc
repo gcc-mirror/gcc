@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
+// { dg-options "-Wno-deprecated" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
@@ -30,8 +31,6 @@ struct A { };
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::auto_ptr<A> a(new A);
   std::unique_ptr<A> a2(std::move(a));
   VERIFY( a.get() == nullptr );

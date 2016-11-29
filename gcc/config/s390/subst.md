@@ -120,3 +120,24 @@
    (clobber (match_scratch:DSI 0 "=d,d"))])
 
 (define_subst_attr "cconly" "cconly_subst" "" "_cconly")
+
+
+; Does transformations to switch between patterns unsing risbg +
+; clobber CC (z10) and risbgn without clobber (zEC12).
+(define_subst "clobbercc_or_nocc_subst"
+  [(set (match_operand 0 "" "") (match_operand 1 "" ""))]
+  ""
+  [(set (match_dup 0) (match_dup 1))
+   (clobber (reg:CC CC_REGNUM))])
+
+; Use this in the insn name to add the target suffix.
+(define_subst_attr "clobbercc_or_nocc" "clobbercc_or_nocc_subst"
+  "_nocc" "_clobbercc")
+
+; Use this in the condition.
+(define_subst_attr "z10_or_zEC12_cond" "clobbercc_or_nocc_subst"
+  "TARGET_ZEC12" "TARGET_Z10 && ! TARGET_ZEC12")
+
+; Use this instead of the risbg instruction.
+(define_subst_attr "risbg_n" "clobbercc_or_nocc_subst"
+  "risbgn" "risbg")

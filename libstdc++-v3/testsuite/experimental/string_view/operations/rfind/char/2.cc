@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -12,7 +12,6 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// { dg-options "-std=gnu++14" }
 
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
@@ -23,11 +22,9 @@
 
 // basic_string_view::find_last_of
 
-bool
+void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::string_view z("ab");
   std::experimental::string_view::size_type pos;
   pos = z.find_last_of("ab");
@@ -44,8 +41,6 @@ test02()
   VERIFY( pos == 1 );
   pos = z.find_last_of('X');
   VERIFY( pos == std::experimental::string_view::npos );
-
-  return test;
 }
 
 int

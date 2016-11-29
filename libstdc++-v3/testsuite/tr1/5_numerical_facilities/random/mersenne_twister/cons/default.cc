@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std::tr1;
   mersenne_twister<
     unsigned long, 32, 624, 397, 31,

@@ -31,7 +31,9 @@ void test01()
   it <= it;
   it > it;
   it >= it;
-  it - it;
+#if __cplusplus < 201103L
+  it - it; // See PR libstdc++/71771
+#endif
   1 + it;
   it + 1;
 }

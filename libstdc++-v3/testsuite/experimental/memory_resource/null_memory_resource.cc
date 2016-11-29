@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2016 Free Software Foundation, Inc.
 //
@@ -28,8 +28,6 @@ using std::experimental::pmr::new_delete_resource;
 void
 test06()
 {
-  bool test __attribute((unused)) = false;
-
   memory_resource* r = null_memory_resource();
   bool caught = false;
 

@@ -17,7 +17,7 @@
 
 // Test to see whether the host provides its own (inline) view of fabs.
 // Origin: Kurt Garloff <kurt@garloff.de>, 2001-05-24
-// dg-do link
+// { dg-do link }
 
 #include <cmath>
 #include <cstdio>

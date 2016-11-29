@@ -20,8 +20,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   char a = '\x7f';
   char b = '\x80';
 

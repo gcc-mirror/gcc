@@ -25,8 +25,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2002-06/msg00025.html
 void test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string str01("portofino");
 
   std::string::reverse_iterator i1 = str01.rbegin();

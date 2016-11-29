@@ -1,0 +1,51 @@
+/* VFP instruction builtin definitions.
+   Copyright (C) 2016 Free Software Foundation, Inc.
+   Contributed by ARM Ltd.
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file lists the builtins that may be available when VFP is enabled but
+   not NEON is enabled.  The entries otherwise have the same requirements and
+   generate the same structures as those in the arm_neon_builtins.def.  */
+
+/* FP16 Arithmetic instructions.  */
+VAR1 (UNOP, vabs, hf)
+VAR2 (UNOP, vcvths, hf, si)
+VAR2 (UNOP, vcvthu, hf, si)
+VAR1 (UNOP, vcvtahs, si)
+VAR1 (UNOP, vcvtahu, si)
+VAR1 (UNOP, vcvtmhs, si)
+VAR1 (UNOP, vcvtmhu, si)
+VAR1 (UNOP, vcvtnhs, si)
+VAR1 (UNOP, vcvtnhu, si)
+VAR1 (UNOP, vcvtphs, si)
+VAR1 (UNOP, vcvtphu, si)
+VAR1 (UNOP, vrnd, hf)
+VAR1 (UNOP, vrnda, hf)
+VAR1 (UNOP, vrndi, hf)
+VAR1 (UNOP, vrndm, hf)
+VAR1 (UNOP, vrndn, hf)
+VAR1 (UNOP, vrndp, hf)
+VAR1 (UNOP, vrndx, hf)
+VAR1 (UNOP, vsqrt, hf)
+
+VAR2 (BINOP, vcvths_n, hf, si)
+VAR2 (BINOP, vcvthu_n, hf, si)
+VAR1 (BINOP, vmaxnm, hf)
+VAR1 (BINOP, vminnm, hf)
+
+VAR1 (TERNOP, vfma, hf)
+VAR1 (TERNOP, vfms, hf)

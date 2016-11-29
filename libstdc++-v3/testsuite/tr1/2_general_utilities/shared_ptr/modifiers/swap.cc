@@ -28,8 +28,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a1 = new A;
   A * const a2 = new A;
   std::tr1::shared_ptr<A> p1(a1);

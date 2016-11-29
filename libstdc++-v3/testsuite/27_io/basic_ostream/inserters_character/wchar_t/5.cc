@@ -26,7 +26,6 @@
 void
 test05()
 {
-  bool test __attribute__((unused)) = true;
   std::wstring str05, str10;
 
   typedef std::wostream::pos_type	pos_type;

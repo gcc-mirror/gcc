@@ -39,6 +39,7 @@ extern int num_insns_constant (rtx, machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
+extern bool mem_operand_ds_form (rtx, machine_mode);
 extern bool toc_relative_expr_p (const_rtx, bool);
 extern bool invalid_e500_subreg (rtx, machine_mode);
 extern void validate_condition_mode (enum rtx_code, machine_mode);
@@ -61,7 +62,10 @@ extern void convert_int_to_float128 (rtx *, enum rtx_code);
 extern void rs6000_expand_vector_init (rtx, rtx);
 extern void paired_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
-extern void rs6000_expand_vector_extract (rtx, rtx, int);
+extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
+extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
+extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
+extern void rs6000_split_v4si_init (rtx []);
 extern bool altivec_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
 extern bool rs6000_expand_vec_perm_const (rtx op[4]);
@@ -73,6 +77,7 @@ extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
+extern bool expand_block_compare (rtx[]);
 extern const char * rs6000_output_load_multiple (rtx[]);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
@@ -182,8 +187,13 @@ extern rtx rs6000_libcall_value (machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
 extern int rs6000_reg_parm_stack_space (tree, bool);
+extern void rs6000_asm_weaken_decl (FILE *, tree, const char *, const char *);
 extern void rs6000_xcoff_declare_function_name (FILE *, const char *, tree);
 extern void rs6000_xcoff_declare_object_name (FILE *, const char *, tree);
+extern void rs6000_xcoff_asm_output_aligned_decl_common (FILE *, tree,
+							 const char *,
+							 unsigned HOST_WIDE_INT,
+							 unsigned HOST_WIDE_INT);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
 #ifdef ARGS_SIZE_RTX
@@ -215,6 +225,7 @@ extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
+extern const char *rs6000_overloaded_builtin_name (enum rs6000_builtins);
 extern HOST_WIDE_INT rs6000_builtin_mask_calculate (void);
 extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);

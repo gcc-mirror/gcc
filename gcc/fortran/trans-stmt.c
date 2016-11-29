@@ -725,7 +725,8 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
 	  return NULL_TREE;
 	}
 
-      gfc_get_caf_token_offset (&token, NULL, caf_decl, NULL_TREE, code->expr1);
+      gfc_get_caf_token_offset (&se, &token, NULL, caf_decl, NULL_TREE,
+				code->expr1);
 
       if (gfc_is_coindexed (code->expr1))
 	image_index = gfc_caf_get_image_index (&se.pre, code->expr1, caf_decl);
@@ -921,7 +922,10 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
       return NULL_TREE;
     }
 
-  gfc_get_caf_token_offset (&token, NULL, caf_decl, NULL_TREE, code->expr1);
+  gfc_init_se (&argse, NULL);
+  gfc_get_caf_token_offset (&argse, &token, NULL, caf_decl, NULL_TREE,
+			    code->expr1);
+  gfc_add_block_to_block (&se.pre, &argse.pre);
 
   if (gfc_is_coindexed (code->expr1))
     image_index = gfc_caf_get_image_index (&se.pre, code->expr1, caf_decl);
@@ -2327,6 +2331,125 @@ gfc_trans_do_while (gfc_code * code)
 }
 
 
+/* Deal with the particular case of SELECT_TYPE, where the vtable
+   addresses are used for the selection. Since these are not sorted,
+   the selection has to be made by a series of if statements.  */
+
+static tree
+gfc_trans_select_type_cases (gfc_code * code)
+{
+  gfc_code *c;
+  gfc_case *cp;
+  tree tmp;
+  tree cond;
+  tree low;
+  tree high;
+  gfc_se se;
+  gfc_se cse;
+  stmtblock_t block;
+  stmtblock_t body;
+  bool def = false;
+  gfc_expr *e;
+  gfc_start_block (&block);
+
+  /* Calculate the switch expression.  */
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr_val (&se, code->expr1);
+  gfc_add_block_to_block (&block, &se.pre);
+
+  /* Generate an expression for the selector hash value, for
+     use to resolve character cases.  */
+  e = gfc_copy_expr (code->expr1->value.function.actual->expr);
+  gfc_add_hash_component (e);
+
+  TREE_USED (code->exit_label) = 0;
+
+repeat:
+  for (c = code->block; c; c = c->block)
+    {
+      cp = c->ext.block.case_list;
+
+      /* Assume it's the default case.  */
+      low = NULL_TREE;
+      high = NULL_TREE;
+      tmp = NULL_TREE;
+
+      /* Put the default case at the end.  */
+      if ((!def && !cp->low) || (def && cp->low))
+	continue;
+
+      if (cp->low && (cp->ts.type == BT_CLASS
+		      || cp->ts.type == BT_DERIVED))
+	{
+	  gfc_init_se (&cse, NULL);
+	  gfc_conv_expr_val (&cse, cp->low);
+	  gfc_add_block_to_block (&block, &cse.pre);
+	  low = cse.expr;
+	}
+      else if (cp->ts.type != BT_UNKNOWN)
+	{
+	  gcc_assert (cp->high);
+	  gfc_init_se (&cse, NULL);
+	  gfc_conv_expr_val (&cse, cp->high);
+	  gfc_add_block_to_block (&block, &cse.pre);
+	  high = cse.expr;
+	}
+
+      gfc_init_block (&body);
+
+      /* Add the statements for this case.  */
+      tmp = gfc_trans_code (c->next);
+      gfc_add_expr_to_block (&body, tmp);
+
+      /* Break to the end of the SELECT TYPE construct.  The default
+	 case just falls through.  */
+      if (!def)
+	{
+	  TREE_USED (code->exit_label) = 1;
+	  tmp = build1_v (GOTO_EXPR, code->exit_label);
+	  gfc_add_expr_to_block (&body, tmp);
+	}
+
+      tmp = gfc_finish_block (&body);
+
+      if (low != NULL_TREE)
+	{
+	  /* Compare vtable pointers.  */
+	  cond = fold_build2_loc (input_location, EQ_EXPR,
+				  TREE_TYPE (se.expr), se.expr, low);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp,
+				 build_empty_stmt (input_location));
+	}
+      else if (high != NULL_TREE)
+	{
+	  /* Compare hash values for character cases.  */
+	  gfc_init_se (&cse, NULL);
+	  gfc_conv_expr_val (&cse, e);
+	  gfc_add_block_to_block (&block, &cse.pre);
+
+	  cond = fold_build2_loc (input_location, EQ_EXPR,
+				  TREE_TYPE (se.expr), high, cse.expr);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp,
+				 build_empty_stmt (input_location));
+	}
+
+      gfc_add_expr_to_block (&block, tmp);
+    }
+
+  if (!def)
+    {
+      def = true;
+      goto repeat;
+    }
+
+  gfc_free_expr (e);
+
+  return gfc_finish_block (&block);
+}
+
+
 /* Translate the SELECT CASE construct for INTEGER case expressions,
    without killing all potential optimizations.  The problem is that
    Fortran allows unbounded cases, but the back-end does not, so we
@@ -2964,6 +3087,35 @@ gfc_trans_select (gfc_code * code)
   /* Build everything together.  */
   gfc_add_expr_to_block (&block, body);
   gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, exit_label));
+
+  return gfc_finish_block (&block);
+}
+
+tree
+gfc_trans_select_type (gfc_code * code)
+{
+  stmtblock_t block;
+  tree body;
+  tree exit_label;
+
+  gcc_assert (code && code->expr1);
+  gfc_init_block (&block);
+
+  /* Build the exit label and hang it in.  */
+  exit_label = gfc_build_label_decl (NULL_TREE);
+  code->exit_label = exit_label;
+
+  /* Empty SELECT constructs are legal.  */
+  if (code->block == NULL)
+    body = build_empty_stmt (input_location);
+  else
+    body = gfc_trans_select_type_cases (code);
+
+  /* Build everything together.  */
+  gfc_add_expr_to_block (&block, body);
+
+  if (TREE_USED (exit_label))
+    gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, exit_label));
 
   return gfc_finish_block (&block);
 }
@@ -5298,13 +5450,41 @@ gfc_trans_exit (gfc_code * code)
 }
 
 
+/* Get the initializer expression for the code and expr of an allocate.
+   When no initializer is needed return NULL.  */
+
+static gfc_expr *
+allocate_get_initializer (gfc_code * code, gfc_expr * expr)
+{
+  if (!gfc_bt_struct (expr->ts.type) && expr->ts.type != BT_CLASS)
+    return NULL;
+
+  /* An explicit type was given in allocate ( T:: object).  */
+  if (code->ext.alloc.ts.type == BT_DERIVED
+      && (code->ext.alloc.ts.u.derived->attr.alloc_comp
+	  || gfc_has_default_initializer (code->ext.alloc.ts.u.derived)))
+    return gfc_default_initializer (&code->ext.alloc.ts);
+
+  if (gfc_bt_struct (expr->ts.type)
+      && (expr->ts.u.derived->attr.alloc_comp
+	  || gfc_has_default_initializer (expr->ts.u.derived)))
+    return gfc_default_initializer (&expr->ts);
+
+  if (expr->ts.type == BT_CLASS
+      && (CLASS_DATA (expr)->ts.u.derived->attr.alloc_comp
+	  || gfc_has_default_initializer (CLASS_DATA (expr)->ts.u.derived)))
+    return gfc_default_initializer (&CLASS_DATA (expr)->ts);
+
+  return NULL;
+}
+
 /* Translate the ALLOCATE statement.  */
 
 tree
 gfc_trans_allocate (gfc_code * code)
 {
   gfc_alloc *al;
-  gfc_expr *expr, *e3rhs = NULL;
+  gfc_expr *expr, *e3rhs = NULL, *init_expr;
   gfc_se se, se_sz;
   tree tmp;
   tree parm;
@@ -5435,7 +5615,10 @@ gfc_trans_allocate (gfc_code * code)
 	  if (code->expr3->rank != 0
 	      && ((!attr.allocatable && !attr.pointer)
 		  || (code->expr3->expr_type == EXPR_FUNCTION
-		      && code->expr3->ts.type != BT_CLASS)))
+		      && (code->expr3->ts.type != BT_CLASS
+			  || (code->expr3->value.function.isym
+			      && code->expr3->value.function.isym
+							 ->transformational)))))
 	    gfc_conv_expr_descriptor (&se, code->expr3);
 	  else
 	    gfc_conv_expr_reference (&se, code->expr3);
@@ -5448,9 +5631,19 @@ gfc_trans_allocate (gfc_code * code)
 	}
       gfc_add_block_to_block (&block, &se.pre);
       gfc_add_block_to_block (&post, &se.post);
+
+      /* Special case when string in expr3 is zero.  */
+      if (code->expr3->ts.type == BT_CHARACTER
+	  && integer_zerop (se.string_length))
+	{
+	  gfc_init_se (&se, NULL);
+	  temp_var_needed = false;
+	  expr3_len = integer_zero_node;
+	  e3_is = E3_MOLD;
+	}
       /* Prevent aliasing, i.e., se.expr may be already a
 	     variable declaration.  */
-      if (se.expr != NULL_TREE && temp_var_needed)
+      else if (se.expr != NULL_TREE && temp_var_needed)
 	{
 	  tree var, desc;
 	  tmp = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)) || is_coarray ?
@@ -5475,7 +5668,8 @@ gfc_trans_allocate (gfc_code * code)
 		  desc = tmp;
 		  tmp = gfc_class_data_get (tmp);
 		}
-	      e3_is = E3_DESC;
+	      if (code->ext.alloc.arr_spec_from_expr3)
+		e3_is = E3_DESC;
 	    }
 	  else
 	    desc = !is_coarray ? se.expr
@@ -5490,17 +5684,6 @@ gfc_trans_allocate (gfc_code * code)
 	    }
 	  gfc_add_modify_loc (input_location, &block, var, tmp);
 
-	  /* Deallocate any allocatable components after all the allocations
-	     and assignments of expr3 have been completed.  */
-	  if (code->expr3->ts.type == BT_DERIVED
-	      && code->expr3->rank == 0
-	      && code->expr3->ts.u.derived->attr.alloc_comp)
-	    {
-	      tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
-					       var, 0);
-	      gfc_add_expr_to_block (&post, tmp);
-	    }
-
 	  expr3 = var;
 	  if (se.string_length)
 	    /* Evaluate it assuming that it also is complicated like expr3.  */
@@ -5511,6 +5694,20 @@ gfc_trans_allocate (gfc_code * code)
 	  expr3 = se.expr;
 	  expr3_len = se.string_length;
 	}
+
+      /* Deallocate any allocatable components in expressions that use a
+	 temporary, i.e. are not of expr-type EXPR_VARIABLE or force the
+	 use of a temporary, after the assignment of expr3 is completed.  */
+      if ((code->expr3->ts.type == BT_DERIVED
+	   || code->expr3->ts.type == BT_CLASS)
+	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_var_needed)
+	  && code->expr3->ts.u.derived->attr.alloc_comp)
+	{
+	  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
+					   expr3, code->expr3->rank);
+	  gfc_prepend_expr_to_block (&post, tmp);
+	}
+
       /* Store what the expr3 is to be used for.  */
       if (e3_is == E3_UNSET)
 	e3_is = expr3 != NULL_TREE ?
@@ -5608,82 +5805,12 @@ gfc_trans_allocate (gfc_code * code)
 	  else
 	    expr3_esize = TYPE_SIZE_UNIT (
 		  gfc_typenode_for_spec (&code->expr3->ts));
-
-	  /* The routine gfc_trans_assignment () already implements all
-	     techniques needed.  Unfortunately we may have a temporary
-	     variable for the source= expression here.  When that is the
-	     case convert this variable into a temporary gfc_expr of type
-	     EXPR_VARIABLE and used it as rhs for the assignment.  The
-	     advantage is, that we get scalarizer support for free,
-	     don't have to take care about scalar to array treatment and
-	     will benefit of every enhancements gfc_trans_assignment ()
-	     gets.
-	     No need to check whether e3_is is E3_UNSET, because that is
-	     done by expr3 != NULL_TREE.
-	     Exclude variables since the following block does not handle
-	     array sections. In any case, there is no harm in sending
-	     variables to gfc_trans_assignment because there is no
-	     evaluation of variables.  */
-	  if (code->expr3->expr_type != EXPR_VARIABLE
-	      && e3_is != E3_MOLD && expr3 != NULL_TREE
-	      && DECL_P (expr3) && DECL_ARTIFICIAL (expr3))
-	    {
-	      /* Build a temporary symtree and symbol.  Do not add it to
-		 the current namespace to prevent accidently modifying
-		 a colliding symbol's as.  */
-	      newsym = XCNEW (gfc_symtree);
-	      /* The name of the symtree should be unique, because
-		 gfc_create_var () took care about generating the
-		 identifier.  */
-	      newsym->name = gfc_get_string (IDENTIFIER_POINTER (
-					       DECL_NAME (expr3)));
-	      newsym->n.sym = gfc_new_symbol (newsym->name, NULL);
-	      /* The backend_decl is known.  It is expr3, which is inserted
-		 here.  */
-	      newsym->n.sym->backend_decl = expr3;
-	      e3rhs = gfc_get_expr ();
-	      e3rhs->ts = code->expr3->ts;
-	      e3rhs->rank = code->expr3->rank;
-	      e3rhs->symtree = newsym;
-	      /* Mark the symbol referenced or gfc_trans_assignment will
-		 bug.  */
-	      newsym->n.sym->attr.referenced = 1;
-	      e3rhs->expr_type = EXPR_VARIABLE;
-	      e3rhs->where = code->expr3->where;
-	      /* Set the symbols type, upto it was BT_UNKNOWN.  */
-	      newsym->n.sym->ts = e3rhs->ts;
-	      /* Check whether the expr3 is array valued.  */
-	      if (e3rhs->rank)
-		{
-		  gfc_array_spec *arr;
-		  arr = gfc_get_array_spec ();
-		  arr->rank = e3rhs->rank;
-		  arr->type = AS_DEFERRED;
-		  /* Set the dimension and pointer attribute for arrays
-		     to be on the safe side.  */
-		  newsym->n.sym->attr.dimension = 1;
-		  newsym->n.sym->attr.pointer = 1;
-		  newsym->n.sym->as = arr;
-		  gfc_add_full_array_ref (e3rhs, arr);
-		}
-	      else if (POINTER_TYPE_P (TREE_TYPE (expr3)))
-		newsym->n.sym->attr.pointer = 1;
-	      /* The string length is known to.  Set it for char arrays.  */
-	      if (e3rhs->ts.type == BT_CHARACTER)
-		newsym->n.sym->ts.u.cl->backend_decl = expr3_len;
-	      gfc_commit_symbol (newsym->n.sym);
-	    }
-	  else
-	    e3rhs = gfc_copy_expr (code->expr3);
 	}
       gcc_assert (expr3_esize);
       expr3_esize = fold_convert (sizetype, expr3_esize);
       if (e3_is == E3_MOLD)
-	{
-	  /* The expr3 is no longer valid after this point.  */
-	  expr3 = NULL_TREE;
-	  e3_is = E3_UNSET;
-	}
+	/* The expr3 is no longer valid after this point.  */
+	expr3 = NULL_TREE;
     }
   else if (code->ext.alloc.ts.type != BT_UNKNOWN)
     {
@@ -5709,6 +5836,95 @@ gfc_trans_allocate (gfc_code * code)
 					 tmp, se_sz.expr);
 	  expr3_esize = gfc_evaluate_now (expr3_esize, &block);
 	}
+    }
+
+  /* The routine gfc_trans_assignment () already implements all
+     techniques needed.  Unfortunately we may have a temporary
+     variable for the source= expression here.  When that is the
+     case convert this variable into a temporary gfc_expr of type
+     EXPR_VARIABLE and used it as rhs for the assignment.  The
+     advantage is, that we get scalarizer support for free,
+     don't have to take care about scalar to array treatment and
+     will benefit of every enhancements gfc_trans_assignment ()
+     gets.
+     No need to check whether e3_is is E3_UNSET, because that is
+     done by expr3 != NULL_TREE.
+     Exclude variables since the following block does not handle
+     array sections.  In any case, there is no harm in sending
+     variables to gfc_trans_assignment because there is no
+     evaluation of variables.  */
+  if (code->expr3)
+    {
+      if (code->expr3->expr_type != EXPR_VARIABLE
+	  && e3_is != E3_MOLD && expr3 != NULL_TREE
+	  && DECL_P (expr3) && DECL_ARTIFICIAL (expr3))
+	{
+	  /* Build a temporary symtree and symbol.  Do not add it to the current
+	     namespace to prevent accidently modifying a colliding
+	     symbol's as.  */
+	  newsym = XCNEW (gfc_symtree);
+	  /* The name of the symtree should be unique, because gfc_create_var ()
+	     took care about generating the identifier.  */
+	  newsym->name = gfc_get_string (IDENTIFIER_POINTER (
+							    DECL_NAME (expr3)));
+	  newsym->n.sym = gfc_new_symbol (newsym->name, NULL);
+	  /* The backend_decl is known.  It is expr3, which is inserted
+	     here.  */
+	  newsym->n.sym->backend_decl = expr3;
+	  e3rhs = gfc_get_expr ();
+	  e3rhs->rank = code->expr3->rank;
+	  e3rhs->symtree = newsym;
+	  /* Mark the symbol referenced or gfc_trans_assignment will bug.  */
+	  newsym->n.sym->attr.referenced = 1;
+	  e3rhs->expr_type = EXPR_VARIABLE;
+	  e3rhs->where = code->expr3->where;
+	  /* Set the symbols type, upto it was BT_UNKNOWN.  */
+	  if (IS_CLASS_ARRAY (code->expr3)
+	      && code->expr3->expr_type == EXPR_FUNCTION
+	      && code->expr3->value.function.isym
+	      && code->expr3->value.function.isym->transformational)
+	    {
+	      e3rhs->ts = CLASS_DATA (code->expr3)->ts;
+	    }
+	  else if (code->expr3->ts.type == BT_CLASS
+		   && !GFC_CLASS_TYPE_P (TREE_TYPE (expr3)))
+	    e3rhs->ts = CLASS_DATA (code->expr3)->ts;
+	  else
+	    e3rhs->ts = code->expr3->ts;
+	  newsym->n.sym->ts = e3rhs->ts;
+	  /* Check whether the expr3 is array valued.  */
+	  if (e3rhs->rank)
+	    {
+	      gfc_array_spec *arr;
+	      arr = gfc_get_array_spec ();
+	      arr->rank = e3rhs->rank;
+	      arr->type = AS_DEFERRED;
+	      /* Set the dimension and pointer attribute for arrays
+	     to be on the safe side.  */
+	      newsym->n.sym->attr.dimension = 1;
+	      newsym->n.sym->attr.pointer = 1;
+	      newsym->n.sym->as = arr;
+	      if (IS_CLASS_ARRAY (code->expr3)
+		  && code->expr3->expr_type == EXPR_FUNCTION
+		  && code->expr3->value.function.isym
+		  && code->expr3->value.function.isym->transformational)
+		{
+		  gfc_array_spec *tarr;
+		  tarr = gfc_get_array_spec ();
+		  *tarr = *arr;
+		  e3rhs->ts.u.derived->as = tarr;
+		}
+	      gfc_add_full_array_ref (e3rhs, arr);
+	    }
+	  else if (POINTER_TYPE_P (TREE_TYPE (expr3)))
+	    newsym->n.sym->attr.pointer = 1;
+	  /* The string length is known, too.  Set it for char arrays.  */
+	  if (e3rhs->ts.type == BT_CHARACTER)
+	    newsym->n.sym->ts.u.cl->backend_decl = expr3_len;
+	  gfc_commit_symbol (newsym->n.sym);
+	}
+      else
+	e3rhs = gfc_copy_expr (code->expr3);
     }
 
   /* Loop over all objects to allocate.  */
@@ -5869,21 +6085,32 @@ gfc_trans_allocate (gfc_code * code)
 	    /* Handle size computation of the type declared to alloc.  */
 	    memsz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
+	  if (gfc_caf_attr (expr).codimension
+	      && flag_coarray == GFC_FCOARRAY_LIB)
+	    {
+	      /* Scalar allocatable components in coarray'ed derived types make
+		 it here and are treated now.  */
+	      tree caf_decl, token;
+	      gfc_se caf_se;
+
+	      gfc_init_se (&caf_se, NULL);
+
+	      caf_decl = gfc_get_tree_for_caf_expr (expr);
+	      gfc_get_caf_token_offset (&caf_se, &token, NULL, caf_decl,
+					NULL_TREE, NULL);
+	      gfc_add_block_to_block (&se.pre, &caf_se.pre);
+	      gfc_allocate_allocatable (&se.pre, se.expr, memsz,
+					gfc_build_addr_expr (NULL_TREE, token),
+					NULL_TREE, NULL_TREE, NULL_TREE,
+					label_finish, expr, 1);
+	    }
 	  /* Allocate - for non-pointers with re-alloc checking.  */
-	  if (gfc_expr_attr (expr).allocatable)
-	    gfc_allocate_allocatable (&se.pre, se.expr, memsz, NULL_TREE,
-				      stat, errmsg, errlen, label_finish,
-				      expr);
+	  else if (gfc_expr_attr (expr).allocatable)
+	    gfc_allocate_allocatable (&se.pre, se.expr, memsz,
+				      NULL_TREE, stat, errmsg, errlen,
+				      label_finish, expr, 0);
 	  else
 	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat);
-
-	  if (al->expr->ts.type == BT_DERIVED
-	      && expr->ts.u.derived->attr.alloc_comp)
-	    {
-	      tmp = build_fold_indirect_ref_loc (input_location, se.expr);
-	      tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, tmp, 0);
-	      gfc_add_expr_to_block (&se.pre, tmp);
-	    }
 	}
       else
 	{
@@ -5898,7 +6125,7 @@ gfc_trans_allocate (gfc_code * code)
 	      al_len_needs_set = false;
 	    }
 	  else if (expr->ts.type == BT_CHARACTER && al_len != NULL_TREE
-		   && code->ext.alloc.ts.u.cl->length)
+	      && code->ext.alloc.ts.u.cl->length)
 	    {
 	      /* Cover the cases where a string length is explicitly
 		 specified by a type spec for deferred length character
@@ -5929,8 +6156,9 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
-      /* Set the vptr.  */
-      if (al_vptr != NULL_TREE)
+      /* Set the vptr only when no source= is set.  When source= is set, then
+	 the trans_assignment below will set the vptr.  */
+      if (al_vptr != NULL_TREE && (!code->expr3 || code->expr3->mold))
 	{
 	  if (expr3_vptr != NULL_TREE)
 	    /* The vtab is already known, so just assign it.  */
@@ -5985,7 +6213,7 @@ gfc_trans_allocate (gfc_code * code)
 		expr3_len = NULL_TREE;
 	    }
 	  else if (code->ext.alloc.ts.type == BT_CHARACTER
-		   && code->ext.alloc.ts.u.cl->length)
+	      && code->ext.alloc.ts.u.cl->length)
 	    {
 	      /* Cover the cases where a string length is explicitly
 		 specified by a type spec for deferred length character
@@ -6012,154 +6240,56 @@ gfc_trans_allocate (gfc_code * code)
 			    fold_convert (TREE_TYPE (al_len),
 					  integer_zero_node));
 	}
-      if (code->expr3 && !code->expr3->mold)
+
+      init_expr = NULL;
+      if (code->expr3 && !code->expr3->mold && e3_is != E3_MOLD)
 	{
 	  /* Initialization via SOURCE block (or static default initializer).
-	     Classes need some special handling, so catch them first.  */
-	  if (expr3 != NULL_TREE
-	      && TREE_CODE (expr3) != POINTER_PLUS_EXPR
-	      && code->expr3->ts.type == BT_CLASS
-	      && (expr->ts.type == BT_CLASS
-		  || expr->ts.type == BT_DERIVED))
-	    {
-	      /* copy_class_to_class can be used for class arrays, too.
-		 It just needs to be ensured, that the decl_saved_descriptor
-		 has a way to get to the vptr.  */
-	      tree to;
-	      to = VAR_P (se.expr) ? se.expr : TREE_OPERAND (se.expr, 0);
-	      tmp = gfc_copy_class_to_class (expr3, to,
-					     nelems, upoly_expr);
-	    }
-	  else if (al->expr->ts.type == BT_CLASS)
-	    {
-	      gfc_actual_arglist *actual, *last_arg;
-	      gfc_expr *ppc;
-	      gfc_code *ppc_code;
-	      gfc_ref *ref, *dataref;
-	      gfc_expr *rhs = e3rhs ? e3rhs : gfc_copy_expr (code->expr3);
-
-	      /* Do a polymorphic deep copy.  */
-	      actual = gfc_get_actual_arglist ();
-	      actual->expr = gfc_copy_expr (rhs);
-	      if (rhs->ts.type == BT_CLASS)
-		gfc_add_data_component (actual->expr);
-	      last_arg = actual->next = gfc_get_actual_arglist ();
-	      last_arg->expr = gfc_copy_expr (al->expr);
-	      last_arg->expr->ts.type = BT_CLASS;
-	      gfc_add_data_component (last_arg->expr);
-
-	      dataref = NULL;
-	      /* Make sure we go up through the reference chain to
-		 the _data reference, where the arrayspec is found.  */
-	      for (ref = last_arg->expr->ref; ref; ref = ref->next)
-		if (ref->type == REF_COMPONENT
-		    && strcmp (ref->u.c.component->name, "_data") == 0)
-		  dataref = ref;
-
-	      if (dataref && dataref->u.c.component->as)
-		{
-		  gfc_array_spec *as = dataref->u.c.component->as;
-		  gfc_free_ref_list (dataref->next);
-		  dataref->next = NULL;
-		  gfc_add_full_array_ref (last_arg->expr, as);
-		  gfc_resolve_expr (last_arg->expr);
-		  gcc_assert (last_arg->expr->ts.type == BT_CLASS
-			      || last_arg->expr->ts.type == BT_DERIVED);
-		  last_arg->expr->ts.type = BT_CLASS;
-		}
-	      if (rhs->ts.type == BT_CLASS)
-		{
-		  if (rhs->ref)
-		    ppc = gfc_find_and_cut_at_last_class_ref (rhs);
-		  else
-		    ppc = gfc_copy_expr (rhs);
-		  gfc_add_vptr_component (ppc);
-		}
-	      else
-		ppc = gfc_lval_expr_from_sym (gfc_find_vtab (&rhs->ts));
-	      gfc_add_component_ref (ppc, "_copy");
-
-	      ppc_code = gfc_get_code (EXEC_CALL);
-	      ppc_code->resolved_sym = ppc->symtree->n.sym;
-	      ppc_code->loc = al->expr->where;
-	      /* Although '_copy' is set to be elemental in class.c, it is
-		 not staying that way.  Find out why, sometime....  */
-	      ppc_code->resolved_sym->attr.elemental = 1;
-	      ppc_code->ext.actual = actual;
-	      ppc_code->expr1 = ppc;
-	      /* Since '_copy' is elemental, the scalarizer will take care
-		 of arrays in gfc_trans_call.  */
-	      tmp = gfc_trans_call (ppc_code, true, NULL, NULL, false);
-	      /* We need to add the
-		   if (al_len > 0)
-		     al_vptr->copy (expr3_data, al_data, expr3_len, al_len);
-		   else
-		     al_vptr->copy (expr3_data, al_data);
-		 block, because al is unlimited polymorphic or a deferred
-		 length char array, whose copy routine needs the array lengths
-		 as third and fourth arguments.  */
-	      if (al_len && UNLIMITED_POLY (code->expr3))
-		{
-		  tree stdcopy, extcopy;
-		  /* Add al%_len.  */
-		  last_arg->next = gfc_get_actual_arglist ();
-		  last_arg = last_arg->next;
-		  last_arg->expr = gfc_find_and_cut_at_last_class_ref (
-			al->expr);
-		  gfc_add_len_component (last_arg->expr);
-		  /* Add expr3's length.  */
-		  last_arg->next = gfc_get_actual_arglist ();
-		  last_arg = last_arg->next;
-		  if (code->expr3->ts.type == BT_CLASS)
-		    {
-		      last_arg->expr =
-			  gfc_find_and_cut_at_last_class_ref (code->expr3);
-		      gfc_add_len_component (last_arg->expr);
-		    }
-		  else if (code->expr3->ts.type == BT_CHARACTER)
-		    last_arg->expr =
-			gfc_copy_expr (code->expr3->ts.u.cl->length);
-		  else
-		    gcc_unreachable ();
-
-		  stdcopy = tmp;
-		  extcopy = gfc_trans_call (ppc_code, true, NULL, NULL, false);
-
-		  tmp = fold_build2_loc (input_location, GT_EXPR,
-					 boolean_type_node, expr3_len,
-					 integer_zero_node);
-		  tmp = fold_build3_loc (input_location, COND_EXPR,
-					 void_type_node, tmp, extcopy, stdcopy);
-		}
-	      gfc_free_statements (ppc_code);
-	      if (rhs != e3rhs)
-		gfc_free_expr (rhs);
-	    }
-	  else
-	    {
-	      /* Switch off automatic reallocation since we have just
-		 done the ALLOCATE.  */
-	      int realloc_lhs = flag_realloc_lhs;
-	      flag_realloc_lhs = 0;
-	      tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
-					  e3rhs, false, false);
-	      flag_realloc_lhs = realloc_lhs;
-	    }
+	     Switch off automatic reallocation since we have just done the
+	     ALLOCATE.  */
+	  int realloc_lhs = flag_realloc_lhs;
+	  gfc_expr *init_expr = gfc_expr_to_initialize (expr);
+	  gfc_expr *rhs = e3rhs ? e3rhs : gfc_copy_expr (code->expr3);
+	  flag_realloc_lhs = 0;
+	  tmp = gfc_trans_assignment (init_expr, rhs, false, false, true,
+				      false);
+	  flag_realloc_lhs = realloc_lhs;
+	  /* Free the expression allocated for init_expr.  */
+	  gfc_free_expr (init_expr);
+	  if (rhs != e3rhs)
+	    gfc_free_expr (rhs);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
-     else if (code->expr3 && code->expr3->mold
-	      && code->expr3->ts.type == BT_CLASS)
+      else if (code->expr3 && code->expr3->mold
+	       && code->expr3->ts.type == BT_CLASS)
 	{
-	  /* Since the _vptr has already been assigned to the allocate
-	     object, we can use gfc_copy_class_to_class in its
-	     initialization mode.  */
-	  tmp = TREE_OPERAND (se.expr, 0);
-	  tmp = gfc_copy_class_to_class (NULL_TREE, tmp, nelems,
-					 upoly_expr);
+	  /* Use class_init_assign to initialize expr.  */
+	  gfc_code *ini;
+	  ini = gfc_get_code (EXEC_INIT_ASSIGN);
+	  ini->expr1 = gfc_find_and_cut_at_last_class_ref (expr);
+	  tmp = gfc_trans_class_init_assign (ini);
+	  gfc_free_statements (ini);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else if ((init_expr = allocate_get_initializer (code, expr)))
+	{
+	  /* Use class_init_assign to initialize expr.  */
+	  gfc_code *ini;
+	  int realloc_lhs = flag_realloc_lhs;
+	  ini = gfc_get_code (EXEC_INIT_ASSIGN);
+	  ini->expr1 = gfc_expr_to_initialize (expr);
+	  ini->expr2 = init_expr;
+	  flag_realloc_lhs = 0;
+	  tmp= gfc_trans_init_assign (ini);
+	  flag_realloc_lhs = realloc_lhs;
+	  gfc_free_statements (ini);
+	  /* Init_expr is freeed by above free_statements, just need to null
+	     it here.  */
+	  init_expr = NULL;
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
-       gfc_free_expr (expr);
+      gfc_free_expr (expr);
     } // for-loop
 
   if (e3rhs)
@@ -6291,7 +6421,7 @@ gfc_trans_deallocate (gfc_code *code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      if (expr->rank || gfc_is_coarray (expr))
+      if (expr->rank || gfc_caf_attr (expr).codimension)
 	{
 	  gfc_ref *ref;
 

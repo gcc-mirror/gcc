@@ -109,8 +109,8 @@
 
 #ifndef __cpp_inheriting_constructors
 #  error "__cpp_inheriting_constructors"
-#elif  __cpp_inheriting_constructors!= 200802
-#  error "__cpp_inheriting_constructors != 200802"
+#elif  __cpp_inheriting_constructors!= 201511
+#  error "__cpp_inheriting_constructors != 201511"
 #endif
 
 #ifndef __cpp_ref_qualifiers

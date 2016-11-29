@@ -48,8 +48,6 @@ struct pod2
 template<typename _Tp, typename _Cp>
 void test04()
 {
-  bool test __attribute__((unused)) = true;
-  
   typedef __gnu_cxx::__pool_base::_Tune tune_type;
   typedef _Tp value_type;
   typedef _Cp policy_type;

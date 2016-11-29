@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> v;
 
   VERIFY( v.max_size() == v.get_allocator().max_size() );

@@ -114,6 +114,9 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   tree t, tt = NULL_TREE;
   tree type0 = TREE_TYPE (op0);
   tree type1 = TREE_TYPE (op1);
+  if (!INTEGRAL_TYPE_P (type0))
+    return NULL_TREE;
+
   tree op1_utype = unsigned_type_for (type1);
   HOST_WIDE_INT op0_prec = TYPE_PRECISION (type0);
   tree uprecm1 = build_int_cst (op1_utype, op0_prec - 1);
@@ -126,9 +129,9 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 
   /* If this is not a signed operation, don't perform overflow checks.
      Also punt on bit-fields.  */
-  if (!INTEGRAL_TYPE_P (type0)
-      || TYPE_OVERFLOW_WRAPS (type0)
-      || GET_MODE_BITSIZE (TYPE_MODE (type0)) != TYPE_PRECISION (type0))
+  if (TYPE_OVERFLOW_WRAPS (type0)
+      || GET_MODE_BITSIZE (TYPE_MODE (type0)) != TYPE_PRECISION (type0)
+      || (flag_sanitize & SANITIZE_SHIFT_BASE) == 0)
     ;
 
   /* For signed x << y, in C99/C11, the following:
@@ -169,8 +172,27 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   /* In case we have a SAVE_EXPR in a conditional context, we need to
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
-  t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t,
-		   tt ? tt : integer_zero_node);
+
+  enum sanitize_code recover_kind = SANITIZE_SHIFT_EXPONENT;
+  tree else_t = void_node;
+  if (tt)
+    {
+      if ((flag_sanitize & SANITIZE_SHIFT_EXPONENT) == 0)
+	{
+	  t = fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, t);
+	  t = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, t, tt);
+	  recover_kind = SANITIZE_SHIFT_BASE;
+	}
+      else
+	{
+	  if (flag_sanitize_undefined_trap_on_error
+	      || ((!(flag_sanitize_recover & SANITIZE_SHIFT_EXPONENT))
+		  == (!(flag_sanitize_recover & SANITIZE_SHIFT_BASE))))
+	    t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, tt);
+	  else
+	    else_t = tt;
+	}
+    }
 
   if (flag_sanitize_undefined_trap_on_error)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
@@ -183,7 +205,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       data = build_fold_addr_expr_loc (loc, data);
 
       enum built_in_function bcode
-	= (flag_sanitize_recover & SANITIZE_SHIFT)
+	= (flag_sanitize_recover & recover_kind)
 	  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
 	  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
       tt = builtin_decl_explicit (bcode);
@@ -191,8 +213,22 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       op1 = unshare_expr (op1);
       tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
 				ubsan_encode_value (op1));
+      if (else_t != void_node)
+	{
+	  bcode = (flag_sanitize_recover & SANITIZE_SHIFT_BASE)
+		  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
+		  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
+	  tree else_tt = builtin_decl_explicit (bcode);
+	  op0 = unshare_expr (op0);
+	  op1 = unshare_expr (op1);
+	  else_tt = build_call_expr_loc (loc, else_tt, 3, data,
+					 ubsan_encode_value (op0),
+					 ubsan_encode_value (op1));
+	  else_t = fold_build3 (COND_EXPR, void_type_node, else_t,
+				else_tt, void_node);
+	}
     }
-  t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_node);
+  t = fold_build3 (COND_EXPR, void_type_node, t, tt, else_t);
 
   return t;
 }
@@ -233,9 +269,6 @@ ubsan_instrument_return (location_t loc)
 {
   if (flag_sanitize_undefined_trap_on_error)
     return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
-  /* It is possible that PCH zapped table with definitions of sanitizer
-     builtins.  Reinitialize them if needed.  */
-  initialize_sanitizer_builtins ();
 
   tree data = ubsan_create_data ("__ubsan_missing_return_data", 1, &loc,
 				 NULL_TREE, NULL_TREE);

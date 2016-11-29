@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-atomic-builtins "" }
 
 // 2008-05-25  Sebastian Redl  <sebastian.redl@getdesigned.at>
@@ -40,7 +40,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   try {

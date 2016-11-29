@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -Wno-pedantic" }
-// { dg-do compile }
+// { dg-options "-Wno-pedantic" }
+// { dg-do compile { target c++11 } }
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -47,6 +47,7 @@ void test01()
   static_assert(test_category<is_floating_point, double>(true), "");
   static_assert(test_category<is_floating_point, long double>(true), "");
 
+#ifndef __STRICT_ANSI__
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_FLOAT128
   static_assert(test_category<is_floating_point, __float128>(true), "");
@@ -56,6 +57,7 @@ void test01()
   static_assert(test_category<is_floating_point, __int128>(false), "");
   static_assert(test_category<is_floating_point,
 		unsigned __int128>(false), "");
+#endif
 #endif
 
   // Sanity check.

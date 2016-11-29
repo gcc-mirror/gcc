@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++11" }
 
 // 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -26,7 +25,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_api.h>
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // libstdc++/41792
 template class std::forward_list<__gnu_test::OverloadedAddress>;

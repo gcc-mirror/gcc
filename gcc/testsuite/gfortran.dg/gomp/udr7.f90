@@ -78,7 +78,7 @@ subroutine f1
 end subroutine f1
 subroutine f2
   use udr7m3	! { dg-error "Previous !.OMP DECLARE REDUCTION|Ambiguous interfaces" }
-  use udr7m2	! { dg-error "Ambiguous !.OMP DECLARE REDUCTION" }
+  use udr7m2	! { dg-error "Ambiguous !.OMP DECLARE REDUCTION|Ambiguous interfaces" }
 end subroutine f2
 subroutine f3
   use udr7m4

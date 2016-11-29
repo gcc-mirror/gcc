@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11 -Wno-pedantic" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wno-pedantic" }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //
@@ -26,8 +26,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
 #if _GLIBCXX_HAVE_COMPLEX_H
   double _Complex x = .5;
   double _Complex y = cacos (x);

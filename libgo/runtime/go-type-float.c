@@ -12,7 +12,7 @@
 /* Hash function for float types.  */
 
 uintptr_t
-__go_type_hash_float (const void *vkey, uintptr_t key_size)
+__go_type_hash_float (const void *vkey, uintptr_t seed, uintptr_t key_size)
 {
   if (key_size == 4)
     {
@@ -24,7 +24,7 @@ __go_type_hash_float (const void *vkey, uintptr_t key_size)
       f = *fp;
 
       if (isinf (f) || f == 0)
-	return 0;
+	return seed;
 
       /* NaN != NaN, so the hash code of a NaN is irrelevant.  Make it
 	 random so that not all NaNs wind up in the same place.  */
@@ -32,7 +32,7 @@ __go_type_hash_float (const void *vkey, uintptr_t key_size)
 	return runtime_fastrand1 ();
 
       memcpy (&si, vkey, 4);
-      return (uintptr_t) si;
+      return (uintptr_t) si ^ seed;
     }
   else if (key_size == 8)
     {
@@ -44,13 +44,13 @@ __go_type_hash_float (const void *vkey, uintptr_t key_size)
       d = *dp;
 
       if (isinf (d) || d == 0)
-	return 0;
+	return seed;
 
       if (isnan (d))
 	return runtime_fastrand1 ();
 
       memcpy (&di, vkey, 8);
-      return (uintptr_t) di;
+      return (uintptr_t) di ^ seed;
     }
   else
     runtime_throw ("__go_type_hash_float: invalid float size");

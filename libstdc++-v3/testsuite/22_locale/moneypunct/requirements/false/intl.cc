@@ -27,8 +27,7 @@ class gnu_moneypunct_f: public std::moneypunct<char, false>
 { };
 
 void test03()
-{ 
-  bool test __attribute__((unused)) = true;
+{
   gnu_moneypunct_f facet02;
   VERIFY (facet02.intl == false);
 }

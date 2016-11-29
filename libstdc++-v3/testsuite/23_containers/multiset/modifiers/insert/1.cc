@@ -38,7 +38,6 @@ operator<(std::pair<int, int> const& lhs, std::pair<int, int> const& rhs)
 
 int main () 
 {
-  bool test __attribute__((unused)) = true;
   typedef std::multiset<std::pair<int, int> >::iterator iterator;
   std::pair<int, int> p(69, 0);
   std::multiset<std::pair<int, int> > s;

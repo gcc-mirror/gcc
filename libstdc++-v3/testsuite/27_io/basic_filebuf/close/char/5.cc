@@ -57,8 +57,6 @@ public:
 
 void test_05()
 {
-  bool test __attribute__((unused)) = true;
-
   Close_filebuf fb_01, fb_02;
   char buffer[] = "xxxxxxxxxx";
 

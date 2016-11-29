@@ -65,11 +65,17 @@ set plugin_test_list [list \
     { diagnostic_plugin_test_show_locus.c \
 	  diagnostic-test-show-locus-bw.c \
 	  diagnostic-test-show-locus-color.c \
-	  diagnostic-test-show-locus-parseable-fixits.c } \
+	  diagnostic-test-show-locus-parseable-fixits.c \
+	  diagnostic-test-show-locus-generate-patch.c } \
     { diagnostic_plugin_test_tree_expression_range.c \
 	  diagnostic-test-expressions-1.c } \
     { diagnostic_plugin_show_trees.c \
 	  diagnostic-test-show-trees-1.c } \
+    { diagnostic_plugin_test_string_literals.c \
+	  diagnostic-test-string-literals-1.c \
+	  diagnostic-test-string-literals-2.c \
+	  diagnostic-test-string-literals-3.c \
+	  diagnostic-test-string-literals-4.c } \
     { location_overflow_plugin.c \
 	  location-overflow-test-1.c \
 	  location-overflow-test-2.c } \

@@ -26,7 +26,6 @@ int main()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   locale l1 = locale(ISO_8859(15,de_DE));
   locale l2 = locale(ISO_8859(15,es_ES));
   

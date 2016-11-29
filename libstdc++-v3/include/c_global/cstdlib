@@ -74,10 +74,10 @@ namespace std
 #define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 #include_next <stdlib.h>
 #undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+#include <bits/std_abs.h>
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
 #undef abort
-#undef abs
 #undef atexit
 #if __cplusplus >= 201103L
 # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
@@ -125,7 +125,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::ldiv_t;
 
   using ::abort;
-  using ::abs;
   using ::atexit;
 #if __cplusplus >= 201103L
 # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
@@ -168,33 +167,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // _GLIBCXX_USE_WCHAR_T
 
 #ifndef __CORRECT_ISO_CPP_STDLIB_H_PROTO
-  inline long
-  abs(long __i) { return __builtin_labs(__i); }
-
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
-#endif
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  inline long long
-  abs(long long __x) { return __builtin_llabs (__x); }
-#endif
-
-#if defined(__GLIBCXX_TYPE_INT_N_0)
-  inline __GLIBCXX_TYPE_INT_N_0
-  abs(__GLIBCXX_TYPE_INT_N_0 __x) { return __x >= 0 ? __x : -__x; }
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_1)
-  inline __GLIBCXX_TYPE_INT_N_1
-  abs(__GLIBCXX_TYPE_INT_N_1 __x) { return __x >= 0 ? __x : -__x; }
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_2)
-  inline __GLIBCXX_TYPE_INT_N_2
-  abs(__GLIBCXX_TYPE_INT_N_2 __x) { return __x >= 0 ? __x : -__x; }
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_3)
-  inline __GLIBCXX_TYPE_INT_N_3
-  abs(__GLIBCXX_TYPE_INT_N_3 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 
 

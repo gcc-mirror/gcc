@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-early-inlining -fdump-ipa-cp -fdump-tree-optimized" } */
+/* { dg-skip-if "No alignment restrictions" { { ! natural_alignment_32 } && { ! natural_alignment_64 } } } */
 
 #include <stdint.h>
 
@@ -52,5 +53,5 @@ bar2 (void)
   through (c.buf);
 }
 
-/* { dg-final { scan-ipa-dump "Adjusting alignment of param" "cp" } } */
+/* { dg-final { scan-ipa-dump "Adjusting align" "cp" } } */
 /* { dg-final { scan-tree-dump-not "fail_the_test" "optimized" } } */

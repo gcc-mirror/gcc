@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
-// { dg-do link }
+// { dg-do link { target c++11 } }
 
 #include <locale>
 #include <string>

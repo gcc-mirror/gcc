@@ -26,10 +26,6 @@
 
 using namespace std;
 
-#ifndef _GLIBCXX_ASSERT
-#  define TEST_NUMPUT_VERBOSE 1
-#endif
-
 struct _TestCase
 {
   double val;
@@ -147,7 +143,6 @@ void apply_formatting(const _TestCase & tc, basic_ostream<_CharT> & os)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   for (std::size_t j = 0; j<sizeof(testcases)/sizeof(testcases[0]); j++)
     {
       _TestCase & tc = testcases[j];

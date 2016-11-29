@@ -7,11 +7,11 @@
 implicit none
 
 interface func
-  procedure f1,f2 ! { dg-error "Ambiguous interfaces" }
+  procedure f1,f2
 end interface
 
 interface operator(.op.)
-  procedure f1,f2 ! { dg-error "Ambiguous interfaces" }
+  procedure f1,f2
 end interface
 
 type :: t1
@@ -35,12 +35,12 @@ o1%ppc => o2%ppc  ! { dg-error "Type mismatch in function result" }
 
 contains
 
-  real function f1(a,b)
+  real function f1(a,b)    ! { dg-error "Ambiguous interfaces" }
     real,intent(in) :: a,b
     f1 = a + b
   end function
 
-  integer function f2(a,b)
+  integer function f2(a,b) ! { dg-error "Ambiguous interfaces" }
     real,intent(in) :: a,b
     f2 = a - b
   end function

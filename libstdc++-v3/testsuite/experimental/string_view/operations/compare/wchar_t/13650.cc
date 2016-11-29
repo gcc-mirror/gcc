@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -27,7 +27,6 @@ void
 test01()
 {
   using namespace std::experimental;
-  bool test [[gnu::unused]] = true;
 
   const wchar_t lit_01[] = { L'w', L'e', L'\0', L'r', L'd' };
   const wchar_t lit_02[] = { L'w', L'e', L'i', L'\0', L'd' };

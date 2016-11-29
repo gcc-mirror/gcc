@@ -34,11 +34,6 @@ __CTOR_END__:
 __DTOR_END__:
 	data8	0
 
-.section .jcr,"aw","progbits"
-	.align 8
-__JCR_END__:
-	data8	0
-
 #if HAVE_INITFINI_ARRAY_SUPPORT
 	.global __do_global_ctors_aux
 	.hidden	__do_global_ctors_aux

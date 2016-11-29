@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-effective-target dfp }
 
 // 2011-02-23  Benjamin Kosnik  <bkoz@redhat.com>

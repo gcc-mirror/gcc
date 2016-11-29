@@ -186,7 +186,8 @@ fi
 EOF
 chmod +x tmpmultilib
 
-combinations=`initial=/ ./tmpmultilib ${options}`
+combination_space=`initial=/ ./tmpmultilib ${options}`
+combinations="$combination_space"
 
 # If there exceptions, weed them out now
 if [ -n "${exceptions}" ]; then
@@ -472,14 +473,19 @@ for rrule in ${multilib_reuse}; do
   # in this variable, it means no multilib will be built for current reuse
   # rule.  Thus the reuse purpose specified by current rule is meaningless.
   if expr "${combinations} " : ".*/${combo}/.*" > /dev/null; then
-    combo="/${combo}/"
-    dirout=`./tmpmultilib3 "${combo}" "${todirnames}" "${toosdirnames}" "${enable_multilib}"`
-    copts="/${copts}/"
-    optout=`./tmpmultilib4 "${copts}" "${options}"`
-    # Output the line with all appropriate matches.
-    dirout="${dirout}" optout="${optout}" ./tmpmultilib2
+    if expr "${combination_space} " : ".*/${copts}/.*" > /dev/null; then
+      combo="/${combo}/"
+      dirout=`./tmpmultilib3 "${combo}" "${todirnames}" "${toosdirnames}" "${enable_multilib}"`
+      copts="/${copts}/"
+      optout=`./tmpmultilib4 "${copts}" "${options}"`
+      # Output the line with all appropriate matches.
+      dirout="${dirout}" optout="${optout}" ./tmpmultilib2
+    else
+      echo "The rule ${rrule} contains an option absent from MULTILIB_OPTIONS." >&2
+      exit 1
+    fi
   else
-    echo "The rule ${rrule} is trying to reuse nonexistent multilib."
+    echo "The rule ${rrule} is trying to reuse nonexistent multilib." >&2
     exit 1
   fi
 done

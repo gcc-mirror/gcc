@@ -42,8 +42,6 @@ struct derives_unary_binary
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using std::tr1::reference_wrapper;
   using std::tr1::is_same;
   using std::tr1::is_convertible;

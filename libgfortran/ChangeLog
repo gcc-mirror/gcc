@@ -1,3 +1,377 @@
+2016-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/51119
+	* Makefile.am: Remove -fno-protect-parens -fstack-arrays.
+	* Makefile.in: Regenerate.
+
+2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgfortran/78314
+	* config/fpu-glibc.h (support_fpu_trap): Use feenableexcept.
+
+2016-11-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libgfortran/51119
+	* Makefile.am: Add new optimization flags matmul.
+	* Makefile.in: Regenerate.
+	* m4/matmul.m4: For the case of all strides = 1, implement a
+	fast blocked matrix multiply. Fix some whitespace.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_i1.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+	* generated/matmul_i2.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
+2016-11-03  Fritz Reese <fritzoreese@gmail.com>
+
+	* io/io.h (IOPARM_DT_DEFAULT_EXP): New flag bit.
+	* io/list_read.c (parse_real, read_real): Allow omission of exponent
+	with IOPARM_DT_DEFAULT_EXP.
+	* io/read.c (read_f): Ditto.
+
+2016-10-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/54679
+	* io/format.c (parse_format_list): Adjust checks for FMT_L to
+	treat a zero width as an extension, giving warnings or error
+	as appropriate. Improve messages.
+
+2016-10-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78123
+	* io/transfer.c (formatted_transfer_scalar_read): Clear seen_eor
+	only if we have tabbed to left of current position.
+
+2016-10-26  Fritz Reese  <fritzoreese@gmail.com>
+
+	* libgfortran.h (IOPARM_OPEN_HAS_READONLY, IOPARM_OPEN_HAS_SHARE,
+	IOPARM_OPEN_HAS_CC): New for READONLY, SHARE, and CARRIAGECONTROL.
+	* io/close.c (st_close): Support READONLY.
+	* io/io.h (st_parameter_open, unit_flags): Support SHARE,
+	CARRIAGECONTROL, and READONLY.
+	* io/open.c (st_open): Ditto.
+	* io/transfer.c (data_transfer_init): Ditto.
+	* io/io.h (st_parameter_dt): New member 'cc' for CARRIAGECONTROL.
+	* io/write.c (write_check_cc, write_cc): New functions for
+	CARRIAGECONTROL.
+	* io/transfer.c (next_record_cc): Ditto.
+	* io/file_pos.c (st_endfile): Support SHARE and CARRIAGECONTROL.
+	* io/io.h (st_parameter_inquire): Ditto.
+	* io/open.c (edit_modes, new_unit): Ditto.
+	* io/inquire.c (inquire_via_unit, inquire_via_filename): Ditto.
+	* io/io.h (unit_share, unit_cc, cc_fortran, IOPARM_INQUIRE_HAS_SHARE,
+	IOPARM_INQUIRE_HAS_CC): New for SHARE and CARRIAGECONTROL.
+	* io/open.c (share_opt, cc_opt): Ditto.
+	* io/read.c (read_x): Support CARRIAGECONTROL.
+	* io/transfer.c (read_sf, next_record_r, next_record_w): Ditto.
+	* io/write.c (list_formatted_write_scalar, write_a): Ditto.
+	* io/unix.h (close_share): New prototype.
+	* io/unix.c (open_share, close_share): New functions to handle SHARE.
+	* io/unix.c (open_external): Handle READONLY. Call open_share.
+	* io/close.c (st_close): Call close_share.
+
+2016-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/77828
+	* io/io.h (st_parameter_dt): Reorder for readability and sanity.
+	* io/transfer.c (data_transfer_init): Remove TODO and enable the
+	runtime error message, rec= specifier not allowed in STREAM
+	access.
+	* libtool-version: Bump major version of libgfortran to 4.
+
+2016-10-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/78055
+	* io/io.h (st_parameter_dt): Restore GFC_IO_INT to maintain
+	alignment.
+
+2016-10-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (finalize_transfer): Free format data in child
+	procedures. (st_read_done, st_write_done): Don't free format
+	hash table.
+
+2016-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/48298
+	* io/io.h: Move size_used from dtp to unit structure. Add bool
+	has_size to unit structure.
+	* io/read.c (read_x): Use has_size and size_used.
+	* io/transfer.c (read_sf_internal,read_sf,read_block_form,
+	read_block_form4): Likewise.
+	(data_transfer_init): If parent, initialize the size variables.
+	(finalize_transfer): Set the size variable using size_used in
+	gfc_unit. (write_block): Delete bogus/dead code.
+
+2016-10-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48587
+	* io/transfer.c (data_transfer_init): Improve error message,
+	remove redundant check.
+
+2016-10-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/48587
+        * io/io.h (get_unique_unit_number): Remove prototype.
+        (newunit_alloc): New prototype.
+        * io/open.c (st_open): Call newunit_alloc.
+        * io/unit.c (newunits,newunit_size,newunit_lwi): New static
+        variables.
+        (GFC_FIRST_NEWUNIT): Rename to NEWUNIT_START.
+        (next_available_newunit): Remove variable.
+        (get_unit): Call newunit_alloc, don't try to create negative
+        external unit.
+        (close_unit_1): Call newunit_free.
+        (close_units): Free newunits array.
+        (get_unique_number): Remove function.
+        (newunit_alloc): New function.
+        (newunit_free): New function.
+        * io/transfer.c (data_transfer_init): Check for invalid unit
+        number.
+
+2016-10-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/67585
+        * io/io.h: TEMP_FAILURE_RETRY: Define macro if not found.
+        * io/unix.c (raw_read): Handle EINTR.
+        (raw_write): Check for return value -1.
+        (raw_seek): Handle EINTR.
+        (raw_tell): Likewise.
+        (raw_size): Likewise.
+        (raw_truncate): Likewise.
+        (raw_close): Likewise.
+        (buf_flush): Call raw_seek instead of lseek.
+        (buf_read): Likewise.
+        (buf_write): Likewise.
+        (fd_to_stream): Handle EINTR.
+        (tempfile_open): Likewise.
+        (regular_file2): Likewise.
+        (compare_file_filename): Likewise.
+        (find_file): Likewise.
+        (inquire_sequential): Likewise.
+        (inquire_direct): Likewise.
+        (inquire_formatted): Likewise.
+
+2016-10-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/77868
+	* io/inquire.c (inquire_via_unit): NULL guard the check for
+	internal unit passed into child IO procedure.
+
+2016-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/inquire.c (inquire_via_unit): Add check for internal unit
+	passed into child IO procedure.
+
+2016-10-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77663
+	* caf/single.c (caf_internal_error): Fix not terminating va-list.
+	(_gfortran_caf_register): Free memory also when other allocs failed.
+	(_gfortran_caf_get_by_ref): Fixed style.
+	(send_by_ref): Token is now stored at the correct position preventing
+	inaccessible tokens, memory loss and possibly crashes.
+
+2016-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77707
+	io/transfer.c (next_record): Flush before calculating next_record.
+	Correctly calculate.
+
+2016-09-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48298
+	* io/inquire.c (inquire_via_unit): Adjust error check for the
+	two possible internal unit KINDs.
+	* io/io.h: Adjust defines for is_internal_unit and
+	is_char4_unit. (gfc_unit): Add internal unit data to structure.
+	(get_internal_unit): Change declaration to set_internal_unit.
+	(free_internal_unit): Change name to stash_internal_unit_number.
+	(get_unique_unit_number): Adjust parameter argument.
+	Define IOPARM_DT_HAS_UDTIO. (gfc_saved_unit): New structure.
+	* io/list_read.c (next_char_internal): Use is_char4_unit.
+	* io/open.c (st_open): Adjust call to get_unique_unit_number.
+	* io/transfer.c (write_block): Use is_char4_unit.
+	(data_transfer_init): Update check for unit numbers.
+	(st_read_done): Free the various allocated memories used for the
+	internal units and stash the negative unit number and pointer to unit
+	structure to allow reuse. (st_write_done): Likewise stash the freed
+	unit.
+	* io/unit.c: Create a fixed size buffer of 16 gfc_saved_unit's to use
+	as a stack to save newunit unit numbers and unit structure for reuse.
+	(get_external_unit): Change name to get_gfc_unit to better
+	reflect what it does. (find_unit): Change call to get_gfc_unit.
+	(find_or_create_unit): Likewise. (get_internal_unit): Change
+	name to set_internal_unit. Move internal unit from the dtp
+	structure to the gfc_unit structure so that it can be passed to
+	child I/O statements through the UNIT.
+	(free_internal_unit): Change name to stash_internal_unit_number.
+	Push the common.unit number onto the newunit stack, saving it
+	for possible reuse later. (get_unit): Set the internal unit
+	KIND. Use get_unique_unit_number to get a negative unit number
+	for the internal unit. Use get_gfc_unit to get the unit structure
+	and use set_internal_unit to initialize it.
+	(init_units): Initialize the newunit stack.
+	(get_unique_unit_number): Check the stack for an available unit
+	number and use it. If none there get the next most negative
+	number. (close_units): Free any unit structures pointed to from the save
+	stack.
+
+2016-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (getosrandom): Use rand_s() on
+	MinGW-w64. Fix bounds overflow in fallback code.
+
+2016-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add caf_reference_type.
+	* caf/mpi.c: Adapted signature of caf_register().
+	* caf/single.c (struct caf_single_token): Added to keep the pointer
+	to the memory registered and array descriptor.
+	(caf_internal_error): Added convenience interface.
+	(_gfortran_caf_register): Adapted to work with caf_single_token and
+	return memory in the array descriptor.
+	(_gfortran_caf_deregister): Same.
+	(assign_char1_from_char4): Fixed style.
+	(convert_type): Fixed incorrect conversion.
+	(_gfortran_caf_get): Adapted to work with caf_single_token.
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Same.
+	(copy_data): Added to stop repeating it in all _by_ref functions.
+	(get_for_ref): Recursive getting of coarray data using a chain of
+	references.
+	(_gfortran_caf_get_by_ref): Driver for computing the memory needed for
+	the get and checking properties of the operation.
+	(send_by_ref): Same as get_for_ref but for sending data.
+	(_gfortran_caf_send_by_ref): Same like caf_get_by_ref but for sending.
+	(_gfortran_caf_sendget_by_ref): Uses get_by_ref and send_by_ref to
+	implement sendget for reference chains.
+	(_gfortran_caf_atomic_define): Adapted to work with caf_single_token.
+	(_gfortran_caf_atomic_ref): Likewise.
+	(_gfortran_caf_atomic_cas): Likewise.
+	(_gfortran_caf_atomic_op): Likewise.
+	(_gfortran_caf_event_post): Likewise.
+	(_gfortran_caf_event_wait): Likewise.
+	(_gfortran_caf_event_query): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+
+2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77507
+ 	* ieee/ieee_arithmetic.F90 (IEEE_VALUE_4,IEEE_VALUE_8,IEEE_VALULE_10,
+	IEEE_VALUE_16):  Use correct keyword.
+
+2016-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77393
+	* io/write_float.def (build_float_string): Recognize when the
+	result will not fit in the user provided, star fill, and exit
+	early.
+
+2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77393
+	* io/write.c (kind_from_size): New function to calculate required buffer
+	size based on kind type. (select_buffer, select_string): Use new
+	function. (write_float_0, write_real, write_real_g0, write_complex):
+	Adjust calls to pass parameters needed by new function.
+
+2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libgfortran/48298
+	* gfortran.map : Flag _st_set_nml_dtio_var and
+	_gfortran_transfer_derived.
+	* io/format.c (format_lex): Detect DTIO formatting.
+	(parse_format_list): Parse the DTIO format.
+	(next_format): Include FMT_DT.
+	* io/format.h : Likewise. Add structure 'udf' to structure
+	'fnode' to carry the IOTYPE string and the 'vlist'.
+	* io/io.h : Add prototypes for the two types of DTIO subroutine
+	and a typedef for gfc_class. Also, add to 'namelist_type'
+	fields for the pointer to the DTIO procedure and the vtable.
+	Add fields to struct st_parameter_dt for pointers to the two
+	types of DTIO subroutine. Add to gfc_unit DTIO specific fields.
+	(internal_proto): Add prototype for 'read_user_defined' and
+	'write_user_defined'.
+	* io/list_read.c (check_buffers): Use the 'current_unit' field.
+	(unget_char): Likewise.
+	(eat_spaces): Likewise.
+	(list_formatted_read_scalar): For case BT_CLASS, call the DTIO
+	procedure.
+	(nml_get_obj_data): Likewise when DTIO procedure is present,.
+	* io/transfer.c : Export prototypes for 'transfer_derived' and
+	'transfer_derived_write'.
+	(unformatted_read): For case BT_CLASS, call the DTIO procedure.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write: Likewise.
+	(transfer_derived): New function.
+	(data_transfer_init): Set last_char if no child_dtio.
+	(finalize_transfer): Return if child_dtio set.
+	(st_write_done): Add condition for child_dtio not set.
+	Add extra arguments for st_set_nml_var prototype.
+	(set_nml_var): New function that contains the contents of the
+	old version of st_set_nml_var. Also sets the 'dtio_sub' and
+	'vtable' fields of the 'nml' structure.
+	(st_set_nml_var): Now just calls set_nml_var with 'dtio_sub'
+	and 'vtable' NULL.
+	(st_set_nml_dtio_var): New function that calls set_nml_var.
+	* io/unit.c (get_external_unit): If the found unit child_dtio
+	is non zero, don't do any mutex locking/unlocking.  Just
+	return the unit.
+	* io/unix.c (tempfile_open): Revert to C style comment.
+	* io/write.c (list_formatted_write_scalar): Do the DTIO call.
+	(nml_write_obj): Add BT_CLASS and do the DTIO call.
+
+2016-08-29  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac (nvptx-*): Hardwire newlib.
+	* configure: Rebuilt.
+
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (xor_keys): New array with "secret" keys.
+	(scramble_seed): XOR given seed with xor_keys array rather than
+	shuffling bytes.
+	(unscramble_seed): Remove function.
+	(random_seed_i4): Use new scramble_seed.
+	(random_seed_i8): Likewise.
+
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (master_init): New variable.
+	(init_rand_state): Move below getosrandom (), maybe initialize
+	master_state.
+	(random_seed_i4): If called with no arguments, set master_init to
+	false, and reinitialize. If called with PUT=, set master_init to
+	true.
+	(random_seed_i8): Likewise.
+
+2016-08-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* intrinsics/random.c: Include <stdlib.h>.
+
+2016-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c: Replace KISS with xorshift1024* using
+	per-thread state.
+	* runtime/main.c (init): Don't call random_seed_i4.
+
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/libcaf.h: Add parameter stat to caf_get() and
@@ -12,14 +386,15 @@
 
 	PR libgfortran/48852
 	* io/write.c: Cleaned up whitespace.
-	(write_d, write_e, write_f, write_es, write_en): Use new helper function
-	write_float_0. (write_float_0): New helper function.
+	(write_d, write_e, write_f, write_es, write_en): Use new helper
+	function write_float_0.
+	(write_float_0): New helper function.
 	(get_precision, select_buffer, select_string, write_float_string): New
-	helper functions used in remaining float writing functions. Helper function
-	write_float_string now contains code for writing to kind=4 character
-	internal units.
-	(write_real): Modified to establish working buffers at this level and to
-	use new helper functions.
+	helper functions used in remaining float writing functions.
+	Helper function write_float_string now contains code for writing
+	to kind=4 character internal units.
+	(write_real): Modified to establish working buffers at this level
+	and to 	use new helper functions.
 	(write_real_g0): Likewise modified.
 	(write_complex): Likewise modified. Gets both float strings before
 	output so that final lengths can be determined which allows right
@@ -85,7 +460,7 @@
 	(read_character): Remove condition testing c = '!' which is now inside
 	the is_separator macro. (parse_real): Reject '!' unless in namelist mode.
 	(read_complex): Reject '!' unless in namelist mode. (read_real): Likewise
-	reject '!'. 
+	reject '!'.
 
 2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

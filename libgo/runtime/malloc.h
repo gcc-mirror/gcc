@@ -82,11 +82,11 @@
 
 typedef struct MCentral	MCentral;
 typedef struct MHeap	MHeap;
-typedef struct MSpan	MSpan;
-typedef struct MStats	MStats;
-typedef struct MLink	MLink;
-typedef struct MTypes	MTypes;
-typedef struct GCStats	GCStats;
+typedef struct mspan	MSpan;
+typedef struct mstats	MStats;
+typedef struct mlink	MLink;
+typedef struct mtypes	MTypes;
+typedef struct gcstats	GCStats;
 
 enum
 {
@@ -100,10 +100,10 @@ enum
 {
 	// Computed constant.  The definition of MaxSmallSize and the
 	// algorithm in msize.c produce some number of different allocation
-	// size classes.  NumSizeClasses is that number.  It's needed here
+	// size classes.  _NumSizeClasses is that number.  It's needed here
 	// because there are static arrays of this length; when msize runs its
 	// size choosing algorithm it double-checks that NumSizeClasses agrees.
-	NumSizeClasses = 67,
+	// _NumSizeClasses is defined in runtime2.go as 67.
 
 	// Tunable constants.
 	MaxSmallSize = 32<<10,
@@ -148,13 +148,6 @@ enum
 #else
 #define	MaxMem	((uintptr)-1)
 #endif
-
-// A generic linked list of blocks.  (Typically the block is bigger than sizeof(MLink).)
-struct MLink
-{
-	MLink *next;
-};
-
 // SysAlloc obtains a large chunk of zeroed memory from the
 // operating system, typically on the order of a hundred kilobytes
 // or a megabyte.
@@ -191,7 +184,8 @@ struct MLink
 // SysFault marks a (already SysAlloc'd) region to fault
 // if accessed.  Used only for debugging the runtime.
 
-void*	runtime_SysAlloc(uintptr nbytes, uint64 *stat);
+void*	runtime_SysAlloc(uintptr nbytes, uint64 *stat)
+  __asm__ (GOSYM_PREFIX "runtime.sysAlloc");
 void	runtime_SysFree(void *v, uintptr nbytes, uint64 *stat);
 void	runtime_SysUnused(void *v, uintptr nbytes);
 void	runtime_SysUsed(void *v, uintptr nbytes);
@@ -223,68 +217,15 @@ void	runtime_FixAlloc_Init(FixAlloc *f, uintptr size, void (*first)(void*, byte*
 void*	runtime_FixAlloc_Alloc(FixAlloc *f);
 void	runtime_FixAlloc_Free(FixAlloc *f, void *p);
 
-
-// Statistics.
-// Shared with Go: if you edit this structure, also edit type MemStats in mem.go.
-struct MStats
-{
-	// General statistics.
-	uint64	alloc;		// bytes allocated and still in use
-	uint64	total_alloc;	// bytes allocated (even if freed)
-	uint64	sys;		// bytes obtained from system (should be sum of xxx_sys below, no locking, approximate)
-	uint64	nlookup;	// number of pointer lookups
-	uint64	nmalloc;	// number of mallocs
-	uint64	nfree;  // number of frees
-
-	// Statistics about malloc heap.
-	// protected by mheap.Lock
-	uint64	heap_alloc;	// bytes allocated and still in use
-	uint64	heap_sys;	// bytes obtained from system
-	uint64	heap_idle;	// bytes in idle spans
-	uint64	heap_inuse;	// bytes in non-idle spans
-	uint64	heap_released;	// bytes released to the OS
-	uint64	heap_objects;	// total number of allocated objects
-
-	// Statistics about allocation of low-level fixed-size structures.
-	// Protected by FixAlloc locks.
-	uint64	stacks_inuse;	// bootstrap stacks
-	uint64	stacks_sys;
-	uint64	mspan_inuse;	// MSpan structures
-	uint64	mspan_sys;
-	uint64	mcache_inuse;	// MCache structures
-	uint64	mcache_sys;
-	uint64	buckhash_sys;	// profiling bucket hash table
-	uint64	gc_sys;
-	uint64	other_sys;
-
-	// Statistics about garbage collector.
-	// Protected by mheap or stopping the world during GC.
-	uint64	next_gc;	// next GC (in heap_alloc time)
-	uint64  last_gc;	// last GC (in absolute time)
-	uint64	pause_total_ns;
-	uint64	pause_ns[256];
-	uint64	pause_end[256];
-	uint32	numgc;
-	float64	gc_cpu_fraction;
-	bool	enablegc;
-	bool	debuggc;
-
-	// Statistics about allocation size classes.
-	struct {
-		uint32 size;
-		uint64 nmalloc;
-		uint64 nfree;
-	} by_size[NumSizeClasses];
-};
-
-extern MStats mstats
-  __asm__ (GOSYM_PREFIX "runtime.memStats");
-void	runtime_updatememstats(GCStats *stats);
+extern MStats *mstats(void)
+  __asm__ (GOSYM_PREFIX "runtime.getMstats");
+void	runtime_updatememstats(GCStats *stats)
+  __asm__ (GOSYM_PREFIX "runtime.updatememstats");
 
 // Size classes.  Computed and initialized by InitSizes.
 //
 // SizeToClass(0 <= n <= MaxSmallSize) returns the size class,
-//	1 <= sizeclass < NumSizeClasses, for n.
+//	1 <= sizeclass < _NumSizeClasses, for n.
 //	Size class 0 is reserved to mean "not small".
 //
 // class_to_size[i] = largest size in class i
@@ -292,42 +233,16 @@ void	runtime_updatememstats(GCStats *stats);
 //	making new objects in class i
 
 int32	runtime_SizeToClass(int32);
-uintptr	runtime_roundupsize(uintptr);
-extern	int32	runtime_class_to_size[NumSizeClasses];
-extern	int32	runtime_class_to_allocnpages[NumSizeClasses];
+uintptr	runtime_roundupsize(uintptr)
+  __asm__(GOSYM_PREFIX "runtime.roundupsize");
+extern	int32	runtime_class_to_size[_NumSizeClasses];
+extern	int32	runtime_class_to_allocnpages[_NumSizeClasses];
 extern	int8	runtime_size_to_class8[1024/8 + 1];
 extern	int8	runtime_size_to_class128[(MaxSmallSize-1024)/128 + 1];
 extern	void	runtime_InitSizes(void);
 
 
-typedef struct MCacheList MCacheList;
-struct MCacheList
-{
-	MLink *list;
-	uint32 nlist;
-};
-
-// Per-thread (in Go, per-P) cache for small objects.
-// No locking needed because it is per-thread (per-P).
-struct MCache
-{
-	// The following members are accessed on every malloc,
-	// so they are grouped here for better caching.
-	int32 next_sample;		// trigger heap sample after allocating this many bytes
-	intptr local_cachealloc;	// bytes allocated (or freed) from cache since last lock of heap
-	// Allocator cache for tiny objects w/o pointers.
-	// See "Tiny allocator" comment in malloc.goc.
-	byte*	tiny;
-	uintptr	tinysize;
-	// The rest is not accessed on every malloc.
-	MSpan*	alloc[NumSizeClasses];	// spans to allocate from
-	MCacheList free[NumSizeClasses];// lists of explicitly freed objects
-	// Local allocator stats, flushed during GC.
-	uintptr local_nlookup;		// number of pointer lookups
-	uintptr local_largefree;	// bytes freed for large objects (>MaxSmallSize)
-	uintptr local_nlargefree;	// number of frees for large objects (>MaxSmallSize)
-	uintptr local_nsmallfree[NumSizeClasses];	// number of frees for small objects (<=MaxSmallSize)
-};
+typedef struct mcachelist MCacheList;
 
 MSpan*	runtime_MCache_Refill(MCache *c, int32 sizeclass);
 void	runtime_MCache_Free(MCache *c, MLink *p, int32 sizeclass, uintptr size);
@@ -364,11 +279,6 @@ enum
 	MTypes_Words = 2,
 	MTypes_Bytes = 3,
 };
-struct MTypes
-{
-	byte	compression;	// one of MTypes_*
-	uintptr	data;
-};
 
 enum
 {
@@ -380,13 +290,7 @@ enum
 	// if that happens.
 };
 
-typedef struct Special Special;
-struct Special
-{
-	Special*	next;	// linked list in span
-	uint16		offset;	// span offset of object
-	byte		kind;	// kind of Special
-};
+typedef struct special Special;
 
 // The described object has a finalizer set for it.
 typedef struct SpecialFinalizer SpecialFinalizer;
@@ -399,7 +303,7 @@ struct SpecialFinalizer
 };
 
 // The described object is being heap profiled.
-typedef struct Bucket Bucket; // from mprof.goc
+typedef struct bucket Bucket; // from mprof.go
 typedef struct SpecialProfile SpecialProfile;
 struct SpecialProfile
 {
@@ -414,33 +318,6 @@ enum
 	MSpanFree,
 	MSpanListHead,
 	MSpanDead,
-};
-struct MSpan
-{
-	MSpan	*next;		// in a span linked list
-	MSpan	*prev;		// in a span linked list
-	PageID	start;		// starting page number
-	uintptr	npages;		// number of pages in span
-	MLink	*freelist;	// list of free objects
-	// sweep generation:
-	// if sweepgen == h->sweepgen - 2, the span needs sweeping
-	// if sweepgen == h->sweepgen - 1, the span is currently being swept
-	// if sweepgen == h->sweepgen, the span is swept and ready to use
-	// h->sweepgen is incremented by 2 after every GC
-	uint32	sweepgen;
-	uint16	ref;		// capacity - number of objects in freelist
-	uint8	sizeclass;	// size class
-	bool	incache;	// being used by an MCache
-	uint8	state;		// MSpanInUse etc
-	uint8	needzero;	// needs to be zeroed before allocation
-	uintptr	elemsize;	// computed from sizeclass or from npages
-	int64   unusedsince;	// First time spotted by GC in MSpanFree state
-	uintptr npreleased;	// number of pages released to the OS
-	byte	*limit;		// end of data in span
-	MTypes	types;		// types of allocated objects in this span
-	Lock	specialLock;	// guards specials list
-	Special	*specials;	// linked list of special records sorted by offset.
-	MLink	*freebuf;	// objects freed explicitly, not incorporated into freelist yet
 };
 
 void	runtime_MSpan_Init(MSpan *span, PageID start, uintptr npages);
@@ -463,7 +340,7 @@ struct MCentral
 	Lock;
 	int32 sizeclass;
 	MSpan nonempty;	// list of spans with a free object
-	MSpan empty;	// list of spans with no free objects (or cached in an MCache)
+	MSpan mempty;	// list of spans with no free objects (or cached in an MCache)
 	int32 nfree;	// # of objects available in nonempty spans
 };
 
@@ -509,7 +386,7 @@ struct MHeap
 	struct {
 		MCentral;
 		byte pad[64];
-	} central[NumSizeClasses];
+	} central[_NumSizeClasses];
 
 	FixAlloc spanalloc;	// allocator for Span*
 	FixAlloc cachealloc;	// allocator for MCache*
@@ -520,7 +397,7 @@ struct MHeap
 	// Malloc stats.
 	uint64 largefree;	// bytes freed for large objects (>MaxSmallSize)
 	uint64 nlargefree;	// number of frees for large objects (>MaxSmallSize)
-	uint64 nsmallfree[NumSizeClasses];	// number of frees for small objects (<=MaxSmallSize)
+	uint64 nsmallfree[_NumSizeClasses];	// number of frees for small objects (<=MaxSmallSize)
 };
 extern MHeap runtime_mheap;
 
@@ -537,7 +414,8 @@ void	runtime_MHeap_Scavenger(void*);
 void	runtime_MHeap_SplitSpan(MHeap *h, MSpan *s);
 
 void*	runtime_mallocgc(uintptr size, uintptr typ, uint32 flag);
-void*	runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat);
+void*	runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
+  __asm__(GOSYM_PREFIX "runtime.persistentalloc");
 int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s);
 void	runtime_gc(int32 force);
 uintptr	runtime_sweepone(void);
@@ -550,11 +428,16 @@ extern	int32	runtime_checking;
 void	runtime_markspan(void *v, uintptr size, uintptr n, bool leftover);
 void	runtime_unmarkspan(void *v, uintptr size);
 void	runtime_purgecachedstats(MCache*);
-void*	runtime_cnew(const Type*);
-void*	runtime_cnewarray(const Type*, intgo);
-void	runtime_tracealloc(void*, uintptr, uintptr);
-void	runtime_tracefree(void*, uintptr);
-void	runtime_tracegc(void);
+void*	runtime_cnew(const Type*)
+  __asm__(GOSYM_PREFIX "runtime.newobject");
+void*	runtime_cnewarray(const Type*, intgo)
+  __asm__(GOSYM_PREFIX "runtime.newarray");
+void	runtime_tracealloc(void*, uintptr, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.tracealloc");
+void	runtime_tracefree(void*, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.tracefree");
+void	runtime_tracegc(void)
+  __asm__ (GOSYM_PREFIX "runtime.tracegc");
 
 uintptr	runtime_gettype(void*);
 
@@ -576,10 +459,14 @@ struct Obj
 	uintptr	ti;	// type info
 };
 
-void	runtime_MProf_Malloc(void*, uintptr);
-void	runtime_MProf_Free(Bucket*, uintptr, bool);
-void	runtime_MProf_GC(void);
-void	runtime_iterate_memprof(void (*callback)(Bucket*, uintptr, Location*, uintptr, uintptr, uintptr));
+void	runtime_MProf_Malloc(void*, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.mProf_Malloc");
+void	runtime_MProf_Free(Bucket*, uintptr, bool)
+  __asm__ (GOSYM_PREFIX "runtime.mProf_Free");
+void	runtime_MProf_GC(void)
+  __asm__ (GOSYM_PREFIX "runtime.mProf_GC");
+void	runtime_iterate_memprof(FuncVal* callback)
+  __asm__ (GOSYM_PREFIX "runtime.iterate_memprof");
 int32	runtime_gcprocs(void);
 void	runtime_helpgc(int32 nproc);
 void	runtime_gchelper(void);
@@ -588,7 +475,8 @@ G*	runtime_wakefing(void);
 extern bool	runtime_fingwait;
 extern bool	runtime_fingwake;
 
-void	runtime_setprofilebucket(void *p, Bucket *b);
+void	runtime_setprofilebucket(void *p, Bucket *b)
+  __asm__ (GOSYM_PREFIX "runtime.setprofilebucket");
 
 struct __go_func_type;
 struct __go_ptr_type;
@@ -647,14 +535,12 @@ void	runtime_gc_g_ptr(Eface*);
 void	runtime_gc_itab_ptr(Eface*);
 
 void	runtime_memorydump(void);
-int32	runtime_setgcpercent(int32);
+int32	runtime_setgcpercent(int32)
+  __asm__ (GOSYM_PREFIX "runtime.setgcpercent");
 
 // Value we use to mark dead pointers when GODEBUG=gcdead=1.
 #define PoisonGC ((uintptr)0xf969696969696969ULL)
 #define PoisonStack ((uintptr)0x6868686868686868ULL)
 
 struct Workbuf;
-void	runtime_MProf_Mark(struct Workbuf**, void (*)(struct Workbuf**, Obj));
 void	runtime_proc_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
-void	runtime_time_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
-void	runtime_netpoll_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -32,8 +32,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<A[]> a = std::make_unique<A[]>(3);
   VERIFY( a != nullptr );
   VERIFY( a[0].b && a[1].b && a[2].b );

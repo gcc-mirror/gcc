@@ -26,7 +26,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00326.html
 void test06()
 {
-  bool test __attribute__((unused)) = true;
   const wchar_t carray01[] = L"mos def & talib kweli are black star";
 
   // normal

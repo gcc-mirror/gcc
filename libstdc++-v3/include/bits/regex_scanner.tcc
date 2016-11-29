@@ -210,7 +210,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       auto __c = *_M_current++;
 
-      if (__c == '[')
+      if (__c == '-')
+	_M_token = _S_token_bracket_dash;
+      else if (__c == '[')
 	{
 	  if (_M_current == _M_end)
 	    __throw_regex_error(regex_constants::error_brack,

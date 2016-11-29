@@ -112,6 +112,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
+#include "optabs-libfuncs.h"
+#include "tree-eh.h"
+#include "targhooks.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -184,6 +187,9 @@ static struct
 
   /* Number of fp fused multiply-add ops inserted.  */
   int fmas_inserted;
+
+  /* Number of divmod calls inserted.  */
+  int divmod_calls_inserted;
 } widen_mul_stats;
 
 /* The instance of "struct occurrence" representing the highest
@@ -1925,25 +1931,32 @@ make_pass_cse_sincos (gcc::context *ctxt)
   return new pass_cse_sincos (ctxt);
 }
 
-/* A symbolic number is used to detect byte permutation and selection
-   patterns.  Therefore the field N contains an artificial number
-   consisting of octet sized markers:
+/* A symbolic number structure is used to detect byte permutation and selection
+   patterns of a source.  To achieve that, its field N contains an artificial
+   number consisting of BITS_PER_MARKER sized markers tracking where does each
+   byte come from in the source:
 
-   0    - target byte has the value 0
-   FF   - target byte has an unknown value (eg. due to sign extension)
-   1..size - marker value is the target byte index minus one.
+   0	   - target byte has the value 0
+   FF	   - target byte has an unknown value (eg. due to sign extension)
+   1..size - marker value is the byte index in the source (0 for lsb).
 
    To detect permutations on memory sources (arrays and structures), a symbolic
-   number is also associated a base address (the array or structure the load is
-   made from), an offset from the base address and a range which gives the
-   difference between the highest and lowest accessed memory location to make
-   such a symbolic number. The range is thus different from size which reflects
-   the size of the type of current expression. Note that for non memory source,
-   range holds the same value as size.
+   number is also associated:
+   - a base address BASE_ADDR and an OFFSET giving the address of the source;
+   - a range which gives the difference between the highest and lowest accessed
+     memory location to make such a symbolic number;
+   - the address SRC of the source element of lowest address as a convenience
+     to easily get BASE_ADDR + offset + lowest bytepos.
 
-   For instance, for an array char a[], (short) a[0] | (short) a[3] would have
-   a size of 2 but a range of 4 while (short) a[0] | ((short) a[0] << 1) would
-   still have a size of 2 but this time a range of 1.  */
+   Note 1: the range is different from size as size reflects the size of the
+   type of the current expression.  For instance, for an array char a[],
+   (short) a[0] | (short) a[3] would have a size of 2 but a range of 4 while
+   (short) a[0] | ((short) a[0] << 1) would still have a size of 2 but this
+   time a range of 1.
+
+   Note 2: for non-memory sources, range holds the same value as size.
+
+   Note 3: SRC points to the SSA_NAME in case of non-memory source.  */
 
 struct symbolic_number {
   uint64_t n;
@@ -1951,6 +1964,7 @@ struct symbolic_number {
   tree base_addr;
   tree offset;
   HOST_WIDE_INT bytepos;
+  tree src;
   tree alias_set;
   tree vuse;
   unsigned HOST_WIDE_INT range;
@@ -2055,6 +2069,7 @@ init_symbolic_number (struct symbolic_number *n, tree src)
     return false;
 
   n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
+  n->src = src;
 
   /* Set up the symbolic number N by setting each byte to a value between 1 and
      the byte size of rhs1.  The highest order byte is set to n->size and the
@@ -2179,6 +2194,7 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
       uint64_t inc;
       HOST_WIDE_INT start_sub, end_sub, end1, end2, end;
       struct symbolic_number *toinc_n_ptr, *n_end;
+      basic_block bb1, bb2;
 
       if (!n1->base_addr || !n2->base_addr
 	  || !operand_equal_p (n1->base_addr, n2->base_addr, 0))
@@ -2192,14 +2208,19 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 	{
 	  n_start = n1;
 	  start_sub = n2->bytepos - n1->bytepos;
-	  source_stmt = source_stmt1;
 	}
       else
 	{
 	  n_start = n2;
 	  start_sub = n1->bytepos - n2->bytepos;
-	  source_stmt = source_stmt2;
 	}
+
+      bb1 = gimple_bb (source_stmt1);
+      bb2 = gimple_bb (source_stmt2);
+      if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	source_stmt = source_stmt1;
+      else
+	source_stmt = source_stmt2;
 
       /* Find the highest address at which a load is performed and
 	 compute related info.  */
@@ -2257,6 +2278,7 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
   n->vuse = n_start->vuse;
   n->base_addr = n_start->base_addr;
   n->offset = n_start->offset;
+  n->src = n_start->src;
   n->bytepos = n_start->bytepos;
   n->type = n_start->type;
   size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
@@ -2498,13 +2520,15 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 static gimple *
 find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
 {
-  /* The number which the find_bswap_or_nop_1 result should match in order
-     to have a full byte swap.  The number is shifted to the right
-     according to the size of the symbolic number before using it.  */
+  unsigned rsize;
+  uint64_t tmpn, mask;
+/* The number which the find_bswap_or_nop_1 result should match in order
+   to have a full byte swap.  The number is shifted to the right
+   according to the size of the symbolic number before using it.  */
   uint64_t cmpxchg = CMPXCHG;
   uint64_t cmpnop = CMPNOP;
 
-  gimple *source_stmt;
+  gimple *ins_stmt;
   int limit;
 
   /* The last parameter determines the depth search limit.  It usually
@@ -2514,33 +2538,43 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
      in libgcc, and for initial shift/and operation of the src operand.  */
   limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
   limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
-  source_stmt = find_bswap_or_nop_1 (stmt, n, limit);
+  ins_stmt = find_bswap_or_nop_1 (stmt, n, limit);
 
-  if (!source_stmt)
+  if (!ins_stmt)
     return NULL;
 
   /* Find real size of result (highest non-zero byte).  */
   if (n->base_addr)
-    {
-      unsigned HOST_WIDE_INT rsize;
-      uint64_t tmpn;
+    for (tmpn = n->n, rsize = 0; tmpn; tmpn >>= BITS_PER_MARKER, rsize++);
+  else
+    rsize = n->range;
 
-      for (tmpn = n->n, rsize = 0; tmpn; tmpn >>= BITS_PER_MARKER, rsize++);
-      if (BYTES_BIG_ENDIAN && n->range != rsize)
-	/* This implies an offset, which is currently not handled by
-	   bswap_replace.  */
-	return NULL;
-      n->range = rsize;
-    }
-
-  /* Zero out the extra bits of N and CMP*.  */
+  /* Zero out the bits corresponding to untouched bytes in original gimple
+     expression.  */
   if (n->range < (int) sizeof (int64_t))
     {
-      uint64_t mask;
-
       mask = ((uint64_t) 1 << (n->range * BITS_PER_MARKER)) - 1;
       cmpxchg >>= (64 / BITS_PER_MARKER - n->range) * BITS_PER_MARKER;
       cmpnop &= mask;
+    }
+
+  /* Zero out the bits corresponding to unused bytes in the result of the
+     gimple expression.  */
+  if (rsize < n->range)
+    {
+      if (BYTES_BIG_ENDIAN)
+	{
+	  mask = ((uint64_t) 1 << (rsize * BITS_PER_MARKER)) - 1;
+	  cmpxchg &= mask;
+	  cmpnop >>= (n->range - rsize) * BITS_PER_MARKER;
+	}
+      else
+	{
+	  mask = ((uint64_t) 1 << (rsize * BITS_PER_MARKER)) - 1;
+	  cmpxchg >>= (n->range - rsize) * BITS_PER_MARKER;
+	  cmpnop &= mask;
+	}
+      n->range = rsize;
     }
 
   /* A complete byte swap should make the symbolic number to start with
@@ -2558,7 +2592,7 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
     return NULL;
 
   n->range *= BITS_PER_UNIT;
-  return source_stmt;
+  return ins_stmt;
 }
 
 namespace {
@@ -2607,7 +2641,7 @@ public:
    changing of basic block.  */
 
 static bool
-bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
+bswap_replace (gimple *cur_stmt, gimple *ins_stmt, tree fndecl,
 	       tree bswap_type, tree load_type, struct symbolic_number *n,
 	       bool bswap)
 {
@@ -2616,50 +2650,31 @@ bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
   gimple *bswap_stmt;
 
   gsi = gsi_for_stmt (cur_stmt);
-  src = gimple_assign_rhs1 (src_stmt);
+  src = n->src;
   tgt = gimple_assign_lhs (cur_stmt);
 
   /* Need to load the value from memory first.  */
   if (n->base_addr)
     {
-      gimple_stmt_iterator gsi_ins = gsi_for_stmt (src_stmt);
+      gimple_stmt_iterator gsi_ins = gsi_for_stmt (ins_stmt);
       tree addr_expr, addr_tmp, val_expr, val_tmp;
       tree load_offset_ptr, aligned_load_type;
       gimple *addr_stmt, *load_stmt;
       unsigned align;
       HOST_WIDE_INT load_offset = 0;
+      basic_block ins_bb, cur_bb;
+
+      ins_bb = gimple_bb (ins_stmt);
+      cur_bb = gimple_bb (cur_stmt);
+      if (!dominated_by_p (CDI_DOMINATORS, cur_bb, ins_bb))
+	return false;
 
       align = get_object_alignment (src);
-      /* If the new access is smaller than the original one, we need
-	 to perform big endian adjustment.  */
-      if (BYTES_BIG_ENDIAN)
-	{
-	  HOST_WIDE_INT bitsize, bitpos;
-	  machine_mode mode;
-	  int unsignedp, reversep, volatilep;
-	  tree offset;
-
-	  get_inner_reference (src, &bitsize, &bitpos, &offset, &mode,
-			       &unsignedp, &reversep, &volatilep);
-	  if (n->range < (unsigned HOST_WIDE_INT) bitsize)
-	    {
-	      load_offset = (bitsize - n->range) / BITS_PER_UNIT;
-	      unsigned HOST_WIDE_INT l
-		= (load_offset * BITS_PER_UNIT) & (align - 1);
-	      if (l)
-		align = l & -l;
-	    }
-	}
-
-      if (bswap
-	  && align < GET_MODE_ALIGNMENT (TYPE_MODE (load_type))
-	  && SLOW_UNALIGNED_ACCESS (TYPE_MODE (load_type), align))
-	return false;
 
       /* Move cur_stmt just before  one of the load of the original
 	 to ensure it has the same VUSE.  See PR61517 for what could
 	 go wrong.  */
-      if (gimple_bb (cur_stmt) != gimple_bb (src_stmt))
+      if (gimple_bb (cur_stmt) != gimple_bb (ins_stmt))
 	reset_flow_sensitive_info (gimple_assign_lhs (cur_stmt));
       gsi_move_before (&gsi, &gsi_ins);
       gsi = gsi_for_stmt (cur_stmt);
@@ -2834,6 +2849,7 @@ pass_optimize_bswap::execute (function *fun)
 
   memset (&nop_stats, 0, sizeof (nop_stats));
   memset (&bswap_stats, 0, sizeof (bswap_stats));
+  calculate_dominance_info (CDI_DOMINATORS);
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -2845,7 +2861,7 @@ pass_optimize_bswap::execute (function *fun)
 	 variant wouldn't be detected.  */
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
         {
-	  gimple *src_stmt, *cur_stmt = gsi_stmt (gsi);
+	  gimple *ins_stmt, *cur_stmt = gsi_stmt (gsi);
 	  tree fndecl = NULL_TREE, bswap_type = NULL_TREE, load_type;
 	  enum tree_code code;
 	  struct symbolic_number n;
@@ -2878,9 +2894,9 @@ pass_optimize_bswap::execute (function *fun)
 	      continue;
 	    }
 
-	  src_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
+	  ins_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
 
-	  if (!src_stmt)
+	  if (!ins_stmt)
 	    continue;
 
 	  switch (n.range)
@@ -2914,7 +2930,7 @@ pass_optimize_bswap::execute (function *fun)
 	  if (bswap && !fndecl && n.range != 16)
 	    continue;
 
-	  if (bswap_replace (cur_stmt, src_stmt, fndecl, bswap_type, load_type,
+	  if (bswap_replace (cur_stmt, ins_stmt, fndecl, bswap_type, load_type,
 			     &n, bswap))
 	    changed = true;
 	}
@@ -3793,6 +3809,213 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
   return true;
 }
 
+/* Return true if target has support for divmod.  */
+
+static bool
+target_supports_divmod_p (optab divmod_optab, optab div_optab, machine_mode mode) 
+{
+  /* If target supports hardware divmod insn, use it for divmod.  */
+  if (optab_handler (divmod_optab, mode) != CODE_FOR_nothing)
+    return true;
+
+  /* Check if libfunc for divmod is available.  */
+  rtx libfunc = optab_libfunc (divmod_optab, mode);
+  if (libfunc != NULL_RTX)
+    {
+      /* If optab_handler exists for div_optab, perhaps in a wider mode,
+	 we don't want to use the libfunc even if it exists for given mode.  */ 
+      for (machine_mode div_mode = mode;
+	   div_mode != VOIDmode;
+	   div_mode = GET_MODE_WIDER_MODE (div_mode))
+	if (optab_handler (div_optab, div_mode) != CODE_FOR_nothing)
+	  return false;
+
+      return targetm.expand_divmod_libfunc != NULL;
+    }
+  
+  return false; 
+}
+
+/* Check if stmt is candidate for divmod transform.  */
+
+static bool
+divmod_candidate_p (gassign *stmt)
+{
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+  enum machine_mode mode = TYPE_MODE (type);
+  optab divmod_optab, div_optab;
+
+  if (TYPE_UNSIGNED (type))
+    {
+      divmod_optab = udivmod_optab;
+      div_optab = udiv_optab;
+    }
+  else
+    {
+      divmod_optab = sdivmod_optab;
+      div_optab = sdiv_optab;
+    }
+
+  tree op1 = gimple_assign_rhs1 (stmt);
+  tree op2 = gimple_assign_rhs2 (stmt);
+
+  /* Disable the transform if either is a constant, since division-by-constant
+     may have specialized expansion.  */
+  if (CONSTANT_CLASS_P (op1) || CONSTANT_CLASS_P (op2))
+    return false;
+
+  /* Exclude the case where TYPE_OVERFLOW_TRAPS (type) as that should
+     expand using the [su]divv optabs.  */
+  if (TYPE_OVERFLOW_TRAPS (type))
+    return false;
+  
+  if (!target_supports_divmod_p (divmod_optab, div_optab, mode)) 
+    return false;
+
+  return true;
+}
+
+/* This function looks for:
+   t1 = a TRUNC_DIV_EXPR b;
+   t2 = a TRUNC_MOD_EXPR b;
+   and transforms it to the following sequence:
+   complex_tmp = DIVMOD (a, b);
+   t1 = REALPART_EXPR(a);
+   t2 = IMAGPART_EXPR(b);
+   For conditions enabling the transform see divmod_candidate_p().
+
+   The pass has three parts:
+   1) Find top_stmt which is trunc_div or trunc_mod stmt and dominates all
+      other trunc_div_expr and trunc_mod_expr stmts.
+   2) Add top_stmt and all trunc_div and trunc_mod stmts dominated by top_stmt
+      to stmts vector.
+   3) Insert DIVMOD call just before top_stmt and update entries in
+      stmts vector to use return value of DIMOVD (REALEXPR_PART for div,
+      IMAGPART_EXPR for mod).  */
+
+static bool
+convert_to_divmod (gassign *stmt)
+{
+  if (stmt_can_throw_internal (stmt)
+      || !divmod_candidate_p (stmt))
+    return false;
+
+  tree op1 = gimple_assign_rhs1 (stmt);
+  tree op2 = gimple_assign_rhs2 (stmt);
+  
+  imm_use_iterator use_iter;
+  gimple *use_stmt;
+  auto_vec<gimple *> stmts; 
+
+  gimple *top_stmt = stmt; 
+  basic_block top_bb = gimple_bb (stmt);
+
+  /* Part 1: Try to set top_stmt to "topmost" stmt that dominates
+     at-least stmt and possibly other trunc_div/trunc_mod stmts
+     having same operands as stmt.  */
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, op1)
+    {
+      if (is_gimple_assign (use_stmt)
+	  && (gimple_assign_rhs_code (use_stmt) == TRUNC_DIV_EXPR
+	      || gimple_assign_rhs_code (use_stmt) == TRUNC_MOD_EXPR)
+	  && operand_equal_p (op1, gimple_assign_rhs1 (use_stmt), 0)
+	  && operand_equal_p (op2, gimple_assign_rhs2 (use_stmt), 0))
+	{
+	  if (stmt_can_throw_internal (use_stmt))
+	    continue;
+
+	  basic_block bb = gimple_bb (use_stmt);
+
+	  if (bb == top_bb)
+	    {
+	      if (gimple_uid (use_stmt) < gimple_uid (top_stmt))
+		top_stmt = use_stmt;
+	    }
+	  else if (dominated_by_p (CDI_DOMINATORS, top_bb, bb))
+	    {
+	      top_bb = bb;
+	      top_stmt = use_stmt;
+	    }
+	}
+    }
+
+  tree top_op1 = gimple_assign_rhs1 (top_stmt);
+  tree top_op2 = gimple_assign_rhs2 (top_stmt);
+
+  stmts.safe_push (top_stmt);
+  bool div_seen = (gimple_assign_rhs_code (top_stmt) == TRUNC_DIV_EXPR);
+
+  /* Part 2: Add all trunc_div/trunc_mod statements domianted by top_bb
+     to stmts vector. The 2nd loop will always add stmt to stmts vector, since
+     gimple_bb (top_stmt) dominates gimple_bb (stmt), so the
+     2nd loop ends up adding at-least single trunc_mod_expr stmt.  */  
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, top_op1)
+    {
+      if (is_gimple_assign (use_stmt)
+	  && (gimple_assign_rhs_code (use_stmt) == TRUNC_DIV_EXPR
+	      || gimple_assign_rhs_code (use_stmt) == TRUNC_MOD_EXPR)
+	  && operand_equal_p (top_op1, gimple_assign_rhs1 (use_stmt), 0)
+	  && operand_equal_p (top_op2, gimple_assign_rhs2 (use_stmt), 0))
+	{
+	  if (use_stmt == top_stmt
+	      || stmt_can_throw_internal (use_stmt)
+	      || !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), top_bb))
+	    continue;
+
+	  stmts.safe_push (use_stmt);
+	  if (gimple_assign_rhs_code (use_stmt) == TRUNC_DIV_EXPR)
+	    div_seen = true;
+	}
+    }
+
+  if (!div_seen)
+    return false;
+
+  /* Part 3: Create libcall to internal fn DIVMOD:
+     divmod_tmp = DIVMOD (op1, op2).  */
+
+  gcall *call_stmt = gimple_build_call_internal (IFN_DIVMOD, 2, op1, op2);
+  tree res = make_temp_ssa_name (build_complex_type (TREE_TYPE (op1)),
+				 call_stmt, "divmod_tmp");
+  gimple_call_set_lhs (call_stmt, res);
+
+  /* Insert the call before top_stmt.  */
+  gimple_stmt_iterator top_stmt_gsi = gsi_for_stmt (top_stmt);
+  gsi_insert_before (&top_stmt_gsi, call_stmt, GSI_SAME_STMT);
+
+  widen_mul_stats.divmod_calls_inserted++;		
+
+  /* Update all statements in stmts vector:
+     lhs = op1 TRUNC_DIV_EXPR op2 -> lhs = REALPART_EXPR<divmod_tmp>
+     lhs = op1 TRUNC_MOD_EXPR op2 -> lhs = IMAGPART_EXPR<divmod_tmp>.  */
+
+  for (unsigned i = 0; stmts.iterate (i, &use_stmt); ++i)
+    {
+      tree new_rhs;
+
+      switch (gimple_assign_rhs_code (use_stmt))
+	{
+	  case TRUNC_DIV_EXPR:
+	    new_rhs = fold_build1 (REALPART_EXPR, TREE_TYPE (op1), res);
+	    break;
+
+	  case TRUNC_MOD_EXPR:
+	    new_rhs = fold_build1 (IMAGPART_EXPR, TREE_TYPE (op1), res);
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
+
+      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+      gimple_assign_set_rhs_from_tree (&gsi, new_rhs);
+      update_stmt (use_stmt);
+    }
+
+  return true; 
+}    
 
 /* Find integer multiplications where the operands are extended from
    smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
@@ -3837,6 +4060,8 @@ pass_optimize_widening_mul::execute (function *fun)
   bool cfg_changed = false;
 
   memset (&widen_mul_stats, 0, sizeof (widen_mul_stats));
+  calculate_dominance_info (CDI_DOMINATORS);
+  renumber_gimple_stmt_uids ();
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -3868,6 +4093,10 @@ pass_optimize_widening_mul::execute (function *fun)
 		case MINUS_EXPR:
 		  if (!convert_plusminus_to_widen (&gsi, stmt, code))
 		    match_uaddsub_overflow (&gsi, stmt, code);
+		  break;
+
+		case TRUNC_MOD_EXPR:
+		  convert_to_divmod (as_a<gassign *> (stmt));
 		  break;
 
 		default:;
@@ -3916,6 +4145,8 @@ pass_optimize_widening_mul::execute (function *fun)
 			    widen_mul_stats.maccs_inserted);
   statistics_counter_event (fun, "fused multiply-adds inserted",
 			    widen_mul_stats.fmas_inserted);
+  statistics_counter_event (fun, "divmod calls inserted",
+			    widen_mul_stats.divmod_calls_inserted);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }

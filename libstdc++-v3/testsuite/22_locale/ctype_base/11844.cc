@@ -25,7 +25,6 @@
 void test01()
 {
   typedef std::ctype_base ctb;
-  bool test __attribute__((unused)) = true;
   
   VERIFY( ctb::alnum == (ctb::alpha | ctb::digit) );
   VERIFY( ctb::graph == (ctb::alnum | ctb::punct) );

@@ -181,7 +181,7 @@
     case SUBREG:
       if (register_operand (op, mode))
 	return 1;
-      /* ... fall through ...  */
+      /* fall through */
     case MEM:
       return ((TARGET_BWX || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));

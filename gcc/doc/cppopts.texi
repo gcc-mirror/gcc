@@ -120,6 +120,12 @@ Warn whenever an identifier which is not a macro is encountered in an
 @samp{#if} directive, outside of @samp{defined}.  Such identifiers are
 replaced with zero.
 
+@item -Wexpansion-to-defined
+@opindex Wexpansion-to-defined
+Warn whenever @samp{defined} is encountered in the expansion of a macro
+(including the case where the macro is expanded by an @samp{#if} directive).
+Such usage is not portable.
+
 @item -Wunused-macros
 @opindex Wunused-macros
 Warn about macros defined in the main file that are unused.  A macro

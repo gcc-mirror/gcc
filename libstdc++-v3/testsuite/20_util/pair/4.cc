@@ -44,7 +44,6 @@ template<typename T>
 // const&
 void test04()
 {
-  bool test __attribute__((unused)) = true;
   const gnu_obj& obj1 = gnu_obj(5);
   const std::pair<const char*, gnu_obj> p_sg_1("enlightenment", obj1);
   const std::pair<const char*, gnu_obj> p_sg_2 = 

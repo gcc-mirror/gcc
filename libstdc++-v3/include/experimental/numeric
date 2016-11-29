@@ -39,8 +39,8 @@
 # include <bits/c++14_warning.h>
 #else
 
+#include <numeric>
 #include <experimental/type_traits>
-#include <cmath>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -52,30 +52,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_experimental_gcd_lcm 201411
 
-  // Greatest common divisor
+  /// Greatest common divisor
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
     gcd(_Mn __m, _Nn __n)
     {
-      static_assert(is_integral<_Mn>::value, "arguments to gcd are integers");
-      static_assert(is_integral<_Nn>::value, "arguments to gcd are integers");
-
-      return __m == 0 ? std::abs(__n)
-	: __n == 0 ? std::abs(__m)
-	: fundamentals_v2::gcd(__n, __m % __n);
+      static_assert(is_integral<_Mn>::value, "gcd arguments are integers");
+      static_assert(is_integral<_Nn>::value, "gcd arguments are integers");
+      static_assert(!is_same<_Mn, bool>::value, "gcd arguments are not bools");
+      static_assert(!is_same<_Nn, bool>::value, "gcd arguments are not bools");
+      return std::__detail::__gcd(__m, __n);
     }
 
-  // Least common multiple
+  /// Least common multiple
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
     lcm(_Mn __m, _Nn __n)
     {
-      static_assert(is_integral<_Mn>::value, "arguments to lcm are integers");
-      static_assert(is_integral<_Nn>::value, "arguments to lcm are integers");
-
-      return (__m != 0 && __n != 0)
-	? (std::abs(__m) / fundamentals_v2::gcd(__m, __n)) * std::abs(__n)
-	: 0;
+      static_assert(is_integral<_Mn>::value, "lcm arguments are integers");
+      static_assert(is_integral<_Nn>::value, "lcm arguments are integers");
+      static_assert(!is_same<_Mn, bool>::value, "lcm arguments are not bools");
+      static_assert(!is_same<_Nn, bool>::value, "lcm arguments are not bools");
+      return std::__detail::__lcm(__m, __n);
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

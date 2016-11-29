@@ -43,8 +43,6 @@ string prepare(string::size_type len, unsigned nchunks, char delim)
 
 void check(istream& stream, const string& str, unsigned nchunks, char delim)
 {
-  bool test __attribute__((unused)) = true;
-
   string::size_type index = 0, index_new = 0;
   unsigned n = 0;
 

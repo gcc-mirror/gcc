@@ -69,6 +69,7 @@ static GTY(()) bool sdbout_initialized;
 #include "rtl.h"
 #include "regs.h"
 #include "function.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "flags.h"
 #include "insn-config.h"
@@ -277,7 +278,7 @@ const struct gcc_debug_hooks sdb_debug_hooks =
 {
   sdbout_init,			         /* init */
   sdbout_finish,		         /* finish */
-  debug_nothing_void,			 /* early_finish */
+  debug_nothing_charstar,		 /* early_finish */
   debug_nothing_void,			 /* assembly_start */
   debug_nothing_int_charstar,	         /* define */
   debug_nothing_int_charstar,	         /* undef */
@@ -906,7 +907,7 @@ sdbout_toplevel_data (tree decl)
   if (DECL_IGNORED_P (decl))
     return;
 
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
   gcc_assert (MEM_P (DECL_RTL (decl)));
   gcc_assert (DECL_INITIAL (decl));
 
@@ -1434,9 +1435,7 @@ sdbout_early_global_decl (tree decl ATTRIBUTE_UNUSED)
 static void
 sdbout_late_global_decl (tree decl)
 {
-  if (TREE_CODE (decl) == VAR_DECL
-      && !DECL_EXTERNAL (decl)
-      && DECL_RTL_SET_P (decl))
+  if (VAR_P (decl) && !DECL_EXTERNAL (decl) && DECL_RTL_SET_P (decl))
     {
       /* The COFF linker can move initialized global vars to the end.
 	 And that can screw up the symbol ordering.  Defer those for

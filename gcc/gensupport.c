@@ -446,7 +446,7 @@ add_define_attr (const char *name)
   XEXP (t1, 2) = rtx_alloc (CONST_STRING);
   XSTR (XEXP (t1, 2), 0) = "yes";
   e->data = t1;
-  e->loc = file_location ("built-in", -1);
+  e->loc = file_location ("built-in", -1, -1);
   e->next = define_attr_queue;
   define_attr_queue = e;
 
@@ -551,8 +551,9 @@ process_rtx (rtx desc, file_location loc)
 	split_cond = XSTR (desc, 4);
 	if (split_cond[0] == '&' && split_cond[1] == '&')
 	  {
-	    copy_md_ptr_loc (split_cond + 2, split_cond);
-	    split_cond = join_c_conditions (XSTR (desc, 2), split_cond + 2);
+	    rtx_reader_ptr->copy_md_ptr_loc (split_cond + 2, split_cond);
+	    split_cond = rtx_reader_ptr->join_c_conditions (XSTR (desc, 2),
+							    split_cond + 2);
 	  }
 	XSTR (split, 1) = split_cond;
 	XVEC (split, 2) = XVEC (desc, 5);
@@ -1038,6 +1039,7 @@ get_alternatives_number (rtx pattern, int *n_alt, file_location loc)
 	case 'V':
 	  if (XVEC (pattern, i) == NULL)
 	    break;
+	  /* FALLTHRU */
 
 	case 'E':
 	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
@@ -1261,8 +1263,8 @@ static const char *
 alter_test_for_insn (struct queue_elem *ce_elem,
 		     struct queue_elem *insn_elem)
 {
-  return join_c_conditions (XSTR (ce_elem->data, 1),
-			    XSTR (insn_elem->data, 2));
+  return rtx_reader_ptr->join_c_conditions (XSTR (ce_elem->data, 1),
+					    XSTR (insn_elem->data, 2));
 }
 
 /* Modify VAL, which is an attribute expression for the "enabled" attribute,
@@ -1631,33 +1633,30 @@ duplicate_each_alternative (const char * str, int n_dup)
 static const char *
 alter_output_for_subst_insn (rtx insn, int alt)
 {
-  const char *insn_out, *sp ;
-  char *old_out, *new_out, *cp;
-  int i, j, new_len;
+  const char *insn_out, *old_out;
+  char *new_out, *cp;
+  size_t old_len, new_len;
+  int j;
 
   insn_out = XTMPL (insn, 3);
 
-  if (alt < 2 || *insn_out == '*' || *insn_out != '@')
+  if (alt < 2 || *insn_out != '@')
     return insn_out;
 
-  old_out = XNEWVEC (char, strlen (insn_out)),
-  sp = insn_out;
+  old_out = insn_out + 1;
+  while (ISSPACE (*old_out))
+    old_out++;
+  old_len = strlen (old_out);
 
-  while (ISSPACE (*sp) || *sp == '@')
-    sp++;
-
-  for (i = 0; *sp;)
-    old_out[i++] = *sp++;
-
-  new_len = alt * (i + 1) + 1;
+  new_len = alt * (old_len + 1) + 1;
 
   new_out = XNEWVEC (char, new_len);
   new_out[0] = '@';
 
-  for (j = 0, cp = new_out + 1; j < alt; j++, cp += i + 1)
+  for (j = 0, cp = new_out + 1; j < alt; j++, cp += old_len + 1)
     {
-      memcpy (cp, old_out, i);
-      *(cp+i) = (j == alt - 1) ? '\0' : '\n';
+      memcpy (cp, old_out, old_len);
+      cp[old_len] = (j == alt - 1) ? '\0' : '\n';
     }
 
   return new_out;
@@ -1873,8 +1872,9 @@ process_substs_on_one_elem (struct queue_elem *elem,
 
       /* Recalculate condition, joining conditions from original and
 	 DEFINE_SUBST input patterns.  */
-      XSTR (elem->data, 2) = join_c_conditions (XSTR (subst_elem->data, 2),
-						XSTR (elem->data, 2));
+      XSTR (elem->data, 2)
+	= rtx_reader_ptr->join_c_conditions (XSTR (subst_elem->data, 2),
+					     XSTR (elem->data, 2));
       /* Mark that subst was applied by changing attribute from "yes"
 	 to "no".  */
       change_subst_attribute (elem, subst_elem, subst_false);
@@ -2156,6 +2156,7 @@ subst_dup (rtx pattern, int n_alt, int n_subst_alt)
 	case 'V':
 	  if (XVEC (pattern, i) == NULL)
 	    break;
+	  /* FALLTHRU */
 	case 'E':
 	  if (code != MATCH_DUP && code != MATCH_OP_DUP)
 	    for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
@@ -2226,10 +2227,18 @@ process_define_subst (void)
     }
 }
 
-/* A read_md_files callback for reading an rtx.  */
+/* A subclass of rtx_reader which reads .md files and calls process_rtx on
+   the top-level elements.  */
 
-static void
-rtx_handle_directive (file_location loc, const char *rtx_name)
+class gen_reader : public rtx_reader
+{
+ public:
+  gen_reader () : rtx_reader () {}
+  void handle_unknown_directive (file_location, const char *);
+};
+
+void
+gen_reader::handle_unknown_directive (file_location loc, const char *rtx_name)
 {
   auto_vec<rtx, 32> subrtxs;
   if (!read_rtx (rtx_name, &subrtxs))
@@ -2292,6 +2301,7 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
   rtx set_attr;
   char *attr_name;
   rtvec new_vec;
+  struct obstack *string_obstack = rtx_reader_ptr->get_string_obstack ();
 
   template_code = XTMPL (insn, 3);
 
@@ -2317,13 +2327,13 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
 	  sp = ep + 1;
 
       if (i > 0)
-	obstack_1grow (&string_obstack, ',');
+	obstack_1grow (string_obstack, ',');
 
       while (cp < sp && ((*cp >= '0' && *cp <= '9')
 			 || (*cp >= 'a' && *cp <= 'z')))
 
 	{
-	  obstack_1grow (&string_obstack, *cp);
+	  obstack_1grow (string_obstack, *cp);
 	  cp++;
 	  size++;
 	}
@@ -2334,7 +2344,7 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
 	    {
 	      /* Don't set a value if there are more than one
 		 instruction in the string.  */
-	      obstack_blank_fast (&string_obstack, -size);
+	      obstack_blank_fast (string_obstack, -size);
 	      size = 0;
 
 	      cp = sp;
@@ -2343,22 +2353,22 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
 	  cp++;
 	}
       if (size == 0)
-	obstack_1grow (&string_obstack, '*');
+	obstack_1grow (string_obstack, '*');
       else
 	add_mnemonic_string (mnemonic_htab,
-			     (char *) obstack_next_free (&string_obstack) - size,
+			     (char *) obstack_next_free (string_obstack) - size,
 			     size);
       i++;
     }
 
   /* An insn definition might emit an empty string.  */
-  if (obstack_object_size (&string_obstack) == 0)
+  if (obstack_object_size (string_obstack) == 0)
     return;
 
-  obstack_1grow (&string_obstack, '\0');
+  obstack_1grow (string_obstack, '\0');
 
   set_attr = rtx_alloc (SET_ATTR);
-  XSTR (set_attr, 1) = XOBFINISH (&string_obstack, char *);
+  XSTR (set_attr, 1) = XOBFINISH (string_obstack, char *);
   attr_name = XNEWVAR (char, strlen (MNEMONIC_ATTR_NAME) + 1);
   strcpy (attr_name, MNEMONIC_ATTR_NAME);
   XSTR (set_attr, 0) = attr_name;
@@ -2381,8 +2391,10 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
 static int
 mnemonic_htab_callback (void **slot, void *info ATTRIBUTE_UNUSED)
 {
-  obstack_grow (&string_obstack, (char*)*slot, strlen ((char*)*slot));
-  obstack_1grow (&string_obstack, ',');
+  struct obstack *string_obstack = rtx_reader_ptr->get_string_obstack ();
+
+  obstack_grow (string_obstack, (char*) *slot, strlen ((char*) *slot));
+  obstack_1grow (string_obstack, ',');
   return 1;
 }
 
@@ -2400,6 +2412,7 @@ gen_mnemonic_attr (void)
   htab_t mnemonic_htab;
   const char *str, *p;
   int i;
+  struct obstack *string_obstack = rtx_reader_ptr->get_string_obstack ();
 
   if (have_error)
     return;
@@ -2463,8 +2476,8 @@ gen_mnemonic_attr (void)
   htab_traverse (mnemonic_htab, mnemonic_htab_callback, NULL);
 
   /* Replace the last ',' with the zero end character.  */
-  *((char *)obstack_next_free (&string_obstack) - 1) = '\0';
-  XSTR (mnemonic_attr, 1) = XOBFINISH (&string_obstack, char *);
+  *((char *) obstack_next_free (string_obstack) - 1) = '\0';
+  XSTR (mnemonic_attr, 1) = XOBFINISH (string_obstack, char *);
 }
 
 /* Check if there are DEFINE_ATTRs with the same name.  */
@@ -2500,7 +2513,7 @@ check_define_attr_duplicates ()
 
 /* The entry point for initializing the reader.  */
 
-bool
+rtx_reader *
 init_rtx_reader_args_cb (int argc, const char **argv,
 			 bool (*parse_opt) (const char *))
 {
@@ -2516,7 +2529,8 @@ init_rtx_reader_args_cb (int argc, const char **argv,
   split_sequence_num = 1;
   peephole2_sequence_num = 1;
 
-  read_md_files (argc, argv, parse_opt, rtx_handle_directive);
+  gen_reader *reader = new gen_reader ();
+  reader->read_md_files (argc, argv, parse_opt);
 
   if (define_attr_queue != NULL)
     check_define_attr_duplicates ();
@@ -2532,12 +2546,18 @@ init_rtx_reader_args_cb (int argc, const char **argv,
   if (define_attr_queue != NULL)
     gen_mnemonic_attr ();
 
-  return !have_error;
+  if (have_error)
+    {
+      delete reader;
+      return NULL;
+    }
+
+  return reader;
 }
 
 /* Programs that don't have their own options can use this entry point
    instead.  */
-bool
+rtx_reader *
 init_rtx_reader_args (int argc, const char **argv)
 {
   return init_rtx_reader_args_cb (argc, argv, 0);

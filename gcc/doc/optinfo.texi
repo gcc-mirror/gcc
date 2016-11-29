@@ -59,6 +59,9 @@ Loop optimization passes. Enabled by @option{-loop}.
 @item OPTGROUP_INLINE
 Inlining passes. Enabled by @option{-inline}.
 
+@item OPTGROUP_OPENMP
+OpenMP passes. Enabled by @option{-openmp}.
+
 @item OPTGROUP_VEC
 Vectorization passes. Enabled by @option{-vec}.
 

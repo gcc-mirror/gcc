@@ -46,10 +46,10 @@ package Sem_Ch7 is
    --  On entrance to a package body, make declarations in package spec
    --  immediately visible.
    --
-   --  When compiling the body of a package,  both routines are called in
+   --  When compiling the body of a package, both routines are called in
    --  succession. When compiling the body of a child package, the call
    --  to Install_Private_Declaration is immediate for private children,
-   --  but is deferred until the compilation of the  private part of the
+   --  but is deferred until the compilation of the private part of the
    --  child for public child packages.
 
    function Unit_Requires_Body

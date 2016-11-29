@@ -23,7 +23,6 @@
 // libstdc++/6548
 void test07()
 {
-  bool test __attribute__((unused)) = true;
   std::cout << "Enter 'test':";
   std::string s;
   std::getline(std::cin, s, '\n');

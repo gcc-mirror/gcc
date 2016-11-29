@@ -6,7 +6,6 @@
 
 #include "runtime.h"
 #include "go-type.h"
-#include "map.h"
 
 /* The compiler will track fields that have the tag go:"track".  Any
    function that refers to such a field will call this function with a
@@ -34,15 +33,25 @@ extern const char _edata[] __attribute__ ((weak));
 extern const char __edata[] __attribute__ ((weak));
 extern const char __bss_start[] __attribute__ ((weak));
 
-void runtime_Fieldtrack (struct __go_map *) __asm__ (GOSYM_PREFIX "runtime.Fieldtrack");
+extern void mapassign1 (const struct __go_map_type *, void *hmap,
+			const void *key, const void *val)
+  __asm__ (GOSYM_PREFIX "runtime.mapassign1");
+
+// The type descriptor for map[string] bool.  */
+extern const char __go_td_MN6_string__N4_bool[] __attribute__ ((weak));
+
+void runtime_Fieldtrack (void *) __asm__ (GOSYM_PREFIX "runtime.Fieldtrack");
 
 void
-runtime_Fieldtrack (struct __go_map *m)
+runtime_Fieldtrack (void *m)
 {
   const char *p;
   const char *pend;
   const char *prefix;
   size_t prefix_len;
+
+  if (__go_td_MN6_string__N4_bool == NULL)
+    return;
 
   p = __data_start;
   if (p == NULL)
@@ -86,14 +95,12 @@ runtime_Fieldtrack (struct __go_map *m)
       if (__builtin_memchr (q1, '\0', q2 - q1) == NULL)
 	{
 	  String s;
-	  void *v;
-	  _Bool *pb;
+	  _Bool b;
 
 	  s.str = (const byte *) q1;
 	  s.len = q2 - q1;
-	  v = __go_map_index (m, &s, 1);
-	  pb = (_Bool *) v;
-	  *pb = 1;
+	  b = 1;
+	  mapassign1((const void*) __go_td_MN6_string__N4_bool, m, &s, &b);
 	}
 
       p = q2;

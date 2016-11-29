@@ -36,7 +36,6 @@ public:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_file1";
 
   Derived_fbuf df2;

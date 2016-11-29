@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -27,7 +27,6 @@ void f1(int) { }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_test;
   
   OverloadedAddress* ao1 = new OverloadedAddress();

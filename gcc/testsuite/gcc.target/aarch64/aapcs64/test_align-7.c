@@ -7,8 +7,8 @@
 
 struct s
   {
-    long x;
-    long y;
+    long long x;
+    long long y;
   };
 
 /* This still has size 16, so is still passed by value.  */

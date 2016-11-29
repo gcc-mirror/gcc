@@ -22,11 +22,12 @@ fi
 output=$1
 shift
 
-deps=`for f in $*; do cat $f; done | 
+files=$*
+deps=`for f in $files; do cat $f; done | 
   sed -n -e '/^import.*"/p; /^import[ 	]*(/,/^)/p' |
   grep '"' |
   grep -v '"unsafe"' |
   sed -e 's/^.*"\([^"]*\)".*$/\1/' -e 's/$/.gox/' |
   sort -u`
 
-echo $output: $deps
+echo $output: $files $deps

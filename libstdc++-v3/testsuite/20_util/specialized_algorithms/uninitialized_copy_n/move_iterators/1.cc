@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -38,8 +38,6 @@ typedef test_container<rvalstruct, forward_iterator_wrapper> container_out;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int inarray[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   const int size = sizeof(inarray) / sizeof(int);
 

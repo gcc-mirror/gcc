@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 
 // 2010-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring str(L"ramifications");
   const std::wstring cstr(L"melodien");
 

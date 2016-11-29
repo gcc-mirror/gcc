@@ -4587,3 +4587,50 @@ _Z80800000000000000000000
 
 __t2m05B500000000000000000_
 __t2m05B500000000000000000_
+#
+# Tests stack overflow PR71696
+
+__10%0__S4_0T0T0
+%0<>::%0(%0<>)
+
+# Inheriting constructor
+_ZN1DCI11BEi
+D::B(int)
+
+# exception-specification (C++17)
+_Z1fIvJiELb0EEvPDOT1_EFT_DpT0_E
+void f<void, int, false>(void (*)(int) noexcept(false))
+
+_Z1fIvJiELb0EEvPDoFT_DpT0_E
+void f<void, int, false>(void (*)(int) noexcept)
+
+_Z1fIvJiELb0EEvPDwiEFT_DpT0_E
+void f<void, int, false>(void (*)(int) throw(int))
+
+# Could crash
+_
+_
+
+# Could crash
+_vt
+_vt
+
+# Could crash
+_$_1Acitz
+_$_1Acitz
+
+# Could crash
+_$_H1R
+_$_H1R
+
+# Could crash
+_Q8ccQ4M2e.
+_Q8ccQ4M2e.
+
+# fold-expression with missing third component could crash.
+_Z12binary_rightIJLi1ELi2ELi3EEEv1AIXfRplT_LiEEE
+_Z12binary_rightIJLi1ELi2ELi3EEEv1AIXfRplT_LiEEE
+
+# ?: expression with missing third component could crash.
+AquT_quT_4mxautouT_4mxxx
+AquT_quT_4mxautouT_4mxxx

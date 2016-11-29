@@ -27,8 +27,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::mbstate_t state_type;
   state_type state01 = state_type();
   state_type state02 = state_type();
@@ -47,8 +45,7 @@ void test01()
   // place.
   pos01.state(state02);
   state01 = pos01.state();
-  test = std::memcmp(&state01, &state02, sizeof(state_type)) == 0;
-  VERIFY( test );
+  VERIFY( std::memcmp(&state01, &state02, sizeof(state_type)) == 0 );
 }
 
 int main() 

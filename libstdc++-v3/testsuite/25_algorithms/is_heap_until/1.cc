@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2007-10-12  Paolo Carlini  <pcarlini@suse.de>
 //
@@ -32,8 +32,6 @@ const int N = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (int i = 0; i <= N; ++i)
     {
       VERIFY( A + i == std::is_heap_until(A, A + i) );

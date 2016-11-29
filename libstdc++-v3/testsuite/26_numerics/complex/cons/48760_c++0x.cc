@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-c-std "" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
@@ -25,8 +25,6 @@
 template<typename T>
   void do_test01()
   {
-    bool test __attribute__((unused)) = true;
-
     if (std::numeric_limits<T>::has_quiet_NaN)
       {
 	std::complex<T> c1(T(0), std::numeric_limits<T>::quiet_NaN());

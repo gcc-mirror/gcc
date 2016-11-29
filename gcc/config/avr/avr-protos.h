@@ -129,6 +129,7 @@ extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
+extern bool avr_casei_sequence_check_operands (rtx *xop);
 
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)
@@ -153,6 +154,12 @@ extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif
 
 extern bool avr_have_dimode;
+
+namespace gcc { class context; }
+class rtl_opt_pass;
+
+extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
+extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 
 /* From avr-log.c */
 

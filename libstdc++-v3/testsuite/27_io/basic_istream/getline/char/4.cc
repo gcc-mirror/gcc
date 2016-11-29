@@ -55,7 +55,6 @@ const char Inbuf::buf[] = "1234567890abcdefghij";
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef char_traits<char>   traits_type;
 

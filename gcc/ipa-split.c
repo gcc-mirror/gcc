@@ -160,7 +160,7 @@ test_nonssa_use (gimple *, tree t, tree, void *data)
     return false;
 
   if (TREE_CODE (t) == PARM_DECL
-      || (TREE_CODE (t) == VAR_DECL
+      || (VAR_P (t)
 	  && auto_var_in_fn_p (t, current_function_decl))
       || TREE_CODE (t) == RESULT_DECL
 	 /* Normal labels are part of CFG and will be handled gratefuly.
@@ -656,7 +656,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
       = split_part_set_ssa_name_p (retval, current, return_bb);
   else if (TREE_CODE (retval) == PARM_DECL)
     current->split_part_set_retval = false;
-  else if (TREE_CODE (retval) == VAR_DECL
+  else if (VAR_P (retval)
 	   || TREE_CODE (retval) == RESULT_DECL)
     current->split_part_set_retval
       = bitmap_bit_p (non_ssa_vars, DECL_UID (retval));
@@ -788,9 +788,7 @@ find_return_bb (void)
       /* For -fsanitize=thread, allow also TSAN_FUNC_EXIT () in the return
 	 bb.  */
       else if ((flag_sanitize & SANITIZE_THREAD)
-	       && is_gimple_call (stmt)
-	       && gimple_call_internal_p (stmt)
-	       && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	       && gimple_call_internal_p (stmt, IFN_TSAN_FUNC_EXIT))
 	;
       else
 	break;
@@ -850,11 +848,9 @@ mark_nonssa_use (gimple *, tree t, tree, void *data)
       return true;
     }
 
-  if ((TREE_CODE (t) == VAR_DECL
-       && auto_var_in_fn_p (t, current_function_decl))
+  if ((VAR_P (t) && auto_var_in_fn_p (t, current_function_decl))
       || TREE_CODE (t) == RESULT_DECL
-      || (TREE_CODE (t) == LABEL_DECL
-	  && FORCED_LABEL (t)))
+      || (TREE_CODE (t) == LABEL_DECL && FORCED_LABEL (t)))
     bitmap_set_bit ((bitmap)data, DECL_UID (t));
 
   /* For DECL_BY_REFERENCE, the return value is actually a pointer.  We want
@@ -1840,9 +1836,7 @@ execute_split_functions (void)
 	    }
 
 	  if ((flag_sanitize & SANITIZE_THREAD)
-	      && is_gimple_call (stmt)
-	      && gimple_call_internal_p (stmt)
-	      && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	      && gimple_call_internal_p (stmt, IFN_TSAN_FUNC_EXIT))
 	    {
 	      /* We handle TSAN_FUNC_EXIT for splitting either in the
 		 return_bb, or in its immediate predecessors.  */

@@ -1,8 +1,11 @@
-// errstr_rtems.go -- RTEMS specific error strings.
+// errstr_linux.go -- GNU/Linux specific error strings.
 
 // Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+// We use this rather than errstr.go because on GNU/Linux sterror_r
+// returns a pointer to the error message, and may not use buf at all.
 
 package syscall
 

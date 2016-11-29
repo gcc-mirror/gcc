@@ -133,6 +133,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-r}|@option{--relative-only}]
      [@option{-s}|@option{--source-prefix} @var{directory}]
      [@option{-u}|@option{--unconditional-branches}]
+     [@option{-x}|@option{--hash-filenames}]
      @var{files}
 @c man end
 @c man begin SEEALSO
@@ -278,6 +279,16 @@ branch:28,nottaken
 Display demangled function names in output. The default is to show
 mangled function names.
 
+@item -x
+@itemx --hash-filenames
+By default, gcov uses the full pathname of the source files to to create
+an output filename.  This can lead to long filenames that can overflow
+filesystem limits.  This option creates names of the form
+@file{@var{source-file}##@var{md5}.gcov},
+where the @var{source-file} component is the final filename part and
+the @var{md5} component is calculated from the full mangled name that
+would have been used otherwise.
+
 @end table
 
 @command{gcov} should be run with the current directory the same as that
@@ -356,8 +367,9 @@ is what you see when you use the basic @command{gcov} facility:
 $ gcc -fprofile-arcs -ftest-coverage tmp.c
 $ a.out
 $ gcov tmp.c
-90.00% of 10 source lines executed in file tmp.c
-Creating tmp.c.gcov.
+File 'tmp.c'
+Lines executed:90.00% of 10
+Creating 'tmp.c.gcov'
 @end smallexample
 
 The file @file{tmp.c.gcov} contains output from @command{gcov}.
@@ -441,11 +453,12 @@ When you use the @option{-b} option, your output looks like this:
 
 @smallexample
 $ gcov -b tmp.c
-90.00% of 10 source lines executed in file tmp.c
-80.00% of 5 branches executed in file tmp.c
-80.00% of 5 branches taken at least once in file tmp.c
-50.00% of 2 calls executed in file tmp.c
-Creating tmp.c.gcov.
+File 'tmp.c'
+Lines executed:90.00% of 10
+Branches executed:80.00% of 5
+Taken at least once:80.00% of 5
+Calls executed:50.00% of 2
+Creating 'tmp.c.gcov'
 @end smallexample
 
 Here is a sample of a resulting @file{tmp.c.gcov} file:
@@ -582,11 +595,15 @@ now be calculable at compile time in some instances.  Because the
 coverage of all the uses of the inline function will be shown for the
 same source lines, the line counts themselves might seem inconsistent.
 
-Long-running applications can use the @code{_gcov_reset} and @code{_gcov_dump}
+Long-running applications can use the @code{__gcov_reset} and @code{__gcov_dump}
 facilities to restrict profile collection to the program region of
-interest. Calling @code{_gcov_reset(void)} will clear all profile counters
-to zero, and calling @code{_gcov_dump(void)} will cause the profile information
+interest. Calling @code{__gcov_reset(void)} will clear all profile counters
+to zero, and calling @code{__gcov_dump(void)} will cause the profile information
 collected at that point to be dumped to @file{.gcda} output files.
+Instrumented applications use a static destructor with priority 99
+to invoke the @code{__gcov_dump} function. Thus @code{__gcov_dump}
+is executed after all user defined static destructors,
+as well as handlers registered with @code{atexit}.
 
 @c man end
 

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -23,8 +23,6 @@
 #include <testsuite_hooks.h>
 
 #include <string>
-
-bool test __attribute__((unused)) = true;
 
 // This test verifies the following:
 //   insert_after single item

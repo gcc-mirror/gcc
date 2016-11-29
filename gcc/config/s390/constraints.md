@@ -55,7 +55,12 @@
 ;;         D,S,H:   mode of the containing operand
 ;;         0,F:     value of the other parts (F - all bits set)
 ;;         --
-;;         xx[DS]q  satisfies s390_contiguous_bitmask_p for DImode or SImode
+;;         xxDq     satisfies s390_contiguous_bitmask_p for DImode
+;;                  (with possible wraparound of the one-bit range)
+;;         xxSw     satisfies s390_contiguous_bitmask_p for SImode
+;;                  (with possible wraparound of the one-bit range)
+;;         xxSq     satisfies s390_contiguous_bitmask_nowrap_p for SImode
+;;                  (without wraparound of the one-bit range)
 ;;
 ;;         The constraint matches if the specified part of a constant
 ;;         has a value different from its other parts.  If the letter x
@@ -346,15 +351,20 @@
   (and (match_code "const_int")
        (match_test "s390_N_constraint_str (\"xQH0\", ival)")))
 
-(define_constraint "NxxDq"
+(define_constraint "NxxDw"
   "@internal"
   (and (match_code "const_int")
-       (match_test "s390_contiguous_bitmask_p (ival, 64, NULL, NULL)")))
+       (match_test "s390_contiguous_bitmask_p (ival, true, 64, NULL, NULL)")))
 
 (define_constraint "NxxSq"
   "@internal"
   (and (match_code "const_int")
-       (match_test "s390_contiguous_bitmask_p (ival, 32, NULL, NULL)")))
+       (match_test "s390_contiguous_bitmask_p (ival, false, 32, NULL, NULL)")))
+
+(define_constraint "NxxSw"
+  "@internal"
+  (and (match_code "const_int")
+       (match_test "s390_contiguous_bitmask_p (ival, true, 32, NULL, NULL)")))
 
 ;;
 ;; Double-letter constraints starting with O follow.

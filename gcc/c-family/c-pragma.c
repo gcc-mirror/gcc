@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "function.h"		/* For cfun.  */
 #include "c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS.  */
 #include "stringpool.h"
 #include "cgraph.h"
@@ -214,6 +215,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
 	    align = maximum_field_alignment;
 	    break;
 	  }
+	/* FALLTHRU */
       default:
 	GCC_BAD2 ("alignment must be a small power of two, not %d", align);
       }
@@ -891,7 +893,7 @@ handle_pragma_target(cpp_reader *ARG_UNUSED(dummy))
       args = nreverse (args);
 
       if (targetm.target_option.pragma_parse (args, NULL_TREE))
-	current_target_pragma = args;
+	current_target_pragma = chainon (current_target_pragma, args);
     }
 }
 

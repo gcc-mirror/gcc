@@ -2090,6 +2090,7 @@ package body Sem_Ch9 is
 
       if (Abort_Allowed or else Restriction_Active (No_Entry_Queue) = False
            or else Number_Entries (T) > 1)
+        and then not Restricted_Profile
         and then
           (Has_Entries (T)
             or else Has_Interrupt_Handler (T)

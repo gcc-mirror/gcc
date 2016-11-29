@@ -28,7 +28,6 @@ test02()
 {
   typedef std::char_traits<char>	traits_type;
 
-  bool test __attribute__((unused)) = true;
   const char str_lit01[] = "\t\t\t    sun*ra \n"
   "                            "
   "and his myth science arkestra present\n"

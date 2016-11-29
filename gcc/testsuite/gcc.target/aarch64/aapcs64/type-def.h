@@ -44,6 +44,24 @@ struct hfa_fx3_t
   float c;
 };
 
+struct hfa_f16x1_t
+{
+  __fp16 a;
+};
+
+struct hfa_f16x2_t
+{
+  __fp16 a;
+  __fp16 b;
+};
+
+struct hfa_f16x3_t
+{
+  __fp16 a;
+  __fp16 b;
+  __fp16 c;
+};
+
 struct hfa_dx2_t
 {
   double a;

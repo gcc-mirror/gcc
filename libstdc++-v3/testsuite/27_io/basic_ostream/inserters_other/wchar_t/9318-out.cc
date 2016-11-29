@@ -46,8 +46,6 @@ private:
 
 void test10()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstringbuf sbuf(L"Bad Moon Rising", std::wios::in);
   Outbuf buf;
   std::wostream stream(&buf);

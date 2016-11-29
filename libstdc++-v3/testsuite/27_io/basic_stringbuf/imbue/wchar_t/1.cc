@@ -26,8 +26,6 @@ std::wstringbuf strb_01(str_01);
 // test the streambuf/stringbuf locale settings
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc_c = std::locale::classic();
   loc_c = strb_01.getloc();
   strb_01.pubimbue(loc_c); //This should initialize _M_init to true

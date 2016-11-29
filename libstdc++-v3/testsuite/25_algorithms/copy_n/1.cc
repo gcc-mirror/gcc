@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -27,7 +27,6 @@ void
 test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
   const int N = sizeof(A) / sizeof(int);

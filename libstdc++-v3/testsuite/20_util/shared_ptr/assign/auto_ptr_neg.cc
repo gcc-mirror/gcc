@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
-// { dg-do compile }
+// { dg-options "-Wno-deprecated" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -32,11 +32,9 @@ struct B { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a;
   std::auto_ptr<B> b;
-  a = std::move(b);                      // { dg-error "here" }
+  a = std::move(b);                      // { dg-error "no match" }
 
   return 0;
 }

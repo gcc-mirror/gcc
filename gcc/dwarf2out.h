@@ -147,13 +147,17 @@ enum dw_val_class
   dw_val_class_lineptr,
   dw_val_class_str,
   dw_val_class_macptr,
+  dw_val_class_loclistsptr,
   dw_val_class_file,
   dw_val_class_data8,
   dw_val_class_decl_ref,
   dw_val_class_vms_delta,
   dw_val_class_high_pc,
   dw_val_class_discr_value,
-  dw_val_class_discr_list
+  dw_val_class_discr_list,
+  dw_val_class_const_implicit,
+  dw_val_class_unsigned_const_implicit,
+  dw_val_class_file_implicit
 };
 
 /* Describe a floating point constant value, or a vector constant value.  */
@@ -198,7 +202,8 @@ struct GTY(()) dw_val_node {
       dw_loc_list_ref GTY ((tag ("dw_val_class_loc_list"))) val_loc_list;
       dw_loc_descr_ref GTY ((tag ("dw_val_class_loc"))) val_loc;
       HOST_WIDE_INT GTY ((default)) val_int;
-      unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
+      unsigned HOST_WIDE_INT
+	GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
       double_int GTY ((tag ("dw_val_class_const_double"))) val_double;
       wide_int_ptr GTY ((tag ("dw_val_class_wide_int"))) val_wide;
       dw_vec_const GTY ((tag ("dw_val_class_vec"))) val_vec;
@@ -212,6 +217,8 @@ struct GTY(()) dw_val_node {
       char * GTY ((tag ("dw_val_class_lbl_id"))) val_lbl_id;
       unsigned char GTY ((tag ("dw_val_class_flag"))) val_flag;
       struct dwarf_file_data * GTY ((tag ("dw_val_class_file"))) val_file;
+      struct dwarf_file_data *
+	GTY ((tag ("dw_val_class_file_implicit"))) val_file_implicit;
       unsigned char GTY ((tag ("dw_val_class_data8"))) val_data8[8];
       tree GTY ((tag ("dw_val_class_decl_ref"))) val_decl_ref;
       struct dw_val_vms_delta_union
@@ -234,9 +241,9 @@ struct GTY((chain_next ("%h.dw_loc_next"))) dw_loc_descr_node {
   /* Used to distinguish DW_OP_addr with a direct symbol relocation
      from DW_OP_addr with a dtp-relative symbol relocation.  */
   unsigned int dtprel : 1;
-  /* For DW_OP_pick operations: true iff. it targets a DWARF prodecure
-     argument.  In this case, it needs to be relocated according to the current
-     frame offset.  */
+  /* For DW_OP_pick, DW_OP_dup and DW_OP_over operations: true iff.
+     it targets a DWARF prodecure argument.  In this case, it needs to be
+     relocated according to the current frame offset.  */
   unsigned int frame_offset_rel : 1;
   int dw_loc_addr;
   dw_val_node dw_loc_oprnd1;
@@ -322,6 +329,7 @@ struct array_descr_info
   tree allocated;
   tree associated;
   tree stride;
+  tree rank;
   bool stride_in_bits;
   struct array_descr_dimen
     {

@@ -3484,7 +3484,7 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
 		       bool allow_nonconstant_step)
 {
   enum tree_code code;
-  tree type, ev, base, e, stop;
+  tree type, ev, base, e;
   wide_int extreme;
   bool folded_casts, overflow;
 
@@ -3601,8 +3601,7 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
     return true;
   e = fold_build2 (code, boolean_type_node, base,
 		   wide_int_to_tree (type, extreme));
-  stop = (TREE_CODE (base) == SSA_NAME) ? base : NULL;
-  e = simplify_using_initial_conditions (use_loop, e, stop);
+  e = simplify_using_initial_conditions (use_loop, e);
   if (!integer_zerop (e))
     return true;
 

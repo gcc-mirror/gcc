@@ -27,7 +27,6 @@
 void test06()
 {
   // default locale, grouping is turned off
-  bool test __attribute__((unused)) = true;
   unsigned int h4;
   wchar_t c;
   std::wstring s(L"205,199,144");

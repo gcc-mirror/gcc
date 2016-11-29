@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
@@ -23,7 +23,6 @@
 #include <testsuite_hooks.h>
 
 struct A { };
-struct B : A { };
 
 // 8.2.1.2 shared_ptr observers [memory.smartptr.shared.obs]
 
@@ -31,8 +30,6 @@ struct B : A { };
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::experimental::shared_ptr<A[5]> p1;
   VERIFY( p1.use_count() == 0 );
   const std::experimental::shared_ptr<A[5]> p2(p1);
@@ -42,8 +39,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> p1(new A[5]);
   std::experimental::shared_ptr<A[5]> p2(p1);
   p1.reset();
@@ -54,11 +49,9 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> p1(new A[5]);
   std::experimental::shared_ptr<A[5]> p2(p1);
-  p2.reset(new B[5]);
+  p2.reset(new A[5]);
   VERIFY( p1.use_count() == 1 );
   VERIFY( p2.use_count() == 1 );
 }

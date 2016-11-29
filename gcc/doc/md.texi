@@ -700,7 +700,7 @@ predicates used with @code{match_operand} have names that end in
 @samp{_operand}, and those used with @code{match_operator} have names
 that end in @samp{_operator}.
 
-All predicates are Boolean functions (in the mathematical sense) of
+All predicates are boolean functions (in the mathematical sense) of
 two arguments: the RTL expression that is being considered at that
 position in the instruction pattern, and the machine mode that the
 @code{match_operand} or @code{match_operator} specifies.  In this
@@ -2582,8 +2582,8 @@ A status register (@code{rmsr}, @code{$fcc1} to @code{$fcc7}).
 @item MIPS---@file{config/mips/constraints.md}
 @table @code
 @item d
-An address register.  This is equivalent to @code{r} unless
-generating MIPS16 code.
+A general-purpose register.  This is equivalent to @code{r} unless
+generating MIPS16 code, in which case the MIPS16 register set is used.
 
 @item f
 A floating-point register (if available).
@@ -3124,6 +3124,18 @@ Memory operand suitable for power9 fusion load/stores.
 
 @item wG
 Memory operand suitable for TOC fusion memory references.
+
+@item wH
+Altivec register if @option{-mvsx-small-integer}.
+
+@item wI
+Floating point register if @option{-mvsx-small-integer}.
+
+@item wJ
+FP register if @option{-mvsx-small-integer} and @option{-mpower9-vector}.
+
+@item wK
+Altivec register if @option{-mvsx-small-integer} and @option{-mpower9-vector}.
 
 @item wL
 Int constant that is the element number that the MFVSRLD instruction.
@@ -4274,7 +4286,7 @@ constraint.  Docstrings are explained further below.
 @end deffn
 
 Non-register constraints are more like predicates: the constraint
-definition gives a Boolean expression which indicates whether the
+definition gives a boolean expression which indicates whether the
 constraint matches.
 
 @deffn {MD Expression} define_constraint name docstring exp
@@ -4730,6 +4742,14 @@ value of all-zeros.
 @item @samp{vec_cmpu@var{m}@var{n}}
 Similar to @code{vec_cmp@var{m}@var{n}} but perform unsigned vector comparison.
 
+@cindex @code{vec_cmpeq@var{m}@var{n}} instruction pattern
+@item @samp{vec_cmpeq@var{m}@var{n}}
+Similar to @code{vec_cmp@var{m}@var{n}} but perform equality or non-equality
+vector comparison only.  If @code{vec_cmp@var{m}@var{n}}
+or @code{vec_cmpu@var{m}@var{n}} instruction pattern is supported,
+it will be preferred over @code{vec_cmpeq@var{m}@var{n}}, so there is
+no need to define this instruction pattern if the others are supported.
+
 @cindex @code{vcond@var{m}@var{n}} instruction pattern
 @item @samp{vcond@var{m}@var{n}}
 Output a conditional vector move.  Operand 0 is the destination to
@@ -4745,6 +4765,14 @@ comparison with a truth value of all-ones and a false value of all-zeros.
 @item @samp{vcondu@var{m}@var{n}}
 Similar to @code{vcond@var{m}@var{n}} but performs unsigned vector
 comparison.
+
+@cindex @code{vcondeq@var{m}@var{n}} instruction pattern
+@item @samp{vcondeq@var{m}@var{n}}
+Similar to @code{vcond@var{m}@var{n}} but performs equality or
+non-equality vector comparison only.  If @code{vcond@var{m}@var{n}}
+or @code{vcondu@var{m}@var{n}} instruction pattern is supported,
+it will be preferred over @code{vcondeq@var{m}@var{n}}, so there is
+no need to define this instruction pattern if the others are supported.
 
 @cindex @code{vcond_mask_@var{m}@var{n}} instruction pattern
 @item @samp{vcond_mask_@var{m}@var{n}}

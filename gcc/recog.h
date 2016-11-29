@@ -124,7 +124,7 @@ extern int offsettable_address_addr_space_p (int, machine_mode, rtx,
 					  ADDR_SPACE_GENERIC)
 extern bool mode_dependent_address_p (rtx, addr_space_t);
 
-extern int recog (rtx, rtx, int *);
+extern int recog (rtx, rtx_insn *, int *);
 #ifndef GENERATOR_FILE
 static inline int recog_memoized (rtx_insn *insn);
 #endif

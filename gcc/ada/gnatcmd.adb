@@ -356,6 +356,7 @@ procedure GNATCmd is
 
       if Add_Sources then
          Tempdir.Create_Temp_File (FD, Temp_File_Name);
+         Record_Temp_File (Project_Tree.Shared, Temp_File_Name);
          Last_Switches.Increment_Last;
          Last_Switches.Table (Last_Switches.Last) :=
            new String'("-files=" & Get_Name_String (Temp_File_Name));
@@ -1214,6 +1215,11 @@ begin
          end if;
 
          My_Exit_Status := Exit_Status (Spawn (Exec_Path.all, The_Args));
+
+         if not Keep_Temporary_Files then
+            Delete_All_Temp_Files (Project_Tree.Shared);
+         end if;
+
          Set_Exit_Status (My_Exit_Status);
       end;
    end;

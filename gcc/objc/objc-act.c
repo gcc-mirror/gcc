@@ -7054,7 +7054,6 @@ continue_class (tree klass)
 #endif /* OBJCPLUS */
 
 	return get_class_ivars (implementation_template, true);
-	break;
       }
     case CLASS_INTERFACE_TYPE:
       {
@@ -7070,7 +7069,6 @@ continue_class (tree klass)
 	pop_lang_context ();
 #endif /* OBJCPLUS */
 	return NULL_TREE;
-	break;
       }
     default:
       return error_mark_node;
@@ -9279,7 +9277,6 @@ objc_maybe_printable_name (tree decl, int v ATTRIBUTE_UNUSED)
     {
     case FUNCTION_DECL:
       return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
-      break;
 
       /* The following happens when we are printing a deprecation
 	 warning for a method.  The warn_deprecation() will end up
@@ -9294,17 +9291,14 @@ objc_maybe_printable_name (tree decl, int v ATTRIBUTE_UNUSED)
     case INSTANCE_METHOD_DECL:
     case CLASS_METHOD_DECL:
       return IDENTIFIER_POINTER (DECL_NAME (decl));
-      break;
       /* This happens when printing a deprecation warning for a
 	 property.  We may want to consider some sort of pretty
 	 printing (eg, include the class name where it was declared
 	 ?).  */
     case PROPERTY_DECL:
       return IDENTIFIER_POINTER (PROPERTY_NAME (decl));
-      break;
     default:
       return NULL;
-      break;
     }
 }
 

@@ -46,10 +46,13 @@ namespace filesystem
 {
 inline namespace v1
 {
+#if _GLIBCXX_INLINE_VERSION
+inline namespace __7 { }
+#endif
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_CXX11_ABI
-  inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
+inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
 #endif
 
   /**
@@ -159,7 +162,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       unknown		=  0xFFFF,
       add_perms		= 0x10000,
       remove_perms	= 0x20000,
-      resolve_symlinks	= 0x40000
+      symlink_nofollow	= 0x40000
   };
 
   constexpr perms
@@ -253,7 +256,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   operator^=(directory_options& __x, directory_options __y) noexcept
   { return __x = __x ^ __y; }
 
-  typedef chrono::time_point<chrono::system_clock> file_time_type;
+  using file_time_type = std::chrono::system_clock::time_point;
 
   // operational functions
 

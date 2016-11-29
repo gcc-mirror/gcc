@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -25,8 +25,6 @@
 // libstdc++/42573
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::__vstring vs(100, 'a');
   vs.push_back('b');
   vs.push_back('b');

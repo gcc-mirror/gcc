@@ -28,7 +28,6 @@
 // should be able to use custom char_type, custom traits type
 void test07()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::basic_stringstream<__gnu_test::pod_ushort> gnu_sstr;
 
   try
@@ -37,8 +36,7 @@ void test07()
     }
   catch(std::exception& obj)
     { 
-      test = false; 
-      VERIFY( test );
+      VERIFY( false );
     }
 }
 

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-02-10  Paolo Carlini  <paolo.carlini@oracle.com> 
 //
@@ -37,8 +37,6 @@ namespace
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   typedef std::unordered_map<std::string, int> Map;
   typedef Map::iterator       iterator;
   typedef Map::const_iterator const_iterator;

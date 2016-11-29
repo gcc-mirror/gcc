@@ -26,10 +26,6 @@ class Location
   gcc_location() const
   { return this->gcc_loc_; }
 
-  // Temporary hack till error_at and warning_at can deal with a Location.
-  operator source_location() const
-  { return this->gcc_loc_; }
-
  private:
   source_location gcc_loc_;
 };
@@ -40,6 +36,12 @@ inline bool
 operator<(Location loca, Location locb)
 {
   return loca.gcc_location() < locb.gcc_location();
+}
+
+inline bool
+operator==(Location loca, Location locb)
+{
+  return loca.gcc_location() == locb.gcc_location();
 }
 
 #endif // !defined(GO_LOCATION_H)

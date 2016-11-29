@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2011-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -26,7 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_test;
 
   std::vector<throwing_move_constructor> v1;

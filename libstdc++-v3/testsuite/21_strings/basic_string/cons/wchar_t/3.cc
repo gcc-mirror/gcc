@@ -26,7 +26,6 @@
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   const wchar_t* with_nulls = L"This contains \0 a zero byte.";
 
   // These are tests to see how basic_string handles data with NUL

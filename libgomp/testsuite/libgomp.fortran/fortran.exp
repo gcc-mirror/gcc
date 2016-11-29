@@ -7,7 +7,7 @@ global ALWAYS_CFLAGS
 
 set shlib_ext [get_shlib_extension]
 set lang_library_path	"../libgfortran/.libs"
-set lang_link_flags	"-lgfortran"
+set lang_link_flags	"-lgfortran -foffload=-lgfortran"
 if [info exists lang_include_flags] then {
     unset lang_include_flags
 }

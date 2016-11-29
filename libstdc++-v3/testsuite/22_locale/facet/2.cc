@@ -47,7 +47,6 @@ typedef surf facet_type;
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   // 1: Destroyed when out of scope.
   VERIFY( counter == 0 );

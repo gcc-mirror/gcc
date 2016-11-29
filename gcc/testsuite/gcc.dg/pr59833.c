@@ -1,5 +1,6 @@
 /* { dg-do run { target { *-*-linux* *-*-gnu* } } } */
 /* { dg-options "-O0 -lm" } */
+/* { dg-add-options ieee } */
 /* { dg-require-effective-target issignaling } */
 
 #define _GNU_SOURCE

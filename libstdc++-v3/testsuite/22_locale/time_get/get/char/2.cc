@@ -1,5 +1,5 @@
+// { dg-do run { target c++11 } }
 // { dg-require-namedlocale "de_DE.UTF-8" }
-// { dg-options " -std=gnu++11 " }
 
 // 2014-04-14 Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
@@ -26,7 +26,7 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-#ifndef _GLIBCXX_ASSERT
+#ifdef TEST_TIMEGET_VERBOSE
 #  include <iostream>
 #  define PRINT(x) cout << #x << ": " << x << endl
 #  define TESTHEAD(x) cout << x << endl
@@ -38,7 +38,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc_c = locale::classic();
   locale loc_de = locale("de_DE.UTF-8");

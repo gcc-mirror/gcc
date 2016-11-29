@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
@@ -45,7 +45,6 @@ public:
 
   void test() const
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( data_ == 3 );
   }
 };

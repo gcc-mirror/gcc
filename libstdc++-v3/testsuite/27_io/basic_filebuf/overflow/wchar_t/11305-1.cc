@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wfilebuf fb;
   locale loc(locale("en_US.UTF-8"));

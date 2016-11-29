@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<std::string> dict;
   dict.push_back("one");
   dict.push_back("two");

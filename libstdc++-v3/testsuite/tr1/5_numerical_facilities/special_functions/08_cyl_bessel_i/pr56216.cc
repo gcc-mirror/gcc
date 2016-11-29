@@ -25,8 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   double j0 = std::tr1::cyl_bessel_j(0.0, 0.0);
   double i0 = std::tr1::cyl_bessel_i(0.0, 0.0);
   double j1 = std::tr1::cyl_bessel_j(1.0, 0.0);

@@ -28,7 +28,6 @@ void
 test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   // make sure we can output a very long float
   long double val = numeric_limits<long double>::max();

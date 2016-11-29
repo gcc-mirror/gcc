@@ -29,7 +29,6 @@ void test01()
   using namespace std;
   typedef char wide_type;
 
-  bool test __attribute__((unused)) = true;
   const locale loc_c = locale::classic();
   const ctype<wide_type>& ctype_c = use_facet<ctype<wide_type> >(loc_c); 
 

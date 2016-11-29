@@ -710,21 +710,6 @@ make_new_block (struct function *fn, unsigned int index)
 }
 
 
-/* Read a wide-int.  */
-
-static widest_int
-streamer_read_wi (struct lto_input_block *ib)
-{
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
-  int i;
-  int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
-  int len = streamer_read_uhwi (ib);
-  for (i = 0; i < len; i++)
-    a[i] = streamer_read_hwi (ib);
-  return widest_int::from_array (a, len);
-}
-
-
 /* Read the CFG for function FN from input block IB.  */
 
 static void
@@ -834,13 +819,13 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
       loop->estimate_state = streamer_read_enum (ib, loop_estimation, EST_LAST);
       loop->any_upper_bound = streamer_read_hwi (ib);
       if (loop->any_upper_bound)
-	loop->nb_iterations_upper_bound = streamer_read_wi (ib);
+	loop->nb_iterations_upper_bound = streamer_read_widest_int (ib);
       loop->any_likely_upper_bound = streamer_read_hwi (ib);
       if (loop->any_likely_upper_bound)
-	loop->nb_iterations_likely_upper_bound = streamer_read_wi (ib);
+	loop->nb_iterations_likely_upper_bound = streamer_read_widest_int (ib);
       loop->any_estimate = streamer_read_hwi (ib);
       if (loop->any_estimate)
-	loop->nb_iterations_estimate = streamer_read_wi (ib);
+	loop->nb_iterations_estimate = streamer_read_widest_int (ib);
 
       /* Read OMP SIMD related info.  */
       loop->safelen = streamer_read_hwi (ib);
@@ -904,13 +889,16 @@ static void
 fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple **stmts,
 			 struct function *fn)
 {
+#define STMT_UID_NOT_IN_RANGE(uid) \
+  (gimple_stmt_max_uid (fn) < uid || uid == 0)
+
   struct cgraph_edge *cedge;
   struct ipa_ref *ref = NULL;
   unsigned int i;
 
   for (cedge = node->callees; cedge; cedge = cedge->next_callee)
     {
-      if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
+      if (STMT_UID_NOT_IN_RANGE (cedge->lto_stmt_uid))
         fatal_error (input_location,
 		     "Cgraph edge statement index out of range");
       cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
@@ -920,7 +908,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple **stmts,
     }
   for (cedge = node->indirect_calls; cedge; cedge = cedge->next_callee)
     {
-      if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
+      if (STMT_UID_NOT_IN_RANGE (cedge->lto_stmt_uid))
         fatal_error (input_location,
 		     "Cgraph edge statement index out of range");
       cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
@@ -930,7 +918,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple **stmts,
   for (i = 0; node->iterate_reference (i, ref); i++)
     if (ref->lto_stmt_uid)
       {
-	if (gimple_stmt_max_uid (fn) < ref->lto_stmt_uid)
+	if (STMT_UID_NOT_IN_RANGE (ref->lto_stmt_uid))
 	  fatal_error (input_location,
 		       "Reference statement index out of range");
 	ref->stmt = stmts[ref->lto_stmt_uid - 1];
@@ -952,7 +940,8 @@ fixup_call_stmt_edges (struct cgraph_node *orig, gimple **stmts)
     orig = orig->clone_of;
   fn = DECL_STRUCT_FUNCTION (orig->decl);
 
-  fixup_call_stmt_edges_1 (orig, stmts, fn);
+  if (!orig->thunk.thunk_p)
+    fixup_call_stmt_edges_1 (orig, stmts, fn);
   if (orig->clones)
     for (node = orig->clones; node != orig;)
       {
@@ -1051,6 +1040,9 @@ input_function (tree fn_decl, struct data_in *data_in,
 
   /* Read the tree of lexical scopes for the function.  */
   DECL_INITIAL (fn_decl) = stream_read_tree (ib, data_in);
+  unsigned block_leaf_count = streamer_read_uhwi (ib);
+  while (block_leaf_count--)
+    stream_read_tree (ib, data_in);
 
   if (!streamer_read_uhwi (ib))
     return;
@@ -1302,10 +1294,6 @@ lto_read_tree_1 (struct lto_input_block *ib, struct data_in *data_in, tree expr)
       && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
     DECL_INITIAL (expr) = stream_read_tree (ib, data_in);
 
-  /* We should never try to instantiate an MD or NORMAL builtin here.  */
-  if (TREE_CODE (expr) == FUNCTION_DECL)
-    gcc_assert (!streamer_handle_as_builtin_p (expr));
-
 #ifdef LTO_STREAMER_DEBUG
   /* Remove the mapping to RESULT's original address set by
      streamer_alloc_tree.  */
@@ -1368,7 +1356,6 @@ lto_input_scc (struct lto_input_block *ib, struct data_in *data_in,
 	  if (tag == LTO_null
 	      || (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
 	      || tag == LTO_tree_pickle_reference
-	      || tag == LTO_builtin_decl
 	      || tag == LTO_integer_cst
 	      || tag == LTO_tree_scc)
 	    gcc_unreachable ();
@@ -1419,12 +1406,6 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
       /* If TAG is a reference to a previously read tree, look it up in
 	 the reader cache.  */
       result = streamer_get_pickled_tree (ib, data_in);
-    }
-  else if (tag == LTO_builtin_decl)
-    {
-      /* If we are going to read a built-in function, all we need is
-	 the code and class.  */
-      result = streamer_get_builtin_tree (ib, data_in);
     }
   else if (tag == LTO_integer_cst)
     {

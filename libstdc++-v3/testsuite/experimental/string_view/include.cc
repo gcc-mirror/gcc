@@ -19,7 +19,7 @@
 
 // NB: This issue affected only debug-mode.
 
-// { dg-options "-std=gnu++14 -fno-rtti" }
-// { dg-do compile }
+// { dg-options "-fno-rtti" }
+// { dg-do compile { target c++14 } }
 
 #include <experimental/string_view>

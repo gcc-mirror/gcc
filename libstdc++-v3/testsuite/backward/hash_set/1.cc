@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   const int werte[] = { 1, 25, 9, 16, -36};
   const int anzahl = sizeof(werte) / sizeof(int);
   __gnu_cxx::hash_set<int> intTable(werte, werte + anzahl);

@@ -29,7 +29,6 @@ class Buf : public std::streambuf
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   Buf buf;
   ostream stream(&buf);

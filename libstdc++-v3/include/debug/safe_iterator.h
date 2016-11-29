@@ -295,7 +295,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock(this->_M_get_mutex());
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
 	++base();
 	return *this;
       }

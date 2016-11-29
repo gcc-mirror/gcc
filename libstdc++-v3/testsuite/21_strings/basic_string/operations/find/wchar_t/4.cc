@@ -25,7 +25,6 @@
 // libstdc++/31401
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   csize_type npos = std::wstring::npos;
 

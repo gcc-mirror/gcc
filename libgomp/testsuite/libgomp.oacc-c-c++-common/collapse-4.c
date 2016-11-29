@@ -11,7 +11,7 @@ main (void)
 
   memset (b, '\0', sizeof (b));
 
-#pragma acc parallel copy(b[0:3][0:3]) copy(l)
+#pragma acc parallel copy(b[0:3][0:3])
     {
 #pragma acc loop collapse(2) reduction(+:l)
 	for (i = 0; i < 2; i++)

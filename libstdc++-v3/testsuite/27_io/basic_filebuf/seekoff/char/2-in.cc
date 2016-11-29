@@ -40,7 +40,6 @@ void test05()
   typedef filebuf::off_type 	off_type;
   typedef filebuf::traits_type 	traits_type;
 
-  bool test __attribute__((unused)) = true;
   streamsize 			strmsz_1;
 
   int_type c1;

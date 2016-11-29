@@ -62,7 +62,6 @@ int
 test01()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::tr1::shared_ptr<A> a(new A);
   std::auto_ptr<B> b(new B);

@@ -1,4 +1,4 @@
-! {dg-do run}
+! { dg-do run }
 !
 ! Contributed by Andre Vehreschild
 ! Check more elaborate class array addressing.

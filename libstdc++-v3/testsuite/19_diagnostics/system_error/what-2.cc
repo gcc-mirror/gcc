@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
@@ -32,7 +32,6 @@ public:
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   try
     { throw fuzzy_logic(); }
   catch(const fuzzy_logic& obj)

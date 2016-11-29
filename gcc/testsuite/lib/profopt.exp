@@ -283,7 +283,7 @@ proc auto-profopt-execute { src } {
 
     if { ! [check_profiling_available "-fauto-profile"] } {
         regsub "(?q)$srcdir/" $src "" testcase
-        unsupported "$testcase"
+        unsupported "$src -fauto-profile"
         return
     }
     set profile_wrapper [profopt-perf-wrapper]
@@ -388,7 +388,7 @@ proc profopt-execute { src } {
 	# valid, by running it after dg-additional-files-options.
 	foreach ext $prof_ext {
 	    profopt-target-cleanup $tmpdir $base $ext
-	    profopt-target-cleanup $tmpdir perf data
+	    profopt-target-cleanup $tmpdir $base "perf.data"
 	}
 
 	# Tree profiling requires TLS runtime support, which may need
@@ -417,8 +417,8 @@ proc profopt-execute { src } {
 	    }
 	    set orig_ld_library_path "[getenv LD_LIBRARY_PATH]"
 	    setenv LD_LIBRARY_PATH "$ld_library_path:$orig_ld_library_path"
-	    verbose -log "Running $profile_wrapper $execname1"
-	    set id [remote_spawn "" "$profile_wrapper $execname1" "readonly"]
+	    verbose -log "Running $profile_wrapper -o $tmpdir/$base.perf.data $execname1"
+	    set id [remote_spawn "" "$profile_wrapper -o $tmpdir/$base.perf.data $execname1" "readonly"]
 	    setenv LD_LIBRARY_PATH $orig_ld_library_path
 	    if { $id < 0 } {
 		warning "Failed to run profiler"
@@ -439,15 +439,17 @@ proc profopt-execute { src } {
 	}
 
 	set missing_file 0
+        set bprefix ""
 	# Make sure the profile data was generated, and fail if not.
 	if { $status == "pass" } {
 	    # convert profile
 	    if { $run_autofdo == 1 } {
-		set cmd "create_gcov --binary $execname1 --profile=perf.data -gcov_version=1 --gcov=$tmpdir/$base.$ext"
+                set bprefix "afdo."
+		set cmd "create_gcov --binary $execname1 --profile=$tmpdir/$base.perf.data -gcov_version=1 --gcov=$tmpdir/$bprefix$base.$ext"
 		verbose "Running $cmd"
 		set id [remote_spawn "" $cmd]
 		if { $id < 0 } {
-		    unsupported "$testcase: Cannot run $cmd"
+		    unsupported "$src -fauto-profile: cannot run create_gcov"
 		    set status "fail"
 		    return
 		}
@@ -456,12 +458,12 @@ proc profopt-execute { src } {
 	    }
 
 	    foreach ext $prof_ext {
-		remote_upload target $tmpdir/$base.$ext
-		set files [glob -nocomplain $base.$ext]
+		remote_upload target $tmpdir/$bprefix$base.$ext
+		set files [glob -nocomplain $bprefix$base.$ext]
 		if { $files == "" } {
 		    set status "fail"
 		    set missing_file 1
-		    fail "$testcase execution: file $base.$ext does not exist, $option $profile_option"
+		    fail "$testcase execution: file $bprefix$base.$ext does not exist, $option $profile_option"
 		}
 	    }
 	}
@@ -490,7 +492,7 @@ proc profopt-execute { src } {
 	lappend options "additional_flags=$option $extra_flags $feedback_option"
 	set optstr "$option $feedback_option"
 	if { [string first "-fauto-profile" $options] >= 0} {
-	    set options [regsub -- "-fauto-profile" $options "-fauto-profile=$tmpdir/$base.$ext"]
+	    set options [regsub -- "-fauto-profile" $options "-fauto-profile=$tmpdir/$bprefix$base.$ext"]
 	}
 
 	set comp_output [${tool}_target_compile "$src" "$execname2" "executable" $options]
@@ -516,8 +518,8 @@ proc profopt-execute { src } {
 
 	# Remove the profiling data files.
 	foreach ext $prof_ext {
-	    profopt-target-cleanup $tmpdir $base $ext
-	    profopt-target-cleanup $tmpdir perf data
+	    profopt-target-cleanup $tmpdir "$bprefix$base" $ext
+	    profopt-target-cleanup $tmpdir $base "perf.data"
 	    profopt-target-cleanup $tmpdir $base "gcda.imports"
 	}
 

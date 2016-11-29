@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   struct T { };
 
   std::shared_ptr<T>                s0(new T);

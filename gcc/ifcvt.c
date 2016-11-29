@@ -26,6 +26,7 @@
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "expmed.h"
 #include "optabs.h"
@@ -435,7 +436,7 @@ cond_exec_get_condition (rtx_insn *jump)
   /* If this branches to JUMP_LABEL when the condition is false,
      reverse the condition.  */
   if (GET_CODE (XEXP (test_if, 2)) == LABEL_REF
-      && LABEL_REF_LABEL (XEXP (test_if, 2)) == JUMP_LABEL (jump))
+      && label_ref_label (XEXP (test_if, 2)) == JUMP_LABEL (jump))
     {
       enum rtx_code rev = reversed_comparison_code (cond, jump);
       if (rev == UNKNOWN)
@@ -811,8 +812,10 @@ struct noce_if_info
      we're optimizing for size.  */
   bool speed_p;
 
-  /* The combined cost of COND, JUMP and the costs for THEN_BB and
-     ELSE_BB.  */
+  /* An estimate of the original costs.  When optimizing for size, this is the
+     combined cost of COND, JUMP and the costs for THEN_BB and ELSE_BB.
+     When optimizing for speed, we use the costs of COND plus the minimum of
+     the costs for THEN_BB and ELSE_BB, as computed in the next field.  */
   unsigned int original_cost;
 
   /* Maximum permissible cost for the unconditional sequence we should
@@ -851,12 +854,12 @@ noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
   /* Cost up the new sequence.  */
   unsigned int cost = seq_cost (seq, speed_p);
 
+  if (cost <= if_info->original_cost)
+    return true;
+
   /* When compiling for size, we can make a reasonably accurately guess
-     at the size growth.  */
-  if (!speed_p)
-    return cost <= if_info->original_cost;
-  else
-    return cost <= if_info->max_seq_cost;
+     at the size growth.  When compiling for speed, use the maximum.  */
+  return speed_p && cost <= if_info->max_seq_cost;
 }
 
 /* Helper function for noce_try_store_flag*.  */
@@ -880,7 +883,7 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
       rtx set = pc_set (if_info->jump);
       cond = XEXP (SET_SRC (set), 0);
       if (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
-	  && LABEL_REF_LABEL (XEXP (SET_SRC (set), 2)) == JUMP_LABEL (if_info->jump))
+	  && label_ref_label (XEXP (SET_SRC (set), 2)) == JUMP_LABEL (if_info->jump))
 	reversep = !reversep;
       if (if_info->then_else_reversed)
 	reversep = !reversep;
@@ -1417,11 +1420,11 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	    gcc_unreachable ();
 	}
       /* Is this (cond) ? 2^n : 0?  */
-      else if (ifalse == 0 && exact_log2 (itrue) >= 0
+      else if (ifalse == 0 && pow2p_hwi (itrue)
 	       && STORE_FLAG_VALUE == 1)
 	normalize = 1;
       /* Is this (cond) ? 0 : 2^n?  */
-      else if (itrue == 0 && exact_log2 (ifalse) >= 0 && can_reverse
+      else if (itrue == 0 && pow2p_hwi (ifalse) && can_reverse
 	       && STORE_FLAG_VALUE == 1)
 	{
 	  normalize = 1;
@@ -2347,7 +2350,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
   cond = XEXP (SET_SRC (set), 0);
   reverse
     = GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
-      && LABEL_REF_LABEL (XEXP (SET_SRC (set), 2)) == JUMP_LABEL (if_info->jump);
+      && label_ref_label (XEXP (SET_SRC (set), 2)) == JUMP_LABEL (if_info->jump);
   if (if_info->then_else_reversed)
     reverse = !reverse;
 
@@ -2954,7 +2957,7 @@ noce_get_condition (rtx_insn *jump, rtx_insn **earliest, bool then_else_reversed
   /* If this branches to JUMP_LABEL when the condition is false,
      reverse the condition.  */
   reverse = (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
-	     && LABEL_REF_LABEL (XEXP (SET_SRC (set), 2)) == JUMP_LABEL (jump));
+	     && label_ref_label (XEXP (SET_SRC (set), 2)) == JUMP_LABEL (jump));
 
   /* We may have to reverse because the caller's if block is not canonical,
      i.e. the THEN block isn't the fallthrough block for the TEST block
@@ -3440,14 +3443,23 @@ noce_process_if_block (struct noce_if_info *if_info)
 	}
     }
 
-  if (! bb_valid_for_noce_process_p (then_bb, cond, &if_info->original_cost,
+  bool speed_p = optimize_bb_for_speed_p (test_bb);
+  unsigned int then_cost = 0, else_cost = 0;
+  if (!bb_valid_for_noce_process_p (then_bb, cond, &then_cost,
 				    &if_info->then_simple))
     return false;
 
   if (else_bb
-      && ! bb_valid_for_noce_process_p (else_bb, cond, &if_info->original_cost,
-				      &if_info->else_simple))
+      && !bb_valid_for_noce_process_p (else_bb, cond, &else_cost,
+				       &if_info->else_simple))
     return false;
+
+  if (else_bb == NULL)
+    if_info->original_cost += then_cost;
+  else if (speed_p)
+    if_info->original_cost += MIN (then_cost, else_cost);
+  else
+    if_info->original_cost += then_cost + else_cost;
 
   insn_a = last_active_insn (then_bb, FALSE);
   set_a = single_set (insn_a);

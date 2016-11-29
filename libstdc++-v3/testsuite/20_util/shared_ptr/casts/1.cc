@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
@@ -21,8 +21,6 @@
 
 #include <memory>
 #include <testsuite_tr1.h>
-
-// { dg-do compile }
 
 struct MyP { virtual ~MyP() { }; };
 struct MyDP : MyP { };

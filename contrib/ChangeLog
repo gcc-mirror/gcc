@@ -1,3 +1,53 @@
+2016-10-24  Moritz Klammler  <moritz@glammler.eu>
+
+	PR other/61439
+	* download_prerequisites: Conditionally verify checksums of
+	downloaded pacakges.  Add help text.  
+	* prerequisites.md5: New file.
+	* prerequisites.sha512: New file.
+
+2016-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* check_GNU_style.sh (remove_testsuite): New function.
+	Use it to remove testsuite from the diff.
+
+2016-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Revert bogus change.
+
+2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* dg-extract-results.py: Report DejaGnu error in the final
+	summary.
+	* dg-extract-results.sh: Likewise.
+
+2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Take ERROR messages into account when
+          comparing.
+
+2016-08-17  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Mark as spam all comments done by a creator.
+
+2016-08-15  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Add error handling and reset
+	another properties of attachments and bugs.
+
+2016-08-11  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Mark attachments as obsolete and rename them.
+
+2016-08-03  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	* download_prerequisites: Explicitly remove existing symlinks
+	before trying to create new ones.
+
+2016-07-28  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: New file.
+
 2016-07-21  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: If there's no loop, do not calculate

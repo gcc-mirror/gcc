@@ -115,6 +115,21 @@ fold_unary_intrinsic (gfc_intrinsic_op op)
 }
 
 
+/* Return the operator depending on the DTIO moded string.  Note that
+   these are not operators in the normal sense and so have been placed
+   beyond GFC_INTRINSIC_END in gfortran.h:enum gfc_intrinsic_op.  */
+
+static gfc_intrinsic_op
+dtio_op (char* mode)
+{
+  if (strncmp (mode, "formatted", 9) == 0)
+    return INTRINSIC_FORMATTED;
+  if (strncmp (mode, "unformatted", 9) == 0)
+    return INTRINSIC_UNFORMATTED;
+  return INTRINSIC_NONE;
+}
+
+
 /* Match a generic specification.  Depending on which type of
    interface is found, the 'name' or 'op' pointers may be set.
    This subroutine doesn't return MATCH_NO.  */
@@ -160,6 +175,40 @@ gfc_match_generic_spec (interface_type *type,
       strcpy (name, buffer);
       *type = INTERFACE_USER_OP;
       return MATCH_YES;
+    }
+
+  if (gfc_match (" read ( %n )", buffer) == MATCH_YES)
+    {
+      *op = dtio_op (buffer);
+      if (*op == INTRINSIC_FORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_RF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op == INTRINSIC_UNFORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_RUF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op != INTRINSIC_NONE)
+	return MATCH_YES;
+    }
+
+  if (gfc_match (" write ( %n )", buffer) == MATCH_YES)
+    {
+      *op = dtio_op (buffer);
+      if (*op == INTRINSIC_FORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_WF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op == INTRINSIC_UNFORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_WUF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op != INTRINSIC_NONE)
+	return MATCH_YES;
     }
 
   if (gfc_match_name (buffer) == MATCH_YES)
@@ -209,6 +258,7 @@ gfc_match_interface (void)
 
   switch (type)
     {
+    case INTERFACE_DTIO:
     case INTERFACE_GENERIC:
       if (gfc_get_symbol (name, NULL, &sym))
 	return MATCH_ERROR;
@@ -349,7 +399,7 @@ gfc_match_end_interface (void)
 	      if (strcmp(s2, "none") == 0)
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> "
 			   "at %C, ", s1);
-	      else		
+	      else
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> at %C, "
 			   "but got %s", s1, s2);
 	    }
@@ -371,6 +421,7 @@ gfc_match_end_interface (void)
 
       break;
 
+    case INTERFACE_DTIO:
     case INTERFACE_GENERIC:
       if (type != current_interface.type
 	  || strcmp (current_interface.sym->name, name) != 0)
@@ -387,26 +438,46 @@ gfc_match_end_interface (void)
 }
 
 
+/* Return whether the component was defined anonymously.  */
+
+static bool
+is_anonymous_component (gfc_component *cmp)
+{
+  /* Only UNION and MAP components are anonymous.  In the case of a MAP,
+     the derived type symbol is FL_STRUCT and the component name looks like mM*.
+     This is the only case in which the second character of a component name is
+     uppercase.  */
+  return cmp->ts.type == BT_UNION
+    || (cmp->ts.type == BT_DERIVED
+        && cmp->ts.u.derived->attr.flavor == FL_STRUCT
+        && cmp->name[0] && cmp->name[1] && ISUPPER (cmp->name[1]));
+}
+
+
+/* Return whether the derived type was defined anonymously.  */
+
+static bool
+is_anonymous_dt (gfc_symbol *derived)
+{
+  /* UNION and MAP types are always anonymous. Otherwise, only nested STRUCTURE
+     types can be anonymous.  For anonymous MAP/STRUCTURE, we have FL_STRUCT
+     and the type name looks like XX*.  This is the only case in which the
+     second character of a type name is uppercase.  */
+  return derived->attr.flavor == FL_UNION
+    || (derived->attr.flavor == FL_STRUCT
+        && derived->name[0] && derived->name[1] && ISUPPER (derived->name[1]));
+}
+
+
 /* Compare components according to 4.4.2 of the Fortran standard.  */
 
 static int
 compare_components (gfc_component *cmp1, gfc_component *cmp2,
     gfc_symbol *derived1, gfc_symbol *derived2)
 {
-  gfc_symbol *d1, *d2;
-  bool anonymous = false;
-
-  /* Unions, maps, and anonymous structures all have names like "[xX]X$\d+"
-     which should not be compared.  */
-  d1 = cmp1->ts.u.derived;
-  d2 = cmp2->ts.u.derived;
-  if (   (d1 && (d1->attr.flavor == FL_STRUCT || d1->attr.flavor == FL_UNION)
-          && ISUPPER (cmp1->name[1]))
-      || (d2 && (d2->attr.flavor == FL_STRUCT || d2->attr.flavor == FL_UNION)
-          && ISUPPER (cmp1->name[1])))
-    anonymous = true;
-
-  if (!anonymous && strcmp (cmp1->name, cmp2->name) != 0)
+  /* Compare names, but not for anonymous components such as UNION or MAP.  */
+  if (!is_anonymous_component (cmp1) && !is_anonymous_component (cmp2)
+      && strcmp (cmp1->name, cmp2->name) != 0)
     return 0;
 
   if (cmp1->attr.access != cmp2->attr.access)
@@ -423,6 +494,17 @@ compare_components (gfc_component *cmp1, gfc_component *cmp2,
 
   if (cmp1->attr.dimension && gfc_compare_array_spec (cmp1->as, cmp2->as) == 0)
     return 0;
+
+  if (cmp1->ts.type == BT_CHARACTER && cmp2->ts.type == BT_CHARACTER)
+    {
+      gfc_charlen *l1 = cmp1->ts.u.cl;
+      gfc_charlen *l2 = cmp2->ts.u.cl;
+      if (l1 && l2 && l1->length && l2->length
+          && l1->length->expr_type == EXPR_CONSTANT
+          && l2->length->expr_type == EXPR_CONSTANT
+          && gfc_dep_compare_expr (l1->length, l2->length) != 0)
+        return 0;
+    }
 
   /* Make sure that link lists do not put this function into an
      endless recursive loop!  */
@@ -455,9 +537,16 @@ int
 gfc_compare_union_types (gfc_symbol *un1, gfc_symbol *un2)
 {
   gfc_component *map1, *map2, *cmp1, *cmp2;
+  gfc_symbol *map1_t, *map2_t;
 
   if (un1->attr.flavor != FL_UNION || un2->attr.flavor != FL_UNION)
     return 0;
+
+  if (un1->attr.zero_comp != un2->attr.zero_comp)
+    return 0;
+
+  if (un1->attr.zero_comp)
+    return 1;
 
   map1 = un1->components;
   map2 = un2->components;
@@ -469,36 +558,46 @@ gfc_compare_union_types (gfc_symbol *un1, gfc_symbol *un2)
      we will say they are not equal for the purposes of this test; therefore
      we compare the maps sequentially. */
   for (;;)
-  {
-    cmp1 = map1->ts.u.derived->components;
-    cmp2 = map2->ts.u.derived->components;
-    for (;;)
     {
-      /* No two fields will ever point to the same map type unless they are
-         the same component, because one map field is created with its type
-         declaration. Therefore don't worry about recursion here. */
-      /* TODO: worry about recursion into parent types of the unions? */
-      if (compare_components (cmp1, cmp2,
-            map1->ts.u.derived, map2->ts.u.derived) == 0)
-        return 0;
+      map1_t = map1->ts.u.derived;
+      map2_t = map2->ts.u.derived;
 
-      cmp1 = cmp1->next;
-      cmp2 = cmp2->next;
+      cmp1 = map1_t->components;
+      cmp2 = map2_t->components;
 
-      if (cmp1 == NULL && cmp2 == NULL)
-        break;
-      if (cmp1 == NULL || cmp2 == NULL)
-        return 0;
+      /* Protect against null components.  */
+      if (map1_t->attr.zero_comp != map2_t->attr.zero_comp)
+	return 0;
+
+      if (map1_t->attr.zero_comp)
+	return 1;
+
+      for (;;)
+	{
+	  /* No two fields will ever point to the same map type unless they are
+	     the same component, because one map field is created with its type
+	     declaration. Therefore don't worry about recursion here. */
+	  /* TODO: worry about recursion into parent types of the unions? */
+	  if (compare_components (cmp1, cmp2, map1_t, map2_t) == 0)
+	    return 0;
+
+	  cmp1 = cmp1->next;
+	  cmp2 = cmp2->next;
+
+	  if (cmp1 == NULL && cmp2 == NULL)
+	    break;
+	  if (cmp1 == NULL || cmp2 == NULL)
+	    return 0;
+	}
+
+      map1 = map1->next;
+      map2 = map2->next;
+
+      if (map1 == NULL && map2 == NULL)
+	break;
+      if (map1 == NULL || map2 == NULL)
+	return 0;
     }
-
-    map1 = map1->next;
-    map2 = map2->next;
-
-    if (map1 == NULL && map2 == NULL)
-      break;
-    if (map1 == NULL || map2 == NULL)
-      return 0;
-  }
 
   return 1;
 }
@@ -512,21 +611,16 @@ int
 gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 {
   gfc_component *cmp1, *cmp2;
-  bool anonymous = false;
 
   if (derived1 == derived2)
     return 1;
 
-  gcc_assert (derived1 && derived2);
+  if (!derived1 || !derived2)
+    gfc_internal_error ("gfc_compare_derived_types: invalid derived type");
 
-  /* MAP and anonymous STRUCTURE types have internal names of the form
-     mM* and sS* (we can get away this this because source names are converted
-     to lowerase). Compare anonymous type names specially because each
-     gets a unique name when it is declared. */
-  anonymous = (derived1->name[0] == derived2->name[0]
-      && derived1->name[1] && derived2->name[1] && derived2->name[2]
-      && derived1->name[1] == (char) TOUPPER (derived1->name[0])
-      && derived2->name[2] == (char) TOUPPER (derived2->name[0]));
+  /* Compare UNION types specially.  */
+  if (derived1->attr.flavor == FL_UNION || derived2->attr.flavor == FL_UNION)
+    return gfc_compare_union_types (derived1, derived2);
 
   /* Special case for comparing derived types across namespaces.  If the
      true names and module names are the same and the module name is
@@ -541,7 +635,9 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
      because they can be anonymous; therefore two structures with different
      names may be equal.  */
 
-  if (strcmp (derived1->name, derived2->name) != 0 && !anonymous)
+  /* Compare names, but not for anonymous types such as UNION or MAP.  */
+  if (!is_anonymous_dt (derived1) && !is_anonymous_dt (derived2)
+      && strcmp (derived1->name, derived2->name) != 0)
     return 0;
 
   if (derived1->component_access == ACCESS_PRIVATE
@@ -616,13 +712,14 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
       && (ts1->u.derived->attr.sequence || ts1->u.derived->attr.is_bind_c))
     return 1;
 
-  if (ts1->type == BT_UNION && ts2->type == BT_UNION)
+  if (ts1->type != ts2->type
+      && ((ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
+	  || (ts2->type != BT_DERIVED && ts2->type != BT_CLASS)))
+    return 0;
+
+  if (ts1->type == BT_UNION)
     return gfc_compare_union_types (ts1->u.derived, ts2->u.derived);
 
-  if (ts1->type != ts2->type
-      && ((!gfc_bt_struct (ts1->type) && ts1->type != BT_CLASS)
-	  || (!gfc_bt_struct (ts2->type) && ts2->type != BT_CLASS)))
-    return 0;
   if (ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
     return (ts1->kind == ts2->kind);
 
@@ -1604,14 +1701,23 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
   f1 = gfc_sym_get_dummy_args (s1);
   f2 = gfc_sym_get_dummy_args (s2);
 
+  /* Special case: No arguments.  */
   if (f1 == NULL && f2 == NULL)
-    return 1;			/* Special case: No arguments.  */
+    return 1;
 
   if (generic_flag)
     {
       if (count_types_test (f1, f2, p1, p2)
 	  || count_types_test (f2, f1, p2, p1))
 	return 0;
+
+      /* Special case: alternate returns.  If both f1->sym and f2->sym are
+	 NULL, then the leading formal arguments are alternate returns.  
+	 The previous conditional should catch argument lists with 
+	 different number of argument.  */
+      if (f1 && f1->sym == NULL && f2 && f2->sym == NULL)
+	return 1;
+
       if (generic_correspondence (f1, f2, p1, p2)
 	  || generic_correspondence (f2, f1, p2, p1))
 	return 0;
@@ -1622,11 +1728,9 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
        This is also done when comparing interfaces for dummy procedures and in
        procedure pointer assignments.  */
 
-    for (;;)
+    for (; f1 || f2; f1 = f1->next, f2 = f2->next)
       {
 	/* Check existence.  */
-	if (f1 == NULL && f2 == NULL)
-	  break;
 	if (f1 == NULL || f2 == NULL)
 	  {
 	    if (errmsg != NULL)
@@ -1634,9 +1738,6 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			"arguments", name2);
 	    return 0;
 	  }
-
-	if (UNLIMITED_POLY (f1->sym))
-	  goto next;
 
 	if (strict_flag)
 	  {
@@ -1666,9 +1767,6 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 		return 0;
 	      }
 	  }
-next:
-	f1 = f1->next;
-	f2 = f2->next;
       }
 
   return 1;
@@ -1779,13 +1877,15 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 				       generic_flag, 0, NULL, 0, NULL, NULL))
 	  {
 	    if (referenced)
-	      gfc_error ("Ambiguous interfaces %qs and %qs in %s at %L",
-			 p->sym->name, q->sym->name, interface_name,
-			 &p->where);
+	      gfc_error ("Ambiguous interfaces in %s for %qs at %L "
+			 "and %qs at %L", interface_name,
+			 q->sym->name, &q->sym->declared_at,
+			 p->sym->name, &p->sym->declared_at);
 	    else if (!p->sym->attr.use_assoc && q->sym->attr.use_assoc)
-	      gfc_warning (0, "Ambiguous interfaces %qs and %qs in %s at %L",
-			   p->sym->name, q->sym->name, interface_name,
-			   &p->where);
+	      gfc_warning (0, "Ambiguous interfaces in %s for %qs at %L "
+			 "and %qs at %L", interface_name,
+			 q->sym->name, &q->sym->declared_at,
+			 p->sym->name, &p->sym->declared_at);
 	    else
 	      gfc_warning (0, "Although not referenced, %qs has ambiguous "
 			   "interfaces at %L", interface_name, &p->where);
@@ -2031,17 +2131,17 @@ argument_rank_mismatch (const char *name, locus *where,
     }
   else if (rank1 == 0)
     {
-      gfc_error ("Rank mismatch in argument %qs at %L "
+      gfc_error (OPT_Wargument_mismatch, "Rank mismatch in argument %qs at %L "
 		 "(scalar and rank-%d)", name, where, rank2);
     }
   else if (rank2 == 0)
     {
-      gfc_error ("Rank mismatch in argument %qs at %L "
+      gfc_error (OPT_Wargument_mismatch, "Rank mismatch in argument %qs at %L "
 		 "(rank-%d and scalar)", name, where, rank1);
     }
   else
     {
-      gfc_error ("Rank mismatch in argument %qs at %L "
+      gfc_error (OPT_Wargument_mismatch, "Rank mismatch in argument %qs at %L "
 		 "(rank-%d and rank-%d)", name, where, rank1, rank2);
     }
 }
@@ -2092,7 +2192,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error ("Interface mismatch in dummy procedure %qs at %L: %s",
+	    gfc_error (OPT_Wargument_mismatch,
+		       "Interface mismatch in dummy procedure %qs at %L: %s",
 		       formal->name, &actual->where, err);
 	  return 0;
 	}
@@ -2119,7 +2220,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   err, sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error ("Interface mismatch in dummy procedure %qs at %L: %s",
+	    gfc_error (OPT_Wargument_mismatch,
+		       "Interface mismatch in dummy procedure %qs at %L: %s",
 		       formal->name, &actual->where, err);
 	  return 0;
 	}
@@ -2145,8 +2247,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 					 CLASS_DATA (actual)->ts.u.derived)))
     {
       if (where)
-	gfc_error ("Type mismatch in argument %qs at %L; passed %s to %s",
-		   formal->name, &actual->where, gfc_typename (&actual->ts),
+	gfc_error (OPT_Wargument_mismatch,
+		   "Type mismatch in argument %qs at %L; passed %s to %s",
+		   formal->name, where, gfc_typename (&actual->ts),
 		   gfc_typename (&formal->ts));
       return 0;
     }
@@ -2849,7 +2952,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			f->sym->ts.u.cl->length->value.integer) != 0))
 	 {
 	   if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
-	     gfc_warning (0,
+	     gfc_warning (OPT_Wargument_mismatch,
 			  "Character length mismatch (%ld/%ld) between actual "
 			  "argument and pointer or allocatable dummy argument "
 			  "%qs at %L",
@@ -2857,7 +2960,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
 			  f->sym->name, &a->expr->where);
 	   else if (where)
-	     gfc_warning (0,
+	     gfc_warning (OPT_Wargument_mismatch,
 			  "Character length mismatch (%ld/%ld) between actual "
 			  "argument and assumed-shape dummy argument %qs "
 			  "at %L",
@@ -2889,12 +2992,14 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && f->sym->attr.flavor != FL_PROCEDURE)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
-	    gfc_warning (0, "Character length of actual argument shorter "
+	    gfc_warning (OPT_Wargument_mismatch,
+			 "Character length of actual argument shorter "
 			 "than of dummy argument %qs (%lu/%lu) at %L",
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
           else if (where)
-	    gfc_warning (0, "Actual argument contains too few "
+	    gfc_warning (OPT_Wargument_mismatch,
+			 "Actual argument contains too few "
 			 "elements for dummy argument %qs (%lu/%lu) at %L",
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
@@ -3077,6 +3182,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 shape array, if the dummy argument has the VOLATILE attribute.  */
 
       if (f->sym->attr.volatile_
+	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->as
 	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
 	  && !(f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
@@ -3106,6 +3212,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 dummy argument has the VOLATILE attribute.  */
 
       if (f->sym->attr.volatile_
+	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->attr.pointer
 	  && a->expr->symtree->n.sym->as
 	  && !(f->sym->as
@@ -3770,7 +3877,7 @@ matching_typebound_op (gfc_expr** tb_base,
 
 	if (base->expr->ts.type == BT_CLASS)
 	  {
-	    if (CLASS_DATA (base->expr) == NULL
+	    if (!base->expr->ts.u.derived || CLASS_DATA (base->expr) == NULL
 		|| !gfc_expr_attr (base->expr).class_ok)
 	      continue;
 	    derived = CLASS_DATA (base->expr)->ts.u.derived;
@@ -3945,7 +4052,7 @@ gfc_extend_expr (gfc_expr *e)
       else
 	return MATCH_YES;
     }
- 
+
   if (i == INTRINSIC_USER)
     {
       for (ns = gfc_current_ns; ns; ns = ns->parent)
@@ -4136,60 +4243,60 @@ gfc_add_interface (gfc_symbol *new_sym)
 	  {
 	    case INTRINSIC_EQ:
 	    case INTRINSIC_EQ_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_EQ], new_sym, 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_EQ], new_sym,
 					    gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_EQ_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_EQ_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_NE:
 	    case INTRINSIC_NE_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_NE], new_sym, 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_NE], new_sym,
 					    gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_NE_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_NE_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_GT:
 	    case INTRINSIC_GT_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GT], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GT],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_GT_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_GT_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_GE:
 	    case INTRINSIC_GE_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GE], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GE],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_GE_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_GE_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_LT:
 	    case INTRINSIC_LT_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LT], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LT],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_LT_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_LT_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_LE:
 	    case INTRINSIC_LE_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LE], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LE],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_LE_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_LE_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    default:
-	      if (!gfc_check_new_interface (ns->op[current_interface.op], 
+	      if (!gfc_check_new_interface (ns->op[current_interface.op],
 					    new_sym, gfc_current_locus))
 		return false;
 	  }
@@ -4198,13 +4305,14 @@ gfc_add_interface (gfc_symbol *new_sym)
       break;
 
     case INTERFACE_GENERIC:
+    case INTERFACE_DTIO:
       for (ns = current_interface.ns; ns; ns = ns->parent)
 	{
 	  gfc_find_symbol (current_interface.sym->name, ns, 0, &sym);
 	  if (sym == NULL)
 	    continue;
 
-	  if (!gfc_check_new_interface (sym->generic, 
+	  if (!gfc_check_new_interface (sym->generic,
 					new_sym, gfc_current_locus))
 	    return false;
 	}
@@ -4213,7 +4321,7 @@ gfc_add_interface (gfc_symbol *new_sym)
       break;
 
     case INTERFACE_USER_OP:
-      if (!gfc_check_new_interface (current_interface.uop->op, 
+      if (!gfc_check_new_interface (current_interface.uop->op,
 				    new_sym, gfc_current_locus))
 	return false;
 
@@ -4242,15 +4350,13 @@ gfc_current_interface_head (void)
     {
       case INTERFACE_INTRINSIC_OP:
 	return current_interface.ns->op[current_interface.op];
-	break;
 
       case INTERFACE_GENERIC:
+      case INTERFACE_DTIO:
 	return current_interface.sym->generic;
-	break;
 
       case INTERFACE_USER_OP:
 	return current_interface.uop->op;
-	break;
 
       default:
 	gcc_unreachable ();
@@ -4268,6 +4374,7 @@ gfc_set_current_interface_head (gfc_interface *i)
 	break;
 
       case INTERFACE_GENERIC:
+      case INTERFACE_DTIO:
 	current_interface.sym->generic = i;
 	break;
 
@@ -4439,7 +4546,8 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
       if (!gfc_check_dummy_characteristics (proc_formal->sym, old_formal->sym,
 					check_type, err, sizeof(err)))
 	{
-	  gfc_error ("Argument mismatch for the overriding procedure "
+	  gfc_error (OPT_Wargument_mismatch,
+		     "Argument mismatch for the overriding procedure "
 		     "%qs at %L: %s", proc->name, &where, err);
 	  return false;
 	}
@@ -4483,4 +4591,368 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
     }
 
   return true;
+}
+
+
+/* The following three functions check that the formal arguments
+   of user defined derived type IO procedures are compliant with
+   the requirements of the standard.  */
+
+static void
+check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
+			   int kind, int rank, sym_intent intent)
+{
+  if (fsym->ts.type != type)
+    {
+      gfc_error ("DTIO dummy argument at %L must be of type %s",
+		 &fsym->declared_at, gfc_basic_typename (type));
+      return;
+    }
+
+  if (fsym->ts.type != BT_CLASS && fsym->ts.type != BT_DERIVED
+      && fsym->ts.kind != kind)
+    gfc_error ("DTIO dummy argument at %L must be of KIND = %d",
+	       &fsym->declared_at, kind);
+
+  if (!typebound
+      && rank == 0
+      && (((type == BT_CLASS) && CLASS_DATA (fsym)->attr.dimension)
+	  || ((type != BT_CLASS) && fsym->attr.dimension)))
+    gfc_error ("DTIO dummy argument at %L be a scalar",
+	       &fsym->declared_at);
+  else if (rank == 1
+	   && (fsym->as == NULL || fsym->as->type != AS_ASSUMED_SHAPE))
+    gfc_error ("DTIO dummy argument at %L must be an "
+	       "ASSUMED SHAPE ARRAY", &fsym->declared_at);
+
+  if (fsym->attr.intent != intent)
+    gfc_error ("DTIO dummy argument at %L must have intent %s",
+	       &fsym->declared_at, gfc_code2string (intents, (int)intent));
+  return;
+}
+
+
+static void
+check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
+		       bool typebound, bool formatted, int code)
+{
+  gfc_symbol *dtio_sub, *generic_proc, *fsym;
+  gfc_typebound_proc *tb_io_proc, *specific_proc;
+  gfc_interface *intr;
+  gfc_formal_arglist *formal;
+  int arg_num;
+
+  bool read = ((dtio_codes)code == DTIO_RF)
+	       || ((dtio_codes)code == DTIO_RUF);
+  bt type;
+  sym_intent intent;
+  int kind;
+
+  dtio_sub = NULL;
+  if (typebound)
+    {
+      /* Typebound DTIO binding.  */
+      tb_io_proc = tb_io_st->n.tb;
+      if (tb_io_proc == NULL)
+	return;
+
+      gcc_assert (tb_io_proc->is_generic);
+      gcc_assert (tb_io_proc->u.generic->next == NULL);
+
+      specific_proc = tb_io_proc->u.generic->specific;
+      if (specific_proc == NULL || specific_proc->is_generic)
+	return;
+
+      dtio_sub = specific_proc->u.specific->n.sym;
+    }
+  else
+    {
+      generic_proc = tb_io_st->n.sym;
+      if (generic_proc == NULL || generic_proc->generic == NULL)
+	return;
+
+      for (intr = tb_io_st->n.sym->generic; intr; intr = intr->next)
+	{
+	  if (intr->sym && intr->sym->formal && intr->sym->formal->sym
+	      && ((intr->sym->formal->sym->ts.type == BT_CLASS
+	           && CLASS_DATA (intr->sym->formal->sym)->ts.u.derived
+							     == derived)
+		  || (intr->sym->formal->sym->ts.type == BT_DERIVED
+		      && intr->sym->formal->sym->ts.u.derived == derived)))
+	    {
+	      dtio_sub = intr->sym;
+	      break;
+	    }
+	  else if (intr->sym && intr->sym->formal && !intr->sym->formal->sym)
+	    {
+	      gfc_error ("Alternate return at %L is not permitted in a DTIO "
+			 "procedure", &intr->sym->declared_at);
+	      return;
+	    }
+	}
+
+      if (dtio_sub == NULL)
+	return;
+    }
+
+  gcc_assert (dtio_sub);
+  if (!dtio_sub->attr.subroutine)
+    gfc_error ("DTIO procedure '%s' at %L must be a subroutine",
+	       dtio_sub->name, &dtio_sub->declared_at);
+
+  arg_num = 0;
+  for (formal = dtio_sub->formal; formal; formal = formal->next)
+    arg_num++;
+
+  if (arg_num < (formatted ? 6 : 4))
+    {
+      gfc_error ("Too few dummy arguments in DTIO procedure '%s' at %L",
+		 dtio_sub->name, &dtio_sub->declared_at);
+      return;
+    }
+
+  if (arg_num > (formatted ? 6 : 4))
+    {
+      gfc_error ("Too many dummy arguments in DTIO procedure '%s' at %L",
+		 dtio_sub->name, &dtio_sub->declared_at);
+      return;
+    }
+
+
+  /* Now go through the formal arglist.  */
+  arg_num = 1;
+  for (formal = dtio_sub->formal; formal; formal = formal->next, arg_num++)
+    {
+      if (!formatted && arg_num == 3)
+	arg_num = 5;
+      fsym = formal->sym;
+
+      if (fsym == NULL)
+	{
+	  gfc_error ("Alternate return at %L is not permitted in a DTIO "
+		     "procedure", &dtio_sub->declared_at);
+	  return;
+	}
+
+      switch (arg_num)
+	{
+	case(1):			/* DTV  */
+	  type = derived->attr.sequence || derived->attr.is_bind_c ?
+		 BT_DERIVED : BT_CLASS;
+	  kind = 0;
+	  intent = read ? INTENT_INOUT : INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+
+	case(2):			/* UNIT  */
+	  type = BT_INTEGER;
+	  kind = gfc_default_integer_kind;
+	  intent = INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	case(3):			/* IOTYPE  */
+	  type = BT_CHARACTER;
+	  kind = gfc_default_character_kind;
+	  intent = INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	case(4):			/* VLIST  */
+	  type = BT_INTEGER;
+	  kind = gfc_default_integer_kind;
+	  intent = INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     1, intent);
+	  break;
+	case(5):			/* IOSTAT  */
+	  type = BT_INTEGER;
+	  kind = gfc_default_integer_kind;
+	  intent = INTENT_OUT;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	case(6):			/* IOMSG  */
+	  type = BT_CHARACTER;
+	  kind = gfc_default_character_kind;
+	  intent = INTENT_INOUT;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  derived->attr.has_dtio_procs = 1;
+  return;
+}
+
+void
+gfc_check_dtio_interfaces (gfc_symbol *derived)
+{
+  gfc_symtree *tb_io_st;
+  bool t = false;
+  int code;
+  bool formatted;
+
+  if (derived->attr.is_class == 1 || derived->attr.vtype == 1)
+    return;
+
+  /* Check typebound DTIO bindings.  */
+  for (code = 0; code < 4; code++)
+    {
+      formatted = ((dtio_codes)code == DTIO_RF)
+		   || ((dtio_codes)code == DTIO_WF);
+
+      tb_io_st = gfc_find_typebound_proc (derived, &t,
+					  gfc_code2string (dtio_procs, code),
+					  true, &derived->declared_at);
+      if (tb_io_st != NULL)
+	check_dtio_interface1 (derived, tb_io_st, true, formatted, code);
+    }
+
+  /* Check generic DTIO interfaces.  */
+  for (code = 0; code < 4; code++)
+    {
+      formatted = ((dtio_codes)code == DTIO_RF)
+		   || ((dtio_codes)code == DTIO_WF);
+
+      tb_io_st = gfc_find_symtree (derived->ns->sym_root,
+				   gfc_code2string (dtio_procs, code));
+      if (tb_io_st != NULL)
+	check_dtio_interface1 (derived, tb_io_st, false, formatted, code);
+    }
+}
+
+
+gfc_symbol *
+gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
+{
+  gfc_symtree *tb_io_st = NULL;
+  gfc_symbol *dtio_sub = NULL;
+  gfc_symbol *extended;
+  gfc_typebound_proc *tb_io_proc, *specific_proc;
+  bool t = false;
+
+  if (!derived || derived->attr.flavor != FL_DERIVED)
+    return NULL;
+
+  /* Try to find a typebound DTIO binding.  */
+  if (formatted == true)
+    {
+      if (write == true)
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_WF),
+					    true,
+					    &derived->declared_at);
+      else
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_RF),
+					    true,
+					    &derived->declared_at);
+    }
+  else
+    {
+      if (write == true)
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_WUF),
+					    true,
+					    &derived->declared_at);
+      else
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_RUF),
+					    true,
+					    &derived->declared_at);
+    }
+
+  if (tb_io_st != NULL)
+    {
+      const char *genname;
+      gfc_symtree *st;
+
+      tb_io_proc = tb_io_st->n.tb;
+      gcc_assert (tb_io_proc != NULL);
+      gcc_assert (tb_io_proc->is_generic);
+      gcc_assert (tb_io_proc->u.generic->next == NULL);
+
+      specific_proc = tb_io_proc->u.generic->specific;
+      gcc_assert (!specific_proc->is_generic);
+
+      /* Go back and make sure that we have the right specific procedure.
+	 Here we most likely have a procedure from the parent type, which
+	 can be overridden in extensions.  */
+      genname = tb_io_proc->u.generic->specific_st->name;
+      st = gfc_find_typebound_proc (derived, NULL, genname,
+				    true, &tb_io_proc->where);
+      if (st)
+	dtio_sub = st->n.tb->u.specific->n.sym;
+      else
+	dtio_sub = specific_proc->u.specific->n.sym;
+    }
+
+  if (tb_io_st != NULL)
+    goto finish;
+
+  /* If there is not a typebound binding, look for a generic
+     DTIO interface.  */
+  for (extended = derived; extended;
+       extended = gfc_get_derived_super_type (extended))
+    {
+      if (extended == NULL || extended->ns == NULL)
+	return NULL;
+
+      if (formatted == true)
+	{
+	  if (write == true)
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_WF));
+	  else
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_RF));
+	}
+      else
+	{
+	  if (write == true)
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_WUF));
+	  else
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_RUF));
+	}
+
+      if (tb_io_st != NULL
+	  && tb_io_st->n.sym
+	  && tb_io_st->n.sym->generic)
+	{
+	  gfc_interface *intr;
+	  for (intr = tb_io_st->n.sym->generic; intr; intr = intr->next)
+	    {
+	      gfc_symbol *fsym = intr->sym->formal->sym;
+	      if (intr->sym && intr->sym->formal
+		  && ((fsym->ts.type == BT_CLASS
+		      && CLASS_DATA (fsym)->ts.u.derived == extended)
+		    || (fsym->ts.type == BT_DERIVED
+			&& fsym->ts.u.derived == extended)))
+		{
+		  dtio_sub = intr->sym;
+		  break;
+		}
+	    }
+	}
+    }
+
+finish:
+  if (dtio_sub && derived != CLASS_DATA (dtio_sub->formal->sym)->ts.u.derived)
+    gfc_find_derived_vtab (derived);
+
+  return dtio_sub;
 }

@@ -27,48 +27,48 @@
 #include <stdlib.h>
 #include <errno.h>
 
-static __inline__ void* 
-_mm_malloc (size_t size, size_t align)
+static __inline__ void * 
+_mm_malloc (size_t __size, size_t __align)
 {
-  void * malloc_ptr;
-  void * aligned_ptr;
+  void * __malloc_ptr;
+  void * __aligned_ptr;
 
   /* Error if align is not a power of two.  */
-  if (align & (align - 1))
+  if (__align & (__align - 1))
     {
       errno = EINVAL;
-      return ((void*) 0);
+      return ((void *) 0);
     }
 
-  if (size == 0)
+  if (__size == 0)
     return ((void *) 0);
 
  /* Assume malloc'd pointer is aligned at least to sizeof (void*).
     If necessary, add another sizeof (void*) to store the value
     returned by malloc. Effectively this enforces a minimum alignment
     of sizeof double. */     
-    if (align < 2 * sizeof (void *))
-      align = 2 * sizeof (void *);
+    if (__align < 2 * sizeof (void *))
+      __align = 2 * sizeof (void *);
 
-  malloc_ptr = malloc (size + align);
-  if (!malloc_ptr)
+  __malloc_ptr = malloc (__size + __align);
+  if (!__malloc_ptr)
     return ((void *) 0);
 
   /* Align  We have at least sizeof (void *) space below malloc'd ptr. */
-  aligned_ptr = (void *) (((size_t) malloc_ptr + align)
-			  & ~((size_t) (align) - 1));
+  __aligned_ptr = (void *) (((size_t) __malloc_ptr + __align)
+			    & ~((size_t) (__align) - 1));
 
   /* Store the original pointer just before p.  */	
-  ((void **) aligned_ptr) [-1] = malloc_ptr;
+  ((void **) __aligned_ptr)[-1] = __malloc_ptr;
 
-  return aligned_ptr;
+  return __aligned_ptr;
 }
 
 static __inline__ void
-_mm_free (void * aligned_ptr)
+_mm_free (void *__aligned_ptr)
 {
-  if (aligned_ptr)
-    free (((void **) aligned_ptr) [-1]);
+  if (__aligned_ptr)
+    free (((void **) __aligned_ptr)[-1]);
 }
 
 #endif /* _MM_MALLOC_H_INCLUDED */

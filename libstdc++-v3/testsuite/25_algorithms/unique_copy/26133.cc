@@ -30,7 +30,6 @@ struct no_assign
 // libstdc++/26133
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::ostringstream oss1, oss2;
 
   no_assign in[4];

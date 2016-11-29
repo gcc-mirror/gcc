@@ -27,8 +27,6 @@ using namespace std::tr1;
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(tuple_size<tuple<> >::value == 0);
   VERIFY(tuple_size<tuple<int> >::value == 1);
   VERIFY(tuple_size<tuple<void> >::value == 1);

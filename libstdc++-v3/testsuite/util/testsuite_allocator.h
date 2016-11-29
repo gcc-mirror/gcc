@@ -297,6 +297,7 @@ namespace __gnu_test
 
 #if __cplusplus >= 201103L
       typedef std::true_type			propagate_on_container_swap;
+      typedef std::false_type			is_always_equal;
 #endif
 
       template<typename Tp1>
@@ -350,8 +351,6 @@ namespace __gnu_test
       void
       deallocate(pointer p, size_type n)
       {
-	bool test __attribute__((unused)) = true;
-
 	VERIFY( p );
 
 	map_type::iterator it = get_map().find(reinterpret_cast<void*>(p));

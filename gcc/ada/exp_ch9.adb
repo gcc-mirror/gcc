@@ -1106,6 +1106,7 @@ package body Exp_Ch9 is
 
    procedure Build_Class_Wide_Master (Typ : Entity_Id) is
       Loc          : constant Source_Ptr := Sloc (Typ);
+      Master_Decl  : Node_Id;
       Master_Id    : Entity_Id;
       Master_Scope : Entity_Id;
       Name_Id      : Node_Id;
@@ -1146,13 +1147,12 @@ package body Exp_Ch9 is
       --  the second transient scope requires a _master, it cannot use the one
       --  already declared because the entity is not visible.
 
-      Name_Id := Make_Identifier (Loc, Name_uMaster);
+      Name_Id     := Make_Identifier (Loc, Name_uMaster);
+      Master_Decl := Empty;
 
       if not Has_Master_Entity (Master_Scope)
         or else No (Current_Entity_In_Scope (Name_Id))
       then
-         declare
-            Master_Decl : Node_Id;
          begin
             Set_Has_Master_Entity (Master_Scope);
 
@@ -1214,7 +1214,17 @@ package body Exp_Ch9 is
           Subtype_Mark        => New_Occurrence_Of (Standard_Integer, Loc),
           Name                => Name_Id);
 
-      Insert_Action (Related_Node, Ren_Decl);
+      --  If the master is declared locally, add the renaming declaration
+      --  immediately after it, to prevent access-before-elaboration in the
+      --  back-end.
+
+      if Present (Master_Decl) then
+         Insert_After (Master_Decl, Ren_Decl);
+         Analyze (Ren_Decl);
+
+      else
+         Insert_Action (Related_Node, Ren_Decl);
+      end if;
 
       Set_Master_Id (Typ, Master_Id);
    end Build_Class_Wide_Master;
@@ -7166,6 +7176,13 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Asynchronous_Select
 
    begin
+      --  Asynchronous select is not supported on restricted runtimes. Don't
+      --  try to expand.
+
+      if Restricted_Profile then
+         return;
+      end if;
+
       Process_Statements_For_Controlled_Objects (Trig);
       Process_Statements_For_Controlled_Objects (Abrt);
 
@@ -8378,11 +8395,27 @@ package body Exp_Ch9 is
    --  simple delays imposed by the use of Protected Objects.
 
    procedure Expand_N_Delay_Relative_Statement (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc  : constant Source_Ptr := Sloc (N);
+      Proc : Entity_Id;
+
    begin
+      --  Try to use System.Relative_Delays.Delay_For only if available. This
+      --  is the implementation used on restricted platforms when Ada.Calendar
+      --  is not available.
+
+      if RTE_Available (RO_RD_Delay_For) then
+         Proc := RTE (RO_RD_Delay_For);
+
+      --  Otherwise, use Ada.Calendar.Delays.Delay_For and emit an error
+      --  message if not available.
+
+      else
+         Proc := RTE (RO_CA_Delay_For);
+      end if;
+
       Rewrite (N,
         Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (RTE (RO_CA_Delay_For), Loc),
+          Name                   => New_Occurrence_Of (Proc, Loc),
           Parameter_Associations => New_List (Expression (N))));
       Analyze (N);
    end Expand_N_Delay_Relative_Statement;

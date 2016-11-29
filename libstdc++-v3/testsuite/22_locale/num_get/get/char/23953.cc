@@ -37,7 +37,6 @@ struct Punct3: numpunct<char>
 // libstdc++/23953
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef istreambuf_iterator<char> iterator_type;
   
   istringstream iss1, iss2, iss3;

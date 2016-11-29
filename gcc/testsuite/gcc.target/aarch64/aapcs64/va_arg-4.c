@@ -29,6 +29,8 @@ struct non_hfa_ffvf2_t non_hfa_ffvf2;
 struct non_hfa_fffd_t non_hfa_fffd = {33.f, 34.f, 35.f, 36.0};
 union hfa_union_t hfa_union;
 union non_hfa_union_t non_hfa_union;
+struct hfa_f16x2_t hfa_f16x2 = {2.0f, 4.0f};
+struct hfa_f16x3_t hfa_f16x3 = {2.0f, 4.0f, 8.0f};
 
 #define HAS_DATA_INIT_FUNC
 void init_data ()
@@ -89,9 +91,12 @@ void init_data ()
   PTR_ANON (struct non_hfa_ffs_t  , non_hfa_ffs  , STACK+120, 18)
   ANON     (struct non_hfa_ffs_2_t, non_hfa_ffs_2, STACK+128, 19)
   ANON     (union  non_hfa_union_t, non_hfa_union, STACK+144, 20)
+  /* HFA of __fp16 passed on stack, directed __fp16 test is va_arg-10.c.  */
+  ANON     (struct hfa_f16x2_t    , hfa_f16x2    , STACK+152, 21)
+  ANON     (struct hfa_f16x3_t    , hfa_f16x3    , STACK+160, 22)
 #ifndef __AAPCS64_BIG_ENDIAN__
-  LAST_ANON(int                   , 2            , STACK+152, 30)
+  LAST_ANON(int                   , 2            , STACK+168, 30)
 #else
-  LAST_ANON(int                   , 2            , STACK+156, 30)
+  LAST_ANON(int                   , 2            , STACK+172, 30)
 #endif
 #endif

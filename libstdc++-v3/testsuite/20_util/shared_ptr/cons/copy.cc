@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //
@@ -61,7 +61,6 @@ struct reset_count_struct
 int test01()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<A> a1;
   std::shared_ptr<A> a2(a1);
@@ -78,7 +77,6 @@ int
 test02()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<A> a1(new A);
   std::shared_ptr<A> a2(a1);
@@ -95,7 +93,6 @@ int
 test03()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<B> b(new B);
   std::shared_ptr<A> a(b);
@@ -112,7 +109,6 @@ int
 test04()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<B> b(new B, &deleter);
   std::shared_ptr<A> a(b);

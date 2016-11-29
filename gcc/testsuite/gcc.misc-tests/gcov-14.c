@@ -1,10 +1,10 @@
 /* Test gcov extern inline.  */
 
+/* { dg-do run { target native } } */
 /* { dg-options "-O2 -fprofile-arcs -ftest-coverage -fgnu89-inline" } */
 /* The following line arranges that Darwin has behavior like elf weak import.  */
 /* { dg-additional-options "-flat_namespace -undefined suppress" { target *-*-darwin* }  } */
 /* { dg-require-weak "" } */
-/* { dg-do run { target native } } */
 /* { dg-skip-if "undefined weak not supported" { { hppa*-*-hpux* } && { ! lp64 } } } */
 /* { dg-skip-if "undefined weak not supported" { powerpc-ibm-aix* } } */
 

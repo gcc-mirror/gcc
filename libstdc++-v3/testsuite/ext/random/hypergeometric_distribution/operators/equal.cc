@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2013-11-18  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::hypergeometric_distribution<unsigned int> u(20, 3, 2), v, w;
 
   VERIFY( v == w );

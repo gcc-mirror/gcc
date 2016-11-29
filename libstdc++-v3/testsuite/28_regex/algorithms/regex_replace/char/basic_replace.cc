@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-09-24  Tim Shen <timshen91@gmail.com>
@@ -31,8 +31,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(regex_replace(string("This is a string"), regex("\\b\\w*\\b"), "|$0|")
 	 == "|This||| |is||| |a||| |string|||");
   VERIFY(regex_replace(string("This is a string"), regex("\\b\\w*\\b"), "|$0|",

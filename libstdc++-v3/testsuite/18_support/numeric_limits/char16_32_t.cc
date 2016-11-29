@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 2008-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -31,8 +31,6 @@ template<typename T, typename R>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef std::numeric_limits<T> char_type;
     typedef std::numeric_limits<R> impl_type;
 

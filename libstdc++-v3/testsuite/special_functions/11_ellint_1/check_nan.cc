@@ -1,3 +1,4 @@
+// { dg-do run { target c++11 } }
 // { dg-require-c-std "" }
 // { dg-add-options ieee }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
@@ -41,7 +42,6 @@ test01()
   long double d = std::ellint_1(kl, phil);
   long double e = std::ellint_1l(kl, phil);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));
@@ -68,7 +68,6 @@ test02()
   long double d = std::ellint_1(kl, phil);
   long double e = std::ellint_1l(kl, phil);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

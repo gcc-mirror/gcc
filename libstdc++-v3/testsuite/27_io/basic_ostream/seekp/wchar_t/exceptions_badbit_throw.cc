@@ -25,7 +25,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   __gnu_test::fail_wstreambuf bib;
   wostream stream(&bib);
@@ -54,8 +53,7 @@ void test01()
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
-  
+ 
   __gnu_test::fail_wstreambuf bib;
   wostream stream(&bib);
   stream.exceptions(ios_base::badbit);

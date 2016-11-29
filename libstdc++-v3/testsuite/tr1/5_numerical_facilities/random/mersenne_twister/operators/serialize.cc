@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::mersenne_twister;
 
   std::stringstream str;

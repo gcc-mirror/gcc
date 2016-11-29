@@ -31,7 +31,6 @@ const char name_02[] = "ofstream_members-1.txt";
 // http://gcc.gnu.org/ml/libstdc++/2000-06/msg00136.html
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::ofstream ofs1;
   ofs1.close();
   

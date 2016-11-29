@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ARC_H
 #define GCC_ARC_H
 
+#include <stdbool.h>
+
 /* Things to do:
 
    - incscc, decscc?
@@ -38,6 +40,10 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_FLAG_MEDIUM_CALL	(SYMBOL_FLAG_MACH_DEP << 1)
 #define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 2)
 #define SYMBOL_FLAG_CMEM	(SYMBOL_FLAG_MACH_DEP << 3)
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT	PROCESSOR_arc700
+#endif
 
 /* Check if this symbol has a long_call attribute in its declaration */
 #define SYMBOL_REF_LONG_CALL_P(X)	\
@@ -64,61 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef CC1_SPEC
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define TARGET_CPU_CPP_BUILTINS()	\
- do {					\
-    builtin_define ("__arc__");		\
-    if (TARGET_ARC600)			\
-      {					\
-	builtin_define ("__A6__");	\
-	builtin_define ("__ARC600__");	\
-      }					\
-    else if (TARGET_ARC601)			\
-      {					\
-	builtin_define ("__ARC601__");	\
-      }					\
-    else if (TARGET_ARC700)			\
-      {					\
-	builtin_define ("__A7__");	\
-	builtin_define ("__ARC700__");	\
-      }					\
-    else if (TARGET_EM)			\
-      {					\
-	builtin_define ("__EM__");	\
-      }					\
-    else if (TARGET_HS)			\
-      {					\
-	builtin_define ("__HS__");	\
-      }					\
-    if (TARGET_ATOMIC)			\
-      {					\
-	builtin_define ("__ARC_ATOMIC__");	\
-      }					\
-    if (TARGET_NORM)			\
-      {					\
-	builtin_define ("__ARC_NORM__");\
-	builtin_define ("__Xnorm");	\
-      }					\
-    if (TARGET_LL64)			\
-      {					\
-	builtin_define ("__ARC_LL64__");\
-      }					\
-    if (TARGET_MUL64_SET)		\
-      builtin_define ("__ARC_MUL64__");\
-    if (TARGET_MULMAC_32BY16_SET)	\
-      builtin_define ("__ARC_MUL32BY16__");\
-    if (TARGET_SIMD_SET)        	\
-      builtin_define ("__ARC_SIMD__");	\
-    if (TARGET_BARREL_SHIFTER)		\
-      builtin_define ("__Xbarrel_shifter");\
-    builtin_define_with_int_value ("__ARC_TLS_REGNO__", \
-				   arc_tp_regno);	\
-    builtin_assert ("cpu=arc");		\
-    builtin_assert ("machine=arc");	\
-    builtin_define (TARGET_BIG_ENDIAN	\
-		    ? "__BIG_ENDIAN__" : "__LITTLE_ENDIAN__"); \
-    if (TARGET_BIG_ENDIAN)		\
-      builtin_define ("__big_endian__"); \
-} while(0)
+#define TARGET_CPU_CPP_BUILTINS() arc_cpu_cpp_builtins (pfile)
 
 #if DEFAULT_LIBC == LIBC_UCLIBC
 
@@ -128,9 +80,11 @@ along with GCC; see the file COPYING3.  If not see
       GNU_USER_TARGET_OS_CPP_BUILTINS (); \
     } \
   while (0)
-#endif
 
-/* Match the macros used in the assembler.  */
+#endif /* DEFAULT_LIBC == LIBC_UCLIBC */
+
+/* Macros enabled by specific command line option.  FIXME: to be
+   deprecatd.  */
 #define CPP_SPEC "\
 %{msimd:-D__Xsimd} %{mno-mpy:-D__Xno_mpy} %{mswap:-D__Xswap} \
 %{mmin-max:-D__Xmin_max} %{mEA:-D__Xea} \
@@ -139,34 +93,22 @@ along with GCC; see the file COPYING3.  If not see
 %{mdsp-packa:-D__Xdsp_packa} %{mcrc:-D__Xcrc} %{mdvbf:-D__Xdvbf} \
 %{mtelephony:-D__Xtelephony} %{mxy:-D__Xxy} %{mmul64: -D__Xmult32} \
 %{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc} \
-%{mcpu=NPS400:-D__NPS400__} \
-%{mcpu=nps400:-D__NPS400__} \
-"
+%{mcpu=nps400:-D__NPS400__}"
 
 #define CC1_SPEC "\
 %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{EB:-mbig-endian} %{EL:-mlittle-endian} \
 "
+extern const char *arc_cpu_to_as (int argc, const char **argv);
 
-#define ASM_DEFAULT "-mARC700 -mEA"
+#define EXTRA_SPEC_FUNCTIONS			\
+  { "cpu_to_as", arc_cpu_to_as },
 
-#define ASM_SPEC  "\
-%{mbig-endian|EB:-EB} %{EL} \
-%{mcpu=ARC600:-mARC600} \
-%{mcpu=ARC601:-mARC601} \
-%{mcpu=ARC700:-mARC700} \
-%{mcpu=ARC700:-mEA} \
-%{!mcpu=*:" ASM_DEFAULT "} \
-%{mbarrel-shifter} %{mno-mpy} %{mmul64} %{mmul32x16:-mdsp-packa} %{mnorm} \
-%{mswap} %{mEA} %{mmin-max} %{mspfp*} %{mdpfp*} %{mfpu=fpuda*:-mfpuda} \
-%{msimd} \
-%{mmac-d16} %{mmac-24} %{mdsp-packa} %{mcrc} %{mdvbf} %{mtelephony} %{mxy} \
-%{mcpu=ARC700|!mcpu=*:%{mlock}} \
-%{mcpu=ARC700|!mcpu=*:%{mswape}} \
-%{mcpu=ARC700|!mcpu=*:%{mrtsc}} \
-%{mcpu=ARCHS:-mHS} \
-%{mcpu=ARCEM:-mEM} \
-%{matomic:-mlock}"
+#define ASM_SPEC  "%{mbig-endian|EB:-EB} %{EL} "			\
+  "%:cpu_to_as(%{mcpu=*:%*}) %{mspfp*} %{mdpfp*} %{mfpu=fpuda*:-mfpuda}"
+
+#define OPTION_DEFAULT_SPECS						\
+  {"cpu", "%{!mcpu=*:%{!mARC*:%{!marc*:%{!mA7:%{!mA6:-mcpu=%(VALUE)}}}}}" }
 
 #if DEFAULT_LIBC == LIBC_UCLIBC
 /* Note that the default is to link against dynamic libraries, if they are
@@ -182,24 +124,6 @@ along with GCC; see the file COPYING3.  If not see
 		   %{!marclinux*: %{pg|p|profile:-marclinux_prof;: -marclinux}} \
 		   %{!z:-z max-page-size=0x2000 -z common-page-size=0x2000} \
 		   %{shared:-shared}"
-/* Like the standard LINK_COMMAND_SPEC, but add %G when building
-   a shared library with -nostdlib, so that the hidden functions of libgcc
-   will be incorporated.
-   N.B., we don't want a plain -lgcc, as this would lead to re-exporting
-   non-hidden functions, so we have to consider libgcc_s.so.* first, which in
-   turn should be wrapped with --as-needed.  */
-#define LINK_COMMAND_SPEC "\
-%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %(linker) %l " LINK_PIE_SPEC "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
-    %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-    %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
-    %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
-	%:include(libgomp.spec)%(link_gomp)}\
-    %(mflib)\
-    %{fprofile-arcs|fprofile-generate|coverage:-lgcov}\
-    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
-    %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
-
 #else
 #define LINK_SPEC "%{mbig-endian:-EB} %{EB} %{EL}\
   %{pg|p:-marcelf_prof;mA7|mARC700|mcpu=arc700|mcpu=ARC700: -marcelf}"
@@ -250,17 +174,11 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_MMEDIUM_CALLS_DEFAULT 0
 #endif
 
-#define DRIVER_SELF_SPECS DRIVER_ENDIAN_SELF_SPECS \
-  "%{mARC600|mA6: -mcpu=ARC600 %<mARC600 %<mA6}" \
-  "%{mARC601: -mcpu=ARC601 %<mARC601}" \
-  "%{mARC700|mA7: -mcpu=ARC700 %<mARC700 %<mA7}" \
-  "%{mbarrel_shifte*: -mbarrel-shifte%* %<mbarrel_shifte*}" \
-  "%{mEA: -mea %<mEA}" \
-  "%{mspfp_*: -mspfp-%* %<mspfp_*}" \
-  "%{mdpfp_*: -mdpfp-%* %<mdpfp_*}" \
-  "%{mdsp_pack*: -mdsp-pack%* %<mdsp_pack*}" \
-  "%{mmac_*: -mmac-%* %<mmac_*}" \
-  "%{multcost=*: -mmultcost=%* %<multcost=*}"
+#define DRIVER_SELF_SPECS DRIVER_ENDIAN_SELF_SPECS		   \
+  "%{mARC600|mA6: -mcpu=arc600 %<mARC600 %<mA6 %<mARC600}"	   \
+  "%{mARC601: -mcpu=arc601 %<mARC601}"				   \
+  "%{mARC700|mA7: -mcpu=arc700 %<mARC700 %<mA7}"		   \
+  "%{mEA: -mea %<mEA}"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -279,12 +197,7 @@ along with GCC; see the file COPYING3.  If not see
    default for A7, and only for pre A7 cores when -mnorm is given.  */
 #define TARGET_NORM (TARGET_ARC700 || TARGET_NORM_SET || TARGET_HS)
 /* Indicate if an optimized floating point emulation library is available.  */
-#define TARGET_OPTFPE				\
-   (TARGET_ARC700				\
-    /* We need a barrel shifter and NORM.  */	\
-    || (TARGET_ARC600 && TARGET_NORM_SET)	\
-    || TARGET_HS				\
-    || (TARGET_EM && TARGET_NORM_SET && TARGET_BARREL_SHIFTER))
+#define TARGET_OPTFPE (TARGET_ARC700 || TARGET_FPX_QUARK)
 
 /* Non-zero means the cpu supports swap instruction.  This flag is set by
    default for A7, and only for pre A7 cores when -mswap is given.  */
@@ -306,20 +219,21 @@ along with GCC; see the file COPYING3.  If not see
    use conditional execution?  */
 #define TARGET_AT_DBR_CONDEXEC  (!TARGET_ARC700 && !TARGET_V2)
 
-#define TARGET_ARC600 (arc_cpu == PROCESSOR_ARC600)
-#define TARGET_ARC601 (arc_cpu == PROCESSOR_ARC601)
-#define TARGET_ARC700 (arc_cpu == PROCESSOR_ARC700	\
-		       || arc_cpu == PROCESSOR_NPS400)
-#define TARGET_EM     (arc_cpu == PROCESSOR_ARCEM)
-#define TARGET_HS     (arc_cpu == PROCESSOR_ARCHS)
-#define TARGET_V2							\
-  ((arc_cpu == PROCESSOR_ARCHS) || (arc_cpu == PROCESSOR_ARCEM))
+extern enum base_architecture arc_base_cpu;
 
-/* Recast the cpu class to be the cpu attribute.  */
-#define arc_cpu_attr ((enum attr_cpu)arc_cpu)
+#define TARGET_ARC600 ((arc_base_cpu == BASE_ARCH_6xx)	\
+		       && (TARGET_BARREL_SHIFTER))
+#define TARGET_ARC601 ((arc_base_cpu == BASE_ARCH_6xx)	\
+		       && (!TARGET_BARREL_SHIFTER))
+#define TARGET_ARC700 (arc_base_cpu == BASE_ARCH_700)
+#define TARGET_EM (arc_base_cpu == BASE_ARCH_em)
+#define TARGET_HS (arc_base_cpu == BASE_ARCH_hs)
+#define TARGET_V2 (TARGET_EM || TARGET_HS)
 
-#ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { "mARC700" }
+#ifdef ARC_MULTILIB_CPU_DEFAULT
+# ifndef MULTILIB_DEFAULTS
+#  define MULTILIB_DEFAULTS { "mcpu=" ARC_MULTILIB_CPU_DEFAULT }
+# endif
 #endif
 
 #ifndef UNALIGNED_ACCESS_DEFAULT
@@ -463,8 +377,8 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0
 
-#define SIZE_TYPE "long unsigned int"
-#define PTRDIFF_TYPE "long int"
+#define SIZE_TYPE "unsigned int"
+#define PTRDIFF_TYPE "int"
 #define WCHAR_TYPE "int"
 #define WCHAR_TYPE_SIZE 32
 
@@ -1600,10 +1514,10 @@ extern int arc_return_address_regs[4];
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
   ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE));
 
-#define INSN_LENGTH_ALIGNMENT(INSN) \
-  ((JUMP_P (INSN) \
+#define INSN_LENGTH_ALIGNMENT(INSN)		  \
+  ((JUMP_TABLE_DATA_P (INSN)			  \
     && GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC \
-    && GET_MODE (PATTERN (INSN)) == QImode) \
+    && GET_MODE (PATTERN (INSN)) == QImode)	  \
    ? 0 : length_unit_log)
 
 /* Define if operations between registers always perform the operation
@@ -1624,13 +1538,10 @@ extern int arc_return_address_regs[4];
 /* Undo the effects of the movmem pattern presence on STORE_BY_PIECES_P .  */
 #define MOVE_RATIO(SPEED) ((SPEED) ? 15 : 3)
 
-/* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. Changed from 1 to 0 for rotate pattern testcases
-   (e.g. 20020226-1.c). This change truncates the upper 27 bits of a word
-   while rotating a word. Came to notice through a combine phase
-   optimization viz. a << (32-b) is equivalent to a << (-b).
+/* Define this to be nonzero if shift instructions ignore all but the
+   low-order few bits.
 */
-#define SHIFT_COUNT_TRUNCATED 0
+#define SHIFT_COUNT_TRUNCATED 1
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
@@ -1786,7 +1697,7 @@ enum
 
 /* FPU defines.  */
 /* Any FPU support.  */
-#define TARGET_HARD_FLOAT (arc_fpu_build != 0)
+#define TARGET_HARD_FLOAT   ((arc_fpu_build & (FPU_SP | FPU_DP)) != 0)
 /* Single precision floating point support.  */
 #define TARGET_FP_SP_BASE   ((arc_fpu_build & FPU_SP) != 0)
 /* Double precision floating point support.  */
@@ -1805,5 +1716,8 @@ enum
 #define TARGET_FP_DP_SQRT   ((arc_fpu_build & FPU_DD) != 0)
 /* Double precision floating point assist instruction support.  */
 #define TARGET_FP_DP_AX     ((arc_fpu_build & FPX_DP) != 0)
+/* Custom FP instructions used by QuarkSE EM cpu.  */
+#define TARGET_FPX_QUARK    (TARGET_EM && TARGET_SPFP		\
+			     && (arc_fpu_build == FPX_QK))
 
 #endif /* GCC_ARC_H */

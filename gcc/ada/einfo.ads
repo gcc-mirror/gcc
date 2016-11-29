@@ -438,11 +438,15 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
---    Anonymous_Master (Node35)
---       Defined in all types. Contains the entity of an anonymous finalization
---       master which services all anonymous access types associated with the
---       same designated type within the current semantic unit. The attribute
---       is set reactively during the expansion of allocators.
+--    Anonymous_Designated_Type (Node35)
+--       Defined in variables which represent anonymous finalization masters.
+--       Contains the designated type which is being serviced by the master.
+
+--    Anonymous_Masters (Elist29)
+--       Defined in packages, subprograms, and subprogram bodies. Contains a
+--       list of anonymous finalization masters declared within the related
+--       unit. The list acts as a mapping between a master and a designated
+--       type.
 
 --    Anonymous_Object (Node30)
 --       Present in protected and task type entities. Contains the entity of
@@ -1811,6 +1815,14 @@ package Einfo is
 --       Defined in all type entities. Set on any type which defines at least
 --       one invariant of its own. The flag is also set on the full view of a
 --       private extension or a private type for completeness.
+
+--    Has_Partial_Visible_Refinement (Flag296)
+--       Defined in E_Abstract_State entities. Set when a state has at least
+--       one refinement constituent subject to indicator Part_Of, and analysis
+--       is in the region between the declaration of the first constituent for
+--       this abstract state (in the private part of the package) and the end
+--       of the package spec or body with visibility over this private part
+--       (which includes the package itself and its child packages).
 
 --    Has_Per_Object_Constraint (Flag154)
 --       Defined in E_Component entities. Set if the subtype of the component
@@ -3780,6 +3792,13 @@ package Einfo is
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
 
+--    Partial_Refinement_Constituents (synthesized)
+--       Defined in abstract state entities. Returns the constituents that
+--       refine the state in the current scope, which are allowed in a global
+--       refinement in this scope. These consist of those constituents that are
+--       abstract states with no or only partial refinement visible, and those
+--       that are not themselves abstract states.
+
 --    Partial_View_Has_Unknown_Discr (Flag280)
 --       Present in all types. Set to Indicate that the partial view of a type
 --       has unknown discriminants. A default initialization of an object of
@@ -5517,7 +5536,6 @@ package Einfo is
    --    Derived_Type_Link                   (Node31)
    --    No_Tagged_Streams_Pragma            (Node32)
    --    Linker_Section_Pragma               (Node33)
-   --    Anonymous_Master                    (Node35)
 
    --    Depends_On_Private                  (Flag14)
    --    Disable_Controlled                  (Flag253)
@@ -5619,6 +5637,7 @@ package Einfo is
    --    Non_Limited_View                    (Node19)
    --    Encapsulating_State                 (Node32)
    --    From_Limited_With                   (Flag159)
+   --    Has_Partial_Visible_Refinement      (Flag296)
    --    Has_Visible_Refinement              (Flag263)
    --    Has_Non_Limited_View                (synth)
    --    Has_Non_Null_Visible_Refinement     (synth)
@@ -5626,6 +5645,7 @@ package Einfo is
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
    --    Is_Synchronized_State               (synth)
+   --    Partial_Refinement_Constituents     (synth)
 
    --  E_Access_Protected_Subprogram_Type
    --    Equivalent_Type                     (Node18)
@@ -5967,6 +5987,7 @@ package Einfo is
    --    Overridden_Operation                (Node26)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
    --    Extra_Formals                       (Node28)
+   --    Anonymous_Masters                   (Elist29)  (non-generic case only)
    --    Corresponding_Equality              (Node30)   (implicit /= only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
    --    Corresponding_Procedure             (Node32)   (generate C code only)
@@ -6192,6 +6213,7 @@ package Einfo is
    --    Package_Instantiation               (Node26)
    --    Current_Use_Clause                  (Node27)
    --    Finalizer                           (Node28)   (non-generic case only)
+   --    Anonymous_Masters                   (Elist29)  (non-generic case only)
    --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
@@ -6277,6 +6299,7 @@ package Einfo is
    --    Overridden_Operation                (Node26)   (never for init proc)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
    --    Extra_Formals                       (Node28)
+   --    Anonymous_Masters                   (Elist29)  (non-generic case only)
    --    Static_Initialization               (Node30)   (init_proc only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
    --    Corresponding_Function              (Node32)   (generate C code only)
@@ -6468,6 +6491,7 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Extra_Formals                       (Node28)
+   --    Anonymous_Masters                   (Elist29)
    --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
@@ -6549,6 +6573,7 @@ package Einfo is
    --    Encapsulating_State                 (Node32)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
+   --    Anonymous_Designated_Type           (Node35)
    --    SPARK_Pragma                        (Node40)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
@@ -6822,7 +6847,8 @@ package Einfo is
    function Address_Taken                       (Id : E) return B;
    function Alias                               (Id : E) return E;
    function Alignment                           (Id : E) return U;
-   function Anonymous_Master                    (Id : E) return E;
+   function Anonymous_Designated_Type           (Id : E) return E;
+   function Anonymous_Masters                   (Id : E) return L;
    function Anonymous_Object                    (Id : E) return E;
    function Associated_Entity                   (Id : E) return E;
    function Associated_Formal_Package           (Id : E) return E;
@@ -6977,6 +7003,7 @@ package Einfo is
    function Has_Object_Size_Clause              (Id : E) return B;
    function Has_Out_Or_In_Out_Parameter         (Id : E) return B;
    function Has_Own_Invariants                  (Id : E) return B;
+   function Has_Partial_Visible_Refinement      (Id : E) return B;
    function Has_Per_Object_Constraint           (Id : E) return B;
    function Has_Pragma_Controlled               (Id : E) return B;
    function Has_Pragma_Elaborate_Body           (Id : E) return B;
@@ -7412,6 +7439,7 @@ package Einfo is
    function Number_Entries                      (Id : E) return Nat;
    function Number_Formals                      (Id : E) return Pos;
    function Parameter_Mode                      (Id : E) return Formal_Kind;
+   function Partial_Refinement_Constituents     (Id : E) return L;
    function Primitive_Operations                (Id : E) return L;
    function Root_Type                           (Id : E) return E;
    function Safe_Emax_Value                     (Id : E) return U;
@@ -7499,7 +7527,8 @@ package Einfo is
    procedure Set_Address_Taken                   (Id : E; V : B := True);
    procedure Set_Alias                           (Id : E; V : E);
    procedure Set_Alignment                       (Id : E; V : U);
-   procedure Set_Anonymous_Master                (Id : E; V : E);
+   procedure Set_Anonymous_Designated_Type       (Id : E; V : E);
+   procedure Set_Anonymous_Masters               (Id : E; V : L);
    procedure Set_Anonymous_Object                (Id : E; V : E);
    procedure Set_Associated_Entity               (Id : E; V : E);
    procedure Set_Associated_Formal_Package       (Id : E; V : E);
@@ -7652,6 +7681,7 @@ package Einfo is
    procedure Set_Has_Object_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Out_Or_In_Out_Parameter     (Id : E; V : B := True);
    procedure Set_Has_Own_Invariants              (Id : E; V : B := True);
+   procedure Set_Has_Partial_Visible_Refinement  (Id : E; V : B := True);
    procedure Set_Has_Per_Object_Constraint       (Id : E; V : B := True);
    procedure Set_Has_Pragma_Controlled           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Elaborate_Body       (Id : E; V : B := True);
@@ -8296,7 +8326,8 @@ package Einfo is
    pragma Inline (Address_Taken);
    pragma Inline (Alias);
    pragma Inline (Alignment);
-   pragma Inline (Anonymous_Master);
+   pragma Inline (Anonymous_Designated_Type);
+   pragma Inline (Anonymous_Masters);
    pragma Inline (Anonymous_Object);
    pragma Inline (Associated_Entity);
    pragma Inline (Associated_Formal_Package);
@@ -8444,6 +8475,7 @@ package Einfo is
    pragma Inline (Has_Object_Size_Clause);
    pragma Inline (Has_Out_Or_In_Out_Parameter);
    pragma Inline (Has_Own_Invariants);
+   pragma Inline (Has_Partial_Visible_Refinement);
    pragma Inline (Has_Per_Object_Constraint);
    pragma Inline (Has_Pragma_Controlled);
    pragma Inline (Has_Pragma_Elaborate_Body);
@@ -8813,7 +8845,8 @@ package Einfo is
    pragma Inline (Set_Address_Taken);
    pragma Inline (Set_Alias);
    pragma Inline (Set_Alignment);
-   pragma Inline (Set_Anonymous_Master);
+   pragma Inline (Set_Anonymous_Designated_Type);
+   pragma Inline (Set_Anonymous_Masters);
    pragma Inline (Set_Anonymous_Object);
    pragma Inline (Set_Associated_Entity);
    pragma Inline (Set_Associated_Formal_Package);
@@ -8959,6 +8992,7 @@ package Einfo is
    pragma Inline (Set_Has_Object_Size_Clause);
    pragma Inline (Set_Has_Out_Or_In_Out_Parameter);
    pragma Inline (Set_Has_Own_Invariants);
+   pragma Inline (Set_Has_Partial_Visible_Refinement);
    pragma Inline (Set_Has_Per_Object_Constraint);
    pragma Inline (Set_Has_Pragma_Controlled);
    pragma Inline (Set_Has_Pragma_Elaborate_Body);

@@ -114,12 +114,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-fold.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "tree-pretty-print.h"
 #include "tree-inline.h"
 #include "params.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
+#include "tree-ssa-ccp.h"
 
 template <typename valtype> class ipcp_value;
 
@@ -236,34 +238,77 @@ public:
   struct ipcp_agg_lattice *next;
 };
 
-/* Lattice of pointer alignment.  Unlike the previous types of lattices, this
-   one is only capable of holding one value.  */
+/* Lattice of known bits, only capable of holding one value.
+   Bitwise constant propagation propagates which bits of a
+   value are constant.
+   For eg:
+   int f(int x)
+   {
+     return some_op (x);
+   }
 
-class ipcp_alignment_lattice
+   int f1(int y)
+   {
+     if (cond)
+      return f (y & 0xff);
+     else
+      return f (y & 0xf);
+   }
+
+   In the above case, the param 'x' will always have all
+   the bits (except the bits in lsb) set to 0.
+   Hence the mask of 'x' would be 0xff. The mask
+   reflects that the bits in lsb are unknown.
+   The actual propagated value is given by m_value & ~m_mask.  */
+
+class ipcp_bits_lattice
 {
 public:
-  /* If bottom and top are both false, these two fields hold values as given by
-     ptr_info_def and get_pointer_alignment_1.  */
-  unsigned align;
-  unsigned misalign;
+  bool bottom_p () { return m_lattice_val == IPA_BITS_VARYING; }
+  bool top_p () { return m_lattice_val == IPA_BITS_UNDEFINED; }
+  bool constant_p () { return m_lattice_val == IPA_BITS_CONSTANT; }
+  bool set_to_bottom ();
+  bool set_to_constant (widest_int, widest_int); 
+ 
+  widest_int get_value () { return m_value; }
+  widest_int get_mask () { return m_mask; }
+
+  bool meet_with (ipcp_bits_lattice& other, unsigned, signop,
+		  enum tree_code, tree);
+
+  bool meet_with (widest_int, widest_int, unsigned);
+
+  void print (FILE *);
+
+private:
+  enum { IPA_BITS_UNDEFINED, IPA_BITS_CONSTANT, IPA_BITS_VARYING } m_lattice_val;
+
+  /* Similar to ccp_lattice_t, mask represents which bits of value are constant.
+     If a bit in mask is set to 0, then the corresponding bit in
+     value is known to be constant.  */
+  widest_int m_value, m_mask;
+
+  bool meet_with_1 (widest_int, widest_int, unsigned); 
+  void get_value_and_mask (tree, widest_int *, widest_int *);
+}; 
+
+/* Lattice of value ranges.  */
+
+class ipcp_vr_lattice
+{
+public:
+  value_range m_vr;
 
   inline bool bottom_p () const;
   inline bool top_p () const;
   inline bool set_to_bottom ();
-  bool meet_with (unsigned new_align, unsigned new_misalign);
-  bool meet_with (const ipcp_alignment_lattice &other, HOST_WIDE_INT offset);
+  bool meet_with (const value_range *p_vr);
+  bool meet_with (const ipcp_vr_lattice &other);
+  void init () { m_vr.type = VR_UNDEFINED; }
   void print (FILE * f);
-private:
-  /* If set, this lattice is bottom and all other fields should be
-     disregarded.  */
-  bool bottom;
-  /* If bottom and not_top are false, the lattice is TOP.  If not_top is true,
-     the known alignment is stored in the fields align and misalign.  The field
-     is negated so that memset to zero initializes the lattice to TOP
-     state.  */
-  bool not_top;
 
-  bool meet_with_1 (unsigned new_align, unsigned new_misalign);
+private:
+  bool meet_with_1 (const value_range *other_vr);
 };
 
 /* Structure containing lattices for a parameter itself and for pieces of
@@ -279,8 +324,10 @@ public:
   ipcp_lattice<ipa_polymorphic_call_context> ctxlat;
   /* Lattices describing aggregate parts.  */
   ipcp_agg_lattice *aggs;
-  /* Lattice describing known alignment.  */
-  ipcp_alignment_lattice alignment;
+  /* Lattice describing known bits.  */
+  ipcp_bits_lattice bits_lattice;
+  /* Lattice describing value range.  */
+  ipcp_vr_lattice m_value_range;
   /* Number of aggregate lattices */
   int aggs_count;
   /* True if aggregate data were passed by reference (as opposed to by
@@ -346,6 +393,16 @@ ipa_get_poly_ctx_lat (struct ipa_node_params *info, int i)
 {
   struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
   return &plats->ctxlat;
+}
+
+/* Return the lattice corresponding to the value range of the Ith formal
+   parameter of the function described by INFO.  */
+
+static inline ipcp_vr_lattice *
+ipa_get_vr_lat (struct ipa_node_params *info, int i)
+{
+  struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+  return &plats->m_value_range;
 }
 
 /* Return whether LAT is a lattice with a single constant and without an
@@ -445,17 +502,27 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
     fprintf (f, "\n");
 }
 
-/* Print alignment lattice to F.  */
-
 void
-ipcp_alignment_lattice::print (FILE * f)
+ipcp_bits_lattice::print (FILE *f)
 {
   if (top_p ())
-    fprintf (f, "         Alignment unknown (TOP)\n");
+    fprintf (f, "         Bits unknown (TOP)\n");
   else if (bottom_p ())
-    fprintf (f, "         Alignment unusable (BOTTOM)\n");
+    fprintf (f, "         Bits unusable (BOTTOM)\n");
   else
-    fprintf (f, "         Alignment %u, misalignment %u\n", align, misalign);
+    {
+      fprintf (f, "         Bits: value = "); print_hex (get_value (), f);
+      fprintf (f, ", mask = "); print_hex (get_mask (), f);
+      fprintf (f, "\n");
+    }
+}
+
+/* Print value range lattice to F.  */
+
+void
+ipcp_vr_lattice::print (FILE * f)
+{
+  dump_value_range (f, &m_vr);
 }
 
 /* Print all ipcp_lattices of all functions to F.  */
@@ -483,7 +550,10 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
 	  plats->itself.print (f, dump_sources, dump_benefits);
 	  fprintf (f, "         ctxs: ");
 	  plats->ctxlat.print (f, dump_sources, dump_benefits);
-	  plats->alignment.print (f);
+	  plats->bits_lattice.print (f);
+	  fprintf (f, "         ");
+	  plats->m_value_range.print (f);
+	  fprintf (f, "\n");
 	  if (plats->virt_call)
 	    fprintf (f, "        virt_call flag set\n");
 
@@ -806,109 +876,211 @@ set_agg_lats_contain_variable (struct ipcp_param_lattices *plats)
   return ret;
 }
 
-/* Return true if alignment information in the lattice is yet unknown.  */
-
 bool
-ipcp_alignment_lattice::top_p () const
+ipcp_vr_lattice::meet_with (const ipcp_vr_lattice &other)
 {
-  return !bottom && !not_top;
+  return meet_with_1 (&other.m_vr);
 }
 
-/* Return true if alignment information in the lattice is known to be
+/* Meet the current value of the lattice with value ranfge described by VR
+   lattice.  */
+
+bool
+ipcp_vr_lattice::meet_with (const value_range *p_vr)
+{
+  return meet_with_1 (p_vr);
+}
+
+/* Meet the current value of the lattice with value ranfge described by
+   OTHER_VR lattice.  */
+
+bool
+ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
+{
+  tree min = m_vr.min, max = m_vr.max;
+  value_range_type type = m_vr.type;
+
+  if (bottom_p ())
+    return false;
+
+  if (other_vr->type == VR_VARYING)
+    return set_to_bottom ();
+
+  vrp_meet (&m_vr, other_vr);
+  if (type != m_vr.type
+      || min != m_vr.min
+      || max != m_vr.max)
+    return true;
+  else
+    return false;
+}
+
+/* Return true if value range information in the lattice is yet unknown.  */
+
+bool
+ipcp_vr_lattice::top_p () const
+{
+  return m_vr.type == VR_UNDEFINED;
+}
+
+/* Return true if value range information in the lattice is known to be
    unusable.  */
 
 bool
-ipcp_alignment_lattice::bottom_p () const
+ipcp_vr_lattice::bottom_p () const
 {
-  return bottom;
+  return m_vr.type == VR_VARYING;
 }
 
-/* Set alignment information in the lattice to bottom.  Return true if it
+/* Set value range information in the lattice to bottom.  Return true if it
    previously was in a different state.  */
 
 bool
-ipcp_alignment_lattice::set_to_bottom ()
+ipcp_vr_lattice::set_to_bottom ()
 {
-  if (bottom_p ())
+  if (m_vr.type == VR_VARYING)
     return false;
-  bottom = true;
+  m_vr.type = VR_VARYING;
   return true;
 }
 
-/* Meet the current value of the lattice with alignment described by NEW_ALIGN
-   and NEW_MISALIGN, assuming that we know the current value is neither TOP nor
-   BOTTOM.  Return true if the value of lattice has changed.  */
+/* Set lattice value to bottom, if it already isn't the case.  */
 
 bool
-ipcp_alignment_lattice::meet_with_1 (unsigned new_align, unsigned new_misalign)
+ipcp_bits_lattice::set_to_bottom ()
 {
-  gcc_checking_assert (new_align != 0);
-  if (align == new_align && misalign == new_misalign)
-    return false;
-
-  bool changed = false;
-  if (align > new_align)
-    {
-      align = new_align;
-      misalign = misalign % new_align;
-      changed = true;
-    }
-  if (misalign != (new_misalign % align))
-    {
-      int diff = abs ((int) misalign - (int) (new_misalign % align));
-      align = (unsigned) diff & -diff;
-      if (align)
-	misalign = misalign % align;
-      else
-	set_to_bottom ();
-      changed = true;
-    }
-  gcc_checking_assert (bottom_p () || align != 0);
-  return changed;
-}
-
-/* Meet the current value of the lattice with alignment described by NEW_ALIGN
-   and NEW_MISALIGN.  Return true if the value of lattice has changed.  */
-
-bool
-ipcp_alignment_lattice::meet_with (unsigned new_align, unsigned new_misalign)
-{
-  gcc_assert (new_align != 0);
   if (bottom_p ())
     return false;
-  if (top_p ())
-    {
-      not_top = true;
-      align = new_align;
-      misalign = new_misalign;
-      return true;
-    }
-  return meet_with_1 (new_align, new_misalign);
+  m_lattice_val = IPA_BITS_VARYING;
+  m_value = 0;
+  m_mask = -1;
+  return true;
 }
 
-/* Meet the current value of the lattice with OTHER, taking into account that
-   OFFSET has been added to the pointer value.  Return true if the value of
-   lattice has changed.  */
+/* Set to constant if it isn't already. Only meant to be called
+   when switching state from TOP.  */
 
 bool
-ipcp_alignment_lattice::meet_with (const ipcp_alignment_lattice &other,
-				   HOST_WIDE_INT offset)
+ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
+{
+  gcc_assert (top_p ());
+  m_lattice_val = IPA_BITS_CONSTANT;
+  m_value = value;
+  m_mask = mask;
+  return true;
+}
+
+/* Convert operand to value, mask form.  */
+
+void
+ipcp_bits_lattice::get_value_and_mask (tree operand, widest_int *valuep, widest_int *maskp)
+{
+  wide_int get_nonzero_bits (const_tree);
+
+  if (TREE_CODE (operand) == INTEGER_CST)
+    {
+      *valuep = wi::to_widest (operand); 
+      *maskp = 0;
+    }
+  else
+    {
+      *valuep = 0;
+      *maskp = -1;
+    }
+}
+
+/* Meet operation, similar to ccp_lattice_meet, we xor values
+   if this->value, value have different values at same bit positions, we want
+   to drop that bit to varying. Return true if mask is changed.
+   This function assumes that the lattice value is in CONSTANT state  */
+
+bool
+ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
+				unsigned precision)
+{
+  gcc_assert (constant_p ());
+  
+  widest_int old_mask = m_mask; 
+  m_mask = (m_mask | mask) | (m_value ^ value);
+
+  if (wi::sext (m_mask, precision) == -1)
+    return set_to_bottom ();
+
+  return m_mask != old_mask;
+}
+
+/* Meet the bits lattice with operand
+   described by <value, mask, sgn, precision.  */
+
+bool
+ipcp_bits_lattice::meet_with (widest_int value, widest_int mask,
+			      unsigned precision)
+{
+  if (bottom_p ())
+    return false;
+
+  if (top_p ())
+    {
+      if (wi::sext (mask, precision) == -1)
+	return set_to_bottom ();
+      return set_to_constant (value, mask); 
+    }
+
+  return meet_with_1 (value, mask, precision);
+}
+
+/* Meet bits lattice with the result of bit_value_binop (other, operand)
+   if code is binary operation or bit_value_unop (other) if code is unary op.
+   In the case when code is nop_expr, no adjustment is required. */
+
+bool
+ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
+			      signop sgn, enum tree_code code, tree operand)
 {
   if (other.bottom_p ())
     return set_to_bottom ();
+
   if (bottom_p () || other.top_p ())
     return false;
 
-  unsigned adjusted_misalign = (other.misalign + offset) % other.align;
-  if (top_p ())
+  widest_int adjusted_value, adjusted_mask;
+
+  if (TREE_CODE_CLASS (code) == tcc_binary)
     {
-      not_top = true;
-      align = other.align;
-      misalign = adjusted_misalign;
-      return true;
+      tree type = TREE_TYPE (operand);
+      gcc_assert (INTEGRAL_TYPE_P (type));
+      widest_int o_value, o_mask;
+      get_value_and_mask (operand, &o_value, &o_mask);
+
+      bit_value_binop (code, sgn, precision, &adjusted_value, &adjusted_mask,
+		       sgn, precision, other.get_value (), other.get_mask (),
+		       TYPE_SIGN (type), TYPE_PRECISION (type), o_value, o_mask);
+
+      if (wi::sext (adjusted_mask, precision) == -1)
+	return set_to_bottom ();
     }
 
-  return meet_with_1 (other.align, adjusted_misalign);
+  else if (TREE_CODE_CLASS (code) == tcc_unary)
+    {
+      bit_value_unop (code, sgn, precision, &adjusted_value,
+		      &adjusted_mask, sgn, precision, other.get_value (),
+		      other.get_mask ());
+
+      if (wi::sext (adjusted_mask, precision) == -1)
+	return set_to_bottom ();
+    }
+
+  else
+    return set_to_bottom ();
+
+  if (top_p ())
+    {
+      if (wi::sext (adjusted_mask, precision) == -1)
+	return set_to_bottom ();
+      return set_to_constant (adjusted_value, adjusted_mask); 
+    }
+  else
+    return meet_with_1 (adjusted_value, adjusted_mask, precision);
 }
 
 /* Mark bot aggregate and scalar lattices as containing an unknown variable,
@@ -921,7 +1093,8 @@ set_all_contains_variable (struct ipcp_param_lattices *plats)
   ret = plats->itself.set_contains_variable ();
   ret |= plats->ctxlat.set_contains_variable ();
   ret |= set_agg_lats_contain_variable (plats);
-  ret |= plats->alignment.set_to_bottom ();
+  ret |= plats->bits_lattice.set_to_bottom ();
+  ret |= plats->m_value_range.set_to_bottom ();
   return ret;
 }
 
@@ -992,6 +1165,12 @@ initialize_node_lattices (struct cgraph_node *node)
 	disable = true;
     }
 
+  for (i = 0; i < ipa_get_param_count (info) ; i++)
+    {
+      struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+      plats->m_value_range.init ();
+    }
+
   if (disable || variable)
     {
       for (i = 0; i < ipa_get_param_count (info) ; i++)
@@ -1002,7 +1181,8 @@ initialize_node_lattices (struct cgraph_node *node)
 	      plats->itself.set_to_bottom ();
 	      plats->ctxlat.set_to_bottom ();
 	      set_agg_lats_to_bottom (plats);
-	      plats->alignment.set_to_bottom ();
+	      plats->bits_lattice.set_to_bottom ();
+	      plats->m_value_range.set_to_bottom ();
 	    }
 	  else
 	    set_all_contains_variable (plats);
@@ -1039,13 +1219,19 @@ ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input)
     return NULL_TREE;
 
   if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
-      == tcc_comparison)
-    restype = boolean_type_node;
+      == tcc_unary)
+    res = fold_unary (ipa_get_jf_pass_through_operation (jfunc),
+		      TREE_TYPE (input), input);
   else
-    restype = TREE_TYPE (input);
-  res = fold_binary (ipa_get_jf_pass_through_operation (jfunc), restype,
-		     input, ipa_get_jf_pass_through_operand (jfunc));
-
+    {
+      if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
+	  == tcc_comparison)
+	restype = boolean_type_node;
+      else
+	restype = TREE_TYPE (input);
+      res = fold_binary (ipa_get_jf_pass_through_operation (jfunc), restype,
+			 input, ipa_get_jf_pass_through_operand (jfunc));
+    }
   if (res && !is_gimple_ip_invariant (res))
     return NULL_TREE;
 
@@ -1568,57 +1754,162 @@ propagate_context_accross_jump_function (cgraph_edge *cs,
   return ret;
 }
 
-/* Propagate alignments across jump function JFUNC that is associated with
-   edge CS and update DEST_LAT accordingly.  */
+/* Propagate bits across jfunc that is associated with
+   edge cs and update dest_lattice accordingly.  */
 
-static bool
-propagate_alignment_accross_jump_function (cgraph_edge *cs,
-					   ipa_jump_func *jfunc,
-					   ipcp_alignment_lattice *dest_lat)
+bool
+propagate_bits_accross_jump_function (cgraph_edge *cs, int idx, ipa_jump_func *jfunc,
+				      ipcp_bits_lattice *dest_lattice)
 {
-  if (dest_lat->bottom_p ())
+  if (dest_lattice->bottom_p ())
     return false;
 
+  enum availability availability;
+  cgraph_node *callee = cs->callee->function_symbol (&availability);
+  struct ipa_node_params *callee_info = IPA_NODE_REF (callee);
+  tree parm_type = ipa_get_type (callee_info, idx);
+
+  /* For K&R C programs, ipa_get_type() could return NULL_TREE.
+     Avoid the transform for these cases.  */
+  if (!parm_type)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Setting dest_lattice to bottom, because"
+			    " param %i type is NULL for %s\n", idx,
+			    cs->callee->name ());
+
+      return dest_lattice->set_to_bottom ();
+    }
+
+  unsigned precision = TYPE_PRECISION (parm_type);
+  signop sgn = TYPE_SIGN (parm_type);
+
   if (jfunc->type == IPA_JF_PASS_THROUGH
-	   || jfunc->type == IPA_JF_ANCESTOR)
+      || jfunc->type == IPA_JF_ANCESTOR)
     {
       struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-      HOST_WIDE_INT offset = 0;
-      int src_idx;
+      tree operand = NULL_TREE;
+      enum tree_code code;
+      unsigned src_idx;
 
       if (jfunc->type == IPA_JF_PASS_THROUGH)
 	{
-	  enum tree_code op = ipa_get_jf_pass_through_operation (jfunc);
-	  if (op != NOP_EXPR)
-	    {
-	      if (op != POINTER_PLUS_EXPR
-		  && op != PLUS_EXPR)
-		return dest_lat->set_to_bottom ();
-	      tree operand = ipa_get_jf_pass_through_operand (jfunc);
-	      if (!tree_fits_shwi_p (operand))
-		return dest_lat->set_to_bottom ();
-	      offset = tree_to_shwi (operand);
-	    }
+	  code = ipa_get_jf_pass_through_operation (jfunc);
 	  src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
+	  if (code != NOP_EXPR)
+	    operand = ipa_get_jf_pass_through_operand (jfunc);
 	}
       else
 	{
+	  code = POINTER_PLUS_EXPR; 
 	  src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
-	  offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
+	  unsigned HOST_WIDE_INT offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
+	  operand = build_int_cstu (size_type_node, offset);
 	}
 
-      struct ipcp_param_lattices *src_lats;
-      src_lats = ipa_get_parm_lattices (caller_info, src_idx);
-      return dest_lat->meet_with (src_lats->alignment, offset);
-    }
-  else
-    {
-      if (jfunc->alignment.known)
-	return dest_lat->meet_with (jfunc->alignment.align,
-				    jfunc->alignment.misalign);
+      struct ipcp_param_lattices *src_lats
+	= ipa_get_parm_lattices (caller_info, src_idx);
+
+      /* Try to propagate bits if src_lattice is bottom, but jfunc is known.
+	 for eg consider:
+	 int f(int x)
+	 {
+	   g (x & 0xff);
+	 }
+	 Assume lattice for x is bottom, however we can still propagate
+	 result of x & 0xff == 0xff, which gets computed during ccp1 pass
+	 and we store it in jump function during analysis stage.  */
+
+      if (src_lats->bits_lattice.bottom_p ()
+	  && jfunc->bits.known)
+	return dest_lattice->meet_with (jfunc->bits.value, jfunc->bits.mask,
+					precision);
       else
-	return dest_lat->set_to_bottom ();
+	return dest_lattice->meet_with (src_lats->bits_lattice, precision, sgn,
+					code, operand);
     }
+
+  else if (jfunc->type == IPA_JF_ANCESTOR)
+    return dest_lattice->set_to_bottom ();
+
+  else if (jfunc->bits.known) 
+    return dest_lattice->meet_with (jfunc->bits.value, jfunc->bits.mask, precision);
+  
+  else
+    return dest_lattice->set_to_bottom ();
+}
+
+/* Propagate value range across jump function JFUNC that is associated with
+   edge CS with param of callee of PARAM_TYPE and update DEST_PLATS
+   accordingly.  */
+
+static bool
+propagate_vr_accross_jump_function (cgraph_edge *cs,
+				    ipa_jump_func *jfunc,
+				    struct ipcp_param_lattices *dest_plats,
+				    tree param_type)
+{
+  struct ipcp_param_lattices *src_lats;
+  ipcp_vr_lattice *dest_lat = &dest_plats->m_value_range;
+
+  if (dest_lat->bottom_p ())
+    return false;
+
+  if (!param_type
+      || (!INTEGRAL_TYPE_P (param_type)
+	  && !POINTER_TYPE_P (param_type)))
+    return dest_lat->set_to_bottom ();
+
+  if (jfunc->type == IPA_JF_PASS_THROUGH)
+    {
+      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+      int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
+      src_lats = ipa_get_parm_lattices (caller_info, src_idx);
+
+      if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
+	return dest_lat->meet_with (src_lats->m_value_range);
+      else if (param_type
+	       && (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
+		   == tcc_unary))
+	{
+	  value_range vr;
+	  memset (&vr, 0, sizeof (vr));
+	  tree operand_type = ipa_get_type (caller_info, src_idx);
+	  enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
+
+	  if (src_lats->m_value_range.bottom_p ())
+	    return dest_lat->set_to_bottom ();
+
+	  extract_range_from_unary_expr (&vr,
+					 operation,
+					 param_type,
+					 &src_lats->m_value_range.m_vr,
+					 operand_type);
+	  if (vr.type == VR_RANGE
+	      || vr.type == VR_ANTI_RANGE)
+	    return dest_lat->meet_with (&vr);
+	}
+    }
+  else if (jfunc->type == IPA_JF_CONST)
+    {
+      tree val = ipa_get_jf_constant (jfunc);
+      if (TREE_CODE (val) == INTEGER_CST)
+	{
+	  if (TREE_OVERFLOW_P (val))
+	    val = drop_tree_overflow (val);
+	  val = fold_convert (param_type, val);
+	  jfunc->vr_known = true;
+	  jfunc->m_vr.type = VR_RANGE;
+	  jfunc->m_vr.min = val;
+	  jfunc->m_vr.max = val;
+	  return dest_lat->meet_with (&jfunc->m_vr);
+	}
+    }
+
+  if (jfunc->vr_known)
+    return dest_lat->meet_with (&jfunc->m_vr);
+  else
+    return dest_lat->set_to_bottom ();
 }
 
 /* If DEST_PLATS already has aggregate items, check that aggs_by_ref matches
@@ -1956,6 +2247,7 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
     {
       struct ipa_jump_func *jump_func = ipa_get_ith_jump_func (args, i);
       struct ipcp_param_lattices *dest_plats;
+      tree param_type = ipa_get_callee_param_type (cs, i);
 
       dest_plats = ipa_get_parm_lattices (callee_info, i);
       if (availability == AVAIL_INTERPOSABLE)
@@ -1966,10 +2258,16 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 							 &dest_plats->itself);
 	  ret |= propagate_context_accross_jump_function (cs, jump_func, i,
 							  &dest_plats->ctxlat);
-	  ret |= propagate_alignment_accross_jump_function (cs, jump_func,
-							 &dest_plats->alignment);
+	  ret |= propagate_bits_accross_jump_function (cs, i, jump_func,
+						       &dest_plats->bits_lattice);
 	  ret |= propagate_aggs_accross_jump_function (cs, jump_func,
 						       dest_plats);
+	  if (opt_for_fn (callee->decl, flag_ipa_vrp))
+	    ret |= propagate_vr_accross_jump_function (cs,
+						       jump_func, dest_plats,
+						       param_type);
+	  else
+	    ret |= dest_plats->m_value_range.set_to_bottom ();
 	}
     }
   for (; i < parms_count; i++)
@@ -2935,6 +3233,19 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
   FOR_EACH_DEFINED_FUNCTION (node)
   {
     struct ipa_node_params *info = IPA_NODE_REF (node);
+
+    /* In LTO we do not have PARM_DECLs but we would still like to be able to
+       look at types of parameters.  */
+    if (in_lto_p)
+      {
+	tree t = TYPE_ARG_TYPES (TREE_TYPE (node->decl));
+	for (int k = 0; k < ipa_get_param_count (info) && t; k++)
+	  {
+	    gcc_assert (t != void_list_node);
+	    info->descriptors[k].decl_or_type = TREE_VALUE (t);
+	    t = t ? TREE_CHAIN (t) : NULL;
+	  }
+      }
 
     determine_versionability (node, info);
     if (node->has_gimple_body_p ())
@@ -4517,25 +4828,100 @@ ipcp_decision_stage (struct ipa_topo_info *topo)
     }
 }
 
-/* Look up all alignment information that we have discovered and copy it over
+/* Look up all the bits information that we have discovered and copy it over
    to the transformation summary.  */
 
 static void
-ipcp_store_alignment_results (void)
+ipcp_store_bits_results (void)
+{
+  cgraph_node *node;
+
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    {
+      ipa_node_params *info = IPA_NODE_REF (node);
+      bool dumped_sth = false;
+      bool found_useful_result = false;
+
+      if (!opt_for_fn (node->decl, flag_ipa_bit_cp))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not considering %s for ipa bitwise propagation "
+				"; -fipa-bit-cp: disabled.\n",
+				node->name ());
+	  continue;
+	}
+
+      if (info->ipcp_orig_node)
+	info = IPA_NODE_REF (info->ipcp_orig_node);
+
+      unsigned count = ipa_get_param_count (info);
+      for (unsigned i = 0; i < count; i++)
+	{
+	  ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+	  if (plats->bits_lattice.constant_p ())
+	    {
+	      found_useful_result = true;
+	      break;
+	    }
+	}
+
+    if (!found_useful_result)
+      continue;
+
+    ipcp_grow_transformations_if_necessary ();
+    ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+    vec_safe_reserve_exact (ts->bits, count);
+
+    for (unsigned i = 0; i < count; i++)
+      {
+	ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+	ipa_bits bits_jfunc;			 
+
+	if (plats->bits_lattice.constant_p ())
+	  {
+	    bits_jfunc.known = true;
+	    bits_jfunc.value = plats->bits_lattice.get_value ();
+	    bits_jfunc.mask = plats->bits_lattice.get_mask ();
+	  }
+	else
+	  bits_jfunc.known = false;
+
+	ts->bits->quick_push (bits_jfunc);
+	if (!dump_file || !bits_jfunc.known)
+	  continue;
+	if (!dumped_sth)
+	  {
+	    fprintf (dump_file, "Propagated bits info for function %s/%i:\n",
+				node->name (), node->order);
+	    dumped_sth = true;
+	  }
+	fprintf (dump_file, " param %i: value = ", i);
+	print_hex (bits_jfunc.value, dump_file);
+	fprintf (dump_file, ", mask = ");
+	print_hex (bits_jfunc.mask, dump_file);
+	fprintf (dump_file, "\n");
+      }
+    }
+}
+
+/* Look up all VR information that we have discovered and copy it over
+   to the transformation summary.  */
+
+static void
+ipcp_store_vr_results (void)
 {
   cgraph_node *node;
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
   {
     ipa_node_params *info = IPA_NODE_REF (node);
-    bool dumped_sth = false;
     bool found_useful_result = false;
 
-    if (!opt_for_fn (node->decl, flag_ipa_cp_alignment))
+    if (!opt_for_fn (node->decl, flag_ipa_vrp))
       {
 	if (dump_file)
-	  fprintf (dump_file, "Not considering %s for alignment discovery "
-		   "and propagate; -fipa-cp-alignment: disabled.\n",
+	  fprintf (dump_file, "Not considering %s for VR discovery "
+		   "and propagate; -fipa-ipa-vrp: disabled.\n",
 		   node->name ());
 	continue;
       }
@@ -4547,10 +4933,9 @@ ipcp_store_alignment_results (void)
    for (unsigned i = 0; i < count ; i++)
      {
        ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-       if (!plats->alignment.bottom_p ()
-	   && !plats->alignment.top_p ())
+       if (!plats->m_value_range.bottom_p ()
+	   && !plats->m_value_range.top_p ())
 	 {
-	   gcc_checking_assert (plats->alignment.align > 0);
 	   found_useful_result = true;
 	   break;
 	 }
@@ -4560,34 +4945,28 @@ ipcp_store_alignment_results (void)
 
    ipcp_grow_transformations_if_necessary ();
    ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
-   vec_safe_reserve_exact (ts->alignments, count);
+   vec_safe_reserve_exact (ts->m_vr, count);
 
    for (unsigned i = 0; i < count ; i++)
      {
        ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-       ipa_alignment al;
+       ipa_vr vr;
 
-       if (!plats->alignment.bottom_p ()
-	   && !plats->alignment.top_p ())
+       if (!plats->m_value_range.bottom_p ()
+	   && !plats->m_value_range.top_p ())
 	 {
-	   al.known = true;
-	   al.align = plats->alignment.align;
-	   al.misalign = plats->alignment.misalign;
+	   vr.known = true;
+	   vr.type = plats->m_value_range.m_vr.type;
+	   vr.min = plats->m_value_range.m_vr.min;
+	   vr.max = plats->m_value_range.m_vr.max;
 	 }
        else
-	 al.known = false;
-
-       ts->alignments->quick_push (al);
-       if (!dump_file || !al.known)
-	 continue;
-       if (!dumped_sth)
 	 {
-	   fprintf (dump_file, "Propagated alignment info for function %s/%i:\n",
-		    node->name (), node->order);
-	   dumped_sth = true;
+	   vr.known = false;
+	   vr.type = VR_VARYING;
+	   vr.min = vr.max = wi::zero (INT_TYPE_SIZE);
 	 }
-       fprintf (dump_file, "  param %i: align: %u, misalign: %u\n",
-		i, al.align, al.misalign);
+       ts->m_vr->quick_push (vr);
      }
   }
 }
@@ -4623,8 +5002,10 @@ ipcp_driver (void)
   ipcp_propagate_stage (&topo);
   /* Decide what constant propagation and cloning should be performed.  */
   ipcp_decision_stage (&topo);
-  /* Store results of alignment propagation. */
-  ipcp_store_alignment_results ();
+  /* Store results of bits propagation.  */
+  ipcp_store_bits_results ();
+  /* Store results of value range propagation.  */
+  ipcp_store_vr_results ();
 
   /* Free all IPCP structures.  */
   free_toporder_info (&topo);

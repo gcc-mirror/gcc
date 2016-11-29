@@ -9,10 +9,10 @@
 int
 main (void)
 {
-  TEST_I_F(signed char, unsigned char, long double, LDBL_MANT_DIG);
-  TEST_I_F(signed short, unsigned short, long double, LDBL_MANT_DIG);
-  TEST_I_F(signed int, unsigned int, long double, LDBL_MANT_DIG);
-  TEST_I_F(signed long, unsigned long, long double, LDBL_MANT_DIG);
-  TEST_I_F(signed long long, unsigned long long, long double, LDBL_MANT_DIG);
+  TEST_I_F(signed char, unsigned char, long double, LDBL_MANT_DIG, LDBL_MAX_EXP);
+  TEST_I_F(signed short, unsigned short, long double, LDBL_MANT_DIG, LDBL_MAX_EXP);
+  TEST_I_F(signed int, unsigned int, long double, LDBL_MANT_DIG, LDBL_MAX_EXP);
+  TEST_I_F(signed long, unsigned long, long double, LDBL_MANT_DIG, LDBL_MAX_EXP);
+  TEST_I_F(signed long long, unsigned long long, long double, LDBL_MANT_DIG, LDBL_MAX_EXP);
   exit (0);
 }

@@ -1,6 +1,5 @@
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++17 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++17 -pthreads" { target *-*-solaris* } }
+// { dg-options " -std=gnu++17 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-solaris* powerpc-ibm-aix* } }
 // { dg-options " -std=gnu++17 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
@@ -30,7 +29,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::shared_mutex mutex_type;
 
   try

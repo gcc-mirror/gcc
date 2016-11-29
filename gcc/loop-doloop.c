@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "cfghooks.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "dojump.h"
 #include "expr.h"
@@ -70,7 +71,7 @@ along with GCC; see the file COPYING3.  If not see
    if it is not a decrement and branch jump insn.  */
 
 rtx
-doloop_condition_get (rtx doloop_pat)
+doloop_condition_get (rtx_insn *doloop_pat)
 {
   rtx cmp;
   rtx inc;
@@ -661,7 +662,7 @@ doloop_optimize (struct loop *loop)
     }
 
   if (desc->const_iter)
-    iterations = widest_int::from (std::make_pair (desc->niter_expr, mode),
+    iterations = widest_int::from (rtx_mode_t (desc->niter_expr, mode),
 				   UNSIGNED);
   else
     iterations = 0;

@@ -37,6 +37,9 @@ Driver RejectNegative Separate
 arch_errors_fatal
 Driver Alias(Zarch_errors_fatal)
 
+asm_macosx_version_min=
+Driver RejectNegative Joined
+
 bind_at_load
 Driver Alias(Zbind_at_load)
 
@@ -390,6 +393,12 @@ Driver Separate
 
 sub_umbrella
 Driver Separate
+
+; Certain aspects of code-gen may be improved / adjusted if the version of ld64
+; is sufficiently modern.
+mtarget-linker
+Target RejectNegative Joined Separate Report Var(darwin_target_linker) Init(LD64_VERSION)
+The version of ld64 in use for this toolchain.
 
 undefined
 Driver Separate

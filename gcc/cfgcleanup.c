@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
@@ -687,7 +688,7 @@ static void
 merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 {
   rtx_insn *barrier, *real_b_end;
-  rtx label;
+  rtx_insn *label;
   rtx_jump_table_data *table;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
@@ -1696,7 +1697,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   /* Check whether there are tablejumps in the end of BB1 and BB2.
      Return true if they are identical.  */
     {
-      rtx label1, label2;
+      rtx_insn *label1, *label2;
       rtx_jump_table_data *table1, *table2;
 
       if (tablejump_p (BB_END (bb1), &label1, &table1)
@@ -1993,7 +1994,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
      they have been already compared for equivalence in outgoing_edges_match ()
      so replace the references to TABLE1 by references to TABLE2.  */
   {
-      rtx label1, label2;
+      rtx_insn *label1, *label2;
       rtx_jump_table_data *table1, *table2;
 
       if (tablejump_p (BB_END (osrc1), &label1, &table1)

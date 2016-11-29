@@ -61,7 +61,6 @@ void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   const char* name = "filebuf_virtuals-1.txt";
   locale loc (locale::classic(), new Cvt_to_upper);	
 

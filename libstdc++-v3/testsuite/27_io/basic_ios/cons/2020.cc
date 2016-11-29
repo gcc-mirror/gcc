@@ -31,14 +31,11 @@ class gnu_ios: public std::basic_ios<__gnu_test::pod_ushort>
 
 void test07()
 {
-  bool test __attribute__((unused)) = true;
-  
   try
     { gnu_ios obj; }
   catch(std::exception& obj)
     { 
-      test = false; 
-      VERIFY( test );
+      VERIFY( false );
     }
 }
 

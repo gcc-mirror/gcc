@@ -730,35 +730,28 @@ fixed_arithmetic (FIXED_VALUE_TYPE *f, int icode, const FIXED_VALUE_TYPE *op0,
     {
     case NEGATE_EXPR:
       return do_fixed_neg (f, op0, sat_p);
-      break;
 
     case PLUS_EXPR:
       gcc_assert (op0->mode == op1->mode);
       return do_fixed_add (f, op0, op1, false, sat_p);
-      break;
 
     case MINUS_EXPR:
       gcc_assert (op0->mode == op1->mode);
       return do_fixed_add (f, op0, op1, true, sat_p);
-      break;
 
     case MULT_EXPR:
       gcc_assert (op0->mode == op1->mode);
       return do_fixed_multiply (f, op0, op1, sat_p);
-      break;
 
     case TRUNC_DIV_EXPR:
       gcc_assert (op0->mode == op1->mode);
       return do_fixed_divide (f, op0, op1, sat_p);
-      break;
 
     case LSHIFT_EXPR:
       return do_fixed_shift (f, op0, op1, true, sat_p);
-      break;
 
     case RSHIFT_EXPR:
       return do_fixed_shift (f, op0, op1, false, sat_p);
-      break;
 
     default:
       gcc_unreachable ();

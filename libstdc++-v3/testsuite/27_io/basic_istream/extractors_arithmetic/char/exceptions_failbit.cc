@@ -26,7 +26,6 @@ template<typename T>
 void test_failbit()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   istringstream stream("jaylib - champion sound");
   stream.exceptions(ios_base::failbit);

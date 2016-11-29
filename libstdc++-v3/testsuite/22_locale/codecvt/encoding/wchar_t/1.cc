@@ -28,7 +28,6 @@ void test01()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
-  bool test __attribute__((unused)) = true;
 
   locale 		loc_c = locale::classic();
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc_c); 

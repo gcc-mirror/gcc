@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
@@ -24,12 +23,10 @@
 
 #include <string>
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests C++ string assignment of the basic_regex class.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::basic_regex<wchar_t> test_type;
 
   std::wstring s(L"a*b");

@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::__vstring vs;
 
   VERIFY( vs.max_size() <= vs.get_allocator().max_size() );

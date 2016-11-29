@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   std::tr1::minstd_rand0 a;
   std::tr1::minstd_rand0 b;

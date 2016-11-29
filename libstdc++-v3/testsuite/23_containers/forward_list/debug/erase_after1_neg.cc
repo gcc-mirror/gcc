@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 xfail *-*-* } }
 // { dg-require-debug-mode "" }
-// { dg-do run { xfail *-*-* } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
@@ -25,8 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<int> fl1{1, 2, 3};
 
   auto it = fl1.begin();

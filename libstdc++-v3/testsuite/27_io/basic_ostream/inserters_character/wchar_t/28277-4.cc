@@ -33,7 +33,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream oss_01;
   const wstring str_01(50, L'a');

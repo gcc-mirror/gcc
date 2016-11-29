@@ -111,6 +111,14 @@
 # endif
 #endif
 
+#ifndef _GLIBCXX17_CONSTEXPR
+# if __cplusplus > 201402L
+#  define _GLIBCXX17_CONSTEXPR constexpr
+# else
+#  define _GLIBCXX17_CONSTEXPR
+# endif
+#endif
+
 // Macro for noexcept, to support in mixed 03/0x mode.
 #ifndef _GLIBCXX_NOEXCEPT
 # if __cplusplus >= 201103L
@@ -136,6 +144,14 @@
 # else
 #  define _GLIBCXX_THROW_OR_ABORT(_EXC) (__builtin_abort())
 # endif
+#endif
+
+#if __cpp_noexcept_function_type
+#define _GLIBCXX_NOEXCEPT_PARM , bool _N
+#define _GLIBCXX_NOEXCEPT_QUAL noexcept (_N)
+#else
+#define _GLIBCXX_NOEXCEPT_PARM
+#define _GLIBCXX_NOEXCEPT_QUAL
 #endif
 
 // Macro for extern template, ie controlling template linkage via use
@@ -179,8 +195,11 @@
     namespace placeholders { }
     namespace regex_constants { }
     namespace this_thread { }
-
-    namespace experimental { }
+    inline namespace literals {
+      inline namespace chrono_literals { }
+      inline namespace complex_literals { }
+      inline namespace string_literals { }
+    }
   }
 
   namespace abi { }
@@ -265,9 +284,16 @@ namespace std
   namespace regex_constants { inline namespace __7 { } }
   namespace this_thread { inline namespace __7 { } }
 
-  namespace experimental { inline namespace __7 { } }
+  inline namespace literals {
+    inline namespace chrono_literals { inline namespace __7 { } }
+    inline namespace complex_literals { inline namespace __7 { } }
+    inline namespace string_literals { inline namespace __7 { } }
+  }
 
-  namespace __detail { inline namespace __7 { } }
+  namespace __detail {
+    inline namespace __7 { }
+    namespace __variant { inline namespace __7 { } }
+  }
 }
 
 namespace __gnu_cxx
@@ -350,6 +376,10 @@ namespace std
 	 namespace _GLIBCXX_STD_C { _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_END_NAMESPACE_CONTAINER \
 	 _GLIBCXX_END_NAMESPACE_VERSION }
+#else
+# define _GLIBCXX_STD_C std
+# define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER _GLIBCXX_BEGIN_NAMESPACE_VERSION
+# define _GLIBCXX_END_NAMESPACE_CONTAINER _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
 #ifdef _GLIBCXX_PARALLEL
@@ -358,30 +388,10 @@ namespace std
 	 namespace _GLIBCXX_STD_A { _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_END_NAMESPACE_ALGO \
 	 _GLIBCXX_END_NAMESPACE_VERSION }
-#endif
-
-#ifndef _GLIBCXX_STD_A
+#else
 # define _GLIBCXX_STD_A std
-#endif
-
-#ifndef _GLIBCXX_STD_C
-# define _GLIBCXX_STD_C std
-#endif
-
-#ifndef _GLIBCXX_BEGIN_NAMESPACE_ALGO
-# define _GLIBCXX_BEGIN_NAMESPACE_ALGO
-#endif
-
-#ifndef _GLIBCXX_END_NAMESPACE_ALGO
-# define _GLIBCXX_END_NAMESPACE_ALGO
-#endif
-
-#ifndef _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
-# define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
-#endif
-
-#ifndef _GLIBCXX_END_NAMESPACE_CONTAINER
-# define _GLIBCXX_END_NAMESPACE_CONTAINER
+# define _GLIBCXX_BEGIN_NAMESPACE_ALGO _GLIBCXX_BEGIN_NAMESPACE_VERSION
+# define _GLIBCXX_END_NAMESPACE_ALGO _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
 // GLIBCXX_ABI Deprecated
@@ -532,6 +542,13 @@ namespace std
 #define _GLIBCXX_TXN_SAFE_DYN
 #endif
 
+#if __cplusplus > 201402L
+// In C++17 mathematical special functions are in namespace std.
+# define _GLIBCXX_USE_STD_SPEC_FUNCS 1
+#elif __cplusplus >= 201103L && __STDCPP_WANT_MATH_SPEC_FUNCS__ != 0
+// For C++11 and C++14 they are in namespace std when requested.
+# define _GLIBCXX_USE_STD_SPEC_FUNCS 1
+#endif
 
 // The remainder of the prewritten config is automatic; all the
 // user hooks are listed above.

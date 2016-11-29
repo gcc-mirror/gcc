@@ -26,7 +26,6 @@ using namespace std;
 
 void test13()
 {
-  bool test __attribute__((unused)) = true;
   __gnu_test::fail_wstreambuf bob;
   wostream stream(&bob);
   stream.exceptions(ios_base::badbit);
@@ -45,7 +44,6 @@ void test13()
 
 void test15()
 {
-  bool test __attribute__((unused)) = true;
   wostringstream stream;
   stream.exceptions(ios_base::badbit);
   __gnu_test::fail_wstreambuf bib;

@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 // 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
@@ -30,8 +29,7 @@ void test01()
   typedef int rep_type;
   typedef std::ratio<-1> period_type;
   typedef std::chrono::duration<rep_type, period_type> test_type;
-  test_type d;
+  test_type d;  // { dg-error "required from here" }
 }
 
-// { dg-error "period must be positive" "" { target *-*-* } 249 }
-// { dg-error "required from here" "" { target *-*-* } 33 }
+// { dg-error "period must be positive" "" { target *-*-* } 311 }

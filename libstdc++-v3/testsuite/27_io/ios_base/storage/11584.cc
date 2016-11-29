@@ -40,7 +40,6 @@ void operator delete[] (void *p) throw() { operator delete(p); }
 
 int main ()
 {
-  bool test __attribute__((unused)) = true;
   const int i = std::ios::xalloc();
   VERIFY( i >= 0 );
 

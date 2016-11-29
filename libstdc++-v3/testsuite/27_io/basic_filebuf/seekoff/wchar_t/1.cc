@@ -33,7 +33,6 @@ void test01()
   typedef wfilebuf::pos_type pos_type;
   typedef wfilebuf::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
   const char name[] = "tmp_seekoff-1.tst";
   const int_type eof = wfilebuf::traits_type::eof();
 

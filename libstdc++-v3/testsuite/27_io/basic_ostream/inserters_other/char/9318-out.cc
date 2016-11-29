@@ -47,8 +47,6 @@ private:
 
 void test10()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringbuf sbuf("Bad Moon Rising", std::ios::in);
   Outbuf buf;
   std::ostream stream(&buf);

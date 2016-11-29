@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 //
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -22,7 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const bool* p = &std::integral_constant<bool, true>::value;
   VERIFY( p );
 }

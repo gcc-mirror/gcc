@@ -26,6 +26,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "memmodel.h"
 #include "tm.h"
 #include "vec.h"
 #include "alias.h"
@@ -215,27 +216,40 @@ find_common_type (tree t1, tree t2)
      calling into build_binary_op), some others are really expected and we
      have to be careful.  */
 
+  const bool variable_record_on_lhs
+    = (TREE_CODE (t1) == RECORD_TYPE
+       && TREE_CODE (t2) == RECORD_TYPE
+       && get_variant_part (t1)
+       && !get_variant_part (t2));
+
+  const bool variable_array_on_lhs
+    = (TREE_CODE (t1) == ARRAY_TYPE
+       && TREE_CODE (t2) == ARRAY_TYPE
+       && !TREE_CONSTANT (TYPE_MIN_VALUE (TYPE_DOMAIN (t1)))
+       && TREE_CONSTANT (TYPE_MIN_VALUE (TYPE_DOMAIN (t2))));
+
   /* We must avoid writing more than what the target can hold if this is for
      an assignment and the case of tagged types is handled in build_binary_op
      so we use the lhs type if it is known to be smaller or of constant size
      and the rhs type is not, whatever the modes.  We also force t1 in case of
      constant size equality to minimize occurrences of view conversions on the
-     lhs of an assignment, except for the case of record types with a variant
-     part on the lhs but not on the rhs to make the conversion simpler.  */
+     lhs of an assignment, except for the case of types with a variable part
+     on the lhs but not on the rhs to make the conversion simpler.  */
   if (TREE_CONSTANT (TYPE_SIZE (t1))
       && (!TREE_CONSTANT (TYPE_SIZE (t2))
 	  || tree_int_cst_lt (TYPE_SIZE (t1), TYPE_SIZE (t2))
 	  || (TYPE_SIZE (t1) == TYPE_SIZE (t2)
-	      && !(TREE_CODE (t1) == RECORD_TYPE
-		   && TREE_CODE (t2) == RECORD_TYPE
-		   && get_variant_part (t1)
-		   && !get_variant_part (t2)))))
+	      && !variable_record_on_lhs
+	      && !variable_array_on_lhs)))
     return t1;
 
-  /* Otherwise, if the lhs type is non-BLKmode, use it.  Note that we know
-     that we will not have any alignment problems since, if we did, the
-     non-BLKmode type could not have been used.  */
-  if (TYPE_MODE (t1) != BLKmode)
+  /* Otherwise, if the lhs type is non-BLKmode, use it, except for the case of
+     a non-BLKmode rhs and array types with a variable part on the lhs but not
+     on the rhs to make sure the conversion is preserved during gimplification.
+     Note that we know that we will not have any alignment problems since, if
+     we did, the non-BLKmode type could not have been used.  */
+  if (TYPE_MODE (t1) != BLKmode
+      && (TYPE_MODE (t2) == BLKmode || !variable_array_on_lhs))
     return t1;
 
   /* If the rhs type is of constant size, use it whatever the modes.  At
@@ -821,6 +835,7 @@ build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
    in that type.  For INIT_EXPR and MODIFY_EXPR, RESULT_TYPE must be
    NULL_TREE.  For ARRAY_REF, RESULT_TYPE may be NULL_TREE, in which
    case the type to be used will be derived from the operands.
+   Don't fold the result if NO_FOLD is true.
 
    This function is very much unlike the ones for C and C++ since we
    have already done any type conversion and matching required.  All we
@@ -828,7 +843,8 @@ build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
 
 tree
 build_binary_op (enum tree_code op_code, tree result_type,
-                 tree left_operand, tree right_operand)
+		 tree left_operand, tree right_operand,
+		 bool no_fold)
 {
   tree left_type = TREE_TYPE (left_operand);
   tree right_type = TREE_TYPE (right_operand);
@@ -1270,10 +1286,16 @@ build_binary_op (enum tree_code op_code, tree result_type,
   else if (TREE_CODE (right_operand) == NULL_EXPR)
     return build1 (NULL_EXPR, operation_type, TREE_OPERAND (right_operand, 0));
   else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
-    result = fold (build4 (op_code, operation_type, left_operand,
-			   right_operand, NULL_TREE, NULL_TREE));
+    {
+      result = build4 (op_code, operation_type, left_operand, right_operand,
+		       NULL_TREE, NULL_TREE);
+      if (!no_fold)
+	result = fold (result);
+    }
   else if (op_code == INIT_EXPR || op_code == MODIFY_EXPR)
     result = build2 (op_code, void_type_node, left_operand, right_operand);
+  else if (no_fold)
+    result = build2 (op_code, operation_type, left_operand, right_operand);
   else
     result
       = fold_build2 (op_code, operation_type, left_operand, right_operand);
@@ -1294,8 +1316,13 @@ build_binary_op (enum tree_code op_code, tree result_type,
   /* If we are working with modular types, perform the MOD operation
      if something above hasn't eliminated the need for it.  */
   if (modulus)
-    result = fold_build2 (FLOOR_MOD_EXPR, operation_type, result,
-			  convert (operation_type, modulus));
+    {
+      modulus = convert (operation_type, modulus);
+      if (no_fold)
+	result = build2 (FLOOR_MOD_EXPR, operation_type, result, modulus);
+      else
+	result = fold_build2 (FLOOR_MOD_EXPR, operation_type, result, modulus);
+    }
 
   if (result_type && result_type != operation_type)
     result = convert (result_type, result);
@@ -2559,6 +2586,12 @@ gnat_protect_expr (tree exp)
       return t;
     }
 
+  /* Likewise if we're indirectly referencing part of something.  */
+  if (code == COMPONENT_REF
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == INDIRECT_REF)
+    return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
+		   TREE_OPERAND (exp, 1), NULL_TREE);
+
   /* If this is a COMPONENT_REF of a fat pointer, save the entire fat pointer.
      This may be more efficient, but will also allow us to more easily find
      the match for the PLACEHOLDER_EXPR.  */
@@ -2578,9 +2611,7 @@ gnat_protect_expr (tree exp)
   /* Otherwise reference, protect the address and dereference.  */
   return
     build_unary_op (INDIRECT_REF, type,
-		    save_expr (build_unary_op (ADDR_EXPR,
-					       build_reference_type (type),
-					       exp)));
+		    save_expr (build_unary_op (ADDR_EXPR, NULL_TREE, exp)));
 }
 
 /* This is equivalent to stabilize_reference_1 in tree.c but we take an extra

@@ -20,4 +20,4 @@ void foo1 (char *pstart, int n)
     *p = 1;
 }
 
-/* { dg-final { scan-tree-dump-times "ivtmp.\[0-9_\]* = PHI <\[^0\]" 0 "ivopts"} } */
+/* { dg-final { scan-tree-dump-times "ivtmp.\[0-9_\]* = PHI <\[^0\]\[^,\]*, \[^0\]" 0 "ivopts"} } */

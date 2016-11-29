@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
-// { dg-options "-std=gnu++11 -DSIMULATOR_TEST" { target simulator } }
+// { dg-options "-DSIMULATOR_TEST" { target simulator } }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 25.4.1.3 [lib.alg.partial.sort]
@@ -37,8 +37,6 @@ struct testPartialSort
   template<typename Container, typename RandomGen>
   void operator()(Container con, RandomGen& rg)
   {
-    bool test __attribute__((unused)) = true;
-
     const int size = con.end() - con.begin();
     auto dist = std::uniform_int_distribution<>(0, size);
     const int element = dist(rg);

@@ -1,4 +1,4 @@
-// { dg-options " -std=gnu++11 " }
+// { dg-do run { target c++11 } }
 
 // 2014-04-14 Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
@@ -29,7 +29,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   locale loc_c = locale::classic();
   istringstream iss;
   iss.imbue(loc_c);

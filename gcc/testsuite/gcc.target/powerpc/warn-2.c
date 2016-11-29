@@ -4,7 +4,7 @@
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-O -mcpu=power7 -mno-altivec" } */
 
-/* { dg-warning "-mno-altivec disables vsx" "" { target *-*-* } 1 } */
+/* { dg-warning "-mno-altivec disables vsx" "" { target *-*-* } 0 } */
 
 double
 foo (double *x, double *y)

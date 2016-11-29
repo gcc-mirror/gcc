@@ -40,13 +40,13 @@ f (int a, double d, void *p)
   switch (a)
     {
     case 0:
-    default: /* { dg-error "this is the first default label" } */
+    default: /* { dg-message "this is the first default label" } */
     case 1:
     default: ; /* { dg-error "multiple default labels in one switch" } */
     }
   switch (a)
     {
-    case 0: /* { dg-error "previously used here" } */
+    case 0: /* { dg-message "previously used here" } */
     case 1:
     case 0: ; /* { dg-error "duplicate case value" } */
     }
@@ -60,11 +60,11 @@ f (int a, double d, void *p)
      }
    switch (a)
      {
-     case 0: /* { dg-error "this is the first entry overlapping that value" } */
+     case 0: /* { dg-message "this is the first entry overlapping that value" } */
      case -1 ... 1: /* { dg-error "duplicate \\(or overlapping\\) case value" } */
-     case 2 ... 3: /* { dg-error "previously used here" } */
+     case 2 ... 3: /* { dg-message "previously used here" } */
      case 2: /* { dg-error "duplicate case value" } */
-     case 4 ... 7: /* { dg-error "this is the first entry overlapping that value" } */
+     case 4 ... 7: /* { dg-message "this is the first entry overlapping that value" } */
      case 6 ... 9: ; /* { dg-error "duplicate \\(or overlapping\\) case value" } */
      }
    switch (a)

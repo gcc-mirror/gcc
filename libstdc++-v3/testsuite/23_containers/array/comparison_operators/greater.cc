@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -25,7 +25,6 @@ test01()
 { 
   const size_t len = 5;
   typedef std::array<int, len> array_type;
-  bool test __attribute__((unused)) = true;
   array_type a = { { 0, 1, 2, 3, 4 } };
   array_type b = { { 0, 1, 2, 3, 4 } };
   array_type c = { { 0, 1, 2, 3, 7 } };

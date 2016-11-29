@@ -26,7 +26,6 @@
 void test05()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   // Check money_get works with other iterators besides streambuf
   // input iterators.
