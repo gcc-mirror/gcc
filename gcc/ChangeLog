@@ -1,3 +1,10 @@
+2016-11-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/78603
+	* config/xtensa/xtensa.c (hwloop_optimize): Don't emit zero
+	overhead loop start between a call and its CALL_ARG_LOCATION
+	note.
+
 2016-11-29  Waldemar Brodkorb  <wbx@openadk.org>
 
 	* config/bfin/linux.h (CPP_SPEC): Define.
