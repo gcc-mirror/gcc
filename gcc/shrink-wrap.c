@@ -1131,8 +1131,6 @@ init_separate_shrink_wrap (sbitmap components)
       SW (bb)->head_components = sbitmap_alloc (SBITMAP_SIZE (components));
       SW (bb)->tail_components = sbitmap_alloc (SBITMAP_SIZE (components));
       bitmap_clear (SW (bb)->has_components);
-      bitmap_clear (SW (bb)->head_components);
-      bitmap_clear (SW (bb)->tail_components);
     }
 }
 
@@ -1253,48 +1251,151 @@ place_prologue_for_one_component (unsigned int which, basic_block head)
     }
 }
 
-/* Mark HAS_COMPONENTS for every block dominated by at least one block with
-   HAS_COMPONENTS set for the respective components, starting at HEAD.  */
+/* Set HAS_COMPONENTS in every block to the maximum it can be set to without
+   setting it on any path from entry to exit where it was not already set
+   somewhere (or, for blocks that have no path to the exit, consider only
+   paths from the entry to the block itself).  */
 static void
-spread_components (basic_block head)
+spread_components (sbitmap components)
 {
-  basic_block bb = head;
-  bool first_visit = true;
-  /* This keeps a tally of all components active.  */
-  sbitmap components = SW (head)->has_components;
+  basic_block entry_block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  basic_block exit_block = EXIT_BLOCK_PTR_FOR_FN (cfun);
 
-  for (;;)
+  /* A stack of all blocks left to consider, and a bitmap of all blocks
+     on that stack.  */
+  vec<basic_block> todo;
+  todo.create (n_basic_blocks_for_fn (cfun));
+  bitmap seen = BITMAP_ALLOC (NULL);
+
+  sbitmap old = sbitmap_alloc (SBITMAP_SIZE (components));
+
+  /* Find for every block the components that are *not* needed on some path
+     from the entry to that block.  Do this with a flood fill from the entry
+     block.  Every block can be visited at most as often as the number of
+     components (plus one), and usually much less often.  */
+
+  if (dump_file)
+    fprintf (dump_file, "Spreading down...\n");
+
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    bitmap_clear (SW (bb)->head_components);
+
+  bitmap_copy (SW (entry_block)->head_components, components);
+
+  edge e;
+  edge_iterator ei;
+
+  todo.quick_push (single_succ (entry_block));
+  bitmap_set_bit (seen, single_succ (entry_block)->index);
+  while (!todo.is_empty ())
     {
-      if (first_visit)
-	{
-	  bitmap_ior (SW (bb)->has_components, SW (bb)->has_components,
-		      components);
+      bb = todo.pop ();
 
-	  if (first_dom_son (CDI_DOMINATORS, bb))
-	    {
-	      components = SW (bb)->has_components;
-	      bb = first_dom_son (CDI_DOMINATORS, bb);
-	      continue;
-	    }
-	}
+      bitmap_copy (old, SW (bb)->head_components);
 
-      components = SW (bb)->has_components;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	bitmap_ior (SW (bb)->head_components, SW (bb)->head_components,
+		    SW (e->src)->head_components);
 
-      if (next_dom_son (CDI_DOMINATORS, bb))
+      bitmap_and_compl (SW (bb)->head_components, SW (bb)->head_components,
+			SW (bb)->has_components);
+
+      if (!bitmap_equal_p (old, SW (bb)->head_components))
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  if (bitmap_set_bit (seen, e->dest->index))
+	    todo.quick_push (e->dest);
+
+      bitmap_clear_bit (seen, bb->index);
+    }
+
+  /* Find for every block the components that are *not* needed on some reverse
+     path from the exit to that block.  */
+
+  if (dump_file)
+    fprintf (dump_file, "Spreading up...\n");
+
+  /* First, mark all blocks not reachable from the exit block as not needing
+     any component on any path to the exit.  Mark everything, and then clear
+     again by a flood fill.  */
+
+  FOR_ALL_BB_FN (bb, cfun)
+    bitmap_copy (SW (bb)->tail_components, components);
+
+  FOR_EACH_EDGE (e, ei, exit_block->preds)
+    {
+      todo.quick_push (e->src);
+      bitmap_set_bit (seen, e->src->index);
+    }
+
+  while (!todo.is_empty ())
+    {
+      bb = todo.pop ();
+
+      if (!bitmap_empty_p (SW (bb)->tail_components))
+	FOR_EACH_EDGE (e, ei, bb->preds)
+	  if (bitmap_set_bit (seen, e->src->index))
+	    todo.quick_push (e->src);
+
+      bitmap_clear (SW (bb)->tail_components);
+
+      bitmap_clear_bit (seen, bb->index);
+    }
+
+  /* And then, flood fill backwards to find for every block the components
+     not needed on some path to the exit.  */
+
+  bitmap_copy (SW (exit_block)->tail_components, components);
+
+  FOR_EACH_EDGE (e, ei, exit_block->preds)
+    {
+      todo.quick_push (e->src);
+      bitmap_set_bit (seen, e->src->index);
+    }
+
+  while (!todo.is_empty ())
+    {
+      bb = todo.pop ();
+
+      bitmap_copy (old, SW (bb)->tail_components);
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	bitmap_ior (SW (bb)->tail_components, SW (bb)->tail_components,
+		    SW (e->dest)->tail_components);
+
+      bitmap_and_compl (SW (bb)->tail_components, SW (bb)->tail_components,
+			SW (bb)->has_components);
+
+      if (!bitmap_equal_p (old, SW (bb)->tail_components))
+	FOR_EACH_EDGE (e, ei, bb->preds)
+	  if (bitmap_set_bit (seen, e->src->index))
+	    todo.quick_push (e->src);
+
+      bitmap_clear_bit (seen, bb->index);
+    }
+
+  /* Finally, mark everything not not needed both forwards and backwards.  */
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      bitmap_and (SW (bb)->head_components, SW (bb)->head_components,
+		  SW (bb)->tail_components);
+      bitmap_and_compl (SW (bb)->has_components, components,
+			SW (bb)->head_components);
+    }
+
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      if (dump_file)
 	{
-	  bb = next_dom_son (CDI_DOMINATORS, bb);
-	  basic_block parent = get_immediate_dominator (CDI_DOMINATORS, bb);
-	  components = SW (parent)->has_components;
-	  first_visit = true;
-	}
-      else
-	{
-	  if (bb == head)
-	    return;
-	  bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-	  first_visit = false;
+	  fprintf (dump_file, "bb %d components:", bb->index);
+	  dump_components ("has", SW (bb)->has_components);
+	  fprintf (dump_file, "\n");
 	}
     }
+
+  sbitmap_free (old);
+  BITMAP_FREE (seen);
 }
 
 /* If we cannot handle placing some component's prologues or epilogues where
@@ -1384,6 +1485,9 @@ emit_common_heads_for_components (sbitmap components)
   sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (components));
 
   basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    bitmap_clear (SW (bb)->head_components);
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       /* Find which prologue resp. epilogue components are needed for all
@@ -1470,6 +1574,9 @@ emit_common_tails_for_components (sbitmap components)
   sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (components));
 
   basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    bitmap_clear (SW (bb)->tail_components);
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       /* Find which prologue resp. epilogue components are needed for all
@@ -1608,6 +1715,10 @@ insert_prologue_epilogue_for_components (sbitmap components)
 			   e->dest->index);
 		  dump_components ("epi", epi);
 		  dump_components ("pro", pro);
+		  if (e->flags & EDGE_SIBCALL)
+		    fprintf (dump_file, "  (SIBCALL)");
+		  else if (e->flags & EDGE_ABNORMAL)
+		    fprintf (dump_file, "  (ABNORMAL)");
 		  fprintf (dump_file, "\n");
 		}
 
@@ -1702,7 +1813,7 @@ try_shrink_wrapping_separate (basic_block first_bb)
   EXECUTE_IF_SET_IN_BITMAP (components, 0, j, sbi)
     place_prologue_for_one_component (j, first_bb);
 
-  spread_components (first_bb);
+  spread_components (components);
 
   disqualify_problematic_components (components);
 
