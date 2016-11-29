@@ -871,11 +871,13 @@ arc_override_options (void)
     optimize_size = 1;
 
   /* Compact casesi is not a valid option for ARCv2 family.  */
-  if (TARGET_V2
-      && TARGET_COMPACT_CASESI)
+  if (TARGET_V2)
     {
-      warning (0, "compact-casesi is not applicable to ARCv2");
-      TARGET_COMPACT_CASESI = 0;
+      if (TARGET_COMPACT_CASESI)
+	{
+	  warning (0, "compact-casesi is not applicable to ARCv2");
+	  TARGET_COMPACT_CASESI = 0;
+	}
     }
   else if (optimize_size == 1
 	   && !global_options_set.x_TARGET_COMPACT_CASESI)

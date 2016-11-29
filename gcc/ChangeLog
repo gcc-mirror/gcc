@@ -1,3 +1,8 @@
+2016-11-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_override_options): Avoid selection of
+	compact casesi for ARCv2.
+
 2016-11-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (lower_phi_internal_fn): Do not look for further
