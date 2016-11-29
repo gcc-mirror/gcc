@@ -27534,7 +27534,11 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
 			 rtx frame_reg_rtx, HOST_WIDE_INT frame_off,
 			 unsigned updt_regno)
 {
-  rtx updt_reg_rtx;
+  /* If there is nothing to do, don't do anything.  */
+  if (frame_off == 0 && REGNO (frame_reg_rtx) == updt_regno)
+    return NULL_RTX;
+
+  rtx updt_reg_rtx = gen_rtx_REG (Pmode, updt_regno);
 
   /* This blockage is needed so that sched doesn't decide to move
      the sp change before the register restores.  */
@@ -27542,18 +27546,17 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
       || (TARGET_SPE_ABI
 	  && info->spe_64bit_regs_used != 0
 	  && info->first_gp_reg_save != 32))
-    rs6000_emit_stack_tie (frame_reg_rtx, frame_pointer_needed);
+    return emit_insn (gen_stack_restore_tie (updt_reg_rtx, frame_reg_rtx,
+					     GEN_INT (frame_off)));
 
   /* If we are restoring registers out-of-line, we will be using the
      "exit" variants of the restore routines, which will reset the
      stack for us.  But we do need to point updt_reg into the
      right place for those routines.  */
-  updt_reg_rtx = gen_rtx_REG (Pmode, updt_regno);
-
   if (frame_off != 0)
     return emit_insn (gen_add3_insn (updt_reg_rtx,
 				     frame_reg_rtx, GEN_INT (frame_off)));
-  else if (REGNO (frame_reg_rtx) != updt_regno)
+  else
     return emit_move_insn (updt_reg_rtx, frame_reg_rtx);
 
   return NULL_RTX;

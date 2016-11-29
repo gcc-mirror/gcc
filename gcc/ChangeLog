@@ -1,3 +1,11 @@
+2016-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77687
+	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Emit the
+	stack_restore_tie insn instead of stack_tie, for the SVR4 and
+	SPE ABIs.
+	* config/rs6000/rs6000.md (stack_restore_tie): New define_insn.
+
 2016-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* shrink-wrap.c (init_separate_shrink_wrap): Do not clear
