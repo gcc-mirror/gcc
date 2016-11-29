@@ -363,7 +363,7 @@ sh_expand_cmpnstr (rtx *operands)
   rtx_code_label *L_loop_byte = gen_label_rtx ();
   rtx_code_label *L_end_loop_byte = gen_label_rtx ();
 
-  rtx len = force_reg (SImode, operands[3]);
+  rtx len = copy_to_mode_reg (SImode, operands[3]);
   int constp = CONST_INT_P (operands[3]);
 
   /* Loop on a register count.  */
@@ -674,9 +674,9 @@ sh_expand_setmem (rtx *operands)
   rtx jump;
   rtx dest = copy_rtx (operands[0]);
   rtx dest_addr = copy_addr_to_reg (XEXP (dest, 0));
-  rtx val = force_reg (SImode, operands[2]);
+  rtx val = copy_to_mode_reg (SImode, operands[2]);
   int align = INTVAL (operands[3]);
-  rtx len = force_reg (SImode, operands[1]);
+  rtx len = copy_to_mode_reg (SImode, operands[1]);
 
   if (! CONST_INT_P (operands[1]))
     return;
