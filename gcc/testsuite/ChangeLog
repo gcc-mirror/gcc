@@ -1,3 +1,8 @@
+2016-11-29  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78582
+	* gcc.dg/pr78582.c: New test.
+
 2016-11-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* testsuite/gcc.dg/pr31096-1.c: Use __{U,}INT32_TYPE__ for
