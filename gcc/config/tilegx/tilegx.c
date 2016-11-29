@@ -3882,8 +3882,8 @@ bool
 tilegx_can_use_return_insn_p (void)
 {
   return (reload_completed
-	  && cfun->static_chain_decl == 0
-	  && compute_total_frame_size () == 0
+	  && !cfun->static_chain_decl
+	  && !compute_total_frame_size ()
 	  && tilegx_current_function_is_leaf ()
 	  && !crtl->profile && !df_regs_ever_live_p (TILEGX_LINK_REGNUM));
 }
@@ -5512,6 +5512,15 @@ tilegx_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file, "\t}\n");
     }
 
+  if (cfun->static_chain_decl)
+    {
+      fprintf (file,
+	       "\t{\n"
+	       "\taddi\tsp, sp, -16\n"
+	       "\tst\tsp, r10\n"
+	       "\t}\n");
+    }
+
   if (flag_pic)
     {
       fprintf (file,
@@ -5527,6 +5536,13 @@ tilegx_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	       "\tmove\tr10, lr\n"
 	       "\tjal\t%s\n"
 	       "\t}\n", MCOUNT_NAME);
+    }
+
+  if (cfun->static_chain_decl)
+    {
+      fprintf (file,
+	       "\taddi\tsp, sp, 16\n"
+	       "\tld\tr10, sp\n");
     }
 
   tilegx_in_bundle = false;
