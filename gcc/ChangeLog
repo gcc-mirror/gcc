@@ -1,3 +1,10 @@
+2016-11-29  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	PR target/71331
+	* config/tilegx/tilegx.c (tilegx_function_profiler): Save r10
+	to stack before call mcount.
+	(tilegx_can_use_return_insn_p): Clean up code.
+
 2016-11-29  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
 
 	* config/avr/avr-arch.h (avr_mcu_t): Add flash_size member.
