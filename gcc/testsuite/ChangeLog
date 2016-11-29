@@ -1,3 +1,8 @@
+2016-11-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58175
+	* gfortran.dg/finalize_30.f90: New test case.
+
 2016-11-29  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/78582
