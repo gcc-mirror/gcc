@@ -361,14 +361,11 @@ lower_phi_internal_fn ()
   /* After edge creation, handle __PHI function from GIMPLE FE.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
 	{
 	  stmt = gsi_stmt (gsi);
 	  if (! gimple_call_internal_p (stmt, IFN_PHI))
-	    {
-	      gsi_next (&gsi);
-	      continue;
-	    }
+	    break;
 
 	  lhs = gimple_call_lhs (stmt);
 	  phi_node = create_phi_node (lhs, bb);
@@ -2604,11 +2601,21 @@ stmt_starts_bb_p (gimple *stmt, gimple *prev_stmt)
       else
 	return true;
     }
-  else if (gimple_code (stmt) == GIMPLE_CALL
-	   && gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
-    /* setjmp acts similar to a nonlocal GOTO target and thus should
-       start a new block.  */
-    return true;
+  else if (gimple_code (stmt) == GIMPLE_CALL)
+    {
+      if (gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
+	/* setjmp acts similar to a nonlocal GOTO target and thus should
+	   start a new block.  */
+	return true;
+      if (gimple_call_internal_p (stmt, IFN_PHI)
+	  && prev_stmt
+	  && gimple_code (prev_stmt) != GIMPLE_LABEL
+	  && (gimple_code (prev_stmt) != GIMPLE_CALL
+	      || ! gimple_call_internal_p (prev_stmt, IFN_PHI)))
+	/* PHI nodes start a new block unless preceeded by a label
+	   or another PHI.  */
+	return true;
+    }
 
   return false;
 }
