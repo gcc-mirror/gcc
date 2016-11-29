@@ -461,10 +461,10 @@ void
 gimple_gen_time_profiler (unsigned tag, unsigned base)
 {
   tree type = get_gcov_type ();
-  basic_block cond_bb
-    = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
-
+  basic_block entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  basic_block cond_bb = split_edge (single_succ_edge (entry));
   basic_block update_bb = split_edge (single_succ_edge (cond_bb));
+  split_edge (single_succ_edge (update_bb));
 
   edge true_edge = single_succ_edge (cond_bb);
   true_edge->flags = EDGE_TRUE_VALUE;

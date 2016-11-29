@@ -1,3 +1,9 @@
+2016-11-29  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78582
+	* tree-profile.c (gimple_gen_time_profiler): Make one extra BB
+	to prevent PHI argument clash.
+
 2016-11-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.opt (marclinux): Fix typo.
