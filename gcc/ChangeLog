@@ -1,3 +1,8 @@
+2016-11-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.opt (marclinux): Fix typo.
+	(marclinux_prof): Likewise.
+
 2016-11-29  Jiong Wang  <jiong.wang@arm.com>
 
 	* target.def (stack_protect_runtime_enabled_p): New.
