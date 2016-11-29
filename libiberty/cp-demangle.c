@@ -4564,7 +4564,7 @@ d_maybe_print_fold_expression (struct d_print_info *dpi, int options,
 
 static void
 d_print_comp_inner (struct d_print_info *dpi, int options,
-		  const struct demangle_component *dc)
+		    const struct demangle_component *dc)
 {
   /* Magic variable to let reference smashing skip over the next modifier
      without needing to modify *dc.  */
