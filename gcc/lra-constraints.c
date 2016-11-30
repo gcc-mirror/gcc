@@ -5888,7 +5888,9 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	       && dst_regno >= lra_constraint_new_regno_start
 	       && invariant_p (SET_SRC (curr_set))
 	       && (cl = lra_get_allocno_class (dst_regno)) != NO_REGS
-	       && ! bitmap_bit_p (&invalid_invariant_regs, dst_regno))
+	       && ! bitmap_bit_p (&invalid_invariant_regs, dst_regno)
+	       && ! bitmap_bit_p (&invalid_invariant_regs,
+				  ORIGINAL_REGNO(regno_reg_rtx[dst_regno])))
 	{
 	  /* 'reload_pseudo <- invariant'.  */
 	  if (ira_class_hard_regs_num[cl] <= max_small_class_regs_num)
@@ -6159,16 +6161,20 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	  curr_id = lra_get_insn_recog_data (curr_insn);
 	  for (reg = curr_id->regs; reg != NULL; reg = reg->next)
 	    if (reg->type != OP_IN)
-	      bitmap_set_bit (&invalid_invariant_regs, reg->regno);
+	      {
+		bitmap_set_bit (&invalid_invariant_regs, reg->regno);
+		bitmap_set_bit (&invalid_invariant_regs,
+				ORIGINAL_REGNO (regno_reg_rtx[reg->regno]));
+	      }
 	  curr_static_id = curr_id->insn_static_data;
 	  for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	    if (reg->type != OP_IN)
 	      bitmap_set_bit (&invalid_invariant_regs, reg->regno);
 	  if (curr_id->arg_hard_regs != NULL)
 	    for (i = 0; (regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	      if (regno >= FIRST_PSEUDO_REGISTER)
 		bitmap_set_bit (&invalid_invariant_regs,
-				regno >= FIRST_PSEUDO_REGISTER
-				? regno : regno - FIRST_PSEUDO_REGISTER);
+				regno - FIRST_PSEUDO_REGISTER);
 	}
       /* We reached the start of the current basic block.  */
       if (prev_insn == NULL_RTX || prev_insn == PREV_INSN (head)
