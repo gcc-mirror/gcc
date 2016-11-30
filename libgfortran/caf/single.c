@@ -1471,7 +1471,7 @@ _gfortran_caf_get_by_ref (caf_token_t token,
   size_t dst_index[GFC_MAX_DIMENSIONS];
   int dst_rank = GFC_DESCRIPTOR_RANK (dst);
   int dst_cur_dim = 0;
-  size_t src_size;
+  size_t src_size = 0;
   caf_single_token_t single_token = TOKEN (token);
   void *memptr = single_token->memptr;
   gfc_descriptor_t *src = single_token->desc;
@@ -2325,7 +2325,7 @@ _gfortran_caf_send_by_ref (caf_token_t token,
   size_t dst_index[GFC_MAX_DIMENSIONS];
   int src_rank = GFC_DESCRIPTOR_RANK (src);
   int src_cur_dim = 0;
-  size_t src_size;
+  size_t src_size = 0;
   caf_single_token_t single_token = TOKEN (token);
   void *memptr = single_token->memptr;
   gfc_descriptor_t *dst = single_token->desc;

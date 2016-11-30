@@ -1,5 +1,12 @@
 2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	* caf/single.c (_gfortran_caf_get_by_ref): Prevent compile time
+	warning.
+	(_gfortran_caf_send_by_ref): Same.
+	(_gfortran_caf_is_present): Prevent fallthrough	warnings.
+
+2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	* caf/libcaf.h: Add new action types for (de-)registration of
 	allocatable components in derived type coarrays.  Add _caf_is_present
 	prototype.
