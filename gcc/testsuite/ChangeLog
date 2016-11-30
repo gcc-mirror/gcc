@@ -1,3 +1,8 @@
+2016-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78573
+	* gfortran.dg/class_61.f90: New test case.
+
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/78569

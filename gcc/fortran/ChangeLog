@@ -1,3 +1,9 @@
+2016-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78573
+	* decl.c (build_struct): On error, return directly and do not build
+	class symbol.
+
 2016-11-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58175
