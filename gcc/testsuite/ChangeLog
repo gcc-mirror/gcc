@@ -1,3 +1,8 @@
+2016-11-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR tree-optimization/77856
+	* gcc.target/i386.c (pr77856.c): New.
+
 2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/debug/dwarf2/ptrdmem-1.C: Don't XFAIL scan-assembler-not on AIX.

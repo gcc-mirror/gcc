@@ -1,3 +1,10 @@
+2016-11-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR tree-optimization/77856
+	* lra-constraints.c (inherit_in_ebb): Check original regno for
+	invalid invariant regs too.  Set only clobbered hard regs for the
+	invalid invariant regs.
+
 2016-11-30  Pitchumani Sivanupandi  <pitchumani.sivanupandi@microchip.com>
 
 	Commit files forgotten in r242966.
