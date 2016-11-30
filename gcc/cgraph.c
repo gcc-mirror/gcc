@@ -263,6 +263,9 @@ symbol_table::initialize (void)
 {
   if (!dump_file)
     dump_file = dump_begin (TDI_cgraph, NULL);
+
+  if (!ipa_clones_dump_file)
+    ipa_clones_dump_file = dump_begin (TDI_clones, NULL);
 }
 
 /* Allocate new callgraph node and insert it into basic data structures.  */
@@ -1814,6 +1817,12 @@ cgraph_node::remove (void)
 {
   cgraph_node *n;
   int uid = this->uid;
+
+  if (symtab->ipa_clones_dump_file && symtab->cloned_nodes.contains (this))
+    fprintf (symtab->ipa_clones_dump_file,
+	     "Callgraph removal;%s;%d;%s;%d;%d\n", asm_name (), order,
+	     DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
+	     DECL_SOURCE_COLUMN (decl));
 
   symtab->call_cgraph_removal_hooks (this);
   remove_callers ();

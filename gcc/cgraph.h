@@ -906,13 +906,14 @@ public:
      If the new node is being inlined into another one, NEW_INLINED_TO should be
      the outline function the new one is (even indirectly) inlined to.
      All hooks will see this in node's global.inlined_to, when invoked.
-     Can be NULL if the node is not inlined.  */
+     Can be NULL if the node is not inlined.  SUFFIX is string that is appended
+     to the original name.  */
   cgraph_node *create_clone (tree decl, gcov_type count, int freq,
 			     bool update_original,
 			     vec<cgraph_edge *> redirect_callers,
 			     bool call_duplication_hook,
 			     cgraph_node *new_inlined_to,
-			     bitmap args_to_skip);
+			     bitmap args_to_skip, const char *suffix = NULL);
 
   /* Create callgraph node clone with new declaration.  The actual body will
      be copied later at compilation stage.  */
@@ -933,11 +934,14 @@ public:
 
      If non-NULL BLOCK_TO_COPY determine what basic blocks
      was copied to prevent duplications of calls that are dead
-     in the clone.  */
+     in the clone.
+
+     SUFFIX is string that is appended to the original name.  */
 
   cgraph_node *create_version_clone (tree new_decl,
 				    vec<cgraph_edge *> redirect_callers,
-				    bitmap bbs_to_copy);
+				    bitmap bbs_to_copy,
+				    const char *suffix = NULL);
 
   /* Perform function versioning.
      Function versioning includes copying of the tree and
@@ -2223,6 +2227,10 @@ public:
   /* Return symbol used to separate symbol name from suffix.  */
   static char symbol_suffix_separator ();
 
+  FILE* GTY ((skip)) ipa_clones_dump_file;
+
+  hash_set <const cgraph_node *> GTY ((skip)) cloned_nodes;
+
 private:
   /* Allocate new callgraph node.  */
   inline cgraph_node * allocate_cgraph_symbol (void);
@@ -2312,6 +2320,10 @@ tree clone_function_name (tree decl, const char *);
 
 void tree_function_versioning (tree, tree, vec<ipa_replace_map *, va_gc> *,
 			       bool, bitmap, bool, bitmap, basic_block);
+
+void dump_callgraph_transformation (const cgraph_node *original,
+				    const cgraph_node *clone,
+				    const char *suffix);
 
 /* In cgraphbuild.c  */
 int compute_call_stmt_bb_frequency (tree, basic_block bb);
