@@ -5158,6 +5158,8 @@ package body Sem_Attr is
 
          Check_E0;
 
+         Check_Restriction (No_Dynamic_Priorities, N);
+
          --  The prefix must be a protected object (AARM D.5.2 (2/2))
 
          Analyze (P);

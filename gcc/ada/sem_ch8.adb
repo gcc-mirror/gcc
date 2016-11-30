@@ -6449,7 +6449,10 @@ package body Sem_Ch8 is
       --  Non-overloaded case
 
       else
-         if Is_Actual and then Present (Enclosing_Instance) then
+         if Is_Actual
+           and then Present (Enclosing_Instance)
+           and then Entity_Matches_Spec (Entity (Nam), New_S)
+         then
             Old_S := Entity (Nam);
 
          elsif Entity_Matches_Spec (Entity (Nam), New_S) then
@@ -7757,6 +7760,7 @@ package body Sem_Ch8 is
             Next_Formal (New_F);
             Next_Formal (Old_F);
          end loop;
+         pragma Assert (No (Old_F));
 
          if Ekind_In (Old_S, E_Function, E_Enumeration_Literal) then
             Set_Etype (New_S, Etype (Old_S));
