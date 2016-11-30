@@ -4840,6 +4840,8 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
   if (mode == VOIDmode)
     mode = GET_MODE (x);
 
+  gcc_checking_assert (mode != BLKmode);
+
   if (mode == VOIDmode || FLOAT_MODE_P (mode) || FLOAT_MODE_P (GET_MODE (x))
       || VECTOR_MODE_P (GET_MODE (x)) || VECTOR_MODE_P (mode))
     return 1;

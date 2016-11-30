@@ -1,3 +1,9 @@
+2016-11-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR rtl-optimization/78588
+	* combine.c (if_then_else_cond): Also guard against BLKmode.
+	* rtlanal.c (num_sign_bit_copies1): Add assert.
+
 2016-11-29  Jeff Law  <law@redhat.com>
 
 	* common/config/arc/arc-common.c (arc_handle_option): Remove unused
