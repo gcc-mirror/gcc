@@ -215,17 +215,16 @@ print_mcu (const avr_mcu_t *mcu)
   // avr-specific specs for linking / the linker.
 
   int wrap_k =
-    str_prefix_p (mcu->name, "at90usb8") ? 8
-    : str_prefix_p (mcu->name, "atmega16") ? 16
-    : (str_prefix_p (mcu->name, "atmega32")
-       || str_prefix_p (mcu->name, "at90can32")) ? 32
-    : (str_prefix_p (mcu->name, "atmega64")
-       || str_prefix_p (mcu->name, "at90can64")
-       || str_prefix_p (mcu->name, "at90usb64")) ? 64
+    mcu->flash_size == 0x2000 ? 8
+    : mcu->flash_size == 0x4000 ? 16
+    : mcu->flash_size == 0x8000 ? 32
+    : mcu->flash_size == 0x10000 ? 64
     : 0;
 
   fprintf (f, "*link_pmem_wrap:\n");
-  if (wrap_k)
+  if (wrap_k == 8)
+    fprintf (f, "\t%%{!mno-pmem-wrap-around: --pmem-wrap-around=8k}");
+  else if (wrap_k > 8)
     fprintf (f, "\t%%{mpmem-wrap-around: --pmem-wrap-around=%dk}", wrap_k);
   fprintf (f, "\n\n");
 
