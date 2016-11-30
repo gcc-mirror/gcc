@@ -4933,15 +4933,15 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
 	  && tb_io_st->n.sym
 	  && tb_io_st->n.sym->generic)
 	{
-	  gfc_interface *intr;
-	  for (intr = tb_io_st->n.sym->generic; intr; intr = intr->next)
+	  for (gfc_interface *intr = tb_io_st->n.sym->generic;
+	       intr && intr->sym && intr->sym->formal;
+	       intr = intr->next)
 	    {
 	      gfc_symbol *fsym = intr->sym->formal->sym;
-	      if (intr->sym && intr->sym->formal
-		  && ((fsym->ts.type == BT_CLASS
-		      && CLASS_DATA (fsym)->ts.u.derived == extended)
-		    || (fsym->ts.type == BT_DERIVED
-			&& fsym->ts.u.derived == extended)))
+	      if ((fsym->ts.type == BT_CLASS
+		   && CLASS_DATA (fsym)->ts.u.derived == extended)
+		  || (fsym->ts.type == BT_DERIVED
+		      && fsym->ts.u.derived == extended))
 		{
 		  dtio_sub = intr->sym;
 		  break;

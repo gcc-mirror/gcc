@@ -1,3 +1,8 @@
+2016-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78592
+	* gfortran.dg/dtio_18.f90: New test case.
+
 2016-11-30  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/78541
