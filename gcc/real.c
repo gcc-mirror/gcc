@@ -2887,7 +2887,7 @@ real_hash (const REAL_VALUE_TYPE *r)
       return h;
 
     case rvc_normal:
-      h |= REAL_EXP (r) << 3;
+      h |= (unsigned int)REAL_EXP (r) << 3;
       break;
 
     case rvc_nan:
