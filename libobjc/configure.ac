@@ -225,7 +225,9 @@ no)
   if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
     dnl no bdw-gw options, fall back to the bdw-gc pkg-config module
     PKG_CHECK_EXISTS(bdw-gc,
-      AC_MSG_RESULT([using bdw-gc pkg-config module]),
+      [AC_MSG_RESULT([using bdw-gc pkg-config module])
+       BDW_GC_CFLAGS=`$PKG_CONFIG --cflags bdw-gc`
+       BDW_GC_LIBS=`$PKG_CONFIG --libs bdw-gc`],
       AC_MSG_ERROR([no --with-target-bdw-gc options and no bdw-gc pkg-config module found]))
   else
     dnl bdw-gw options passed by configure flags
