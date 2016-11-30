@@ -1,3 +1,8 @@
+2016-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* ira.c (ira_update_equiv_info_by_shuffle_insn): Use copy_rtx
+	for REG_EQUIV argument.
+
 2016-11-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/t-rmprofile: Add mappings for Cortex-M23 and Cortex-M33.
