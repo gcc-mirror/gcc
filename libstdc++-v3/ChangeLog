@@ -1,3 +1,10 @@
+2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/18_support/50594.cc: XFAIL on AIX.
+	* testsuite/ext/mt_allocator/check_new.cc: Same.
+	* testsuite/ext/pool_allocator/check_new.cc: Same.
+	* testsuite/27_io/ios_base/storage/11584.cc: Same.
+
 2016-11-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2534, Constrain rvalue stream operators.
