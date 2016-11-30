@@ -2713,6 +2713,12 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
   tree base = gimple_call_arg (g, 1);
   gcc_checking_assert (TREE_CODE (base) == ADDR_EXPR);
   tree decl = TREE_OPERAND (base, 0);
+
+  /* For a nested function, we can have: ASAN_MARK (2, &FRAME.2.fp_input, 4) */
+  if (TREE_CODE (decl) == COMPONENT_REF
+      && DECL_NONLOCAL_FRAME (TREE_OPERAND (decl, 0)))
+    decl = TREE_OPERAND (decl, 0);
+
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
   if (asan_handled_variables == NULL)
     asan_handled_variables = new hash_set<tree> (16);
