@@ -2826,10 +2826,10 @@ static void
 verify_insn_sharing (rtx insn)
 {
   gcc_assert (INSN_P (insn));
-  verify_rtx_sharing (PATTERN (insn), insn);
-  verify_rtx_sharing (REG_NOTES (insn), insn);
+  reset_used_flags (PATTERN (insn));
+  reset_used_flags (REG_NOTES (insn));
   if (CALL_P (insn))
-    verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (insn), insn);
+    reset_used_flags (CALL_INSN_FUNCTION_USAGE (insn));
 }
 
 /* Go through all the RTL insn bodies and check that there is no unexpected
