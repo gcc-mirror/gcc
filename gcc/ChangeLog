@@ -1,3 +1,9 @@
+2016-11-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78541
+	* asan.c (asan_expand_mark_ifn): Properly
+	select a VAR_DECL from FRAME.* component reference.
+
 2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78583
