@@ -1,3 +1,11 @@
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.def: Remove reference to boehm-gc target module.
+  	* configure.ac: Include pkg.m4, check for --with-target-bdw-gc
+	options and for the bdw-gc pkg-config module.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2016-11-28  Nathan Sidwell  <nathan@acm.org>
 
 	* MAINTAINERS (nvptx): Remove self.

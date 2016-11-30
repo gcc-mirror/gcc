@@ -1,3 +1,13 @@
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac (--enable-objc-gc): Allow to configure with a
+	system provided boehm-gc.
+	* configure: Regenerate.
+	* Makefile.in (OBJC_BOEHM_GC_LIBS): Get value from configure.
+	* gc.c: Include system bdw-gc headers.
+	* memory.c: Likewise
+	* objects.c: Likewise
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* aclocal.m4: Regenerate.

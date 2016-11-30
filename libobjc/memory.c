@@ -41,7 +41,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/runtime.h"
 
 #if OBJC_WITH_GC
-#include <gc.h>
+#include <gc/gc.h>
 
 void *
 objc_malloc (size_t size)

@@ -1,3 +1,8 @@
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Document configure options --enable-objc-gc
+	and --with-target-bdw-gc.
+
 2016-11-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78594
