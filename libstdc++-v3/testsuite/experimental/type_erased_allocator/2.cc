@@ -1,4 +1,5 @@
 // { dg-do run { target c++14 } }
+// { dg-require-thread-fence "" }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
