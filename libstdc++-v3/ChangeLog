@@ -1,3 +1,22 @@
+2016-11-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2534, Constrain rvalue stream operators.
+	* include/std/istream (__is_convertible_to_basic_istream): New.
+	(__is_extractable): Likewise.
+	(operator>>(basic_istream<_CharT, _Traits>&&, _Tp&&)):
+	Turn the stream parameter into a template parameter
+	and constrain.
+	* include/std/ostream (__is_convertible_to_basic_ostream): New.
+	(__is_insertable): Likewise.
+	(operator<<(basic_ostream<_CharT, _Traits>&&, const _Tp&)):
+	Turn the stream parameter into a template parameter
+	and constrain.
+	* testsuite/27_io/basic_istream/extractors_other/char/4.cc: New.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/6.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/6.cc: Likewise.
+
 2016-11-30  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* testsuite/experimental/type_erased_allocator/2.cc: Add
