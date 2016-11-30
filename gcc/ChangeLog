@@ -1,5 +1,8 @@
 2016-11-29  Jeff Law  <law@redhat.com>
 
+	* common/config/arc/arc-common.c (arc_handle_option): Remove unused
+	variables.
+
 	* lra-constraints.c (check_and_process_move): Constrain the
 	range of DCLASS and SCLASS to avoid false positive out of bounds
 	array index warning.
