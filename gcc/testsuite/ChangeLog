@@ -1,5 +1,10 @@
 2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	* caf/single.c (_gfortran_caf_is_present): Prevent fallthrough
+	warnings.
+
+2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	* gfortran.dg/coarray/alloc_comp_1.f90: Fix tree-dump scans to adhere
 	to the changed interfaces.
 	* gfortran.dg/coarray_alloc_comp_1.f08: Likewise.
