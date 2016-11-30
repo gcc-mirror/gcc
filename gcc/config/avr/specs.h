@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
   "%{mmcu=*:-m%*} "
 
 #define LINK_RELAX_SPEC                         \
-  "%{mrelax:--relax %(link_pmem_wrap)} "
+  "%{mrelax:--relax} "
 
 #undef  LINK_SPEC
 #define LINK_SPEC                               \
@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
   "%(link_data_start) "                         \
   "%(link_text_start) "                         \
   "%(link_relax) "                              \
+  "%(link_pmem_wrap) "                          \
   "%{shared:%eshared is not supported} "
 
 #undef  LIB_SPEC
