@@ -1000,7 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       element_type&
       operator*() const noexcept
       {
-	__glibcxx_assert(_M_ptr != nullptr);
+	__glibcxx_assert(_M_get() != nullptr);
 	return *_M_get();
       }
 
