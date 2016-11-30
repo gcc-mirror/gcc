@@ -1150,6 +1150,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
   sclass = dclass = NO_REGS;
   if (REG_P (dreg))
     dclass = get_reg_class (REGNO (dreg));
+  gcc_assert (dclass < LIM_REG_CLASSES);
   if (dclass == ALL_REGS)
     /* ALL_REGS is used for new pseudos created by transformations
        like reload of SUBREG_REG (see function
@@ -1161,6 +1162,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
     return false;
   if (REG_P (sreg))
     sclass = get_reg_class (REGNO (sreg));
+  gcc_assert (sclass < LIM_REG_CLASSES);
   if (sclass == ALL_REGS)
     /* See comments above.  */
     return false;
