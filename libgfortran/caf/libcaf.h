@@ -50,7 +50,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STAT_STOPPED_IMAGE 	6000
 #endif
 
-/* Describes what type of array we are registerring. Keep in sync with
+/* Describes what type of array we are registerring.  Keep in sync with
    gcc/fortran/trans.h.  */
 typedef enum caf_register_t {
   CAF_REGTYPE_COARRAY_STATIC,
@@ -59,9 +59,19 @@ typedef enum caf_register_t {
   CAF_REGTYPE_LOCK_ALLOC,
   CAF_REGTYPE_CRITICAL,
   CAF_REGTYPE_EVENT_STATIC,
-  CAF_REGTYPE_EVENT_ALLOC
+  CAF_REGTYPE_EVENT_ALLOC,
+  CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY,
+  CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY
 }
 caf_register_t;
+
+/* Describes the action to take on _caf_deregister.  Keep in sync with
+   gcc/fortran/trans.h.  */
+typedef enum caf_deregister_t {
+  CAF_DEREGTYPE_COARRAY_DEREGISTER,
+  CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY
+}
+caf_deregister_t;
 
 typedef void* caf_token_t;
 typedef gfc_array_void gfc_descriptor_t;
@@ -174,7 +184,8 @@ int _gfortran_caf_num_images (int, int);
 
 void _gfortran_caf_register (size_t, caf_register_t, caf_token_t *,
 			     gfc_descriptor_t *, int *, char *, int);
-void _gfortran_caf_deregister (caf_token_t *, int *, char *, int);
+void _gfortran_caf_deregister (caf_token_t *, caf_deregister_t, int *, char *,
+			       int);
 
 void _gfortran_caf_sync_all (int *, char *, int);
 void _gfortran_caf_sync_memory (int *, char *, int);
@@ -231,5 +242,7 @@ void _gfortran_caf_unlock (caf_token_t, size_t, int, int *, char *, int);
 void _gfortran_caf_event_post (caf_token_t, size_t, int, int *, char *, int);
 void _gfortran_caf_event_wait (caf_token_t, size_t, int, int *, char *, int);
 void _gfortran_caf_event_query (caf_token_t, size_t, int, int *, int *);
+
+int _gfortran_caf_is_present (caf_token_t, int, caf_reference_t *);
 
 #endif  /* LIBCAF_H  */

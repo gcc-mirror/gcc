@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2014, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2016, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -36,8 +36,13 @@
 #error "RTS unit only"
 #endif
 
+#ifndef CERT
 #include "tconfig.h"
 #include "tsystem.h"
+#else
+#define ATTRIBUTE_UNUSED __attribute__((unused))
+#define HAVE_GETIPINFO 1
+#endif
 
 #include <stdarg.h>
 typedef char bool;
@@ -79,6 +84,15 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 extern struct Exception_Occurrence *__gnat_setup_current_excep
  (_Unwind_Exception *);
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
+
+#ifdef CERT
+#define abort() __gnat_raise_abort()
+static void __gnat_raise_abort(void)
+{
+  while (1)
+    ;
+}
+#endif
 
 #include "unwind-pe.h"
 
@@ -928,9 +942,13 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
   /* All others and others choice match any foreign exception.  */
   if (choice == GNAT_ALL_OTHERS
       || choice == GNAT_OTHERS
-      || choice == (_Unwind_Ptr) &Foreign_Exception)
+#ifndef CERT
+      || choice == (_Unwind_Ptr) &Foreign_Exception
+#endif
+      )
     return handler;
 
+#ifndef CERT
   /* C++ exception occurrences.  */
   if (exception_class_eq (propagated_exception, CXX_EXCEPTION_CLASS)
       && Language_For (choice) == 'C')
@@ -947,6 +965,7 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
       if (choice_typeinfo == except_typeinfo)
 	return handler;
     }
+#endif
 
   return nothing;
 }
@@ -1172,6 +1191,7 @@ personality_body (_Unwind_Action uw_phases,
 	}
       else
 	{
+#ifndef CERT
 	  struct Exception_Occurrence *excep;
 
 	  /* Trigger the appropriate notification routines before the second
@@ -1182,6 +1202,7 @@ personality_body (_Unwind_Action uw_phases,
 	    __gnat_notify_unhandled_exception (excep);
 	  else
 	    __gnat_notify_handled_exception (excep);
+#endif
 
 	  return _URC_HANDLER_FOUND;
 	}
@@ -1195,10 +1216,12 @@ personality_body (_Unwind_Action uw_phases,
   setup_to_install
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
 
+#ifndef CERT
   /* Write current exception, so that it can be retrieved from Ada.  It was
      already done during phase 1 (just above), but in between, one or several
      exceptions may have been raised (in cleanup handlers).  */
   __gnat_setup_current_excep (uw_exception);
+#endif
 
   return _URC_INSTALL_CONTEXT;
 }
@@ -1338,6 +1361,7 @@ PERSONALITY_FUNCTION (_Unwind_State state,
 /* Callback routine called by Unwind_ForcedUnwind to execute all the cleanup
    before exiting the task.  */
 
+#ifndef CERT
 _Unwind_Reason_Code
 __gnat_cleanupunwind_handler (int version ATTRIBUTE_UNUSED,
 			      _Unwind_Action phases,
@@ -1362,6 +1386,7 @@ __gnat_cleanupunwind_handler (int version ATTRIBUTE_UNUSED,
      and this hook will gain control again.  */
   return _URC_NO_REASON;
 }
+#endif
 
 /* Define the consistently named wrappers imported by Propagate_Exception.  */
 

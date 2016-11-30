@@ -1,3 +1,149 @@
+2016-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78602
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): If the
+	element is not a constant or in a register, force it to a
+	register.
+
+	PR target/78560
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Force value
+	that will be set to a vector element to be in a register.
+	* config/rs6000/vsx.md (vsx_set_<mode>_p9): Fix thinko that used
+	the wrong multiplier to convert the element number to a byte
+	offset.
+
+2016-11-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR tree-optimization/77856
+	* lra-constraints.c (inherit_in_ebb): Check original regno for
+	invalid invariant regs too.  Set only clobbered hard regs for the
+	invalid invariant regs.
+
+2016-11-30  Pitchumani Sivanupandi  <pitchumani.sivanupandi@microchip.com>
+
+	Commit files forgotten in r242966.
+
+	* config/avr/avr-arch.h (avr_mcu_t) [flash_size]: New member.
+	* config/avr/avr-devices.c (avr_mcu_types): Add flash size info.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Remove hard-coded
+	prefix check to find wrap-around value, instead use MCU flash size.
+	For 8k flash devices, update link_pmem_wrap spec string to
+	add --pmem-wrap-around=8k.
+	* config/avr/specs.h (LINK_RELAX_SPEC): Move link_pmem_wrap from
+	here...
+	(LINK_SPEC): ...to here.
+
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
+	* selftest.c (selftest::assert_strndup_eq): New function.
+	(selftest::test_strndup): New function.
+	(selftest::test_libiberty): New function.
+	(selftest::selftest_c_tests): Call test_libiberty.
+
+2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78610
+	* ira.c (combine_and_move_insns): Don't substitute into TRAP_IF
+	instructions.
+
+2016-11-30  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/78574
+	* tree-ssa-loop-ivopts.c (find_deriving_biv_for_expr): Skip loop
+	header PHI that doesn't define biv.
+
+2016-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* emit-rtl.c (verify_insn_sharing): Call verify_rtx_sharing instead of
+	reset_used_flags.
+
+	* config/i386/i386.c (dimode_scalar_chain::convert_op): Avoid
+	sharing the SUBREG rtx between move and following insn.
+
+	* ira.c (ira_update_equiv_info_by_shuffle_insn): Use copy_rtx
+	for REG_EQUIV argument.
+
+2016-11-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/t-rmprofile: Add mappings for Cortex-M23 and Cortex-M33.
+
+2016-11-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/78555
+	* real.c (real_hash): Add cast to avoid left
+	shifting of negative values.
+
+2016-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78362
+	* config/aarch64/aarch64.md (add<mode>3): Extract inner expression
+	from a subreg in operands[1] and don't call REGNO on a non-reg
+	expression when deciding to force operands[2] into a reg.
+
+2016-11-30  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc-protos.h (arc_store_addr_hazard_p): Declare.
+	* config/arc/arc.c (arc_store_addr_hazard_p): New function.
+	(workaround_arc_anomaly): Call arc_store_addr_hazard_p for ARC700.
+	* config/arc/arc700.md: Add define_bypass for store/load.
+
+2016-11-30  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (symbol_table::initialize): Initialize
+	ipa_clones_dump_file.
+	(cgraph_node::remove): Report to ipa_clones_dump_file.
+	* cgraph.h: Add new argument (suffix) to cloning methods.
+	* cgraphclones.c (dump_callgraph_transformation): New function.
+	(cgraph_node::create_clone): New argument.
+	(cgraph_node::create_virtual_clone): Likewise.
+	(cgraph_node::create_version_clone): Likewise.
+	* dumpfile.c: Add .ipa-clones dump file.
+	* dumpfile.h (enum tree_dump_index): Add TDI_clones
+	* ipa-inline-transform.c (clone_inlined_nodes): Report operation
+	to dump_callgraph_transformation.
+
+2016-11-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78541
+	* asan.c (asan_expand_mark_ifn): Properly
+	select a VAR_DECL from FRAME.* component reference.
+
+2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78583
+	* simplify-rtx.c (simplify_truncation): Add check missing from the
+	previous commit.
+
+2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78590
+	* combine.c (change_zero_ext): Transform zero_extend of subregs only
+	if the subreg_reg is a scalar integer mode.
+
+2016-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78586
+	* gimple-ssa-sprintf.c (format_integer): Use TYPE_MAX_VALUE or
+	TYPE_MIN_VALUE or build_all_ones_cst instead of folding LSHIFT_EXPR.
+	Don't build_int_cst min/max twice.  Formatting fix.
+
+2016-11-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR rtl-optimization/78588
+	* combine.c (if_then_else_cond): Also guard against BLKmode.
+	* rtlanal.c (num_sign_bit_copies1): Add assert.
+
+2016-11-29  Jeff Law  <law@redhat.com>
+
+	* common/config/arc/arc-common.c (arc_handle_option): Remove unused
+	variables.
+
+	* lra-constraints.c (check_and_process_move): Constrain the
+	range of DCLASS and SCLASS to avoid false positive out of bounds
+	array index warning.
+
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/install.texi (--with-target-bdw-gc): Remove stray '@'.
@@ -79,15 +225,7 @@
 
 2016-11-29  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
 
-	* config/avr/avr-arch.h (avr_mcu_t): Add flash_size member.
-	* config/avr/avr-devices.c(avr_mcu_types): Add flash size info.
-	* config/avr/avr-mcu.def: Likewise.
-	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Remove hard-coded prefix
-	check to find wrap-around value, instead use MCU flash size. For 8k
-	flash devices, update link_pmem_wrap spec string to add
-	--pmem-wrap-around=8k.
-	* config/avr/specs.h: Remove link_pmem_wrap from LINK_RELAX_SPEC and
-	add to linker specs (LINK_SPEC) directly.
+	* config/avr/avr-mcu.def: (avr_mcu_types): Add flash size info.
 
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 

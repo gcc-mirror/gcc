@@ -1,3 +1,116 @@
+2016-11-30  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78586
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: New test cases.
+
+2016-11-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR tree-optimization/77856
+	* gcc.target/i386/pr77856.c: New.
+
+2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/ptrdmem-1.C: Don't XFAIL
+	scan-assembler-not on AIX.
+
+2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_alloc_4.f90: Really add.
+
+2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/eh/new1.C: XFAIL on AIX.
+	* g++.dg/eh/delete1.C: Same.
+	* g++.dg/init/new40.C: Same.
+	* g++.old-deja/g++.eh/new2.C: Same.
+
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
+	* gcc.dg/format/pr78494.c: Rename to...
+	* gcc.dg/format/pr78498.c: ...this.
+
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
+	* gcc.dg/format/pr78494.c: New test case.
+
+2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/ref-1.C: Don't XFAIL scan-assembler-not on AIX.
+	* g++.dg/debug/dwarf2/imported-decl-2.C: Same.
+	* g++.dg/debug/dwarf2/refqual-1.C: Same.
+	* g++.dg/debug/dwarf2/refqual-2.C: Same.
+
+2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78610
+	* gcc.c-torture/compile/pr78610.c: New testcase.
+
+2016-11-30  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/78574
+	* gcc.c-torture/compile/pr78574.c: New test.
+
+2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/alloc_comp_1.f90: Fix tree-dump scans to adhere
+	to the changed interfaces.
+	* gfortran.dg/coarray_alloc_comp_1.f08: Likewise.
+	* gfortran.dg/coarray_allocate_7.f08: Likewise.
+	* gfortran.dg/coarray_lib_alloc_1.f90: Likewise.
+	* gfortran.dg/coarray_lib_alloc_2.f90: Likewise.
+	* gfortran.dg/coarray_lib_alloc_3.f90: Likewise.
+	* gfortran.dg/coarray_lib_comm_1.f90: Likewise.
+	* gfortran.dg/coarray_lib_alloc_4.f90: New test.
+
+2016-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78593
+	* gfortran.dg/derived_result.f90: New test case.
+
+2016-11-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (add_options_for_arm_arch_v6m): Add
+	-mfloat-abi=soft option.
+	(add_options_for_arm_arch_v8m_base): Likewise.  Reindent containing
+	foreach loop.
+
+2016-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78362
+	* gcc.c-torture/compile/pr78362.c: New test.
+
+2016-11-30  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* lib/target-supports.exp (check_effective_target_freorder): Check
+	additional case.
+
+2016-11-30  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* gcc.target/arc/arc700-stld-hazard.c: New file.
+
+2016-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78592
+	* gfortran.dg/dtio_18.f90: New test case.
+
+2016-11-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78541
+	* gcc.dg/asan/pr78541-2.c: New test.
+	* gcc.dg/asan/pr78541.c: New test.
+
+2016-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78586
+	* gcc.c-torture/execute/pr78586.c: New test.
+
+2016-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78573
+	* gfortran.dg/class_61.f90: New test case.
+
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/78569

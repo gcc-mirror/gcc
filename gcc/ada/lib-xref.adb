@@ -1508,6 +1508,14 @@ package body Lib.Xref is
                           Entity (Original_Node (Object_Definition (Decl)));
                      end if;
                   end;
+
+               --  For a function that returns a class-wide type, Tref is
+               --  already correct.
+
+               elsif Is_Overloadable (Ent)
+                 and then Is_Class_Wide_Type (Tref)
+               then
+                  return;
                end if;
 
             --  For anything else, exit

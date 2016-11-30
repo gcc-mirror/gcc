@@ -3871,6 +3871,7 @@ of such a type
 @menu
 * caf_token_t::
 * caf_register_t::
+* caf_deregister_t::
 * caf_reference_t::
 @end menu
 
@@ -3893,10 +3894,38 @@ typedef enum caf_register_t {
   CAF_REGTYPE_LOCK_ALLOC,
   CAF_REGTYPE_CRITICAL,
   CAF_REGTYPE_EVENT_STATIC,
-  CAF_REGTYPE_EVENT_ALLOC
+  CAF_REGTYPE_EVENT_ALLOC,
+  CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY,
+  CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY
 }
 caf_register_t;
 @end verbatim
+
+The values @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and
+@code{CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY} are for allocatable components
+in derived type coarrays only.  The first one sets up the token without
+allocating memory for allocatable component.  The latter one only allocates the
+memory for an allocatable component in a derived type coarray.  The token
+needs to be setup previously by the REGISTER_ONLY.  This allows to have
+allocatable components un-allocated on some images.  The status whether an
+allocatable component is allocated on a remote image can be queried by
+@code{_caf_is_present} which used internally by the @code{ALLOCATED}
+intrinsic.
+
+@node caf_deregister_t
+@subsection @code{caf_deregister_t}
+
+@verbatim
+typedef enum caf_deregister_t {
+  CAF_DEREGTYPE_COARRAY_DEREGISTER,
+  CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY
+}
+caf_deregister_t;
+@end verbatim
+
+Allows to specifiy the type of deregistration of a coarray object.  The
+@code{CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY} flag is only allowed for
+allocatable components in derived type coarrays.
 
 @node caf_reference_t
 @subsection @code{caf_reference_t}
@@ -4017,6 +4046,7 @@ descriptor-less arrays.  The library caf_single has untested support for it.
 * _gfortran_caf_num_images:: Querying the maximal number of images
 * _gfortran_caf_register:: Registering coarrays
 * _gfortran_caf_deregister:: Deregistering coarrays
+* _gfortran_caf_is_present:: Query whether an allocatable component in a derived type coarray is allocated
 * _gfortran_caf_send:: Sending data from a local image to a remote image
 * _gfortran_caf_get:: Getting data from a remote image
 * _gfortran_caf_sendget:: Sending data between remote images
@@ -4218,6 +4248,7 @@ section) such as the value false; for event types, the initial state should
 be no event, e.g. zero.
 @end table
 
+
 @node _gfortran_caf_deregister
 @subsection @code{_gfortran_caf_deregister} --- Deregistering coarrays
 @cindex Coarray, _gfortran_caf_deregister
@@ -4231,12 +4262,16 @@ library is only expected to free memory it allocated itself during a call to
 @code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
-@code{void caf_deregister (caf_token_t *token, int *stat, char *errmsg,
-int errmsg_len)}
+@code{void caf_deregister (caf_token_t *token, caf_deregister_t type,
+int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab the token to free.
+@item @var{type} @tab the type of action to take for the coarray.  A
+@code{CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY} is allowed only for allocatable
+components of derived type coarrays.  The action only deallocates the local
+memory without deleting the token.
 @item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set
 to an error message; may be NULL
@@ -4249,6 +4284,31 @@ required, it has to be handled via the finish, stop and error stop functions,
 and via destructors.
 @end table
 
+
+@node _gfortran_caf_is_present
+@subsection @code{_gfortran_caf_is_present} --- Query whether an allocatable component in a derived type coarray is allocated
+@cindex Coarray, _gfortran_caf_is_present
+
+@table @asis
+@item @emph{Description}:
+Used to query the coarray library whether an allocatable component in a derived
+type coarray is allocated on a remote image.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_is_present (caf_token_t token, int image_index,
+gfc_reference_t *ref)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab An opaque pointer identifying the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{ref} @tab A chain of references to address the allocatable component
+in the derived type coarray.  The object reffed needs to be a scalar or a full
+array ref, respectively.
+@end multitable
+
+@end table
 
 @node _gfortran_caf_send
 @subsection @code{_gfortran_caf_send} --- Sending data from a local image to a remote image

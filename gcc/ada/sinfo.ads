@@ -2008,7 +2008,7 @@ package Sinfo is
    --  Parent_Spec (Node4-Sem)
    --    For a library unit that is a child unit spec (package or subprogram
    --    declaration, generic declaration or instantiation, or library level
-   --    rename, this field points to the compilation unit node for the parent
+   --    rename) this field points to the compilation unit node for the parent
    --    package specification. This field is Empty for library bodies (the
    --    parent spec in this case can be found from the corresponding spec).
 

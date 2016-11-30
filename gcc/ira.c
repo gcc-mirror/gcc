@@ -2647,7 +2647,7 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx_insn *i
 	}
       if (find_reg_note (insn, REG_EQUIV, x) == NULL_RTX)
 	{
-	  note = set_unique_reg_note (insn, REG_EQUIV, x);
+	  note = set_unique_reg_note (insn, REG_EQUIV, copy_rtx (x));
 	  gcc_assert (note != NULL_RTX);
 	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	    {
@@ -3667,6 +3667,11 @@ combine_and_move_insns (void)
       /* Don't substitute into jumps.  indirect_jump_optimize does
 	 this for anything we are prepared to handle.  */
       if (JUMP_P (use_insn))
+	continue;
+
+      /* Also don't substitute into a conditional trap insn -- it can become
+	 an unconditional trap, and that is a flow control insn.  */
+      if (GET_CODE (PATTERN (use_insn)) == TRAP_IF)
 	continue;
 
       df_ref def = DF_REG_DEF_CHAIN (regno);

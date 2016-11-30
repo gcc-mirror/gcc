@@ -89,6 +89,15 @@ func showframe(name string, gp *g) bool {
 	if g.m.throwing > 0 && gp != nil && (gp == g.m.curg || gp == g.m.caughtsig.ptr()) {
 		return true
 	}
+
+	// Gccgo can trace back through C functions called via cgo.
+	// We want to print those in the traceback.
+	// But unless GOTRACEBACK > 1 (checked below), still skip
+	// internal C functions and cgo-generated functions.
+	if !contains(name, ".") && !hasprefix(name, "__go_") && !hasprefix(name, "_cgo_") {
+		return true
+	}
+
 	level, _, _ := gotraceback()
 
 	// Special case: always show runtime.gopanic frame, so that we can

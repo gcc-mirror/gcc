@@ -9176,7 +9176,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
   /* If X is known to be either 0 or -1, those are the true and
      false values when testing X.  */
   else if (x == constm1_rtx || x == const0_rtx
-	   || (mode != VOIDmode
+	   || (mode != VOIDmode && mode != BLKmode
 	       && num_sign_bit_copies (x, mode) == GET_MODE_PRECISION (mode)))
     {
       *ptrue = constm1_rtx, *pfalse = const0_rtx;
@@ -11251,6 +11251,7 @@ change_zero_ext (rtx pat)
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && SCALAR_INT_MODE_P (mode)
 	       && GET_CODE (XEXP (x, 0)) == SUBREG
+	       && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (XEXP (x, 0))))
 	       && !paradoxical_subreg_p (XEXP (x, 0))
 	       && subreg_lowpart_p (XEXP (x, 0)))
 	{

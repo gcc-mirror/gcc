@@ -107,7 +107,7 @@ gfc_se;
 
 /* Denotes different types of coarray.
    Please keep in sync with libgfortran/caf/libcaf.h.  */
-enum gfc_coarray_type
+enum gfc_coarray_regtype
 {
   GFC_CAF_COARRAY_STATIC,
   GFC_CAF_COARRAY_ALLOC,
@@ -115,7 +115,22 @@ enum gfc_coarray_type
   GFC_CAF_LOCK_ALLOC,
   GFC_CAF_CRITICAL,
   GFC_CAF_EVENT_STATIC,
-  GFC_CAF_EVENT_ALLOC
+  GFC_CAF_EVENT_ALLOC,
+  GFC_CAF_COARRAY_ALLOC_REGISTER_ONLY,
+  GFC_CAF_COARRAY_ALLOC_ALLOCATE_ONLY
+};
+
+
+/* Describes the action to take on _caf_deregister.  Keep in sync with
+   gcc/fortran/trans.h.  The negative values are not valid for the library and
+   are used by the drivers for building the correct call.  */
+enum gfc_coarray_deregtype {
+  /* This is no coarray, i.e. build a call to a free ().  */
+  GFC_CAF_COARRAY_NOCOARRAY = -2,
+  /* The driver is to analyze which _caf_deregister ()-call to generate.  */
+  GFC_CAF_COARRAY_ANALYZE = -1,
+  GFC_CAF_COARRAY_DEREGISTER = 0,
+  GFC_CAF_COARRAY_DEALLOCATE_ONLY
 };
 
 
@@ -139,6 +154,15 @@ enum gfc_caf_array_ref_t {
   GFC_CAF_ARR_REF_OPEN_END,
   GFC_CAF_ARR_REF_OPEN_START
 };
+
+
+/* trans-array (structure_alloc_comps) caf_mode bits.  */
+enum gfc_structure_caf_mode_t {
+  GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY = 1 << 0,
+  GFC_STRUCTURE_CAF_MODE_IN_COARRAY = 1 << 1,
+  GFC_STRUCTURE_CAF_MODE_DEALLOC_ONLY = 1 << 2
+};
+
 
 /* The array-specific scalarization information.  The array members of
    this struct are indexed by actual array index, and thus can be sparse.  */
@@ -506,7 +530,8 @@ int gfc_conv_procedure_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
 void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool);
 
 /* Generate code for a scalar assignment.  */
-tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool);
+tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool,
+			      bool c = false);
 
 /* Translate COMMON blocks.  */
 void gfc_trans_common (gfc_namespace *);
@@ -681,6 +706,10 @@ tree gfc_call_malloc (stmtblock_t *, tree, tree);
 /* Build a memcpy call.  */
 tree gfc_build_memcpy_call (tree, tree, tree);
 
+/* Register memory with the coarray library.  */
+void gfc_allocate_using_caf_lib (stmtblock_t *, tree, tree, tree, tree, tree,
+				 tree, gfc_coarray_regtype);
+
 /* Allocate memory for allocatable variables, with optional status variable.  */
 void gfc_allocate_allocatable (stmtblock_t*, tree, tree, tree, tree,
 			       tree, tree, tree, gfc_expr*, int);
@@ -690,14 +719,15 @@ void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree);
 
 /* Generate code to deallocate an array.  */
 tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool,
-				 gfc_expr *, bool);
-tree gfc_deallocate_scalar_with_status (tree, tree, bool, gfc_expr*, gfc_typespec);
+				 gfc_expr *, int);
+tree gfc_deallocate_scalar_with_status (tree, tree, tree, bool, gfc_expr*,
+					gfc_typespec, bool c = false);
 
 /* Generate code to call realloc().  */
 tree gfc_call_realloc (stmtblock_t *, tree, tree);
 
 /* Assign a derived type constructor to a variable.  */
-tree gfc_trans_structure_assign (tree, gfc_expr *, bool);
+tree gfc_trans_structure_assign (tree, gfc_expr *, bool, bool c = false);
 
 /* Generate code for an assignment, includes scalarization.  */
 tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool, bool p = false,
@@ -808,7 +838,7 @@ extern GTY(()) tree gfor_fndecl_co_max;
 extern GTY(()) tree gfor_fndecl_co_min;
 extern GTY(()) tree gfor_fndecl_co_reduce;
 extern GTY(()) tree gfor_fndecl_co_sum;
-
+extern GTY(()) tree gfor_fndecl_caf_is_present;
 
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */

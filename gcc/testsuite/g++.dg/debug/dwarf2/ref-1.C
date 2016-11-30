@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O -g -dA -gno-strict-dwarf" }
-// { dg-final { scan-assembler-not "DW_TAG_const_type" { xfail { powerpc-ibm-aix* } } } }
+// { dg-final { scan-assembler-not "DW_TAG_const_type" } }
 
 int x;
 int &y = x;

@@ -3,6 +3,7 @@
 // In C++11 we throw bad_array_new_length instead.
 // { dg-options -std=c++03 }
 // { dg-do run }
+// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
 #include <assert.h>
 #include <stdlib.h>

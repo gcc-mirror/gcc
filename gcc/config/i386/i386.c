@@ -3723,7 +3723,7 @@ dimode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	  emit_insn_before (seq, insn);
 	}
 
-      emit_insn_before (gen_move_insn (tmp, vec_cst), insn);
+      emit_insn_before (gen_move_insn (copy_rtx (tmp), vec_cst), insn);
       *op = tmp;
     }
   else

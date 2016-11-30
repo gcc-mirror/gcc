@@ -1,3 +1,9 @@
+2016-11-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR lto/78562
+	* lto-symtab.c (lto_symtab_merge_decls_2): Don't diagnose type
+	mismatch if the two types are built-in.
+
 2016-11-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* lto-lang.c (lto_init): Remove initialization of ptrdiff_type_node.

@@ -420,8 +420,8 @@ gfc_walk_alloc_comps (tree decl, tree dest, tree var,
 	  if (GFC_DESCRIPTOR_TYPE_P (ftype)
 	      && GFC_TYPE_ARRAY_AKIND (ftype) == GFC_ARRAY_ALLOCATABLE)
 	    {
-	      tem = gfc_trans_dealloc_allocated (unshare_expr (declf),
-						 false, NULL);
+	      tem = gfc_trans_dealloc_allocated (unshare_expr (declf), NULL,
+						 GFC_CAF_COARRAY_NOCOARRAY);
 	      gfc_add_expr_to_block (&block, gfc_omp_unshare_expr (tem));
 	    }
 	  else if (GFC_DECL_GET_SCALAR_ALLOCATABLE (field))
@@ -812,7 +812,8 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
       if (GFC_DESCRIPTOR_TYPE_P (type))
 	gfc_add_expr_to_block (&cond_block,
 			       gfc_trans_dealloc_allocated (unshare_expr (dest),
-							    false, NULL));
+							    NULL,
+						    GFC_CAF_COARRAY_NOCOARRAY));
       else
 	{
 	  destptr = gfc_evaluate_now (destptr, &cond_block);
@@ -988,7 +989,7 @@ gfc_omp_clause_dtor (tree clause, tree decl)
   if (GFC_DESCRIPTOR_TYPE_P (type))
     /* Allocatable arrays in FIRSTPRIVATE/LASTPRIVATE etc. clauses need
        to be deallocated if they were allocated.  */
-    tem = gfc_trans_dealloc_allocated (decl, false, NULL);
+    tem = gfc_trans_dealloc_allocated (decl, NULL, GFC_CAF_COARRAY_NOCOARRAY);
   else
     tem = gfc_call_free (decl);
   tem = gfc_omp_unshare_expr (tem);

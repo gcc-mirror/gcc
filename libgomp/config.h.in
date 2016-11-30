@@ -115,6 +115,9 @@
 /* Define to 1 if GNU symbol versioning is used for libgomp. */
 #undef LIBGOMP_GNU_SYMBOL_VERSIONING
 
+/* Define to 1 if building libgomp for an accelerator-only target. */
+#undef LIBGOMP_OFFLOADED_ONLY
+
 /* Define to 1 if libgomp should use POSIX threads. */
 #undef LIBGOMP_USE_PTHREADS
 

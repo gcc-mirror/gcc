@@ -527,13 +527,6 @@ package body SPARK_Specific is
          if Ekind (E) in Overloadable_Kind then
             return Typ = 's';
 
-         --  Objects of task or protected types are not SPARK references
-
-         elsif Present (Etype (E))
-           and then Ekind (Etype (E)) in Concurrent_Kind
-         then
-            return False;
-
          --  In all other cases, result is true for reference/modify cases,
          --  and false for all other cases.
 

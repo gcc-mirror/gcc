@@ -102,6 +102,8 @@ MULTILIB_MATCHES       += march?armv6s-m=mcpu?cortex-m1.small-multiply
 MULTILIB_MATCHES       += march?armv7-m=mcpu?cortex-m3
 MULTILIB_MATCHES       += march?armv7e-m=mcpu?cortex-m4
 MULTILIB_MATCHES       += march?armv7e-m=mcpu?cortex-m7
+MULTILIB_MATCHES       += march?armv8-m.base=mcpu?cortex-m23
+MULTILIB_MATCHES       += march?armv8-m.main=mcpu?cortex-m33
 MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r4
 MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r4f
 MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r5

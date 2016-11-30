@@ -6409,6 +6409,9 @@ gfc_trans_deallocate (gfc_code *code)
   for (al = code->ext.alloc.list; al != NULL; al = al->next)
     {
       gfc_expr *expr = gfc_copy_expr (al->expr);
+      bool is_coarray = false, is_coarray_array = false;
+      int caf_mode = 0;
+
       gcc_assert (expr->expr_type == EXPR_VARIABLE);
 
       if (expr->ts.type == BT_CLASS)
@@ -6421,11 +6424,32 @@ gfc_trans_deallocate (gfc_code *code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      if (expr->rank || gfc_caf_attr (expr).codimension)
+      if (flag_coarray == GFC_FCOARRAY_LIB)
+	{
+	  bool comp_ref;
+	  symbol_attribute caf_attr = gfc_caf_attr (expr, false, &comp_ref);
+	  if (caf_attr.codimension)
+	    {
+	      is_coarray = true;
+	      is_coarray_array = caf_attr.dimension || !comp_ref
+		  || caf_attr.coarray_comp;
+
+	      /* When the expression to deallocate is referencing a
+		 component, then only deallocate it, but do not deregister.  */
+	      caf_mode = GFC_STRUCTURE_CAF_MODE_IN_COARRAY
+		  | (comp_ref && !caf_attr.coarray_comp
+		     ? GFC_STRUCTURE_CAF_MODE_DEALLOC_ONLY : 0);
+	    }
+	}
+      else if (flag_coarray == GFC_FCOARRAY_SINGLE)
+	is_coarray = is_coarray_array = gfc_caf_attr (expr).codimension;
+
+      if (expr->rank || is_coarray_array)
 	{
 	  gfc_ref *ref;
 
-	  if (gfc_bt_struct (expr->ts.type) && expr->ts.u.derived->attr.alloc_comp
+	  if (gfc_bt_struct (expr->ts.type)
+	      && expr->ts.u.derived->attr.alloc_comp
 	      && !gfc_is_finalizable (expr->ts.u.derived, NULL))
 	    {
 	      gfc_ref *last = NULL;
@@ -6439,16 +6463,34 @@ gfc_trans_deallocate (gfc_code *code)
 	      if (!(last && last->u.c.component->attr.pointer)
 		    && !(!last && expr->symtree->n.sym->attr.pointer))
 		{
-		  tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, se.expr,
-						   expr->rank);
+		  if (is_coarray && expr->rank == 0
+		      && (!last || !last->u.c.component->attr.dimension))
+		    {
+		      /* Add the ref to the data member only, when this is not
+			 a regular array or deallocate_alloc_comp will try to
+			 add another one.  */
+		      tmp = gfc_conv_descriptor_data_get (se.expr);
+		    }
+		  else
+		    tmp = se.expr;
+		  tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, tmp,
+						   expr->rank, caf_mode);
 		  gfc_add_expr_to_block (&se.pre, tmp);
 		}
 	    }
 
 	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
 	    {
+	      gfc_coarray_deregtype caf_dtype;
+
+	      if (is_coarray)
+		caf_dtype = gfc_caf_is_dealloc_only (caf_mode)
+		    ? GFC_CAF_COARRAY_DEALLOCATE_ONLY
+		    : GFC_CAF_COARRAY_DEREGISTER;
+	      else
+		caf_dtype = GFC_CAF_COARRAY_NOCOARRAY;
 	      tmp = gfc_array_deallocate (se.expr, pstat, errmsg, errlen,
-				          label_finish, expr);
+					  label_finish, expr, caf_dtype);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
 	  else if (TREE_CODE (se.expr) == COMPONENT_REF
@@ -6491,8 +6533,9 @@ gfc_trans_deallocate (gfc_code *code)
 	}
       else
 	{
-	  tmp = gfc_deallocate_scalar_with_status (se.expr, pstat, false,
-						   al->expr, al->expr->ts);
+	  tmp = gfc_deallocate_scalar_with_status (se.expr, pstat, label_finish,
+						   false, al->expr,
+						   al->expr->ts, is_coarray);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  /* Set to zero after deallocation.  */

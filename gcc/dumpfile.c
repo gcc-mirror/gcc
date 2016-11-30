@@ -55,6 +55,8 @@ static struct dump_file_info dump_files[TDI_end] =
    0, 0, 0, 0, 0, false, false},
   {".type-inheritance", "ipa-type-inheritance", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
    0, 0, 0, 0, 0, false, false},
+  {".ipa-clones", "ipa-clones", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
+   0, 0, 0, 0, 0, false, false},
   {".tu", "translation-unit", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 1, false, false},
   {".class", "class-hierarchy", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
