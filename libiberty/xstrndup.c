@@ -48,10 +48,7 @@ char *
 xstrndup (const char *s, size_t n)
 {
   char *result;
-  size_t len = strlen (s);
-
-  if (n < len)
-    len = n;
+  size_t len = strnlen (s, n);
 
   result = XNEWVEC (char, len + 1);
 

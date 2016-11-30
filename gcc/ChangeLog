@@ -1,3 +1,11 @@
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
+	* selftest.c (selftest::assert_strndup_eq): New function.
+	(selftest::test_strndup): New function.
+	(selftest::test_libiberty): New function.
+	(selftest::selftest_c_tests): Call test_libiberty.
+
 2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78610

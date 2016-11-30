@@ -1,3 +1,11 @@
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
+	* strndup.c (strlen): Delete decl.
+	(strnlen): Add decl.
+	(strndup): Call strnlen rather than strlen.
+	* xstrndup.c (xstrndup): Likewise.
+
 2016-11-29  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (d_print_comp_inner): Fix parameter indentation.
