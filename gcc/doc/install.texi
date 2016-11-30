@@ -2177,6 +2177,37 @@ In order to avoid shell and @command{make} quoting issues for complex
 overrides, you can pass a setting for @env{CONFIG_SITE} and set
 variables in the site file.
 
+@subheading Objective-C-Specific Options
+
+The following options apply to the build of the Objective-C runtime library.
+
+@table @code
+@item --enable-objc-gc
+Specify that an additional variant of the GNU Objective-C runtime library
+is built, using an external build of the Boehm-Demers-Weiser garbage
+collector (@uref{http://www.hboehm.info/gc/}).  This library needs to be
+available for each multilib variant, unless configured with
+@option{--enable-objc-gc=@samp{auto}} in which case the build of the
+additional runtime library is skipped when not available and the build
+continues.
+
+@item --with-target-bdw-gc=@var{list}
+@itemx --with-target-bdw-gc-include=@var{list}
+@itemx --with-target-bdw-gc-lib=@var{list}
+Specify search directories for the garbage collector header files and
+libraries. @var{list} is a comma separated list of key value pairs of the
+form @samp{@var{multilibdir}@=@var{path}}, where the default multilib key
+is named as @samp{.} (dot), or is omitted (e.g.
+@samp{--with-target-bdw-gc=/opt/bdw-gc,32=/opt-bdw-gc32}).
+
+The options @option{--with-target-bdw-gc-include} and
+@option{--with-target-bdw-gc-lib} must always be specified together
+for each multilib variant and they take precedence over
+@option{--with-target-bdw-gc}.  If none of these options are
+specified, the values are taken from the @command{pkg-config}
+@samp{bdw-gc} module.
+@end table
+
 @html
 <hr />
 <p>

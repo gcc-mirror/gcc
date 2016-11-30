@@ -29,6 +29,7 @@ m4_include([ltsugar.m4])
 m4_include([ltversion.m4])
 m4_include([lt~obsolete.m4])
 m4_include([config/isl.m4])
+m4_include([config/pkg.m4])
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.64)
@@ -161,7 +162,6 @@ target_libraries="target-libgcc \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
-		target-boehm-gc \
 		target-libffi \
 		target-libobjc \
 		target-libada \
@@ -2060,22 +2060,36 @@ done
 AC_ARG_ENABLE(objc-gc,
 [AS_HELP_STRING([--enable-objc-gc],
 		[enable use of Boehm's garbage collector with the
-		 GNU Objective-C runtime])],
-[case ,${enable_languages},:${enable_objc_gc}:${noconfigdirs} in
-  *,objc,*:*:yes:*target-boehm-gc*)
-    AC_MSG_ERROR([Boehm's garbage collector was requested yet not supported in this configuration])
-    ;;
-esac])
-
-# Make sure we only build Boehm's garbage collector if required.
-case ,${enable_languages},:${enable_objc_gc} in
-  *,objc,*:yes)
-    # Keep target-boehm-gc if requested for Objective-C.
-    ;;
-  *)
-    # Otherwise remove target-boehm-gc.
-    noconfigdirs="$noconfigdirs target-boehm-gc"
-    ;;
+		 GNU Objective-C runtime])])
+AC_ARG_WITH([target-bdw-gc],
+[AS_HELP_STRING([--with-target-bdw-gc=PATHLIST],
+		[specify prefix directory for installed bdw-gc package.
+		 Equivalent to --with-target-bdw-gc-include=PATH/include
+		 plus --with-target-bdw-gc-lib=PATH/lib])])
+AC_ARG_WITH([target-bdw-gc-include],
+[AS_HELP_STRING([--with-target-bdw-gc-include=PATHLIST],
+		[specify directories for installed bdw-gc include files])])
+AC_ARG_WITH([target-bdw-gc-lib],
+[AS_HELP_STRING([--with-target-bdw-gc-lib=PATHLIST],
+		[specify directories for installed bdw-gc library])])
+		  
+case ,${enable_languages},:${enable_objc_gc} in *,objc,*:yes|*,objc,*:auto)
+  AC_MSG_CHECKING([for bdw garbage collector])
+  if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
+    dnl no bdw-gw options, fall back to the bdw-gc pkg-config module
+    PKG_CHECK_EXISTS(bdw-gc,
+      AC_MSG_RESULT([using bdw-gc pkg-config module]),
+      AC_MSG_ERROR([no --with-target-bdw-gc options and no bdw-gc pkg-config module found]))
+  else
+    dnl bdw-gw options, first error checking, complete checking in libobjc
+    if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
+      AC_MSG_ERROR([found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing])
+    elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
+      AC_MSG_ERROR([found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing])
+    else
+      AC_MSG_RESULT([using paths configured with --with-target-bdw-gc options])
+    fi
+  fi
 esac
 
 # Disable libcilkrts, libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
