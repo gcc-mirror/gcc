@@ -1,5 +1,12 @@
 2016-11-30  Alexander Monakov  <amonakov@ispras.ru>
 
+	* config/nvptx/env.c: Delete.
+	* icv.c: Move definitions of ICV variables back ...
+	* env.c: ...here.  Do not compile environment-related functionality if
+	LIBGOMP_OFFLOADED_ONLY is set.
+
+2016-11-30  Alexander Monakov  <amonakov@ispras.ru>
+
 	* configure.ac [nvptx*-*-*] (libgomp_offloaded_only): Set and use it...
 	(LIBGOMP_OFFLOADED_ONLY): ...here; new define.
 	* configure: Regenerate.
