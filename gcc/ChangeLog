@@ -1,3 +1,10 @@
+2016-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78362
+	* config/aarch64/aarch64.md (add<mode>3): Extract inner expression
+	from a subreg in operands[1] and don't call REGNO on a non-reg
+	expression when deciding to force operands[2] into a reg.
+
 2016-11-30  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
