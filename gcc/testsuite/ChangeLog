@@ -1,3 +1,8 @@
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
+	* gcc.dg/format/pr78494.c: New test case.
+
 2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/debug/dwarf2/ref-1.C: Don't XFAIL scan-assembler-not on AIX.
