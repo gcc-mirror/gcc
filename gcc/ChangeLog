@@ -1,3 +1,9 @@
+2016-11-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/78555
+	* real.c (real_hash): Add cast to avoid left
+	shifting of negative values.
+
 2016-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/78362
