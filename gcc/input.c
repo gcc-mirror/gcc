@@ -1331,6 +1331,16 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
   if (cpp_get_options (pfile)->track_macro_expansion != 2)
     return "track_macro_expansion != 2";
 
+  /* If #line or # 44 "file"-style directives are present, then there's
+     no guarantee that the line numbers we have can be used to locate
+     the strings.  For example, we might have a .i file with # directives
+     pointing back to lines within a .c file, but the .c file might
+     have been edited since the .i file was created.
+     In such a case, the safest course is to disable on-demand substring
+     locations.  */
+  if (line_table->seen_line_directive)
+    return "seen line directive";
+
   /* If string concatenation has occurred at STRLOC, get the locations
      of all of the literal tokens making up the compound string.
      Otherwise, just use STRLOC.  */
