@@ -47,8 +47,6 @@ extra_ldflags_libobjc = @extra_ldflags_libobjc@
 
 top_builddir = .
 
--include ../boehm-gc/threads.mk
-
 libdir = $(exec_prefix)/lib
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 
@@ -95,7 +93,7 @@ LIBTOOL_CLEAN   = $(LIBTOOL) --mode=clean
 OBJC_GCFLAGS=@OBJC_GCFLAGS@
 OBJC_BOEHM_GC=@OBJC_BOEHM_GC@
 OBJC_BOEHM_GC_INCLUDES=@OBJC_BOEHM_GC_INCLUDES@
-OBJC_BOEHM_GC_LIBS=../boehm-gc/libgcjgc_convenience.la $(thread_libs_and_flags)
+OBJC_BOEHM_GC_LIBS=@OBJC_BOEHM_GC_LIBS@
 
 INCLUDES = -I$(srcdir)/$(MULTISRCTOP)../gcc \
   -I$(srcdir)/$(MULTISRCTOP)../gcc/config \

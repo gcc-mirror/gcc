@@ -166,7 +166,6 @@ target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
 target_modules = { module= libffi; no_install=true; };
 target_modules = { module= zlib; };
-target_modules = { module= boehm-gc; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
@@ -543,7 +542,6 @@ lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };
 // a dependency on libgcc for native targets to configure.
 lang_env_dependencies = { module=libiberty; no_c=true; };
 
-dependencies = { module=configure-target-boehm-gc; on=all-target-libstdc++-v3; };
 dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
@@ -551,8 +549,6 @@ dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };
-dependencies = { module=configure-target-libobjc; on=configure-target-boehm-gc; };
-dependencies = { module=all-target-libobjc; on=all-target-boehm-gc; };
 dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
 dependencies = { module=configure-target-liboffloadmic; on=configure-target-libgomp; };
 dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v3; };

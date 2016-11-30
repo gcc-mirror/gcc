@@ -643,6 +643,9 @@ DEBUG_PREFIX_CFLAGS_FOR_TARGET
 SYSROOT_CFLAGS_FOR_TARGET
 extra_host_zlib_configure_flags
 extra_host_libiberty_configure_flags
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
 stage1_languages
 extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
@@ -783,6 +786,9 @@ enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
 enable_stage1_languages
 enable_objc_gc
+with_target_bdw_gc
+with_target_bdw_gc_include
+with_target_bdw_gc_lib
 with_build_sysroot
 with_debug_prefix_map
 with_build_config
@@ -805,6 +811,9 @@ CPPFLAGS
 CXX
 CXXFLAGS
 CCC
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
 build_configargs
 host_configargs
 target_configargs
@@ -1549,6 +1558,16 @@ Optional Packages:
                           --with-isl-lib=PATH/lib
   --with-isl-include=PATH Specify directory for installed isl include files
   --with-isl-lib=PATH     Specify the directory for the installed isl library
+  --with-target-bdw-gc=PATHLIST
+                          specify prefix directory for installed bdw-gc
+                          package. Equivalent to
+                          --with-target-bdw-gc-include=PATH/include plus
+                          --with-target-bdw-gc-lib=PATH/lib
+  --with-target-bdw-gc-include=PATHLIST
+                          specify directories for installed bdw-gc include
+                          files
+  --with-target-bdw-gc-lib=PATHLIST
+                          specify directories for installed bdw-gc library
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -1568,6 +1587,11 @@ Some influential environment variables:
               you have headers in a nonstandard directory <include dir>
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
+  PKG_CONFIG  path to pkg-config utility
+  PKG_CONFIG_PATH
+              directories to add to pkg-config's search path
+  PKG_CONFIG_LIBDIR
+              path overriding pkg-config's built-in search path
   build_configargs
               additional configure arguments for build directories
   host_configargs
@@ -2746,7 +2770,6 @@ target_libraries="target-libgcc \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
-		target-boehm-gc \
 		target-libffi \
 		target-libobjc \
 		target-libada \
@@ -6392,23 +6415,173 @@ done
 # Check for Boehm's garbage collector
 # Check whether --enable-objc-gc was given.
 if test "${enable_objc_gc+set}" = set; then :
-  enableval=$enable_objc_gc; case ,${enable_languages},:${enable_objc_gc}:${noconfigdirs} in
-  *,objc,*:*:yes:*target-boehm-gc*)
-    as_fn_error "Boehm's garbage collector was requested yet not supported in this configuration" "$LINENO" 5
-    ;;
-esac
+  enableval=$enable_objc_gc;
 fi
 
 
-# Make sure we only build Boehm's garbage collector if required.
-case ,${enable_languages},:${enable_objc_gc} in
-  *,objc,*:yes)
-    # Keep target-boehm-gc if requested for Objective-C.
-    ;;
+# Check whether --with-target-bdw-gc was given.
+if test "${with_target_bdw_gc+set}" = set; then :
+  withval=$with_target_bdw_gc;
+fi
+
+
+# Check whether --with-target-bdw-gc-include was given.
+if test "${with_target_bdw_gc_include+set}" = set; then :
+  withval=$with_target_bdw_gc_include;
+fi
+
+
+# Check whether --with-target-bdw-gc-lib was given.
+if test "${with_target_bdw_gc_lib+set}" = set; then :
+  withval=$with_target_bdw_gc_lib;
+fi
+
+
+case ,${enable_languages},:${enable_objc_gc} in *,objc,*:yes|*,objc,*:auto)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for bdw garbage collector" >&5
+$as_echo_n "checking for bdw garbage collector... " >&6; }
+  if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_PKG_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
   *)
-    # Otherwise remove target-boehm-gc.
-    noconfigdirs="$noconfigdirs target-boehm-gc"
-    ;;
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_ac_pt_PKG_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
+if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"bdw-gc\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "bdw-gc") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: using bdw-gc pkg-config module" >&5
+$as_echo "using bdw-gc pkg-config module" >&6; }
+else
+  as_fn_error "no --with-target-bdw-gc options and no bdw-gc pkg-config module found" "$LINENO" 5
+fi
+  else
+        if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
+      as_fn_error "found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing" "$LINENO" 5
+    elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
+      as_fn_error "found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing" "$LINENO" 5
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using paths configured with --with-target-bdw-gc options" >&5
+$as_echo "using paths configured with --with-target-bdw-gc options" >&6; }
+    fi
+  fi
 esac
 
 # Disable libcilkrts, libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++

@@ -18,6 +18,8 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
+m4_include([../config/pkg.m4])
+
 AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libobjc)
 AC_CONFIG_SRCDIR([objc/objc.h])
@@ -56,26 +58,6 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
  esac],
 [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
-
-AC_ARG_ENABLE(objc-gc,
-[  --enable-objc-gc       enable the use of Boehm's garbage collector with
-                          the GNU Objective-C runtime.],
-[case $enable_objc_gc in
-  no)
-    OBJC_GCFLAGS=''
-    OBJC_BOEHM_GC=''
-    OBJC_BOEHM_GC_INCLUDES=''
-    ;;
-  *)
-    OBJC_GCFLAGS='-DOBJC_WITH_GC=1'
-    OBJC_BOEHM_GC='libobjc_gc$(libsuffix).la'
-    OBJC_BOEHM_GC_INCLUDES='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
-    ;;
-esac],
-[OBJC_GCFLAGS=''; OBJC_BOEHM_GC=''; OBJC_BOEHM_GC_INCLUDES=''])
-AC_SUBST(OBJC_GCFLAGS)
-AC_SUBST(OBJC_BOEHM_GC)
-AC_SUBST(OBJC_BOEHM_GC_INCLUDES)
 
 # -----------
 # Directories
@@ -213,6 +195,160 @@ AC_CHECK_HEADERS(sched.h)
 GCC_CHECK_TLS
 
 gt_BITFIELD_TYPE_MATTERS
+
+# -----------
+# boehm-gc
+# -----------
+
+AC_ARG_ENABLE(objc-gc,
+[AS_HELP_STRING([--enable-objc-gc],
+		[enable use of Boehm's garbage collector with the
+		 GNU Objective-C runtime])])
+AC_ARG_WITH([target-bdw-gc],
+[AS_HELP_STRING([--with-target-bdw-gc=PATHLIST],
+		[specify prefix directory for installed bdw-gc package.
+		 Equivalent to --with-target-bdw-gc-include=PATH/include
+		 plus --with-target-bdw-gc-lib=PATH/lib])])
+AC_ARG_WITH([target-bdw-gc-include],
+[AS_HELP_STRING([--with-target-bdw-gc-include=PATHLIST],
+		[specify directories for installed bdw-gc include files])])
+AC_ARG_WITH([target-bdw-gc-lib],
+[AS_HELP_STRING([--with-target-bdw-gc-lib=PATHLIST],
+		[specify directories for installed bdw-gc library])])
+		  
+case "$enable_objc_gc" in
+no)
+  use_bdw_gc=no
+  ;;
+*)
+  AC_MSG_CHECKING([for bdw garbage collector])
+  if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
+    dnl no bdw-gw options, fall back to the bdw-gc pkg-config module
+    PKG_CHECK_EXISTS(bdw-gc,
+      AC_MSG_RESULT([using bdw-gc pkg-config module]),
+      AC_MSG_ERROR([no --with-target-bdw-gc options and no bdw-gc pkg-config module found]))
+  else
+    dnl bdw-gw options passed by configure flags
+    if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
+      AC_MSG_ERROR([found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing])
+    elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
+      AC_MSG_ERROR([found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing])
+    else
+      AC_MSG_RESULT([using paths configured with --with-target-bdw-gc options])
+    fi
+    mldir=`${CC-gcc} --print-multi-directory 2>/dev/null`
+    bdw_val=
+    if test "x$with_target_bdw_gc" != x; then
+      for i in `echo $with_target_bdw_gc | tr ',' ' '`; do
+        case "$i" in
+          *=*) sd=${i%%=*}; d=${i#*=} ;;
+          *) sd=.; d=$i ;;
+        esac
+        if test "$mldir" = "$sd"; then
+          bdw_val=$d
+        fi
+      done
+      if test "x$bdw_val" = x; then
+        AC_MSG_ERROR([no multilib path ($mldir) found in --with-target-bdw-gc])
+      fi
+      bdw_inc_dir="$bdw_val/include"
+      bdw_lib_dir="$bdw_val/lib"
+    fi
+    bdw_val=
+    if test "x$with_target_bdw_gc_include" != x; then
+      for i in `echo $with_target_bdw_gc_include | tr ',' ' '`; do
+        case "$i" in
+          *=*) sd=${i%%=*}; d=${i#*=} ;;
+          *) sd=.; d=$i ;;
+        esac
+        if test "$mldir" = "$sd"; then
+          bdw_val=$d
+        fi
+      done
+      if test "x$bdw_val" = x; then
+        AC_MSG_ERROR([no multilib path ($mldir) found in --with-target-bdw-gc-include])
+      fi
+      bdw_inc_dir="$bdw_val"
+    fi
+    bdw_val=
+    if test "x$with_target_bdw_gc_lib" != x; then
+      for i in `echo $with_target_bdw_gc_lib | tr ',' ' '`; do
+        case "$i" in
+          *=*) sd=${i%%=*}; d=${i#*=} ;;
+          *) sd=.; d=$i ;;
+        esac
+        if test "$mldir" = "$sd"; then
+          bdw_val=$d
+        fi
+      done
+      if test "x$bdw_val" = x; then
+        AC_MSG_ERROR([no multilib path ($mldir) found in --with-target-bdw-gc-lib])
+      fi
+      bdw_lib_dir="$bdw_val"
+    fi
+    if test "x$bdw_inc_dir" = x; then
+      AC_MSG_ERROR([no multilib path ($mldir) found in --with-target-bdw-gc-include])
+    fi
+    if test "x$bdw_lib_dir" = x; then
+      AC_MSG_ERROR([no multilib path ($mldir) found in --with-target-bdw-gc-lib])
+    fi
+    BDW_GC_CFLAGS="-I$bdw_inc_dir"
+    BDW_GC_LIBS="-L$bdw_lib_dir -lgc"
+    AC_MSG_RESULT([found])
+  fi
+
+  AC_MSG_CHECKING([for system boehm-gc])
+  save_CFLAGS=$CFLAGS
+  save_LIBS=$LIBS
+  CFLAGS="$CFLAGS $BDW_GC_CFLAGS"
+  LIBS="$LIBS $BDW_GC_LIBS"
+  dnl the link test is not good enough for ARM32 multilib detection,
+  dnl first check to link, then to run
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM([#include <gc/gc.h>],[GC_init()])],
+    [
+      AC_RUN_IFELSE([AC_LANG_SOURCE([[
+        #include <gc/gc.h>
+        int main() {
+          GC_init();
+          return 0;
+        }
+        ]])],
+        [system_bdw_gc_found=yes],
+        [system_bdw_gc_found=no],
+        dnl assume no system boehm-gc for cross builds ...
+        [system_bdw_gc_found=no]
+      )
+    ],
+    [system_bdw_gc_found=no])
+  CFLAGS=$save_CFLAGS
+  LIBS=$save_LIBS
+  if test x$enable_objc_gc = xauto && test x$system_bdw_gc_found = xno; then
+    AC_MSG_WARN([system bdw-gc not found, not building libobjc_gc])
+    use_bdw_gc=no
+  elif test x$enable_objc_gc = xyes && test x$system_bdw_gc_found = xno; then
+    AC_MSG_ERROR([system bdw-gc required but not found])
+  else
+    use_bdw_gc=yes
+    AC_MSG_RESULT([found])
+  fi
+esac
+
+if test "$use_bdw_gc" = no; then
+  OBJC_GCFLAGS=''
+  OBJC_BOEHM_GC=''
+  OBJC_BOEHM_GC_INCLUDES=''
+  OBJC_BOEHM_GC_LIBS=''
+else
+  OBJC_GCFLAGS='-DOBJC_WITH_GC=1'
+  OBJC_BOEHM_GC='libobjc_gc$(libsuffix).la'
+  OBJC_BOEHM_GC_INCLUDES=$BDW_GC_CFLAGS
+  OBJC_BOEHM_GC_LIBS=$BDW_GC_LIBS
+fi
+AC_SUBST(OBJC_GCFLAGS)
+AC_SUBST(OBJC_BOEHM_GC)
+AC_SUBST(OBJC_BOEHM_GC_INCLUDES)
+AC_SUBST(OBJC_BOEHM_GC_LIBS)
 
 # ------
 # Output

@@ -141,6 +141,15 @@ func freedefer(d *_defer) {
 	if d.special {
 		return
 	}
+
+	// When C code calls a Go function on a non-Go thread, the
+	// deferred call to cgocallBackDone will set g to nil.
+	// Don't crash trying to put d on the free list; just let it
+	// be garbage collected.
+	if getg() == nil {
+		return
+	}
+
 	mp := acquirem()
 	pp := mp.p.ptr()
 	if len(pp.deferpool) == cap(pp.deferpool) {

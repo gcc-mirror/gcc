@@ -1,7 +1,0 @@
-/* include/gc_ext_config.h.in.  This contains definitions needed by
-external clients that do not want to include the full gc.h.  Currently this
-is used by libjava/include/boehm-gc.h. */
-
-#undef THREAD_LOCAL_ALLOC
-
-#undef HAVE_PTHREAD_GETATTR_NP

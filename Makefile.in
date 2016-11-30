@@ -998,7 +998,6 @@ configure-target:  \
     maybe-configure-target-libgloss \
     maybe-configure-target-libffi \
     maybe-configure-target-zlib \
-    maybe-configure-target-boehm-gc \
     maybe-configure-target-rda \
     maybe-configure-target-libada \
     maybe-configure-target-libgomp \
@@ -1164,7 +1163,6 @@ all-target: maybe-all-target-winsup
 all-target: maybe-all-target-libgloss
 all-target: maybe-all-target-libffi
 all-target: maybe-all-target-zlib
-all-target: maybe-all-target-boehm-gc
 all-target: maybe-all-target-rda
 all-target: maybe-all-target-libada
 @if target-libgomp-no-bootstrap
@@ -1257,7 +1255,6 @@ info-target: maybe-info-target-winsup
 info-target: maybe-info-target-libgloss
 info-target: maybe-info-target-libffi
 info-target: maybe-info-target-zlib
-info-target: maybe-info-target-boehm-gc
 info-target: maybe-info-target-rda
 info-target: maybe-info-target-libada
 info-target: maybe-info-target-libgomp
@@ -1343,7 +1340,6 @@ dvi-target: maybe-dvi-target-winsup
 dvi-target: maybe-dvi-target-libgloss
 dvi-target: maybe-dvi-target-libffi
 dvi-target: maybe-dvi-target-zlib
-dvi-target: maybe-dvi-target-boehm-gc
 dvi-target: maybe-dvi-target-rda
 dvi-target: maybe-dvi-target-libada
 dvi-target: maybe-dvi-target-libgomp
@@ -1429,7 +1425,6 @@ pdf-target: maybe-pdf-target-winsup
 pdf-target: maybe-pdf-target-libgloss
 pdf-target: maybe-pdf-target-libffi
 pdf-target: maybe-pdf-target-zlib
-pdf-target: maybe-pdf-target-boehm-gc
 pdf-target: maybe-pdf-target-rda
 pdf-target: maybe-pdf-target-libada
 pdf-target: maybe-pdf-target-libgomp
@@ -1515,7 +1510,6 @@ html-target: maybe-html-target-winsup
 html-target: maybe-html-target-libgloss
 html-target: maybe-html-target-libffi
 html-target: maybe-html-target-zlib
-html-target: maybe-html-target-boehm-gc
 html-target: maybe-html-target-rda
 html-target: maybe-html-target-libada
 html-target: maybe-html-target-libgomp
@@ -1601,7 +1595,6 @@ TAGS-target: maybe-TAGS-target-winsup
 TAGS-target: maybe-TAGS-target-libgloss
 TAGS-target: maybe-TAGS-target-libffi
 TAGS-target: maybe-TAGS-target-zlib
-TAGS-target: maybe-TAGS-target-boehm-gc
 TAGS-target: maybe-TAGS-target-rda
 TAGS-target: maybe-TAGS-target-libada
 TAGS-target: maybe-TAGS-target-libgomp
@@ -1687,7 +1680,6 @@ install-info-target: maybe-install-info-target-winsup
 install-info-target: maybe-install-info-target-libgloss
 install-info-target: maybe-install-info-target-libffi
 install-info-target: maybe-install-info-target-zlib
-install-info-target: maybe-install-info-target-boehm-gc
 install-info-target: maybe-install-info-target-rda
 install-info-target: maybe-install-info-target-libada
 install-info-target: maybe-install-info-target-libgomp
@@ -1773,7 +1765,6 @@ install-pdf-target: maybe-install-pdf-target-winsup
 install-pdf-target: maybe-install-pdf-target-libgloss
 install-pdf-target: maybe-install-pdf-target-libffi
 install-pdf-target: maybe-install-pdf-target-zlib
-install-pdf-target: maybe-install-pdf-target-boehm-gc
 install-pdf-target: maybe-install-pdf-target-rda
 install-pdf-target: maybe-install-pdf-target-libada
 install-pdf-target: maybe-install-pdf-target-libgomp
@@ -1859,7 +1850,6 @@ install-html-target: maybe-install-html-target-winsup
 install-html-target: maybe-install-html-target-libgloss
 install-html-target: maybe-install-html-target-libffi
 install-html-target: maybe-install-html-target-zlib
-install-html-target: maybe-install-html-target-boehm-gc
 install-html-target: maybe-install-html-target-rda
 install-html-target: maybe-install-html-target-libada
 install-html-target: maybe-install-html-target-libgomp
@@ -1945,7 +1935,6 @@ installcheck-target: maybe-installcheck-target-winsup
 installcheck-target: maybe-installcheck-target-libgloss
 installcheck-target: maybe-installcheck-target-libffi
 installcheck-target: maybe-installcheck-target-zlib
-installcheck-target: maybe-installcheck-target-boehm-gc
 installcheck-target: maybe-installcheck-target-rda
 installcheck-target: maybe-installcheck-target-libada
 installcheck-target: maybe-installcheck-target-libgomp
@@ -2031,7 +2020,6 @@ mostlyclean-target: maybe-mostlyclean-target-winsup
 mostlyclean-target: maybe-mostlyclean-target-libgloss
 mostlyclean-target: maybe-mostlyclean-target-libffi
 mostlyclean-target: maybe-mostlyclean-target-zlib
-mostlyclean-target: maybe-mostlyclean-target-boehm-gc
 mostlyclean-target: maybe-mostlyclean-target-rda
 mostlyclean-target: maybe-mostlyclean-target-libada
 mostlyclean-target: maybe-mostlyclean-target-libgomp
@@ -2117,7 +2105,6 @@ clean-target: maybe-clean-target-winsup
 clean-target: maybe-clean-target-libgloss
 clean-target: maybe-clean-target-libffi
 clean-target: maybe-clean-target-zlib
-clean-target: maybe-clean-target-boehm-gc
 clean-target: maybe-clean-target-rda
 clean-target: maybe-clean-target-libada
 clean-target: maybe-clean-target-libgomp
@@ -2203,7 +2190,6 @@ distclean-target: maybe-distclean-target-winsup
 distclean-target: maybe-distclean-target-libgloss
 distclean-target: maybe-distclean-target-libffi
 distclean-target: maybe-distclean-target-zlib
-distclean-target: maybe-distclean-target-boehm-gc
 distclean-target: maybe-distclean-target-rda
 distclean-target: maybe-distclean-target-libada
 distclean-target: maybe-distclean-target-libgomp
@@ -2289,7 +2275,6 @@ maintainer-clean-target: maybe-maintainer-clean-target-winsup
 maintainer-clean-target: maybe-maintainer-clean-target-libgloss
 maintainer-clean-target: maybe-maintainer-clean-target-libffi
 maintainer-clean-target: maybe-maintainer-clean-target-zlib
-maintainer-clean-target: maybe-maintainer-clean-target-boehm-gc
 maintainer-clean-target: maybe-maintainer-clean-target-rda
 maintainer-clean-target: maybe-maintainer-clean-target-libada
 maintainer-clean-target: maybe-maintainer-clean-target-libgomp
@@ -2431,7 +2416,6 @@ check-target:  \
     maybe-check-target-libgloss \
     maybe-check-target-libffi \
     maybe-check-target-zlib \
-    maybe-check-target-boehm-gc \
     maybe-check-target-rda \
     maybe-check-target-libada \
     maybe-check-target-libgomp \
@@ -2613,7 +2597,6 @@ install-target:  \
     maybe-install-target-libgloss \
     maybe-install-target-libffi \
     maybe-install-target-zlib \
-    maybe-install-target-boehm-gc \
     maybe-install-target-rda \
     maybe-install-target-libada \
     maybe-install-target-libgomp \
@@ -2719,7 +2702,6 @@ install-strip-target:  \
     maybe-install-strip-target-libgloss \
     maybe-install-strip-target-libffi \
     maybe-install-strip-target-zlib \
-    maybe-install-strip-target-boehm-gc \
     maybe-install-strip-target-rda \
     maybe-install-strip-target-libada \
     maybe-install-strip-target-libgomp \
@@ -48324,464 +48306,6 @@ maintainer-clean-target-zlib:
 
 
 
-.PHONY: configure-target-boehm-gc maybe-configure-target-boehm-gc
-maybe-configure-target-boehm-gc:
-@if gcc-bootstrap
-configure-target-boehm-gc: stage_current
-@endif gcc-bootstrap
-@if target-boehm-gc
-maybe-configure-target-boehm-gc: configure-target-boehm-gc
-configure-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for boehm-gc..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/boehm-gc/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/boehm-gc/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/boehm-gc/multilib.tmp $(TARGET_SUBDIR)/boehm-gc/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/boehm-gc/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/boehm-gc/Makefile; \
-	    mv $(TARGET_SUBDIR)/boehm-gc/multilib.tmp $(TARGET_SUBDIR)/boehm-gc/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/boehm-gc/multilib.tmp $(TARGET_SUBDIR)/boehm-gc/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/boehm-gc/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/boehm-gc; \
-	cd "$(TARGET_SUBDIR)/boehm-gc" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/boehm-gc/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=boehm-gc; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias}  \
-	  || exit 1
-@endif target-boehm-gc
-
-
-
-
-
-.PHONY: all-target-boehm-gc maybe-all-target-boehm-gc
-maybe-all-target-boehm-gc:
-@if gcc-bootstrap
-all-target-boehm-gc: stage_current
-@endif gcc-bootstrap
-@if target-boehm-gc
-TARGET-target-boehm-gc=all
-maybe-all-target-boehm-gc: all-target-boehm-gc
-all-target-boehm-gc: configure-target-boehm-gc
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
-		$(TARGET-target-boehm-gc))
-@endif target-boehm-gc
-
-
-
-
-
-.PHONY: check-target-boehm-gc maybe-check-target-boehm-gc
-maybe-check-target-boehm-gc:
-@if target-boehm-gc
-maybe-check-target-boehm-gc: check-target-boehm-gc
-
-check-target-boehm-gc:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-boehm-gc
-
-.PHONY: install-target-boehm-gc maybe-install-target-boehm-gc
-maybe-install-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-target-boehm-gc: install-target-boehm-gc
-
-install-target-boehm-gc: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-boehm-gc
-
-.PHONY: install-strip-target-boehm-gc maybe-install-strip-target-boehm-gc
-maybe-install-strip-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-strip-target-boehm-gc: install-strip-target-boehm-gc
-
-install-strip-target-boehm-gc: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
-
-@endif target-boehm-gc
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-target-boehm-gc info-target-boehm-gc
-maybe-info-target-boehm-gc:
-@if target-boehm-gc
-maybe-info-target-boehm-gc: info-target-boehm-gc
-
-info-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           info) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-dvi-target-boehm-gc dvi-target-boehm-gc
-maybe-dvi-target-boehm-gc:
-@if target-boehm-gc
-maybe-dvi-target-boehm-gc: dvi-target-boehm-gc
-
-dvi-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-pdf-target-boehm-gc pdf-target-boehm-gc
-maybe-pdf-target-boehm-gc:
-@if target-boehm-gc
-maybe-pdf-target-boehm-gc: pdf-target-boehm-gc
-
-pdf-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           pdf) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-html-target-boehm-gc html-target-boehm-gc
-maybe-html-target-boehm-gc:
-@if target-boehm-gc
-maybe-html-target-boehm-gc: html-target-boehm-gc
-
-html-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           html) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-TAGS-target-boehm-gc TAGS-target-boehm-gc
-maybe-TAGS-target-boehm-gc:
-@if target-boehm-gc
-maybe-TAGS-target-boehm-gc: TAGS-target-boehm-gc
-
-TAGS-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-install-info-target-boehm-gc install-info-target-boehm-gc
-maybe-install-info-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-info-target-boehm-gc: install-info-target-boehm-gc
-
-install-info-target-boehm-gc: \
-    configure-target-boehm-gc \
-    info-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-install-pdf-target-boehm-gc install-pdf-target-boehm-gc
-maybe-install-pdf-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-pdf-target-boehm-gc: install-pdf-target-boehm-gc
-
-install-pdf-target-boehm-gc: \
-    configure-target-boehm-gc \
-    pdf-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-pdf) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-install-html-target-boehm-gc install-html-target-boehm-gc
-maybe-install-html-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-html-target-boehm-gc: install-html-target-boehm-gc
-
-install-html-target-boehm-gc: \
-    configure-target-boehm-gc \
-    html-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-installcheck-target-boehm-gc installcheck-target-boehm-gc
-maybe-installcheck-target-boehm-gc:
-@if target-boehm-gc
-maybe-installcheck-target-boehm-gc: installcheck-target-boehm-gc
-
-installcheck-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-mostlyclean-target-boehm-gc mostlyclean-target-boehm-gc
-maybe-mostlyclean-target-boehm-gc:
-@if target-boehm-gc
-maybe-mostlyclean-target-boehm-gc: mostlyclean-target-boehm-gc
-
-mostlyclean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-clean-target-boehm-gc clean-target-boehm-gc
-maybe-clean-target-boehm-gc:
-@if target-boehm-gc
-maybe-clean-target-boehm-gc: clean-target-boehm-gc
-
-clean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           clean) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-distclean-target-boehm-gc distclean-target-boehm-gc
-maybe-distclean-target-boehm-gc:
-@if target-boehm-gc
-maybe-distclean-target-boehm-gc: distclean-target-boehm-gc
-
-distclean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-maintainer-clean-target-boehm-gc maintainer-clean-target-boehm-gc
-maybe-maintainer-clean-target-boehm-gc:
-@if target-boehm-gc
-maybe-maintainer-clean-target-boehm-gc: maintainer-clean-target-boehm-gc
-
-maintainer-clean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-
-
-
-
 .PHONY: configure-target-rda maybe-configure-target-rda
 maybe-configure-target-rda:
 @if gcc-bootstrap
@@ -54740,7 +54264,6 @@ configure-target-winsup: stage_last
 configure-target-libgloss: stage_last
 configure-target-libffi: stage_last
 configure-target-zlib: stage_last
-configure-target-boehm-gc: stage_last
 configure-target-rda: stage_last
 configure-target-libada: stage_last
 configure-stage1-target-libgomp: maybe-all-stage1-gcc
@@ -54775,7 +54298,6 @@ configure-target-winsup: maybe-all-gcc
 configure-target-libgloss: maybe-all-gcc
 configure-target-libffi: maybe-all-gcc
 configure-target-zlib: maybe-all-gcc
-configure-target-boehm-gc: maybe-all-gcc
 configure-target-rda: maybe-all-gcc
 configure-target-libada: maybe-all-gcc
 configure-target-libgomp: maybe-all-gcc
@@ -55790,7 +55312,6 @@ all-flex: maybe-all-m4
 all-flex: maybe-all-build-texinfo
 all-m4: maybe-all-intl
 all-m4: maybe-all-build-texinfo
-configure-target-boehm-gc: maybe-all-target-libstdc++-v3
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
 configure-target-libgo: maybe-configure-target-libffi
@@ -55798,8 +55319,6 @@ configure-target-libgo: maybe-all-target-libstdc++-v3
 all-target-libgo: maybe-all-target-libbacktrace
 all-target-libgo: maybe-all-target-libffi
 all-target-libgo: maybe-all-target-libatomic
-configure-target-libobjc: maybe-configure-target-boehm-gc
-all-target-libobjc: maybe-all-target-boehm-gc
 configure-target-libstdc++-v3: maybe-configure-target-libgomp
 
 configure-stage1-target-libstdc++-v3: maybe-configure-stage1-target-libgomp
@@ -55931,7 +55450,6 @@ configure-target-winsup: maybe-all-target-libgcc
 configure-target-libgloss: maybe-all-target-libgcc
 configure-target-libffi: maybe-all-target-libgcc
 configure-target-zlib: maybe-all-target-libgcc
-configure-target-boehm-gc: maybe-all-target-libgcc
 configure-target-rda: maybe-all-target-libgcc
 configure-target-libada: maybe-all-target-libgcc
 configure-target-libgomp: maybe-all-target-libgcc
@@ -55977,8 +55495,6 @@ configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libffi: maybe-all-target-libstdc++-v3
 
 configure-target-zlib: maybe-all-target-newlib maybe-all-target-libgloss
-
-configure-target-boehm-gc: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-rda: maybe-all-target-newlib maybe-all-target-libgloss
 

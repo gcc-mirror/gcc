@@ -1,3 +1,7 @@
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4: New file.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	multi.m4: Don't set GCJ.

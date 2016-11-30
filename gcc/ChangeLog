@@ -1,11 +1,91 @@
+2016-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/install.texi (--with-target-bdw-gc): Remove stray '@'.
+
+2016-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78569
+	* input.c (get_substring_ranges_for_loc): Fail gracefully if
+	line directives were present.
+
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Document configure options --enable-objc-gc
+	and --with-target-bdw-gc.
+
+2016-11-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78594
+	* config/rs6000/rs6000.md (mov<mode>_internal, QHI iterator): Add
+	'x' to stxsi<wd>x print pattern, so that QImode and HImode values
+	residing in traditional altivec registers can be stored
+	correctly.
+
+2016-11-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/78603
+	* config/xtensa/xtensa.c (hwloop_optimize): Don't emit zero
+	overhead loop start between a call and its CALL_ARG_LOCATION
+	note.
+
+2016-11-29  Waldemar Brodkorb  <wbx@openadk.org>
+
+	* config/bfin/linux.h (CPP_SPEC): Define.
+
+2016-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78512
+	* config/linux.h (TARGET_PRINTF_POINTER_FORMAT): Remove.
+	* config/rs6000/linux.h: Same.
+	* config/rs6000/linux64.h: Same.
+	* config/sol2.h: Same.
+	* config/sol2.c (solaris_printf_pointer_format): Remove.
+	* doc/tm.texi.in (TARGET_PRINTF_POINTER_FORMAT): Remove.
+	* doc/tm.texi: Regenerate.
+	* gimple-ssa-sprintf.c (format_pointer): Rempove.
+	(pass_sprintf_length::compute_format_length): Return bool.
+	(pass_sprintf_length::handle_gimple_call): Adjust.
+	* target.def (printf_pointer_format): Remove.
+	* targhooks.c (default_printf_pointer_format): Remove.
+	(linux_printf_pointer_format): Same.
+	* targhooks.h (default_printf_pointer_format): Remove.
+	(linux_printf_pointer_format, solaris_printf_pointer_format): Same.
+
+2016-11-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (UNSPEC_MASKOP): Move from i386.md.
+	(mshift): Ditto.
+	(SWI1248_AVX512BWDQ): Ditto.
+	(SWI1248_AVX512BW): Ditto.
+	(k<any_logic:code><mode>): Ditto.
+	(kandn<mode>): Ditto.
+	(kxnor<mode>): Ditto.
+	(knot<mode>): Ditto.
+	(*k<any_lshift:code><mode>): Ditto.
+	(kortestzhi, kortestchi): Ditto.
+	(kunpckhi, kunpcksi, kunpckdi): Ditto.
+
+2016-11-29  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-vrp.c (simplify_stmt_using_ranges): Use boolean_type_node
+	for the EQ_EXPR.
+
+2016-11-29  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	PR target/71331
+	* config/tilegx/tilegx.c (tilegx_function_profiler): Save r10
+	to stack before call mcount.
+	(tilegx_can_use_return_insn_p): Clean up code.
+
 2016-11-29  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
 
 	* config/avr/avr-arch.h (avr_mcu_t): Add flash_size member.
 	* config/avr/avr-devices.c(avr_mcu_types): Add flash size info.
 	* config/avr/avr-mcu.def: Likewise.
 	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Remove hard-coded prefix
-	check to find wrap-around value, instead use MCU flash size. For 8k flash
-	devices, update link_pmem_wrap spec string to add --pmem-wrap-around=8k.
+	check to find wrap-around value, instead use MCU flash size. For 8k
+	flash devices, update link_pmem_wrap spec string to add
+	--pmem-wrap-around=8k.
 	* config/avr/specs.h: Remove link_pmem_wrap from LINK_RELAX_SPEC and
 	add to linker specs (LINK_SPEC) directly.
 
@@ -190,9 +270,8 @@
 
 2016-11-28  Richard Biener  <rguenther@suse.de>
 
-	* tree-vrp.c (vrp_visit_assignment_or_call): Handle
-	simplifications to SSA names via extract_range_from_ssa_name
-	if allowed.
+	* tree-vrp.c (vrp_visit_assignment_or_call): Handle simplifications
+	to SSA names via extract_range_from_ssa_name if allowed.
 
 2016-11-28  Richard Biener  <rguenther@suse.de>
 
@@ -202,9 +281,8 @@
 
 2016-11-28  Paolo Bonzini  <bonzini@gnu.org>
 
-	* combine.c (simplify_if_then_else): Simplify IF_THEN_ELSE
-	that isolates a single bit, even if the condition involves
-	subregs.
+	* combine.c (simplify_if_then_else): Simplify IF_THEN_ELSE that
+	isolates a single bit, even if the condition involves subregs.
 
 2016-11-28  Tamar Christina  <tamar.christina@arm.com>
 
@@ -293,6 +371,7 @@
 	(vdupq_laneq_p64): Likewise.
 
 2016-11-28  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/arm/arm_neon.h (vget_lane_p64): New.
 
 2016-11-28  Iain Sandoe  <iain@codesourcery.com>

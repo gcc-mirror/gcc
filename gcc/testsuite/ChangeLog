@@ -1,5 +1,26 @@
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
+	PR preprocessor/78569
+	* gcc.dg/format/pr78569.c: New test case.
+
+2016-11-29  Martin Sebor  <msebor@redhat.com>
+
+	avoid false positives on ILP32 targets.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Same.
+
+2016-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78512
+	* gcc.dg/tree-ssa/builtin-sprintf-6.c: Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Remove test cases.
+
+2016-11-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx512f-kmovw-1.c (avx512f_test):
+	Force value through k register.
+
+2016-11-29  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/72774
 	PR c++/72786
 	PR c++/77922
