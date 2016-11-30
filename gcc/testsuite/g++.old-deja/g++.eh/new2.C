@@ -2,6 +2,7 @@
 // Test that a throw in B's constructor destroys the A and frees the memory.
 // Avoid use of none-overridable new/delete operators in shared
 // { dg-options "-static" { target *-*-mingw* } }
+// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
 #include <cstddef>
 #include <cstdlib>

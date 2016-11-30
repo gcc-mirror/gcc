@@ -1,3 +1,10 @@
+2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/eh/new1.C: XFAIL on AIX.
+	* g++.dg/eh/delete1.C: Same.
+	* g++.dg/init/new40.C: Same.
+	* g++.old-deja/g++.eh/new2.C: Same.
+
 2016-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/78498
