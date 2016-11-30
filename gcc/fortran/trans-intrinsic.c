@@ -1674,7 +1674,8 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 		      tmp = gfc_deallocate_with_status (tmp, NULL_TREE,
 							NULL_TREE, NULL_TREE,
 							NULL_TREE, true,
-							NULL, false);
+							NULL,
+						     GFC_CAF_COARRAY_NOCOARRAY);
 		      gfc_add_expr_to_block (&se->post, tmp);
 		    }
 		}
@@ -1764,6 +1765,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 	  ar->as = ar2.as;
 	  ar->type = AR_FULL;
 	}
+      // TODO: Check whether argse.want_coarray = 1 can help with the below.
       gfc_conv_expr_descriptor (&argse, array_expr);
       /* Using gfc_conv_expr_descriptor, we only get the descriptor, but that
 	 has the wrong type if component references are done.  */
@@ -1926,7 +1928,9 @@ conv_caf_send (gfc_code *code) {
 
   /* Special case: RHS is a coarray but LHS is not; this code path avoids a
      temporary and a loop.  */
-  if (!gfc_is_coindexed (lhs_expr) && !lhs_caf_attr.codimension)
+  if (!gfc_is_coindexed (lhs_expr)
+      && (!lhs_caf_attr.codimension
+	  || !(lhs_expr->rank > 0 && lhs_caf_attr.allocatable)))
     {
       bool lhs_may_realloc = lhs_expr->rank > 0 && lhs_caf_attr.allocatable;
       gcc_assert (gfc_is_coindexed (rhs_expr));
@@ -1957,7 +1961,7 @@ conv_caf_send (gfc_code *code) {
       gfc_add_block_to_block (&block, &lhs_se.pre);
       gfc_conv_intrinsic_caf_get (&rhs_se, rhs_expr, lhs_se.expr, lhs_kind,
 				  may_require_tmp, lhs_may_realloc,
-				  &lhs_caf_attr);
+				  &rhs_caf_attr);
       gfc_add_block_to_block (&block, &rhs_se.pre);
       gfc_add_block_to_block (&block, &rhs_se.post);
       gfc_add_block_to_block (&block, &lhs_se.post);
@@ -2059,7 +2063,7 @@ conv_caf_send (gfc_code *code) {
       gfc_add_block_to_block (&block, &stat_se.post);
     }
 
-  if (!gfc_is_coindexed (rhs_expr) && !rhs_caf_attr.codimension)
+  if (!gfc_is_coindexed (rhs_expr))
     {
       if (lhs_caf_attr.alloc_comp)
 	{
@@ -7318,6 +7322,42 @@ scalar_transfer:
 }
 
 
+/* Generate a call to caf_is_present.  */
+
+static tree
+trans_caf_is_present (gfc_se *se, gfc_expr *expr)
+{
+  tree caf_reference, caf_decl, token, image_index;
+
+  /* Compile the reference chain.  */
+  caf_reference = conv_expr_ref_to_caf_ref (&se->pre, expr);
+  gcc_assert (caf_reference != NULL_TREE);
+
+  caf_decl = gfc_get_tree_for_caf_expr (expr);
+  if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
+    caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
+  image_index = gfc_caf_get_image_index (&se->pre, expr, caf_decl);
+  gfc_get_caf_token_offset (se, &token, NULL, caf_decl, NULL,
+			    expr);
+
+  return build_call_expr_loc (input_location, gfor_fndecl_caf_is_present,
+			      3, token, image_index, caf_reference);
+}
+
+
+/* Test whether this ref-chain refs this image only.  */
+
+static bool
+caf_this_image_ref (gfc_ref *ref)
+{
+  for ( ; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.codimen)
+      return ref->u.ar.dimen_type[ref->u.ar.dimen] == DIMEN_THIS_IMAGE;
+
+  return false;
+}
+
+
 /* Generate code for the ALLOCATED intrinsic.
    Generate inline code that directly check the address of the argument.  */
 
@@ -7327,6 +7367,7 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
   gfc_actual_arglist *arg1;
   gfc_se arg1se;
   tree tmp;
+  symbol_attribute caf_attr;
 
   gfc_init_se (&arg1se, NULL);
   arg1 = expr->value.function.actual;
@@ -7342,23 +7383,37 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
 	gfc_add_data_component (arg1->expr);
     }
 
-  if (arg1->expr->rank == 0)
-    {
-      /* Allocatable scalar.  */
-      arg1se.want_pointer = 1;
-      gfc_conv_expr (&arg1se, arg1->expr);
-      tmp = arg1se.expr;
-    }
+  /* When arg1 references an allocatable component in a coarray, then call
+     the caf-library function caf_is_present ().  */
+  if (flag_coarray == GFC_FCOARRAY_LIB && arg1->expr->expr_type == EXPR_FUNCTION
+      && arg1->expr->value.function.isym
+      && arg1->expr->value.function.isym->id == GFC_ISYM_CAF_GET)
+    caf_attr = gfc_caf_attr (arg1->expr->value.function.actual->expr);
+  else
+    gfc_clear_attr (&caf_attr);
+  if (flag_coarray == GFC_FCOARRAY_LIB && caf_attr.codimension
+      && !caf_this_image_ref (arg1->expr->value.function.actual->expr->ref))
+    tmp = trans_caf_is_present (se, arg1->expr->value.function.actual->expr);
   else
     {
-      /* Allocatable array.  */
-      arg1se.descriptor_only = 1;
-      gfc_conv_expr_descriptor (&arg1se, arg1->expr);
-      tmp = gfc_conv_descriptor_data_get (arg1se.expr);
-    }
+      if (arg1->expr->rank == 0)
+	{
+	  /* Allocatable scalar.  */
+	  arg1se.want_pointer = 1;
+	  gfc_conv_expr (&arg1se, arg1->expr);
+	  tmp = arg1se.expr;
+	}
+      else
+	{
+	  /* Allocatable array.  */
+	  arg1se.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&arg1se, arg1->expr);
+	  tmp = gfc_conv_descriptor_data_get (arg1se.expr);
+	}
 
-  tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, tmp,
-			 fold_convert (TREE_TYPE (tmp), null_pointer_node));
+      tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, tmp,
+			     fold_convert (TREE_TYPE (tmp), null_pointer_node));
+    }
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
 }
 
@@ -10270,8 +10325,8 @@ conv_intrinsic_move_alloc (gfc_code *code)
       gfc_add_block_to_block (&block, &to_se.pre);
 
       /* Deallocate "to".  */
-      tmp = gfc_deallocate_scalar_with_status (to_se.expr, NULL_TREE, true,
-					       to_expr, to_expr->ts);
+      tmp = gfc_deallocate_scalar_with_status (to_se.expr, NULL_TREE, NULL_TREE,
+					       true, to_expr, to_expr->ts);
       gfc_add_expr_to_block (&block, tmp);
 
       /* Assign (_data) pointers.  */
@@ -10429,7 +10484,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
 
       tmp = gfc_deallocate_with_status (to_se.expr, NULL_TREE, NULL_TREE,
 					NULL_TREE, NULL_TREE, true, to_expr,
-					true);
+					GFC_CAF_COARRAY_DEALLOCATE_ONLY);
       gfc_add_expr_to_block (&block, tmp);
 
       tmp = gfc_conv_descriptor_data_get (to_se.expr);
@@ -10457,7 +10512,8 @@ conv_intrinsic_move_alloc (gfc_code *code)
 
       tmp = gfc_conv_descriptor_data_get (to_se.expr);
       tmp = gfc_deallocate_with_status (tmp, NULL_TREE, NULL_TREE, NULL_TREE,
-					NULL_TREE, true, to_expr, false);
+					NULL_TREE, true, to_expr,
+					GFC_CAF_COARRAY_NOCOARRAY);
       gfc_add_expr_to_block (&block, tmp);
     }
 

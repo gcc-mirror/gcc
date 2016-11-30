@@ -1,3 +1,85 @@
+2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* check.c (gfc_check_allocated): By pass the caf_get call and check on
+	the array.
+	* gfortran.h: Add optional flag to gfc_caf_attr.
+	* gfortran.texi: Document new enum values and _caf_is_present function.
+	* primary.c (caf_variable_attr): Add optional flag to indicate that the
+	expression is reffing a component.
+	(gfc_caf_attr): Likewise.
+	* trans-array.c (gfc_array_deallocate): Handle deallocation mode for
+	coarray deregistration.
+	(gfc_trans_dealloc_allocated): Likewise.
+	(duplicate_allocatable): Use constants instead of
+        creating custom constant tree node of zero or one.  Use gfc_add_modify
+        convenience function.
+	(duplicate_allocatable_coarray): This function is similar to
+	duplicate_allocatable but tailored to handle coarrays.
+	(caf_enabled): Check whether in-derived-type coarray processing is
+	enabled.
+	(caf_in_coarray): Check that in-derived-type coarray processing is
+	enabled and currently in a derived-typed coarray.
+	(gfc_caf_is_dealloc_only): Return true, when deallocate only is
+	desired for components in derived typed coarrays.
+	(structure_alloc_comps): A mode for handling coarrays, that is no
+	longer encode in the purpose.  This makes the use cases of the
+	routine more flexible without repeating.  Allocatable components in
+	derived type coarrays are now registered only when nullifying an
+	object and allocated before copying data into them.
+	(gfc_nullify_alloc_comp): Use the caf_mode of structure_alloc_comps
+	now.
+	(gfc_deallocate_alloc_comp): Likewise.
+	(gfc_deallocate_alloc_comp_no_caf): Likewise.
+	(gfc_reassign_alloc_comp_caf): Likewise.
+	(gfc_copy_alloc_comp): Likewise.
+	(gfc_copy_only_alloc_comp): Likewise.
+	(gfc_alloc_allocatable_for_assignment): Make use to the cheaper way of
+	reallocating a coarray without deregistering and reregistering it.
+	(gfc_trans_deferred_array): Initialize the coarray token correctly for
+	deferred variables and tear them down on exit.
+	* trans-array.h: Change some prototypes to add the coarray (de-)
+	registration modes.  Add prototype for checking if deallocate only is
+	selected for components in derived typed coarrays.
+	* trans-decl.c (gfc_build_builtin_function_decls): Generate the
+	declarations for the changed/new caf-lib routines.
+	(gfc_trans_deferred_vars): Ensure deferred variables are (de-)
+	registered correctly on procedure entry/exit.
+	(generate_coarray_sym_init): Use constants.
+	* trans-expr.c (gfc_conv_procedure_call): Propagate coarray allocation
+	modes accordingly.
+	(gfc_trans_alloc_subarray_assign): Likewise.
+	(gfc_trans_subcomponent_assign): Likewise.
+	(gfc_trans_structure_assign): Generate code to register the components
+	of a derived type coarray prior to initialization.
+	(gfc_conv_structure): Set flag that the structure is in a coarray.
+	(gfc_trans_scalar_assign): Add flag to indicate being in a coarray and
+	set the structure_alloc_comps modes correctly.
+	(gfc_trans_assignment_1): Figure being in a coarray expression.
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Adapt to new
+	structure_alloc_comps interface.
+	(conv_caf_send): Use the old API as long as possible.
+	(trans_caf_is_present): Generate code to check whether an allocatable
+	component in a derived typed coarray is allocated on a remote image.
+	(caf_this_image_ref): Return true, when only reffing this image.
+	(gfc_conv_allocated): Convert allocated queries on allocatable
+	components to the library API.
+	(conv_intrinsic_move_alloc): Adapt to new interface of
+	structure_alloc_comps.
+	* trans-openmp.c (gfc_walk_alloc_comps): Likewise.
+	(gfc_omp_clause_assign_op): Likewise.
+	(gfc_omp_clause_dtor): Likewise.
+	* trans-stmt.c (gfc_trans_deallocate): Figure which mode to use when
+	deallocating allocatable components in derived type coarras.
+	* trans.c (gfc_allocate_using_lib): Renamed to
+	gfc_allcate_using_caf_lib.
+	(gfc_allocate_allocatable): Set the registration mode/type of caf-
+	register calls adapting to all the possible allocatable objects.
+	(gfc_deallocate_with_status): Add deregistration mode for allocatable
+	components in derived type coarrays.
+	(gfc_deallocate_scalar_with_status): Likewise.
+	* trans.h (enum gfc_coarray_type): Renamed to gfc_coarray_regtype to
+	avoid collision with gfc_coarray_deregtype.
+
 2016-11-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78593
