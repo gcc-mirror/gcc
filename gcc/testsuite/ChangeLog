@@ -1,3 +1,8 @@
+2016-11-30  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/78574
+	* gcc.c-torture/compile/pr78574.c: New test.
+
 2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/single.c (_gfortran_caf_is_present): Prevent fallthrough
