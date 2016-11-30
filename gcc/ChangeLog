@@ -1,3 +1,7 @@
+2016-11-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/t-rmprofile: Add mappings for Cortex-M23 and Cortex-M33.
+
 2016-11-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR ipa/78555
