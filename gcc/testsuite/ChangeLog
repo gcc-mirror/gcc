@@ -1,3 +1,7 @@
+2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/ptrdmem-1.C: Don't XFAIL scan-assembler-not on AIX.
+
 2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Now really add the file.
