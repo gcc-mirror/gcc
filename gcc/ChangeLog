@@ -1,3 +1,9 @@
+2016-11-29  Jeff Law  <law@redhat.com>
+
+	* lra-constraints.c (check_and_process_move): Constrain the
+	range of DCLASS and SCLASS to avoid false positive out of bounds
+	array index warning.
+
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/install.texi (--with-target-bdw-gc): Remove stray '@'.
