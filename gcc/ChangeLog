@@ -1,5 +1,11 @@
 2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/78583
+	* simplify-rtx.c (simplify_truncation): Add check missing from the
+	previous commit.
+
+2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/78590
 	* combine.c (change_zero_ext): Transform zero_extend of subregs only
 	if the subreg_reg is a scalar integer mode.
