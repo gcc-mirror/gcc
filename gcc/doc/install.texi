@@ -2196,7 +2196,7 @@ continues.
 @itemx --with-target-bdw-gc-lib=@var{list}
 Specify search directories for the garbage collector header files and
 libraries. @var{list} is a comma separated list of key value pairs of the
-form @samp{@var{multilibdir}@=@var{path}}, where the default multilib key
+form @samp{@var{multilibdir}=@var{path}}, where the default multilib key
 is named as @samp{.} (dot), or is omitted (e.g.
 @samp{--with-target-bdw-gc=/opt/bdw-gc,32=/opt-bdw-gc32}).
 

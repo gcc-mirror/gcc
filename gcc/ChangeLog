@@ -1,5 +1,9 @@
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
+	* doc/install.texi (--with-target-bdw-gc): Remove stray '@'.
+
+2016-11-29  David Malcolm  <dmalcolm@redhat.com>
+
 	PR preprocessor/78569
 	* input.c (get_substring_ranges_for_loc): Fail gracefully if
 	line directives were present.
