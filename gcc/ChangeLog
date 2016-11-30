@@ -1,3 +1,11 @@
+2016-11-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78594
+	* config/rs6000/rs6000.md (mov<mode>_internal, QHI iterator): Add
+	'x' to stxsi<wd>x print pattern, so that QImode and HImode values
+	residing in traditional altivec registers can be stored
+	correctly.
+
 2016-11-29  Max Filippov  <jcmvbkbc@gmail.com>
 
 	PR target/78603
