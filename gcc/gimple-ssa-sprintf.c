@@ -995,7 +995,8 @@ format_integer (const conversion_spec &spec, tree arg)
   tree argmin = NULL_TREE;
   tree argmax = NULL_TREE;
 
-  if (arg && TREE_CODE (arg) == SSA_NAME
+  if (arg
+      && TREE_CODE (arg) == SSA_NAME
       && TREE_CODE (argtype) == INTEGER_TYPE)
     {
       /* Try to determine the range of values of the integer argument
@@ -1017,12 +1018,8 @@ format_integer (const conversion_spec &spec, tree arg)
 	     the upper bound for %i but -3 for %u.  */
 	  if (wi::neg_p (min) && !wi::neg_p (max))
 	    {
-	      argmin = build_int_cst (argtype, wi::fits_uhwi_p (min)
-				      ? min.to_uhwi () : min.to_shwi ());
-
-	      argmax = build_int_cst (argtype, wi::fits_uhwi_p (max)
-				      ? max.to_uhwi () : max.to_shwi ());
-
+	      argmin = res.argmin;
+	      argmax = res.argmax;
 	      int minbytes = format_integer (spec, res.argmin).range.min;
 	      int maxbytes = format_integer (spec, res.argmax).range.max;
 	      if (maxbytes < minbytes)
@@ -1081,21 +1078,25 @@ format_integer (const conversion_spec &spec, tree arg)
       int typeprec = TYPE_PRECISION (dirtype);
       int argprec = TYPE_PRECISION (argtype);
 
-      if (argprec < typeprec || POINTER_TYPE_P (argtype))
+      if (argprec < typeprec)
 	{
-	  if (TYPE_UNSIGNED (argtype))
+	  if (POINTER_TYPE_P (argtype))
 	    argmax = build_all_ones_cst (argtype);
+	  else if (TYPE_UNSIGNED (argtype))
+	    argmax = TYPE_MAX_VALUE (argtype);
 	  else
-	    argmax = fold_build2 (LSHIFT_EXPR, argtype, integer_one_node,
-				  build_int_cst (integer_type_node,
-						 argprec - 1));
+	    argmax = TYPE_MIN_VALUE (argtype);
 	}
       else
 	{
-	  argmax = fold_build2 (LSHIFT_EXPR, dirtype, integer_one_node,
-				build_int_cst (integer_type_node,
-					       typeprec - 1));
+	  if (POINTER_TYPE_P (dirtype))
+	    argmax = build_all_ones_cst (dirtype);
+	  else if (TYPE_UNSIGNED (dirtype))
+	    argmax = TYPE_MAX_VALUE (dirtype);
+	  else
+	    argmax = TYPE_MIN_VALUE (dirtype);
 	}
+
       res.argmin = argmin;
       res.argmax = argmax;
     }
