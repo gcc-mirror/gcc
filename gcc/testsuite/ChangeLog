@@ -1,6 +1,12 @@
 2016-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/78498
+	* gcc.dg/format/pr78494.c: Rename to...
+	* gcc.dg/format/pr78498.c: ...this.
+
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
 	* gcc.dg/format/pr78494.c: New test case.
 
 2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
