@@ -1,5 +1,9 @@
 2016-11-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
+	* LOCAL_PATCHES: Add revision.
+
+2016-11-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
 	PR sanitizer/78532
 	* sanitizer_common/sanitizer_platform_limits_posix.h
 	(__sanitizer_sigaction): Adjust for sparc targets and various Glibc
