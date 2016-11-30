@@ -1,5 +1,8 @@
 2016-11-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* emit-rtl.c (verify_insn_sharing): Call verify_rtx_sharing instead of
+	reset_used_flags.
+
 	* config/i386/i386.c (dimode_scalar_chain::convert_op): Avoid
 	sharing the SUBREG rtx between move and following insn.
 
