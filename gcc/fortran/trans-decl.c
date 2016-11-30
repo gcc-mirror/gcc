@@ -159,6 +159,7 @@ tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_reduce;
 tree gfor_fndecl_co_sum;
+tree gfor_fndecl_caf_is_present;
 
 
 /* Math functions.  Many other math functions are handled in
@@ -3573,8 +3574,9 @@ gfc_build_builtin_function_decls (void)
 	pint_type, pchar_type_node, integer_type_node);
 
       gfor_fndecl_caf_deregister = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_deregister")), "WWWR", void_type_node, 4,
-	ppvoid_type_node, pint_type, pchar_type_node, integer_type_node);
+	get_identifier (PREFIX("caf_deregister")), "WRWWR", void_type_node, 5,
+	ppvoid_type_node, integer_type_node, pint_type, pchar_type_node,
+	integer_type_node);
 
       gfor_fndecl_caf_get = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_get")), ".R.RRWRRRW", void_type_node, 10,
@@ -3726,6 +3728,11 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("caf_co_sum")), "W.WW",
 	void_type_node, 5, pvoid_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node);
+
+      gfor_fndecl_caf_is_present = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_is_present")), "RRR",
+	integer_type_node, 3, pvoid_type_node, integer_type_node,
+	pvoid_type_node);
     }
 
   gfc_build_intrinsic_function_decls ();
@@ -4447,12 +4454,15 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    tmp = gfc_deallocate_with_status (descriptor, NULL_TREE,
 						      NULL_TREE, NULL_TREE,
 						      NULL_TREE, true, NULL,
-						      true);
+						      GFC_CAF_COARRAY_ANALYZE);
 		  else
 		    {
 		      gfc_expr *expr = gfc_lval_expr_from_sym (sym);
-		      tmp = gfc_deallocate_scalar_with_status (se.expr, NULL_TREE,
-						   true, expr, sym->ts);
+		      tmp = gfc_deallocate_scalar_with_status (se.expr,
+							       NULL_TREE,
+							       NULL_TREE,
+							       true, expr,
+							       sym->ts);
 		      gfc_free_expr (expr);
 		    }
 		}
@@ -5093,8 +5103,8 @@ generate_coarray_sym_init (gfc_symbol *sym)
 			     build_int_cst (integer_type_node, reg_type),
 			     token, gfc_build_addr_expr (pvoid_type_node, desc),
 			     null_pointer_node, /* stat.  */
-			     null_pointer_node, /* errgmsg, errmsg_len.  */
-			     build_int_cst (integer_type_node, 0));
+			     null_pointer_node, /* errgmsg.  */
+			     integer_zero_node); /* errmsg_len.  */
   gfc_add_expr_to_block (&caf_init_block, tmp);
   gfc_add_modify (&caf_init_block, decl, fold_convert (TREE_TYPE (decl),
 					  gfc_conv_descriptor_data_get (desc)));

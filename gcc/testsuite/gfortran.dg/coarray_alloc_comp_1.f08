@@ -90,4 +90,7 @@ if (.not. allocated(bar%vec( 2)%indices)) call abort()
 if (any(bar[me]%vec(2)%indices /= 89)) call abort()
 
 if (any (bar[neighbor]%vec(1)%indices /= [ 3,4,15])) call abort()
+
+deallocate(bar%vec(2)%indices, object%scalar, object%matrix)
+deallocate(bar%vec)
 end program

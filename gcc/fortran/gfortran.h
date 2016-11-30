@@ -3274,7 +3274,7 @@ const char *gfc_dt_upper_string (const char *);
 /* primary.c */
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);
 symbol_attribute gfc_expr_attr (gfc_expr *);
-symbol_attribute gfc_caf_attr (gfc_expr *, bool in_allocate = false);
+symbol_attribute gfc_caf_attr (gfc_expr *, bool i = false, bool *r = NULL);
 match gfc_match_rvalue (gfc_expr **);
 match gfc_match_varspec (gfc_expr*, int, bool, bool);
 int gfc_check_digit (char, int);
