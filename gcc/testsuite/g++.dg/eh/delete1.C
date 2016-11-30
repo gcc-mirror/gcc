@@ -1,4 +1,6 @@
 // { dg-do run }
+// { dg-xfail-run-if "AIX operator delete" { powerpc-ibm-aix* } }
+
 // pr 55635, the delete operator must be called, regardless of whether
 // the dtor throws
 
