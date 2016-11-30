@@ -1,3 +1,10 @@
+2016-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/ref-1.C: Don't XFAIL scan-assembler-not on AIX.
+	* g++.dg/debug/dwarf2/imported-decl-2.C: Same.
+	* g++.dg/debug/dwarf2/refqual-1.C: Same.
+	* g++.dg/debug/dwarf2/refqual-2.C: Same.
+
 2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78610
