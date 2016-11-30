@@ -13,7 +13,11 @@
 # define LINE 0
 #endif
 
-#define INT_MAX __INT_MAX__
+#define INT_MAX    __INT_MAX__
+#define INT_MIN    (-INT_MAX - 1)
+
+#define LONG_MAX   __LONG_MAX__
+#define LONG_MIN   (-LONG_MAX - 1)
 
 char *buf;
 char buf8k [8192];
@@ -50,8 +54,13 @@ char buf8k [8192];
       }									\
   }
 
+typedef __SIZE_TYPE__ size_t;
+
 extern int i;
+extern unsigned u;
 extern long li;
+extern unsigned long lu;
+extern size_t sz;
 extern char *str;
 
 extern double d;
@@ -162,6 +171,20 @@ RNG (0,  4,  7, "%i", i)
 RNG (0,  5,  7, "%i", i)
 RNG (0,  6,  7, "%i", i)
 
+RNG (4,  4, 32, "%i", i)
+RNG (4,  4, 32, "%u", u)
+RNG (4,  4, 32, "%li", li)
+RNG (4,  4, 32, "%lu", lu)
+RNG (4,  4, 32, "%zu", sz)
+
+/* Exercise bug 78586.  */
+RNG (4,  4, 32, "%lu", (unsigned long)i)
+RNG (4,  4, 32, "%lu", (unsigned)u)
+RNG (4,  4, 32, "%lu", (unsigned long)li)
+RNG (4,  4, 32, "%lu", (unsigned long)lu)
+RNG (4,  4, 32, "%lu", (unsigned long)sz)
+
+
 #if __SIZEOF_INT__ == 4
 
 /* A 32-bit int takes up at most 11 bytes (-2147483648) not including
@@ -252,5 +275,5 @@ RNG (0,  6,   8, "%s%ls", "1", L"2");
 
 */
 
-/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 114 "optimized" { target { ilp32 || lp64 } } } } */
-/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 83 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */
+/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 124 "optimized" { target { ilp32 || lp64 } } } } */
+/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 93 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */
