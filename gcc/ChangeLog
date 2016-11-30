@@ -1,3 +1,9 @@
+2016-11-30  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/78574
+	* tree-ssa-loop-ivopts.c (find_deriving_biv_for_expr): Skip loop
+	header PHI that doesn't define biv.
+
 2016-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* emit-rtl.c (verify_insn_sharing): Call verify_rtx_sharing instead of
