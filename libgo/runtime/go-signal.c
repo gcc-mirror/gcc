@@ -140,6 +140,15 @@ sigtramp(int sig, siginfo_t *info, void *context)
 
 #endif // USING_SPLIT_STACK
 
+// C function to return the address of the sigtramp function.
+uintptr getSigtramp(void) __asm__ (GOSYM_PREFIX "runtime.getSigtramp");
+
+uintptr
+getSigtramp()
+{
+  return (uintptr)(void*)sigtramp;
+}
+
 // C code to manage the sigaction sa_sigaction field, which is
 // typically a union and so hard for mksysinfo.sh to handle.
 
