@@ -1,3 +1,17 @@
+2016-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78602
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): If the
+	element is not a constant or in a register, force it to a
+	register.
+
+	PR target/78560
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Force value
+	that will be set to a vector element to be in a register.
+	* config/rs6000/vsx.md (vsx_set_<mode>_p9): Fix thinko that used
+	the wrong multiplier to convert the element number to a byte
+	offset.
+
 2016-11-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR tree-optimization/77856
