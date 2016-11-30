@@ -3669,6 +3669,11 @@ combine_and_move_insns (void)
       if (JUMP_P (use_insn))
 	continue;
 
+      /* Also don't substitute into a conditional trap insn -- it can become
+	 an unconditional trap, and that is a flow control insn.  */
+      if (GET_CODE (PATTERN (use_insn)) == TRAP_IF)
+	continue;
+
       df_ref def = DF_REG_DEF_CHAIN (regno);
       gcc_assert (DF_REG_DEF_COUNT (regno) == 1 && DF_REF_INSN_INFO (def));
       rtx_insn *def_insn = DF_REF_INSN (def);
