@@ -1,3 +1,15 @@
+2016-11-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix testsuite failures caused by the patch implementing LWG 2534.
+	* include/std/istream (__is_convertible_to_basic_istream):
+	Change the return types of __check, introduce istream_type.
+	(operator>>(_Istream&&, _Tp&&)):
+	Use __is_convertible_to_basic_istream::istream_type as the return type.
+	* include/std/ostream (__is_convertible_to_basic_ostream):
+	Change the return types of __check, introduce ostream_type.
+	(operator>>(_Ostream&&, _Tp&&)):
+	Use __is_convertible_to_basic_ostream::ostream_type as the return type.
+
 2016-11-30  Tim Shen  <timshen@google.com>
 
 	* include/bits/shared_ptr_base.h

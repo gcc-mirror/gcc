@@ -617,11 +617,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_convertible_to_basic_ostream
   {
     template<typename _Ch, typename _Up>
-    static true_type __check(basic_ostream<_Ch, _Up>*);
+    static basic_ostream<_Ch, _Up>& __check(basic_ostream<_Ch, _Up>*);
 
-    static false_type __check(void*);
+    static void __check(void*);
   public:
-    using type = decltype(__check(declval<_Tp*>()));
+    using ostream_type =
+      decltype(__check(declval<typename remove_reference<_Tp>::type*>()));
+    using type = __not_<is_same<ostream_type, void>>;
     constexpr static bool value = type::value;
   };
 
@@ -647,11 +649,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ostream, typename _Tp>
     inline
     typename enable_if<__and_<__not_<is_lvalue_reference<_Ostream>>,
-			      __is_convertible_to_basic_ostream<
-				typename remove_reference<_Ostream>::type>,
+			      __is_convertible_to_basic_ostream<_Ostream>,
 			      __is_insertable<_Ostream&, const _Tp&>>::value,
-		       _Ostream&>::type
-				      //basic_ostream<_CharT, _Traits>&
+		       typename __is_convertible_to_basic_ostream<
+			 _Ostream>::ostream_type>::type
     operator<<(_Ostream&& __os, const _Tp& __x)
     {
       __os << __x;

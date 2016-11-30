@@ -913,11 +913,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_convertible_to_basic_istream
     {
       template<typename _Ch, typename _Up>
-      static true_type __check(basic_istream<_Ch, _Up>*);
+      static basic_istream<_Ch, _Up>& __check(basic_istream<_Ch, _Up>*);
 
-      static false_type __check(void*);
+      static void __check(void*);
     public:
-      using type = decltype(__check(declval<_Tp*>()));
+      using istream_type =
+	decltype(__check(declval<typename remove_reference<_Tp>::type*>()));
+      using type = __not_<is_same<istream_type, void>>;
       constexpr static bool value = type::value;
   };
 
@@ -946,10 +948,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Istream, typename _Tp>
     inline
     typename enable_if<__and_<__not_<is_lvalue_reference<_Istream>>,
-			      __is_convertible_to_basic_istream<
-				typename remove_reference<_Istream>::type>,
+			      __is_convertible_to_basic_istream<_Istream>,
 			      __is_extractable<_Istream&, _Tp&&>>::value,
-		       _Istream&>::type
+		       typename __is_convertible_to_basic_istream<
+			 _Istream>::istream_type>::type
     operator>>(_Istream&& __is, _Tp&& __x)
     {
       __is >> std::forward<_Tp>(__x);
