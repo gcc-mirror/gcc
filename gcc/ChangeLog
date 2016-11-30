@@ -1,3 +1,9 @@
+2016-11-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78590
+	* combine.c (change_zero_ext): Transform zero_extend of subregs only
+	if the subreg_reg is a scalar integer mode.
+
 2016-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78586
