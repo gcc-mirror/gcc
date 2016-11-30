@@ -1011,12 +1011,19 @@ proc check_effective_target_fstack_protector {} {
 }
 
 # Return 1 if compilation with -freorder-blocks-and-partition is error-free
-# for trivial code, 0 otherwise.
+# for trivial code, 0 otherwise.  As some targets (ARM for example) only
+# warn when -fprofile-use is also supplied we test that combination too.
 
 proc check_effective_target_freorder {} {
-    return [check_no_compiler_messages freorder object {
+    if { [check_no_compiler_messages freorder object {
 	void foo (void) { }
     } "-freorder-blocks-and-partition"]
+    && [check_no_compiler_messages fprofile_use_freorder object {
+	void foo (void) { }
+    } "-fprofile-use -freorder-blocks-and-partition"] } {
+	return 1
+    }
+    return 0
 }
 
 # Return 1 if -fpic and -fPIC are supported, as in no warnings or errors
