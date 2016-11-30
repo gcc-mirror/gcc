@@ -11668,6 +11668,8 @@ if test -n "$PKG_CONFIG" && \
   test $ac_status = 0; }; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: using bdw-gc pkg-config module" >&5
 $as_echo "using bdw-gc pkg-config module" >&6; }
+       BDW_GC_CFLAGS=`$PKG_CONFIG --cflags bdw-gc`
+       BDW_GC_LIBS=`$PKG_CONFIG --libs bdw-gc`
 else
   as_fn_error "no --with-target-bdw-gc options and no bdw-gc pkg-config module found" "$LINENO" 5
 fi

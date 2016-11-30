@@ -1,3 +1,9 @@
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Set BDW_GC_CFLAGS and BDW_GC_LIBS after checking
+	for the existence of the pkg-config modules.
+	* Regenerate.
+
 2016-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (--enable-objc-gc): If not given, default to
