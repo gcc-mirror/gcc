@@ -1,3 +1,8 @@
+2016-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78586
+	* gcc.c-torture/execute/pr78586.c: New test.
+
 2016-11-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78573

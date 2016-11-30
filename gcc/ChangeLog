@@ -1,3 +1,10 @@
+2016-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78586
+	* gimple-ssa-sprintf.c (format_integer): Use TYPE_MAX_VALUE or
+	TYPE_MIN_VALUE or build_all_ones_cst instead of folding LSHIFT_EXPR.
+	Don't build_int_cst min/max twice.  Formatting fix.
+
 2016-11-30  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR rtl-optimization/78588
