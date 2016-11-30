@@ -1,5 +1,10 @@
 2016-11-30  Andrew Burgess  <andrew.burgess@embecosm.com>
 
+	* lib/target-supports.exp (check_effective_target_freorder): Check
+	additional case.
+
+2016-11-30  Andrew Burgess  <andrew.burgess@embecosm.com>
+
 	* gcc.target/arc/arc700-stld-hazard.c: New file.
 
 2016-11-30  Janus Weil  <janus@gcc.gnu.org>
