@@ -1,5 +1,11 @@
 2016-11-30  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/78592
+	* interface.c (gfc_find_specific_dtio_proc): Rearrange code to avoid
+	dereferencing a null pointer.
+
+2016-11-30  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/78573
 	* decl.c (build_struct): On error, return directly and do not build
 	class symbol.
