@@ -182,6 +182,8 @@ case "$host" in
   nvptx*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
     libgomp_use_pthreads=no
+    # NVPTX is an accelerator-only target
+    libgomp_offloaded_only=yes
     ;;
   *)
     # Check to see if -pthread or -lpthread is needed.  Prefer the former.
@@ -206,6 +208,11 @@ esac
 if test x$libgomp_use_pthreads != xno; then
   AC_DEFINE(LIBGOMP_USE_PTHREADS, 1,
             [Define to 1 if libgomp should use POSIX threads.])
+fi
+
+if test x$libgomp_offloaded_only = xyes; then
+  AC_DEFINE(LIBGOMP_OFFLOADED_ONLY, 1,
+            [Define to 1 if building libgomp for an accelerator-only target.])
 fi
 
 m4_include([plugin/configfrag.ac])

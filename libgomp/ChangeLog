@@ -1,5 +1,12 @@
 2016-11-30  Alexander Monakov  <amonakov@ispras.ru>
 
+	* configure.ac [nvptx*-*-*] (libgomp_offloaded_only): Set and use it...
+	(LIBGOMP_OFFLOADED_ONLY): ...here; new define.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
+2016-11-30  Alexander Monakov  <amonakov@ispras.ru>
+
 	* Makefile.in: Regenerate with automake-1.11.6.
 	* aclocal.m4: Likewise.
 	* configure: Likewise.
