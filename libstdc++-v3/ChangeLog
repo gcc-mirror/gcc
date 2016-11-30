@@ -1,3 +1,8 @@
+2016-11-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/experimental/type_erased_allocator/2.cc: Add
+	dg-require-thread-fence.
+
 2016-11-29  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR libstdc++/68838
