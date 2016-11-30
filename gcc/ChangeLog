@@ -1,3 +1,11 @@
+2016-11-30  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc-protos.h (arc_store_addr_hazard_p): Declare.
+	* config/arc/arc.c (arc_store_addr_hazard_p): New function.
+	(workaround_arc_anomaly): Call arc_store_addr_hazard_p for ARC700.
+	* config/arc/arc700.md: Add define_bypass for store/load.
+
 2016-11-30  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (symbol_table::initialize): Initialize
