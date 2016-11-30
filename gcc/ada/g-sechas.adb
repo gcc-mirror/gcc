@@ -253,7 +253,7 @@ package body GNAT.Secure_Hashes is
                if Index = First_Index then
 
                   --  Message_Length is in bytes, but we need to store it as
-                  --  a bit count).
+                  --  a bit count.
 
                   Pad (Index) := Character'Val
                                    (Shift_Left (Message_Length and 16#1f#, 3));

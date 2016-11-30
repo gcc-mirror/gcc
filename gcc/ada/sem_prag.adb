@@ -7019,7 +7019,7 @@ package body Sem_Prag is
 
          function Check_Node (N : Node_Id) return Traverse_Result;
          --  Tree visitor that checks if N is an attribute reference that can
-         --  be statically computed by the backend. Validation_Needed is set
+         --  be statically computed by the back end. Validation_Needed is set
          --  to True if found.
 
          ----------------
@@ -7063,10 +7063,10 @@ package body Sem_Prag is
          if Compile_Time_Known_Value (Arg1x) then
             Process_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
 
-         --  Register the expression for its validation after the backend has
-         --  been called if it has occurrences of attributes size or alignment
-         --  (because they may be statically computed by the backend and hence
-         --  the whole expression needs to be re-evaluated).
+         --  Register the expression for its validation after the back end has
+         --  been called if it has occurrences of attributes Size or Alignment
+         --  (because they may be statically computed by the back end and hence
+         --  the whole expression needs to be reevaluated).
 
          else
             Check_Expression (Arg1x);

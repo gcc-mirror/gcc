@@ -393,7 +393,7 @@ package body Sem_Ch6 is
          Rewrite (N, New_Body);
 
          --  Remove any existing aspects from the original node because the act
-         --  of rewriting cases the list to be shared between the two nodes.
+         --  of rewriting causes the list to be shared between the two nodes.
 
          Orig_N := Original_Node (N);
          Remove_Aspects (Orig_N);
@@ -405,8 +405,8 @@ package body Sem_Ch6 is
          Relocate_Pragmas_To_Body (N);
          Analyze (N);
 
-         --  Once the aspects of the generated body has been analyzed, create a
-         --  copy for ASIS purposes and assciate it with the original node.
+         --  Once the aspects of the generated body have been analyzed, create
+         --  a copy for ASIS purposes and associate it with the original node.
 
          if Has_Aspects (N) then
             Set_Aspect_Specifications (Orig_N,
@@ -459,15 +459,15 @@ package body Sem_Ch6 is
          Rewrite (N, Make_Subprogram_Declaration (Loc, Specification => Spec));
 
          --  Remove any existing aspects from the original node because the act
-         --  of rewriting cases the list to be shared between the two nodes.
+         --  of rewriting causes the list to be shared between the two nodes.
 
          Orig_N := Original_Node (N);
          Remove_Aspects (Orig_N);
 
          Analyze (N);
 
-         --  Once the aspects of the generated spec has been analyzed, create a
-         --  copy for ASIS purposes and assciate it with the original node.
+         --  Once the aspects of the generated spec have been analyzed, create
+         --  a copy for ASIS purposes and associate it with the original node.
 
          if Has_Aspects (N) then
             Set_Aspect_Specifications (Orig_N,

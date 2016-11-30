@@ -1,3 +1,32 @@
+2016-11-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb, sem_ch6.adb: Minor reformatting and typo fixes.
+	* g-sechas.adb: Minor reformatting.
+	* lib-xref.ads: minor grammar fix in comment.
+	* lib-xref-spark_specific.adb
+	(Is_SPARK_Reference): do not ignore references to concurrent
+	objects.
+	* sinfo.ads: Fix of unbalanced parens in comment
+
+2016-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Get_Type_Reference): If the entity is a function
+	returning a classwide type, the type reference is obtained right
+	away and does not need further unwinding.
+
+2016-11-30  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Find_Renamed_Entity): For non-overloaded subprogram
+	actuals of generic units check that the spec of the renaming
+	and renamed entities match.
+
+2016-11-30  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: For CERT runtimes: do not use gcc includes, simplify
+	the handling.
+	* sem_attr.adb (Analyze_Attribute): Check No_Dynamic_Priorities
+	restriction for Priority Attribute.
+
 2016-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/78524
