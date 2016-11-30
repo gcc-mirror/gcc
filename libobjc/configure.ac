@@ -203,7 +203,7 @@ gt_BITFIELD_TYPE_MATTERS
 AC_ARG_ENABLE(objc-gc,
 [AS_HELP_STRING([--enable-objc-gc],
 		[enable use of Boehm's garbage collector with the
-		 GNU Objective-C runtime])])
+		 GNU Objective-C runtime])],,enable_objc_gc=no)
 AC_ARG_WITH([target-bdw-gc],
 [AS_HELP_STRING([--with-target-bdw-gc=PATHLIST],
 		[specify prefix directory for installed bdw-gc package.

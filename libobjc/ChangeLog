@@ -1,3 +1,9 @@
+2016-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (--enable-objc-gc): If not given, default to
+	enable_objc_gc=no.
+	* configure: Regenerated.
+
 2016-11-30  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac (--enable-objc-gc): Allow to configure with a
@@ -5,8 +11,8 @@
 	* configure: Regenerate.
 	* Makefile.in (OBJC_BOEHM_GC_LIBS): Get value from configure.
 	* gc.c: Include system bdw-gc headers.
-	* memory.c: Likewise
-	* objects.c: Likewise
+	* memory.c: Likewise.
+	* objects.c: Likewise.
 
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 

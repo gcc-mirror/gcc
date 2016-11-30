@@ -11509,6 +11509,8 @@ $as_echo "#define HAVE_BITFIELD_TYPE_MATTERS 1" >>confdefs.h
 # Check whether --enable-objc-gc was given.
 if test "${enable_objc_gc+set}" = set; then :
   enableval=$enable_objc_gc;
+else
+  enable_objc_gc=no
 fi
 
 
