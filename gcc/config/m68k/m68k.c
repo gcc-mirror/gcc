@@ -166,7 +166,10 @@ static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static bool m68k_ok_for_sibcall_p (tree, tree);
 static bool m68k_tls_symbol_p (rtx);
 static rtx m68k_legitimize_address (rtx, rtx, machine_mode);
-static bool m68k_rtx_costs (rtx, machine_mode, int, int, int *, bool);
+#ifndef TARGET_AMIGAOS
+static
+#endif
+bool m68k_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 #if M68K_HONOR_TARGET_STRICT_ALIGNMENT
 static bool m68k_return_in_memory (const_tree, const_tree);
 #endif
@@ -174,10 +177,12 @@ static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void m68k_trampoline_init (rtx, tree, rtx);
 static int m68k_return_pops_args (tree, tree, int);
 static rtx m68k_delegitimize_address (rtx);
+#ifndef TARGET_AMIGA
 static void m68k_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
 static rtx m68k_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
+#endif
 static bool m68k_cannot_force_const_mem (machine_mode mode, rtx x);
 static bool m68k_output_addr_const_extra (FILE *, rtx);
 static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
@@ -322,6 +327,10 @@ static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 #undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 #define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 128
 
+#ifdef TARGET_AMIGA
+#include "amigaos.h"
+#endif
+
 static const struct attribute_spec m68k_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
@@ -332,6 +341,9 @@ static const struct attribute_spec m68k_attribute_table[] =
     m68k_handle_fndecl_attribute, false },
   { "interrupt_thread", 0, 0, true,  false, false,
     m68k_handle_fndecl_attribute, false },
+#ifdef SUBTARGET_ATTRIBUTES
+  SUBTARGET_ATTRIBUTES
+#endif
   { NULL,                0, 0, false, false, false, NULL, false }
 };
 
@@ -1419,6 +1431,7 @@ m68k_ok_for_sibcall_p (tree decl, tree exp)
   return false;
 }
 
+#ifndef TARGET_AMIGA
 /* On the m68k all args are always pushed.  */
 
 static rtx
@@ -1440,6 +1453,7 @@ m68k_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   ? (GET_MODE_SIZE (mode) + 3) & ~3
 	   : (int_size_in_bytes (type) + 3) & ~3);
 }
+#endif
 
 /* Convert X to a legitimate function call memory reference and return the
    result.  */
@@ -2172,6 +2186,8 @@ m68k_get_gp (void)
   if (pic_offset_table_rtx == NULL_RTX)
     pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_REG);
 
+//  debug_rtx(pic_offset_table_rtx);
+
   crtl->uses_pic_offset_table = 1;
 
   return pic_offset_table_rtx;
@@ -2442,9 +2458,9 @@ legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
   if (GET_CODE (orig) == SYMBOL_REF || GET_CODE (orig) == LABEL_REF)
     {
       gcc_assert (reg);
-
       pic_ref = m68k_wrap_symbol_into_got_ref (orig, RELOC_GOT, reg);
       pic_ref = m68k_move_to_reg (pic_ref, orig, reg);
+//      debug_rtx(pic_ref);
     }
   else if (GET_CODE (orig) == CONST)
     {
@@ -2787,7 +2803,10 @@ const_int_cost (HOST_WIDE_INT i)
     }
 }
 
-static bool
+#ifndef TARGET_AMIGAOS
+static
+#endif
+bool
 m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed ATTRIBUTE_UNUSED)
@@ -4424,6 +4443,7 @@ floating_exact_log2 (rtx x)
 void
 print_operand (FILE *file, rtx op, int letter)
 {
+//  printf("letter: %c\n", letter);
   if (letter == '.')
     {
       if (MOTOROLA)
@@ -4521,7 +4541,9 @@ m68k_get_reloc_decoration (enum m68k_reloc reloc)
   switch (reloc)
     {
     case RELOC_GOT:
-      if (MOTOROLA)
+      if (TARGET_AMIGAOS)
+	return "";
+      else if (MOTOROLA)
 	{
 	  if (flag_pic == 1 && TARGET_68020)
 	    return "@GOT.w";

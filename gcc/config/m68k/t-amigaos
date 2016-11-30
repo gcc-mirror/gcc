@@ -1,0 +1,30 @@
+# Makefile fragment for AmigaOS target.
+
+# Extra object file linked to the cc1* executables.
+amigaos.o: $(srcdir)/config/m68k/amigaos.c $(CONFIG_H)
+	$(CXX) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+
+# Additional target dependent options for compiling libgcc.a.  This just
+# ensures that we don't compile libgcc* with anything other than a
+# fixed stack.
+
+#TARGET_LIBGCC2_CFLAGS = -mfixedstack
+
+# Support for building multiple version of libgcc.
+
+LIBGCC_MULTI =	.; \
+		libb;@fbaserel \
+		libm020;@m68020 \
+		libb/libm020;@fbaserel@m68020 \
+		libb32/libm020;@fbaserel32@m68020
+
+### begin-GG-local: dynamic libraries
+# Extra objects that get compiled and linked to collect2
+
+EXTRA_COLLECT2_OBJS = amigacollect2.o
+
+# Build supplimentary AmigaOS target support file for collect2
+amigacollect2.o: amigacollect2.c
+	$(CXX) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	-DA2IXDIR_PREFIX=\"$(prefix)/share/a2ixlibrary\" $< $(OUTPUT_OPTION)
+### end-GG-local

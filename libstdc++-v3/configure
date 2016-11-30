@@ -28820,6 +28820,10 @@ else
 
 # Base decisions on target environment.
 case "${host}" in
+  m68k-*-*)
+  	# Nothing to do here.
+  	;;
+
   arm*-*-symbianelf*)
     # This is a freestanding configuration; there is nothing to do here.
     ;;

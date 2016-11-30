@@ -971,3 +971,8 @@ extern int m68k_sched_address_bypass_p (rtx_insn *, rtx_insn *);
 extern int m68k_sched_indexed_address_bypass_p (rtx_insn *, rtx_insn *);
 
 #define CPU_UNITS_QUERY 1
+
+#if 1
+extern void default_stabs_asm_out_constructor (rtx, int);
+extern void default_stabs_asm_out_destructor (rtx, int);
+#endif

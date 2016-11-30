@@ -1,0 +1,13 @@
+
+mregparm=
+Target RejectNegative Var(amigaos_regparm) Joined UInteger
+Pass arguments through registers.
+
+noixemul
+Target RejectNegative
+Do not use ixemul.library - use libnix instead to link
+
+msmall-code
+Target RejectNegative
+small code model
+

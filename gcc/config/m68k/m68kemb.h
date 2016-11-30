@@ -32,12 +32,14 @@
 #define NEEDS_UNTYPED_CALL 1
 
 /* Target OS builtins.  */
+#ifndef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
       builtin_define ("__embedded__");		\
     }						\
   while (0)
+#endif
 
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
    profiling, or libg.a.  */

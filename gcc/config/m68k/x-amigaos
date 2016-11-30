@@ -1,0 +1,104 @@
+# Makefile fragment for AmigaOS host
+
+# Each compilation environment (Manx, Dice, GCC, SAS/C, etc) provides its
+# own equivalent of the UNIX /usr/include tree.  For gcc, the standard headers
+# are in /gg/include and system specific headers are in /gg/os-include.
+# Use these paths for fixincludes.
+
+SYSTEM_HEADER_DIR = $(prefix)/include
+
+# Uncomment the following macro to get a resident GCC. We don't do it
+# by default, since we want to support users with mc68000.
+# WARNING!  If you uncomment this, you MUST add the same flags to the
+# libiberty's Makefile (libiberty is now linked into GCC executables).
+
+#RESIDENT = -m68020 -resident32
+
+# Additional host flags that are not used when compiling with GCC_FOR_TARGET,
+# such as when compiling the libgcc* runtime archives. GCC uses stack
+# a lot, and since AmigaOS provides processes with a small, fixed size
+# stack, we have to generate code that will extend it whenever necessary.
+
+XCFLAGS = -mstackextend $(RESIDENT)
+
+# AmigaOS supports "AmigaGuide(R)" hypertext files. For GCC, these are
+# build with a custom "makeinfo".
+
+# Arrange for guides to be build with GCC, in the build directory.
+
+### begin-GG-local: gcc-amigaos
+#EXTRA_DOC_TARGETS = guide gcc-amigaos-doc
+### end-GG-local
+
+# Actually build guides
+
+guide:: doc/cpp.guide doc/gcc.guide doc/gccint.guide \
+	 doc/gccinstall.guide doc/cppinternals.guide
+
+doc/cpp.guide: $(TEXI_CPP_FILES)
+doc/gcc.guide: $(TEXI_GCC_FILES)
+doc/gccint.guide: $(TEXI_GCCINT_FILES)
+doc/cppinternals.guide: $(TEXI_CPPINT_FILES)
+
+doc/%.guide: %.texi
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+		$(MAKEINFO) --amiga $(MAKEINFOFLAGS) -I $(docdir) \
+			-I $(docdir)/include -o $@ $<; \
+	fi
+
+# Duplicate entry to handle renaming of gccinstall.guide
+doc/gccinstall.guide: $(TEXI_GCCINSTALL_FILES)
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+		$(MAKEINFO) --amiga $(MAKEINFOFLAGS) -I $(docdir) \
+			-I $(docdir)/include -o $@ install.texi; \
+	fi
+
+# Arrange for guides to be installed with GCC.
+
+### begin-GG-local: gcc-amigaos
+#EXTRA_INSTALL_TARGETS = install-guide install-gcc-amigaos-doc
+### end-GG-local
+
+# Where the guide files go
+
+guidedir = $(prefix)/guide
+
+# Actually install guides.
+
+installdirs-guide:
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(guidedir)
+
+install-guide: doc installdirs-guide \
+	$(DESTDIR)$(guidedir)/cpp.guide \
+	$(DESTDIR)$(guidedir)/gcc.guide \
+	$(DESTDIR)$(guidedir)/cppinternals.guide \
+	$(DESTDIR)$(guidedir)/gccinstall.guide \
+	$(DESTDIR)$(guidedir)/gccint.guide
+
+$(DESTDIR)$(guidedir)/%.guide: doc/%.guide installdirs-guide
+	rm -f $@
+	if [ -f $< ]; then \
+	  for f in $(<)*; do \
+	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	    $(INSTALL_DATA) $$f $(DESTDIR)$(guidedir)/$$realfile; \
+	    chmod a-x $(DESTDIR)$(guidedir)/$$realfile; \
+	  done; \
+	else true; fi
+
+### begin-GG-local: gcc-amigaos
+# Build and install gcc-amigaos.guide - documentation specific to the
+# AmigaOS port of GCC.
+
+gcc-amigaos-doc:: doc/gcc-amigaos.info doc/gcc-amigaos.guide
+
+doc/gcc-amigaos.info doc/gcc-amigaos.guide: gcc-amigaos.texi
+
+install-gcc-amigaos-doc: doc installdirs installdirs-guide \
+	$(DESTDIR)$(infodir)/gcc-amigaos.info \
+	$(DESTDIR)$(guidedir)/gcc-amigaos.guide
+### end-GG-local
+
+host-amigaos.o : $(srcdir)/config/m68k/host-amigaos.c $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h hosthooks.h hosthooks-def.h toplev.h diagnostic.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/m68k/host-amigaos.c 
