@@ -7105,6 +7105,8 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
   int width = GET_MODE_SIZE (inner_mode);
   int i;
 
+  val = force_reg (GET_MODE (val), val);
+
   if (VECTOR_MEM_VSX_P (mode))
     {
       rtx insn = NULL_RTX;
@@ -7257,6 +7259,8 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 	  convert_move (tmp, elt, 0);
 	  elt = tmp;
 	}
+      else if (!REG_P (elt))
+	elt = force_reg (DImode, elt);
 
       switch (mode)
 	{
