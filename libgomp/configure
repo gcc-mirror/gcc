@@ -15074,6 +15074,8 @@ case "$host" in
   nvptx*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
     libgomp_use_pthreads=no
+    # NVPTX is an accelerator-only target
+    libgomp_offloaded_only=yes
     ;;
   *)
     # Check to see if -pthread or -lpthread is needed.  Prefer the former.
@@ -15122,6 +15124,12 @@ esac
 if test x$libgomp_use_pthreads != xno; then
 
 $as_echo "#define LIBGOMP_USE_PTHREADS 1" >>confdefs.h
+
+fi
+
+if test x$libgomp_offloaded_only = xyes; then
+
+$as_echo "#define LIBGOMP_OFFLOADED_ONLY 1" >>confdefs.h
 
 fi
 
