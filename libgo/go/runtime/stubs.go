@@ -502,8 +502,8 @@ func goexit1()
 func schedtrace(bool)
 func freezetheworld()
 
-// Signal trampoline, written in C.
-func sigtramp()
+// Get signal trampoline, written in C.
+func getSigtramp() uintptr
 
 // The sa_handler field is generally hidden in a union, so use C accessors.
 func getSigactionHandler(*_sigaction) uintptr
