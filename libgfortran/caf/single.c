@@ -2949,6 +2949,7 @@ _gfortran_caf_is_present (caf_token_t token,
 		  if (riter->next == NULL)
 		    break;
 		  /* else fall through reporting an error.  */
+		  /* FALLTHROUGH */
 		case CAF_ARR_REF_VECTOR:
 		case CAF_ARR_REF_RANGE:
 		case CAF_ARR_REF_OPEN_END:
@@ -2976,6 +2977,7 @@ _gfortran_caf_is_present (caf_token_t token,
 		  if (riter->next == NULL)
 		    break;
 		  /* else fall through reporting an error.  */
+		  /* FALLTHROUGH */
 		case CAF_ARR_REF_VECTOR:
 		case CAF_ARR_REF_RANGE:
 		case CAF_ARR_REF_OPEN_END:
