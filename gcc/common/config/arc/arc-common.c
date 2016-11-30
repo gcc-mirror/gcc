@@ -69,9 +69,7 @@ arc_handle_option (struct gcc_options *opts,
 {
   size_t code = decoded->opt_index;
   int value = decoded->value;
-  const char *arg = decoded->arg;
   static int mcpu_seen = PROCESSOR_NONE;
-  char *p;
 
   switch (code)
     {
