@@ -1,5 +1,20 @@
 2016-11-30  Martin Liska  <mliska@suse.cz>
 
+	* cgraph.c (symbol_table::initialize): Initialize
+	ipa_clones_dump_file.
+	(cgraph_node::remove): Report to ipa_clones_dump_file.
+	* cgraph.h: Add new argument (suffix) to cloning methods.
+	* cgraphclones.c (dump_callgraph_transformation): New function.
+	(cgraph_node::create_clone): New argument.
+	(cgraph_node::create_virtual_clone): Likewise.
+	(cgraph_node::create_version_clone): Likewise.
+	* dumpfile.c: Add .ipa-clones dump file.
+	* dumpfile.h (enum tree_dump_index): Add TDI_clones
+	* ipa-inline-transform.c (clone_inlined_nodes): Report operation
+	to dump_callgraph_transformation.
+
+2016-11-30  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/78541
 	* asan.c (asan_expand_mark_ifn): Properly
 	select a VAR_DECL from FRAME.* component reference.

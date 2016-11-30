@@ -209,6 +209,9 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  duplicate = false;
 	  e->callee->externally_visible = false;
           update_noncloned_frequencies (e->callee, e->frequency);
+
+	  dump_callgraph_transformation (e->callee, inlining_into,
+					 "inlining to");
 	}
       else
 	{
