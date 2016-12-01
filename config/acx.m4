@@ -404,7 +404,7 @@ AC_DEFUN([ACX_PROG_CMP_IGNORE_INITIAL],
 [AC_CACHE_CHECK([how to compare bootstrapped objects], gcc_cv_prog_cmp_skip,
 [ echo abfoo >t1
   echo cdfoo >t2
-  gcc_cv_prog_cmp_skip='tail +16c $$f1 > tmp-foo1; tail +16c $$f2 > tmp-foo2; cmp tmp-foo1 tmp-foo2'
+  gcc_cv_prog_cmp_skip='tail -c +17 $$f1 > tmp-foo1; tail -c +17 $$f2 > tmp-foo2; cmp tmp-foo1 tmp-foo2'
   if cmp t1 t2 2 2 > /dev/null 2>&1; then
     if cmp t1 t2 1 1 > /dev/null 2>&1; then
       :
