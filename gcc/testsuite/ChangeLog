@@ -1,3 +1,8 @@
+2016-12-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/tiny-memx.c: Only perform if target avr_tiny.
+	* gcc.target/avr/tiny-caller-save.c: Dito.
+
 2016-12-01  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.dg/coarray_lib_alloc_4.f90: Fix for 32-bits.
