@@ -65,6 +65,11 @@ var signalsOK bool
 //go:nosplit
 //go:nowritebarrierrec
 func initsig(preinit bool) {
+	if preinit {
+		// preinit is only passed as true if isarchive should be true.
+		isarchive = true
+	}
+
 	if !preinit {
 		// It's now OK for signal handlers to run.
 		signalsOK = true
