@@ -1,3 +1,9 @@
+2016-12-01  Elizebeth Punnoose  <elizebeth.punnoose@hpe.com>
+
+	PR fortran/77505
+	* gfortran.dg/char_length_20.f90: New test.
+	* gfortran.dg/char_length_21.f90: Ditto.
+
 2016-12-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78279

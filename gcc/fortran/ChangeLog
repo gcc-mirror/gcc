@@ -1,3 +1,9 @@
+2016-12-01  Elizebeth Punnoose  <elizebeth.punnoose@hpe.com>
+
+	PR fortran/77505
+	* trans-array.c (trans_array_constructor): Treat negative character
+	length as LEN = 0.
+
 2016-12-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78279
