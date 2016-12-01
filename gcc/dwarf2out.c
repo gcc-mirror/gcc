@@ -1514,7 +1514,8 @@ loc_descr_plus_const (dw_loc_descr_ref *list_head, HOST_WIDE_INT offset)
 
   else
     {
-      loc->dw_loc_next = int_loc_descriptor (-offset);
+      loc->dw_loc_next
+	= uint_loc_descriptor (-(unsigned HOST_WIDE_INT) offset);
       add_loc_descr (&loc->dw_loc_next, new_loc_descr (DW_OP_minus, 0, 0));
     }
 }
@@ -13837,7 +13838,7 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
       if (CONST_INT_P (XEXP (rtl, 1))
 	  && GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT
 	  && (size_of_int_loc_descriptor (shift) + 1
-	      + size_of_int_loc_descriptor (INTVAL (XEXP (rtl, 1)) << shift)
+	      + size_of_int_loc_descriptor (UINTVAL (XEXP (rtl, 1)) << shift)
 	      >= size_of_int_loc_descriptor (GET_MODE_MASK (op_mode)) + 1
 		 + size_of_int_loc_descriptor (INTVAL (XEXP (rtl, 1))
 					       & GET_MODE_MASK (op_mode))))
@@ -13852,7 +13853,7 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
   add_loc_descr (&op0, int_loc_descriptor (shift));
   add_loc_descr (&op0, new_loc_descr (DW_OP_shl, 0, 0));
   if (CONST_INT_P (XEXP (rtl, 1)))
-    op1 = int_loc_descriptor (INTVAL (XEXP (rtl, 1)) << shift);
+    op1 = int_loc_descriptor (UINTVAL (XEXP (rtl, 1)) << shift);
   else
     {
       add_loc_descr (&op1, int_loc_descriptor (shift));

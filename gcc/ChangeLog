@@ -1,5 +1,11 @@
 2016-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/78587
+	* dwarf2out.c (loc_descr_plus_const): For negative offset use
+	uint_loc_descriptor instead of int_loc_descriptor and perform negation
+	in unsigned HOST_WIDE_INT type.
+	(scompare_loc_descriptor): Shift UINTVAL left instead of INTVAL.
+
 	PR target/78614
 	* config/rs6000/rs6000.c (rs6000_frame_related): Call
 	set_used_flags (pat) before any simplifications.  Clear used flag on

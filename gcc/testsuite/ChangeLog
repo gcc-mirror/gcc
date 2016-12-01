@@ -1,3 +1,8 @@
+2016-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/78587
+	* gcc.dg/debug/pr78587.c: New test.
+
 2016-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78607
