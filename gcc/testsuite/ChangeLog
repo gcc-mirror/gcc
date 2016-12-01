@@ -1,3 +1,11 @@
+2016-12-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2016-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78101
+	* gcc.target/powerpc/fusion4.c: New test.
+
 2016-12-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
