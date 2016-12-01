@@ -1,4 +1,9 @@
-2016-11-31  Tim Shen  <timshen@google.com>
+2016-12-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* crossconfig.m4 (*-linux*): Add link-check for memalign.
+	* configure: Regenerated.
+
+2016-12-01  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/71500
 	* include/bits/regex.h (basic_regex::basic_regex): Use ECMAScript

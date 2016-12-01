@@ -157,6 +157,7 @@ case "${host}" in
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1)
     GCC_CHECK_TLS
     AC_CHECK_FUNCS(__cxa_thread_atexit_impl)
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AM_ICONV
     ;;
   *-mingw32*)
