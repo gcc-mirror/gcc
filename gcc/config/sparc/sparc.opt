@@ -57,6 +57,10 @@ msoft-quad-float
 Target Report RejectNegative InverseMask(HARD_QUAD)
 Do not use hardware quad fp instructions.
 
+mlra
+Target Report Mask(LRA)
+Enable Local Register Allocation.
+
 mv8plus
 Target Report Mask(V8PLUS)
 Compile for V8+ ABI.
