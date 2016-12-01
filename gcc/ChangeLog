@@ -38,7 +38,6 @@
 	PR rtl-optimization/78607
 	* combine.c (try_combine): Emit a barrier after a unconditional trap.
 
->>>>>>> .r243107
 2016-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78602
