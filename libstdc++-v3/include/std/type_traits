@@ -2593,9 +2593,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp>
     struct __is_nothrow_swappable;
 
+  template<typename... _Elements>
+    class tuple;
+
+  template<typename>
+    struct __is_tuple_like_impl : false_type
+    { };
+
+  template<typename... _Tps>
+    struct __is_tuple_like_impl<tuple<_Tps...>> : true_type
+    { };
+
+  // Internal type trait that allows us to sfinae-protect tuple_cat.
+  template<typename _Tp>
+    struct __is_tuple_like
+    : public __is_tuple_like_impl<typename remove_cv<
+      typename remove_reference<_Tp>::type>::type>::type
+    { };
+
   template<typename _Tp>
     inline
-    typename enable_if<__and_<is_move_constructible<_Tp>,
+    typename enable_if<__and_<__not_<__is_tuple_like<_Tp>>,
+			      is_move_constructible<_Tp>,
 			      is_move_assignable<_Tp>>::value>::type
     swap(_Tp&, _Tp&)
     noexcept(__and_<is_nothrow_move_constructible<_Tp>,

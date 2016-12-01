@@ -889,9 +889,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return false; }
 
   template<typename... _Types>
-    inline auto swap(variant<_Types...>& __lhs, variant<_Types...>& __rhs)
-    noexcept(noexcept(__lhs.swap(__rhs))) -> decltype(__lhs.swap(__rhs))
+    inline enable_if_t<__and_<is_move_constructible<_Types>...,
+			      is_swappable<_Types>...>::value>
+    swap(variant<_Types...>& __lhs, variant<_Types...>& __rhs)
+    noexcept(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
+
+  template<typename... _Types>
+    inline enable_if_t<!__and_<is_move_constructible<_Types>...,
+			       is_swappable<_Types>...>::value>
+    swap(variant<_Types...>&, variant<_Types...>&) = delete;
 
   class bad_variant_access : public exception
   {
