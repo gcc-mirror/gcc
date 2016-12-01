@@ -220,7 +220,7 @@ NORETURN cilk_fiber_sysdep::run()
         // enough extra space from the top of the stack we are
         // switching to for any temporaries required for this run()
         // function.
-        JMPBUF_SP(m_resume_jmpbuf) = m_stack_base - frame_size;
+        JMPBUF_SP(m_resume_jmpbuf) = CILK_ADJUST_SP(m_stack_base - frame_size);
 
         // GCC doesn't allow us to call __builtin_longjmp in the same function
         // that calls __builtin_setjmp, so it's been moved into it's own

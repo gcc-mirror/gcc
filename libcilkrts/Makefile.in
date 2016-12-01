@@ -396,7 +396,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # Enable Intel Cilk Plus extension
 
-# Always generate unwind tables
+#Always generate unwind tables
 GENERAL_FLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/runtime \
 	-I$(top_srcdir)/runtime/config/$(config_dir) \
 	-I$(top_srcdir)/runtime/sslib -DIN_CILK_RUNTIME=1 -fcilkplus \
@@ -455,7 +455,7 @@ libcilkrts_la_SOURCES = \
   runtime/sysdep-unix.c            \
   runtime/worker_mutex.c
 
-CILK_REVISION = 4420
+CILK_REVISION = 4467
 
 # Load the $(REVISION) value.
 

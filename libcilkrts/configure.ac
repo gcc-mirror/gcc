@@ -69,6 +69,10 @@ AC_PROG_CXX
 AC_CONFIG_FILES([Makefile libcilkrts.spec])
 AC_FUNC_ALLOCA
 
+# Check for dl functions
+AC_CHECK_LIB(dl, dladdr,
+             [AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])
+
 # Check whether the target supports protected visibility.
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -Werror"
@@ -141,16 +145,16 @@ esac
 # contains information on what's needed
 case "${target}" in
 
-  x86_64-*-*)
-    config_dir="x86"
-    ;;
-
-  i?86-*-*)
+  i?86-*-* | x86_64-*-*)
     config_dir="x86"
     ;;
 
   arm-*-*)
     config_dir="arm"
+    ;;
+
+  sparc*-*-*)
+    config_dir="sparc"
     ;;
 
   *)
