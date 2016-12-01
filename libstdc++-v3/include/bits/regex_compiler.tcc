@@ -612,37 +612,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _BracketMatcher<_TraitsT, __icase, __collate>::
     _M_apply(_CharT __ch, false_type) const
     {
-      bool __ret = std::binary_search(_M_char_set.begin(), _M_char_set.end(),
-				      _M_translator._M_translate(__ch));
-      if (!__ret)
-	{
-	  auto __s = _M_translator._M_transform(__ch);
-	  for (auto& __it : _M_range_set)
-	    if (__it.first <= __s && __s <= __it.second)
-	      {
-		__ret = true;
-		break;
-	      }
-	  if (_M_traits.isctype(__ch, _M_class_set))
-	    __ret = true;
-	  else if (std::find(_M_equiv_set.begin(), _M_equiv_set.end(),
-			     _M_traits.transform_primary(&__ch, &__ch+1))
-		   != _M_equiv_set.end())
-	    __ret = true;
-	  else
-	    {
-	      for (auto& __it : _M_neg_class_set)
-		if (!_M_traits.isctype(__ch, __it))
-		  {
-		    __ret = true;
-		    break;
-		  }
-	    }
-	}
-      if (_M_is_non_matching)
-	return !__ret;
-      else
-	return __ret;
+      return [this, __ch]
+      {
+	if (std::binary_search(_M_char_set.begin(), _M_char_set.end(),
+			       _M_translator._M_translate(__ch)))
+	  return true;
+	auto __s = _M_translator._M_transform(__ch);
+	for (auto& __it : _M_range_set)
+	  if (_M_translator._M_match_range(__it.first, __it.second, __s))
+	    return true;
+	if (_M_traits.isctype(__ch, _M_class_set))
+	  return true;
+	if (std::find(_M_equiv_set.begin(), _M_equiv_set.end(),
+		      _M_traits.transform_primary(&__ch, &__ch+1))
+	    != _M_equiv_set.end())
+	  return true;
+	for (auto& __it : _M_neg_class_set)
+	  if (!_M_traits.isctype(__ch, __it))
+	    return true;
+	return false;
+      }() ^ _M_is_non_matching;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
