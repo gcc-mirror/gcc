@@ -968,24 +968,13 @@ format_integer (const conversion_spec &spec, tree arg)
     }
   else if (TREE_CODE (TREE_TYPE (arg)) == INTEGER_TYPE
 	   || TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE)
-    {
-      /* Determine the type of the provided non-constant argument.  */
-      if (TREE_CODE (arg) == NOP_EXPR)
-	arg = TREE_OPERAND (arg, 0);
-      else if (TREE_CODE (arg) == CONVERT_EXPR)
-	arg = TREE_OPERAND (arg, 0);
-      if (TREE_CODE (arg) == COMPONENT_REF)
-	arg = TREE_OPERAND (arg, 1);
-
-      argtype = TREE_TYPE (arg);
-    }
+    /* Determine the type of the provided non-constant argument.  */
+    argtype = TREE_TYPE (arg);
   else
-    {
-      /* Don't bother with invalid arguments since they likely would
-	 have already been diagnosed, and disable any further checking
-	 of the format string by returning [-1, -1].  */
-      return fmtresult ();
-    }
+    /* Don't bother with invalid arguments since they likely would
+       have already been diagnosed, and disable any further checking
+       of the format string by returning [-1, -1].  */
+    return fmtresult ();
 
   fmtresult res;
 
@@ -1059,7 +1048,12 @@ format_integer (const conversion_spec &spec, tree arg)
 		}
 
 	      if (code == NOP_EXPR)
-		argtype = TREE_TYPE (gimple_assign_rhs1 (def));
+		{
+		  tree type = TREE_TYPE (gimple_assign_rhs1 (def));
+		  if (TREE_CODE (type) == INTEGER_TYPE
+		      || TREE_CODE (type) == POINTER_TYPE)
+		    argtype = type;
+		}
 	    }
 	}
     }

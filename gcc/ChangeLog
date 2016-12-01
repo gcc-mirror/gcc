@@ -1,3 +1,11 @@
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78586
+	* gimple-ssa-sprintf.c (format_integer): Don't handle NOP_EXPR,
+	CONVERT_EXPR or COMPONENT_REF here.  Formatting fix.  For
+	SSA_NAME_DEF_STMT with NOP_EXPR only change argtype if the rhs1's
+	type is INTEGER_TYPE or POINTER_TYPE.
+
 2016-12-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/78577
