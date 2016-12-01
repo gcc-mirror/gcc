@@ -915,7 +915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Ch, typename _Up>
       static basic_istream<_Ch, _Up>& __check(basic_istream<_Ch, _Up>*);
 
-      static void __check(void*);
+      static void __check(...);
     public:
       using istream_type =
 	decltype(__check(declval<typename remove_reference<_Tp>::type*>()));
