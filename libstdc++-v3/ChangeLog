@@ -1,3 +1,16 @@
+2016-11-31  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/71500
+	* include/bits/regex.h (basic_regex::basic_regex): Use ECMAScript
+	when the syntax is not specified.
+	* include/bits/regex_compiler.h (_RegexTranslator,
+	_RegexTranslatorBase): Partially support icase in ranges.
+	* include/bits/regex_compiler.tcc (_BracketMatcher::_M_apply):
+	Refactor _M_apply to make the control flow easier to follow, and
+	call _M_translator._M_match_range as added previously.
+	* testsuite/28_regex/traits/char/icase.cc: Add new tests.
+	* testsuite/28_regex/traits/char/user_defined.cc: Add new tests.
+
 2016-11-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix testsuite failures caused by the patch implementing LWG 2534.

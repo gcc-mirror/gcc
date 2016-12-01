@@ -30,6 +30,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+
+  template<typename>
+    class regex_traits;
+
+_GLIBCXX_END_NAMESPACE_CXX11
+_GLIBCXX_END_NAMESPACE_VERSION
+
 namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -207,17 +216,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [28.13.14]
   template<typename _TraitsT, bool __icase, bool __collate>
-    class _RegexTranslator
+    class _RegexTranslatorBase
     {
     public:
       typedef typename _TraitsT::char_type	      _CharT;
       typedef typename _TraitsT::string_type	      _StringT;
-      typedef typename std::conditional<__collate,
-					_StringT,
-					_CharT>::type _StrTransT;
+      typedef _StringT _StrTransT;
 
       explicit
-      _RegexTranslator(const _TraitsT& __traits)
+      _RegexTranslatorBase(const _TraitsT& __traits)
       : _M_traits(__traits)
       { }
 
@@ -235,23 +242,86 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StrTransT
       _M_transform(_CharT __ch) const
       {
-	return _M_transform_impl(__ch, typename integral_constant<bool,
-				 __collate>::type());
-      }
-
-    private:
-      _StrTransT
-      _M_transform_impl(_CharT __ch, false_type) const
-      { return __ch; }
-
-      _StrTransT
-      _M_transform_impl(_CharT __ch, true_type) const
-      {
-	_StrTransT __str = _StrTransT(1, _M_translate(__ch));
+	_StrTransT __str(1, __ch);
 	return _M_traits.transform(__str.begin(), __str.end());
       }
 
+      // See LWG 523. It's not efficiently implementable when _TraitsT is not
+      // std::regex_traits<>, and __collate is true. See specializations for
+      // implementations of other cases.
+      bool
+      _M_match_range(const _StrTransT& __first, const _StrTransT& __last,
+		     const _StrTransT& __s) const
+      { return __first <= __s && __s <= __last; }
+
+    protected:
+      bool _M_in_range_icase(_CharT __first, _CharT __last, _CharT __ch) const
+      {
+	typedef std::ctype<_CharT> __ctype_type;
+	const auto& __fctyp = use_facet<__ctype_type>(this->_M_traits.getloc());
+	auto __lower = __fctyp.tolower(__ch);
+	auto __upper = __fctyp.toupper(__ch);
+	return (__first <= __lower && __lower <= __last)
+	  || (__first <= __upper && __upper <= __last);
+      }
+
       const _TraitsT& _M_traits;
+    };
+
+  template<typename _TraitsT, bool __icase, bool __collate>
+    class _RegexTranslator
+    : public _RegexTranslatorBase<_TraitsT, __icase, __collate>
+    {
+    public:
+      typedef _RegexTranslatorBase<_TraitsT, __icase, __collate> _Base;
+      using _Base::_Base;
+    };
+
+  template<typename _TraitsT, bool __icase>
+    class _RegexTranslator<_TraitsT, __icase, false>
+    : public _RegexTranslatorBase<_TraitsT, __icase, false>
+    {
+    public:
+      typedef _RegexTranslatorBase<_TraitsT, __icase, false> _Base;
+      typedef typename _Base::_CharT _CharT;
+      typedef _CharT _StrTransT;
+
+      using _Base::_Base;
+
+      _StrTransT
+      _M_transform(_CharT __ch) const
+      { return __ch; }
+
+      bool
+      _M_match_range(_CharT __first, _CharT __last, _CharT __ch) const
+      {
+	if (!__icase)
+	  return __first <= __ch && __ch <= __last;
+	return this->_M_in_range_icase(__first, __last, __ch);
+      }
+    };
+
+  template<typename _CharType>
+    class _RegexTranslator<std::regex_traits<_CharType>, true, true>
+    : public _RegexTranslatorBase<std::regex_traits<_CharType>, true, true>
+    {
+    public:
+      typedef _RegexTranslatorBase<std::regex_traits<_CharType>, true, true>
+	_Base;
+      typedef typename _Base::_CharT _CharT;
+      typedef typename _Base::_StrTransT _StrTransT;
+
+      using _Base::_Base;
+
+      bool
+      _M_match_range(const _StrTransT& __first, const _StrTransT& __last,
+		     const _StrTransT& __str) const
+      {
+	__glibcxx_assert(__first.size() == 1);
+	__glibcxx_assert(__last.size() == 1);
+	__glibcxx_assert(__str.size() == 1);
+	return this->_M_in_range_icase(__first[0], __last[0], __str[0]);
+      }
     };
 
   template<typename _TraitsT>
@@ -272,6 +342,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StrTransT
       _M_transform(_CharT __ch) const
       { return __ch; }
+
+      bool
+      _M_match_range(_CharT __first, _CharT __last, _CharT __ch) const
+      { return __first <= __ch && __ch <= __last; }
     };
 
   template<typename _TraitsT, bool __is_ecma, bool __icase, bool __collate>
