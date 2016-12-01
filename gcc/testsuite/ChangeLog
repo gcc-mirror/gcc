@@ -1,3 +1,8 @@
+2016-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78607
+	* gcc.c-torture/compile/pr78607.c: New testcase.
+
 2016-11-30  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78586
