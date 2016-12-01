@@ -1,3 +1,7 @@
+2016-12-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c: Fix coding rule glitches.
+
 2016-12-01  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR tree-optimization/78598
