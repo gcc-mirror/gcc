@@ -1,3 +1,7 @@
+2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/26_numerics/headers/cmath/hypot.cc: XFAIL on AIX.
+
 2016-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2766,
