@@ -140,10 +140,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using tuple_element_t = typename tuple_element<__i, _Tp>::type;
 #endif
 
-  template<typename>
-    struct __is_tuple_like_impl : false_type
-    { };
-
   // Various functions which give std::pair a tuple-like interface.
 
   /// Partial specialization for std::pair

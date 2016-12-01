@@ -219,6 +219,21 @@ void test_relational()
   }
 }
 
+// Not swappable, and variant<C> not swappable via the generic std::swap.
+struct C { };
+void swap(C&, C&) = delete;
+
+static_assert( !std::is_swappable_v<variant<C>> );
+static_assert( !std::is_swappable_v<variant<int, C>> );
+static_assert( !std::is_swappable_v<variant<C, int>> );
+
+// Not swappable, and variant<D> not swappable via the generic std::swap.
+struct D { D(D&&) = delete; };
+
+static_assert( !std::is_swappable_v<variant<D>> );
+static_assert( !std::is_swappable_v<variant<int, D>> );
+static_assert( !std::is_swappable_v<variant<D, int>> );
+
 void test_swap()
 {
   variant<int, string> a, b;

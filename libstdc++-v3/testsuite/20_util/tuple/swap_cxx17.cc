@@ -18,28 +18,26 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <optional>
 
-// Swappable.
-struct A { };
+// NOTE: This makes use of the fact that we know how moveable
+// is implemented on tuple.  If the implementation changed
+// this test may begin to fail.
 
-static_assert( std::is_nothrow_swappable_v<A> );
-static_assert( std::is_nothrow_swappable_v<std::optional<A>> );
+#include <tuple>
 
-// Swappable, but might throw.
-struct B { };
-void swap(B&, B&) noexcept(false);
-
-static_assert( std::is_swappable_v<std::optional<B>> );
-static_assert( !std::is_nothrow_swappable_v<std::optional<B>> );
-
-// Not swappable, and optional<C> not swappable via the generic std::swap.
+// Not swappable, and tuple not swappable via the generic std::swap.
 struct C { };
 void swap(C&, C&) = delete;
 
-static_assert( !std::is_swappable_v<std::optional<C>> );
+static_assert( !std::is_swappable_v<std::tuple<int, C>> );
+static_assert( !std::is_swappable_v<std::tuple<C, int>> );
+static_assert( !std::is_swappable_v<std::tuple<int, int, C>> );
+static_assert( !std::is_swappable_v<std::tuple<C, int, int>> );
 
-// Not swappable, and optional<D> not swappable via the generic std::swap.
+// Not swappable, and tuple not swappable via the generic std::swap.
 struct D { D(D&&) = delete; };
 
-static_assert( !std::is_swappable_v<std::optional<D>> );
+static_assert( !std::is_swappable_v<std::tuple<int, D>> );
+static_assert( !std::is_swappable_v<std::tuple<D, int>> );
+static_assert( !std::is_swappable_v<std::tuple<int, int, D>> );
+static_assert( !std::is_swappable_v<std::tuple<D, int, int>> );

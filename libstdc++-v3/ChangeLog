@@ -1,5 +1,45 @@
 2016-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Implement LWG 2766,
+	Swapping non-swappable types and LWG 2749,
+	swappable traits for variants.
+	* include/bits/move.h (swap(_Tp&, _Tp&)): Constrain
+	with __is_tuple_like.
+	* include/bits/stl_pair.h (swap(pair<_T1, _T2>&, pair<_T1, _T2>&)):
+	Add a deleted overload.
+	* include/bits/unique_ptr.h
+	(swap(unique_ptr<_Tp, _Dp>&, unique_ptr<_Tp, _Dp>&)): Likewise.
+	* include/std/array
+	(swap(array<_Tp, _Nm>&, array<_Tp, _Nm>&)): Likewise.
+	* include/std/optional
+	(swap(optional<_Tp>&, optional<_Tp>&)): Likewise.
+	* include/std/tuple (__is_tuple_like_impl, __is_tuple_like):
+	Move to type_traits.
+	(swap(tuple<_Elements...>&, tuple<_Elements...>&)): Add a deleted
+	overload.
+	* include/std/type_traits (__is_tuple_like_impl, __is_tuple_like):
+	New.
+	(swap(_Tp&, _Tp&)): Constrain with __is_tuple_like.
+	* include/std/utility (__is_tuple_like_impl): Move to type_traits.
+	* include/std/variant
+	(swap(variant<_Types...>&, variant<_Types...>&)):
+	Add a deleted overload.
+	* testsuite/20_util/optional/swap/2.cc: Add tests for disabled
+	swaps.
+	* testsuite/20_util/pair/swap_cxx17.cc: New.
+	* testsuite/20_util/tuple/swap_cxx17.cc: Likewise.
+	* testsuite/20_util/unique_ptr/specialized_algorithms/swap_cxx17.cc:
+	Likewise.
+	* testsuite/20_util/variant/compile.cc: Add tests for disabled
+	swaps.
+	* testsuite/23_containers/array/specialized_algorithms/swap_cxx17.cc:
+	New.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
+2016-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	The convertible_to traits need to use a variadic catch-all for the
 	false-cases.
 	* include/std/istream (__is_convertible_to_basic_istream):
