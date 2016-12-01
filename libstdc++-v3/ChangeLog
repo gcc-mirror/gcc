@@ -1,3 +1,12 @@
+2016-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	The convertible_to traits need to use a variadic catch-all for the
+	false-cases.
+	* include/std/istream (__is_convertible_to_basic_istream):
+	Change the parameter of the false-case of __check to a variadic.
+	* include/std/ostream (__is_convertible_to_basic_ostream):
+	Likewise.
+
 2016-12-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* crossconfig.m4 (*-linux*): Add link-check for memalign.
