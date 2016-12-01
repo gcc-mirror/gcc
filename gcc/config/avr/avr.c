@@ -2726,7 +2726,7 @@ avr_print_operand (FILE *file, rtx x, int code)
     }
   else if (code == 'i')
     {
-      if (GET_CODE (x) == SYMBOL_REF && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_IO))
+      if (SYMBOL_REF_P (x) && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_IO))
 	avr_print_operand_address
 	  (file, VOIDmode, plus_constant (HImode, x, -avr_arch->sfr_offset));
       else
@@ -9585,7 +9585,7 @@ avr_handle_addr_attribute (tree *node, tree name, tree args,
 rtx
 avr_eval_addr_attrib (rtx x)
 {
-  if (GET_CODE (x) == SYMBOL_REF
+  if (SYMBOL_REF_P (x)
       && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_ADDRESS))
     {
       tree decl = SYMBOL_REF_DECL (x);
@@ -9896,7 +9896,7 @@ avr_asm_output_aligned_decl_common (FILE * stream,
   rtx symbol;
 
   if (mem != NULL_RTX && MEM_P (mem)
-      && GET_CODE ((symbol = XEXP (mem, 0))) == SYMBOL_REF
+      && SYMBOL_REF_P ((symbol = XEXP (mem, 0)))
       && (SYMBOL_REF_FLAGS (symbol) & (SYMBOL_FLAG_IO | SYMBOL_FLAG_ADDRESS)))
     {
 
@@ -9941,7 +9941,7 @@ avr_asm_asm_output_aligned_bss (FILE *file, tree decl, const char *name,
   rtx symbol;
 
   if (mem != NULL_RTX && MEM_P (mem)
-      && GET_CODE ((symbol = XEXP (mem, 0))) == SYMBOL_REF
+      && SYMBOL_REF_P ((symbol = XEXP (mem, 0)))
       && (SYMBOL_REF_FLAGS (symbol) & (SYMBOL_FLAG_IO | SYMBOL_FLAG_ADDRESS)))
     {
       if (!(SYMBOL_REF_FLAGS (symbol) & SYMBOL_FLAG_ADDRESS))
@@ -12715,7 +12715,7 @@ avr_addr_space_convert (rtx src, tree type_from, tree type_to)
          but are located in flash.  In that case we patch the incoming
          address space.  */
 
-      if (SYMBOL_REF == GET_CODE (sym)
+      if (SYMBOL_REF_P (sym)
           && ADDR_SPACE_FLASH == AVR_SYMBOL_GET_ADDR_SPACE (sym))
         {
           as_from = ADDR_SPACE_FLASH;

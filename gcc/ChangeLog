@@ -1,3 +1,9 @@
+2016-12-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_print_operand): Use SYMBOL_REF_P if possible.
+	(avr_handle_addr_attribute, avr_asm_output_aligned_decl_common)
+	(avr_asm_asm_output_aligned_bss, avr_addr_space_convert): Dito.
+
 2016-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/78587
