@@ -137,7 +137,8 @@ class Expression
     EXPRESSION_STRUCT_FIELD_OFFSET,
     EXPRESSION_LABEL_ADDR,
     EXPRESSION_CONDITIONAL,
-    EXPRESSION_COMPOUND
+    EXPRESSION_COMPOUND,
+    EXPRESSION_BACKEND
   };
 
   Expression(Expression_classification, Location);
@@ -484,6 +485,10 @@ class Expression
   // Make a compound expression.
   static Expression*
   make_compound(Expression*, Expression*, Location);
+
+  // Make a backend expression.
+  static Expression*
+  make_backend(Bexpression*, Type*, Location);
 
   // Return the expression classification.
   Expression_classification
@@ -3823,6 +3828,54 @@ class Compound_expression : public Expression
   Expression* init_;
   // The expression that is evaluated and returned.
   Expression* expr_;
+};
+
+// A backend expression.  This is a backend expression wrapped in an
+// Expression, for convenience during backend generation.
+
+class Backend_expression : public Expression
+{
+ public:
+  Backend_expression(Bexpression* bexpr, Type* type, Location location)
+    : Expression(EXPRESSION_BACKEND, location), bexpr_(bexpr), type_(type)
+  {}
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  // For now these are always valid static initializers.  If that
+  // changes we can change this.
+  bool
+  do_is_static_initializer() const
+  { return true; }
+
+  Type*
+  do_type()
+  { return this->type_; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  {
+    return new Backend_expression(this->bexpr_, this->type_, this->location());
+  }
+
+  Bexpression*
+  do_get_backend(Translate_context*)
+  { return this->bexpr_; }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The backend expression we are wrapping.
+  Bexpression* bexpr_;
+  // The type of the expression;
+  Type* type_;
 };
 
 // A numeric constant.  This is used both for untyped constants and
