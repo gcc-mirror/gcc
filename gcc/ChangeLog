@@ -1,3 +1,7 @@
+2016-12-01  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Don't use pkg-config to check for bdw-gc.
+
 2016-12-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (indirect_refs_may_alias_p): Do not
@@ -34,6 +38,7 @@
 	PR rtl-optimization/78607
 	* combine.c (try_combine): Emit a barrier after a unconditional trap.
 
+>>>>>>> .r243107
 2016-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78602
