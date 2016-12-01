@@ -19,6 +19,7 @@ class Typed_identifier;
 class Typed_identifier_list;
 class Function_type;
 class Expression;
+class Expression_list;
 class Statement;
 class Temporary_statement;
 class Block;
@@ -556,6 +557,15 @@ class Gogo
   specific_type_functions_are_written() const
   { return this->specific_type_functions_are_written_; }
 
+  // Add a pointer that needs to be added to the list of objects
+  // traversed by the garbage collector.  This should be an expression
+  // of pointer type that points to static storage.  It's not
+  // necessary to add global variables to this list, just global
+  // variable initializers that would otherwise not be seen.
+  void
+  add_gc_root(Expression* expr)
+  { this->gc_roots_.push_back(expr); }
+
   // Traverse the tree.  See the Traverse class.
   void
   traverse(Traverse*);
@@ -892,6 +902,8 @@ class Gogo
   // A list containing groups of possibly mutually recursive functions to be
   // considered during escape analysis.
   std::vector<Analysis_set> analysis_sets_;
+  // A list of objects to add to the GC roots.
+  std::vector<Expression*> gc_roots_;
 };
 
 // A block of statements.
