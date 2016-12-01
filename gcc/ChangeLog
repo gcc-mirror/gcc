@@ -1,3 +1,9 @@
+2016-12-01  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR rtl-optimization/78596
+	* combine.c (simplify_comparison): Cast to unsigned to avoid
+	left shifting of negative value.
+
 2016-12-01  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/install.texi: Don't use pkg-config to check for bdw-gc.
