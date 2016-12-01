@@ -700,9 +700,9 @@ ddown (HOST_WIDE_INT x, unsigned HOST_WIDE_INT by)
   gcc_assert (by > 0);
 
   if (x >= 0)
-    return x / by;
+    return x / (HOST_WIDE_INT) by;
   else
-    return (x + by - 1) / by;
+    return (x + (HOST_WIDE_INT) by - 1) / (HOST_WIDE_INT) by;
 }
 
 /* Given a CACHE_LINE_SIZE and two inductive memory references

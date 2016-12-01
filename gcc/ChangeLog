@@ -1,5 +1,11 @@
 2016-12-01  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
+	PR tree-optimization/78598
+	* tree-ssa-loop-prefetch.c (ddown): Cast to signed to avoid
+	overflows.
+
+2016-12-01  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
 	PR rtl-optimization/78596
 	* combine.c (simplify_comparison): Cast to unsigned to avoid
 	left shifting of negative value.
