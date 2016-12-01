@@ -1,3 +1,8 @@
+2016-12-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78279
+	* gfortran.dg/pr78279.f90: New test.
+
 2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/tls/pr77285-1.C: dg-add-options tls
