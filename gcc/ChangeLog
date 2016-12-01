@@ -1,3 +1,7 @@
+2016-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*andndi3_doubleword): Depend on TARGET_SSE2.
+
 2016-12-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c: Fix coding rule glitches.
