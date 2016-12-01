@@ -35,7 +35,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-11-30 22:55+0100\n"
+"PO-Revision-Date: 2016-12-01 23:28+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -8105,7 +8105,7 @@ msgstr "Genera código que use las instrucciones de coma flotante del 68881."
 
 #: config/m68k/m68k.opt:99
 msgid "Align variables on a 32-bit boundary."
-msgstr "Alínea las variables en límites de 32-bit."
+msgstr "Alinea las variables en límites de 32-bit."
 
 #: config/m68k/m68k.opt:103 config/arm/arm.opt:81 config/nios2/nios2.opt:570
 #: config/nds32/nds32.opt:66 config/c6x/c6x.opt:67
@@ -8504,152 +8504,102 @@ msgid "Use simple data speculation check for control speculation."
 msgstr "Usa la revisión de especulación de datos simple para el control de especulación."
 
 #: config/ia64/ia64.opt:174
-#, fuzzy
-#| msgid "Count speculative dependencies while calculating priority of instructions"
 msgid "Count speculative dependencies while calculating priority of instructions."
 msgstr "Cuenta las dependencias especulativas mientras se calcula la prioridad de las instrucciones."
 
 #: config/ia64/ia64.opt:178
-#, fuzzy
-#| msgid "Place a stop bit after every cycle when scheduling"
 msgid "Place a stop bit after every cycle when scheduling."
-msgstr "Coloca un bit de parada después de cada ciclo durante la calendarización."
+msgstr "Coloca un bit de parada después de cada ciclo durante la planificación."
 
 #: config/ia64/ia64.opt:182
-#, fuzzy
-#| msgid "Assume that floating-point stores and loads are not likely to cause conflict when placed into one instruction group"
 msgid "Assume that floating-point stores and loads are not likely to cause conflict when placed into one instruction group."
-msgstr "Asume que los stores y loads de coma flotante no pueden causar conflictos al colocarse en un grupo de instrucción."
+msgstr "Asume que los stores y loads de coma flotante no es probable que provoquen conflictos al colocarse en un grupo de instrucción."
 
 #: config/ia64/ia64.opt:186
-#, fuzzy
-#| msgid "Soft limit on number of memory insns per instruction group, giving lower priority to subsequent memory insns attempting to schedule in the same insn group. Frequently useful to prevent cache bank conflicts.  Default value is 1"
 msgid "Soft limit on number of memory insns per instruction group, giving lower priority to subsequent memory insns attempting to schedule in the same insn group. Frequently useful to prevent cache bank conflicts.  Default value is 1."
-msgstr "Límite suave en el número de insns de memoria por grupo de instrucción, dando una prioridad más baja a insns de memoria subsecuentes que intenten calendarizar en el mismo grupo insn. Frecuentemente útil para prevenir conflictos en el banco de caché.  El valor por defecto es 1."
+msgstr "Límite suave en el número de insns de memoria por grupo de instrucción, dando una prioridad más baja a insns de memoria subsiguientes que intenten planificar en el mismo grupo insn. Frecuentemente útil para prevenir conflictos en el banco de caché.  El valor por defecto es 1."
 
 #: config/ia64/ia64.opt:190
-#, fuzzy
-#| msgid "Disallow more than 'msched-max-memory-insns' in instruction group. Otherwise, limit is 'soft' (prefer non-memory operations when limit is reached)"
 msgid "Disallow more than 'msched-max-memory-insns' in instruction group. Otherwise, limit is 'soft' (prefer non-memory operations when limit is reached)."
 msgstr "Desactiva más de 'msched-max-memory-insns' en el grupo de instrucción.  De otra forma, el límite es 'soft' (se prefieren operaciones que no sean de memoria cuando se alcanza el límite)."
 
 #: config/ia64/ia64.opt:194
-#, fuzzy
-#| msgid "Don't generate checks for control speculation in selective scheduling"
 msgid "Don't generate checks for control speculation in selective scheduling."
-msgstr "No genera revisiones para el control de especulación en la calendarización selectiva."
+msgstr "No genera revisiones para el control de especulación en la planificación selectiva."
 
 #: config/spu/spu.opt:20
-#, fuzzy
-#| msgid "Emit warnings when run-time relocations are generated"
 msgid "Emit warnings when run-time relocations are generated."
 msgstr "Emite avisos cuando se generan las reubicaciones de tiempo de ejecución."
 
 #: config/spu/spu.opt:24
-#, fuzzy
-#| msgid "Emit errors when run-time relocations are generated"
 msgid "Emit errors when run-time relocations are generated."
 msgstr "Emite errores cuando se generan las reubicaciones de tiempo de ejecución."
 
 #: config/spu/spu.opt:28
-#, fuzzy
-#| msgid "Specify cost of branches (Default 20)"
 msgid "Specify cost of branches (Default 20)."
 msgstr "Especifica el costo de las ramificaciones (20 por defecto)."
 
 #: config/spu/spu.opt:32
-#, fuzzy
-#| msgid "Make sure loads and stores are not moved past DMA instructions"
 msgid "Make sure loads and stores are not moved past DMA instructions."
 msgstr "Se asegura que las instrucciones load y store no se mueven después de las instrucciones DMA."
 
 #: config/spu/spu.opt:36
-#, fuzzy
-#| msgid "volatile must be specified on any memory that is effected by DMA"
 msgid "volatile must be specified on any memory that is effected by DMA."
-msgstr "Se debe especificar volatile en cualquier memoria que sea afectada por DMA."
+msgstr "se debe especificar volatile en cualquier memoria que sea afectada por DMA."
 
 #: config/spu/spu.opt:40 config/spu/spu.opt:44
-#, fuzzy
-#| msgid "Insert nops when it might improve performance by allowing dual issue (default)"
 msgid "Insert nops when it might improve performance by allowing dual issue (default)."
 msgstr "Inserta nops cuando se puede mejorar el rendimiento permitiendo el asunto dual (por defecto)."
 
 #: config/spu/spu.opt:48
-#, fuzzy
-#| msgid "Use standard main function as entry for startup"
 msgid "Use standard main function as entry for startup."
 msgstr "Usa la función main estándar como entrada para el inicio."
 
 #: config/spu/spu.opt:52
-#, fuzzy
-#| msgid "Generate branch hints for branches"
 msgid "Generate branch hints for branches."
 msgstr "Genera pistas de ramificación para las ramificaciones."
 
 #: config/spu/spu.opt:56
-#, fuzzy
-#| msgid "Maximum number of nops to insert for a hint (Default 2)"
 msgid "Maximum number of nops to insert for a hint (Default 2)."
 msgstr "Número máximo de nops a insertar para una pista (Por defecto 2)."
 
 #: config/spu/spu.opt:60
-#, fuzzy
-#| msgid "Approximate maximum number of instructions to allow between a hint and its branch [125]"
 msgid "Approximate maximum number of instructions to allow between a hint and its branch [125]."
 msgstr "El número máximo aproximado de instrucciones a permitir entre una pista y su ramificación [125]."
 
 #: config/spu/spu.opt:64
-#, fuzzy
-#| msgid "Generate code for 18 bit addressing"
 msgid "Generate code for 18 bit addressing."
 msgstr "Genera código para direccionamiento de 18 bit."
 
 #: config/spu/spu.opt:68
-#, fuzzy
-#| msgid "Generate code for 32 bit addressing"
 msgid "Generate code for 32 bit addressing."
 msgstr "Genera código para direccionamiento de 32 bit."
 
 #: config/spu/spu.opt:76
-#, fuzzy
-#| msgid "Insert hbrp instructions after hinted branch targets to avoid the SPU hang issue"
 msgid "Insert hbrp instructions after hinted branch targets to avoid the SPU hang issue."
 msgstr "Inserta instrucciones hbrp después de los objetivos ramificados con pista para evitar el problema del colgado de SPU."
 
 #: config/spu/spu.opt:80 config/i386/i386.opt:247 config/s390/s390.opt:56
-#, fuzzy
-#| msgid "Generate code for given CPU"
 msgid "Generate code for given CPU."
-msgstr "Genera código para el CPU dado."
+msgstr "Genera código para la CPU dada."
 
 #: config/spu/spu.opt:88
-#, fuzzy
-#| msgid "Access variables in 32-bit PPU objects (default)"
 msgid "Access variables in 32-bit PPU objects (default)."
 msgstr "Accede a las variables en objetos PPU de 32-bit (por defecto)."
 
 #: config/spu/spu.opt:92
-#, fuzzy
-#| msgid "Access variables in 64-bit PPU objects"
 msgid "Access variables in 64-bit PPU objects."
-msgstr "Accede a las varialbes en objetos PPU de 64-bit."
+msgstr "Accede a las variables en objetos PPU de 64-bit."
 
 #: config/spu/spu.opt:96
-#, fuzzy
-#| msgid "Allow conversions between __ea and generic pointers (default)"
 msgid "Allow conversions between __ea and generic pointers (default)."
 msgstr "Permite las conversiones entre __ea y punteros genéricos (por defecto)."
 
 #: config/spu/spu.opt:100
-#, fuzzy
-#| msgid "Size (in KB) of software data cache"
 msgid "Size (in KB) of software data cache."
 msgstr "Tamaño (en KB) del caché de datos de software."
 
 #: config/spu/spu.opt:104
-#, fuzzy
-#| msgid "Atomically write back software data cache lines (default)"
 msgid "Atomically write back software data cache lines (default)."
 msgstr "Escribe hacia atrás atómicamente las líneas de caché de datos de software (por defecto)."
 
@@ -8662,8 +8612,6 @@ msgid "preferentially allocate registers that allow short instruction generation
 msgstr "aloja de preferencia registros que permitan la generación de instrucciones short."
 
 #: config/epiphany/epiphany.opt:32
-#, fuzzy
-#| msgid "Set branch cost"
 msgid "Set branch cost."
 msgstr "Establece el costo de ramificación."
 
@@ -8672,32 +8620,22 @@ msgid "enable conditional move instruction usage."
 msgstr "activa el uso de la instrucción move condicional."
 
 #: config/epiphany/epiphany.opt:40
-#, fuzzy
-#| msgid "set number of nops to emit before each insn pattern"
 msgid "set number of nops to emit before each insn pattern."
 msgstr "establece el número de nops a emitir antes de cada patrón insn."
 
 #: config/epiphany/epiphany.opt:52
-#, fuzzy
-#| msgid "Use software floating point comparisons"
 msgid "Use software floating point comparisons."
 msgstr "Usa comparaciones de coma flotante de software."
 
 #: config/epiphany/epiphany.opt:56
-#, fuzzy
-#| msgid "Enable split of 32 bit immediate loads into low / high part"
 msgid "Enable split of 32 bit immediate loads into low / high part."
 msgstr "Activa la división de loads inmediatos de 32 bit en partes low / high."
 
 #: config/epiphany/epiphany.opt:60
-#, fuzzy
-#| msgid "Enable use of POST_INC / POST_DEC"
 msgid "Enable use of POST_INC / POST_DEC."
 msgstr "Activa el uso de POST_INC / POST_DEC."
 
 #: config/epiphany/epiphany.opt:64
-#, fuzzy
-#| msgid "Enable use of POST_MODIFY"
 msgid "Enable use of POST_MODIFY."
 msgstr "Activa el uso de POST_MODIFY."
 
@@ -8707,17 +8645,13 @@ msgstr "Establece el número prealojado de bytes en la pila para que use el llam
 
 #: config/epiphany/epiphany.opt:72
 msgid "Assume round to nearest is selected for purposes of scheduling."
-msgstr "Asume que está seleccionado el redondeo al más cercano para propósitos de calendarización."
+msgstr "Asume que está seleccionado el redondeo al más cercano para propósitos de planificación."
 
 #: config/epiphany/epiphany.opt:76
-#, fuzzy
-#| msgid "Generate call insns as indirect calls"
 msgid "Generate call insns as indirect calls."
 msgstr "Genera las llamadas insns como llamadas indirectas."
 
 #: config/epiphany/epiphany.opt:80
-#, fuzzy
-#| msgid "Generate call insns as direct calls"
 msgid "Generate call insns as direct calls."
 msgstr "Genera las llamadas insns como llamadas directas."
 
@@ -8738,10 +8672,8 @@ msgid "Split unaligned 8 byte vector moves before post-modify address generation
 msgstr "Divide moves vectoriales de 8 byte sin alinear antes de post-modificar la generación de dirección."
 
 #: config/epiphany/epiphany.opt:132
-#, fuzzy
-#| msgid "Use hardware floating point conversion instructions"
 msgid "Use the floating point unit for integer add/subtract."
-msgstr "Usa instrucciones de conversión de coma flotante de hardware."
+msgstr "Usa la unidad de coma flotante para suma/resta de enteros."
 
 #: config/epiphany/epiphany.opt:136
 msgid "Set register to hold -1."
@@ -8749,252 +8681,174 @@ msgstr "Establece el registro para conservar -1."
 
 #: config/ft32/ft32.opt:23
 msgid "target the software simulator."
-msgstr ""
+msgstr "destina al simulador software."
 
 #: config/ft32/ft32.opt:27 config/s390/s390.opt:201 config/mips/mips.opt:385
-#, fuzzy
-#| msgid "Use ROM instead of RAM"
 msgid "Use LRA instead of reload."
-msgstr "Usa la ROM en lugar de la RAM."
+msgstr "Usa la LRA en lugar de recarga."
 
 #: config/ft32/ft32.opt:31
-#, fuzzy
-#| msgid "Allow the use of MDMX instructions"
 msgid "Avoid use of the DIV and MOD instructions"
-msgstr "Permite el uso de las instrucciones MDMX"
+msgstr "Evita el uso de las instrucciones DIV y MOD"
 
 #: config/h8300/h8300.opt:23
-#, fuzzy
-#| msgid "Generate H8S code"
 msgid "Generate H8S code."
 msgstr "Genera código H8S."
 
 #: config/h8300/h8300.opt:27
-#, fuzzy
-#| msgid "Generate H8SX code"
 msgid "Generate H8SX code."
 msgstr "Genera código H8SX."
 
 #: config/h8300/h8300.opt:31
-#, fuzzy
-#| msgid "Generate H8S/2600 code"
 msgid "Generate H8S/2600 code."
 msgstr "Genera código H8S/2600."
 
 #: config/h8300/h8300.opt:35
-#, fuzzy
-#| msgid "Make integers 32 bits wide"
 msgid "Make integers 32 bits wide."
 msgstr "Hace los enteros de 32 bits de anchura."
 
 #: config/h8300/h8300.opt:42
-#, fuzzy
-#| msgid "Use registers for argument passing"
 msgid "Use registers for argument passing."
 msgstr "Usa registros para el paso de parámetros."
 
 #: config/h8300/h8300.opt:46
-#, fuzzy
-#| msgid "Consider access to byte sized memory slow"
 msgid "Consider access to byte sized memory slow."
 msgstr "Considera lento el acceso a memoria de tamaño byte."
 
 #: config/h8300/h8300.opt:50
-#, fuzzy
-#| msgid "Enable linker relaxing"
 msgid "Enable linker relaxing."
 msgstr "Activa la relajación del enlazador."
 
 #: config/h8300/h8300.opt:54
-#, fuzzy
-#| msgid "Generate H8/300H code"
 msgid "Generate H8/300H code."
 msgstr "Genera código H8/300H."
 
 #: config/h8300/h8300.opt:58
-#, fuzzy
-#| msgid "Enable the normal mode"
 msgid "Enable the normal mode."
-msgstr "Activa el modelo normal."
+msgstr "Activa el modo normal."
 
 #: config/h8300/h8300.opt:62
-#, fuzzy
-#| msgid "Use H8/300 alignment rules"
 msgid "Use H8/300 alignment rules."
 msgstr "Usa las reglas de alineación H8/300."
 
 #: config/h8300/h8300.opt:66
 msgid "Push extended registers on stack in monitor functions."
-msgstr ""
+msgstr "Empuja los registros extendidos a la pila en las funciones de monitorización."
 
 #: config/h8300/h8300.opt:70
 msgid "Do not push extended registers on stack in monitor functions."
-msgstr ""
+msgstr "No empuja los registros extendidos a la pila en las funciones de monitorización."
 
 #: config/pdp11/pdp11.opt:23
-#, fuzzy
-#| msgid "Generate code for an 11/10"
 msgid "Generate code for an 11/10."
 msgstr "Genera código para un 11/10."
 
 #: config/pdp11/pdp11.opt:27
-#, fuzzy
-#| msgid "Generate code for an 11/40"
 msgid "Generate code for an 11/40."
 msgstr "Genera código para un 11/40."
 
 #: config/pdp11/pdp11.opt:31
-#, fuzzy
-#| msgid "Generate code for an 11/45"
 msgid "Generate code for an 11/45."
 msgstr "Genera código para un 11/45."
 
 #: config/pdp11/pdp11.opt:35
-#, fuzzy
-#| msgid "Return floating-point results in ac0 (fr0 in Unix assembler syntax)"
 msgid "Return floating-point results in ac0 (fr0 in Unix assembler syntax)."
 msgstr "Devuelve los resultados de coma flotante en ac0 (fr0 en sintaxis de ensamblador Unix)."
 
 #: config/pdp11/pdp11.opt:39
-#, fuzzy
-#| msgid "Do not use inline patterns for copying memory"
 msgid "Do not use inline patterns for copying memory."
 msgstr "No usa patrones incluidos en línea para copiado de memoria."
 
 #: config/pdp11/pdp11.opt:43
-#, fuzzy
-#| msgid "Use inline patterns for copying memory"
 msgid "Use inline patterns for copying memory."
 msgstr "Usa patrones incluidos en línea para copiado de memoria."
 
 #: config/pdp11/pdp11.opt:47
-#, fuzzy
-#| msgid "Do not pretend that branches are expensive"
 msgid "Do not pretend that branches are expensive."
 msgstr "No pretende que las ramificaciones son costosas."
 
 #: config/pdp11/pdp11.opt:51
-#, fuzzy
-#| msgid "Pretend that branches are expensive"
 msgid "Pretend that branches are expensive."
 msgstr "Pretende que las ramificaciones son costosas."
 
 #: config/pdp11/pdp11.opt:55
-#, fuzzy
-#| msgid "Use the DEC assembler syntax"
 msgid "Use the DEC assembler syntax."
 msgstr "Usa la sintaxis de ensamblador DEC."
 
 #: config/pdp11/pdp11.opt:59
-#, fuzzy
-#| msgid "Use 32 bit float"
 msgid "Use 32 bit float."
 msgstr "Usa float de 32 bit."
 
 #: config/pdp11/pdp11.opt:63
-#, fuzzy
-#| msgid "Use 64 bit float"
 msgid "Use 64 bit float."
 msgstr "Usa float de 64 bit."
 
 #: config/pdp11/pdp11.opt:67 config/rs6000/rs6000.opt:177
 #: config/frv/frv.opt:158
-#, fuzzy
-#| msgid "Use hardware floating point"
 msgid "Use hardware floating point."
 msgstr "Usa coma flotante de hardware."
 
 #: config/pdp11/pdp11.opt:71
-#, fuzzy
-#| msgid "Use 16 bit int"
 msgid "Use 16 bit int."
 msgstr "Usa int de 16 bit."
 
 #: config/pdp11/pdp11.opt:75
-#, fuzzy
-#| msgid "Use 32 bit int"
 msgid "Use 32 bit int."
 msgstr "Usa int de 32 bit."
 
 #: config/pdp11/pdp11.opt:79 config/rs6000/rs6000.opt:173
-#, fuzzy
-#| msgid "Do not use hardware floating point"
 msgid "Do not use hardware floating point."
 msgstr "No usa coma flotante de hardware."
 
 #: config/pdp11/pdp11.opt:83
-#, fuzzy
-#| msgid "Target has split I&D"
 msgid "Target has split I&D."
 msgstr "El objetivo tiene I&D dividido."
 
 #: config/pdp11/pdp11.opt:87
-#, fuzzy
-#| msgid "Use UNIX assembler syntax"
 msgid "Use UNIX assembler syntax."
 msgstr "Usa sintaxis de ensamblador UNIX."
 
 #: config/xtensa/xtensa.opt:23
-#, fuzzy
-#| msgid "Use CONST16 instruction to load constants"
 msgid "Use CONST16 instruction to load constants."
 msgstr "Usa la instrucción CONST16 para cargar constantes."
 
 #: config/xtensa/xtensa.opt:27
-#, fuzzy
-#| msgid "Disable position-independent code (PIC) for use in OS kernel code"
 msgid "Disable position-independent code (PIC) for use in OS kernel code."
 msgstr "Desactiva el código independiente de posición (PIC) para su uso en código de núcleo de SO."
 
 #: config/xtensa/xtensa.opt:31
-#, fuzzy
-#| msgid "Use indirect CALLXn instructions for large programs"
 msgid "Use indirect CALLXn instructions for large programs."
 msgstr "Usa las instrucciones CALLXn indirectas para programas grandes."
 
 #: config/xtensa/xtensa.opt:35
-#, fuzzy
-#| msgid "Automatically align branch targets to reduce branch penalties"
 msgid "Automatically align branch targets to reduce branch penalties."
-msgstr "Alínea automáticamente los objetivos de las ramificaciones para reducir las penas de ramificación."
+msgstr "Alinea automáticamente los objetivos de las ramificaciones para reducir las penas de ramificación."
 
 #: config/xtensa/xtensa.opt:39
-#, fuzzy
-#| msgid "Intersperse literal pools with code in the text section"
 msgid "Intersperse literal pools with code in the text section."
 msgstr "Dispersa los conjuntos de literales con código en la sección de texto."
 
 #: config/xtensa/xtensa.opt:43
 msgid "Relax literals in assembler and place them automatically in the text section."
-msgstr ""
+msgstr "Relaja los literales en ensamblador y los coloca automáticamente en la sección de texto."
 
 #: config/xtensa/xtensa.opt:47
-#, fuzzy
-#| msgid "-mno-serialize-volatile\tDo not serialize volatile memory references with MEMW instructions"
 msgid "-mno-serialize-volatile\tDo not serialize volatile memory references with MEMW instructions."
 msgstr "-mno-serialize-volatile\tNo serializa las referencias a memoria volátil con instrucciones MEMW."
 
 #: config/i386/cygming.opt:23
-#, fuzzy
-#| msgid "Create console application"
 msgid "Create console application."
 msgstr "Crea una aplicación de consola."
 
 #: config/i386/cygming.opt:27
-#, fuzzy
-#| msgid "Generate code for a DLL"
 msgid "Generate code for a DLL."
 msgstr "Genera código para una DLL."
 
 #: config/i386/cygming.opt:31
-#, fuzzy
-#| msgid "Ignore dllimport for functions"
 msgid "Ignore dllimport for functions."
 msgstr "Ignora dllimport para funciones."
 
 #: config/i386/cygming.opt:35
-#, fuzzy
-#| msgid "Use Mingw-specific thread support"
 msgid "Use Mingw-specific thread support."
 msgstr "Usa el soporte de hilos específico de Mingw."
 
@@ -9005,132 +8859,94 @@ msgid "Set Windows defines."
 msgstr "Establece las definiciones de Windows."
 
 #: config/i386/cygming.opt:43
-#, fuzzy
-#| msgid "Create GUI application"
 msgid "Create GUI application."
 msgstr "Crea una aplicación con interfaz gráfica de usuario (GUI)."
 
 #: config/i386/cygming.opt:47 config/i386/interix.opt:32
-#, fuzzy
-#| msgid "Use the GNU extension to the PE format for aligned common data"
 msgid "Use the GNU extension to the PE format for aligned common data."
 msgstr "Usa la extensión GNU para el formato PE para los datos comunes alineados."
 
 #: config/i386/cygming.opt:51
-#, fuzzy
-#| msgid "Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement"
 msgid "Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement."
 msgstr "Compila código que depende de las envolturas DLL de Cygwin para admitir el reemplazo de los operadores de C++ new/delete."
 
 #: config/i386/cygming.opt:58
 msgid "Put relocated read-only data into .data section."
-msgstr ""
+msgstr "Pone los datos de solo lectura reubicados en la sección .data."
 
 #: config/i386/mingw.opt:29
-#, fuzzy
-#| msgid "Warn about none ISO msvcrt scanf/printf width extensions"
 msgid "Warn about none ISO msvcrt scanf/printf width extensions."
-msgstr "Avisa sobre extensiones de anchura scanf/printf msvcrt que no son ISO."
+msgstr "Advierte de extensiones de anchura scanf/printf msvcrt que no son ISO."
 
 #: config/i386/mingw.opt:33
 msgid "For nested functions on stack executable permission is set."
 msgstr "Se establece el permiso ejecutable para las funciones anidadas en la pila."
 
 #: config/i386/mingw-w64.opt:23
-#, fuzzy
-#| msgid "Use unicode startup and define UNICODE macro"
 msgid "Use unicode startup and define UNICODE macro."
 msgstr "Usa el inicio de unicode y define la macro UNICODE."
 
 #: config/i386/i386.opt:182
-#, fuzzy
-#| msgid "sizeof(long double) is 16"
 msgid "sizeof(long double) is 16."
 msgstr "sizeof(long double) es 16."
 
 #: config/i386/i386.opt:186 config/i386/i386.opt:354
-#, fuzzy
-#| msgid "Use hardware fp"
 msgid "Use hardware fp."
 msgstr "Usa fp de hardware."
 
 #: config/i386/i386.opt:190
-#, fuzzy
-#| msgid "sizeof(long double) is 12"
 msgid "sizeof(long double) is 12."
 msgstr "sizeof(long double) es 12."
 
 #: config/i386/i386.opt:194
-#, fuzzy
-#| msgid "Use 128-bit long double"
 msgid "Use 80-bit long double."
-msgstr "Usa long doubles de 128 bits."
+msgstr "Usa long doubles de 80 bits."
 
 #: config/i386/i386.opt:198 config/s390/s390.opt:130
 #: config/sparc/long-double-switch.opt:27 config/alpha/alpha.opt:102
 #, fuzzy
-#| msgid "Use 64-bit long double"
+#| msgid "Use 80-bit long double."
 msgid "Use 64-bit long double."
-msgstr "Usa long doubles de 64 bits."
+msgstr "Usa long doubles de 80 bits."
 
 #: config/i386/i386.opt:202 config/s390/s390.opt:126
 #: config/sparc/long-double-switch.opt:23 config/alpha/alpha.opt:98
-#, fuzzy
-#| msgid "Use 128-bit long double"
 msgid "Use 128-bit long double."
 msgstr "Usa long doubles de 128 bits."
 
 #: config/i386/i386.opt:206 config/sh/sh.opt:209
-#, fuzzy
-#| msgid "Reserve space for outgoing arguments in the function prologue"
 msgid "Reserve space for outgoing arguments in the function prologue."
 msgstr "Reserva espacio para los argumentos de salida en el prólogo de la función."
 
 #: config/i386/i386.opt:210
-#, fuzzy
-#| msgid "Align some doubles on dword boundary"
 msgid "Align some doubles on dword boundary."
-msgstr "Alínea algunos doubles en límites de dword."
+msgstr "Alinea algunos doubles en límites de dword."
 
 #: config/i386/i386.opt:214
-#, fuzzy
-#| msgid "Function starts are aligned to this power of 2"
 msgid "Function starts are aligned to this power of 2."
 msgstr "Los inicios de las funciones se alinean a esta potencia de 2."
 
 #: config/i386/i386.opt:218
-#, fuzzy
-#| msgid "Jump targets are aligned to this power of 2"
 msgid "Jump targets are aligned to this power of 2."
 msgstr "Los objetivos de salto se alinean a esta potencia de 2."
 
 #: config/i386/i386.opt:222
-#, fuzzy
-#| msgid "Loop code aligned to this power of 2"
 msgid "Loop code aligned to this power of 2."
 msgstr "El código de ciclo se alinea a esta potencia de 2."
 
 #: config/i386/i386.opt:226
-#, fuzzy
-#| msgid "Align destination of the string operations"
 msgid "Align destination of the string operations."
-msgstr "Alínea el destino de las operaciones de cadenas."
+msgstr "Alinea el destino de las operaciones de cadenas."
 
 #: config/i386/i386.opt:230
-#, fuzzy
-#| msgid "Do not tune writable data alignment"
 msgid "Use the given data alignment."
-msgstr "No ajusta la alineación de los datos modificables."
+msgstr "Usa la alineación de los datos dada."
 
 #: config/i386/i386.opt:234
-#, fuzzy
-#| msgid "Known TLS dialects (for use with the -mtls-dialect= option):"
 msgid "Known data alignment choices (for use with the -malign-data= option):"
-msgstr "Dialectos TLS conocidos (para usar con la opción -mtls-dialect=):"
+msgstr "Las opciones conocidas para alineamiento de datos (para usar con la opción -malign-data=):"
 
 #: config/i386/i386.opt:251
-#, fuzzy
-#| msgid "Use given assembler dialect"
 msgid "Use given assembler dialect."
 msgstr "Usa el dialecto de ensamblador dado."
 
@@ -9139,20 +8955,14 @@ msgid "Known assembler dialects (for use with the -masm-dialect= option):"
 msgstr "Dialectos de ensamblador conocidos (para uso con la opción -masm-dialect=):"
 
 #: config/i386/i386.opt:265
-#, fuzzy
-#| msgid "Branches are this expensive (1-5, arbitrary units)"
 msgid "Branches are this expensive (1-5, arbitrary units)."
 msgstr "Las ramificaciones son así de caras (1-5, unidades arbitrarias)."
 
 #: config/i386/i386.opt:269
-#, fuzzy
-#| msgid "Data greater than given threshold will go into .ldata section in x86-64 medium model"
 msgid "Data greater than given threshold will go into .ldata section in x86-64 medium model."
 msgstr "Los datos más grandes que el límite dado irán a la sección .ldata en el modeolo medium del x86-64."
 
 #: config/i386/i386.opt:273
-#, fuzzy
-#| msgid "Use given x86-64 code model"
 msgid "Use given x86-64 code model."
 msgstr "Usa el modelo de código del x86-64 dado."
 
@@ -9297,7 +9107,7 @@ msgstr "Usa las convenciones de paso de registro SSE para los modos SF y DF."
 #, fuzzy
 #| msgid "Realign stack in prologue"
 msgid "Realign stack in prologue."
-msgstr "Realínea la pila en el prólogo."
+msgstr "Realinea la pila en el prólogo."
 
 #: config/i386/i386.opt:442
 #, fuzzy
@@ -9405,7 +9215,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Do dispatch scheduling if processor is bdver1 or bdver2 and Haifa scheduling"
 msgid "Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4"
-msgstr "Despacha al planificador si el procesador es bdver1 o bdver2 y la calendarización es Haifa"
+msgstr "Despacha al planificador si el procesador es bdver1 o bdver2 y la planificación es Haifa"
 
 #: config/i386/i386.opt:582
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
@@ -9950,7 +9760,7 @@ msgstr "Usa convenciones de llamada transportable."
 #, fuzzy
 #| msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000"
 msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000."
-msgstr "Especifica el CPU por razones de calendarización.  Los argumentos válidos son 700, 7100, 7100LC, 7200, 7300, y 8000."
+msgstr "Especifica el CPU por razones de planificación.  Los argumentos válidos son 700, 7100, 7100LC, 7200, 7300, y 8000."
 
 #: config/pa/pa.opt:132 config/frv/frv.opt:215
 #, fuzzy
@@ -10343,7 +10153,7 @@ msgstr "Compila para el m32r."
 #, fuzzy
 #| msgid "Align all loops to 32 byte boundary"
 msgid "Align all loops to 32 byte boundary."
-msgstr "Alínea todos los bucles al límite de 32 byte."
+msgstr "Alinea todos los bucles al límite de 32 byte."
 
 #: config/m32r/m32r.opt:50
 #, fuzzy
@@ -10727,7 +10537,7 @@ msgstr "Almacena nombres de función en el código objeto."
 #, fuzzy
 #| msgid "Permit scheduling of a function's prologue sequence"
 msgid "Permit scheduling of a function's prologue sequence."
-msgstr "Permite la calendarización de un secuencia de los prólogos de función."
+msgstr "Permite la planificación de un secuencia de los prólogos de función."
 
 #: config/arm/arm.opt:179 config/rs6000/rs6000.opt:248
 #, fuzzy
@@ -11484,7 +11294,7 @@ msgstr "Argumentos válidos para -malign-:"
 #, fuzzy
 #| msgid "Specify scheduling priority for dispatch slot restricted insns"
 msgid "Specify scheduling priority for dispatch slot restricted insns."
-msgstr "Especifica la prioridad de calendarización para despachar insns restringidos por ranuras."
+msgstr "Especifica la prioridad de planificación para despachar insns restringidos por ranuras."
 
 #: config/rs6000/rs6000.opt:504
 #, fuzzy
@@ -11536,7 +11346,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Align destination of the string operations"
 msgid "Allow sign extension in fusion operations."
-msgstr "Alínea el destino de las operaciones de cadenas."
+msgstr "Alinea el destino de las operaciones de cadenas."
 
 #: config/rs6000/rs6000.opt:562
 msgid "Use/do not use vector and scalar instructions added in ISA 2.07."
@@ -11658,7 +11468,7 @@ msgstr "Selecciona el método para el manejo de sdata."
 #, fuzzy
 #| msgid "Align to the base type of the bit-field"
 msgid "Align to the base type of the bit-field."
-msgstr "Alínea al tipo base del campo de bit."
+msgstr "Alinea al tipo base del campo de bit."
 
 #: config/rs6000/sysv4.opt:57 config/rs6000/sysv4.opt:61
 #, fuzzy
@@ -13286,7 +13096,7 @@ msgstr "Especifica el CPU para propósitos de generación de código."
 
 #: config/iq2000/iq2000.opt:47
 msgid "Specify CPU for scheduling purposes."
-msgstr "Especifica el CPU para propósitos de calendarización."
+msgstr "Especifica el CPU para propósitos de planificación."
 
 #: config/iq2000/iq2000.opt:51
 msgid "Known IQ2000 CPUs (for use with the -mcpu= option):"
@@ -13390,13 +13200,13 @@ msgstr "No ajusta la alineación del código y de datos de sólo lectura."
 #, fuzzy
 #| msgid "Align code and data to 32 bits"
 msgid "Align code and data to 32 bits."
-msgstr "Alínea código y datos a 32 bits."
+msgstr "Alinea código y datos a 32 bits."
 
 #: config/cris/cris.opt:133
 #, fuzzy
 #| msgid "Don't align items in code or data"
 msgid "Don't align items in code or data."
-msgstr "No alínea los elementos en el código o los datos."
+msgstr "No alinea los elementos en el código o los datos."
 
 #: config/cris/cris.opt:142
 #, fuzzy
@@ -13744,7 +13554,7 @@ msgstr "Permite evitar cut2 en SH5."
 #, fuzzy
 #| msgid "Align doubles at 64-bit boundaries"
 msgid "Align doubles at 64-bit boundaries."
-msgstr "Alínea doubles en límites de 64-bit."
+msgstr "Alinea doubles en límites de 64-bit."
 
 #: config/sh/sh.opt:257
 #, fuzzy
@@ -13970,7 +13780,7 @@ msgstr "Habilita el Coprocesador MeP con registros de 64-bit."
 #, fuzzy
 #| msgid "Enable IVC2 scheduling"
 msgid "Enable IVC2 scheduling."
-msgstr "Activa la calendarización IVC2."
+msgstr "Activa la planificación IVC2."
 
 #: config/mep/mep.opt:71
 #, fuzzy
@@ -15548,25 +15358,25 @@ msgstr ""
 #, fuzzy
 #| msgid "Align the start of functions"
 msgid "Align the start of functions."
-msgstr "Alínea el inicio de las funciones."
+msgstr "Alinea el inicio de las funciones."
 
 #: common.opt:899
 #, fuzzy
 #| msgid "Align labels which are only reached by jumping"
 msgid "Align labels which are only reached by jumping."
-msgstr "Alínea las etiquetas que solamente se alcanzan saltando."
+msgstr "Alinea las etiquetas que solamente se alcanzan saltando."
 
 #: common.opt:906
 #, fuzzy
 #| msgid "Align all labels"
 msgid "Align all labels."
-msgstr "Alínea todas las etiquetas."
+msgstr "Alinea todas las etiquetas."
 
 #: common.opt:913
 #, fuzzy
 #| msgid "Align the start of loops"
 msgid "Align the start of loops."
-msgstr "Alínea el inicio de los bucles."
+msgstr "Alinea el inicio de los bucles."
 
 #: common.opt:936
 #, fuzzy
@@ -16427,13 +16237,13 @@ msgstr "-fmessage-length=<número>\tLimita los diagnósticos a <número> caracte
 #, fuzzy
 #| msgid "Perform SMS based modulo scheduling before the first scheduling pass"
 msgid "Perform SMS based modulo scheduling before the first scheduling pass."
-msgstr "Realiza la calendarización SMS basada en módulo antes del primer paso de calendarización."
+msgstr "Realiza la planificación SMS basada en módulo antes del primer paso de calendarización."
 
 #: common.opt:1747
 #, fuzzy
 #| msgid "Perform SMS based modulo scheduling with register moves allowed"
 msgid "Perform SMS based modulo scheduling with register moves allowed."
-msgstr "Realiza la calendarización módulo basada en SMS con movimientos permitidos de registros."
+msgstr "Realiza la planificación módulo basada en SMS con movimientos permitidos de registros."
 
 #: common.opt:1751
 #, fuzzy
@@ -16457,7 +16267,7 @@ msgstr "Usa la eliminación de almacenamiento muerto de RTL."
 #, fuzzy
 #| msgid "Enable/Disable the traditional scheduling in loops that already passed modulo scheduling"
 msgid "Enable/Disable the traditional scheduling in loops that already passed modulo scheduling."
-msgstr "Activa/Desactiva la calendarización tradicional en bucles que ya pasaron la calendarización módulo."
+msgstr "Activa/Desactiva la planificación tradicional en bucles que ya pasaron la calendarización módulo."
 
 #: common.opt:1767
 #, fuzzy
@@ -16693,7 +16503,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Enable register pressure sensitive insn scheduling"
 msgid "Relief of register pressure through live range shrinkage."
-msgstr "Activa la calendarización de insn sensible a la presión de registros."
+msgstr "Activa la planificación de insn sensible a la presión de registros."
 
 #: common.opt:1962
 #, fuzzy
@@ -16751,13 +16561,13 @@ msgstr "Desactiva las optimizaciones que asumen la conducta de un FP que redonde
 #, fuzzy
 #| msgid "Enable scheduling across basic blocks"
 msgid "Enable scheduling across basic blocks."
-msgstr "Activa la calendarización entre bloques básicos."
+msgstr "Activa la planificación entre bloques básicos."
 
 #: common.opt:2011
 #, fuzzy
 #| msgid "Enable register pressure sensitive insn scheduling"
 msgid "Enable register pressure sensitive insn scheduling."
-msgstr "Activa la calendarización de insn sensible a la presión de registros."
+msgstr "Activa la planificación de insn sensible a la presión de registros."
 
 #: common.opt:2015
 #, fuzzy
@@ -16787,7 +16597,7 @@ msgstr "-fsched-verbose=<número>\tEstablece el nivel de detalle del planificado
 #, fuzzy
 #| msgid "If scheduling post reload, do superblock scheduling"
 msgid "If scheduling post reload, do superblock scheduling."
-msgstr "Si se calendariza después de la recarga, hace la calendarización de superbloque."
+msgstr "Si se calendariza después de la recarga, hace la planificación de superbloque."
 
 #: common.opt:2039
 #, fuzzy
@@ -16805,25 +16615,25 @@ msgstr "Recalendariza las instrucciones después del alojamiento de registros."
 #, fuzzy
 #| msgid "Schedule instructions using selective scheduling algorithm"
 msgid "Schedule instructions using selective scheduling algorithm."
-msgstr "Calendariza instrucciones usando el algoritmo de calendarización selectivo."
+msgstr "Calendariza instrucciones usando el algoritmo de planificación selectivo."
 
 #: common.opt:2054
 #, fuzzy
 #| msgid "Run selective scheduling after reload"
 msgid "Run selective scheduling after reload."
-msgstr "Ejecuta la calendarización selectiva después de recargar."
+msgstr "Ejecuta la planificación selectiva después de recargar."
 
 #: common.opt:2058
 #, fuzzy
 #| msgid "Perform software pipelining of inner loops during selective scheduling"
 msgid "Perform software pipelining of inner loops during selective scheduling."
-msgstr "Realiza el `pipelining' de software de los bucles internos durante la calendarización selectiva."
+msgstr "Realiza el `pipelining' de software de los bucles internos durante la planificación selectiva."
 
 #: common.opt:2062
 #, fuzzy
 #| msgid "Perform software pipelining of outer loops during selective scheduling"
 msgid "Perform software pipelining of outer loops during selective scheduling."
-msgstr "Realiza el `pipelining' de software de los bucles externos durante la calendarización selectiva."
+msgstr "Realiza el `pipelining' de software de los bucles externos durante la planificación selectiva."
 
 #: common.opt:2066
 #, fuzzy
@@ -16839,7 +16649,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Allow premature scheduling of queued insns"
 msgid "Allow premature scheduling of queued insns."
-msgstr "Permite la calendarización prematura de insns encoladas."
+msgstr "Permite la planificación prematura de insns encoladas."
 
 #: common.opt:2080
 #, fuzzy
@@ -16851,13 +16661,13 @@ msgstr "-fsched-stalled-insns=<número>\tEstablece el número de insns encoladas
 #, fuzzy
 #| msgid "Set dependence distance checking in premature scheduling of queued insns"
 msgid "Set dependence distance checking in premature scheduling of queued insns."
-msgstr "Establece la revisión de distancia de dependencias en la calendarización prematura de insns encoladas."
+msgstr "Establece la revisión de distancia de dependencias en la planificación prematura de insns encoladas."
 
 #: common.opt:2092
 #, fuzzy
 #| msgid "-fsched-stalled-insns-dep=<number>\tSet dependence distance checking in premature scheduling of queued insns"
 msgid "-fsched-stalled-insns-dep=<number>\tSet dependence distance checking in premature scheduling of queued insns."
-msgstr "-fsched-stalled-insns-dep=<número>\tEstablece la revisión de distancia de dependencias en la calendarización prematura de insns encoladas."
+msgstr "-fsched-stalled-insns-dep=<número>\tEstablece la revisión de distancia de dependencias en la planificación prematura de insns encoladas."
 
 #: common.opt:2096
 #, fuzzy
@@ -22813,7 +22623,7 @@ msgstr "-fname-mangling-version ya no tiene soporte"
 #: toplev.c:1316
 #, gcc-internal-format
 msgid "instruction scheduling not supported on this target machine"
-msgstr "no se admite la calendarización de instrucciones en este objetivo"
+msgstr "no se admite la planificación de instrucciones en este objetivo"
 
 #: toplev.c:1320
 #, gcc-internal-format
@@ -31375,7 +31185,7 @@ msgstr "la generación de instrucciones Probables a Ramificar está activada, pe
 #, fuzzy, gcc-internal-format
 #| msgid "instruction scheduling not supported on this target machine"
 msgid "CDX instructions are only supported with R2 architecture"
-msgstr "no se admite la calendarización de instrucciones en este objetivo"
+msgstr "no se admite la planificación de instrucciones en este objetivo"
 
 #: config/nios2/nios2.c:1383
 #, fuzzy, gcc-internal-format
@@ -63748,10 +63558,10 @@ msgstr "se crea un selector para el método %qE que no existe"
 #~ msgstr "Especifica el rango de registros a convertir en fijos"
 
 #~ msgid "If set, data speculative instructions will be chosen for schedule only if there are no other choices at the moment "
-#~ msgstr "Si está definido, se escogerán las instrucciones especulativas de datos para calendarización sólo si no hay otras opciones por el momento"
+#~ msgstr "Si está definido, se escogerán las instrucciones especulativas de datos para planificación sólo si no hay otras opciones por el momento"
 
 #~ msgid "If set, control speculative instructions will be chosen for schedule only if there are no other choices at the moment "
-#~ msgstr "Si está definido, se escogerán el control especulativo de instrucciones para calendarización sólo si no hay otras opciones por el momento"
+#~ msgstr "Si está definido, se escogerán el control especulativo de instrucciones para planificación sólo si no hay otras opciones por el momento"
 
 #~ msgid "Ignored (obsolete)"
 #~ msgstr "Se descarta (obsoleto)"
@@ -63812,7 +63622,7 @@ msgstr "se crea un selector para el método %qE que no existe"
 #~ msgstr "Soporte para el ABI Green Hills"
 
 #~ msgid "Specify CPU for scheduling purposes"
-#~ msgstr "Especifica el CPU para propósitos de calendarización"
+#~ msgstr "Especifica el CPU para propósitos de planificación"
 
 #~ msgid "Specify which type of AE to target. This option sets the mul-type and byte-access."
 #~ msgstr "Especifica a qué tipo de AE se apunta. Esta opción establece el tipo muly el acceso a byte."
@@ -66103,7 +65913,7 @@ msgstr "se crea un selector para el método %qE que no existe"
 #~ msgstr "faltan argumentos para \"-%s\""
 
 #~ msgid "If scheduling post reload, do trace scheduling"
-#~ msgstr "Si se calendariza después de la recarga, hace trazado de calendarización"
+#~ msgstr "Si se calendariza después de la recarga, hace trazado de planificación"
 
 #~ msgid "(Each undeclared identifier is reported only once"
 #~ msgstr "(Cada identificador sin declarar solamente se reporta una vez"
@@ -68112,7 +67922,7 @@ msgstr "se crea un selector para el método %qE que no existe"
 #~ "\n"
 
 #~ msgid "Maximum number of loops to perform swing modulo scheduling on (mainly for debugging)"
-#~ msgstr "Número máximo de bucles que realizan calendarización de cambio de módulo en (principalmente para depuración)"
+#~ msgstr "Número máximo de bucles que realizan planificación de cambio de módulo en (principalmente para depuración)"
 
 #~ msgid "Given N calls and V call-clobbered vars in a function.  Use .GLOBAL_VAR if NxV is larger than this limit"
 #~ msgstr "Dadas N llamadas y V variables sobreescritas por llamada en una función.  Use .GLOBAL_VAR si NxV es mayor que este límite"
@@ -69518,7 +69328,7 @@ msgstr "se crea un selector para el método %qE que no existe"
 #~ msgstr "No establece las definiciones de Windows"
 
 #~ msgid "Align doubles on word boundary"
-#~ msgstr "Alínea doubles en límites de word"
+#~ msgstr "Alinea doubles en límites de word"
 
 #~ msgid "Uninitialized locals in .data"
 #~ msgstr "Locales sin inicializar en .data"
@@ -69533,7 +69343,7 @@ msgstr "se crea un selector para el método %qE que no existe"
 #~ msgstr "No genera sin, cos, sqrt para FPU"
 
 #~ msgid "Do not align destination of the string operations"
-#~ msgstr "No alínea destino de las operaciones de cadenas"
+#~ msgstr "No alinea destino de las operaciones de cadenas"
 
 #~ msgid "Do not inline all known string operations"
 #~ msgstr "No convierte a inline todas las operaciones de cadenas conocidas"
@@ -69800,7 +69610,7 @@ msgstr "se crea un selector para el método %qE que no existe"
 #~ msgstr "Especifica sí/no si se utiliza la coma flotante en los GPRs"
 
 #~ msgid "Don't align to the base type of the bit-field"
-#~ msgstr "No alínea al tipo base del campo de bit"
+#~ msgstr "No alinea al tipo base del campo de bit"
 
 #~ msgid "Assume that unaligned accesses are handled by the system"
 #~ msgstr "Asume que los accesos sin alinear son manejados por el sistema"
