@@ -27174,6 +27174,7 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
      Call simplify_replace_rtx on the SETs rather than the whole insn
      so as to leave the other stuff alone (for example USE of r12).  */
 
+  set_used_flags (pat);
   if (GET_CODE (pat) == SET)
     {
       if (repl)
@@ -27185,6 +27186,7 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
     {
       pat = shallow_copy_rtx (pat);
       XVEC (pat, 0) = shallow_copy_rtvec (XVEC (pat, 0));
+      RTX_FLAG (pat, used) = 0;
 
       for (int i = 0; i < XVECLEN (pat, 0); i++)
 	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
@@ -27207,8 +27209,7 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
     gcc_unreachable ();
 
   RTX_FRAME_RELATED_P (insn) = 1;
-  if (repl || reg2)
-    add_reg_note (insn, REG_FRAME_RELATED_EXPR, pat);
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, copy_rtx_if_shared (pat));
 
   return insn;
 }

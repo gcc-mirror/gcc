@@ -1,3 +1,12 @@
+2016-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78614
+	* config/rs6000/rs6000.c (rs6000_frame_related): Call
+	set_used_flags (pat) before any simplifications.  Clear used flag on
+	PARALLEL copy.  Don't guard add_reg_note call.  Call
+	copy_rtx_if_shared on pat before storing it into
+	REG_FRAME_RELATED_EXPR.
+
 2016-12-01  Alan Modra  <amodra@gmail.com>
 
 	* gcc/config/rs6000/rs6000.c (insn_is_swappable_p): Properly
