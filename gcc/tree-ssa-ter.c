@@ -169,6 +169,8 @@ struct temp_expr_table
   bitmap new_replaceable_dependencies;	/* Holding place for pending dep's.  */
   int *num_in_part;			/* # of ssa_names in a partition.  */
   int *call_cnt;			/* Call count at definition.  */
+  int *reg_vars_cnt;			/* Number of register variable
+					   definitions encountered.  */
 };
 
 /* Used to indicate a dependency on VDEFs.  */
@@ -212,6 +214,7 @@ new_temp_expr_table (var_map map)
         t->num_in_part[p]++;
     }
   t->call_cnt = XCNEWVEC (int, num_ssa_names + 1);
+  t->reg_vars_cnt = XCNEWVEC (int, num_ssa_names + 1);
 
   return t;
 }
@@ -244,6 +247,7 @@ free_temp_expr_table (temp_expr_table *t)
   free (t->partition_dependencies);
   free (t->num_in_part);
   free (t->call_cnt);
+  free (t->reg_vars_cnt);
 
   if (t->replaceable_expressions)
     ret = t->replaceable_expressions;
@@ -436,7 +440,8 @@ ter_is_replaceable_p (gimple *stmt)
 /* Create an expression entry for a replaceable expression.  */
 
 static void
-process_replaceable (temp_expr_table *tab, gimple *stmt, int call_cnt)
+process_replaceable (temp_expr_table *tab, gimple *stmt, int call_cnt,
+		     int reg_vars_cnt)
 {
   tree var, def, basevar;
   int version;
@@ -478,6 +483,7 @@ process_replaceable (temp_expr_table *tab, gimple *stmt, int call_cnt)
     }
 
   tab->call_cnt[version] = call_cnt;
+  tab->reg_vars_cnt[version] = reg_vars_cnt;
 }
 
 
@@ -574,6 +580,7 @@ find_replaceable_in_bb (temp_expr_table *tab, basic_block bb)
   ssa_op_iter iter;
   bool stmt_replaceable;
   int cur_call_cnt = 0;
+  int cur_reg_vars_cnt = 0;
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
@@ -650,11 +657,14 @@ find_replaceable_in_bb (temp_expr_table *tab, basic_block bb)
 	      /* Mark expression as replaceable unless stmt is volatile, or the
 		 def variable has the same root variable as something in the
 		 substitution list, or the def and use span a call such that
-		 we'll expand lifetimes across a call.  */
+		 we'll expand lifetimes across a call.  We also don't want to
+		 replace across these expressions that may call libcalls that
+		 clobber the register involved.  See PR 70184.  */
 	      if (gimple_has_volatile_ops (stmt) || same_root_var
 		  || (tab->call_cnt[ver] != cur_call_cnt
 		      && SINGLE_SSA_USE_OPERAND (SSA_NAME_DEF_STMT (use), SSA_OP_USE)
-			 == NULL_USE_OPERAND_P))
+			 == NULL_USE_OPERAND_P)
+		  || tab->reg_vars_cnt[ver] != cur_reg_vars_cnt)
 		finished_with_expr (tab, ver, true);
 	      else
 		mark_replaceable (tab, use, stmt_replaceable);
@@ -677,9 +687,16 @@ find_replaceable_in_bb (temp_expr_table *tab, basic_block bb)
 	       && DECL_BUILT_IN (fndecl)))
 	cur_call_cnt++;
 
+      /* Increment counter if this statement sets a local
+	 register variable.  */
+      if (gimple_assign_single_p (stmt)
+	  && (TREE_CODE (gimple_assign_lhs (stmt)) == VAR_DECL
+	  && DECL_HARD_REGISTER (gimple_assign_lhs (stmt))))
+	cur_reg_vars_cnt++;
+
       /* Now see if we are creating a new expression or not.  */
       if (stmt_replaceable)
-	process_replaceable (tab, stmt, cur_call_cnt);
+	process_replaceable (tab, stmt, cur_call_cnt, cur_reg_vars_cnt);
 
       /* Free any unused dependency lists.  */
       bitmap_clear (tab->new_replaceable_dependencies);

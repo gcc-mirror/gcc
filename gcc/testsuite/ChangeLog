@@ -1,3 +1,12 @@
+2016-12-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/48863
+	PR inline-asm/70184
+	* gcc.target/arm/pr48863.c: New test.
+
 2016-11-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78500
