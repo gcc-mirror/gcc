@@ -2042,6 +2042,25 @@ add_function_candidate (struct z_candidate **candidates,
       reason = arity_rejection (first_arg, i + remaining, len);
     }
 
+  /* A constructor that is a direct member of a class C and has a first
+     parameter of type "reference to cv C" (including such a constructor
+     instantiated from a template) is excluded from the set of candidate
+     functions when used to construct an object of type derived from C (12.6.3
+     [class.inhctor.init]) with an argument list containing a single
+     argument.  */
+  if (viable && len == 1 && parmlist && DECL_CONSTRUCTOR_P (fn)
+      && flag_new_inheriting_ctors
+      && DECL_INHERITED_CTOR (fn))
+    {
+      tree ptype = non_reference (TREE_VALUE (parmlist));
+      tree ctype = DECL_INHERITED_CTOR_BASE (fn);
+      if (same_type_ignoring_top_level_qualifiers_p (ptype, ctype))
+	{
+	  viable = false;
+	  reason = inherited_ctor_rejection ();
+	}
+    }
+
   /* Second, for a function to be viable, its constraints must be
      satisfied. */
   if (flag_concepts && viable
