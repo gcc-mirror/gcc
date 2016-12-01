@@ -1,3 +1,8 @@
+2016-12-01  Alan Modra  <amodra@gmail.com>
+
+	* gcc/config/rs6000/rs6000.c (insn_is_swappable_p): Properly
+	look inside UNSPEC_VSX_XXSPLTW vec.
+
 2016-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78607
