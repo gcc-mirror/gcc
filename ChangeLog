@@ -1,3 +1,8 @@
+2016-12-01  Ma Jiang  <ma.jiang@zte.com.cn>
+
+	* config/acx.m4: Change "tail +16c" to "tail -c +17".
+	* configure: Regenerated.
+
 2016-12-01  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Don't use pkg-config to check for bdw-gc.
