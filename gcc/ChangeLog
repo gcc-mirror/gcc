@@ -1,3 +1,18 @@
+2016-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+            David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.opt (mlra): New target option.
+	* config/sparc/sparc.c (TARGET_LRA_P): Define to...
+	(sparc_lra_p): ...this.  New function.
+	(D_MODES, DF_MODES): Add missing cast.
+	* config/sparc/sparc.md (*movsi_lo_sum, *movsi_high): Do not
+	provide these insns when flag_pic.
+	(sethi_di_medlow, losum_di_medlow, seth44, setm44, setl44, sethh,
+	setlm, sethm, setlo, embmedany_sethi, embmedany_losum,
+	embmedany_brsum, embmedany_textuhi, embmedany_texthi,
+	embmedany_textulo, embmedany_textlo): Likewise.
+	(sethi_di_medlow_embmedany_pic): Provide it only with flag_pic.
+
 2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR debug/66419
