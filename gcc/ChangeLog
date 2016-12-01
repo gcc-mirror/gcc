@@ -1,3 +1,8 @@
+2016-12-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (indirect_refs_may_alias_p): Do not
+	treat arrays with same type as objects that cannot overlap.
+
 2016-12-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_print_operand): Use SYMBOL_REF_P if possible.

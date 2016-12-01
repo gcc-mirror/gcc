@@ -1,3 +1,7 @@
+2016-12-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/alias-2.c: New testcase.
+
 2016-12-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/tiny-memx.c: Only perform if target avr_tiny.
