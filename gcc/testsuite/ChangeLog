@@ -1,3 +1,7 @@
+2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/tls/pr77285-1.C: dg-add-options tls
+
 2016-12-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/pr78582.c (main): Call setjmp, not sigsetjmp.
