@@ -490,7 +490,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::ceil;
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   copysign(float __x, float __y)
   { return __builtin_copysignf(__x, __y); }
@@ -511,7 +511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::cos;
   using std::cosh;  
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   erf(float __x)
   { return __builtin_erff(__x); }
@@ -527,7 +527,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erf(_Tp __x)
     { return __builtin_erf(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   erfc(float __x)
   { return __builtin_erfcf(__x); }
@@ -545,7 +545,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::exp;
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   exp2(float __x)
   { return __builtin_exp2f(__x); }
@@ -561,7 +561,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     exp2(_Tp __x)
     { return __builtin_exp2(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   expm1(float __x)
   { return __builtin_expm1f(__x); }
@@ -603,7 +603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __builtin_fabs(__x); }
 #endif
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fdim(float __x, float __y)
   { return __builtin_fdimf(__x, __y); }
@@ -623,7 +623,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::floor;
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fma(float __x, float __y, float __z)
   { return __builtin_fmaf(__x, __y, __z); }
@@ -641,7 +641,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fma(__type(__x), __type(__y), __type(__z));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fmax(float __x, float __y)
   { return __builtin_fmaxf(__x, __y); }
@@ -659,7 +659,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fmax(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fmin(float __x, float __y)
   { return __builtin_fminf(__x, __y); }
@@ -680,7 +680,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::fmod;
   using std::frexp;
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   hypot(float __x, float __y)
   { return __builtin_hypotf(__x, __y); }
@@ -716,7 +716,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::ldexp;
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   lgamma(float __x)
   { return __builtin_lgammaf(__x); }
@@ -732,7 +732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lgamma(_Tp __x)
     { return __builtin_lgamma(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long long
   llrint(float __x)
   { return __builtin_llrintf(__x); }
@@ -748,7 +748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     llrint(_Tp __x)
     { return __builtin_llrint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long long
   llround(float __x)
   { return __builtin_llroundf(__x); }
@@ -767,7 +767,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::log;
   using std::log10;
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   log1p(float __x)
   { return __builtin_log1pf(__x); }
@@ -784,7 +784,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __builtin_log1p(__x); }
 
   // DR 568.
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   log2(float __x)
   { return __builtin_log2f(__x); }
@@ -800,7 +800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     log2(_Tp __x)
     { return __builtin_log2(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   logb(float __x)
   { return __builtin_logbf(__x); }
@@ -818,7 +818,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __builtin_logb(__x);
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long
   lrint(float __x)
   { return __builtin_lrintf(__x); }
@@ -834,7 +834,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lrint(_Tp __x)
     { return __builtin_lrint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long
   lround(float __x)
   { return __builtin_lroundf(__x); }
@@ -850,7 +850,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lround(_Tp __x)
     { return __builtin_lround(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP_FP
   inline float
   nearbyint(float __x)
   { return __builtin_nearbyintf(__x); }
@@ -866,7 +866,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     nearbyint(_Tp __x)
     { return __builtin_nearbyint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   nextafter(float __x, float __y)
   { return __builtin_nextafterf(__x, __y); }
@@ -884,7 +884,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return nextafter(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP_FP
   inline float
   nexttoward(float __x, long double __y)
   { return __builtin_nexttowardf(__x, __y); }
@@ -900,7 +900,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     nexttoward(_Tp __x, long double __y)
     { return __builtin_nexttoward(__x, __y); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   remainder(float __x, float __y)
   { return __builtin_remainderf(__x, __y); }
@@ -918,7 +918,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return remainder(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   remquo(float __x, float __y, int* __pquo)
   { return __builtin_remquof(__x, __y, __pquo); }
@@ -936,7 +936,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return remquo(__type(__x), __type(__y), __pquo);
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   rint(float __x)
   { return __builtin_rintf(__x); }
@@ -952,7 +952,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     rint(_Tp __x)
     { return __builtin_rint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   round(float __x)
   { return __builtin_roundf(__x); }
@@ -968,7 +968,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     round(_Tp __x)
     { return __builtin_round(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   scalbln(float __x, long __ex)
   { return __builtin_scalblnf(__x, __ex); }
@@ -984,7 +984,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     scalbln(_Tp __x, long __ex)
     { return __builtin_scalbln(__x, __ex); }
  
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   scalbn(float __x, int __ex)
   { return __builtin_scalbnf(__x, __ex); }
@@ -1006,7 +1006,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::tan;
   using std::tanh;
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   tgamma(float __x)
   { return __builtin_tgammaf(__x); }
@@ -1022,7 +1022,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     tgamma(_Tp __x)
     { return __builtin_tgamma(__x); }
  
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   trunc(float __x)
   { return __builtin_truncf(__x); }
@@ -1064,7 +1064,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // the discussion about this issue here:
   // http://gcc.gnu.org/ml/gcc-patches/2012-09/msg01278.html
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   pow(float __x, float __y)
   { return std::pow(__x, __y); }
