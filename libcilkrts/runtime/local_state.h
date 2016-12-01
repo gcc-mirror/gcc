@@ -360,6 +360,13 @@ struct local_state  /* COMMON_PORTABLE */
     unsigned int steal_failure_count;
 
     /**
+     * Record indicating that the worker stole work at least once.
+     *
+     * [local read/write]
+     */
+    int has_stolen;
+
+    /**
      * 1 if work was stolen from another worker.  When true, this will flag
      * setup_for_execution_pedigree to increment the pedigree when we resume
      * execution to match the increment that would have been done on a return

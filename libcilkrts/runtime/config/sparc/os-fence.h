@@ -47,33 +47,18 @@
  *  for your assistance in helping us improve Cilk Plus.
  **************************************************************************/
 
-// __atomic_* intrinsics are available since GCC 4.7.
-#define HAVE_ATOMIC_INTRINSICS defined(__GNUC__) && \
-                               (__GNUC__ * 10 + __GNUC_MINOR__ >= 47)
-
 // GCC before 4.4 does not implement __sync_synchronize properly
 #define HAVE_SYNC_INTRINSICS defined(__GNUC__) && \
                              (__GNUC__ * 10 + __GNUC_MINOR__ >= 44)
 
 /*
  * void __cilkrts_fence(void)
- *
- * Executes an MFENCE instruction to serialize all load and store instructions
- * that were issued prior the MFENCE instruction. This serializing operation
- * guarantees that every load and store instruction that precedes the MFENCE
- * instruction is globally visible before any load or store instruction that
- * follows the MFENCE instruction. The MFENCE instruction is ordered with
- * respect to all load and store instructions, other MFENCE instructions, any
- * SFENCE and LFENCE instructions, and any serializing instructions (such as
- * the CPUID instruction).
  */
 
-#if HAVE_ATOMIC_INTRINSICS
-#   define __cilkrts_fence() __atomic_thread_fence(__ATOMIC_SEQ_CST)
-#elif HAVE_SYNC_INTRINSICS
+#if HAVE_SYNC_INTRINSICS
 #   define __cilkrts_fence() __sync_synchronize()
+#elif defined(__GNUC__)
+#   define __cilkrts_fence() __asm__ volatile ("membar #StoreLoad" ::: "memory")
 #else
-#   define __cilkrts_fence()
-// Leaving this code just in case.
-//# define __cilkrts_fence() __asm__ __volatile__ ("mcr   p15,0,%[t],c7,c10,4\n" :: [t] "r" (0) : "memory");
+COMMON_SYSDEP void __cilkrts_fence(void);
 #endif

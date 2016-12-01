@@ -1,4 +1,7 @@
-/*
+/* os-unix-sysdep.c                  -*-C-*-
+ *
+ *************************************************************************
+ *
  *  Copyright (C) 2009-2016, Intel Corporation
  *  All rights reserved.
  *  
@@ -42,98 +45,71 @@
  *  
  *  We welcome your contributions to this open source project. Thank you
  *  for your assistance in helping us improve Cilk Plus.
+ *************************************************************************
  *
- ******************************************************************************
- *
- * cilk_undocumented.h
- *
- * This file defines exported functions that are not included in the standard
- * documentation.
+ * This file contains system-specific code for sparc-based systems
  */
 
-#ifndef INCLUDED_CILK_UNDOCUMENTED_H
-#define INCLUDED_CILK_UNDOCUMENTED_H
-
-#include <cilk/common.h>
-
-#ifndef CILK_STUB
-
-__CILKRTS_BEGIN_EXTERN_C
+#include "os.h"
+#include "sysdep.h"
 
 /*
- * __cilkrts_synched
- *
- * Allows an application to determine if there are any outstanding children at
- * this instant. This function will examine the current full frame to
- * determine this. This function will return a valid result only when called
- * within a spawn continuation, within the stack frame of the continuation
- * itself.
+ * The cycle counter is used for debugging.  This function is only called if
+ * CILK_PROFILE is defined when the runtime is built.
  */
-
-CILK_EXPORT __CILKRTS_NOTHROW
-int __cilkrts_synched(void);
-
-/*
- * __cilkrts_cilkscreen_puts
- *
- * Allows an application to write a string to the Cilkscreen log.
- * The standard error stream will be flushed after the write.
- */
-
-CILK_EXPORT __CILKRTS_NOTHROW
-void __cilkrts_cilkscreen_puts(const char *);
-
-/*
- * __cilkrts_get_sf
- *
- * A debugging aid that allows an application to get the __cilkrts_stack_frame
- * for the current function.  Only compiled into the DLL in debug builds.
- */
-
-CILK_EXPORT __CILKRTS_NOTHROW
-void *__cilkrts_get_sf(void);
-
-/**
- * Returns the size of stacks created by Intel(R) Cilk(TM) Plus.
- */
-CILK_EXPORT __CILKRTS_NOTHROW
-size_t __cilkrts_get_stack_size(void);
-
-/** 
- * Dumps runtime statistics to stderr.
- * Undocumented API for debugging. 
- */
-CILK_EXPORT __CILKRTS_NOTHROW
-void __cilkrts_dump_stats(void);
-
-struct __cilk_tbb_unwatch_thunk;
-struct __cilk_tbb_stack_op_thunk;
-
-CILK_EXPORT __CILKRTS_NOTHROW
-int __cilkrts_watch_stack(struct __cilk_tbb_unwatch_thunk *u,
-                          struct __cilk_tbb_stack_op_thunk o);
-
-#ifndef IN_CILK_RUNTIME
-#ifdef _WIN32
-/* Do not use CILK_API because __cilkrts_worker_stub must be __stdcall */
-CILK_EXPORT unsigned __CILKRTS_NOTHROW __stdcall
-__cilkrts_worker_stub(void *arg);
+COMMON_SYSDEP unsigned long long __cilkrts_getticks(void)
+{
+    unsigned long long tick;
+#ifdef __sparcv9
+    __asm__ volatile("rd %%tick, %0" : "=r"(tick));
 #else
-/* Do not use CILK_API because __cilkrts_worker_stub have default visibility */
-CILK_EXPORT void* __CILKRTS_NOTHROW
-__cilkrts_worker_stub(void *arg);
-#endif /* _WIN32 */
-#endif /* IN_CILK_RUNTIME */
+    __asm__ volatile("rd %%tick, %L0\n"
+                     "srlx %L0, 32, %H0"
+                     : "=r"(tick));
+#endif
+    return tick;
+}
 
-__CILKRTS_END_EXTERN_C
+/*
+ * A "short pause" - called from the Cilk runtime's spinloops.
+ */
+COMMON_SYSDEP void __cilkrts_short_pause(void)
+{
+    /* Spin around for 8 cycles.  */
+    __asm__ volatile("rd %ccr, %g0");
+    __asm__ volatile("rd %ccr, %g0");
+    __asm__ volatile("rd %ccr, %g0");
+    __asm__ volatile("rd %ccr, %g0");
+}
 
-#else /* CILK_STUB */
+/*
+ * Interlocked exchange - used to implement the Cilk runtime's spinloops
+ */
+COMMON_SYSDEP int __cilkrts_xchg(volatile int *ptr, int x)
+{
+    x = __sync_lock_test_and_set(ptr, x);
+    return x;
+}
 
-/* Stubs for the api functions */
 
-#define __cilkrts_get_stack_size() (0)
-#define __cilkrts_synched() (1)
+/*
+ * Restore the floating point state that is stored in a stack frame at each
+ * spawn.  This should be called each time a frame is resumed.
+ *
+ * Only valid for IA32 and Intel64 processors.
+ */
+void restore_x86_fp_state (__cilkrts_stack_frame *sf)
+{
+}
 
-#endif /* CILK_STUB */
 
-#endif /* INCLUDED_CILK_UNDOCUMENTED_H */
+/*
+ * Save the floating point state to the __cilkrts_stack_frame at each spawn.
+ *
+ * Architecture-specific - Should only be needed on IA32 and Intel64
+ * processors.
+ */
+void sysdep_save_fp_ctrl_state(__cilkrts_stack_frame *sf)
+{
+}
+
