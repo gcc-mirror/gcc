@@ -40675,7 +40675,7 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
 	    if (GET_CODE (use_body) != SET
 		|| GET_CODE (SET_SRC (use_body)) != UNSPEC
 		|| XINT (SET_SRC (use_body), 1) != UNSPEC_VSX_XXSPLTW
-		|| XEXP (XEXP (SET_SRC (use_body), 0), 1) != const0_rtx)
+		|| XVECEXP (SET_SRC (use_body), 0, 1) != const0_rtx)
 	      return 0;
 	  }
 	}
