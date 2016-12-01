@@ -1,3 +1,8 @@
+2016-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* dwarf2out.c (dwarf2out_c_finalize): Reset early_dwarf and
+	early_dwarf_finished.
+
 2016-12-01  Eric Botcazou  <ebotcazou@adacore.com>
             David S. Miller  <davem@davemloft.net>
 
