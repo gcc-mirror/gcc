@@ -29830,6 +29830,9 @@ dwarf2out_c_finalize (void)
   cold_text_section = NULL;
   current_unit_personality = NULL;
 
+  early_dwarf = false;
+  early_dwarf_finished = false;
+
   next_die_offset = 0;
   single_comp_unit_die = NULL;
   comdat_type_list = NULL;
