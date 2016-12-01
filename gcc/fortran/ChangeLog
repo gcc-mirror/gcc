@@ -1,3 +1,9 @@
+2016-12-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78279
+	* dependency.c (identical_array_ref): Convert gcc_assert to conditional
+	and gfc_internal_error.
+
 2016-11-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78500
