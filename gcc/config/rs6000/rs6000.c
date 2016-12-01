@@ -3333,28 +3333,28 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
       static const struct fuse_insns addis_insns[] = {
 	{ SFmode, DImode, RELOAD_REG_FPR,
-	  CODE_FOR_fusion_fpr_di_sf_load,
-	  CODE_FOR_fusion_fpr_di_sf_store },
+	  CODE_FOR_fusion_vsx_di_sf_load,
+	  CODE_FOR_fusion_vsx_di_sf_store },
 
 	{ SFmode, SImode, RELOAD_REG_FPR,
-	  CODE_FOR_fusion_fpr_si_sf_load,
-	  CODE_FOR_fusion_fpr_si_sf_store },
+	  CODE_FOR_fusion_vsx_si_sf_load,
+	  CODE_FOR_fusion_vsx_si_sf_store },
 
 	{ DFmode, DImode, RELOAD_REG_FPR,
-	  CODE_FOR_fusion_fpr_di_df_load,
-	  CODE_FOR_fusion_fpr_di_df_store },
+	  CODE_FOR_fusion_vsx_di_df_load,
+	  CODE_FOR_fusion_vsx_di_df_store },
 
 	{ DFmode, SImode, RELOAD_REG_FPR,
-	  CODE_FOR_fusion_fpr_si_df_load,
-	  CODE_FOR_fusion_fpr_si_df_store },
+	  CODE_FOR_fusion_vsx_si_df_load,
+	  CODE_FOR_fusion_vsx_si_df_store },
 
 	{ DImode, DImode, RELOAD_REG_FPR,
-	  CODE_FOR_fusion_fpr_di_di_load,
-	  CODE_FOR_fusion_fpr_di_di_store },
+	  CODE_FOR_fusion_vsx_di_di_load,
+	  CODE_FOR_fusion_vsx_di_di_store },
 
 	{ DImode, SImode, RELOAD_REG_FPR,
-	  CODE_FOR_fusion_fpr_si_di_load,
-	  CODE_FOR_fusion_fpr_si_di_store },
+	  CODE_FOR_fusion_vsx_si_di_load,
+	  CODE_FOR_fusion_vsx_si_di_store },
 
 	{ QImode, DImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_di_qi_load,
@@ -3414,6 +3414,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
 	  reg_addr[xmode].fusion_addis_ld[rtype] = addis_insns[i].load;
 	  reg_addr[xmode].fusion_addis_st[rtype] = addis_insns[i].store;
+
+	  if (rtype == RELOAD_REG_FPR && TARGET_P9_DFORM_SCALAR)
+	    {
+	      reg_addr[xmode].fusion_addis_ld[RELOAD_REG_VMX]
+		= addis_insns[i].load;
+	      reg_addr[xmode].fusion_addis_st[RELOAD_REG_VMX]
+		= addis_insns[i].store;
+	    }
 	}
     }
 
@@ -37835,6 +37843,15 @@ emit_fusion_p9_load (rtx reg, rtx mem, rtx tmp_reg)
       else
 	gcc_unreachable ();
     }
+  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_DFORM_SCALAR)
+    {
+      if (mode == SFmode)
+	load_string = "lxssp";
+      else if (mode == DFmode || mode == DImode)
+	load_string = "lxsd";
+      else
+	gcc_unreachable ();
+    }
   else if (INT_REGNO_P (r))
     {
       switch (mode)
@@ -37910,6 +37927,15 @@ emit_fusion_p9_store (rtx mem, rtx reg, rtx tmp_reg)
 	store_string = "stfs";
       else if (mode == DFmode)
 	store_string = "stfd";
+      else
+	gcc_unreachable ();
+    }
+  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_DFORM_SCALAR)
+    {
+      if (mode == SFmode)
+	store_string = "stxssp";
+      else if (mode == DFmode || mode == DImode)
+	store_string = "stxsd";
       else
 	gcc_unreachable ();
     }
