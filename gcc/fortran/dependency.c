@@ -101,7 +101,9 @@ identical_array_ref (gfc_array_ref *a1, gfc_array_ref *a2)
 
   if (a1->type == AR_ELEMENT && a2->type == AR_ELEMENT)
     {
-      gcc_assert (a1->dimen == a2->dimen);
+      if (a1->dimen != a2->dimen)
+	gfc_internal_error ("identical_array_ref(): inconsistent dimensions");
+
       for (i = 0; i < a1->dimen; i++)
 	{
 	  if (gfc_dep_compare_expr (a1->start[i], a2->start[i]) != 0)
