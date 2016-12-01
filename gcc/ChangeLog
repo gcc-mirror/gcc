@@ -1,3 +1,11 @@
+2016-12-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/78577
+	* config/rs6000/vsx.md (vextuhlx): Revise mode of operand 2.
+	(vextuhrx): Likewise.
+	(vextuwlx): Likewise.
+	(vextuwrx): Likewise.
+
 2016-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* dwarf2out.c (dwarf2out_c_finalize): Reset early_dwarf and
