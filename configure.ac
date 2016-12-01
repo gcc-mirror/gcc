@@ -29,7 +29,6 @@ m4_include([ltsugar.m4])
 m4_include([ltversion.m4])
 m4_include([lt~obsolete.m4])
 m4_include([config/isl.m4])
-m4_include([config/pkg.m4])
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.64)
@@ -2076,10 +2075,8 @@ AC_ARG_WITH([target-bdw-gc-lib],
 case ,${enable_languages},:${enable_objc_gc} in *,objc,*:yes|*,objc,*:auto)
   AC_MSG_CHECKING([for bdw garbage collector])
   if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
-    dnl no bdw-gw options, fall back to the bdw-gc pkg-config module
-    PKG_CHECK_EXISTS(bdw-gc,
-      AC_MSG_RESULT([using bdw-gc pkg-config module]),
-      AC_MSG_ERROR([no --with-target-bdw-gc options and no bdw-gc pkg-config module found]))
+    dnl no bdw-gw options, assume default locations
+    AC_MSG_RESULT([using bdw-gc in default locations])
   else
     dnl bdw-gw options, first error checking, complete checking in libobjc
     if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then

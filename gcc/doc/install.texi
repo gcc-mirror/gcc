@@ -2204,8 +2204,7 @@ The options @option{--with-target-bdw-gc-include} and
 @option{--with-target-bdw-gc-lib} must always be specified together
 for each multilib variant and they take precedence over
 @option{--with-target-bdw-gc}.  If none of these options are
-specified, the values are taken from the @command{pkg-config}
-@samp{bdw-gc} module.
+specified, the library is assumed in default locations.
 @end table
 
 @html
