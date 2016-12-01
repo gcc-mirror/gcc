@@ -1355,7 +1355,10 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1
       && same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1
       && same_type_for_tbaa (TREE_TYPE (ptrtype1),
-			     TREE_TYPE (ptrtype2)) == 1)
+			     TREE_TYPE (ptrtype2)) == 1
+      /* But avoid treating arrays as "objects", instead assume they
+         can overlap by an exact multiple of their element size.  */
+      && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE)
     return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
 
   /* Do type-based disambiguation.  */
