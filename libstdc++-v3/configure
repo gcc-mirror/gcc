@@ -18235,11 +18235,11 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   case "$host" in
     *-*-solaris2.*)
-      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
-      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> overloads" >&5
-$as_echo_n "checking for C++11 <math.h> overloads... " >&6; }
-      if test "${glibcxx_cv_math11_overload+set}" = set; then :
+      # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> floating point overloads" >&5
+$as_echo_n "checking for C++11 <math.h> floating point overloads... " >&6; }
+      if test "${glibcxx_cv_math11_fp_overload+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -18254,9 +18254,9 @@ else
 
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_math11_overload=no
+  glibcxx_cv_math11_fp_overload=no
 else
-  glibcxx_cv_math11_overload=yes
+  glibcxx_cv_math11_fp_overload=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
@@ -18266,12 +18266,74 @@ fi
       # autoheader cannot handle indented templates.
 
 
-      if test $glibcxx_cv_math11_overload = yes; then
-        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO 1" >>confdefs.h
+      if test $glibcxx_cv_math11_fp_overload = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO_FP 1" >>confdefs.h
 
       fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_overload" >&5
-$as_echo "$glibcxx_cv_math11_overload" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_fp_overload" >&5
+$as_echo "$glibcxx_cv_math11_fp_overload" >&6; }
+
+      # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> integral type overloads" >&5
+$as_echo_n "checking for C++11 <math.h> integral type overloads... " >&6; }
+      if test "${glibcxx_cv_math11_int_overload+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+	   namespace std {
+	     template<typename _Tp>
+	       struct __is_integer;
+	     template<>
+	       struct __is_integer<int>
+	       {
+	         enum { __value = 1 };
+	       };
+	   }
+	   namespace __gnu_cxx {
+	     template<bool, typename>
+	       struct __enable_if;
+	     template<typename _Tp>
+	       struct __enable_if<true, _Tp>
+	       { typedef _Tp __type; };
+	   }
+	   namespace std {
+	     template<typename _Tp>
+	       constexpr typename __gnu_cxx::__enable_if
+	       		 <__is_integer<_Tp>::__value, double>::__type
+	       log2(_Tp __x)
+	       { return __builtin_log2(__x); }
+	   }
+	   int
+	   main (void)
+	   {
+	     int i = 1000;
+	     return std::log2(i);
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_math11_int_overload=no
+else
+  glibcxx_cv_math11_int_overload=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+      # autoheader cannot handle indented templates.
+
+
+      if test $glibcxx_cv_math11_int_overload = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO_INT 1" >>confdefs.h
+
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_int_overload" >&5
+$as_echo "$glibcxx_cv_math11_int_overload" >&6; }
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)

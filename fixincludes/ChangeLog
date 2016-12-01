@@ -1,3 +1,13 @@
+2016-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2016-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_math_12): New fix.
+	(hpux11_fabsf): Replace bypass by *-hp-hpux11* mach selector.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h [SOLARIS_MATH_12_CHECK]: New test.
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.
