@@ -1,3 +1,9 @@
+2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR debug/66419
+	PR c++/78235
+	* dbxout.c (dbxout_type_fields): Skip TEMPLATE_DECLs.
+
 2016-12-01  Richard Biener  <rguenther@suse.de>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
