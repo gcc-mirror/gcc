@@ -1,3 +1,9 @@
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Fix and harden the
+	pattern checks.
+	* gcc.target/s390/zvector/vec-cmp-1.c: New test.
+
 2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	* c-c++-common/asan/no-redundant-odr-indicators-1.c: New test.
