@@ -1,3 +1,13 @@
+2016-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/78616
+	* selftest.c (selftest::assert_strndup_eq): Rename to...
+	(selftest::assert_xstrndup_eq): ...this, and remove call to
+	strndup.
+	(selftest::test_strndup): Rename to...
+	(selftest::test_xstrndup): ...this, updating for above renaming.
+	(selftest::test_libiberty): Update for renaming.
+
 2016-12-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78639
