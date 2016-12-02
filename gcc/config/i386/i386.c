@@ -3831,30 +3831,32 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
   if (!flag_var_tracking)
     return;
 
-  df_ref ref;
-  for (ref = DF_REG_USE_CHAIN (REGNO (reg));
-       ref;
-       ref = DF_REF_NEXT_REG (ref))
+  df_ref ref, next;
+  for (ref = DF_REG_USE_CHAIN (REGNO (reg)); ref; ref = next)
     {
       rtx_insn *insn = DF_REF_INSN (ref);
+      /* Make sure the next ref is for a different instruction,
+         so that we're not affected by the rescan.  */
+      next = DF_REF_NEXT_REG (ref);
+      while (next && DF_REF_INSN (next) == insn)
+	next = DF_REF_NEXT_REG (next);
+
       if (DEBUG_INSN_P (insn))
 	{
 	  /* It may be a debug insn with a TImode variable in
 	     register.  */
-	  rtx val = PATTERN (insn);
-	  if (GET_MODE (val) != TImode)
-	    continue;
-	  gcc_assert (GET_CODE (val) == VAR_LOCATION);
-	  rtx loc = PAT_VAR_LOCATION_LOC (val);
-	  /* It may have been converted to TImode already.  */
-	  if (GET_MODE (loc) == TImode)
-	    continue;
-	  gcc_assert (REG_P (loc)
-		      && GET_MODE (loc) == V1TImode);
-	  /* Convert V1TImode register, which has been updated by a SET
-	     insn before, to SUBREG TImode.  */
-	  PAT_VAR_LOCATION_LOC (val) = gen_rtx_SUBREG (TImode, loc, 0);
-	  df_insn_rescan (insn);
+	  bool changed = false;
+	  for (; ref != next; ref = DF_REF_NEXT_REG (ref))
+	    {
+	      rtx *loc = DF_REF_LOC (ref);
+	      if (REG_P (*loc) && GET_MODE (*loc) == V1TImode)
+		{
+		  *loc = gen_rtx_SUBREG (TImode, *loc, 0);
+		  changed = true;
+		}
+	    }
+	  if (changed)
+	    df_insn_rescan (insn);
 	}
     }
 }

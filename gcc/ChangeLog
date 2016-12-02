@@ -1,3 +1,11 @@
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78575
+	* config/i386/i386.c (timode_scalar_chain::fix_debug_reg_uses): Use
+	DF infrastructure to wrap all V1TImode reg uses into TImode subreg
+	if not already wrapped in a subreg.  Make sure df_insn_rescan does not
+	affect further iterations.
+
 2016-12-02  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/78555
