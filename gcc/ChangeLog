@@ -1,6 +1,12 @@
 2016-12-02  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR rtl-optimization/78561
+	* varasm.c (recompute_pool_offsets): New.
+	(output_constant_pool): Call it.
+
+2016-12-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR rtl-optimization/78561
 	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p) Rename
 	get_pool_size to get_pool_size_upper_bound.
 	(rs6000_stack_info): Likewise.
