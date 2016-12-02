@@ -1722,6 +1722,31 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	}
       tmp = *op0; *op0 = *op1; *op1 = tmp;
     }
+
+  /* A comparison result is compared against zero.  Replace it with
+     the (perhaps inverted) original comparison.
+     This probably should be done by simplify_relational_operation.  */
+  if ((*code == EQ || *code == NE)
+      && *op1 == const0_rtx
+      && COMPARISON_P (*op0)
+      && CC_REG_P (XEXP (*op0, 0)))
+    {
+      enum rtx_code new_code;
+
+      if (*code == EQ)
+	new_code = reversed_comparison_code_parts (GET_CODE (*op0),
+						   XEXP (*op0, 0),
+						   XEXP (*op1, 0), NULL);
+      else
+	new_code = GET_CODE (*op0);
+
+      if (new_code != UNKNOWN)
+	{
+	  *code = new_code;
+	  *op1 = XEXP (*op0, 1);
+	  *op0 = XEXP (*op0, 0);
+	}
+    }
 }
 
 /* Helper function for s390_emit_compare.  If possible emit a 64 bit
@@ -6341,6 +6366,23 @@ s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
 				    gen_rtx_REG (cc_consumer_mode, CC_REGNUM),
 				    const0_rtx),
 					tmp_reg, target));
+}
+
+/* Invert the comparison CODE applied to a CC mode.  This is only safe
+   if we know whether there result was created by a floating point
+   compare or not.  For the CCV modes this is encoded as part of the
+   mode.  */
+enum rtx_code
+s390_reverse_condition (machine_mode mode, enum rtx_code code)
+{
+  /* Reversal of FP compares takes care -- an ordered compare
+     becomes an unordered compare and vice versa.  */
+  if (mode == CCVFALLmode || mode == CCVFANYmode)
+    return reverse_condition_maybe_unordered (code);
+  else if (mode == CCVIALLmode || mode == CCVIANYmode)
+    return reverse_condition (code);
+  else
+    gcc_unreachable ();
 }
 
 /* Generate a vector comparison expression loading either elements of

@@ -513,6 +513,18 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		        \
   s390_cannot_change_mode_class ((FROM), (TO), (CLASS))
 
+/* We can reverse a CC mode safely if we know whether it comes from a
+   floating point compare or not.  With the vector modes it is encoded
+   as part of the mode.
+   FIXME: It might make sense to do this for other cc modes as well.  */
+#define REVERSIBLE_CC_MODE(MODE)				\
+  ((MODE) == CCVIALLmode || (MODE) == CCVIANYmode		\
+   || (MODE) == CCVFALLmode || (MODE) == CCVFANYmode)
+
+/* Given a condition code and a mode, return the inverse condition.  */
+#define REVERSE_CONDITION(CODE, MODE) s390_reverse_condition (MODE, CODE)
+
+
 /* Register classes.  */
 
 /* We use the following register classes:
