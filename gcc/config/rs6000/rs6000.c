@@ -27186,7 +27186,6 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
     {
       pat = shallow_copy_rtx (pat);
       XVEC (pat, 0) = shallow_copy_rtvec (XVEC (pat, 0));
-      RTX_FLAG (pat, used) = 0;
 
       for (int i = 0; i < XVECLEN (pat, 0); i++)
 	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)

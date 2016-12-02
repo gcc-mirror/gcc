@@ -119,10 +119,6 @@ cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
      us to explicitly document why we are *not* copying a flag.  */
   x = shallow_copy_rtx (x);
 
-  /* We do not copy the USED flag, which is used as a mark bit during
-     walks over the RTL.  */
-  RTX_FLAG (x, used) = 0;
-
   /* We do not copy FRAME_RELATED for INSNs.  */
   if (INSN_P (x))
     RTX_FLAG (x, frame_related) = 0;

@@ -1,3 +1,15 @@
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78614
+	* rtl.c (copy_rtx): Don't clear used flag here.
+	(shallow_copy_rtx_stat): Clear used flag here unless code the rtx
+	is shareable.
+	* simplify-rtx.c (simplify_replace_fn_rtx): When copying rtx with
+	'E' in format, copy all vectors.
+	* emit-rtl.c (copy_insn_1): Don't clear used flag here.
+	* valtrack.c (cleanup_auto_inc_dec): Likewise.
+	* config/rs6000/rs6000.c (rs6000_frame_related): Likewise.
+
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
