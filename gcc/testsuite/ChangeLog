@@ -1,3 +1,10 @@
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70322
+	* gcc.target/i386/pr70322-1.c: New test.
+	* gcc.target/i386/pr70322-2.c: New test.
+	* gcc.target/i386/pr70322-3.c: New test.
+
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 

@@ -1,5 +1,14 @@
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70322
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p): Handle
+	NOT.
+	(dimode_scalar_chain::compute_convert_gain): Likewise.
+	(dimode_scalar_chain::convert_insn): Likewise.
+	* config/i386/i386.md (*one_cmpldi2_doubleword): New
+	define_insn_and_split.
+	(one_cmpl<mode>2): Use SWIM1248x iterator instead of SWIM.
+
 	PR target/78614
 	* rtl.c (copy_rtx): Don't clear used flag here.
 	(shallow_copy_rtx_stat): Clear used flag here unless code the rtx
