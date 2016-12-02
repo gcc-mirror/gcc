@@ -1274,6 +1274,11 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
 
   gcc_assert (GET_CODE (set) == SET);
 
+  /* These modes are supposed to be used only in CC consumer
+     patterns.  */
+  gcc_assert (req_mode != CCVIALLmode && req_mode != CCVIANYmode
+	      && req_mode != CCVFALLmode && req_mode != CCVFANYmode);
+
   if (GET_CODE (SET_DEST (set)) != REG || !CC_REGNO_P (REGNO (SET_DEST (set))))
     return 1;
 
@@ -1292,8 +1297,8 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
     case CCT2mode:
     case CCT3mode:
     case CCVEQmode:
-    case CCVHmode:
-    case CCVHUmode:
+    case CCVIHmode:
+    case CCVIHUmode:
     case CCVFHmode:
     case CCVFHEmode:
       if (req_mode != set_mode)
@@ -1751,14 +1756,20 @@ s390_expand_vec_compare_scalar (enum rtx_code *code, rtx cmp1, rtx cmp2,
       cmp2 = cmp1;
       cmp1 = tmp;
     }
-  *cc = gen_rtx_REG (cmp_mode, CC_REGNUM);
+
   emit_insn (gen_rtx_PARALLEL (VOIDmode,
 	       gen_rtvec (2,
-			  gen_rtx_SET (*cc,
+			  gen_rtx_SET (gen_rtx_REG (cmp_mode, CC_REGNUM),
 				       gen_rtx_COMPARE (cmp_mode, cmp1,
 							cmp2)),
 			  gen_rtx_CLOBBER (VOIDmode,
 					   gen_rtx_SCRATCH (V2DImode)))));
+
+  /* This is the cc reg how it will be used in the cc mode consumer.
+     It either needs to be CCVFALL or CCVFANY.  However, CC1 will
+     never be set by the scalar variants.  So it actually doesn't
+     matter which one we choose here.  */
+  *cc = gen_rtx_REG (CCVFALLmode, CC_REGNUM);
   return true;
 }
 
@@ -2020,91 +2031,62 @@ s390_branch_condition_mask (rtx code)
       break;
 
       /* Vector comparison modes.  */
-
-    case CCVEQmode:
+      /* CC2 will never be set.  It however is part of the negated
+	 masks.  */
+    case CCVIALLmode:
       switch (GET_CODE (code))
 	{
-	case EQ:        return CC0;
-	case NE:        return CC3;
-	default:        return -1;
-	}
-
-    case CCVEQANYmode:
-      switch (GET_CODE (code))
-	{
-	case EQ:        return CC0 | CC1;
-	case NE:        return CC3 | CC1;
-	default:        return -1;
-	}
-
-      /* Integer vector compare modes.  */
-
-    case CCVHmode:
-      switch (GET_CODE (code))
-	{
-	case GT:        return CC0;
-	case LE:        return CC3;
-	default:        return -1;
-	}
-
-    case CCVHANYmode:
-      switch (GET_CODE (code))
-	{
-	case GT:        return CC0 | CC1;
-	case LE:        return CC3 | CC1;
-	default:        return -1;
-	}
-
-    case CCVHUmode:
-      switch (GET_CODE (code))
-	{
-	case GTU:       return CC0;
-	case LEU:       return CC3;
-	default:        return -1;
-	}
-
-    case CCVHUANYmode:
-      switch (GET_CODE (code))
-	{
-	case GTU:       return CC0 | CC1;
-	case LEU:       return CC3 | CC1;
-	default:        return -1;
-	}
-
-      /* FP vector compare modes.  */
-
-    case CCVFHmode:
-      switch (GET_CODE (code))
-	{
-	case GT:        return CC0;
-	case UNLE:      return CC3;
-	default:        return -1;
-	}
-
-    case CCVFHANYmode:
-      switch (GET_CODE (code))
-	{
-	case GT:        return CC0 | CC1;
-	case UNLE:      return CC3 | CC1;
-	default:        return -1;
-	}
-
-    case CCVFHEmode:
-      switch (GET_CODE (code))
-	{
+	case EQ:
+	case GTU:
+	case GT:
 	case GE:        return CC0;
-	case UNLT:      return CC3;
+	  /* The inverted modes are in fact *any* modes.  */
+	case NE:
+	case LEU:
+	case LE:
+	case LT:        return CC3 | CC1 | CC2;
 	default:        return -1;
 	}
 
-    case CCVFHEANYmode:
+    case CCVIANYmode:
       switch (GET_CODE (code))
 	{
+	case EQ:
+	case GTU:
+	case GT:
 	case GE:        return CC0 | CC1;
-	case UNLT:      return CC3 | CC1;
+	  /* The inverted modes are in fact *all* modes.  */
+	case NE:
+	case LEU:
+	case LE:
+	case LT:        return CC3 | CC2;
+	default:        return -1;
+	}
+    case CCVFALLmode:
+      switch (GET_CODE (code))
+	{
+	case EQ:
+	case GT:
+	case GE:        return CC0;
+	  /* The inverted modes are in fact *any* modes.  */
+	case NE:
+	case UNLE:
+	case UNLT:      return CC3 | CC1 | CC2;
 	default:        return -1;
 	}
 
+    case CCVFANYmode:
+      switch (GET_CODE (code))
+	{
+	case EQ:
+	case GT:
+	case GE:        return CC0 | CC1;
+	  /* The inverted modes are in fact *all* modes.  */
+	case NE:
+	case UNLE:
+	case UNLT:      return CC3 | CC2;
+	default:        return -1;
+	}
 
     case CCRAWmode:
       switch (GET_CODE (code))
@@ -6207,13 +6189,15 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 
 /* Expand the comparison CODE of CMP1 and CMP2 and copy 1 or 0 into
    TARGET if either all (ALL_P is true) or any (ALL_P is false) of the
-   elements in CMP1 and CMP2 fulfill the comparison.  */
+   elements in CMP1 and CMP2 fulfill the comparison.
+   This function is only used to emit patterns for the vx builtins and
+   therefore only handles comparison codes required by the
+   builtins.  */
 void
 s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
 			    rtx cmp1, rtx cmp2, bool all_p)
 {
-  enum rtx_code new_code = code;
-  machine_mode cmp_mode, full_cmp_mode, scratch_mode;
+  machine_mode cc_producer_mode, cc_consumer_mode, scratch_mode;
   rtx tmp_reg = gen_reg_rtx (SImode);
   bool swap_p = false;
 
@@ -6221,52 +6205,70 @@ s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
     {
       switch (code)
 	{
-	case EQ:  cmp_mode = CCVEQmode; break;
-	case NE:  cmp_mode = CCVEQmode; break;
-	case GT:  cmp_mode = CCVHmode;  break;
-	case GE:  cmp_mode = CCVHmode;  new_code = LE; swap_p = true; break;
-	case LT:  cmp_mode = CCVHmode;  new_code = GT; swap_p = true; break;
-	case LE:  cmp_mode = CCVHmode;  new_code = LE; break;
-	case GTU: cmp_mode = CCVHUmode; break;
-	case GEU: cmp_mode = CCVHUmode; new_code = LEU; swap_p = true; break;
-	case LTU: cmp_mode = CCVHUmode; new_code = GTU; swap_p = true; break;
-	case LEU: cmp_mode = CCVHUmode; new_code = LEU; break;
-	default: gcc_unreachable ();
+	case EQ:
+	case NE:
+	  cc_producer_mode = CCVEQmode;
+	  break;
+	case GE:
+	case LT:
+	  code = swap_condition (code);
+	  swap_p = true;
+	  /* fallthrough */
+	case GT:
+	case LE:
+	  cc_producer_mode = CCVIHmode;
+	  break;
+	case GEU:
+	case LTU:
+	  code = swap_condition (code);
+	  swap_p = true;
+	  /* fallthrough */
+	case GTU:
+	case LEU:
+	  cc_producer_mode = CCVIHUmode;
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
+
       scratch_mode = GET_MODE (cmp1);
+      /* These codes represent inverted CC interpretations.  Inverting
+	 an ALL CC mode results in an ANY CC mode and the other way
+	 around.  Invert the all_p flag here to compensate for
+	 that.  */
+      if (code == NE || code == LE || code == LEU)
+	all_p = !all_p;
+
+      cc_consumer_mode = all_p ? CCVIALLmode : CCVIANYmode;
     }
-  else if (GET_MODE (cmp1) == V2DFmode)
+  else if (GET_MODE_CLASS (GET_MODE (cmp1)) == MODE_VECTOR_FLOAT)
     {
+      bool inv_p = false;
+
       switch (code)
 	{
-	case EQ:   cmp_mode = CCVEQmode;  break;
-	case NE:   cmp_mode = CCVEQmode;  break;
-	case GT:   cmp_mode = CCVFHmode;  break;
-	case GE:   cmp_mode = CCVFHEmode; break;
-	case UNLE: cmp_mode = CCVFHmode;  break;
-	case UNLT: cmp_mode = CCVFHEmode; break;
-	case LT:   cmp_mode = CCVFHmode;  new_code = GT; swap_p = true; break;
-	case LE:   cmp_mode = CCVFHEmode; new_code = GE; swap_p = true; break;
+	case EQ:   cc_producer_mode = CCVEQmode;  break;
+	case NE:   cc_producer_mode = CCVEQmode;  inv_p = true; break;
+	case GT:   cc_producer_mode = CCVFHmode;  break;
+	case GE:   cc_producer_mode = CCVFHEmode; break;
+	case UNLE: cc_producer_mode = CCVFHmode;  inv_p = true; break;
+	case UNLT: cc_producer_mode = CCVFHEmode; inv_p = true; break;
+	case LT:   cc_producer_mode = CCVFHmode;  code = GT; swap_p = true; break;
+	case LE:   cc_producer_mode = CCVFHEmode; code = GE; swap_p = true; break;
 	default: gcc_unreachable ();
 	}
-      scratch_mode = V2DImode;
+      scratch_mode = mode_for_vector (
+		       int_mode_for_mode (GET_MODE_INNER (GET_MODE (cmp1))),
+		       GET_MODE_NUNITS (GET_MODE (cmp1)));
+      gcc_assert (scratch_mode != BLKmode);
+
+      if (inv_p)
+	all_p = !all_p;
+
+      cc_consumer_mode = all_p ? CCVFALLmode : CCVFANYmode;
     }
   else
     gcc_unreachable ();
-
-  if (!all_p)
-    switch (cmp_mode)
-      {
-      case CCVEQmode:  full_cmp_mode = CCVEQANYmode;  break;
-      case CCVHmode:   full_cmp_mode = CCVHANYmode;   break;
-      case CCVHUmode:  full_cmp_mode = CCVHUANYmode;  break;
-      case CCVFHmode:  full_cmp_mode = CCVFHANYmode;  break;
-      case CCVFHEmode: full_cmp_mode = CCVFHEANYmode; break;
-      default: gcc_unreachable ();
-      }
-  else
-    /* The modes without ANY match the ALL modes.  */
-    full_cmp_mode = cmp_mode;
 
   if (swap_p)
     {
@@ -6277,8 +6279,8 @@ s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
 
   emit_insn (gen_rtx_PARALLEL (VOIDmode,
 	       gen_rtvec (2, gen_rtx_SET (
-			       gen_rtx_REG (cmp_mode, CC_REGNUM),
-			       gen_rtx_COMPARE (cmp_mode, cmp1, cmp2)),
+			       gen_rtx_REG (cc_producer_mode, CC_REGNUM),
+			       gen_rtx_COMPARE (cc_producer_mode, cmp1, cmp2)),
 			  gen_rtx_CLOBBER (VOIDmode,
 					   gen_rtx_SCRATCH (scratch_mode)))));
   emit_move_insn (target, const0_rtx);
@@ -6286,10 +6288,10 @@ s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
 
   emit_move_insn (target,
 		  gen_rtx_IF_THEN_ELSE (SImode,
-		    gen_rtx_fmt_ee (new_code, VOIDmode,
-				    gen_rtx_REG (full_cmp_mode, CC_REGNUM),
+		    gen_rtx_fmt_ee (code, VOIDmode,
+				    gen_rtx_REG (cc_consumer_mode, CC_REGNUM),
 				    const0_rtx),
-		      target, tmp_reg));
+					tmp_reg, target));
 }
 
 /* Generate a vector comparison expression loading either elements of
