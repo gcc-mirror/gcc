@@ -77,6 +77,14 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
   def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT);
 
+  if (arm_arch8 && !arm_arch_notm)
+    {
+      if (arm_arch_cmse && use_cmse)
+	builtin_define_with_int_value ("__ARM_FEATURE_CMSE", 3);
+      else
+	builtin_define ("__ARM_FEATURE_CMSE");
+    }
+
   if (TARGET_ARM_FEATURE_LDREX)
     builtin_define_with_int_value ("__ARM_FEATURE_LDREX",
 				   TARGET_ARM_FEATURE_LDREX);

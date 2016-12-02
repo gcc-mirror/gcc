@@ -909,6 +909,9 @@ int arm_condexec_masklen = 0;
 /* Nonzero if chip supports the ARMv8 CRC instructions.  */
 int arm_arch_crc = 0;
 
+/* Nonzero if chip supports the ARMv8-M security extensions.  */
+int arm_arch_cmse = 0;
+
 /* Nonzero if the core has a very small, high-latency, multiply unit.  */
 int arm_m_profile_small_mul = 0;
 
@@ -3227,6 +3230,7 @@ arm_option_override (void)
   arm_arch_no_volatile_ce = ARM_FSET_HAS_CPU1 (insn_flags, FL_NO_VOLATILE_CE);
   arm_tune_cortex_a9 = (arm_tune == TARGET_CPU_cortexa9) != 0;
   arm_arch_crc = ARM_FSET_HAS_CPU1 (insn_flags, FL_CRC32);
+  arm_arch_cmse = ARM_FSET_HAS_CPU2 (insn_flags, FL2_CMSE);
   arm_m_profile_small_mul = ARM_FSET_HAS_CPU1 (insn_flags, FL_SMALLMUL);
   arm_fp16_inst = ARM_FSET_HAS_CPU2 (insn_flags, FL2_FP16INST);
   if (arm_fp16_inst)
@@ -3493,6 +3497,9 @@ arm_option_override (void)
      disable it for pure-code.  */
   if (target_slow_flash_data || target_pure_code)
     arm_disable_literal_pool = true;
+
+  if (use_cmse && !arm_arch_cmse)
+    error ("target CPU does not support ARMv8-M Security Extensions");
 
   /* Disable scheduling fusion by default if it's not armv7 processor
      or doesn't prefer ldrd/strd.  */

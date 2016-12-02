@@ -1,3 +1,23 @@
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config.gcc (extra_headers): Added arm_cmse.h.
+	* config/arm/arm-arches.def (ARM_ARCH):
+	(armv8-m): Add FL2_CMSE.
+	(armv8-m.main): Likewise.
+	(armv8-m.main+dsp): Likewise.
+	* config/arm/arm-c.c
+	(arm_cpu_builtins): Added __ARM_FEATURE_CMSE macro.
+	* config/arm/arm-flags.h: Define FL2_CMSE.
+	* config/arm.c (arm_arch_cmse): New.
+	(arm_option_override): New error for unsupported cmse target.
+	* config/arm/arm.h (arm_arch_cmse): New.
+	* config/arm/arm.opt (mcmse): New.
+	* config/arm/arm_cmse.h: New file.
+	* doc/invoke.texi (ARM Options): Add -mcmse.
+	* doc/sourcebuild.texi (arm_cmse_ok): Add new effective target.
+	* doc/extend.texi: Add ARMv8-M Security Extensions entry.
+
 2016-12-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c: Fix coding rule glitches.

@@ -523,6 +523,9 @@ extern bool arm_disable_literal_pool;
 /* Nonzero if chip supports the ARMv8 CRC instructions.  */
 extern int arm_arch_crc;
 
+/* Nonzero if chip supports the ARMv8-M Security Extensions.  */
+extern int arm_arch_cmse;
+
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)
 #endif
