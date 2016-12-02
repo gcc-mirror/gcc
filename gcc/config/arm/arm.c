@@ -7000,6 +7000,15 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
   if (IS_CMSE_ENTRY (arm_current_func_type ()))
     return false;
 
+  /* We do not allow ARMv8-M non-secure calls to be turned into sibling calls,
+     this would complicate matters for later code generation.  */
+  if (TREE_CODE (exp) == CALL_EXPR)
+    {
+      tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
+      if (lookup_attribute ("cmse_nonsecure_call", TYPE_ATTRIBUTES (fntype)))
+	return false;
+    }
+
   if (!VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
     {
       /* Check that the return value locations are the same.  For
@@ -16654,6 +16663,197 @@ compute_not_to_clear_mask (tree arg_type, rtx arg_rtx, int regno,
   return not_to_clear_mask;
 }
 
+/* Saves callee saved registers, clears callee saved registers and caller saved
+   registers not used to pass arguments before a cmse_nonsecure_call.  And
+   restores the callee saved registers after.  */
+
+static void
+cmse_nonsecure_call_clear_caller_saved (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *insn;
+
+      FOR_BB_INSNS (bb, insn)
+	{
+	  uint64_t to_clear_mask, float_mask;
+	  rtx_insn *seq;
+	  rtx pat, call, unspec, reg, cleared_reg, tmp;
+	  unsigned int regno, maxregno;
+	  rtx address;
+	  CUMULATIVE_ARGS args_so_far_v;
+	  cumulative_args_t args_so_far;
+	  tree arg_type, fntype;
+	  bool using_r4, first_param = true;
+	  function_args_iterator args_iter;
+	  uint32_t padding_bits_to_clear[4] = {0U, 0U, 0U, 0U};
+	  uint32_t * padding_bits_to_clear_ptr = &padding_bits_to_clear[0];
+
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  if (!CALL_P (insn))
+	    continue;
+
+	  pat = PATTERN (insn);
+	  gcc_assert (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 0);
+	  call = XVECEXP (pat, 0, 0);
+
+	  /* Get the real call RTX if the insn sets a value, ie. returns.  */
+	  if (GET_CODE (call) == SET)
+	      call = SET_SRC (call);
+
+	  /* Check if it is a cmse_nonsecure_call.  */
+	  unspec = XEXP (call, 0);
+	  if (GET_CODE (unspec) != UNSPEC
+	      || XINT (unspec, 1) != UNSPEC_NONSECURE_MEM)
+	    continue;
+
+	  /* Determine the caller-saved registers we need to clear.  */
+	  to_clear_mask = (1LL << (NUM_ARG_REGS)) - 1;
+	  maxregno = NUM_ARG_REGS - 1;
+	  /* Only look at the caller-saved floating point registers in case of
+	     -mfloat-abi=hard.  For -mfloat-abi=softfp we will be using the
+	     lazy store and loads which clear both caller- and callee-saved
+	     registers.  */
+	  if (TARGET_HARD_FLOAT_ABI)
+	    {
+	      float_mask = (1LL << (D7_VFP_REGNUM + 1)) - 1;
+	      float_mask &= ~((1LL << FIRST_VFP_REGNUM) - 1);
+	      to_clear_mask |= float_mask;
+	      maxregno = D7_VFP_REGNUM;
+	    }
+
+	  /* Make sure the register used to hold the function address is not
+	     cleared.  */
+	  address = RTVEC_ELT (XVEC (unspec, 0), 0);
+	  gcc_assert (MEM_P (address));
+	  gcc_assert (REG_P (XEXP (address, 0)));
+	  to_clear_mask &= ~(1LL << REGNO (XEXP (address, 0)));
+
+	  /* Set basic block of call insn so that df rescan is performed on
+	     insns inserted here.  */
+	  set_block_for_insn (insn, bb);
+	  df_set_flags (DF_DEFER_INSN_RESCAN);
+	  start_sequence ();
+
+	  /* Make sure the scheduler doesn't schedule other insns beyond
+	     here.  */
+	  emit_insn (gen_blockage ());
+
+	  /* Walk through all arguments and clear registers appropriately.
+	  */
+	  fntype = TREE_TYPE (MEM_EXPR (address));
+	  arm_init_cumulative_args (&args_so_far_v, fntype, NULL_RTX,
+				    NULL_TREE);
+	  args_so_far = pack_cumulative_args (&args_so_far_v);
+	  FOREACH_FUNCTION_ARGS (fntype, arg_type, args_iter)
+	    {
+	      rtx arg_rtx;
+	      machine_mode arg_mode = TYPE_MODE (arg_type);
+
+	      if (VOID_TYPE_P (arg_type))
+		continue;
+
+	      if (!first_param)
+		arm_function_arg_advance (args_so_far, arg_mode, arg_type,
+					  true);
+
+	      arg_rtx = arm_function_arg (args_so_far, arg_mode, arg_type,
+					  true);
+	      gcc_assert (REG_P (arg_rtx));
+	      to_clear_mask
+		&= ~compute_not_to_clear_mask (arg_type, arg_rtx,
+					       REGNO (arg_rtx),
+					       padding_bits_to_clear_ptr);
+
+	      first_param = false;
+	    }
+
+	  /* Clear padding bits where needed.  */
+	  cleared_reg = XEXP (address, 0);
+	  reg = gen_rtx_REG (SImode, IP_REGNUM);
+	  using_r4 = false;
+	  for (regno = R0_REGNUM; regno < NUM_ARG_REGS; regno++)
+	    {
+	      if (padding_bits_to_clear[regno] == 0)
+		continue;
+
+	      /* If this is a Thumb-1 target copy the address of the function
+		 we are calling from 'r4' into 'ip' such that we can use r4 to
+		 clear the unused bits in the arguments.  */
+	      if (TARGET_THUMB1 && !using_r4)
+		{
+		  using_r4 =  true;
+		  reg = cleared_reg;
+		  emit_move_insn (gen_rtx_REG (SImode, IP_REGNUM),
+					  reg);
+		}
+
+	      tmp = GEN_INT ((((~padding_bits_to_clear[regno]) << 16u) >> 16u));
+	      emit_move_insn (reg, tmp);
+	      /* Also fill the top half of the negated
+		 padding_bits_to_clear.  */
+	      if (((~padding_bits_to_clear[regno]) >> 16) > 0)
+		{
+		  tmp = GEN_INT ((~padding_bits_to_clear[regno]) >> 16);
+		  emit_insn (gen_rtx_SET (gen_rtx_ZERO_EXTRACT (SImode, reg,
+								GEN_INT (16),
+								GEN_INT (16)),
+					  tmp));
+		}
+
+	      emit_insn (gen_andsi3 (gen_rtx_REG (SImode, regno),
+				     gen_rtx_REG (SImode, regno),
+				     reg));
+
+	    }
+	  if (using_r4)
+	    emit_move_insn (cleared_reg,
+			    gen_rtx_REG (SImode, IP_REGNUM));
+
+	  /* We use right shift and left shift to clear the LSB of the address
+	     we jump to instead of using bic, to avoid having to use an extra
+	     register on Thumb-1.  */
+	  tmp = gen_rtx_LSHIFTRT (SImode, cleared_reg, const1_rtx);
+	  emit_insn (gen_rtx_SET (cleared_reg, tmp));
+	  tmp = gen_rtx_ASHIFT (SImode, cleared_reg, const1_rtx);
+	  emit_insn (gen_rtx_SET (cleared_reg, tmp));
+
+	  /* Clearing all registers that leak before doing a non-secure
+	     call.  */
+	  for (regno = R0_REGNUM; regno <= maxregno; regno++)
+	    {
+	      if (!(to_clear_mask & (1LL << regno)))
+		continue;
+
+	      /* If regno is an even vfp register and its successor is also to
+		 be cleared, use vmov.  */
+	      if (IS_VFP_REGNUM (regno))
+		{
+		  if (TARGET_VFP_DOUBLE
+		      && VFP_REGNO_OK_FOR_DOUBLE (regno)
+		      && to_clear_mask & (1LL << (regno + 1)))
+		    emit_move_insn (gen_rtx_REG (DFmode, regno++),
+				    CONST0_RTX (DFmode));
+		  else
+		    emit_move_insn (gen_rtx_REG (SFmode, regno),
+				    CONST0_RTX (SFmode));
+		}
+	      else
+		emit_move_insn (gen_rtx_REG (SImode, regno), cleared_reg);
+	    }
+
+	  seq = get_insns ();
+	  end_sequence ();
+	  emit_insn_before (seq, insn);
+
+	}
+    }
+}
+
 /* Rewrite move insn into subtract of 0 if the condition codes will
    be useful in next conditional jump insn.  */
 
@@ -16954,6 +17154,8 @@ arm_reorg (void)
   HOST_WIDE_INT address = 0;
   Mfix * fix;
 
+  if (use_cmse)
+    cmse_nonsecure_call_clear_caller_saved ();
   if (TARGET_THUMB1)
     thumb1_reorg ();
   else if (TARGET_THUMB2)
@@ -17325,6 +17527,23 @@ vfp_emit_fstmd (int base_reg, int count)
 
   return count * 8;
 }
+
+/* Returns true if -mcmse has been passed and the function pointed to by 'addr'
+   has the cmse_nonsecure_call attribute and returns false otherwise.  */
+
+bool
+detect_cmse_nonsecure_call (tree addr)
+{
+  if (!addr)
+    return FALSE;
+
+  tree fntype = TREE_TYPE (addr);
+  if (use_cmse && lookup_attribute ("cmse_nonsecure_call",
+				    TYPE_ATTRIBUTES (fntype)))
+    return TRUE;
+  return FALSE;
+}
+
 
 /* Emit a call instruction with pattern PAT.  ADDR is the address of
    the call target.  */
