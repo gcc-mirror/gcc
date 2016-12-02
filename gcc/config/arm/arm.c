@@ -3866,6 +3866,11 @@ use_return_insn (int iscond, rtx sibling)
 	return 0;
     }
 
+  /* ARMv8-M nonsecure entry function need to use bxns to return and thus need
+     several instructions if anything needs to be popped.  */
+  if (saved_int_regs && IS_CMSE_ENTRY (func_type))
+    return 0;
+
   /* If there are saved registers but the LR isn't saved, then we need
      two instructions for the return.  */
   if (saved_int_regs && !(saved_int_regs & (1 << LR_REGNUM)))
@@ -6904,6 +6909,11 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
   func_type = arm_current_func_type ();
   /* Never tailcall from an ISR routine - it needs a special exit sequence.  */
   if (IS_INTERRUPT (func_type))
+    return false;
+
+  /* ARMv8-M non-secure entry functions need to return with bxns which is only
+     generated for entry functions themselves.  */
+  if (IS_CMSE_ENTRY (arm_current_func_type ()))
     return false;
 
   if (!VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
@@ -18568,6 +18578,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	 (e.g. interworking) then we can load the return address
 	 directly into the PC.  Otherwise we must load it into LR.  */
       if (really_return
+	  && !IS_CMSE_ENTRY (func_type)
 	  && (IS_INTERRUPT (func_type) || !TARGET_INTERWORK))
 	return_reg = reg_names[PC_REGNUM];
       else
@@ -18708,8 +18719,10 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	  break;
 
 	default:
+	  if (IS_CMSE_ENTRY (func_type))
+	    snprintf (instr, sizeof (instr), "bxns%s\t%%|lr", conditional);
 	  /* Use bx if it's available.  */
-	  if (arm_arch5 || arm_arch4t)
+	  else if (arm_arch5 || arm_arch4t)
 	    sprintf (instr, "bx%s\t%%|lr", conditional);
 	  else
 	    sprintf (instr, "mov%s\t%%|pc, %%|lr", conditional);
@@ -18720,6 +18733,44 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
     }
 
   return "";
+}
+
+/* Output in FILE asm statements needed to declare the NAME of the function
+   defined by its DECL node.  */
+
+void
+arm_asm_declare_function_name (FILE *file, const char *name, tree decl)
+{
+  size_t cmse_name_len;
+  char *cmse_name = 0;
+  char cmse_prefix[] = "__acle_se_";
+
+  /* When compiling with ARMv8-M Security Extensions enabled, we should print an
+     extra function label for each function with the 'cmse_nonsecure_entry'
+     attribute.  This extra function label should be prepended with
+     '__acle_se_', telling the linker that it needs to create secure gateway
+     veneers for this function.  */
+  if (use_cmse && lookup_attribute ("cmse_nonsecure_entry",
+				    DECL_ATTRIBUTES (decl)))
+    {
+      cmse_name_len = sizeof (cmse_prefix) + strlen (name);
+      cmse_name = XALLOCAVEC (char, cmse_name_len);
+      snprintf (cmse_name, cmse_name_len, "%s%s", cmse_prefix, name);
+      targetm.asm_out.globalize_label (file, cmse_name);
+
+      ARM_DECLARE_FUNCTION_NAME (file, cmse_name, decl);
+      ASM_OUTPUT_TYPE_DIRECTIVE (file, cmse_name, "function");
+    }
+
+  ARM_DECLARE_FUNCTION_NAME (file, name, decl);
+  ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
+  ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
+  ASM_OUTPUT_LABEL (file, name);
+
+  if (cmse_name)
+    ASM_OUTPUT_LABEL (file, cmse_name);
+
+  ARM_OUTPUT_FN_UNWIND (file, TRUE);
 }
 
 /* Write the function name into the code section, directly preceding
@@ -18771,10 +18822,6 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
 {
   unsigned long func_type;
 
-  /* ??? Do we want to print some of the below anyway?  */
-  if (TARGET_THUMB1)
-    return;
-
   /* Sanity check.  */
   gcc_assert (!arm_ccfsm_state && !arm_target_insn);
 
@@ -18809,6 +18856,8 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
     asm_fprintf (f, "\t%@ Nested: function declared inside another function.\n");
   if (IS_STACKALIGN (func_type))
     asm_fprintf (f, "\t%@ Stack Align: May be called with mis-aligned SP.\n");
+  if (IS_CMSE_ENTRY (func_type))
+    asm_fprintf (f, "\t%@ Non-secure entry function: called from non-secure code.\n");
 
   asm_fprintf (f, "\t%@ args = %d, pretend = %d, frame = %wd\n",
 	       crtl->args.size,
@@ -22915,8 +22964,8 @@ thumb_pop (FILE *f, unsigned long mask)
   if (mask & (1 << PC_REGNUM))
     {
       /* Catch popping the PC.  */
-      if (TARGET_INTERWORK || TARGET_BACKTRACE
-	  || crtl->calls_eh_return)
+      if (TARGET_INTERWORK || TARGET_BACKTRACE || crtl->calls_eh_return
+	  || IS_CMSE_ENTRY (arm_current_func_type ()))
 	{
 	  /* The PC is never poped directly, instead
 	     it is popped into r3 and then BX is used.  */
@@ -22977,7 +23026,10 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
       if (crtl->calls_eh_return)
 	asm_fprintf (f, "\tadd\t%r, %r\n", SP_REGNUM, ARM_EH_STACKADJ_REGNUM);
 
-      asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
+      if (IS_CMSE_ENTRY (arm_current_func_type ()))
+	asm_fprintf (f, "\tbxns\t%r\n", reg_containing_return_addr);
+      else
+	asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
       return;
     }
   /* Otherwise if we are not supporting interworking and we have not created
@@ -22986,7 +23038,8 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
   else if (!TARGET_INTERWORK
 	   && !TARGET_BACKTRACE
 	   && !is_called_in_ARM_mode (current_function_decl)
-	   && !crtl->calls_eh_return)
+	   && !crtl->calls_eh_return
+	   && !IS_CMSE_ENTRY (arm_current_func_type ()))
     {
       asm_fprintf (f, "\tpop\t{%r}\n", PC_REGNUM);
       return;
@@ -23209,7 +23262,10 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
     asm_fprintf (f, "\tadd\t%r, %r\n", SP_REGNUM, ARM_EH_STACKADJ_REGNUM);
 
   /* Return to caller.  */
-  asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
+  if (IS_CMSE_ENTRY (arm_current_func_type ()))
+    asm_fprintf (f, "\tbxns\t%r\n", reg_containing_return_addr);
+  else
+    asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
 }
 
 /* Scan INSN just before assembler is output for it.
@@ -24095,6 +24151,12 @@ thumb2_expand_return (bool simple_return)
 
   if (!simple_return && saved_regs_mask)
     {
+      /* TODO: Verify that this path is never taken for cmse_nonsecure_entry
+	 functions or adapt code to handle according to ACLE.  This path should
+	 not be reachable for cmse_nonsecure_entry functions though we prefer
+	 to assert it for now to ensure that future code changes do not silently
+	 change this behavior.  */
+      gcc_assert (!IS_CMSE_ENTRY (arm_current_func_type ()));
       if (num_regs == 1)
         {
           rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
@@ -24512,6 +24574,7 @@ arm_expand_epilogue (bool really_return)
 
       if (ARM_FUNC_TYPE (func_type) != ARM_FT_INTERWORKED
           && (TARGET_ARM || ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
+	  && !IS_CMSE_ENTRY (func_type)
           && !IS_STACKALIGN (func_type)
           && really_return
           && crtl->args.pretend_args_size == 0

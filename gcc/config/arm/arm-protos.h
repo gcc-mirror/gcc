@@ -33,6 +33,7 @@ extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
 extern void arm_expand_epilogue (bool);
 extern void arm_declare_function_name (FILE *, const char *, tree);
+extern void arm_asm_declare_function_name (FILE *, const char *, tree);
 extern void thumb2_expand_return (bool);
 extern const char *arm_strip_name_encoding (const char *);
 extern void arm_asm_output_labelref (FILE *, const char *);
