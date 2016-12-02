@@ -580,6 +580,19 @@
   [(set_attr "type" "call")]
 )
 
+(define_insn "*nonsecure_call_reg_thumb2"
+  [(call (unspec:SI [(mem:SI (match_operand:SI 0 "s_register_operand" "r"))]
+		    UNSPEC_NONSECURE_MEM)
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (clobber (reg:SI LR_REGNUM))
+   (clobber (match_dup 0))]
+  "TARGET_THUMB2 && use_cmse"
+  "bl\\t__gnu_cmse_nonsecure_call"
+  [(set_attr "length" "4")
+   (set_attr "type" "call")]
+)
+
 (define_insn "*call_value_reg_thumb2"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand:SI 1 "register_operand" "l*r"))
@@ -589,6 +602,21 @@
   "TARGET_THUMB2"
   "blx\\t%1"
   [(set_attr "type" "call")]
+)
+
+(define_insn "*nonsecure_call_value_reg_thumb2"
+  [(set (match_operand 0 "" "")
+	(call
+	 (unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "l*r"))]
+		    UNSPEC_NONSECURE_MEM)
+	 (match_operand 2 "" "")))
+   (use (match_operand 3 "" ""))
+   (clobber (reg:SI LR_REGNUM))
+   (clobber (match_dup 1))]
+  "TARGET_THUMB2 && use_cmse"
+  "bl\t__gnu_cmse_nonsecure_call"
+  [(set_attr "length" "4")
+   (set_attr "type" "call")]
 )
 
 (define_insn "*thumb2_indirect_jump"

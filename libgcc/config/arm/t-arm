@@ -12,4 +12,6 @@ libgcc-objects += cmse.o cmse_nonsecure_call.o
 
 cmse.o: $(srcdir)/config/arm/cmse.c
 	$(gcc_compile) -c $(CMSE_OPTS) $<
+cmse_nonsecure_call.o: $(srcdir)/config/arm/cmse_nonsecure_call.S
+		       $(gcc_compile) -c $<
 endif

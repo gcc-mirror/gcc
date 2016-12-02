@@ -1,6 +1,48 @@
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* gcc.target/arm/cmse/cmse.exp: Run tests in mainline dir.
+	* gcc.target/arm/cmse/cmse-9.c: Added some extra tests.
+	* gcc.target/arm/cmse/cmse-14.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-4.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-5.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-6.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-7.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-8.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-9.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-and-union-1.c: New.
+	* gcc.target/arm/cmse/baseline/cmse-11.c: New.
+	* gcc.target/arm/cmse/baseline/cmse-13.c: New.
+	* gcc.target/arm/cmse/baseline/cmse-6.c: New.
+	* gcc.target/arm/cmse/baseline/union-1.c: New.
+	* gcc.target/arm/cmse/baseline/union-2.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-4.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-5.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-6.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-7.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-8.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-9.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-and-union-1.c: New.
+	* gcc.target/arm/cmse/mainline/union-1.c: New.
+	* gcc.target/arm/cmse/mainline/union-2.c: New.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/soft/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/soft/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/soft/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-8.c: New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* gcc.target/arm/cmse/cmse-3.c: Add tests.
 	* gcc.target/arm/cmse/cmse-4.c: Add tests.
 	* gcc.target/arm/cmse/cmse-15.c: New.

@@ -1,6 +1,25 @@
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (detect_cmse_nonsecure_call): New.
+	(cmse_nonsecure_call_clear_caller_saved): New.
+	(arm_reorg): Use cmse_nonsecure_call_clear_caller_saved.
+	(arm_function_ok_for_sibcall): Disable sibcalls for
+	cmse_nonsecure_call.
+	* config/arm/arm-protos.h (detect_cmse_nonsecure_call): New.
+	* config/arm/arm.md (call): Handle cmse_nonsecure_entry.
+	(call_value): Likewise.
+	(nonsecure_call_internal): New.
+	(nonsecure_call_value_internal): New.
+	* config/arm/thumb1.md (*nonsecure_call_reg_thumb1_v5): New.
+	(*nonsecure_call_value_reg_thumb1_v5): New.
+	* config/arm/thumb2.md (*nonsecure_call_reg_thumb2): New.
+	(*nonsecure_call_value_reg_thumb2): New.
+	* config/arm/unspecs.md (UNSPEC_NONSECURE_MEM): New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (gimplify.h): New include.
 	(arm_handle_cmse_nonsecure_call): New.
 	(arm_attribute_table): Added cmse_nonsecure_call.

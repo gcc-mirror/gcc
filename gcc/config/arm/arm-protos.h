@@ -137,6 +137,7 @@ extern int arm_const_double_inline_cost (rtx);
 extern bool arm_const_double_by_parts (rtx);
 extern bool arm_const_double_by_immediates (rtx);
 extern void arm_emit_call_insn (rtx, rtx, bool);
+bool detect_cmse_nonsecure_call (tree);
 extern const char *output_call (rtx *);
 void arm_emit_movpair (rtx, rtx);
 extern const char *output_mov_long_double_arm_from_arm (rtx *);

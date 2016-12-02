@@ -50,6 +50,8 @@ if {[check_effective_target_arm_arch_v8m_base_ok]} then {
 }
 
 if {[check_effective_target_arm_arch_v8m_main_ok]} then {
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/*.c]] \
+	    "" $DEFAULT_CFLAGS
     # Mainline -mfloat-abi=soft
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/soft/*.c]] \
 	    "-mfloat-abi=soft" $DEFAULT_CFLAGS
