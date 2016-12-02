@@ -5929,6 +5929,30 @@ int read_var (int i)
 @}
 @end smallexample
 
+Please notice that on these devices, there is no need for @code{progmem}
+at all.  Just use an appropriate linker description file like outlined below.
+
+@smallexample
+  .text :
+  @{ ...
+  @} > text
+  /* Leave .rodata in flash and add an offset of 0x4000 to all
+     addresses so that respective objects can be accessed by LD
+     instructions and open coded C/C++.  This means there is no
+     need for progmem in the source and no overhead by read-only
+     data in RAM.  */
+  .rodata ADDR(.text) + SIZEOF (.text) + 0x4000 :
+  @{
+    *(.rodata)
+    *(.rodata*)
+    *(.gnu.linkonce.r*)
+  @} AT> text
+  /* No more need to put .rodata into .data:
+     Removed all .rodata entries from .data.  */
+  .data :
+  @{ ...
+@end smallexample
+
 @end table
 
 @item io
@@ -6000,6 +6024,8 @@ warning like
 @end quotation
 
 @end itemize
+
+See also the @option{-mabsdata} @ref{AVR Options,command-line option}.
 
 @end table
 

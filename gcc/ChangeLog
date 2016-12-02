@@ -1,3 +1,10 @@
+2016-12-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options) [-mabsdata]: Point to absdata.
+	* doc/extend.texi (AVR Variable Attributes) [progmem]: Hint
+	about linker description to avoid progmem altogether.
+	[absdata]: Point to -mabsdata option.
+
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/78547
