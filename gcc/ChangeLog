@@ -1,5 +1,15 @@
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-protos.h (s390_reverse_condition): New
+	prototype.
+	* config/s390/s390.c (s390_canonicalize_comparison): Fold compares
+	of CC mode values.
+	(s390_reverse_condition): New function.
+	* config/s390/s390.h (REVERSE_CC_MODE, REVERSE_CONDITION): Define
+	target macros.
+
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390-modes.def (CCVEQANY, CCVH, CCVHANY, CCVHU)
 	(CCVHUANY): Remove modes.
 	(CCVIH, CCVIHU, CCVIALL, CCVIANY, CCVFALL, CCVFANY): Add modes and
