@@ -5142,7 +5142,7 @@
   "TARGET_ABI_OSF"
 {
   if (flag_reorder_blocks_and_partition)
-    operands[0] = alpha_gp_save_rtx ();
+    operands[0] = copy_rtx (alpha_gp_save_rtx ());
   else
     operands[0] = const0_rtx;
 })
