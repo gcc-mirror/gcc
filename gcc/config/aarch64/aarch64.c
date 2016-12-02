@@ -1137,7 +1137,7 @@ aarch64_is_extend_from_extract (machine_mode mode, rtx mult_imm,
 
 /* Emit an insn that's a simple single-set.  Both the operands must be
    known to be valid.  */
-inline static rtx
+inline static rtx_insn *
 emit_set_insn (rtx x, rtx y)
 {
   return emit_insn (gen_rtx_SET (x, y));
@@ -3134,6 +3134,9 @@ aarch64_save_callee_saves (machine_mode mode, HOST_WIDE_INT start_offset,
 	      || regno == cfun->machine->frame.wb_candidate2))
 	continue;
 
+      if (cfun->machine->reg_is_wrapped_separately[regno])
+       continue;
+
       reg = gen_rtx_REG (mode, regno);
       offset = start_offset + cfun->machine->frame.reg_offset[regno];
       mem = gen_mem_ref (mode, plus_constant (Pmode, stack_pointer_rtx,
@@ -3142,6 +3145,7 @@ aarch64_save_callee_saves (machine_mode mode, HOST_WIDE_INT start_offset,
       regno2 = aarch64_next_callee_save (regno + 1, limit);
 
       if (regno2 <= limit
+	  && !cfun->machine->reg_is_wrapped_separately[regno2]
 	  && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
 	      == cfun->machine->frame.reg_offset[regno2]))
 
@@ -3190,6 +3194,9 @@ aarch64_restore_callee_saves (machine_mode mode,
        regno <= limit;
        regno = aarch64_next_callee_save (regno + 1, limit))
     {
+      if (cfun->machine->reg_is_wrapped_separately[regno])
+       continue;
+
       rtx reg, mem;
 
       if (skip_wb
@@ -3204,6 +3211,7 @@ aarch64_restore_callee_saves (machine_mode mode,
       regno2 = aarch64_next_callee_save (regno + 1, limit);
 
       if (regno2 <= limit
+	  && !cfun->machine->reg_is_wrapped_separately[regno2]
 	  && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
 	      == cfun->machine->frame.reg_offset[regno2]))
 	{
@@ -3221,6 +3229,245 @@ aarch64_restore_callee_saves (machine_mode mode,
 	emit_move_insn (reg, mem);
       *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg, *cfi_ops);
     }
+}
+
+static inline bool
+offset_9bit_signed_unscaled_p (machine_mode mode ATTRIBUTE_UNUSED,
+			       HOST_WIDE_INT offset)
+{
+  return offset >= -256 && offset < 256;
+}
+
+static inline bool
+offset_12bit_unsigned_scaled_p (machine_mode mode, HOST_WIDE_INT offset)
+{
+  return (offset >= 0
+	  && offset < 4096 * GET_MODE_SIZE (mode)
+	  && offset % GET_MODE_SIZE (mode) == 0);
+}
+
+bool
+aarch64_offset_7bit_signed_scaled_p (machine_mode mode, HOST_WIDE_INT offset)
+{
+  return (offset >= -64 * GET_MODE_SIZE (mode)
+	  && offset < 64 * GET_MODE_SIZE (mode)
+	  && offset % GET_MODE_SIZE (mode) == 0);
+}
+
+/* Implement TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS.  */
+
+static sbitmap
+aarch64_get_separate_components (void)
+{
+  aarch64_layout_frame ();
+
+  sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
+  bitmap_clear (components);
+
+  /* The registers we need saved to the frame.  */
+  for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
+    if (aarch64_register_saved_on_entry (regno))
+      {
+	HOST_WIDE_INT offset = cfun->machine->frame.reg_offset[regno];
+	if (!frame_pointer_needed)
+	  offset += cfun->machine->frame.frame_size
+		    - cfun->machine->frame.hard_fp_offset;
+	/* Check that we can access the stack slot of the register with one
+	   direct load with no adjustments needed.  */
+	if (offset_12bit_unsigned_scaled_p (DImode, offset))
+	  bitmap_set_bit (components, regno);
+      }
+
+  /* Don't mess with the hard frame pointer.  */
+  if (frame_pointer_needed)
+    bitmap_clear_bit (components, HARD_FRAME_POINTER_REGNUM);
+
+  unsigned reg1 = cfun->machine->frame.wb_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  /* If aarch64_layout_frame has chosen registers to store/restore with
+     writeback don't interfere with them to avoid having to output explicit
+     stack adjustment instructions.  */
+  if (reg2 != INVALID_REGNUM)
+    bitmap_clear_bit (components, reg2);
+  if (reg1 != INVALID_REGNUM)
+    bitmap_clear_bit (components, reg1);
+
+  bitmap_clear_bit (components, LR_REGNUM);
+  bitmap_clear_bit (components, SP_REGNUM);
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB.  */
+
+static sbitmap
+aarch64_components_for_bb (basic_block bb)
+{
+  bitmap in = DF_LIVE_IN (bb);
+  bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
+  bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
+
+  sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
+  bitmap_clear (components);
+
+  /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
+  for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
+    if ((!call_used_regs[regno])
+       && (bitmap_bit_p (in, regno)
+	   || bitmap_bit_p (gen, regno)
+	   || bitmap_bit_p (kill, regno)))
+	  bitmap_set_bit (components, regno);
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS.
+   Nothing to do for aarch64.  */
+
+static void
+aarch64_disqualify_components (sbitmap, edge, sbitmap, bool)
+{
+}
+
+/* Return the next set bit in BMP from START onwards.  Return the total number
+   of bits in BMP if no set bit is found at or after START.  */
+
+static unsigned int
+aarch64_get_next_set_bit (sbitmap bmp, unsigned int start)
+{
+  unsigned int nbits = SBITMAP_SIZE (bmp);
+  if (start == nbits)
+    return start;
+
+  gcc_assert (start < nbits);
+  for (unsigned int i = start; i < nbits; i++)
+    if (bitmap_bit_p (bmp, i))
+      return i;
+
+  return nbits;
+}
+
+/* Do the work for aarch64_emit_prologue_components and
+   aarch64_emit_epilogue_components.  COMPONENTS is the bitmap of registers
+   to save/restore, PROLOGUE_P indicates whether to emit the prologue sequence
+   for these components or the epilogue sequence.  That is, it determines
+   whether we should emit stores or loads and what kind of CFA notes to attach
+   to the insns.  Otherwise the logic for the two sequences is very
+   similar.  */
+
+static void
+aarch64_process_components (sbitmap components, bool prologue_p)
+{
+  rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
+			     ? HARD_FRAME_POINTER_REGNUM
+			     : STACK_POINTER_REGNUM);
+
+  unsigned last_regno = SBITMAP_SIZE (components);
+  unsigned regno = aarch64_get_next_set_bit (components, R0_REGNUM);
+  rtx_insn *insn = NULL;
+
+  while (regno != last_regno)
+    {
+      /* AAPCS64 section 5.1.2 requires only the bottom 64 bits to be saved
+	 so DFmode for the vector registers is enough.  */
+      machine_mode mode = GP_REGNUM_P (regno) ? DImode : DFmode;
+      rtx reg = gen_rtx_REG (mode, regno);
+      HOST_WIDE_INT offset = cfun->machine->frame.reg_offset[regno];
+      if (!frame_pointer_needed)
+	offset += cfun->machine->frame.frame_size
+		  - cfun->machine->frame.hard_fp_offset;
+      rtx addr = plus_constant (Pmode, ptr_reg, offset);
+      rtx mem = gen_frame_mem (mode, addr);
+
+      rtx set = prologue_p ? gen_rtx_SET (mem, reg) : gen_rtx_SET (reg, mem);
+      unsigned regno2 = aarch64_get_next_set_bit (components, regno + 1);
+      /* No more registers to handle after REGNO.
+	 Emit a single save/restore and exit.  */
+      if (regno2 == last_regno)
+	{
+	  insn = emit_insn (set);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  if (prologue_p)
+	    add_reg_note (insn, REG_CFA_OFFSET, copy_rtx (set));
+	  else
+	    add_reg_note (insn, REG_CFA_RESTORE, reg);
+	  break;
+	}
+
+      HOST_WIDE_INT offset2 = cfun->machine->frame.reg_offset[regno2];
+      /* The next register is not of the same class or its offset is not
+	 mergeable with the current one into a pair.  */
+      if (!satisfies_constraint_Ump (mem)
+	  || GP_REGNUM_P (regno) != GP_REGNUM_P (regno2)
+	  || (offset2 - cfun->machine->frame.reg_offset[regno])
+		!= GET_MODE_SIZE (mode))
+	{
+	  insn = emit_insn (set);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  if (prologue_p)
+	    add_reg_note (insn, REG_CFA_OFFSET, copy_rtx (set));
+	  else
+	    add_reg_note (insn, REG_CFA_RESTORE, reg);
+
+	  regno = regno2;
+	  continue;
+	}
+
+      /* REGNO2 can be saved/restored in a pair with REGNO.  */
+      rtx reg2 = gen_rtx_REG (mode, regno2);
+      if (!frame_pointer_needed)
+	offset2 += cfun->machine->frame.frame_size
+		  - cfun->machine->frame.hard_fp_offset;
+      rtx addr2 = plus_constant (Pmode, ptr_reg, offset2);
+      rtx mem2 = gen_frame_mem (mode, addr2);
+      rtx set2 = prologue_p ? gen_rtx_SET (mem2, reg2)
+			     : gen_rtx_SET (reg2, mem2);
+
+      if (prologue_p)
+	insn = emit_insn (aarch64_gen_store_pair (mode, mem, reg, mem2, reg2));
+      else
+	insn = emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2, mem2));
+
+      RTX_FRAME_RELATED_P (insn) = 1;
+      if (prologue_p)
+	{
+	  add_reg_note (insn, REG_CFA_OFFSET, set);
+	  add_reg_note (insn, REG_CFA_OFFSET, set2);
+	}
+      else
+	{
+	  add_reg_note (insn, REG_CFA_RESTORE, reg);
+	  add_reg_note (insn, REG_CFA_RESTORE, reg2);
+	}
+
+      regno = aarch64_get_next_set_bit (components, regno2 + 1);
+    }
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS.  */
+
+static void
+aarch64_emit_prologue_components (sbitmap components)
+{
+  aarch64_process_components (components, true);
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS.  */
+
+static void
+aarch64_emit_epilogue_components (sbitmap components)
+{
+  aarch64_process_components (components, false);
+}
+
+/* Implement TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS.  */
+
+static void
+aarch64_set_handled_components (sbitmap components)
+{
+  for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
+    if (bitmap_bit_p (components, regno))
+      cfun->machine->reg_is_wrapped_separately[regno] = true;
 }
 
 /* AArch64 stack frames generated by this compiler look like:
@@ -3979,29 +4226,6 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
     }
 
   return false;
-}
-
-bool
-aarch64_offset_7bit_signed_scaled_p (machine_mode mode, HOST_WIDE_INT offset)
-{
-  return (offset >= -64 * GET_MODE_SIZE (mode)
-	  && offset < 64 * GET_MODE_SIZE (mode)
-	  && offset % GET_MODE_SIZE (mode) == 0);
-}
-
-static inline bool
-offset_9bit_signed_unscaled_p (machine_mode mode ATTRIBUTE_UNUSED,
-			       HOST_WIDE_INT offset)
-{
-  return offset >= -256 && offset < 256;
-}
-
-static inline bool
-offset_12bit_unsigned_scaled_p (machine_mode mode, HOST_WIDE_INT offset)
-{
-  return (offset >= 0
-	  && offset < 4096 * GET_MODE_SIZE (mode)
-	  && offset % GET_MODE_SIZE (mode) == 0);
 }
 
 /* Return true if MODE is one of the modes for which we
@@ -14566,6 +14790,30 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD \
   aarch64_first_cycle_multipass_dfa_lookahead_guard
+
+#undef TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
+#define TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS \
+  aarch64_get_separate_components
+
+#undef TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB
+#define TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB \
+  aarch64_components_for_bb
+
+#undef TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS
+#define TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS \
+  aarch64_disqualify_components
+
+#undef TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS \
+  aarch64_emit_prologue_components
+
+#undef TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS \
+  aarch64_emit_epilogue_components
+
+#undef TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS
+#define TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS \
+  aarch64_set_handled_components
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT aarch64_trampoline_init

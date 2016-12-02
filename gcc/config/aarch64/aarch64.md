@@ -59,6 +59,7 @@
     (V0_REGNUM		32)
     (V15_REGNUM		47)
     (V31_REGNUM		63)
+    (LAST_SAVED_REGNUM	63)
     (SFP_REGNUM		64)
     (AP_REGNUM		65)
     (CC_REGNUM		66)
