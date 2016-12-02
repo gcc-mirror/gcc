@@ -649,7 +649,8 @@ Objective-C and Objective-C++ Dialects}.
 -mslow-flash-data @gol
 -masm-syntax-unified @gol
 -mrestrict-it @gol
--mpure-code}
+-mpure-code @gol
+-mcmse}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -mabsdata -maccumulate-args @gol
@@ -15378,6 +15379,11 @@ Additionally, when compiling for ELF object format give all text sections the
 ELF processor-specific section attribute @code{SHF_ARM_PURECODE}.  This option
 is only available when generating non-pic code for ARMv7-M targets.
 
+@item -mcmse
+@opindex mcmse
+Generate secure code as per the "ARMv8-M Security Extensions: Requirements on
+Development Tools Engineering Specification", which can be found on
+@url{http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf}.
 @end table
 
 @node AVR Options

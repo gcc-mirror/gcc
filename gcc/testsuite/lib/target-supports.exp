@@ -3916,6 +3916,19 @@ proc check_effective_target_arm_thumb1_cbz_ok {} {
     }
 }
 
+# Return 1 if this is an ARM target where ARMv8-M Security Extensions is
+# available.
+
+proc check_effective_target_arm_cmse_ok {} {
+    return [check_no_compiler_messages arm_cmse object {
+	int
+	foo (void)
+	{
+	  asm ("bxns r0");
+	}
+    } "-mcmse"];
+}
+
 # Return 1 if this compilation turns on string_ops_prefer_neon on.
 
 proc check_effective_target_arm_tune_string_ops_prefer_neon { } {

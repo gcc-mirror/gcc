@@ -105,6 +105,10 @@ mfloat-abi=
 Target RejectNegative Joined Enum(float_abi_type) Var(arm_float_abi) Init(TARGET_DEFAULT_FLOAT_ABI)
 Specify if floating point hardware should be used.
 
+mcmse
+Target RejectNegative Var(use_cmse)
+Specify that the compiler should target secure code as per ARMv8-M Security Extensions.
+
 Enum
 Name(float_abi_type) Type(enum float_abi_type)
 Known floating-point ABIs (for use with the -mfloat-abi= option):

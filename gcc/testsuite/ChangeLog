@@ -1,3 +1,12 @@
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse.exp: New.
+	* gcc.target/arm/cmse/cmse-1.c: New.
+	* gcc.target/arm/cmse/cmse-12.c: New.
+	* lib/target-supports.exp
+	(check_effective_target_arm_cmse_ok): New.
+
 2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
