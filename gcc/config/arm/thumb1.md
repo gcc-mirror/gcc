@@ -1869,8 +1869,13 @@
   "*
     return thumb1_unexpanded_epilogue ();
   "
-  ; Length is absolute worst case
-  [(set_attr "length" "44")
+  ; Length is absolute worst case, when using CMSE and if this is an entry
+  ; function an extra 4 (MSR) bytes will be added.
+  [(set (attr "length")
+	(if_then_else
+	 (match_test "IS_CMSE_ENTRY (arm_current_func_type ())")
+	 (const_int 48)
+	 (const_int 44)))
    (set_attr "type" "block")
    ;; We don't clobber the conditions, but the potential length of this
    ;; operation is sufficient to make conditionalizing the sequence

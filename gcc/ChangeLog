@@ -1,6 +1,24 @@
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (output_return_instruction): Clear
+	registers.
+	(thumb2_expand_return): Likewise.
+	(thumb1_expand_epilogue): Likewise.
+	(thumb_exit): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(cmse_nonsecure_entry_clear_before_return): New.
+	(comp_not_to_clear_mask_str_un): New.
+	(compute_not_to_clear_mask): New.
+	* config/arm/thumb1.md (*epilogue_insns): Change length attribute.
+	* config/arm/thumb2.md (*thumb2_return): Disable for
+	cmse_nonsecure_entry functions.
+	(*thumb2_cmse_entry_return): Duplicate thumb2_return pattern for
+	cmse_nonsecure_entry functions.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (use_return_insn): Change to return with  bxns
 	when cmse_nonsecure_entry.
 	(output_return_instruction): Likewise.
