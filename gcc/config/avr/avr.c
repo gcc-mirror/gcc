@@ -747,8 +747,8 @@ avr_option_override (void)
      introduces additional code in LIM and increases reg pressure.  */
 
   maybe_set_param_value (PARAM_ALLOW_STORE_DATA_RACES, 1,
-      global_options.x_param_values,
-      global_options_set.x_param_values);
+                         global_options.x_param_values,
+                         global_options_set.x_param_values);
 
   /* Unwind tables currently require a frame pointer for correctness,
      see toplev.c:process_options().  */
@@ -1034,7 +1034,7 @@ avr_set_current_function (tree decl)
   if (cfun->machine->is_OS_task + cfun->machine->is_OS_main
       + (cfun->machine->is_signal || cfun->machine->is_interrupt) > 1)
     error_at (loc, "function attributes %qs, %qs and %qs are mutually"
-               " exclusive", "OS_task", "OS_main", isr);
+              " exclusive", "OS_task", "OS_main", isr);
 
   /* 'naked' will hide effects of 'OS_task' and 'OS_main'.  */
 
@@ -1299,7 +1299,7 @@ avr_return_addr_rtx (int count, rtx tem)
 
   /* Can only return this function's return address. Others not supported.  */
   if (count)
-     return NULL;
+    return NULL;
 
   if (AVR_3_BYTE_PC)
     {
@@ -1313,7 +1313,7 @@ avr_return_addr_rtx (int count, rtx tem)
   r = gen_rtx_PLUS (Pmode, tem, r);
   r = gen_frame_mem (Pmode, memory_address (Pmode, r));
   r = gen_rtx_ROTATE (HImode, r, GEN_INT (8));
-  return  r;
+  return r;
 }
 
 /* Return 1 if the function epilogue is just a single "ret".  */
@@ -2093,7 +2093,6 @@ avr_asm_function_begin_epilogue (FILE *file)
 static bool
 avr_cannot_modify_jumps_p (void)
 {
-
   /* Naked Functions must not have any instructions after
      their epilogue, see PR42240 */
 
@@ -2698,7 +2697,7 @@ avr_print_operand (FILE *file, rtx x, int code)
       else if (code == 'b')
         {
           if (GET_CODE (addr) != PLUS)
-               fatal_insn ("bad address, not (reg+disp):", addr);
+            fatal_insn ("bad address, not (reg+disp):", addr);
 
           avr_print_operand_address (file, VOIDmode, XEXP (addr, 0));
         }
@@ -2708,7 +2707,7 @@ avr_print_operand (FILE *file, rtx x, int code)
             fatal_insn ("bad address, not post_inc or pre_dec:", addr);
 
           if (code == 'p')
-	    /* X, Y, Z */
+            /* X, Y, Z */
             avr_print_operand_address (file, VOIDmode, XEXP (addr, 0));
           else
             avr_print_operand (file, XEXP (addr, 0), 0);  /* r26, r28, r30 */
@@ -3723,8 +3722,6 @@ output_movhi (rtx_insn *insn, rtx xop[], int *plen)
       return avr_out_lpm (insn, xop, plen);
     }
 
-  gcc_assert (2 == GET_MODE_SIZE (GET_MODE (dest)));
-
   if (REG_P (dest))
     {
       if (REG_P (src)) /* mov r,r */
@@ -3825,8 +3822,8 @@ out_movqi_r_mr (rtx_insn *insn, rtx op[], int *plen)
     }
 
   if (GET_CODE (x) == PLUS
-           && REG_P (XEXP (x, 0))
-           && CONST_INT_P (XEXP (x, 1)))
+      && REG_P (XEXP (x, 0))
+      && CONST_INT_P (XEXP (x, 1)))
     {
       /* memory access by reg+disp */
 
@@ -4016,7 +4013,7 @@ out_movhi_r_mr (rtx_insn *insn, rtx op[], int *plen)
                            "ldd %B0,Y+63"    CR_TAB
                            "sbiw r28,%o1-62", op, plen, -4)
 
-              : avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
+            : avr_asm_len ("subi r28,lo8(-%o1)" CR_TAB
                            "sbci r29,hi8(-%o1)" CR_TAB
                            "ld %A0,Y"           CR_TAB
                            "ldd %B0,Y+1"        CR_TAB
@@ -4385,7 +4382,7 @@ avr_out_movsi_mr_r_reg_no_disp_tiny (rtx_insn *insn, rtx op[], int *l)
 
   if (reg_base == reg_src)
     {
-	  /* "ld r26,-X" is undefined */
+      /* "ld r26,-X" is undefined */
       if (reg_unused_after (insn, base))
         {
           return *l = 7, ("mov __tmp_reg__, %B1"  CR_TAB
@@ -4672,6 +4669,7 @@ output_movsisf (rtx_insn *insn, rtx operands[], int *l)
     l = &dummy;
 
   gcc_assert (4 == GET_MODE_SIZE (GET_MODE (dest)));
+
   if (REG_P (dest))
     {
       if (REG_P (src)) /* mov r,r */
@@ -4717,7 +4715,7 @@ output_movsisf (rtx_insn *insn, rtx operands[], int *l)
       const char *templ;
 
       if (src == CONST0_RTX (GET_MODE (dest)))
-	  operands[1] = zero_reg_rtx;
+        operands[1] = zero_reg_rtx;
 
       templ = out_movsi_mr_r (insn, operands, real_l);
 
@@ -4785,7 +4783,7 @@ avr_out_load_psi_reg_disp_tiny (rtx_insn *insn, rtx *op, int *plen)
                           TINY_SBIW (%I1, %J1, 1)     CR_TAB
                           "ld %A0,%b1"                CR_TAB
                           "mov %B0,__tmp_reg__", op, plen, -8);
-   }
+    }
   else
     {
       avr_asm_len (TINY_ADIW (%I1, %J1, %o1)   CR_TAB
@@ -4914,9 +4912,9 @@ avr_out_load_psi (rtx_insn *insn, rtx *op, int *plen)
                             "ldd %A0,%A1" CR_TAB
                             "mov %B0,__tmp_reg__", op, plen, -4);
 
-        return avr_asm_len ("ldd %A0,%A1" CR_TAB
-                            "ldd %B0,%B1" CR_TAB
-                            "ldd %C0,%C1", op, plen, -3);
+      return avr_asm_len ("ldd %A0,%A1" CR_TAB
+                          "ldd %B0,%B1" CR_TAB
+                          "ldd %C0,%C1", op, plen, -3);
     }
   else if (GET_CODE (base) == PRE_DEC) /* (--R) */
     return avr_asm_len ("ld %C0,%1" CR_TAB
@@ -5191,14 +5189,14 @@ avr_out_movqi_mr_r_reg_disp_tiny (rtx_insn *insn, rtx op[], int *plen)
                    TINY_ADIW (%I0, %J0, %o0) CR_TAB
                    "st %b0,__tmp_reg__", op, plen, -4);
     }
-    else
+  else
     {
       avr_asm_len (TINY_ADIW (%I0, %J0, %o0) CR_TAB
                    "st %b0,%1", op, plen, -3);
     }
 
   if (!reg_unused_after (insn, XEXP (x, 0)))
-      avr_asm_len (TINY_SBIW (%I0, %J0, %o0), op, plen, 2);
+    avr_asm_len (TINY_SBIW (%I0, %J0, %o0), op, plen, 2);
 
   return "";
 }
@@ -5410,11 +5408,11 @@ avr_out_movhi_mr_r_reg_no_disp_tiny (rtx_insn *insn, rtx op[], int *plen)
     }
 
   return !mem_volatile_p && reg_unused_after (insn, base)
-      ? avr_asm_len ("st %0+,%A1" CR_TAB
-                     "st %0,%B1", op, plen, -2)
-      : avr_asm_len (TINY_ADIW (%E0, %F0, 1) CR_TAB
-                     "st %0,%B1"             CR_TAB
-                     "st -%0,%A1", op, plen, -4);
+    ? avr_asm_len ("st %0+,%A1" CR_TAB
+                   "st %0,%B1", op, plen, -2)
+    : avr_asm_len (TINY_ADIW (%E0, %F0, 1) CR_TAB
+                   "st %0,%B1"             CR_TAB
+                   "st -%0,%A1", op, plen, -4);
 }
 
 static const char*
@@ -5797,8 +5795,8 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
               && reg_unused_after (insn, xreg))
             {
               return AVR_TINY
-                  ? avr_asm_len (TINY_ADIW (%A0, %B0, %n1), xop, plen, 2)
-                  : avr_asm_len ("adiw %0,%n1", xop, plen, 1);
+                ? avr_asm_len (TINY_ADIW (%A0, %B0, %n1), xop, plen, 2)
+                : avr_asm_len ("adiw %0,%n1", xop, plen, 1);
             }
         }
 
@@ -5973,7 +5971,7 @@ out_shift_with_cnt (const char *templ, rtx_insn *insn, rtx operands[],
       int max_len = 10;  /* If larger than this, always use a loop.  */
 
       if (count <= 0)
-          return;
+        return;
 
       if (count < 8 && !scratch)
         use_zero_reg = true;
@@ -6044,7 +6042,7 @@ out_shift_with_cnt (const char *templ, rtx_insn *insn, rtx operands[],
     fatal_insn ("bad shift insn:", insn);
 
   if (second_label)
-      avr_asm_len ("rjmp 2f", op, plen, 1);
+    avr_asm_len ("rjmp 2f", op, plen, 1);
 
   avr_asm_len ("1:", op, plen, 0);
   avr_asm_len (templ, op, plen, t_len);
@@ -8774,9 +8772,9 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 	      xop[3] = all_regs_rtx[dest.regno_msb];
 	      avr_asm_len ("ldi %3,127", xop, plen, 1);
 	      avr_asm_len ((have_carry && lsb_in_tmp_reg ? "adc __tmp_reg__,%3"
-			   : have_carry ? "adc %2,%3"
-			   : lsb_in_tmp_reg ? "add __tmp_reg__,%3"
-			   : "add %2,%3"),
+			    : have_carry ? "adc %2,%3"
+			    : lsb_in_tmp_reg ? "add __tmp_reg__,%3"
+			    : "add %2,%3"),
 			   xop, plen, 1);
 	    }
 	  else
@@ -8860,7 +8858,7 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
                      "lsl __tmp_reg__", &all_regs_rtx[s0], plen, 2);
 
       sign_in_carry = true;
-  }
+    }
 
   gcc_assert (sign_in_carry + msb_in_carry + lsb_in_carry <= 1);
 
@@ -8979,150 +8977,150 @@ avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
 
 
 /* Create RTL split patterns for byte sized rotate expressions.  This
-  produces a series of move instructions and considers overlap situations.
-  Overlapping non-HImode operands need a scratch register.  */
+   produces a series of move instructions and considers overlap situations.
+   Overlapping non-HImode operands need a scratch register.  */
 
 bool
 avr_rotate_bytes (rtx operands[])
 {
-    machine_mode mode = GET_MODE (operands[0]);
-    bool overlapped = reg_overlap_mentioned_p (operands[0], operands[1]);
-    bool same_reg = rtx_equal_p (operands[0], operands[1]);
-    int num = INTVAL (operands[2]);
-    rtx scratch = operands[3];
-    /* Work out if byte or word move is needed.  Odd byte rotates need QImode.
-       Word move if no scratch is needed, otherwise use size of scratch.  */
-    machine_mode move_mode = QImode;
-    int move_size, offset, size;
+  machine_mode mode = GET_MODE (operands[0]);
+  bool overlapped = reg_overlap_mentioned_p (operands[0], operands[1]);
+  bool same_reg = rtx_equal_p (operands[0], operands[1]);
+  int num = INTVAL (operands[2]);
+  rtx scratch = operands[3];
+  /* Work out if byte or word move is needed.  Odd byte rotates need QImode.
+     Word move if no scratch is needed, otherwise use size of scratch.  */
+  machine_mode move_mode = QImode;
+  int move_size, offset, size;
 
-    if (num & 0xf)
-      move_mode = QImode;
-    else if ((mode == SImode && !same_reg) || !overlapped)
-      move_mode = HImode;
-    else
-      move_mode = GET_MODE (scratch);
+  if (num & 0xf)
+    move_mode = QImode;
+  else if ((mode == SImode && !same_reg) || !overlapped)
+    move_mode = HImode;
+  else
+    move_mode = GET_MODE (scratch);
 
-    /* Force DI rotate to use QI moves since other DI moves are currently split
-       into QI moves so forward propagation works better.  */
-    if (mode == DImode)
-      move_mode = QImode;
-    /* Make scratch smaller if needed.  */
-    if (SCRATCH != GET_CODE (scratch)
-        && HImode == GET_MODE (scratch)
-        && QImode == move_mode)
-      scratch = simplify_gen_subreg (move_mode, scratch, HImode, 0);
+  /* Force DI rotate to use QI moves since other DI moves are currently split
+     into QI moves so forward propagation works better.  */
+  if (mode == DImode)
+    move_mode = QImode;
+  /* Make scratch smaller if needed.  */
+  if (SCRATCH != GET_CODE (scratch)
+      && HImode == GET_MODE (scratch)
+      && QImode == move_mode)
+    scratch = simplify_gen_subreg (move_mode, scratch, HImode, 0);
 
-    move_size = GET_MODE_SIZE (move_mode);
-    /* Number of bytes/words to rotate.  */
-    offset = (num  >> 3) / move_size;
-    /* Number of moves needed.  */
-    size = GET_MODE_SIZE (mode) / move_size;
-    /* Himode byte swap is special case to avoid a scratch register.  */
-    if (mode == HImode && same_reg)
-      {
-	/* HImode byte swap, using xor.  This is as quick as using scratch.  */
-	rtx src, dst;
-	src = simplify_gen_subreg (move_mode, operands[1], mode, 0);
-	dst = simplify_gen_subreg (move_mode, operands[0], mode, 1);
-	if (!rtx_equal_p (dst, src))
-	  {
-	     emit_move_insn (dst, gen_rtx_XOR (QImode, dst, src));
-	     emit_move_insn (src, gen_rtx_XOR (QImode, src, dst));
-	     emit_move_insn (dst, gen_rtx_XOR (QImode, dst, src));
-	  }
-      }
-    else
-      {
+  move_size = GET_MODE_SIZE (move_mode);
+  /* Number of bytes/words to rotate.  */
+  offset = (num  >> 3) / move_size;
+  /* Number of moves needed.  */
+  size = GET_MODE_SIZE (mode) / move_size;
+  /* Himode byte swap is special case to avoid a scratch register.  */
+  if (mode == HImode && same_reg)
+    {
+      /* HImode byte swap, using xor.  This is as quick as using scratch.  */
+      rtx src, dst;
+      src = simplify_gen_subreg (move_mode, operands[1], mode, 0);
+      dst = simplify_gen_subreg (move_mode, operands[0], mode, 1);
+      if (!rtx_equal_p (dst, src))
+        {
+          emit_move_insn (dst, gen_rtx_XOR (QImode, dst, src));
+          emit_move_insn (src, gen_rtx_XOR (QImode, src, dst));
+          emit_move_insn (dst, gen_rtx_XOR (QImode, dst, src));
+        }
+    }
+  else
+    {
 #define MAX_SIZE 8 /* GET_MODE_SIZE (DImode) / GET_MODE_SIZE (QImode)  */
-	/* Create linked list of moves to determine move order.  */
-	struct {
-	  rtx src, dst;
-	  int links;
-	} move[MAX_SIZE + 8];
-	int blocked, moves;
+      /* Create linked list of moves to determine move order.  */
+      struct {
+        rtx src, dst;
+        int links;
+      } move[MAX_SIZE + 8];
+      int blocked, moves;
 
-	gcc_assert (size <= MAX_SIZE);
-	/* Generate list of subreg moves.  */
-	for (int i = 0; i < size; i++)
-          {
-	    int from = i;
-	    int to = (from + offset) % size;
-	    move[i].src = simplify_gen_subreg (move_mode, operands[1],
-                                               mode, from * move_size);
-	    move[i].dst = simplify_gen_subreg (move_mode, operands[0],
-                                               mode, to * move_size);
-            move[i].links = -1;
-          }
-	/* Mark dependence where a dst of one move is the src of another move.
-	   The first move is a conflict as it must wait until second is
-	   performed.  We ignore moves to self - we catch this later.  */
-	if (overlapped)
-	  for (int i = 0; i < size; i++)
-	    if (reg_overlap_mentioned_p (move[i].dst, operands[1]))
-	      for (int j = 0; j < size; j++)
-		if (j != i && rtx_equal_p (move[j].src, move[i].dst))
-		  {
-		    /* The dst of move i is the src of move j.  */
-		    move[i].links = j;
-		    break;
-		  }
+      gcc_assert (size <= MAX_SIZE);
+      /* Generate list of subreg moves.  */
+      for (int i = 0; i < size; i++)
+        {
+          int from = i;
+          int to = (from + offset) % size;
+          move[i].src = simplify_gen_subreg (move_mode, operands[1],
+                                             mode, from * move_size);
+          move[i].dst = simplify_gen_subreg (move_mode, operands[0],
+                                             mode, to * move_size);
+          move[i].links = -1;
+        }
+      /* Mark dependence where a dst of one move is the src of another move.
+         The first move is a conflict as it must wait until second is
+         performed.  We ignore moves to self - we catch this later.  */
+      if (overlapped)
+        for (int i = 0; i < size; i++)
+          if (reg_overlap_mentioned_p (move[i].dst, operands[1]))
+            for (int j = 0; j < size; j++)
+              if (j != i && rtx_equal_p (move[j].src, move[i].dst))
+                {
+                  /* The dst of move i is the src of move j.  */
+                  move[i].links = j;
+                  break;
+                }
 
-	blocked = -1;
-	moves = 0;
-	/* Go through move list and perform non-conflicting moves.  As each
-	   non-overlapping move is made, it may remove other conflicts
-	   so the process is repeated until no conflicts remain.  */
-	do
-	  {
-	    blocked = -1;
-	    moves = 0;
-	    /* Emit move where dst is not also a src or we have used that
-	       src already.  */
-	    for (int i = 0; i < size; i++)
-	      if (move[i].src != NULL_RTX)
-		{
-		  if (move[i].links == -1
-		      || move[move[i].links].src == NULL_RTX)
-		    {
-		      moves++;
-		      /* Ignore NOP moves to self.  */
-		      if (!rtx_equal_p (move[i].dst, move[i].src))
-			emit_move_insn (move[i].dst, move[i].src);
+      blocked = -1;
+      moves = 0;
+      /* Go through move list and perform non-conflicting moves.  As each
+         non-overlapping move is made, it may remove other conflicts
+         so the process is repeated until no conflicts remain.  */
+      do
+        {
+          blocked = -1;
+          moves = 0;
+          /* Emit move where dst is not also a src or we have used that
+             src already.  */
+          for (int i = 0; i < size; i++)
+            if (move[i].src != NULL_RTX)
+              {
+                if (move[i].links == -1
+                    || move[move[i].links].src == NULL_RTX)
+                  {
+                    moves++;
+                    /* Ignore NOP moves to self.  */
+                    if (!rtx_equal_p (move[i].dst, move[i].src))
+                      emit_move_insn (move[i].dst, move[i].src);
 
-		      /* Remove  conflict from list.  */
-		      move[i].src = NULL_RTX;
-		    }
-		  else
-		    blocked = i;
-		}
+                    /* Remove  conflict from list.  */
+                    move[i].src = NULL_RTX;
+                  }
+                else
+                  blocked = i;
+              }
 
-	    /* Check for deadlock. This is when no moves occurred and we have
-	       at least one blocked move.  */
-	    if (moves == 0 && blocked != -1)
-	      {
-		/* Need to use scratch register to break deadlock.
-		   Add move to put dst of blocked move into scratch.
-		   When this move occurs, it will break chain deadlock.
-		   The scratch register is substituted for real move.  */
+          /* Check for deadlock. This is when no moves occurred and we have
+             at least one blocked move.  */
+          if (moves == 0 && blocked != -1)
+            {
+              /* Need to use scratch register to break deadlock.
+                 Add move to put dst of blocked move into scratch.
+                 When this move occurs, it will break chain deadlock.
+                 The scratch register is substituted for real move.  */
 
-		gcc_assert (SCRATCH != GET_CODE (scratch));
+              gcc_assert (SCRATCH != GET_CODE (scratch));
 
-		move[size].src = move[blocked].dst;
-		move[size].dst =  scratch;
-		/* Scratch move is never blocked.  */
-		move[size].links = -1;
-		/* Make sure we have valid link.  */
-		gcc_assert (move[blocked].links != -1);
-		/* Replace src of  blocking move with scratch reg.  */
-		move[move[blocked].links].src = scratch;
-		/* Make dependent on scratch move occurring.  */
-		move[blocked].links = size;
-		size=size+1;
-	      }
-	  }
-	while (blocked != -1);
-      }
-    return true;
+              move[size].src = move[blocked].dst;
+              move[size].dst =  scratch;
+              /* Scratch move is never blocked.  */
+              move[size].links = -1;
+              /* Make sure we have valid link.  */
+              gcc_assert (move[blocked].links != -1);
+              /* Replace src of  blocking move with scratch reg.  */
+              move[move[blocked].links].src = scratch;
+              /* Make dependent on scratch move occurring.  */
+              move[blocked].links = size;
+              size=size+1;
+            }
+        }
+      while (blocked != -1);
+    }
+  return true;
 }
 
 
@@ -9900,7 +9898,6 @@ avr_asm_output_aligned_decl_common (FILE * stream,
       && SYMBOL_REF_P ((symbol = XEXP (mem, 0)))
       && (SYMBOL_REF_FLAGS (symbol) & (SYMBOL_FLAG_IO | SYMBOL_FLAG_ADDRESS)))
     {
-
       if (!local_p)
 	{
 	  fprintf (stream, "\t.globl\t");
@@ -10139,7 +10136,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       && TREE_CODE (decl) != FUNCTION_DECL
       && MEM_P (rtl)
       && SYMBOL_REF_P (XEXP (rtl, 0)))
-   {
+    {
       rtx sym = XEXP (rtl, 0);
       tree type = TREE_TYPE (decl);
       tree attr = DECL_ATTRIBUTES (decl);
@@ -10345,7 +10342,7 @@ avr_adjust_reg_alloc_order (void)
       17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2,
       0, 1,
       32, 33, 34, 35
-  };
+    };
   static const int tiny_order_0[] = {
     20, 21,
     22, 23,
@@ -10366,7 +10363,7 @@ avr_adjust_reg_alloc_order (void)
       17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2,
       0, 1,
       32, 33, 34, 35
-  };
+    };
   static const int tiny_order_1[] = {
     22, 23,
     24, 25,
@@ -10386,7 +10383,7 @@ avr_adjust_reg_alloc_order (void)
       17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2,
       1, 0,
       32, 33, 34, 35
-  };
+    };
 
   /* Select specific register allocation order.
      Tiny Core (ATtiny4/5/9/10/20/40) devices have only 16 registers,
@@ -10397,7 +10394,7 @@ avr_adjust_reg_alloc_order (void)
                       : (AVR_TINY ? tiny_order_0 : order_0));
 
   for (size_t i = 0; i < ARRAY_SIZE (order_0); ++i)
-      reg_alloc_order[i] = order[i];
+    reg_alloc_order[i] = order[i];
 }
 
 
@@ -10767,10 +10764,10 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
                 *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 5 : 4);
             }
 
-	   if (mode == DImode)
-	     *total *= 2;
+	  if (mode == DImode)
+	    *total *= 2;
 
-	   return true;
+	  return true;
 
 	default:
 	  return false;
@@ -13187,7 +13184,7 @@ avr_expand_delay_cycles (rtx operands0)
       emit_insn (gen_delay_cycles_1 (gen_int_mode (loop_count, QImode),
                                      avr_mem_clobber()));
       cycles -= cycles_used;
-      }
+    }
 
   while (cycles >= 2)
     {

@@ -1,4 +1,8 @@
-2016-12-09  Martin Jambor  <mjambor@suse.cz>
+2016-12-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c: Fix coding rule glitches.
+
+2016-12-02  Martin Jambor  <mjambor@suse.cz>
 
 	* hsa.c (hsa_callable_function_p): Return false for artificial
 	functions.
