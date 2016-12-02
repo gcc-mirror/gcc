@@ -1,3 +1,8 @@
+2016-12-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* match.pd: Add new pattern:
+	(cond (cmp (convert? x) c1) (op x c2) c3) -> (op (minmax x c1) c2).
+
 2016-12-02  Nathan Sidwell  <nathan@acm.org>
 
 	* diagnostic.c (diagnostic_report_diagnostic): Remove extraneous
