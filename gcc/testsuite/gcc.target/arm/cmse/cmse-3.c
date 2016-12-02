@@ -35,3 +35,11 @@ norf (struct span2 a) {}
 
 void __attribute__ ((cmse_nonsecure_entry))
 foo2 (long long a, int b, union test_union c) {} /* { dg-error "not available to functions with arguments passed on the stack" } */
+
+typedef void __attribute__ ((cmse_nonsecure_call)) bar2 (long long a, int b, long long c); /* { dg-error "not available to functions with arguments passed on the stack" } */
+
+typedef void __attribute__ ((cmse_nonsecure_call)) baz2 (long long a, int b, struct span c); /* { dg-error "not available to functions with arguments passed on the stack" } */
+
+typedef struct span __attribute__ ((cmse_nonsecure_call)) qux2 (void); /* { dg-error "not available to functions that return value on the stack" } */
+
+typedef void __attribute__ ((cmse_nonsecure_call)) norf2 (int a, ...); /* { dg-error "not available to functions with variable number of arguments" } */
