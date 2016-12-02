@@ -1,3 +1,8 @@
+2016-12-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/pool.h (gomp_get_thread_pool): Return proper
+	thread pool in case nthreads == 1.
+
 2016-11-30  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/nvptx/env.c: Delete.
