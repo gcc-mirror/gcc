@@ -16,10 +16,44 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 #
+
+# MSYS will zealously translate all paths to Windows form, so /usr/include becomes c:/msysX/usr/include.
+# This is undesirable when TARGET_SYSTEM_ROOT is specified, so this function converts /usr/include to //usr\include,
+# which will become /usr/include again when passed to gcc.
+
+# This function takes two parameters: first parameter is include directory path, second parameter tells
+# if the path is relative to TARGET_SYSTEM_ROOT.
+# If TARGET_SYSTEM_ROOT is not configured, or
+#   this function always expands to the unmodified first parameter
+# if TARGET_SYSTEM_ROOT is configured, but second parameter is not 1,
+#   this function again expands to the unmodified first parameter
+# otherwise,
+#  it expands to a shell expression which will transform the first parameter as described above.
+ifneq ($(TARGET_SYSTEM_ROOT),)
+sysroot_relative_path = $(if $(filter 1,$(2)),`echo "$(1)" | tr '/' '\\\\' | sed 's|^\\\\|//|'`,$(1))
+else
+sysroot_relative_path = $(1)
+endif
+
+ifneq ($(TARGET_SYSTEM_ROOT),)
+#
+# Make sure that relative the path is not converted to absolute DOS style path
+#
+local_includedir = $(call sysroot_relative_path,$(local_prefix)/include,1)
+else
 #
 # Make local_includedir relative to EXEC_PREFIX 
 #
 local_includedir=$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include
+endif
+
+#
+# Make sure that relative path are not converted to absolute DOS style paths
+#
+gplusplus_includedir = $(call sysroot_relative_path,$(gcc_gxx_include_dir),$(gcc_gxx_include_dir_add_sysroot))
+gplusplus_tool_includedir = $(call sysroot_relative_path,$(gcc_gxx_include_dir)/$(target_noncanonical),$(gcc_gxx_include_dir_add_sysroot))
+gplusplus_backward_includedir = $(call sysroot_relative_path,$(gcc_gxx_include_dir)/backward,$(gcc_gxx_include_dir_add_sysroot))
+native_system_includedir = $(call sysroot_relative_path,$(NATIVE_SYSTEM_HEADER_DIR),1)
 
 # On MinGW, we use "%IA64d" to print 64-bit integers, and the format-checking
 # code does not handle that, so we have to disable checking here.

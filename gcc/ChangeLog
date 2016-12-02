@@ -1,3 +1,14 @@
+2016-12-02  Tadek Kijkowski  <tkijkowski@gmail.com>
+
+	* Makefile.in (PREPROCESSOR_DEFINES): Add a level of indirection
+	for several include directories that may be relative to sysroot.
+	* config/i386/x-mingw32 (gplus_includedir): Define.
+	(gplus_tool_includedir, gplus_backward_include_dir): Likewise.
+	(native_system_includedir): Likewise.
+	* config/i386/mingw32.h (STANDARD_STARTFILE_PREFIX_1): Do not
+	override if TARGET_SYSTEM_ROOT is defined.
+	(NATIVE_SYSTEM_HEADER_DIR): Likewise.
+
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70322
