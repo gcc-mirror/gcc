@@ -5552,10 +5552,6 @@ copy_insn_1 (rtx orig)
      us to explicitly document why we are *not* copying a flag.  */
   copy = shallow_copy_rtx (orig);
 
-  /* We do not copy the USED flag, which is used as a mark bit during
-     walks over the RTL.  */
-  RTX_FLAG (copy, used) = 0;
-
   /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
   if (INSN_P (orig))
     {
