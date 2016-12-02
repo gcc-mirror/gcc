@@ -1,3 +1,18 @@
+2016-12-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR rtl-optimization/78561
+	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p) Rename
+	get_pool_size to get_pool_size_upper_bound.
+	(rs6000_stack_info): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_elf_declare_function_name): Likewise.
+	(rs6000_set_up_by_prologue): Likewise.
+	(rs6000_can_eliminate): Likewise, reformat spaces to tabs.
+	* output.h (get_pool_size): Rename to...
+	(get_pool_size_upper_bound): ...This.
+	* varasm.c (get_pool_size): Rename to...
+	(get_pool_size_upper_bound): ...This.
+
 2016-12-02  Bin Cheng  <bin.cheng@arm.com>
 
 	* match.pd: Add new pattern:

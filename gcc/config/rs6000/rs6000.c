@@ -25460,7 +25460,7 @@ rs6000_reg_live_or_pic_offset_p (int reg)
       if (TARGET_TOC && TARGET_MINIMAL_TOC
 	  && (crtl->calls_eh_return
 	      || df_regs_ever_live_p (reg)
-	      || get_pool_size ()))
+	      || get_pool_size_upper_bound ()))
 	return true;
 
       if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)
@@ -26266,7 +26266,7 @@ rs6000_stack_info (void)
 #ifdef TARGET_RELOCATABLE
       || (DEFAULT_ABI == ABI_V4
 	  && (TARGET_RELOCATABLE || flag_pic > 1)
-	  && get_pool_size () != 0)
+	  && get_pool_size_upper_bound () != 0)
 #endif
       || rs6000_ra_ever_killed ())
     info->lr_save_p = 1;
@@ -28044,7 +28044,8 @@ rs6000_emit_prologue (void)
       cfun->machine->r2_setup_needed = df_regs_ever_live_p (TOC_REGNUM);
 
       /* With -mminimal-toc we may generate an extra use of r2 below.  */
-      if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
+      if (TARGET_TOC && TARGET_MINIMAL_TOC
+	  && get_pool_size_upper_bound () != 0)
 	cfun->machine->r2_setup_needed = true;
     }
 
@@ -28899,7 +28900,8 @@ rs6000_emit_prologue (void)
 
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
   if (!TARGET_SINGLE_PIC_BASE
-      && ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
+      && ((TARGET_TOC && TARGET_MINIMAL_TOC
+	   && get_pool_size_upper_bound () != 0)
 	  || (DEFAULT_ABI == ABI_V4
 	      && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
 	      && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))))
@@ -34966,7 +34968,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   if (DEFAULT_ABI == ABI_V4
       && (TARGET_RELOCATABLE || flag_pic > 1)
       && !TARGET_SECURE_PLT
-      && (get_pool_size () != 0 || crtl->profile)
+      && (get_pool_size_upper_bound () != 0 || crtl->profile)
       && uses_TOC ())
     {
       char buf[256];
@@ -37449,10 +37451,11 @@ static bool
 rs6000_can_eliminate (const int from, const int to)
 {
   return (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
-          ? ! frame_pointer_needed
-          : from == RS6000_PIC_OFFSET_TABLE_REGNUM
-            ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC || get_pool_size () == 0
-            : true);
+	  ? ! frame_pointer_needed
+	  : from == RS6000_PIC_OFFSET_TABLE_REGNUM
+	    ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC
+		|| get_pool_size_upper_bound () == 0
+	    : true);
 }
 
 /* Define the offset between two registers, FROM to be eliminated and its
@@ -38988,7 +38991,7 @@ rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
   if (!TARGET_SINGLE_PIC_BASE
       && TARGET_TOC
       && TARGET_MINIMAL_TOC
-      && get_pool_size () != 0)
+      && get_pool_size_upper_bound () != 0)
     add_to_hard_reg_set (&set->set, Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
   if (cfun->machine->split_stack_argp_used)
     add_to_hard_reg_set (&set->set, Pmode, 12);

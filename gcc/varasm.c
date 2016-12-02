@@ -3811,7 +3811,7 @@ get_pool_mode (const_rtx addr)
 /* Return the size of the constant pool.  */
 
 int
-get_pool_size (void)
+get_pool_size_upper_bound (void)
 {
   return crtl->varasm.pool->offset;
 }
