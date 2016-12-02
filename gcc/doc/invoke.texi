@@ -15402,7 +15402,8 @@ GCC supports the following AVR devices and ISAs:
 
 Assume that all data in static storage can be accessed by LDS / STS
 instructions.  This option has only an effect on reduced Tiny devices like
-ATtiny40.
+ATtiny40.  See also the @code{absdata}
+@ref{AVR Variable Attributes,variable attribute}.
 
 @item -maccumulate-args
 @opindex maccumulate-args
