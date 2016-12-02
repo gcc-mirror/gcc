@@ -834,9 +834,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
      -Wno-error=*.  */
   if (context->warning_as_error_requested
       && diagnostic->kind == DK_WARNING)
-    {
-      diagnostic->kind = DK_ERROR;
-    }
+    diagnostic->kind = DK_ERROR;
 
   if (diagnostic->option_index
       && diagnostic->option_index != permissive_error_option (context))

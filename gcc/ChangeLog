@@ -1,3 +1,8 @@
+2016-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_diagnostic): Remove extraneous
+	braces.
+
 2016-12-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/78328
