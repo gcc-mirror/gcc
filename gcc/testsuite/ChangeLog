@@ -1,5 +1,9 @@
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vector/vec-nopeel-1.c: New test.
+
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/zvector/vec-cmp-2.c: New test.
 
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
