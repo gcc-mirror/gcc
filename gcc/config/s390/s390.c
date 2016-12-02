@@ -3674,6 +3674,40 @@ s390_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
   return ad.indx? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (1);
 }
 
+/* Implement targetm.vectorize.builtin_vectorization_cost.  */
+static int
+s390_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
+				 tree vectype,
+				 int misalign ATTRIBUTE_UNUSED)
+{
+  switch (type_of_cost)
+    {
+      case scalar_stmt:
+      case scalar_load:
+      case scalar_store:
+      case vector_stmt:
+      case vector_load:
+      case vector_store:
+      case vec_to_scalar:
+      case scalar_to_vec:
+      case cond_branch_not_taken:
+      case vec_perm:
+      case vec_promote_demote:
+      case unaligned_load:
+      case unaligned_store:
+	return 1;
+
+      case cond_branch_taken:
+	return 3;
+
+      case vec_construct:
+	return TYPE_VECTOR_SUBPARTS (vectype) - 1;
+
+      default:
+	gcc_unreachable ();
+    }
+}
+
 /* If OP is a SYMBOL_REF of a thread-local symbol, return its TLS mode,
    otherwise return 0.  */
 
@@ -15428,6 +15462,9 @@ s390_excess_precision (enum excess_precision_type type)
 #define TARGET_REGISTER_MOVE_COST s390_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST s390_memory_move_cost
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
+  s390_builtin_vectorization_cost
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG s390_reorg
