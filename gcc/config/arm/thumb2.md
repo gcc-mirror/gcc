@@ -1114,10 +1114,29 @@
 
 (define_insn "*thumb2_return"
   [(simple_return)]
-  "TARGET_THUMB2"
+  "TARGET_THUMB2 && !IS_CMSE_ENTRY (arm_current_func_type ())"
   "* return output_return_instruction (const_true_rtx, true, false, true);"
   [(set_attr "type" "branch")
    (set_attr "length" "4")]
+)
+
+(define_insn "*thumb2_cmse_entry_return"
+  [(simple_return)]
+  "TARGET_THUMB2 && IS_CMSE_ENTRY (arm_current_func_type ())"
+  "* return output_return_instruction (const_true_rtx, true, false, true);"
+  [(set_attr "type" "branch")
+   ; This is a return from a cmse_nonsecure_entry function so code will be
+   ; added to clear the APSR and potentially the FPSCR if VFP is available, so
+   ; we adapt the length accordingly.
+   (set (attr "length")
+     (if_then_else (match_test "TARGET_HARD_FLOAT")
+      (const_int 12)
+      (const_int 8)))
+   ; We do not support predicate execution of returns from cmse_nonsecure_entry
+   ; functions because we need to clear the APSR.  Since predicable has to be
+   ; a constant, we had to duplicate the thumb2_return pattern for CMSE entry
+   ; functions.
+   (set_attr "predicable" "no")]
 )
 
 (define_insn_and_split "thumb2_eh_return"

@@ -43,6 +43,26 @@ set LTO_TORTURE_OPTIONS ""
 gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] \
 	"" $DEFAULT_CFLAGS
 
+if {[check_effective_target_arm_arch_v8m_base_ok]} then {
+    # Baseline only
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/baseline/*.c]] \
+	    "" $DEFAULT_CFLAGS
+}
+
+if {[check_effective_target_arm_arch_v8m_main_ok]} then {
+    # Mainline -mfloat-abi=soft
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/soft/*.c]] \
+	    "-mfloat-abi=soft" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp/*.c]] \
+	    "" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp-sp/*.c]] \
+	    "" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard/*.c]] \
+	    "" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard-sp/*.c]] \
+	    "" $DEFAULT_CFLAGS
+}
+
 set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
 set dg-do-what-default ${saved-dg-do-what-default}
 
