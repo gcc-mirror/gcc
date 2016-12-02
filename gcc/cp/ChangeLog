@@ -1,3 +1,10 @@
+2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_enter_exit_data): Update diagnostics.
+	(cp_parser_pragma): Error when PRAGMA_OACC_{ENTER_DATA,
+	EXIT_DATA,WAIT} are not used in compound statements.
+
 2016-12-01  Jason Merrill  <jason@redhat.com>
 
 	* call.c (add_function_candidate): Also exclude inherited ctors
