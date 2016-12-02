@@ -1,3 +1,31 @@
+2016-12-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (machine_function): Add
+	reg_is_wrapped_separately field.
+	* config/aarch64/aarch64.md (LAST_SAVED_REGNUM): Define new constant.
+	* config/aarch64/aarch64.c (emit_set_insn): Change return type to
+	rtx_insn *.
+	(aarch64_save_callee_saves): Don't save registers that are wrapped
+	separately.
+	(aarch64_restore_callee_saves): Don't restore registers that are
+	wrapped separately.
+	(offset_9bit_signed_unscaled_p, offset_12bit_unsigned_scaled_p,
+	aarch64_offset_7bit_signed_scaled_p): Move earlier in the file.
+	(aarch64_get_separate_components): New function.
+	(aarch64_get_next_set_bit): Likewise.
+	(aarch64_components_for_bb): Likewise.
+	(aarch64_disqualify_components): Likewise.
+	(aarch64_emit_prologue_components): Likewise.
+	(aarch64_emit_epilogue_components): Likewise.
+	(aarch64_set_handled_components): Likewise.
+	(aarch64_process_components): Likewise.
+	(TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS,
+	TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB,
+	TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS,
+	TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS,
+	TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS,
+	TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS): Define.
+
 2016-12-02  Martin Jambor  <mjambor@suse.cz>
 
 	* passes.def: Move pass_rebuild_cgraph_edges to the end of
