@@ -12666,6 +12666,7 @@ cmse_address_info_t cmse_TTAT_fptr (FPTR)
 void * cmse_check_address_range (void *, size_t, int)
 typeof(p) cmse_nsfptr_create (FPTR p)
 intptr_t cmse_is_nsfptr (FPTR)
+int cmse_nonsecure_caller (void)
 @end smallexample
 
 @node AVR Built-in Functions

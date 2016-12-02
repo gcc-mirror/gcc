@@ -1,6 +1,16 @@
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-builtins.c (arm_builtins): Define
+	ARM_BUILTIN_CMSE_NONSECURE_CALLER.
+	(bdesc_2arg): Add line for cmse_nonsecure_caller.
+	(arm_init_builtins): Handle cmse_nonsecure_caller.
+	(arm_expand_builtin): Likewise.
+	* config/arm/arm_cmse.h (cmse_nonsecure_caller): New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (detect_cmse_nonsecure_call): New.
 	(cmse_nonsecure_call_clear_caller_saved): New.
 	(arm_reorg): Use cmse_nonsecure_call_clear_caller_saved.
