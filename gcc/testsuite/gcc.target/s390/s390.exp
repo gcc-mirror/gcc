@@ -90,16 +90,16 @@ dg-init
 set md_tests $srcdir/$subdir/md/*.c
 
 # Main loop.
-dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.\[cS\]] \
+dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.{c,S,C}] \
 			 $md_tests]] "" $DEFAULT_CFLAGS
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.\[cS\]]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.]] \
 	"" $DEFAULT_CFLAGS
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.\[cS\]]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.{c,S,C}]] \
 	"" $DEFAULT_CFLAGS
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.\[cS\]]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S,C}]] \
 	"" $DEFAULT_CFLAGS
 
 # Additional hotpatch torture tests.
