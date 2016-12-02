@@ -57,6 +57,8 @@ static tree handle_no_address_safety_analysis_attribute (tree *, tree, tree,
 							 int, bool *);
 static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
+						 bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
@@ -291,6 +293,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      false },
   { "no_sanitize_undefined",  0, 0, true, false, false,
 			      handle_no_sanitize_undefined_attribute,
+			      false },
+  { "asan odr indicator",     0, 0, true, false, false,
+			      handle_asan_odr_indicator_attribute,
 			      false },
   { "warning",		      1, 1, true,  false, false,
 			      handle_error_attribute, false },
@@ -588,6 +593,15 @@ handle_no_sanitize_undefined_attribute (tree *node, tree name, tree, int,
       *no_add_attrs = true;
     }
 
+  return NULL_TREE;
+}
+
+/* Handle an "asan odr indicator" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_asan_odr_indicator_attribute (tree *, tree, tree, int, bool *)
+{
   return NULL_TREE;
 }
 

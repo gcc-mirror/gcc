@@ -1,3 +1,13 @@
+2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.c (asan_global_struct): Refactor.
+	(create_odr_indicator): New function.
+	(asan_needs_odr_indicator_p): Likewise.
+	(is_odr_indicator): Likewise.
+	(asan_add_global): Introduce odr_indicator_ptr. Pass it into global's
+	constructor.
+	(asan_protect_global): Do not protect odr indicators.
+
 2016-12-01  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c

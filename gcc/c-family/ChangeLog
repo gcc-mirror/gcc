@@ -1,3 +1,8 @@
+2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* c-attribs.c (asan odr indicator): New attribute.
+	(handle_asan_odr_indicator_attribute): New function.
+
 2016-11-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* c-common.c (c_common_nodes_and_builtins): Remove initialization of
