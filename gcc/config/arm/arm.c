@@ -136,6 +136,7 @@ static tree arm_handle_isr_attribute (tree *, tree, tree, int, bool *);
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 static tree arm_handle_notshared_attribute (tree *, tree, tree, int, bool *);
 #endif
+static tree arm_handle_cmse_nonsecure_entry (tree *, tree, tree, int, bool *);
 static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
@@ -344,6 +345,9 @@ static const struct attribute_spec arm_attribute_table[] =
   { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute,
     false },
 #endif
+  /* ARMv8-M Security Extensions support.  */
+  { "cmse_nonsecure_entry", 0, 0, true, false, false,
+    arm_handle_cmse_nonsecure_entry, false },
   { NULL,           0, 0, false, false, false, NULL, false }
 };
 
@@ -3633,6 +3637,9 @@ arm_compute_func_type (void)
   else
     type |= arm_isr_value (TREE_VALUE (a));
 
+  if (lookup_attribute ("cmse_nonsecure_entry", attr))
+    type |= ARM_FT_CMSE_ENTRY;
+
   return type;
 }
 
@@ -6633,6 +6640,113 @@ arm_handle_notshared_attribute (tree *node,
   return NULL_TREE;
 }
 #endif
+
+/* This function returns true if a function with declaration FNDECL and type
+   FNTYPE uses the stack to pass arguments or return variables and false
+   otherwise.  This is used for functions with the attributes
+   'cmse_nonsecure_call' or 'cmse_nonsecure_entry' and this function will issue
+   diagnostic messages if the stack is used.  NAME is the name of the attribute
+   used.  */
+
+static bool
+cmse_func_args_or_return_in_stack (tree fndecl, tree name, tree fntype)
+{
+  function_args_iterator args_iter;
+  CUMULATIVE_ARGS args_so_far_v;
+  cumulative_args_t args_so_far;
+  bool first_param = true;
+  tree arg_type, prev_arg_type = NULL_TREE, ret_type;
+
+  /* Error out if any argument is passed on the stack.  */
+  arm_init_cumulative_args (&args_so_far_v, fntype, NULL_RTX, fndecl);
+  args_so_far = pack_cumulative_args (&args_so_far_v);
+  FOREACH_FUNCTION_ARGS (fntype, arg_type, args_iter)
+    {
+      rtx arg_rtx;
+      machine_mode arg_mode = TYPE_MODE (arg_type);
+
+      prev_arg_type = arg_type;
+      if (VOID_TYPE_P (arg_type))
+	continue;
+
+      if (!first_param)
+	arm_function_arg_advance (args_so_far, arg_mode, arg_type, true);
+      arg_rtx = arm_function_arg (args_so_far, arg_mode, arg_type, true);
+      if (!arg_rtx
+	  || arm_arg_partial_bytes (args_so_far, arg_mode, arg_type, true))
+	{
+	  error ("%qE attribute not available to functions with arguments "
+		 "passed on the stack", name);
+	  return true;
+	}
+      first_param = false;
+    }
+
+  /* Error out for variadic functions since we cannot control how many
+     arguments will be passed and thus stack could be used.  stdarg_p () is not
+     used for the checking to avoid browsing arguments twice.  */
+  if (prev_arg_type != NULL_TREE && !VOID_TYPE_P (prev_arg_type))
+    {
+      error ("%qE attribute not available to functions with variable number "
+	     "of arguments", name);
+      return true;
+    }
+
+  /* Error out if return value is passed on the stack.  */
+  ret_type = TREE_TYPE (fntype);
+  if (arm_return_in_memory (ret_type, fntype))
+    {
+      error ("%qE attribute not available to functions that return value on "
+	     "the stack", name);
+      return true;
+    }
+  return false;
+}
+
+/* Called upon detection of the use of the cmse_nonsecure_entry attribute, this
+   function will check whether the attribute is allowed here and will add the
+   attribute to the function declaration tree or otherwise issue a warning.  */
+
+static tree
+arm_handle_cmse_nonsecure_entry (tree *node, tree name,
+				 tree /* args */,
+				 int /* flags */,
+				 bool *no_add_attrs)
+{
+  tree fndecl;
+
+  if (!use_cmse)
+    {
+      *no_add_attrs = true;
+      warning (OPT_Wattributes, "%qE attribute ignored without -mcmse option.",
+	       name);
+      return NULL_TREE;
+    }
+
+  /* Ignore attribute for function types.  */
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  fndecl = *node;
+
+  /* Warn for static linkage functions.  */
+  if (!TREE_PUBLIC (fndecl))
+    {
+      warning (OPT_Wattributes, "%qE attribute has no effect on functions "
+	       "with static linkage", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  *no_add_attrs |= cmse_func_args_or_return_in_stack (fndecl, name,
+						TREE_TYPE (fndecl));
+  return NULL_TREE;
+}
 
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
