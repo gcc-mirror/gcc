@@ -1,6 +1,18 @@
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (arm_handle_cmse_nonsecure_entry): New.
+	(arm_attribute_table): Added cmse_nonsecure_entry
+	(arm_compute_func_type): Handle cmse_nonsecure_entry.
+	(cmse_func_args_or_return_in_stack): New.
+	(arm_handle_cmse_nonsecure_entry): New.
+	* config/arm/arm.h (ARM_FT_CMSE_ENTRY): New macro define.
+	(IS_CMSE_ENTRY): Likewise.
+	* doc/extend.texi (ARM ARMv8-M Security Extensions): New attribute.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config.gcc (extra_headers): Added arm_cmse.h.
 	* config/arm/arm-arches.def (ARM_ARCH):
 	(armv8-m): Add FL2_CMSE.
