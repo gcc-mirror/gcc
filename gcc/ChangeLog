@@ -1,6 +1,16 @@
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (gimplify.h): New include.
+	(arm_handle_cmse_nonsecure_call): New.
+	(arm_attribute_table): Added cmse_nonsecure_call.
+	(arm_comp_type_attributes): Deny compatibility of function types
+	with without the cmse_nonsecure_call attribute.
+	* doc/extend.texi (ARM ARMv8-M Security Extensions): New attribute.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (output_return_instruction): Clear
 	registers.
 	(thumb2_expand_return): Likewise.

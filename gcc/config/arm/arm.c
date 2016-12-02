@@ -63,6 +63,7 @@
 #include "tm-constrs.h"
 #include "rtl-iter.h"
 #include "optabs-libfuncs.h"
+#include "gimplify.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -137,6 +138,7 @@ static tree arm_handle_isr_attribute (tree *, tree, tree, int, bool *);
 static tree arm_handle_notshared_attribute (tree *, tree, tree, int, bool *);
 #endif
 static tree arm_handle_cmse_nonsecure_entry (tree *, tree, tree, int, bool *);
+static tree arm_handle_cmse_nonsecure_call (tree *, tree, tree, int, bool *);
 static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
@@ -348,6 +350,8 @@ static const struct attribute_spec arm_attribute_table[] =
   /* ARMv8-M Security Extensions support.  */
   { "cmse_nonsecure_entry", 0, 0, true, false, false,
     arm_handle_cmse_nonsecure_entry, false },
+  { "cmse_nonsecure_call", 0, 0, true, false, false,
+    arm_handle_cmse_nonsecure_call, true },
   { NULL,           0, 0, false, false, false, NULL, false }
 };
 
@@ -6753,6 +6757,78 @@ arm_handle_cmse_nonsecure_entry (tree *node, tree name,
   return NULL_TREE;
 }
 
+
+/* Called upon detection of the use of the cmse_nonsecure_call attribute, this
+   function will check whether the attribute is allowed here and will add the
+   attribute to the function type tree or otherwise issue a diagnostic.  The
+   reason we check this at declaration time is to only allow the use of the
+   attribute with declarations of function pointers and not function
+   declarations.  This function checks NODE is of the expected type and issues
+   diagnostics otherwise using NAME.  If it is not of the expected type
+   *NO_ADD_ATTRS will be set to true.  */
+
+static tree
+arm_handle_cmse_nonsecure_call (tree *node, tree name,
+				 tree /* args */,
+				 int /* flags */,
+				 bool *no_add_attrs)
+{
+  tree decl = NULL_TREE, fntype = NULL_TREE;
+  tree main_variant, type;
+
+  if (!use_cmse)
+    {
+      *no_add_attrs = true;
+      warning (OPT_Wattributes, "%qE attribute ignored without -mcmse option.",
+	       name);
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (*node) == VAR_DECL || TREE_CODE (*node) == TYPE_DECL)
+    {
+      decl = *node;
+      fntype = TREE_TYPE (decl);
+    }
+
+  while (fntype != NULL_TREE && TREE_CODE (fntype) == POINTER_TYPE)
+    fntype = TREE_TYPE (fntype);
+
+  if (!decl || TREE_CODE (fntype) != FUNCTION_TYPE)
+    {
+	warning (OPT_Wattributes, "%qE attribute only applies to base type of a "
+		 "function pointer", name);
+	*no_add_attrs = true;
+	return NULL_TREE;
+    }
+
+  *no_add_attrs |= cmse_func_args_or_return_in_stack (NULL, name, fntype);
+
+  if (*no_add_attrs)
+    return NULL_TREE;
+
+  /* Prevent trees being shared among function types with and without
+     cmse_nonsecure_call attribute.  */
+  type = TREE_TYPE (decl);
+
+  type = build_distinct_type_copy (type);
+  TREE_TYPE (decl) = type;
+  fntype = type;
+
+  while (TREE_CODE (fntype) != FUNCTION_TYPE)
+    {
+      type = fntype;
+      fntype = TREE_TYPE (fntype);
+      fntype = build_distinct_type_copy (fntype);
+      TREE_TYPE (type) = fntype;
+    }
+
+  /* Construct a type attribute and add it to the function type.  */
+  tree attrs = tree_cons (get_identifier ("cmse_nonsecure_call"), NULL_TREE,
+			  TYPE_ATTRIBUTES (fntype));
+  TYPE_ATTRIBUTES (fntype) = attrs;
+  return NULL_TREE;
+}
+
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */
@@ -6790,6 +6866,14 @@ arm_comp_type_attributes (const_tree type1, const_tree type2)
   l2 = lookup_attribute ("isr", TYPE_ATTRIBUTES (type2)) != NULL;
   if (! l2)
     l1 = lookup_attribute ("interrupt", TYPE_ATTRIBUTES (type2)) != NULL;
+  if (l1 != l2)
+    return 0;
+
+  l1 = lookup_attribute ("cmse_nonsecure_call",
+			 TYPE_ATTRIBUTES (type1)) != NULL;
+  l2 = lookup_attribute ("cmse_nonsecure_call",
+			 TYPE_ATTRIBUTES (type2)) != NULL;
+
   if (l1 != l2)
     return 0;
 
