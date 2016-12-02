@@ -1,3 +1,10 @@
+2016-12-02  Janus Weil  <janus@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78618
+	* check.c (gfc_check_rank): Remove ATTRIBUTE_UNUSED.
+	* expr.c (gfc_check_assign): Fix error propagation.
+
 2016-12-01  Elizebeth Punnoose  <elizebeth.punnoose@hpe.com>
 
 	PR fortran/77505
