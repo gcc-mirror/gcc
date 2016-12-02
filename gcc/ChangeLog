@@ -1,3 +1,8 @@
+2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/77822
+	* rtl.h (EXTRACT_ARGS_IN_RANGE): New.
+
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc/config/s390/s390.c (s390_builtin_vectorization_cost): New
