@@ -1,3 +1,8 @@
+2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* bootstrap-asan.mk: Replace LSAN_OPTIONS=detect_leaks=0 with
+	ASAN_OPTIONS=detect_leaks=0:use_odr_indicator=1.
+
 2016-12-01  Matthias Klose  <doko@ubuntu.com>
 
 	* pkg.m4: Remove.
