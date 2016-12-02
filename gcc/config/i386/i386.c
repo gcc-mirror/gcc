@@ -4075,6 +4075,28 @@ convert_scalars_to_vector ()
 	crtl->stack_alignment_needed = 128;
       if (crtl->stack_alignment_estimated < 128)
 	crtl->stack_alignment_estimated = 128;
+      /* Fix up DECL_RTL/DECL_INCOMING_RTL of arguments.  */
+      if (TARGET_64BIT)
+	for (tree parm = DECL_ARGUMENTS (current_function_decl);
+	     parm; parm = DECL_CHAIN (parm))
+	  {
+	    if (TYPE_MODE (TREE_TYPE (parm)) != TImode)
+	      continue;
+	    if (DECL_RTL_SET_P (parm)
+		&& GET_MODE (DECL_RTL (parm)) == V1TImode)
+	      {
+		rtx r = DECL_RTL (parm);
+		if (REG_P (r))
+		  SET_DECL_RTL (parm, gen_rtx_SUBREG (TImode, r, 0));
+	      }
+	    if (DECL_INCOMING_RTL (parm)
+		&& GET_MODE (DECL_INCOMING_RTL (parm)) == V1TImode)
+	      {
+		rtx r = DECL_INCOMING_RTL (parm);
+		if (REG_P (r))
+		  DECL_INCOMING_RTL (parm) = gen_rtx_SUBREG (TImode, r, 0);
+	      }
+	  }
     }
 
   return 0;
