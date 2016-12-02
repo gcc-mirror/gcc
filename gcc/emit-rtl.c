@@ -2668,6 +2668,14 @@ unsigned int
 unshare_all_rtl (void)
 {
   unshare_all_rtl_1 (get_insns ());
+
+  for (tree decl = DECL_ARGUMENTS (cfun->decl); decl; decl = DECL_CHAIN (decl))
+    {
+      if (DECL_RTL_SET_P (decl))
+	SET_DECL_RTL (decl, copy_rtx_if_shared (DECL_RTL (decl)));
+      DECL_INCOMING_RTL (decl) = copy_rtx_if_shared (DECL_INCOMING_RTL (decl));
+    }
+
   return 0;
 }
 

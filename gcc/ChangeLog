@@ -1,5 +1,13 @@
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/78547
+	* emit-rtl.c (unshare_all_rtl): Make sure DECL_RTL and
+	DECL_INCOMING_RTL is not shared.
+	* config/i386/i386.c (convert_scalars_to_vectors): If any
+	insns have been converted, adjust all parameter's DEC_RTL and
+	DECL_INCOMING_RTL back from V1TImode to TImode if the parameters have
+	TImode.
+
 	PR rtl-optimization/78575
 	* config/i386/i386.c (timode_scalar_chain::fix_debug_reg_uses): Use
 	DF infrastructure to wrap all V1TImode reg uses into TImode subreg
