@@ -39,7 +39,7 @@
    GOMP_RTEMS_THREAD_POOLS environment variable.  */
 struct gomp_thread_pool_reservoir {
   gomp_sem_t available;
-  gomp_mutex_t lock;
+  pthread_spinlock_t lock;
   size_t index;
   int priority;
   struct gomp_thread_pool *pools[];
@@ -96,9 +96,9 @@ gomp_get_thread_pool (struct gomp_thread *thr, unsigned nthreads)
   if (res != NULL)
     {
       gomp_sem_wait (&res->available);
-      gomp_mutex_lock (&res->lock);
+      pthread_spin_lock (&res->lock);
       pool = res->pools[--res->index];
-      gomp_mutex_unlock (&res->lock);
+      pthread_spin_unlock (&res->lock);
       pool->threads_busy = nthreads;
       thr->thread_pool = pool;
     }
@@ -115,9 +115,9 @@ gomp_release_thread_pool (struct gomp_thread_pool *pool)
     gomp_tls_rtems_data.thread_pool_reservoir;
   if (res != NULL)
     {
-      gomp_mutex_lock (&res->lock);
+      pthread_spin_lock (&res->lock);
       res->pools[res->index++] = pool;
-      gomp_mutex_unlock (&res->lock);
+      pthread_spin_unlock (&res->lock);
       gomp_sem_post (&res->available);
     }
 }
