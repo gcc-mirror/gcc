@@ -24,7 +24,6 @@
 (define_mode_iterator V_HW_32_64 [V4SI V2DI V2DF])
 (define_mode_iterator VI_HW_SD [V4SI V2DI])
 (define_mode_iterator V_HW_HSD [V8HI V4SI V2DI V2DF])
-(define_mode_iterator VI_HW_HSD [V8HI V4SI V2DI])
 
 ; The element type of the vector with floating point modes translated
 ; to int modes of the same size.
