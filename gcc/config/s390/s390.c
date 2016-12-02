@@ -10666,7 +10666,7 @@ s390_save_gprs_to_fprs (void)
 	  /* This prevents dwarf2cfi from interpreting the set.  Doing
 	     so it might emit def_cfa_register infos setting an FPR as
 	     new CFA.  */
-	  add_reg_note (insn, REG_CFA_REGISTER, PATTERN (insn));
+	  add_reg_note (insn, REG_CFA_REGISTER, copy_rtx (PATTERN (insn)));
 	}
     }
 }
