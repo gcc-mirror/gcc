@@ -1,3 +1,9 @@
+2016-12-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/78328
+	* gimple-ssa-warn-alloca.c (alloca_call_type): Handle
+	VR_ANTI_RANGE.
+
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_save_gprs_to_fprs): Fix RTL sharing
