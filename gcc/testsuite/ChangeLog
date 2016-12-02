@@ -1,3 +1,10 @@
+2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/77822
+	* gcc.target/s390/s390.exp: Support .C tests.
+	* gcc.target/s390/pr77822-2.c: New test.
+	* gcc.target/s390/pr77822-1.C: New test.
+
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/vector/vec-nopeel-1.c: New test.

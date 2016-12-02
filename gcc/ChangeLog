@@ -1,6 +1,19 @@
 2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/77822
+	* config/s390/s390.md ("extzv")
+	("*extzv<mode><clobbercc_or_nocc>")
+	("*extzvdi<clobbercc_or_nocc>_lshiftrt")
+	("*<risbg_n>_ior_and_sr_ze")
+	("*extract1bitdi<clobbercc_or_nocc>")
+	("*insv<mode><clobbercc_or_nocc>", "*insv_rnsbg_noshift")
+	("*insv_rnsbg_srl", "*insv<mode>_mem_reg")
+	("*insvdi_mem_reghigh", "*insvdi_reg_imm"): Use EXTRACT_ARGS_IN_RANGE
+	to validate the arguments of zero_extract and sign_extract.
+
+2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/77822
 	* rtl.h (EXTRACT_ARGS_IN_RANGE): New.
 
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
