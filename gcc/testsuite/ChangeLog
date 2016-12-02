@@ -1,3 +1,10 @@
+2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-c++-common/goacc/data-2.c: Adjust test.
+	* c-c++-common/goacc/executeables-1.c: New test.
+	* g++.dg/goacc/data-1.C: Adjust test.
+
 2016-12-02  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR rtl-optimization/78561
