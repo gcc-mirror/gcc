@@ -1,3 +1,8 @@
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78575
+	* gcc.dg/pr78575.c: New test.
+
 2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/litpool-r3-1.c: Fix label number test.
