@@ -1,3 +1,7 @@
+2016-12-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (gfc_convert_char_constant): Free result on error.
+
 2016-12-02  Janus Weil  <janus@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

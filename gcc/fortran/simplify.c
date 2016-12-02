@@ -7152,6 +7152,7 @@ gfc_convert_char_constant (gfc_expr *e, bt type ATTRIBUTE_UNUSED, int kind)
 		       "into character kind %d",
 		       gfc_print_wide_char (result->value.character.string[i]),
 		       &e->where, kind);
+	    gfc_free_expr (result);
 	    return &gfc_bad_expr;
 	  }
 
