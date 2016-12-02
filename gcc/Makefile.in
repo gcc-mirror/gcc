@@ -675,6 +675,15 @@ objext = .o
 exeext = @host_exeext@
 build_exeext = @build_exeext@
 
+
+# This allows overriding include paths in host specific Makefile
+# (config/i386/x-mingw32 overrides those variables and local_includedir).
+gplusplus_includedir = $(gcc_gxx_include_dir)
+gplusplus_tool_includedir = $(gcc_gxx_include_dir)/$(target_noncanonical)
+gplusplus_backward_includedir = $(gcc_gxx_include_dir)/backward
+native_system_includedir = $(NATIVE_SYSTEM_HEADER_DIR)
+
+
 # Directory in which to put man pages.
 mandir = @mandir@
 man1dir = $(mandir)/man1
@@ -2768,14 +2777,14 @@ CFLAGS-intl.o += -DLOCALEDIR=\"$(localedir)\"
 PREPROCESSOR_DEFINES = \
   -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
   -DFIXED_INCLUDE_DIR=\"$(libsubdir)/include-fixed\" \
-  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
+  -DGPLUSPLUS_INCLUDE_DIR=\"$(gplusplus_includedir)\" \
   -DGPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT=$(gcc_gxx_include_dir_add_sysroot) \
-  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/$(target_noncanonical)\" \
-  -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
+  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gplusplus_tool_includedir)\" \
+  -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gplusplus_backward_includedir)\" \
   -DLOCAL_INCLUDE_DIR=\"$(local_includedir)\" \
   -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
-  -DNATIVE_SYSTEM_HEADER_DIR=\"$(NATIVE_SYSTEM_HEADER_DIR)\" \
+  -DNATIVE_SYSTEM_HEADER_DIR=\"$(native_system_includedir)\" \
   -DPREFIX=\"$(prefix)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
   @TARGET_SYSTEM_ROOT_DEFINE@
