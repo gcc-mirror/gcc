@@ -1,3 +1,11 @@
+2016-12-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78639
+	* config/rs6000/rs6000.md (movdi_internal64): Fix typo in
+	subversion id 242679 that causes the wrong store instruction to be
+	generated if a DImode is in an Altivec register using REG+REG
+	addressing.
+
 2016-12-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70322
