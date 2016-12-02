@@ -120,9 +120,6 @@ typedef struct
   /* Start of text section. */
   int text_section_start;
 
-  /* Number of 64k segments in the flash.  */
-  int n_flash;
-
   /* Flash size in bytes.  */
   int flash_size;
 } avr_mcu_t;

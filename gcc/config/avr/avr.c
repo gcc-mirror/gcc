@@ -707,7 +707,7 @@ avr_set_core_architecture (void)
         {
           avr_arch = &avr_arch_types[mcu->arch_id];
           if (avr_n_flash < 0)
-            avr_n_flash = mcu->n_flash;
+            avr_n_flash = 1 + (mcu->flash_size - 1) / 0x10000;
 
           return true;
         }
