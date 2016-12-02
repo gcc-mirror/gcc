@@ -1,5 +1,8 @@
 2016-12-01  Jason Merrill  <jason@redhat.com>
 
+	* call.c (add_function_candidate): Also exclude inherited ctors
+	that take a type reference-related to the derived class.
+
 	* call.c (add_function_candidate): Exclude inherited copy/move
 	ctors.
 

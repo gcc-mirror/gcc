@@ -2042,19 +2042,18 @@ add_function_candidate (struct z_candidate **candidates,
       reason = arity_rejection (first_arg, i + remaining, len);
     }
 
-  /* A constructor that is a direct member of a class C and has a first
+  /* An inherited constructor (12.6.3 [class.inhctor.init]) that has a first
      parameter of type "reference to cv C" (including such a constructor
      instantiated from a template) is excluded from the set of candidate
-     functions when used to construct an object of type derived from C (12.6.3
-     [class.inhctor.init]) with an argument list containing a single
-     argument.  */
+     functions when used to construct an object of type D with an argument list
+     containing a single argument if C is reference-related to D.  */
   if (viable && len == 1 && parmlist && DECL_CONSTRUCTOR_P (fn)
       && flag_new_inheriting_ctors
       && DECL_INHERITED_CTOR (fn))
     {
       tree ptype = non_reference (TREE_VALUE (parmlist));
-      tree ctype = DECL_INHERITED_CTOR_BASE (fn);
-      if (same_type_ignoring_top_level_qualifiers_p (ptype, ctype))
+      tree dtype = DECL_CONTEXT (fn);
+      if (reference_related_p (ptype, dtype))
 	{
 	  viable = false;
 	  reason = inherited_ctor_rejection ();
@@ -2159,18 +2158,6 @@ add_function_candidate (struct z_candidate **candidates,
 		  arg = build_this (arg);
 		  argtype = lvalue_type (arg);
 		}
-	    }
-
-	  /* Don't consider inherited constructors for initialization from an
-	     expression of the same or derived type.  */
-	  /* FIXME extend to operator=.  */
-	  if (i == 0 && len == 1
-	      && DECL_INHERITED_CTOR (fn)
-	      && reference_related_p (ctype, argtype))
-	    {
-	      viable = 0;
-	      reason = inherited_ctor_rejection ();
-	      goto out;
 	    }
 
 	  /* Core issue 899: When [copy-]initializing a temporary to be bound
