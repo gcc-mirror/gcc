@@ -1,7 +1,7 @@
 /* PR target/70322 */
 /* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -msse2 -mstv -mno-bmi" } */
-/* { dg-final { scan-assembler "pandn" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "pandn" } } */
 
 extern long long z;
 

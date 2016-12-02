@@ -1,3 +1,9 @@
+2016-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70322
+	* config/i386/i386.md (*andndi3_doubleword): Add non-BMI alternative
+	and corresponding post-reload splitter.
+
 2016-12-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.h (machine_function): Add

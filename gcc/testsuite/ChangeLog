@@ -1,3 +1,8 @@
+2016-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70322
+	* gcc.target/i386/pr70322-2.c (dg-final): Remove xfail.
+
 2016-12-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78618
