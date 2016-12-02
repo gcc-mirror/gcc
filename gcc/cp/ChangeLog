@@ -1,3 +1,9 @@
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78649
+	* pt.c (tsubst_init): Don't call build_value_init if decl's type
+	is error_mark_node.
+
 2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
