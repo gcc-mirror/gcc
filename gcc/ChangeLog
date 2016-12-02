@@ -1,3 +1,8 @@
+2016-12-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* simplify-rtx.c (simplify_truncation): M2 is not mode, it is
+	GET_MODE (op).  Fix this.
+
 2016-12-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/78616
