@@ -5602,6 +5602,18 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 		     && OBJECT_P (SUBREG_REG (XEXP (x, 0)))))))
     {
       rtx cond, true_rtx, false_rtx;
+      unsigned HOST_WIDE_INT nz;
+
+      /* If the operation is an AND wrapped in a SIGN_EXTEND or ZERO_EXTEND with
+	 either operand being just a constant single bit value, do nothing since
+	 IF_THEN_ELSE is likely to increase the expression's complexity.  */
+      if (HWI_COMPUTABLE_MODE_P (mode)
+	  && pow2p_hwi (nz = nonzero_bits (x, mode))
+	  && ! ((code == SIGN_EXTEND || code == ZERO_EXTEND)
+		&& GET_CODE (XEXP (x, 0)) == AND
+		&& CONST_INT_P (XEXP (XEXP (x, 0), 0))
+		&& UINTVAL (XEXP (XEXP (x, 0), 0)) == nz))
+	      return x;
 
       cond = if_then_else_cond (x, &true_rtx, &false_rtx);
       if (cond != 0

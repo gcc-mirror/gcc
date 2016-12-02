@@ -1,5 +1,10 @@
 2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* combine.c (combine_simplify_rtx):  Suppress replacement of
+	"(and (reg) (const_int bit))" with "if_then_else".
+
+2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	PR target/77822
 	* config/s390/s390.md ("extzv")
 	("*extzv<mode><clobbercc_or_nocc>")
