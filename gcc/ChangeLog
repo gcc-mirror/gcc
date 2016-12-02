@@ -1,3 +1,8 @@
+2016-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (exception_receiver): Copy
+	alpha_gp_ave_rtx return value.
+
 2016-12-02  Tadek Kijkowski  <tkijkowski@gmail.com>
 
 	* Makefile.in (PREPROCESSOR_DEFINES): Add a level of indirection
@@ -12,8 +17,7 @@
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70322
-	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p): Handle
-	NOT.
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p): Handle NOT.
 	(dimode_scalar_chain::compute_convert_gain): Likewise.
 	(dimode_scalar_chain::convert_insn): Likewise.
 	* config/i386/i386.md (*one_cmpldi2_doubleword): New
@@ -341,7 +345,7 @@
 	early_dwarf_finished.
 
 2016-12-01  Eric Botcazou  <ebotcazou@adacore.com>
-            David S. Miller  <davem@davemloft.net>
+	    David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.opt (mlra): New target option.
 	* config/sparc/sparc.c (TARGET_LRA_P): Define to...
