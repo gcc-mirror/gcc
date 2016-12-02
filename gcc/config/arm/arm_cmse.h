@@ -163,6 +163,13 @@ __attribute__ ((__always_inline__))
 cmse_TTAT (void *__p)
 __CMSE_TT_ASM (at)
 
+/* FIXME: diagnose use outside cmse_nonsecure_entry functions.  */
+__extension__ static __inline int __attribute__ ((__always_inline__))
+cmse_nonsecure_caller (void)
+{
+  return __builtin_arm_cmse_nonsecure_caller ();
+}
+
 #define CMSE_AU_NONSECURE	2
 #define CMSE_MPU_NONSECURE	16
 #define CMSE_NONSECURE		18

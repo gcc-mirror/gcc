@@ -1,6 +1,12 @@
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* gcc.target/arm/cmse/cmse-1.c: Add test for
+	cmse_nonsecure_caller.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* gcc.target/arm/cmse/cmse.exp: Run tests in mainline dir.
 	* gcc.target/arm/cmse/cmse-9.c: Added some extra tests.
 	* gcc.target/arm/cmse/cmse-14.c: New.
