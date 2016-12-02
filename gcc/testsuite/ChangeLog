@@ -1,3 +1,8 @@
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78649
+	* g++.dg/cpp0x/pr78649.C: New test.
+
 2016-12-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70322
