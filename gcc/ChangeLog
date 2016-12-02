@@ -1,5 +1,19 @@
 2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vector.md (vec_halfhalf): New mode iterator.
+	("vec_pack_trunc_<mode>", "vec_pack_ssat_<mode>")
+	("vec_pack_usat_<mode>", "vec_unpacks_hi_v16qi")
+	("vec_unpacks_low_v16qi", "vec_unpacku_hi_v16qi")
+	("vec_unpacku_low_v16qi", "vec_unpacks_hi_v8hi")
+	("vec_unpacks_lo_v8hi", "vec_unpacku_hi_v8hi")
+	("vec_unpacku_lo_v8hi", "vec_unpacks_hi_v4si")
+	("vec_unpacks_lo_v4si", "vec_unpacku_hi_v4si")
+	("vec_unpacku_lo_v4si"): New pattern definitions.
+	* config/s390/vx-builtins.md: Move VI_HW_HSD mode iterator to
+	vector.md.
+
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390-protos.h (s390_reverse_condition): New
 	prototype.
 	* config/s390/s390.c (s390_canonicalize_comparison): Fold compares
