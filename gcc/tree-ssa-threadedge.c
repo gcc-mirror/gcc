@@ -328,9 +328,10 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	     SSA_NAME_VALUE in addition to its own lattice.  */
 	  cached_lhs = gimple_fold_stmt_to_constant_1 (stmt,
 						       threadedge_valueize);
-          if (!cached_lhs
-              || (TREE_CODE (cached_lhs) != SSA_NAME
-                  && !is_gimple_min_invariant (cached_lhs)))
+          if (NUM_SSA_OPERANDS (stmt, SSA_OP_ALL_USES) != 0
+	      && (!cached_lhs
+                  || (TREE_CODE (cached_lhs) != SSA_NAME
+                      && !is_gimple_min_invariant (cached_lhs))))
 	    {
 	      /* We're going to temporarily copy propagate the operands
 		 and see if that allows us to simplify this statement.  */

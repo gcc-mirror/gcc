@@ -1,3 +1,9 @@
+2016-12-01  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Avoid temporary
+	propagation of operands if there are no operands.
+
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78586
