@@ -2443,6 +2443,14 @@ powerpc*-*-linux*)
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
+	# Assume modern glibc if not targeting Android nor uclibc.
+	case ${target} in
+	    *-*-*android*|*-*-*uclibc*|*-*-*musl*)
+		    ;;
+	    *)
+		default_gnu_indirect_function=yes
+		    ;;
+	esac
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
