@@ -1,3 +1,7 @@
+2016-12-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Regenerate.
+
 2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/26_numerics/headers/cmath/hypot.cc: XFAIL on AIX.
