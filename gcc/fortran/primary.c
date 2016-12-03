@@ -3298,6 +3298,15 @@ gfc_match_rvalue (gfc_expr **result)
       if (sym->result == NULL)
 	sym->result = sym;
 
+      gfc_gobble_whitespace ();
+      /* F08:C612.  */
+      if (gfc_peek_ascii_char() == '%')
+	{
+	  gfc_error ("The leftmost part-ref in a data-ref can not be a "
+		     "function reference at %C");
+	  m = MATCH_ERROR;
+	}
+
       m = MATCH_YES;
       break;
 

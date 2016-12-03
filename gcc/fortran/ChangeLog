@@ -1,5 +1,11 @@
 2016-12-03  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/42188
+	* primary.c (gfc_match_rvalue): Add a new check that gives better error
+	messages.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/58175
 	* resolve.c (gfc_resolve_finalizers): Prevent bogus warning.
 
