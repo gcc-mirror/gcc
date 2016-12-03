@@ -10,6 +10,8 @@ module ct
    contains
      final :: aD
   end type
+  type, extends(a) :: a1
+  end type
 contains
   subroutine aD(self)
     type(a), intent(inout) :: self
