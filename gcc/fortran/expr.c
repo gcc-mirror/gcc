@@ -795,8 +795,6 @@ gfc_build_conversion (gfc_expr *e)
   p = gfc_get_expr ();
   p->expr_type = EXPR_FUNCTION;
   p->symtree = NULL;
-  p->value.function.actual = NULL;
-
   p->value.function.actual = gfc_get_actual_arglist ();
   p->value.function.actual->expr = e;
 
