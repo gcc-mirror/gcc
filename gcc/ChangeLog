@@ -1,4 +1,17 @@
-2016-12-01  Jeff Law  <law@redhat.com>
+2016-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+            David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md (U): Adjust comment.
+	* config/sparc/sparc.md (lra): New attribute.
+	(enabled): For base instructions, if the lra attribute is set,
+	return 1 if it is in keeping with TARGET_LRA.
+	(*movdi_insn_sp32): Add lra attribute for alternatives mentioning U
+	constraint and duplicate them with U replaced by r.
+	(*movdf_insn_sp32): Likewise.
+	(*mov<VM64:mode>_insn_sp32): Likewise.
+	(*movtf_insn_sp32): Remove alternatives mentioning U constraint.
+
+2016-12-02  Jeff Law  <law@redhat.com>
 
 	* config/arm/arm.c (arm_handle_cmse_nonsecure_call): Remove unused
 	variable main_variant.

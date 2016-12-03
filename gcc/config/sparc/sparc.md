@@ -254,8 +254,14 @@
 (define_attr "cpu_feature" "none,fpu,fpunotv9,v9,vis,vis3,vis4"
   (const_string "none"))
 
+(define_attr "lra" "none,disabled,enabled"
+  (const_string "none"))
+
 (define_attr "enabled" ""
-  (cond [(eq_attr "cpu_feature" "none") (const_int 1)
+  (cond [(eq_attr "cpu_feature" "none")
+	   (cond [(eq_attr "lra" "disabled") (symbol_ref "!TARGET_LRA")
+		  (eq_attr "lra" "enabled") (symbol_ref "TARGET_LRA")]
+		 (const_int 1))
          (eq_attr "cpu_feature" "fpu") (symbol_ref "TARGET_FPU")
          (eq_attr "cpu_feature" "fpunotv9") (symbol_ref "TARGET_FPU && !TARGET_V9")
          (eq_attr "cpu_feature" "v9") (symbol_ref "TARGET_V9")
@@ -1701,9 +1707,9 @@
 
 (define_insn "*movdi_insn_sp32"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-			    "=T,o,T,U,o,r,r,r,?T,?*f,?*f,?o,?*e,?*e,  r,?*f,?*e,?W,b,b")
+			    "=T,o,T,T,U,r,o,r,r,r,?T,?*f,?*f,?o,?*e,?*e,  r,?*f,?*e,?W,b,b")
         (match_operand:DI 1 "input_operand"
-			    " J,J,U,T,r,o,i,r,*f,  T,  o,*f, *e, *e,?*f,  r,  W,*e,J,P"))]
+			    " J,J,U,r,T,T,r,o,i,r,*f,  T,  o,*f, *e, *e,?*f,  r,  W,*e,J,P"))]
   "TARGET_ARCH32
    && (register_operand (operands[0], DImode)
        || register_or_zero_operand (operands[1], DImode))"
@@ -1711,6 +1717,8 @@
    stx\t%%g0, %0
    #
    std\t%1, %0
+   std\t%1, %0
+   ldd\t%1, %0
    ldd\t%1, %0
    #
    #
@@ -1728,11 +1736,12 @@
    std\t%1, %0
    fzero\t%0
    fone\t%0"
-  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,*,*,*,fpload,fpstore,visl,visl")
-   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
-   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
-   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")
-   (set_attr "v3pipe" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,true,true")])
+  [(set_attr "type" "store,store,store,store,load,load,*,*,*,*,fpstore,fpload,*,*,fpmove,*,*,*,fpload,fpstore,visl,visl")
+   (set_attr "length" "*,2,*,*,*,*,2,2,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
+   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
+   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")
+   (set_attr "v3pipe" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,true,true")
+   (set_attr "lra" "*,*,disabled,enabled,disabled,enabled,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdi_insn_sp64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,?W,b,b")
@@ -2372,9 +2381,9 @@
 
 (define_insn "*movdf_insn_sp32"
   [(set (match_operand:DF 0 "nonimmediate_operand"
-			    "=b,b,e,e,*r, f,  e,T,W,U,T,  f,  *r,  o,o")
+			    "=b,b,e,e,*r, f,  e,T,W,U,r,T,T,  f,  *r,  o,o")
 	(match_operand:DF 1 "input_operand"
-			    " G,C,e,e, f,*r,W#F,G,e,T,U,o#F,*roF,*rG,f"))]
+			    " G,C,e,e, f,*r,W#F,G,e,T,T,U,r,o#F,*roF,*rG,f"))]
   "TARGET_ARCH32
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
@@ -2389,16 +2398,19 @@
   stx\t%r1, %0
   std\t%1, %0
   ldd\t%1, %0
+  ldd\t%1, %0
+  std\t%1, %0
   std\t%1, %0
   #
   #
   #
   #"
-  [(set_attr "type" "visl,visl,fpmove,*,*,*,fpload,store,fpstore,load,store,*,*,*,*")
-   (set_attr "length" "*,*,*,2,2,2,*,*,*,*,*,2,2,2,2")
-   (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,fpu,*,*,fpu")
-   (set_attr "v3pipe" "true,true,*,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "visl,visl,fpmove,*,*,*,fpload,store,fpstore,load,load,store,store,*,*,*,*")
+   (set_attr "length" "*,*,*,2,2,2,*,*,*,*,*,*,*,2,2,2,2")
+   (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*,*,*,*,*,*,*")
+   (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,*,*,fpu,*,*,fpu")
+   (set_attr "v3pipe" "true,true,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")
+   (set_attr "lra" "*,*,*,*,*,*,*,*,*,disabled,enabled,disabled,enabled,*,*,*,*")])
 
 (define_insn "*movdf_insn_sp64"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,W, *r,*r,  m,*r")
@@ -2609,14 +2621,14 @@
 })
 
 (define_insn "*movtf_insn_sp32"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,o,  o,U,  r")
-	(match_operand:TF 1 "input_operand"        " G,oe,e,rGU,o,roG"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,o, o,  r")
+	(match_operand:TF 1 "input_operand"        " G,oe,e,rG,roG"))]
   "TARGET_ARCH32
    && (register_operand (operands[0], TFmode)
        || register_or_zero_operand (operands[1], TFmode))"
   "#"
-  [(set_attr "length" "4,4,4,4,4,4")
-   (set_attr "cpu_feature" "fpu,fpu,fpu,*,*,*")])
+  [(set_attr "length" "4,4,4,4,4")
+   (set_attr "cpu_feature" "fpu,fpu,fpu,*,*")])
 
 (define_insn "*movtf_insn_sp64"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=b, e,o, o,  r")
@@ -8636,8 +8648,8 @@
    (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,*,*")])
 
 (define_insn "*mov<VM64:mode>_insn_sp32"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,*r, f,e,m,m,U,T, o,*r")
-	(match_operand:VM64 1 "input_operand"         "Y,C,e, f,*r,m,e,Y,T,U,*r,*r"))]
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,*r, f,e,m,m,U,r,T,T, o,*r")
+	(match_operand:VM64 1 "input_operand"         "Y,C,e, f,*r,m,e,Y,T,T,U,r,*r,*r"))]
   "TARGET_VIS
    && TARGET_ARCH32
    && (register_operand (operands[0], <VM64:MODE>mode)
@@ -8652,13 +8664,16 @@
   std\t%1, %0
   stx\t%r1, %0
   ldd\t%1, %0
+  ldd\t%1, %0
+  std\t%1, %0
   std\t%1, %0
   #
   #"
-  [(set_attr "type" "visl,visl,vismv,*,*,fpload,fpstore,store,load,store,*,*")
-   (set_attr "length" "*,*,*,2,2,*,*,*,*,*,2,2")
-   (set_attr "cpu_feature" "vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*")
-   (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "visl,visl,vismv,*,*,fpload,fpstore,store,load,load,store,store,*,*")
+   (set_attr "length" "*,*,*,2,2,*,*,*,*,*,*,*,2,2")
+   (set_attr "cpu_feature" "vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*,*,*")
+   (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,*,*,*,*,*")
+   (set_attr "lra" "*,*,*,*,*,*,*,*,disabled,enabled,disabled,enabled,*,*")])
 
 (define_split
   [(set (match_operand:VM64 0 "memory_operand" "")
