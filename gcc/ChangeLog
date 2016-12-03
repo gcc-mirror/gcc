@@ -1,4 +1,9 @@
 2016-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lra-constraints.c (emit_spill_move): Use gen_lowpart_SUBREG in all
+	cases to build a lowpart SUBREG.
+
+2016-12-03  Eric Botcazou  <ebotcazou@adacore.com>
             David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md (U): Adjust comment.
