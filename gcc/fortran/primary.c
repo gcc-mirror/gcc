@@ -2222,7 +2222,15 @@ check_substring:
 	}
     }
 
-  /* F2008, C727.  */
+  /* F08:C611.  */
+  if (primary->ts.type == BT_DERIVED && primary->ref
+      && primary->ts.u.derived && primary->ts.u.derived->attr.abstract)
+    {
+      gfc_error ("Nonpolymorphic reference to abstract type at %C");
+      return MATCH_ERROR;
+    }
+
+  /* F08:C727.  */
   if (primary->expr_type == EXPR_PPC && gfc_is_coindexed (primary))
     {
       gfc_error ("Coindexed procedure-pointer component at %C");

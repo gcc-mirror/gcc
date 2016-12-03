@@ -1,5 +1,10 @@
 2016-12-03  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/43207
+	* gfortran.dg/abstract_type_9.f90: New test case.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/42188
 	* gfortran.dg/derived_result_2.f90.f90: New test case.
 
