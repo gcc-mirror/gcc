@@ -1,3 +1,11 @@
+2016-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78379
+	* config/i386/cpuinfo.c:  Move denums for processor vendors,
+	processor type, processor subtypes and declaration of
+	struct __processor_model into
+	* config/i386/cpuinfo.h:  New header file.
+
 2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 

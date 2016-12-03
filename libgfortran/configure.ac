@@ -609,6 +609,15 @@ LIBGFOR_CHECK_UNLINK_OPEN_FILE
 # Check whether line terminator is LF or CRLF
 LIBGFOR_CHECK_CRLF
 
+# Check whether we support AVX extensions
+LIBGFOR_CHECK_AVX
+
+# Check wether we support AVX2 extensions
+LIBGFOR_CHECK_AVX2
+
+# Check wether we support AVX512f extensions
+LIBGFOR_CHECK_AVX512F
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then
