@@ -6774,7 +6774,7 @@ arm_handle_cmse_nonsecure_call (tree *node, tree name,
 				 bool *no_add_attrs)
 {
   tree decl = NULL_TREE, fntype = NULL_TREE;
-  tree main_variant, type;
+  tree type;
 
   if (!use_cmse)
     {

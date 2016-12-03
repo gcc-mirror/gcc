@@ -1,3 +1,8 @@
+2016-12-01  Jeff Law  <law@redhat.com>
+
+	* config/arm/arm.c (arm_handle_cmse_nonsecure_call): Remove unused
+	variable main_variant.
+
 2016-12-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-linux*): Set gnu-indirect-function by
