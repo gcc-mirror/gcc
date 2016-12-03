@@ -1,3 +1,8 @@
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58175
+	* resolve.c (gfc_resolve_finalizers): Prevent bogus warning.
+
 2016-12-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* simplify.c (gfc_convert_char_constant): Free result on error.

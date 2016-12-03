@@ -1,3 +1,8 @@
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58175
+	* gfortran.dg/finalize_30.f90: Extend test case.
+
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78649
