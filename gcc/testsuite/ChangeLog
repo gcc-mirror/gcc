@@ -1,3 +1,8 @@
+2016-12-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/78668
+	* gcc.dg/builtin-alloc-size.c: New test.
+
 2016-12-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70322
