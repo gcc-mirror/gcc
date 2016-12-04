@@ -1,3 +1,11 @@
+2016-12-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78618
+	* intrinsic.c (gfc_convert_type_warn): Do not set the full typespec for
+	the conversion symbol, but only type and kind. Set the full typespec
+	for the expression.
+	(gfc_convert_chartype): Ditto.
+
 2016-12-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43207

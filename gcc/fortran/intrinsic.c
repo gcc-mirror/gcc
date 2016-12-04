@@ -4984,12 +4984,14 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   new_expr->value.function.name = sym->lib_name;
   new_expr->value.function.isym = sym;
   new_expr->where = old_where;
+  new_expr->ts = *ts;
   new_expr->rank = rank;
   new_expr->shape = gfc_copy_shape (shape, rank);
 
   gfc_get_ha_sym_tree (sym->name, &new_expr->symtree);
   new_expr->symtree->n.sym->result = new_expr->symtree->n.sym;
-  new_expr->symtree->n.sym->ts = *ts;
+  new_expr->symtree->n.sym->ts.type = ts->type;
+  new_expr->symtree->n.sym->ts.kind = ts->kind;
   new_expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   new_expr->symtree->n.sym->attr.function = 1;
   new_expr->symtree->n.sym->attr.elemental = 1;
@@ -5055,11 +5057,13 @@ gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
   new_expr->value.function.name = sym->lib_name;
   new_expr->value.function.isym = sym;
   new_expr->where = old_where;
+  new_expr->ts = *ts;
   new_expr->rank = rank;
   new_expr->shape = gfc_copy_shape (shape, rank);
 
   gfc_get_ha_sym_tree (sym->name, &new_expr->symtree);
-  new_expr->symtree->n.sym->ts = *ts;
+  new_expr->symtree->n.sym->ts.type = ts->type;
+  new_expr->symtree->n.sym->ts.kind = ts->kind;
   new_expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   new_expr->symtree->n.sym->attr.function = 1;
   new_expr->symtree->n.sym->attr.elemental = 1;
