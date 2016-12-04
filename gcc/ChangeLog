@@ -1,3 +1,17 @@
+2016-12-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/78668
+        * builtin-attrs.def (ATTR_ALLOC_SIZE, ATTR_RETURNS_NONNULL): New
+        identifier tree nodes.
+        (ATTR_ALLOCA_SIZE_1_NOTHROW_LEAF_LIST): New attribute list.
+        (ATTR_MALLOC_SIZE_1_NOTHROW_LIST): Same.
+        (ATTR_MALLOC_SIZE_1_NOTHROW_LEAF_LIST): Same.
+        (ATTR_MALLOC_SIZE_1_2_NOTHROW_LEAF_LIST): Same.
+        (ATTR_ALLOC_SIZE_2_NOTHROW_LEAF_LIST): Same.
+        * builtins.def (aligned_alloc, calloc, malloc, realloc):
+        Add attribute alloc_size.
+        (alloca): Add attribute alloc_size and returns_nonnull.
+
 2016-12-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70322
