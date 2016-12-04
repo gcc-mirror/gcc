@@ -2826,6 +2826,7 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 	return false;
       break;
 
+    case NEG:
     case NOT:
       break;
 
@@ -2851,7 +2852,8 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
   if ((GET_MODE (XEXP (src, 0)) != DImode
        && !CONST_INT_P (XEXP (src, 0)))
-      || (GET_CODE (src) != NOT
+      || (GET_CODE (src) != NEG
+	  && GET_CODE (src) != NOT
 	  && GET_MODE (XEXP (src, 1)) != DImode
 	  && !CONST_INT_P (XEXP (src, 1))))
     return false;
@@ -3419,7 +3421,8 @@ dimode_scalar_chain::compute_convert_gain ()
 	  if (CONST_INT_P (XEXP (src, 1)))
 	    gain -= vector_const_cost (XEXP (src, 1));
 	}
-      else if (GET_CODE (src) == NOT)
+      else if (GET_CODE (src) == NEG
+	       || GET_CODE (src) == NOT)
 	gain += ix86_cost->add - COSTS_N_INSNS (1);
       else if (GET_CODE (src) == COMPARE)
 	{
@@ -3774,6 +3777,14 @@ dimode_scalar_chain::convert_insn (rtx_insn *insn)
       convert_op (&XEXP (src, 0), insn);
       convert_op (&XEXP (src, 1), insn);
       PUT_MODE (src, V2DImode);
+      break;
+
+    case NEG:
+      src = XEXP (src, 0);
+      convert_op (&src, insn);
+      subreg = gen_reg_rtx (V2DImode);
+      emit_insn_before (gen_move_insn (subreg, CONST0_RTX (V2DImode)), insn);
+      src = gen_rtx_MINUS (V2DImode, subreg, src);
       break;
 
     case NOT:

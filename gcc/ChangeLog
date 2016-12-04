@@ -1,10 +1,17 @@
+2016-12-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70322
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p): Handle NEG.
+	(dimode_scalar_chain::compute_convert_gain): Ditto.
+	(dimode_scalar_chain::convert_insn): Ditto.
+
 2016-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lra-constraints.c (emit_spill_move): Use gen_lowpart_SUBREG in all
 	cases to build a lowpart SUBREG.
 
 2016-12-03  Eric Botcazou  <ebotcazou@adacore.com>
-            David S. Miller  <davem@davemloft.net>
+	    David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md (U): Adjust comment.
 	* config/sparc/sparc.md (lra): New attribute.
