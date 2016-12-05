@@ -1,3 +1,8 @@
+2016-12-05  Nathan Sidwell  <nathan@acm.org>
+
+	* error.c (gfc_warning_check): Call diagnostic_check_max_errors.
+	(gfc_error_check): Likewise.
+
 2016-12-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78618
