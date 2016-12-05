@@ -1,5 +1,6 @@
 2016-12-05  Waldemar Brodkorb  <wbx@openadk.org>
 
+	PR target/71721
 	* config.gcc (*-*-uclinux*): Enable posix threads.
 
 2016-12-05  Andrew Senkevich  <andrew.senkevich@intel.com>
