@@ -1,3 +1,8 @@
+2016-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-darwin-ppc.ads (Support_Atomic_Primitives): Set to True only
+	if the word size is 64.
+
 2016-11-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_prag.adb, sem_ch6.adb: Minor reformatting and typo fixes.
