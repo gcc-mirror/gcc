@@ -1,3 +1,16 @@
+2016-12-05  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (insn_is_tls_gd_dispatch): Remove.
+	* config/arc/arc.c (arc_unspec_offset): New function.
+	(arc_finalize_pic): Change.
+	(arc_emit_call_tls_get_addr): Likewise.
+	(arc_legitimize_tls_address): Likewise.
+	(arc_legitimize_pic_address): Likewise.
+	(insn_is_tls_gd_dispatch): Remove.
+	* config/arc/arc.h (INSN_REFERENCES_ARE_DELAYED): Change.
+	* config/arc/arc.md (ls_gd_load): Remove unused pattern.
+	(tls_gd_dispatch): Likewise.
+
 2016-12-025  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm.c (TARGET_ASM_INIT_SECTIONS): Fix wrong undef

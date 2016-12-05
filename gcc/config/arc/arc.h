@@ -1612,7 +1612,7 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
    && (get_attr_type (X) == TYPE_CALL || get_attr_type (X) == TYPE_SFUNC))
 
 #define INSN_REFERENCES_ARE_DELAYED(insn)				\
-  (INSN_SETS_ARE_DELAYED (insn) && !insn_is_tls_gd_dispatch (insn))
+  (INSN_SETS_ARE_DELAYED (insn))
 
 #define CALL_ATTR(X, NAME) \
   ((CALL_P (X) || NONJUMP_INSN_P (X)) \
