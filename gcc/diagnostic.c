@@ -446,6 +446,31 @@ bt_err_callback (void *data ATTRIBUTE_UNUSED, const char *msg, int errnum)
 	   errnum == 0 ? "" : xstrerror (errnum));
 }
 
+/* Check if we've met the maximum error limit, and if so fatally exit
+   with a message.  CONTEXT is the context to check, and FLUSH
+   indicates whether a diagnostic_finish call is needed.  */
+
+void
+diagnostic_check_max_errors (diagnostic_context *context, bool flush)
+{
+  if (!context->max_errors)
+    return;
+
+  int count = (diagnostic_kind_count (context, DK_ERROR)
+	       + diagnostic_kind_count (context, DK_SORRY)
+	       + diagnostic_kind_count (context, DK_WERROR));
+
+  if (count >= context->max_errors)
+    {
+      fnotice (stderr,
+	       "compilation terminated due to -fmax-errors=%u.\n",
+	       context->max_errors);
+      if (flush)
+	diagnostic_finish (context);
+      exit (FATAL_EXIT_CODE);
+    }
+}
+
 /* Take any action which is expected to happen after the diagnostic
    is written out.  This function does not always return.  */
 void
@@ -467,18 +492,6 @@ diagnostic_action_after_output (diagnostic_context *context,
       if (context->fatal_errors)
 	{
 	  fnotice (stderr, "compilation terminated due to -Wfatal-errors.\n");
-	  diagnostic_finish (context);
-	  exit (FATAL_EXIT_CODE);
-	}
-      if (context->max_errors != 0
-	  && ((unsigned) (diagnostic_kind_count (context, DK_ERROR)
-			  + diagnostic_kind_count (context, DK_SORRY)
-			  + diagnostic_kind_count (context, DK_WERROR))
-	      >= context->max_errors))
-	{
-	  fnotice (stderr,
-		   "compilation terminated due to -fmax-errors=%u.\n",
-		   context->max_errors);
 	  diagnostic_finish (context);
 	  exit (FATAL_EXIT_CODE);
 	}
@@ -889,6 +902,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       if (diagnostic->kind == DK_IGNORED)
 	return false;
     }
+
+  if (diagnostic->kind != DK_NOTE)
+    diagnostic_check_max_errors (context);
 
   context->lock++;
 

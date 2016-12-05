@@ -1,3 +1,12 @@
+2016-12-05  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_check_max_errors): New, broken out of ...
+	(diagnostic_action_after_output): ... here.
+	(diagnostic_report_diagnostic): Call it for non-notes.
+	* diagnostic.h (struct diagnostic_context): Make max_errors signed
+	int.
+	(diagnostic_check_max_errors): Declare.
+
 2016-12-05  Cupertino Miranda  <cmiranda@synopsys.com>
 
 	* config/arc/arc.h (STARTFILE_SPEC): Use default linux specs.

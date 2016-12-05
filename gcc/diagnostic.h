@@ -143,7 +143,7 @@ struct diagnostic_context
   bool dc_warn_system_headers;
 
   /* Maximum number of errors to report.  */
-  unsigned int max_errors;
+  int max_errors;
 
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
@@ -320,6 +320,7 @@ void default_diagnostic_start_span_fn (diagnostic_context *,
 void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 void diagnostic_action_after_output (diagnostic_context *, diagnostic_t);
+void diagnostic_check_max_errors (diagnostic_context *, bool flush = false);
 
 void diagnostic_file_cache_fini (void);
 
