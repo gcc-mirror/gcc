@@ -5486,21 +5486,6 @@
   [(set_attr "is_sfunc" "yes")
    (set_attr "predicable" "yes")])
 
-(define_insn "tls_gd_load"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcq#q,c")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "Rcq#q,c")
-		    (match_operand:SI 2 "symbolic_operand" "X,X")]
-	 UNSPEC_TLS_GD))]
-  ""
-  ".tls_gd_ld %2`ld%? %0,[%1]"
-  [(set_attr "type" "load")
-   ; if the linker has to patch this into IE, we need a long insn
-   ; (FIXME: or two short insn, ld_s / jl_s.  missing -Os optimization.)
-   (set_attr_alternative "iscompact"
-     [(cond [(ne (symbol_ref "arc_tp_regno == 30") (const_int 0))
-	     (const_string "*")] (const_string "maybe"))
-      (const_string "*")])])
-
 (define_insn "tls_gd_get_addr"
   [(set (reg:SI R0_REG)
 	(call:SI (mem:SI (unspec:SI [(match_operand:SI 0
@@ -5513,25 +5498,6 @@
   [(set_attr "type" "call")
    ; With TARGET_MEDIUM_CALLS, plt calls are not predicable.
    (set_attr "predicable" "no")])
-
-; We make this call specific to the tls symbol to avoid commoning this
-; with calls for other symbols; we want the linker to be able to
-(define_insn "tls_gd_dispatch"
-  [(set (reg:SI R0_REG)
-	(unspec:SI
-	  [(reg:SI R0_REG)
-	   (call (mem:SI (match_operand:SI 0 "register_operand" "Rcq,q,c"))
-		 (const_int 0))
-	   (match_operand:SI 1 "symbolic_operand" "X,X,X")]
-	 UNSPEC_TLS_GD))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:DI R10_REG))
-   (clobber (reg:SI R12_REG))]
-  ""
-  ".tls_gd_call %1`jl%!%* [%0]"
-  [(set_attr "type" "call")
-   (set_attr "iscompact" "maybe,false,*")
-   (set_attr "predicable" "no,no,yes")])
 
 ;; For thread pointer builtins
 (define_expand "get_thread_pointersi"
