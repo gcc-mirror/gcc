@@ -133,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-11-27 16:58+0100\n"
+"PO-Revision-Date: 2016-12-03 14:29+0100\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -2284,336 +2284,327 @@ msgstr "Le nombre de registres de chaque classe laissés inutilisés par les dé
 #: params.def:814
 #, no-c-format
 msgid "The max number of reload pseudos which are considered during spilling a non-reload pseudo."
-msgstr "Le nombre maximum de pseudos qui peuvent être rechargés qui doivent être considérés pendant le versage de pseudos qui ne peuvent pas être rechargés."
+msgstr "Le nombre maximum de pseudos rechargeables qui doivent être considérés pendant le versage de pseudos qui ne peuvent pas être rechargés."
 
 #: params.def:819
 #, no-c-format
 msgid "Minimal fall-through edge probability in percentage used to add BB to inheritance EBB in LRA."
-msgstr ""
+msgstr "La probabilité minimale, en pourcents, qu'une arrête enchaîne immédiatement sur une autre pour décider d'ajouter un BB à un EBB d'héritage dans LRA."
 
 #: params.def:827
 #, no-c-format
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place."
-msgstr ""
+msgstr "La rapport maximum entre la taille du tableau et les branchements du switch pour qu'une conversion du switch ait lieu."
 
 #: params.def:835
 #, no-c-format
 msgid "size of tiles for loop blocking."
-msgstr ""
+msgstr "la taille des blocs pour le découpage de boucle en blocs (loop blocking)."
 
 #: params.def:842
 #, no-c-format
 msgid "maximum number of parameters in a SCoP."
-msgstr "Le nombre maximum de paramètres dans un scope."
+msgstr "le nombre maximum de paramètres dans un SCoP."
 
 #: params.def:849
 #, no-c-format
 msgid "maximum number of basic blocks per function to be analyzed by Graphite."
-msgstr ""
+msgstr "le nombre maximum de blocs de base par fonction à analyser par Graphite."
 
 #: params.def:856
 #, no-c-format
 msgid "maximum number of arrays per scop."
-msgstr "Le nombre maximum de tableaux par scope."
+msgstr "le nombre maximum de tableaux par scop."
 
 #: params.def:863
 #, no-c-format
 msgid "minimal number of loops per function to be analyzed by Graphite."
-msgstr ""
+msgstr "le nombre minimum de boucles par fonction à analyser par Graphite."
 
 #: params.def:868
 #, no-c-format
 msgid "maximum number of isl operations, 0 means unlimited"
-msgstr "Le nombre maximum d'opérations isl, 0 pour illimité"
+msgstr "le nombre maximum d'opérations isl, 0 pour illimité"
 
 #: params.def:874
 #, no-c-format
 msgid "Maximum number of datarefs in loop for building loop data dependencies."
-msgstr ""
+msgstr "Le nombre maximum de datarefs dans une boucle pour construire les dépendances de données de la boucle."
 
 #: params.def:881
 #, no-c-format
 msgid "Max basic blocks number in loop for loop invariant motion."
-msgstr ""
+msgstr "Le nombre max de blocs de base dans une boucle pour un déplacement de boucle invariant."
 
 #: params.def:889
-#, fuzzy, no-c-format
-#| msgid "cannot find file for class %s"
+#, no-c-format
 msgid "use internal function id in profile lookup."
-msgstr "Ne peut repérer le fichier pour la classe %s."
+msgstr "utiliser un ID de fonction interne dans la recherche de profilage."
 
 #: params.def:897
 #, no-c-format
 msgid "track topn target addresses in indirect-call profile."
-msgstr ""
+msgstr "pister les N adresses cibles les plus fréquentes dans le profilage d'appels indirects."
 
 #: params.def:903
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization."
-msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne"
+msgstr "Le nombre maximum d'instructions dans un bloc de base à considérer pour la vectorisation SLP."
 
 #: params.def:908
 #, no-c-format
 msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count."
-msgstr ""
+msgstr "Le rapport min entre les insns et les pré-extractions pour activer la pré-extraction dans une boucle avec un nombre inconnu d'itérations."
 
 #: params.def:914
 #, no-c-format
 msgid "Min. ratio of insns to mem ops to enable prefetching in a loop."
-msgstr ""
+msgstr "Le rapport min entre les insns et les opérandes mémoire pour activer la pré-extraction dans une boucle."
 
 #: params.def:921
 #, no-c-format
 msgid "Max. size of var tracking hash tables."
-msgstr ""
+msgstr "La taille max des tables de hachage pour le pistage des variables."
 
 #: params.def:929
 #, no-c-format
 msgid "Max. recursion depth for expanding var tracking expressions."
-msgstr ""
+msgstr "La profondeur de récursion max pour développer les expressions de pistage de variables."
 
 #: params.def:937
 #, no-c-format
 msgid "Max. size of loc list for which reverse ops should be added."
-msgstr ""
+msgstr "La taille max de la liste des emplacements pour laquelle des opérations inverses devraient être ajoutées."
 
 #: params.def:944
 #, no-c-format
 msgid "The minimum UID to be used for a nondebug insn."
-msgstr ""
+msgstr "Le UID minimum à utiliser pour une insn qui n'est pas pour le déboguage."
 
 #: params.def:949
 #, no-c-format
 msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with."
-msgstr ""
+msgstr "La croissance maximale de la taille autorisée quand IPA-SRA remplace un pointeur vers un agrégat par de nouveaux paramètres."
 
 #: params.def:955
 #, no-c-format
 msgid "Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs."
-msgstr ""
+msgstr "La taille en octets au delà de laquelle des agrégats locaux au thread doivent être manipulés par les fonctions de journalisation au lieu de paires de save/restore."
 
 #: params.def:962
 #, no-c-format
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for speed."
-msgstr ""
+msgstr "La taille maximale, en unité de stockage, d'un agrégat qui devrait être considéré pour une conversion scalaire lors d'une compilation pour la vitesse."
 
 #: params.def:968
 #, no-c-format
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for size."
-msgstr ""
+msgstr "La taille maximale, en unité de stockage, d'un agrégat qui devrait être considéré pour une conversion scalaire lors d'une compilation pour l'espace."
 
 #: params.def:974
 #, no-c-format
 msgid "Maximum size of a list of values associated with each parameter for interprocedural constant propagation."
-msgstr ""
+msgstr "La taille maximale d'une liste de valeurs associées à chaque paramètre pour la propagation de constantes interprocédurale."
 
 #: params.def:980
 #, no-c-format
 msgid "Threshold ipa-cp opportunity evaluation that is still considered beneficial to clone.."
-msgstr ""
+msgstr "Le seuil de l'évaluation de l'opportunité de IPA-CP qui est encore considérée comme bénéfique au clone."
 
 #: params.def:986
 #, no-c-format
 msgid "Percentage penalty the recursive functions will receive when they are evaluated for cloning.."
-msgstr ""
+msgstr "Le pourcentage de pénalité que des fonctions récursives recevront quand elles seront évaluées pour un clonage."
 
 #: params.def:992
 #, no-c-format
 msgid "Percentage penalty functions containg a single call to another function will receive when they are evaluated for cloning.."
-msgstr ""
+msgstr "Le pourcentage de pénalité que des fonctions contenant un unique appel à une autre fonction recevront quand elles seront évaluées pour un clonage."
 
 #: params.def:998
 #, no-c-format
 msgid "Maximum number of aggregate content items for a parameter in jump functions and lattices."
-msgstr ""
+msgstr "Le nombre maximum d'éléments contenus dans un agrégat d'un paramètre dans des fonctions de saut ou des maillages."
 
 #: params.def:1004
 #, no-c-format
 msgid "Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known.."
-msgstr ""
+msgstr "Bonus à la compilation que IPA-CP assigne aux candidats qui rendent les limites ou les pas des boucles connus."
 
 #: params.def:1010
 #, no-c-format
 msgid "Compile-time bonus IPA-CP assigns to candidates which make an array index known.."
-msgstr ""
+msgstr "Bonus à la compilation que IPA-CP assigne aux candidats qui rendent connus l'index dans un tableau."
 
 #: params.def:1016
 #, no-c-format
 msgid "Maximum number of statements that will be visited by IPA formal parameter analysis based on alias analysis in any given function."
-msgstr ""
+msgstr "Le nombre maximum d'expressions qui seront visitées par l'analyse des paramètres formels de IPA basé sur l'analyse d'alias dans une fonction quelconque."
 
 #: params.def:1024
 #, no-c-format
 msgid "Number of partitions the program should be split to."
-msgstr ""
+msgstr "Le nombre de partitions dans lesquelles il faudrait scinder le programme."
 
 #: params.def:1029
 #, no-c-format
 msgid "Minimal size of a partition for LTO (in estimated instructions)."
-msgstr ""
+msgstr "La taille minimale d'une partition pour LTO (en instructions estimées)."
 
 #: params.def:1036
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to fill a delay slot"
+#, no-c-format
 msgid "Maximum number of namespaces to search for alternatives when name lookup fails."
-msgstr "Le nombre maximum d'instructions à considérer pour remplir une slot délai"
+msgstr "Le nombre maximum d'espaces de noms à parcourir pour chercher des alternatives quand la recherche de nom a échoué."
 
 #: params.def:1043
 #, no-c-format
 msgid "Maximum number of conditional store pairs that can be sunk."
-msgstr ""
+msgstr "Le nombre maximum de paires de stockage conditionnel qui peuvent être descendues."
 
 #: params.def:1051
 #, no-c-format
 msgid "The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine."
-msgstr ""
+msgstr "Le plus petit nombre de valeurs différentes pour lequel il est préférable d'utiliser une table de sauts plutôt qu'un arbre de branchements conditionnels. Si 0, utilise le choix par défaut pour la machine."
 
 #: params.def:1059
 #, no-c-format
 msgid "Allow new data races on stores to be introduced."
-msgstr ""
+msgstr "Permet l'introduction de compétitions sur de nouvelles données durant un stockage."
 
 #: params.def:1065
 #, no-c-format
 msgid "Set the maximum number of instructions executed in parallel in reassociated tree. If 0, use the target dependent heuristic.."
-msgstr ""
+msgstr "Fixe le nombre maximum d'instructions exécutées en parallèle dans un arbre ré-associé. Si 0, utilise l'heuristique dépendant de la cible."
 
 #: params.def:1071
 #, no-c-format
 msgid "Maximum amount of similar bbs to compare a bb with."
-msgstr ""
+msgstr "La quantité maximale de bbs similaires à comparer avec un bb."
 
 #: params.def:1076
 #, no-c-format
 msgid "Maximum amount of iterations of the pass over a function."
-msgstr ""
+msgstr "Le nombre maximum d'itérations du passage sur une fonction."
 
 #: params.def:1083
 #, no-c-format
 msgid "Maximum number of strings for which strlen optimization pass will track string lengths."
-msgstr ""
+msgstr "Le nombre maximum de chaînes pour lesquelles l'optimisation de strlen conserve la longueur des chaînes."
 
 #: params.def:1090
 #, no-c-format
 msgid "Which -fsched-pressure algorithm to apply."
-msgstr ""
+msgstr "Quel algorithme de -fsched-pressure appliquer."
 
 #: params.def:1096
-#, fuzzy, no-c-format
-#| msgid "Perform strength reduction optimizations"
+#, no-c-format
 msgid "Maximum length of candidate scans for straight-line strength reduction."
-msgstr "Exécuter un réduction en force des optimisations"
+msgstr "La longueur maximale de la recherche dans les candidats pour la simplification des instructions dupliquées lors de l'aplatissage d'une boucle (Straight-Line Strength Reduction)."
 
 #: params.def:1102
 #, no-c-format
 msgid "Enable asan stack protection."
-msgstr "Autoriser la protection de pile asan"
+msgstr "Autoriser ASan à protéger la pile."
 
 #: params.def:1107
 #, no-c-format
 msgid "Enable asan globals protection."
-msgstr "Autoriser la protection des constantes asan."
+msgstr "Autoriser ASan à protéger les globales."
 
 #: params.def:1112
-#, fuzzy, no-c-format
-#| msgid "Enable parallel instructions"
+#, no-c-format
 msgid "Enable asan store operations protection."
-msgstr "Autoriser les instructions parallèles"
+msgstr "Autoriser ASan à protéger les opérations d'écriture."
 
 #: params.def:1117
-#, fuzzy, no-c-format
-#| msgid "Enable parallel instructions"
+#, no-c-format
 msgid "Enable asan load operations protection."
-msgstr "Autoriser les instructions parallèles"
+msgstr "Autoriser ASan à protéger les opérations de chargement."
 
 #: params.def:1122
-#, fuzzy, no-c-format
-#| msgid "Enable function profiling"
+#, no-c-format
 msgid "Enable asan builtin functions protection."
-msgstr "Autoriser le profilage de fonction"
+msgstr "Autoriser ASan à protéger les fonctions intégrées."
 
 #: params.def:1127
 #, no-c-format
 msgid "Enable asan detection of use-after-return bugs."
-msgstr ""
+msgstr "Autoriser la détection par ASan des bogues d'utilisation après retour."
 
 #: params.def:1132
 #, no-c-format
 msgid "Use callbacks instead of inline code if number of accesses in function becomes greater or equal to this number."
-msgstr ""
+msgstr "Utiliser une fonction de rappel au lieu de code en ligne si le nombre d'accès dans la fonction devient plus grand ou égal à ce nombre."
 
 #: params.def:1138
 #, no-c-format
 msgid "Maximum number of nested calls to search for control dependencies during uninitialized variable analysis."
-msgstr ""
+msgstr "Nombre maximum d'appels imbriqués pour rechercher une dépendance de contrôle pendant l'analyse d'une variable non initialisée."
 
 #: params.def:1144
 #, no-c-format
 msgid "Maximum number of statements to be included into a single static constructor generated by Pointer Bounds Checker."
-msgstr ""
+msgstr "Le nombre maximum d'expressions à inclure dans un seul constructeur statique généré par Pointer Bounds Checker."
 
 #: params.def:1150
 #, no-c-format
 msgid "Scale factor to apply to the number of statements in a threading path when comparing to the number of (scaled) blocks."
-msgstr ""
+msgstr "Facteur d'échelle à appliquer au nombre d'expressions dans un chemin de sauts enchaînés lors de la comparaison de blocs (mis à l'échelle)."
 
 #: params.def:1155
 #, no-c-format
 msgid "Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block."
-msgstr ""
+msgstr "Le nombre maximum d'arguments qu'un PHI peut avoir avant que le FSM qui est responsable de l'enchaînement arrête d'essayer d'enchaîner les sauts dans ses blocs."
 
 #: params.def:1160
 #, no-c-format
 msgid "Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements."
-msgstr ""
+msgstr "Facteur d'échelle à appliquer au nombre de blocs dans un chemin de sauts enchaînés lors de la comparaison avec le nombre d'expressions (mises à l'échelle)."
 
 #: params.def:1165
 #, no-c-format
 msgid "Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path."
-msgstr ""
+msgstr "Le nombre maximum d'instructions à copier en dupliquant des blocs le long du chemin de sauts enchaînés d'un automate à états finis."
 
 #: params.def:1170
 #, no-c-format
 msgid "Maximum number of basic blocks on a finite state automaton jump thread path."
-msgstr ""
+msgstr "Le nombre maximum de blocs de base sur le chemin de sauts enchaînés d'un automate à états finis."
 
 #: params.def:1175
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to fill a delay slot"
+#, no-c-format
 msgid "Maximum number of new jump thread paths to create for a finite state automaton."
-msgstr "Le nombre maximum d'instructions à considérer pour remplir une slot délai"
+msgstr "Le nombre maximum de nouveaux chemins pour enchaîner des sauts pour un automate à états finis."
 
 #: params.def:1180
 #, no-c-format
 msgid "Chunk size of omp schedule for loops parallelized by parloops."
-msgstr ""
+msgstr "Taille des fragments de l'ordonnanceur OMP pour des boucles parallélisées par parloops."
 
 #: params.def:1185
 #, no-c-format
 msgid "Schedule type of omp schedule for loops parallelized by parloops (static, dynamic, guided, auto, runtime)."
-msgstr ""
+msgstr "Type d'ordonnancement de l'ordonnanceur OMP pour des boucles parallélisées par parloops (static, dynamic, guided, auto, runtime)."
 
 #: params.def:1192
 #, no-c-format
 msgid "Maximum recursion depth allowed when querying a property of an SSA name."
-msgstr ""
+msgstr "La profondeur de récursion maximum permise en interrogeant une propriété d'un nom SSA."
 
 #: params.def:1198
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "Maximum number of insns in a basic block to consider for RTL if-conversion."
-msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne"
+msgstr "Le nombre maximum d'insns dans un bloc de base pour considérer une conversion du if par RTL."
 
 #: params.def:1204
 #, no-c-format
 msgid "Level of hsa debug stores verbosity"
-msgstr ""
+msgstr "Le niveau de verbosité des stockages de déboguage de hsa"
 
 #: params.def:1209
 #, no-c-format
 msgid "Maximum number of may-defs visited when devirtualizing speculatively"
-msgstr ""
+msgstr "Le nombre maximum de may-defs visités lors d'une dévirtualisation spéculative"
 
 #: c-family/c-format.c:417
 msgid "format"
@@ -2729,7 +2720,7 @@ msgstr "fanion « q »"
 
 #: c-family/c-format.c:593
 msgid "the 'q' diagnostic flag"
-msgstr "le fanion « d » de diagnostique"
+msgstr "le fanion « q » de diagnostique"
 
 #: c-family/c-format.c:606 config/i386/msformat-c.c:63
 msgid "assignment suppression"
@@ -2737,7 +2728,7 @@ msgstr "suppression d'affectation"
 
 #: c-family/c-format.c:606 config/i386/msformat-c.c:63
 msgid "the assignment suppression scanf feature"
-msgstr "options de scanf pour la suppression d'affectation"
+msgstr "la fonctionnalité de suppression d'affectation de scanf"
 
 #: c-family/c-format.c:607 config/i386/msformat-c.c:64
 msgid "'a' flag"
@@ -2865,19 +2856,19 @@ msgstr "largeur de champ dans le format de strfmon"
 
 #: c-family/c-format.c:660
 msgid "left precision"
-msgstr "précision de gauche"
+msgstr "précision à gauche"
 
 #: c-family/c-format.c:660
 msgid "left precision in strfmon format"
-msgstr "précision de gauche dans le format de strfmon"
+msgstr "précision à gauche dans le format de strfmon"
 
 #: c-family/c-format.c:661
 msgid "right precision"
-msgstr "précision de droite"
+msgstr "précision à droite"
 
 #: c-family/c-format.c:661
 msgid "right precision in strfmon format"
-msgstr "précision de droite dans le format de strfmon"
+msgstr "précision à droite dans le format de strfmon"
 
 #: c-family/c-format.c:662
 msgid "length modifier in strfmon format"
@@ -2892,7 +2883,7 @@ msgstr "<ligne-de-commande>"
 #: config/arm/arm.c:21997 config/nios2/nios2.c:2642
 #, c-format
 msgid "Unsupported operand for code '%c'"
-msgstr "opérande non supportée pour le code « %c »"
+msgstr "Opérande non supporté pour le code « %c »"
 
 #: config/aarch64/aarch64.c:4463 config/aarch64/aarch64.c:4479
 #: config/aarch64/aarch64.c:4492 config/aarch64/aarch64.c:4504
@@ -2900,18 +2891,18 @@ msgstr "opérande non supportée pour le code « %c »"
 #: config/aarch64/aarch64.c:4591 config/aarch64/aarch64.c:4794
 #, c-format
 msgid "invalid operand for '%%%c'"
-msgstr "opérande invalide pour « %%%c »"
+msgstr "opérande invalide pour « %%%c »"
 
 #: config/aarch64/aarch64.c:4558 config/aarch64/aarch64.c:4571
 #: config/aarch64/aarch64.c:4581
 #, c-format
 msgid "incompatible floating point / vector register operand for '%%%c'"
-msgstr ""
+msgstr "opérande en virgule flottante ou registre vecteur incompatible pour « %%%c »"
 
 #: config/aarch64/aarch64.c:4627 config/arm/arm.c:22504
 #, c-format
 msgid "missing operand"
-msgstr "opérande manquante"
+msgstr "opérande manquant"
 
 #: config/aarch64/aarch64.c:4689
 #, c-format
@@ -2926,13 +2917,13 @@ msgstr "opérande invalide"
 #: config/aarch64/aarch64.c:4805
 #, c-format
 msgid "invalid operand prefix '%%%c'"
-msgstr "préfixe d'opérande invalide « %%%c »"
+msgstr "préfixe d'opérande invalide « %%%c »"
 
 #: config/alpha/alpha.c:5102 config/i386/i386.c:17140
 #: config/rs6000/rs6000.c:21150 config/sparc/sparc.c:8749
 #, c-format
 msgid "'%%&' used without any local dynamic TLS references"
-msgstr ""
+msgstr "« %%& » utilisé sans référence à un TLS dynamique local"
 
 #: config/alpha/alpha.c:5160 config/bfin/bfin.c:1423
 #, c-format
@@ -3078,16 +3069,14 @@ msgid "invalid shift operand"
 msgstr "opérande shift invalide"
 
 #: config/arm/arm.c:21835 config/arm/arm.c:21853
-#, fuzzy, c-format
-#| msgid "Generate char instructions"
+#, c-format
 msgid "predicated Thumb instruction"
-msgstr "Générer des instructions « char »"
+msgstr "instruction Thumb établie"
 
 #: config/arm/arm.c:21841
-#, fuzzy, c-format
-#| msgid "ret instruction not implemented"
+#, c-format
 msgid "predicated instruction in conditional sequence"
-msgstr "instruction ret n'est pas implantée"
+msgstr "instruction établie dans la séquence conditionnelle"
 
 #: config/arm/arm.c:22074 config/arm/arm.c:22096 config/arm/arm.c:22106
 #: config/arm/arm.c:22116 config/arm/arm.c:22126 config/arm/arm.c:22165
@@ -3113,66 +3102,53 @@ msgstr "instruction jamais exécutée"
 #: config/arm/arm.c:22199
 #, c-format
 msgid "obsolete Maverick format code '%c'"
-msgstr ""
+msgstr "code de format Maverick « %c » obsolète"
 
 #: config/arm/arm.c:23618
-#, fuzzy
-#| msgid "function returns an aggregate"
 msgid "function parameters cannot have __fp16 type"
-msgstr "fonction retourne un agrégat"
+msgstr "les paramètres de fonction ne peuvent pas avoir le type __fp16"
 
 #: config/arm/arm.c:23628
-#, fuzzy
-#| msgid "function does not return string type"
 msgid "functions cannot return __fp16 type"
-msgstr "fonction ne retourne pas un type « string »"
+msgstr "les fonctions ne peuvent pas retourner le type __fp16"
 
 #: config/avr/avr.c:2124
-#, fuzzy, c-format
-#| msgid "read-write constraint does not allow a register"
+#, c-format
 msgid "address operand requires constraint for X, Y, or Z register"
-msgstr "contrainte de lecture-écriture ne permet pas de registre"
+msgstr "l'opérande d'adresse requiert une contrainte sur le registre X, Y ou Z"
 
 #: config/avr/avr.c:2282
-#, fuzzy
-#| msgid "output operand %d must use `&' constraint"
 msgid "operands to %T/%t must be reg + const_int:"
-msgstr "opérande de sortie %d doit utiliser la contrainte « & »"
+msgstr "les opérandes de %T/%t doivent être reg + const_int:"
 
 #: config/avr/avr.c:2332 config/avr/avr.c:2399
-#, fuzzy
-#| msgid "bad address, not (reg+disp):"
 msgid "bad address, not an I/O address:"
-msgstr "adresse erronée, pas (reg+disp):"
+msgstr "mauvaise adresse, pas une adresse E/S:"
 
 #: config/avr/avr.c:2341
-#, fuzzy
-#| msgid "address offset not a constant"
 msgid "bad address, not a constant:"
-msgstr "décalage d'adresse n'est pas une constante"
+msgstr "mauvaise adresse, pas une constante:"
 
 #: config/avr/avr.c:2359 config/avr/avr.c:2366
 msgid "bad address, not (reg+disp):"
-msgstr "adresse erronée, pas (reg+disp):"
+msgstr "mauvaise adresse, pas (reg+disp):"
 
 #: config/avr/avr.c:2373
-#, fuzzy
-#| msgid "bad address, not (reg+disp):"
 msgid "bad address, not post_inc or pre_dec:"
-msgstr "adresse erronée, pas (reg+disp):"
+msgstr "mauvaise adresse, pas post_inc ou pre_dec:"
 
 #: config/avr/avr.c:2385
 msgid "internal compiler error.  Bad address:"
-msgstr "erreur internal du compilateur. Adresse erronée:"
+msgstr "erreur interne du compilateur. Mauvaise adresse:"
 
 #: config/avr/avr.c:2418
 #, c-format
 msgid "Unsupported code '%c' for fixed-point:"
-msgstr ""
+msgstr "Code « %c » non supporté en virgule fixe:"
 
 #: config/avr/avr.c:2426
 msgid "internal compiler error.  Unknown mode:"
-msgstr "erreur internal du compilateur. Mode inconnu:"
+msgstr "erreur interne du compilateur. Mode inconnu:"
 
 #: config/avr/avr.c:3419 config/avr/avr.c:4349 config/avr/avr.c:4798
 msgid "invalid insn:"
@@ -3183,35 +3159,34 @@ msgstr "insn invalide :"
 #: config/avr/avr.c:4201 config/avr/avr.c:4485 config/avr/avr.c:4691
 #: config/avr/avr.c:4855 config/avr/avr.c:4949 config/avr/avr.c:5145
 msgid "incorrect insn:"
-msgstr "insn incorrect :"
+msgstr "insn incorrecte :"
 
 #: config/avr/avr.c:3717 config/avr/avr.c:3992 config/avr/avr.c:4272
 #: config/avr/avr.c:4557 config/avr/avr.c:4737 config/avr/avr.c:5005
 #: config/avr/avr.c:5203
 msgid "unknown move insn:"
-msgstr "insn de déplacement inconnu :"
+msgstr "insn de déplacement inconnue :"
 
 #: config/avr/avr.c:5634
 msgid "bad shift insn:"
-msgstr "décalage insn erroné :"
+msgstr "insn de décalage erronée :"
 
 #: config/avr/avr.c:5742 config/avr/avr.c:6223 config/avr/avr.c:6638
 msgid "internal compiler error.  Incorrect shift:"
-msgstr "erreur internal du compilateur. Décalage incorrect:"
+msgstr "erreur interne du compilateur. Décalage incorrect:"
 
 #: config/avr/avr.c:7975
-#, fuzzy
-#| msgid "unsupported version"
 msgid "unsupported fixed-point conversion"
-msgstr "version non reconnue"
+msgstr "conversion en virgule fixe non supportée"
 
 #: config/avr/driver-avr.c:71
-#, fuzzy, c-format
-#| msgid "unknown spec function `%s'"
+#, c-format
 msgid ""
 "Running spec function '%s' with %d args\n"
 "\n"
-msgstr "spécification de fonction inconnue « %s »:"
+msgstr ""
+"Exécution de la fonction spec « %s » avec %d args\n"
+"\n"
 
 #: config/avr/driver-avr.c:118
 #, c-format
@@ -3220,6 +3195,9 @@ msgid ""
 "'%s': specfile='%s'\n"
 "\n"
 msgstr ""
+"« %s »: mmcu=« %s »\n"
+"« %s »: specfile=« %s »\n"
+"\n"
 
 #: config/bfin/bfin.c:1385
 #, c-format
@@ -3254,16 +3232,12 @@ msgid "invalid operand for 'b' modifier"
 msgstr "opérande invalide pour le modificateur « b »"
 
 #: config/cris/cris.c:761
-#, fuzzy
-#| msgid "invalid operand for 'b' modifier"
 msgid "invalid operand for 'o' modifier"
-msgstr "opérande invalide pour le modificateur « b »"
+msgstr "opérande invalide pour le modificateur « o »"
 
 #: config/cris/cris.c:780
-#, fuzzy
-#| msgid "invalid operand for 'b' modifier"
 msgid "invalid operand for 'O' modifier"
-msgstr "opérande invalide pour le modificateur « b »"
+msgstr "opérande invalide pour le modificateur « O »"
 
 #: config/cris/cris.c:813
 msgid "invalid operand for 'p' modifier"
@@ -3279,7 +3253,7 @@ msgstr "opérande invalide pour le modificateur « H »"
 
 #: config/cris/cris.c:926
 msgid "bad register"
-msgstr "registre erroné"
+msgstr "mauvais registre"
 
 #: config/cris/cris.c:970
 msgid "invalid operand for 'e' modifier"
@@ -3303,15 +3277,15 @@ msgstr "opérande invalide pour le modificateur « T »"
 
 #: config/cris/cris.c:1116 config/ft32/ft32.c:230 config/moxie/moxie.c:173
 msgid "invalid operand modifier letter"
-msgstr "opérande invalide pour le modificateur de lettre"
+msgstr "lettre de modificateur d'opérande invalide"
 
 #: config/cris/cris.c:1170
 msgid "unexpected multiplicative operand"
-msgstr "opérande multiplicative inattendue"
+msgstr "opérande multiplicatif inattendu"
 
 #: config/cris/cris.c:1190 config/ft32/ft32.c:253 config/moxie/moxie.c:198
 msgid "unexpected operand"
-msgstr "opérande inattendue"
+msgstr "opérande inattendu"
 
 #: config/cris/cris.c:1229 config/cris/cris.c:1239
 msgid "unrecognized address"
@@ -3319,21 +3293,21 @@ msgstr "adresse non reconnue"
 
 #: config/cris/cris.c:2559
 msgid "unrecognized supposed constant"
-msgstr "supposée constante non reconnue"
+msgstr "constante supposée non reconnue"
 
 #: config/cris/cris.c:2958 config/cris/cris.c:3016
 msgid "unexpected side-effects in address"
-msgstr "effets de bord inattendue dans l'adresse"
+msgstr "effets de bord inattendus dans l'adresse"
 
 #. Can't possibly get anything else for a function-call, right?
 #: config/cris/cris.c:3844
 msgid "unidentifiable call op"
-msgstr ""
+msgstr "opérande d'appel non identifiable"
 
 #: config/cris/cris.c:3906
 #, c-format
 msgid "PIC register isn't set up"
-msgstr "le registre n'est pas initialisé"
+msgstr "le registre PIC n'est pas initialisé"
 
 #: config/fr30/fr30.c:496
 #, c-format
@@ -3343,12 +3317,12 @@ msgstr "fr30_print_operand_address: adresse non traitée"
 #: config/fr30/fr30.c:520
 #, c-format
 msgid "fr30_print_operand: unrecognized %%p code"
-msgstr "fr30_print_operand: code %%p non reconnue"
+msgstr "fr30_print_operand: code %%p non reconnu"
 
 #: config/fr30/fr30.c:540
 #, c-format
 msgid "fr30_print_operand: unrecognized %%b code"
-msgstr "fr30_print_operand: code %%b non reconnue"
+msgstr "fr30_print_operand: code %%b non reconnu"
 
 #: config/fr30/fr30.c:561
 #, c-format
@@ -3358,7 +3332,7 @@ msgstr "fr30_print_operand: code %%B non reconnu"
 #: config/fr30/fr30.c:569
 #, c-format
 msgid "fr30_print_operand: invalid operand to %%A code"
-msgstr "fr30_print_operand: opérande invalide pour code %%A"
+msgstr "fr30_print_operand: opérande invalide pour le code %%A"
 
 #: config/fr30/fr30.c:586
 #, c-format
@@ -3382,23 +3356,17 @@ msgid "fr30_print_operand: unhandled MEM"
 msgstr "fr30_print_operand: MEM non traité"
 
 #: config/frv/frv.c:2507
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand_address:"
 msgid "bad insn to frv_print_operand_address:"
-msgstr "insn erroné pour frv_print_operand_addresse:"
+msgstr "mauvaise insn pour frv_print_operand_addresse:"
 
 #: config/frv/frv.c:2518
-#, fuzzy
-#| msgid "Bad register to frv_print_operand_memory_reference_reg:"
 msgid "bad register to frv_print_operand_memory_reference_reg:"
-msgstr "registre erroné pour frv_print_operand_memory_reference_reg:"
+msgstr "mauvais registre pour frv_print_operand_memory_reference_reg:"
 
 #: config/frv/frv.c:2557 config/frv/frv.c:2567 config/frv/frv.c:2576
 #: config/frv/frv.c:2597 config/frv/frv.c:2602
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand_memory_reference:"
 msgid "bad insn to frv_print_operand_memory_reference:"
-msgstr "insn erroné pour frv_print_operand_memory_reference:"
+msgstr "mauvaise insn pour frv_print_operand_memory_reference:"
 
 #: config/frv/frv.c:2688
 #, c-format
@@ -3406,92 +3374,64 @@ msgid "bad condition code"
 msgstr "mauvais code de condition"
 
 #: config/frv/frv.c:2762
-#, fuzzy
-#| msgid "Bad insn in frv_print_operand, bad const_double"
 msgid "bad insn in frv_print_operand, bad const_double"
-msgstr "insn erroné dans frv_print_operand, bad const_double"
+msgstr "mauvaise insn dans frv_print_operand, mauvais const_double"
 
 #: config/frv/frv.c:2823
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, 'e' modifier:"
 msgid "bad insn to frv_print_operand, 'e' modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « e »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « e »:"
 
 #: config/frv/frv.c:2831
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, 'F' modifier:"
 msgid "bad insn to frv_print_operand, 'F' modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « F »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « F »:"
 
 #: config/frv/frv.c:2847
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, 'f' modifier:"
 msgid "bad insn to frv_print_operand, 'f' modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « f »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « f »:"
 
 #: config/frv/frv.c:2861
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, 'C' modifier:"
 msgid "bad insn to frv_print_operand, 'g' modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « C »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « g »:"
 
 #: config/frv/frv.c:2909
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, 'L' modifier:"
 msgid "bad insn to frv_print_operand, 'L' modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « L »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « L »:"
 
 #: config/frv/frv.c:2922
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, 'M/N' modifier:"
 msgid "bad insn to frv_print_operand, 'M/N' modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « M/N »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « M/N »:"
 
 #: config/frv/frv.c:2943
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, 'O' modifier:"
 msgid "bad insn to frv_print_operand, 'O' modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « O »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « O »:"
 
 #: config/frv/frv.c:2961
-#, fuzzy
-#| msgid "Bad insn to frv_print_operand, P modifier:"
 msgid "bad insn to frv_print_operand, P modifier:"
-msgstr "insn erroné pour frv_print_operand, modificateur « P »:"
+msgstr "mauvaise insn pour frv_print_operand, modificateur « P »:"
 
 #: config/frv/frv.c:2981
-#, fuzzy
-#| msgid "Bad insn in frv_print_operand, z case"
 msgid "bad insn in frv_print_operand, z case"
-msgstr "insn erroné dans frv_print_operand, case z"
+msgstr "mauvaise insn dans frv_print_operand, case z"
 
 #: config/frv/frv.c:3012
-#, fuzzy
-#| msgid "Bad insn in frv_print_operand, 0 case"
 msgid "bad insn in frv_print_operand, 0 case"
-msgstr "insn erroné dans frv_print_operand, case 0"
+msgstr "mauvaise insn dans frv_print_operand, case 0"
 
 #: config/frv/frv.c:3017
 msgid "frv_print_operand: unknown code"
 msgstr "frv_print_operand: code inconnu"
 
 #: config/frv/frv.c:4421
-#, fuzzy
-#| msgid "Bad output_move_single operand"
 msgid "bad output_move_single operand"
-msgstr "opérande output_move_single erronée"
+msgstr "mauvais opérande output_move_single"
 
 #: config/frv/frv.c:4548
-#, fuzzy
-#| msgid "Bad output_move_double operand"
 msgid "bad output_move_double operand"
-msgstr "opérande output_move_double erronée"
+msgstr "mauvais opérande output_move_double"
 
 #: config/frv/frv.c:4690
-#, fuzzy
-#| msgid "Bad output_condmove_single operand"
 msgid "bad output_condmove_single operand"
-msgstr "opérande output_condmove_single erronée"
+msgstr "mauvais opérande output_condmove_single"
 
 #: config/i386/i386.c:16060
 #, c-format
@@ -3516,7 +3456,7 @@ msgstr "type opérande invalide utilisé avec le code d'opérande « Z »"
 #: config/i386/i386.c:16874
 #, c-format
 msgid "invalid operand size for operand code 'Z'"
-msgstr "taille opérande invalide pour le code d'opérande « Z »"
+msgstr "taille d'opérande invalide pour le code d'opérande « Z »"
 
 #: config/i386/i386.c:16950
 #, c-format
@@ -3534,10 +3474,9 @@ msgid "operand is not a condition code, invalid operand code '%c'"
 msgstr "l'opérande n'est pas du code de condition, code d'opérande invalide « %c »"
 
 #: config/i386/i386.c:17053
-#, fuzzy, c-format
-#| msgid "operand is neither a constant nor a condition code, invalid operand code 'c'"
+#, c-format
 msgid "operand is not an offsettable memory reference, invalid operand code 'H'"
-msgstr "l'opérande n'est ni une constante ni du code de condition, code d'opérande invalide « c »"
+msgstr "l'opérande n'est pas une référence mémoire avec décalage, code d'opérande invalide « H »"
 
 #: config/i386/i386.c:17218
 #, c-format
@@ -3554,10 +3493,9 @@ msgid "unknown insn mode"
 msgstr "mode insn inconnu"
 
 #: config/i386/djgpp.h:146
-#, fuzzy, c-format
-#| msgid "-f%s not supported: ignored"
+#, c-format
 msgid "-f%s ignored (not supported for DJGPP)\n"
-msgstr "-f%s n'est pas supporté: ignoré"
+msgstr "-f%s ignoré (pas supporté par DJGPP)\n"
 
 #: config/i386/i386-interix.h:77
 msgid "Use native (MS) bitfield layout"
@@ -3608,15 +3546,15 @@ msgstr "utilisation invalide de %%d, %%x, ou %%X"
 #: config/lm32/lm32.c:507
 #, c-format
 msgid "only 0.0 can be loaded as an immediate"
-msgstr ""
+msgstr "seul 0.0 peut être chargé comme valeur immédiate"
 
 #: config/lm32/lm32.c:577
 msgid "bad operand"
-msgstr "opérande erronée"
+msgstr "mauvais opérande"
 
 #: config/lm32/lm32.c:589
 msgid "can't use non gp relative absolute address"
-msgstr ""
+msgstr "impossible d'utiliser une adresse absolue pas relative à gp"
 
 #: config/lm32/lm32.c:593
 msgid "invalid addressing mode"
@@ -3634,7 +3572,7 @@ msgstr "opérande invalide pour le code %%p"
 
 #: config/m32r/m32r.c:2137
 msgid "bad insn for 'A'"
-msgstr "insn erroné pour « A »"
+msgstr "mauvaise insn pour « A »"
 
 #: config/m32r/m32r.c:2184
 #, c-format
@@ -3648,20 +3586,20 @@ msgstr "opérande invalide pour le code %%N"
 
 #: config/m32r/m32r.c:2240
 msgid "pre-increment address is not a register"
-msgstr "pré-incrément d'adresse n'est pas un registre"
+msgstr "le pré-incrément d'adresse n'est pas un registre"
 
 #: config/m32r/m32r.c:2247
 msgid "pre-decrement address is not a register"
-msgstr "pré-décrément d'adresse n'est pas un registre"
+msgstr "le pré-décrément d'adresse n'est pas un registre"
 
 #: config/m32r/m32r.c:2254
 msgid "post-increment address is not a register"
-msgstr "post-incrément d'adresse n'est pas un registre"
+msgstr "le post-incrément d'adresse n'est pas un registre"
 
 #: config/m32r/m32r.c:2328 config/m32r/m32r.c:2343
 #: config/rs6000/rs6000.c:32640
 msgid "bad address"
-msgstr "adresse erronée"
+msgstr "mauvaise adresse"
 
 #: config/m32r/m32r.c:2348
 msgid "lo_sum not of register"
@@ -3685,12 +3623,12 @@ msgstr "pointeur null"
 #: config/microblaze/microblaze.c:2234
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%C"
-msgstr "PRINT_OPERAND insn invalide pour %%C"
+msgstr "PRINT_OPERAND, insn invalide pour %%C"
 
 #: config/microblaze/microblaze.c:2263
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%N"
-msgstr "PRINT_OPERAND insn invalide pour %%N"
+msgstr "PRINT_OPERAND, insn invalide pour %%N"
 
 #: config/microblaze/microblaze.c:2283 config/microblaze/microblaze.c:2458
 msgid "insn contains an invalid address !"
@@ -3720,44 +3658,44 @@ msgstr "utilisation invalide de « %%%c »"
 
 #: config/mmix/mmix.c:1547 config/mmix/mmix.c:1677
 msgid "MMIX Internal: Expected a CONST_INT, not this"
-msgstr "MMIX interne: attendait CONST_INT, pas ceci"
+msgstr "MMIX interne: Attendait CONST_INT, pas ceci"
 
 #: config/mmix/mmix.c:1626
 msgid "MMIX Internal: Bad value for 'm', not a CONST_INT"
-msgstr "MMIX interne: valeur erronée pour « m », pas un CONST_INT"
+msgstr "MMIX interne: Valeur erronée pour « m », pas un CONST_INT"
 
 #: config/mmix/mmix.c:1645
 msgid "MMIX Internal: Expected a register, not this"
-msgstr "MMIX interne: attendait un registre, pas ceci"
+msgstr "MMIX interne: Attendait un registre, pas ceci"
 
 #: config/mmix/mmix.c:1655
 msgid "MMIX Internal: Expected a constant, not this"
-msgstr "MMIX interne: attendait une constante, pas ceci"
+msgstr "MMIX interne: Attendait une constante, pas ceci"
 
 #. We need the original here.
 #: config/mmix/mmix.c:1739
 msgid "MMIX Internal: Cannot decode this operand"
-msgstr "MMIX interne: ne peut décoder cette opérande"
+msgstr "MMIX interne: Ne peut décoder cet opérande"
 
 #: config/mmix/mmix.c:1795
 msgid "MMIX Internal: This is not a recognized address"
-msgstr "MMIX interne: ce n'est pas une adresse reconnue"
+msgstr "MMIX interne: Ce n'est pas une adresse reconnue"
 
 #: config/mmix/mmix.c:2671
 msgid "MMIX Internal: Trying to output invalidly reversed condition:"
-msgstr "MMIX interne: tentative de produire incorrectement une condition renversée:"
+msgstr "MMIX interne: Tentative de produire une condition incorrectement inversée:"
 
 #: config/mmix/mmix.c:2678
 msgid "MMIX Internal: What's the CC of this?"
-msgstr "MMIX interne: quel sorte de CC est-ce?"
+msgstr "MMIX interne: Quel est le CC de ceci ?"
 
 #: config/mmix/mmix.c:2682
 msgid "MMIX Internal: What is the CC of this?"
-msgstr "MMIX interne: quel sorte de CC est-ce?"
+msgstr "MMIX interne: Quel est le CC de ceci ?"
 
 #: config/mmix/mmix.c:2724
 msgid "MMIX Internal: This is not a constant:"
-msgstr "interne MMIX: ce n'est pas une constante:"
+msgstr "MMIX interne: Ce n'est pas une constante:"
 
 #: config/msp430/msp430.c:3609
 #, c-format
@@ -3767,12 +3705,12 @@ msgstr "préfixe d'opérande invalide"
 #: config/msp430/msp430.c:3643
 #, c-format
 msgid "invalid zero extract"
-msgstr ""
+msgstr "« zero extract » invalide"
 
 #: config/rl78/rl78.c:1797 config/rl78/rl78.c:1883
 #, c-format
 msgid "q/Q modifiers invalid for symbol references"
-msgstr ""
+msgstr "modificateurs q/Q invalides pour des références de symboles"
 
 #: config/rs6000/host-darwin.c:94
 #, c-format
@@ -3782,11 +3720,11 @@ msgstr "Manque d'espace sur la pile.\n"
 #: config/rs6000/host-darwin.c:115
 #, c-format
 msgid "Try running '%s' in the shell to raise its limit.\n"
-msgstr "Essayer d'exécuter « %s » dans le shell pour augmenter la limite.\n"
+msgstr "Essayez d'exécuter « %s » dans le shell pour augmenter sa limite.\n"
 
 #: config/rs6000/rs6000.c:3959
 msgid "-maltivec=le not allowed for big-endian targets"
-msgstr ""
+msgstr "-maltivec=le pas permis pour des cibles gros-boutistes"
 
 #: config/rs6000/rs6000.c:3971
 msgid "-mvsx requires hardware floating point"
@@ -3794,7 +3732,7 @@ msgstr "-mvsx nécessite une unité matérielle en virgule flottante"
 
 #: config/rs6000/rs6000.c:3979
 msgid "-mvsx and -mpaired are incompatible"
-msgstr "-mvsx et -mpaired -msystem-v sont incompatibles"
+msgstr "-mvsx et -mpaired sont incompatibles"
 
 #: config/rs6000/rs6000.c:3981
 msgid "-mvsx needs indexed addressing"
@@ -3814,29 +3752,27 @@ msgstr "-mquad-memory requiert le mode 64 bits"
 
 #: config/rs6000/rs6000.c:4132
 msgid "-mquad-memory-atomic requires 64-bit mode"
-msgstr ""
+msgstr "-mquad-memory-atomic requiert le mode 64 bits"
 
 #: config/rs6000/rs6000.c:4144
 msgid "-mquad-memory is not available in little endian mode"
-msgstr ""
+msgstr "-mquad-memory n'est pas disponible en mode petit-boutiste"
 
 #: config/rs6000/rs6000.c:4212
-#, fuzzy
-#| msgid "-mquad-memory requires 64-bit mode"
 msgid "-mtoc-fusion requires 64-bit"
-msgstr "-mquad-memory requiert le mode 64 bits"
+msgstr "-mtoc-fusion requiert le mode 64 bits"
 
 #: config/rs6000/rs6000.c:4219
 msgid "-mtoc-fusion requires medium/large code model"
-msgstr ""
+msgstr "-mtoc-fusion requiert le modèle de code moyen/large"
 
 #: config/rs6000/rs6000.c:9919
 msgid "bad move"
-msgstr "mauvais mouvement"
+msgstr "mauvais déplacement"
 
 #: config/rs6000/rs6000.c:20411
 msgid "Bad 128-bit move"
-msgstr ""
+msgstr "Mauvais déplacement sur 128 bits"
 
 #: config/rs6000/rs6000.c:20602
 #, c-format
@@ -3909,78 +3845,71 @@ msgid "invalid %%x value"
 msgstr "valeur %%x invalide"
 
 #: config/rs6000/rs6000.c:21099
-#, fuzzy, c-format
-#| msgid "invalid punctuation `%c' in constraint"
+#, c-format
 msgid "invalid %%y value, try using the 'Z' constraint"
-msgstr "ponctuation invalide « %c » dans la contrainte"
+msgstr "valeur %%y invalide, essayez d'utiliser la contrainte « Z »"
 
 #: config/rs6000/rs6000.c:21814
 msgid "__float128 and __ibm128 cannot be used in the same expression"
-msgstr ""
+msgstr "__float128 et __ibm128 ne peuvent pas être utilisés dans la même expression"
 
 #: config/rs6000/rs6000.c:21820
 msgid "__ibm128 and long double cannot be used in the same expression"
-msgstr ""
+msgstr "__ibm128 et long double ne peuvent pas être utilisés dans la même expression"
 
 #: config/rs6000/rs6000.c:21826
 msgid "__float128 and long double cannot be used in the same expression"
-msgstr ""
+msgstr "__float128 et long double ne peuvent pas être utilisés dans la même expression"
 
 #: config/rs6000/rs6000.c:35706
-#, fuzzy
-#| msgid "too few arguments to function"
 msgid "AltiVec argument passed to unprototyped function"
-msgstr "trop peu d'arguments pour la fonction"
+msgstr "Argument AltiVec passé à une fonction sans prototype"
 
 #: config/rs6000/rs6000.c:37429
-#, fuzzy
-#| msgid "Do not generate code for a Sun FPA"
 msgid "Could not generate addis value for fusion"
-msgstr "Ne pas générer le code pour un Sun FPA"
+msgstr "N'a pu générer de valeur addis pour la fusion"
 
 #: config/rs6000/rs6000.c:37501
-#, fuzzy
-#| msgid "unable to generate reloads for:"
 msgid "Unable to generate load/store offset for fusion"
-msgstr "incapable de générer des recharges pour:"
+msgstr "Impossible de générer un offset load/store pour la fusion"
 
 #: config/rs6000/rs6000.c:37605
 msgid "Bad GPR fusion"
-msgstr ""
+msgstr "Mauvaise fusion GPR"
 
 #: config/rs6000/rs6000.c:37823
 msgid "emit_fusion_p9_load, bad reg #1"
-msgstr ""
+msgstr "emit_fusion_p9_load, mauvais reg #1"
 
 #: config/rs6000/rs6000.c:37860
 msgid "emit_fusion_p9_load, bad reg #2"
-msgstr ""
+msgstr "emit_fusion_p9_load, mauvais reg #2"
 
 #: config/rs6000/rs6000.c:37863
 msgid "emit_fusion_p9_load not MEM"
-msgstr ""
+msgstr "emit_fusion_p9_load pas MEM"
 
 #: config/rs6000/rs6000.c:37901
 msgid "emit_fusion_p9_store, bad reg #1"
-msgstr ""
+msgstr "emit_fusion_p9_store, mauvais reg #1"
 
 #: config/rs6000/rs6000.c:37938
 msgid "emit_fusion_p9_store, bad reg #2"
-msgstr ""
+msgstr "emit_fusion_p9_store, mauvais reg #2"
 
 #: config/rs6000/rs6000.c:37941
 msgid "emit_fusion_p9_store not MEM"
-msgstr ""
+msgstr "emit_fusion_p9_store pas MEM"
 
 #: config/s390/s390.c:7168
 #, c-format
 msgid "symbolic memory references are only supported on z10 or later"
-msgstr ""
+msgstr "les références mémoire symboliques sont uniquement supportées sur z10 ou ultérieur"
 
 #: config/s390/s390.c:7179
 #, c-format
 msgid "cannot decompose address"
-msgstr "Adresse indécomposable"
+msgstr "adresse indécomposable"
 
 #: config/s390/s390.c:7248
 #, c-format
@@ -4005,7 +3934,7 @@ msgstr "adresse invalide pour le modificateur de sortie « R »"
 #: config/s390/s390.c:7329
 #, c-format
 msgid "memory reference expected for 'S' output modifier"
-msgstr ""
+msgstr "référence mémoire attendue pour le modificateur de sortie « S »"
 
 #: config/s390/s390.c:7339
 #, c-format
@@ -4015,12 +3944,12 @@ msgstr "adresse invalide pour le modificateur de sortie « S »"
 #: config/s390/s390.c:7360
 #, c-format
 msgid "register or memory expression expected for 'N' output modifier"
-msgstr ""
+msgstr "registre ou expression mémoire attendue pour le modificateur de sortie « N »"
 
 #: config/s390/s390.c:7371
 #, c-format
 msgid "register or memory expression expected for 'M' output modifier"
-msgstr ""
+msgstr "registre ou expression mémoire attendue pour le modificateur de sortie « M »"
 
 #: config/s390/s390.c:7456 config/s390/s390.c:7477
 #, c-format
@@ -4030,13 +3959,12 @@ msgstr "constante invalide pour le modificateur de sortie « %c »"
 #: config/s390/s390.c:7474
 #, c-format
 msgid "invalid constant - try using an output modifier"
-msgstr "opérande invalide - essayez un modificateur de sortie"
+msgstr "constante invalide - essayez un modificateur de sortie"
 
 #: config/s390/s390.c:7515
-#, fuzzy, c-format
-#| msgid "invalid constant for output modifier '%c'"
+#, c-format
 msgid "invalid constant vector for output modifier '%c'"
-msgstr "constante invalide pour le modificateur de sortie « %c »"
+msgstr "vecteur constant invalide pour le modificateur de sortie « %c »"
 
 #: config/s390/s390.c:7522
 #, c-format
@@ -4049,30 +3977,24 @@ msgid "invalid expression for output modifier '%c'"
 msgstr "expression invalide pour le modificateur de sortie « %c »"
 
 #: config/s390/s390.c:11377
-#, fuzzy
-#| msgid "too few arguments to function"
 msgid "Vector argument passed to unprototyped function"
-msgstr "trop peu d'arguments pour la fonction"
+msgstr "Vecteur passé en argument à une fonction sans prototype"
 
 #: config/s390/s390.c:15036
-#, fuzzy
-#| msgid "pointer targets in %s differ in signedness"
 msgid "types differ in signess"
-msgstr "les cibles des pointeurs dans %s n'ont pas toutes de signe"
+msgstr "les types diffèrent sur le type signé/non-signé"
 
 #: config/s390/s390.c:15046
 msgid "binary operator does not support two vector bool operands"
-msgstr ""
+msgstr "l'opérateur binaire ne supporte pas deux opérandes booléens vectoriels"
 
 #: config/s390/s390.c:15049
-#, fuzzy
-#| msgid "target format does not support infinity"
 msgid "binary operator does not support vector bool operand"
-msgstr "le format cible ne supporte pas l'infini"
+msgstr "l'opérateur binaire ne supporte pas l'opérande booléen vectoriel"
 
 #: config/s390/s390.c:15057
 msgid "binary operator does not support mixing vector bool with floating point vector operands"
-msgstr ""
+msgstr "l'opérateur binaire ne supporte pas le mélange d'un booléen vectoriel avec un vecteur en virgule flottante"
 
 #: config/sh/sh.c:1313
 #, c-format
@@ -4109,7 +4031,7 @@ msgstr "opérande %%A invalide"
 #: config/sparc/sparc.c:8844
 #, c-format
 msgid "invalid %%B operand"
-msgstr "Opérande %%B invalide"
+msgstr "opérande %%B invalide"
 
 #: config/sparc/sparc.c:8873 config/tilegx/tilegx.c:5095
 #: config/tilepro/tilepro.c:4510
@@ -4133,25 +4055,24 @@ msgid "invalid %%s operand"
 msgstr "opérande %%s invalide"
 
 #: config/sparc/sparc.c:8963
-#, fuzzy, c-format
-#| msgid "floating point constant not a valid immediate operand"
+#, c-format
 msgid "floating-point constant not a valid immediate operand"
-msgstr "constante en virgule flottante n'est pas une opérande immédiate valide"
+msgstr "la constante en virgule flottante n'est pas un opérande immédiat valide"
 
 #: config/stormy16/stormy16.c:1733 config/stormy16/stormy16.c:1804
 #, c-format
 msgid "'B' operand is not constant"
-msgstr "opérande « B » n'est pas une constante"
+msgstr "l'opérande « B » n'est pas une constante"
 
 #: config/stormy16/stormy16.c:1760
 #, c-format
 msgid "'B' operand has multiple bits set"
-msgstr "l'opérande « B » a de multiples jeux de bits"
+msgstr "l'opérande « B » a plusieurs bits activés"
 
 #: config/stormy16/stormy16.c:1786
 #, c-format
 msgid "'o' operand is not constant"
-msgstr "opérande « o » n'est pas une constante"
+msgstr "l'opérande « o » n'est pas une constante"
 
 #: config/stormy16/stormy16.c:1818
 #, c-format
@@ -4206,12 +4127,12 @@ msgstr "opérande %%N invalide"
 #: config/tilegx/tilegx.c:5385
 #, c-format
 msgid "invalid operand for 'r' specifier"
-msgstr "opérande invalide pour le modificateur « r »"
+msgstr "opérande invalide pour le spécificateur « r »"
 
 #: config/tilegx/tilegx.c:5409 config/tilepro/tilepro.c:4816
 #, c-format
 msgid "unable to print out operand yet; code == %d (%c)"
-msgstr ""
+msgstr "impossible d'imprimer l'opérande pour l'instant; code == %d (%c)"
 
 #: config/tilepro/tilepro.c:4560
 #, c-format
@@ -4245,7 +4166,7 @@ msgstr "opérande %%r invalide"
 
 #: config/v850/v850.c:293
 msgid "const_double_split got a bad insn:"
-msgstr "const_double_split a reçu un insn erroné :"
+msgstr "const_double_split a reçu une mauvaise insn :"
 
 #: config/v850/v850.c:899
 msgid "output_move_single:"
@@ -4254,27 +4175,25 @@ msgstr "output_move_single :"
 #: config/vax/vax.c:453
 #, c-format
 msgid "symbol used with both base and indexed registers"
-msgstr ""
+msgstr "symbole utilisé conjointement avec des registres de base et d'index"
 
 #: config/vax/vax.c:462
-#, fuzzy, c-format
-#| msgid "code model %s not supported in PIC mode"
+#, c-format
 msgid "symbol with offset used in PIC mode"
-msgstr "model de code %s n'est pas supporté en mode PIC"
+msgstr "symbole avec offset utilisé en mode PIC"
 
 #: config/vax/vax.c:550
-#, fuzzy, c-format
-#| msgid "long long constant not a valid immediate operand"
+#, c-format
 msgid "symbol used as immediate operand"
-msgstr "constante long long n'est pas une opérande immédiate valide"
+msgstr "symbole utilisé comme opérande immédiat"
 
 #: config/vax/vax.c:1577
 msgid "illegal operand detected"
-msgstr "opérande illégale détectée"
+msgstr "opérande illégal détecté"
 
 #: config/visium/visium.c:3255
 msgid "illegal operand "
-msgstr "opérande illégale "
+msgstr "opérande illégal "
 
 #: config/visium/visium.c:3306
 msgid "illegal operand address (1)"
@@ -4295,7 +4214,7 @@ msgstr "adresse d'opérande illégale (4)"
 #: config/xtensa/xtensa.c:768 config/xtensa/xtensa.c:800
 #: config/xtensa/xtensa.c:809
 msgid "bad test"
-msgstr "test erroné"
+msgstr "mauvais test"
 
 #: config/xtensa/xtensa.c:2301
 #, c-format
@@ -4322,7 +4241,7 @@ msgstr "pas de registre dans l'adresse"
 
 #: config/xtensa/xtensa.c:2487
 msgid "address offset not a constant"
-msgstr "décalage d'adresse n'est pas une constante"
+msgstr "le décalage d'adresse n'est pas une constante"
 
 #: c/c-objc-common.c:160
 msgid "aka"
@@ -4406,7 +4325,7 @@ msgstr "%<]%> attendu"
 
 #: c/c-parser.c:3759
 msgid "expected %<;%>, %<,%> or %<)%>"
-msgstr "%<;%>, %<,%> or %<)%> attendu"
+msgstr "%<;%>, %<,%> ou %<)%> attendu"
 
 #: c/c-parser.c:4372 c/c-parser.c:14517 cp/parser.c:26967 cp/parser.c:28889
 #, gcc-internal-format
@@ -4430,19 +4349,19 @@ msgstr "%<:%> attendu"
 
 #: c/c-parser.c:5185 cp/semantics.c:613
 msgid "Cilk array notation cannot be used as a computed goto expression"
-msgstr ""
+msgstr "La notation Cilk d'un tableau ne peut pas être utilisée comme expression d'un goto calculé"
 
 #: c/c-parser.c:5244
 msgid "Cilk array notation cannot be used for a throw expression"
-msgstr ""
+msgstr "La notation Cilk d'un tableau ne peut pas être utilisée comme expression pour déclencher une exception"
 
 #: c/c-parser.c:5556 cp/semantics.c:1136
 msgid "Cilk array notation cannot be used as a condition for switch statement"
-msgstr ""
+msgstr "La notation Cilk d'un tableau ne peut pas être utilisée comme condition d'un switch"
 
 #: c/c-parser.c:5605 cp/semantics.c:791
 msgid "Cilk array notation cannot be used as a condition for while statement"
-msgstr ""
+msgstr "La notation Cilk d'un tableau ne peut pas être utilisée comme condition d'un while"
 
 #: c/c-parser.c:5656 cp/parser.c:26897
 #, gcc-internal-format
@@ -4451,11 +4370,11 @@ msgstr "%<while%> attendu"
 
 #: c/c-parser.c:5663 cp/semantics.c:850
 msgid "Cilk array notation cannot be used as a condition for a do-while statement"
-msgstr ""
+msgstr "La notation Cilk d'un tableau ne peut pas être utilisée comme condition d'un do-while"
 
 #: c/c-parser.c:5866 cp/semantics.c:969
 msgid "Cilk array notation cannot be used in a condition for a for-loop"
-msgstr ""
+msgstr "La notation Cilk d'un tableau ne peut pas être utilisée comme condition d'une boucle for"
 
 #: c/c-parser.c:7497
 msgid "expected %<.%>"
@@ -4475,7 +4394,7 @@ msgstr "%<>%> attendu"
 #: c/c-parser.c:12116 c/c-parser.c:12880 cp/parser.c:27012
 #, gcc-internal-format
 msgid "expected %<,%> or %<)%>"
-msgstr "%<,%> or %<)%> attendu"
+msgstr "%<,%> ou %<)%> attendu"
 
 #: c/c-parser.c:14229 c/c-parser.c:14273 c/c-parser.c:14501 c/c-parser.c:14736
 #: c/c-parser.c:16891 c/c-parser.c:17513 c/c-parser.c:4573 cp/parser.c:26991
@@ -4486,7 +4405,7 @@ msgstr "%<=%> attendu"
 #: c/c-parser.c:15280 c/c-parser.c:15270 cp/parser.c:34132
 #, gcc-internal-format
 msgid "expected %<#pragma omp section%> or %<}%>"
-msgstr "%<#pragma omp section%> or %<}%> attendu"
+msgstr "%<#pragma omp section%> ou %<}%> attendu"
 
 #: c/c-parser.c:17675 c/c-parser.c:10602 cp/parser.c:26976 cp/parser.c:30031
 #, gcc-internal-format
@@ -4507,23 +4426,23 @@ msgstr "candidat 2 :"
 
 #: cp/decl2.c:778
 msgid "candidates are: %+#D"
-msgstr "candidats sont : %+#D"
+msgstr "les candidats sont : %+#D"
 
 #: cp/decl2.c:780
 msgid "candidate is: %+#D"
-msgstr "candidat est : %+#D"
+msgstr "le candidat est : %+#D"
 
 #: cp/error.c:317
 msgid "<missing>"
-msgstr "<champ manquant>"
+msgstr "<manquant>"
 
 #: cp/error.c:417
 msgid "<brace-enclosed initializer list>"
-msgstr ""
+msgstr "<initialisation de liste entre accolades>"
 
 #: cp/error.c:419
 msgid "<unresolved overloaded function type>"
-msgstr ""
+msgstr "<type de fonction surchargée non résolu>"
 
 #: cp/error.c:581
 msgid "<type error>"
@@ -4532,7 +4451,7 @@ msgstr "<erreur de type>"
 #: cp/error.c:684
 #, c-format
 msgid "<anonymous %s>"
-msgstr "<anonymous %s>"
+msgstr "<%s anonyme>"
 
 #. A lambda's "type" is essentially its signature.
 #: cp/error.c:689
@@ -4541,29 +4460,29 @@ msgstr "<lambda"
 
 #: cp/error.c:819
 msgid "<typeprefixerror>"
-msgstr "<typeprefixerror>"
+msgstr "<erreurprefixtype>"
 
 #: cp/error.c:948
 #, c-format
 msgid "(static initializers for %s)"
-msgstr "(initialiseur static pour « %s »)"
+msgstr "(initialiseurs statiques pour %s)"
 
 #: cp/error.c:950
 #, c-format
 msgid "(static destructors for %s)"
-msgstr "(destructeur static pour %s)"
+msgstr "(destructeurs statiques pour %s)"
 
 #: cp/error.c:1063
 msgid "vtable for "
-msgstr ""
+msgstr "vtable pour "
 
 #: cp/error.c:1087
 msgid "<return value> "
-msgstr ""
+msgstr "<valeur de retour> "
 
 #: cp/error.c:1102
 msgid "{anonymous}"
-msgstr "{anonymous}"
+msgstr "{anonyme}"
 
 #: cp/error.c:1104
 msgid "(anonymous namespace)"
@@ -4571,7 +4490,7 @@ msgstr "(espace de nom anonyme)"
 
 #: cp/error.c:1220
 msgid "<template arguments error>"
-msgstr "<erreur argument du patron>"
+msgstr "<erreur dans les arguments du patron>"
 
 #: cp/error.c:1242
 msgid "<enumerator>"
@@ -4583,7 +4502,7 @@ msgstr "<erreur de déclaration>"
 
 #: cp/error.c:1819 cp/error.c:1839
 msgid "<template parameter error>"
-msgstr "<erreur de patron de paramètre>"
+msgstr "<erreur de paramètre du patron>"
 
 #: cp/error.c:1969
 msgid "<statement>"
@@ -4598,11 +4517,11 @@ msgstr "<inconnu>"
 #. __cxa_allocate_exception, __cxa_throw, and the like.
 #: cp/error.c:2014
 msgid "<throw-expression>"
-msgstr "<levé d'exception>"
+msgstr "<levée d'exception>"
 
 #: cp/error.c:2115
 msgid "<ubsan routine call>"
-msgstr ""
+msgstr "<appel de routine UBSan>"
 
 #: cp/error.c:2572
 msgid "<unparsed>"
@@ -4630,7 +4549,7 @@ msgstr "{inconnu}"
 
 #: cp/error.c:3199
 msgid "At global scope:"
-msgstr ""
+msgstr "Au niveau global:"
 
 #: cp/error.c:3305
 #, c-format
@@ -4659,11 +4578,11 @@ msgstr "Dans la fonction lambda"
 #: cp/error.c:3333
 #, c-format
 msgid "%s: In substitution of %qS:\n"
-msgstr "%s : dans la substitution de %qS :\n"
+msgstr "%s: Dans la substitution de %qS :\n"
 
 #: cp/error.c:3334
 msgid "%s: In instantiation of %q#D:\n"
-msgstr "%s : dans l'instantiation de %q#D :\n"
+msgstr "%s: Dans l'instanciation de %q#D :\n"
 
 #: cp/error.c:3359
 msgid "%r%s:%d:%d:%R   "
@@ -4676,110 +4595,94 @@ msgstr "%r%s:%d:%R   "
 #: cp/error.c:3370
 #, c-format
 msgid "recursively required by substitution of %qS\n"
-msgstr ""
+msgstr "requis récursivement par la substitution de %qS\n"
 
 #: cp/error.c:3371
 #, c-format
 msgid "required by substitution of %qS\n"
-msgstr ""
+msgstr "requis par la substitution de %qS\n"
 
 #: cp/error.c:3376
 msgid "recursively required from %q#D\n"
-msgstr ""
+msgstr "requis récursivement par %q#D\n"
 
 #: cp/error.c:3377
 msgid "required from %q#D\n"
-msgstr ""
+msgstr "requis par %q#D\n"
 
 #: cp/error.c:3384
 msgid "recursively required from here\n"
-msgstr ""
+msgstr "requis récursivement depuis ici\n"
 
 #: cp/error.c:3385
-#, fuzzy
-#| msgid "called from here"
 msgid "required from here\n"
-msgstr "appelé d'ici"
+msgstr "requis depuis ici\n"
 
 #: cp/error.c:3437
 msgid "%r%s:%d:%d:%R   [ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
-msgstr ""
+msgstr "%r%s:%d:%d:%R   [ passe outre %d contextes d'instanciation, utilisez -ftemplate-backtrace-limit=0 pour désactiver ]\n"
 
 #: cp/error.c:3443
 msgid "%r%s:%d:%R   [ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
-msgstr ""
+msgstr "%r%s:%d:%R   [ passe outre %d contextes d'instanciation, utilisez -ftemplate-backtrace-limit=0 pour désactiver ]\n"
 
 #: cp/error.c:3497
 msgid "%r%s:%d:%d:%R   in constexpr expansion of %qs"
-msgstr ""
+msgstr "%r%s:%d:%d:%R   dans l'expansion de constexpr de %qs"
 
 #: cp/error.c:3501
 msgid "%r%s:%d:%R   in constexpr expansion of %qs"
-msgstr ""
+msgstr "%r%s:%d:%R   dans l'expansion de constexpr de %qs"
 
 #: cp/pt.c:1945 cp/semantics.c:5217
 msgid "candidates are:"
-msgstr "candidats sont :"
+msgstr "les candidats sont :"
 
 #: cp/pt.c:21086
 msgid "candidate is:"
 msgid_plural "candidates are:"
-msgstr[0] "candidat est :"
-msgstr[1] "candidats sont :"
+msgstr[0] "le candidat est :"
+msgstr[1] "les candidats sont :"
 
 #: cp/rtti.c:545
-#, fuzzy
-#| msgid "  overriding `%#D' (must be pointer or reference to class)"
 msgid "target is not pointer or reference to class"
-msgstr "doit être un pointeur ou une référence vers un classe"
+msgstr "la cible n'est pas un pointeur ni une référence à une classe"
 
 #: cp/rtti.c:550
-#, fuzzy
-#| msgid "arithmetic on pointer to an incomplete type"
 msgid "target is not pointer or reference to complete type"
-msgstr "arithmétique sur un pointeur vers un type incomplet"
+msgstr "la cible n'est pas un pointeur ni une référence à un type complet"
 
 #: cp/rtti.c:556
-#, fuzzy
-#| msgid "cannot declare pointers to references"
 msgid "target is not pointer or reference"
-msgstr "ne peut déclarer des pointeurs vers des références"
+msgstr "la cible n'est pas un pointeur ni une référence"
 
 #: cp/rtti.c:572
-#, fuzzy
-#| msgid "base operand of `->' is not a pointer"
 msgid "source is not a pointer"
-msgstr "l'opérande de base de «->» n'est pas un pointeur"
+msgstr "la source n'est pas un pointeur"
 
 #: cp/rtti.c:577
-#, fuzzy
-#| msgid "Assume that pointers not aliased"
 msgid "source is not a pointer to class"
-msgstr "Présumer que les pointeurs ne peuvent pas être aliasés"
+msgstr "la source n'est pas un pointeur vers une classe"
 
 #: cp/rtti.c:582
-#, fuzzy
-#| msgid "cannot %s a pointer to incomplete type `%T'"
 msgid "source is a pointer to incomplete type"
-msgstr "ne peut utiliser %s comme pointeur sur un type incomplet « %T »"
+msgstr "la source est un pointeur vers un type incomplet"
 
 #: cp/rtti.c:597
 msgid "source is not of class type"
-msgstr "la source n'est pas de type classe"
+msgstr "la source n'est pas de type « class »"
 
 #: cp/rtti.c:602
-#, fuzzy
-#| msgid "return type is an incomplete type"
 msgid "source is of incomplete class type"
-msgstr "le type du retour est incomplet"
+msgstr "la source est d'un type « class » incomplet"
 
 #: cp/rtti.c:611
 msgid "conversion casts away constness"
-msgstr ""
+msgstr "la conversion supprime l'attribut « const »"
 
 #: cp/rtti.c:767
 msgid "source type is not polymorphic"
-msgstr ""
+msgstr "le type source n'est pas polymorphique"
 
 #: cp/typeck.c:5820 c/c-typeck.c:4098
 #, gcc-internal-format
@@ -4794,7 +4697,7 @@ msgstr "type d'argument erroné pour le plus unaire"
 #: cp/typeck.c:5848 c/c-typeck.c:4124
 #, gcc-internal-format
 msgid "wrong type argument to bit-complement"
-msgstr "type d'argument erroné pour un complément de bit"
+msgstr "type d'argument erroné pour le complément de bit"
 
 #: cp/typeck.c:5855 c/c-typeck.c:4132
 #, gcc-internal-format
@@ -4808,23 +4711,23 @@ msgstr "type d'argument erroné pour la conjugaison"
 
 #: cp/typeck.c:5885
 msgid "in argument to unary !"
-msgstr ""
+msgstr "dans l'argument d'un unaire !"
 
 #: cp/typeck.c:5931
 msgid "no pre-increment operator for type"
-msgstr ""
+msgstr "pas d'opérateur de pré-incrémentation pour le type"
 
 #: cp/typeck.c:5933
 msgid "no post-increment operator for type"
-msgstr ""
+msgstr "pas d'opérateur de post-incrémentation pour le type"
 
 #: cp/typeck.c:5935
 msgid "no pre-decrement operator for type"
-msgstr ""
+msgstr "pas d'opérateur de pré-décrémentation pour le type"
 
 #: cp/typeck.c:5937
 msgid "no post-decrement operator for type"
-msgstr ""
+msgstr "pas d'opérateur de post-décrémentation pour le type"
 
 #: fortran/arith.c:95
 msgid "Arithmetic OK at %L"
@@ -4836,7 +4739,7 @@ msgstr "Débordement arithmétique à %L"
 
 #: fortran/arith.c:101
 msgid "Arithmetic underflow at %L"
-msgstr ""
+msgstr "Dépassement de capacité arithmétique par le bas à %L"
 
 #: fortran/arith.c:104
 msgid "Arithmetic NaN at %L"
@@ -4848,35 +4751,30 @@ msgstr "Division par zéro à %L"
 
 #: fortran/arith.c:110
 msgid "Array operands are incommensurate at %L"
-msgstr ""
+msgstr "Les opérandes de tableau ne sont pas comparables à %L"
 
 #: fortran/arith.c:114
 msgid "Integer outside symmetric range implied by Standard Fortran at %L"
-msgstr ""
+msgstr "L'entier est hors de la plage symétrique impliquée par le standard Fortran à %L"
 
 #: fortran/arith.c:1370
-#, fuzzy
-#| msgid "missing binary operator"
 msgid "elemental binary operation"
-msgstr "opérateur binaire manquant"
+msgstr "opération binaire élémentaire"
 
 #: fortran/check.c:2124 fortran/check.c:3115 fortran/check.c:3169
-#, fuzzy, c-format
-#| msgid "Too few arguments for intrinsic `%A' at %0"
+#, c-format
 msgid "arguments '%s' and '%s' for intrinsic %s"
-msgstr "trop peu d'arguments passés à l'intrinsèque «%A» à %0"
+msgstr "arguments « %s » et « %s » pour l'intrinsèque %s"
 
 #: fortran/check.c:2921
-#, fuzzy, c-format
-#| msgid "Too few arguments for intrinsic `%A' at %0"
+#, c-format
 msgid "arguments 'a%d' and 'a%d' for intrinsic '%s'"
-msgstr "trop peu d'arguments passés à l'intrinsèque «%A» à %0"
+msgstr "arguments « a%d » et « a%d » pour l'intrinsèque « %s »"
 
 #: fortran/check.c:3444 fortran/intrinsic.c:4290
-#, fuzzy, c-format
-#| msgid "Too few arguments for intrinsic `%A' at %0"
+#, c-format
 msgid "arguments '%s' and '%s' for intrinsic '%s'"
-msgstr "trop peu d'arguments passés à l'intrinsèque «%A» à %0"
+msgstr "arguments « %s » et « %s » pour l'intrinsèque « %s »"
 
 #: fortran/error.c:871
 msgid "Fortran 2008 obsolescent feature:"
@@ -4899,22 +4797,19 @@ msgid "Deleted feature:"
 msgstr "Fonctionnalité supprimée :"
 
 #: fortran/expr.c:622
-#, fuzzy, c-format
-#| msgid "non-constant expression for BIN"
+#, c-format
 msgid "Constant expression required at %C"
-msgstr "expression n'est pas un constante pour BIN"
+msgstr "Expression constante requise à %C"
 
 #: fortran/expr.c:625
-#, fuzzy, c-format
-#| msgid "untyped expression as argument %d"
+#, c-format
 msgid "Integer expression required at %C"
-msgstr "expression sans type comme argument %d"
+msgstr "Expression entière requise à %C"
 
 #: fortran/expr.c:630
-#, fuzzy, c-format
-#| msgid "integer overflow in expression"
+#, c-format
 msgid "Integer value too large in expression at %C"
-msgstr "débordement d'entier dans l'expression"
+msgstr "Valeur entière trop grande dans l'expression à %C"
 
 #: fortran/expr.c:3242
 msgid "array assignment"
@@ -4923,113 +4818,93 @@ msgstr "affectation de tableau"
 #: fortran/gfortranspec.c:425
 #, c-format
 msgid "Driving:"
-msgstr ""
+msgstr "Pilotage:"
 
 #: fortran/interface.c:3048 fortran/intrinsic.c:3994
 msgid "actual argument to INTENT = OUT/INOUT"
-msgstr ""
+msgstr "argument actuel de INTENT = OUT/INOUT"
 
 #: fortran/io.c:550
-#, fuzzy
-#| msgid "  but %d required"
 msgid "Positive width required"
-msgstr "mais %d son requis"
+msgstr "Largeur positive requise"
 
 #: fortran/io.c:551
-#, fuzzy
-#| msgid "negative width in bit-field `%s'"
 msgid "Nonnegative width required"
-msgstr "largeur négative du champ de bits"
+msgstr "Largeur non négative requise"
 
 #: fortran/io.c:552
-#, fuzzy
-#| msgid "unterminated format string"
 msgid "Unexpected element %qc in format string at %L"
-msgstr "chaîne de format non terminée"
+msgstr "Élément %qc inattendu dans la chaîne de format à %L"
 
 #: fortran/io.c:554
-#, fuzzy
-#| msgid "unterminated format string"
 msgid "Unexpected end of format string"
-msgstr "chaîne de format non terminée"
+msgstr "Fin inattendue de la chaîne de format"
 
 #: fortran/io.c:555
-#, fuzzy
-#| msgid "zero width in %s format"
 msgid "Zero width in format descriptor"
-msgstr "largeur zéro dans le format %s"
+msgstr "Largeur zéro dans le descripteur de format"
 
 #: fortran/io.c:575
-#, fuzzy
-#| msgid "missing open paren"
 msgid "Missing leading left parenthesis"
-msgstr "parenthèse ouvrante manquante"
+msgstr "Parenthèse gauche d'ouverture manquante"
 
 #: fortran/io.c:604
-#, fuzzy
-#| msgid "template argument required for `%s %T'"
 msgid "Left parenthesis required after %<*%>"
-msgstr "argument du patron est requis pour « %s %T »"
+msgstr "Parenthèse gauche requise après %<*%>"
 
 #: fortran/io.c:635
 msgid "Expected P edit descriptor"
-msgstr ""
+msgstr "Descripteur d'édition P attendu"
 
 #. P requires a prior number.
 #: fortran/io.c:643
 msgid "P descriptor requires leading scale factor"
-msgstr ""
+msgstr "Le descripteur P doit être annoncé par un facteur d'échelle"
 
 #: fortran/io.c:736 fortran/io.c:750
 msgid "Comma required after P descriptor"
-msgstr ""
+msgstr "Virgule requise après le descripteur P"
 
 #: fortran/io.c:764
 msgid "Positive width required with T descriptor"
-msgstr ""
+msgstr "Largeur positive requise avec le descripteur T"
 
 #: fortran/io.c:843
-#, fuzzy
-#| msgid "type specifier `%s' not allowed after struct or class"
 msgid "E specifier not allowed with g0 descriptor"
-msgstr "spécificateur de type « %s » n'est pas permis après struct ou class"
+msgstr "Spécificateur E pas permis avec le descripteur g0"
 
 #: fortran/io.c:913
-#, fuzzy
-#| msgid "no exponent width (offset %d)"
 msgid "Positive exponent width required"
-msgstr "pas de largeur d'exposant (décalage %d)"
+msgstr "Largeur d'exposant positive requise"
 
 #: fortran/io.c:943
-#, fuzzy
-#| msgid "unrecognized format specifier"
 msgid "Period required in format specifier"
-msgstr "spécificateur de format non reconnu"
+msgstr "Point requis dans le spécificateur de format"
 
 #: fortran/io.c:1570
 #, c-format
 msgid "%s tag"
-msgstr "tag %s"
+msgstr "étiquette %s"
 
 #: fortran/io.c:2966
 msgid "internal unit in WRITE"
-msgstr ""
+msgstr "unité interne dans WRITE"
 
 #. For INQUIRE, all tags except FILE, ID and UNIT are variable definition
 #. contexts.  Thus, use an extended RESOLVE_TAG macro for that.
 #: fortran/io.c:4185
 #, c-format
 msgid "%s tag with INQUIRE"
-msgstr ""
+msgstr "étiquette %s avec INQUIRE"
 
 #: fortran/matchexp.c:28
 #, c-format
 msgid "Syntax error in expression at %C"
-msgstr "erreur de syntaxe dans l'exception à %C"
+msgstr "Erreur de syntaxe dans l'exception à %C"
 
 #: fortran/module.c:1204
 msgid "Unexpected EOF"
-msgstr "fin de fichier inattendue"
+msgstr "Fin de fichier inattendue"
 
 #: fortran/module.c:1288
 msgid "Integer overflow"
@@ -5049,7 +4924,7 @@ msgstr "Nom attendu"
 
 #: fortran/module.c:1550
 msgid "Expected left parenthesis"
-msgstr "Parenthèse droite attendu"
+msgstr "Parenthèse gauche attendue"
 
 #: fortran/module.c:1553
 msgid "Expected right parenthesis"
@@ -5065,41 +4940,35 @@ msgstr "Chaîne attendue"
 
 #: fortran/module.c:1584
 msgid "find_enum(): Enum not found"
-msgstr "find_enum() : Énumération introuvable"
+msgstr "find_enum(): Énumération introuvable"
 
 #: fortran/module.c:2265
-#, fuzzy
-#| msgid "packed attribute is unnecessary"
 msgid "Expected attribute bit name"
-msgstr "attribut empaqueté n'est pas nécessaire"
+msgstr "Nom de bit d'attribut attendu"
 
 #: fortran/module.c:3151
 msgid "Expected integer string"
-msgstr "Chaîne d'entiers attendue"
+msgstr "Chaîne contenant un entier attendue"
 
 #: fortran/module.c:3155
 msgid "Error converting integer"
-msgstr "Erreur de conversion d'entier"
+msgstr "Erreur de conversion de l'entier"
 
 #: fortran/module.c:3177
 msgid "Expected real string"
-msgstr "Chaîne de réels attendue"
+msgstr "Chaîne contenant un réel attendue"
 
 #: fortran/module.c:3401
-#, fuzzy
-#| msgid "unexpected address expression"
 msgid "Expected expression type"
-msgstr "expression d'adresse inattendue"
+msgstr "Type d'expression attendue"
 
 #: fortran/module.c:3481
 msgid "Bad operator"
-msgstr "Mauvais opérande"
+msgstr "Mauvais opérateur"
 
 #: fortran/module.c:3596
-#, fuzzy
-#| msgid "overflow in constant expression"
 msgid "Bad type in constant expression"
-msgstr "débordement dans l'expression de la constante"
+msgstr "Mauvais type dans l'expression constante"
 
 #: fortran/module.c:6946
 msgid "Unexpected end of module"
@@ -5111,7 +4980,7 @@ msgstr "IF arithmétique"
 
 #: fortran/parse.c:1680
 msgid "attribute declaration"
-msgstr "Déclaration d'attribut"
+msgstr "déclaration d'attribut"
 
 #: fortran/parse.c:1716
 msgid "data declaration"
@@ -5119,7 +4988,7 @@ msgstr "déclaration de données"
 
 #: fortran/parse.c:1734
 msgid "derived type declaration"
-msgstr "déclaration vide"
+msgstr "déclaration de type dérivé"
 
 #: fortran/parse.c:1846
 msgid "block IF"
@@ -5127,7 +4996,7 @@ msgstr "bloc IF"
 
 #: fortran/parse.c:1855
 msgid "implied END DO"
-msgstr "implique END DO"
+msgstr "END DO implicite"
 
 #: fortran/parse.c:1949 fortran/resolve.c:10537
 msgid "assignment"
@@ -5143,41 +5012,31 @@ msgstr "IF simple"
 
 #: fortran/resolve.c:606
 msgid "module procedure"
-msgstr ""
+msgstr "procédure de module"
 
 #: fortran/resolve.c:607
 msgid "internal function"
 msgstr "fonction interne"
 
 #: fortran/resolve.c:2157 fortran/resolve.c:2351
-#, fuzzy
-#| msgid "too few arguments to procedure"
 msgid "elemental procedure"
-msgstr "trop peu d'arguments pour la procédure"
+msgstr "procédure élémentaire"
 
 #: fortran/resolve.c:2254
-#, fuzzy
-#| msgid "invalid type argument"
 msgid "allocatable argument"
-msgstr "type d'argument invalide"
+msgstr "argument qui peut être alloué"
 
 #: fortran/resolve.c:2259
-#, fuzzy
-#| msgid "no arguments"
 msgid "asynchronous argument"
-msgstr "pas d'argument"
+msgstr "argument asynchrone"
 
 #: fortran/resolve.c:2264
-#, fuzzy
-#| msgid "no arguments"
 msgid "optional argument"
-msgstr "pas d'argument"
+msgstr "argument optionnel"
 
 #: fortran/resolve.c:2269
-#, fuzzy
-#| msgid "no arguments"
 msgid "pointer argument"
-msgstr "pas d'argument"
+msgstr "argument pointeur"
 
 #: fortran/resolve.c:2274
 msgid "target argument"
@@ -5192,26 +5051,20 @@ msgid "volatile argument"
 msgstr "argument volatile"
 
 #: fortran/resolve.c:2289
-#, fuzzy
-#| msgid "invalid type argument"
 msgid "assumed-shape argument"
-msgstr "type d'argument invalide"
+msgstr "argument de forme tacite (assumed-shape)"
 
 #: fortran/resolve.c:2294
-#, fuzzy
-#| msgid "no arguments"
 msgid "assumed-rank argument"
-msgstr "pas d'argument"
+msgstr "argument de rang tacite (assumed-rank)"
 
 #: fortran/resolve.c:2299
 msgid "coarray argument"
 msgstr "argument co-tableau"
 
 #: fortran/resolve.c:2304
-#, fuzzy
-#| msgid "parameterized structures not implemented"
 msgid "parametrized derived type argument"
-msgstr "structure paramétrisée ne sont pas implantées"
+msgstr "argument de type dérivé paramétrisé"
 
 #: fortran/resolve.c:2309
 msgid "polymorphic argument"
@@ -5219,106 +5072,93 @@ msgstr "argument polymorphique"
 
 #: fortran/resolve.c:2314
 msgid "NO_ARG_CHECK attribute"
-msgstr ""
+msgstr "attribut NO_ARG_CHECK "
 
 #. As assumed-type is unlimited polymorphic (cf. above).
 #. See also TS 29113, Note 6.1.
 #: fortran/resolve.c:2321
 msgid "assumed-type argument"
-msgstr "argument assumed-type"
+msgstr "argument de type tacite (assumed-type)"
 
 #: fortran/resolve.c:2332
 msgid "array result"
-msgstr ""
+msgstr "résultat tableau"
 
 #: fortran/resolve.c:2337
 msgid "pointer or allocatable result"
-msgstr ""
+msgstr "résultat pointeur ou allouable"
 
 #: fortran/resolve.c:2344
-#, fuzzy
-#| msgid "bit array slice with non-constant length"
 msgid "result with non-constant character length"
-msgstr "découpage de tableau de bits avec une longueur non constante"
+msgstr "résultat avec une longueur de caractères non constante"
 
 #: fortran/resolve.c:2356
 msgid "bind(c) procedure"
-msgstr ""
+msgstr "procédure bind(c)"
 
 #: fortran/resolve.c:3558
-#, fuzzy, c-format
-#| msgid "Invalid continuation line at %0"
+#, c-format
 msgid "Invalid context for NULL() pointer at %%L"
-msgstr "ligne de continuation invalide à %0"
+msgstr "Contexte invalide pour un pointeur NULL() à %%L"
 
 #: fortran/resolve.c:3574
-#, fuzzy, c-format
-#| msgid "Invalid operand at %1 for concatenation operator at %0"
+#, c-format
 msgid "Operand of unary numeric operator %%<%s%%> at %%L is %s"
-msgstr "Opérande invalide à %1 pour l'opérateur de concaténation à %0"
+msgstr "L'opérande de l'opérateur numérique unaire %%<%s%%> à %%L est %s"
 
 #: fortran/resolve.c:3590
-#, fuzzy, c-format
-#| msgid "Invalid operand at %1 for concatenation operator at %0"
+#, c-format
 msgid "Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"
-msgstr "Opérande invalide à %1 pour l'opérateur de concaténation à %0"
+msgstr "Les opérandes de l'opérateur numérique binaire %%<%s%%> à %%L sont %s/%s"
 
 #: fortran/resolve.c:3605
-#, fuzzy, c-format
-#| msgid "Invalid operand at %1 for concatenation operator at %0"
+#, c-format
 msgid "Operands of string concatenation operator at %%L are %s/%s"
-msgstr "Opérande invalide à %1 pour l'opérateur de concaténation à %0"
+msgstr "Les opérandes de l'opérateur de concaténation de chaînes à %%L sont %s/%s"
 
 #: fortran/resolve.c:3624
-#, fuzzy, c-format
-#| msgid "Invalid operand at %1 for concatenation operator at %0"
+#, c-format
 msgid "Operands of logical operator %%<%s%%> at %%L are %s/%s"
-msgstr "Opérande invalide à %1 pour l'opérateur de concaténation à %0"
+msgstr "Les opérandes de l'opérateur logique %%<%s%%> à %%L sont %s/%s"
 
 #: fortran/resolve.c:3638
 #, c-format
 msgid "Operand of .not. operator at %%L is %s"
-msgstr ""
+msgstr "L'opérande de l'opérateur .not. à %%L est %s"
 
 #: fortran/resolve.c:3652
-#, fuzzy
-#| msgid "`%V' qualifiers cannot be applied to `%T'"
 msgid "COMPLEX quantities cannot be compared at %L"
-msgstr "qualificateur « %V » ne peut pas être appliqué à « %T »"
+msgstr "Les quantités COMPLEX ne peuvent pas être comparées à %L"
 
 #: fortran/resolve.c:3703
 #, c-format
 msgid "Logicals at %%L must be compared with %s instead of %s"
-msgstr ""
+msgstr "Les valeurs logiques à %%L doivent être comparées avec %s au lieu de %s"
 
 #: fortran/resolve.c:3709
-#, fuzzy, c-format
-#| msgid "Invalid operand at %1 for concatenation operator at %0"
+#, c-format
 msgid "Operands of comparison operator %%<%s%%> at %%L are %s/%s"
-msgstr "Opérande invalide à %1 pour l'opérateur de concaténation à %0"
+msgstr "Les opérandes de l'opérateur de comparaison %%<%s%%> à %%L sont %s/%s"
 
 #: fortran/resolve.c:3717
-#, fuzzy, c-format
-#| msgid "Unknown operator '%s' at %%L"
+#, c-format
 msgid "Unknown operator %%<%s%%> at %%L"
-msgstr "Opérateur inconnu « %s » à %%L"
+msgstr "Opérateur %%<%s%%> inconnu à %%L"
 
 #: fortran/resolve.c:3720
-#, fuzzy, c-format
-#| msgid "Invalid operand at %1 for concatenation operator at %0"
+#, c-format
 msgid "Operand of user operator %%<%s%%> at %%L is %s"
-msgstr "Opérande invalide à %1 pour l'opérateur de concaténation à %0"
+msgstr "L'opérande de l'opérateur utilisateur %%<%s%%> à %%L est %s"
 
 #: fortran/resolve.c:3724
-#, fuzzy, c-format
-#| msgid "Invalid operand at %1 for concatenation operator at %0"
+#, c-format
 msgid "Operands of user operator %%<%s%%> at %%L are %s/%s"
-msgstr "Opérande invalide à %1 pour l'opérateur de concaténation à %0"
+msgstr "Les opérandes de l'opérateur utilisateur %%<%s%%> à %%L sont %s/%s"
 
 #: fortran/resolve.c:3812
 #, c-format
 msgid "Inconsistent ranks for operator at %%L and %%L"
-msgstr ""
+msgstr "Rangs inconsistant pour l'opérateur à %%L et %%L"
 
 #: fortran/resolve.c:6476
 msgid "Loop variable"
@@ -5326,25 +5166,19 @@ msgstr "Variable de boucle"
 
 #: fortran/resolve.c:6480
 msgid "iterator variable"
-msgstr "Variable d'itérateur"
+msgstr "variable d'itérateur"
 
 #: fortran/resolve.c:6484
-#, fuzzy
-#| msgid "SET expression not a location"
 msgid "Start expression in DO loop"
-msgstr "expression de l'ENSEMBLE n'est pas une localisation"
+msgstr "Expression de départ dans la boucle DO"
 
 #: fortran/resolve.c:6488
-#, fuzzy
-#| msgid "SET expression not a location"
 msgid "End expression in DO loop"
-msgstr "expression de l'ENSEMBLE n'est pas une localisation"
+msgstr "Expression de fin dans la boucle DO"
 
 #: fortran/resolve.c:6492
-#, fuzzy
-#| msgid "SET expression not a location"
 msgid "Step expression in DO loop"
-msgstr "expression de l'ENSEMBLE n'est pas une localisation"
+msgstr "Expression de pas dans la boucle DO"
 
 #: fortran/resolve.c:6749 fortran/resolve.c:6752
 msgid "DEALLOCATE object"
@@ -5352,11 +5186,11 @@ msgstr "objet DEALLOCATE"
 
 #: fortran/resolve.c:7119 fortran/resolve.c:7122
 msgid "ALLOCATE object"
-msgstr "object ALLOCATE"
+msgstr "objet ALLOCATE"
 
 #: fortran/resolve.c:7351 fortran/resolve.c:8798
 msgid "STAT variable"
-msgstr "object STAT"
+msgstr "variable STAT"
 
 #: fortran/resolve.c:7395 fortran/resolve.c:8810
 msgid "ERRMSG variable"
@@ -5373,109 +5207,99 @@ msgstr "variable ACQUIRED_LOCK"
 #: fortran/trans-array.c:1428
 #, c-format
 msgid "Different CHARACTER lengths (%ld/%ld) in array constructor"
-msgstr ""
+msgstr "Longueurs de CHARACTER différentes (%ld/%ld) dans le constructeur de tableau"
 
 #: fortran/trans-array.c:5491
 msgid "Integer overflow when calculating the amount of memory to allocate"
-msgstr ""
+msgstr "Débordement d'entier en calculant la quantité de mémoire à allouer"
 
 #: fortran/trans-decl.c:5503
 #, c-format
 msgid "Actual string length does not match the declared one for dummy argument '%s' (%ld/%ld)"
-msgstr ""
+msgstr "La longueur réelle de la chaîne ne correspond pas à celle déclarée pour l'argument fictif « %s » (%ld/%ld)"
 
 #: fortran/trans-decl.c:5511
 #, c-format
 msgid "Actual string length is shorter than the declared one for dummy argument '%s' (%ld/%ld)"
-msgstr ""
+msgstr "La longueur réelle de la chaîne est plus courte que celle déclarée pour l'argument fictif « %s » (%ld/%ld)"
 
 #: fortran/trans-expr.c:8170
 #, c-format
 msgid "Target of rank remapping is too small (%ld < %ld)"
-msgstr ""
+msgstr "La cible du remappage de rang est trop petite (%ld < %ld)"
 
 #: fortran/trans-expr.c:9375
 msgid "Assignment of scalar to unallocated array"
-msgstr ""
+msgstr "Assignation d'un scalaire à un tableau non alloué"
 
 #: fortran/trans-intrinsic.c:897
 #, c-format
 msgid "Unequal character lengths (%ld/%ld) in %s"
-msgstr ""
+msgstr "Longueurs de caractères inégales (%ld/%ld) dans %s"
 
 #: fortran/trans-intrinsic.c:7002
 #, c-format
 msgid "Argument NCOPIES of REPEAT intrinsic is negative (its value is %ld)"
-msgstr ""
+msgstr "L'argument NCOPIES de l'intrinsèque REPEAT est négatif (sa valeur est %ld)"
 
 #: fortran/trans-intrinsic.c:7034
 msgid "Argument NCOPIES of REPEAT intrinsic is too large"
-msgstr ""
+msgstr "L'argument NCOPIES de l'intrinsèque REPEAT est trop grand"
 
 #: fortran/trans-io.c:560
-#, fuzzy
-#| msgid "Spurious number in FORMAT statement at %0"
 msgid "Unit number in I/O statement too small"
-msgstr "faux nombre dans la déclaration de FORMAT à %0"
+msgstr "Le numéro d'unité dans l'expression E/S est trop petit"
 
 #: fortran/trans-io.c:569
-#, fuzzy
-#| msgid "Spurious number in FORMAT statement at %0"
 msgid "Unit number in I/O statement too large"
-msgstr "faux nombre dans la déclaration de FORMAT à %0"
+msgstr "Le numéro d'unité dans l'expression E/S est trop grand"
 
 #: fortran/trans-stmt.c:156
-#, fuzzy
-#| msgid "mode in label is not discrete"
 msgid "Assigned label is not a target label"
-msgstr "mode dans l'étiquette n'est pas discret"
+msgstr "L'étiquette assignée n'est pas une étiquette cible"
 
 #: fortran/trans-stmt.c:1101
 #, c-format
 msgid "Invalid image number %d in SYNC IMAGES"
-msgstr ""
+msgstr "Numéro d'image %d invalide dans SYNC IMAGES"
 
 #: fortran/trans-stmt.c:1898 fortran/trans-stmt.c:2183
 msgid "Loop variable has been modified"
-msgstr ""
+msgstr "La variable de boucle a été modifiée"
 
 #: fortran/trans-stmt.c:2038
 msgid "DO step value is zero"
-msgstr ""
+msgstr "La valeur de pas de DO est zéro"
 
 #: fortran/trans.c:47
-#, fuzzy
-#| msgid "forming reference to void"
 msgid "Array reference out of bounds"
-msgstr "formation d'une référence en void"
+msgstr "Référence de tableau hors limites"
 
 #: fortran/trans.c:48
-#, fuzzy
-#| msgid "`noreturn' function returns non-void value"
 msgid "Incorrect function return value"
-msgstr "fonction marquée « noreturn » retourne une valeur n'étant pas de type « void »"
+msgstr "Valeur de retour de fonction invalide"
 
 #: fortran/trans.c:607
 msgid "Memory allocation failed"
-msgstr ""
+msgstr "L'allocation de mémoire a échoué"
 
 #: fortran/trans.c:688 fortran/trans.c:1527
 msgid "Allocation would exceed memory limit"
-msgstr ""
+msgstr "L'allocation dépasserait la limite de la mémoire"
 
 #: fortran/trans.c:858
 #, c-format
 msgid "Attempting to allocate already allocated variable '%s'"
-msgstr ""
+msgstr "Tentative d'allouer la variable « %s » qui est déjà allouée"
 
 #: fortran/trans.c:864
 msgid "Attempting to allocate already allocated variable"
-msgstr ""
+msgstr "Tentative d'allouer une variable déjà allouée"
 
 #: fortran/trans.c:1274 fortran/trans.c:1428
 #, c-format
 msgid "Attempt to DEALLOCATE unallocated '%s'"
-msgstr ""
+msgstr "Tentative d'utiliser DEALLOCATE sur « %s » qui n'est pas alloué"
 
 #. The remainder are real diagnostic types.
 #: fortran/gfc-diagnostic.def:33
@@ -5485,10 +5309,8 @@ msgstr "Erreur fatale"
 #. This is like DK_ICE, but backtrace is not printed.  Used in the driver
 #. when reporting fatal signal in the compiler.
 #: fortran/gfc-diagnostic.def:34 fortran/gfc-diagnostic.def:50
-#, fuzzy
-#| msgid "internal compiler error: "
 msgid "internal compiler error"
-msgstr "erreur interne du compilateur: "
+msgstr "erreur interne du compilateur"
 
 #: fortran/gfc-diagnostic.def:35
 msgid "Error"
@@ -5504,7 +5326,7 @@ msgstr "Avertissement"
 
 #: fortran/gfc-diagnostic.def:38
 msgid "anachronism"
-msgstr "Anachronisme"
+msgstr "anachronisme"
 
 #: fortran/gfc-diagnostic.def:39
 msgid "note"
@@ -5532,29 +5354,29 @@ msgstr "erreur"
 
 #: go/go-backend.c:171
 msgid "lseek failed while reading export data"
-msgstr ""
+msgstr "lseek a échoué en lisant les données d'export"
 
 #: go/go-backend.c:178
 msgid "memory allocation failed while reading export data"
-msgstr ""
+msgstr "l'allocation de mémoire a échoué en lisant les données d'export"
 
 #: go/go-backend.c:186
 msgid "read failed while reading export data"
-msgstr ""
+msgstr "la lecture a échoué en lisant les données d'export"
 
 #: go/go-backend.c:192
 msgid "short read while reading export data"
-msgstr ""
+msgstr "trop peu de données lues en lisant les données d'export"
 
 #: java/jcf-dump.c:1127
 #, c-format
 msgid "Not a valid Java .class file.\n"
-msgstr "n'est pas un fichier Java .class valide.\n"
+msgstr "N'est pas un fichier Java .class valide.\n"
 
 #: java/jcf-dump.c:1133
 #, c-format
 msgid "error while parsing constant pool\n"
-msgstr "error lors de l'analyse syntaxique du lots de constantes\n"
+msgstr "erreur lors de l'analyse syntaxique du lots de constantes\n"
 
 #: java/jcf-dump.c:1139 java/jcf-parse.c:1429
 #, gcc-internal-format, gfc-internal-format
@@ -5574,7 +5396,7 @@ msgstr "erreur lors de l'analyse syntaxique des méthodes\n"
 #: java/jcf-dump.c:1161
 #, c-format
 msgid "error while parsing final attributes\n"
-msgstr "erreur lors de l'analyse syntaxique des attributs\n"
+msgstr "erreur lors de l'analyse syntaxique des attributs finaux\n"
 
 #: java/jcf-dump.c:1198
 #, c-format
@@ -5596,63 +5418,58 @@ msgid ""
 "Display contents of a class file in readable form.\n"
 "\n"
 msgstr ""
+"Afficher le contenu d'un fichier de classe dans une forme lisible.\n"
+"\n"
 
 #: java/jcf-dump.c:1207
-#, fuzzy, c-format
-#| msgid "  -W                      Enable extra warnings\n"
+#, c-format
 msgid "  -c                      Disassemble method bodies\n"
-msgstr "  -c                      autoriser les avertissements additionnels\n"
+msgstr "  -c                      Désassembler les corps des méthodes\n"
 
 #: java/jcf-dump.c:1208
-#, fuzzy, c-format
-#| msgid "  --help                   Display this information\n"
+#, c-format
 msgid "  --javap                 Generate output in 'javap' format\n"
-msgstr "  --javap                 afficher l'aide mémoire\n"
+msgstr "  --javap                 Générer la sortie au format « javap »\n"
 
 #: java/jcf-dump.c:1210
 #, c-format
 msgid "  --classpath PATH        Set path to find .class files\n"
-msgstr ""
+msgstr "  --classpath CHEMIN      Fixer le chemin pour trouver les fichiers .class\n"
 
 #: java/jcf-dump.c:1211
-#, fuzzy, c-format
-#| msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
+#, c-format
 msgid "  -IDIR                   Append directory to class path\n"
-msgstr "  -B <répertoire>          ajouter le <répertoire> aux chemins de recherche du compilateur\n"
+msgstr "  -IDIR                   Ajouter le répertoire au chemin des classes\n"
 
 #: java/jcf-dump.c:1212
 #, c-format
 msgid "  --bootclasspath PATH    Override built-in class path\n"
-msgstr ""
+msgstr "  --bootclasspath CHEMIN  Écraser le chemin de classe intégré\n"
 
 #: java/jcf-dump.c:1213
 #, c-format
 msgid "  --extdirs PATH          Set extensions directory path\n"
-msgstr ""
+msgstr "  --extdirs CHEMIN        Fixer le chemin du répertoire des extensions\n"
 
 #: java/jcf-dump.c:1214
-#, fuzzy, c-format
-#| msgid "  -o <file>                Place the output into <file>\n"
+#, c-format
 msgid "  -o FILE                 Set output file name\n"
-msgstr "  -o FICHIER             placer la sortie dans le <fichier>\n"
+msgstr "  -o FICHIER              Choisi le nom du fichier de sortie\n"
 
 #: java/jcf-dump.c:1216
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "  --help                  Print this help, then exit\n"
-msgstr "  -h, --help               afficher l'aide mémoire\n"
+msgstr "  --help                  Afficher cette aide puis quitter\n"
 
 #: java/jcf-dump.c:1217
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "  --version               Print version number, then exit\n"
-msgstr "  -v, --version            exécuter le numéro de <version> de gcc, si installée\n"
+msgstr "  --version               Afficher le numéro de version puis quitter\n"
 
 #: java/jcf-dump.c:1218
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "  -v, --verbose           Print extra information while running\n"
-msgstr "  -v, --version            exécuter le numéro de <version> de gcc, si installée\n"
+msgstr "  -v, --verbose           Afficher des informations supplémentaires pendant l'exécution\n"
 
 #: java/jcf-dump.c:1220
 #, c-format
@@ -5660,13 +5477,13 @@ msgid ""
 "For bug reporting instructions, please see:\n"
 "%s.\n"
 msgstr ""
-"Pour les instructions de rapport des anomales, veuillez consulter :\n"
+"Pour les instructions de rapport des anomalies, veuillez consulter :\n"
 "%s.\n"
 
 #: java/jcf-dump.c:1258 java/jcf-dump.c:1326
 #, c-format
 msgid "jcf-dump: no classes specified\n"
-msgstr "jcf-dump : pas de classes spécifiées\n"
+msgstr "jcf-dump: pas de classes spécifiées\n"
 
 #: java/jcf-dump.c:1346
 #, c-format
@@ -5676,7 +5493,7 @@ msgstr "Impossible d'ouvrir « %s » pour écrire la sortie.\n"
 #: java/jcf-dump.c:1391
 #, c-format
 msgid "bad format of .zip/.jar archive\n"
-msgstr "format d'archive .zip/.jar incorrect\n"
+msgstr "mauvais format d'archive .zip/.jar\n"
 
 #: java/jcf-dump.c:1509
 #, c-format
@@ -5686,17 +5503,17 @@ msgstr "Mauvais codes d'octet.\n"
 #: java/jvgenmain.c:44
 #, c-format
 msgid "Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n"
-msgstr "Usage : %s [OPTION]… NOMCLASSprincipale [FICHIERSORTIE]\n"
+msgstr "Usage : %s [OPTIONS]… NOMCLASSprincipale [FICHIERSORTIE]\n"
 
 #: java/jvgenmain.c:117
 #, c-format
 msgid "%s: Cannot open output file: %s\n"
-msgstr "%s : impossible d'ouvrir le fichier : %s\n"
+msgstr "%s: Impossible d'ouvrir le fichier de sortie : %s\n"
 
 #: java/jvgenmain.c:167
 #, c-format
 msgid "%s: Failed to close output file %s\n"
-msgstr "%s : Impossible de fermer le fichier de sortie %s\n"
+msgstr "%s: Impossible de fermer le fichier de sortie %s\n"
 
 #: objc/objc-act.c:6179 cp/cxx-pretty-print.c:159
 #, gcc-internal-format
@@ -5717,11 +5534,11 @@ msgstr "-fuse-linker-plugin n'est pas supporté par cette configuration"
 
 #: gcc.c:976
 msgid "cannot specify -static with -fsanitize=address"
-msgstr "Impossible de spécifier -static avec -fsanitize=adresse"
+msgstr "impossible de spécifier -static avec -fsanitize=adresse"
 
 #: gcc.c:978
 msgid "cannot specify -static with -fsanitize=thread"
-msgstr ""
+msgstr "impossible de spécifier -static avec -fsanitize=thread"
 
 #: gcc.c:1122 ada/gcc-interface/lang-specs.h:33 java/jvspec.c:79
 msgid "-pg and -fomit-frame-pointer are incompatible"
@@ -5733,7 +5550,7 @@ msgstr "GNU C ne supporte plus -traditional sans -E"
 
 #: gcc.c:1307
 msgid "-E or -x required when input is from standard input"
-msgstr "-E ou -x est requis lorsque l'entrée est faite à partir de l'entrée standard"
+msgstr "-E ou -x est requis lorsque l'entrée vient de l'entrée standard"
 
 #: config/darwin.h:252
 msgid "-current_version only allowed with -dynamiclib"
@@ -5741,7 +5558,7 @@ msgstr "-current_version permis seulement avec -dynamiclib"
 
 #: config/darwin.h:254
 msgid "-install_name only allowed with -dynamiclib"
-msgstr "-install_name permis seulement avec with -dynamiclib"
+msgstr "-install_name permis seulement avec -dynamiclib"
 
 #: config/darwin.h:259
 msgid "-bundle not allowed with -dynamiclib"
@@ -5771,31 +5588,27 @@ msgstr "-private_bundle n'est pas permis avec -dynamiclib"
 #: config/i386/freebsd64.h:35 config/ia64/freebsd.h:26
 #: config/rs6000/sysv4.h:731 config/sparc/freebsd.h:45
 msgid "consider using '-pg' instead of '-p' with gprof(1)"
-msgstr ""
+msgstr "envisagez d'utiliser « -pg » au lieu de « -p » avec gprof(1)"
 
 #: config/lynx.h:69
 msgid "cannot use mthreads and mlegacy-threads together"
-msgstr ""
+msgstr "impossible d'utiliser simultanément mthreads et mlegacy-threads"
 
 #: config/lynx.h:94
 msgid "cannot use mshared and static together"
-msgstr ""
+msgstr "impossible d'utiliser simultanément mshared et static"
 
 #: config/sol2.h:181
-#, fuzzy
-#| msgid "-m%s not supported in this configuration"
 msgid "-fvtable-verify is not supported in this configuration"
-msgstr "-m%s n'est pas supporté par cette configuration"
+msgstr "-fvtable-verify n'est pas supporté par cette configuration"
 
 #: config/sol2.h:268 config/sol2.h:273
 msgid "does not support multilib"
 msgstr "ne supporte pas multilib"
 
 #: config/sol2.h:365
-#, fuzzy
-#| msgid "-gz is not supported in this configuration"
 msgid "-pie is not supported in this configuration"
-msgstr "-gz n'est pas supporté par cette configuration"
+msgstr "-pie n'est pas supporté par cette configuration"
 
 #: config/vxworks.h:70
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
@@ -5803,11 +5616,11 @@ msgstr "-Xbind-now et -Xbind-lazy sont incompatibles"
 
 #: config/arc/arc.h:142 config/mips/mips.h:1358
 msgid "may not use both -EB and -EL"
-msgstr "ne peut utiliser ensemble -EB et -EL"
+msgstr "ne peut utiliser -EB et -EL ensemble"
 
 #: config/arm/arm.h:100
 msgid "-mfloat-abi=soft and -mfloat-abi=hard may not be used together"
-msgstr "-mfloat-abi=soft et -mfloat-abi=hard ne peuvent être utilisées ensembles"
+msgstr "-mfloat-abi=soft et -mfloat-abi=hard ne peuvent pas être utilisés ensemble"
 
 #: config/arm/arm.h:102 config/tilegx/tilegx.h:546 config/tilegx/tilegx.h:551
 msgid "-mbig-endian and -mlittle-endian may not be used together"
@@ -5815,21 +5628,19 @@ msgstr "-mbig-endian et -mlittle-endian ne peuvent être utilisés ensemble"
 
 #: config/arm/freebsd.h:49
 msgid "consider using `-pg' instead of `-p' with gprof (1) "
-msgstr ""
+msgstr "envisagez d'utiliser « -pg » au lieu de « -p » avec gprof (1)"
 
 #: config/avr/specs.h:68
 msgid "shared is not supported"
 msgstr "shared n'est pas supporté"
 
 #: config/bfin/elf.h:55
-#, fuzzy
-#| msgid "spec file has no spec for linking"
 msgid "no processor type specified for linking"
-msgstr "fichier de specs n'a pas de spécification pour l'édition de liens"
+msgstr "pas de type de processeur spécifié pour l'édition de liens"
 
 #: config/cris/cris.h:184
 msgid "do not specify both -march=... and -mcpu=..."
-msgstr "ne peut spécifier à la fois -march=… et -mcpu=…"
+msgstr "ne spécifiez pas à la fois -march=… et -mcpu=…"
 
 #: config/i386/cygwin-w64.h:64 config/i386/cygwin.h:130
 #: config/i386/mingw-w64.h:87 config/i386/mingw32.h:117
@@ -5838,27 +5649,23 @@ msgstr "shared et mdll ne sont pas compatibles"
 
 #: config/mcore/mcore.h:53
 msgid "the m210 does not have little endian support"
-msgstr "Le m210 ne supporte pas le code pour système à octets de poids faible"
+msgstr "le m210 ne supporte pas les systèmes à octets de poids faible"
 
 #: config/mips/r3900.h:37
 msgid "-mhard-float not supported"
 msgstr "-mhard-float n'est pas supporté"
 
 #: config/mips/r3900.h:39
-#, fuzzy
-#| msgid "-msingle-float and -msoft-float can not both be specified"
 msgid "-msingle-float and -msoft-float cannot both be specified"
-msgstr "-msingle-float et -msoft-float ne peuvent être spécifiés ensembles"
+msgstr "-msingle-float et -msoft-float ne peuvent être spécifiés ensemble"
 
 #: config/moxie/moxiebox.h:43
-#, fuzzy
-#| msgid "Generate code for little endian"
 msgid "this target is little-endian"
-msgstr "Générer du code pour un système à octets de poids faible"
+msgstr "cette cible est petit-boutien"
 
 #: config/nios2/elf.h:44
 msgid "You need a C startup file for -msys-crt0="
-msgstr ""
+msgstr "Vous avez besoin d'un fichier de démarrage C pour -msys-crt0="
 
 #: config/pa/pa-hpux10.h:102 config/pa/pa-hpux10.h:105
 #: config/pa/pa-hpux10.h:113 config/pa/pa-hpux10.h:116
@@ -5866,7 +5673,7 @@ msgstr ""
 #: config/pa/pa64-hpux.h:29 config/pa/pa64-hpux.h:32 config/pa/pa64-hpux.h:41
 #: config/pa/pa64-hpux.h:44
 msgid "warning: consider linking with '-static' as system libraries with"
-msgstr ""
+msgstr "attention: envisagez de lier avec « -static » car les bibliothèques système avec"
 
 #: config/pa/pa-hpux10.h:103 config/pa/pa-hpux10.h:106
 #: config/pa/pa-hpux10.h:114 config/pa/pa-hpux10.h:117
@@ -5874,15 +5681,15 @@ msgstr ""
 #: config/pa/pa64-hpux.h:30 config/pa/pa64-hpux.h:33 config/pa/pa64-hpux.h:42
 #: config/pa/pa64-hpux.h:45
 msgid "  profiling support are only provided in archive format"
-msgstr ""
+msgstr " support pour le profilage sont uniquement fournies dans ce format d'archive"
 
 #: config/rs6000/darwin.h:95
 msgid " conflicting code gen style switches are used"
-msgstr " code de génération de style de switches utilisées est en conflit"
+msgstr " les sélecteurs de style de génération de code utilisés sont en conflit"
 
 #: config/rs6000/freebsd64.h:171
 msgid "consider using `-pg' instead of `-p' with gprof(1)"
-msgstr ""
+msgstr "envisagez d'utiliser « -pg » au lieu de « -p » avec gprof(1)"
 
 #: config/rx/rx.h:80
 msgid "-mas100-syntax is incompatible with -gdwarf"
@@ -5890,37 +5697,33 @@ msgstr "-mas100-syntax incompatible avec -gdwarf"
 
 #: config/rx/rx.h:81
 msgid "rx100 cpu does not have FPU hardware"
-msgstr "le processeur rx100 n'a pas de d'unité matérielle FPU"
+msgstr "le processeur rx100 n'a pas de d'unité FPU matérielle"
 
 #: config/rx/rx.h:82
 msgid "rx200 cpu does not have FPU hardware"
-msgstr "le processeur rx200 n'a pas de d'unité matérielle FPU"
+msgstr "le processeur rx200 n'a pas de d'unité FPU matérielle"
 
 #: config/s390/tpf.h:110
 msgid "static is not supported on TPF-OS"
 msgstr "static n'est pas supporté sur TPF-OS"
 
 #: config/sh/sh.h:375 config/sh/sh.h:378
-#, fuzzy
-#| msgid "does not support multilib"
 msgid "SH2a does not support little-endian"
-msgstr "ne supporte pas multilib"
+msgstr "SH2a ne supporte pas les petits-boutistes"
 
 #: config/sparc/linux64.h:149 config/sparc/linux64.h:156
 #: config/sparc/netbsd-elf.h:108 config/sparc/netbsd-elf.h:117
 #: config/sparc/sol2.h:228 config/sparc/sol2.h:234
 msgid "may not use both -m32 and -m64"
-msgstr "ne peut utiliser ensemble -m32 et -m64"
+msgstr "ne peut utiliser -m32 et -m64 ensemble"
 
 #: config/vax/netbsd-elf.h:51
-#, fuzzy
-#| msgid "The -shared option is not currently supported for VAX ELF."
 msgid "the -shared option is not currently supported for VAX ELF"
-msgstr "L'option -shared n'est pas couramment supportée pour VAS ELF."
+msgstr "l'option -shared n'est actuellement pas supportée pour un ELF VAX."
 
 #: config/vax/vax.h:46 config/vax/vax.h:47
 msgid "profiling not supported with -mg"
-msgstr "profilage n'est pas supporté avec -mg"
+msgstr "le profilage n'est pas supporté avec -mg"
 
 #: ada/gcc-interface/lang-specs.h:34
 msgid "-c or -S required for Ada"
@@ -5948,23 +5751,23 @@ msgstr "-fjni et -femit-class-file sont incompatibles"
 
 #: java/lang-specs.h:34 java/lang-specs.h:35
 msgid "-femit-class-file should used along with -fsyntax-only"
-msgstr "-femit-class-file dervait être utilisé avec -fsyntax-only"
+msgstr "-femit-class-file devrait être utilisé avec -fsyntax-only"
 
 #: objc/lang-specs.h:30 objc/lang-specs.h:41
 msgid "GNU Objective C no longer supports traditional compilation"
-msgstr ""
+msgstr "GNU Objective C ne supporte plus la compilation traditionnelle"
 
 #: objc/lang-specs.h:55
 msgid "objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
-msgstr ""
+msgstr "objc-cpp-output est déprécié; utilisez plutôt objective-c-cpp-output"
 
 #: objcp/lang-specs.h:58
 msgid "objc++-cpp-output is deprecated; please use objective-c++-cpp-output instead"
-msgstr ""
+msgstr "objc++-cpp-output est déprécié; utilisez plutôt objective-c++-cpp-output"
 
 #: fortran/lang.opt:146
 msgid "-J<directory>\tPut MODULE files in 'directory'."
-msgstr ""
+msgstr "-J<répertoire>\tPlace les fichiers de MODULE dans « répertoire »."
 
 #: fortran/lang.opt:198
 #, fuzzy
@@ -51220,13 +51023,13 @@ msgstr "attribut « %s » peut seulement être appliqué aux définitions de cla
 #, fuzzy, gcc-internal-format
 #| msgid "storage class `%D' applied to template instantiation"
 msgid "ignoring %qE attribute applied to template instantiation %qT"
-msgstr "classe de stockage « %D » appliqué à l'instantiation du patron"
+msgstr "classe de stockage « %D » appliqué à l'instanciation du patron"
 
 #: cp/tree.c:3815
 #, fuzzy, gcc-internal-format
 #| msgid "storage class `%D' applied to template instantiation"
 msgid "ignoring %qE attribute applied to template specialization %qT"
-msgstr "classe de stockage « %D » appliqué à l'instantiation du patron"
+msgstr "classe de stockage « %D » appliqué à l'instanciation du patron"
 
 #: cp/tree.c:3837
 #, fuzzy, gcc-internal-format

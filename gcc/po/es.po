@@ -35,7 +35,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-12-01 23:28+0100\n"
+"PO-Revision-Date: 2016-12-04 14:54+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -8972,42 +8972,30 @@ msgid "Known code models (for use with the -mcmodel= option):"
 msgstr "Modelos de código conocidos (para uso con la opción -mcmodel=):"
 
 #: config/i386/i386.opt:296
-#, fuzzy
-#| msgid "Use complex addressing modes"
 msgid "Use given address mode."
-msgstr "Usar modos de direccionamiento complejos."
+msgstr "Usar el modo de dirección dado."
 
 #: config/i386/i386.opt:300
-#, fuzzy
-#| msgid "Known code models (for use with the -mcmodel= option):"
 msgid "Known address mode (for use with the -maddress-mode= option):"
-msgstr "Modelos de código conocidos (para uso con la opción -mcmodel=):"
+msgstr "Modo de dirección conocido (para uso con la opción -maddress-mode=):"
 
 #: config/i386/i386.opt:309
 msgid "%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead"
 msgstr "%<-mcpu=%> es obsoleto; utilice %<-mtune=%> o %<-march%> en su lugar"
 
 #: config/i386/i386.opt:313
-#, fuzzy
-#| msgid "Generate sin, cos, sqrt for FPU"
 msgid "Generate sin, cos, sqrt for FPU."
 msgstr "Genera sin, cos, sqrt para FPU."
 
 #: config/i386/i386.opt:317
-#, fuzzy
-#| msgid "Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack"
 msgid "Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack."
 msgstr "Usar siempre el Puntero de Argumento Realineado Dinámicamente (DRAP) para realinear la pila."
 
 #: config/i386/i386.opt:321
-#, fuzzy
-#| msgid "Return values of functions in FPU registers"
 msgid "Return values of functions in FPU registers."
 msgstr "Devuelve los valores de funciones en registros FPU."
 
 #: config/i386/i386.opt:325
-#, fuzzy
-#| msgid "Generate floating point mathematics using given instruction set"
 msgid "Generate floating point mathematics using given instruction set."
 msgstr "Genera matemáticas de coma flotante usando el conjunto de instrucciones dado."
 
@@ -9016,14 +9004,10 @@ msgid "Valid arguments to -mfpmath=:"
 msgstr "Argumentos válidos para -mfpmath=:"
 
 #: config/i386/i386.opt:362
-#, fuzzy
-#| msgid "Inline all known string operations"
 msgid "Inline all known string operations."
 msgstr "Incluye en línea todas las operaciones de cadenas conocidas."
 
 #: config/i386/i386.opt:366
-#, fuzzy
-#| msgid "Inline memset/memcpy string operations, but perform inline version only for small blocks"
 msgid "Inline memset/memcpy string operations, but perform inline version only for small blocks."
 msgstr "Incluye en línea las operaciones de cadena memset/memcpy, pero realiza la versión inline sólo para los bloques pequeños."
 
@@ -9032,100 +9016,70 @@ msgid "%<-mintel-syntax%> and %<-mno-intel-syntax%> are deprecated; use %<-masm=
 msgstr "%<-mintel-syntax%> y %<-mno-intel-syntax%> son obsoletos; utilice %<-masm=intel%> y %<-masm=att%> en su lugar"
 
 #: config/i386/i386.opt:374
-#, fuzzy
-#| msgid "Use native (MS) bitfield layout"
 msgid "Use native (MS) bitfield layout."
 msgstr "Usa la disposición de campos de bits nativos (MS)."
 
 #: config/i386/i386.opt:394
-#, fuzzy
-#| msgid "Set 80387 floating-point precision to 32-bit"
 msgid "Set 80387 floating-point precision to 32-bit."
 msgstr "Establece la precisión de coma flotante 80387 a 32-bit."
 
 #: config/i386/i386.opt:398
-#, fuzzy
-#| msgid "Set 80387 floating-point precision to 64-bit"
 msgid "Set 80387 floating-point precision to 64-bit."
 msgstr "Establece la precisión de coma flotante 80387 a 64-bit."
 
 #: config/i386/i386.opt:402
-#, fuzzy
-#| msgid "Set 80387 floating-point precision to 80-bit"
 msgid "Set 80387 floating-point precision to 80-bit."
 msgstr "Establece la precisión de coma flotante 80387 a 80-bit."
 
 #: config/i386/i386.opt:406
-#, fuzzy
-#| msgid "Attempt to keep stack aligned to this power of 2"
 msgid "Attempt to keep stack aligned to this power of 2."
 msgstr "Trata de mantenter la pila alineada a esta potencia de 2."
 
 #: config/i386/i386.opt:410
-#, fuzzy
-#| msgid "Assume incoming stack aligned to this power of 2"
 msgid "Assume incoming stack aligned to this power of 2."
 msgstr "Asume que la pila de entrada está alineada a esta potencia de 2."
 
 #: config/i386/i386.opt:414
-#, fuzzy
-#| msgid "Use push instructions to save outgoing arguments"
 msgid "Use push instructions to save outgoing arguments."
 msgstr "Usa instrucciones push para guardar los argumentos de salida."
 
 #: config/i386/i386.opt:418
-#, fuzzy
-#| msgid "Use red-zone in the x86-64 code"
 msgid "Use red-zone in the x86-64 code."
 msgstr "Usa la zona roja en el código x86-64."
 
 #: config/i386/i386.opt:422
-#, fuzzy
-#| msgid "Number of registers used to pass integer arguments"
 msgid "Number of registers used to pass integer arguments."
 msgstr "Número de registros usados para pasar argumentos enteros."
 
 #: config/i386/i386.opt:426
-#, fuzzy
-#| msgid "Alternate calling convention"
 msgid "Alternate calling convention."
-msgstr "Convención de llamada alternativa."
+msgstr "Convenio de llamada alternativa."
 
 #: config/i386/i386.opt:430 config/alpha/alpha.opt:23
-#, fuzzy
-#| msgid "Do not use hardware fp"
 msgid "Do not use hardware fp."
 msgstr "No usa fp de hardware."
 
 #: config/i386/i386.opt:434
-#, fuzzy
-#| msgid "Use SSE register passing conventions for SF and DF mode"
 msgid "Use SSE register passing conventions for SF and DF mode."
-msgstr "Usa las convenciones de paso de registro SSE para los modos SF y DF."
+msgstr "Usa los convenios de paso de registro SSE para los modos SF y DF."
 
 #: config/i386/i386.opt:438
-#, fuzzy
-#| msgid "Realign stack in prologue"
 msgid "Realign stack in prologue."
 msgstr "Realinea la pila en el prólogo."
 
 #: config/i386/i386.opt:442
-#, fuzzy
-#| msgid "Enable stack probing"
 msgid "Enable stack probing."
 msgstr "Habilita la prueba de la pila."
 
 #: config/i386/i386.opt:446
 msgid "Specify memcpy expansion strategy when expected size is known."
-msgstr ""
+msgstr "Especifica la estrategia de expansión de memcpy cuando se conoce el tamaño esperado."
 
 #: config/i386/i386.opt:450
 msgid "Specify memset expansion strategy when expected size is known."
-msgstr ""
+msgstr "Especifica la estrategia de expansión de memset cuando se conoce el tamaño esperado."
 
 #: config/i386/i386.opt:454
-#, fuzzy
-#| msgid "Chose strategy to generate stringop using"
 msgid "Chose strategy to generate stringop using."
 msgstr "Escoge la estrategia para generar stringop using."
 
@@ -9134,8 +9088,6 @@ msgid "Valid arguments to -mstringop-strategy=:"
 msgstr "Argumentos válidos para -mstringop-strategy=:"
 
 #: config/i386/i386.opt:486
-#, fuzzy
-#| msgid "Use given thread-local storage dialect"
 msgid "Use given thread-local storage dialect."
 msgstr "Usa el dialecto de almacenamiento thread-local dado."
 
@@ -9144,30 +9096,23 @@ msgid "Known TLS dialects (for use with the -mtls-dialect= option):"
 msgstr "Dialectos TLS conocidos (para usar con la opción -mtls-dialect=):"
 
 #: config/i386/i386.opt:500
-#, fuzzy, c-format
-#| msgid "Use direct references against %gs when accessing tls data"
+#, c-format
 msgid "Use direct references against %gs when accessing tls data."
-msgstr "Usa referencias directas contra %gs cuando se accesen datos tls."
+msgstr "Usa referencias directas contra %gs cuando se acceden datos tls."
 
 #: config/i386/i386.opt:508
 msgid "Fine grain control of tune features."
-msgstr ""
+msgstr "Control fino de las características de ajuste."
 
 #: config/i386/i386.opt:512
-#, fuzzy
-#| msgid "Allow all ugly features"
 msgid "Clear all tune features."
-msgstr "Desactiva todas las características feas."
+msgstr "Quita todas las características de ajuste."
 
 #: config/i386/i386.opt:519
-#, fuzzy
-#| msgid "Generate code that conforms to the given ABI"
 msgid "Generate code that conforms to Intel MCU psABI."
-msgstr "Genera código que cumpla con la ABI dada."
+msgstr "Genera código que cumpla con Intel MCU psABI."
 
 #: config/i386/i386.opt:523
-#, fuzzy
-#| msgid "Generate code that conforms to the given ABI"
 msgid "Generate code that conforms to the given ABI."
 msgstr "Genera código que cumpla con la ABI dada."
 
@@ -9176,8 +9121,6 @@ msgid "Known ABIs (for use with the -mabi= option):"
 msgstr "ABIs conocidas (para usar con la opción -mabi=):"
 
 #: config/i386/i386.opt:537 config/rs6000/rs6000.opt:189
-#, fuzzy
-#| msgid "Vector library ABI to use"
 msgid "Vector library ABI to use."
 msgstr "ABI de biblioteca de vectores a utilizar."
 
@@ -9186,8 +9129,6 @@ msgid "Known vectorization library ABIs (for use with the -mveclibabi= option):"
 msgstr "ABIs de biblioteca de vectorización conocidas (para usar con la opción -mveclibabi=):"
 
 #: config/i386/i386.opt:551
-#, fuzzy
-#| msgid "Return 8-byte vectors in memory"
 msgid "Return 8-byte vectors in memory."
 msgstr "Devuelve vectores de 8 bytes en memoria."
 
@@ -9207,101 +9148,72 @@ msgstr "Genera la instrucción cld en el prólogo de función."
 msgid "Generate vzeroupper instruction before a transfer of control flow out of"
 msgstr "Genera la instrucción vzeroupper antes de una transferencia de flujo de control fuera de"
 
+# TODO review
 #: config/i386/i386.opt:572
 msgid "Disable Scalar to Vector optimization pass transforming 64-bit integer"
-msgstr ""
+msgstr "Desactiva el paso de optimización de escalar a vector al transformar enteros de 64 bits"
 
 #: config/i386/i386.opt:577
-#, fuzzy
-#| msgid "Do dispatch scheduling if processor is bdver1 or bdver2 and Haifa scheduling"
 msgid "Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4"
-msgstr "Despacha al planificador si el procesador es bdver1 o bdver2 y la planificación es Haifa"
+msgstr "Despacha al planificador si el procesador es bdver1, bdver2, bdver3, bdver4"
 
 #: config/i386/i386.opt:582
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
 msgstr "Usa instrucciones AVX de 128-bit en lugar de instrucciones AVX de 256-bit en el auto-vectorizador."
 
 #: config/i386/i386.opt:588
-#, fuzzy
-#| msgid "Generate 32bit i386 code"
 msgid "Generate 32bit i386 code."
 msgstr "Genera código i386 de 32bit."
 
 #: config/i386/i386.opt:592
-#, fuzzy
-#| msgid "Generate 64bit x86-64 code"
 msgid "Generate 64bit x86-64 code."
 msgstr "Genera código x86-64 de 64bit."
 
 #: config/i386/i386.opt:596
-#, fuzzy
-#| msgid "Generate 32bit x86-64 code"
 msgid "Generate 32bit x86-64 code."
 msgstr "Genera código x86-64 de 32bit."
 
 #: config/i386/i386.opt:600
-#, fuzzy
-#| msgid "Generate 32bit i386 code"
 msgid "Generate 16bit i386 code."
-msgstr "Genera código i386 de 32bit."
+msgstr "Genera código i386 de 16bit."
 
 #: config/i386/i386.opt:604
-#, fuzzy
-#| msgid "Support MMX built-in functions"
 msgid "Support MMX built-in functions."
 msgstr "Admite funciones internas MMX."
 
 #: config/i386/i386.opt:608
-#, fuzzy
-#| msgid "Support 3DNow! built-in functions"
 msgid "Support 3DNow! built-in functions."
 msgstr "Admite funciones internas 3DNow!."
 
 #: config/i386/i386.opt:612
-#, fuzzy
-#| msgid "Support Athlon 3Dnow! built-in functions"
 msgid "Support Athlon 3Dnow! built-in functions."
 msgstr "Admite funciones internas Athlon 3DNow!."
 
 #: config/i386/i386.opt:616
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support MMX and SSE built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX y SSE."
 
 #: config/i386/i386.opt:620
-#, fuzzy
-#| msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
 msgid "Support MMX, SSE and SSE2 built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE y SSE2."
 
 #: config/i386/i386.opt:624
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2 y SSE3."
 
 #: config/i386/i386.opt:628
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3 y SSSE3."
 
 #: config/i386/i386.opt:632
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3 y SSE4.1."
 
 #: config/i386/i386.opt:636 config/i386/i386.opt:640
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 y SSE4.2."
 
 #: config/i386/i386.opt:644
-#, fuzzy
-#| msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
 msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation."
 msgstr "No admite funciones internas y generación de código SSE4.1 y SSE4.2."
 
@@ -9310,100 +9222,68 @@ msgid "%<-msse5%> was removed"
 msgstr "se eliminó %<-msse5%>"
 
 #: config/i386/i386.opt:652
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 y AVX."
 
 #: config/i386/i386.opt:656
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
 
 #: config/i386/i386.opt:660
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 y AVX512F."
 
 #: config/i386/i386.opt:664
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512PF."
 
 #: config/i386/i386.opt:668
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512ER."
 
 #: config/i386/i386.opt:672
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512CD."
 
 #: config/i386/i386.opt:676
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512DQ."
 
 #: config/i386/i386.opt:680
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512BW."
 
 #: config/i386/i386.opt:684
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512VL."
 
 #: config/i386/i386.opt:688
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512IFMA."
 
 #: config/i386/i386.opt:692
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y AVX2."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX512VBMI."
 
 #: config/i386/i386.opt:696
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX y FMA."
 
 #: config/i386/i386.opt:700
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3 y SSE4A."
 
 #: config/i386/i386.opt:704
-#, fuzzy
-#| msgid "Support FMA4 built-in functions and code generation "
 msgid "Support FMA4 built-in functions and code generation."
-msgstr "Admite funciones internas FMA4 y generación de código ."
+msgstr "Admite funciones internas FMA4 y generación de código."
 
 #: config/i386/i386.opt:708
-#, fuzzy
-#| msgid "Support XOP built-in functions and code generation "
 msgid "Support XOP built-in functions and code generation."
-msgstr "Admite funciones internas XOP y generación de código ."
+msgstr "Admite funciones internas XOP y generación de código."
 
 #: config/i386/i386.opt:712
-#, fuzzy
-#| msgid "Support LWP built-in functions and code generation "
 msgid "Support LWP built-in functions and code generation."
-msgstr "Admite funciones internas LWP y generación de código ."
+msgstr "Admite funciones internas LWP y generación de código."
 
 #: config/i386/i386.opt:716
 msgid "Support code generation of Advanced Bit Manipulation (ABM) instructions."
@@ -9414,36 +9294,28 @@ msgid "Support code generation of popcnt instruction."
 msgstr "Admite la generación de código de la instrucción popcnt."
 
 #: config/i386/i386.opt:724
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation"
 msgid "Support BMI built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código BMI."
 
 #: config/i386/i386.opt:728
-#, fuzzy
-#| msgid "Support BMI2 built-in functions and code generation"
 msgid "Support BMI2 built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código BMI2."
 
 #: config/i386/i386.opt:732
-#, fuzzy
-#| msgid "Support LZCNT built-in function and code generation"
 msgid "Support LZCNT built-in function and code generation."
 msgstr "Admite funciones internas y generación de código LZCNT."
 
 #: config/i386/i386.opt:736
 msgid "Support Hardware Lock Elision prefixes."
-msgstr ""
+msgstr "Admite prefijos de elisión de bloqueo de hardware."
 
 #: config/i386/i386.opt:740
-#, fuzzy
-#| msgid "no support for induction"
 msgid "Support RDSEED instruction."
-msgstr "no se admite la inducción."
+msgstr "Admite la instrucción RDSEED."
 
 #: config/i386/i386.opt:744
 msgid "Support PREFETCHW instruction."
-msgstr ""
+msgstr "Admite la instrucción PREFETCHW."
 
 #: config/i386/i386.opt:748
 #, fuzzy
@@ -9453,49 +9325,37 @@ msgstr "Admite la generación de código de la instrucción crc32."
 
 #: config/i386/i386.opt:752
 msgid "Support CLFLUSHOPT instructions."
-msgstr ""
+msgstr "Admite las instrucciones CLFLUSHOPT."
 
 #: config/i386/i386.opt:756
-#, fuzzy
-#| msgid "no support for induction"
 msgid "Support CLWB instruction."
-msgstr "no se admite la inducción."
+msgstr "Admite la instrucción CLWB.."
 
 #: config/i386/i386.opt:760
-#, fuzzy
-#| msgid "Support MMX built-in functions"
 msgid "Support PCOMMIT instruction."
-msgstr "Admite funciones internas MMX."
+msgstr "Admite la instrucción PCOMMIT."
 
 #: config/i386/i386.opt:764
 msgid "Support FXSAVE and FXRSTOR instructions."
-msgstr ""
+msgstr "Admite las instrucciones PXSAVE y FXRSTOR."
 
 #: config/i386/i386.opt:768
-#, fuzzy
-#| msgid "Support code generation of movbe instruction."
 msgid "Support XSAVE and XRSTOR instructions."
-msgstr "Admite la generación de código de la instrucción movbe."
+msgstr "Admite las instrucciones XSAV y XRSTOR."
 
 #: config/i386/i386.opt:772
-#, fuzzy
-#| msgid "Support MMX built-in functions"
 msgid "Support XSAVEOPT instruction."
-msgstr "Admite funciones internas MMX."
+msgstr "Admite las instrucciones XSAVEOPT."
 
 #: config/i386/i386.opt:776
-#, fuzzy
-#| msgid "Support MMX built-in functions"
 msgid "Support XSAVEC instructions."
-msgstr "Admite funciones internas MMX."
+msgstr "Admite las instrucciones XSAVEC."
 
 #: config/i386/i386.opt:780
 msgid "Support XSAVES and XRSTORS instructions."
-msgstr ""
+msgstr "Admite las instrucciones XSAVES y XRSTORS."
 
 #: config/i386/i386.opt:784
-#, fuzzy
-#| msgid "Support TBM built-in functions and code generation"
 msgid "Support TBM built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código TBM."
 
@@ -9516,52 +9376,36 @@ msgid "Support code generation of crc32 instruction."
 msgstr "Admite la generación de código de la instrucción crc32."
 
 #: config/i386/i386.opt:804
-#, fuzzy
-#| msgid "Support AES built-in functions and code generation"
 msgid "Support AES built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código AES."
 
 #: config/i386/i386.opt:808
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support SHA1 and SHA256 built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX y SSE."
+msgstr "Admite funciones internas y generación de código SHA1 y SHA256."
 
 #: config/i386/i386.opt:812
-#, fuzzy
-#| msgid "Support PCLMUL built-in functions and code generation"
 msgid "Support PCLMUL built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código PCLMUL."
 
 #: config/i386/i386.opt:816
-#, fuzzy
-#| msgid "Encode SSE instructions with VEX prefix"
 msgid "Encode SSE instructions with VEX prefix."
 msgstr "Codifica las instrucciones SSE con el prefijo VEX."
 
 #: config/i386/i386.opt:820
-#, fuzzy
-#| msgid "Support FSGSBASE built-in functions and code generation"
 msgid "Support FSGSBASE built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código FSGSBASE."
 
 #: config/i386/i386.opt:824
-#, fuzzy
-#| msgid "Support RDRND built-in functions and code generation"
 msgid "Support RDRND built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código RDRND."
 
 #: config/i386/i386.opt:828
-#, fuzzy
-#| msgid "Support F16C built-in functions and code generation"
 msgid "Support F16C built-in functions and code generation."
 msgstr "Admite funciones internas y generación de código F16C."
 
 #: config/i386/i386.opt:832
-#, fuzzy
-#| msgid "Support F16C built-in functions and code generation"
 msgid "Support PREFETCHWT1 built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código F16C."
+msgstr "Admite funciones internas y generación de código PREFETCHWT1."
 
 #: config/i386/i386.opt:836
 msgid "Emit profiling counter call at function entry before prologue."
@@ -9569,77 +9413,59 @@ msgstr "Emite llamada a contador de perfil en la entrada de función antes del p
 
 #: config/i386/i386.opt:840
 msgid "Generate __mcount_loc section with all mcount or __fentry__ calls."
-msgstr ""
+msgstr "Genera sección __mcount_loc con todos los mcount o llamadas __fentry__."
 
 #: config/i386/i386.opt:844
 msgid "Generate mcount/__fentry__ calls as nops. To activate they need to be"
-msgstr ""
+msgstr "Genera llamadas mcount/__fentry__ como nops. Para activarlo han de ser"
 
 #: config/i386/i386.opt:849
 msgid "Skip setting up RAX register when passing variable arguments."
-msgstr ""
+msgstr "Salta configurar registro RAX cuando se pasan argumentos variables."
 
 #: config/i386/i386.opt:853
-#, fuzzy
-#| msgid "Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check"
 msgid "Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check."
 msgstr "Expande la división entera de 32bit/64bit en división entera sin signo de 8bit con revisión en tiempo de ejecución."
 
 #: config/i386/i386.opt:857
-#, fuzzy
-#| msgid "Split 32-byte AVX unaligned load"
 msgid "Split 32-byte AVX unaligned load."
 msgstr "Divide load sin alinear AVX de 32-byte."
 
 #: config/i386/i386.opt:861
-#, fuzzy
-#| msgid "Split 32-byte AVX unaligned store"
 msgid "Split 32-byte AVX unaligned store."
 msgstr "Divide store sin alinear AVX de 32-byte."
 
 #: config/i386/i386.opt:865
-#, fuzzy
-#| msgid "Support TBM built-in functions and code generation"
 msgid "Support RTM built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código TBM."
+msgstr "Admite funciones internas y generación de código RTM."
 
 #: config/i386/i386.opt:869
-#, fuzzy
-#| msgid "Support code generation of movbe instruction."
 msgid "Support MPX code generation."
-msgstr "Admite la generación de código de la instrucción movbe."
+msgstr "Admite la generación de código MPX."
 
 #: config/i386/i386.opt:873
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation"
 msgid "Support MWAITX and MONITORX built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX y SSE."
+msgstr "Admite funciones internas y generación de código MWAITX y MONITORX."
 
 #: config/i386/i386.opt:877
-#, fuzzy
-#| msgid "Support AES built-in functions and code generation"
 msgid "Support CLZERO built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código AES."
+msgstr "Admite funciones internas y generación de código CLZERO."
 
 #: config/i386/i386.opt:881
-#, fuzzy
-#| msgid "Support PCLMUL built-in functions and code generation"
 msgid "Support PKU built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código PCLMUL."
+msgstr "Admite funciones internas y generación de código PKU."
 
 #: config/i386/i386.opt:885
 msgid "Use given stack-protector guard."
-msgstr ""
+msgstr "USa la guarda de protección de la pila dada."
 
 #: config/i386/i386.opt:889
-#, fuzzy
-#| msgid "Known ARM architectures (for use with the -march= option):"
 msgid "Known stack protector guard (for use with the -mstack-protector-guard= option):"
-msgstr "Arquitecturas ARM conocidas (para usar con la opción -march=):"
+msgstr "Guarda de protección de pila conocida (para usar con la opción -mstack-protector-guard=):"
 
 #: config/i386/i386.opt:899
 msgid "Attempt to avoid generating instruction sequences containing ret bytes."
-msgstr ""
+msgstr "Trata de evitar que se generen secuencias de instrucciones que contengan ret bytes."
 
 #: config/i386/stringop.opt:8
 msgid "the Free Software Foundation; either version 3, or (at your option)"
