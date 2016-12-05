@@ -1023,7 +1023,7 @@ arc*-*-elf*)
 	;;
 arc*-*-linux-uclibc*)
 	extra_headers="arc-simd.h"
-	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file}"
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} arc/t-uClibc arc/t-arc"
 	tm_defines="${tm_defines} TARGET_SDATA_DEFAULT=0"
 	tm_defines="${tm_defines} TARGET_MMEDIUM_CALLS_DEFAULT=1"
