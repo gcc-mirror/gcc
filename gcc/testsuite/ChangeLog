@@ -1,3 +1,28 @@
+2016-12-05  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx512bw-kandd-1.c: New.
+	* gcc.target/i386/avx512bw-kandnd-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kandnq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kandq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-knotd-1.c: Ditto.
+	* gcc.target/i386/avx512bw-knotq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kord-1.c: Ditto.
+	* gcc.target/i386/avx512bw-korq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kunpckdq-3.c: Ditto.
+	* gcc.target/i386/avx512bw-kunpckwd-3.c: Ditto.
+	* gcc.target/i386/avx512bw-kxnord-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxnorq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxord-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxorq-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kandb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kandnb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-knotb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-korb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kxnorb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kxorb-1.c: Ditto.
+	* gcc.target/i386/avx512f-kunpckbw-3.c: Ditto.
+	* gcc.target/i386/avx512f-kandnw-1.c: Removed unneeded check.
+
 2016-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/fold-and-lshift.c, gcc.dg/fold-and-rshift-1.c,

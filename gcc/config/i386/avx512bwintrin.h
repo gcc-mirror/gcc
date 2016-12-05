@@ -40,6 +40,90 @@ typedef char __v64qi __attribute__ ((__vector_size__ (64)));
 
 typedef unsigned long long __mmask64;
 
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_knot_mask32 (__mmask32 __A)
+{
+  return (__mmask32) __builtin_ia32_knotsi ((__mmask32) __A);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_knot_mask64 (__mmask64 __A)
+{
+  return (__mmask64) __builtin_ia32_knotdi ((__mmask64) __A);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kor_mask32 (__mmask32 __A, __mmask32 __B)
+{
+  return (__mmask32) __builtin_ia32_korsi ((__mmask32) __A, (__mmask32) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kor_mask64 (__mmask64 __A, __mmask64 __B)
+{
+  return (__mmask64) __builtin_ia32_kordi ((__mmask64) __A, (__mmask64) __B);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kxnor_mask32 (__mmask32 __A, __mmask32 __B)
+{
+  return (__mmask32) __builtin_ia32_kxnorsi ((__mmask32) __A, (__mmask32) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kxnor_mask64 (__mmask64 __A, __mmask64 __B)
+{
+  return (__mmask64) __builtin_ia32_kxnordi ((__mmask64) __A, (__mmask64) __B);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kxor_mask32 (__mmask32 __A, __mmask32 __B)
+{
+  return (__mmask32) __builtin_ia32_kxorsi ((__mmask32) __A, (__mmask32) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kxor_mask64 (__mmask64 __A, __mmask64 __B)
+{
+  return (__mmask64) __builtin_ia32_kxordi ((__mmask64) __A, (__mmask64) __B);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kand_mask32 (__mmask32 __A, __mmask32 __B)
+{
+  return (__mmask32) __builtin_ia32_kandsi ((__mmask32) __A, (__mmask32) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kand_mask64 (__mmask64 __A, __mmask64 __B)
+{
+  return (__mmask64) __builtin_ia32_kanddi ((__mmask64) __A, (__mmask64) __B);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kandn_mask32 (__mmask32 __A, __mmask32 __B)
+{
+  return (__mmask32) __builtin_ia32_kandnsi ((__mmask32) __A, (__mmask32) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kandn_mask64 (__mmask64 __A, __mmask64 __B)
+{
+  return (__mmask64) __builtin_ia32_kandndi ((__mmask64) __A, (__mmask64) __B);
+}
+
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_mov_epi16 (__m512i __W, __mmask32 __U, __m512i __A)
@@ -114,9 +198,25 @@ _mm512_kunpackw (__mmask32 __A, __mmask32 __B)
 					      (__mmask32) __B);
 }
 
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kunpackw_mask32 (__mmask16 __A, __mmask16 __B)
+{
+  return (__mmask32) __builtin_ia32_kunpcksi ((__mmask32) __A,
+					      (__mmask32) __B);
+}
+
 extern __inline __mmask64
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_kunpackd (__mmask64 __A, __mmask64 __B)
+{
+  return (__mmask64) __builtin_ia32_kunpckdi ((__mmask64) __A,
+					      (__mmask64) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kunpackd_mask64 (__mmask32 __A, __mmask32 __B)
 {
   return (__mmask64) __builtin_ia32_kunpckdi ((__mmask64) __A,
 					      (__mmask64) __B);

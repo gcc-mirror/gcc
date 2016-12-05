@@ -34,6 +34,48 @@
 #define __DISABLE_AVX512DQ__
 #endif /* __AVX512DQ__ */
 
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_knot_mask8 (__mmask8 __A)
+{
+  return (__mmask8) __builtin_ia32_knotqi ((__mmask8) __A);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kor_mask8 (__mmask8 __A, __mmask8 __B)
+{
+  return (__mmask8) __builtin_ia32_korqi ((__mmask8) __A, (__mmask8) __B);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kxnor_mask8 (__mmask8 __A, __mmask8 __B)
+{
+  return (__mmask8) __builtin_ia32_kxnorqi ((__mmask8) __A, (__mmask8) __B);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kxor_mask8 (__mmask8 __A, __mmask8 __B)
+{
+  return (__mmask8) __builtin_ia32_kxorqi ((__mmask8) __A, (__mmask8) __B);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kand_mask8 (__mmask8 __A, __mmask8 __B)
+{
+  return (__mmask8) __builtin_ia32_kandqi ((__mmask8) __A, (__mmask8) __B);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kandn_mask8 (__mmask8 __A, __mmask8 __B)
+{
+  return (__mmask8) __builtin_ia32_kandnqi ((__mmask8) __A, (__mmask8) __B);
+}
+
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_broadcast_f64x2 (__m128d __A)
