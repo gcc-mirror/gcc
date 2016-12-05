@@ -831,6 +831,9 @@ case ${target} in
 *-*-uclinux*)
   extra_options="$extra_options gnu-user.opt"
   use_gcc_stdint=wrap
+  case ${enable_threads} in
+    "" | yes | posix) thread_file='posix' ;;
+  esac
   tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC SINGLE_LIBC"
   ;;
 *-*-rdos*)

@@ -1,3 +1,7 @@
+2016-12-05  Waldemar Brodkorb  <wbx@openadk.org>
+
+	* config.gcc (*-*-uclinux*): Enable posix threads.
+
 2016-12-05  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* config/i386/avx512bwintrin.h: Add new k-mask intrinsics.
