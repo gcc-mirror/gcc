@@ -595,8 +595,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_ASM_EMIT_EXCEPT_PERSONALITY
 #define TARGET_ASM_EMIT_EXCEPT_PERSONALITY arm_asm_emit_except_personality
 
-#undef TARGET_ASM_INIT_SECTIONS
 #endif /* ARM_UNWIND_INFO */
+
+#undef TARGET_ASM_INIT_SECTIONS
 #define TARGET_ASM_INIT_SECTIONS arm_asm_init_sections
 
 #undef TARGET_DWARF_REGISTER_SPAN
