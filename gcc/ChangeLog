@@ -1,3 +1,7 @@
+2016-12-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c: Revert r243162.
+
 2016-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* match.pd: Simplify X ? C : 0 where C is a power of 2 and
