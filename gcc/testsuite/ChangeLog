@@ -1,3 +1,8 @@
+2016-12-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/fold-and-lshift.c, gcc.dg/fold-and-rshift-1.c,
+	gcc.dg/fold-and-rshift-2.c: New testcases.
+
 2016-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/fmax_errors.c: Check notes after last error are
