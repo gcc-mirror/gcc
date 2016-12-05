@@ -1,3 +1,30 @@
+2016-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (sparc_splitdi_legitimate): Rename to...
+	(sparc_split_reg_mem_legitimate): ...this.
+	(sparc_split_reg_mem): Declare.
+	(sparc_split_mem_reg): Likewise.
+	(sparc_split_regreg_legitimate): Rename to...
+	(sparc_split_reg_reg_legitimate): ...this.
+	* config/sparc/sparc.c (sparc_splitdi_legitimate): Rename to...
+	(sparc_split_reg_mem_legitimate): ...this.
+	(sparc_split_reg_mem): New function.
+	(sparc_split_mem_reg): Likewise.
+	(sparc_split_regreg_legitimate): Rename to...
+	(sparc_split_reg_reg_legitimate): ...this.
+	(sparc_split_reg_reg): New function.
+	* config/sparc/sparc.md (lra): Remove "none" value.
+	(enabled): Adjust to above change.
+	(*movdi_insn_sp32): Remove new (r,T) alternative and reorder others.
+	(DImode splitters): Adjust to above renamings and use new functions.
+	(*movdf_insn_sp32): Remove new (r,T) alternative and reorder others.
+	(DFmode splitters): Adjust to above renamings and use new functions.
+	(*mov<VM64:mode>_insn_sp64): Replace C with Z constraint and use W
+	constraint in conjunction with e.
+	(*mov<VM64:mode>_insn_sp32): Remove new (r,T) alternative, add (o,Y)
+	alternative and reorder others.
+	(VM64:mode splitters): Adjust to above renamings and use new functions.
+
 2016-12-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78668
