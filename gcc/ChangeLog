@@ -1,3 +1,25 @@
+2016-12-05  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* config/i386/avx512bwintrin.h: Add new k-mask intrinsics.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512fintrin.h: Ditto.
+	* config/i386/i386-builtin-types.def (UCHAR_FTYPE_UQI_UQI_PUCHAR,
+	UCHAR_FTYPE_UHI_UHI_PUCHAR, UCHAR_FTYPE_USI_USI_PUCHAR,
+	UCHAR_FTYPE_UDI_UDI_PUCHAR, UCHAR_FTYPE_UQI_UQI, UCHAR_FTYPE_UHI_UHI,
+	UCHAR_FTYPE_USI_USI, UCHAR_FTYPE_UDI_UDI, UQI_FTYPE_UQI_INT,
+	UHI_FTYPE_UHI_INT, USI_FTYPE_USI_INT, UDI_FTYPE_UDI_INT,
+	UQI_FTYPE_UQI, USI_FTYPE_USI, UDI_FTYPE_UDI, UQI_FTYPE_UQI_UQI): New
+	function types.
+	* config/i386/i386-builtin.def (__builtin_ia32_knotqi,
+	__builtin_ia32_knotsi, __builtin_ia32_knotdi,
+	__builtin_ia32_korqi, __builtin_ia32_korsi, __builtin_ia32_kordi,
+	__builtin_ia32_kxnorqi, __builtin_ia32_kxnorsi,
+	__builtin_ia32_kxnordi, __builtin_ia32_kxorqi, __builtin_ia32_kxorsi,
+	__builtin_ia32_kxordi, __builtin_ia32_kandqi,
+	__builtin_ia32_kandsi, __builtin_ia32_kanddi, __builtin_ia32_kandnqi,
+	__builtin_ia32_kandnsi, __builtin_ia32_kandndi): New.
+	* config/i386/i386.c (ix86_expand_args_builtin): Handle new types.
+
 2016-12-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c: Revert r243162.

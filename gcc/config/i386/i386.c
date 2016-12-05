@@ -34842,7 +34842,12 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4DI_FTYPE_V8HI:
     case V4DI_FTYPE_V4SI:
     case V4DI_FTYPE_V2DI:
+    case UQI_FTYPE_UQI:
     case UHI_FTYPE_UHI:
+    case USI_FTYPE_USI:
+    case USI_FTYPE_UQI:
+    case USI_FTYPE_UHI:
+    case UDI_FTYPE_UDI:
     case UHI_FTYPE_V16QI:
     case USI_FTYPE_V32QI:
     case UDI_FTYPE_V64QI:
@@ -34976,6 +34981,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case UINT_FTYPE_UINT_UCHAR:
     case UINT16_FTYPE_UINT16_INT:
     case UINT8_FTYPE_UINT8_INT:
+    case UQI_FTYPE_UQI_UQI:
     case UHI_FTYPE_UHI_UHI:
     case USI_FTYPE_USI_USI:
     case UDI_FTYPE_UDI_UDI:
@@ -35023,6 +35029,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4DI_FTYPE_V8DI_INT:
     case QI_FTYPE_V4SF_INT:
     case QI_FTYPE_V2DF_INT:
+    case UQI_FTYPE_UQI_INT:
+    case UHI_FTYPE_UHI_INT:
+    case USI_FTYPE_USI_INT:
+    case UDI_FTYPE_UDI_INT:
       nargs = 2;
       nargs_constant = 1;
       break;
