@@ -1,3 +1,10 @@
+2016-12-05  Cupertino Miranda  <cmiranda@synopsys.com>
+
+	* config.host (arc*-*-linux-uclibc*): Use default extra
+	objects. Include linux-android header.
+	* config/arc/crti.S (_init): Declare symbol as function.
+	(_fini): Likewise.
+
 2016-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78379

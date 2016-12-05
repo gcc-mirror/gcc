@@ -1,3 +1,8 @@
+2016-12-05  Cupertino Miranda  <cmiranda@synopsys.com>
+
+	* config/arc/arc.h (STARTFILE_SPEC): Use default linux specs.
+	(ENDFILE_SPEC): Likewise.
+
 2016-12-05  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-protos.h (insn_is_tls_gd_dispatch): Remove.
