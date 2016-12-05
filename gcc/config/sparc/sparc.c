@@ -8484,46 +8484,82 @@ order_regs_for_local_alloc (void)
 }
 
 /* Return 1 if REG and MEM are legitimate enough to allow the various
-   mem<-->reg splits to be run.  */
+   MEM<-->REG splits to be run.  */
 
 int
-sparc_splitdi_legitimate (rtx reg, rtx mem)
+sparc_split_reg_mem_legitimate (rtx reg, rtx mem)
 {
   /* Punt if we are here by mistake.  */
   gcc_assert (reload_completed);
 
   /* We must have an offsettable memory reference.  */
-  if (! offsettable_memref_p (mem))
+  if (!offsettable_memref_p (mem))
     return 0;
 
   /* If we have legitimate args for ldd/std, we do not want
      the split to happen.  */
-  if ((REGNO (reg) % 2) == 0
-      && mem_min_alignment (mem, 8))
+  if ((REGNO (reg) % 2) == 0 && mem_min_alignment (mem, 8))
     return 0;
 
   /* Success.  */
   return 1;
 }
 
-/* Like sparc_splitdi_legitimate but for REG <--> REG moves.  */
+/* Split a REG <-- MEM move into a pair of moves in MODE.  */
+
+void
+sparc_split_reg_mem (rtx dest, rtx src, machine_mode mode)
+{
+  rtx high_part = gen_highpart (mode, dest);
+  rtx low_part = gen_lowpart (mode, dest);
+  rtx word0 = adjust_address (src, mode, 0);
+  rtx word1 = adjust_address (src, mode, 4);
+
+  if (reg_overlap_mentioned_p (high_part, word1))
+    {
+      emit_move_insn_1 (low_part, word1);
+      emit_move_insn_1 (high_part, word0);
+    }
+  else
+    {
+      emit_move_insn_1 (high_part, word0);
+      emit_move_insn_1 (low_part, word1);
+    }
+}
+
+/* Split a MEM <-- REG move into a pair of moves in MODE.  */
+
+void
+sparc_split_mem_reg (rtx dest, rtx src, machine_mode mode)
+{
+  rtx word0 = adjust_address (dest, mode, 0);
+  rtx word1 = adjust_address (dest, mode, 4);
+  rtx high_part = gen_highpart (mode, src);
+  rtx low_part = gen_lowpart (mode, src);
+
+  emit_move_insn_1 (word0, high_part);
+  emit_move_insn_1 (word1, low_part);
+}
+
+/* Like sparc_split_reg_mem_legitimate but for REG <--> REG moves.  */
 
 int
-sparc_split_regreg_legitimate (rtx reg1, rtx reg2)
+sparc_split_reg_reg_legitimate (rtx reg1, rtx reg2)
 {
-  int regno1, regno2;
+  /* Punt if we are here by mistake.  */
+  gcc_assert (reload_completed);
 
   if (GET_CODE (reg1) == SUBREG)
     reg1 = SUBREG_REG (reg1);
   if (GET_CODE (reg1) != REG)
     return 0;
-  regno1 = REGNO (reg1);
+  const int regno1 = REGNO (reg1);
 
   if (GET_CODE (reg2) == SUBREG)
     reg2 = SUBREG_REG (reg2);
   if (GET_CODE (reg2) != REG)
     return 0;
-  regno2 = REGNO (reg2);
+  const int regno2 = REGNO (reg2);
 
   if (SPARC_INT_REG_P (regno1) && SPARC_INT_REG_P (regno2))
     return 1;
@@ -8536,6 +8572,30 @@ sparc_split_regreg_legitimate (rtx reg1, rtx reg2)
     }
 
   return 0;
+}
+
+/* Split a REG <--> REG move into a pair of moves in MODE.  */
+
+void
+sparc_split_reg_reg (rtx dest, rtx src, machine_mode mode)
+{
+  rtx dest1 = gen_highpart (mode, dest);
+  rtx dest2 = gen_lowpart (mode, dest);
+  rtx src1 = gen_highpart (mode, src);
+  rtx src2 = gen_lowpart (mode, src);
+
+  /* Now emit using the real source and destination we found, swapping
+     the order if we detect overlap.  */
+  if (reg_overlap_mentioned_p (dest1, src2))
+    {
+      emit_move_insn_1 (dest2, src2);
+      emit_move_insn_1 (dest1, src1);
+    }
+  else
+    {
+      emit_move_insn_1 (dest1, src1);
+      emit_move_insn_1 (dest2, src2);
+    }
 }
 
 /* Return 1 if REGNO (reg1) is even and REGNO (reg1) == REGNO (reg2) - 1.

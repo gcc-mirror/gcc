@@ -254,14 +254,12 @@
 (define_attr "cpu_feature" "none,fpu,fpunotv9,v9,vis,vis3,vis4"
   (const_string "none"))
 
-(define_attr "lra" "none,disabled,enabled"
-  (const_string "none"))
+(define_attr "lra" "disabled,enabled"
+  (const_string "enabled"))
 
 (define_attr "enabled" ""
   (cond [(eq_attr "cpu_feature" "none")
-	   (cond [(eq_attr "lra" "disabled") (symbol_ref "!TARGET_LRA")
-		  (eq_attr "lra" "enabled") (symbol_ref "TARGET_LRA")]
-		 (const_int 1))
+           (cond [(eq_attr "lra" "disabled") (symbol_ref "!TARGET_LRA")] (const_int 1))
          (eq_attr "cpu_feature" "fpu") (symbol_ref "TARGET_FPU")
          (eq_attr "cpu_feature" "fpunotv9") (symbol_ref "TARGET_FPU && !TARGET_V9")
          (eq_attr "cpu_feature" "v9") (symbol_ref "TARGET_V9")
@@ -1707,25 +1705,23 @@
 
 (define_insn "*movdi_insn_sp32"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-			    "=T,o,T,T,U,r,o,r,r,r,?T,?*f,?*f,?o,?*e,?*e,  r,?*f,?*e,?W,b,b")
+			    "=T,o,U,T,r,o,r,r,?*f,?T,?*f,?o,?*e,?*e,  r,?*f,?*e,?W,*b,*b")
         (match_operand:DI 1 "input_operand"
-			    " J,J,U,r,T,T,r,o,i,r,*f,  T,  o,*f, *e, *e,?*f,  r,  W,*e,J,P"))]
+			    " J,J,T,U,o,r,i,r,  T,*f,  o,*f, *e, *e,?*f,  r,  W,*e, J, P"))]
   "TARGET_ARCH32
    && (register_operand (operands[0], DImode)
        || register_or_zero_operand (operands[1], DImode))"
   "@
-   stx\t%%g0, %0
+   stx\t%r1, %0
    #
-   std\t%1, %0
-   std\t%1, %0
    ldd\t%1, %0
-   ldd\t%1, %0
-   #
-   #
-   #
-   #
    std\t%1, %0
    ldd\t%1, %0
+   std\t%1, %0
+   #
+   #
+   ldd\t%1, %0
+   std\t%1, %0
    #
    #
    fmovd\t%1, %0
@@ -1736,12 +1732,12 @@
    std\t%1, %0
    fzero\t%0
    fone\t%0"
-  [(set_attr "type" "store,store,store,store,load,load,*,*,*,*,fpstore,fpload,*,*,fpmove,*,*,*,fpload,fpstore,visl,visl")
-   (set_attr "length" "*,2,*,*,*,*,2,2,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
-   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
-   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")
-   (set_attr "v3pipe" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,true,true")
-   (set_attr "lra" "*,*,disabled,enabled,disabled,enabled,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "store,*,load,store,load,store,*,*,fpload,fpstore,*,*,fpmove,*,*,*,fpload,fpstore,visl,visl")
+   (set_attr "length" "*,2,*,*,*,*,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
+   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
+   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")
+   (set_attr "v3pipe" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,true,true")
+   (set_attr "lra" "*,*,disabled,disabled,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdi_insn_sp64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,?W,b,b")
@@ -1997,30 +1993,27 @@
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
         (match_operand:DI 1 "const_int_operand" ""))]
-  "TARGET_ARCH32
+  "reload_completed
+   && TARGET_ARCH32
    && ((GET_CODE (operands[0]) == REG
         && SPARC_INT_REG_P (REGNO (operands[0])))
        || (GET_CODE (operands[0]) == SUBREG
            && GET_CODE (SUBREG_REG (operands[0])) == REG
-           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))
-   && reload_completed"
+           && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(clobber (const_int 0))]
 {
-  HOST_WIDE_INT low, high;
+  HOST_WIDE_INT low = trunc_int_for_mode (INTVAL (operands[1]), SImode);
+  HOST_WIDE_INT high = trunc_int_for_mode (INTVAL (operands[1]) >> 32, SImode);
+  rtx high_part = gen_highpart (SImode, operands[0]);
+  rtx low_part = gen_lowpart (SImode, operands[0]);
 
-  low = trunc_int_for_mode (INTVAL (operands[1]), SImode);
-  high = trunc_int_for_mode (INTVAL (operands[1]) >> 32, SImode);
-  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), GEN_INT (high)));
+  emit_move_insn_1 (high_part, GEN_INT (high));
 
-  /* Slick... but this trick loses if this subreg constant part
-     can be done in one insn.  */
-  if (low == high
-      && !SPARC_SETHI32_P (high)
-      && !SPARC_SIMM13_P (high))
-    emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			  gen_highpart (SImode, operands[0])));
+  /* Slick... but this loses if the constant can be done in one insn.  */
+  if (low == high && !SPARC_SETHI32_P (high) && !SPARC_SIMM13_P (high))
+    emit_move_insn_1 (low_part, high_part);
   else
-    emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), GEN_INT (low)));
+    emit_move_insn_1 (low_part, GEN_INT (low));
 
   DONE;
 })
@@ -2031,31 +2024,10 @@
   "reload_completed
    && (!TARGET_V9
        || (TARGET_ARCH32
-           && sparc_split_regreg_legitimate (operands[0], operands[1])))"
+           && sparc_split_reg_reg_legitimate (operands[0], operands[1])))"
   [(clobber (const_int 0))]
 {
-  rtx set_dest = operands[0];
-  rtx set_src = operands[1];
-  rtx dest1, dest2;
-  rtx src1, src2;
-
-  dest1 = gen_highpart (SImode, set_dest);
-  dest2 = gen_lowpart (SImode, set_dest);
-  src1 = gen_highpart (SImode, set_src);
-  src2 = gen_lowpart (SImode, set_src);
-
-  /* Now emit using the real source and destination we found, swapping
-     the order if we detect overlap.  */
-  if (reg_overlap_mentioned_p (dest1, src2))
-    {
-      emit_insn (gen_movsi (dest2, src2));
-      emit_insn (gen_movsi (dest1, src1));
-    }
-  else
-    {
-      emit_insn (gen_movsi (dest1, src1));
-      emit_insn (gen_movsi (dest2, src2));
-    }
+  sparc_split_reg_reg (operands[0], operands[1], SImode);
   DONE;
 })
 
@@ -2064,41 +2036,24 @@
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
         (match_operand:DI 1 "memory_operand" ""))]
-  "(TARGET_ARCH32
-    && reload_completed
-    && sparc_splitdi_legitimate (operands[0], operands[1]))"
+  "reload_completed
+   && TARGET_ARCH32
+   && sparc_split_reg_mem_legitimate (operands[0], operands[1])"
   [(clobber (const_int 0))]
 {
-  rtx word0 = adjust_address (operands[1], SImode, 0);
-  rtx word1 = adjust_address (operands[1], SImode, 4);
-  rtx high_part = gen_highpart (SImode, operands[0]);
-  rtx low_part = gen_lowpart (SImode, operands[0]);
-
-  if (reg_overlap_mentioned_p (high_part, word1))
-    {
-      emit_insn (gen_movsi (low_part, word1));
-      emit_insn (gen_movsi (high_part, word0));
-    }
-  else
-    {
-      emit_insn (gen_movsi (high_part, word0));
-      emit_insn (gen_movsi (low_part, word1));
-    }
+  sparc_split_reg_mem (operands[0], operands[1], SImode);
   DONE;
 })
 
 (define_split
   [(set (match_operand:DI 0 "memory_operand" "")
         (match_operand:DI 1 "register_operand" ""))]
-  "(TARGET_ARCH32
-    && reload_completed
-    && sparc_splitdi_legitimate (operands[1], operands[0]))"
+  "reload_completed
+   && TARGET_ARCH32
+   && sparc_split_reg_mem_legitimate (operands[1], operands[0])"
   [(clobber (const_int 0))]
 {
-  emit_insn (gen_movsi (adjust_address (operands[0], SImode, 0),
-			gen_highpart (SImode, operands[1])));
-  emit_insn (gen_movsi (adjust_address (operands[0], SImode, 4),
-			gen_lowpart (SImode, operands[1])));
+  sparc_split_mem_reg (operands[0], operands[1], SImode);
   DONE;
 })
 
@@ -2112,8 +2067,8 @@
    && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
 {
-  emit_insn (gen_movsi (adjust_address (operands[0], SImode, 0), const0_rtx));
-  emit_insn (gen_movsi (adjust_address (operands[0], SImode, 4), const0_rtx));
+  emit_move_insn_1 (adjust_address (operands[0], SImode, 0), const0_rtx);
+  emit_move_insn_1 (adjust_address (operands[0], SImode, 4), const0_rtx);
   DONE;
 })
 
@@ -2381,13 +2336,15 @@
 
 (define_insn "*movdf_insn_sp32"
   [(set (match_operand:DF 0 "nonimmediate_operand"
-			    "=b,b,e,e,*r, f,  e,T,W,U,r,T,T,  f,  *r,  o,o")
+			    "=T,o,b,b,e,e,*r, f,  e,W,U,T,  f,o, *r,*r, o")
 	(match_operand:DF 1 "input_operand"
-			    " G,C,e,e, f,*r,W#F,G,e,T,T,U,r,o#F,*roF,*rG,f"))]
+			    " G,G,G,C,e,e, f,*r,W#F,e,T,U,o#F,f,*rF, o,*r"))]
   "TARGET_ARCH32
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
   "@
+  stx\t%r1, %0
+  #
   fzero\t%0
   fone\t%0
   fmovd\t%1, %0
@@ -2395,22 +2352,20 @@
   #
   #
   ldd\t%1, %0
-  stx\t%r1, %0
   std\t%1, %0
   ldd\t%1, %0
+  std\t%1, %0
+  #
+  #
+  #
   ldd\t%1, %0
-  std\t%1, %0
-  std\t%1, %0
-  #
-  #
-  #
-  #"
-  [(set_attr "type" "visl,visl,fpmove,*,*,*,fpload,store,fpstore,load,load,store,store,*,*,*,*")
-   (set_attr "length" "*,*,*,2,2,2,*,*,*,*,*,*,*,2,2,2,2")
-   (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,*,*,fpu,*,*,fpu")
-   (set_attr "v3pipe" "true,true,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "lra" "*,*,*,*,*,*,*,*,*,disabled,enabled,disabled,enabled,*,*,*,*")])
+  std\t%1, %0"
+  [(set_attr "type" "store,*,visl,visl,fpmove,*,*,*,fpload,fpstore,load,store,*,*,*,load,store")
+   (set_attr "length" "*,2,*,*,*,2,2,2,*,*,*,*,2,2,2,*,*")
+   (set_attr "fptype" "*,*,double,double,double,*,*,*,*,*,*,*,*,*,*,*,*")
+   (set_attr "cpu_feature" "v9,*,vis,vis,v9,fpunotv9,vis3,vis3,fpu,fpu,*,*,fpu,fpu,*,*,*")
+   (set_attr "v3pipe" "*,*,true,true,*,*,*,*,*,*,*,*,*,*,*,*,*")
+   (set_attr "lra" "*,*,*,*,*,*,*,*,*,*,disabled,disabled,*,*,*,*,*")])
 
 (define_insn "*movdf_insn_sp64"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,W, *r,*r,  m,*r")
@@ -2440,44 +2395,38 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
         (match_operand:DF 1 "const_double_operand" ""))]
-  "REG_P (operands[0])
+  "reload_completed
+   && REG_P (operands[0])
    && SPARC_INT_REG_P (REGNO (operands[0]))
-   && !const_zero_operand (operands[1], GET_MODE (operands[0]))
-   && reload_completed"
+   && !const_zero_operand (operands[1], GET_MODE (operands[0]))"
   [(clobber (const_int 0))]
 {
   operands[0] = gen_raw_REG (DImode, REGNO (operands[0]));
 
   if (TARGET_ARCH64)
     {
-      machine_mode mode = GET_MODE (operands[1]);
-      rtx tem = simplify_subreg (DImode, operands[1], mode, 0);
+      rtx tem = simplify_subreg (DImode, operands[1], DFmode, 0);
       emit_insn (gen_movdi (operands[0], tem));
     }
   else
     {
-      machine_mode mode = GET_MODE (operands[1]);
-      rtx hi = simplify_subreg (SImode, operands[1], mode, 0);
-      rtx lo = simplify_subreg (SImode, operands[1], mode, 4);
+      rtx hi = simplify_subreg (SImode, operands[1], DFmode, 0);
+      rtx lo = simplify_subreg (SImode, operands[1], DFmode, 4);
+      rtx high_part = gen_highpart (SImode, operands[0]);
+      rtx low_part = gen_lowpart (SImode, operands[0]);
 
       gcc_assert (GET_CODE (hi) == CONST_INT);
       gcc_assert (GET_CODE (lo) == CONST_INT);
 
-      emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), hi));
+      emit_move_insn_1 (high_part, hi);
 
-      /* Slick... but this trick loses if this subreg constant part
-         can be done in one insn.  */
+      /* Slick... but this loses if the constant can be done in one insn.  */
       if (lo == hi
 	  && !SPARC_SETHI32_P (INTVAL (hi))
 	  && !SPARC_SIMM13_P (INTVAL (hi)))
-        {
-          emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			        gen_highpart (SImode, operands[0])));
-        }
+	emit_move_insn_1 (low_part, high_part);
       else
-        {
-          emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), lo));
-        }
+	emit_move_insn_1 (low_part, lo);
     }
   DONE;
 })
@@ -2489,35 +2438,31 @@
 ;; register DFmode cases must be handled.
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
-        (match_operand:DF 1 "register_operand" ""))]
-  "(!TARGET_V9
-    || (TARGET_ARCH32
-        && sparc_split_regreg_legitimate (operands[0], operands[1])))
-   && reload_completed"
+        (match_operand:DF 1 "const_zero_operand" ""))]
+  "reload_completed
+   && TARGET_ARCH32
+   && ((GET_CODE (operands[0]) == REG
+	&& SPARC_INT_REG_P (REGNO (operands[0])))
+       || (GET_CODE (operands[0]) == SUBREG
+	   && GET_CODE (SUBREG_REG (operands[0])) == REG
+	   && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
   [(clobber (const_int 0))]
 {
-  rtx set_dest = operands[0];
-  rtx set_src = operands[1];
-  rtx dest1, dest2;
-  rtx src1, src2;
+  emit_move_insn_1 (gen_highpart (SFmode, operands[0]), CONST0_RTX (SFmode));
+  emit_move_insn_1 (gen_lowpart (SFmode, operands[0]), CONST0_RTX (SFmode));
+  DONE;
+})
 
-  dest1 = gen_highpart (SFmode, set_dest);
-  dest2 = gen_lowpart (SFmode, set_dest);
-  src1 = gen_highpart (SFmode, set_src);
-  src2 = gen_lowpart (SFmode, set_src);
-
-  /* Now emit using the real source and destination we found, swapping
-     the order if we detect overlap.  */
-  if (reg_overlap_mentioned_p (dest1, src2))
-    {
-      emit_move_insn_1 (dest2, src2);
-      emit_move_insn_1 (dest1, src1);
-    }
-  else
-    {
-      emit_move_insn_1 (dest1, src1);
-      emit_move_insn_1 (dest2, src2);
-    }
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "")
+        (match_operand:DF 1 "register_operand" ""))]
+  "reload_completed
+   && (!TARGET_V9
+       || (TARGET_ARCH32
+	   && sparc_split_reg_reg_legitimate (operands[0], operands[1])))"
+  [(clobber (const_int 0))]
+{
+  sparc_split_reg_reg (operands[0], operands[1], SFmode);
   DONE;
 })
 
@@ -2526,26 +2471,10 @@
 	(match_operand:DF 1 "memory_operand" ""))]
   "reload_completed
    && TARGET_ARCH32
-   && (((REGNO (operands[0]) % 2) != 0)
-       || !mem_min_alignment (operands[1], 8))
-   && offsettable_memref_p (operands[1])"
+   && sparc_split_reg_mem_legitimate (operands[0], operands[1])"
   [(clobber (const_int 0))]
 {
-  rtx word0, word1;
-
-  word0 = adjust_address (operands[1], SFmode, 0);
-  word1 = adjust_address (operands[1], SFmode, 4);
-
-  if (reg_overlap_mentioned_p (gen_highpart (SFmode, operands[0]), word1))
-    {
-      emit_move_insn_1 (gen_lowpart (SFmode, operands[0]), word1);
-      emit_move_insn_1 (gen_highpart (SFmode, operands[0]), word0);
-    }
-  else
-    {
-      emit_move_insn_1 (gen_highpart (SFmode, operands[0]), word0);
-      emit_move_insn_1 (gen_lowpart (SFmode, operands[0]), word1);
-    }
+  sparc_split_reg_mem (operands[0], operands[1], SFmode);
   DONE;
 })
 
@@ -2554,18 +2483,10 @@
 	(match_operand:DF 1 "register_operand" ""))]
   "reload_completed
    && TARGET_ARCH32
-   && (((REGNO (operands[1]) % 2) != 0)
-       || !mem_min_alignment (operands[0], 8))
-   && offsettable_memref_p (operands[0])"
+   && sparc_split_reg_mem_legitimate (operands[1], operands[0])"
   [(clobber (const_int 0))]
 {
-  rtx word0, word1;
-
-  word0 = adjust_address (operands[0], SFmode, 0);
-  word1 = adjust_address (operands[0], SFmode, 4);
-
-  emit_move_insn_1 (word0, gen_highpart (SFmode, operands[1]));
-  emit_move_insn_1 (word1, gen_lowpart (SFmode, operands[1]));
+  sparc_split_mem_reg (operands[0], operands[1], SFmode);
   DONE;
 })
 
@@ -2579,35 +2500,8 @@
    && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
 {
-  rtx dest1, dest2;
-
-  dest1 = adjust_address (operands[0], SFmode, 0);
-  dest2 = adjust_address (operands[0], SFmode, 4);
-
-  emit_move_insn_1 (dest1, CONST0_RTX (SFmode));
-  emit_move_insn_1 (dest2, CONST0_RTX (SFmode));
-  DONE;
-})
-
-(define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-        (match_operand:DF 1 "const_zero_operand" ""))]
-  "reload_completed
-   && TARGET_ARCH32
-   && ((GET_CODE (operands[0]) == REG
-	&& SPARC_INT_REG_P (REGNO (operands[0])))
-       || (GET_CODE (operands[0]) == SUBREG
-	   && GET_CODE (SUBREG_REG (operands[0])) == REG
-	   && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))"
-  [(clobber (const_int 0))]
-{
-  rtx set_dest = operands[0];
-  rtx dest1, dest2;
-
-  dest1 = gen_highpart (SFmode, set_dest);
-  dest2 = gen_lowpart (SFmode, set_dest);
-  emit_move_insn_1 (dest1, CONST0_RTX (SFmode));
-  emit_move_insn_1 (dest2, CONST0_RTX (SFmode));
+  emit_move_insn_1 (adjust_address (operands[0], SFmode, 0), CONST0_RTX (SFmode));
+  emit_move_insn_1 (adjust_address (operands[0], SFmode, 4), CONST0_RTX (SFmode));
   DONE;
 })
 
@@ -8625,8 +8519,8 @@
    (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,true,true")])
 
 (define_insn "*mov<VM64:mode>_insn_sp64"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,m,m,*r, m,*r, e,*r")
-	(match_operand:VM64 1 "input_operand"         "Y,C,e,m,e,Y, m,*r, e,*r,*r"))]
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,W,m,*r, m,*r, e,*r")
+	(match_operand:VM64 1 "input_operand"         "Y,Z,e,W,e,Y, m,*r, e,*r,*r"))]
   "TARGET_VIS
    && TARGET_ARCH64
    && (register_operand (operands[0], <VM64:MODE>mode)
@@ -8648,13 +8542,17 @@
    (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,*,*")])
 
 (define_insn "*mov<VM64:mode>_insn_sp32"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,*r, f,e,m,m,U,r,T,T, o,*r")
-	(match_operand:VM64 1 "input_operand"         "Y,C,e, f,*r,m,e,Y,T,T,U,r,*r,*r"))]
+  [(set (match_operand:VM64 0 "nonimmediate_operand"
+			      "=T,o,e,e,e,*r, f,e,W,U,T,e,o,*r,*r, o")
+	(match_operand:VM64 1 "input_operand"
+			      " Y,Y,Y,Z,e, f,*r,W,e,T,U,o,e,*r, o,*r"))]
   "TARGET_VIS
    && TARGET_ARCH32
    && (register_operand (operands[0], <VM64:MODE>mode)
        || register_or_zero_or_all_ones_operand (operands[1], <VM64:MODE>mode))"
   "@
+  stx\t%r1, %0
+  #
   fzero\t%0
   fone\t%0
   fsrc2\t%1, %0
@@ -8662,39 +8560,18 @@
   #
   ldd\t%1, %0
   std\t%1, %0
-  stx\t%r1, %0
   ldd\t%1, %0
-  ldd\t%1, %0
-  std\t%1, %0
   std\t%1, %0
   #
-  #"
-  [(set_attr "type" "visl,visl,vismv,*,*,fpload,fpstore,store,load,load,store,store,*,*")
-   (set_attr "length" "*,*,*,2,2,*,*,*,*,*,*,*,2,2")
-   (set_attr "cpu_feature" "vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*,*,*")
-   (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "lra" "*,*,*,*,*,*,*,*,disabled,enabled,disabled,enabled,*,*")])
-
-(define_split
-  [(set (match_operand:VM64 0 "memory_operand" "")
-        (match_operand:VM64 1 "register_operand" ""))]
-  "reload_completed
-   && TARGET_VIS
-   && TARGET_ARCH32
-   && (((REGNO (operands[1]) % 2) != 0)
-       || !mem_min_alignment (operands[0], 8))
-   && offsettable_memref_p (operands[0])"
-  [(clobber (const_int 0))]
-{
-  rtx word0, word1;
-
-  word0 = adjust_address (operands[0], SImode, 0);
-  word1 = adjust_address (operands[0], SImode, 4);
-
-  emit_move_insn_1 (word0, gen_highpart (SImode, operands[1]));
-  emit_move_insn_1 (word1, gen_lowpart (SImode, operands[1]));
-  DONE;
-})
+  #
+  #
+  ldd\t%1, %0
+  std\t%1, %0"
+  [(set_attr "type" "store,*,visl,visl,vismv,*,*,fpload,fpstore,load,store,*,*,*,load,store")
+   (set_attr "length" "*,2,*,*,*,2,2,*,*,*,*,2,2,2,*,*")
+   (set_attr "cpu_feature" "*,*,vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*,*,*")
+   (set_attr "v3pipe" "*,*,true,true,true,*,*,*,*,*,*,*,*,*,*,*")
+   (set_attr "lra" "*,*,*,*,*,*,*,*,*,disabled,disabled,*,*,*,*,*")])
 
 (define_split
   [(set (match_operand:VM64 0 "register_operand" "")
@@ -8702,31 +8579,51 @@
   "reload_completed
    && TARGET_VIS
    && TARGET_ARCH32
-   && sparc_split_regreg_legitimate (operands[0], operands[1])"
+   && sparc_split_reg_reg_legitimate (operands[0], operands[1])"
   [(clobber (const_int 0))]
 {
-  rtx set_dest = operands[0];
-  rtx set_src = operands[1];
-  rtx dest1, dest2;
-  rtx src1, src2;
+  sparc_split_reg_reg (operands[0], operands[1], SImode);
+  DONE;
+})
 
-  dest1 = gen_highpart (SImode, set_dest);
-  dest2 = gen_lowpart (SImode, set_dest);
-  src1 = gen_highpart (SImode, set_src);
-  src2 = gen_lowpart (SImode, set_src);
+(define_split
+  [(set (match_operand:VM64 0 "register_operand" "")
+        (match_operand:VM64 1 "memory_operand" ""))]
+  "reload_completed
+   && TARGET_VIS
+   && TARGET_ARCH32
+   && sparc_split_reg_mem_legitimate (operands[0], operands[1])"
+  [(clobber (const_int 0))]
+{
+  sparc_split_reg_mem (operands[0], operands[1], SImode);
+  DONE;
+})
 
-  /* Now emit using the real source and destination we found, swapping
-     the order if we detect overlap.  */
-  if (reg_overlap_mentioned_p (dest1, src2))
-    {
-      emit_insn (gen_movsi (dest2, src2));
-      emit_insn (gen_movsi (dest1, src1));
-    }
-  else
-    {
-      emit_insn (gen_movsi (dest1, src1));
-      emit_insn (gen_movsi (dest2, src2));
-    }
+(define_split
+  [(set (match_operand:VM64 0 "memory_operand" "")
+        (match_operand:VM64 1 "register_operand" ""))]
+  "reload_completed
+   && TARGET_VIS
+   && TARGET_ARCH32
+   && sparc_split_reg_mem_legitimate (operands[1], operands[0])"
+  [(clobber (const_int 0))]
+{
+  sparc_split_mem_reg (operands[0], operands[1], SImode);
+  DONE;
+})
+
+(define_split
+  [(set (match_operand:VM64 0 "memory_operand" "")
+        (match_operand:VM64 1 "const_zero_operand" ""))]
+  "reload_completed
+   && TARGET_VIS
+   && TARGET_ARCH32
+   && !mem_min_alignment (operands[0], 8)
+   && offsettable_memref_p (operands[0])"
+  [(clobber (const_int 0))]
+{
+  emit_move_insn_1 (adjust_address (operands[0], SImode, 0), const0_rtx);
+  emit_move_insn_1 (adjust_address (operands[0], SImode, 4), const0_rtx);
   DONE;
 })
 
