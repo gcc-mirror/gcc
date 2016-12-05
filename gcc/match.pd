@@ -2737,6 +2737,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (bit_and@2 @0 integer_pow2p@1) @1)
   (icmp @2 { build_zero_cst (TREE_TYPE (@0)); })))
  
+/* If we have (A & C) != 0 ? D : 0 where C and D are powers of 2,
+   convert this into a shift followed by ANDing with D.  */
+(simplify
+ (cond
+  (ne (bit_and @0 integer_pow2p@1) integer_zerop)
+  integer_pow2p@2 integer_zerop)
+ (with {
+    int shift = wi::exact_log2 (@2) - wi::exact_log2 (@1);
+  }
+  (if (shift > 0)
+   (bit_and
+    (lshift (convert @0) { build_int_cst (integer_type_node, shift); }) @2)
+   (bit_and
+    (convert (rshift @0 { build_int_cst (integer_type_node, -shift); })) @2))))
+
 /* If we have (A & C) != 0 where C is the sign bit of A, convert
    this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
 (for cmp (eq ne)
@@ -2750,6 +2765,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && wi::only_sign_bit_p (@1, element_precision (@0)))
    (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
     (ncmp (convert:stype @0) { build_zero_cst (stype); })))))
+
+/* If we have A < 0 ? C : 0 where C is a power of 2, convert
+   this into a right shift followed by ANDing with C.  */
+(simplify
+ (cond
+  (lt @0 integer_zerop)
+  integer_pow2p@1 integer_zerop)
+ (with {
+    int shift = element_precision (@0) - wi::exact_log2 (@1) - 1;
+  }
+  (bit_and
+   (convert (rshift @0 { build_int_cst (integer_type_node, shift); }))
+   @1)))
 
 /* When the addresses are not directly of decls compare base and offset.
    This implements some remaining parts of fold_comparison address

@@ -1,3 +1,8 @@
+2016-12-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* match.pd: Simplify X ? C : 0 where C is a power of 2 and
+	X tests a single bit.
+
 2016-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	* diagnostic.c (diagnostic_check_max_errors): New, broken out of ...
@@ -25,7 +30,7 @@
 	* config/arc/arc.md (ls_gd_load): Remove unused pattern.
 	(tls_gd_dispatch): Likewise.
 
-2016-12-025  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+2016-12-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm.c (TARGET_ASM_INIT_SECTIONS): Fix wrong undef
 	location.
