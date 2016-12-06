@@ -1,3 +1,9 @@
+2016-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57728
+	* pt.c (do_type_instantiation): Don't mess with non-user-provided
+	member functions.
+
 2016-11-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67631 - list-init and explicit conversions
