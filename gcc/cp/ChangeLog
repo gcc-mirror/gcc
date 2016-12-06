@@ -1,5 +1,9 @@
 2016-12-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71515
+	* pt.c (resolve_typename_type): Try to avoid calling
+	currently_open_class.
+
 	PR c++/77907
 	* constexpr.c (cxx_eval_constant_expression): Use cp_fold_convert.
 
