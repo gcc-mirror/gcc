@@ -3540,6 +3540,7 @@ expand_call (tree exp, rtx target, int ignore)
       funexp = prepare_call_address (fndecl ? fndecl : fntype, funexp,
 				     static_chain_value, &call_fusage,
 				     reg_parm_seen, flags);
+
       load_register_parameters (args, num_actuals, &call_fusage, flags,
 				pass == 0, &sibcall_failure);
 
