@@ -32,9 +32,9 @@
 	cortexr4f,cortexr5,cortexr7,
 	cortexr8,cortexm7,cortexm4,
 	cortexm3,marvell_pj4,cortexa15cortexa7,
-	cortexa17cortexa7,cortexm23,cortexa32,
-	cortexm33,cortexa35,cortexa53,
-	cortexa57,cortexa72,cortexa73,
+	cortexa17cortexa7,cortexa32,cortexa35,
+	cortexa53,cortexa57,cortexa72,
+	cortexa73,cortexm23,cortexm33,
 	exynosm1,falkor,qdf24xx,
 	xgene1,cortexa57cortexa53,cortexa72cortexa53,
 	cortexa73cortexa35,cortexa73cortexa53"

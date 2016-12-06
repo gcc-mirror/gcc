@@ -1,3 +1,10 @@
+2016-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cores.def (cortex-m23, cortex-m33): Move into
+	alphabetical order with respect to other ARMv8 processors.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+
 2016-12-06  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips.c (mips_expand_builtin_insn): Check input
