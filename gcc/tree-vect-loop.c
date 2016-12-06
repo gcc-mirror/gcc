@@ -6601,8 +6601,10 @@ vectorizable_live_operation (gimple *stmt,
   /* Create a new vectorized stmt for the uses of STMT and insert outside the
      loop.  */
   gimple_seq stmts = NULL;
-  tree new_tree = build3 (BIT_FIELD_REF, TREE_TYPE (vectype), vec_lhs, bitsize,
-			  bitstart);
+  tree bftype = TREE_TYPE (vectype);
+  if (VECTOR_BOOLEAN_TYPE_P (vectype))
+    bftype = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 1);
+  tree new_tree = build3 (BIT_FIELD_REF, bftype, vec_lhs, bitsize, bitstart);
   new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree), &stmts,
 				   true, NULL_TREE);
   if (stmts)
