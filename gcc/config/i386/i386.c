@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "selftest.h"
 #include "selftest-rtl.h"
+#include "print-rtl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -51175,12 +51176,35 @@ ix86_test_dumping_hard_regs ()
   ASSERT_RTL_DUMP_EQ ("(reg:SI dx)", gen_raw_REG (SImode, 1));
 }
 
+/* Test dumping an insn with repeated references to the same SCRATCH,
+   to verify the rtx_reuse code.  */
+
+static void
+ix86_test_dumping_memory_blockage ()
+{
+  set_new_first_and_last_insn (NULL, NULL);
+
+  rtx pat = gen_memory_blockage ();
+  rtx_reuse_manager r;
+  r.preprocess (pat);
+
+  /* Verify that the repeated references to the SCRATCH show use
+     reuse IDS.  The first should be prefixed with a reuse ID,
+     and the second should be dumped as a "reuse_rtx" of that ID.  */
+  ASSERT_RTL_DUMP_EQ_WITH_REUSE
+    ("(cinsn 1 (set (mem/v:BLK (0|scratch:DI) [0  A8])\n"
+     "        (unspec:BLK [\n"
+     "                (mem/v:BLK (reuse_rtx 0) [0  A8])\n"
+     "            ] UNSPEC_MEMORY_BLOCKAGE)))\n", pat, &r);
+}
+
 /* Run all target-specific selftests.  */
 
 static void
 ix86_run_selftests (void)
 {
   ix86_test_dumping_hard_regs ();
+  ix86_test_dumping_memory_blockage ();
 }
 
 } // namespace selftest

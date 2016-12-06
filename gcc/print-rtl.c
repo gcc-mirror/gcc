@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include "print-rtl.h"
+#include "rtl-iter.h"
 
 /* String printed at beginning of each RTL when it is dumped.
    This string is set to ASM_COMMENT_START when the RTL is dumped in
@@ -74,11 +75,101 @@ int flag_dump_unnumbered_links = 0;
 
 /* Constructor for rtx_writer.  */
 
-rtx_writer::rtx_writer (FILE *outf, int ind, bool simple, bool compact)
+rtx_writer::rtx_writer (FILE *outf, int ind, bool simple, bool compact,
+			rtx_reuse_manager *reuse_manager)
 : m_outfile (outf), m_sawclose (0), m_indent (ind),
-  m_in_call_function_usage (false), m_simple (simple), m_compact (compact)
+  m_in_call_function_usage (false), m_simple (simple), m_compact (compact),
+  m_rtx_reuse_manager (reuse_manager)
 {
 }
+
+#ifndef GENERATOR_FILE
+
+/* rtx_reuse_manager's ctor.  */
+
+rtx_reuse_manager::rtx_reuse_manager ()
+: m_next_id (0)
+{
+  bitmap_initialize (&m_defs_seen, NULL);
+}
+
+/* Determine if X is of a kind suitable for dumping via reuse_rtx.  */
+
+static bool
+uses_rtx_reuse_p (const_rtx x)
+{
+  if (x == NULL)
+    return false;
+
+  switch (GET_CODE (x))
+    {
+    case DEBUG_EXPR:
+    case VALUE:
+    case SCRATCH:
+      return true;
+
+    /* We don't use reuse_rtx for consts.  */
+    CASE_CONST_UNIQUE:
+    default:
+      return false;
+    }
+}
+
+/* Traverse X and its descendents, determining if we see any rtx more than
+   once.  Any rtx suitable for "reuse_rtx" that is seen more than once is
+   assigned an ID.  */
+
+void
+rtx_reuse_manager::preprocess (const_rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    if (uses_rtx_reuse_p (*iter))
+      {
+	if (int *count = m_rtx_occurrence_count.get (*iter))
+	  {
+	    if (*(count++) == 1)
+	      m_rtx_reuse_ids.put (*iter, m_next_id++);
+	  }
+	else
+	  m_rtx_occurrence_count.put (*iter, 1);
+      }
+}
+
+/* Return true iff X has been assigned a reuse ID.  If it has,
+   and OUT is non-NULL, then write the reuse ID to *OUT.  */
+
+bool
+rtx_reuse_manager::has_reuse_id (const_rtx x, int *out)
+{
+  int *id = m_rtx_reuse_ids.get (x);
+  if (id)
+    {
+      if (out)
+	*out = *id;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* Determine if set_seen_def has been called for the given reuse ID.  */
+
+bool
+rtx_reuse_manager::seen_def_p (int reuse_id)
+{
+  return bitmap_bit_p (&m_defs_seen, reuse_id);
+}
+
+/* Record that the definition of the given reuse ID has been seen.  */
+
+void
+rtx_reuse_manager::set_seen_def (int reuse_id)
+{
+  bitmap_set_bit (&m_defs_seen, reuse_id);
+}
+
+#endif /* #ifndef GENERATOR_FILE */
 
 #ifndef GENERATOR_FILE
 void
@@ -631,7 +722,33 @@ rtx_writer::print_rtx (const_rtx in_rtx)
        return;
     }
 
+  fputc ('(', m_outfile);
+
   /* Print name of expression code.  */
+
+  /* Handle reuse.  */
+#ifndef GENERATOR_FILE
+  if (m_rtx_reuse_manager)
+    {
+      int reuse_id;
+      if (m_rtx_reuse_manager->has_reuse_id (in_rtx, &reuse_id))
+	{
+	  /* Have we already seen the defn of this rtx?  */
+	  if (m_rtx_reuse_manager->seen_def_p (reuse_id))
+	    {
+	      fprintf (m_outfile, "reuse_rtx %i)", reuse_id);
+	      m_sawclose = 1;
+	      return;
+	    }
+	  else
+	    {
+	      /* First time we've seen this reused-rtx.  */
+	      fprintf (m_outfile, "%i|", reuse_id);
+	      m_rtx_reuse_manager->set_seen_def (reuse_id);
+	    }
+	}
+    }
+#endif /* #ifndef GENERATOR_FILE */
 
   /* In compact mode, prefix the code of insns with "c",
      giving "cinsn", "cnote" etc.  */
@@ -641,14 +758,14 @@ rtx_writer::print_rtx (const_rtx in_rtx)
 	 just "clabel".  */
       rtx_code code = GET_CODE (in_rtx);
       if (code == CODE_LABEL)
-	fprintf (m_outfile, "(clabel");
+	fprintf (m_outfile, "clabel");
       else
-	fprintf (m_outfile, "(c%s", GET_RTX_NAME (code));
+	fprintf (m_outfile, "c%s", GET_RTX_NAME (code));
     }
   else if (m_simple && CONST_INT_P (in_rtx))
-    fputc ('(', m_outfile);
+    ; /* no code.  */
   else
-    fprintf (m_outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));
+    fprintf (m_outfile, "%s", GET_RTX_NAME (GET_CODE (in_rtx)));
 
   if (! m_simple)
     {
@@ -819,7 +936,7 @@ rtx_writer::finish_directive ()
 void
 print_inline_rtx (FILE *outf, const_rtx x, int ind)
 {
-  rtx_writer w (outf, ind, false, false);
+  rtx_writer w (outf, ind, false, false, NULL);
   w.print_rtx (x);
 }
 
@@ -828,7 +945,7 @@ print_inline_rtx (FILE *outf, const_rtx x, int ind)
 DEBUG_FUNCTION void
 debug_rtx (const_rtx x)
 {
-  rtx_writer w (stderr, 0, false, false);
+  rtx_writer w (stderr, 0, false, false, NULL);
   w.print_rtx (x);
   fprintf (stderr, "\n");
 }
@@ -975,7 +1092,7 @@ rtx_writer::print_rtl (const_rtx rtx_first)
 void
 print_rtl (FILE *outf, const_rtx rtx_first)
 {
-  rtx_writer w (outf, 0, false, false);
+  rtx_writer w (outf, 0, false, false, NULL);
   w.print_rtl (rtx_first);
 }
 
@@ -985,7 +1102,7 @@ print_rtl (FILE *outf, const_rtx rtx_first)
 int
 print_rtl_single (FILE *outf, const_rtx x)
 {
-  rtx_writer w (outf, 0, false, false);
+  rtx_writer w (outf, 0, false, false, NULL);
   return w.print_rtl_single_with_indent (x, 0);
 }
 
@@ -1016,7 +1133,7 @@ rtx_writer::print_rtl_single_with_indent (const_rtx x, int ind)
 void
 print_simple_rtl (FILE *outf, const_rtx x)
 {
-  rtx_writer w (outf, 0, true, false);
+  rtx_writer w (outf, 0, true, false, NULL);
   w.print_rtl (x);
 }
 

@@ -25,18 +25,27 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+class rtx_reuse_manager;
+
 namespace selftest {
 
 /* Verify that X is dumped as EXPECTED_DUMP, using compact mode.
    Use LOC as the effective location when reporting errors.  */
 
 extern void
-assert_rtl_dump_eq (const location &loc, const char *expected_dump, rtx x);
+assert_rtl_dump_eq (const location &loc, const char *expected_dump, rtx x,
+		    rtx_reuse_manager *reuse_manager);
 
 /* Verify that RTX is dumped as EXPECTED_DUMP, using compact mode.  */
 
 #define ASSERT_RTL_DUMP_EQ(EXPECTED_DUMP, RTX) \
-  assert_rtl_dump_eq (SELFTEST_LOCATION, (EXPECTED_DUMP), (RTX))
+  assert_rtl_dump_eq (SELFTEST_LOCATION, (EXPECTED_DUMP), (RTX), NULL)
+
+/* As above, but using REUSE_MANAGER when dumping.  */
+
+#define ASSERT_RTL_DUMP_EQ_WITH_REUSE(EXPECTED_DUMP, RTX, REUSE_MANAGER) \
+  assert_rtl_dump_eq (SELFTEST_LOCATION, (EXPECTED_DUMP), (RTX), \
+		      (REUSE_MANAGER))
 
 } /* end of namespace selftest.  */
 

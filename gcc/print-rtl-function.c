@@ -221,7 +221,12 @@ print_param (FILE *outfile, rtx_writer &w, tree arg)
 DEBUG_FUNCTION void
 print_rtx_function (FILE *outfile, function *fn, bool compact)
 {
-  rtx_writer w (outfile, 0, false, compact);
+  rtx_reuse_manager r;
+  rtx_writer w (outfile, 0, false, compact, &r);
+
+  /* Support "reuse_rtx" in the dump.  */
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    r.preprocess (insn);
 
   tree fdecl = fn->decl;
 
