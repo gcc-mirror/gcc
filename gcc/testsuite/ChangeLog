@@ -1,5 +1,8 @@
 2016-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71537
+	* g++.dg/cpp0x/constexpr-strchr.C: New test.
+
 	PR tree-optimization/78675
 	* gcc.c-torture/execute/pr78675.c: New test.
 	* gcc.target/i386/pr78675-1.c: New test.

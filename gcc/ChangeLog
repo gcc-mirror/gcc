@@ -1,5 +1,9 @@
 2016-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71537
+	* fold-const-call.c (fold_const_call): Handle
+	CFN_BUILT_IN_{INDEX,STRCHR,RINDEX,STRRCHR}.
+
 	PR tree-optimization/78675
 	* tree-vect-loop.c (vectorizable_live_operation): For
 	VECTOR_BOOLEAN_TYPE_P vectype use integral type with bitsize precision
