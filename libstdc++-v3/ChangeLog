@@ -1,5 +1,7 @@
 2016-12-06  Felipe Magno de Almeida  <felipe@expertisesolutions.com.br>
 
+	* src/c++11/cow-stdexcept.cc: Add special case for 16 bit pointers.
+
 	* crossconfig.m4: Add avr target for cross-compilation.
 	* configure: Regenerate.
 
