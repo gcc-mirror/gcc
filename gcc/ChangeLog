@@ -1,6 +1,11 @@
 2016-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71537
+	* fold-const.c (fold_comparison): Assume CONSTANT_CLASS_P (base0)
+	plus offset is non-zero.  For maybe_nonzero_address decl base0,
+	require indirect_base0.
+
+	PR c++/71537
 	* fold-const-call.c (fold_const_call_1): Remove memchr handling here.
 	(fold_const_call) <case CFN_BUILT_IN_STRNCMP,
 	case CFN_BUILT_IN_STRNCASECMP>: Formatting improvements.

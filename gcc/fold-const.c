@@ -8419,14 +8419,16 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	 below follow the C++ rules with the additional property that
 	 every object pointer compares greater than a null pointer.
       */
-      else if (DECL_P (base0)
-	       && maybe_nonzero_address (base0) > 0
-	       /* Avoid folding references to struct members at offset 0 to
-		  prevent tests like '&ptr->firstmember == 0' from getting
-		  eliminated.  When ptr is null, although the -> expression
-		  is strictly speaking invalid, GCC retains it as a matter
-		  of QoI.  See PR c/44555. */
-	       && (offset0 == NULL_TREE && bitpos0 != 0)
+      else if (((DECL_P (base0)
+		 && maybe_nonzero_address (base0) > 0
+		 /* Avoid folding references to struct members at offset 0 to
+		    prevent tests like '&ptr->firstmember == 0' from getting
+		    eliminated.  When ptr is null, although the -> expression
+		    is strictly speaking invalid, GCC retains it as a matter
+		    of QoI.  See PR c/44555. */
+		 && (offset0 == NULL_TREE && bitpos0 != 0))
+		|| CONSTANT_CLASS_P (base0))
+	       && indirect_base0
 	       /* The caller guarantees that when one of the arguments is
 		  constant (i.e., null in this case) it is second.  */
 	       && integer_zerop (arg1))
