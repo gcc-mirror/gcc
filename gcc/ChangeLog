@@ -1,3 +1,39 @@
+2016-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/i386/i386.c: Include print-rtl.h.
+	(selftest::ix86_test_dumping_memory_blockage): New function.
+	(selftest::ix86_run_selftests): Call it.
+	* print-rtl-function.c (print_rtx_function): Create an
+	rtx_reuse_manager and use it.
+	* print-rtl.c: Include "rtl-iter.h".
+	(rtx_writer::rtx_writer): Add reuse_manager param.
+	(rtx_reuse_manager::rtx_reuse_manager): New ctor.
+	(uses_rtx_reuse_p): New function.
+	(rtx_reuse_manager::preprocess): New function.
+	(rtx_reuse_manager::has_reuse_id): New function.
+	(rtx_reuse_manager::seen_def_p): New function.
+	(rtx_reuse_manager::set_seen_def): New function.
+	(rtx_writer::print_rtx): If "in_rtx" has a reuse ID, print it as a
+	prefix the first time in_rtx is seen, and print reuse_rtx
+	subsequently.
+	(print_inline_rtx): Supply NULL for new reuse_manager param.
+	(debug_rtx): Likewise.
+	(print_rtl): Likewise.
+	(print_rtl_single): Likewise.
+	(rtx_writer::print_rtl_single_with_indent): Likewise.
+	* print-rtl.h: Include bitmap.h when building for host.
+	(rtx_writer::rtx_writer): Add reuse_manager param.
+	(rtx_writer::m_rtx_reuse_manager): New field.
+	(class rtx_reuse_manager): New class.
+	* rtl-tests.c (selftest::assert_rtl_dump_eq): Add reuse_manager
+	param and use it when constructing rtx_writer.
+	(selftest::test_dumping_rtx_reuse): New function.
+	(selftest::rtl_tests_c_tests): Call it.
+	* selftest-rtl.h (class rtx_reuse_manager): New forward decl.
+	(selftest::assert_rtl_dump_eq): Add reuse_manager param.
+	(ASSERT_RTL_DUMP_EQ): Supply NULL for reuse_manager param.
+	(ASSERT_RTL_DUMP_EQ_WITH_REUSE): New macro.
+
 2016-12-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	target/77761
