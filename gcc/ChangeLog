@@ -1,3 +1,9 @@
+2016-12-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67955
+	* tree-ssa-alias.c (same_addr_size_stores_p): New function.
+	(stmt_kills_ref_p): Use it.
+
 2016-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/78700
