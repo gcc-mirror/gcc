@@ -1,3 +1,11 @@
+2016-12-07  Tim Shen  <timshen@google.com>
+
+	* include/std/variant (__erased_use_alloc_ctor,
+	_Variant_base::_Variant_base, variant::variant): Remove uses-allocator
+	related functions.
+	* testsuite/20_util/variant/compile.cc: Remove related tests.
+	* testsuite/20_util/variant/run.cc: Remove related tests.
+
 2016-12-06  Aditya Kumar  <hiraditya@msn.com>
 
 	* src/c++11/shared_ptr.cc (_Sp_locker::_Sp_locker(const void* p)): Add
