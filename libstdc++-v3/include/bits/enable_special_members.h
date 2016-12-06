@@ -38,7 +38,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct _Enable_default_constructor_tag
   {
-    explicit _Enable_default_constructor_tag() = default;
+    explicit constexpr _Enable_default_constructor_tag() = default;
   };
 
 /**
@@ -118,7 +118,8 @@ template<typename _Tag>
     operator=(_Enable_default_constructor&&) noexcept = default;
 
     // Can be used in other ctors.
-    explicit _Enable_default_constructor(_Enable_default_constructor_tag) { }
+    constexpr explicit
+    _Enable_default_constructor(_Enable_default_constructor_tag) { }
   };
 
 template<typename _Tag>

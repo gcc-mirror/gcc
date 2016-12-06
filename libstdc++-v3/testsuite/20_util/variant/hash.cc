@@ -29,6 +29,10 @@ template<class T>
 auto f(...) -> decltype(std::false_type());
 
 static_assert(!decltype(f<S>(0))::value, "");
+static_assert(!decltype(f<std::variant<S>>(0))::value, "");
+static_assert(!decltype(f<std::variant<S, S>>(0))::value, "");
+static_assert(decltype(f<std::variant<int>>(0))::value, "");
+static_assert(decltype(f<std::variant<int, int>>(0))::value, "");
 
 int main()
 {
