@@ -276,7 +276,7 @@ class Gcc_backend : public Backend
   { return this->make_expression(null_pointer_node); }
 
   Bexpression*
-  var_expression(Bvariable* var, Location);
+  var_expression(Bvariable* var, Varexpr_context, Location);
 
   Bexpression*
   indirect_expression(Btype*, Bexpression* expr, bool known_valid, Location);
@@ -1243,7 +1243,7 @@ Gcc_backend::zero_expression(Btype* btype)
 // An expression that references a variable.
 
 Bexpression*
-Gcc_backend::var_expression(Bvariable* var, Location location)
+Gcc_backend::var_expression(Bvariable* var, Varexpr_context, Location location)
 {
   tree ret = var->get_tree(location);
   if (ret == error_mark_node)

@@ -1,3 +1,8 @@
+2016-12-06  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::var_expression): Add Varexpr_context
+	parameter.
+
 2016-11-22  Than McIntosh  <thanm@google.com>
 
 	* go-gcc.cc (char_needs_encoding): Remove.
