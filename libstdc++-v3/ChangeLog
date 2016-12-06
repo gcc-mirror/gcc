@@ -1,5 +1,13 @@
 2016-12-07  Tim Shen  <timshen@google.com>
 
+	* include/bits/enable_special_members.h: Make
+	_Enable_default_constructor constexpr.
+	* include/std/variant (variant::emplace, variant::swap, std::swap,
+	std::hash): Sfinae on emplace and std::swap; handle __poison_hash bases
+	of duplicated types.
+
+2016-12-07  Tim Shen  <timshen@google.com>
+
 	* include/std/variant (std::get, operator==): Implement constexpr
 	comparison and get<>.
 	* testsuite/20_util/variant/compile.cc: Tests.

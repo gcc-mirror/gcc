@@ -51,6 +51,15 @@ struct DefaultNoexcept
   DefaultNoexcept& operator=(DefaultNoexcept&&) noexcept = default;
 };
 
+struct MoveCtorOnly
+{
+  MoveCtorOnly() noexcept = delete;
+  MoveCtorOnly(const DefaultNoexcept&) noexcept = delete;
+  MoveCtorOnly(DefaultNoexcept&&) noexcept { }
+  MoveCtorOnly& operator=(const DefaultNoexcept&) noexcept = delete;
+  MoveCtorOnly& operator=(DefaultNoexcept&&) noexcept = delete;
+};
+
 struct nonliteral
 {
   nonliteral() { }
@@ -237,9 +246,9 @@ static_assert( !std::is_swappable_v<variant<D, int>> );
 
 void test_swap()
 {
-  variant<int, string> a, b;
-  a.swap(b);
-  swap(a, b);
+  static_assert(is_swappable_v<variant<int, string>>, "");
+  static_assert(is_swappable_v<variant<MoveCtorOnly>>, "");
+  static_assert(!is_swappable_v<variant<AllDeleted>>, "");
 }
 
 void test_visit()
@@ -385,11 +394,37 @@ void test_adl()
    variant<X> v4{in_place_type<X>, il, x};
 }
 
-void test_variant_alternative() {
+void test_variant_alternative()
+{
   static_assert(is_same_v<variant_alternative_t<0, variant<int, string>>, int>, "");
   static_assert(is_same_v<variant_alternative_t<1, variant<int, string>>, string>, "");
 
   static_assert(is_same_v<variant_alternative_t<0, const variant<int>>, const int>, "");
   static_assert(is_same_v<variant_alternative_t<0, volatile variant<int>>, volatile int>, "");
   static_assert(is_same_v<variant_alternative_t<0, const volatile variant<int>>, const volatile int>, "");
+}
+
+template<typename V, typename T>
+  constexpr auto has_type_emplace(int) -> decltype((declval<V>().template emplace<T>(), true))
+  { return true; };
+
+template<typename V, typename T>
+  constexpr bool has_type_emplace(...)
+  { return false; };
+
+template<typename V, size_t N>
+  constexpr auto has_index_emplace(int) -> decltype((declval<V>().template emplace<N>(), true))
+  { return true; };
+
+template<typename V, size_t T>
+  constexpr bool has_index_emplace(...)
+  { return false; };
+
+void test_emplace()
+{
+  static_assert(has_type_emplace<variant<int>, int>(0), "");
+  static_assert(!has_type_emplace<variant<long>, int>(0), "");
+  static_assert(has_index_emplace<variant<int>, 0>(0), "");
+  static_assert(!has_type_emplace<variant<AllDeleted>, AllDeleted>(0), "");
+  static_assert(!has_index_emplace<variant<AllDeleted>, 0>(0), "");
 }

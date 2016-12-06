@@ -330,14 +330,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<size_t... __indices>
-	constexpr void _M_destroy_impl(std::index_sequence<__indices...>)
+	constexpr void _M_reset_impl(std::index_sequence<__indices...>)
 	{
 	  if (_M_index != variant_npos)
 	    _S_vtable<__indices...>[_M_index](*this);
 	}
 
+      void _M_reset()
+      {
+	_M_reset_impl(std::index_sequence_for<_Types...>{});
+	_M_index = variant_npos;
+      }
+
       ~_Variant_storage()
-      { _M_destroy_impl(std::index_sequence_for<_Types...>{}); }
+      { _M_reset(); }
 
       _Variadic_union<_Types...> _M_u;
       size_t _M_index;
@@ -353,6 +359,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_u(in_place_index<_Np>, std::forward<_Args>(__args)...),
 	_M_index(_Np)
 	{ }
+
+      void _M_reset()
+      { _M_index = variant_npos; }
 
       _Variadic_union<_Types...> _M_u;
       size_t _M_index;
@@ -436,6 +445,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      void _M_destructive_move(_Variant_base&& __rhs)
+      {
+	this->~_Variant_base();
+	__try
+	  {
+	    ::new (this) _Variant_base(std::move(__rhs));
+	  }
+	__catch (...)
+	  {
+	    this->_M_index = variant_npos;
+	    __throw_exception_again;
+	  }
+      }
+
       _Variant_base&
       operator=(_Variant_base&& __rhs)
       noexcept(__and_<is_nothrow_move_constructible<_Types>...,
@@ -453,16 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	else
 	  {
-	    this->~_Variant_base();
-	    __try
-	      {
-		::new (this) _Variant_base(std::move(__rhs));
-	      }
-	    __catch (...)
-	      {
-		this->_M_index = variant_npos;
-		__throw_exception_again;
-	      }
+	    _M_destructive_move(std::move(__rhs));
 	  }
 	return *this;
       }
@@ -682,6 +696,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
+  template<size_t _Np, typename _Tp>
+    struct _Base_dedup : public _Tp { };
+
+  template<typename _Variant, typename __indices>
+    struct _Variant_hash_base;
+
+  template<typename... _Types, size_t... __indices>
+    struct _Variant_hash_base<variant<_Types...>,
+			      std::index_sequence<__indices...>>
+    : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __variant
 } // namespace __detail
@@ -858,8 +883,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return false; }
 
   template<typename... _Types>
-    inline enable_if_t<__and_<is_move_constructible<_Types>...,
-			      is_swappable<_Types>...>::value>
+    inline enable_if_t<(is_move_constructible_v<_Types> && ...)
+			&& (is_swappable_v<_Types> && ...)>
     swap(variant<_Types...>& __lhs, variant<_Types...>& __rhs)
     noexcept(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
@@ -1028,25 +1053,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp, typename... _Args>
-	void emplace(_Args&&... __args)
+	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>>
+	emplace(_Args&&... __args)
 	{
-	  static_assert(__exactly_once<_Tp>,
-			"T should occur for exactly once in alternatives");
 	  this->emplace<__index_of<_Tp>>(std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
 	}
 
       template<typename _Tp, typename _Up, typename... _Args>
-	void emplace(initializer_list<_Up> __il, _Args&&... __args)
+	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
+		    && __exactly_once<_Tp>>
+	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
-	  static_assert(__exactly_once<_Tp>,
-			"T should occur for exactly once in alternatives");
 	  this->emplace<__index_of<_Tp>>(__il, std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
 	}
 
       template<size_t _Np, typename... _Args>
-	void emplace(_Args&&... __args)
+	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
+				       _Args...>>
+	emplace(_Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
 			"The index should be in [0, number of alternatives)");
@@ -1065,7 +1091,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<size_t _Np, typename _Up, typename... _Args>
-	void emplace(initializer_list<_Up> __il, _Args&&... __args)
+	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
+				       initializer_list<_Up>&, _Args...>>
+	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
 			"The index should be in [0, number of alternatives)");
@@ -1092,7 +1120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(variant& __rhs)
       noexcept(__and_<__is_nothrow_swappable<_Types>...>::value
-	       && is_nothrow_move_assignable_v<variant>)
+	       && is_nothrow_move_constructible_v<variant>)
       {
 	if (this->index() == __rhs.index())
 	  {
@@ -1107,17 +1135,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	else if (!this->_M_valid())
 	  {
-	    *this = std::move(__rhs);
+	    this->_M_destructive_move(std::move(__rhs));
+	    __rhs._M_reset();
 	  }
 	else if (!__rhs._M_valid())
 	  {
-	    __rhs = std::move(*this);
+	    __rhs._M_destructive_move(std::move(*this));
+	    this->_M_reset();
 	  }
 	else
 	  {
 	    auto __tmp = std::move(__rhs);
-	    __rhs = std::move(*this);
-	    *this = std::move(__tmp);
+	    __rhs._M_destructive_move(std::move(*this));
+	    this->_M_destructive_move(std::move(__tmp));
 	  }
       }
 
@@ -1253,14 +1283,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types>
     struct hash<variant<_Types...>>
-    : private __poison_hash<remove_const_t<_Types>>...
+    : private __detail::__variant::_Variant_hash_base<
+	variant<_Types...>, std::index_sequence_for<_Types...>>
     {
       using result_type = size_t;
       using argument_type = variant<_Types...>;
 
       size_t
       operator()(const variant<_Types...>& __t) const
-      noexcept((... && noexcept(hash<decay_t<_Types>>{}(std::declval<_Types>()))))
+      noexcept((is_nothrow_callable_v<hash<decay_t<_Types>>(_Types)> && ...))
       {
 	if (!__t.valueless_by_exception())
 	  {
