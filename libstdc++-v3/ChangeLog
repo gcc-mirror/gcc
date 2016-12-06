@@ -1,3 +1,8 @@
+2016-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h
+	(__shared_ptr_access<T, L, false, true>::operator->()): Fix assertion.
+
 2016-12-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Constrain optional's __constexpr_addressof in its return type
