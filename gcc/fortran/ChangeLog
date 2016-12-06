@@ -1,3 +1,12 @@
+2016-12-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78226
+	* class.c (finalize_component): Add missing locus information.
+	(finalization_scalarizer): Likewise.
+	(finalization_get_offset): Likewise.
+	(finalizer_insert_packed_call): Likewise.
+	(generate_finalization_wrapper): Likewise.
+
 2016-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	* error.c (gfc_warning_check): Call diagnostic_check_max_errors.

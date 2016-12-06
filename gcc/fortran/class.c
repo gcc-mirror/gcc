@@ -965,6 +965,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       cond->block = gfc_get_code (EXEC_IF);
       cond->block->expr1 = gfc_get_expr ();
       cond->block->expr1->expr_type = EXPR_FUNCTION;
+      cond->block->expr1->where = gfc_current_locus;
       gfc_get_sym_tree ("associated", sub_ns, &cond->block->expr1->symtree, false);
       cond->block->expr1->symtree->n.sym->attr.flavor = FL_PROCEDURE;
       cond->block->expr1->symtree->n.sym->attr.intrinsic = 1;
@@ -1077,6 +1078,7 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   gfc_commit_symbol (expr->symtree->n.sym);
   expr->ts.type = BT_INTEGER;
   expr->ts.kind = gfc_index_integer_kind;
+  expr->where = gfc_current_locus;
 
   /* TRANSFER.  */
   expr2 = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_TRANSFER, "transfer",
@@ -1093,6 +1095,7 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   block->ext.actual->expr->value.op.op1 = expr2;
   block->ext.actual->expr->value.op.op2 = offset;
   block->ext.actual->expr->ts = expr->ts;
+  block->ext.actual->expr->where = gfc_current_locus;
 
   /* C_F_POINTER's 2nd arg: ptr -- and its absent shape=.  */
   block->ext.actual->next = gfc_get_actual_arglist ();
@@ -1149,6 +1152,7 @@ finalization_get_offset (gfc_symbol *idx, gfc_symbol *idx2, gfc_symbol *offset,
   expr->ref->u.ar.dimen = 1;
   expr->ref->u.ar.dimen_type[0] = DIMEN_ELEMENT;
   expr->ref->u.ar.start[0] = gfc_lval_expr_from_sym (idx2);
+  expr->where = sizes->declared_at;
 
   expr = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_MOD, "mod",
 				   gfc_current_locus, 2,
@@ -1169,6 +1173,7 @@ finalization_get_offset (gfc_symbol *idx, gfc_symbol *idx2, gfc_symbol *offset,
   expr2->value.op.op2->ref->u.ar.dimen_type[0] = DIMEN_ELEMENT;
   expr2->value.op.op2->ref->u.ar.start[0] = gfc_get_expr ();
   expr2->value.op.op2->ref->u.ar.start[0]->expr_type = EXPR_OP;
+  expr2->value.op.op2->ref->u.ar.start[0]->where = gfc_current_locus;
   expr2->value.op.op2->ref->u.ar.start[0]->value.op.op = INTRINSIC_MINUS;
   expr2->value.op.op2->ref->u.ar.start[0]->value.op.op1
 	= gfc_lval_expr_from_sym (idx2);
@@ -1177,6 +1182,7 @@ finalization_get_offset (gfc_symbol *idx, gfc_symbol *idx2, gfc_symbol *offset,
   expr2->value.op.op2->ref->u.ar.start[0]->ts
 	= expr2->value.op.op2->ref->u.ar.start[0]->value.op.op1->ts;
   expr2->ts = idx->ts;
+  expr2->where = gfc_current_locus;
 
   /* ... * strides(idx2).  */
   expr = gfc_get_expr ();
@@ -1192,6 +1198,7 @@ finalization_get_offset (gfc_symbol *idx, gfc_symbol *idx2, gfc_symbol *offset,
   expr->value.op.op2->ref->u.ar.start[0] = gfc_lval_expr_from_sym (idx2);
   expr->value.op.op2->ref->u.ar.as = strides->as;
   expr->ts = idx->ts;
+  expr->where = gfc_current_locus;
 
   /* offset = offset + ...  */
   block->block->next = gfc_get_code (EXEC_ASSIGN);
@@ -1202,6 +1209,7 @@ finalization_get_offset (gfc_symbol *idx, gfc_symbol *idx2, gfc_symbol *offset,
   block->block->next->expr2->value.op.op1 = gfc_lval_expr_from_sym (offset);
   block->block->next->expr2->value.op.op2 = expr;
   block->block->next->expr2->ts = idx->ts;
+  block->block->next->expr2->where = gfc_current_locus;
 
   /* After the loop:  offset = offset * byte_stride.  */
   block->next = gfc_get_code (EXEC_ASSIGN);
@@ -1213,6 +1221,7 @@ finalization_get_offset (gfc_symbol *idx, gfc_symbol *idx2, gfc_symbol *offset,
   block->expr2->value.op.op1 = gfc_lval_expr_from_sym (offset);
   block->expr2->value.op.op2 = gfc_lval_expr_from_sym (byte_stride);
   block->expr2->ts = block->expr2->value.op.op1->ts;
+  block->expr2->where = gfc_current_locus;
   return block;
 }
 
@@ -1422,6 +1431,7 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
   /* Offset calculation for the new array: idx * size of type (in bytes).  */
   offset2 = gfc_get_expr ();
   offset2->expr_type = EXPR_OP;
+  offset2->where = gfc_current_locus;
   offset2->value.op.op = INTRINSIC_TIMES;
   offset2->value.op.op1 = gfc_lval_expr_from_sym (idx);
   offset2->value.op.op2 = gfc_copy_expr (size_expr);
@@ -1826,6 +1836,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   block->expr2 = gfc_get_expr ();
   block->expr2->expr_type = EXPR_OP;
   block->expr2->value.op.op = INTRINSIC_TIMES;
+  block->expr2->where = gfc_current_locus;
 
   /* sizes(idx-1).  */
   block->expr2->value.op.op1 = gfc_lval_expr_from_sym (sizes);
@@ -1837,6 +1848,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   block->expr2->value.op.op1->ref->u.ar.dimen_type[0] = DIMEN_ELEMENT;
   block->expr2->value.op.op1->ref->u.ar.start[0] = gfc_get_expr ();
   block->expr2->value.op.op1->ref->u.ar.start[0]->expr_type = EXPR_OP;
+  block->expr2->value.op.op1->ref->u.ar.start[0]->where = gfc_current_locus;
   block->expr2->value.op.op1->ref->u.ar.start[0]->value.op.op = INTRINSIC_MINUS;
   block->expr2->value.op.op1->ref->u.ar.start[0]->value.op.op1
 	= gfc_lval_expr_from_sym (idx);
@@ -1890,6 +1902,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   block->expr1->value.op.op2->ref->u.ar.dimen_type[0] = DIMEN_ELEMENT;
   block->expr1->value.op.op2->ref->u.ar.start[0] = gfc_get_expr ();
   block->expr1->value.op.op2->ref->u.ar.start[0]->expr_type = EXPR_OP;
+  block->expr1->value.op.op2->ref->u.ar.start[0]->where = gfc_current_locus;
   block->expr1->value.op.op2->ref->u.ar.start[0]->value.op.op = INTRINSIC_MINUS;
   block->expr1->value.op.op2->ref->u.ar.start[0]->value.op.op1
 	= gfc_lval_expr_from_sym (idx);
@@ -1927,6 +1940,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   last_code->expr2->value.op.op2
 	= gfc_get_int_expr (gfc_index_integer_kind, NULL, 1);
   last_code->expr2->ts = last_code->expr2->value.op.op2->ts;
+  last_code->expr2->where = gfc_current_locus;
 
   last_code->expr2->value.op.op1 = gfc_lval_expr_from_sym (sizes);
   last_code->expr2->value.op.op1->ref = gfc_get_ref ();
