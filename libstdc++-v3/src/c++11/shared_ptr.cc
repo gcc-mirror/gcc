@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   }
 
-  _Sp_locker::_Sp_locker(const void* p)
+  _Sp_locker::_Sp_locker(const void* p) noexcept
   {
     if (__gthread_active_p())
       {
@@ -65,7 +65,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_key1 = _M_key2 = invalid;
   }
 
-  _Sp_locker::_Sp_locker(const void* p1, const void* p2)
+  _Sp_locker::_Sp_locker(const void* p1, const void* p2) noexcept
   {
     if (__gthread_active_p())
       {
