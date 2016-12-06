@@ -1,3 +1,18 @@
+2016-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (general_gr_operand): New predicate.
+	* config/i386/i386.md (TImode and DImode push_operand splitter):
+	Use general_gr_operand.  Macroize using DWI mode macro.
+	(TImode and DImode nonimmediate_operand splitter): Use
+	nonimmediate_gr_operand and general_gr_operand.  Macroize using
+	DWI mode macro.
+	(TF/XF/DFmode push_operand splitter): Use general_gr_operand.
+	(TFmode nonimmediate_operand splitter): Use nonimmediate_gr_operand
+	and general_gr_operand.
+	(XFmode nonimmediate_operand splitter): Ditto.
+	(DFmode nonimmediate_operand splitter): Ditto.
+	* config/i386/mmx.md (MMXMODE nonimmediate_operand splitter): Ditto.
+
 2016-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cores.def (cortex-m23, cortex-m33): Move into
@@ -138,8 +153,7 @@
 	* diagnostic.c (diagnostic_check_max_errors): New, broken out of ...
 	(diagnostic_action_after_output): ... here.
 	(diagnostic_report_diagnostic): Call it for non-notes.
-	* diagnostic.h (struct diagnostic_context): Make max_errors signed
-	int.
+	* diagnostic.h (struct diagnostic_context): Make max_errors signed int.
 	(diagnostic_check_max_errors): Declare.
 
 2016-12-05  Cupertino Miranda  <cmiranda@synopsys.com>
