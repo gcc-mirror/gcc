@@ -1,3 +1,11 @@
+2016-12-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from mainline
+	2016-12-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/pool.h (gomp_get_thread_pool): Return proper
+	thread pool in case nthreads == 1.
+
 2016-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
