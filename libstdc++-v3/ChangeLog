@@ -1,3 +1,9 @@
+2016-12-06  Aditya Kumar  <hiraditya@msn.com>
+
+	* src/c++11/shared_ptr.cc (_Sp_locker::_Sp_locker(const void* p)): Add
+	noexcept on constructor.
+	(_Sp_locker::_Sp_locker(const void* p1, const void* p2)): Same.
+
 2016-12-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (basic_string::find, basic_string::rfind)
