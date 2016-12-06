@@ -1,6 +1,9 @@
 2016-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71537
+	* g++.dg/cpp0x/constexpr-memchr.C: New test.
+
+	PR c++/71537
 	* g++.dg/cpp0x/constexpr-strchr.C: New test.
 
 	PR tree-optimization/78675

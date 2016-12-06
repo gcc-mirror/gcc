@@ -1,6 +1,14 @@
 2016-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71537
+	* fold-const-call.c (fold_const_call_1): Remove memchr handling here.
+	(fold_const_call) <case CFN_BUILT_IN_STRNCMP,
+	case CFN_BUILT_IN_STRNCASECMP>: Formatting improvements.
+	(fold_const_call) <case CFN_BUILT_IN_MEMCMP>: Likewise.  If s2 is 0
+	and arguments have no side-effects, return 0.
+	(fold_const_call): Handle CFN_BUILT_IN_MEMCHR.
+
+	PR c++/71537
 	* fold-const-call.c (fold_const_call): Handle
 	CFN_BUILT_IN_{INDEX,STRCHR,RINDEX,STRRCHR}.
 
