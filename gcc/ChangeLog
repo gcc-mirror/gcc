@@ -1,3 +1,10 @@
+2016-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/78642
+	* emit-rtl.c (verify_rtx_sharing) <CLOBBER>: Relax condition.
+	(copy_rtx_if_shared_1) <CLOBBER>: Likewise.
+	(copy_insn_1) <CLOBBER>: Likewise.
+
 2016-12-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78688

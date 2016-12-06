@@ -2718,8 +2718,9 @@ verify_rtx_sharing (rtx orig, rtx insn)
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
+      if (REG_P (XEXP (x, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (x, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (x, 0))))
 	return;
       break;
 
@@ -2970,8 +2971,9 @@ repeat:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
+      if (REG_P (XEXP (x, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (x, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (x, 0))))
 	return;
       break;
 
@@ -5521,8 +5523,9 @@ copy_insn_1 (rtx orig)
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (orig, 0)) == REGNO (XEXP (orig, 0)))
+      if (REG_P (XEXP (orig, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (orig, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (orig, 0))))
 	return orig;
       break;
 
