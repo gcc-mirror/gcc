@@ -1,5 +1,11 @@
 2016-12-07  Tim Shen  <timshen@google.com>
 
+	* include/std/variant (std::get, operator==): Implement constexpr
+	comparison and get<>.
+	* testsuite/20_util/variant/compile.cc: Tests.
+
+2016-12-07  Tim Shen  <timshen@google.com>
+
 	* include/std/variant (__erased_use_alloc_ctor,
 	_Variant_base::_Variant_base, variant::variant): Remove uses-allocator
 	related functions.

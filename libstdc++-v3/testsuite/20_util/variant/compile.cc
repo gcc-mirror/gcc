@@ -51,6 +51,14 @@ struct DefaultNoexcept
   DefaultNoexcept& operator=(DefaultNoexcept&&) noexcept = default;
 };
 
+struct nonliteral
+{
+  nonliteral() { }
+
+  bool operator<(const nonliteral&) const;
+  bool operator==(const nonliteral&) const;
+};
+
 void default_ctor()
 {
   static_assert(is_default_constructible_v<variant<int, string>>, "");
@@ -175,22 +183,40 @@ void test_get()
 void test_relational()
 {
   {
-    const variant<int, string> a, b;
-    (void)(a < b);
-    (void)(a > b);
-    (void)(a <= b);
-    (void)(a == b);
-    (void)(a != b);
-    (void)(a >= b);
+    constexpr variant<int, nonliteral> a(42), b(43);
+    static_assert((a < b), "");
+    static_assert(!(a > b), "");
+    static_assert((a <= b), "");
+    static_assert(!(a == b), "");
+    static_assert((a != b), "");
+    static_assert(!(a >= b), "");
   }
   {
-    const monostate a, b;
-    (void)(a < b);
-    (void)(a > b);
-    (void)(a <= b);
-    (void)(a == b);
-    (void)(a != b);
-    (void)(a >= b);
+    constexpr variant<int, nonliteral> a(42), b(42);
+    static_assert(!(a < b), "");
+    static_assert(!(a > b), "");
+    static_assert((a <= b), "");
+    static_assert((a == b), "");
+    static_assert(!(a != b), "");
+    static_assert((a >= b), "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(43), b(42);
+    static_assert(!(a < b), "");
+    static_assert((a > b), "");
+    static_assert(!(a <= b), "");
+    static_assert(!(a == b), "");
+    static_assert((a != b), "");
+    static_assert((a >= b), "");
+  }
+  {
+    constexpr monostate a, b;
+    static_assert(!(a < b), "");
+    static_assert(!(a > b), "");
+    static_assert((a <= b), "");
+    static_assert((a == b), "");
+    static_assert(!(a != b), "");
+    static_assert((a >= b), "");
   }
 }
 
@@ -262,13 +288,58 @@ void test_constexpr()
 	constexpr literal() = default;
     };
 
-    struct nonliteral {
-	nonliteral() { }
-    };
-
     constexpr variant<literal, nonliteral> v{};
     constexpr variant<literal, nonliteral> v1{in_place_type<literal>};
     constexpr variant<literal, nonliteral> v2{in_place_index<0>};
+  }
+
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<0>(a) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<0>(a) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<1>(a) == 42, "");
+  }
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<int>(a) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<int>(a) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<int>(a) == 42, "");
+  }
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<0>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<0>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<1>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<int>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<int>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<int>(std::move(a)) == 42, "");
   }
 }
 
