@@ -1,3 +1,14 @@
+2016-12-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Constrain optional's __constexpr_addressof in its return type
+	and use a constexpr addressof for optional, if available.
+	* include/experimental/optional (__constexpr_addressof):
+	Constrain in the return type instead of in a template parameter.
+	(_Has_addressof_mem)
+	(_Has_addressof_free, _Has_addressof, __constexpr_addressof):
+	Guard with #ifndef __cpp_lib_addressof_constexpr.
+	(operator->()): Use std::__addressof if it's constexpr.
+
 2016-11-27  Tim Shen  <timshen@google.com>
 
 	* include/std/variant (visit): Make visit constexpr. Also cleanup

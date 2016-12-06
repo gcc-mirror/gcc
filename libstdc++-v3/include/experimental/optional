@@ -134,6 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_bad_optional_access(const char* __s)
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
 
+#ifndef __cpp_lib_addressof_constexpr
   template<typename _Tp, typename = void>
     struct _Has_addressof_mem : std::false_type { };
 
@@ -170,16 +171,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * overloaded addressof operator (unary operator&), in which case the call
     * will not be a constant expression.
     */
-  template<typename _Tp, enable_if_t<!_Has_addressof<_Tp>::value, int>...>
-    constexpr _Tp* __constexpr_addressof(_Tp& __t)
+  template<typename _Tp>
+    constexpr
+    enable_if_t<!_Has_addressof<_Tp>::value, _Tp*>
+    __constexpr_addressof(_Tp& __t)
     { return &__t; }
 
   /**
     * @brief Fallback overload that defers to __addressof.
     */
-  template<typename _Tp, enable_if_t<_Has_addressof<_Tp>::value, int>...>
-    inline _Tp* __constexpr_addressof(_Tp& __t)
+  template<typename _Tp>
+    inline
+    enable_if_t<_Has_addressof<_Tp>::value, _Tp*>
+    __constexpr_addressof(_Tp& __t)
     { return std::__addressof(__t); }
+#endif // __cpp_lib_addressof_constexpr
 
   /**
     * @brief Class template that holds the necessary state for @ref optional
@@ -705,7 +711,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // [X.Y.4.5] Observers.
       constexpr const _Tp*
       operator->() const
-      { return __constexpr_addressof(this->_M_get()); }
+      {
+#ifndef __cpp_lib_addressof_constexpr
+	return __constexpr_addressof(this->_M_get());
+#else
+	return std::__addressof(this->_M_get());
+#endif
+      }
 
       _Tp*
       operator->()
