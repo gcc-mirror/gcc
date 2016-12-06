@@ -16570,6 +16570,7 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
 			  struct expand_operand *ops, bool has_target_p)
 {
   machine_mode imode;
+  int rangelo = 0, rangehi = 0, error_opno = 0;
 
   switch (icode)
     {
@@ -16600,12 +16601,19 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       gcc_assert (has_target_p && nops == 3);
       /* We only generate a vector of constants iff the second argument
 	 is an immediate.  We also validate the range of the immediate.  */
-      if (!CONST_INT_P (ops[2].value)
-	  || !IN_RANGE (INTVAL (ops[2].value), 0,  31))
-	break;
-      ops[2].mode = ops[0].mode;
-      ops[2].value = mips_gen_const_int_vector (ops[2].mode,
-						INTVAL (ops[2].value));
+      if (CONST_INT_P (ops[2].value))
+	{
+	  rangelo = 0;
+	  rangehi = 31;
+	  if (IN_RANGE (INTVAL (ops[2].value), rangelo, rangehi))
+	    {
+	      ops[2].mode = ops[0].mode;
+	      ops[2].value = mips_gen_const_int_vector (ops[2].mode,
+							INTVAL (ops[2].value));
+	    }
+	  else
+	    error_opno = 2;
+	}
       break;
 
     case CODE_FOR_msa_ceqi_b:
@@ -16631,12 +16639,19 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       gcc_assert (has_target_p && nops == 3);
       /* We only generate a vector of constants iff the second argument
 	 is an immediate.  We also validate the range of the immediate.  */
-      if (!CONST_INT_P (ops[2].value)
-	  || !IN_RANGE (INTVAL (ops[2].value), -16,  15))
-	break;
-      ops[2].mode = ops[0].mode;
-      ops[2].value = mips_gen_const_int_vector (ops[2].mode,
-						INTVAL (ops[2].value));
+      if (CONST_INT_P (ops[2].value))
+	{
+	  rangelo = -16;
+	  rangehi = 15;
+	  if (IN_RANGE (INTVAL (ops[2].value), rangelo, rangehi))
+	    {
+	      ops[2].mode = ops[0].mode;
+	      ops[2].value = mips_gen_const_int_vector (ops[2].mode,
+							INTVAL (ops[2].value));
+	    }
+	  else
+	    error_opno = 2;
+	}
       break;
 
     case CODE_FOR_msa_andi_b:
@@ -16716,13 +16731,19 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_msa_srli_w:
     case CODE_FOR_msa_srli_d:
       gcc_assert (has_target_p && nops == 3);
-      if (!CONST_INT_P (ops[2].value)
-	  || !IN_RANGE (INTVAL (ops[2].value), 0,
-			GET_MODE_UNIT_PRECISION (ops[0].mode) - 1))
-	break;
-      ops[2].mode = ops[0].mode;
-      ops[2].value = mips_gen_const_int_vector (ops[2].mode,
-						INTVAL (ops[2].value));
+      if (CONST_INT_P (ops[2].value))
+	{
+	  rangelo = 0;
+	  rangehi = GET_MODE_UNIT_BITSIZE (ops[0].mode) - 1;
+	  if (IN_RANGE (INTVAL (ops[2].value), rangelo, rangehi))
+	    {
+	      ops[2].mode = ops[0].mode;
+	      ops[2].value = mips_gen_const_int_vector (ops[2].mode,
+							INTVAL (ops[2].value));
+	    }
+	  else
+	    error_opno = 2;
+	}
       break;
 
     case CODE_FOR_msa_insert_b:
@@ -16738,7 +16759,13 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       imode = GET_MODE_INNER (ops[0].mode);
       ops[1].value = lowpart_subreg (imode, ops[1].value, ops[1].mode);
       ops[1].mode = imode;
-      ops[3].value = GEN_INT (1 << INTVAL (ops[3].value));
+      rangelo = 0;
+      rangehi = GET_MODE_NUNITS (ops[0].mode) - 1;
+      if (CONST_INT_P (ops[3].value)
+	  && IN_RANGE (INTVAL (ops[3].value), rangelo, rangehi))
+	ops[3].value = GEN_INT (1 << INTVAL (ops[3].value));
+      else
+	error_opno = 2;
       break;
 
     case CODE_FOR_msa_insve_b:
@@ -16750,7 +16777,13 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       gcc_assert (has_target_p && nops == 4);
       std::swap (ops[1], ops[2]);
       std::swap (ops[1], ops[3]);
-      ops[3].value = GEN_INT (1 << INTVAL (ops[3].value));
+      rangelo = 0;
+      rangehi = GET_MODE_NUNITS (ops[0].mode) - 1;
+      if (CONST_INT_P (ops[3].value)
+	  && IN_RANGE (INTVAL (ops[3].value), rangelo, rangehi))
+	ops[3].value = GEN_INT (1 << INTVAL (ops[3].value));
+      else
+	error_opno = 2;
       break;
 
     case CODE_FOR_msa_shf_b:
@@ -16774,7 +16807,13 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       break;
   }
 
-  if (!maybe_expand_insn (icode, nops, ops))
+  if (error_opno != 0)
+    {
+      error ("argument %d to the built-in must be a constant"
+	     " in range %d to %d", error_opno, rangelo, rangehi);
+      return has_target_p ? gen_reg_rtx (ops[0].mode) : const0_rtx;
+    }
+  else if (!maybe_expand_insn (icode, nops, ops))
     {
       error ("invalid argument to built-in function");
       return has_target_p ? gen_reg_rtx (ops[0].mode) : const0_rtx;
