@@ -702,11 +702,24 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       /* Update max ref width and hard reg usage.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
 	{
+	  int i, regno = reg->regno;
+	  
 	  if (GET_MODE_SIZE (reg->biggest_mode)
-	      > GET_MODE_SIZE (lra_reg_info[reg->regno].biggest_mode))
-	    lra_reg_info[reg->regno].biggest_mode = reg->biggest_mode;
-	  if (reg->regno < FIRST_PSEUDO_REGISTER)
-	    lra_hard_reg_usage[reg->regno] += freq;
+	      > GET_MODE_SIZE (lra_reg_info[regno].biggest_mode))
+	    lra_reg_info[regno].biggest_mode = reg->biggest_mode;
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    {
+	      lra_hard_reg_usage[regno] += freq;
+	      /* A hard register explicitly can be used in small mode,
+		 but implicitly it can be used in natural mode as a
+		 part of multi-register group.  Process this case
+		 here.  */
+	      for (i = 1; i < hard_regno_nregs[regno][reg->biggest_mode]; i++)
+		if (GET_MODE_SIZE (GET_MODE (regno_reg_rtx[regno + i]))
+		    > GET_MODE_SIZE (lra_reg_info[regno + i].biggest_mode))
+		  lra_reg_info[regno + i].biggest_mode
+		    = GET_MODE (regno_reg_rtx[regno + i]);
+	    }
 	}
 
       call_p = CALL_P (curr_insn);
