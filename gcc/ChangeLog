@@ -1,3 +1,21 @@
+2016-12-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc/config/aarch64/arm_neon.h
+	(vreinterpretq_p8_p128, vreinterpretq_p16_p128): Added.
+	(vreinterpret_p64_p16, vreinterpretq_p64_p128): Likewise.
+	(vreinterpretq_p64_p16, vreinterpretq_p128_p8): Likewise.
+	(vreinterpretq_p128_p16, vreinterpretq_p128_f16): Likewise.
+	(vreinterpretq_p128_f32, vreinterpretq_p128_p64): Likewise.
+	(vreinterpretq_p128_s64, vreinterpretq_p128_u64): Likewise.
+	(vreinterpretq_p128_s8, vreinterpretq_p128_s16): Likewise.
+	(vreinterpretq_p128_s32, vreinterpretq_p128_u8): Likewise.
+	(vreinterpretq_p128_u16, vreinterpretq_p128_u32): Likewise.
+	(vreinterpretq_f16_p128, vreinterpretq_f32_p128): Likewise.
+	(vreinterpretq_s64_p128, vreinterpretq_u64_p128): Likewise.
+	(vreinterpretq_s8_p128, vreinterpretq_s16_p128): Likewise.
+	(vreinterpretq_s32_p128, vreinterpretq_u8_p128): Likewise.
+	(vreinterpretq_u16_p128, vreinterpretq_u32_p128): Likewise.
+
 2016-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71537
