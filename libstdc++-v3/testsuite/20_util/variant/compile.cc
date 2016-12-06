@@ -117,31 +117,6 @@ void in_place_type_ctor()
   static_assert(!is_constructible_v<variant<string, string>, in_place_type_t<string>, const char*>, "");
 }
 
-void uses_alloc_ctors()
-{
-  std::allocator<char> alloc;
-  variant<int> a(allocator_arg, alloc);
-  static_assert(!is_constructible_v<variant<AllDeleted>, allocator_arg_t, std::allocator<char>>, "");
-  {
-    variant<string, int> b(allocator_arg, alloc, "a");
-    static_assert(!is_constructible_v<variant<string, string>, allocator_arg_t, std::allocator<char>, const char*>, "");
-  }
-  {
-    variant<string, int> b(allocator_arg, alloc, in_place_index<0>, "a");
-    variant<string, string> c(allocator_arg, alloc, in_place_index<1>, "a");
-  }
-  {
-    variant<string, int> b(allocator_arg, alloc, in_place_index<0>, {'a'});
-    variant<string, string> c(allocator_arg, alloc, in_place_index<1>, {'a'});
-  }
-  {
-    variant<int, string, int> b(allocator_arg, alloc, in_place_type<string>, "a");
-  }
-  {
-    variant<int, string, int> b(allocator_arg, alloc, in_place_type<string>, {'a'});
-  }
-}
-
 void dtor()
 {
   static_assert(is_destructible_v<variant<int, string>>, "");
@@ -324,9 +299,7 @@ namespace adl_trap
 void test_adl()
 {
    using adl_trap::X;
-   using std::allocator_arg;
    X x;
-   std::allocator<int> a;
    std::initializer_list<int> il;
    adl_trap::Visitor vis;
 
@@ -339,11 +312,6 @@ void test_adl()
    variant<X> v2{in_place_type<X>, x};
    variant<X> v3{in_place_index<0>, il, x};
    variant<X> v4{in_place_type<X>, il, x};
-   variant<X> v5{allocator_arg, a, in_place_index<0>, x};
-   variant<X> v6{allocator_arg, a, in_place_type<X>, x};
-   variant<X> v7{allocator_arg, a, in_place_index<0>, il, x};
-   variant<X> v8{allocator_arg, a, in_place_type<X>, il, x};
-   variant<X> v9{allocator_arg, a, in_place_type<X>, 1};
 }
 
 void test_variant_alternative() {
