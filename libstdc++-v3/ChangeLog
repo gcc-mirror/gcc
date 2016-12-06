@@ -1,5 +1,9 @@
 2016-12-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (StdVariantPrinter): Update for new
+	data member name.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Remove redundant test.
+
 	* include/bits/shared_ptr_base.h
 	(__shared_ptr_access<T, L, false, true>::operator->()): Fix assertion.
 
