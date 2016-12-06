@@ -1186,6 +1186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find(const _CharT* __s, size_type __pos, size_type __n) const
+    _GLIBCXX_NOEXCEPT
     {
       __glibcxx_requires_string_len(__s, __n);
       const size_type __size = this->size();
@@ -1227,6 +1228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     rfind(const _CharT* __s, size_type __pos, size_type __n) const
+    _GLIBCXX_NOEXCEPT
     {
       __glibcxx_requires_string_len(__s, __n);
       const size_type __size = this->size();
@@ -1265,6 +1267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
+    _GLIBCXX_NOEXCEPT
     {
       __glibcxx_requires_string_len(__s, __n);
       for (; __n && __pos < this->size(); ++__pos)
@@ -1280,6 +1283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
+    _GLIBCXX_NOEXCEPT
     {
       __glibcxx_requires_string_len(__s, __n);
       size_type __size = this->size();
@@ -1301,6 +1305,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_not_of(const _CharT* __s, size_type __pos, size_type __n) const
+    _GLIBCXX_NOEXCEPT
     {
       __glibcxx_requires_string_len(__s, __n);
       for (; __pos < this->size(); ++__pos)
@@ -1324,6 +1329,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_not_of(const _CharT* __s, size_type __pos, size_type __n) const
+    _GLIBCXX_NOEXCEPT
     {
       __glibcxx_requires_string_len(__s, __n);
       size_type __size = this->size();
@@ -1397,7 +1403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
     int
     basic_string<_CharT, _Traits, _Alloc>::
-    compare(const _CharT* __s) const
+    compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT
     {
       __glibcxx_requires_string(__s);
       const size_type __size = this->size();

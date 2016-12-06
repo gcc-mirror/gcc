@@ -1,3 +1,11 @@
+2016-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string::find, basic_string::rfind)
+	(basic_string::find_first_of, basic_string::find_last_of)
+	(basic_string::find_first_not_of, basic_string::find_last_not_of):
+	Make all overloads noexcept.
+	(basic_string::compare(const _CharT*)): Make noexcept.
+
 2016-12-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Regenerate.
