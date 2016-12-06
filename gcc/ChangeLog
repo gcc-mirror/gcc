@@ -1,3 +1,11 @@
+2016-12-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78688
+	* config/rs6000/rs6000.h (FUNCTION_VALUE_REGNO_P): Use IN_RANGE
+	instead of ((N) >= (X) && (N) <= (Y-X)) to silence warnings about
+	comparing signed to unsigned values.
+	(FUNCTION_ARG_REGNO_P): Likewise.
+
 2016-12-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Stefan Freudenberger  <stefan@reservoir.com>
 
