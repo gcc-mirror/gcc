@@ -1774,7 +1774,7 @@ simplify_preds_4 (pred_chain_union *preds)
 	  s_preds.safe_push ((*preds)[i]);
 	}
 
-      destroy_predicate_vecs (preds);
+      preds->release ();
       (*preds) = s_preds;
       s_preds = vNULL;
     }
@@ -2211,10 +2211,9 @@ uninit_uses_cannot_happen (gphi *phi, unsigned uninit_opnds,
 
   /* Look for the control dependencies of all the uninitialized
      operands and build guard predicates describing them.  */
-  unsigned i;
-  pred_chain_union uninit_preds[max_phi_args];
-  memset (uninit_preds, 0, sizeof (pred_chain_union) * phi_args);
-  for (i = 0; i < phi_args; ++i)
+  pred_chain_union uninit_preds;
+  bool ret = true;
+  for (unsigned i = 0; i < phi_args; ++i)
     {
       if (!MASK_TEST_BIT (uninit_opnds, i))
 	continue;
@@ -2226,26 +2225,32 @@ uninit_uses_cannot_happen (gphi *phi, unsigned uninit_opnds,
       int num_calls = 0;
 
       /* Build the control dependency chain for uninit operand `i'...  */
+      uninit_preds = vNULL;
       if (!compute_control_dep_chain (find_dom (e->src),
 				      e->src, dep_chains, &num_chains,
 				      &cur_chain, &num_calls))
-	return false;
+	{
+	  ret = false;
+	  break;
+	}
       /* ...and convert it into a set of predicates.  */
       convert_control_dep_chain_into_preds (dep_chains, num_chains,
-					    &uninit_preds[i]);
+					    &uninit_preds);
       for (size_t j = 0; j < num_chains; ++j)
 	dep_chains[j].release ();
-      simplify_preds (&uninit_preds[i], NULL, false);
-      uninit_preds[i]
-	= normalize_preds (uninit_preds[i], NULL, false);
+      simplify_preds (&uninit_preds, NULL, false);
+      uninit_preds = normalize_preds (uninit_preds, NULL, false);
 
       /* Can the guard for this uninitialized operand be invalidated
 	 by the PHI use?  */
-      if (!can_chain_union_be_invalidated_p (uninit_preds[i],
-					     phi_use_guards[0]))
-	return false;
+      if (!can_chain_union_be_invalidated_p (uninit_preds, phi_use_guards[0]))
+	{
+	  ret = false;
+	  break;
+	}
     }
-  return true;
+  destroy_predicate_vecs (&uninit_preds);
+  return ret;
 }
 
 /* Computes the predicates that guard the use and checks
