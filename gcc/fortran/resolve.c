@@ -13900,15 +13900,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 			       "or POINTER components", nl->sym->name,
 			       sym->name, &sym->declared_at))
 	    return false;
-
-	  if (!dtio)
-	    {
-	      gfc_error ("NAMELIST object %qs in namelist %qs at %L has "
-			"ALLOCATABLE or POINTER components and thus requires "
-			"a defined input/output procedure", nl->sym->name,
-			sym->name, &sym->declared_at);
-	      return false;
-	    }
+	  return true;
 	}
     }
 
