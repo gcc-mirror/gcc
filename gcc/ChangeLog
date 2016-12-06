@@ -1,5 +1,12 @@
 2016-12-06  Aldy Hernandez  <aldyh@redhat.com>
 
+	PR middle-end/78548
+	* tree-ssa-uninit.c (simplify_preds_4): Call release() instead of
+	destroy_predicate_vecs.
+	(uninit_uses_cannot_happen): Make uninit_preds a scalar.
+
+2016-12-06  Aldy Hernandez  <aldyh@redhat.com>
+
 	PR middle-end/78566
 	* tree-ssa-uninit.c (can_one_predicate_be_invalidated_p): Change
 	argument type to a pred_chain.
