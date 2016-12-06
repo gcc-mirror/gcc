@@ -41,10 +41,33 @@
 #include <bits/functexcept.h>
 #include <bits/move.h>
 #include <bits/functional_hash.h>
+#include <bits/invoke.h>
 #include <ext/aligned_buffer.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+namespace __detail
+{
+namespace __variant
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<size_t _Np, typename... _Types>
+    struct _Nth_type;
+
+  template<size_t _Np, typename _First, typename... _Rest>
+    struct _Nth_type<_Np, _First, _Rest...>
+    : _Nth_type<_Np-1, _Rest...> { };
+
+  template<typename _First, typename... _Rest>
+    struct _Nth_type<0, _First, _Rest...>
+    { using type = _First; };
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __variant
+} // namespace __detail
+
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types> class tuple;
@@ -99,6 +122,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr size_t variant_npos = -1;
 
+  template<size_t _Np, typename... _Types>
+    constexpr variant_alternative_t<_Np, variant<_Types...>>&
+    get(variant<_Types...>&);
+
+  template<size_t _Np, typename... _Types>
+    constexpr variant_alternative_t<_Np, variant<_Types...>>&&
+    get(variant<_Types...>&&);
+
+  template<size_t _Np, typename... _Types>
+    constexpr variant_alternative_t<_Np, variant<_Types...>> const&
+    get(const variant<_Types...>&);
+
+  template<size_t _Np, typename... _Types>
+    constexpr variant_alternative_t<_Np, variant<_Types...>> const&&
+    get(const variant<_Types...>&&);
+
 _GLIBCXX_END_NAMESPACE_VERSION
 
 namespace __detail
@@ -118,41 +157,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __index_of<_Tp, _First, _Rest...> :
       std::integral_constant<size_t, is_same_v<_Tp, _First>
 	? 0 : __index_of_v<_Tp, _Rest...> + 1> {};
-
-  // Extract _From's qualifiers and references and apply it to _To.
-  // __reserved_type_map<const int&, char> is const char&.
-  template<typename _From, typename _To>
-    struct __reserved_type_map_impl
-    { using type = _To; };
-
-  template<typename _From, typename _To>
-    using __reserved_type_map =
-      typename __reserved_type_map_impl<_From, _To>::type;
-
-  template<typename _From, typename _To>
-    struct __reserved_type_map_impl<_From&, _To>
-    { using type = add_lvalue_reference_t<__reserved_type_map<_From, _To>>; };
-
-  template<typename _From, typename _To>
-    struct __reserved_type_map_impl<_From&&, _To>
-    { using type = add_rvalue_reference_t<__reserved_type_map<_From, _To>>; };
-
-  template<typename _From, typename _To>
-    struct __reserved_type_map_impl<const _From, _To>
-    { using type = add_const_t<__reserved_type_map<_From, _To>>; };
-
-  template<typename _From, typename _To>
-    struct __reserved_type_map_impl<volatile _From, _To>
-    { using type = add_volatile_t<__reserved_type_map<_From, _To>>; };
-
-  template<typename _From, typename _To>
-    struct __reserved_type_map_impl<const volatile _From, _To>
-    { using type = add_cv_t<__reserved_type_map<_From, _To>>; };
-
-  // This abstraction might be useful for future features,
-  // e.g. boost::recursive_wrapper.
-  template<typename _Alternative>
-    using __storage = _Alternative;
 
   // _Uninitialized<T> is guaranteed to be a literal type, even if T is not.
   // We have to do this, because [basic.types]p10.5.3 (n4606) is not implemented
@@ -210,16 +214,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __gnu_cxx::__aligned_membuf<_Type> _M_storage;
     };
 
-  // Given a qualified storage type, return the desired reference.
-  // For example, variant<int>&& stores the int as __storage<int>, and
-  // _Qualified_storage will be __storage<int>&&.
-  template<typename _Qualified_storage>
-    decltype(auto)
-    __get_alternative(void* __ptr)
+  template<typename _Ref>
+    _Ref __ref_cast(void* __ptr)
     {
-      using _Storage = decay_t<_Qualified_storage>;
-      return __reserved_type_map<_Qualified_storage, _Storage>(
-	*static_cast<_Storage*>(__ptr));
+      return static_cast<_Ref>(*static_cast<remove_reference_t<_Ref>*>(__ptr));
     }
 
   template<typename _Union>
@@ -242,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Lhs, typename _Rhs>
     constexpr void
     __erased_ctor(void* __lhs, void* __rhs)
-    { ::new (__lhs) decay_t<_Lhs>(__get_alternative<_Rhs>(__rhs)); }
+    { ::new (__lhs) remove_reference_t<_Lhs>(__ref_cast<_Rhs>(__rhs)); }
 
   template<typename _Variant, size_t _Np>
     constexpr void
@@ -256,14 +254,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Lhs, typename _Rhs>
     constexpr void
     __erased_assign(void* __lhs, void* __rhs)
-    { __get_alternative<_Lhs>(__lhs) = __get_alternative<_Rhs>(__rhs); }
+    { __ref_cast<_Lhs>(__lhs) = __ref_cast<_Rhs>(__rhs); }
 
   template<typename _Lhs, typename _Rhs>
     constexpr void
     __erased_swap(void* __lhs, void* __rhs)
     {
       using std::swap;
-      swap(__get_alternative<_Lhs>(__lhs), __get_alternative<_Rhs>(__rhs));
+      swap(__ref_cast<_Lhs>(__lhs), __ref_cast<_Rhs>(__rhs));
     }
 
   template<typename _Variant, size_t _Np>
@@ -285,7 +283,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr size_t
     __erased_hash(void* __t)
-    { return std::hash<decay_t<_Tp>>{}(__get_alternative<_Tp>(__t)); }
+    {
+      return std::hash<remove_cv_t<remove_reference_t<_Tp>>>{}(
+	  __ref_cast<_Tp>(__t));
+    }
 
   // Defines members and ctors.
   template<typename... _Types>
@@ -389,8 +390,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__rhs._M_valid())
 	  {
 	    static constexpr void (*_S_vtable[])(void*, void*) =
-	      { &__erased_ctor<__storage<_Types>&,
-			       const __storage<_Types>&>... };
+	      { &__erased_ctor<_Types&, const _Types&>... };
 	    _S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
 	    this->_M_index = __rhs._M_index;
 	  }
@@ -402,7 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__rhs._M_valid())
 	  {
 	    static constexpr void (*_S_vtable[])(void*, void*) =
-	      { &__erased_ctor<__storage<_Types>&, __storage<_Types>&&>... };
+	      { &__erased_ctor<_Types&, _Types&&>... };
 	    _S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
 	    this->_M_index = __rhs._M_index;
 	  }
@@ -422,8 +422,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__rhs._M_valid())
 	      {
 		static constexpr void (*_S_vtable[])(void*, void*) =
-		  { &__erased_assign<__storage<_Types>&,
-				     const __storage<_Types>&>... };
+		  { &__erased_assign<_Types&, const _Types&>... };
 		_S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
 	      }
 	  }
@@ -469,8 +468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__rhs._M_valid())
 	      {
 		static constexpr void (*_S_vtable[])(void*, void*) =
-		  { &__erased_assign<__storage<_Types>&,
-				     __storage<_Types>&&>... };
+		  { &__erased_assign<_Types&, _Types&&>... };
 		_S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
 	      }
 	  }
@@ -555,20 +553,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void* __get_storage(_Variant&& __v)
     { return __v._M_storage(); }
 
-  // A helper used to create variadic number of _To types.
-  template<typename _From, typename _To>
-    using _To_type = _To;
-
-  // Call the actual visitor.
-  // _Args are qualified storage types.
-  template<typename _Visitor, typename... _Args>
-    decltype(auto)
-    __visit_invoke(_Visitor&& __visitor, _To_type<_Args, void*>... __ptrs)
-    {
-      return std::forward<_Visitor>(__visitor)(
-	  __get_alternative<_Args>(__ptrs)...);
-    }
-
   // Used for storing multi-dimensional vtable.
   template<typename _Tp, size_t... _Dimensions>
     struct _Multi_array
@@ -592,108 +576,115 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // Creates a multi-dimensional vtable recursively.
-  // _Variant_tuple is initially the input from visit(), and gets gradually
-  // consumed.
-  // _Arg_tuple is enumerated alternative sequence, represented by a
-  // qualified storage.
   //
   // For example,
   // visit([](auto, auto){},
-  //       variant<int, char>(),
-  //       variant<float, double, long double>())
+  //       variant<int, char>(),  // typedef'ed as V1
+  //       variant<float, double, long double>())  // typedef'ed as V2
   // will trigger instantiations of:
-  // __gen_vtable_impl<_Multi_array<void(*)(void*, void*), 2, 3>,
-  //                   tuple<variant<int, char>,
-  //                         variant<float, double, long double>>,
-  //                   tuple<>>
-  //   __gen_vtable_impl<_Multi_array<void(*)(void*, void*), 3>,
-  //                     tuple<variant<float, double, long double>>,
-  //                     tuple<int>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
-  //                       tuple<>,
-  //                       tuple<int, float>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
-  //                       tuple<>,
-  //                       tuple<int, double>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
-  //                       tuple<>,
-  //                       tuple<int, long double>>
-  //   __gen_vtable_impl<_Multi_array<void(*)(void*, void*), 3>,
-  //                     tuple<variant<float, double, long double>>,
-  //                     tuple<char>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
-  //                       tuple<>,
-  //                       tuple<char, float>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
-  //                       tuple<>,
-  //                       tuple<char, double>>
-  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
-  //                       tuple<>,
-  //                       tuple<char, long double>>
+  // __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 2, 3>,
+  //                   tuple<V1&&, V2&&>, std::index_sequence<>>
+  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
+  //                     tuple<V1&&, V2&&>, std::index_sequence<0>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //                       tuple<V1&&, V2&&>, std::index_sequence<0, 0>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //                       tuple<V1&&, V2&&>, std::index_sequence<0, 1>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //                       tuple<V1&&, V2&&>, std::index_sequence<0, 2>>
+  //   __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&), 3>,
+  //                     tuple<V1&&, V2&&>, std::index_sequence<1>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //                       tuple<V1&&, V2&&>, std::index_sequence<1, 0>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //                       tuple<V1&&, V2&&>, std::index_sequence<1, 1>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(V1&&, V2&&)>,
+  //                       tuple<V1&&, V2&&>, std::index_sequence<1, 2>>
   // The returned multi-dimensional vtable can be fast accessed by the visitor
   // using index calculation.
-  template<typename _Array_type, typename _Variant_tuple, typename _Arg_tuple>
+  template<typename _Array_type, typename _Variant_tuple, typename _Index_seq>
     struct __gen_vtable_impl;
 
-  template<typename _Array_type, typename _First, typename... _Rest,
-	   typename... _Args>
-    struct __gen_vtable_impl<_Array_type, tuple<_First, _Rest...>,
-			     tuple<_Args...>>
+  template<typename _Result_type, typename _Visitor, size_t... __unused,
+	   typename... _Variants, size_t... __indices>
+    struct __gen_vtable_impl<
+	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __unused...>,
+	tuple<_Variants...>, std::index_sequence<__indices...>>
     {
+      using _Next =
+	  remove_reference_t<typename _Nth_type<sizeof...(__indices),
+			     _Variants...>::type>;
+      using _Array_type =
+	  _Multi_array<_Result_type (*)(_Visitor, _Variants...), __unused...>;
+
       static constexpr _Array_type
       _S_apply()
       {
 	_Array_type __vtable{};
 	_S_apply_all_alts(
-	  __vtable, make_index_sequence<variant_size_v<decay_t<_First>>>());
+	  __vtable, make_index_sequence<variant_size_v<_Next>>());
 	return __vtable;
       }
 
-      template<size_t... __indices>
+      template<size_t... __var_indices>
 	static constexpr void
-	_S_apply_all_alts(_Array_type& __vtable, index_sequence<__indices...>)
-	{ (_S_apply_single_alt<__indices>(__vtable._M_arr[__indices]), ...); }
+	_S_apply_all_alts(_Array_type& __vtable,
+			  std::index_sequence<__var_indices...>)
+	{
+	  (_S_apply_single_alt<__var_indices>(
+	     __vtable._M_arr[__var_indices]), ...);
+	}
 
       template<size_t __index, typename _Tp>
 	static constexpr void
 	_S_apply_single_alt(_Tp& __element)
 	{
-	  using _Alternative = variant_alternative_t<__index, decay_t<_First>>;
-	  using _Qualified_storage = __reserved_type_map<
-	    _First, __storage<_Alternative>>;
+	  using _Alternative = variant_alternative_t<__index, _Next>;
 	  __element = __gen_vtable_impl<
-	    decay_t<decltype(__element)>, tuple<_Rest...>,
-	    tuple<_Args..., _Qualified_storage>>::_S_apply();
+	    remove_reference_t<
+	      decltype(__element)>, tuple<_Variants...>,
+	      std::index_sequence<__indices..., __index>>::_S_apply();
 	}
     };
 
-  template<typename _Result_type, typename _Visitor, typename... _Args>
+  template<typename _Result_type, typename _Visitor, typename... _Variants,
+	   size_t... __indices>
     struct __gen_vtable_impl<
-      _Multi_array<_Result_type (*)(_Visitor, _To_type<_Args, void*>...)>,
-		   tuple<>, tuple<_Args...>>
+      _Multi_array<_Result_type (*)(_Visitor, _Variants...)>,
+		   tuple<_Variants...>, std::index_sequence<__indices...>>
     {
       using _Array_type =
-	_Multi_array<_Result_type (*)(_Visitor&&, _To_type<_Args, void*>...)>;
+	  _Multi_array<_Result_type (*)(_Visitor&&, _Variants...)>;
+
+      decltype(auto)
+      static constexpr __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
+      {
+	return __invoke(std::forward<_Visitor>(__visitor),
+			std::get<__indices>(
+			    std::forward<_Variants>(__vars))...);
+      }
 
       static constexpr auto
       _S_apply()
-      { return _Array_type{&__visit_invoke<_Visitor, _Args...>}; }
+      { return _Array_type{&__visit_invoke}; }
     };
 
   template<typename _Result_type, typename _Visitor, typename... _Variants>
     struct __gen_vtable
     {
-      using _Func_ptr =
-	_Result_type (*)(_Visitor&&, _To_type<_Variants, void*>...);
+      using _Func_ptr = _Result_type (*)(_Visitor&&, _Variants...);
       using _Array_type =
-	_Multi_array<_Func_ptr, variant_size_v<decay_t<_Variants>>...>;
+	  _Multi_array<_Func_ptr,
+		       variant_size_v<remove_reference_t<_Variants>>...>;
 
       static constexpr _Array_type
       _S_apply()
       {
-	return __gen_vtable_impl<
-	  _Array_type, tuple<_Variants...>, tuple<>>::_S_apply();
+	return __gen_vtable_impl<_Array_type, tuple<_Variants...>,
+				 std::index_sequence<>>::_S_apply();
       }
+
+      static constexpr auto _S_vtable = _S_apply();
     };
 
   template<size_t _Np, typename _Tp>
@@ -721,22 +712,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "T should occur for exactly once in alternatives");
       return __v.index() == __detail::__variant::__index_of_v<_Tp, _Types...>;
     }
-
-  template<size_t _Np, typename... _Types>
-    constexpr variant_alternative_t<_Np, variant<_Types...>>&
-    get(variant<_Types...>&);
-
-  template<size_t _Np, typename... _Types>
-    constexpr variant_alternative_t<_Np, variant<_Types...>>&&
-    get(variant<_Types...>&&);
-
-  template<size_t _Np, typename... _Types>
-    constexpr variant_alternative_t<_Np, variant<_Types...>> const&
-    get(const variant<_Types...>&);
-
-  template<size_t _Np, typename... _Types>
-    constexpr variant_alternative_t<_Np, variant<_Types...>> const&&
-    get(const variant<_Types...>&&);
 
   template<typename _Tp, typename... _Types>
     constexpr inline _Tp& get(variant<_Types...>& __v)
@@ -860,7 +835,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__lhs < __rhs); }
 
   template<typename _Visitor, typename... _Variants>
-    decltype(auto) visit(_Visitor&&, _Variants&&...);
+    constexpr decltype(auto) visit(_Visitor&&, _Variants&&...);
 
   struct monostate { };
 
@@ -963,9 +938,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp>
 	using __accepted_type = __to_type<__accepted_index<_Tp>>;
-
-      template<typename _Tp>
-	using __storage = __detail::__variant::__storage<_Tp>;
 
       template<typename _Tp>
 	static constexpr size_t __index_of =
@@ -1127,8 +1099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (this->_M_valid())
 	      {
 		static constexpr void (*_S_vtable[])(void*, void*) =
-		  { &__detail::__variant::__erased_swap<
-		      __storage<_Types>&, __storage<_Types>&>... };
+		  { &__detail::__variant::__erased_swap<_Types&, _Types&>... };
 		_S_vtable[__rhs._M_index](this->_M_storage(),
 					  __rhs._M_storage());
 	      }
@@ -1268,17 +1239,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Visitor, typename... _Variants>
-    decltype(auto)
+    constexpr decltype(auto)
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
+      if ((__variants.valueless_by_exception() || ...))
+	__throw_bad_variant_access("Unexpected index");
+
       using _Result_type =
 	decltype(std::forward<_Visitor>(__visitor)(get<0>(__variants)...));
-      static constexpr auto _S_vtable =
-	__detail::__variant::__gen_vtable<
-	  _Result_type, _Visitor&&, _Variants&&...>::_S_apply();
-      auto __func_ptr = _S_vtable._M_access(__variants.index()...);
+
+      constexpr auto& __vtable = __detail::__variant::__gen_vtable<
+	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
+
+      auto __func_ptr = __vtable._M_access(__variants.index()...);
       return (*__func_ptr)(std::forward<_Visitor>(__visitor),
-			   __detail::__variant::__get_storage(__variants)...);
+			   std::forward<_Variants>(__variants)...);
     }
 
   template<typename... _Types>
@@ -1297,7 +1272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    namespace __edv = __detail::__variant;
 	    static constexpr size_t (*_S_vtable[])(void*) =
-	      { &__edv::__erased_hash<const __edv::__storage<_Types>&>... };
+	      { &__edv::__erased_hash<const _Types&>... };
 	    return hash<size_t>{}(__t.index())
 	      + _S_vtable[__t.index()](__edv::__get_storage(__t));
 	  }

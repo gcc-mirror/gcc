@@ -1,3 +1,10 @@
+2016-11-27  Tim Shen  <timshen@google.com>
+
+	* include/std/variant (visit): Make visit constexpr. Also cleanup
+	__get_alternative and __storage, since we don't support reference/void
+	alternatives any more.
+	* testsuite/20_util/variant/compile.cc: Add tests.
+
 2016-12-07  Tim Shen  <timshen@google.com>
 
 	* include/bits/enable_special_members.h: Make

@@ -275,6 +275,22 @@ void test_visit()
     };
     visit(Visitor(), variant<int, char>(), variant<float, double>());
   }
+  {
+    struct Visitor
+    {
+      constexpr bool operator()(const int&) { return true; }
+      constexpr bool operator()(const nonliteral&) { return false; }
+    };
+    static_assert(visit(Visitor(), variant<int, nonliteral>(0)), "");
+  }
+  {
+    struct Visitor
+    {
+      constexpr bool operator()(const int&) { return true; }
+      constexpr bool operator()(const nonliteral&) { return false; }
+    };
+    static_assert(visit(Visitor(), variant<int, nonliteral>(0)), "");
+  }
 }
 
 void test_constexpr()
