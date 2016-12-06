@@ -1383,6 +1383,7 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 {
   const char *p0, *p1;
+  char c;
   switch (fn)
     {
     case CFN_BUILT_IN_STRSPN:
@@ -1406,6 +1407,30 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	  int r = strcmp (p0, p1);
 	  if (r == 0)
 	    return build_cmp_result (type, r);
+	}
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_INDEX:
+    case CFN_BUILT_IN_STRCHR:
+      if ((p0 = c_getstr (arg0)) && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = strchr (p0, c);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
+	}
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_RINDEX:
+    case CFN_BUILT_IN_STRRCHR:
+      if ((p0 = c_getstr (arg0)) && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = strrchr (p0, c);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
 	}
       return NULL_TREE;
 
