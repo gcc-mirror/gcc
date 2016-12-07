@@ -1,3 +1,9 @@
+2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/new/synopsis.cc: Add C++14 and C++17
+	declarations.
+	* testsuite/18_support/headers/new/synopsis_cxx98.cc: New test.
+
 2016-12-06  Felipe Magno de Almeida  <felipe@expertisesolutions.com.br>
 
 	* src/c++11/cow-stdexcept.cc: Add special case for 16 bit pointers.
