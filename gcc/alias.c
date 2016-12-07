@@ -2746,6 +2746,13 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
       || TREE_CODE (expry) == CONST_DECL)
     return 1;
 
+  /* If either of the decls doesn't have DECL_RTL set (e.g. marked as
+     living in multiple places), we can't tell anything.  Exception
+     are FUNCTION_DECLs for which we can create DECL_RTL on demand.  */
+  if ((!DECL_RTL_SET_P (exprx) && TREE_CODE (exprx) != FUNCTION_DECL)
+      || (!DECL_RTL_SET_P (expry) && TREE_CODE (expry) != FUNCTION_DECL))
+    return 0;
+
   rtlx = DECL_RTL (exprx);
   rtly = DECL_RTL (expry);
 
