@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++1z" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 #include <functional>
 
@@ -27,17 +26,33 @@ struct A {
 void
 test01()
 {
+  // PR libstdc++/59768
   A a;
   auto ref = std::ref(a);
-  std::invoke(&A::foo, ref, 100);		// lvalue
-  std::invoke(&A::foo, std::move(ref), 100);	// rvalue
+  std::__invoke(&A::foo, ref, 100);		// lvalue
+  std::__invoke(&A::foo, std::move(ref), 100);	// rvalue
   const auto refc = std::ref(a);
-  std::invoke(&A::foo, refc, 100);		// const lvalue
-  std::invoke(&A::foo, std::move(refc), 100);	// const rvalue
+  std::__invoke(&A::foo, refc, 100);		// const lvalue
+  std::__invoke(&A::foo, std::move(refc), 100);	// const rvalue
 }
 
-int
-main()
+struct B {
+  int bar = 0;
+};
+
+void
+test02()
 {
-  test01();
+  B b;
+  // Invocation through a reference_wrapper means the object is an lvalue.
+
+  int* ptr [[gnu::unused]];
+  auto ref = std::ref(b);
+  ptr = &std::__invoke(&B::bar, ref);
+  ptr = &std::__invoke(&B::bar, std::move(ref));
+
+  const int* cptr [[gnu::unused]];
+  auto cref = std::cref(b);
+  cptr = &std::__invoke(&B::bar, cref);
+  cptr = &std::__invoke(&B::bar, std::move(cref));
 }
