@@ -672,6 +672,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				   VAR_DECL, gnu_entity_name, gnu_type);
 	    SET_DECL_VALUE_EXPR (gnu_decl, value);
 	    DECL_HAS_VALUE_EXPR_P (gnu_decl) = 1;
+	    TREE_STATIC (gnu_decl) = global_bindings_p ();
 	    gnat_pushdecl (gnu_decl, gnat_entity);
 	    break;
 	  }
