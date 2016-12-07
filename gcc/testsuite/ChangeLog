@@ -1,3 +1,13 @@
+2016-12-07  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: Move built-in tests for P8 and
+	P9 to their own test file.  This allows precise constraints on the
+	effective target and compile options.
+	* gcc.target/powerpc/builtins-3-p8.c: New file for the vector
+	compare P8 built-in tests.
+	* gcc.target/powerpc/builtins-3-p9.c: New file for the vector
+	compare P9 built-in tests.
+
 2016-12-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr77761.c: Require int128 effective target.
