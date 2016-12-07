@@ -1,6 +1,12 @@
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78299
+	* omp-low.c (expand_omp_for_static_nochunk): Don't assert
+	that loop->header == body_bb if broken_loop.
+
 	2016-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77834
