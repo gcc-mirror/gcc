@@ -55,6 +55,8 @@ struct GTY(()) incoming_args {
 
 /* Datastructures maintained for currently processed function in RTL form.  */
 struct GTY(()) rtl_data {
+  void init_stack_alignment ();
+
   struct expr_status expr;
   struct emit_status emit;
   struct varasm_status varasm;

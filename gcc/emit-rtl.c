@@ -6291,5 +6291,17 @@ need_atomic_barrier_p (enum memmodel model, bool pre)
       gcc_unreachable ();
     }
 }
+
+/* Initialize fields of rtl_data related to stack alignment.  */
+
+void
+rtl_data::init_stack_alignment ()
+{
+  stack_alignment_needed = STACK_BOUNDARY;
+  max_used_stack_slot_alignment = STACK_BOUNDARY;
+  stack_alignment_estimated = 0;
+  preferred_stack_boundary = STACK_BOUNDARY;
+}
+
 
 #include "gt-emit-rtl.h"
