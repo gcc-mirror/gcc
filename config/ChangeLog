@@ -1,3 +1,10 @@
+2016-12-08  Alan Modra  <amodra@gmail.com>
+
+	* elf.m4: Revert 2016-06-21 change.
+	* picflag.m4: Likewise.  Revert 2016-04-30 change too.
+	* override.m4 (AC_PROG_LEX): Import 2016-01-18 binutils fix
+	for PR binutils/19481.
+
 2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	* bootstrap-asan.mk: Replace LSAN_OPTIONS=detect_leaks=0 with
