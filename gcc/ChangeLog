@@ -1,6 +1,12 @@
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78025
+	* omp-simd-clone.c (simd_clone_adjust): Handle noreturn declare simd
+	functions.
+
 	2016-10-26  Jakub Jelinek  <jakub@redhat.com>
 		    Martin Liska  <mliska@suse.cz>
 
