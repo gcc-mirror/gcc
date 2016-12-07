@@ -1,3 +1,9 @@
+2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR rtl-optimization/78617
+	* lra-remat.c (do_remat): Initialize live_hard_regs from live in
+	registers, also setting hard registers mapped to pseudo registers.
+
 2016-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* cfgexpand.c (pass_expand::execute): Move stack initializations

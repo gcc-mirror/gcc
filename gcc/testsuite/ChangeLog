@@ -1,3 +1,8 @@
+2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR rtl-optimization/78617
+	* gcc.c-torture/execute/pr78617.c: New test.
+
 2016-12-07  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c: Move built-in tests for P8 and
