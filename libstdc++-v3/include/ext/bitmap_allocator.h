@@ -648,7 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  equal to that requested.
      */
     size_t*
-    _M_get(size_t __sz) throw(std::bad_alloc);
+    _M_get(size_t __sz) _GLIBCXX_THROW(std::bad_alloc);
 
     /** @brief  This function just clears the internal Free List, and
      *  gives back all the memory to the OS.
@@ -766,7 +766,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the newly acquired block. Having a tight bound.
        */
       void 
-      _S_refill_pool() throw(std::bad_alloc)
+      _S_refill_pool() _GLIBCXX_THROW(std::bad_alloc)
       {
 #if defined _GLIBCXX_DEBUG
 	_S_check_for_free_blocks();
@@ -824,7 +824,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Amortized Constant time.
        */
       pointer 
-      _M_allocate_single_object() throw(std::bad_alloc)
+      _M_allocate_single_object() _GLIBCXX_THROW(std::bad_alloc)
       {
 #if defined __GTHREADS
 	__scoped_lock __bit_lock(_S_mut);
