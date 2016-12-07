@@ -25460,7 +25460,7 @@ rs6000_reg_live_or_pic_offset_p (int reg)
       if (TARGET_TOC && TARGET_MINIMAL_TOC
 	  && (crtl->calls_eh_return
 	      || df_regs_ever_live_p (reg)
-	      || get_pool_size_upper_bound ()))
+	      || !constant_pool_empty_p ()))
 	return true;
 
       if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)
@@ -26266,7 +26266,7 @@ rs6000_stack_info (void)
 #ifdef TARGET_RELOCATABLE
       || (DEFAULT_ABI == ABI_V4
 	  && (TARGET_RELOCATABLE || flag_pic > 1)
-	  && get_pool_size_upper_bound () != 0)
+	  && !constant_pool_empty_p ())
 #endif
       || rs6000_ra_ever_killed ())
     info->lr_save_p = 1;
@@ -28044,7 +28044,7 @@ rs6000_emit_prologue (void)
 
       /* With -mminimal-toc we may generate an extra use of r2 below.  */
       if (TARGET_TOC && TARGET_MINIMAL_TOC
-	  && get_pool_size_upper_bound () != 0)
+	  && !constant_pool_empty_p ())
 	cfun->machine->r2_setup_needed = true;
     }
 
@@ -28900,7 +28900,7 @@ rs6000_emit_prologue (void)
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
   if (!TARGET_SINGLE_PIC_BASE
       && ((TARGET_TOC && TARGET_MINIMAL_TOC
-	   && get_pool_size_upper_bound () != 0)
+	   && !constant_pool_empty_p ())
 	  || (DEFAULT_ABI == ABI_V4
 	      && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
 	      && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))))
@@ -34967,7 +34967,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   if (DEFAULT_ABI == ABI_V4
       && (TARGET_RELOCATABLE || flag_pic > 1)
       && !TARGET_SECURE_PLT
-      && (get_pool_size_upper_bound () != 0 || crtl->profile)
+      && (!constant_pool_empty_p () || crtl->profile)
       && uses_TOC ())
     {
       char buf[256];
@@ -37453,7 +37453,7 @@ rs6000_can_eliminate (const int from, const int to)
 	  ? ! frame_pointer_needed
 	  : from == RS6000_PIC_OFFSET_TABLE_REGNUM
 	    ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC
-		|| get_pool_size_upper_bound () == 0
+		|| constant_pool_empty_p ()
 	    : true);
 }
 
@@ -38990,7 +38990,7 @@ rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
   if (!TARGET_SINGLE_PIC_BASE
       && TARGET_TOC
       && TARGET_MINIMAL_TOC
-      && get_pool_size_upper_bound () != 0)
+      && !constant_pool_empty_p ())
     add_to_hard_reg_set (&set->set, Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
   if (cfun->machine->split_stack_argp_used)
     add_to_hard_reg_set (&set->set, Pmode, 12);
