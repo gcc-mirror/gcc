@@ -1,6 +1,6 @@
 /* PR target/70322 */
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -msse2 -mstv" } */
+/* { dg-options "-O2 -msse2 -mstv -mno-stackrealign" } */
 /* { dg-final { scan-assembler "psub" } } */
 /* { dg-final { scan-assembler "por" } } */
 
