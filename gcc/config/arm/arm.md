@@ -567,9 +567,9 @@
 ;;  (plus (reg rN) (reg sp)) into (reg rN).  In this case reload will
 ;; put the duplicated register first, and not try the commutative version.
 (define_insn_and_split "*arm_addsi3"
-  [(set (match_operand:SI          0 "s_register_operand" "=rk,l,l ,l ,r ,k ,r,r ,k ,r ,k,k,r ,k ,r")
-        (plus:SI (match_operand:SI 1 "s_register_operand" "%0 ,l,0 ,l ,rk,k ,r,rk,k ,rk,k,r,rk,k ,rk")
-                 (match_operand:SI 2 "reg_or_int_operand" "rk ,l,Py,Pd,rI,rI,k,Pj,Pj,L ,L,L,PJ,PJ,?n")))]
+  [(set (match_operand:SI          0 "s_register_operand" "=rk,l,l ,l ,r ,k ,r,k ,r ,k ,r ,k,k,r ,k ,r")
+	(plus:SI (match_operand:SI 1 "s_register_operand" "%0 ,l,0 ,l ,rk,k ,r,r ,rk,k ,rk,k,r,rk,k ,rk")
+		 (match_operand:SI 2 "reg_or_int_operand" "rk ,l,Py,Pd,rI,rI,k,rI,Pj,Pj,L ,L,L,PJ,PJ,?n")))]
   "TARGET_32BIT"
   "@
    add%?\\t%0, %0, %2
@@ -579,6 +579,7 @@
    add%?\\t%0, %1, %2
    add%?\\t%0, %1, %2
    add%?\\t%0, %2, %1
+   add%?\\t%0, %1, %2
    addw%?\\t%0, %1, %2
    addw%?\\t%0, %1, %2
    sub%?\\t%0, %1, #%n2
@@ -598,10 +599,10 @@
 		      operands[1], 0);
   DONE;
   "
-  [(set_attr "length" "2,4,4,4,4,4,4,4,4,4,4,4,4,4,16")
+  [(set_attr "length" "2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,16")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "yes,yes,yes,yes,no,no,no,no,no,no,no,no,no,no,no")
-   (set_attr "arch" "t2,t2,t2,t2,*,*,*,t2,t2,*,*,a,t2,t2,*")
+   (set_attr "predicable_short_it" "yes,yes,yes,yes,no,no,no,no,no,no,no,no,no,no,no,no")
+   (set_attr "arch" "t2,t2,t2,t2,*,*,*,a,t2,t2,*,*,a,t2,t2,*")
    (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
 		      (const_string "alu_imm")
 		      (const_string "alu_sreg")))
