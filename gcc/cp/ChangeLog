@@ -1,6 +1,12 @@
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77591
+	* typeck.c (maybe_warn_about_returning_address_of_local): Optimize
+	whats_returned through fold_for_warn.
+
 	2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77739
