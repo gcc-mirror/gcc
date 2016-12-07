@@ -1,3 +1,9 @@
+2016-12-07  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/78691
+	* match.pd ((convert1 (minmax ((convert2 (x) c)))) -> minmax (x c)):
+	Require integral type for the outer expression.
+
 2016-12-07  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
 	* config/aarch64/aarch64.c

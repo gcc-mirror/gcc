@@ -1,3 +1,9 @@
+2016-12-07  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/78691
+	* gcc.target/i386/pr78691-i386.c: New test.
+	* gcc.target/powerpc/pr78691-ppc.c: New test.
+
 2016-12-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/pr70322-1.c: Add -mno-stackrealign to dg-options.
