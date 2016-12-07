@@ -29,9 +29,34 @@ struct A : std::experimental::enable_shared_from_this<A>
   ~A() { ++destroyed; }
 };
 
+struct B : A { };
+
 // 8.2.1.1 shared_ptr constructors [memory.smartptr.shared.const]
 
 // Construction from unique_ptr<A[]>
+
+template<typename From, typename To>
+constexpr bool constructible()
+{
+  using std::experimental::shared_ptr;
+  using std::experimental::is_constructible_v;
+  using std::unique_ptr;
+  return is_constructible_v<shared_ptr<To>, unique_ptr<From>>;
+}
+
+static_assert(  constructible< A,    A    >(), "A -> A compatible" );
+static_assert( !constructible< A,    A[]  >(), "A -> A[] not compatible" );
+static_assert( !constructible< A,    A[1] >(), "A -> A[1] not compatible" );
+static_assert( !constructible< A[],  A    >(), "A[] -> A not compatible" );
+static_assert(  constructible< A[],  A[]  >(), "A[] -> A[] compatible" );
+static_assert( !constructible< A[],  A[1] >(), "A[] -> A[1] not compatible" );
+
+static_assert(  constructible< B,    A    >(), "B -> A compatible" );
+static_assert( !constructible< B,    A[]  >(), "B -> A[] not compatible" );
+static_assert( !constructible< B,    A[1] >(), "B -> A[1] not compatible" );
+static_assert( !constructible< B[],  A    >(), "B[] -> A not compatible" );
+static_assert( !constructible< B[],  A[]  >(), "B[] -> A[] not compatible" );
+static_assert( !constructible< B[],  A[1] >(), "B[2] -> A[1] not compatible" );
 
 void
 test01()
