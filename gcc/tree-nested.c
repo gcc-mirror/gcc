@@ -1978,6 +1978,8 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   struct nesting_info *info = (struct nesting_info *) wi->info;
   tree save_local_var_chain;
   bitmap save_suppress;
+  char save_static_chain_added;
+  bool frame_decl_added;
   gimple *stmt = gsi_stmt (*gsi);
 
   switch (gimple_code (stmt))
@@ -1985,29 +1987,44 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
       save_suppress = info->suppress_expansion;
+      frame_decl_added = false;
       if (convert_local_omp_clauses (gimple_omp_taskreg_clauses_ptr (stmt),
 	                             wi))
 	{
-	  tree c;
+	  tree c = build_omp_clause (gimple_location (stmt),
+				     OMP_CLAUSE_SHARED);
 	  (void) get_frame_type (info);
-	  c = build_omp_clause (gimple_location (stmt),
-				OMP_CLAUSE_SHARED);
 	  OMP_CLAUSE_DECL (c) = info->frame_decl;
 	  OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
 	  gimple_omp_taskreg_set_clauses (stmt, c);
+	  info->static_chain_added |= 4;
+	  frame_decl_added = true;
 	}
 
       save_local_var_chain = info->new_local_var_chain;
+      save_static_chain_added = info->static_chain_added;
       info->new_local_var_chain = NULL;
+      info->static_chain_added = 0;
 
       walk_body (convert_local_reference_stmt, convert_local_reference_op, info,
 	         gimple_omp_body_ptr (stmt));
 
+      if ((info->static_chain_added & 4) != 0 && !frame_decl_added)
+	{
+	  tree c = build_omp_clause (gimple_location (stmt),
+				     OMP_CLAUSE_SHARED);
+	  (void) get_frame_type (info);
+	  OMP_CLAUSE_DECL (c) = info->frame_decl;
+	  OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
+	  info->static_chain_added |= 4;
+	  gimple_omp_taskreg_set_clauses (stmt, c);
+	}
       if (info->new_local_var_chain)
 	declare_vars (info->new_local_var_chain,
 		      gimple_seq_first_stmt (gimple_omp_body (stmt)), false);
       info->new_local_var_chain = save_local_var_chain;
       info->suppress_expansion = save_suppress;
+      info->static_chain_added |= save_static_chain_added;
       break;
 
     case GIMPLE_OMP_FOR:
@@ -2048,29 +2065,46 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	  break;
 	}
       save_suppress = info->suppress_expansion;
+      frame_decl_added = false;
       if (convert_local_omp_clauses (gimple_omp_target_clauses_ptr (stmt), wi))
 	{
-	  tree c;
+	  tree c = build_omp_clause (gimple_location (stmt), OMP_CLAUSE_MAP);
 	  (void) get_frame_type (info);
-	  c = build_omp_clause (gimple_location (stmt), OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_DECL (c) = info->frame_decl;
 	  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TOFROM);
 	  OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (info->frame_decl);
 	  OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
 	  gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt), c);
+	  info->static_chain_added |= 4;
+	  frame_decl_added = true;
 	}
 
       save_local_var_chain = info->new_local_var_chain;
+      save_static_chain_added = info->static_chain_added;
       info->new_local_var_chain = NULL;
+      info->static_chain_added = 0;
 
       walk_body (convert_local_reference_stmt, convert_local_reference_op, info,
 		 gimple_omp_body_ptr (stmt));
+
+      if ((info->static_chain_added & 4) != 0 && !frame_decl_added)
+	{
+	  tree c = build_omp_clause (gimple_location (stmt), OMP_CLAUSE_MAP);
+	  (void) get_frame_type (info);
+	  OMP_CLAUSE_DECL (c) = info->frame_decl;
+	  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TOFROM);
+	  OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (info->frame_decl);
+	  OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
+	  gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt), c);
+	  info->static_chain_added |= 4;
+	}
 
       if (info->new_local_var_chain)
 	declare_vars (info->new_local_var_chain,
 		      gimple_seq_first_stmt (gimple_omp_body (stmt)), false);
       info->new_local_var_chain = save_local_var_chain;
       info->suppress_expansion = save_suppress;
+      info->static_chain_added |= save_static_chain_added;
       break;
 
     case GIMPLE_OMP_TEAMS:
