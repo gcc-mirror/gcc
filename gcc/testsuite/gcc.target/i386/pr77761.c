@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-guess-branch-probability -fschedule-insns -fno-tree-ter -mavx512f --param=max-pending-list-length=512" } */
+/* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target avx512f } */
 
 #include "avx512f-check.h"
@@ -29,8 +30,8 @@ foo(u8 x1, u16 x2, u32 x3, u64 x4, v64u8 x5, v64u16 x6, v64u32 x7, v64u64 x8, v6
     (v64u128) x8 + x9;
 }
 
-int
-do_main ()
+static void
+avx512f_test (void)
 {
   v64u128 x = foo(1, 0, 0, 0, (v64u8){}, (v64u16){}, (v64u32){}, (v64u64){}, (v64u128){});
 
@@ -45,11 +46,4 @@ do_main ()
     __builtin_abort();
   if (x[3] != 1)
     __builtin_abort();
-  return 0;
-}
-
-static void
-avx512f_test (void)
-{
-  do_main ();
 }

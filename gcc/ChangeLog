@@ -111,7 +111,7 @@
 
 2016-12-06  Vladimir Makarov  <vmakarov@redhat.com>
 
-	target/77761
+	PR target/77761
 	* lra-lives.c (process_bb_lives): Update biggest mode for
 	implicitly used hard reg.
 

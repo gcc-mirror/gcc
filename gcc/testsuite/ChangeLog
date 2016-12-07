@@ -1,3 +1,9 @@
+2016-12-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr77761.c: Require int128 effective target.
+	(avx512f_test): Delete.
+	(do_main): Rename to avx512f_test.
+
 2016-12-07  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/78691
@@ -27,7 +33,7 @@
 
 2016-12-06  Vladimir Makarov  <vmakarov@redhat.com>
 
-	target/77761
+	PR target/77761
 	* testsuite/gcc.target/i386/pr77761.c: New.
 
 2016-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
