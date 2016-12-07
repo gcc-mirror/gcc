@@ -1,5 +1,8 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_path.h (path::_S_convert): Replace
+	uses of C++14 std::remove_cv_t alias template.
+
 	* testsuite/28_regex/traits/char/user_defined.cc: Replace uses of
 	C++14 std::exchange function.
 
