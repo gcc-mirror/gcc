@@ -1,5 +1,8 @@
 2016-12-07  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (tsubst <{NON,}TYPE_ARGUMENT_PACK>: Simplify control flow
+	and avoid re-tsubsting type.
+
 	* cp-tree.h (enum cp_tree_index): Add CPTI_AUTO_IDENTIFIER &
 	CPTI_DECLTYPE_AUTO_IDENTIFIER.
 	(auto_identifier, decltype_auto_identifier): New.
