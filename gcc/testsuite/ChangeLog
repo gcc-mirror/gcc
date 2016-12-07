@@ -3,6 +3,9 @@
 	Backported from mainline
 	2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77482
+	* g++.dg/cpp0x/constexpr-77482.C: New test.
+
 	PR c++/77375
 	* g++.dg/cpp0x/mutable1.C: New test.
 
