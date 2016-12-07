@@ -1,3 +1,10 @@
+2016-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* cfgexpand.c (pass_expand::execute): Move stack initializations
+	to rtl_data::init_stack_alignment and call it.
+	* emit-rtl.c (rtl_data::init_stack_alignment): New method.
+	* emit-rtl.h (rtl_data::init_stack_alignment): New method.
+
 2016-12-07  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc/ira.c (ira_setup_eliminable_regset): Initialize crtl->is_leaf.
