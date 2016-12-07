@@ -4330,7 +4330,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     instruction memory accesses.  */
 	  if (mode == TImode || mode == TFmode)
 	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
-		    && offset_9bit_signed_unscaled_p (mode, offset));
+		    && (offset_9bit_signed_unscaled_p (mode, offset)
+			|| offset_12bit_unsigned_scaled_p (mode, offset)));
 
 	  /* A 7bit offset check because OImode will emit a ldp/stp
 	     instruction (only big endian will get here).
@@ -4534,18 +4535,19 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x,
 /* Split an out-of-range address displacement into a base and offset.
    Use 4KB range for 1- and 2-byte accesses and a 16KB range otherwise
    to increase opportunities for sharing the base address of different sizes.
-   For TI/TFmode and unaligned accesses use a 256-byte range.  */
+   For unaligned accesses and TI/TF mode use the signed 9-bit range.  */
 static bool
 aarch64_legitimize_address_displacement (rtx *disp, rtx *off, machine_mode mode)
 {
-  HOST_WIDE_INT mask = GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3fff;
+  HOST_WIDE_INT offset = INTVAL (*disp);
+  HOST_WIDE_INT base = offset & ~(GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3ffc);
 
-  if (mode == TImode || mode == TFmode ||
-      (INTVAL (*disp) & (GET_MODE_SIZE (mode) - 1)) != 0)
-    mask = 0xff;
+  if (mode == TImode || mode == TFmode
+      || (offset & (GET_MODE_SIZE (mode) - 1)) != 0)
+    base = (offset + 0x100) & ~0x1ff;
 
-  *off = GEN_INT (INTVAL (*disp) & ~mask);
-  *disp = GEN_INT (INTVAL (*disp) & mask);
+  *off = GEN_INT (base);
+  *disp = GEN_INT (offset - base);
   return true;
 }
 
@@ -5412,12 +5414,10 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
 	  x = gen_rtx_PLUS (Pmode, base, offset_rtx);
 	}
 
-      /* Does it look like we'll need a load/store-pair operation?  */
+      /* Does it look like we'll need a 16-byte load/store-pair operation?  */
       HOST_WIDE_INT base_offset;
-      if (GET_MODE_SIZE (mode) > 16
-	  || mode == TImode)
-	base_offset = ((offset + 64 * GET_MODE_SIZE (mode))
-		       & ~((128 * GET_MODE_SIZE (mode)) - 1));
+      if (GET_MODE_SIZE (mode) > 16)
+	base_offset = (offset + 0x400) & ~0x7f0;
       /* For offsets aren't a multiple of the access size, the limit is
 	 -256...255.  */
       else if (offset & (GET_MODE_SIZE (mode) - 1))
@@ -5431,6 +5431,8 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
       /* Small negative offsets are supported.  */
       else if (IN_RANGE (offset, -256, 0))
 	base_offset = 0;
+      else if (mode == TImode || mode == TFmode)
+	base_offset = (offset + 0x100) & ~0x1ff;
       /* Use 12-bit offset by access size.  */
       else
 	base_offset = offset & (~0xfff * GET_MODE_SIZE (mode));
