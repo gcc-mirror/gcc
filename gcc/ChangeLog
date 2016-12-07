@@ -1,3 +1,9 @@
+2016-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/78705
+	* config/i386/i386.c (ix86_test_dumping_memory_blockage):
+	Conditionalize the string comparison on Pmode == DImode.
+
 2016-12-06  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/67955
