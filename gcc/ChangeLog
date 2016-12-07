@@ -1,5 +1,13 @@
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* builtins.c (fold_builtin_strstr): Removed.
+	(fold_builtin_2): Don't call fold_builtin_strstr.
+	* gimple-fold.c (gimple_fold_builtin_strchr): Check is_strrchr
+	earlier in the strrchr (x, 0) -> strchr (x, 0) optimization.
+	(gimple_fold_builtin_strstr): New function.
+	(gimple_fold_builtin): Call it.
+	* fold-const-call.c (fold_const_call): Handle CFN_BUILT_IN_STRSTR.
+
 	PR c++/78692
 	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Set lhs
 	var to lhs of new_stmt right before noreturn handling rather than to

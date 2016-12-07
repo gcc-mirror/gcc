@@ -1,5 +1,8 @@
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/builtin-strstr-1.c: New test.
+	* g++.dg/cpp0x/constexpr-strstr.C: New test.
+
 	PR c++/78692
 	* g++.dg/torture/pr78692.C: New test.
 
