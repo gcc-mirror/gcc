@@ -1,3 +1,15 @@
+2016-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* read-md.c (rtx_reader::require_char): New method.
+	(require_char_ws): Convert from function to...
+	(rtx_reader::require_char_ws): ...method.
+	(rtx_reader::require_word_ws): New method.
+	* read-md.h (rtx_reader::require_char): New method decl.
+	(require_char_ws): Remove global decl in favor of...
+	(rtx_reader::require_char_ws): ...new method decl.
+	(rtx_reader::require_word_ws): New method decl.
+	(rtx_reader::peek_char): New method decl.
+
 2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR rtl-optimization/78617
