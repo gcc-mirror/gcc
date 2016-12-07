@@ -340,15 +340,38 @@ read_skip_spaces (void)
     }
 }
 
+/* Consume the next character, issuing a fatal error if it is not
+   EXPECTED.  */
+
+void
+rtx_reader::require_char (char expected)
+{
+  int ch = read_char ();
+  if (ch != expected)
+    fatal_expected_char (expected, ch);
+}
+
 /* Consume any whitespace, then consume the next non-whitespace
    character, issuing a fatal error if it is not EXPECTED.  */
 
 void
-require_char_ws (char expected)
+rtx_reader::require_char_ws (char expected)
 {
   int ch = read_skip_spaces ();
   if (ch != expected)
     fatal_expected_char (expected, ch);
+}
+
+/* Consume any whitespace, then consume the next word (as per read_name),
+   issuing a fatal error if it is not EXPECTED.  */
+
+void
+rtx_reader::require_word_ws (const char *expected)
+{
+  struct md_name name;
+  read_name (&name);
+  if (strcmp (name.string, expected))
+    fatal_with_file_and_line ("missing '%s'", expected);
 }
 
 /* Read the next character from the file.  */
@@ -384,6 +407,16 @@ rtx_reader::unread_char (int ch)
   else
     m_read_md_colno--;
   ungetc (ch, m_read_md_file);
+}
+
+/* Peek at the next character from the file without consuming it.  */
+
+int
+rtx_reader::peek_char (void)
+{
+  int ch = read_char ();
+  unread_char (ch);
+  return ch;
 }
 
 /* Read an rtx code name into NAME.  It is terminated by any of the

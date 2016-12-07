@@ -116,6 +116,10 @@ class rtx_reader
   char *read_braced_string ();
   char *read_string (int star_if_braced);
   void read_skip_construct (int depth, file_location loc);
+  void require_char (char expected);
+  void require_char_ws (char expected);
+  void require_word_ws (const char *expected);
+  int peek_char (void);
 
   void set_md_ptr_loc (const void *ptr, const char *filename, int lineno);
   const struct ptr_loc *get_md_ptr_loc (const void *ptr);
@@ -269,7 +273,6 @@ extern void fatal_with_file_and_line (const char *, ...)
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;
 extern int read_skip_spaces (void);
-extern void require_char_ws (char expected);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
 extern void upcase_string (char *);
