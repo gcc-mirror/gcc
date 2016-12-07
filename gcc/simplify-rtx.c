@@ -55,12 +55,17 @@ static rtx simplify_unary_operation_1 (enum rtx_code, machine_mode, rtx);
 static rtx simplify_binary_operation_1 (enum rtx_code, machine_mode,
 					rtx, rtx, rtx, rtx);
 
-/* Negate a CONST_INT rtx, truncating (because a conversion from a
-   maximally negative number can overflow).  */
+/* Negate a CONST_INT rtx.  */
 static rtx
 neg_const_int (machine_mode mode, const_rtx i)
 {
-  return gen_int_mode (-(unsigned HOST_WIDE_INT) INTVAL (i), mode);
+  unsigned HOST_WIDE_INT val = -UINTVAL (i);
+  
+  if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT
+      && val == UINTVAL (i))
+    return simplify_const_unary_operation (NEG, mode, CONST_CAST_RTX (i),
+					   mode);
+  return gen_int_mode (val, mode);
 }
 
 /* Test whether expression, X, is an immediate constant that represents
@@ -4475,9 +4480,12 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
       rtx value = ops[n_ops - 1].op;
       if (ops[n_ops - 1].neg ^ ops[n_ops - 2].neg)
 	value = neg_const_int (mode, value);
-      ops[n_ops - 2].op = plus_constant (mode, ops[n_ops - 2].op,
-					 INTVAL (value));
-      n_ops--;
+      if (CONST_INT_P (value))
+	{
+	  ops[n_ops - 2].op = plus_constant (mode, ops[n_ops - 2].op,
+					     INTVAL (value));
+	  n_ops--;
+	}
     }
 
   /* Put a non-negated operand first, if possible.  */
