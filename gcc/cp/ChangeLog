@@ -1,3 +1,10 @@
+2016-12-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/78589
+	* error.c (dump_decl): Use dump_function_name to dump
+	!DECL_LANG_SPECIFIC function decls with no or self-referencing
+	abstract origin.
+
 2016-12-07  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (tsubst <{NON,}TYPE_ARGUMENT_PACK>: Simplify control flow
