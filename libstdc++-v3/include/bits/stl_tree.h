@@ -861,11 +861,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Link_type
 	_M_copy(_Const_Link_type __x, _Base_ptr __p, _NodeGen&);
 
+      template<typename _NodeGen>
+	_Link_type
+	_M_copy(const _Rb_tree& __x, _NodeGen& __gen)
+	{
+	  _Link_type __root = _M_copy(__x._M_begin(), _M_end(), __gen);
+	  _M_leftmost() = _S_minimum(__root);
+	  _M_rightmost() = _S_maximum(__root);
+	  _M_impl._M_node_count = __x._M_impl._M_node_count;
+	  return __root;
+	}
+
       _Link_type
-      _M_copy(_Const_Link_type __x, _Base_ptr __p)
+      _M_copy(const _Rb_tree& __x)
       {
 	_Alloc_node __an(*this);
-	return _M_copy(__x, __p, __an);
+	return _M_copy(__x, __an);
       }
 
       void
@@ -903,12 +914,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_impl(__x._M_impl)
       {
 	if (__x._M_root() != 0)
-	  {
-	    _M_root() = _M_copy(__x._M_begin(), _M_end());
-	    _M_leftmost() = _S_minimum(_M_root());
-	    _M_rightmost() = _S_maximum(_M_root());
-	    _M_impl._M_node_count = __x._M_impl._M_node_count;
-	  }
+	  _M_root() = _M_copy(__x);
       }
 
 #if __cplusplus >= 201103L
@@ -920,12 +926,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_impl(__x._M_impl._M_key_compare, _Node_allocator(__a))
       {
 	if (__x._M_root() != nullptr)
-	  {
-	    _M_root() = _M_copy(__x._M_begin(), _M_end());
-	    _M_leftmost() = _S_minimum(_M_root());
-	    _M_rightmost() = _S_maximum(_M_root());
-	    _M_impl._M_node_count = __x._M_impl._M_node_count;
-	  }
+	  _M_root() = _M_copy(__x);
       }
 
       _Rb_tree(_Rb_tree&&) = default;
@@ -1595,10 +1596,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto& __val = const_cast<value_type&>(__cval);
 	      return __an(std::move_if_noexcept(__val));
 	    };
-	  _M_root() = _M_copy(__x._M_begin(), _M_end(), __lbd);
-	  _M_leftmost() = _S_minimum(_M_root());
-	  _M_rightmost() = _S_maximum(_M_root());
-	  _M_impl._M_node_count = __x._M_impl._M_node_count;
+	  _M_root() = _M_copy(__x, __lbd);
 	}
     }
 
@@ -1636,10 +1634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto& __val = const_cast<value_type&>(__cval);
 	      return __roan(std::move_if_noexcept(__val));
 	    };
-	  _M_root() = _M_copy(__x._M_begin(), _M_end(), __lbd);
-	  _M_leftmost() = _S_minimum(_M_root());
-	  _M_rightmost() = _S_maximum(_M_root());
-	  _M_impl._M_node_count = __x._M_impl._M_node_count;
+	  _M_root() = _M_copy(__x, __lbd);
 	  __x.clear();
 	}
     }
@@ -1653,10 +1648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     && is_nothrow_move_assignable<_Compare>::value)
     {
       _M_impl._M_key_compare = std::move(__x._M_impl._M_key_compare);
-      constexpr bool __move_storage =
-	  _Alloc_traits::_S_propagate_on_move_assign()
-	  || _Alloc_traits::_S_always_equal();
-      _M_move_assign(__x, __bool_constant<__move_storage>());
+      _M_move_assign(__x, __bool_constant<_Alloc_traits::_S_nothrow_move()>());
       return *this;
     }
 
@@ -1716,12 +1708,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_impl._M_reset();
 	  _M_impl._M_key_compare = __x._M_impl._M_key_compare;
 	  if (__x._M_root() != 0)
-	    {
-	      _M_root() = _M_copy(__x._M_begin(), _M_end(), __roan);
-	      _M_leftmost() = _S_minimum(_M_root());
-	      _M_rightmost() = _S_maximum(_M_root());
-	      _M_impl._M_node_count = __x._M_impl._M_node_count;
-	    }
+	    _M_root() = _M_copy(__x, __roan);
 	}
 
       return *this;
