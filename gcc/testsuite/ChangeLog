@@ -1,6 +1,11 @@
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78649
+	* g++.dg/cpp0x/pr78649.C: New test.
+
 	2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78540
