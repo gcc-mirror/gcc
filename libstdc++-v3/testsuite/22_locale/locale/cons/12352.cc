@@ -45,7 +45,7 @@ void deallocate(void* p)
     std::free(p);
 }
 
-void* operator new(std::size_t n) throw (std::bad_alloc)
+void* operator new(std::size_t n) THROW (std::bad_alloc)
 {
   void* ret = allocate(n);
   if (!ret)
@@ -53,7 +53,7 @@ void* operator new(std::size_t n) throw (std::bad_alloc)
   return ret;
 }
 
-void* operator new[](std::size_t n) throw (std::bad_alloc)
+void* operator new[](std::size_t n) THROW (std::bad_alloc)
 {
   void* ret = allocate(n);
   if (!ret)

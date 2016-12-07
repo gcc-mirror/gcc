@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <cstdio>
+#include <testsuite_hooks.h>
 
 namespace __gnu_test
 {
@@ -32,7 +33,7 @@ namespace __gnu_test
 
     counter() : _M_count(0), _M_throw(true) { }
 
-    ~counter() throw (counter_error)
+    ~counter() THROW (counter_error)
     {
       if (_M_throw && _M_count != 0)
 	throw counter_error();
@@ -86,7 +87,7 @@ namespace __gnu_test
     }
 } // namespace __gnu_test
 
-void* operator new(std::size_t size) throw(std::bad_alloc)
+void* operator new(std::size_t size) THROW(std::bad_alloc)
 {
   std::printf("operator new is called \n");
   void* p = std::malloc(size);
