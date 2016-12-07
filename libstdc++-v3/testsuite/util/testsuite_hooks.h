@@ -75,6 +75,12 @@
          #langTERR ".ISO8859-" #part "@euro" : #langTERR ".ISO8859-" #part)
 #endif
 
+#if __cplusplus < 201103L
+# define THROW(X) throw(X)
+#else
+# define THROW(X) noexcept(false)
+#endif
+
 namespace __gnu_test
 {
   // All macros are defined in GLIBCXX_CONFIGURE_TESTSUITE and imported

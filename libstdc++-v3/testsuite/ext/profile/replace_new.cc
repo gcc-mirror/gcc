@@ -20,10 +20,11 @@
 // { dg-require-profile-mode "" }
 
 #include <vector>
+#include <testsuite_hooks.h>
 
 using std::vector;
 
-void* operator new(std::size_t size) throw(std::bad_alloc)
+void* operator new(std::size_t size) THROW(std::bad_alloc)
 {
   void* p = std::malloc(size);
   if (!p)

@@ -23,6 +23,7 @@
 #define _GLIBCXX_TESTSUITE_TR1_H
 
 #include <ext/type_traits.h>
+#include <testsuite_hooks.h>
 
 namespace __gnu_test
 {
@@ -146,25 +147,25 @@ namespace __gnu_test
 
   struct ThrowExplicitClass
   {
-    ThrowExplicitClass(double&) throw(int);
-    explicit ThrowExplicitClass(int&) throw(int);
-    ThrowExplicitClass(double&, int&, double&) throw(int);
+    ThrowExplicitClass(double&) THROW(int);
+    explicit ThrowExplicitClass(int&) THROW(int);
+    ThrowExplicitClass(double&, int&, double&) THROW(int);
   };
 
   struct ThrowDefaultClass
   {
-    ThrowDefaultClass() throw(int);
+    ThrowDefaultClass() THROW(int);
   };
 
   struct ThrowCopyConsClass
   {
-    ThrowCopyConsClass(const ThrowCopyConsClass&) throw(int);
+    ThrowCopyConsClass(const ThrowCopyConsClass&) THROW(int);
   };
 
 #if __cplusplus >= 201103L
   struct ThrowMoveConsClass
   {
-    ThrowMoveConsClass(ThrowMoveConsClass&&) throw(int);
+    ThrowMoveConsClass(ThrowMoveConsClass&&) THROW(int);
   };
 
   struct NoexceptExplicitClass
@@ -558,7 +559,7 @@ namespace __gnu_test
 
     struct TD2
     {
-      ~TD2() throw(int);
+      ~TD2() THROW(int);
     };
 
     struct Aggr

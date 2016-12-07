@@ -1,5 +1,18 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_hooks.h (THROW): Define.
+	* testsuite/util/replacement_memory_operators.h: Include
+	testsuite_hooks.h and use THROW macro.
+	* testsuite/util/testsuite_tr1.h: Likewise.
+	* testsuite/20_util/allocator/1.cc: Use THROW macro.
+	* testsuite/22_locale/locale/cons/12352.cc: Likewise.
+	* testsuite/23_containers/vector/zero_sized_allocations.cc: Likewise.
+	* testsuite/30_threads/lock_guard/cons/1.cc: Replace dynamic exception
+	specification with noexcept-specifier.
+	* testsuite/ext/pool_allocator/allocate_chunk.cc: Include
+	testsuite_hooks.h and use THROW macro.
+	* testsuite/ext/profile/replace_new.cc: Likewise.
+
 	* include/ext/bitmap_allocator.h (bitmap_allocator::_S_refill_pool)
 	(bitmap_allocator::_M_allocate_single_object)
 	(bitmap_allocator::_M_get): Use _GLIBCXX_THROW macro.

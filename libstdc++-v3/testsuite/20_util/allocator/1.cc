@@ -30,7 +30,7 @@ bool check_new = false;
 bool check_delete = false;
 
 void* 
-operator new(std::size_t n) throw(std::bad_alloc)
+operator new(std::size_t n) THROW(std::bad_alloc)
 {
   check_new = true;
   return std::malloc(n);
