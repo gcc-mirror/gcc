@@ -1,5 +1,7 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/bad_exception/59392.cc: Disable for C++17.
+
 	* testsuite/18_support/headers/new/synopsis.cc: Add C++14 and C++17
 	declarations.
 	* testsuite/18_support/headers/new/synopsis_cxx98.cc: New test.
