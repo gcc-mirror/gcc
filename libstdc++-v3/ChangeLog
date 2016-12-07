@@ -1,6 +1,16 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/51960
+	* doc/xml/manual/intro.xml: Document DR 2127 change.
+	* doc/html/*: Regenerate.
+	* include/bits/stl_raw_storage_iter.h (operator=(_Tp&&)): Add.
+	(operator++(), operator++(int)): Use injected class name.
+	* testsuite/20_util/raw_storage_iterator/dr2127.cc: New test.
+
+	Backport from mainline
 	2016-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional (_Unwrap): Rename to __inv_unwrap.
