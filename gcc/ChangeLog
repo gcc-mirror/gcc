@@ -1,3 +1,10 @@
+2016-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78692
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Set lhs
+	var to lhs of new_stmt right before noreturn handling rather than to
+	lhs of e->call_stmt early.
+
 2016-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* read-md.c (rtx_reader::require_char): New method.

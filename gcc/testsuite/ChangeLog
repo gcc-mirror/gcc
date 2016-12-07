@@ -1,3 +1,8 @@
+2016-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78692
+	* g++.dg/torture/pr78692.C: New test.
+
 2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR rtl-optimization/78617
