@@ -1,6 +1,15 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 2442 status.
+	* include/std/mutex [_GLIBCXX_HAVE_TLS] (__once_call_impl): Remove.
+	(call_once): Use lambda expression and std::__invoke instead of
+	__bind_simple and __once_call_impl.
+	* testsuite/30_threads/call_once/dr2442.cc: New test.
+
+	Backport from mainline
 	2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/allocator.h (allocator<T>::is_always_equal): Define.
