@@ -3,6 +3,14 @@
 	Backport from mainline
 	2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
+	Add tests for valid and invalid conversions.
+	* testsuite/experimental/memory/shared_ptr/cons/weak_ptr_ctor.cc:
+	Likewise.
+
+	Backport from mainline
+	2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/experimental/bits/shared_ptr.h
 	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::_Compatible): Just use
 	is_convertible for non-array specialization.
