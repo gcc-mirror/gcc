@@ -3,6 +3,13 @@
 	Backported from mainline
 	2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/78540
+	* rtl.h (remove_reg_equal_equiv_notes): Return bool instead of void.
+	* rtlanal.c (remove_reg_equal_equiv_notes): Return true if any
+	note has been removed.
+	* postreload.c (reload_combine_recognize_pattern): If
+	remove_reg_equal_equiv_notes returns true, call df_notes_rescan.
+
 	PR rtl-optimization/78546
 	* simplify-rtx.c (neg_const_int): When negating most negative
 	number in mode wider than HOST_BITS_PER_WIDE_INT, use
