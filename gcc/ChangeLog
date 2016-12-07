@@ -1,3 +1,13 @@
+2016-12-07  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (movti_aarch64): Change Ump to m.
+	(movtf_aarch64): Likewise.
+	* config/aarch64/aarch64.c (aarch64_classify_address):
+	Use correct intersection of offsets.
+	(aarch64_legitimize_address_displacement): Use 9-bit signed offsets.
+	(aarch64_legitimize_address): Use 9-bit signed offsets for TI/TF mode.
+	Use 7-bit signed scaled mode for modes > 16 bytes.
+
 2016-12-07  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR rtl-optimization/78561
