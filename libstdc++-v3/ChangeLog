@@ -1,6 +1,13 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78326
+	* include/experimental/memory_resource (memory_resource::_S_max_align):
+	Change access to protected.
+
+	Backport from mainline
 	2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
