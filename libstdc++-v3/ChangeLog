@@ -1,5 +1,8 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/28_regex/traits/char/user_defined.cc: Replace uses of
+	C++14 std::exchange function.
+
 	* testsuite/util/testsuite_hooks.h (THROW): Define.
 	* testsuite/util/replacement_memory_operators.h: Include
 	testsuite_hooks.h and use THROW macro.
