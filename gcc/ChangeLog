@@ -1,3 +1,9 @@
+2016-12-07  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_builtin_support_vector_misalignment): New.
+	(TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT): Define.
+
 2016-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/78705
