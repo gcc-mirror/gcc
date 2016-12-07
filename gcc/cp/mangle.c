@@ -4068,6 +4068,7 @@ mangle_guard_variable (const tree variable)
 tree
 mangle_tls_init_fn (const tree variable)
 {
+  check_abi_tags (variable);
   start_mangling (variable);
   write_string ("_ZTH");
   write_guarded_var_name (variable);
@@ -4082,6 +4083,7 @@ mangle_tls_init_fn (const tree variable)
 tree
 mangle_tls_wrapper_fn (const tree variable)
 {
+  check_abi_tags (variable);
   start_mangling (variable);
   write_string (TLS_WRAPPER_PREFIX);
   write_guarded_var_name (variable);
