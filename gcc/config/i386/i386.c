@@ -51190,12 +51190,14 @@ ix86_test_dumping_memory_blockage ()
 
   /* Verify that the repeated references to the SCRATCH show use
      reuse IDS.  The first should be prefixed with a reuse ID,
-     and the second should be dumped as a "reuse_rtx" of that ID.  */
-  ASSERT_RTL_DUMP_EQ_WITH_REUSE
-    ("(cinsn 1 (set (mem/v:BLK (0|scratch:DI) [0  A8])\n"
-     "        (unspec:BLK [\n"
-     "                (mem/v:BLK (reuse_rtx 0) [0  A8])\n"
-     "            ] UNSPEC_MEMORY_BLOCKAGE)))\n", pat, &r);
+     and the second should be dumped as a "reuse_rtx" of that ID.
+     The expected string assumes Pmode == DImode.  */
+  if (Pmode == DImode)
+    ASSERT_RTL_DUMP_EQ_WITH_REUSE
+      ("(cinsn 1 (set (mem/v:BLK (0|scratch:DI) [0  A8])\n"
+       "        (unspec:BLK [\n"
+       "                (mem/v:BLK (reuse_rtx 0) [0  A8])\n"
+       "            ] UNSPEC_MEMORY_BLOCKAGE)))\n", pat, &r);
 }
 
 /* Run all target-specific selftests.  */
