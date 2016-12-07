@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do compile { target c++14 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,54 +20,32 @@
 // 8.2.1 Class template shared_ptr [memory.smartptr.shared]
 
 #include <experimental/memory>
-#include <testsuite_hooks.h>
 
-int destroyed = 0;
-
-struct A : std::experimental::enable_shared_from_this<A>
-{
-  ~A() { ++destroyed; }
-};
+struct A { };
+struct B : A { };
+struct C { };
+struct D { void operator()(B* p) const { delete[] p; } };
 
 // 8.2.1.1 shared_ptr constructors [memory.smartptr.shared.const]
 
-// Construction from unique_ptr<A[]>
-
+// Construction from pointer
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-  std::unique_ptr<A> up(new A);
-  std::experimental::shared_ptr<A> sp(std::move(up));
-  VERIFY( up.get() == 0 );
-  VERIFY( sp.get() != 0 );
-  VERIFY( sp.use_count() == 1 );
-
-  VERIFY( sp->shared_from_this() != nullptr );
-
-  sp.reset();
-  VERIFY( destroyed == 1 );
-  destroyed = 0;
+  C * const c = nullptr;
+  std::experimental::shared_ptr<A> p(c); // { dg-error "no match" }
 }
 
 void
 test02()
 {
-  std::unique_ptr<A[]> up(new A[5]);
-  std::experimental::shared_ptr<A[]> sp(std::move(up));
-  VERIFY( up.get() == 0 );
-  VERIFY( sp.get() != 0 );
-  VERIFY( sp.use_count() == 1 );
-
-  VERIFY( sp[0].shared_from_this() != nullptr );
-
-  sp.reset();
-  VERIFY( destroyed == 5 );
+  B * const b = nullptr;
+  std::experimental::shared_ptr<A[5]> p(b); // { dg-error "no match" }
 }
 
-int
-main()
+void
+test03()
 {
-  test01();
-  test02();
+  B * const b = nullptr;
+  std::experimental::shared_ptr<A[]> p(b); // { dg-error "no match" }
 }
