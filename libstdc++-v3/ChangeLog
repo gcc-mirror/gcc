@@ -1,3 +1,37 @@
+2016-12-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_map.h (map(const map&)): Make default.
+	(map(map&&)): Likewise.
+	(~map()): Likewise.
+	(operator=(const map&)): Likewise.
+	* include/bits/stl_multimap.h (multimap(const multimap&)): Make default.
+	(multimap(multimap&&)): Likewise.
+	(~multimap()): Likewise.
+	(operator=(const multimap&)): Likewise.
+	* include/bits/stl_set.h (set(const set&)): Make default.
+	(set(set&&)): Likewise.
+	(~set()): Likewise.
+	(operator=(const set&)): Likewise.
+	* include/bits/stl_multiset.h (multiset(const multiset&)): Make default.
+	(multiset(multiset&&)): Likewise.
+	(~multiset()): Likewise.
+	(operator=(const multiset&)): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree_key_compare<>): New.
+	(_Rb_tree_header): New.
+	(_Rb_tree_impl): Inherit from latters.
+	(_Rb_tree_impl()): Make default.
+	(_Rb_tree_impl(const _Rb_tree_impl&)): New.
+	(_Rb_tree<>(const _Rb_tree&): Use latter.
+	(_Rb_tree_impl(_Rb_tree_impl&&)): New, default.
+	(_Rb_tree_impl(const _Key_compare&, const _Node_allocator&)): Delete.
+	(_Rb_tree_impl::_M_reset): Move...
+	(_Rb_tree_header::_M_reset): ...here.
+	(_Rb_tree_impl::_M_initialize): Delete.
+	(_Rb_tree(_Rb_tree&&)): Make default.
+	(_Rb_tree_header::_M_move_data(_Rb_tree_header&)): New.
+	(_Rb_tree<>::_M_move_data(_Rb_tree&, true_type)): Use latter.
+	(_Rb_tree<>(_Rb_tree&&)): Make default.
+
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_path.h (path::_S_convert): Replace

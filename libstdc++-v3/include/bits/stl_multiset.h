@@ -194,25 +194,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Multiset copy constructor.
-       *  @param  __x  A %multiset of identical element and allocator types.
        *
-       *  The newly-created %multiset uses a copy of the allocator object used
-       *  by @a __x (unless the allocator traits dictate a different object).
+       *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       multiset(const multiset& __x)
       : _M_t(__x._M_t) { }
+#else
+      multiset(const multiset&) = default;
 
-#if __cplusplus >= 201103L
      /**
        *  @brief  %Multiset move constructor.
-       *  @param  __x  A %multiset of identical element and allocator types.
        *
-       *  The newly-created %multiset contains the exact contents of @a __x.
-       *  The contents of @a __x are a valid, but unspecified %multiset.
+       *  The newly-created %multiset contains the exact contents of the
+       *  moved instance. The moved instance is a valid, but unspecified
+       *  %multiset.
        */
-      multiset(multiset&& __x)
-      noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _M_t(std::move(__x._M_t)) { }
+      multiset(multiset&&) = default;
 
       /**
        *  @brief  Builds a %multiset from an initializer_list.
@@ -256,24 +254,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		 const allocator_type& __a)
 	: _M_t(_Compare(), _Key_alloc_type(__a))
         { _M_t._M_insert_equal(__first, __last); }
+
+      /**
+       *  The dtor only erases the elements, and note that if the elements
+       *  themselves are pointers, the pointed-to memory is not touched in any
+       *  way. Managing the pointer is the user's responsibility.
+       */
+      ~multiset() = default;
 #endif
 
       /**
        *  @brief  %Multiset assignment operator.
-       *  @param  __x  A %multiset of identical element and allocator types.
-       *
-       *  All the elements of @a __x are copied.
        *
        *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       multiset&
       operator=(const multiset& __x)
       {
 	_M_t = __x._M_t;
 	return *this;
       }
+#else
+      multiset&
+      operator=(const multiset&) = default;
 
-#if __cplusplus >= 201103L
       /// Move assignment operator.
       multiset&
       operator=(multiset&&) = default;
