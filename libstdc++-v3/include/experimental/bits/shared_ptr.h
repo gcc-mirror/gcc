@@ -672,7 +672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	shared_ptr(const shared_ptr<_Tp1>& __r) noexcept
 	: _Base_type(__r) { }
 
-      shared_ptr(const shared_ptr<_Tp>&& __r) noexcept
+      shared_ptr(shared_ptr&& __r) noexcept
       : _Base_type(std::move(__r)) { }
 
       template<typename _Tp1, typename = _Compatible<_Tp1>>
@@ -815,7 +815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      operator<(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
      {
        using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return std::less<__elem_t>()(__a.get(), nullptr);
+       return std::less<__elem_t*>()(__a.get(), nullptr);
      }
 
    template<typename _Tp>
