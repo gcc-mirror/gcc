@@ -1662,12 +1662,12 @@ finish_character_type (tree char_type)
   SET_TYPE_DEBUG_TYPE (char_type, unsigned_char_type);
 
   /* If this is a subtype, make the debug type a subtype of the debug type
-     of the base type and convert literal bounds to unsigned.  */
+     of the base type and convert literal RM bounds to unsigned.  */
   if (TREE_TYPE (char_type))
     {
       tree base_unsigned_char_type = TYPE_DEBUG_TYPE (TREE_TYPE (char_type));
-      tree min_value = TYPE_MIN_VALUE (char_type);
-      tree max_value = TYPE_MAX_VALUE (char_type);
+      tree min_value = TYPE_RM_MIN_VALUE (char_type);
+      tree max_value = TYPE_RM_MAX_VALUE (char_type);
 
       if (TREE_CODE (min_value) == INTEGER_CST)
 	min_value = fold_convert (base_unsigned_char_type, min_value);
@@ -1679,7 +1679,7 @@ finish_character_type (tree char_type)
       SET_TYPE_RM_MAX_VALUE (unsigned_char_type, max_value);
     }
 
-  /* Adjust the bounds of the original type to unsigned; that's especially
+  /* Adjust the RM bounds of the original type to unsigned; that's especially
      important for types since they are implicit in this case.  */
   SET_TYPE_RM_MIN_VALUE (char_type, TYPE_MIN_VALUE (unsigned_char_type));
   SET_TYPE_RM_MAX_VALUE (char_type, TYPE_MAX_VALUE (unsigned_char_type));
