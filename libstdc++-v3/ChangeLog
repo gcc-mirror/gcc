@@ -1,6 +1,15 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h (allocator<T>::is_always_equal): Define.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Test for
+	is_always_equal.
+	* testsuite/util/testsuite_allocator.h
+	(uneq_allocator::is_always_equal): Define as false_type.
+
+	Backport from mainline
 	2016-10-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Update status.
