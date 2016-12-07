@@ -1,3 +1,14 @@
+2016-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (enum cp_tree_index): Add CPTI_AUTO_IDENTIFIER &
+	CPTI_DECLTYPE_AUTO_IDENTIFIER.
+	(auto_identifier, decltype_auto_identifier): New.
+	*decl.c (initialize_predefined_identifiers): Add 'auto' and
+	'decltype(auto)'.
+	(grokdeclarator): Use cached identifier.
+	* pt.c (make_decltype_auto, make_auto, make_constrained_auto,
+	is_auto): Likewise.
+
 2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78649
