@@ -1434,6 +1434,22 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	}
       return NULL_TREE;
 
+    case CFN_BUILT_IN_STRSTR:
+      if ((p1 = c_getstr (arg1)))
+	{
+	  if ((p0 = c_getstr (arg0)))
+	    {
+	      const char *r = strstr (p0, p1);
+	      if (r == NULL)
+		return build_int_cst (type, 0);
+	      return fold_convert (type,
+				   fold_build_pointer_plus_hwi (arg0, r - p0));
+	    }
+	  if (*p1 == '\0')
+	    return fold_convert (type, arg0);
+	}
+      return NULL_TREE;
+
     default:
       return fold_const_call_1 (fn, type, arg0, arg1);
     }

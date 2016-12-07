@@ -163,7 +163,6 @@ static tree fold_builtin_3 (location_t, tree, tree, tree, tree);
 static tree fold_builtin_varargs (location_t, tree, tree*, int);
 
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree);
-static tree fold_builtin_strstr (location_t, tree, tree, tree);
 static tree fold_builtin_strspn (location_t, tree, tree);
 static tree fold_builtin_strcspn (location_t, tree, tree);
 
@@ -8303,9 +8302,6 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
     CASE_FLT_FN (BUILT_IN_MODF):
       return fold_builtin_modf (loc, arg0, arg1, type);
 
-    case BUILT_IN_STRSTR:
-      return fold_builtin_strstr (loc, arg0, arg1, type);
-
     case BUILT_IN_STRSPN:
       return fold_builtin_strspn (loc, arg0, arg1);
 
@@ -8727,72 +8723,6 @@ readonly_data_expr (tree exp)
     return decl_readonly_section (exp, 0);
   else
     return false;
-}
-
-/* Simplify a call to the strstr builtin.  S1 and S2 are the arguments
-   to the call, and TYPE is its return type.
-
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.  */
-
-static tree
-fold_builtin_strstr (location_t loc, tree s1, tree s2, tree type)
-{
-  if (!validate_arg (s1, POINTER_TYPE)
-      || !validate_arg (s2, POINTER_TYPE))
-    return NULL_TREE;
-  else
-    {
-      tree fn;
-      const char *p1, *p2;
-
-      p2 = c_getstr (s2);
-      if (p2 == NULL)
-	return NULL_TREE;
-
-      p1 = c_getstr (s1);
-      if (p1 != NULL)
-	{
-	  const char *r = strstr (p1, p2);
-	  tree tem;
-
-	  if (r == NULL)
-	    return build_int_cst (TREE_TYPE (s1), 0);
-
-	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
-	  return fold_convert_loc (loc, type, tem);
-	}
-
-      /* The argument is const char *, and the result is char *, so we need
-	 a type conversion here to avoid a warning.  */
-      if (p2[0] == '\0')
-	return fold_convert_loc (loc, type, s1);
-
-      if (p2[1] != '\0')
-	return NULL_TREE;
-
-      fn = builtin_decl_implicit (BUILT_IN_STRCHR);
-      if (!fn)
-	return NULL_TREE;
-
-      /* New argument list transforming strstr(s1, s2) to
-	 strchr(s1, s2[0]).  */
-      return build_call_expr_loc (loc, fn, 2, s1,
-				  build_int_cst (integer_type_node, p2[0]));
-    }
 }
 
 /* Simplify a call to the strpbrk builtin.  S1 and S2 are the arguments
