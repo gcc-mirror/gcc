@@ -4034,6 +4034,8 @@ initialize_predefined_identifiers (void)
     { "__vtt_parm", &vtt_parm_identifier, 0 },
     { "::", &global_scope_name, 0 },
     { "std", &std_identifier, 0 },
+    { "auto", &auto_identifier, 0 },
+    { "decltype(auto)", &decltype_auto_identifier, 0 },
     { NULL, NULL, 0 }
   };
 
@@ -10600,7 +10602,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  gcc_unreachable ();
 	}
       if (TREE_CODE (type) != TEMPLATE_TYPE_PARM
-	  || TYPE_IDENTIFIER (type) != get_identifier ("auto"))
+	  || TYPE_IDENTIFIER (type) != auto_identifier)
 	{
 	  if (type != error_mark_node)
 	    {
