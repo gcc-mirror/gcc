@@ -1,5 +1,10 @@
 2016-12-07  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* gcc/ira.c (ira_setup_eliminable_regset): Initialize crtl->is_leaf.
+	(ira): Move initialization of crtl->is_leaf earlier.
+
+2016-12-07  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.md (movti_aarch64): Change Ump to m.
 	(movtf_aarch64): Likewise.
 	* config/aarch64/aarch64.c (aarch64_classify_address):
