@@ -1198,10 +1198,11 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 	      /* Delete the reg-reg addition.  */
 	      delete_insn (insn);
 
-	      if (reg_state[regno].offset != const0_rtx)
-		/* Previous REG_EQUIV / REG_EQUAL notes for PREV
-		   are now invalid.  */
-		remove_reg_equal_equiv_notes (prev);
+	      if (reg_state[regno].offset != const0_rtx
+		  /* Previous REG_EQUIV / REG_EQUAL notes for PREV
+		     are now invalid.  */
+		  && remove_reg_equal_equiv_notes (prev))
+		df_notes_rescan (prev);
 
 	      reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
 	      return true;
