@@ -141,6 +141,10 @@ static bool aarch64_vector_mode_supported_p (machine_mode);
 static bool aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
 						 const unsigned char *sel);
 static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
+static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
+							 const_tree type,
+							 int misalignment,
+							 bool is_packed);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -11412,6 +11416,37 @@ aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
   return true;
 }
 
+/* Return true if the vector misalignment factor is supported by the
+   target.  */
+static bool
+aarch64_builtin_support_vector_misalignment (machine_mode mode,
+					     const_tree type, int misalignment,
+					     bool is_packed)
+{
+  if (TARGET_SIMD && STRICT_ALIGNMENT)
+    {
+      /* Return if movmisalign pattern is not supported for this mode.  */
+      if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
+        return false;
+
+      if (misalignment == -1)
+	{
+	  /* Misalignment factor is unknown at compile time but we know
+	     it's word aligned.  */
+	  if (aarch64_simd_vector_alignment_reachable (type, is_packed))
+            {
+              int element_size = TREE_INT_CST_LOW (TYPE_SIZE (type));
+
+              if (element_size != 64)
+                return true;
+            }
+	  return false;
+	}
+    }
+  return default_builtin_support_vector_misalignment (mode, type, misalignment,
+						      is_packed);
+}
+
 /* If VALS is a vector constant that can be loaded into a register
    using DUP, generate instructions to do so and return an RTX to
    assign to the register.  Otherwise return NULL_RTX.  */
@@ -14823,6 +14858,10 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P aarch64_vector_mode_supported_p
+
+#undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
+#define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
+  aarch64_builtin_support_vector_misalignment
 
 #undef TARGET_ARRAY_MODE_SUPPORTED_P
 #define TARGET_ARRAY_MODE_SUPPORTED_P aarch64_array_mode_supported_p
