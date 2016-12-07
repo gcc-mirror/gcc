@@ -1,6 +1,16 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h (shared_ptr(shared_ptr&&)):
+	Remove const from parameter.
+	(operator<(const shared_ptr<T>&, nullptr_t)): Use correct
+	specialization of std::less.
+	* testsuite/experimental/memory/shared_ptr/comparison/comparison.cc:
+	Test comparison with nullptr and actually call test functions.
+
+	Backport from mainline
 	2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/intro.xml: Document LWG 2484 status.
