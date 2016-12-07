@@ -22739,6 +22739,7 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
     cmp_op1 = force_reg (cmp_ops_mode, cmp_op1);
 
   if (optimize
+      || (maskcmp && cmp_mode != mode)
       || (op_true && reg_overlap_mentioned_p (dest, op_true))
       || (op_false && reg_overlap_mentioned_p (dest, op_false)))
     dest = gen_reg_rtx (maskcmp ? cmp_mode : mode);
