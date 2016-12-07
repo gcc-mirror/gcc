@@ -1,5 +1,15 @@
 2016-12-07  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/bits/stl_tree.h
+	(_Rb_tree<>::_M_copy(_Const_Link_type, _Base_ptr)): Delete.
+	(_Rb_tree<>::_M_copy(const _Rb_tree&, _NodeGen&)): New.
+	(_Rb_tree<>::_M_copy(const _Rb_tree&)): New, use latter.
+	(_Rb_tree<>(const _Rb_tree&): Use latter.
+	(_Rb_tree<>(const _Rb_tree&, const allocator_type&)): Likewise.
+	(_Rb_tree<>::_M_move_data(_Rb_tree&, false_type)): Likewise.
+	(_Rb_tree<>::_M_move_assign(_Rb_tree&, false_type)): Likewise.
+	(_Rb_tree<>::operator=(const _Rb_tree&)): Likewise.
+
 	* include/bits/stl_map.h (map(const map&)): Make default.
 	(map(map&&)): Likewise.
 	(~map()): Likewise.
