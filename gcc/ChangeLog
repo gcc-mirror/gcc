@@ -1,3 +1,18 @@
+2016-12-07  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR rtl-optimization/78561
+	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p) Use
+	constant_pool_empty_p in place of get_pool_size_upper_bound.
+	(rs6000_stack_info): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_elf_declare_function_name): Likewise.
+	(rs6000_set_up_by_prologue): Likewise.
+	(rs6000_can_eliminate): Likewise.
+	* output.h (get_pool_size_upper_bound): Delete.
+	(constant_pool_empty_p): New.
+	* varasm.c (get_pool_size_upper_bound): Delete
+	(constant_pool_empty_p): New.
+
 2016-12-07  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/78691
