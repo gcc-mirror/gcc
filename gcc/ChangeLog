@@ -1,6 +1,17 @@
 2016-12-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
+	2016-12-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	            Stefan Freudenberger  <stefan@reservoir.com>
+
+	PR tree-optimization/78646
+	* gimple-ssa-strength-reduction.c (replace_ref): The pointer
+	addition used for the memory base expression should have the type
+	of the candidate.
+
+2016-12-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
 	2016-09-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	            Michael Meissner  <meissner@linux.vnet.ibm.com>
 

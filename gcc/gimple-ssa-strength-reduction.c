@@ -1882,7 +1882,7 @@ replace_ref (tree *expr, slsr_cand_t c)
   if (align < TYPE_ALIGN (acc_type))
     acc_type = build_aligned_type (acc_type, align);
 
-  add_expr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (c->base_expr),
+  add_expr = fold_build2 (POINTER_PLUS_EXPR, c->cand_type,
 			  c->base_expr, c->stride);
   mem_ref = fold_build2 (MEM_REF, acc_type, add_expr,
 			 wide_int_to_tree (c->cand_type, c->index));
