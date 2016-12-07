@@ -3,6 +3,9 @@
 	Backported from mainline
 	2016-11-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/78378
+	* gcc.c-torture/execute/pr78378.c: New test.
+
 	PR fortran/78299
 	* gfortran.dg/gomp/pr78299.f90: New test.
 
