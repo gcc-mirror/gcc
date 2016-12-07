@@ -1,6 +1,14 @@
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-10-26  Jakub Jelinek  <jakub@redhat.com>
+		    Martin Liska  <mliska@suse.cz>
+
+	PR fortran/77973
+	* gimplify.c (gimplify_adjust_omp_clauses_1): For all added map
+	clauses with OMP_CLAUSE_SIZE being a decl, call omp_notice_variable
+	on outer context if any.
+
 	2016-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/66343

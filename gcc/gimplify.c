@@ -7816,9 +7816,10 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       && omp_shared_to_firstprivate_optimizable_decl_p (decl))
     omp_mark_stores (gimplify_omp_ctxp->outer_context, decl);
 
+  tree chain = *list_p;
   clause = build_omp_clause (input_location, code);
   OMP_CLAUSE_DECL (clause) = decl;
-  OMP_CLAUSE_CHAIN (clause) = *list_p;
+  OMP_CLAUSE_CHAIN (clause) = chain;
   if (private_debug)
     OMP_CLAUSE_PRIVATE_DEBUG (clause) = 1;
   else if (code == OMP_CLAUSE_PRIVATE && (flags & GOVD_PRIVATE_OUTER_REF))
@@ -7845,7 +7846,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_ALLOC);
       OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (clause) = 1;
       OMP_CLAUSE_SET_MAP_KIND (nc, GOMP_MAP_FIRSTPRIVATE_POINTER);
-      OMP_CLAUSE_CHAIN (nc) = *list_p;
+      OMP_CLAUSE_CHAIN (nc) = chain;
       OMP_CLAUSE_CHAIN (clause) = nc;
       struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
       gimplify_omp_ctxp = ctx->outer_context;
@@ -7915,7 +7916,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       tree nc = build_omp_clause (input_location, OMP_CLAUSE_LASTPRIVATE);
       OMP_CLAUSE_DECL (nc) = decl;
       OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (nc) = 1;
-      OMP_CLAUSE_CHAIN (nc) = *list_p;
+      OMP_CLAUSE_CHAIN (nc) = chain;
       OMP_CLAUSE_CHAIN (clause) = nc;
       struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
       gimplify_omp_ctxp = ctx->outer_context;
@@ -7926,6 +7927,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
   gimplify_omp_ctxp = ctx->outer_context;
   lang_hooks.decls.omp_finish_clause (clause, pre_p);
+  if (gimplify_omp_ctxp)
+    for (; clause != chain; clause = OMP_CLAUSE_CHAIN (clause))
+      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
+	  && DECL_P (OMP_CLAUSE_SIZE (clause)))
+	omp_notice_variable (gimplify_omp_ctxp, OMP_CLAUSE_SIZE (clause),
+			     true);
   gimplify_omp_ctxp = ctx;
   return 0;
 }
