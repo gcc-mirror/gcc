@@ -1,5 +1,9 @@
 2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/bitmap_allocator.h (bitmap_allocator::_S_refill_pool)
+	(bitmap_allocator::_M_allocate_single_object)
+	(bitmap_allocator::_M_get): Use _GLIBCXX_THROW macro.
+
 	* testsuite/18_support/bad_exception/59392.cc: Disable for C++17.
 
 	* testsuite/18_support/headers/new/synopsis.cc: Add C++14 and C++17
