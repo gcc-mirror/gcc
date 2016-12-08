@@ -1,3 +1,8 @@
+2015-12-08  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/78733
+	* gcc.target/aarch64/pr78733.c: New test.
+
 2016-12-08  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78551
