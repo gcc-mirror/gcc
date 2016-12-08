@@ -1,3 +1,17 @@
+2016-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71856
+	* doc/xml/manual/using.xml: Document macro.
+	* include/bits/c++config [_GLIBCXX_DEBUG || _GLIBCXX_PARALLEL]
+	(__glibcxx_assert): Rename to __glibcxx_assert_impl.
+	[_GLIBCXX_DEBUG] (__glibcxx_assert): Expand to __glibcxx_assert_impl.
+	* include/parallel/base.h [_GLIBCXX_PARALLEL_ASSERTIONS]
+	(_GLIBCXX_PARALLEL_ASSERT): Expand to __glibcxx_assert_impl.
+	[!_GLIBCXX_PARALLEL_ASSERTIONS] (_GLIBCXX_PARALLEL_ASSERT): Define as
+	empty.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_assert2.cc: New test.
+
 2016-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/util/testsuite_new_operators.h: Include testsuite_hooks.h.
