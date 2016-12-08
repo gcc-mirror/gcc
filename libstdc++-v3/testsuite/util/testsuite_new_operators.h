@@ -23,6 +23,7 @@
 #define _GLIBCXX_TESTSUITE_NEW_OPERATORS_H
 
 #include <new>
+#include <testsuite_hooks.h>
 
 namespace __gnu_test
 {
@@ -38,7 +39,7 @@ namespace __gnu_test
   { get_new_limit() = l; }
 }
 
-void* operator new(std::size_t size) throw(std::bad_alloc)
+void* operator new(std::size_t size) THROW(std::bad_alloc)
 {
   if (size > __gnu_test::get_new_limit())
     throw std::bad_alloc();

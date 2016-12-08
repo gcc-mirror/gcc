@@ -12,7 +12,13 @@ void operator delete (void *) throw ()
 }
 
 struct Foo {
-  ~Foo() throw(int) {throw 1;}
+  ~Foo()
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#else
+  noexcept(false)
+#endif
+  {throw 1;}
 };
 
 struct Baz {
@@ -20,7 +26,13 @@ struct Baz {
   {
     deleted = 2;
   }
-  virtual ~Baz() throw(int) {throw 1;}
+  virtual ~Baz()
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#else
+  noexcept(false)
+#endif
+  {throw 1;}
 };
 
 int non_virt ()

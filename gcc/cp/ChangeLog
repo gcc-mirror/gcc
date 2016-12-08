@@ -1,3 +1,11 @@
+2016-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	P0003R5 - removal of dynamic exception specification from C++17
+	* parser.c (cp_parser_exception_specification_opt): For C++17
+	error out on throw ( type-id-list ), for C++11 and C++14 issue
+	-Wdeprecated warning on it.  Formatting fix.  Treat throw()
+	in C++17 as noexcept(true).
+
 2016-12-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/78589

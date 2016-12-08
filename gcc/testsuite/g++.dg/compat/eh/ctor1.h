@@ -5,6 +5,12 @@ struct Foo
 
 struct Bar
 {
-  ~Bar () throw(int);
+  ~Bar ()
+#if __cplusplus < 201103L
+  throw(int)
+#else
+  noexcept(false)
+#endif
+  ;
   Foo f;
 };
