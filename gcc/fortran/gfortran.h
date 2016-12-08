@@ -1768,7 +1768,7 @@ typedef struct gfc_namespace
   /* !$ACC ROUTINE names.  */
   gfc_oacc_routine_name *oacc_routine_names;
 
-  gfc_charlen *cl_list, *old_cl_list;
+  gfc_charlen *cl_list;
 
   gfc_dt_list *derived_types;
 

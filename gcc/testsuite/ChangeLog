@@ -1,3 +1,26 @@
+2016-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/65173
+	PR fortran/69064
+	PR fortran/69859
+	PR fortran/78350
+	* gfortran.dg/misplaced_implicit_character.f90: Adjust errors.
+	* gfortran.dg/charlen_01.f90: New test.
+	* gfortran.dg/charlen_02.f90: Ditto.
+	* gfortran.dg/charlen_03.f90: Ditto.
+	* gfortran.dg/charlen_04.f90: Ditto.
+	* gfortran.dg/charlen_05.f90: Ditto.
+	* gfortran.dg/charlen_06.f90: Ditto.
+	* gfortran.dg/charlen_07.f90: Ditto.
+	* gfortran.dg/charlen_08.f90: Ditto.
+	* gfortran.dg/charlen_09.f90: Ditto.
+	* gfortran.dg/charlen_10.f90: Ditto.
+	* gfortran.dg/charlen_11.f90: Ditto.
+	* gfortran.dg/charlen_12.f90: Ditto.
+	* gfortran.dg/charlen_13.f90: Ditto.
+	* gfortran.dg/charlen_14.f90: Ditto.
+	* gfortran.dg/charlen_15.f90: Ditto.
+
 2016-12-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/78671
