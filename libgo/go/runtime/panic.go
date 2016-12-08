@@ -415,10 +415,19 @@ func gopanic(e interface{}) {
 		throw("panic holding locks")
 	}
 
-	var p _panic
-	p.arg = e
-	p.link = gp._panic
-	gp._panic = (*_panic)(noescape(unsafe.Pointer(&p)))
+	// The gc compiler allocates this new _panic struct on the
+	// stack. We can't do that, because when a deferred function
+	// recovers the panic we unwind the stack. We unlink this
+	// entry before unwinding the stack, but that doesn't help in
+	// the case where we panic, a deferred function recovers and
+	// then panics itself, that panic is in turn recovered, and
+	// unwinds the stack past this stack frame.
+
+	p := &_panic{
+		arg:  e,
+		link: gp._panic,
+	}
+	gp._panic = p
 
 	for {
 		d := gp._defer
