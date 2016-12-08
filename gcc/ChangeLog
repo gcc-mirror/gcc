@@ -1,3 +1,26 @@
+2016-12-08  Martin Sebor  <msebor@redhat.com>
+
+	PR c/78284
+	* builtin-attrs.def (ATTR_ALLOC_SIZE, ATTR_RETURNS_NONNULL): New
+	identifier tree nodes.
+	(ATTR_ALLOCA_SIZE_1_NOTHROW_LEAF_LIST): New attribute list.
+	(ATTR_MALLOC_SIZE_1_NOTHROW_LIST): Same.
+	(ATTR_MALLOC_SIZE_1_NOTHROW_LEAF_LIST): Same.
+	(ATTR_MALLOC_SIZE_1_2_NOTHROW_LEAF_LIST): Same.
+	(ATTR_ALLOC_SIZE_2_NOTHROW_LEAF_LIST): Same.
+	* builtins.c (expand_builtin_alloca): Call
+	maybe_warn_alloc_args_overflow.
+	* builtins.def (aligned_alloc, calloc, malloc, realloc):
+	Add attribute alloc_size.
+	(alloca): Add attribute alloc_size and returns_nonnull.
+	* calls.h (maybe_warn_alloc_args_overflow): Declare.
+	* calls.c (alloc_max_size, operand_signed_p): New functions.
+	(maybe_warn_alloc_args_overflow): Define.
+	(initialize_argument_information): Diagnose overflow in functions
+	declared with attaribute alloc_size.
+	* doc/invoke.texi (Warning Options): Document -Walloc-zero and
+	-Walloc-size-larger-than.
+
 2016-12-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/78671

@@ -37,7 +37,6 @@ extern bool pass_by_reference (CUMULATIVE_ARGS *, machine_mode,
 			       tree, bool);
 extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
 				     tree, bool);
-
-
+extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
 
 #endif // GCC_CALLS_H

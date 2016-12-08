@@ -257,6 +257,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
+-Walloc-zero -Walloc-size-larger-than=@var{n}
 -Walloca -Walloca-larger-than=@var{n} @gol
 -Wno-aggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
 -Wno-attributes -Wbool-compare -Wbool-operation @gol
@@ -5098,6 +5099,27 @@ annotations.
 @item -Wsuggest-override
 Warn about overriding virtual functions that are not marked with the override
 keyword.
+
+@item -Walloc-zero
+@opindex Wno-alloc-zero
+@opindex Walloc-zero
+Warn about calls to allocation functions decorated with attribute
+@code{alloc_size} that specify zero bytes, including those to the built-in
+forms of the functions @code{aligned_alloc}, @code{alloca}, @code{calloc},
+@code{malloc}, and @code{realloc}.  Because the behavior of these functions
+when called with a zero size differs among implementations (and in the case
+of @code{realloc} has been deprecated) relying on it may result in subtle
+portability bugs and should be avoided.
+
+@item -Walloc-size-larger-than=@var{n}
+Warn about calls to functions decorated with attribute @code{alloc_size}
+that attempt to allocate objects larger than the specified number of bytes,
+or where the result of the size computation in an integer type with infinite
+precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n}
+may end in one of the standard suffixes designating a multiple of bytes
+such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
+@code{MB} and @code{MiB} for magabyte and mebibyte, and so on.
+@xref{Function Attributes}.
 
 @item -Walloca
 @opindex Wno-alloca

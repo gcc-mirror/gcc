@@ -303,6 +303,15 @@ Walloca
 C ObjC C++ ObjC++ Var(warn_alloca) Warning
 Warn on any use of alloca.
 
+Walloc-size-larger-than=
+C ObjC C++ ObjC++ Var(warn_alloc_size_limit) Warning Joined
+-Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
+attempt to allocate objects larger than the specified number of bytes.
+
+Walloc-zero
+C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
+-Walloc-zero Warn for calls to allocation functions that specify zero bytes.
+
 Walloca-larger-than=
 C ObjC C++ ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative UInteger
 -Walloca-larger-than=<number> Warn on unbounded uses of
