@@ -1,3 +1,16 @@
+2016-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/65173
+	PR fortran/69064
+	PR fortran/69859
+	PR fortran/78350
+	* gfortran.h (gfc_namespace): Remove old_cl_list member.
+	* parse.c (use_modules, next_statement): old_cl_list is gone.
+	(clear_default_charlen): Remove no longer used function.
+	(reject_statement): Do not try ot clean up gfc_charlen structure(s)
+	that may have been added to a cl_list list.
+	* symbol.c (gfc_new_charlen): old_cl_list structure is gone.
+
 2016-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/78659
