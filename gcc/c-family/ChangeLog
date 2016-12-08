@@ -1,3 +1,10 @@
+2016-12-08  Martin Sebor  <msebor@redhat.com>
+
+	PR c/78165
+           * c-pretty-print (pp_c_integer_constant): Avoid formatting type
+             suffix.
+gcc/testsuite/ChangeLog:
+
 2016-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/53562
