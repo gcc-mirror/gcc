@@ -1,3 +1,8 @@
+2016-12-08  Bin Cheng  <bin.cheng@arm.com>
+
+	PR middle-end/78684
+	* g++.dg/torture/pr78684.C: New test.
+
 2016-12-08  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
