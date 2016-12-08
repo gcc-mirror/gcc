@@ -2226,6 +2226,8 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   gfc_ss_info *ss_info;
   gfc_expr *expr;
   gfc_ss *s;
+  tree neg_len;
+  char *msg;
 
   /* Save the old values for nested checking.  */
   old_first_len = first_len;
@@ -2271,6 +2273,29 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	  gfc_conv_expr_type (&length_se, expr->ts.u.cl->length,
 			      gfc_charlen_type_node);
 	  ss_info->string_length = length_se.expr;
+
+	  /* Check if the character length is negative.  If it is, then
+	     set LEN = 0.  */
+	  neg_len = fold_build2_loc (input_location, LT_EXPR,
+				     boolean_type_node, ss_info->string_length,
+				     build_int_cst (gfc_charlen_type_node, 0));
+	  /* Print a warning if bounds checking is enabled.  */
+	  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+	    {
+	      msg = xasprintf ("Negative character length treated as LEN = 0");
+	      gfc_trans_runtime_check (false, true, neg_len, &length_se.pre,
+				       where, msg);
+	      free (msg);
+	    }
+
+	  ss_info->string_length
+	    = fold_build3_loc (input_location, COND_EXPR,
+			       gfc_charlen_type_node, neg_len,
+			       build_int_cst (gfc_charlen_type_node, 0),
+			       ss_info->string_length);
+	  ss_info->string_length = gfc_evaluate_now (ss_info->string_length,
+						     &length_se.pre);
+
 	  gfc_add_block_to_block (&outer_loop->pre, &length_se.pre);
 	  gfc_add_block_to_block (&outer_loop->post, &length_se.post);
 	}

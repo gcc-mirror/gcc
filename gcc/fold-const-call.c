@@ -1383,6 +1383,7 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 {
   const char *p0, *p1;
+  char c;
   switch (fn)
     {
     case CFN_BUILT_IN_STRSPN:
@@ -1406,6 +1407,46 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	  int r = strcmp (p0, p1);
 	  if (r == 0)
 	    return build_cmp_result (type, r);
+	}
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_INDEX:
+    case CFN_BUILT_IN_STRCHR:
+      if ((p0 = c_getstr (arg0)) && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = strchr (p0, c);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
+	}
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_RINDEX:
+    case CFN_BUILT_IN_STRRCHR:
+      if ((p0 = c_getstr (arg0)) && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = strrchr (p0, c);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
+	}
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_STRSTR:
+      if ((p1 = c_getstr (arg1)))
+	{
+	  if ((p0 = c_getstr (arg0)))
+	    {
+	      const char *r = strstr (p0, p1);
+	      if (r == NULL)
+		return build_int_cst (type, 0);
+	      return fold_convert (type,
+				   fold_build_pointer_plus_hwi (arg0, r - p0));
+	    }
+	  if (*p1 == '\0')
+	    return fold_convert (type, arg0);
 	}
       return NULL_TREE;
 
@@ -1466,36 +1507,6 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
       return NULL_TREE;
     }
 
-  switch (fn)
-    {
-    case CFN_BUILT_IN_MEMCHR:
-      {
-	char c;
-	if (integer_zerop (arg2)
-	    && !TREE_SIDE_EFFECTS (arg0)
-	    && !TREE_SIDE_EFFECTS (arg1))
-	  return build_int_cst (type, 0);
-
-	if (!tree_fits_uhwi_p (arg2) || !target_char_cst_p (arg1, &c))
-	  return NULL_TREE;
-
-	unsigned HOST_WIDE_INT length = tree_to_uhwi (arg2);
-	unsigned HOST_WIDE_INT string_length;
-	const char *p1 = c_getstr (arg0, &string_length);
-	if (p1)
-	  {
-	    const char *r
-	      = (const char *)memchr (p1, c, MIN (length, string_length));
-	    if (r == NULL && length <= string_length)
-	      return build_int_cst (type, 0);
-	  }
-
-	break;
-      }
-    default:
-      break;
-    }
-
   return NULL_TREE;
 }
 
@@ -1506,45 +1517,67 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   const char *p0, *p1;
+  char c;
   unsigned HOST_WIDE_INT s0, s1;
   size_t s2 = 0;
   switch (fn)
     {
     case CFN_BUILT_IN_STRNCMP:
-      {
-	bool const_size_p = host_size_t_cst_p (arg2, &s2);
-	if (const_size_p && s2 == 0
-	    && !TREE_SIDE_EFFECTS (arg0)
-	    && !TREE_SIDE_EFFECTS (arg1))
-	  return build_int_cst (type, 0);
-	else if (const_size_p
-		 && (p0 = c_getstr (arg0))
-		 && (p1 = c_getstr (arg1)))
-	  return build_int_cst (type, strncmp (p0, p1, s2));
+      if (!host_size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
-      }
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
+      else if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_int_cst (type, strncmp (p0, p1, s2));
+      return NULL_TREE;
+
     case CFN_BUILT_IN_STRNCASECMP:
-      {
-	bool const_size_p = host_size_t_cst_p (arg2, &s2);
-	if (const_size_p && s2 == 0
-	    && !TREE_SIDE_EFFECTS (arg0)
-	    && !TREE_SIDE_EFFECTS (arg1))
-	  return build_int_cst (type, 0);
-	else if (const_size_p
-		 && (p0 = c_getstr (arg0))
-		 && (p1 = c_getstr (arg1))
-		 && strncmp (p0, p1, s2) == 0)
-	  return build_int_cst (type, 0);
+      if (!host_size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
-      }
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
+      else if ((p0 = c_getstr (arg0))
+	       && (p1 = c_getstr (arg1))
+	       && strncmp (p0, p1, s2) == 0)
+	return build_int_cst (type, 0);
+      return NULL_TREE;
+
     case CFN_BUILT_IN_BCMP:
     case CFN_BUILT_IN_MEMCMP:
+      if (!host_size_t_cst_p (arg2, &s2))
+	return NULL_TREE;
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
       if ((p0 = c_getstr (arg0, &s0))
 	  && (p1 = c_getstr (arg1, &s1))
-	  && host_size_t_cst_p (arg2, &s2)
 	  && s2 <= s0
 	  && s2 <= s1)
 	return build_cmp_result (type, memcmp (p0, p1, s2));
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_MEMCHR:
+      if (!host_size_t_cst_p (arg2, &s2))
+	return NULL_TREE;
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
+      if ((p0 = c_getstr (arg0, &s0))
+	  && s2 <= s0
+	  && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = (const char *) memchr (p0, c, s2);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
+	}
       return NULL_TREE;
 
     default:

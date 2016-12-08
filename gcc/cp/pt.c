@@ -13795,22 +13795,23 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
       {
-        tree r = TYPE_P (t) ? cxx_make_type (code) : make_node (code);
-        tree packed_out = 
-          tsubst_template_args (ARGUMENT_PACK_ARGS (t), 
-                                args,
-                                complain,
-                                in_decl);
-        SET_ARGUMENT_PACK_ARGS (r, packed_out);
+        tree r;
 
-        /* For template nontype argument packs, also substitute into
-           the type.  */
-        if (code == NONTYPE_ARGUMENT_PACK)
-          TREE_TYPE (r) = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	if (code == NONTYPE_ARGUMENT_PACK)
+	  {
+	    r = make_node (code);
+	    /* Set the already-substituted type.  */
+	    TREE_TYPE (r) = type;
+	  }
+	else
+	  r = cxx_make_type (code);
 
-        return r;
+	tree pack_args = ARGUMENT_PACK_ARGS (t);
+	pack_args = tsubst_template_args (pack_args, args, complain, in_decl);
+	SET_ARGUMENT_PACK_ARGS (r, pack_args);
+
+	return r;
       }
-      break;
 
     case VOID_CST:
     case INTEGER_CST:
@@ -14082,7 +14083,7 @@ tsubst_init (tree init, tree decl, tree args,
 
   init = tsubst_expr (init, args, complain, in_decl, false);
 
-  if (!init)
+  if (!init && TREE_TYPE (decl) != error_mark_node)
     {
       /* If we had an initializer but it
 	 instantiated to nothing,
@@ -24302,13 +24303,13 @@ make_auto_1 (tree name, bool set_canonical)
 tree
 make_decltype_auto (void)
 {
-  return make_auto_1 (get_identifier ("decltype(auto)"), true);
+  return make_auto_1 (decltype_auto_identifier, true);
 }
 
 tree
 make_auto (void)
 {
-  return make_auto_1 (get_identifier ("auto"), true);
+  return make_auto_1 (auto_identifier, true);
 }
 
 /* Return a C++17 deduction placeholder for class template TMPL.  */
@@ -24330,7 +24331,7 @@ make_template_placeholder (tree tmpl)
 tree
 make_constrained_auto (tree con, tree args)
 {
-  tree type = make_auto_1 (get_identifier ("auto"), false);
+  tree type = make_auto_1 (auto_identifier, false);
 
   /* Build the constraint. */
   tree tmpl = DECL_TI_TEMPLATE (con);
@@ -25016,8 +25017,8 @@ bool
 is_auto (const_tree type)
 {
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-      && (TYPE_IDENTIFIER (type) == get_identifier ("auto")
-	  || TYPE_IDENTIFIER (type) == get_identifier ("decltype(auto)")
+      && (TYPE_IDENTIFIER (type) == auto_identifier
+	  || TYPE_IDENTIFIER (type) == decltype_auto_identifier
 	  || CLASS_PLACEHOLDER_TEMPLATE (type)))
     return true;
   else

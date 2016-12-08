@@ -1,3 +1,19 @@
+2016-12-08  Alan Modra  <amodra@gmail.com>
+
+	* elf.m4: Revert 2016-06-21 change.
+	* picflag.m4: Likewise.  Revert 2016-04-30 change too.
+	* override.m4 (AC_PROG_LEX): Import 2016-01-18 binutils fix
+	for PR binutils/19481.
+
+2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* bootstrap-asan.mk: Replace LSAN_OPTIONS=detect_leaks=0 with
+	ASAN_OPTIONS=detect_leaks=0:use_odr_indicator=1.
+
+2016-12-01  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4: Remove.
+
 2016-11-30  Matthias Klose  <doko@ubuntu.com>
 
 	* pkg.m4: New file.

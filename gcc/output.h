@@ -287,8 +287,10 @@ extern void assemble_real (REAL_VALUE_TYPE, machine_mode, unsigned,
 /* Write the address of the entity given by SYMBOL to SEC.  */
 extern void assemble_addr_to_section (rtx, section *);
 
-/* Return the size of the constant pool.  */
-extern int get_pool_size (void);
+/* Return TRUE if and only if the constant pool has no entries.  Note
+   that even entries we might end up choosing not to emit are counted
+   here, so there is the potential for missed optimizations.  */
+extern bool constant_pool_empty_p (void);
 
 extern rtx_insn *peephole (rtx_insn *);
 

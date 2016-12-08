@@ -20,6 +20,7 @@
 // 20.4.1.1 allocator members
 
 #include <ext/pool_allocator.h>
+#include <testsuite_hooks.h>
 
 struct small
 {
@@ -32,7 +33,7 @@ struct big
 };
 
 void*
-operator new(size_t n) throw(std::bad_alloc)
+operator new(size_t n) THROW(std::bad_alloc)
 {
   static bool first = true;
   if (!first)

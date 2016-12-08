@@ -138,17 +138,15 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 #define STARTFILE_SPEC "%{!shared:crt0.o%s} crti%O%s %{pg|p:crtg.o%s} " \
   "%(arc_tls_extra_start_spec) crtbegin.o%s"
 #else
-#define STARTFILE_SPEC   "%{!shared:%{!mkernel:crt1.o%s}} crti.o%s \
-  %{!shared:%{pg|p|profile:crtg.o%s} crtbegin.o%s} %{shared:crtbeginS.o%s}"
-
+#define STARTFILE_SPEC							\
+  LINUX_OR_ANDROID_LD (GNU_USER_TARGET_STARTFILE_SPEC, ANDROID_STARTFILE_SPEC)
 #endif
 
 #if DEFAULT_LIBC != LIBC_UCLIBC
 #define ENDFILE_SPEC "%{pg|p:crtgend.o%s} crtend.o%s crtn%O%s"
 #else
-#define ENDFILE_SPEC "%{!shared:%{pg|p|profile:crtgend.o%s} crtend.o%s} \
-  %{shared:crtendS.o%s} crtn.o%s"
-
+#define ENDFILE_SPEC							\
+  LINUX_OR_ANDROID_LD (GNU_USER_TARGET_ENDFILE_SPEC, ANDROID_ENDFILE_SPEC)
 #endif
 
 #if DEFAULT_LIBC == LIBC_UCLIBC
@@ -1612,7 +1610,7 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
    && (get_attr_type (X) == TYPE_CALL || get_attr_type (X) == TYPE_SFUNC))
 
 #define INSN_REFERENCES_ARE_DELAYED(insn)				\
-  (INSN_SETS_ARE_DELAYED (insn) && !insn_is_tls_gd_dispatch (insn))
+  (INSN_SETS_ARE_DELAYED (insn))
 
 #define CALL_ATTR(X, NAME) \
   ((CALL_P (X) || NONJUMP_INSN_P (X)) \

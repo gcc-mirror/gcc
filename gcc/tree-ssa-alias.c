@@ -1355,7 +1355,10 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1
       && same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1
       && same_type_for_tbaa (TREE_TYPE (ptrtype1),
-			     TREE_TYPE (ptrtype2)) == 1)
+			     TREE_TYPE (ptrtype2)) == 1
+      /* But avoid treating arrays as "objects", instead assume they
+         can overlap by an exact multiple of their element size.  */
+      && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE)
     return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
 
   /* Do type-based disambiguation.  */
@@ -2313,6 +2316,78 @@ stmt_may_clobber_ref_p (gimple *stmt, tree ref)
   return stmt_may_clobber_ref_p_1 (stmt, &r);
 }
 
+/* Return true if store1 and store2 described by corresponding tuples
+   <BASE, OFFSET, SIZE, MAX_SIZE> have the same size and store to the same
+   address.  */
+
+static bool
+same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
+			 HOST_WIDE_INT max_size1,
+			 tree base2, HOST_WIDE_INT offset2, HOST_WIDE_INT size2,
+			 HOST_WIDE_INT max_size2)
+{
+  /* For now, just handle VAR_DECL.  */
+  bool base1_obj_p = VAR_P (base1);
+  bool base2_obj_p = VAR_P (base2);
+
+  /* We need one object.  */
+  if (base1_obj_p == base2_obj_p)
+    return false;
+  tree obj = base1_obj_p ? base1 : base2;
+
+  /* And we need one MEM_REF.  */
+  bool base1_memref_p = TREE_CODE (base1) == MEM_REF;
+  bool base2_memref_p = TREE_CODE (base2) == MEM_REF;
+  if (base1_memref_p == base2_memref_p)
+    return false;
+  tree memref = base1_memref_p ? base1 : base2;
+
+  /* Sizes need to be valid.  */
+  if (max_size1 == -1 || max_size2 == -1
+      || size1 == -1 || size2 == -1)
+    return false;
+
+  /* Max_size needs to match size.  */
+  if (max_size1 != size1
+      || max_size2 != size2)
+    return false;
+
+  /* Sizes need to match.  */
+  if (size1 != size2)
+    return false;
+
+  /* Offsets need to be 0.  */
+  if (offset1 != 0
+      || offset2 != 0)
+    return false;
+
+  /* Check that memref is a store to pointer with singleton points-to info.  */
+  if (!tree_int_cst_equal (TREE_OPERAND (memref, 1), integer_zero_node))
+    return false;
+  tree ptr = TREE_OPERAND (memref, 0);
+  if (TREE_CODE (ptr) != SSA_NAME)
+    return false;
+  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+  unsigned int pt_uid;
+  if (pi == NULL
+      || !pt_solution_singleton_or_null_p (&pi->pt, &pt_uid))
+    return false;
+
+  /* Check that ptr points relative to obj.  */
+  unsigned int obj_uid = (DECL_PT_UID_SET_P (obj)
+			  ? DECL_PT_UID (obj)
+			  : DECL_UID (obj));
+  if (obj_uid != pt_uid)
+    return false;
+
+  /* Check that the object size is the same as the store size.  That ensures us
+     that ptr points to the start of obj.  */
+  if (!tree_fits_shwi_p (DECL_SIZE (obj)))
+    return false;
+  HOST_WIDE_INT obj_size = tree_to_shwi (DECL_SIZE (obj));
+  return obj_size == size1;
+}
+
 /* If STMT kills the memory reference REF return true, otherwise
    return false.  */
 
@@ -2390,6 +2465,11 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	 so base == ref->base does not always hold.  */
       if (base != ref->base)
 	{
+	  /* Try using points-to info.  */
+	  if (same_addr_size_stores_p (base, offset, size, max_size, ref->base,
+				       ref->offset, ref->size, ref->max_size))
+	    return true;
+
 	  /* If both base and ref->base are MEM_REFs, only compare the
 	     first operand, and if the second operand isn't equal constant,
 	     try to add the offsets into offset and ref_offset.  */

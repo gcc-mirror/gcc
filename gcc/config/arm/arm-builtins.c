@@ -528,6 +528,8 @@ enum arm_builtins
   ARM_BUILTIN_GET_FPSCR,
   ARM_BUILTIN_SET_FPSCR,
 
+  ARM_BUILTIN_CMSE_NONSECURE_CALLER,
+
 #undef CRYPTO1
 #undef CRYPTO2
 #undef CRYPTO3
@@ -1833,6 +1835,17 @@ arm_init_builtins (void)
 	= add_builtin_function ("__builtin_arm_stfscr", ftype_set_fpscr,
 				ARM_BUILTIN_SET_FPSCR, BUILT_IN_MD, NULL, NULL_TREE);
     }
+
+  if (use_cmse)
+    {
+      tree ftype_cmse_nonsecure_caller
+	= build_function_type_list (unsigned_type_node, NULL);
+      arm_builtin_decls[ARM_BUILTIN_CMSE_NONSECURE_CALLER]
+	= add_builtin_function ("__builtin_arm_cmse_nonsecure_caller",
+				ftype_cmse_nonsecure_caller,
+				ARM_BUILTIN_CMSE_NONSECURE_CALLER, BUILT_IN_MD,
+				NULL, NULL_TREE);
+    }
 }
 
 /* Return the ARM builtin for CODE.  */
@@ -2451,6 +2464,12 @@ arm_expand_builtin (tree exp,
 	  pat = GEN_FCN (icode) (op0);
 	}
       emit_insn (pat);
+      return target;
+
+    case ARM_BUILTIN_CMSE_NONSECURE_CALLER:
+      target = gen_reg_rtx (SImode);
+      op0 = arm_return_addr (0, NULL_RTX);
+      emit_insn (gen_addsi3 (target, op0, const1_rtx));
       return target;
 
     case ARM_BUILTIN_TEXTRMSB:

@@ -1506,11 +1506,11 @@ gimple_fold_builtin_strchr (gimple_stmt_iterator *gsi, bool is_strrchr)
     return false;
 
   /* Transform strrchr (s, 0) to strchr (s, 0) when optimizing for size.  */
-  if (optimize_function_for_size_p (cfun))
+  if (is_strrchr && optimize_function_for_size_p (cfun))
     {
       tree strchr_fn = builtin_decl_implicit (BUILT_IN_STRCHR);
 
-      if (is_strrchr && strchr_fn)
+      if (strchr_fn)
 	{
 	  gimple *repl = gimple_build_call (strchr_fn, 2, str, c);
 	  replace_call_with_call_and_fold (gsi, repl);
@@ -1547,6 +1547,68 @@ gimple_fold_builtin_strchr (gimple_stmt_iterator *gsi, bool is_strrchr)
   gsi_prev (&gsi2);
   fold_stmt (&gsi2);
   return true;
+}
+
+/* Fold function call to builtin strstr.
+   If both arguments are constant, evaluate and fold the result,
+   additionally fold strstr (x, "") into x and strstr (x, "c")
+   into strchr (x, 'c').  */
+static bool
+gimple_fold_builtin_strstr (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree haystack = gimple_call_arg (stmt, 0);
+  tree needle = gimple_call_arg (stmt, 1);
+  const char *p, *q;
+
+  if (!gimple_call_lhs (stmt))
+    return false;
+
+  q = c_getstr (needle);
+  if (q == NULL)
+    return false;
+
+  if ((p = c_getstr (haystack)))
+    {
+      const char *r = strstr (p, q);
+
+      if (r == NULL)
+	{
+	  replace_call_with_value (gsi, integer_zero_node);
+	  return true;
+	}
+
+      tree len = build_int_cst (size_type_node, r - p);
+      gimple_seq stmts = NULL;
+      gimple *new_stmt
+	= gimple_build_assign (gimple_call_lhs (stmt), POINTER_PLUS_EXPR,
+			       haystack, len);
+      gimple_seq_add_stmt_without_update (&stmts, new_stmt);
+      gsi_replace_with_seq_vops (gsi, stmts);
+      return true;
+    }
+
+  /* For strstr (x, "") return x.  */
+  if (q[0] == '\0')
+    {
+      replace_call_with_value (gsi, haystack);
+      return true;
+    }
+
+  /* Transform strstr (x, "c") into strchr (x, 'c').  */
+  if (q[1] == '\0')
+    {
+      tree strchr_fn = builtin_decl_implicit (BUILT_IN_STRCHR);
+      if (strchr_fn)
+	{
+	  tree c = build_int_cst (integer_type_node, q[0]);
+	  gimple *repl = gimple_build_call (strchr_fn, 2, haystack, c);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+
+  return false;
 }
 
 /* Simplify a call to the strcat builtin.  DST and SRC are the arguments
@@ -3236,6 +3298,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_RINDEX:
     case BUILT_IN_STRRCHR:
       return gimple_fold_builtin_strchr (gsi, true);
+    case BUILT_IN_STRSTR:
+      return gimple_fold_builtin_strstr (gsi);
     case BUILT_IN_STRCMP:
     case BUILT_IN_STRCASECMP:
     case BUILT_IN_STRNCMP:

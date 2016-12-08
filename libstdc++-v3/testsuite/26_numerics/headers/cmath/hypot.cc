@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target c++1z } }
+// { dg-xfail-run-if "AIX long double" { powerpc-ibm-aix* } }
 
 #include <cmath>
 #include <type_traits>

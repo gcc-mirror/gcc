@@ -481,4 +481,4 @@ f4 (char *x, char **y, int z, char w[64])
   stpncpy (x, s3, sizeof (s3));
 }
 
-/* { dg-prune-output "\[\n\r\]*will always overflow\[\n\r\]*" } */
+/* { dg-prune-output "\[\n\r\]*writing\[\n\r\]*" } */

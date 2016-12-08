@@ -72,13 +72,15 @@ test01()
     VERIFY(!called_transform);
     basic_regex<char, MyRegexTraits<char>> re("[a]", regex::collate);
     VERIFY(regex_match("a", re));
-    VERIFY(exchange(called_transform, false));
+    VERIFY(called_transform);
+    called_transform = false;
   }
   {
     VERIFY(!called_nocase);
     basic_regex<char, MyRegexTraits<char>> re("[a]", regex::icase);
     VERIFY(regex_match("A", re));
-    VERIFY(exchange(called_nocase, false));
+    VERIFY(called_nocase);
+    called_nocase = false;
   }
   {
     basic_regex<char, MyRegexTraits<char>> re("[T-f]", regex::icase);

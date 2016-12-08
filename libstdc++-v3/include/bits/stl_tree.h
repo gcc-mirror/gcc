@@ -137,6 +137,80 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   };
 
+  // Helper type offering value initialization guarantee on the compare functor.
+  template<typename _Key_compare>
+    struct _Rb_tree_key_compare
+    {
+      _Key_compare		_M_key_compare;
+
+      _Rb_tree_key_compare()
+      _GLIBCXX_NOEXCEPT_IF(
+	is_nothrow_default_constructible<_Key_compare>::value)
+      : _M_key_compare()
+      { }
+
+      _Rb_tree_key_compare(const _Key_compare& __comp)
+      : _M_key_compare(__comp)
+      { }
+
+#if __cplusplus >= 201103L
+      // Copy constructor added for consistency with C++98 mode.
+      _Rb_tree_key_compare(const _Rb_tree_key_compare&) = default;
+
+      _Rb_tree_key_compare(_Rb_tree_key_compare&& __x)
+	noexcept(is_nothrow_copy_constructible<_Key_compare>::value)
+      : _M_key_compare(__x._M_key_compare)
+      { }
+#endif
+    };
+
+  // Helper type to manage default initialization of node count and header.
+  struct _Rb_tree_header
+  {
+    _Rb_tree_node_base	_M_header;
+    size_t		_M_node_count; // Keeps track of size of tree.
+
+    _Rb_tree_header() _GLIBCXX_NOEXCEPT
+    {
+      _M_header._M_color = _S_red;
+      _M_reset();
+    }
+
+#if __cplusplus >= 201103L
+    _Rb_tree_header(_Rb_tree_header&& __x) noexcept
+    {
+      if (__x._M_header._M_parent != nullptr)
+	_M_move_data(__x);
+      else
+	{
+	  _M_header._M_color = _S_red;
+	  _M_reset();
+	}
+    }
+#endif
+
+    void
+    _M_move_data(_Rb_tree_header& __from)
+    {
+      _M_header._M_parent = __from._M_header._M_parent;
+      _M_header._M_left = __from._M_header._M_left;
+      _M_header._M_right = __from._M_header._M_right;
+      _M_header._M_parent->_M_parent = &_M_header;
+      _M_node_count = __from._M_node_count;
+
+      __from._M_reset();
+    }
+
+    void
+    _M_reset()
+    {
+      _M_header._M_parent = 0;
+      _M_header._M_left = &_M_header;
+      _M_header._M_right = &_M_header;
+      _M_node_count = 0;
+    }
+  };
+
   template<typename _Val>
     struct _Rb_tree_node : public _Rb_tree_node_base
     {
@@ -599,50 +673,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Unused _Is_pod_comparator is kept as it is part of mangled name.
       template<typename _Key_compare,
 	       bool /* _Is_pod_comparator */ = __is_pod(_Key_compare)>
-        struct _Rb_tree_impl : public _Node_allocator
+        struct _Rb_tree_impl
+	: public _Node_allocator
+	, public _Rb_tree_key_compare<_Key_compare>
+	, public _Rb_tree_header
         {
-	  _Key_compare		_M_key_compare;
-	  _Rb_tree_node_base	_M_header;
-	  size_type		_M_node_count; // Keeps track of size of tree.
+	  typedef _Rb_tree_key_compare<_Key_compare> _Base_key_compare;
 
+#if __cplusplus < 201103L
 	  _Rb_tree_impl()
-	  _GLIBCXX_NOEXCEPT_IF(
-	    is_nothrow_default_constructible<_Node_allocator>::value
-	    && is_nothrow_default_constructible<_Key_compare>::value)
-	  : _Node_allocator(), _M_key_compare(), _M_header(),
-	    _M_node_count(0)
-	  { _M_initialize(); }
-
-	  _Rb_tree_impl(const _Key_compare& __comp, const _Node_allocator& __a)
-	  : _Node_allocator(__a), _M_key_compare(__comp), _M_header(),
-	    _M_node_count(0)
-	  { _M_initialize(); }
-
-#if __cplusplus >= 201103L
-	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
-	  : _Node_allocator(std::move(__a)), _M_key_compare(__comp),
-	    _M_header(), _M_node_count(0)
-	  { _M_initialize(); }
+	  { }
+#else
+	  _Rb_tree_impl() = default;
 #endif
 
-	  void
-	  _M_reset()
-	  {
-	    this->_M_header._M_parent = 0;
-	    this->_M_header._M_left = &this->_M_header;
-	    this->_M_header._M_right = &this->_M_header;
-	    this->_M_node_count = 0;
-	  }
+	  _Rb_tree_impl(const _Rb_tree_impl& __x)
+	  : _Node_allocator(_Alloc_traits::_S_select_on_copy(__x))
+	  , _Base_key_compare(__x._M_key_compare)
+	  { }
 
-	private:
-	  void
-	  _M_initialize()
-	  {
-	    this->_M_header._M_color = _S_red;
-	    this->_M_header._M_parent = 0;
-	    this->_M_header._M_left = &this->_M_header;
-	    this->_M_header._M_right = &this->_M_header;
-	  }
+#if __cplusplus >= 201103L
+	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
+	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
+	  : _Node_allocator(std::move(__a)), _Base_key_compare(__comp)
+	  { }
+#endif
 	};
 
       _Rb_tree_impl<_Compare> _M_impl;
@@ -806,11 +861,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Link_type
 	_M_copy(_Const_Link_type __x, _Base_ptr __p, _NodeGen&);
 
+      template<typename _NodeGen>
+	_Link_type
+	_M_copy(const _Rb_tree& __x, _NodeGen& __gen)
+	{
+	  _Link_type __root = _M_copy(__x._M_begin(), _M_end(), __gen);
+	  _M_leftmost() = _S_minimum(__root);
+	  _M_rightmost() = _S_maximum(__root);
+	  _M_impl._M_node_count = __x._M_impl._M_node_count;
+	  return __root;
+	}
+
       _Link_type
-      _M_copy(_Const_Link_type __x, _Base_ptr __p)
+      _M_copy(const _Rb_tree& __x)
       {
 	_Alloc_node __an(*this);
-	return _M_copy(__x, __p, __an);
+	return _M_copy(__x, __an);
       }
 
       void
@@ -845,16 +911,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_impl(__comp, _Node_allocator(__a)) { }
 
       _Rb_tree(const _Rb_tree& __x)
-      : _M_impl(__x._M_impl._M_key_compare,
-	        _Alloc_traits::_S_select_on_copy(__x._M_get_Node_allocator()))
+      : _M_impl(__x._M_impl)
       {
 	if (__x._M_root() != 0)
-	  {
-	    _M_root() = _M_copy(__x._M_begin(), _M_end());
-	    _M_leftmost() = _S_minimum(_M_root());
-	    _M_rightmost() = _S_maximum(_M_root());
-	    _M_impl._M_node_count = __x._M_impl._M_node_count;
-	  }
+	  _M_root() = _M_copy(__x);
       }
 
 #if __cplusplus >= 201103L
@@ -866,21 +926,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_impl(__x._M_impl._M_key_compare, _Node_allocator(__a))
       {
 	if (__x._M_root() != nullptr)
-	  {
-	    _M_root() = _M_copy(__x._M_begin(), _M_end());
-	    _M_leftmost() = _S_minimum(_M_root());
-	    _M_rightmost() = _S_maximum(_M_root());
-	    _M_impl._M_node_count = __x._M_impl._M_node_count;
-	  }
+	  _M_root() = _M_copy(__x);
       }
 
-      _Rb_tree(_Rb_tree&& __x)
-      : _M_impl(__x._M_impl._M_key_compare,
-		std::move(__x._M_get_Node_allocator()))
-      {
-	if (__x._M_root() != 0)
-	  _M_move_data(__x, std::true_type());
-      }
+      _Rb_tree(_Rb_tree&&) = default;
 
       _Rb_tree(_Rb_tree&& __x, const allocator_type& __a)
       : _Rb_tree(std::move(__x), _Node_allocator(__a))
@@ -1278,7 +1327,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       // Move elements from container with equal allocator.
       void
-      _M_move_data(_Rb_tree&, std::true_type);
+      _M_move_data(_Rb_tree& __x, std::true_type)
+      { _M_impl._M_move_data(__x._M_impl); }
 
       // Move elements from container with possibly non-equal allocator,
       // which might result in a copy not a move.
@@ -1533,29 +1583,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            typename _Compare, typename _Alloc>
     void
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_move_data(_Rb_tree& __x, std::true_type)
-    {
-      _M_root() = __x._M_root();
-      _M_leftmost() = __x._M_leftmost();
-      _M_rightmost() = __x._M_rightmost();
-      _M_root()->_M_parent = _M_end();
-
-      __x._M_root() = 0;
-      __x._M_leftmost() = __x._M_end();
-      __x._M_rightmost() = __x._M_end();
-
-      this->_M_impl._M_node_count = __x._M_impl._M_node_count;
-      __x._M_impl._M_node_count = 0;
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-           typename _Compare, typename _Alloc>
-    void
-    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _M_move_data(_Rb_tree& __x, std::false_type)
     {
       if (_M_get_Node_allocator() == __x._M_get_Node_allocator())
-	  _M_move_data(__x, std::true_type());
+	_M_move_data(__x, std::true_type());
       else
 	{
 	  _Alloc_node __an(*this);
@@ -1565,10 +1596,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto& __val = const_cast<value_type&>(__cval);
 	      return __an(std::move_if_noexcept(__val));
 	    };
-	  _M_root() = _M_copy(__x._M_begin(), _M_end(), __lbd);
-	  _M_leftmost() = _S_minimum(_M_root());
-	  _M_rightmost() = _S_maximum(_M_root());
-	  _M_impl._M_node_count = __x._M_impl._M_node_count;
+	  _M_root() = _M_copy(__x, __lbd);
 	}
     }
 
@@ -1606,10 +1634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto& __val = const_cast<value_type&>(__cval);
 	      return __roan(std::move_if_noexcept(__val));
 	    };
-	  _M_root() = _M_copy(__x._M_begin(), _M_end(), __lbd);
-	  _M_leftmost() = _S_minimum(_M_root());
-	  _M_rightmost() = _S_maximum(_M_root());
-	  _M_impl._M_node_count = __x._M_impl._M_node_count;
+	  _M_root() = _M_copy(__x, __lbd);
 	  __x.clear();
 	}
     }
@@ -1623,10 +1648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     && is_nothrow_move_assignable<_Compare>::value)
     {
       _M_impl._M_key_compare = std::move(__x._M_impl._M_key_compare);
-      constexpr bool __move_storage =
-	  _Alloc_traits::_S_propagate_on_move_assign()
-	  || _Alloc_traits::_S_always_equal();
-      _M_move_assign(__x, __bool_constant<__move_storage>());
+      _M_move_assign(__x, __bool_constant<_Alloc_traits::_S_nothrow_move()>());
       return *this;
     }
 
@@ -1686,12 +1708,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_impl._M_reset();
 	  _M_impl._M_key_compare = __x._M_impl._M_key_compare;
 	  if (__x._M_root() != 0)
-	    {
-	      _M_root() = _M_copy(__x._M_begin(), _M_end(), __roan);
-	      _M_leftmost() = _S_minimum(_M_root());
-	      _M_rightmost() = _S_maximum(_M_root());
-	      _M_impl._M_node_count = __x._M_impl._M_node_count;
-	    }
+	    _M_root() = _M_copy(__x, __roan);
 	}
 
       return *this;
@@ -1966,26 +1983,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_root() == 0)
 	{
 	  if (__t._M_root() != 0)
-	    {
-	      _M_root() = __t._M_root();
-	      _M_leftmost() = __t._M_leftmost();
-	      _M_rightmost() = __t._M_rightmost();
-	      _M_root()->_M_parent = _M_end();
-	      _M_impl._M_node_count = __t._M_impl._M_node_count;
-	      
-	      __t._M_impl._M_reset();
-	    }
+	    _M_impl._M_move_data(__t._M_impl);
 	}
       else if (__t._M_root() == 0)
-	{
-	  __t._M_root() = _M_root();
-	  __t._M_leftmost() = _M_leftmost();
-	  __t._M_rightmost() = _M_rightmost();
-	  __t._M_root()->_M_parent = __t._M_end();
-	  __t._M_impl._M_node_count = _M_impl._M_node_count;
-	  
-	  _M_impl._M_reset();
-	}
+	__t._M_impl._M_move_data(_M_impl);
       else
 	{
 	  std::swap(_M_root(),__t._M_root());

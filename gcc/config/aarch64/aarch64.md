@@ -59,6 +59,7 @@
     (V0_REGNUM		32)
     (V15_REGNUM		47)
     (V31_REGNUM		63)
+    (LAST_SAVED_REGNUM	63)
     (SFP_REGNUM		64)
     (AP_REGNUM		65)
     (CC_REGNUM		66)
@@ -1119,9 +1120,9 @@
 
 (define_insn "*movti_aarch64"
   [(set (match_operand:TI 0
-	 "nonimmediate_operand"  "=r, *w,r ,*w,r  ,Ump,Ump,*w,m")
+	 "nonimmediate_operand"  "=r, *w,r ,*w,r,m,m,*w,m")
 	(match_operand:TI 1
-	 "aarch64_movti_operand" " rn,r ,*w,*w,Ump,r  ,Z  , m,*w"))]
+	 "aarch64_movti_operand" " rn,r ,*w,*w,m,r,Z, m,*w"))]
   "(register_operand (operands[0], TImode)
     || aarch64_reg_or_zero (operands[1], TImode))"
   "@
@@ -1236,9 +1237,9 @@
 
 (define_insn "*movtf_aarch64"
   [(set (match_operand:TF 0
-	 "nonimmediate_operand" "=w,?&r,w ,?r,w,?w,w,m,?r ,Ump,Ump")
+	 "nonimmediate_operand" "=w,?&r,w ,?r,w,?w,w,m,?r,m ,m")
 	(match_operand:TF 1
-	 "general_operand"      " w,?r, ?r,w ,Y,Y ,m,w,Ump,?r ,Y"))]
+	 "general_operand"      " w,?r, ?r,w ,Y,Y ,m,w,m ,?r,Y"))]
   "TARGET_FLOAT && (register_operand (operands[0], TFmode)
     || aarch64_reg_or_fp_zero (operands[1], TFmode))"
   "@
@@ -5172,20 +5173,20 @@
 ;; The TLS ABI specifically requires that the compiler does not schedule
 ;; instructions in the TLS stubs, in order to enable linker relaxation.
 ;; Therefore we treat the stubs as an atomic sequence.
-(define_expand "tlsgd_small"
+(define_expand "tlsgd_small_<mode>"
  [(parallel [(set (match_operand 0 "register_operand" "")
                   (call (mem:DI (match_dup 2)) (const_int 1)))
-	     (unspec:DI [(match_operand:DI 1 "aarch64_valid_symref" "")] UNSPEC_GOTSMALLTLS)
+	     (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref" "")] UNSPEC_GOTSMALLTLS)
 	     (clobber (reg:DI LR_REGNUM))])]
  ""
 {
   operands[2] = aarch64_tls_get_addr ();
 })
 
-(define_insn "*tlsgd_small"
+(define_insn "*tlsgd_small_<mode>"
   [(set (match_operand 0 "register_operand" "")
 	(call (mem:DI (match_operand:DI 2 "" "")) (const_int 1)))
-   (unspec:DI [(match_operand:DI 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
+   (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
    (clobber (reg:DI LR_REGNUM))
   ]
   ""

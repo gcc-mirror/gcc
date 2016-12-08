@@ -44,11 +44,11 @@
 
 # Disable Cilk Runtime library for unsupported architectures.
 case "${target}" in
-  x86_64-*-*)
-    ;;
-  i?86-*-*)
+  i?86-*-* | x86_64-*-*)
     ;;
   arm-*-*)
+    ;;
+  sparc*-*-*)
     ;;
   *-*-*)
     UNSUPPORTED=1

@@ -161,6 +161,8 @@ along with GCC; see the file COPYING3.  If not see
     fvtable-verify=std:vtv_end.o%s} \
   crtend.o%s"
 
+#if !defined(TARGET_SYSTEM_ROOT)
+
 /* Override startfile prefix defaults.  */
 #ifndef STANDARD_STARTFILE_PREFIX_1
 #define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib/"
@@ -173,6 +175,8 @@ along with GCC; see the file COPYING3.  If not see
    macro contains POSIX-style path.  See bug 52947.  */
 #undef NATIVE_SYSTEM_HEADER_DIR
 #define NATIVE_SYSTEM_HEADER_DIR "/mingw/include"
+
+#endif /* !defined(TARGET_SYSTEM_ROOT) */
 
 /* Output STRING, a string representing a filename, to FILE.
    We canonicalize it to be in Unix format (backslashes are replaced

@@ -12517,7 +12517,7 @@ error:
   /* Warn if we haven't seen a scalar finalizer procedure (but we know there
      were nodes in the list, must have been for arrays.  It is surely a good
      idea to have a scalar version there if there's something to finalize.  */
-  if (warn_surprising && result && !seen_scalar)
+  if (warn_surprising && derived->f2k_derived->finalizers && !seen_scalar)
     gfc_warning (OPT_Wsurprising,
 		 "Only array FINAL procedures declared for derived type %qs"
 		 " defined at %L, suggest also scalar one",
@@ -13900,15 +13900,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 			       "or POINTER components", nl->sym->name,
 			       sym->name, &sym->declared_at))
 	    return false;
-
-	  if (!dtio)
-	    {
-	      gfc_error ("NAMELIST object %qs in namelist %qs at %L has "
-			"ALLOCATABLE or POINTER components and thus requires "
-			"a defined input/output procedure", nl->sym->name,
-			sym->name, &sym->declared_at);
-	      return false;
-	    }
+	  return true;
 	}
     }
 

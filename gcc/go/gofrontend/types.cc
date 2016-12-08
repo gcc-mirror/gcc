@@ -1173,7 +1173,8 @@ Type::type_descriptor_pointer(Gogo* gogo, Location location)
       go_assert(t->type_descriptor_var_ != NULL);
     }
   Bexpression* var_expr =
-      gogo->backend()->var_expression(t->type_descriptor_var_, location);
+      gogo->backend()->var_expression(t->type_descriptor_var_,
+                                      VE_rvalue, location);
   return gogo->backend()->address_expression(var_expr, location);
 }
 
@@ -1647,7 +1648,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
   const char* equal_fnname;
   if (this->compare_is_identity(gogo))
     {
-      hash_fnname = "__go_type_hash_identity";
+      hash_fnname = "runtime.memhash";
       equal_fnname = "__go_type_equal_identity";
     }
   else
@@ -2146,7 +2147,7 @@ Type::gc_symbol_pointer(Gogo* gogo)
     }
   Location bloc = Linemap::predeclared_location();
   Bexpression* var_expr =
-      gogo->backend()->var_expression(t->gc_symbol_var_, bloc);
+      gogo->backend()->var_expression(t->gc_symbol_var_, VE_rvalue, bloc);
   return gogo->backend()->address_expression(var_expr, bloc);
 }
 

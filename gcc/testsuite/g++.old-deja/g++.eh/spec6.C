@@ -1,4 +1,5 @@
-// { dg-do assemble  }
+// { dg-do assemble { target c++14_down } }
+// { dg-additional-options "-Wno-deprecated" }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 19 Jan 1999 <nathan@acm.org>

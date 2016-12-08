@@ -1,3 +1,70 @@
+2016-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78659
+	* resolve.c (resolve_fl_namelist): Remove unneeded error.
+
+2016-12-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78226
+	* class.c (finalize_component): Add missing locus information.
+	(finalization_scalarizer): Likewise.
+	(finalization_get_offset): Likewise.
+	(finalizer_insert_packed_call): Likewise.
+	(generate_finalization_wrapper): Likewise.
+
+2016-12-05  Nathan Sidwell  <nathan@acm.org>
+
+	* error.c (gfc_warning_check): Call diagnostic_check_max_errors.
+	(gfc_error_check): Likewise.
+
+2016-12-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78618
+	* intrinsic.c (gfc_convert_type_warn): Do not set the full typespec for
+	the conversion symbol, but only type and kind. Set the full typespec
+	for the expression.
+	(gfc_convert_chartype): Ditto.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43207
+	* primary.c (gfc_match_varspec): Reject nonpolymorphic references to
+	abstract types.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42188
+	* primary.c (gfc_match_rvalue): Add a new check that gives better error
+	messages.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58175
+	* resolve.c (gfc_resolve_finalizers): Prevent bogus warning.
+
+2016-12-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (gfc_convert_char_constant): Free result on error.
+
+2016-12-02  Janus Weil  <janus@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78618
+	* check.c (gfc_check_rank): Remove ATTRIBUTE_UNUSED.
+	* expr.c (gfc_check_assign): Fix error propagation.
+
+2016-12-01  Elizebeth Punnoose  <elizebeth.punnoose@hpe.com>
+
+	PR fortran/77505
+	* trans-array.c (trans_array_constructor): Treat negative character
+	length as LEN = 0.
+
+2016-12-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78279
+	* dependency.c (identical_array_ref): Convert gcc_assert to conditional
+	and gfc_internal_error.
+
 2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* check.c (gfc_check_allocated): By pass the caf_get call and check on

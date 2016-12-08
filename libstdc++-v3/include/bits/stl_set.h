@@ -199,25 +199,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Set copy constructor.
-       *  @param  __x  A %set of identical element and allocator types.
        *
-       *  The newly-created %set uses a copy of the allocator object used
-       *  by @a __x (unless the allocator traits dictate a different object).
+       *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       set(const set& __x)
       : _M_t(__x._M_t) { }
+#else
+      set(const set&) = default;
 
-#if __cplusplus >= 201103L
      /**
        *  @brief %Set move constructor
-       *  @param __x  A %set of identical element and allocator types.
        *
-       *  The newly-created %set contains the exact contents of @a x.
-       *  The contents of @a x are a valid, but unspecified %set.
+       *  The newly-created %set contains the exact contents of the moved
+       *  instance. The moved instance is a valid, but unspecified, %set.
        */
-      set(set&& __x)
-      noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _M_t(std::move(__x._M_t)) { }
+      set(set&&) = default;
 
       /**
        *  @brief  Builds a %set from an initializer_list.
@@ -261,24 +258,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    const allocator_type& __a)
 	: _M_t(_Compare(), _Key_alloc_type(__a))
         { _M_t._M_insert_unique(__first, __last); }
+
+      /**
+       *  The dtor only erases the elements, and note that if the elements
+       *  themselves are pointers, the pointed-to memory is not touched in any
+       *  way. Managing the pointer is the user's responsibility.
+       */
+      ~set() = default;
 #endif
 
       /**
        *  @brief  %Set assignment operator.
-       *  @param  __x  A %set of identical element and allocator types.
-       *
-       *  All the elements of @a __x are copied.
        *
        *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       set&
       operator=(const set& __x)
       {
 	_M_t = __x._M_t;
 	return *this;
       }
+#else
+      set&
+      operator=(const set&) = default;
 
-#if __cplusplus >= 201103L
       /// Move assignment operator.
       set&
       operator=(set&&) = default;

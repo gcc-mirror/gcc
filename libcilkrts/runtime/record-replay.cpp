@@ -262,7 +262,7 @@ char * walk_pedigree_nodes(char *p, const __cilkrts_pedigree *pnode)
     if (pnode->parent)
     {
         p = walk_pedigree_nodes(p, pnode->parent);
-        p += cilk_snprintf_s(p, PEDIGREE_BUFF_SIZE, "%s", (char *) "_");
+        p += cilk_snprintf_s(p, PEDIGREE_BUFF_SIZE, "%s", (char *)"_");
     }
     return p + cilk_snprintf_l(p, PEDIGREE_BUFF_SIZE, "%" PRIu64, pnode->rank);
 }

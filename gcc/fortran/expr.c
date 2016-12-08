@@ -795,8 +795,6 @@ gfc_build_conversion (gfc_expr *e)
   p = gfc_get_expr ();
   p->expr_type = EXPR_FUNCTION;
   p->symtree = NULL;
-  p->value.function.actual = NULL;
-
   p->value.function.actual = gfc_get_actual_arglist ();
   p->value.function.actual->expr = e;
 
@@ -3314,9 +3312,9 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
   if (lvalue->ts.type == BT_CHARACTER && rvalue->ts.type == BT_CHARACTER)
     {
       if (lvalue->ts.kind != rvalue->ts.kind && allow_convert)
-	gfc_convert_chartype (rvalue, &lvalue->ts);
-
-      return true;
+	return gfc_convert_chartype (rvalue, &lvalue->ts);
+      else
+	return true;
     }
 
   if (!allow_convert)

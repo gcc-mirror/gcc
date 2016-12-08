@@ -47,6 +47,7 @@ main (int argc, char **argv)
   runtime_isstarted = true;
 
   __go_end = (uintptr)_end;
+  runtime_cpuinit ();
   runtime_check ();
   runtime_args (argc, (byte **) argv);
   runtime_osinit ();

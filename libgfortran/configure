@@ -26174,6 +26174,93 @@ $as_echo "#define HAVE_CRLF 1" >>confdefs.h
 
 fi
 
+# Check whether we support AVX extensions
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  void _mm256_zeroall (void)
+        {
+           __builtin_ia32_vzeroall ();
+        }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_AVX 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+
+
+# Check wether we support AVX2 extensions
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx2"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	mm256_is32_andnotsi256  (__v4di __X, __v4di __Y)
+        {
+	   return __builtin_ia32_andnotsi256 (__X, __Y);
+        }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_AVX2 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+
+
+# Check wether we support AVX512f extensions
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx512f"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+	typedef double __m512d __attribute__ ((__vector_size__ (64)));
+	__m512d _mm512_add (__m512d a)
+	{
+	  return __builtin_ia32_addpd512_mask (a, a, a, 1, 4);
+        }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_AVX512F 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure

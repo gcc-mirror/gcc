@@ -28902,6 +28902,55 @@ case "${host}" in
     # This is a freestanding configuration; there is nothing to do here.
     ;;
 
+  avr*-*-*)
+    $as_echo "#define HAVE_ACOSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ASINF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ATAN2F 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ATANF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_CEILF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_COSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_COSHF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_EXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FABSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FLOORF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FMODF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FREXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SQRTF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_HYPOTF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LDEXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LOG10F 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LOGF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_MODFF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_POWF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SINF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SINHF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_TANF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_TANHF 1" >>confdefs.h
+
+    ;;
+
   mips*-sde-elf*)
     # These definitions are for the SDE C library rather than newlib.
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -59821,6 +59870,19 @@ do :
 if test "x$ac_cv_func___cxa_thread_atexit_impl" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE___CXA_THREAD_ATEXIT_IMPL 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi

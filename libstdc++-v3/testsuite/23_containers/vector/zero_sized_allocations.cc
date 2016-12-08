@@ -22,7 +22,7 @@
 
 unsigned int zero_sized_news = 0;
 
-void *operator new(std::size_t size) throw (std::bad_alloc)
+void *operator new(std::size_t size) THROW (std::bad_alloc)
 {
   /* malloc(0) is unpredictable; avoid it.  */
   if (size == 0)

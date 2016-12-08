@@ -2266,6 +2266,10 @@ ira_setup_eliminable_regset (void)
   int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 
+  /* Setup is_leaf as frame_pointer_required may use it.  This function
+     is called by sched_init before ira if scheduling is enabled.  */
+  crtl->is_leaf = leaf_function_p ();
+
   /* FIXME: If EXIT_IGNORE_STACK is set, we will not save and restore
      sp for alloca.  So we can't eliminate the frame pointer in that
      case.  At some point, we should improve this by emitting the
@@ -5079,6 +5083,13 @@ ira (FILE *f)
 
   clear_bb_flags ();
 
+  /* Determine if the current function is a leaf before running IRA
+     since this can impact optimizations done by the prologue and
+     epilogue thus changing register elimination offsets.
+     Other target callbacks may use crtl->is_leaf too, including
+     SHRINK_WRAPPING_ENABLED, so initialize as early as possible.  */
+  crtl->is_leaf = leaf_function_p ();
+
   /* Perform target specific PIC register initialization.  */
   targetm.init_pic_reg ();
 
@@ -5163,11 +5174,6 @@ ira (FILE *f)
      to generate these warnings.  */
   if (warn_clobbered)
     generate_setjmp_warnings ();
-
-  /* Determine if the current function is a leaf before running IRA
-     since this can impact optimizations done by the prologue and
-     epilogue thus changing register elimination offsets.  */
-  crtl->is_leaf = leaf_function_p ();
 
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);

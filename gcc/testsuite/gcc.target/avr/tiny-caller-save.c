@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target avr_tiny } } */
 /* { dg-options "-mmcu=avrtiny -gdwarf -Os" } */
 
 /* This is a stripped down piece of libgcc2.c that triggerd an ICE for avr with

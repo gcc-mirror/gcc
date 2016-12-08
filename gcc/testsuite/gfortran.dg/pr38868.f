@@ -9,7 +9,7 @@
       ANER(1)='A   '
       ANER(2)='    '
       LINE=' '
-      LINE(78:80)='xyz'
+      LINE(78:80)='xyz'   ! { dg-warning "writing 3 bytes into a region of size 2" }
       WRITE(*,'(A82)') "'"//LINE//"'"
       END
 

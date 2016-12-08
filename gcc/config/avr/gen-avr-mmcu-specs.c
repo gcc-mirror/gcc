@@ -179,8 +179,10 @@ print_mcu (const avr_mcu_t *mcu)
 
   // avr-gcc specific specs for the compilation / the compiler proper.
 
+  int n_flash = 1 + (mcu->flash_size - 1) / 0x10000;
+
   fprintf (f, "*cc1_n_flash:\n"
-           "\t%%{!mn-flash=*:-mn-flash=%d}\n\n", mcu->n_flash);
+           "\t%%{!mn-flash=*:-mn-flash=%d}\n\n", n_flash);
 
   fprintf (f, "*cc1_rmw:\n%s\n\n", rmw
            ? "\t%{!mno-rmw: -mrmw}"

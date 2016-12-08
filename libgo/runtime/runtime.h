@@ -212,10 +212,6 @@ extern bool runtime_copystack;
 #define USED(v)		((void) v)
 #define	ROUND(x, n)	(((x)+(n)-1)&~(uintptr)((n)-1)) /* all-caps to mark as macro: it evaluates n twice */
 
-byte*	runtime_startup_random_data;
-uint32	runtime_startup_random_data_len;
-void	runtime_get_random_data(byte**, int32*);
-
 enum {
 	// hashinit wants this many random bytes
 	HashRandomBytes = 32
@@ -269,6 +265,8 @@ struct __go_func_type;
 void	runtime_args(int32, byte**)
   __asm__ (GOSYM_PREFIX "runtime.args");
 void	runtime_osinit();
+void	runtime_alginit(void)
+  __asm__ (GOSYM_PREFIX "runtime.alginit");
 void	runtime_goargs(void)
   __asm__ (GOSYM_PREFIX "runtime.goargs");
 void	runtime_goenvs(void);
@@ -596,3 +594,7 @@ extern void *getitab(const struct __go_type_descriptor *,
 		     const struct __go_type_descriptor *,
 		     _Bool)
   __asm__ (GOSYM_PREFIX "runtime.getitab");
+
+extern void runtime_cpuinit(void);
+extern void setCpuidECX(uint32)
+  __asm__ (GOSYM_PREFIX "runtime.setCpuidECX");

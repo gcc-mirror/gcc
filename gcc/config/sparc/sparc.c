@@ -639,6 +639,7 @@ static const char *sparc_mangle_type (const_tree);
 static void sparc_trampoline_init (rtx, tree, rtx);
 static machine_mode sparc_preferred_simd_mode (machine_mode);
 static reg_class_t sparc_preferred_reload_class (rtx x, reg_class_t rclass);
+static bool sparc_lra_p (void);
 static bool sparc_print_operand_punct_valid_p (unsigned char);
 static void sparc_print_operand (FILE *, rtx, int);
 static void sparc_print_operand_address (FILE *, machine_mode, rtx);
@@ -836,7 +837,7 @@ char sparc_hard_reg_printed[8];
 #endif
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
+#define TARGET_LRA_P sparc_lra_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P sparc_legitimate_address_p
@@ -4787,7 +4788,7 @@ enum sparc_mode_class {
   ((1 << (int) H_MODE) | (1 << (int) S_MODE) | (1 << (int) SF_MODE))
 
 /* Modes for double-word and smaller quantities.  */
-#define D_MODES (S_MODES | (1 << (int) D_MODE) | (1 << DF_MODE))
+#define D_MODES (S_MODES | (1 << (int) D_MODE) | (1 << (int) DF_MODE))
 
 /* Modes for quad-word and smaller quantities.  */
 #define T_MODES (D_MODES | (1 << (int) T_MODE) | (1 << (int) TF_MODE))
@@ -4799,7 +4800,7 @@ enum sparc_mode_class {
 #define SF_MODES ((1 << (int) S_MODE) | (1 << (int) SF_MODE))
 
 /* Modes for double-float and smaller quantities.  */
-#define DF_MODES (SF_MODES | (1 << (int) D_MODE) | (1 << DF_MODE))
+#define DF_MODES (SF_MODES | (1 << (int) D_MODE) | (1 << (int) DF_MODE))
 
 /* Modes for quad-float and smaller quantities.  */
 #define TF_MODES (DF_MODES | (1 << (int) TF_MODE))
@@ -8483,46 +8484,82 @@ order_regs_for_local_alloc (void)
 }
 
 /* Return 1 if REG and MEM are legitimate enough to allow the various
-   mem<-->reg splits to be run.  */
+   MEM<-->REG splits to be run.  */
 
 int
-sparc_splitdi_legitimate (rtx reg, rtx mem)
+sparc_split_reg_mem_legitimate (rtx reg, rtx mem)
 {
   /* Punt if we are here by mistake.  */
   gcc_assert (reload_completed);
 
   /* We must have an offsettable memory reference.  */
-  if (! offsettable_memref_p (mem))
+  if (!offsettable_memref_p (mem))
     return 0;
 
   /* If we have legitimate args for ldd/std, we do not want
      the split to happen.  */
-  if ((REGNO (reg) % 2) == 0
-      && mem_min_alignment (mem, 8))
+  if ((REGNO (reg) % 2) == 0 && mem_min_alignment (mem, 8))
     return 0;
 
   /* Success.  */
   return 1;
 }
 
-/* Like sparc_splitdi_legitimate but for REG <--> REG moves.  */
+/* Split a REG <-- MEM move into a pair of moves in MODE.  */
+
+void
+sparc_split_reg_mem (rtx dest, rtx src, machine_mode mode)
+{
+  rtx high_part = gen_highpart (mode, dest);
+  rtx low_part = gen_lowpart (mode, dest);
+  rtx word0 = adjust_address (src, mode, 0);
+  rtx word1 = adjust_address (src, mode, 4);
+
+  if (reg_overlap_mentioned_p (high_part, word1))
+    {
+      emit_move_insn_1 (low_part, word1);
+      emit_move_insn_1 (high_part, word0);
+    }
+  else
+    {
+      emit_move_insn_1 (high_part, word0);
+      emit_move_insn_1 (low_part, word1);
+    }
+}
+
+/* Split a MEM <-- REG move into a pair of moves in MODE.  */
+
+void
+sparc_split_mem_reg (rtx dest, rtx src, machine_mode mode)
+{
+  rtx word0 = adjust_address (dest, mode, 0);
+  rtx word1 = adjust_address (dest, mode, 4);
+  rtx high_part = gen_highpart (mode, src);
+  rtx low_part = gen_lowpart (mode, src);
+
+  emit_move_insn_1 (word0, high_part);
+  emit_move_insn_1 (word1, low_part);
+}
+
+/* Like sparc_split_reg_mem_legitimate but for REG <--> REG moves.  */
 
 int
-sparc_split_regreg_legitimate (rtx reg1, rtx reg2)
+sparc_split_reg_reg_legitimate (rtx reg1, rtx reg2)
 {
-  int regno1, regno2;
+  /* Punt if we are here by mistake.  */
+  gcc_assert (reload_completed);
 
   if (GET_CODE (reg1) == SUBREG)
     reg1 = SUBREG_REG (reg1);
   if (GET_CODE (reg1) != REG)
     return 0;
-  regno1 = REGNO (reg1);
+  const int regno1 = REGNO (reg1);
 
   if (GET_CODE (reg2) == SUBREG)
     reg2 = SUBREG_REG (reg2);
   if (GET_CODE (reg2) != REG)
     return 0;
-  regno2 = REGNO (reg2);
+  const int regno2 = REGNO (reg2);
 
   if (SPARC_INT_REG_P (regno1) && SPARC_INT_REG_P (regno2))
     return 1;
@@ -8535,6 +8572,30 @@ sparc_split_regreg_legitimate (rtx reg1, rtx reg2)
     }
 
   return 0;
+}
+
+/* Split a REG <--> REG move into a pair of moves in MODE.  */
+
+void
+sparc_split_reg_reg (rtx dest, rtx src, machine_mode mode)
+{
+  rtx dest1 = gen_highpart (mode, dest);
+  rtx dest2 = gen_lowpart (mode, dest);
+  rtx src1 = gen_highpart (mode, src);
+  rtx src2 = gen_lowpart (mode, src);
+
+  /* Now emit using the real source and destination we found, swapping
+     the order if we detect overlap.  */
+  if (reg_overlap_mentioned_p (dest1, src2))
+    {
+      emit_move_insn_1 (dest2, src2);
+      emit_move_insn_1 (dest1, src1);
+    }
+  else
+    {
+      emit_move_insn_1 (dest1, src1);
+      emit_move_insn_1 (dest2, src2);
+    }
 }
 
 /* Return 1 if REGNO (reg1) is even and REGNO (reg1) == REGNO (reg2) - 1.
@@ -12246,6 +12307,14 @@ sparc_preferred_reload_class (rtx x, reg_class_t rclass)
     }
 
   return rclass;
+}
+
+/* Return true if we use LRA instead of reload pass.  */
+
+static bool
+sparc_lra_p (void)
+{
+  return TARGET_LRA;
 }
 
 /* Output a wide multiply instruction in V8+ mode.  INSN is the instruction,

@@ -2771,6 +2771,15 @@ arc_return_slot_offset ()
 
 /* PIC */
 
+/* Helper to generate unspec constant.  */
+
+static rtx
+arc_unspec_offset (rtx loc, int unspec)
+{
+  return gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (Pmode, gen_rtvec (1, loc),
+					       unspec));
+}
+
 /* Emit special PIC prologues and epilogues.  */
 /* If the function has any GOTOFF relocations, then the GOTBASE
    register has to be setup in the prologue
@@ -2796,9 +2805,7 @@ arc_finalize_pic (void)
   gcc_assert (flag_pic != 0);
 
   pat = gen_rtx_SYMBOL_REF (Pmode, "_DYNAMIC");
-  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, pat), ARC_UNSPEC_GOT);
-  pat = gen_rtx_CONST (Pmode, pat);
-
+  pat = arc_unspec_offset (pat, ARC_UNSPEC_GOT);
   pat = gen_rtx_SET (baseptr_rtx, pat);
 
   emit_insn (pat);
@@ -4866,8 +4873,7 @@ arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
 
   start_sequence ();
 
-  rtx x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym), reloc);
-  x = gen_rtx_CONST (Pmode, x);
+  rtx x = arc_unspec_offset (sym, reloc);
   emit_move_insn (r0, x);
   use_reg (&call_fusage, r0);
 
@@ -4923,17 +4929,18 @@ arc_legitimize_tls_address (rtx addr, enum tls_model model)
       addr = gen_rtx_CONST (Pmode, addr);
       base = arc_legitimize_tls_address (base, TLS_MODEL_GLOBAL_DYNAMIC);
       return gen_rtx_PLUS (Pmode, force_reg (Pmode, base), addr);
+
     case TLS_MODEL_GLOBAL_DYNAMIC:
       return arc_emit_call_tls_get_addr (addr, UNSPEC_TLS_GD, addr);
+
     case TLS_MODEL_INITIAL_EXEC:
-      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_TLS_IE);
-      addr = gen_rtx_CONST (Pmode, addr);
+      addr = arc_unspec_offset (addr, UNSPEC_TLS_IE);
       addr = copy_to_mode_reg (Pmode, gen_const_mem (Pmode, addr));
       return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+
     case TLS_MODEL_LOCAL_EXEC:
     local_exec:
-      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_TLS_OFF);
-      addr = gen_rtx_CONST (Pmode, addr);
+      addr = arc_unspec_offset (addr, UNSPEC_TLS_OFF);
       return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
     default:
       gcc_unreachable ();
@@ -4964,14 +4971,11 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
       else if (!flag_pic)
 	return orig;
       else if (CONSTANT_POOL_ADDRESS_P (addr) || SYMBOL_REF_LOCAL_P (addr))
-	return gen_rtx_CONST (Pmode,
-			      gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
-			      ARC_UNSPEC_GOTOFFPC));
+	return arc_unspec_offset (addr, ARC_UNSPEC_GOTOFFPC);
 
       /* This symbol must be referenced via a load from the Global
 	 Offset Table (@GOTPC).  */
-      pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOT);
-      pat = gen_rtx_CONST (Pmode, pat);
+      pat = arc_unspec_offset (addr, ARC_UNSPEC_GOT);
       pat = gen_const_mem (Pmode, pat);
 
       if (oldx == NULL)
@@ -9983,15 +9987,6 @@ arc_dwarf_register_span (rtx rtl)
    XVECEXP (p, 0, 1) = gen_rtx_REG (SImode, regno + 1);
 
    return p;
-}
-
-/* We can't inline this in INSN_REFERENCES_ARE_DELAYED because
-   resource.h doesn't include the required header files.  */
-
-bool
-insn_is_tls_gd_dispatch (rtx_insn *insn)
-{
-  return recog_memoized (insn) == CODE_FOR_tls_gd_dispatch;
 }
 
 /* Return true if OP is an acceptable memory operand for ARCompact

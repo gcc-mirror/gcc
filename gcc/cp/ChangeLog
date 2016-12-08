@@ -1,3 +1,53 @@
+2016-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	P0003R5 - removal of dynamic exception specification from C++17
+	* parser.c (cp_parser_exception_specification_opt): For C++17
+	error out on throw ( type-id-list ), for C++11 and C++14 issue
+	-Wdeprecated warning on it.  Formatting fix.  Treat throw()
+	in C++17 as noexcept(true).
+
+2016-12-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/78589
+	* error.c (dump_decl): Use dump_function_name to dump
+	!DECL_LANG_SPECIFIC function decls with no or self-referencing
+	abstract origin.
+
+2016-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (tsubst <{NON,}TYPE_ARGUMENT_PACK>: Simplify control flow
+	and avoid re-tsubsting type.
+
+	* cp-tree.h (enum cp_tree_index): Add CPTI_AUTO_IDENTIFIER &
+	CPTI_DECLTYPE_AUTO_IDENTIFIER.
+	(auto_identifier, decltype_auto_identifier): New.
+	*decl.c (initialize_predefined_identifiers): Add 'auto' and
+	'decltype(auto)'.
+	(grokdeclarator): Use cached identifier.
+	* pt.c (make_decltype_auto, make_auto, make_constrained_auto,
+	is_auto): Likewise.
+
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78649
+	* pt.c (tsubst_init): Don't call build_value_init if decl's type
+	is error_mark_node.
+
+2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_enter_exit_data): Update diagnostics.
+	(cp_parser_pragma): Error when PRAGMA_OACC_{ENTER_DATA,
+	EXIT_DATA,WAIT} are not used in compound statements.
+
+2016-12-01  Jason Merrill  <jason@redhat.com>
+
+	* call.c (add_function_candidate): Also exclude inherited ctors
+	that take a type reference-related to the derived class.
+
+	* call.c (add_function_candidate): Exclude inherited copy/move
+	ctors.
+
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/77922
@@ -216,7 +266,7 @@
 	IMAGPART_EXPR can be lvalues.
 
 	DR 374
-	PR c++/56840
+	PR c++/56480
 	* pt.c (check_specialization_namespace): Allow any enclosing
 	namespace.
 	(check_unqualified_spec_or_inst): New.

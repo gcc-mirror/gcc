@@ -1774,7 +1774,7 @@ simplify_preds_4 (pred_chain_union *preds)
 	  s_preds.safe_push ((*preds)[i]);
 	}
 
-      destroy_predicate_vecs (preds);
+      preds->release ();
       (*preds) = s_preds;
       s_preds = vNULL;
     }
@@ -2155,115 +2155,65 @@ normalize_preds (pred_chain_union preds, gimple *use_or_def, bool is_use)
 
 static bool
 can_one_predicate_be_invalidated_p (pred_info predicate,
-				    vec<pred_info *> worklist)
+				    pred_chain use_guard)
 {
-  for (size_t i = 0; i < worklist.length (); ++i)
+  for (size_t i = 0; i < use_guard.length (); ++i)
     {
-      pred_info *p = worklist[i];
-
       /* NOTE: This is a very simple check, and only understands an
 	 exact opposite.  So, [i == 0] is currently only invalidated
 	 by [.NOT. i == 0] or [i != 0].  Ideally we should also
 	 invalidate with say [i > 5] or [i == 8].  There is certainly
 	 room for improvement here.  */
-      if (pred_neg_p (predicate, *p))
+      if (pred_neg_p (predicate, use_guard[i]))
 	return true;
     }
   return false;
 }
 
-/* Return TRUE if all USE_PREDS can be invalidated by some predicate
-   in WORKLIST.  */
+/* Return TRUE if all predicates in UNINIT_PRED are invalidated by
+   USE_GUARD being true.  */
 
 static bool
-can_chain_union_be_invalidated_p (pred_chain_union use_preds,
-				  vec<pred_info *> worklist)
+can_chain_union_be_invalidated_p (pred_chain_union uninit_pred,
+				  pred_chain use_guard)
 {
-  /* Remember:
-       PRED_CHAIN_UNION = PRED_CHAIN1 || PRED_CHAIN2 || PRED_CHAIN3
-       PRED_CHAIN = PRED_INFO1 && PRED_INFO2 && PRED_INFO3, etc.
-
-       We need to invalidate the entire PRED_CHAIN_UNION, which means,
-       invalidating every PRED_CHAIN in this union.  But to invalidate
-       an individual PRED_CHAIN, all we need to invalidate is _any_ one
-       PRED_INFO, by boolean algebra !PRED_INFO1 || !PRED_INFO2...  */
-  for (size_t i = 0; i < use_preds.length (); ++i)
+  if (uninit_pred.is_empty ())
+    return false;
+  for (size_t i = 0; i < uninit_pred.length (); ++i)
     {
-      pred_chain c = use_preds[i];
-      bool entire_pred_chain_invalidated = false;
+      pred_chain c = uninit_pred[i];
       for (size_t j = 0; j < c.length (); ++j)
-	if (can_one_predicate_be_invalidated_p (c[j], worklist))
-	  {
-	    entire_pred_chain_invalidated = true;
-	    break;
-	  }
-      if (!entire_pred_chain_invalidated)
-	return false;
+	if (!can_one_predicate_be_invalidated_p (c[j], use_guard))
+	  return false;
     }
   return true;
 }
 
-/* Flatten out all the factors in all the pred_chain_union's in PREDS
-   into a WORKLIST of individual PRED_INFO's.
+/* Return TRUE if none of the uninitialized operands in UNINT_OPNDS
+   can actually happen if we arrived at a use for PHI.
 
-   N is the number of pred_chain_union's in PREDS.
-
-   Since we are interested in the inverse of the PRED_CHAIN's, by
-   boolean algebra, an inverse turns those PRED_CHAINS into unions,
-   which means we can flatten all the factors out for easy access.  */
-
-static void
-flatten_out_predicate_chains (pred_chain_union preds[], size_t n,
-			      vec<pred_info *> *worklist)
-{
-  for (size_t i = 0; i < n; ++i)
-    {
-      pred_chain_union u = preds[i];
-      for (size_t j = 0; j < u.length (); ++j)
-	{
-	  pred_chain c = u[j];
-	  for (size_t k = 0; k < c.length (); ++k)
-	    worklist->safe_push (&c[k]);
-	}
-    }
-}
-
-/* Return TRUE if executing the path to some uninitialized operands in
-   a PHI will invalidate the use of the PHI result later on.
-
-   UNINIT_OPNDS is a bit vector specifying which PHI arguments have
-   arguments which are considered uninitialized.
-
-   USE_PREDS is the pred_chain_union specifying the guard conditions
-   for the use of the PHI result.
-
-   What we want to do is disprove each of the guards in the factors of
-   the USE_PREDS.  So if we have:
-
-   # USE_PREDS guards of:
-   #	1. i > 5 && i < 100
-   #	2. j > 10 && j < 88
-
-   Then proving that the control dependenies for the UNINIT_OPNDS are:
-
-   #      [i <= 5]
-   # .OR. [i >= 100]
-   #
-
-   ...we can prove that the 1st guard above in USE_PREDS is invalid.
-   Similarly for the 2nd guard.  We return TRUE if we can disprove
-   both of the guards in USE_PREDS above.  */
+   PHI_USE_GUARDS are the guard conditions for the use of the PHI.  */
 
 static bool
-uninit_ops_invalidate_phi_use (gphi *phi, unsigned uninit_opnds,
-			       pred_chain_union use_preds)
+uninit_uses_cannot_happen (gphi *phi, unsigned uninit_opnds,
+			   pred_chain_union phi_use_guards)
 {
+  unsigned phi_args = gimple_phi_num_args (phi);
+  if (phi_args > max_phi_args)
+    return false;
+
+  /* PHI_USE_GUARDS are OR'ed together.  If we have more than one
+     possible guard, there's no way of knowing which guard was true.
+     Since we need to be absolutely sure that the uninitialized
+     operands will be invalidated, bail.  */
+  if (phi_use_guards.length () != 1)
+    return false;
+
   /* Look for the control dependencies of all the uninitialized
-     operands and build predicates describing them.  */
-  unsigned i;
-  pred_chain_union uninit_preds[max_phi_args];
-  memset (uninit_preds, 0, sizeof (pred_chain_union) * max_phi_args);
-  for (i = 0; i < MIN (max_phi_args, gimple_phi_num_args (phi)); i++)
+     operands and build guard predicates describing them.  */
+  pred_chain_union uninit_preds;
+  bool ret = true;
+  for (unsigned i = 0; i < phi_args; ++i)
     {
       if (!MASK_TEST_BIT (uninit_opnds, i))
 	continue;
@@ -2274,31 +2224,32 @@ uninit_ops_invalidate_phi_use (gphi *phi, unsigned uninit_opnds,
       size_t num_chains = 0;
       int num_calls = 0;
 
-      /* Build the control dependency chain for `i'...  */
-      if (compute_control_dep_chain (find_dom (e->src),
-				     e->src,
-				     dep_chains,
-				     &num_chains,
-				     &cur_chain,
-				     &num_calls))
+      /* Build the control dependency chain for uninit operand `i'...  */
+      uninit_preds = vNULL;
+      if (!compute_control_dep_chain (find_dom (e->src),
+				      e->src, dep_chains, &num_chains,
+				      &cur_chain, &num_calls))
 	{
-	  /* ...and convert it into a set of predicates.  */
-	  convert_control_dep_chain_into_preds (dep_chains, num_chains,
-						&uninit_preds[i]);
-	  for (size_t j = 0; j < num_chains; ++j)
-	    dep_chains[j].release ();
-	  simplify_preds (&uninit_preds[i], NULL, false);
-	  uninit_preds[i]
-	    = normalize_preds (uninit_preds[i], NULL, false);
+	  ret = false;
+	  break;
+	}
+      /* ...and convert it into a set of predicates.  */
+      convert_control_dep_chain_into_preds (dep_chains, num_chains,
+					    &uninit_preds);
+      for (size_t j = 0; j < num_chains; ++j)
+	dep_chains[j].release ();
+      simplify_preds (&uninit_preds, NULL, false);
+      uninit_preds = normalize_preds (uninit_preds, NULL, false);
+
+      /* Can the guard for this uninitialized operand be invalidated
+	 by the PHI use?  */
+      if (!can_chain_union_be_invalidated_p (uninit_preds, phi_use_guards[0]))
+	{
+	  ret = false;
+	  break;
 	}
     }
-
-  /* Munge all the predicates into one worklist, and see if we can
-     invalidate all the chains in USE_PREDs with the predicates in
-     WORKLIST.  */
-  auto_vec<pred_info *> worklist;
-  flatten_out_predicate_chains (uninit_preds, i, &worklist);
-  bool ret = can_chain_union_be_invalidated_p (use_preds, worklist);
+  destroy_predicate_vecs (&uninit_preds);
   return ret;
 }
 
@@ -2361,8 +2312,8 @@ is_use_properly_guarded (gimple *use_stmt,
      for UNINIT_OPNDS are true, that the control dependencies for
      USE_STMT can never be true.  */
   if (!is_properly_guarded)
-    is_properly_guarded |= uninit_ops_invalidate_phi_use (phi, uninit_opnds,
-							  preds);
+    is_properly_guarded |= uninit_uses_cannot_happen (phi, uninit_opnds,
+						      preds);
 
   if (is_properly_guarded)
     {

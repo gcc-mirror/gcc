@@ -3427,13 +3427,6 @@ expand_call (tree exp, rtx target, int ignore)
       if (STRICT_ALIGNMENT)
 	store_unaligned_arguments_into_pseudos (args, num_actuals);
 
-      /* Prepare the address of the call.  This must be done before any
-	 register parameters is loaded for find_first_parameter_load to
-	 work properly in the presence of descriptors.  */
-      funexp = prepare_call_address (fndecl ? fndecl : fntype, funexp,
-				     static_chain_value, &call_fusage,
-				     reg_parm_seen, flags);
-
       /* Now store any partially-in-registers parm.
 	 This is the last place a block-move can happen.  */
       if (reg_parm_seen)
@@ -3544,6 +3537,10 @@ expand_call (tree exp, rtx target, int ignore)
 	}
 
       after_args = get_last_insn ();
+      funexp = prepare_call_address (fndecl ? fndecl : fntype, funexp,
+				     static_chain_value, &call_fusage,
+				     reg_parm_seen, flags);
+
       load_register_parameters (args, num_actuals, &call_fusage, flags,
 				pass == 0, &sibcall_failure);
 

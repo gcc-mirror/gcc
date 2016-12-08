@@ -645,7 +645,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
-	if (Convention (gnat_entity) == Convention_C
+	if (Has_Foreign_Convention (gnat_entity)
 	    && Is_Descendant_Of_Address (gnat_type))
 	  gnu_type = ptr_type_node;
 	else
@@ -672,6 +672,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				   VAR_DECL, gnu_entity_name, gnu_type);
 	    SET_DECL_VALUE_EXPR (gnu_decl, value);
 	    DECL_HAS_VALUE_EXPR_P (gnu_decl) = 1;
+	    TREE_STATIC (gnu_decl) = global_bindings_p ();
 	    gnat_pushdecl (gnu_decl, gnat_entity);
 	    break;
 	  }
@@ -1859,8 +1860,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       TYPE_BIASED_REPRESENTATION_P (gnu_type)
 	= Has_Biased_Representation (gnat_entity);
 
-      /* Set TYPE_STRING_FLAG for Character and Wide_Character subtypes.  */
-      TYPE_STRING_FLAG (gnu_type) = TYPE_STRING_FLAG (TREE_TYPE (gnu_type));
+      /* Do the same processing for Character subtypes as for types.  */
+      if (TYPE_STRING_FLAG (TREE_TYPE (gnu_type)))
+	{
+	  TYPE_NAME (gnu_type) = gnu_entity_name;
+	  TYPE_STRING_FLAG (gnu_type) = 1;
+	  TYPE_ARTIFICIAL (gnu_type) = artificial_p;
+	  finish_character_type (gnu_type);
+	}
 
       /* Inherit our alias set from what we're a subtype of.  Subtypes
 	 are not different types and a pointer can designate any instance
@@ -5398,12 +5405,6 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
     gnu_param_type
       = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_param_type))));
 
-  /* For GCC builtins, pass Address integer types as (void *)  */
-  if (Convention (gnat_subprog) == Convention_Intrinsic
-      && Present (Interface_Name (gnat_subprog))
-      && Is_Descendant_Of_Address (gnat_param_type))
-    gnu_param_type = ptr_type_node;
-
   /* Arrays are passed as pointers to element type for foreign conventions.  */
   if (foreign && mech != By_Copy && TREE_CODE (gnu_param_type) == ARRAY_TYPE)
     {
@@ -5778,7 +5779,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
   else
     {
-      if (Convention (gnat_subprog) == Convention_C
+      /* For foreign convention subprograms, return System.Address as void *
+	 or equivalent.  Note that this comprises GCC builtins.  */
+      if (Has_Foreign_Convention (gnat_subprog)
 	  && Is_Descendant_Of_Address (gnat_return_type))
 	gnu_return_type = ptr_type_node;
       else
@@ -5943,7 +5946,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	{
 	  Entity_Id gnat_param_type = Etype (gnat_param);
 
-	  if (Convention (gnat_subprog) == Convention_C
+	  /* For foreign convention subprograms, pass System.Address as void *
+	     or equivalent.  Note that this comprises GCC builtins.  */
+	  if (Has_Foreign_Convention (gnat_subprog)
 	      && Is_Descendant_Of_Address (gnat_param_type))
 	    gnu_param_type = ptr_type_node;
 	  else
@@ -8903,10 +8908,6 @@ intrin_return_compatible_p (intrin_binding_t * inb)
   if (VOID_TYPE_P (ada_return_type)
       && !VOID_TYPE_P (btin_return_type))
     return true;
-
-  /* If return type is Address (integer type), map it to void *.  */
-  if (Is_Descendant_Of_Address (Etype (inb->gnat_entity)))
-    ada_return_type = ptr_type_node;
 
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */

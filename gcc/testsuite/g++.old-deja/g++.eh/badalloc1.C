@@ -93,19 +93,28 @@ extern "C" void *realloc (void *p, size_t size)
   return r;
 }
 
-void fn_throw() throw(int)
+void fn_throw()
+#if __cplusplus <= 201402L
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
 {
   throw 1;
 }
 
-void fn_rethrow() throw(int)
+void fn_rethrow()
+#if __cplusplus <= 201402L
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
 {
   try{fn_throw();}
   catch(int a){
     throw;}
 }
 
-void fn_catchthrow() throw(int)
+void fn_catchthrow()
+#if __cplusplus <= 201402L
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
 {
   try{fn_throw();}
   catch(int a){

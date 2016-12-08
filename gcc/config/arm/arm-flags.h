@@ -70,6 +70,7 @@
 #define FL2_ARCH8_2   (1U << 1)		/* Architecture 8.2.  */
 #define FL2_FP16INST  (1U << 2)		/* FP16 Instructions for ARMv8.2 and
 					   later.  */
+#define FL2_CMSE      (1U << 3)		/* ARMv8-M Security Extensions.  */
 
 /* Flags that only effect tuning, not available instructions.  */
 #define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \

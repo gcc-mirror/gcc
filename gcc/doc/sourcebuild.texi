@@ -1674,6 +1674,10 @@ ARM target generates Thumb-1 code for @code{-mthumb} with
 ARM target for which divmod transform is disabled, if it supports hardware
 div instruction.
 
+@item arm_cmse_ok
+ARM target supports ARMv8-M Security Extensions, enabled by the @code{-mcmse}
+option.
+
 @end table
 
 @subsubsection AArch64-specific attributes

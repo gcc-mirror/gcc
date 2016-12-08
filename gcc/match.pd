@@ -1378,7 +1378,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for minmax (min max)
  (simplify
   (convert (minmax@0 (convert @1) INTEGER_CST@2))
-  (if (types_match (@1, type) && int_fits_type_p (@2, type)
+  (if (INTEGRAL_TYPE_P (type)
+       && types_match (@1, type) && int_fits_type_p (@2, type)
        && TYPE_SIGN (TREE_TYPE (@0)) == TYPE_SIGN (type)
        && TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
    (minmax @1 (convert @2)))))
@@ -2038,6 +2039,106 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (convert (cond (eq @1 (convert @3))
 		     (convert:from_type @3) (convert:from_type @2)))))))))
 
+/* (cond (cmp (convert? x) c1) (op x c2) c3) -> (op (minmax x c1) c2) if:
+
+     1) OP is PLUS or MINUS.
+     2) CMP is LT, LE, GT or GE.
+     3) C3 == (C1 op C2), and computation doesn't have undefined behavior.
+
+   This pattern also handles special cases like:
+
+     A) Operand x is a unsigned to signed type conversion and c1 is
+	integer zero.  In this case,
+	  (signed type)x  < 0  <=>  x  > MAX_VAL(signed type)
+	  (signed type)x >= 0  <=>  x <= MAX_VAL(signed type)
+     B) Const c1 may not equal to (C3 op' C2).  In this case we also
+	check equality for (c1+1) and (c1-1) by adjusting comparison
+	code.
+
+   TODO: Though signed type is handled by this pattern, it cannot be
+   simplified at the moment because C standard requires additional
+   type promotion.  In order to match&simplify it here, the IR needs
+   to be cleaned up by other optimizers, i.e, VRP.  */
+(for op (plus minus)
+ (for cmp (lt le gt ge)
+  (simplify
+   (cond (cmp (convert? @X) INTEGER_CST@1) (op @X INTEGER_CST@2) INTEGER_CST@3)
+   (with { tree from_type = TREE_TYPE (@X), to_type = TREE_TYPE (@1); }
+    (if (types_match (from_type, to_type)
+	 /* Check if it is special case A).  */
+	 || (TYPE_UNSIGNED (from_type)
+	     && !TYPE_UNSIGNED (to_type)
+	     && TYPE_PRECISION (from_type) == TYPE_PRECISION (to_type)
+	     && integer_zerop (@1)
+	     && (cmp == LT_EXPR || cmp == GE_EXPR)))
+     (with
+      {
+	bool overflow = false;
+	enum tree_code code, cmp_code = cmp;
+	wide_int real_c1, c1 = @1, c2 = @2, c3 = @3;
+	signop sgn = TYPE_SIGN (from_type);
+
+	/* Handle special case A), given x of unsigned type:
+	    ((signed type)x  < 0) <=> (x  > MAX_VAL(signed type))
+	    ((signed type)x >= 0) <=> (x <= MAX_VAL(signed type))  */
+	if (!types_match (from_type, to_type))
+	  {
+	    if (cmp_code == LT_EXPR)
+	      cmp_code = GT_EXPR;
+	    if (cmp_code == GE_EXPR)
+	      cmp_code = LE_EXPR;
+	    c1 = wi::max_value (to_type);
+	  }
+	/* To simplify this pattern, we require c3 = (c1 op c2).  Here we
+	   compute (c3 op' c2) and check if it equals to c1 with op' being
+	   the inverted operator of op.  Make sure overflow doesn't happen
+	   if it is undefined.  */
+	if (op == PLUS_EXPR)
+	  real_c1 = wi::sub (c3, c2, sgn, &overflow);
+	else
+	  real_c1 = wi::add (c3, c2, sgn, &overflow);
+
+	code = cmp_code;
+	if (!overflow || !TYPE_OVERFLOW_UNDEFINED (from_type))
+	  {
+	    /* Check if c1 equals to real_c1.  Boundary condition is handled
+	       by adjusting comparison operation if necessary.  */
+	    if (!wi::cmp (wi::sub (real_c1, 1, sgn, &overflow), c1, sgn)
+		&& !overflow)
+	      {
+		/* X <= Y - 1 equals to X < Y.  */
+		if (cmp_code == LE_EXPR)
+		  code = LT_EXPR;
+		/* X > Y - 1 equals to X >= Y.  */
+		if (cmp_code == GT_EXPR)
+		  code = GE_EXPR;
+	      }
+	    if (!wi::cmp (wi::add (real_c1, 1, sgn, &overflow), c1, sgn)
+		&& !overflow)
+	      {
+		/* X < Y + 1 equals to X <= Y.  */
+		if (cmp_code == LT_EXPR)
+		  code = LE_EXPR;
+		/* X >= Y + 1 equals to X > Y.  */
+		if (cmp_code == GE_EXPR)
+		  code = GT_EXPR;
+	      }
+	    if (code != cmp_code || !wi::cmp (real_c1, c1, sgn))
+	      {
+		if (cmp_code == LT_EXPR || cmp_code == LE_EXPR)
+		  code = MIN_EXPR;
+		if (cmp_code == GT_EXPR || cmp_code == GE_EXPR)
+		  code = MAX_EXPR;
+	      }
+	  }
+      }
+      (if (code == MAX_EXPR)
+       (op (max @X { wide_int_to_tree (from_type, real_c1); })
+	   { wide_int_to_tree (from_type, c2); })
+       (if (code == MIN_EXPR)
+	(op (min @X { wide_int_to_tree (from_type, real_c1); })
+	    { wide_int_to_tree (from_type, c2); })))))))))
+
 (for cnd (cond vec_cond)
  /* A ? B : (A ? X : C) -> A ? B : C.  */
  (simplify
@@ -2637,6 +2738,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (bit_and@2 @0 integer_pow2p@1) @1)
   (icmp @2 { build_zero_cst (TREE_TYPE (@0)); })))
  
+/* If we have (A & C) != 0 ? D : 0 where C and D are powers of 2,
+   convert this into a shift followed by ANDing with D.  */
+(simplify
+ (cond
+  (ne (bit_and @0 integer_pow2p@1) integer_zerop)
+  integer_pow2p@2 integer_zerop)
+ (with {
+    int shift = wi::exact_log2 (@2) - wi::exact_log2 (@1);
+  }
+  (if (shift > 0)
+   (bit_and
+    (lshift (convert @0) { build_int_cst (integer_type_node, shift); }) @2)
+   (bit_and
+    (convert (rshift @0 { build_int_cst (integer_type_node, -shift); })) @2))))
+
 /* If we have (A & C) != 0 where C is the sign bit of A, convert
    this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
 (for cmp (eq ne)
@@ -2650,6 +2766,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && wi::only_sign_bit_p (@1, element_precision (@0)))
    (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
     (ncmp (convert:stype @0) { build_zero_cst (stype); })))))
+
+/* If we have A < 0 ? C : 0 where C is a power of 2, convert
+   this into a right shift followed by ANDing with C.  */
+(simplify
+ (cond
+  (lt @0 integer_zerop)
+  integer_pow2p@1 integer_zerop)
+ (with {
+    int shift = element_precision (@0) - wi::exact_log2 (@1) - 1;
+  }
+  (bit_and
+   (convert (rshift @0 { build_int_cst (integer_type_node, shift); }))
+   @1)))
 
 /* When the addresses are not directly of decls compare base and offset.
    This implements some remaining parts of fold_comparison address

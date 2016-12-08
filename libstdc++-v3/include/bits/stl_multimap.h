@@ -182,25 +182,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Multimap copy constructor.
-       *  @param  __x  A %multimap of identical element and allocator types.
        *
-       *  The newly-created %multimap uses a copy of the allocator object used
-       *  by @a __x (unless the allocator traits dictate a different object).
+       *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       multimap(const multimap& __x)
       : _M_t(__x._M_t) { }
+#else
+      multimap(const multimap&) = default;
 
-#if __cplusplus >= 201103L
       /**
        *  @brief  %Multimap move constructor.
-       *  @param   __x  A %multimap of identical element and allocator types.
        *
-       *  The newly-created %multimap contains the exact contents of @a __x.
-       *  The contents of @a __x are a valid, but unspecified %multimap.
+       *  The newly-created %multimap contains the exact contents of the
+       *  moved instance. The moved instance is a valid, but unspecified
+       *  %multimap.
        */
-      multimap(multimap&& __x)
-      noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _M_t(std::move(__x._M_t)) { }
+      multimap(multimap&&) = default;
 
       /**
        *  @brief  Builds a %multimap from an initializer_list.
@@ -278,31 +276,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_t(__comp, _Pair_alloc_type(__a))
         { _M_t._M_insert_equal(__first, __last); }
 
-      // FIXME There is no dtor declared, but we should have something generated
-      // by Doxygen.  I don't know what tags to add to this paragraph to make
-      // that happen:
+#if __cplusplus >= 201103L
       /**
        *  The dtor only erases the elements, and note that if the elements
        *  themselves are pointers, the pointed-to memory is not touched in any
-       *  way.  Managing the pointer is the user's responsibility.
+       *  way. Managing the pointer is the user's responsibility.
        */
+      ~multimap() = default;
+#endif
 
       /**
        *  @brief  %Multimap assignment operator.
-       *  @param  __x  A %multimap of identical element and allocator types.
-       *
-       *  All the elements of @a __x are copied.
        *
        *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       multimap&
       operator=(const multimap& __x)
       {
 	_M_t = __x._M_t;
 	return *this;
       }
+#else
+      multimap&
+      operator=(const multimap&) = default;
 
-#if __cplusplus >= 201103L
       /// Move assignment operator.
       multimap&
       operator=(multimap&&) = default;

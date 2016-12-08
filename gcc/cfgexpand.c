@@ -6213,10 +6213,7 @@ pass_expand::execute (function *fun)
   discover_nonconstant_array_refs ();
 
   targetm.expand_to_rtl_hook ();
-  crtl->stack_alignment_needed = STACK_BOUNDARY;
-  crtl->max_used_stack_slot_alignment = STACK_BOUNDARY;
-  crtl->stack_alignment_estimated = 0;
-  crtl->preferred_stack_boundary = STACK_BOUNDARY;
+  crtl->init_stack_alignment ();
   fun->cfg->max_jumptable_ents = 0;
 
   /* Resovle the function section.  Some targets, like ARM EABI rely on knowledge

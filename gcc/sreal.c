@@ -102,14 +102,14 @@ sreal::shift_right (int s)
 int64_t
 sreal::to_int () const
 {
-  int64_t sign = m_sig < 0 ? -1 : 1;
+  int64_t sign = SREAL_SIGN (m_sig);
 
   if (m_exp <= -SREAL_BITS)
     return 0;
   if (m_exp >= SREAL_PART_BITS)
     return sign * INTTYPE_MAXIMUM (int64_t);
   if (m_exp > 0)
-    return m_sig << m_exp;
+    return sign * (SREAL_ABS (m_sig) << m_exp);
   if (m_exp < 0)
     return m_sig >> -m_exp;
   return m_sig;
@@ -229,7 +229,8 @@ sreal::operator/ (const sreal &other) const
 {
   gcc_checking_assert (other.m_sig != 0);
   sreal r;
-  r.m_sig = (m_sig << SREAL_PART_BITS) / other.m_sig;
+  r.m_sig
+    = SREAL_SIGN (m_sig) * (SREAL_ABS (m_sig) << SREAL_PART_BITS) / other.m_sig;
   r.m_exp = m_exp - other.m_exp - SREAL_PART_BITS;
   r.normalize ();
   return r;
@@ -334,6 +335,18 @@ sreal_verify_shifting (void)
     verify_shifting (values[i]);
 }
 
+/* Verify division by (of) a negative value.  */
+
+static void
+sreal_verify_negative_division (void)
+{
+  ASSERT_EQ (sreal (1) / sreal (1), sreal (1));
+  ASSERT_EQ (sreal (-1) / sreal (-1), sreal (1));
+  ASSERT_EQ (sreal (-1234567) / sreal (-1234567), sreal (1));
+  ASSERT_EQ (sreal (-1234567) / sreal (1234567), sreal (-1));
+  ASSERT_EQ (sreal (1234567) / sreal (-1234567), sreal (-1));
+}
+
 /* Run all of the selftests within this file.  */
 
 void sreal_c_tests ()
@@ -341,6 +354,7 @@ void sreal_c_tests ()
   sreal_verify_basics ();
   sreal_verify_arithmetics ();
   sreal_verify_shifting ();
+  sreal_verify_negative_division ();
 }
 
 } // namespace selftest

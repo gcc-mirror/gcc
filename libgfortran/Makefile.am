@@ -987,7 +987,7 @@ $(i_product_c): m4/product.m4 $(I_M4_DEPS1)
 $(i_sum_c): m4/sum.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 sum.m4 > $@
 
-$(i_matmul_c): m4/matmul.m4 $(I_M4_DEPS)
+$(i_matmul_c): m4/matmul.m4 m4/matmul_internal.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $@
 
 $(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)

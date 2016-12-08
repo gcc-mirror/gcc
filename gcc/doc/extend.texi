@@ -5929,6 +5929,30 @@ int read_var (int i)
 @}
 @end smallexample
 
+Please notice that on these devices, there is no need for @code{progmem}
+at all.  Just use an appropriate linker description file like outlined below.
+
+@smallexample
+  .text :
+  @{ ...
+  @} > text
+  /* Leave .rodata in flash and add an offset of 0x4000 to all
+     addresses so that respective objects can be accessed by LD
+     instructions and open coded C/C++.  This means there is no
+     need for progmem in the source and no overhead by read-only
+     data in RAM.  */
+  .rodata ADDR(.text) + SIZEOF (.text) + 0x4000 :
+  @{
+    *(.rodata)
+    *(.rodata*)
+    *(.gnu.linkonce.r*)
+  @} AT> text
+  /* No more need to put .rodata into .data:
+     Removed all .rodata entries from .data.  */
+  .data :
+  @{ ...
+@end smallexample
+
 @end table
 
 @item io
@@ -6000,6 +6024,8 @@ warning like
 @end quotation
 
 @end itemize
+
+See also the @option{-mabsdata} @ref{AVR Options,command-line option}.
 
 @end table
 
@@ -11768,6 +11794,7 @@ instructions, but allow the compiler to schedule those calls.
 * ARM iWMMXt Built-in Functions::
 * ARM C Language Extensions (ACLE)::
 * ARM Floating Point Status and Control Intrinsics::
+* ARM ARMv8-M Security Extensions::
 * AVR Built-in Functions::
 * Blackfin Built-in Functions::
 * FR-V Built-in Functions::
@@ -12611,6 +12638,35 @@ processors with floating-point unit.
 @smallexample
 unsigned int __builtin_arm_get_fpscr ()
 void __builtin_arm_set_fpscr (unsigned int)
+@end smallexample
+
+@node ARM ARMv8-M Security Extensions
+@subsection ARM ARMv8-M Security Extensions
+
+GCC implements the ARMv8-M Security Extensions as described in the ARMv8-M
+Security Extensions: Requiremenets on Development Tools Engineering
+Specification, which can be found at
+@uref{http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf}.
+
+As part of the Security Extensions GCC implements two new function attributes:
+@code{cmse_nonsecure_entry} and @code{cmse_nonsecure_call}.
+
+As part of the Security Extensions GCC implements the intrinsics below.  FPTR
+is used here to mean any function pointer type.
+
+@smallexample
+cmse_address_info_t cmse_TT (void *)
+cmse_address_info_t cmse_TT_fptr (FPTR)
+cmse_address_info_t cmse_TTT (void *)
+cmse_address_info_t cmse_TTT_fptr (FPTR)
+cmse_address_info_t cmse_TTA (void *)
+cmse_address_info_t cmse_TTA_fptr (FPTR)
+cmse_address_info_t cmse_TTAT (void *)
+cmse_address_info_t cmse_TTAT_fptr (FPTR)
+void * cmse_check_address_range (void *, size_t, int)
+typeof(p) cmse_nsfptr_create (FPTR p)
+intptr_t cmse_is_nsfptr (FPTR)
+int cmse_nonsecure_caller (void)
 @end smallexample
 
 @node AVR Built-in Functions

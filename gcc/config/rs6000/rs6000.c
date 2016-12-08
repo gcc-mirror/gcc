@@ -6891,25 +6891,43 @@ rs6000_expand_vector_init (rtx target, rtx vals)
   /* Double word values on VSX can use xxpermdi or lxvdsx.  */
   if (VECTOR_MEM_VSX_P (mode) && (mode == V2DFmode || mode == V2DImode))
     {
-      rtx op0 = XVECEXP (vals, 0, 0);
-      rtx op1 = XVECEXP (vals, 0, 1);
+      rtx op[2];
+      size_t i;
+      size_t num_elements = all_same ? 1 : 2;
+      for (i = 0; i < num_elements; i++)
+	{
+	  op[i] = XVECEXP (vals, 0, i);
+	  /* Just in case there is a SUBREG with a smaller mode, do a
+	     conversion.  */
+	  if (GET_MODE (op[i]) != inner_mode)
+	    {
+	      rtx tmp = gen_reg_rtx (inner_mode);
+	      convert_move (tmp, op[i], 0);
+	      op[i] = tmp;
+	    }
+	  /* Allow load with splat double word.  */
+	  else if (MEM_P (op[i]))
+	    {
+	      if (!all_same)
+		op[i] = force_reg (inner_mode, op[i]);
+	    }
+	  else if (!REG_P (op[i]))
+	    op[i] = force_reg (inner_mode, op[i]);
+	}
+
       if (all_same)
 	{
-	  if (!MEM_P (op0) && !REG_P (op0))
-	    op0 = force_reg (inner_mode, op0);
 	  if (mode == V2DFmode)
-	    emit_insn (gen_vsx_splat_v2df (target, op0));
+	    emit_insn (gen_vsx_splat_v2df (target, op[0]));
 	  else
-	    emit_insn (gen_vsx_splat_v2di (target, op0));
+	    emit_insn (gen_vsx_splat_v2di (target, op[0]));
 	}
       else
 	{
-	  op0 = force_reg (inner_mode, op0);
-	  op1 = force_reg (inner_mode, op1);
 	  if (mode == V2DFmode)
-	    emit_insn (gen_vsx_concat_v2df (target, op0, op1));
+	    emit_insn (gen_vsx_concat_v2df (target, op[0], op[1]));
 	  else
-	    emit_insn (gen_vsx_concat_v2di (target, op0, op1));
+	    emit_insn (gen_vsx_concat_v2di (target, op[0], op[1]));
 	}
       return;
     }
@@ -25460,7 +25478,7 @@ rs6000_reg_live_or_pic_offset_p (int reg)
       if (TARGET_TOC && TARGET_MINIMAL_TOC
 	  && (crtl->calls_eh_return
 	      || df_regs_ever_live_p (reg)
-	      || get_pool_size ()))
+	      || !constant_pool_empty_p ()))
 	return true;
 
       if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)
@@ -26266,7 +26284,7 @@ rs6000_stack_info (void)
 #ifdef TARGET_RELOCATABLE
       || (DEFAULT_ABI == ABI_V4
 	  && (TARGET_RELOCATABLE || flag_pic > 1)
-	  && get_pool_size () != 0)
+	  && !constant_pool_empty_p ())
 #endif
       || rs6000_ra_ever_killed ())
     info->lr_save_p = 1;
@@ -27174,6 +27192,7 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
      Call simplify_replace_rtx on the SETs rather than the whole insn
      so as to leave the other stuff alone (for example USE of r12).  */
 
+  set_used_flags (pat);
   if (GET_CODE (pat) == SET)
     {
       if (repl)
@@ -27207,8 +27226,7 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
     gcc_unreachable ();
 
   RTX_FRAME_RELATED_P (insn) = 1;
-  if (repl || reg2)
-    add_reg_note (insn, REG_FRAME_RELATED_EXPR, pat);
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, copy_rtx_if_shared (pat));
 
   return insn;
 }
@@ -28043,7 +28061,8 @@ rs6000_emit_prologue (void)
       cfun->machine->r2_setup_needed = df_regs_ever_live_p (TOC_REGNUM);
 
       /* With -mminimal-toc we may generate an extra use of r2 below.  */
-      if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
+      if (TARGET_TOC && TARGET_MINIMAL_TOC
+	  && !constant_pool_empty_p ())
 	cfun->machine->r2_setup_needed = true;
     }
 
@@ -28898,7 +28917,8 @@ rs6000_emit_prologue (void)
 
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
   if (!TARGET_SINGLE_PIC_BASE
-      && ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
+      && ((TARGET_TOC && TARGET_MINIMAL_TOC
+	   && !constant_pool_empty_p ())
 	  || (DEFAULT_ABI == ABI_V4
 	      && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
 	      && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))))
@@ -34965,7 +34985,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   if (DEFAULT_ABI == ABI_V4
       && (TARGET_RELOCATABLE || flag_pic > 1)
       && !TARGET_SECURE_PLT
-      && (get_pool_size () != 0 || crtl->profile)
+      && (!constant_pool_empty_p () || crtl->profile)
       && uses_TOC ())
     {
       char buf[256];
@@ -37448,10 +37468,11 @@ static bool
 rs6000_can_eliminate (const int from, const int to)
 {
   return (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
-          ? ! frame_pointer_needed
-          : from == RS6000_PIC_OFFSET_TABLE_REGNUM
-            ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC || get_pool_size () == 0
-            : true);
+	  ? ! frame_pointer_needed
+	  : from == RS6000_PIC_OFFSET_TABLE_REGNUM
+	    ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC
+		|| constant_pool_empty_p ()
+	    : true);
 }
 
 /* Define the offset between two registers, FROM to be eliminated and its
@@ -38987,7 +39008,7 @@ rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
   if (!TARGET_SINGLE_PIC_BASE
       && TARGET_TOC
       && TARGET_MINIMAL_TOC
-      && get_pool_size () != 0)
+      && !constant_pool_empty_p ())
     add_to_hard_reg_set (&set->set, Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
   if (cfun->machine->split_stack_argp_used)
     add_to_hard_reg_set (&set->set, Pmode, 12);
@@ -40675,7 +40696,7 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
 	    if (GET_CODE (use_body) != SET
 		|| GET_CODE (SET_SRC (use_body)) != UNSPEC
 		|| XINT (SET_SRC (use_body), 1) != UNSPEC_VSX_XXSPLTW
-		|| XEXP (XEXP (SET_SRC (use_body), 0), 1) != const0_rtx)
+		|| XVECEXP (SET_SRC (use_body), 0, 1) != const0_rtx)
 	      return 0;
 	  }
 	}

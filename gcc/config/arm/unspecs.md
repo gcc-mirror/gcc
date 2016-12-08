@@ -84,6 +84,8 @@
   UNSPEC_VRINTA         ; Represent a float to integral float rounding
                         ; towards nearest, ties away from zero.
   UNSPEC_PROBE_STACK    ; Probe stack memory reference
+  UNSPEC_NONSECURE_MEM	; Represent non-secure memory in ARMv8-M with
+			; security extension
 ])
 
 (define_c_enum "unspec" [

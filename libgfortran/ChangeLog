@@ -1,3 +1,31 @@
+2016-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78379
+	* Makefile.am:  Add dependence of m4/matmul_internal_m4 to
+	mamtul files..
+	* Makefile.in:  Regenerated.
+	* acinclude.m4:  Check for AVX, AVX2 and AVX512F.
+	* config.h.in:  Add HAVE_AVX, HAVE_AVX2 and HAVE_AVX512F.
+	* configure:  Regenerated.
+	* configure.ac:  Use checks for AVX, AVX2 and AVX_512F.
+	* m4/matmul_internal.m4:  New file. working part of matmul.m4.
+	* m4/matmul.m4:  Implement architecture-specific switching
+	for AVX, AVX2 and AVX512F by including matmul_internal.m4
+	multiple times.
+	* generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+
 2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/single.c (_gfortran_caf_get_by_ref): Prevent compile time

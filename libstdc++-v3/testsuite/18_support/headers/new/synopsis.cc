@@ -21,18 +21,25 @@
 
 namespace std {
   class bad_alloc;
+  class bad_array_new_length;
   struct nothrow_t;
   extern const nothrow_t nothrow;
   typedef void (*new_handler)();
-  new_handler set_new_handler(new_handler new_p) throw();
   new_handler get_new_handler() noexcept;
+  new_handler set_new_handler(new_handler new_p) noexcept;
+
+#if __cplusplus > 201402L
+  enum class align_val_t : size_t;
+  // static constexpr size_t hardware_destructive_interference_size;
+  // static constexpr size_t hardware_constructive_interference_size;
+#endif
 }
 
-void* operator new(std::size_t size) throw(std::bad_alloc);
-void* operator new(std::size_t size, const std::nothrow_t&) throw();
+void* operator new(std::size_t size);
+void* operator new(std::size_t size, const std::nothrow_t&) noexcept;
 void  operator delete(void* ptr) throw();
 void  operator delete(void* ptr, const std::nothrow_t&) throw();
-void* operator new[](std::size_t size) throw(std::bad_alloc);
+void* operator new[](std::size_t size);
 void* operator new[](std::size_t size, const std::nothrow_t&) throw();
 void  operator delete[](void* ptr) throw();
 void  operator delete[](void* ptr, const std::nothrow_t&) throw();
@@ -41,3 +48,32 @@ void* operator new  (std::size_t size, void* ptr) throw();
 void* operator new[](std::size_t size, void* ptr) throw();
 void  operator delete  (void* ptr, void*) throw();
 void  operator delete[](void* ptr, void*) throw();
+
+#if __cplusplus >= 201402L
+// C++14 sized deallocation functions
+void  operator delete(void* ptr, std::size_t size) noexcept;
+void  operator delete(void* ptr, std::size_t size,
+                      const std::nothrow_t&) noexcept;
+void  operator delete[](void* ptr, std::size_t size) noexcept;
+void  operator delete[](void* ptr, std::size_t size,
+                        const std::nothrow_t&) noexcept;
+#endif
+
+#if __cplusplus > 201402L
+// C++17 (de)allocation functions for types with new-extended alignment
+void* operator new(std::size_t, std::align_val_t);
+void* operator new(std::size_t, std::align_val_t,
+                   const std::nothrow_t&) noexcept;
+void  operator delete(void*, std::align_val_t) noexcept;
+void  operator delete(void*, std::size_t, std::align_val_t) noexcept;
+void  operator delete(void*, std::align_val_t,
+                      const std::nothrow_t&) noexcept;
+
+void* operator new[](std::size_t, std::align_val_t);
+void* operator new[](std::size_t, std::align_val_t,
+                     const std::nothrow_t&) noexcept;
+void  operator delete[](void*, std::align_val_t) noexcept;
+void  operator delete[](void*, std::size_t, std::align_val_t) noexcept;
+void  operator delete[](void*, std::align_val_t,
+                        const std::nothrow_t&) noexcept;
+#endif

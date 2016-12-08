@@ -54,7 +54,9 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     interface_types_(),
     specific_type_functions_(),
     specific_type_functions_are_written_(false),
-    named_types_are_converted_(false)
+    named_types_are_converted_(false),
+    analysis_sets_(),
+    gc_roots_()
 {
   const Location loc = Linemap::predeclared_location();
 
@@ -750,10 +752,9 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   Expression_list* roots_init = new Expression_list();
 
-  size_t i = 0;
   for (std::vector<Named_object*>::const_iterator p = var_gc.begin();
        p != var_gc.end();
-       ++p, ++i)
+       ++p)
     {
       Expression_list* init = new Expression_list();
 
@@ -769,6 +770,27 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
       Expression* root_ctor =
           Expression::make_struct_composite_literal(root_type, init, no_loc);
+      roots_init->push_back(root_ctor);
+    }
+
+  for (std::vector<Expression*>::const_iterator p = this->gc_roots_.begin();
+       p != this->gc_roots_.end();
+       ++p)
+    {
+      Expression_list *init = new Expression_list();
+
+      Expression* expr = *p;
+      Location eloc = expr->location();
+      init->push_back(expr);
+
+      Type* type = expr->type()->points_to();
+      go_assert(type != NULL);
+      Expression* size =
+	Expression::make_type_info(type, Expression::TYPE_INFO_SIZE);
+      init->push_back(size);
+
+      Expression* root_ctor =
+	Expression::make_struct_composite_literal(root_type, init, eloc);
       roots_init->push_back(root_ctor);
     }
 
@@ -1347,7 +1369,7 @@ Gogo::write_globals()
                 {
                   Location loc = var->location();
                   Bexpression* var_expr =
-                      this->backend()->var_expression(bvar, loc);
+                      this->backend()->var_expression(bvar, VE_lvalue, loc);
                   var_init_stmt =
                       this->backend()->assignment_statement(var_expr, var_binit,
                                                             loc);
@@ -5712,7 +5734,8 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
     {
       Named_object* no = (*this->results_)[i];
       Bvariable* bvar = no->get_backend_variable(gogo, named_function);
-      Bexpression* val = gogo->backend()->var_expression(bvar, location);
+      Bexpression* val = gogo->backend()->var_expression(bvar, VE_rvalue,
+                                                         location);
       if (no->result_var_value()->is_in_heap())
 	{
 	  Btype* bt = no->result_var_value()->type()->get_backend(gogo);
@@ -6541,7 +6564,8 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
           Expression* val_expr =
               Expression::make_cast(this->type(), this->init_, loc);
           Bexpression* val = val_expr->get_backend(&context);
-          Bexpression* var_ref = gogo->backend()->var_expression(var_decl, loc);
+          Bexpression* var_ref =
+              gogo->backend()->var_expression(var_decl, VE_lvalue, loc);
           decl_init = gogo->backend()->assignment_statement(var_ref, val, loc);
 	}
     }

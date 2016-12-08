@@ -38,6 +38,12 @@
     (match_test "GENERAL_REGNO_P (REGNO (op))")
     (match_operand 0 "nonimmediate_operand")))
 
+;; True if the operand is a general operand with GENERAL class register.
+(define_predicate "general_gr_operand"
+  (if_then_else (match_code "reg")
+    (match_test "GENERAL_REGNO_P (REGNO (op))")
+    (match_operand 0 "general_operand")))
+
 ;; True if the operand is an MMX register.
 (define_predicate "mmx_reg_operand"
   (and (match_code "reg")

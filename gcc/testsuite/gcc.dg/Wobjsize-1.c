@@ -10,6 +10,6 @@ int main(int argc, char **argv)
   return 0;
 }
 
-/* { dg-warning "will always overflow destination buffer" "" { target *-*-* } 6 } */
+/* { dg-warning "writing" "" { target *-*-* } 6 } */
 /* { dg-message "file included" "included" { target *-*-* } 0 } */
 /* { dg-message "inlined from" "inlined" { target *-*-* } 0 } */

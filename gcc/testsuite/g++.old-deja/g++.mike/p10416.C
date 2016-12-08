@@ -5,5 +5,9 @@
 
 class not_ok {
 public:
-  void f() throw(int) { }
+  void f()
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
+  { }
 };

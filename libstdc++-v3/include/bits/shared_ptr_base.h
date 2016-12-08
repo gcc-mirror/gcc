@@ -983,8 +983,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       element_type*
       operator->() const noexcept
       {
-	_GLIBCXX_DEBUG_PEDASSERT(_M_get() != nullptr);
-	return static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get();
+	auto __ptr = static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get();
+	_GLIBCXX_DEBUG_PEDASSERT(__ptr != nullptr);
+	return __ptr;
       }
     };
 

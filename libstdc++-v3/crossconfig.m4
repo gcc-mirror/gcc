@@ -9,6 +9,32 @@ case "${host}" in
     # This is a freestanding configuration; there is nothing to do here.
     ;;
 
+  avr*-*-*)
+    AC_DEFINE(HAVE_ACOSF)
+    AC_DEFINE(HAVE_ASINF)
+    AC_DEFINE(HAVE_ATAN2F)
+    AC_DEFINE(HAVE_ATANF)
+    AC_DEFINE(HAVE_CEILF)
+    AC_DEFINE(HAVE_COSF)
+    AC_DEFINE(HAVE_COSHF)
+    AC_DEFINE(HAVE_EXPF)
+    AC_DEFINE(HAVE_FABSF)
+    AC_DEFINE(HAVE_FLOORF)
+    AC_DEFINE(HAVE_FMODF)
+    AC_DEFINE(HAVE_FREXPF)
+    AC_DEFINE(HAVE_SQRTF)
+    AC_DEFINE(HAVE_HYPOTF)
+    AC_DEFINE(HAVE_LDEXPF)
+    AC_DEFINE(HAVE_LOG10F)
+    AC_DEFINE(HAVE_LOGF)
+    AC_DEFINE(HAVE_MODFF)
+    AC_DEFINE(HAVE_POWF)
+    AC_DEFINE(HAVE_SINF)
+    AC_DEFINE(HAVE_SINHF)
+    AC_DEFINE(HAVE_TANF)
+    AC_DEFINE(HAVE_TANHF)
+    ;;
+
   mips*-sde-elf*)
     # These definitions are for the SDE C library rather than newlib.
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -157,6 +183,7 @@ case "${host}" in
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1)
     GCC_CHECK_TLS
     AC_CHECK_FUNCS(__cxa_thread_atexit_impl)
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AM_ICONV
     ;;
   *-mingw32*)

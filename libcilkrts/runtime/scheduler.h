@@ -85,7 +85,10 @@ __CILKRTS_BEGIN_EXTERN_C
  * Print debugging messages and assertions for parallel reducers. 0 is
  * no debugging.  A higher value generates more output.
  */
+
+#ifndef REDPAR_DEBUG
 #define REDPAR_DEBUG 0
+#endif
 
 /**
  * @brief Lock the worker mutex to allow exclusive access to the

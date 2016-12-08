@@ -1,3 +1,8 @@
+2016-12-01  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Don't use pkg-config to check for bdw-gc.
+	* configure: Regenerate.
+
 2016-11-30  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Set BDW_GC_CFLAGS and BDW_GC_LIBS after checking

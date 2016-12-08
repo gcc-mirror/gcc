@@ -119,6 +119,7 @@ extern void s390_expand_atomic (machine_mode, enum rtx_code,
 extern void s390_expand_tbegin (rtx, rtx, rtx, bool);
 extern void s390_expand_vec_compare (rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_compare_cc (rtx, enum rtx_code, rtx, rtx, bool);
+extern enum rtx_code s390_reverse_condition (machine_mode, enum rtx_code);
 extern void s390_expand_vcond (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_init (rtx, rtx);
 extern rtx s390_return_addr_rtx (int, rtx);

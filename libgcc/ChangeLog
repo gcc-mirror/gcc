@@ -1,3 +1,30 @@
+2016-12-05  Cupertino Miranda  <cmiranda@synopsys.com>
+
+	* config.host (arc*-*-linux-uclibc*): Use default extra
+	objects. Include linux-android header.
+	* config/arc/crti.S (_init): Declare symbol as function.
+	(_fini): Likewise.
+
+2016-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78379
+	* config/i386/cpuinfo.c:  Move denums for processor vendors,
+	processor type, processor subtypes and declaration of
+	struct __processor_model into
+	* config/i386/cpuinfo.h:  New header file.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/cmse_nonsecure_call.S: New.
+	* config/arm/t-arm: Compile cmse_nonsecure_call.S
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/t-arm (HAVE_CMSE): New.
+	* config/arm/cmse.c: New.
+
 2016-11-28  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
 	PR gcc/74748

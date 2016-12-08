@@ -323,7 +323,7 @@ arc*-*-*)
 arm*-*-*)
 	cpu_type=arm
 	extra_objs="arm-builtins.o aarch-common.o"
-	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h"
+	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
@@ -831,6 +831,9 @@ case ${target} in
 *-*-uclinux*)
   extra_options="$extra_options gnu-user.opt"
   use_gcc_stdint=wrap
+  case ${enable_threads} in
+    "" | yes | posix) thread_file='posix' ;;
+  esac
   tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC SINGLE_LIBC"
   ;;
 *-*-rdos*)
@@ -1023,7 +1026,7 @@ arc*-*-elf*)
 	;;
 arc*-*-linux-uclibc*)
 	extra_headers="arc-simd.h"
-	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file}"
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} arc/t-uClibc arc/t-arc"
 	tm_defines="${tm_defines} TARGET_SDATA_DEFAULT=0"
 	tm_defines="${tm_defines} TARGET_MMEDIUM_CALLS_DEFAULT=1"
@@ -2443,6 +2446,14 @@ powerpc*-*-linux*)
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
+	# Assume modern glibc if not targeting Android nor uclibc.
+	case ${target} in
+	    *-*-*android*|*-*-*uclibc*|*-*-*musl*)
+		    ;;
+	    *)
+		default_gnu_indirect_function=yes
+		    ;;
+	esac
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"

@@ -2668,6 +2668,14 @@ unsigned int
 unshare_all_rtl (void)
 {
   unshare_all_rtl_1 (get_insns ());
+
+  for (tree decl = DECL_ARGUMENTS (cfun->decl); decl; decl = DECL_CHAIN (decl))
+    {
+      if (DECL_RTL_SET_P (decl))
+	SET_DECL_RTL (decl, copy_rtx_if_shared (DECL_RTL (decl)));
+      DECL_INCOMING_RTL (decl) = copy_rtx_if_shared (DECL_INCOMING_RTL (decl));
+    }
+
   return 0;
 }
 
@@ -2710,8 +2718,9 @@ verify_rtx_sharing (rtx orig, rtx insn)
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
+      if (REG_P (XEXP (x, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (x, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (x, 0))))
 	return;
       break;
 
@@ -2962,8 +2971,9 @@ repeat:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
+      if (REG_P (XEXP (x, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (x, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (x, 0))))
 	return;
       break;
 
@@ -5513,8 +5523,9 @@ copy_insn_1 (rtx orig)
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (orig, 0)) == REGNO (XEXP (orig, 0)))
+      if (REG_P (XEXP (orig, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (orig, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (orig, 0))))
 	return orig;
       break;
 
@@ -5543,10 +5554,6 @@ copy_insn_1 (rtx orig)
      not be copied.  That is the sensible default behavior, and forces
      us to explicitly document why we are *not* copying a flag.  */
   copy = shallow_copy_rtx (orig);
-
-  /* We do not copy the USED flag, which is used as a mark bit during
-     walks over the RTL.  */
-  RTX_FLAG (copy, used) = 0;
 
   /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
   if (INSN_P (orig))
@@ -6284,5 +6291,17 @@ need_atomic_barrier_p (enum memmodel model, bool pre)
       gcc_unreachable ();
     }
 }
+
+/* Initialize fields of rtl_data related to stack alignment.  */
+
+void
+rtl_data::init_stack_alignment ()
+{
+  stack_alignment_needed = STACK_BOUNDARY;
+  max_used_stack_slot_alignment = STACK_BOUNDARY;
+  stack_alignment_estimated = 0;
+  preferred_stack_boundary = STACK_BOUNDARY;
+}
+
 
 #include "gt-emit-rtl.h"

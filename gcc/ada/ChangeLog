@@ -1,3 +1,34 @@
+2016-12-07  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): When they are global,
+	consider ___XR GNAT encodings variables for renamings as static so
+	they have a location in the debug info.
+
+2016-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Translate
+	System.Address into ptr_type_node for every foreign convention.
+	(gnat_to_gnu_subprog_type): Likewise for result and parameter types.
+	(gnat_to_gnu_param): Do not do it here for GCC builtins.
+	(intrin_return_compatible_p): Likewise.
+
+2016-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Enumeration_Subtype>:
+	Also call finish_character_type on Character subtypes.
+	* gcc-interface/utils.c (finish_character_type): Deal with subtypes.
+
+2016-12-05  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR ada/48835
+	* gcc-interface/Makefile.in: Add support for m68k-linux.
+	* system-linux-m68k.ads: New file.
+
+2016-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-darwin-ppc.ads (Support_Atomic_Primitives): Set to True only
+	if the word size is 64.
+
 2016-11-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_prag.adb, sem_ch6.adb: Minor reformatting and typo fixes.

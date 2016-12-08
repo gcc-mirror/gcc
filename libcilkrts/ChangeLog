@@ -1,3 +1,10 @@
+2016-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/68945
+	Merge from upstream, version 2.0.4467.0.
+	Fix typo in git URL.
+	* aclocal.m4, configure, Makefile.in: Regenerate.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.

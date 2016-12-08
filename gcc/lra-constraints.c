@@ -1109,9 +1109,9 @@ emit_spill_move (bool to_p, rtx mem_pseudo, rtx val)
 	 dependent macro HARD_REGNO_CALLER_SAVE_MODE.  */
       if (! MEM_P (val))
 	{
-	  val = gen_rtx_SUBREG (GET_MODE (mem_pseudo),
-				GET_CODE (val) == SUBREG ? SUBREG_REG (val) : val,
-				0);
+	  val = gen_lowpart_SUBREG (GET_MODE (mem_pseudo),
+				    GET_CODE (val) == SUBREG
+				    ? SUBREG_REG (val) : val);
 	  LRA_SUBREG_P (val) = 1;
 	}
       else

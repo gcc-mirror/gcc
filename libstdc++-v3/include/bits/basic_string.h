@@ -2251,7 +2251,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  npos.
       */
       size_type
-      find(const _CharT* __s, size_type __pos, size_type __n) const;
+      find(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find position of a string.
@@ -2265,7 +2266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find(__str.data(), __pos, __str.size()); }
 
 #if __cplusplus > 201402L
@@ -2291,7 +2292,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  it begins.  If not found, returns npos.
       */
       size_type
-      find(const _CharT* __s, size_type __pos = 0) const
+      find(const _CharT* __s, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find(__s, __pos, traits_type::length(__s));
@@ -2322,7 +2323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       rfind(const basic_string& __str, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->rfind(__str.data(), __pos, __str.size()); }
 
 #if __cplusplus > 201402L
@@ -2350,7 +2351,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  npos.
       */
       size_type
-      rfind(const _CharT* __s, size_type __pos, size_type __n) const;
+      rfind(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find last position of a C string.
@@ -2395,7 +2397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_first_of(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_first_of(__str.data(), __pos, __str.size()); }
 
 #if __cplusplus > 201402L
@@ -2423,7 +2425,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns npos.
       */
       size_type
-      find_first_of(const _CharT* __s, size_type __pos, size_type __n) const;
+      find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find position of a character of C string.
@@ -2437,6 +2440,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_first_of(const _CharT* __s, size_type __pos = 0) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_first_of(__s, __pos, traits_type::length(__s));
@@ -2471,7 +2475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_last_of(const basic_string& __str, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_last_of(__str.data(), __pos, __str.size()); }
 
 #if __cplusplus > 201402L
@@ -2499,7 +2503,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns npos.
       */
       size_type
-      find_last_of(const _CharT* __s, size_type __pos, size_type __n) const;
+      find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find last position of a character of C string.
@@ -2513,6 +2518,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_last_of(const _CharT* __s, size_type __pos = npos) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_last_of(__s, __pos, traits_type::length(__s));
@@ -2546,7 +2552,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_first_not_of(__str.data(), __pos, __str.size()); }
 
 #if __cplusplus > 201402L
@@ -2575,7 +2581,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos,
-			size_type __n) const;
+			size_type __n) const _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find position of a character not in C string.
@@ -2589,6 +2595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos = 0) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_first_not_of(__s, __pos, traits_type::length(__s));
@@ -2606,7 +2613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(_CharT __c, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT;
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find last position of a character not in string.
@@ -2621,7 +2628,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(const basic_string& __str, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_last_not_of(__str.data(), __pos, __str.size()); }
 
 #if __cplusplus > 201402L
@@ -2650,7 +2657,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos,
-		       size_type __n) const;
+		       size_type __n) const _GLIBCXX_NOEXCEPT;
       /**
        *  @brief  Find last position of a character not in C string.
        *  @param __s  C string containing characters to avoid.
@@ -2664,6 +2671,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos = npos) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_last_not_of(__s, __pos, traits_type::length(__s));
@@ -2681,7 +2689,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(_CharT __c, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT;
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Get a substring.
@@ -2841,7 +2849,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  ordered first.
       */
       int
-      compare(const _CharT* __s) const;
+      compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 5 String::compare specification questionable
@@ -4787,7 +4795,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  npos.
       */
       size_type
-      find(const _CharT* __s, size_type __pos, size_type __n) const;
+      find(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find position of a string.
@@ -4801,7 +4810,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find(__str.data(), __pos, __str.size()); }
 
       /**
@@ -4815,7 +4824,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  it begins.  If not found, returns npos.
       */
       size_type
-      find(const _CharT* __s, size_type __pos = 0) const
+      find(const _CharT* __s, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find(__s, __pos, traits_type::length(__s));
@@ -4846,7 +4855,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       rfind(const basic_string& __str, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->rfind(__str.data(), __pos, __str.size()); }
 
       /**
@@ -4862,7 +4871,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  npos.
       */
       size_type
-      rfind(const _CharT* __s, size_type __pos, size_type __n) const;
+      rfind(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find last position of a C string.
@@ -4875,7 +4885,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  where it begins.  If not found, returns npos.
       */
       size_type
-      rfind(const _CharT* __s, size_type __pos = npos) const
+      rfind(const _CharT* __s, size_type __pos = npos) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->rfind(__s, __pos, traits_type::length(__s));
@@ -4907,7 +4917,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_first_of(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_first_of(__str.data(), __pos, __str.size()); }
 
       /**
@@ -4923,7 +4933,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  returns npos.
       */
       size_type
-      find_first_of(const _CharT* __s, size_type __pos, size_type __n) const;
+      find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find position of a character of C string.
@@ -4937,6 +4948,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_first_of(const _CharT* __s, size_type __pos = 0) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_first_of(__s, __pos, traits_type::length(__s));
@@ -4971,7 +4983,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_last_of(const basic_string& __str, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_last_of(__str.data(), __pos, __str.size()); }
 
       /**
@@ -4987,7 +4999,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  returns npos.
       */
       size_type
-      find_last_of(const _CharT* __s, size_type __pos, size_type __n) const;
+      find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find last position of a character of C string.
@@ -5001,6 +5014,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_last_of(const _CharT* __s, size_type __pos = npos) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_last_of(__s, __pos, traits_type::length(__s));
@@ -5034,7 +5048,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_first_not_of(__str.data(), __pos, __str.size()); }
 
       /**
@@ -5051,7 +5065,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos,
-			size_type __n) const;
+			size_type __n) const _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find position of a character not in C string.
@@ -5065,6 +5079,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos = 0) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_first_not_of(__s, __pos, traits_type::length(__s));
@@ -5082,7 +5097,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_first_not_of(_CharT __c, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT;
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Find last position of a character not in string.
@@ -5097,7 +5112,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(const basic_string& __str, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT
+      _GLIBCXX_NOEXCEPT
       { return this->find_last_not_of(__str.data(), __pos, __str.size()); }
 
       /**
@@ -5114,7 +5129,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos,
-		       size_type __n) const;
+		       size_type __n) const _GLIBCXX_NOEXCEPT;
       /**
        *  @brief  Find last position of a character not in C string.
        *  @param __s  C string containing characters to avoid.
@@ -5128,6 +5143,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos = npos) const
+      _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_string(__s);
 	return this->find_last_not_of(__s, __pos, traits_type::length(__s));
@@ -5145,7 +5161,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       size_type
       find_last_not_of(_CharT __c, size_type __pos = npos) const
-	_GLIBCXX_NOEXCEPT;
+      _GLIBCXX_NOEXCEPT;
 
       /**
        *  @brief  Get a substring.
@@ -5255,7 +5271,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  ordered first.
       */
       int
-      compare(const _CharT* __s) const;
+      compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 5 String::compare specification questionable

@@ -6053,7 +6053,7 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 @MAINTAINER_MODE_TRUE@$(i_sum_c): m4/sum.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 sum.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_matmul_c): m4/matmul.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@$(i_matmul_c): m4/matmul.m4 m4/matmul_internal.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)

@@ -107,6 +107,9 @@ const char *current_iterator_name;
 
 static void validate_const_int (const char *);
 
+/* Global singleton.  */
+rtx_reader *rtx_reader_ptr = NULL;
+
 /* The mode and code iterator structures.  */
 static struct iterator_group modes, codes, ints, substs;
 
@@ -326,7 +329,7 @@ map_attr_string (const char *p)
    if any changes were needed, otherwise return STRING itself.  */
 
 const char *
-rtx_reader::apply_iterator_to_string (const char *string)
+md_reader::apply_iterator_to_string (const char *string)
 {
   char *base, *copy, *p, *start, *end;
   struct map_value *v;
@@ -365,7 +368,7 @@ rtx_reader::apply_iterator_to_string (const char *string)
    values into any strings.  */
 
 rtx
-rtx_reader::copy_rtx_for_iterators (rtx original)
+md_reader::copy_rtx_for_iterators (rtx original)
 {
   const char *format_ptr, *p;
   int i, j;
@@ -735,7 +738,7 @@ atoll (const char *p)
    slipped in at the beginning of the sequence of MD files read by
    most of the other generators.  */
 void
-rtx_reader::read_conditions ()
+md_reader::read_conditions ()
 {
   int c;
 
@@ -834,8 +837,8 @@ record_attribute_use (struct iterator_group *group, void *ptr,
    callback.  */
 
 void
-rtx_reader::record_potential_iterator_use (struct iterator_group *group,
-					   void *ptr, const char *name)
+md_reader::record_potential_iterator_use (struct iterator_group *group,
+					  void *ptr, const char *name)
 {
   struct mapping *m;
   size_t len;
@@ -869,7 +872,7 @@ rtx_reader::record_potential_iterator_use (struct iterator_group *group,
    (which belongs to GROUP) and return it.  */
 
 struct mapping *
-rtx_reader::read_mapping (struct iterator_group *group, htab_t table)
+md_reader::read_mapping (struct iterator_group *group, htab_t table)
 {
   struct md_name name;
   struct mapping *m;
@@ -1072,7 +1075,7 @@ rtx_reader::read_rtx (const char *rtx_name, vec<rtx> *rtxen)
       return true;
     }
 
-  apply_iterators (read_rtx_code (rtx_name), rtxen);
+  apply_iterators (rtx_reader_ptr->read_rtx_code (rtx_name), rtxen);
   iterator_uses.truncate (0);
   attribute_uses.truncate (0);
 
@@ -1270,6 +1273,7 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
       {
 	char *stringbuf;
 	int star_if_braced;
+	struct obstack *string_obstack = get_string_obstack ();
 
 	c = read_skip_spaces ();
 	unread_char (c);
@@ -1306,11 +1310,11 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 	    for (slash = fn; *slash; slash ++)
 	      if (*slash == '/' || *slash == '\\' || *slash == ':')
 		fn = slash + 1;
-	    obstack_1grow (&m_string_obstack, '*');
-	    obstack_grow (&m_string_obstack, fn, strlen (fn));
+	    obstack_1grow (string_obstack, '*');
+	    obstack_grow (string_obstack, fn, strlen (fn));
 	    sprintf (line_name, ":%d", get_lineno ());
-	    obstack_grow (&m_string_obstack, line_name, strlen (line_name)+1);
-	    stringbuf = XOBFINISH (&m_string_obstack, char *);
+	    obstack_grow (string_obstack, line_name, strlen (line_name)+1);
+	    stringbuf = XOBFINISH (string_obstack, char *);
 	  }
 
 	/* Find attr-names in the string.  */
@@ -1446,4 +1450,21 @@ rtx_reader::read_rtx_variadic (rtx form)
   while (c == '(');
   unread_char (c);
   return form;
+}
+
+/* Constructor for class rtx_reader.  */
+
+rtx_reader::rtx_reader ()
+: md_reader ()
+{
+  /* Set the global singleton pointer.  */
+  rtx_reader_ptr = this;
+}
+
+/* Destructor for class rtx_reader.  */
+
+rtx_reader::~rtx_reader ()
+{
+  /* Clear the global singleton pointer.  */
+  rtx_reader_ptr = NULL;
 }

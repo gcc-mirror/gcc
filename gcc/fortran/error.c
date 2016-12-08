@@ -1226,6 +1226,7 @@ gfc_warning_check (void)
       diagnostic_action_after_output (global_dc,
 				      warningcount_buffered
 				      ? DK_WARNING : DK_ERROR);
+      diagnostic_check_max_errors (global_dc, true);
     }
 }
 
@@ -1370,6 +1371,7 @@ gfc_error_check (void)
       gcc_assert (gfc_output_buffer_empty_p (pp_error_buffer));
       pp->buffer = tmp_buffer;
       diagnostic_action_after_output (global_dc, DK_ERROR);
+      diagnostic_check_max_errors (global_dc, true);
       return true;
     }
 

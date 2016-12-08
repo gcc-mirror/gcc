@@ -137,7 +137,8 @@ class Expression
     EXPRESSION_STRUCT_FIELD_OFFSET,
     EXPRESSION_LABEL_ADDR,
     EXPRESSION_CONDITIONAL,
-    EXPRESSION_COMPOUND
+    EXPRESSION_COMPOUND,
+    EXPRESSION_BACKEND
   };
 
   Expression(Expression_classification, Location);
@@ -484,6 +485,10 @@ class Expression
   // Make a compound expression.
   static Expression*
   make_compound(Expression*, Expression*, Location);
+
+  // Make a backend expression.
+  static Expression*
+  make_backend(Bexpression*, Type*, Location);
 
   // Return the expression classification.
   Expression_classification
@@ -1277,13 +1282,23 @@ class Var_expression : public Expression
  public:
   Var_expression(Named_object* variable, Location location)
     : Expression(EXPRESSION_VAR_REFERENCE, location),
-      variable_(variable)
+      variable_(variable), in_lvalue_pos_(VE_rvalue)
   { }
 
   // Return the variable.
   Named_object*
   named_object() const
   { return this->variable_; }
+
+  // Does this var expression appear in an lvalue (assigned-to) context?
+  bool
+  in_lvalue_pos() const
+  { return this->in_lvalue_pos_ == VE_lvalue; }
+
+  // Mark a var_expression as appearing in an lvalue context.
+  void
+  set_in_lvalue_pos()
+  { this->in_lvalue_pos_ = VE_lvalue; }
 
  protected:
   Expression*
@@ -1315,6 +1330,8 @@ class Var_expression : public Expression
  private:
   // The variable we are referencing.
   Named_object* variable_;
+  // Set to TRUE if var expression appears in lvalue context
+  Varexpr_context in_lvalue_pos_;
 };
 
 // A reference to a variable within an enclosing function.
@@ -3823,6 +3840,54 @@ class Compound_expression : public Expression
   Expression* init_;
   // The expression that is evaluated and returned.
   Expression* expr_;
+};
+
+// A backend expression.  This is a backend expression wrapped in an
+// Expression, for convenience during backend generation.
+
+class Backend_expression : public Expression
+{
+ public:
+  Backend_expression(Bexpression* bexpr, Type* type, Location location)
+    : Expression(EXPRESSION_BACKEND, location), bexpr_(bexpr), type_(type)
+  {}
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  // For now these are always valid static initializers.  If that
+  // changes we can change this.
+  bool
+  do_is_static_initializer() const
+  { return true; }
+
+  Type*
+  do_type()
+  { return this->type_; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  {
+    return new Backend_expression(this->bexpr_, this->type_, this->location());
+  }
+
+  Bexpression*
+  do_get_backend(Translate_context*)
+  { return this->bexpr_; }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The backend expression we are wrapping.
+  Bexpression* bexpr_;
+  // The type of the expression;
+  Type* type_;
 };
 
 // A numeric constant.  This is used both for untyped constants and

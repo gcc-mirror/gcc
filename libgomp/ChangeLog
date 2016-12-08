@@ -1,3 +1,17 @@
+2016-12-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgomp/config/rtems/pool.h (gomp_thread_pool_reservoir): Use
+	pthread_spinlock_t instead of gomp_mutex_t lock.
+	(gomp_get_thread_pool): Likewise.
+	(gomp_release_thread_pool): Likewise.
+	* libgomp/config/rtems/proc.c (allocate_thread_pool_reservoir):
+	Likewise.
+
+2016-12-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/pool.h (gomp_get_thread_pool): Return proper
+	thread pool in case nthreads == 1.
+
 2016-11-30  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/nvptx/env.c: Delete.

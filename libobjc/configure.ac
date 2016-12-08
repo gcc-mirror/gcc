@@ -18,8 +18,6 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-m4_include([../config/pkg.m4])
-
 AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libobjc)
 AC_CONFIG_SRCDIR([objc/objc.h])
@@ -223,12 +221,9 @@ no)
 *)
   AC_MSG_CHECKING([for bdw garbage collector])
   if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
-    dnl no bdw-gw options, fall back to the bdw-gc pkg-config module
-    PKG_CHECK_EXISTS(bdw-gc,
-      [AC_MSG_RESULT([using bdw-gc pkg-config module])
-       BDW_GC_CFLAGS=`$PKG_CONFIG --cflags bdw-gc`
-       BDW_GC_LIBS=`$PKG_CONFIG --libs bdw-gc`],
-      AC_MSG_ERROR([no --with-target-bdw-gc options and no bdw-gc pkg-config module found]))
+    dnl no bdw-gw options, assuming bdw-gc in default locations
+    BDW_GC_CFLAGS=
+    BDW_GC_LIBS="-lgc"
   else
     dnl bdw-gw options passed by configure flags
     if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then

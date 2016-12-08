@@ -1,4 +1,255 @@
-2016-11-31  Tim Shen  <timshen@google.com>
+2016-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR libstdc++/78264
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT_PARM): Turn _N into _NE.
+	(_GLIBCXX_NOEXCEPT_QUAL): Likewise.
+
+2016-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/path/construct/range.cc: Don't
+	use basic_string::front() when string might be empty.
+
+	* include/debug/array (swap): Add deleted overload.
+	* include/bits/stl_pair.h (swap): Remove redundant inline keyword
+	from deleted overload.
+	* include/bits/unique_ptr.h (swap): Likewise.
+	* include/std/array (swap): Likewise.
+	* include/std/optional (swap): Likewise.
+	* include/std/tuple (swap): Likewise.
+	* include/std/variant (swap): Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
+	PR libstdc++/71856
+	* doc/xml/manual/using.xml: Document macro.
+	* include/bits/c++config [_GLIBCXX_DEBUG || _GLIBCXX_PARALLEL]
+	(__glibcxx_assert): Rename to __glibcxx_assert_impl.
+	[_GLIBCXX_DEBUG] (__glibcxx_assert): Expand to __glibcxx_assert_impl.
+	* include/parallel/base.h [_GLIBCXX_PARALLEL_ASSERTIONS]
+	(_GLIBCXX_PARALLEL_ASSERT): Expand to __glibcxx_assert_impl.
+	[!_GLIBCXX_PARALLEL_ASSERTIONS] (_GLIBCXX_PARALLEL_ASSERT): Define as
+	empty.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_assert2.cc: New test.
+
+2016-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/util/testsuite_new_operators.h: Include testsuite_hooks.h.
+	(operator new): Use THROW macro.
+
+2016-12-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h
+	(_Rb_tree<>::_M_copy(_Const_Link_type, _Base_ptr)): Delete.
+	(_Rb_tree<>::_M_copy(const _Rb_tree&, _NodeGen&)): New.
+	(_Rb_tree<>::_M_copy(const _Rb_tree&)): New, use latter.
+	(_Rb_tree<>(const _Rb_tree&): Use latter.
+	(_Rb_tree<>(const _Rb_tree&, const allocator_type&)): Likewise.
+	(_Rb_tree<>::_M_move_data(_Rb_tree&, false_type)): Likewise.
+	(_Rb_tree<>::_M_move_assign(_Rb_tree&, false_type)): Likewise.
+	(_Rb_tree<>::operator=(const _Rb_tree&)): Likewise.
+
+	* include/bits/stl_map.h (map(const map&)): Make default.
+	(map(map&&)): Likewise.
+	(~map()): Likewise.
+	(operator=(const map&)): Likewise.
+	* include/bits/stl_multimap.h (multimap(const multimap&)): Make default.
+	(multimap(multimap&&)): Likewise.
+	(~multimap()): Likewise.
+	(operator=(const multimap&)): Likewise.
+	* include/bits/stl_set.h (set(const set&)): Make default.
+	(set(set&&)): Likewise.
+	(~set()): Likewise.
+	(operator=(const set&)): Likewise.
+	* include/bits/stl_multiset.h (multiset(const multiset&)): Make default.
+	(multiset(multiset&&)): Likewise.
+	(~multiset()): Likewise.
+	(operator=(const multiset&)): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree_key_compare<>): New.
+	(_Rb_tree_header): New.
+	(_Rb_tree_impl): Inherit from latters.
+	(_Rb_tree_impl()): Make default.
+	(_Rb_tree_impl(const _Rb_tree_impl&)): New.
+	(_Rb_tree<>(const _Rb_tree&): Use latter.
+	(_Rb_tree_impl(_Rb_tree_impl&&)): New, default.
+	(_Rb_tree_impl(const _Key_compare&, const _Node_allocator&)): Delete.
+	(_Rb_tree_impl::_M_reset): Move...
+	(_Rb_tree_header::_M_reset): ...here.
+	(_Rb_tree_impl::_M_initialize): Delete.
+	(_Rb_tree(_Rb_tree&&)): Make default.
+	(_Rb_tree_header::_M_move_data(_Rb_tree_header&)): New.
+	(_Rb_tree<>::_M_move_data(_Rb_tree&, true_type)): Use latter.
+	(_Rb_tree<>(_Rb_tree&&)): Make default.
+
+2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h (path::_S_convert): Replace
+	uses of C++14 std::remove_cv_t alias template.
+
+	* testsuite/28_regex/traits/char/user_defined.cc: Replace uses of
+	C++14 std::exchange function.
+
+	* testsuite/util/testsuite_hooks.h (THROW): Define.
+	* testsuite/util/replacement_memory_operators.h: Include
+	testsuite_hooks.h and use THROW macro.
+	* testsuite/util/testsuite_tr1.h: Likewise.
+	* testsuite/20_util/allocator/1.cc: Use THROW macro.
+	* testsuite/22_locale/locale/cons/12352.cc: Likewise.
+	* testsuite/23_containers/vector/zero_sized_allocations.cc: Likewise.
+	* testsuite/30_threads/lock_guard/cons/1.cc: Replace dynamic exception
+	specification with noexcept-specifier.
+	* testsuite/ext/pool_allocator/allocate_chunk.cc: Include
+	testsuite_hooks.h and use THROW macro.
+	* testsuite/ext/profile/replace_new.cc: Likewise.
+
+	* include/ext/bitmap_allocator.h (bitmap_allocator::_S_refill_pool)
+	(bitmap_allocator::_M_allocate_single_object)
+	(bitmap_allocator::_M_get): Use _GLIBCXX_THROW macro.
+
+	* testsuite/18_support/bad_exception/59392.cc: Disable for C++17.
+
+	* testsuite/18_support/headers/new/synopsis.cc: Add C++14 and C++17
+	declarations.
+	* testsuite/18_support/headers/new/synopsis_cxx98.cc: New test.
+
+2016-12-06  Felipe Magno de Almeida  <felipe@expertisesolutions.com.br>
+
+	* src/c++11/cow-stdexcept.cc: Add special case for 16 bit pointers.
+
+	* crossconfig.m4: Add avr target for cross-compilation.
+	* configure: Regenerate.
+
+2016-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdVariantPrinter): Update for new
+	data member name.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Remove redundant test.
+
+	* include/bits/shared_ptr_base.h
+	(__shared_ptr_access<T, L, false, true>::operator->()): Fix assertion.
+
+2016-12-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Constrain optional's __constexpr_addressof in its return type
+	and use a constexpr addressof for optional, if available.
+	* include/experimental/optional (__constexpr_addressof):
+	Constrain in the return type instead of in a template parameter.
+	(_Has_addressof_mem)
+	(_Has_addressof_free, _Has_addressof, __constexpr_addressof):
+	Guard with #ifndef __cpp_lib_addressof_constexpr.
+	(operator->()): Use std::__addressof if it's constexpr.
+
+2016-12-06  Tim Shen  <timshen@google.com>
+
+	* include/std/variant (visit): Make visit constexpr. Also cleanup
+	__get_alternative and __storage, since we don't support reference/void
+	alternatives any more.
+	* testsuite/20_util/variant/compile.cc: Add tests.
+
+2016-12-06  Tim Shen  <timshen@google.com>
+
+	* include/bits/enable_special_members.h: Make
+	_Enable_default_constructor constexpr.
+	* include/std/variant (variant::emplace, variant::swap, std::swap,
+	std::hash): Sfinae on emplace and std::swap; handle __poison_hash bases
+	of duplicated types.
+
+2016-12-06  Tim Shen  <timshen@google.com>
+
+	* include/std/variant (std::get, operator==): Implement constexpr
+	comparison and get<>.
+	* testsuite/20_util/variant/compile.cc: Tests.
+
+2016-12-06  Tim Shen  <timshen@google.com>
+
+	* include/std/variant (__erased_use_alloc_ctor,
+	_Variant_base::_Variant_base, variant::variant): Remove uses-allocator
+	related functions.
+	* testsuite/20_util/variant/compile.cc: Remove related tests.
+	* testsuite/20_util/variant/run.cc: Remove related tests.
+
+2016-12-06  Aditya Kumar  <hiraditya@msn.com>
+
+	* src/c++11/shared_ptr.cc (_Sp_locker::_Sp_locker(const void* p)): Add
+	noexcept on constructor.
+	(_Sp_locker::_Sp_locker(const void* p1, const void* p2)): Same.
+
+2016-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string::find, basic_string::rfind)
+	(basic_string::find_first_of, basic_string::find_last_of)
+	(basic_string::find_first_not_of, basic_string::find_last_not_of):
+	Make all overloads noexcept.
+	(basic_string::compare(const _CharT*)): Make noexcept.
+
+2016-12-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Regenerate.
+
+2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/26_numerics/headers/cmath/hypot.cc: XFAIL on AIX.
+
+2016-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2766,
+	Swapping non-swappable types and LWG 2749,
+	swappable traits for variants.
+	* include/bits/move.h (swap(_Tp&, _Tp&)): Constrain
+	with __is_tuple_like.
+	* include/bits/stl_pair.h (swap(pair<_T1, _T2>&, pair<_T1, _T2>&)):
+	Add a deleted overload.
+	* include/bits/unique_ptr.h
+	(swap(unique_ptr<_Tp, _Dp>&, unique_ptr<_Tp, _Dp>&)): Likewise.
+	* include/std/array
+	(swap(array<_Tp, _Nm>&, array<_Tp, _Nm>&)): Likewise.
+	* include/std/optional
+	(swap(optional<_Tp>&, optional<_Tp>&)): Likewise.
+	* include/std/tuple (__is_tuple_like_impl, __is_tuple_like):
+	Move to type_traits.
+	(swap(tuple<_Elements...>&, tuple<_Elements...>&)): Add a deleted
+	overload.
+	* include/std/type_traits (__is_tuple_like_impl, __is_tuple_like):
+	New.
+	(swap(_Tp&, _Tp&)): Constrain with __is_tuple_like.
+	* include/std/utility (__is_tuple_like_impl): Move to type_traits.
+	* include/std/variant
+	(swap(variant<_Types...>&, variant<_Types...>&)):
+	Add a deleted overload.
+	* testsuite/20_util/optional/swap/2.cc: Add tests for disabled
+	swaps.
+	* testsuite/20_util/pair/swap_cxx17.cc: New.
+	* testsuite/20_util/tuple/swap_cxx17.cc: Likewise.
+	* testsuite/20_util/unique_ptr/specialized_algorithms/swap_cxx17.cc:
+	Likewise.
+	* testsuite/20_util/variant/compile.cc: Add tests for disabled
+	swaps.
+	* testsuite/23_containers/array/specialized_algorithms/swap_cxx17.cc:
+	New.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
+2016-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	The convertible_to traits need to use a variadic catch-all for the
+	false-cases.
+	* include/std/istream (__is_convertible_to_basic_istream):
+	Change the parameter of the false-case of __check to a variadic.
+	* include/std/ostream (__is_convertible_to_basic_ostream):
+	Likewise.
+
+2016-12-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* crossconfig.m4 (*-linux*): Add link-check for memalign.
+	* configure: Regenerated.
+
+2016-12-01  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/71500
 	* include/bits/regex.h (basic_regex::basic_regex): Use ECMAScript

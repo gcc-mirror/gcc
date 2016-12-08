@@ -2694,6 +2694,16 @@ get_full_set_src_cost (rtx x, machine_mode mode, struct full_rtx_costs *c)
 }
 #endif
 
+/* A convenience macro to validate the arguments of a zero_extract
+   expression.  It determines whether SIZE lies inclusively within
+   [1, RANGE], POS lies inclusively within between [0, RANGE - 1]
+   and the sum lies inclusively within [1, RANGE].  RANGE must be
+   >= 1, but SIZE and POS may be negative.  */
+#define EXTRACT_ARGS_IN_RANGE(SIZE, POS, RANGE) \
+  (IN_RANGE ((POS), 0, (unsigned HOST_WIDE_INT) (RANGE) - 1) \
+   && IN_RANGE ((SIZE), 1, (unsigned HOST_WIDE_INT) (RANGE) \
+			   - (unsigned HOST_WIDE_INT)(POS)))
+
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, machine_mode);
 extern rtx plus_constant (machine_mode, rtx, HOST_WIDE_INT, bool = false);

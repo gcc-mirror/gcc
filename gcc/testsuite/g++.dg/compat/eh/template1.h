@@ -11,5 +11,9 @@ struct C
 {
   typedef B<T> D;
   typedef typename D::E E;
-  void f() throw(E);
+  void f()
+#if __cplusplus < 201103L
+  throw(E)
+#endif
+  ;
 };

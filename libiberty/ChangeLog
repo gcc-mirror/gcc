@@ -1,3 +1,7 @@
+2016-12-06  DJ Delorie  <dj@redhat.com>
+
+	* argv.c (expandargv): Check for directories passed as @-files.
+
 2016-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/78498

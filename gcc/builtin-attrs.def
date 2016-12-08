@@ -83,6 +83,7 @@ DEF_LIST_INT_INT (5,6)
 #undef DEF_LIST_INT_INT
 
 /* Construct trees for identifiers.  */
+DEF_ATTR_IDENT (ATTR_ALLOC_SIZE, "alloc_size")
 DEF_ATTR_IDENT (ATTR_COLD, "cold")
 DEF_ATTR_IDENT (ATTR_CONST, "const")
 DEF_ATTR_IDENT (ATTR_FORMAT, "format")
@@ -150,6 +151,26 @@ DEF_ATTR_TREE_LIST (ATTR_SENTINEL_NOTHROW_LEAF_LIST, ATTR_SENTINEL,	\
 			ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST, ATTR_CONST,\
 			ATTR_NULL, ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST)
+
+/* Allocation functions like malloc and realloc whose first argument
+   specifies the size of the allocated object.  */
+DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_NOTHROW_LIST, ATTR_ALLOC_SIZE,	\
+			ATTR_LIST_1, ATTR_MALLOC_NOTHROW_LIST)
+DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_NOTHROW_LEAF_LIST, ATTR_ALLOC_SIZE, \
+		        ATTR_LIST_1, ATTR_MALLOC_NOTHROW_LEAF_LIST)
+/* Alloca is just like malloc except that it never returns null.  */
+DEF_ATTR_TREE_LIST (ATTR_ALLOCA_SIZE_1_NOTHROW_LEAF_LIST, ATTR_RETURNS_NONNULL,
+		    ATTR_NULL, ATTR_MALLOC_SIZE_1_NOTHROW_LEAF_LIST)
+
+/* Allocation functions like calloc the product of whose first two arguments
+   specifies the size of the allocated object.  */
+DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_2_NOTHROW_LEAF_LIST, ATTR_ALLOC_SIZE, \
+		        ATTR_LIST_1_2, ATTR_MALLOC_NOTHROW_LEAF_LIST)
+
+/* Allocation functions like realloc whose second argument specifies
+   the size of the allocated object.  */
+DEF_ATTR_TREE_LIST (ATTR_ALLOC_SIZE_2_NOTHROW_LEAF_LIST, ATTR_ALLOC_SIZE, \
+		        ATTR_LIST_2, ATTR_NOTHROW_LEAF_LIST)
 
 /* Functions whose pointer parameter(s) are all nonnull.  */
 DEF_ATTR_TREE_LIST (ATTR_NONNULL_LIST, ATTR_NONNULL, ATTR_NULL, ATTR_NULL)

@@ -47,6 +47,14 @@
  *  for your assistance in helping us improve Cilk Plus.
  **************************************************************************/
 
+// __atomic_* intrinsics are available since GCC 4.7.
+#define HAVE_ATOMIC_INTRINSICS defined(__GNUC__) && \
+                               (__GNUC__ * 10 + __GNUC_MINOR__ >= 47)
+
+// GCC before 4.4 does not implement __sync_synchronize properly
+#define HAVE_SYNC_INTRINSICS defined(__GNUC__) && \
+                             (__GNUC__ * 10 + __GNUC_MINOR__ >= 44)
+
 /*
  * void __cilkrts_fence(void)
  *
@@ -60,5 +68,12 @@
  * the CPUID instruction).
  */
 
-// COMMON_SYSDEP void __cilkrts_fence(void); ///< MFENCE instruction
-# define __cilkrts_fence() __asm__ __volatile__ ("mcr   p15,0,%[t],c7,c10,4\n" :: [t] "r" (0) : "memory");
+#if HAVE_ATOMIC_INTRINSICS
+#   define __cilkrts_fence() __atomic_thread_fence(__ATOMIC_SEQ_CST)
+#elif HAVE_SYNC_INTRINSICS
+#   define __cilkrts_fence() __sync_synchronize()
+#else
+#   define __cilkrts_fence()
+// Leaving this code just in case.
+//# define __cilkrts_fence() __asm__ __volatile__ ("mcr   p15,0,%[t],c7,c10,4\n" :: [t] "r" (0) : "memory");
+#endif

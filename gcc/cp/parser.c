@@ -23786,8 +23786,8 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   token = cp_lexer_peek_token (parser->lexer);
 
   /* Is it a noexcept-specification?  */
-  type_id_list = cp_parser_noexcept_specification_opt(parser, true, NULL,
-						      false);
+  type_id_list = cp_parser_noexcept_specification_opt (parser, true, NULL,
+						       false);
   if (type_id_list != NULL_TREE)
     return type_id_list;
 
@@ -23795,12 +23795,7 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   if (!cp_parser_is_keyword (token, RID_THROW))
     return NULL_TREE;
 
-#if 0
-  /* Enable this once a lot of code has transitioned to noexcept?  */
-  if (cxx_dialect >= cxx11 && !in_system_header_at (input_location))
-    warning (OPT_Wdeprecated, "dynamic exception specifications are "
-	     "deprecated in C++0x; use %<noexcept%> instead");
-#endif
+  location_t loc = token->location;
 
   /* Consume the `throw'.  */
   cp_lexer_consume_token (parser->lexer);
@@ -23821,7 +23816,23 @@ cp_parser_exception_specification_opt (cp_parser* parser)
       type_id_list = cp_parser_type_id_list (parser);
       /* Restore the saved message.  */
       parser->type_definition_forbidden_message = saved_message;
+
+      if (cxx_dialect >= cxx1z)
+	{
+	  error_at (loc, "ISO C++1z does not allow dynamic exception "
+			 "specifications");
+	  type_id_list = NULL_TREE;
+	}
+      else if (cxx_dialect >= cxx11 && !in_system_header_at (loc))
+	warning_at (loc, OPT_Wdeprecated,
+		    "dynamic exception specifications are deprecated in C++11;"
+		    " use %<noexcept%> instead");
     }
+  /* In C++17, throw() is equivalent to noexcept (true).  throw()
+     is deprecated in C++11 and above as well, but is still widely used,
+     so don't warn about it yet.  */
+  else if (cxx_dialect >= cxx1z)
+    type_id_list = noexcept_true_spec;
   else
     type_id_list = empty_except_spec;
 
@@ -36175,23 +36186,18 @@ static tree
 cp_parser_oacc_enter_exit_data (cp_parser *parser, cp_token *pragma_tok,
 				bool enter)
 {
+  location_t loc = pragma_tok->location;
   tree stmt, clauses;
+  const char *p = "";
 
-  if (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA_EOL)
-     || cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
-    {
-      cp_parser_error (parser, enter
-		       ? "expected %<data%> in %<#pragma acc enter data%>"
-		       : "expected %<data%> in %<#pragma acc exit data%>");
-      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return NULL_TREE;
-    }
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    p = IDENTIFIER_POINTER (cp_lexer_peek_token (parser->lexer)->u.value);
 
-  const char *p =
-    IDENTIFIER_POINTER (cp_lexer_peek_token (parser->lexer)->u.value);
   if (strcmp (p, "data") != 0)
     {
-      cp_parser_error (parser, "invalid pragma");
+      error_at (loc, enter
+		? "expected %<data%> after %<#pragma acc enter%>"
+		: "expected %<data%> after %<#pragma acc exit%>");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return NULL_TREE;
     }
@@ -36207,8 +36213,8 @@ cp_parser_oacc_enter_exit_data (cp_parser *parser, cp_token *pragma_tok,
 
   if (find_omp_clause (clauses, OMP_CLAUSE_MAP) == NULL_TREE)
     {
-      error_at (pragma_tok->location,
-		"%<#pragma acc enter data%> has no data movement clause");
+      error_at (loc, "%<#pragma acc %s data%> has no data movement clause",
+		enter ? "enter" : "exit");
       return NULL_TREE;
     }
 
@@ -38083,6 +38089,30 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       cp_parser_oacc_declare (parser, pragma_tok);
       return false;
 
+    case PRAGMA_OACC_ENTER_DATA:
+      if (context == pragma_stmt)
+	{
+	  cp_parser_error (parser, "%<#pragma acc enter data%> may only be "
+			   "used in compound statements");
+	  break;
+	}
+      else if (context != pragma_compound)
+	goto bad_stmt;
+      cp_parser_omp_construct (parser, pragma_tok, if_p);
+      return true;
+
+    case PRAGMA_OACC_EXIT_DATA:
+      if (context == pragma_stmt)
+	{
+	  cp_parser_error (parser, "%<#pragma acc exit data%> may only be "
+			   "used in compound statements");
+	  break;
+	}
+      else if (context != pragma_compound)
+	goto bad_stmt;
+      cp_parser_omp_construct (parser, pragma_tok, if_p);
+      return true;
+
     case PRAGMA_OACC_ROUTINE:
       if (context != pragma_external)
 	{
@@ -38093,17 +38123,37 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       cp_parser_oacc_routine (parser, pragma_tok, context);
       return false;
 
+    case PRAGMA_OACC_UPDATE:
+      if (context == pragma_stmt)
+	{
+	  cp_parser_error (parser, "%<#pragma acc update%> may only be "
+			   "used in compound statements");
+	  break;
+	}
+      else if (context != pragma_compound)
+	goto bad_stmt;
+      cp_parser_omp_construct (parser, pragma_tok, if_p);
+      return true;
+
+    case PRAGMA_OACC_WAIT:
+      if (context == pragma_stmt)
+	{
+	  cp_parser_error (parser, "%<#pragma acc wait%> may only be "
+			   "used in compound statements");
+	  break;
+	}
+      else if (context != pragma_compound)
+	goto bad_stmt;
+      cp_parser_omp_construct (parser, pragma_tok, if_p);
+      return true;
+
     case PRAGMA_OACC_ATOMIC:
     case PRAGMA_OACC_CACHE:
     case PRAGMA_OACC_DATA:
-    case PRAGMA_OACC_ENTER_DATA:
-    case PRAGMA_OACC_EXIT_DATA:
     case PRAGMA_OACC_HOST_DATA:
     case PRAGMA_OACC_KERNELS:
     case PRAGMA_OACC_PARALLEL:
     case PRAGMA_OACC_LOOP:
-    case PRAGMA_OACC_UPDATE:
-    case PRAGMA_OACC_WAIT:
     case PRAGMA_OMP_ATOMIC:
     case PRAGMA_OMP_CRITICAL:
     case PRAGMA_OMP_DISTRIBUTE:

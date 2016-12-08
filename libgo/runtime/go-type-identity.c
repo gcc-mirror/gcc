@@ -9,44 +9,14 @@
 #include "runtime.h"
 #include "go-type.h"
 
-/* An identity hash function for a type.  This is used for types where
-   we can simply use the type value itself as a hash code.  This is
-   true of, e.g., integers and pointers.  */
+/* The hash functions for types that can compare as identity is
+   written in Go.  */
 
-uintptr_t
-__go_type_hash_identity (const void *key, uintptr_t seed, uintptr_t key_size)
-{
-  uintptr_t ret;
-  uintptr_t i;
-  const unsigned char *p;
-
-  if (key_size <= 8)
-    {
-      union
-      {
-	uint64 v;
-	unsigned char a[8];
-      } u;
-      u.v = 0;
-#ifdef WORDS_BIGENDIAN
-      __builtin_memcpy (&u.a[8 - key_size], key, key_size);
-#else
-      __builtin_memcpy (&u.a[0], key, key_size);
-#endif
-      if (sizeof (uintptr_t) >= 8)
-	return (uintptr_t) u.v ^ seed;
-      else
-	return (uintptr_t) ((u.v >> 32) ^ (u.v & 0xffffffff)) ^ seed;
-    }
-
-  ret = seed;
-  for (i = 0, p = (const unsigned char *) key; i < key_size; i++, p++)
-    ret = ret * 33 + *p;
-  return ret;
-}
+extern uintptr runtime_memhash(void *, uintptr, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.memhash");
 
 const FuncVal __go_type_hash_identity_descriptor =
-  { (void *) __go_type_hash_identity };
+  { (void *) runtime_memhash };
 
 /* An identity equality function for a type.  This is used for types
    where we can check for equality by checking that the values have

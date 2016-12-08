@@ -1,3 +1,526 @@
+2016-12-08  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR debug/78112
+	* g++.dg/pr78112.C: Remove platform-dependent checks.
+	* g++.dg/pr78112-2.C: New testcase.
+
+2016-12-08  Bin Cheng  <bin.cheng@arm.com>
+
+	PR middle-end/78684
+	* g++.dg/torture/pr78684.C: New test.
+
+2016-12-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(CHECK_CRYPTO): Remove.
+	(expected_poly64x1_t, expected_poly64x2_t): Remove
+
+2016-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	P0003R5 - removal of dynamic exception specification from C++17
+	* g++.dg/compat/eh/ctor1.h: Adjust for deprecation of
+	throw (type-id-list) in C++11 and C++14 and removal in C++17.
+	* g++.dg/compat/eh/ctor1_y.C: Likewise.
+	* g++.dg/compat/eh/new1_x.C: Likewise.
+	* g++.dg/compat/eh/new1_y.C: Likewise.
+	* g++.dg/compat/eh/spec3_x.C: Likewise.
+	* g++.dg/compat/eh/spec3_y.C: Likewise.
+	* g++.dg/compat/eh/template1.h: Likewise.
+	* g++.dg/compat/eh/template1_y.C: Likewise.
+	* g++.dg/compat/eh/unexpected1_x.C: Likewise.
+	* g++.dg/compat/eh/unexpected1_y.C: Likewise.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp0x/defaulted23.C: Likewise.
+	* g++.dg/cpp0x/error5.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-eh2.C: Likewise.
+	* g++.dg/cpp0x/noexcept02.C: Likewise.
+	* g++.dg/cpp0x/noexcept07.C: Likewise.
+	* g++.dg/cpp0x/noexcept08.C: Likewise.
+	* g++.dg/cpp0x/noexcept19.C: Likewise.
+	* g++.dg/cpp0x/variadic73.C: Likewise.
+	* g++.dg/cpp0x/variadic-throw.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type1.C: Likewise.
+	* g++.dg/eh/async-unwind2.C: Likewise.
+	* g++.dg/eh/cond4.C: Likewise.
+	* g++.dg/eh/delete1.C: Likewise.
+	* g++.dg/eh/ehopt1.C: Likewise.
+	* g++.dg/eh/forced3.C: Likewise.
+	* g++.dg/eh/forced4.C: Likewise.
+	* g++.dg/eh/init-temp2.C: Likewise.
+	* g++.dg/eh/pr38662.C: Likewise.
+	* g++.dg/eh/pr41819.C: Likewise.
+	* g++.dg/eh/shadow1.C: Likewise.
+	* g++.dg/eh/spec2.C: Likewise.
+	* g++.dg/eh/spec3.C: Likewise.
+	* g++.dg/eh/spec5.C: Likewise.
+	* g++.dg/eh/spec6.C: Likewise.
+	* g++.dg/eh/spec7.C: Likewise.
+	* g++.dg/eh/spec8.C: Likewise.
+	* g++.dg/eh/spec9.C: Likewise.
+	* g++.dg/eh/template1.C: Likewise.
+	* g++.dg/eh/unexpected1.C: Likewise.
+	* g++.dg/ext/has_nothrow_assign.C: Likewise.
+	* g++.dg/ext/has_nothrow_constructor.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-1.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-2.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-4.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-5.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-6.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-7.C: Likewise.
+	* g++.dg/gcov/gcov-7.C: Likewise.
+	* g++.dg/init/new13.C: Likewise.
+	* g++.dg/init/new25.C: Likewise.
+	* g++.dg/lookup/exception1.C: Likewise.
+	* g++.dg/opt/noreturn-1.C: Likewise.
+	* g++.dg/other/error3.C: Likewise.
+	* g++.dg/rtti/crash3.C: Likewise.
+	* g++.dg/template/eh2.C: Likewise.
+	* g++.dg/template/error36.C: Likewise.
+	* g++.dg/tm/pr46567.C: Likewise.
+	* g++.dg/tm/pr47340.C: Likewise.
+	* g++.dg/torture/pr46364.C: Likewise.
+	* g++.dg/torture/pr49394.C: Likewise.
+	* g++.dg/torture/pr52918-1.C: Likewise.
+	* g++.dg/torture/pr57190.C: Likewise.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-fastcall-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-global-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-thiscall-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Likewise.
+	* g++.dg/tree-ssa/pr45605.C: Likewise.
+	* g++.dg/warn/Wreturn-type-3.C: Likewise.
+	* g++.old-deja/g++.eh/badalloc1.C: Likewise.
+	* g++.old-deja/g++.eh/cleanup2.C: Likewise.
+	* g++.old-deja/g++.eh/spec1.C: Likewise.
+	* g++.old-deja/g++.eh/spec2.C: Likewise.
+	* g++.old-deja/g++.eh/spec3.C: Likewise.
+	* g++.old-deja/g++.eh/spec4.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Likewise.
+	* g++.old-deja/g++.eh/throw1.C: Likewise.
+	* g++.old-deja/g++.eh/throw2.C: Likewise.
+	* g++.old-deja/g++.eh/tmpl1.C: Likewise.
+	* g++.old-deja/g++.eh/tmpl3.C: Likewise.
+	* g++.old-deja/g++.mike/eh15.C: Likewise.
+	* g++.old-deja/g++.mike/eh25.C: Likewise.
+	* g++.old-deja/g++.mike/eh33.C: Likewise.
+	* g++.old-deja/g++.mike/eh34.C: Likewise.
+	* g++.old-deja/g++.mike/eh50.C: Likewise.
+	* g++.old-deja/g++.mike/eh51.C: Likewise.
+	* g++.old-deja/g++.mike/eh55.C: Likewise.
+	* g++.old-deja/g++.mike/p10416.C: Likewise.
+	* g++.old-deja/g++.other/crash28.C: Likewise.
+	* g++.old-deja/g++.other/crash30.C: Likewise.
+	* g++.old-deja/g++.other/new7.C: Likewise.
+	* g++.old-deja/g++.pt/ehspec1.C: Likewise.
+	* g++.old-deja/g++.robertl/eb123.C: Likewise.
+
+2016-12-08  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* gcc.target/aarch64/pr78382.c: New testcase.
+
+2016-12-08  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/pr71112.c: New testcase.
+
+2016-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77784
+	PR middle-end/78149
+	PR middle-end/78138
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Adjust expected diagnostic.
+	* g++.dg/ext/builtin-object-size3.C (bar): Same.
+	* g++.dg/ext/strncpy-chk1.C: Same.
+	* g++.dg/opt/memcpy1.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
+	* gcc.c-torture/compile/pr55569.c: Disable -Wstringop-overflow.
+	* gcc.dg/Wobjsize-1.c: Adjust expected diagnostic.
+	* gcc.dg/attr-alloc_size.c: Same.
+	* gcc.dg/builtin-stringop-chk-1.c: Adjust expected diagnostic.
+	* gcc.dg/builtin-stringop-chk-2.c: Same.
+	* gcc.dg/builtin-stringop-chk-4.c: New test.
+	* gcc.dg/builtin-strncat-chk-1.c: Adjust expected diagnostic.
+	* gcc.dg/memcpy-2.c: Same.
+	* gcc.dg/pr40340-1.c: Same.
+	* gcc.dg/pr40340-2.c (main): Same.
+	* gcc.dg/pr40340-5.c (main): Same.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Same.
+	* gcc.dg/torture/pr71132.c: Disable -Wstringop-overflow.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust text of expected
+	warning.
+	* gfortran.dg/char_length_3.f90: Prune expected warnings.
+	* gfortran.dg/pr38868.f: Add expected warnings.
+
+2016-12-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/72717
+	* gcc.target/powerpc/pr72717.c: New test.
+
+2016-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-strstr-1.c: New test.
+	* g++.dg/cpp0x/constexpr-strstr.C: New test.
+
+	PR c++/78692
+	* g++.dg/torture/pr78692.C: New test.
+
+2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR rtl-optimization/78617
+	* gcc.c-torture/execute/pr78617.c: New test.
+
+2016-12-07  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: Move built-in tests for P8 and
+	P9 to their own test file.  This allows precise constraints on the
+	effective target and compile options.
+	* gcc.target/powerpc/builtins-3-p8.c: New file for the vector
+	compare P8 built-in tests.
+	* gcc.target/powerpc/builtins-3-p9.c: New file for the vector
+	compare P9 built-in tests.
+
+2016-12-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr77761.c: Require int128 effective target.
+	(avx512f_test): Delete.
+	(do_main): Rename to avx512f_test.
+
+2016-12-07  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/78691
+	* gcc.target/i386/pr78691-i386.c: New test.
+	* gcc.target/powerpc/pr78691-ppc.c: New test.
+
+2016-12-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr70322-1.c: Add -mno-stackrealign to dg-options.
+	* gcc.target/i386/pr70322-2.c: Likewise.
+	* gcc.target/i386/pr70322-3.c: Likewise.
+	* gcc.target/i386/pr70322-4.c: Likewise.
+
+2016-12-07  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* gcc.target/aarch64/pr71727.c: New testcase.
+
+2016-12-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/67955
+	* gcc.dg/tree-ssa/dse-points-to.c: New test.
+
+2016-12-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78658
+	* gcc.target/powerpc/pr78658.c: New test.
+
+2016-12-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/77761
+	* testsuite/gcc.target/i386/pr77761.c: New.
+
+2016-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78659
+	* gfortran.dg/alloc_comp_constraint_1.f90: Update test.
+	* gfortran.dg/alloc_comp_constraint_7.f90: New test.
+	* gfortran.dg/namelist_34.f90: Update test.
+	* gfortran.dg/namelist_63.f90: Update test.
+
+2016-12-06  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/msa-builtins-err.c: New test.
+
+2016-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71537
+	* g++.dg/cpp0x/constexpr-71537.C: New test.
+
+	PR c++/71537
+	* g++.dg/cpp0x/constexpr-memchr.C: New test.
+
+	PR c++/71537
+	* g++.dg/cpp0x/constexpr-strchr.C: New test.
+
+	PR tree-optimization/78675
+	* gcc.c-torture/execute/pr78675.c: New test.
+	* gcc.target/i386/pr78675-1.c: New test.
+	* gcc.target/i386/pr78675-2.c: New test.
+
+2016-12-05  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx512bw-kandd-1.c: New.
+	* gcc.target/i386/avx512bw-kandnd-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kandnq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kandq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-knotd-1.c: Ditto.
+	* gcc.target/i386/avx512bw-knotq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kord-1.c: Ditto.
+	* gcc.target/i386/avx512bw-korq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kunpckdq-3.c: Ditto.
+	* gcc.target/i386/avx512bw-kunpckwd-3.c: Ditto.
+	* gcc.target/i386/avx512bw-kxnord-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxnorq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxord-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxorq-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kandb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kandnb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-knotb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-korb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kxnorb-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kxorb-1.c: Ditto.
+	* gcc.target/i386/avx512f-kunpckbw-3.c: Ditto.
+	* gcc.target/i386/avx512f-kandnw-1.c: Removed unneeded check.
+
+2016-12-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/fold-and-lshift.c, gcc.dg/fold-and-rshift-1.c,
+	gcc.dg/fold-and-rshift-2.c: New testcases.
+
+2016-12-05  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/fmax_errors.c: Check notes after last error are
+	emitted.
+
+2016-12-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR rtl-optimization/78561
+	* gcc.target/aarch64/pr78561.c: Add missing testcase from r243183.
+
+2016-12-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/78668
+	* gcc.dg/builtin-alloc-size.c: New test.
+
+2016-12-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70322
+	* gcc.target/i386/pr70322-4.c: New test.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43207
+	* gfortran.dg/abstract_type_9.f90: New test case.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42188
+	* gfortran.dg/derived_result_2.f90.f90: New test case.
+
+2016-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58175
+	* gfortran.dg/finalize_30.f90: Extend test case.
+
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78649
+	* g++.dg/cpp0x/pr78649.C: New test.
+
+2016-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70322
+	* gcc.target/i386/pr70322-2.c (dg-final): Remove xfail.
+
+2016-12-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78618
+	* gfortran.dg/char_conversion.f90: New test.
+
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70322
+	* gcc.target/i386/pr70322-1.c: New test.
+	* gcc.target/i386/pr70322-2.c: New test.
+	* gcc.target/i386/pr70322-3.c: New test.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse-1.c: Add test for
+	cmse_nonsecure_caller.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse.exp: Run tests in mainline dir.
+	* gcc.target/arm/cmse/cmse-9.c: Added some extra tests.
+	* gcc.target/arm/cmse/cmse-14.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-4.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-5.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-6.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-7.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-8.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-9.c: New.
+	* gcc.target/arm/cmse/baseline/bitfield-and-union-1.c: New.
+	* gcc.target/arm/cmse/baseline/cmse-11.c: New.
+	* gcc.target/arm/cmse/baseline/cmse-13.c: New.
+	* gcc.target/arm/cmse/baseline/cmse-6.c: New.
+	* gcc.target/arm/cmse/baseline/union-1.c: New.
+	* gcc.target/arm/cmse/baseline/union-2.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-4.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-5.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-6.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-7.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-8.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-9.c: New.
+	* gcc.target/arm/cmse/mainline/bitfield-and-union-1.c: New.
+	* gcc.target/arm/cmse/mainline/union-1.c: New.
+	* gcc.target/arm/cmse/mainline/union-2.c: New.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/soft/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/soft/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/soft/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-8.c: New.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-13.c: New.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-7.c: New.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-8.c: New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse-3.c: Add tests.
+	* gcc.target/arm/cmse/cmse-4.c: Add tests.
+	* gcc.target/arm/cmse/cmse-15.c: New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse.exp: Test different multilibs separate.
+	* gcc.target/arm/cmse/struct-1.c: New.
+	* gcc.target/arm/cmse/bitfield-1.c: New.
+	* gcc.target/arm/cmse/bitfield-2.c: New.
+	* gcc.target/arm/cmse/bitfield-3.c: New.
+	* gcc.target/arm/cmse/baseline/cmse-2.c: New.
+	* gcc.target/arm/cmse/baseline/softfp.c: New.
+	* gcc.target/arm/cmse/mainline/soft/cmse-5.c: New.
+	* gcc.target/arm/cmse/mainline/hard/cmse-5.c: New.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-5.c: New.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-5.c: New.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-5.c: New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse-4.c: New.
+	* gcc.target/arm/cmse/cmse-9.c: New.
+	* gcc.target/arm/cmse/cmse-10.c: New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse-3.c: New.
+
+2016-12-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse.exp: New.
+	* gcc.target/arm/cmse/cmse-1.c: New.
+	* gcc.target/arm/cmse/cmse-12.c: New.
+	* lib/target-supports.exp
+	(check_effective_target_arm_cmse_ok): New.
+
+2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-c++-common/goacc/data-2.c: Adjust test.
+	* c-c++-common/goacc/executeables-1.c: New test.
+	* g++.dg/goacc/data-1.C: Adjust test.
+
+2016-12-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR rtl-optimization/78561
+	* gcc.target/aarch64/pr78561.c: New.
+
+2016-12-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/fold-bopcond-1.c: New test.
+	* gcc.dg/fold-bopcond-2.c: New test.
+
+2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/md/setmem_long-1.c: Fix test.
+
+2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78547
+	* gcc.dg/pr78547.c: New test.
+
+	PR rtl-optimization/78575
+	* gcc.dg/pr78575.c: New test.
+
+2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/litpool-r3-1.c: Fix label number test.
+
+2016-12-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/77822
+	* gcc.target/s390/s390.exp: Support .C tests.
+	* gcc.target/s390/pr77822-2.c: New test.
+	* gcc.target/s390/pr77822-1.C: New test.
+
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/vector/vec-nopeel-1.c: New test.
+
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/zvector/vec-cmp-2.c: New test.
+
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Fix and harden the
+	pattern checks.
+	* gcc.target/s390/zvector/vec-cmp-1.c: New test.
+
+2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* c-c++-common/asan/no-redundant-odr-indicators-1.c: New test.
+
+2016-12-01  Elizebeth Punnoose  <elizebeth.punnoose@hpe.com>
+
+	PR fortran/77505
+	* gfortran.dg/char_length_20.f90: New test.
+	* gfortran.dg/char_length_21.f90: Ditto.
+
+2016-12-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78279
+	* gfortran.dg/pr78279.f90: New test.
+
+2016-12-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/tls/pr77285-1.C: dg-add-options tls
+
+2016-12-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/pr78582.c (main): Call setjmp, not sigsetjmp.
+
+2016-12-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/alias-2.c: New testcase.
+
+2016-12-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/tiny-memx.c: Only perform if target avr_tiny.
+	* gcc.target/avr/tiny-caller-save.c: Dito.
+
+2016-12-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_alloc_4.f90: Fix for 32-bits.
+
+2016-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/78587
+	* gcc.dg/debug/pr78587.c: New test.
+
 2016-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78607
@@ -468,23 +991,23 @@
 
 2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
-	* gcc.target/aarch64/ldp_stp_1.c : Add -mcpu=generic.
-	* gcc.target/aarch64/store-pair-1.c : Likewise.
+	* gcc.target/aarch64/ldp_stp_1.c: Add -mcpu=generic.
+	* gcc.target/aarch64/store-pair-1.c: Likewise.
 
 2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
-	* gcc.target/aarch64/fmaxmin.c : Add -fno-vect-cost-model.
-	* gcc.target/aarch64/fmul_fcvt_2.c : Likewise.
-	* gcc.target/aarch64/vect-abs-compile.c : Likewise.
-	* gcc.target/aarch64/vect-clz.c : Likewise.
-	* gcc.target/aarch64/vect-fcm-eq-d.c : Likewise.
-	* gcc.target/aarch64/vect-fcm-ge-d.c : Likewise.
-	* gcc.target/aarch64/vect-fcm-gt-d.c : Likewise.
-	* gcc.target/aarch64/vect-fmovd-zero.c : Likewise.
-	* gcc.target/aarch64/vect-fmovd.c : Likewise.
-	* gcc.target/aarch64/vect-fmovf-zero.c : Likewise.
-	* gcc.target/aarch64/vect-fmovf.c : Likewise.
-	* gcc.target/aarch64/vect_ctz_1.c : Likewise.
+	* gcc.target/aarch64/fmaxmin.c: Add -fno-vect-cost-model.
+	* gcc.target/aarch64/fmul_fcvt_2.c: Likewise.
+	* gcc.target/aarch64/vect-abs-compile.c: Likewise.
+	* gcc.target/aarch64/vect-clz.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-eq-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf.c: Likewise.
+	* gcc.target/aarch64/vect_ctz_1.c: Likewise.
 
 2016-11-23  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -6656,7 +7179,7 @@
 2016-07-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71883
-	* gfortran.dg/pr71883.f90 : New test.
+	* gfortran.dg/pr71883.f90: New test.
 
 2016-07-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
@@ -14280,7 +14803,7 @@
 2016-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69423
-	* gfortran.dg/deferred_character_15.f90 : New test.
+	* gfortran.dg/deferred_character_15.f90: New test.
 
 2016-02-20  Dominique d'Humieres  <dominiq@lps.ens.fr>
 

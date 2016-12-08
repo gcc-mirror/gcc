@@ -20,12 +20,19 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PRINT_RTL_H
 #define GCC_PRINT_RTL_H
 
+#ifndef GENERATOR_FILE
+#include "bitmap.h"
+#endif /* #ifndef GENERATOR_FILE */
+
+class rtx_reuse_manager;
+
 /* A class for writing rtx to a FILE *.  */
 
 class rtx_writer
 {
  public:
-  rtx_writer (FILE *outfile, int ind, bool simple, bool compact);
+  rtx_writer (FILE *outfile, int ind, bool simple, bool compact,
+	      rtx_reuse_manager *reuse_manager);
 
   void print_rtx (const_rtx in_rtx);
   void print_rtl (const_rtx rtx_first);
@@ -60,6 +67,9 @@ class rtx_writer
        printed with a '%' sigil e.g. "%0" for (LAST_VIRTUAL_REGISTER + 1),
      - insn names are prefixed with "c" (e.g. "cinsn", "cnote", etc).  */
   bool m_compact;
+
+  /* An optional instance of rtx_reuse_manager.  */
+  rtx_reuse_manager *m_rtx_reuse_manager;
 };
 
 #ifdef BUFSIZ
@@ -79,5 +89,74 @@ extern void rtl_dump_bb_for_graph (pretty_printer *, basic_block);
 extern const char *str_pattern_slim (const_rtx);
 
 extern void print_rtx_function (FILE *file, function *fn, bool compact);
+
+#ifndef GENERATOR_FILE
+
+/* For some rtx codes (such as SCRATCH), instances are defined to only be
+   equal for pointer equality: two distinct SCRATCH instances are non-equal.
+   copy_rtx preserves this equality by reusing the SCRATCH instance.
+
+   For example, in this x86 instruction:
+
+      (cinsn (set (mem/v:BLK (scratch:DI) [0  A8])
+                    (unspec:BLK [
+                            (mem/v:BLK (scratch:DI) [0  A8])
+                        ] UNSPEC_MEMORY_BLOCKAGE)) "test.c":2
+                 (nil))
+
+   the two instances of "(scratch:DI)" are actually the same underlying
+   rtx pointer (and thus "equal"), and the insn will only be recognized
+   (as "*memory_blockage") if this pointer-equality is preserved.
+
+   To be able to preserve this pointer-equality when round-tripping
+   through dumping/loading the rtl, we need some syntax.  The first
+   time a reused rtx is encountered in the dump, we prefix it with
+   a reuse ID:
+
+      (0|scratch:DI)
+
+   Subsequent references to the rtx in the dump can be expressed using
+   "reuse_rtx" e.g.:
+
+      (reuse_rtx 0)
+
+   This class is responsible for tracking a set of reuse IDs during a dump.
+
+   Dumping with reuse-support is done in two passes:
+
+   (a) a first pass in which "preprocess" is called on each top-level rtx
+       to be seen in the dump.  This traverses the rtx and its descendents,
+       identifying rtx that will be seen more than once in the actual dump,
+       and assigning them reuse IDs.
+
+   (b) the actual dump, via print_rtx etc.  print_rtx detect the presence
+       of a live rtx_reuse_manager and uses it if there is one.  Any rtx
+       that were assigned reuse IDs will be printed with it the first time
+       that they are seen, and then printed as "(reuse_rtx ID)" subsequently.
+
+   The first phase is needed since otherwise there would be no way to tell
+   if an rtx will be reused when first encountering it.  */
+
+class rtx_reuse_manager
+{
+ public:
+  rtx_reuse_manager ();
+
+  /* The first pass.  */
+  void preprocess (const_rtx x);
+
+  /* The second pass (within print_rtx).  */
+  bool has_reuse_id (const_rtx x, int *out);
+  bool seen_def_p (int reuse_id);
+  void set_seen_def (int reuse_id);
+
+ private:
+  hash_map<const_rtx, int> m_rtx_occurrence_count;
+  hash_map<const_rtx, int> m_rtx_reuse_ids;
+  bitmap_head m_defs_seen;
+  int m_next_id;
+};
+
+#endif /* #ifndef GENERATOR_FILE */
 
 #endif  // GCC_PRINT_RTL_H

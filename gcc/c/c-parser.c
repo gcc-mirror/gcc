@@ -10145,10 +10145,24 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       return false;
 
     case PRAGMA_OACC_ENTER_DATA:
+      if (context != pragma_compound)
+	{
+	  if (context == pragma_stmt)
+	    c_parser_error (parser, "%<#pragma acc enter data%> may only be "
+			    "used in compound statements");
+	  goto bad_stmt;
+	}
       c_parser_oacc_enter_exit_data (parser, true);
       return false;
 
     case PRAGMA_OACC_EXIT_DATA:
+      if (context != pragma_compound)
+	{
+	  if (context == pragma_stmt)
+	    c_parser_error (parser, "%<#pragma acc exit data%> may only be "
+			    "used in compound statements");
+	  goto bad_stmt;
+	}
       c_parser_oacc_enter_exit_data (parser, false);
       return false;
 
@@ -10304,6 +10318,16 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
 	}
       c_parser_cilk_grainsize (parser, if_p);
       return false;
+
+    case PRAGMA_OACC_WAIT:
+      if (context != pragma_compound)
+	{
+	  if (context == pragma_stmt)
+	    c_parser_error (parser, "%<#pragma acc enter data%> may only be "
+			    "used in compound statements");
+	  goto bad_stmt;
+	}
+	/* FALL THROUGH.  */
 
     default:
       if (id < PRAGMA_FIRST_EXTERNAL)
@@ -13871,27 +13895,25 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   tree clauses, stmt;
+  const char *p = "";
 
   c_parser_consume_pragma (parser);
 
-  if (!c_parser_next_token_is (parser, CPP_NAME))
+  if (c_parser_next_token_is (parser, CPP_NAME))
     {
-      c_parser_error (parser, enter
-		      ? "expected %<data%> in %<#pragma acc enter data%>"
-		      : "expected %<data%> in %<#pragma acc exit data%>");
-      c_parser_skip_to_pragma_eol (parser);
-      return;
+      p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      c_parser_consume_token (parser);
     }
 
-  const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
   if (strcmp (p, "data") != 0)
     {
-      c_parser_error (parser, "invalid pragma");
+      error_at (loc, enter
+		? "expected %<data%> after %<#pragma acc enter%>"
+		: "expected %<data%> after %<#pragma acc exit%>");
+      parser->error = true;
       c_parser_skip_to_pragma_eol (parser);
       return;
     }
-
-  c_parser_consume_token (parser);
 
   if (enter)
     clauses = c_parser_oacc_all_clauses (parser, OACC_ENTER_DATA_CLAUSE_MASK,

@@ -9977,6 +9977,13 @@ _mm512_maskz_expandloadu_epi32 (__mmask16 __U, void const *__P)
 }
 
 /* Mask arithmetic operations */
+#define _kand_mask16 _mm512_kand
+#define _kandn_mask16 _mm512_kandn
+#define _knot_mask16 _mm512_knot
+#define _kor_mask16 _mm512_kor
+#define _kxnor_mask16 _mm512_kxnor
+#define _kxor_mask16 _mm512_kxor
+
 extern __inline __mmask16
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_kand (__mmask16 __A, __mmask16 __B)
@@ -9988,7 +9995,8 @@ extern __inline __mmask16
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_kandn (__mmask16 __A, __mmask16 __B)
 {
-  return (__mmask16) __builtin_ia32_kandnhi ((__mmask16) __A, (__mmask16) __B);
+  return (__mmask16) __builtin_ia32_kandnhi ((__mmask16) __A,
+					     (__mmask16) __B);
 }
 
 extern __inline __mmask16
@@ -10038,6 +10046,13 @@ _mm512_knot (__mmask16 __A)
 extern __inline __mmask16
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_kunpackb (__mmask16 __A, __mmask16 __B)
+{
+  return (__mmask16) __builtin_ia32_kunpckhi ((__mmask16) __A, (__mmask16) __B);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kunpackb_mask16 (__mmask8 __A, __mmask8 __B)
 {
   return (__mmask16) __builtin_ia32_kunpckhi ((__mmask16) __A, (__mmask16) __B);
 }

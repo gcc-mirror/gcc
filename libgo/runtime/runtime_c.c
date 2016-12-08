@@ -6,6 +6,10 @@
 #include <signal.h>
 #include <unistd.h>
 
+#if defined(__i386__) || defined(__x86_64__)
+#include <cpuid.h>
+#endif
+
 #include "config.h"
 
 #include "runtime.h"
@@ -203,4 +207,19 @@ intgo
 go_errno()
 {
   return (intgo)errno;
+}
+
+// CPU-specific initialization.
+// Fetch CPUID info on x86.
+
+void
+runtime_cpuinit()
+{
+#if defined(__i386__) || defined(__x86_64__)
+	unsigned int eax, ebx, ecx, edx;
+
+	if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
+		setCpuidECX(ecx);
+	}
+#endif
 }
