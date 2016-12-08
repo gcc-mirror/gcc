@@ -1,3 +1,8 @@
+2016-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78551
+	* g++.dg/cpp1y/pr78551.C: New.
+
 2016-12-08  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR debug/78112
