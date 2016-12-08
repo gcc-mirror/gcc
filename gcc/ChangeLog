@@ -1,3 +1,8 @@
+2016-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/i386.h (HARD_REGNO_NREGS): Use GENERAL_REGNO_P.
+	(HARD_REGNO_NREGS_HAS_PADDING): Ditto.  Simplify macro.
+
 2016-12-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* emit-rtl.c (gen_reg_rtx): Move regno_pointer_align and
