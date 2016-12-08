@@ -1,3 +1,7 @@
+2016-12-08  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* gcc.target/aarch64/pr78382.c : New Testcase.
+
 2016-12-08  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/aarch64/pr71112.c : New Testcase.

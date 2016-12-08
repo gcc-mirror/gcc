@@ -1379,10 +1379,14 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
     case SYMBOL_SMALL_TLSGD:
       {
 	rtx_insn *insns;
-	rtx result = gen_rtx_REG (Pmode, R0_REGNUM);
+	machine_mode mode = GET_MODE (dest);
+	rtx result = gen_rtx_REG (mode, R0_REGNUM);
 
 	start_sequence ();
-	aarch64_emit_call_insn (gen_tlsgd_small (result, imm));
+	if (TARGET_ILP32)
+	  aarch64_emit_call_insn (gen_tlsgd_small_si (result, imm));
+	else
+	  aarch64_emit_call_insn (gen_tlsgd_small_di (result, imm));
 	insns = get_insns ();
 	end_sequence ();
 

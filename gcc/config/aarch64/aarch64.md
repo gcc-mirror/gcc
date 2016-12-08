@@ -5173,20 +5173,20 @@
 ;; The TLS ABI specifically requires that the compiler does not schedule
 ;; instructions in the TLS stubs, in order to enable linker relaxation.
 ;; Therefore we treat the stubs as an atomic sequence.
-(define_expand "tlsgd_small"
+(define_expand "tlsgd_small_<mode>"
  [(parallel [(set (match_operand 0 "register_operand" "")
                   (call (mem:DI (match_dup 2)) (const_int 1)))
-	     (unspec:DI [(match_operand:DI 1 "aarch64_valid_symref" "")] UNSPEC_GOTSMALLTLS)
+	     (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref" "")] UNSPEC_GOTSMALLTLS)
 	     (clobber (reg:DI LR_REGNUM))])]
  ""
 {
   operands[2] = aarch64_tls_get_addr ();
 })
 
-(define_insn "*tlsgd_small"
+(define_insn "*tlsgd_small_<mode>"
   [(set (match_operand 0 "register_operand" "")
 	(call (mem:DI (match_operand:DI 2 "" "")) (const_int 1)))
-   (unspec:DI [(match_operand:DI 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
+   (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
    (clobber (reg:DI LR_REGNUM))
   ]
   ""
