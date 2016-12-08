@@ -189,7 +189,7 @@ libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_4 =  \
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@	getncpu-bsd.lo
 @LIBGO_IS_LINUX_TRUE@am__objects_4 = getncpu-linux.lo
-am__objects_5 = go-assert.lo go-breakpoint.lo go-caller.lo \
+am__objects_5 = aeshash.lo go-assert.lo go-breakpoint.lo go-caller.lo \
 	go-callers.lo go-cdiv.lo go-cgo.lo go-construct-map.lo \
 	go-ffi.lo go-fieldtrack.lo go-matherr.lo go-memclr.lo \
 	go-memcmp.lo go-memequal.lo go-memmove.lo go-nanotime.lo \
@@ -767,6 +767,7 @@ toolexeclibgounicode_DATA = \
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
 @LIBGO_IS_LINUX_TRUE@runtime_getncpu_file = runtime/getncpu-linux.c
 runtime_files = \
+	runtime/aeshash.c \
 	runtime/go-assert.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
@@ -1446,6 +1447,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aeshash.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/env_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-bsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-irix.Plo@am__quote@
@@ -1572,6 +1574,13 @@ libgolibbegin_a-go-libmain.obj: runtime/go-libmain.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-libmain.c' object='libgolibbegin_a-go-libmain.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgolibbegin_a_CFLAGS) $(CFLAGS) -c -o libgolibbegin_a-go-libmain.obj `if test -f 'runtime/go-libmain.c'; then $(CYGPATH_W) 'runtime/go-libmain.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-libmain.c'; fi`
+
+aeshash.lo: runtime/aeshash.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT aeshash.lo -MD -MP -MF $(DEPDIR)/aeshash.Tpo -c -o aeshash.lo `test -f 'runtime/aeshash.c' || echo '$(srcdir)/'`runtime/aeshash.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/aeshash.Tpo $(DEPDIR)/aeshash.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/aeshash.c' object='aeshash.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o aeshash.lo `test -f 'runtime/aeshash.c' || echo '$(srcdir)/'`runtime/aeshash.c
 
 go-assert.lo: runtime/go-assert.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-assert.lo -MD -MP -MF $(DEPDIR)/go-assert.Tpo -c -o go-assert.lo `test -f 'runtime/go-assert.c' || echo '$(srcdir)/'`runtime/go-assert.c

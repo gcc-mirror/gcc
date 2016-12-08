@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -668,7 +669,6 @@ type forcegcstate struct {
 // the ELF AT_RANDOM auxiliary vector (vdso_linux_amd64.go or os_linux_386.go).
 var startupRandomData []byte
 
-/*
 // extendRandom extends the random numbers in r[:n] to the whole slice r.
 // Treats n<0 as n==0.
 func extendRandom(r []byte, n int) {
@@ -689,7 +689,6 @@ func extendRandom(r []byte, n int) {
 		}
 	}
 }
-*/
 
 // deferred subroutine calls
 // This is the gccgo version.
@@ -770,11 +769,12 @@ var (
 
 	sched schedt
 
-//	newprocs    int32
+	//	newprocs    int32
 
-// Information about what cpu features are available.
-// Set on startup in asm_{x86,amd64}.s.
-//	cpuid_ecx         uint32
+	// Information about what cpu features are available.
+	// Set on startup.
+	cpuid_ecx uint32
+
 //	cpuid_edx         uint32
 //	cpuid_ebx7        uint32
 //	lfenceBeforeRdtsc bool

@@ -265,6 +265,8 @@ struct __go_func_type;
 void	runtime_args(int32, byte**)
   __asm__ (GOSYM_PREFIX "runtime.args");
 void	runtime_osinit();
+void	runtime_alginit(void)
+  __asm__ (GOSYM_PREFIX "runtime.alginit");
 void	runtime_goargs(void)
   __asm__ (GOSYM_PREFIX "runtime.goargs");
 void	runtime_goenvs(void);
@@ -592,3 +594,7 @@ extern void *getitab(const struct __go_type_descriptor *,
 		     const struct __go_type_descriptor *,
 		     _Bool)
   __asm__ (GOSYM_PREFIX "runtime.getitab");
+
+extern void runtime_cpuinit(void);
+extern void setCpuidECX(uint32)
+  __asm__ (GOSYM_PREFIX "runtime.setCpuidECX");

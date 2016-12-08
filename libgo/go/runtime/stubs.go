@@ -248,6 +248,12 @@ func funcPC(f interface{}) uintptr {
 	return **(**uintptr)(i.data)
 }
 
+// For gccgo, to communicate from the C code to the Go code.
+//go:linkname setCpuidECX runtime.setCpuidECX
+func setCpuidECX(v uint32) {
+	cpuid_ecx = v
+}
+
 // typedmemmove copies a typed value.
 // For gccgo for now.
 //go:nosplit
