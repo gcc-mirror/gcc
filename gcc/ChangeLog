@@ -446,6 +446,7 @@
 
 2016-12-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/78638
 	* simplify-rtx.c (simplify_truncation): M2 is not mode, it is
 	GET_MODE (op).  Fix this.
 
