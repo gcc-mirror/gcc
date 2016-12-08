@@ -10,22 +10,22 @@ A a;
 
 struct B
 {
-  B() throw (int) = default; // { dg-message "exception-specification" }
-};
-
-B b;				// { dg-error "deleted" }
+  B() throw (int) = default; // { dg-message "exception-specification" "" { target { ! c++1z } } }
+};				// { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
+				// { dg-warning "deprecated" "" { target { ! c++1z } } .-2 }
+B b;				// { dg-error "deleted" "" { target { ! c++1z } } }
 
 struct C
 {
-  C() throw (int) { }
-};
+  C() throw (int) { }		// { dg-error "dynamic exception specification" "" { target c++1z } }
+};				// { dg-warning "deprecated" "" { target { ! c++1z } } .-1 }
 
 C c;
 
 struct D: C
 {
-  D() throw (int) = default;
-};
+  D() throw (int) = default;	// { dg-error "dynamic exception specification" "" { target c++1z } }
+};				// { dg-warning "deprecated" "" { target { ! c++1z } } .-1 }
 
 D d;
 

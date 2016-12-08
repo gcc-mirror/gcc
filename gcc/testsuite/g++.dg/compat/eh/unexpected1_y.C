@@ -1,3 +1,5 @@
+// { dg-options "-std=c++98" }
+
 struct One { };
 struct Two { };
 

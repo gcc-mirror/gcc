@@ -1,17 +1,118 @@
+2016-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	P0003R5 - removal of dynamic exception specification from C++17
+	* g++.dg/compat/eh/ctor1.h: Adjust for deprecation of
+	throw (type-id-list) in C++11 and C++14 and removal in C++17.
+	* g++.dg/compat/eh/ctor1_y.C: Likewise.
+	* g++.dg/compat/eh/new1_x.C: Likewise.
+	* g++.dg/compat/eh/new1_y.C: Likewise.
+	* g++.dg/compat/eh/spec3_x.C: Likewise.
+	* g++.dg/compat/eh/spec3_y.C: Likewise.
+	* g++.dg/compat/eh/template1.h: Likewise.
+	* g++.dg/compat/eh/template1_y.C: Likewise.
+	* g++.dg/compat/eh/unexpected1_x.C: Likewise.
+	* g++.dg/compat/eh/unexpected1_y.C: Likewise.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp0x/defaulted23.C: Likewise.
+	* g++.dg/cpp0x/error5.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-eh2.C: Likewise.
+	* g++.dg/cpp0x/noexcept02.C: Likewise.
+	* g++.dg/cpp0x/noexcept07.C: Likewise.
+	* g++.dg/cpp0x/noexcept08.C: Likewise.
+	* g++.dg/cpp0x/noexcept19.C: Likewise.
+	* g++.dg/cpp0x/variadic73.C: Likewise.
+	* g++.dg/cpp0x/variadic-throw.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type1.C: Likewise.
+	* g++.dg/eh/async-unwind2.C: Likewise.
+	* g++.dg/eh/cond4.C: Likewise.
+	* g++.dg/eh/delete1.C: Likewise.
+	* g++.dg/eh/ehopt1.C: Likewise.
+	* g++.dg/eh/forced3.C: Likewise.
+	* g++.dg/eh/forced4.C: Likewise.
+	* g++.dg/eh/init-temp2.C: Likewise.
+	* g++.dg/eh/pr38662.C: Likewise.
+	* g++.dg/eh/pr41819.C: Likewise.
+	* g++.dg/eh/shadow1.C: Likewise.
+	* g++.dg/eh/spec2.C: Likewise.
+	* g++.dg/eh/spec3.C: Likewise.
+	* g++.dg/eh/spec5.C: Likewise.
+	* g++.dg/eh/spec6.C: Likewise.
+	* g++.dg/eh/spec7.C: Likewise.
+	* g++.dg/eh/spec8.C: Likewise.
+	* g++.dg/eh/spec9.C: Likewise.
+	* g++.dg/eh/template1.C: Likewise.
+	* g++.dg/eh/unexpected1.C: Likewise.
+	* g++.dg/ext/has_nothrow_assign.C: Likewise.
+	* g++.dg/ext/has_nothrow_constructor.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-1.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-2.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-4.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-5.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-6.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-7.C: Likewise.
+	* g++.dg/gcov/gcov-7.C: Likewise.
+	* g++.dg/init/new13.C: Likewise.
+	* g++.dg/init/new25.C: Likewise.
+	* g++.dg/lookup/exception1.C: Likewise.
+	* g++.dg/opt/noreturn-1.C: Likewise.
+	* g++.dg/other/error3.C: Likewise.
+	* g++.dg/rtti/crash3.C: Likewise.
+	* g++.dg/template/eh2.C: Likewise.
+	* g++.dg/template/error36.C: Likewise.
+	* g++.dg/tm/pr46567.C: Likewise.
+	* g++.dg/tm/pr47340.C: Likewise.
+	* g++.dg/torture/pr46364.C: Likewise.
+	* g++.dg/torture/pr49394.C: Likewise.
+	* g++.dg/torture/pr52918-1.C: Likewise.
+	* g++.dg/torture/pr57190.C: Likewise.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-fastcall-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-global-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-thiscall-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Likewise.
+	* g++.dg/tree-ssa/pr45605.C: Likewise.
+	* g++.dg/warn/Wreturn-type-3.C: Likewise.
+	* g++.old-deja/g++.eh/badalloc1.C: Likewise.
+	* g++.old-deja/g++.eh/cleanup2.C: Likewise.
+	* g++.old-deja/g++.eh/spec1.C: Likewise.
+	* g++.old-deja/g++.eh/spec2.C: Likewise.
+	* g++.old-deja/g++.eh/spec3.C: Likewise.
+	* g++.old-deja/g++.eh/spec4.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Likewise.
+	* g++.old-deja/g++.eh/throw1.C: Likewise.
+	* g++.old-deja/g++.eh/throw2.C: Likewise.
+	* g++.old-deja/g++.eh/tmpl1.C: Likewise.
+	* g++.old-deja/g++.eh/tmpl3.C: Likewise.
+	* g++.old-deja/g++.mike/eh15.C: Likewise.
+	* g++.old-deja/g++.mike/eh25.C: Likewise.
+	* g++.old-deja/g++.mike/eh33.C: Likewise.
+	* g++.old-deja/g++.mike/eh34.C: Likewise.
+	* g++.old-deja/g++.mike/eh50.C: Likewise.
+	* g++.old-deja/g++.mike/eh51.C: Likewise.
+	* g++.old-deja/g++.mike/eh55.C: Likewise.
+	* g++.old-deja/g++.mike/p10416.C: Likewise.
+	* g++.old-deja/g++.other/crash28.C: Likewise.
+	* g++.old-deja/g++.other/crash30.C: Likewise.
+	* g++.old-deja/g++.other/new7.C: Likewise.
+	* g++.old-deja/g++.pt/ehspec1.C: Likewise.
+	* g++.old-deja/g++.robertl/eb123.C: Likewise.
+
 2016-12-08  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
-	* gcc.target/aarch64/pr78382.c : New Testcase.
+	* gcc.target/aarch64/pr78382.c: New testcase.
 
 2016-12-08  Andrew Pinski  <apinski@cavium.com>
 
-	* gcc.target/aarch64/pr71112.c : New Testcase.
+	* gcc.target/aarch64/pr71112.c: New testcase.
 
 2016-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/77784
 	PR middle-end/78149
 	PR middle-end/78138
-
 	* c-c++-common/Wsizeof-pointer-memaccess2.c: Adjust expected diagnostic.
 	* g++.dg/ext/builtin-object-size3.C (bar): Same.
 	* g++.dg/ext/strncpy-chk1.C: Same.
@@ -84,7 +185,7 @@
 
 2016-12-07  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
-	* gcc.target/aarch64/pr71727.c : New Testcase.
+	* gcc.target/aarch64/pr71727.c: New testcase.
 
 2016-12-06  Tom de Vries  <tom@codesourcery.com>
 
@@ -873,23 +974,23 @@
 
 2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
-	* gcc.target/aarch64/ldp_stp_1.c : Add -mcpu=generic.
-	* gcc.target/aarch64/store-pair-1.c : Likewise.
+	* gcc.target/aarch64/ldp_stp_1.c: Add -mcpu=generic.
+	* gcc.target/aarch64/store-pair-1.c: Likewise.
 
 2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
-	* gcc.target/aarch64/fmaxmin.c : Add -fno-vect-cost-model.
-	* gcc.target/aarch64/fmul_fcvt_2.c : Likewise.
-	* gcc.target/aarch64/vect-abs-compile.c : Likewise.
-	* gcc.target/aarch64/vect-clz.c : Likewise.
-	* gcc.target/aarch64/vect-fcm-eq-d.c : Likewise.
-	* gcc.target/aarch64/vect-fcm-ge-d.c : Likewise.
-	* gcc.target/aarch64/vect-fcm-gt-d.c : Likewise.
-	* gcc.target/aarch64/vect-fmovd-zero.c : Likewise.
-	* gcc.target/aarch64/vect-fmovd.c : Likewise.
-	* gcc.target/aarch64/vect-fmovf-zero.c : Likewise.
-	* gcc.target/aarch64/vect-fmovf.c : Likewise.
-	* gcc.target/aarch64/vect_ctz_1.c : Likewise.
+	* gcc.target/aarch64/fmaxmin.c: Add -fno-vect-cost-model.
+	* gcc.target/aarch64/fmul_fcvt_2.c: Likewise.
+	* gcc.target/aarch64/vect-abs-compile.c: Likewise.
+	* gcc.target/aarch64/vect-clz.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-eq-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf.c: Likewise.
+	* gcc.target/aarch64/vect_ctz_1.c: Likewise.
 
 2016-11-23  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -7061,7 +7162,7 @@
 2016-07-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71883
-	* gfortran.dg/pr71883.f90 : New test.
+	* gfortran.dg/pr71883.f90: New test.
 
 2016-07-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
@@ -14685,7 +14786,7 @@
 2016-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69423
-	* gfortran.dg/deferred_character_15.f90 : New test.
+	* gfortran.dg/deferred_character_15.f90: New test.
 
 2016-02-20  Dominique d'Humieres  <dominiq@lps.ens.fr>
 

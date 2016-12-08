@@ -23786,8 +23786,8 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   token = cp_lexer_peek_token (parser->lexer);
 
   /* Is it a noexcept-specification?  */
-  type_id_list = cp_parser_noexcept_specification_opt(parser, true, NULL,
-						      false);
+  type_id_list = cp_parser_noexcept_specification_opt (parser, true, NULL,
+						       false);
   if (type_id_list != NULL_TREE)
     return type_id_list;
 
@@ -23795,12 +23795,7 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   if (!cp_parser_is_keyword (token, RID_THROW))
     return NULL_TREE;
 
-#if 0
-  /* Enable this once a lot of code has transitioned to noexcept?  */
-  if (cxx_dialect >= cxx11 && !in_system_header_at (input_location))
-    warning (OPT_Wdeprecated, "dynamic exception specifications are "
-	     "deprecated in C++0x; use %<noexcept%> instead");
-#endif
+  location_t loc = token->location;
 
   /* Consume the `throw'.  */
   cp_lexer_consume_token (parser->lexer);
@@ -23821,7 +23816,23 @@ cp_parser_exception_specification_opt (cp_parser* parser)
       type_id_list = cp_parser_type_id_list (parser);
       /* Restore the saved message.  */
       parser->type_definition_forbidden_message = saved_message;
+
+      if (cxx_dialect >= cxx1z)
+	{
+	  error_at (loc, "ISO C++1z does not allow dynamic exception "
+			 "specifications");
+	  type_id_list = NULL_TREE;
+	}
+      else if (cxx_dialect >= cxx11 && !in_system_header_at (loc))
+	warning_at (loc, OPT_Wdeprecated,
+		    "dynamic exception specifications are deprecated in C++11;"
+		    " use %<noexcept%> instead");
     }
+  /* In C++17, throw() is equivalent to noexcept (true).  throw()
+     is deprecated in C++11 and above as well, but is still widely used,
+     so don't warn about it yet.  */
+  else if (cxx_dialect >= cxx1z)
+    type_id_list = noexcept_true_spec;
   else
     type_id_list = empty_except_spec;
 
