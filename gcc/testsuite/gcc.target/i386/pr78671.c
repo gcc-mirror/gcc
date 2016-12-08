@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-march=skylake-avx512 -Og" } */
 
 typedef unsigned __int128 u128;
