@@ -34,6 +34,8 @@ struct GTY(()) sequence_stack {
 };
 
 struct GTY(()) emit_status {
+  void ensure_regno_capacity ();
+
   /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
      After rtl generation, it is 1 plus the largest register number used.  */
   int x_reg_rtx_no;
