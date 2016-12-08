@@ -260,6 +260,14 @@ namespace __debug
     { return !(__one < __two); }
 
   // Specialized algorithms.
+
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+  template<typename _Tp, size_t _Nm>
+    typename enable_if<
+      !_GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::_Is_swappable::value>::type
+    swap(array<_Tp, _Nm>&, array<_Tp, _Nm>&) = delete;
+#endif
+
   template<typename _Tp, std::size_t _Nm>
     inline void
     swap(array<_Tp, _Nm>& __one, array<_Tp, _Nm>& __two)

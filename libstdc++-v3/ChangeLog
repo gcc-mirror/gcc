@@ -1,5 +1,21 @@
 2016-12-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/array (swap): Add deleted overload.
+	* include/bits/stl_pair.h (swap): Remove redundant inline keyword
+	from deleted overload.
+	* include/bits/unique_ptr.h (swap): Likewise.
+	* include/std/array (swap): Likewise.
+	* include/std/optional (swap): Likewise.
+	* include/std/tuple (swap): Likewise.
+	* include/std/variant (swap): Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
 	PR libstdc++/71856
 	* doc/xml/manual/using.xml: Document macro.
 	* include/bits/c++config [_GLIBCXX_DEBUG || _GLIBCXX_PARALLEL]

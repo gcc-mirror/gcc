@@ -1588,7 +1588,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
   template<typename... _Elements>
-    inline
     typename enable_if<!__and_<__is_swappable<_Elements>...>::value>::type
     swap(tuple<_Elements...>&, tuple<_Elements...>&) = delete;
 #endif
