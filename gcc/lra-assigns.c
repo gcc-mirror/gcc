@@ -628,9 +628,13 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	hard_regno = ira_class_hard_regs[rclass][i];
       if (! overlaps_hard_reg_set_p (conflict_set,
 				     PSEUDO_REGNO_MODE (regno), hard_regno)
-	  /* We can not use prohibited_class_mode_regs because it is
-	     not defined for all classes.  */
 	  && HARD_REGNO_MODE_OK (hard_regno, PSEUDO_REGNO_MODE (regno))
+	  /* We can not use prohibited_class_mode_regs for all classes
+	     because it is not defined for all classes.  */
+	  && (ira_allocno_class_translate[rclass] != rclass
+	      || ! TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs
+				      [rclass][PSEUDO_REGNO_MODE (regno)],
+				      hard_regno))
 	  && ! TEST_HARD_REG_BIT (impossible_start_hard_regs, hard_regno)
 	  && (nregs_diff == 0
 	      || (WORDS_BIG_ENDIAN

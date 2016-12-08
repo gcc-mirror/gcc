@@ -1,3 +1,9 @@
+2016-12-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/78671
+	* lra-assign.c (lra-assigns.c): Check prohibited regs for an
+	allocno class.
+
 2016-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/i386.h (HARD_REGNO_NREGS): Use GENERAL_REGNO_P.
