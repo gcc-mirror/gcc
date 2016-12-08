@@ -1,5 +1,8 @@
 2016-12-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/filesystem/path/construct/range.cc: Don't
+	use basic_string::front() when string might be empty.
+
 	* include/debug/array (swap): Add deleted overload.
 	* include/bits/stl_pair.h (swap): Remove redundant inline keyword
 	from deleted overload.

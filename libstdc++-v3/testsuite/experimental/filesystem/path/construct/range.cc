@@ -59,13 +59,14 @@ test01()
     using __gnu_test::test_container;
     using __gnu_test::input_iterator_wrapper;
     // Test with input iterators and const value_types
+
     test_container<char, input_iterator_wrapper>
-      r1(&s.front(), &s.front() + s.size());
+      r1((char*)s.c_str(), (char*)s.c_str() + s.size());
     path p9(r1.begin(), r1.end());
     compare_paths(p1, p9);
 
     test_container<char, input_iterator_wrapper>
-      r2(&s.front(), &s.front() + s.size() + 1); // includes null-terminator
+      r2((char*)s.c_str(), (char*)s.c_str() + s.size() + 1); // includes null-terminator
     path p10(r2.begin());
     compare_paths(p1, p10);
 
@@ -82,12 +83,12 @@ test01()
 #if _GLIBCXX_USE_WCHAR_T
     // Test with input iterators and const value_types
     test_container<wchar_t, input_iterator_wrapper>
-      r5(&ws.front(), &ws.front() + ws.size());
+      r5((wchar_t*)ws.c_str(), (wchar_t*)ws.c_str() + ws.size());
     path p13(r5.begin(), r5.end());
     compare_paths(p1, p13);
 
     test_container<wchar_t, input_iterator_wrapper>
-      r6(&ws.front(), &ws.front() + ws.size() + 1); // includes null-terminator
+      r6((wchar_t*)ws.c_str(), (wchar_t*)ws.c_str() + ws.size() + 1); // includes null-terminator
     path p14(r6.begin());
     compare_paths(p1, p14);
 
