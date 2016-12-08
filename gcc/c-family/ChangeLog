@@ -1,5 +1,10 @@
 2016-12-08  Martin Sebor  <msebor@redhat.com>
 
+	PR c/78284
+	* c.opt (-Walloc-zero, -Walloc-size-larger-than): New options.
+
+2016-12-08  Martin Sebor  <msebor@redhat.com>
+
 	PR c/78165
            * c-pretty-print (pp_c_integer_constant): Avoid formatting type
              suffix.
