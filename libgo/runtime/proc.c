@@ -455,7 +455,8 @@ runtime_schedinit(void)
 	// runtime_symtabinit();
 	runtime_mallocinit();
 	mcommoninit(m);
-	
+	runtime_alginit(); // maps must not be used before this call
+
 	// Initialize the itable value for newErrorCString,
 	// so that the next time it gets called, possibly
 	// in a fault during a garbage collection, it will not

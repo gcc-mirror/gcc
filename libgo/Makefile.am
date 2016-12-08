@@ -422,6 +422,7 @@ endif
 endif
 
 runtime_files = \
+	runtime/aeshash.c \
 	runtime/go-assert.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \

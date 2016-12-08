@@ -1648,7 +1648,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
   const char* equal_fnname;
   if (this->compare_is_identity(gogo))
     {
-      hash_fnname = "__go_type_hash_identity";
+      hash_fnname = "runtime.memhash";
       equal_fnname = "__go_type_equal_identity";
     }
   else

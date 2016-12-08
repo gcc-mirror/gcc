@@ -362,7 +362,6 @@ extern _Bool
 __go_type_descriptors_equal(const struct __go_type_descriptor*,
 			    const struct __go_type_descriptor*);
 
-extern uintptr_t __go_type_hash_identity (const void *, uintptr_t, uintptr_t);
 extern const FuncVal __go_type_hash_identity_descriptor;
 extern _Bool __go_type_equal_identity (const void *, const void *, uintptr_t);
 extern const FuncVal __go_type_equal_identity_descriptor;
