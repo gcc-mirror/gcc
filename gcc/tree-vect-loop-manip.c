@@ -2070,8 +2070,7 @@ create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
       /* Index must have const step, otherwise DR_STEP won't be constant.  */
       gcc_assert (TREE_CODE (idx_step) == INTEGER_CST);
       /* Index must evaluate in the same direction as DR.  */
-      gcc_assert (!neg_step
-		  || tree_int_cst_compare (idx_step, size_zero_node) < 0);
+      gcc_assert (!neg_step || tree_int_cst_sign_bit (idx_step) == 1);
 
       tree min1 = CHREC_LEFT (access1);
       tree min2 = CHREC_LEFT (access2);
