@@ -1829,6 +1829,27 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
 }
 
 
+/* Extract element INDEX consisting of CHARS_PER_ELT chars from
+   STRING_CST STRING.  */
+
+static tree
+extract_string_elt (tree string, unsigned chars_per_elt, unsigned index)
+{
+  tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (string)));
+  tree r;
+
+  if (chars_per_elt == 1)
+    r = build_int_cst (type, TREE_STRING_POINTER (string)[index]);
+  else
+    {
+      const unsigned char *ptr
+	= ((const unsigned char *)TREE_STRING_POINTER (string)
+	   + index * chars_per_elt);
+      r = native_interpret_expr (type, ptr, chars_per_elt);
+    }
+  return r;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to reduce a reference to an array slot.  */
 
@@ -1913,16 +1934,8 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 
   if (TREE_CODE (ary) == CONSTRUCTOR)
     return (*CONSTRUCTOR_ELTS (ary))[i].value;
-  else if (elem_nchars == 1)
-    return build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
-			  TREE_STRING_POINTER (ary)[i]);
   else
-    {
-      tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (ary)));
-      return native_interpret_expr (type, (const unsigned char *)
-					  TREE_STRING_POINTER (ary)
-					  + i * elem_nchars, elem_nchars);
-    }
+    return extract_string_elt (ary, elem_nchars, i);
   /* Don't VERIFY_CONSTANT here.  */
 }
 
@@ -2837,6 +2850,34 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp) = true;
+	}
+      else if (TREE_CODE (*valp) == STRING_CST)
+	{
+	  /* An array was initialized with a string constant, and now
+	     we're writing into one of its elements.  Explode the
+	     single initialization into a set of element
+	     initializations.  */
+	  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+	  tree string = *valp;
+	  tree elt_type = TREE_TYPE (type);
+	  unsigned chars_per_elt = (TYPE_PRECISION (elt_type)
+				    / TYPE_PRECISION (char_type_node));
+	  unsigned num_elts = TREE_STRING_LENGTH (string) / chars_per_elt;
+	  tree ary_ctor = build_constructor (type, NULL);
+
+	  vec_safe_reserve (CONSTRUCTOR_ELTS (ary_ctor), num_elts);
+	  for (unsigned ix = 0; ix != num_elts; ix++)
+	    {
+	      constructor_elt elt = 
+		{
+		  build_int_cst (size_type_node, ix),
+		  extract_string_elt (string, chars_per_elt, ix)
+		};
+	      CONSTRUCTOR_ELTS (ary_ctor)->quick_push (elt);
+	    }
+	  
+	  *valp = ary_ctor;
 	}
 
       enum tree_code code = TREE_CODE (type);
