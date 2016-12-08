@@ -1,3 +1,8 @@
+2016-12-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_assert2.cc: Move dg-do run first.
+
 2016-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR libstdc++/78264
