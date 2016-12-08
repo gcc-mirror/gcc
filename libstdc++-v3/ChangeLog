@@ -1,3 +1,9 @@
+2016-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR libstdc++/78264
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT_PARM): Turn _N into _NE.
+	(_GLIBCXX_NOEXCEPT_QUAL): Likewise.
+
 2016-12-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/path/construct/range.cc: Don't
