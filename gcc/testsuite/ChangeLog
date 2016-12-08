@@ -1,3 +1,9 @@
+2016-12-08  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR debug/78112
+	* g++.dg/pr78112.C: Remove platform-dependent checks.
+	* g++.dg/pr78112-2.C: New testcase.
+
 2016-12-08  Bin Cheng  <bin.cheng@arm.com>
 
 	PR middle-end/78684
