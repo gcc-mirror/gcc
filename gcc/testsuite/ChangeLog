@@ -1,3 +1,9 @@
+2016-12-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(CHECK_CRYPTO): Remove.
+	(expected_poly64x1_t, expected_poly64x2_t): Remove
+
 2016-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	P0003R5 - removal of dynamic exception specification from C++17
