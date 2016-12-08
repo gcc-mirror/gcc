@@ -39,7 +39,7 @@ void (*include_callback) (const char *);
 
 /* Global singleton.  */
 
-rtx_reader *rtx_reader_ptr;
+md_reader *md_reader_ptr;
 
 /* Given an object that starts with a char * name field, return a hash
    code for its name.  */
@@ -79,7 +79,7 @@ leading_ptr_eq_p (const void *def1, const void *def2)
 /* Associate PTR with the file position given by FILENAME and LINENO.  */
 
 void
-rtx_reader::set_md_ptr_loc (const void *ptr, const char *filename, int lineno)
+md_reader::set_md_ptr_loc (const void *ptr, const char *filename, int lineno)
 {
   struct ptr_loc *loc;
 
@@ -95,7 +95,7 @@ rtx_reader::set_md_ptr_loc (const void *ptr, const char *filename, int lineno)
    position was set.  */
 
 const struct ptr_loc *
-rtx_reader::get_md_ptr_loc (const void *ptr)
+md_reader::get_md_ptr_loc (const void *ptr)
 {
   return (const struct ptr_loc *) htab_find (m_ptr_locs, &ptr);
 }
@@ -103,7 +103,7 @@ rtx_reader::get_md_ptr_loc (const void *ptr)
 /* Associate NEW_PTR with the same file position as OLD_PTR.  */
 
 void
-rtx_reader::copy_md_ptr_loc (const void *new_ptr, const void *old_ptr)
+md_reader::copy_md_ptr_loc (const void *new_ptr, const void *old_ptr)
 {
   const struct ptr_loc *loc = get_md_ptr_loc (old_ptr);
   if (loc != 0)
@@ -114,7 +114,7 @@ rtx_reader::copy_md_ptr_loc (const void *new_ptr, const void *old_ptr)
    directive for it to OUTF.  */
 
 void
-rtx_reader::fprint_md_ptr_loc (FILE *outf, const void *ptr)
+md_reader::fprint_md_ptr_loc (FILE *outf, const void *ptr)
 {
   const struct ptr_loc *loc = get_md_ptr_loc (ptr);
   if (loc != 0)
@@ -123,7 +123,7 @@ rtx_reader::fprint_md_ptr_loc (FILE *outf, const void *ptr)
 
 /* Special fprint_md_ptr_loc for writing to STDOUT.  */
 void
-rtx_reader::print_md_ptr_loc (const void *ptr)
+md_reader::print_md_ptr_loc (const void *ptr)
 {
   fprint_md_ptr_loc (stdout, ptr);
 }
@@ -132,7 +132,7 @@ rtx_reader::print_md_ptr_loc (const void *ptr)
    may be null or empty.  */
 
 const char *
-rtx_reader::join_c_conditions (const char *cond1, const char *cond2)
+md_reader::join_c_conditions (const char *cond1, const char *cond2)
 {
   char *result;
   const void **entry;
@@ -161,7 +161,7 @@ rtx_reader::join_c_conditions (const char *cond1, const char *cond2)
    directive for COND if its original file position is known.  */
 
 void
-rtx_reader::fprint_c_condition (FILE *outf, const char *cond)
+md_reader::fprint_c_condition (FILE *outf, const char *cond)
 {
   const char **halves = (const char **) htab_find (m_joined_conditions, &cond);
   if (halves != 0)
@@ -183,7 +183,7 @@ rtx_reader::fprint_c_condition (FILE *outf, const char *cond)
 /* Special fprint_c_condition for writing to STDOUT.  */
 
 void
-rtx_reader::print_c_condition (const char *cond)
+md_reader::print_c_condition (const char *cond)
 {
   fprint_c_condition (stdout, cond);
 }
@@ -250,8 +250,9 @@ fatal_with_file_and_line (const char *msg, ...)
 
   va_start (ap, msg);
 
-  fprintf (stderr, "%s:%d:%d: error: ", rtx_reader_ptr->get_filename (),
-	   rtx_reader_ptr->get_lineno (), rtx_reader_ptr->get_colno ());
+  fprintf (stderr, "%s:%d:%d: error: ", md_reader_ptr->get_filename (),
+	   md_reader_ptr->get_lineno (),
+	   md_reader_ptr->get_colno ());
   vfprintf (stderr, msg, ap);
   putc ('\n', stderr);
 
@@ -271,8 +272,9 @@ fatal_with_file_and_line (const char *msg, ...)
   context[i] = '\0';
 
   fprintf (stderr, "%s:%d:%d: note: following context is `%s'\n",
-	   rtx_reader_ptr->get_filename (), rtx_reader_ptr->get_lineno (),
-	   rtx_reader_ptr->get_colno (), context);
+	   md_reader_ptr->get_filename (),
+	   md_reader_ptr->get_lineno (),
+	   md_reader_ptr->get_colno (), context);
 
   va_end (ap);
   exit (1);
@@ -344,7 +346,7 @@ read_skip_spaces (void)
    EXPECTED.  */
 
 void
-rtx_reader::require_char (char expected)
+md_reader::require_char (char expected)
 {
   int ch = read_char ();
   if (ch != expected)
@@ -355,7 +357,7 @@ rtx_reader::require_char (char expected)
    character, issuing a fatal error if it is not EXPECTED.  */
 
 void
-rtx_reader::require_char_ws (char expected)
+md_reader::require_char_ws (char expected)
 {
   int ch = read_skip_spaces ();
   if (ch != expected)
@@ -366,7 +368,7 @@ rtx_reader::require_char_ws (char expected)
    issuing a fatal error if it is not EXPECTED.  */
 
 void
-rtx_reader::require_word_ws (const char *expected)
+md_reader::require_word_ws (const char *expected)
 {
   struct md_name name;
   read_name (&name);
@@ -377,7 +379,7 @@ rtx_reader::require_word_ws (const char *expected)
 /* Read the next character from the file.  */
 
 int
-rtx_reader::read_char (void)
+md_reader::read_char (void)
 {
   int ch;
 
@@ -397,7 +399,7 @@ rtx_reader::read_char (void)
 /* Put back CH, which was the last character read from the file.  */
 
 void
-rtx_reader::unread_char (int ch)
+md_reader::unread_char (int ch)
 {
   if (ch == '\n')
     {
@@ -412,7 +414,7 @@ rtx_reader::unread_char (int ch)
 /* Peek at the next character from the file without consuming it.  */
 
 int
-rtx_reader::peek_char (void)
+md_reader::peek_char (void)
 {
   int ch = read_char ();
   unread_char (ch);
@@ -423,7 +425,7 @@ rtx_reader::peek_char (void)
    punctuation chars of rtx printed syntax.  */
 
 void
-rtx_reader::read_name (struct md_name *name)
+md_reader::read_name (struct md_name *name)
 {
   int c;
   size_t i;
@@ -489,7 +491,7 @@ rtx_reader::read_name (struct md_name *name)
    Caller has read the backslash, but not placed it into the obstack.  */
 
 void
-rtx_reader::read_escape ()
+md_reader::read_escape ()
 {
   int c = read_char ();
 
@@ -542,7 +544,7 @@ rtx_reader::read_escape ()
    the leading quote.  */
 
 char *
-rtx_reader::read_quoted_string ()
+md_reader::read_quoted_string ()
 {
   int c;
 
@@ -569,7 +571,7 @@ rtx_reader::read_quoted_string ()
    the outermost braces _are_ included in the string constant.  */
 
 char *
-rtx_reader::read_braced_string ()
+md_reader::read_braced_string ()
 {
   int c;
   int brace_depth = 1;  /* caller-processed */
@@ -606,7 +608,7 @@ rtx_reader::read_braced_string ()
    and dispatch to the appropriate string constant reader.  */
 
 char *
-rtx_reader::read_string (int star_if_braced)
+md_reader::read_string (int star_if_braced)
 {
   char *stringbuf;
   int saw_paren = 0;
@@ -642,7 +644,7 @@ rtx_reader::read_string (int star_if_braced)
    is currently nested by DEPTH levels of parentheses.  */
 
 void
-rtx_reader::read_skip_construct (int depth, file_location loc)
+md_reader::read_skip_construct (int depth, file_location loc)
 {
   struct md_name name;
   int c;
@@ -784,7 +786,7 @@ add_constant (htab_t defs, char *name, char *value,
    after the "define_constants".  */
 
 void
-rtx_reader::handle_constants ()
+md_reader::handle_constants ()
 {
   int c;
   htab_t defs;
@@ -815,7 +817,7 @@ rtx_reader::handle_constants ()
    Stop when CALLBACK returns zero.  */
 
 void
-rtx_reader::traverse_md_constants (htab_trav callback, void *info)
+md_reader::traverse_md_constants (htab_trav callback, void *info)
 {
   htab_traverse (get_md_constants (), callback, info);
 }
@@ -838,7 +840,7 @@ md_decimal_string (int number)
    directive is a define_enum rather than a define_c_enum.  */
 
 void
-rtx_reader::handle_enum (file_location loc, bool md_p)
+md_reader::handle_enum (file_location loc, bool md_p)
 {
   char *enum_name, *value_name;
   struct md_name name;
@@ -904,7 +906,7 @@ rtx_reader::handle_enum (file_location loc, bool md_p)
 /* Try to find the definition of the given enum.  Return null on failure.  */
 
 struct enum_type *
-rtx_reader::lookup_enum_type (const char *name)
+md_reader::lookup_enum_type (const char *name)
 {
   return (struct enum_type *) htab_find (m_enum_types, &name);
 }
@@ -914,15 +916,15 @@ rtx_reader::lookup_enum_type (const char *name)
    returns zero.  */
 
 void
-rtx_reader::traverse_enum_types (htab_trav callback, void *info)
+md_reader::traverse_enum_types (htab_trav callback, void *info)
 {
   htab_traverse (m_enum_types, callback, info);
 }
 
 
-/* Constructor for rtx_reader.  */
+/* Constructor for md_reader.  */
 
-rtx_reader::rtx_reader ()
+md_reader::md_reader ()
 : m_toplevel_fname (NULL),
   m_base_dir (NULL),
   m_read_md_file (NULL),
@@ -933,7 +935,7 @@ rtx_reader::rtx_reader ()
   m_last_dir_md_include_ptr (&m_first_dir_md_include)
 {
   /* Set the global singleton pointer.  */
-  rtx_reader_ptr = this;
+  md_reader_ptr = this;
 
   obstack_init (&m_string_obstack);
 
@@ -953,9 +955,9 @@ rtx_reader::rtx_reader ()
   unlock_std_streams ();
 }
 
-/* rtx_reader's destructor.  */
+/* md_reader's destructor.  */
 
-rtx_reader::~rtx_reader ()
+md_reader::~md_reader ()
 {
   free (m_base_dir);
 
@@ -972,7 +974,7 @@ rtx_reader::~rtx_reader ()
   obstack_free (&m_string_obstack, NULL);
 
   /* Clear the global singleton pointer.  */
-  rtx_reader_ptr = NULL;
+  md_reader_ptr = NULL;
 }
 
 /* Process an "include" directive, starting with the optional space
@@ -981,7 +983,7 @@ rtx_reader::~rtx_reader ()
    which the "include" occurred.  */
 
 void
-rtx_reader::handle_include (file_location loc)
+md_reader::handle_include (file_location loc)
 {
   const char *filename;
   const char *old_filename;
@@ -1059,7 +1061,7 @@ rtx_reader::handle_include (file_location loc)
    unknown directives.  */
 
 void
-rtx_reader::handle_file ()
+md_reader::handle_file ()
 {
   struct md_name directive;
   int c;
@@ -1093,7 +1095,7 @@ rtx_reader::handle_file ()
    and m_base_dir accordingly.  */
 
 void
-rtx_reader::handle_toplevel_file ()
+md_reader::handle_toplevel_file ()
 {
   const char *base;
 
@@ -1108,7 +1110,7 @@ rtx_reader::handle_toplevel_file ()
 }
 
 file_location
-rtx_reader::get_current_location () const
+md_reader::get_current_location () const
 {
   return file_location (m_read_md_filename, m_read_md_lineno, m_read_md_colno);
 }
@@ -1116,7 +1118,7 @@ rtx_reader::get_current_location () const
 /* Parse a -I option with argument ARG.  */
 
 void
-rtx_reader::add_include_path (const char *arg)
+md_reader::add_include_path (const char *arg)
 {
   struct file_name_list *dirtmp;
 
@@ -1137,8 +1139,8 @@ rtx_reader::add_include_path (const char *arg)
    generic error should be reported.  */
 
 bool
-rtx_reader::read_md_files (int argc, const char **argv,
-			   bool (*parse_opt) (const char *))
+md_reader::read_md_files (int argc, const char **argv,
+			  bool (*parse_opt) (const char *))
 {
   int i;
   bool no_more_options;
@@ -1233,7 +1235,7 @@ rtx_reader::read_md_files (int argc, const char **argv,
   return !have_error;
 }
 
-/* class noop_reader : public rtx_reader */
+/* class noop_reader : public md_reader */
 
 /* A dummy implementation which skips unknown directives.  */
 void
