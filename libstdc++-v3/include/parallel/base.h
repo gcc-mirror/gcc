@@ -419,7 +419,11 @@ namespace __gnu_parallel
 	}
     }
 
-#define _GLIBCXX_PARALLEL_ASSERT(_Condition) __glibcxx_assert(_Condition)
+#if _GLIBCXX_PARALLEL_ASSERTIONS && defined(__glibcxx_assert_impl)
+#define _GLIBCXX_PARALLEL_ASSERT(_Condition) __glibcxx_assert_impl(_Condition)
+#else
+#define _GLIBCXX_PARALLEL_ASSERT(_Condition)
+#endif
 
 } //namespace __gnu_parallel
 
