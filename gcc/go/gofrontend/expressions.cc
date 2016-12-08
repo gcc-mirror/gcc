@@ -12951,8 +12951,8 @@ Slice_construction_expression::do_flatten(Gogo* gogo, Named_object* no,
   // Base class flattening first
   this->Array_construction_expression::do_flatten(gogo, no, inserter);
 
-  // Create an stack-allocated storage temp if storage won't escape
-  if (!this->storage_escapes_)
+  // Create a stack-allocated storage temp if storage won't escape
+  if (!this->storage_escapes_ && this->slice_storage_ == NULL)
     {
       Location loc = this->location();
       this->array_val_ = create_array_val();
