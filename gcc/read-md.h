@@ -91,11 +91,23 @@ struct enum_type {
   unsigned int num_values;
 };
 
-class rtx_reader
+/* A class for reading .md files and RTL dump files.
+
+   Implemented in read-md.c.
+
+   This class has responsibility for reading chars from input files, and
+   for certain common top-level directives including the "include"
+   directive.
+
+   It does not handle parsing the hierarchically-nested expressions of
+   rtl.def; for that see the rtx_reader subclass below (implemented in
+   read-rtl.c).  */
+
+class md_reader
 {
  public:
-  rtx_reader ();
-  virtual ~rtx_reader ();
+  md_reader ();
+  virtual ~md_reader ();
 
   bool read_md_files (int, const char **, bool (*) (const char *));
 
@@ -145,11 +157,6 @@ class rtx_reader
   void record_potential_iterator_use (struct iterator_group *group,
 				      void *ptr, const char *name);
   struct mapping *read_mapping (struct iterator_group *group, htab_t table);
-  bool read_rtx (const char *rtx_name, vec<rtx> *rtxen);
-  rtx read_rtx_code (const char *code_name);
-  void read_rtx_operand (rtx return_rtx, int idx);
-  rtx read_nested_rtx ();
-  rtx read_rtx_variadic (rtx form);
 
   const char *get_top_level_filename () const { return m_toplevel_fname; }
   const char *get_filename () const { return m_read_md_filename; }
@@ -231,19 +238,41 @@ class rtx_reader
   htab_t m_enum_types;
 };
 
-/* Global singleton.  */
-extern rtx_reader *rtx_reader_ptr;
+/* Global singleton; constrast with rtx_reader_ptr below.  */
+extern md_reader *md_reader_ptr;
 
-/* An rtx_reader subclass which skips unknown directives.  */
+/* An md_reader subclass which skips unknown directives, for
+   the gen* tools that purely use read-md.o.  */
 
-class noop_reader : public rtx_reader
+class noop_reader : public md_reader
 {
  public:
-  noop_reader () : rtx_reader () {}
+  noop_reader () : md_reader () {}
 
   /* A dummy implementation which skips unknown directives.  */
   void handle_unknown_directive (file_location, const char *);
 };
+
+/* An md_reader subclass that actually handles full hierarchical
+   rtx expressions.
+
+   Implemented in read-rtl.c.  */
+
+class rtx_reader : public md_reader
+{
+ public:
+  rtx_reader ();
+  ~rtx_reader ();
+
+  bool read_rtx (const char *rtx_name, vec<rtx> *rtxen);
+  rtx read_rtx_code (const char *code_name);
+  void read_rtx_operand (rtx return_rtx, int idx);
+  rtx read_nested_rtx ();
+  rtx read_rtx_variadic (rtx form);
+};
+
+/* Global singleton; constrast with md_reader_ptr above.  */
+extern rtx_reader *rtx_reader_ptr;
 
 extern void (*include_callback) (const char *);
 
@@ -252,7 +281,7 @@ extern void (*include_callback) (const char *);
 static inline int
 read_char (void)
 {
-  return rtx_reader_ptr->read_char ();
+  return md_reader_ptr->read_char ();
 }
 
 /* Put back CH, which was the last character read from the MD file.  */
@@ -260,7 +289,7 @@ read_char (void)
 static inline void
 unread_char (int ch)
 {
-  rtx_reader_ptr->unread_char (ch);
+  md_reader_ptr->unread_char (ch);
 }
 
 extern hashval_t leading_string_hash (const void *);
