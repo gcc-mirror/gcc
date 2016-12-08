@@ -1,3 +1,13 @@
+2016-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* emit-rtl.c (gen_reg_rtx): Move regno_pointer_align and
+	regno_reg_rtx resizing logic to...
+	(emit_status::ensure_regno_capacity): ...this new method,
+	and ensure that the buffers are large enough.
+	(init_emit): Allocate regno_reg_rtx using ggc_cleared_vec_alloc
+	rather than ggc_vec_alloc.
+	* function.h (emit_status::ensure_regno_capacity): New method.
+
 2016-12-08  Dmitry Vyukov  <dvyukov@google.com>
 
 	* opts.c (finish_options): Enable
