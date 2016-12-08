@@ -774,7 +774,23 @@ get_width_and_precision (const conversion_spec &spec,
   if (spec.star_width)
     {
       if (TREE_CODE (spec.star_width) == INTEGER_CST)
-	width = abs (tree_to_shwi (spec.star_width));
+	{
+	  width = tree_to_shwi (spec.star_width);
+	  if (width < 0)
+	    {
+	      if (width == HOST_WIDE_INT_MIN)
+		{
+		  /* Avoid undefined behavior due to negating a minimum.
+		     This case will be diagnosed since it will result in
+		     more than INT_MAX bytes on output, either by the
+		     directive itself (when INT_MAX < HOST_WIDE_INT_MAX)
+		     or by the format function itself.  */
+		  width = HOST_WIDE_INT_MAX;
+		}
+	      else
+		width = -width;
+	    }
+	}
       else
 	width = HOST_WIDE_INT_MIN;
     }
@@ -1261,9 +1277,9 @@ format_floating (const conversion_spec &spec, int width, int prec)
 	res.range.min = 2 + (prec < 0 ? 6 : prec);
 
 	/* Compute the maximum just once.  */
-	static const int f_max[] = {
-	  format_floating_max (double_type_node, 'f'),
-	  format_floating_max (long_double_type_node, 'f')
+	const int f_max[] = {
+	  format_floating_max (double_type_node, 'f', prec),
+	  format_floating_max (long_double_type_node, 'f', prec)
 	};
 	res.range.max = width == INT_MIN ? HOST_WIDE_INT_MAX : f_max [ldbl];
 
@@ -1279,9 +1295,9 @@ format_floating (const conversion_spec &spec, int width, int prec)
 	res.range.min = 2 + (prec < 0 ? 6 : prec);
 
 	/* Compute the maximum just once.  */
-	static const int g_max[] = {
-	  format_floating_max (double_type_node, 'g'),
-	  format_floating_max (long_double_type_node, 'g')
+	const int g_max[] = {
+	  format_floating_max (double_type_node, 'g', prec),
+	  format_floating_max (long_double_type_node, 'g', prec)
 	};
 	res.range.max = width == INT_MIN ? HOST_WIDE_INT_MAX : g_max [ldbl];
 
@@ -2743,19 +2759,27 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	{
 	  dstsize = tree_to_uhwi (size);
 	  /* No object can be larger than SIZE_MAX bytes (half the address
-	     space) on the target.  This imposes a limit that's one byte
-	     less than that.
+	     space) on the target.
 	     The functions are defined only for output of at most INT_MAX
 	     bytes.  Specifying a bound in excess of that limit effectively
 	     defeats the bounds checking (and on some implementations such
 	     as Solaris cause the function to fail with EINVAL).  */
-	  if (dstsize >= target_size_max () / 2)
-	    warning_at (gimple_location (info.callstmt), OPT_Wformat_length_,
-			"specified destination size %wu is too large",
-			dstsize);
+	  if (dstsize > target_size_max () / 2)
+	    {
+	      /* Avoid warning if -Wstringop-overflow is specified since
+		 it also warns for the same thing though only for the
+		 checking built-ins.  */
+	      if ((idx_objsize == HOST_WIDE_INT_M1U
+		   || !warn_stringop_overflow))
+		warning_at (gimple_location (info.callstmt),
+			    OPT_Wformat_length_,
+			    "specified bound %wu exceeds maximum object size "
+			    "%wu",
+			    dstsize, target_size_max () / 2);
+	    }
 	  else if (dstsize > target_int_max ())
 	    warning_at (gimple_location (info.callstmt), OPT_Wformat_length_,
-			"specified destination size %wu exceeds %<INT_MAX %>",
+			"specified bound %wu exceeds %<INT_MAX %>",
 			dstsize);
 	}
       else if (TREE_CODE (size) == SSA_NAME)
@@ -2800,10 +2824,15 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       info.objsize = dstsize < objsize ? dstsize : objsize;
 
       if (info.bounded
-	  && dstsize < target_size_max () / 2 && objsize < dstsize)
+	  && dstsize < target_size_max () / 2 && objsize < dstsize
+	  /* Avoid warning if -Wstringop-overflow is specified since
+	     it also warns for the same thing though only for the
+	     checking built-ins.  */
+	  && (idx_objsize == HOST_WIDE_INT_M1U
+	      || !warn_stringop_overflow))
 	{
 	  warning_at (gimple_location (info.callstmt), OPT_Wformat_length_,
-		      "specified size %wu exceeds the size %wu "
+		      "specified bound %wu exceeds the size %wu "
 		      "of the destination object", dstsize, objsize);
 	}
     }

@@ -13,5 +13,5 @@ main (void)
   return 0;
 }
 
-/* { dg-warning "will always overflow destination buffer" "" { target *-*-* } 10 } */
+/* { dg-warning "writing" "" { target *-*-* } 10 } */
 /* { dg-message "file included" "In file included" { target *-*-* } 0 } */

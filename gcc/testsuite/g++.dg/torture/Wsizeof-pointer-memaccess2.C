@@ -1,7 +1,8 @@
 // Test -Wsizeof-pointer-memaccess warnings.
 // { dg-do compile }
-// { dg-options "-Wall -Wno-sizeof-array-argument" }
-// Test just twice, once with -O0 non-fortified, once with -O2 fortified.
+// { dg-options "-Wall -Wno-sizeof-array-argument -Wno-stringop-overflow" }
+// Test just twice, once with -O0 non-fortified, once with -O2 fortified,
+// suppressing buffer overflow warnings.
 // { dg-skip-if "" { *-*-* }  { "*" } { "-O0" "-O2" } }
 // { dg-skip-if "" { *-*-* }  { "-flto" } { "" } }
 

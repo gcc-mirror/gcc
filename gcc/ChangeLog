@@ -1,3 +1,28 @@
+2016-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77784
+	PR middle-end/78149
+	PR middle-end/78138
+	
+	* builtins.c (expand_builtin_strcat, expand_builtin_strncat): New
+	functions.
+	(compute_dest_size, get_size_range, check_sizes, check_strncat_sizes)
+	(check_memop_sizes): Same.
+	(expand_builtin_memcpy): Call check memop_sizes.
+	(expand_builtin_mempcpy): Same.
+	(expand_builtin_memset): Same,
+	(expand_builtin_bzero): Same.
+	(expand_builtin_memory_chk): Call check_sizes.
+	(expand_builtin_strcpy): Same.
+	(expand_builtin_strncpy): Same.
+	(maybe_emit_sprintf_chk_warning): Same.
+	(expand_builtin): Handle strcat and strncat.
+	(fini_object_sizes): Reset pointers.
+	(compute_object_size): New function.
+	* gimple-ssa-sprintf.c (pass_sprintf_length::handle_gimple_call):
+	Avoid issuing warnings also issued during built-in expansion.
+	* doc/invoke.texi (Warning Options): Document -Wstringop-overflow.
+
 2016-12-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/72717

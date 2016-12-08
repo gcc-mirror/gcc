@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -Wformat -Wformat-length=1 -ftrack-macro-expansion=0" } */
+/* { dg-options "-Wformat -Wformat-length=1 -ftrack-macro-expansion=0" } */
 /* { dg-require-effective-target int32plus } */
 
 /* When debugging, define LINE to the line number of the test case to exercise
@@ -1456,9 +1456,7 @@ void test_vsprintf_chk_int (__builtin_va_list va)
 
 void test_snprintf_c_const (char *d)
 {
-  T (-1, "%c",    0);            /* { dg-warning "specified destination size \[0-9\]+ is too large" } */
-
-  __builtin_snprintf (d, INT_MAX, "%c", 0);   /* { dg-warning "specified destination size 2147483647 is too large" "ilp32" { target { ilp32 } } } */
+  T (-1, "%c",    0);            /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 
   /* Verify the full text of the diagnostic for just the distinct messages
      and use abbreviations in subsequent test cases.  */
@@ -1506,9 +1504,9 @@ void test_snprintf_chk_c_const (void)
   /* Verify that specifying a size of the destination buffer that's
      bigger than its actual size (normally determined and passed to
      the function by __builtin_object_size) is diagnosed.  */
-  __builtin___snprintf_chk (buffer, 3, 0, 2, " ");   /* { dg-warning "always overflow|specified size 3 exceeds the size 2 of the destination" } */
+  __builtin___snprintf_chk (buffer, 3, 0, 2, " ");   /* { dg-warning "specified bound 3 exceeds the size 2 of the destination" } */
 
-  T (-1, "%c",    0);           /* { dg-warning "specified destination size \[^ \]* is too large" } */
+  T (-1, "%c",    0);           /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 
   T (0, "%c",     0);
   T (0, "%c%c",   0, 0);
@@ -1619,7 +1617,7 @@ void test_vsprintf_int (__builtin_va_list va)
 
 void test_vsnprintf_s (__builtin_va_list va)
 {
-  T (-1, "%s");             /* { dg-warning "specified destination size \[^ \]* is too large" } */
+  T (-1, "%s");             /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 
   T (0, "%s");
   T (1, "%s");
@@ -1642,9 +1640,9 @@ void test_vsnprintf_chk_s (__builtin_va_list va)
   /* Verify that specifying a size of the destination buffer that's
      bigger than its actual size (normally determined and passed to
      the function by __builtin_object_size) is diagnosed.  */
-  __builtin___vsnprintf_chk (buffer, 123, 0, 122, "%-s", va);   /* { dg-warning "always overflow|specified size 123 exceeds the size 122 of the destination object" } */
+  __builtin___vsnprintf_chk (buffer, 123, 0, 122, "%-s", va);   /* { dg-warning "specified bound 123 exceeds the size 122 of the destination" } */
 
-  __builtin___vsnprintf_chk (buffer, __SIZE_MAX__, 0, 2, "%-s", va);   /* { dg-warning "always overflow|destination size .\[0-9\]+. is too large" } */
+  __builtin___vsnprintf_chk (buffer, __SIZE_MAX__, 0, 2, "%-s", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 
   T (0, "%s");
   T (1, "%s");

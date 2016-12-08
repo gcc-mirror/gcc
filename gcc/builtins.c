@@ -67,7 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
 #include "gimple-fold.h"
-
+#include "intl.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -125,9 +125,11 @@ static rtx expand_builtin_mempcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_mempcpy_with_bounds (tree, rtx, machine_mode);
 static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx,
 					machine_mode, int, tree);
+static rtx expand_builtin_strcat (tree, rtx);
 static rtx expand_builtin_strcpy (tree, rtx);
 static rtx expand_builtin_strcpy_args (tree, tree, rtx);
 static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
+static rtx expand_builtin_strncat (tree, rtx);
 static rtx expand_builtin_strncpy (tree, rtx);
 static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, machine_mode);
 static rtx expand_builtin_memset (tree, rtx, machine_mode);
@@ -3010,6 +3012,292 @@ expand_builtin_memcpy_args (tree dest, tree src, tree len, rtx target, tree exp)
   return dest_addr;
 }
 
+/* Fill the 2-element RANGE array with the minimum and maximum values
+   EXP is known to have and return true, otherwise null and return
+   false.  */
+
+static bool
+get_size_range (tree exp, tree range[2])
+{
+  if (tree_fits_uhwi_p (exp))
+    {
+      range[0] = range[1] = exp;
+      return true;
+    }
+
+  if (TREE_CODE (exp) == SSA_NAME)
+    {
+      wide_int min, max;
+      enum value_range_type range_type = get_range_info (exp, &min, &max);
+
+      if (range_type == VR_RANGE)
+	{
+	  /* Interpret the bound in the variable's type.  */
+	  range[0] = wide_int_to_tree (TREE_TYPE (exp), min);
+	  range[1] = wide_int_to_tree (TREE_TYPE (exp), max);
+	  return true;
+	}
+      else if (range_type == VR_ANTI_RANGE)
+	{
+	  /* FIXME: Handle anti-ranges.  */
+	}
+    }
+
+  range[0] = NULL_TREE;
+  range[1] = NULL_TREE;
+  return false;
+}
+
+/* Try to verify that the sizes and lengths of the arguments to a string
+   manipulation function given by EXP are within valid bounds and that
+   the operation does not lead to buffer overflow.  Arguments other than
+   EXP may be null.  When non-null, the arguments have the following
+   meaning:
+   SIZE is the user-supplied size argument to the function (such as in
+   memcpy(d, s, SIZE) or strncpy(d, s, SIZE).  It specifies the exact
+   number of bytes to write.
+   MAXLEN is the user-supplied bound on the length of the source sequence
+   (such as in strncat(d, s, N).  It specifies the upper limit on the number
+   of bytes to write.
+   STR is the source string (such as in strcpy(d, s)) when the epxression
+   EXP is a string function call (as opposed to a memory call like memcpy).
+   As an exception, STR can also be an integer denoting the precomputed
+   length of the source string.
+   OBJSIZE is the size of the destination object specified by the last
+   argument to the _chk builtins, typically resulting from the expansion
+   of __builtin_object_size (such as in __builtin___strcpy_chk(d, s,
+   OBJSIZE).
+
+   When SIZE is null LEN is checked to verify that it doesn't exceed
+   SIZE_MAX.
+
+   If the call is successfully verified as safe from buffer overflow
+   the function returns true, otherwise false..  */
+
+static bool
+check_sizes (int opt, tree exp, tree size, tree maxlen, tree str, tree objsize)
+{
+  /* The size of the largest object is half the address space, or
+     SSIZE_MAX.  (This is way too permissive.)  */
+  tree maxobjsize = TYPE_MAX_VALUE (ssizetype);
+
+  tree slen = NULL_TREE;
+
+  /* Set to true when the exact number of bytes written by a string
+     function like strcpy is not known and the only thing that is
+     known is that it must be at least one (for the terminating nul).  */
+  bool at_least_one = false;
+  if (str)
+    {
+      /* STR is normally a pointer to string but as a special case
+	 it can be an integer denoting the length of a string.  */
+      if (TREE_CODE (TREE_TYPE (str)) == POINTER_TYPE)
+	{
+	  /* Try to determine the range of lengths the source string
+	     refers to.  If it can be determined add one to it for
+	     the terminating nul.  Otherwise, set it to one for
+	     the same reason.  */
+	  tree lenrange[2];
+	  get_range_strlen (str, lenrange);
+	  if (lenrange[0])
+	    slen = fold_build2 (PLUS_EXPR, size_type_node, lenrange[0],
+				size_one_node);
+	  else
+	    {
+	      at_least_one = true;
+	      slen = size_one_node;
+	    }
+	}
+      else
+	slen = str;
+    }
+
+  if (!size && !maxlen)
+    {
+      /* When the only available piece of data is the object size
+	 there is nothing to do.  */
+      if (!slen)
+	return true;
+
+      /* Otherwise, when the length of the source sequence is known
+	 (as with with strlen), set SIZE to it.  */
+      size = slen;
+    }
+
+  if (!objsize)
+    objsize = maxobjsize;
+
+  /* The SIZE is exact if it's non-null, constant, and in range of
+     unsigned HOST_WIDE_INT.  */
+  bool exactsize = size && tree_fits_uhwi_p (size);
+
+  tree range[2] = { NULL_TREE, NULL_TREE };
+  if (size)
+    get_size_range (size, range);
+
+  /* First check the number of bytes to be written against the maximum
+     object size.  */
+  if (range[0] && tree_int_cst_lt (maxobjsize, range[0]))
+    {
+      location_t loc = tree_nonartificial_location (exp);
+
+      if (range[0] == range[1])
+	warning_at (loc, opt,
+		    "%K%qD: specified size %wu "
+		    "exceeds maximum object size %wu",
+		    exp, get_callee_fndecl (exp),
+		    tree_to_uhwi (range[0]),
+		    tree_to_uhwi (maxobjsize));
+	  else
+	    warning_at (loc, opt,
+			"%K%qD: specified size between %wu and %wu "
+			"exceeds maximum object size %wu",
+			exp, get_callee_fndecl (exp),
+			tree_to_uhwi (range[0]),
+			tree_to_uhwi (range[1]),
+			tree_to_uhwi (maxobjsize));
+      return false;
+    }
+
+  /* Next check the number of bytes to be written against the destination
+     object size.  */
+  if (range[0] || !exactsize || integer_all_onesp (size))
+    {
+      if (range[0]
+	  && ((tree_fits_uhwi_p (objsize)
+	       && tree_int_cst_lt (objsize, range[0]))
+	      || (tree_fits_uhwi_p (size)
+		  && tree_int_cst_lt (size, range[0]))))
+	{
+	  unsigned HOST_WIDE_INT uwir0 = tree_to_uhwi (range[0]);
+
+	  location_t loc = tree_nonartificial_location (exp);
+
+	  if (at_least_one)
+	    warning_at (loc, opt,
+			"%K%qD: writing at least %wu byte into a region "
+			"of size %wu overflows the destination",
+			exp, get_callee_fndecl (exp), uwir0,
+			tree_to_uhwi (objsize));
+	  else if (range[0] == range[1])
+	    warning_at (loc, opt,
+			(uwir0 == 1
+			 ? G_("%K%qD: writing %wu byte into a region "
+			      "of size %wu overflows the destination")
+			 : G_("%K%qD writing %wu bytes into a region "
+			      "of size %wu overflows the destination")),
+			exp, get_callee_fndecl (exp), uwir0,
+			tree_to_uhwi (objsize));
+	  else
+	    warning_at (loc, opt,
+			"%K%qD: writing between %wu and %wu bytes "
+			"into a region of size %wu overflows "
+			"the destination",
+			exp, get_callee_fndecl (exp), uwir0,
+			tree_to_uhwi (range[1]), tree_to_uhwi (objsize));
+
+	  /* Return error when an overflow has been detected.  */
+	  return false;
+	}
+    }
+
+  /* Check the maximum length of the source sequence against the size
+     of the destination object if known, or against the maximum size
+     of an object.  */
+  if (maxlen)
+    {
+      get_size_range (maxlen, range);
+
+      if (range[0] && objsize && tree_fits_uhwi_p (objsize))
+	{
+	  location_t loc = tree_nonartificial_location (exp);
+
+	  if (tree_int_cst_lt (maxobjsize, range[0]))
+	    {
+	      /* Warn about crazy big sizes first since that's more
+		 likely to be meaningful than saying that the bound
+		 is greater than the object size if both are big.  */
+	      if (range[0] == range[1])
+		warning_at (loc, opt,
+			    "%K%qD: specified bound %wu "
+			    "exceeds maximum object size %wu",
+			    exp, get_callee_fndecl (exp),
+			    tree_to_uhwi (range[0]),
+			    tree_to_uhwi (maxobjsize));
+	      else
+		warning_at (loc, opt,
+			    "%K%qD: specified bound between %wu and %wu "
+			    " exceeds maximum object size %wu",
+			    exp, get_callee_fndecl (exp),
+			    tree_to_uhwi (range[0]),
+			    tree_to_uhwi (range[1]),
+			    tree_to_uhwi (maxobjsize));
+
+	      return false;
+	    }
+
+	  if (objsize != maxobjsize && tree_int_cst_lt (objsize, range[0]))
+	    {
+	      if (range[0] == range[1])
+		warning_at (loc, opt,
+			    "%K%qD: specified bound %wu "
+			    "exceeds the size %wu of the destination",
+			    exp, get_callee_fndecl (exp),
+			    tree_to_uhwi (range[0]),
+			    tree_to_uhwi (objsize));
+	      else
+		warning_at (loc, opt,
+			    "%K%qD: specified bound between %wu and %wu "
+			    " exceeds the size %wu of the destination",
+			    exp, get_callee_fndecl (exp),
+			    tree_to_uhwi (range[0]),
+			    tree_to_uhwi (range[1]),
+			    tree_to_uhwi (objsize));
+	      return false;
+	    }
+	}
+    }
+
+  return true;
+}
+
+/* Helper to compute the size of the object referenced by the DEST
+   expression which must of of pointer type, using Object Size type
+   OSTYPE (only the least significant 2 bits are used).  Return
+   the size of the object if successful or NULL when the size cannot
+   be determined.  */
+
+static inline tree
+compute_dest_size (tree dest, int ostype)
+{
+  unsigned HOST_WIDE_INT size;
+  if (compute_builtin_object_size (dest, ostype & 3, &size))
+    return build_int_cst (sizetype, size);
+
+  return NULL_TREE;
+}
+
+/* Helper to determine and check the sizes of the source and the destination
+   of calls to __builtin_{bzero,memcpy,memset} calls.  Use Object Size type-0
+   regardless of the OPT_Wstringop_overflow_ setting.  Returns true on success
+   (no overflow or invalid sizes), false otherwise.  */
+
+static bool
+check_memop_sizes (tree exp, tree dest, tree size)
+{
+  if (!warn_stringop_overflow)
+    return true;
+
+  /* For functions like memset and memcpy that operate on raw memory
+     try to determine the size of the largest destination object using
+     type-0 Object Size regardless of the object size type specified
+     by the option.  */
+  tree objsize = compute_dest_size (dest, 0);
+
+  return check_sizes (OPT_Wstringop_overflow_, exp,
+		      size, /*maxlen=*/NULL_TREE, /*str=*/NULL_TREE, objsize);
+}
+
 /* Expand a call EXP to the memcpy builtin.
    Return NULL_RTX if we failed, the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
@@ -3021,13 +3309,14 @@ expand_builtin_memcpy (tree exp, rtx target)
   if (!validate_arglist (exp,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
-  else
-    {
-      tree dest = CALL_EXPR_ARG (exp, 0);
-      tree src = CALL_EXPR_ARG (exp, 1);
-      tree len = CALL_EXPR_ARG (exp, 2);
-      return expand_builtin_memcpy_args (dest, src, len, target, exp);
-    }
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree src = CALL_EXPR_ARG (exp, 1);
+  tree len = CALL_EXPR_ARG (exp, 2);
+
+  check_memop_sizes (exp, dest, len);
+
+  return expand_builtin_memcpy_args (dest, src, len, target, exp);
 }
 
 /* Expand an instrumented call EXP to the memcpy builtin.
@@ -3075,15 +3364,20 @@ expand_builtin_mempcpy (tree exp, rtx target, machine_mode mode)
   if (!validate_arglist (exp,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
-  else
-    {
-      tree dest = CALL_EXPR_ARG (exp, 0);
-      tree src = CALL_EXPR_ARG (exp, 1);
-      tree len = CALL_EXPR_ARG (exp, 2);
-      return expand_builtin_mempcpy_args (dest, src, len,
-					  target, mode, /*endp=*/ 1,
-					  exp);
-    }
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree src = CALL_EXPR_ARG (exp, 1);
+  tree len = CALL_EXPR_ARG (exp, 2);
+
+  /* Avoid expanding mempcpy into memcpy when the call is determined
+     to overflow the buffer.  This also prevents the same overflow
+     from being diagnosed again when expanding memcpy.  */
+  if (!check_memop_sizes (exp, dest, len))
+    return NULL_RTX;
+
+  return expand_builtin_mempcpy_args (dest, src, len,
+				      target, mode, /*endp=*/ 1,
+				      exp);
 }
 
 /* Expand an instrumented call EXP to the mempcpy builtin.
@@ -3255,6 +3549,33 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
   return target;
 }
 
+/* Do some very basic size validation of a call to the strcpy builtin
+   given by EXP.  Return NULL_RTX to have the built-in expand to a call
+   to the library function.  */
+
+static rtx
+expand_builtin_strcat (tree exp, rtx)
+{
+  if (!validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
+      || !warn_stringop_overflow)
+    return NULL_RTX;
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree src = CALL_EXPR_ARG (exp, 1);
+
+  /* There is no way here to determine the length of the string in
+     the destination to which the SRC string is being appended so
+     just diagnose cases when the souce string is longer than
+     the destination object.  */
+
+  tree destsize = compute_dest_size (dest, warn_stringop_overflow - 1);
+
+  check_sizes (OPT_Wstringop_overflow_,
+	       exp, /*size=*/NULL_TREE, /*maxlen=*/NULL_TREE, src, destsize);
+
+  return NULL_RTX;
+}
+
 /* Expand expression EXP, which is a call to the strcpy builtin.  Return
    NULL_RTX if we failed the caller should emit a normal call, otherwise
    try to get the result in TARGET, if convenient (and in mode MODE if that's
@@ -3263,13 +3584,20 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 static rtx
 expand_builtin_strcpy (tree exp, rtx target)
 {
-  if (validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
-   {
-     tree dest = CALL_EXPR_ARG (exp, 0);
-     tree src = CALL_EXPR_ARG (exp, 1);
-     return expand_builtin_strcpy_args (dest, src, target);
-   }
-   return NULL_RTX;
+  if (!validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree src = CALL_EXPR_ARG (exp, 1);
+
+  if (warn_stringop_overflow)
+    {
+      tree destsize = compute_dest_size (dest, warn_stringop_overflow - 1);
+      check_sizes (OPT_Wstringop_overflow_,
+		   exp, /*size=*/NULL_TREE, /*maxlen=*/NULL_TREE, src, destsize);
+    }
+
+  return expand_builtin_strcpy_args (dest, src, target);
 }
 
 /* Helper function to do the actual work for expand_builtin_strcpy.  The
@@ -3377,6 +3705,131 @@ builtin_strncpy_read_str (void *data, HOST_WIDE_INT offset,
   return c_readstr (str + offset, mode);
 }
 
+/* Helper to check the sizes of sequences and the destination of calls
+   to __builtin_strncat and __builtin___strncat_chk.  Returns true on
+   success (no overflow or invalid sizes), false otherwise.  */
+
+static bool
+check_strncat_sizes (tree exp, tree objsize)
+{
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree src = CALL_EXPR_ARG (exp, 1);
+  tree maxlen = CALL_EXPR_ARG (exp, 2);
+
+  /* Try to determine the range of lengths that the source expression
+     refers to.  */
+  tree lenrange[2];
+  get_range_strlen (src, lenrange);
+
+  /* Try to verify that the destination is big enough for the shortest
+     string.  */
+
+  if (!objsize && warn_stringop_overflow)
+    {
+      /* If it hasn't been provided by __strncat_chk, try to determine
+	 the size of the destination object into which the source is
+	 being copied.  */
+      objsize = compute_dest_size (dest, warn_stringop_overflow - 1);
+    }
+
+  /* Add one for the terminating nul.  */
+  tree srclen = (lenrange[0]
+		 ? fold_build2 (PLUS_EXPR, size_type_node, lenrange[0],
+				size_one_node)
+		 : NULL_TREE);
+
+  /* Strncat copies at most MAXLEN bytes and always appends the terminating
+     nul so the specified upper bound should never be equal to (or greater
+     than) the size of the destination.  */
+  if (tree_fits_uhwi_p (maxlen) && tree_fits_uhwi_p (objsize)
+      && tree_int_cst_equal (objsize, maxlen))
+    {
+      warning_at (EXPR_LOCATION (exp), OPT_Wstringop_overflow_,
+		  "specified bound %wu "
+		  "equals the size of the destination",
+		  tree_to_uhwi (maxlen));
+
+      return false;
+    }
+
+  if (!srclen
+      || (maxlen && tree_fits_uhwi_p (maxlen)
+	  && tree_fits_uhwi_p (srclen)
+	  && tree_int_cst_lt (maxlen, srclen)))
+    srclen = maxlen;
+
+  /* The number of bytes to write is LEN but check_sizes will also
+     check SRCLEN if LEN's value isn't known.  */
+  return check_sizes (OPT_Wstringop_overflow_,
+		      exp, /*size=*/NULL_TREE, maxlen, srclen, objsize);
+}
+
+/* Similar to expand_builtin_strcat, do some very basic size validation
+   of a call to the strcpy builtin given by EXP.  Return NULL_RTX to have
+   the built-in expand to a call to the library function.  */
+
+static rtx
+expand_builtin_strncat (tree exp, rtx)
+{
+  if (!validate_arglist (exp,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE)
+      || !warn_stringop_overflow)
+    return NULL_RTX;
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree src = CALL_EXPR_ARG (exp, 1);
+  /* The upper bound on the number of bytes to write.  */
+  tree maxlen = CALL_EXPR_ARG (exp, 2);
+  /* The length of the source sequence.  */
+  tree slen = c_strlen (src, 1);
+
+  /* Try to determine the range of lengths that the source expression
+     refers to.  */
+  tree lenrange[2];
+  if (slen)
+    lenrange[0] = lenrange[1] = slen;
+  else
+    get_range_strlen (src, lenrange);
+
+  /* Try to verify that the destination is big enough for the shortest
+     string.  First try to determine the size of the destination object
+     into which the source is being copied.  */
+  tree destsize = compute_dest_size (dest, warn_stringop_overflow - 1);
+
+  /* Add one for the terminating nul.  */
+  tree srclen = (lenrange[0]
+		 ? fold_build2 (PLUS_EXPR, size_type_node, lenrange[0],
+				size_one_node)
+		 : NULL_TREE);
+
+  /* Strncat copies at most MAXLEN bytes and always appends the terminating
+     nul so the specified upper bound should never be equal to (or greater
+     than) the size of the destination.  */
+  if (tree_fits_uhwi_p (maxlen) && tree_fits_uhwi_p (destsize)
+      && tree_int_cst_equal (destsize, maxlen))
+    {
+      warning_at (EXPR_LOCATION (exp), OPT_Wstringop_overflow_,
+		  "specified bound %wu "
+		  "equals the size of the destination",
+		  tree_to_uhwi (maxlen));
+
+      return NULL_RTX;
+    }
+
+  if (!srclen
+      || (maxlen && tree_fits_uhwi_p (maxlen)
+	  && tree_fits_uhwi_p (srclen)
+	  && tree_int_cst_lt (maxlen, srclen)))
+    srclen = maxlen;
+
+  /* The number of bytes to write is LEN but check_sizes will also
+     check SRCLEN if LEN's value isn't known.  */
+  check_sizes (OPT_Wstringop_overflow_,
+	       exp, /*size=*/NULL_TREE, maxlen, srclen, destsize);
+
+  return NULL_RTX;
+}
+
 /* Expand expression EXP, which is a call to the strncpy builtin.  Return
    NULL_RTX if we failed the caller should emit a normal call.  */
 
@@ -3390,8 +3843,32 @@ expand_builtin_strncpy (tree exp, rtx target)
     {
       tree dest = CALL_EXPR_ARG (exp, 0);
       tree src = CALL_EXPR_ARG (exp, 1);
+      /* The number of bytes to write (not the maximum).  */
       tree len = CALL_EXPR_ARG (exp, 2);
+      /* The length of the source sequence.  */
       tree slen = c_strlen (src, 1);
+
+      if (warn_stringop_overflow)
+	{
+	  /* Try to determine the range of lengths that the source expression
+	     refers to.  */
+	  tree lenrange[2];
+	  if (slen)
+	    lenrange[0] = lenrange[1] = slen;
+	  else
+	    {
+	      get_range_strlen (src, lenrange);
+	      slen = lenrange[0];
+	    }
+
+	  tree destsize = compute_dest_size (dest,
+					     warn_stringop_overflow - 1);
+
+	  /* The number of bytes to write is LEN but check_sizes will also
+	     check SLEN if LEN's value isn't known.  */
+	  check_sizes (OPT_Wstringop_overflow_,
+		       exp, len, /*maxlen=*/NULL_TREE, slen, destsize);
+	}
 
       /* We must be passed a constant len and src parameter.  */
       if (!tree_fits_uhwi_p (len) || !slen || !tree_fits_uhwi_p (slen))
@@ -3480,13 +3957,14 @@ expand_builtin_memset (tree exp, rtx target, machine_mode mode)
   if (!validate_arglist (exp,
  			 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
-  else
-    {
-      tree dest = CALL_EXPR_ARG (exp, 0);
-      tree val = CALL_EXPR_ARG (exp, 1);
-      tree len = CALL_EXPR_ARG (exp, 2);
-      return expand_builtin_memset_args (dest, val, len, target, mode, exp);
-    }
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree val = CALL_EXPR_ARG (exp, 1);
+  tree len = CALL_EXPR_ARG (exp, 2);
+
+  check_memop_sizes (exp, dest, len);
+
+  return expand_builtin_memset_args (dest, val, len, target, mode, exp);
 }
 
 /* Expand expression EXP, which is an instrumented call to the memset builtin.
@@ -3667,19 +4145,20 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 static rtx
 expand_builtin_bzero (tree exp)
 {
-  tree dest, size;
-  location_t loc = EXPR_LOCATION (exp);
-
   if (!validate_arglist (exp, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-  dest = CALL_EXPR_ARG (exp, 0);
-  size = CALL_EXPR_ARG (exp, 1);
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree size = CALL_EXPR_ARG (exp, 1);
+
+  check_memop_sizes (exp, dest, size);
 
   /* New argument list transforming bzero(ptr x, int y) to
      memset(ptr x, int 0, size_t y).   This is done this way
      so that if it isn't expanded inline, we fallback to
      calling bzero instead of memset.  */
+
+  location_t loc = EXPR_LOCATION (exp);
 
   return expand_builtin_memset_args (dest, integer_zero_node,
 				     fold_convert_loc (loc,
@@ -6205,8 +6684,20 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
       break;
 
+    case BUILT_IN_STRCAT:
+      target = expand_builtin_strcat (exp, target);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_STRCPY:
       target = expand_builtin_strcpy (exp, target);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_STRNCAT:
+      target = expand_builtin_strncat (exp, target);
       if (target)
 	return target;
       break;
@@ -9052,22 +9543,22 @@ expand_builtin_memory_chk (tree exp, rtx target, machine_mode mode,
   len = CALL_EXPR_ARG (exp, 2);
   size = CALL_EXPR_ARG (exp, 3);
 
-  if (! tree_fits_uhwi_p (size))
+  bool sizes_ok = check_sizes (OPT_Wstringop_overflow_,
+			       exp, len, /*maxlen=*/NULL_TREE,
+			       /*str=*/NULL_TREE, size);
+
+  if (!tree_fits_uhwi_p (size))
     return NULL_RTX;
 
   if (tree_fits_uhwi_p (len) || integer_all_onesp (size))
     {
-      tree fn;
+      /* Avoid transforming the checking call to an ordinary one when
+	 an overflow has been detected or when the call couldn't be
+	 validated because the size is not constant.  */
+      if (!sizes_ok && !integer_all_onesp (size) && tree_int_cst_lt (size, len))
+	return NULL_RTX;
 
-      if (! integer_all_onesp (size) && tree_int_cst_lt (size, len))
-	{
-	  warning_at (tree_nonartificial_location (exp),
-		      0, "%Kcall to %D will always overflow destination buffer",
-		      exp, get_callee_fndecl (exp));
-	  return NULL_RTX;
-	}
-
-      fn = NULL_TREE;
+      tree fn = NULL_TREE;
       /* If __builtin_mem{cpy,pcpy,move,set}_chk is used, assume
 	 mem{cpy,pcpy,move,set} is available.  */
       switch (fcode)
@@ -9153,68 +9644,68 @@ expand_builtin_memory_chk (tree exp, rtx target, machine_mode mode,
 static void
 maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
 {
-  int is_strlen = 0;
-  tree len, size;
-  location_t loc = tree_nonartificial_location (exp);
+  /* The source string.  */
+  tree srcstr = NULL_TREE;
+  /* The size of the destination object.  */
+  tree objsize = NULL_TREE;
+  /* The string that is being concatenated with (as in __strcat_chk)
+     or null if it isn't.  */
+  tree catstr = NULL_TREE;
+  /* The maximum length of the source sequence in a bounded operation
+     (such as __strncat_chk) or null if the operation isn't bounded
+     (such as __strcat_chk).  */
+  tree maxlen = NULL_TREE;
 
   switch (fcode)
     {
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
-    /* For __strcat_chk the warning will be emitted only if overflowing
-       by at least strlen (dest) + 1 bytes.  */
-    case BUILT_IN_STRCAT_CHK:
-      len = CALL_EXPR_ARG (exp, 1);
-      size = CALL_EXPR_ARG (exp, 2);
-      is_strlen = 1;
+      srcstr = CALL_EXPR_ARG (exp, 1);
+      objsize = CALL_EXPR_ARG (exp, 2);
       break;
+
+    case BUILT_IN_STRCAT_CHK:
+      /* For __strcat_chk the warning will be emitted only if overflowing
+	 by at least strlen (dest) + 1 bytes.  */
+      catstr = CALL_EXPR_ARG (exp, 0);
+      srcstr = CALL_EXPR_ARG (exp, 1);
+      objsize = CALL_EXPR_ARG (exp, 2);
+      break;
+
     case BUILT_IN_STRNCAT_CHK:
+      catstr = CALL_EXPR_ARG (exp, 0);
+      srcstr = CALL_EXPR_ARG (exp, 1);
+      maxlen = CALL_EXPR_ARG (exp, 2);
+      objsize = CALL_EXPR_ARG (exp, 3);
+      break;
+
     case BUILT_IN_STRNCPY_CHK:
     case BUILT_IN_STPNCPY_CHK:
-      len = CALL_EXPR_ARG (exp, 2);
-      size = CALL_EXPR_ARG (exp, 3);
+      srcstr = CALL_EXPR_ARG (exp, 1);
+      maxlen = CALL_EXPR_ARG (exp, 2);
+      objsize = CALL_EXPR_ARG (exp, 3);
       break;
+
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
-      len = CALL_EXPR_ARG (exp, 1);
-      size = CALL_EXPR_ARG (exp, 3);
+      maxlen = CALL_EXPR_ARG (exp, 1);
+      objsize = CALL_EXPR_ARG (exp, 3);
       break;
     default:
       gcc_unreachable ();
     }
 
-  if (!len || !size)
-    return;
-
-  if (! tree_fits_uhwi_p (size) || integer_all_onesp (size))
-    return;
-
-  if (is_strlen)
+  if (catstr && maxlen)
     {
-      len = c_strlen (len, 1);
-      if (! len || ! tree_fits_uhwi_p (len) || tree_int_cst_lt (len, size))
+      /* Check __strncat_chk.  There is no way to determine the length
+	 of the string to which the source string is being appended so
+	 just warn when the length of the source string is not known.  */
+      if (!check_strncat_sizes (exp, objsize))
 	return;
     }
-  else if (fcode == BUILT_IN_STRNCAT_CHK)
-    {
-      tree src = CALL_EXPR_ARG (exp, 1);
-      if (! src || ! tree_fits_uhwi_p (len) || tree_int_cst_lt (len, size))
-	return;
-      src = c_strlen (src, 1);
-      if (! src || ! tree_fits_uhwi_p (src))
-	{
-	  warning_at (loc, 0, "%Kcall to %D might overflow destination buffer",
-		      exp, get_callee_fndecl (exp));
-	  return;
-	}
-      else if (tree_int_cst_lt (src, size))
-	return;
-    }
-  else if (! tree_fits_uhwi_p (len) || ! tree_int_cst_lt (size, len))
-    return;
 
-  warning_at (loc, 0, "%Kcall to %D will always overflow destination buffer",
-	      exp, get_callee_fndecl (exp));
+  check_sizes (OPT_Wstringop_overflow_, exp,
+	       /*size=*/NULL_TREE, maxlen, srcstr, objsize);
 }
 
 /* Emit warning if a buffer overflow is detected at compile time
@@ -9268,10 +9759,10 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
   else
     return;
 
-  if (! tree_int_cst_lt (len, size))
-    warning_at (tree_nonartificial_location (exp),
-		0, "%Kcall to %D will always overflow destination buffer",
-		exp, get_callee_fndecl (exp));
+  /* Add one for the terminating nul.  */
+  len = fold_build2 (PLUS_EXPR, TREE_TYPE (len), len, size_one_node);
+  check_sizes (OPT_Wstringop_overflow_,
+	       exp, /*size=*/NULL_TREE, /*maxlen=*/NULL_TREE, len, size);
 }
 
 /* Emit warning if a free is called with address of a variable.  */

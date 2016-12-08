@@ -1,3 +1,11 @@
+2016-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/53562
+	PR middle-end/77784
+	PR middle-end/78149
+	PR middle-end/78138
+	* c.opt (-Wstringop-overflow): New option.
+
 2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	* c-attribs.c (asan odr indicator): New attribute.
