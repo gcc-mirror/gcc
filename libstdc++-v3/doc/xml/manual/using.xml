@@ -948,6 +948,15 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	mode</link>.
       </para>
     </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_PARALLEL_ASSERTIONS</code></term>
+    <listitem>
+      <para>Undefined by default, but when any parallel mode header is included
+      this macro will be defined to a non-zero value if
+      <code>_GLIBCXX_ASSERTIONS</code> has a non-zero value, otherwise to zero.
+      When defined to a non-zero value, it enables extra error checking and
+      assertions in the parallel mode.
+      </para>
+    </listitem></varlistentry>
 
     <varlistentry><term><code>_GLIBCXX_PROFILE</code></term>
     <listitem>
