@@ -4273,8 +4273,11 @@ aarch64_classify_address (struct aarch64_address_info *info,
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
 
-  /* On BE, we use load/store pair for all large int mode load/stores.  */
+  /* On BE, we use load/store pair for all large int mode load/stores.
+     TI/TFmode may also use a load/store pair.  */
   bool load_store_pair_p = (outer_code == PARALLEL
+			    || mode == TImode
+			    || mode == TFmode
 			    || (BYTES_BIG_ENDIAN
 				&& aarch64_vect_struct_mode_p (mode)));
 

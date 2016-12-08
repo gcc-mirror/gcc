@@ -1,3 +1,11 @@
+2016-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78551
+	* constexpr.c (extract_string_elt): New.  Broken out of ...
+	(cxx_eval_array_reference): ... here.  Call it.
+	(cxx_eval_store_expression): Convert init by STRING_CST into
+	CONSTRUCTOR, if needed.
+
 2016-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	P0003R5 - removal of dynamic exception specification from C++17
