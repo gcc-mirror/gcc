@@ -1,3 +1,12 @@
+2016-12-08  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Handle SYMBOL_SMALL_TLSGD for ILP32.
+	* config/aarch64/aarch64.md : tlsgd_small modified into
+	tlsgd_small_<mode> to support SImode and DImode.
+	*tlsgd_small modified into *tlsgd_small_<mode> to support SImode and
+	DImode.
+
 2016-12-08  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
