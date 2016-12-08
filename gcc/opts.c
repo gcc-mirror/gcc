@@ -990,7 +990,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Enable -fsanitize-address-use-after-scope if address sanitizer is
      enabled.  */
-  if (opts->x_flag_sanitize
+  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
       && !opts_set->x_flag_sanitize_address_use_after_scope)
     opts->x_flag_sanitize_address_use_after_scope = true;
 

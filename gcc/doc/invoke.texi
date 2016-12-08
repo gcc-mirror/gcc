@@ -10640,7 +10640,6 @@ The option can't be combined with @option{-fsanitize=thread}.
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
-The option enables @option{-fsanitize-address-use-after-scope}.
 See @uref{https://github.com/google/kasan/wiki} for more details.
 
 @item -fsanitize=thread

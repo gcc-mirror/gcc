@@ -1,3 +1,11 @@
+2016-12-08  Dmitry Vyukov  <dvyukov@google.com>
+
+	* opts.c (finish_options): Enable
+	-fsanitize-address-use-after-scope only if -fsanitize=address is enabled
+	(not -fsanitize=kernel-address).
+	* doc/invoke.texi (-fsanitize=kernel-address):
+	Don't say that it enables -fsanitize-address-use-after-scope.
+
 2016-12-08  Bin Cheng  <bin.cheng@arm.com>
 
 	PR middle-end/78684
