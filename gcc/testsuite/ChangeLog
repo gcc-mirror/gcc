@@ -1,3 +1,32 @@
+2016-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77784
+	PR middle-end/78149
+	PR middle-end/78138
+
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Adjust expected diagnostic.
+	* g++.dg/ext/builtin-object-size3.C (bar): Same.
+	* g++.dg/ext/strncpy-chk1.C: Same.
+	* g++.dg/opt/memcpy1.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
+	* gcc.c-torture/compile/pr55569.c: Disable -Wstringop-overflow.
+	* gcc.dg/Wobjsize-1.c: Adjust expected diagnostic.
+	* gcc.dg/attr-alloc_size.c: Same.
+	* gcc.dg/builtin-stringop-chk-1.c: Adjust expected diagnostic.
+	* gcc.dg/builtin-stringop-chk-2.c: Same.
+	* gcc.dg/builtin-stringop-chk-4.c: New test.
+	* gcc.dg/builtin-strncat-chk-1.c: Adjust expected diagnostic.
+	* gcc.dg/memcpy-2.c: Same.
+	* gcc.dg/pr40340-1.c: Same.
+	* gcc.dg/pr40340-2.c (main): Same.
+	* gcc.dg/pr40340-5.c (main): Same.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Same.
+	* gcc.dg/torture/pr71132.c: Disable -Wstringop-overflow.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust text of expected
+	warning.
+	* gfortran.dg/char_length_3.f90: Prune expected warnings.
+	* gfortran.dg/pr38868.f: Add expected warnings.
+
 2016-12-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/72717

@@ -304,6 +304,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
+-Wstringop-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
 -Wsuggest-final-types @gol -Wsuggest-final-methods -Wsuggest-override @gol
 -Wmissing-format-attribute -Wsubobject-linkage @gol
@@ -4934,6 +4935,86 @@ simplified to @code{x + 1 >= y}.  This is reported only at the
 highest warning level because this simplification applies to many
 comparisons, so this warning level gives a very large number of
 false positives.
+@end table
+
+@item -Wstringop-overflow
+@itemx -Wstringop-overflow=@var{type}
+@opindex Wstringop-overflow
+@opindex Wno-stringop-overflow
+Warn for calls to string manipulation functions such as @code{memcpy} and
+@code{strcpy} that are determined to overflow the destination buffer.  The
+optional argument is one greater than the type of Object Size Checking to
+perform to determine the size of the destination.  @xref{Object Size Checking}.
+The argument is meaningful only for functions that operate on character arrays
+but not for raw memory functions like @code{memcpy} which always make use
+of Object Size type-0.  The option also warns for calls that specify a size
+in excess of the largest possible object or at most @code{SIZE_MAX / 2} bytes.
+The option produces the best results with optimization enabled but can detect
+a small subset of simple buffer overflows even without optimization in
+calls to the GCC built-in functions like @code{__builtin_memcpy} that
+correspond to the standard functions.  In any case, the option warns about
+just a subset of buffer overflows detected by the corresponding overflow
+checking built-ins.  For example, the option will issue a warning for
+the @code{strcpy} call below because it copies at least 5 characters
+(the string @code{"blue"} including the terminating NUL) into the buffer
+of size 4.
+
+@smallexample
+enum Color @{ blue, purple, yellow @};
+const char* f (enum Color clr)
+@{
+  static char buf [4];
+  const char *str;
+  switch (clr)
+    @{
+      case blue: str = "blue"; break;
+      case purple: str = "purple"; break;
+      case yellow: str = "yellow"; break;
+    @}
+
+  return strcpy (buf, str);   // warning here
+@}
+@end smallexample
+
+Option @option{-Wstringop-overflow=2} is enabled by default.
+
+@table @gcctabopt
+@item -Wstringop-overflow
+@item -Wstringop-overflow=1
+@opindex Wstringop-overflow
+@opindex Wno-stringop-overflow
+The @option{-Wstringop-overflow=1} option uses type-zero Object Size Checking
+to determine the sizes of destination objects.  This is the default setting
+of the option.  At this setting the option will not warn for writes past
+the end of subobjects of larger objects accessed by pointers unless the
+size of the largest surrounding object is known.  When the destination may
+be one of several objects it is assumed to be the largest one of them.  On
+Linux systems, when optimization is enabled at this setting the option warns
+for the same code as when the @code{_FORTIFY_SOURCE} macro is defined to
+a non-zero value.
+
+@item -Wstringop-overflow=2
+The @option{-Wstringop-overflow=2} option uses type-one Object Size Checking
+to determine the sizes of destination objects.  At this setting the option
+will warn about overflows when writing to members of the largest complete
+objects whose exact size is known.  It will, however, not warn for excessive
+writes to the same members of unknown objects referenced by pointers since
+they may point to arrays containing unknown numbers of elements.
+
+@item -Wstringop-overflow=3
+The @option{-Wstringop-overflow=3} option uses type-two Object Size Checking
+to determine the sizes of destination objects.  At this setting the option
+warns about overflowing the smallest object or data member.  This is the
+most restrictive setting of the option that may result in warnings for safe
+code.
+
+@item -Wstringop-overflow=4
+The @option{-Wstringop-overflow=4} option uses type-three Object Size Checking
+to determine the sizes of destination objects.  At this setting the option
+will warn about overflowing any data members, and when the destination is
+one of several objects it uses the size of the largest of them to decide
+whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
+setting of the option may result in warnings for benign code.
 @end table
 
 @item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]}
