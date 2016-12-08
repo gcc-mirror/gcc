@@ -26,6 +26,7 @@
 # scheduler       - planificador
 # SSA             - SSA
 # statement       - sentencia
+# Thumb           - TBD
 # ubsan           - ubsan
 #
 # advierte de -> avisa sobre
@@ -35,7 +36,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-12-04 14:54+0100\n"
+"PO-Revision-Date: 2016-12-08 00:01+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -302,294 +303,194 @@ msgid "Options:\n"
 msgstr "Opciones:\n"
 
 #: gcc.c:3384
-#, fuzzy
-#| msgid "  -pass-exit-codes         Exit with highest error code from a phase\n"
 msgid "  -pass-exit-codes         Exit with highest error code from a phase.\n"
 msgstr "  -pass-exit-codes         Sale con el código de error más alto de una fase.\n"
 
 #: gcc.c:3385
-#, fuzzy
-#| msgid "  --help                   Display this information\n"
 msgid "  --help                   Display this information.\n"
 msgstr "  --help                   Muestra esta información.\n"
 
 #: gcc.c:3386
-#, fuzzy
-#| msgid "  --target-help            Display target specific command line options\n"
 msgid "  --target-help            Display target specific command line options.\n"
 msgstr "  --target-help            Muestra opciones de línea de órdenes específicas del objetivo.\n"
 
 #: gcc.c:3387
-#, fuzzy
-#| msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...]\n"
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
-msgstr "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...]\n"
+msgstr "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
 
 #: gcc.c:3388
-#, fuzzy
-#| msgid "                           Display specific types of command line options\n"
 msgid "                           Display specific types of command line options.\n"
-msgstr "                           Muestra tipos específicos de opciones de línea de órdenes\n"
+msgstr "                           Muestra tipos específicos de opciones de línea de órdenes.\n"
 
 #: gcc.c:3390
-#, fuzzy
-#| msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
 msgid "  (Use '-v --help' to display command line options of sub-processes).\n"
-msgstr "  (Use '-v --help' para mostrar las opciones de línea de órdenes de los subprocesos)\n"
+msgstr "  (Use '-v --help' para mostrar las opciones de línea de órdenes de los subprocesos).\n"
 
 #: gcc.c:3391
-#, fuzzy
-#| msgid "  --version                Display compiler version information\n"
 msgid "  --version                Display compiler version information.\n"
-msgstr "  --version                Muestra la información de versión del compilador\n"
+msgstr "  --version                Muestra la información de versión del compilador.\n"
 
 #: gcc.c:3392
-#, fuzzy
-#| msgid "  -dumpspecs               Display all of the built in spec strings\n"
 msgid "  -dumpspecs               Display all of the built in spec strings.\n"
-msgstr "  -dumpspecs               Muestra todas las cadenas internas de especificación\n"
+msgstr "  -dumpspecs               Muestra todas las cadenas internas de especificación.\n"
 
 #: gcc.c:3393
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -dumpversion             Display the version of the compiler.\n"
-msgstr "  -dumpversion             Muestra la versión del compilador\n"
+msgstr "  -dumpversion             Muestra la versión del compilador.\n"
 
 #: gcc.c:3394
-#, fuzzy
-#| msgid "  -dumpmachine             Display the compiler's target processor\n"
 msgid "  -dumpmachine             Display the compiler's target processor.\n"
-msgstr "  -dumpmachine             Muestra el procesador objetivo del compilador\n"
+msgstr "  -dumpmachine             Muestra el procesador objetivo del compilador.\n"
 
 #: gcc.c:3395
-#, fuzzy
-#| msgid "  -print-search-dirs       Display the directories in the compiler's search path\n"
 msgid "  -print-search-dirs       Display the directories in the compiler's search path.\n"
-msgstr "  -print-search-dirs       Muestra los directorios en la ruta de búsqueda del compilador\n"
+msgstr "  -print-search-dirs       Muestra los directorios en la ruta de búsqueda del compilador.\n"
 
 #: gcc.c:3396
-#, fuzzy
-#| msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library\n"
 msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"
-msgstr "  -print-libgcc-file-name  Muestra el nombre de la biblioteca que acompaña al compilador\n"
+msgstr "  -print-libgcc-file-name  Muestra el nombre de la biblioteca que acompaña al compilador.\n"
 
 #: gcc.c:3397
-#, fuzzy
-#| msgid "  -print-file-name=<lib>   Display the full path to library <lib>\n"
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>.\n"
-msgstr "  -print-file-name=<bib>   Muestra la ruta completa a la biblioteca <bib>\n"
+msgstr "  -print-file-name=<bib>   Muestra la ruta completa a la biblioteca <bib>.\n"
 
 #: gcc.c:3398
-#, fuzzy
-#| msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"
-msgstr "  -print-prog-name=<prog>  Muestra la ruta completa del programa componente del compilador <prog>\n"
+msgstr "  -print-prog-name=<prog>  Muestra la ruta completa del programa componente del compilador <prog>.\n"
 
 #: gcc.c:3399
-#, fuzzy
-#| msgid ""
-#| "  -print-multi-lib         Display the mapping between command line options and\n"
-#| "                           multiple library search directories\n"
 msgid ""
 "  -print-multiarch         Display the target's normalized GNU triplet, used as\n"
 "                           a component in the library path.\n"
 msgstr ""
-"  -print-multi-lib         Muestra el mapeo entre las opciones de línea de órdenes\n"
-"                           y los múltiples directorios de búsqueda de bibliotecas\n"
+"  -print-multiarch         Muestra el triplete GNU normalizado del destino, usado como\n"
+"                           como componente en la ruta de la biblioteca.\n"
 
 #: gcc.c:3402
-#, fuzzy
-#| msgid "  -print-multi-directory   Display the root directory for versions of libgcc\n"
 msgid "  -print-multi-directory   Display the root directory for versions of libgcc.\n"
-msgstr "  -print-multi-directory   Muestra el directorio raíz para las versiones de libgcc\n"
+msgstr "  -print-multi-directory   Muestra el directorio raíz para las versiones de libgcc.\n"
 
 #: gcc.c:3403
-#, fuzzy
-#| msgid ""
-#| "  -print-multi-lib         Display the mapping between command line options and\n"
-#| "                           multiple library search directories\n"
 msgid ""
 "  -print-multi-lib         Display the mapping between command line options and\n"
 "                           multiple library search directories.\n"
 msgstr ""
 "  -print-multi-lib         Muestra el mapeo entre las opciones de línea de órdenes\n"
-"                           y los múltiples directorios de búsqueda de bibliotecas\n"
+"                           y los múltiples directorios de búsqueda de bibliotecas.\n"
 
 #: gcc.c:3406
-#, fuzzy
-#| msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
 msgid "  -print-multi-os-directory Display the relative path to OS libraries.\n"
-msgstr "  -print-multi-os-directory Muestra la ruta relativa para las bibliotecas del SO\n"
+msgstr "  -print-multi-os-directory Muestra la ruta relativa para las bibliotecas del SO.\n"
 
 #: gcc.c:3407
-#, fuzzy
-#| msgid "  -print-sysroot           Display the target libraries directory\n"
 msgid "  -print-sysroot           Display the target libraries directory.\n"
-msgstr "  -print-sysroot           Muestra el directorio de las bibliotecas objetivo\n"
+msgstr "  -print-sysroot           Muestra el directorio de las bibliotecas objetivo.\n"
 
 #: gcc.c:3408
-#, fuzzy
-#| msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers.\n"
-msgstr "  -print-sysroot-headers-suffix Muestra el sufijo sysroot que se usa para buscar encabezados\n"
+msgstr "  -print-sysroot-headers-suffix Muestra el sufijo sysroot que se usa para buscar encabezados.\n"
 
 #: gcc.c:3409
-#, fuzzy
-#| msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler.\n"
-msgstr "  -Wa,<opciones>           Pasa <opciones> separadas por coma al ensamblador\n"
+msgstr "  -Wa,<opciones>           Pasa <opciones> separadas por coma al ensamblador.\n"
 
 #: gcc.c:3410
-#, fuzzy
-#| msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"
-msgstr "  -Wp,<opciones>           Pasa <opciones> separadas por coma al preprocesador\n"
+msgstr "  -Wp,<opciones>           Pasa <opciones> separadas por coma al preprocesador.\n"
 
 #: gcc.c:3411
-#, fuzzy
-#| msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker\n"
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"
-msgstr "  -Wl,<opciones>           Pasa <opciones> separadas por coma al enlazador\n"
+msgstr "  -Wl,<opciones>           Pasa <opciones> separadas por coma al enlazador.\n"
 
 #: gcc.c:3412
-#, fuzzy
-#| msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
-msgstr "  -Xassembler <argumento>  Pasa el <argumento> al ensamblador\n"
+msgstr "  -Xassembler <argumento>  Pasa el <argumento> al ensamblador.\n"
 
 #: gcc.c:3413
-#, fuzzy
-#| msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"
-msgstr "  -Xpreprocessor <argumento> Pasa el <argumento> al preprocesador\n"
+msgstr "  -Xpreprocessor <argumento> Pasa el <argumento> al preprocesador.\n"
 
 #: gcc.c:3414
-#, fuzzy
-#| msgid "  -Xlinker <arg>           Pass <arg> on to the linker\n"
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr "  -Xlinker <argumento>     Pasa el <argumento> al enlazador\n"
+msgstr "  -Xlinker <argumento>     Pasa el <argumento> al enlazador.\n"
 
 #: gcc.c:3415
-#, fuzzy
-#| msgid "  -save-temps              Do not delete intermediate files\n"
 msgid "  -save-temps              Do not delete intermediate files.\n"
-msgstr "  -save-temps              No borra los ficheros intermedios\n"
+msgstr "  -save-temps              No borra los ficheros intermedios.\n"
 
 #: gcc.c:3416
-#, fuzzy
-#| msgid "  -save-temps=<arg>        Do not delete intermediate files\n"
 msgid "  -save-temps=<arg>        Do not delete intermediate files.\n"
-msgstr "  -save-temps=<arg>        No borra los ficheros intermedios\n"
+msgstr "  -save-temps=<arg>        No borra los ficheros intermedios.\n"
 
 #: gcc.c:3417
-#, fuzzy
-#| msgid ""
-#| "  -no-canonical-prefixes   Do not canonicalize paths when building relative\n"
-#| "                           prefixes to other gcc components\n"
 msgid ""
 "  -no-canonical-prefixes   Do not canonicalize paths when building relative\n"
 "                           prefixes to other gcc components.\n"
 msgstr ""
 "  -no-canonical-prefixes   No crea rutas completas al construir prefijos\n"
-"                           relativos a otros componentes de gcc\n"
+"                           relativos a otros componentes de gcc.\n"
 
 #: gcc.c:3420
-#, fuzzy
-#| msgid "  -pipe                    Use pipes rather than intermediate files\n"
 msgid "  -pipe                    Use pipes rather than intermediate files.\n"
-msgstr "  -pipe                    Usa tuberías en lugar de ficheros intermedios\n"
+msgstr "  -pipe                    Usa tuberías en lugar de ficheros intermedios.\n"
 
 #: gcc.c:3421
-#, fuzzy
-#| msgid "  -time                    Time the execution of each subprocess\n"
 msgid "  -time                    Time the execution of each subprocess.\n"
-msgstr "  -time                    Obtiene el tiempo de ejecución de cada subproceso\n"
+msgstr "  -time                    Obtiene el tiempo de ejecución de cada subproceso.\n"
 
 #: gcc.c:3422
-#, fuzzy
-#| msgid "  -specs=<file>            Override built-in specs with the contents of <file>\n"
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>.\n"
-msgstr "  -specs=<fichero>         Sobrepone las especificaciones internas con el contenido del <fichero>\n"
+msgstr "  -specs=<fichero>         Sobrepone las especificaciones internas con el contenido del <fichero>.\n"
 
 #: gcc.c:3423
-#, fuzzy
-#| msgid "  -std=<standard>          Assume that the input sources are for <standard>\n"
 msgid "  -std=<standard>          Assume that the input sources are for <standard>.\n"
-msgstr "  -std=<estándar>          Asume que los ficheros de entrada son para el <estándar>\n"
+msgstr "  -std=<estándar>          Asume que los ficheros de entrada son para el <estándar>.\n"
 
 #: gcc.c:3424
-#, fuzzy
-#| msgid ""
-#| "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
-#| "                           and libraries\n"
 msgid ""
 "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
 "                           and libraries.\n"
 msgstr ""
 "  --sysroot=<directorio>   Usa el <directorio> como directorio raíz para\n"
-"                           los encabezados y bibliotecas\n"
+"                           los encabezados y bibliotecas.\n"
 
 #: gcc.c:3427
-#, fuzzy
-#| msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
 msgid "  -B <directory>           Add <directory> to the compiler's search paths.\n"
-msgstr "  -B <directorio>          Agrega el <directorio> a las rutas de búsqueda del compilador\n"
+msgstr "  -B <directorio>          Agrega el <directorio> a las rutas de búsqueda del compilador.\n"
 
 #: gcc.c:3428
-#, fuzzy
-#| msgid "  -v                       Display the programs invoked by the compiler\n"
 msgid "  -v                       Display the programs invoked by the compiler.\n"
-msgstr "  -v                       Muestra los programas invocados por el compilador\n"
+msgstr "  -v                       Muestra los programas invocados por el compilador.\n"
 
 #: gcc.c:3429
-#, fuzzy
-#| msgid "  -###                     Like -v but options quoted and commands not executed\n"
 msgid "  -###                     Like -v but options quoted and commands not executed.\n"
-msgstr "  -###                     Como -v pero no se ejecutan las opciones entre comillas y las órdenes\n"
+msgstr "  -###                     Como -v pero no se ejecutan las opciones entre comillas y las órdenes.\n"
 
 #: gcc.c:3430
-#, fuzzy
-#| msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
 msgid "  -E                       Preprocess only; do not compile, assemble or link.\n"
-msgstr "  -E                       Solamente preprocesa; no compila, ensambla o enlaza\n"
+msgstr "  -E                       Solamente preprocesa; no compila, ensambla o enlaza.\n"
 
 #: gcc.c:3431
-#, fuzzy
-#| msgid "  -S                       Compile only; do not assemble or link\n"
 msgid "  -S                       Compile only; do not assemble or link.\n"
-msgstr "  -S                       Solamente compila; no ensambla o enlaza\n"
+msgstr "  -S                       Solamente compila; no ensambla o enlaza.\n"
 
 #: gcc.c:3432
-#, fuzzy
-#| msgid "  -c                       Compile and assemble, but do not link\n"
 msgid "  -c                       Compile and assemble, but do not link.\n"
-msgstr "  -c                       Compila y ensambla, pero no enlaza\n"
+msgstr "  -c                       Compila y ensambla, pero no enlaza.\n"
 
 #: gcc.c:3433
-#, fuzzy
-#| msgid "  -o <file>                Place the output into <file>\n"
 msgid "  -o <file>                Place the output into <file>.\n"
-msgstr "  -o <fichero>             Coloca la salida en el <fichero>\n"
+msgstr "  -o <fichero>             Coloca la salida en el <fichero>.\n"
 
 #: gcc.c:3434
-#, fuzzy
-#| msgid "  -pie                     Create a position independent executable\n"
 msgid "  -pie                     Create a position independent executable.\n"
-msgstr "  -pie                     Genera un ejecutable independiente de posición\n"
+msgstr "  -pie                     Genera un ejecutable independiente de posición.\n"
 
 #: gcc.c:3435
-#, fuzzy
-#| msgid "  -shared                  Create a shared library\n"
 msgid "  -shared                  Create a shared library.\n"
-msgstr "  -shared                  Crea una biblioteca compartida\n"
+msgstr "  -shared                  Crea una biblioteca compartida.\n"
 
 #: gcc.c:3436
-#, fuzzy
-#| msgid ""
-#| "  -x <language>            Specify the language of the following input files\n"
-#| "                           Permissible languages include: c c++ assembler none\n"
-#| "                           'none' means revert to the default behavior of\n"
-#| "                           guessing the language based on the file's extension\n"
 msgid ""
 "  -x <language>            Specify the language of the following input files.\n"
 "                           Permissible languages include: c c++ assembler none\n"
@@ -597,9 +498,9 @@ msgid ""
 "                           guessing the language based on the file's extension.\n"
 msgstr ""
 "  -x <lenguaje>            Especifica el lenguaje de los siguientes ficheros de entrada\n"
-"                           Los lenguajes permitidos incluyen: c c++ assembler none\n"
-"                           'none' significa revertir a la conducta habitual de\n"
-"                           adivinar el lenguaje basado en la extensión del fichero\n"
+"                           Los lenguajes permitidos son: c c++ assembler none\n"
+"                           'none' significa revertir al comportamiento habitual de\n"
+"                           adivinar el lenguaje por la extensión del fichero.\n"
 
 #: gcc.c:3443
 #, c-format
@@ -854,16 +755,14 @@ msgstr ""
 "\n"
 
 #: gcov-tool.c:510
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "  -h, --help                            Print this help, then exit\n"
-msgstr "  -h, --help                      Muestra esta información, y finaliza\n"
+msgstr "  -h, --help                            Muestra esta información, y finaliza\n"
 
 #: gcov-tool.c:511
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "  -v, --version                         Print version number, then exit\n"
-msgstr "  -v, --version                   Muestra el número de versión, y finaliza\n"
+msgstr "  -v, --version                         Muestra el número de versión, y finaliza\n"
 
 #: gcov-tool.c:515 gcov.c:492
 #, c-format
@@ -877,10 +776,9 @@ msgstr ""
 "%s.\n"
 
 #: gcov-tool.c:526
-#, fuzzy, c-format
-#| msgid "Copyright (C) 2001 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
-msgstr "Copyright (C) 2001 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:529 gcov.c:506
 #, c-format
@@ -929,10 +827,7 @@ msgid "  -b, --branch-probabilities      Include branch probabilities in output\
 msgstr "  -b, --branch-probabilities      Incluye las probabilidades de ramificación en la salida\n"
 
 #: gcov.c:477
-#, fuzzy, c-format
-#| msgid ""
-#| "  -c, --branch-counts             Given counts of branches taken\n"
-#| "                                    rather than percentages\n"
+#, c-format
 msgid ""
 "  -c, --branch-counts             Output counts of branches taken\n"
 "                                    rather than percentages\n"
@@ -1035,34 +930,29 @@ msgid "\n"
 msgstr "\n"
 
 #: gcov.c:856
-#, fuzzy, c-format
-#| msgid "%s: Cannot open output file: %s\n"
+#, c-format
 msgid "Cannot open intermediate output file %s\n"
-msgstr "%s: No se puede abrir el fichero de salida: %s\n"
+msgstr "No se puede abrir el fichero de salida intermedia %s\n"
 
 #: gcov.c:1139
-#, fuzzy, c-format
-#| msgid "%s:source file is newer than graph file '%s'\n"
+#, c-format
 msgid "%s:source file is newer than notes file '%s'\n"
-msgstr "%s:el fichero fuente es más nuevo que el fichero de grafo '%s'\n"
+msgstr "%s:el fichero fuente es más nuevo que el fichero de notas '%s'\n"
 
 #: gcov.c:1144
-#, fuzzy, c-format
-#| msgid "(the message is only displayed one per source file)\n"
+#, c-format
 msgid "(the message is displayed only once per source file)\n"
-msgstr "(el mensaje sólo se muestra una vez por cada fichero de código)\n"
+msgstr "(el mensaje sólo se muestra una vez por cada fichero de código fuente)\n"
 
 #: gcov.c:1169
-#, fuzzy, c-format
-#| msgid "%s:cannot open graph file\n"
+#, c-format
 msgid "%s:cannot open notes file\n"
-msgstr "%s:no se puede abrir el fichero de grafo\n"
+msgstr "%s:no se puede abrir el fichero de notas\n"
 
 #: gcov.c:1175
-#, fuzzy, c-format
-#| msgid "%s:not a gcov data file\n"
+#, c-format
 msgid "%s:not a gcov notes file\n"
-msgstr "%s:no es un fichero de datos gcov\n"
+msgstr "%s:no es un fichero de notas gcov\n"
 
 #: gcov.c:1188
 #, c-format
@@ -1100,10 +990,9 @@ msgid "%s:version '%.4s', prefer version '%.4s'\n"
 msgstr "%s:versión '%.4s', se prefiere la versión '%.4s'\n"
 
 #: gcov.c:1417
-#, fuzzy, c-format
-#| msgid "%s:stamp mismatch with graph file\n"
+#, c-format
 msgid "%s:stamp mismatch with notes file\n"
-msgstr "%s:no coincide la marca con el fichero de grafo\n"
+msgstr "%s:no coincide la marca con el fichero de notas\n"
 
 #: gcov.c:1452
 #, c-format
@@ -1234,10 +1123,9 @@ msgid "function returns address of local variable"
 msgstr "la función devuelve la dirección de una variable local"
 
 #: gimple-ssa-isolate-paths.c:442 gimple-ssa-isolate-paths.c:287
-#, fuzzy, gcc-internal-format
-#| msgid "function returns address of local variable"
+#, gcc-internal-format
 msgid "function may return address of local variable"
-msgstr "la función devuelve la dirección de una variable local"
+msgstr "la función puede devolver la dirección de una variable local"
 
 #: incpath.c:72
 #, c-format
@@ -1302,16 +1190,12 @@ msgid "In function %qs"
 msgstr "En la función %qs"
 
 #: langhooks.c:448 cp/error.c:3268
-#, fuzzy
-#| msgid "    inlined from %qs at %s:%d:%d"
 msgid "    inlined from %qs at %r%s:%d:%d%R"
-msgstr "    incluido en línea de %qs en %s:%d:%d"
+msgstr "    incluido en línea de %qs en %r%s:%d:%d%R"
 
 #: langhooks.c:453 cp/error.c:3273
-#, fuzzy
-#| msgid "    inlined from %qs at %s:%d"
 msgid "    inlined from %qs at %r%s:%d%R"
-msgstr "    incluido en línea de %qs en %s:%d"
+msgstr "    incluido en línea de %qs en %r%s:%d%R"
 
 #: langhooks.c:459 cp/error.c:3279
 #, c-format
@@ -1384,10 +1268,9 @@ msgid " No options with the desired characteristics were found\n"
 msgstr " No se encontraron opciones con las características deseadas\n"
 
 #: opts.c:1246
-#, fuzzy, c-format
-#| msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end\n"
+#, c-format
 msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"
-msgstr " No se encontró ninguna.  Use --help=%s para mostrar *todas* las opciones admitidas por el frente %s\n"
+msgstr " No se encontró ninguna.  Use --help=%s para mostrar *todas* las opciones admitidas por el frente %s.\n"
 
 #: opts.c:1252
 #, c-format
@@ -1526,10 +1409,9 @@ msgid "%s%s%s %sversion %s (%s) compiled by CC, "
 msgstr "%s%s%s %sversión %s (%s) compilado por CC, "
 
 #: toplev.c:644
-#, fuzzy, c-format
-#| msgid "GMP version %s, MPFR version %s, MPC version %s\n"
+#, c-format
 msgid "GMP version %s, MPFR version %s, MPC version %s, isl version %s\n"
-msgstr "GMP versión %s, MPFR versión %s, MPC versión %s\n"
+msgstr "GMP versión %s, MPFR versión %s, MPC versión %s, isl versión %s\n"
 
 #: toplev.c:646
 #, c-format
@@ -1560,10 +1442,8 @@ msgid "function not considered for inlining"
 msgstr "la función no se consideró para la inclusión en línea"
 
 #: cif-code.def:43
-#, fuzzy
-#| msgid "%qE is not initialized"
 msgid "caller is not optimized"
-msgstr "%qE no está inicializado"
+msgstr "el que llama no está optimizado"
 
 #: cif-code.def:47
 msgid "function body not available"
@@ -1796,8 +1676,7 @@ msgid "The maximum length of scheduling's pending operations list."
 msgstr "La longitud máxima de la lista de operaciones pendientes del planificador."
 
 #: params.def:180
-#, fuzzy, no-c-format
-#| msgid "The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop"
+#, no-c-format
 msgid "The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop."
 msgstr "El número máximo de intentos hacia atrás que debe hacer el planificador cuando planifique un bucle módulo."
 
@@ -3032,22 +2911,19 @@ msgid "invalid %%xn code"
 msgstr "código %%xn inválido"
 
 #: config/alpha/alpha.c:5499
-#, fuzzy, c-format
-#| msgid "invalid address"
+#, c-format
 msgid "invalid operand address"
-msgstr "dirección inválida"
+msgstr "dirección de operando no válida"
 
 #: config/arc/arc.c:2966
-#, fuzzy, c-format
-#| msgid "invalid operand to %%s code"
+#, c-format
 msgid "invalid operand to %%Z code"
-msgstr "operando inválido para el código %%s"
+msgstr "operando no válido para el código %%Z"
 
 #: config/arc/arc.c:2974
-#, fuzzy, c-format
-#| msgid "invalid operand to %%s code"
+#, c-format
 msgid "invalid operand to %%z code"
-msgstr "operando inválido para el código %%s"
+msgstr "operando no válido para el código %%z"
 
 #: config/arc/arc.c:2982
 #, fuzzy, c-format
@@ -9469,7 +9345,7 @@ msgstr "Trata de evitar que se generen secuencias de instrucciones que contengan
 
 #: config/i386/stringop.opt:8
 msgid "the Free Software Foundation; either version 3, or (at your option)"
-msgstr ""
+msgstr "la Free Software Foundation; bien versión 3, o (a su elección)"
 
 #: config/i386/stringop.opt:13
 msgid "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
@@ -9477,391 +9353,267 @@ msgstr ""
 
 #: config/i386/stringop.opt:18
 msgid "see <http://www.gnu.org/licenses/>.  */"
-msgstr ""
+msgstr "véase <http://www.gnu.org/licenses/>.  */"
 
 #: config/pa/pa64-hpux.opt:23
-#, fuzzy
-#| msgid "Assume code will be linked by GNU ld"
 msgid "Assume code will be linked by GNU ld."
-msgstr "Asume que el código se enlazará por ld de GNU."
+msgstr "Asume que el código se enlazará mediante ld de GNU."
 
 #: config/pa/pa64-hpux.opt:27
-#, fuzzy
-#| msgid "Assume code will be linked by HP ld"
 msgid "Assume code will be linked by HP ld."
-msgstr "Asume que el código se enlazará por ld de HP."
+msgstr "Asume que el código se enlazará mediante ld de HP."
 
 #: config/pa/pa-hpux1010.opt:23 config/pa/pa-hpux.opt:31
 #: config/pa/pa-hpux1131.opt:23 config/pa/pa-hpux1111.opt:23
-#, fuzzy
-#| msgid "Specify UNIX standard for predefines and linking"
 msgid "Specify UNIX standard for predefines and linking."
-msgstr "Especifica el estándar UNIX para las predefiniciones y enlace."
+msgstr "Especifica el estándar UNIX para las predefiniciones y enlazado."
 
 #: config/pa/pa-hpux.opt:27
-#, fuzzy
-#| msgid "Generate cpp defines for server IO"
 msgid "Generate cpp defines for server IO."
 msgstr "Genera definiciones cpp para ES de servidor."
 
 #: config/pa/pa-hpux.opt:35
-#, fuzzy
-#| msgid "Generate cpp defines for workstation IO"
 msgid "Generate cpp defines for workstation IO."
 msgstr "Genera definiciones cpp para ES de estación de trabajo."
 
 #: config/pa/pa.opt:30 config/pa/pa.opt:83 config/pa/pa.opt:91
-#, fuzzy
-#| msgid "Generate PA1.0 code"
 msgid "Generate PA1.0 code."
 msgstr "Genera código PA1.0."
 
 #: config/pa/pa.opt:34 config/pa/pa.opt:95 config/pa/pa.opt:136
-#, fuzzy
-#| msgid "Generate PA1.1 code"
 msgid "Generate PA1.1 code."
 msgstr "Genera código PA1.1."
 
 #: config/pa/pa.opt:38 config/pa/pa.opt:99
-#, fuzzy
-#| msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)."
 msgstr "Genera código PA2.0 (requiere binutils 2.10 o superior)."
 
 #: config/pa/pa.opt:46
-#, fuzzy
-#| msgid "Disable FP regs"
 msgid "Disable FP regs."
 msgstr "Desactiva los registros FP."
 
 #: config/pa/pa.opt:50
-#, fuzzy
-#| msgid "Disable indexed addressing"
 msgid "Disable indexed addressing."
-msgstr "Desactiva el direccionamiento indizado."
+msgstr "Desactiva el direccionamiento indexado."
 
 #: config/pa/pa.opt:54
-#, fuzzy
-#| msgid "Generate fast indirect calls"
 msgid "Generate fast indirect calls."
 msgstr "Genera llamadas indirectas rápidas."
 
 #: config/pa/pa.opt:62
-#, fuzzy
-#| msgid "Assume code will be assembled by GAS"
 msgid "Assume code will be assembled by GAS."
-msgstr "Asume que el código será ensamblado por GAS."
+msgstr "Asume que el código será ensamblado mediante GAS."
 
 #: config/pa/pa.opt:71
-#, fuzzy
-#| msgid "Enable linker optimizations"
 msgid "Enable linker optimizations."
 msgstr "Activa las optimizaciones del enlazador."
 
 #: config/pa/pa.opt:75
-#, fuzzy
-#| msgid "Always generate long calls"
 msgid "Always generate long calls."
 msgstr "Genera siempre llamadas long."
 
 #: config/pa/pa.opt:79
-#, fuzzy
-#| msgid "Emit long load/store sequences"
 msgid "Emit long load/store sequences."
 msgstr "Emite secuencias load/store long."
 
 #: config/pa/pa.opt:87
-#, fuzzy
-#| msgid "Disable space regs"
 msgid "Disable space regs."
 msgstr "Desactiva los registros de espacio."
 
 #: config/pa/pa.opt:103
-#, fuzzy
-#| msgid "Use portable calling conventions"
 msgid "Use portable calling conventions."
-msgstr "Usa convenciones de llamada transportable."
+msgstr "Usa convenios de llamada transportable."
 
 #: config/pa/pa.opt:107
-#, fuzzy
-#| msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000"
 msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000."
-msgstr "Especifica el CPU por razones de planificación.  Los argumentos válidos son 700, 7100, 7100LC, 7200, 7300, y 8000."
+msgstr "Especifica la CPU por razones de planificación.  Los argumentos válidos son 700, 7100, 7100LC, 7200, 7300, y 8000."
 
 #: config/pa/pa.opt:132 config/frv/frv.opt:215
-#, fuzzy
-#| msgid "Use software floating point"
 msgid "Use software floating point."
 msgstr "Usa coma flotante de software."
 
 #: config/pa/pa.opt:140
-#, fuzzy
-#| msgid "Do not disable space regs"
 msgid "Do not disable space regs."
 msgstr "No desactiva los registros de espacio."
 
 #: config/v850/v850.opt:29
-#, fuzzy
-#| msgid "Use registers r2 and r5"
 msgid "Use registers r2 and r5."
 msgstr "Usa los registros r2 y r5."
 
 #: config/v850/v850.opt:33
-#, fuzzy
-#| msgid "Use 4 byte entries in switch tables"
 msgid "Use 4 byte entries in switch tables."
 msgstr "Usa entradas de 4 byte en las tablas de switch."
 
 # No me gusta mucho esta traducción. cfuga
 #: config/v850/v850.opt:37
-#, fuzzy
-#| msgid "Enable backend debugging"
 msgid "Enable backend debugging."
 msgstr "Habilita la depuración del extremo trasero."
 
 #: config/v850/v850.opt:41
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the callt instruction (default)."
-msgstr "No usa la instrucción callt."
+msgstr "No usa la instrucción callt (predeterminado)."
 
 #: config/v850/v850.opt:45
-#, fuzzy
-#| msgid "Reuse r30 on a per function basis"
 msgid "Reuse r30 on a per function basis."
 msgstr "Reusa r30 basado por función."
 
 #: config/v850/v850.opt:52
-#, fuzzy
-#| msgid "Prohibit PC relative function calls"
 msgid "Prohibit PC relative function calls."
 msgstr "Prohíbe la llamada a funciones relativas al PC."
 
 #: config/v850/v850.opt:56
-#, fuzzy
-#| msgid "Use stubs for function prologues"
 msgid "Use stubs for function prologues."
-msgstr "Usa cabos para los prólogos de función."
+msgstr "Usa stubs para los prólogos de función."
 
 #: config/v850/v850.opt:60
-#, fuzzy
-#| msgid "Set the max size of data eligible for the SDA area"
 msgid "Set the max size of data eligible for the SDA area."
 msgstr "Establece el tamaño máximo de datos elegibles para el área SDA."
 
 #: config/v850/v850.opt:67
-#, fuzzy
-#| msgid "Enable the use of the short load instructions"
 msgid "Enable the use of the short load instructions."
 msgstr "Activa el uso de las instrucciones short load."
 
 #: config/v850/v850.opt:71
-#, fuzzy
-#| msgid "Same as: -mep -mprolog-function"
 msgid "Same as: -mep -mprolog-function."
 msgstr "Igual que: -mep -mprolog-function."
 
 #: config/v850/v850.opt:75
-#, fuzzy
-#| msgid "Set the max size of data eligible for the TDA area"
 msgid "Set the max size of data eligible for the TDA area."
 msgstr "Establece el tamaño máximo de datos elegibles para el área TDA."
 
 #: config/v850/v850.opt:82
-#, fuzzy
-#| msgid "Do not enforce strict alignment"
 msgid "Do not enforce strict alignment."
 msgstr "No refuerza la alineación estricta."
 
 #: config/v850/v850.opt:86
-#, fuzzy
-#| msgid "Put jump tables for switch statements into the .data section rather than the .code section"
 msgid "Put jump tables for switch statements into the .data section rather than the .code section."
 msgstr "Coloca las tablas de salto para las declaraciones switch en la sección .data en lugar de la sección .code."
 
 #: config/v850/v850.opt:93
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850 processor."
 msgstr "Compila para el procesador v850."
 
 #: config/v850/v850.opt:97
-#, fuzzy
-#| msgid "Compile for the v850e processor"
 msgid "Compile for the v850e processor."
 msgstr "Compila para el procesador v850e."
 
 #: config/v850/v850.opt:101
-#, fuzzy
-#| msgid "Compile for the v850e1 processor"
 msgid "Compile for the v850e1 processor."
 msgstr "Compila para el procesador v850e1."
 
 #: config/v850/v850.opt:105
-#, fuzzy
-#| msgid "Compile for the v850es variant of the v850e1"
 msgid "Compile for the v850es variant of the v850e1."
 msgstr "Compila para la variante v850es del procesador v850e1."
 
 #: config/v850/v850.opt:109
-#, fuzzy
-#| msgid "Compile for the v850e2 processor"
 msgid "Compile for the v850e2 processor."
 msgstr "Compila para el procesador v850e2."
 
 #: config/v850/v850.opt:113
-#, fuzzy
-#| msgid "Compile for the v850e2v3 processor"
 msgid "Compile for the v850e2v3 processor."
 msgstr "Compila para el procesador v850e2v3."
 
 #: config/v850/v850.opt:117
-#, fuzzy
-#| msgid "Compile for the v850e processor"
 msgid "Compile for the v850e3v5 processor."
-msgstr "Compila para el procesador v850e."
+msgstr "Compila para el procesador v850e3v5."
 
 #: config/v850/v850.opt:124
-#, fuzzy
-#| msgid "Enable clip instructions"
 msgid "Enable v850e3v5 loop instructions."
-msgstr "Activa las instrucciones clip."
+msgstr "Activa las instrucciones de bucle del v850e3v5."
 
 #: config/v850/v850.opt:128
-#, fuzzy
-#| msgid "Set the max size of data eligible for the ZDA area"
 msgid "Set the max size of data eligible for the ZDA area."
 msgstr "Establece el tamaño máximo de datos elegibles para el área ZDA."
 
 #: config/v850/v850.opt:135
-#, fuzzy
-#| msgid "Enable compatibility with ic960 assembler"
 msgid "Enable relaxing in the assembler."
-msgstr "Activar la compatibilidad con el ensamblador ic960."
+msgstr "Activar la relajación en el ensamblador."
 
 #: config/v850/v850.opt:139
-#, fuzzy
-#| msgid "Prohibit PC relative function calls"
 msgid "Prohibit PC relative jumps."
-msgstr "Prohíbe la llamada a funciones relativas al PC."
+msgstr "Prohíbe los saltos relativos al PC."
 
 #: config/v850/v850.opt:143
-#, fuzzy
-#| msgid "Prevent the use of all hardware floating-point instructions"
 msgid "Inhibit the use of hardware floating point instructions."
-msgstr "Previene el uso de todas las instrucciones de coma flotante de hardware."
+msgstr "Inhibe el uso de las instrucciones de coma flotante de hardware."
 
 #: config/v850/v850.opt:147
-#, fuzzy
-#| msgid "Allow the use of hardware floating-point ABI and instructions"
 msgid "Allow the use of hardware floating point instructions for V850E2V3 and up."
-msgstr "Permite el uso de la ABI y las instrucciones de coma flotante de hardware."
+msgstr "Permite el uso de las instrucciones de coma flotante de hardware para el V850E2V3 y superior."
 
 #: config/v850/v850.opt:151
-#, fuzzy
-#| msgid "Enable the use of RX FPU instructions.  This is the default."
 msgid "Enable support for the RH850 ABI.  This is the default."
-msgstr "Activa el uso de las instrucciones de FPU RX.  Este es el valor por defecto."
+msgstr "Activa el soporte del ABI del RH850.  Este es el valor por defecto."
 
 #: config/v850/v850.opt:155
-#, fuzzy
-#| msgid "Enable support for huge objects"
 msgid "Enable support for the old GCC ABI."
-msgstr "Activa el soporte para objetos enormes."
+msgstr "Activa el soporte para el antiguo ABI de GCC."
 
 #: config/v850/v850.opt:159
 msgid "Support alignments of up to 64-bits."
-msgstr ""
+msgstr "Activa alineamientos de hasta 64 bits."
 
 #: config/g.opt:27
-#, fuzzy
-#| msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)."
 msgstr "-G<número>\tColoca los datos globales y estáticos más pequeños que <número> bytes en una sección especial (en algunos objetivos)."
 
 #: config/lynx.opt:23
-#, fuzzy
-#| msgid "Support legacy multi-threading"
 msgid "Support legacy multi-threading."
 msgstr "Soporte para multihilos antiguo."
 
 #: config/lynx.opt:27
-#, fuzzy
-#| msgid "Use shared libraries"
 msgid "Use shared libraries."
 msgstr "Usa bibliotecas compartidas."
 
 #: config/lynx.opt:31
-#, fuzzy
-#| msgid "Support multi-threading"
 msgid "Support multi-threading."
 msgstr "Soporte para multihilos."
 
 #: config/nvptx/nvptx.opt:22
-#, fuzzy
-#| msgid "Generate code for a Fido A"
 msgid "Generate code for a 32-bit ABI."
-msgstr "Genera código para un Fido A."
+msgstr "Genera código para ABI de 32 bits."
 
 #: config/nvptx/nvptx.opt:26
-#, fuzzy
-#| msgid "Generate code for a Fido A"
 msgid "Generate code for a 64-bit ABI."
-msgstr "Genera código para un Fido A."
+msgstr "Genera código para ABI de 64 bits."
 
 #: config/nvptx/nvptx.opt:30
 msgid "Link in code for a __main kernel."
-msgstr ""
+msgstr "Enlace en el código para un núcleo __main."
 
 #: config/nvptx/nvptx.opt:34
 msgid "Optimize partition neutering."
 msgstr ""
 
 #: config/vxworks.opt:36
-#, fuzzy
-#| msgid "Assume the VxWorks RTP environment"
 msgid "Assume the VxWorks RTP environment."
 msgstr "Asume el entorno RTP de VxWorks."
 
 #: config/vxworks.opt:43
-#, fuzzy
-#| msgid "Assume the VxWorks vThreads environment"
 msgid "Assume the VxWorks vThreads environment."
 msgstr "Asume el entorno vThreads de VxWorks."
 
 #: config/cr16/cr16.opt:23
-#, fuzzy
-#| msgid "-msim   Use simulator runtime"
 msgid "-msim   Use simulator runtime."
 msgstr "-msim   Usa el simulador de tiempo de ejecución."
 
 #: config/cr16/cr16.opt:27
-#, fuzzy
-#| msgid "Generate SBIT, CBIT instructions"
 msgid "Generate SBIT, CBIT instructions."
 msgstr "Genera instrucciones SBIT, CBIT."
 
 #: config/cr16/cr16.opt:31
-#, fuzzy
-#| msgid "Support multiply accumulate instructions"
 msgid "Support multiply accumulate instructions."
 msgstr "Da soporte a múltiples instrucciones de acumulador."
 
 #: config/cr16/cr16.opt:38
-#, fuzzy
-#| msgid "Treat data references as near, far or medium. medium is default"
 msgid "Treat data references as near, far or medium. medium is default."
 msgstr "Trata las referencias a datos como near, far o medium. Por defecto es medium."
 
 #: config/cr16/cr16.opt:42
-#, fuzzy
-#| msgid "Generate code for CR16C architecture"
 msgid "Generate code for CR16C architecture."
 msgstr "Genera código para la arquitectura CR16C."
 
 #: config/cr16/cr16.opt:46
-#, fuzzy
-#| msgid "Generate code for CR16C+ architecture (Default)"
 msgid "Generate code for CR16C+ architecture (Default)."
 msgstr "Genera código para la arquitectura CR16C+ (Por defecto)."
 
@@ -9870,44 +9622,35 @@ msgid "Treat integers as 32-bit."
 msgstr "Trata los enteros como 32-bit."
 
 #: config/avr/avr.opt:23
-#, fuzzy
-#| msgid "Use subroutines for function prologues and epilogues"
 msgid "Use subroutines for function prologues and epilogues."
 msgstr "Usa subrutinas para los prólogos y epílogos de función."
 
 #: config/avr/avr.opt:26
-#, fuzzy, c-format
-#| msgid "missing makefile target after %qs"
+#, c-format
 msgid "missing device or architecture after %qs"
-msgstr "falta un fichero make objetivo después de %qs"
+msgstr "falta dispositivo o arquitectura después de %qs"
 
 #: config/avr/avr.opt:27
-#, fuzzy
-#| msgid "-mmcu=MCU\tSelect the target MCU"
 msgid "-mmcu=MCU\tSelect the target MCU."
 msgstr "-mmcu=MCU\tSelecciona el MCU destino."
 
 #: config/avr/avr.opt:31
 msgid "Set the number of 64 KiB flash segments."
-msgstr ""
+msgstr "Establece el número de segmentos flash de 64 KiB."
 
 #: config/avr/avr.opt:35
 msgid "Indicate presence of a processor erratum."
-msgstr ""
+msgstr "Indica la presencia de una errata del procesador."
 
 #: config/avr/avr.opt:39
 msgid "Enable Read-Modify-Write (RMW) instructions support/use."
-msgstr ""
+msgstr "Activa el soporte/uso de instrucciones Leer-Modificar-Escribir (LME)."
 
 #: config/avr/avr.opt:49
-#, fuzzy
-#| msgid "Use an 8-bit 'int' type"
 msgid "Use an 8-bit 'int' type."
 msgstr "Usa un tipo 'int' de 8-bit."
 
 #: config/avr/avr.opt:53
-#, fuzzy
-#| msgid "Change the stack pointer without disabling interrupts"
 msgid "Change the stack pointer without disabling interrupts."
 msgstr "Cambia el puntero de la pila sin desactivar las interrupciones."
 
@@ -9916,14 +9659,10 @@ msgid "Set the branch costs for conditional branch instructions.  Reasonable val
 msgstr "Establece los costos de ramificación para las instrucciones de ramificación condicional.  Los valores razonables son enteros pequeños que no son negativos.  El costo de ramificación por defecto es 0."
 
 #: config/avr/avr.opt:67
-#, fuzzy
-#| msgid "Change only the low 8 bits of the stack pointer"
 msgid "Change only the low 8 bits of the stack pointer."
 msgstr "Cambia sólo los 8 bits bajos del puntero de pila."
 
 #: config/avr/avr.opt:71
-#, fuzzy
-#| msgid "Relax branches"
 msgid "Relax branches."
 msgstr "Relaja ramificaciones."
 
@@ -9944,242 +9683,170 @@ msgid "The device has no SPH special function register. This option will be over
 msgstr "El dispositivo no tiene el registro de función especial SPH. Esta opción la sobreescribirá el controlador del compilador con la opción correcta si se puede deducir la presencia/ausencia de SPH con -mmcu=MCU."
 
 #: config/avr/avr.opt:92
-#, fuzzy
-#| msgid "taking the address of a label is non-standard"
 msgid "Warn if the address space of an address is changed."
-msgstr "tomar la dirección de una etiqueta no es estándar."
+msgstr "Avisa si se cambia el espacio de direcciones de una direccción."
 
 #: config/avr/avr.opt:96
 msgid "Allow to use truncation instead of rounding towards 0 for fractional int types."
-msgstr ""
+msgstr "Permite truncar en lugar de redondear a 0 los tipos de fracciones de enteros."
 
 #: config/avr/avr.opt:100
 msgid "Do not link against the device-specific library lib<MCU>.a."
-msgstr ""
+msgstr "No enlaza contra la biblioteca específica de dispositivo lib<MCU>.a."
 
 #: config/m32r/m32r.opt:34
-#, fuzzy
-#| msgid "Compile for the m32rx"
 msgid "Compile for the m32rx."
 msgstr "Compila para el m32rx."
 
 #: config/m32r/m32r.opt:38
-#, fuzzy
-#| msgid "Compile for the m32r2"
 msgid "Compile for the m32r2."
 msgstr "Compila para el m32r2."
 
 #: config/m32r/m32r.opt:42
-#, fuzzy
-#| msgid "Compile for the m32r"
 msgid "Compile for the m32r."
 msgstr "Compila para el m32r."
 
 #: config/m32r/m32r.opt:46
-#, fuzzy
-#| msgid "Align all loops to 32 byte boundary"
 msgid "Align all loops to 32 byte boundary."
 msgstr "Alinea todos los bucles al límite de 32 byte."
 
 #: config/m32r/m32r.opt:50
-#, fuzzy
-#| msgid "Prefer branches over conditional execution"
 msgid "Prefer branches over conditional execution."
 msgstr "Prefiere las ramas sobre la ejecución condicional."
 
 #: config/m32r/m32r.opt:54
-#, fuzzy
-#| msgid "Give branches their default cost"
 msgid "Give branches their default cost."
 msgstr "Da a las ramificaciones su costo por defecto."
 
 #: config/m32r/m32r.opt:58
-#, fuzzy
-#| msgid "Display compile time statistics"
 msgid "Display compile time statistics."
 msgstr "Muestra estadísticas de tiempo de compilación."
 
 #: config/m32r/m32r.opt:62
-#, fuzzy
-#| msgid "Specify cache flush function"
 msgid "Specify cache flush function."
 msgstr "Especifica la función de limpieza de caché."
 
 #: config/m32r/m32r.opt:66
-#, fuzzy
-#| msgid "Specify cache flush trap number"
 msgid "Specify cache flush trap number."
 msgstr "Especifica el número de trampa de limpieza de caché."
 
 #: config/m32r/m32r.opt:70
-#, fuzzy
-#| msgid "Only issue one instruction per cycle"
 msgid "Only issue one instruction per cycle."
 msgstr "Sólo ejecuta una instrucción por ciclo."
 
 #: config/m32r/m32r.opt:74
-#, fuzzy
-#| msgid "Allow two instructions to be issued per cycle"
 msgid "Allow two instructions to be issued per cycle."
 msgstr "Permite que se ejecuten dos instrucciones por ciclo."
 
 #: config/m32r/m32r.opt:78
-#, fuzzy
-#| msgid "Code size: small, medium or large"
 msgid "Code size: small, medium or large."
 msgstr "Tamaño del código: small, medium o large."
 
 #: config/m32r/m32r.opt:94
-#, fuzzy
-#| msgid "Don't call any cache flush functions"
 msgid "Don't call any cache flush functions."
 msgstr "No llama a ninguna función de limpieza de caché."
 
 #: config/m32r/m32r.opt:98
-#, fuzzy
-#| msgid "Don't call any cache flush trap"
 msgid "Don't call any cache flush trap."
 msgstr "No llama a ninguna trampa de limpieza de caché."
 
 #: config/m32r/m32r.opt:105
-#, fuzzy
-#| msgid "Small data area: none, sdata, use"
 msgid "Small data area: none, sdata, use."
 msgstr "Área de datos small: none, sdata, use."
 
 #: config/s390/tpf.opt:23
-#, fuzzy
-#| msgid "Enable TPF-OS tracing code"
 msgid "Enable TPF-OS tracing code."
 msgstr "Activa el código de rastreo TPF-OS."
 
 #: config/s390/tpf.opt:27
-#, fuzzy
-#| msgid "Specify main object for TPF-OS"
 msgid "Specify main object for TPF-OS."
 msgstr "Especifica el objeto principal para TPF-OS."
 
 #: config/s390/s390.opt:48
-#, fuzzy
-#| msgid "31 bit ABI"
 msgid "31 bit ABI."
 msgstr "ABI de 31 bit."
 
 #: config/s390/s390.opt:52
-#, fuzzy
-#| msgid "64 bit ABI"
 msgid "64 bit ABI."
 msgstr "ABI de 64 bit."
 
 #: config/s390/s390.opt:96
-#, fuzzy
-#| msgid "Maintain backchain pointer"
 msgid "Maintain backchain pointer."
 msgstr "Mantiene el puntero a la cadena hacia atrás."
 
 #: config/s390/s390.opt:100
-#, fuzzy
-#| msgid "Additional debug prints"
 msgid "Additional debug prints."
 msgstr "Impresiones adicionales de depuración."
 
 #: config/s390/s390.opt:104
-#, fuzzy
-#| msgid "ESA/390 architecture"
 msgid "ESA/390 architecture."
 msgstr "Arquitectura ESA/390."
 
 #: config/s390/s390.opt:108
-#, fuzzy
-#| msgid "Enable decimal floating point hardware support"
 msgid "Enable decimal floating point hardware support."
 msgstr "Admite la coma flotante decimal de hardware."
 
 #: config/s390/s390.opt:112
-#, fuzzy
-#| msgid "Enable hardware floating point"
 msgid "Enable hardware floating point."
 msgstr "Activa coma flotante de hardware."
 
 #: config/s390/s390.opt:116
 msgid "Takes two non-negative integer numbers separated by a comma."
-msgstr ""
+msgstr "Toma dos números enteros no negativos separados por coma."
 
 #: config/s390/s390.opt:134
-#, fuzzy
-#| msgid "Use hardware floating point instructions"
 msgid "Use hardware transactional execution instructions."
-msgstr "Usa instrucciones de coma flotante por hardware."
+msgstr "Usa instrucciones de ejecución transaccional por hardware."
 
 #: config/s390/s390.opt:138
-#, fuzzy
-#| msgid "hardware decimal floating point instructions not available on %s"
 msgid "Use hardware vector facility instructions and enable the vector ABI."
-msgstr "las instrucciones de coma flotante decimal de hardware no están disponibles en %s."
+msgstr "Usa las instrucciones de operaciones con vectores por hardware y activa el vector ABI."
 
 #: config/s390/s390.opt:142
-#, fuzzy
-#| msgid "Use packed stack layout"
 msgid "Use packed stack layout."
 msgstr "Usa la disposición de pila empacada."
 
 #: config/s390/s390.opt:146
-#, fuzzy
-#| msgid "Use bras for executable < 64k"
 msgid "Use bras for executable < 64k."
 msgstr "Usa bras para el ejecutable < 64k."
 
 #: config/s390/s390.opt:150
-#, fuzzy
-#| msgid "Disable hardware floating point"
 msgid "Disable hardware floating point."
 msgstr "Desactiva la coma flotante de hardware."
 
 #: config/s390/s390.opt:154
-#, fuzzy
-#| msgid "Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered"
 msgid "Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered."
 msgstr "Establece el número máximo de bytes que se deben dejar en el tamaño de la pila antes de que se active una instrucción trap."
 
 #: config/s390/s390.opt:158
 msgid "Switches off the -mstack-guard= option."
-msgstr ""
+msgstr "Desactiva la opción -mstack-guard=."
 
 #: config/s390/s390.opt:162
-#, fuzzy
-#| msgid "Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit"
 msgid "Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit."
 msgstr "Emite código extra en el prólogo de la función para atrapar en caso de que el tamaño de la pila exceda el límite dado."
 
 #: config/s390/s390.opt:166
 msgid "Switches off the -mstack-size= option."
-msgstr ""
+msgstr "Desactiva la opción -mstack-size= ."
 
 #: config/s390/s390.opt:174
-#, fuzzy
-#| msgid "Generate string instructions for block moves"
 msgid "Use the mvcle instruction for block moves."
-msgstr "Genera instrucciones de cadena para movimiento de bloques."
+msgstr "Utiliza la instrucción mvcle para movimiento de bloques."
 
 #: config/s390/s390.opt:178
 msgid "Enable the z vector language extension providing the context-sensitive"
-msgstr ""
+msgstr "Activa la extensión de lenguaje de vector z que ofrece la sensibilidad al contexto"
 
 #: config/s390/s390.opt:183
-#, fuzzy
-#| msgid "Warn if a function uses alloca or creates an array with dynamic size"
 msgid "Warn if a function uses alloca or creates an array with dynamic size."
 msgstr "Avisa si una función usa alloca o crea una matriz de tamaño dinámico."
 
 #: config/s390/s390.opt:187
-#, fuzzy
-#| msgid "Warn if a single function's framesize exceeds the given framesize"
 msgid "Warn if a single function's framesize exceeds the given framesize."
 msgstr "Avisa si el tamaño de marco de una sola función excede el tamaño de marco dado."
 
 #: config/s390/s390.opt:191
-#, fuzzy
-#| msgid "z/Architecture"
 msgid "z/Architecture."
 msgstr "z/Architecture."
 
@@ -10193,47 +9860,37 @@ msgstr "Usa el simulador de tiempo de ejecución."
 
 #: config/rl78/rl78.opt:31
 msgid "Selects the type of hardware multiplication and division to use (none/g13/g14)."
-msgstr ""
+msgstr "Selecciona el tipo de multiplicación y división por hardware que se usará (none/g13/g14)."
 
 #: config/rl78/rl78.opt:50
-#, fuzzy
-#| msgid "Specifies the number of registers to reserve for interrupt handlers."
 msgid "Use all registers, reserving none for interrupt handlers."
-msgstr "Especifica el número de registros a reservar para los manejadores de interrupciones."
+msgstr "Usa todos los registros, sin reservar ninguno para los manejadores de interrupciones."
 
 #: config/rl78/rl78.opt:54
 msgid "Enable assembler and linker relaxation.  Enabled by default at -Os."
-msgstr ""
+msgstr "Activa la relajación del ensamblador y el enlazador.  Activado por defecto a -Os."
 
 #: config/rl78/rl78.opt:58
 msgid "Selects the type of RL78 core being targeted (g10/g13/g14).  The default is the G14.  If set, also selects the hardware multiply support to be used."
-msgstr ""
+msgstr "Selecciona el tipo de núcleo RL78 de destino (g10/g13/g14).  El predeterminado es G14.  Si se pone, también selecciona el soporte de multiplicación por hardware que se usará."
 
 #: config/rl78/rl78.opt:77
-#, fuzzy
-#| msgid "Alias for -mcpu."
 msgid "Alias for -mcpu=g10."
-msgstr "Alias para -mcpu."
+msgstr "Alias para -mcpu=g10."
 
 #: config/rl78/rl78.opt:81
-#, fuzzy
-#| msgid "Alias for -mcpu."
 msgid "Alias for -mcpu=g13."
-msgstr "Alias para -mcpu."
+msgstr "Alias para -mcpu=g13."
 
 #: config/rl78/rl78.opt:85 config/rl78/rl78.opt:89
-#, fuzzy
-#| msgid "Alias for -mcpu."
 msgid "Alias for -mcpu=g14."
-msgstr "Alias para -mcpu."
+msgstr "Alias para -mcpu=g14."
 
 #: config/rl78/rl78.opt:93
 msgid "Assume ES is zero throughout program execution, use ES: for read-only data."
-msgstr ""
+msgstr "Asume que ES es cero a lo largo de la ejecución del programa, usa ES: para datos de solo lectura."
 
 #: config/stormy16/stormy16.opt:24
-#, fuzzy
-#| msgid "Provide libraries for the simulator"
 msgid "Provide libraries for the simulator."
 msgstr "Provee bibliotecas para el simulador."
 
@@ -10254,8 +9911,6 @@ msgid "TLS dialect to use:"
 msgstr "Dialecto TLS a utilizar:"
 
 #: config/arm/arm.opt:36
-#, fuzzy
-#| msgid "Specify an ABI"
 msgid "Specify an ABI."
 msgstr "Especifica una ABI."
 
@@ -10264,26 +9919,18 @@ msgid "Known ARM ABIs (for use with the -mabi= option):"
 msgstr "ABIs ARM conocidas (para uso con la opción -mabi=):"
 
 #: config/arm/arm.opt:59
-#, fuzzy
-#| msgid "Generate a call to abort if a noreturn function returns"
 msgid "Generate a call to abort if a noreturn function returns."
 msgstr "Genera una llamada a abortar si una funcion noreturn devuelve."
 
 #: config/arm/arm.opt:66
-#, fuzzy
-#| msgid "Pass FP arguments in FP registers"
 msgid "Pass FP arguments in FP registers."
 msgstr "Pasa los argumentos FP en los registros FP."
 
 #: config/arm/arm.opt:70
-#, fuzzy
-#| msgid "Generate APCS conformant stack frames"
 msgid "Generate APCS conformant stack frames."
 msgstr "Genera marcos de pila que cumplan con APCS."
 
 #: config/arm/arm.opt:74
-#, fuzzy
-#| msgid "Generate re-entrant, PIC code"
 msgid "Generate re-entrant, PIC code."
 msgstr "Genera código PIC reentrante."
 
@@ -10292,14 +9939,10 @@ msgid "Generate code in 32 bit ARM state."
 msgstr "Genera código en el estado ARM de 32 bit."
 
 #: config/arm/arm.opt:98
-#, fuzzy
-#| msgid "Thumb: Assume non-static functions may be called from ARM code"
 msgid "Thumb: Assume non-static functions may be called from ARM code."
 msgstr "Thumb: Asume que las funciones no static pueden ser llamadas desde código ARM."
 
 #: config/arm/arm.opt:102
-#, fuzzy
-#| msgid "Thumb: Assume function pointers may go to non-Thumb aware code"
 msgid "Thumb: Assume function pointers may go to non-Thumb aware code."
 msgstr "Thumb: Asume que los punteros de función pueden ir a código no informado sobre Thumb."
 
