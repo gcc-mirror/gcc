@@ -575,7 +575,10 @@ uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
 
 #else // !defined(__i386__) && !defined(__x86_64__)
 
-uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
+uintptr aeshashbody(void* p __attribute__((unused)),
+		    uintptr seed __attribute__((unused)),
+		    uintptr size __attribute__((unused)),
+		    Slice aeskeysched __attribute__((unused))) {
 	// We should never get here on a non-x86 system.
 	runtime_throw("impossible call to aeshashbody");
 }
