@@ -1,3 +1,8 @@
+2016-12-08  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Access the lower part of RTX appropriately.
+
 2016-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* genpreds.c (write_tm_constrs_h): Update for renaming of
