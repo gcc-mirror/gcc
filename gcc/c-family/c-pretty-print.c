@@ -904,15 +904,6 @@ pp_c_void_constant (c_pretty_printer *pp)
 static void
 pp_c_integer_constant (c_pretty_printer *pp, tree i)
 {
-  int idx;
-
-  /* We are going to compare the type of I to other types using
-     pointer comparison so we need to use its canonical type.  */
-  tree type =
-    TYPE_CANONICAL (TREE_TYPE (i))
-    ? TYPE_CANONICAL (TREE_TYPE (i))
-    : TREE_TYPE (i);
-
   if (tree_fits_shwi_p (i))
     pp_wide_integer (pp, tree_to_shwi (i));
   else if (tree_fits_uhwi_p (i))
@@ -929,24 +920,6 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
       print_hex (wi, pp_buffer (pp)->digit_buffer);
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
-  if (TYPE_UNSIGNED (type))
-    pp_character (pp, 'u');
-  if (type == long_integer_type_node || type == long_unsigned_type_node)
-    pp_character (pp, 'l');
-  else if (type == long_long_integer_type_node
-	   || type == long_long_unsigned_type_node)
-    pp_string (pp, "ll");
-  else for (idx = 0; idx < NUM_INT_N_ENTS; idx ++)
-    if (int_n_enabled_p[idx])
-      {
-	char buf[2+20];
-	if (type == int_n_trees[idx].signed_type
-	    || type == int_n_trees[idx].unsigned_type)
-	  {
-	    sprintf (buf, "I%d", int_n_data[idx].bitsize);
-	    pp_string (pp, buf);
-	  }
-      }
 }
 
 /* Print out a CHARACTER literal.  */
