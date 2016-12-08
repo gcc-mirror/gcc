@@ -212,10 +212,6 @@ extern bool runtime_copystack;
 #define USED(v)		((void) v)
 #define	ROUND(x, n)	(((x)+(n)-1)&~(uintptr)((n)-1)) /* all-caps to mark as macro: it evaluates n twice */
 
-byte*	runtime_startup_random_data;
-uint32	runtime_startup_random_data_len;
-void	runtime_get_random_data(byte**, int32*);
-
 enum {
 	// hashinit wants this many random bytes
 	HashRandomBytes = 32
