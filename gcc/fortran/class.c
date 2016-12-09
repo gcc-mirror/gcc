@@ -841,20 +841,19 @@ has_finalizer_component (gfc_symbol *derived)
    gfc_component *c;
 
   for (c = derived->components; c; c = c->next)
-    {
-      if (c->ts.type == BT_DERIVED && c->ts.u.derived->f2k_derived
-	  && c->ts.u.derived->f2k_derived->finalizers)
-	return true;
+    if (c->ts.type == BT_DERIVED && !c->attr.pointer && !c->attr.allocatable)
+      {
+	if (c->ts.u.derived->f2k_derived
+	    && c->ts.u.derived->f2k_derived->finalizers)
+	  return true;
 
-      /* Stop infinite recursion through this function by inhibiting
-	 calls when the derived type and that of the component are
-	 the same.  */
-      if (c->ts.type == BT_DERIVED
-	  && !gfc_compare_derived_types (derived, c->ts.u.derived)
-	  && !c->attr.pointer && !c->attr.allocatable
-	  && has_finalizer_component (c->ts.u.derived))
-	return true;
-    }
+	/* Stop infinite recursion through this function by inhibiting
+	  calls when the derived type and that of the component are
+	  the same.  */
+	if (!gfc_compare_derived_types (derived, c->ts.u.derived)
+	    && has_finalizer_component (c->ts.u.derived))
+	  return true;
+      }
   return false;
 }
 
