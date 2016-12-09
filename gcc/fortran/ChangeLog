@@ -1,3 +1,9 @@
+2016-12-09  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/78593
+	* primary.c (gfc_match_varspec): Check if sym is non-null to avoid ICE.
+
 2016-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
