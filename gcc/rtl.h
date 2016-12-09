@@ -3355,7 +3355,7 @@ extern struct target_rtl *this_target_rtl;
 
 #ifndef GENERATOR_FILE
 /* Return the attributes of a MEM rtx.  */
-static inline struct mem_attrs *
+static inline const struct mem_attrs *
 get_mem_attrs (const_rtx x)
 {
   struct mem_attrs *attrs;

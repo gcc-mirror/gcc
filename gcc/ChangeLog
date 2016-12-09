@@ -1,3 +1,8 @@
+2016-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (get_mem_attrs): Add "const" qualifier to returned
+	pointer.
+
 2016-12-09  Nathan Sidwell  <nathan@acm.org>
 
 	PR C++/78550
