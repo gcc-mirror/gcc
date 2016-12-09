@@ -3091,7 +3091,7 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree str, tree objsize)
     {
       /* STR is normally a pointer to string but as a special case
 	 it can be an integer denoting the length of a string.  */
-      if (TREE_CODE (TREE_TYPE (str)) == POINTER_TYPE)
+      if (POINTER_TYPE_P (TREE_TYPE (str)))
 	{
 	  /* Try to determine the range of lengths the source string
 	     refers to.  If it can be determined add one to it for
