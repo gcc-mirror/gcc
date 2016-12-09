@@ -1,3 +1,25 @@
+2016-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44265
+	* gfortran.h : Add fn_result_spec bitfield to gfc_symbol.
+	* resolve.c (flag_fn_result_spec): New function.
+	(resolve_fntype): Call it for character result lengths.
+	* symbol.c (gfc_new_symbol): Set fn_result_spec to zero.
+	* trans-decl.c (gfc_sym_mangled_identifier): Include the
+	procedure name in the mangled name for symbols with the
+	fn_result_spec bit set.
+	(gfc_finish_var_decl): Mark the decls of these symbols
+	appropriately for the case where the function is external.
+	(gfc_get_symbol_decl): Mangle the name of these symbols.
+	(gfc_create_module_variable): Allow them through the assert.
+	(gfc_generate_function_code): Remove the assert before the
+	initialization of sym->tlink because the frontend no longer
+	uses this field.
+	* trans-expr.c (gfc_map_intrinsic_function): Add a case to
+	treat the LEN_TRIM intrinsic.
+	(gfc_trans_string_copy): Deal with Wstringop-overflow warning
+	that can occur with constant source lengths at -O3.
+
 2016-12-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/65173
