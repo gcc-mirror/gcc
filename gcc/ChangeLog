@@ -1,3 +1,9 @@
+2016-12-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR C++/78550
+	* convert.c (convert_to_integer_1): Maybe fold conversions to
+	integral types with fewer bits than its mode.
+
 2016-12-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
