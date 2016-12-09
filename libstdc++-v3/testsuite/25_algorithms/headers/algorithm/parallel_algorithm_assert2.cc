@@ -1,6 +1,6 @@
+// { dg-do run }
 // { dg-require-parallel-mode "" }
 // { dg-options "-fopenmp -D_GLIBCXX_PARALLEL" { target *-*-* } }
-// { dg-do run }
 
 // Copyright (C) 2016 Free Software Foundation, Inc.
 //
