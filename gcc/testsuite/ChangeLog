@@ -1,5 +1,10 @@
 2016-12-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR testsuite/78740
+	* gcc.target/powerpc/pr78691-ppc.c: Remove -m32.
+
+2016-12-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-add-7.c: Require effective target to
 	support __int128.
 

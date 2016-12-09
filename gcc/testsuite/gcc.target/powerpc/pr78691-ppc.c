@@ -1,5 +1,5 @@
 /* PR tree-optimization/78691 */
-/* { dg-options "-Os -m32" } */
+/* { dg-options "-Os" } */
 
 int *b;
 int fn1() {
