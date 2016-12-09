@@ -1,3 +1,9 @@
+2016-12-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/61767
+	* class.c (has_finalizer_component): Fix this function to detect only
+	non-pointer non-allocatable components which have a finalizer.
+
 2016-12-09  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78505
