@@ -1,3 +1,12 @@
+2016-12-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-passes.def: New file.
+	* config/rs6000/rs6000-protos.h: Declare make_pass_analyze_swaps.
+	* config/rs6000/rs6000.c (rs6000_option_override): Remove
+	registration of machine-specific passes.
+	(pass_analyze_swaps::clone): New function.
+	* config/rs6000/t-rs6000: Define PASSES_EXTRA.
+
 2016-12-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR ipa/78721
