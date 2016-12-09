@@ -1,3 +1,9 @@
+2016-12-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR C++/78550
+	* convert.c (convert_to_integer_1): Maybe fold conversions to
+	integral types with fewer bits than its mode.
+
 2016-12-09  Martin Liska  <mliska@suse.cz>
 
 	* tree-pretty-print.c (pretty_print_string): Escape non-printable
@@ -67,9 +73,8 @@
 
 2016-12-08  Dmitry Vyukov  <dvyukov@google.com>
 
-	* opts.c (finish_options): Enable
-	-fsanitize-address-use-after-scope only if -fsanitize=address is enabled
-	(not -fsanitize=kernel-address).
+	* opts.c (finish_options): Enable -fsanitize-address-use-after-scope
+	only if -fsanitize=address is enabled (not -fsanitize=kernel-address).
 	* doc/invoke.texi (-fsanitize=kernel-address):
 	Don't say that it enables -fsanitize-address-use-after-scope.
 
