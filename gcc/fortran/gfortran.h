@@ -1532,14 +1532,20 @@ typedef struct gfc_symbol
   gfc_namelist *namelist, *namelist_tail;
 
   /* Change management fields.  Symbols that might be modified by the
-     current statement have the mark member nonzero and are kept in a
-     singly linked list through the tlink field.  Of these symbols,
+     current statement have the mark member nonzero.  Of these symbols,
      symbols with old_symbol equal to NULL are symbols created within
      the current statement.  Otherwise, old_symbol points to a copy of
-     the old symbol.  */
-
-  struct gfc_symbol *old_symbol, *tlink;
+     the old symbol. gfc_new is used in symbol.c to flag new symbols.  */
+  struct gfc_symbol *old_symbol;
   unsigned mark:1, gfc_new:1;
+
+  /* The tlink field is used in the front end to carry the module
+     declaration of separate module procedures so that the characteristics
+     can be compared with the corresponding declaration in a submodule. In
+     translation this field carries a linked list of symbols that require
+     deferred initialization.  */
+  struct gfc_symbol *tlink;
+
   /* Nonzero if all equivalences associated with this symbol have been
      processed.  */
   unsigned equiv_built:1;

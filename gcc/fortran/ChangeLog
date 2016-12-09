@@ -1,3 +1,15 @@
+2016-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77903
+	* decl.c (get_proc_name): Use the symbol tlink field instead of
+	the typespec interface field.
+	(gfc_match_function_decl, gfc_match_submod_proc): Ditto.
+	* gfortran.h : Since the symbol tlink field is no longer used
+	by the frontend for change management, change the comment to
+	reflect its current uses.
+	* parse.c (get_modproc_result): Same as decl.c changes.
+	* resolve.c (resolve_fl_procedure): Ditto.
+
 2016-12-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/61767
@@ -22,7 +34,7 @@
 	* trans-expr.c (gfc_conv_procedure_call): Use the almighty deallocate_
 	with_status.
 	* trans-openmp.c (gfc_walk_alloc_comps): Likewise.
-	(gfc_omp_clause_assign_op): Likewise. 
+	(gfc_omp_clause_assign_op): Likewise.
 	(gfc_omp_clause_dtor): Likewise.
 	* trans-stmt.c (gfc_trans_deallocate): Likewise.
 	* trans.c (gfc_deallocate_with_status): Allow deallocation of scalar

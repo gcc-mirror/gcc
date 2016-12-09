@@ -12282,10 +12282,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       module_name = strtok (name, ".");
       submodule_name = strtok (NULL, ".");
 
-      /* Stop the dummy characteristics test from using the interface
-	 symbol instead of 'sym'.  */
-      iface = sym->ts.interface;
-      sym->ts.interface = NULL;
+      iface = sym->tlink;
+      sym->tlink = NULL;
 
       /* Make sure that the result uses the correct charlen for deferred
 	 length results.  */
@@ -12333,7 +12331,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
 
 check_formal:
-      /* Check the charcateristics of the formal arguments.  */
+      /* Check the characteristics of the formal arguments.  */
       if (sym->formal && sym->formal_ns)
 	{
 	  for (arg = sym->formal; arg && arg->sym; arg = arg->next)
@@ -12342,8 +12340,6 @@ check_formal:
 	      gfc_traverse_ns (sym->formal_ns, compare_fsyms);
 	    }
 	}
-
-      sym->ts.interface = iface;
     }
   return true;
 }
