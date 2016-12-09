@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Generate code to free an array.  */
-tree gfc_array_deallocate (tree, tree, tree, tree, tree, gfc_expr*, int c = -2);
-
 /* Generate code to initialize and allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
 bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree, tree,
@@ -41,8 +38,6 @@ void gfc_trans_auto_array_allocation (tree, gfc_symbol *, gfc_wrapped_block *);
 void gfc_trans_dummy_array_bias (gfc_symbol *, tree, gfc_wrapped_block *);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 void gfc_trans_g77_array (gfc_symbol *, gfc_wrapped_block *);
-/* Generate code to deallocate an array, if it is allocated.  */
-tree gfc_trans_dealloc_allocated (tree, gfc_expr *, int);
 
 tree gfc_full_array_size (stmtblock_t *, tree, int);
 

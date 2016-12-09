@@ -1,3 +1,11 @@
+2016-12-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_alloc_comp_3.f08: New test.
+	* gfortran.dg/coarray_alloc_comp_4.f08: New test.
+	* gfortran.dg/finalize_18.f90: Add count for additional guard against
+	accessing null-pointer.
+	* gfortran.dg/proc_ptr_comp_47.f90: New test.
+
 2016-12-09  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78550
