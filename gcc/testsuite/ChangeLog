@@ -1,3 +1,9 @@
+2016-12-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR ipa/78027
+	* c-c++-common/goacc/acc-icf.c: New test.
+	* gfortran.dg/goacc/pr78027.f90: New test.
+
 2015-12-09  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/78733

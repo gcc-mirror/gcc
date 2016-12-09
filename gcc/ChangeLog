@@ -1,3 +1,9 @@
+2016-12-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR ipa/78027
+	* ipa-icf.c (sem_function::parse): Don't process functions with
+	oacc decl attributes, as they may be OpenACC routines.
+
 2016-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (get_mem_attrs): Add "const" qualifier to returned
