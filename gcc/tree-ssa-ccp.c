@@ -1732,7 +1732,12 @@ evaluate_stmt (gimple *stmt)
     {
       fold_defer_overflow_warnings ();
       simplified = ccp_fold (stmt);
-      if (simplified && TREE_CODE (simplified) == SSA_NAME)
+      if (simplified
+	  && TREE_CODE (simplified) == SSA_NAME
+	  /* We may not use values of something that may be simulated again,
+	     see valueize_op_1.  */
+	  && (SSA_NAME_IS_DEFAULT_DEF (simplified)
+	      || ! prop_simulate_again_p (SSA_NAME_DEF_STMT (simplified))))
 	{
 	  val = *get_value (simplified);
 	  if (val.lattice_val != VARYING)

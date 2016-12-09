@@ -1,3 +1,51 @@
+2016-12-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78542
+	* tree-ssa-ccp.c (evaluate_stmt): Only valueize simplification
+	if allowed.
+
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78482
+	* tree-cfgcleanup.c: Include tree-ssa-loop-niter.h.
+	(remove_forwarder_block_with_phi): When merging with a loop
+	header creates a new latch reset number of iteration information
+	of the loop.
+
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71762
+	* match.pd ((~X & Y) -> X < Y, (X & ~Y) -> Y < X,
+	(~X | Y) -> X <= Y, (X | ~Y) -> Y <= X): Remove.
+
+	2016-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71575
+	* graphite-isl-ast-to-gimple.c (copy_cond_phi_nodes): Remove
+	bogus assert.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78224
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds):
+	Split the fallthru edge in case its successor may have PHIs.
+
+	2016-11-05  David Edelsohn  <dje.gcc@gmail.com>
+		Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/78188
+	PR c++/71848
+	* ipa-comdats.c (pass_ipa_comdats::gate): Require HAVE_COMDAT_GROUP.
+
+	2016-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77646
+	* tree-ssa-sccvn.c (visit_reference_op_call): Always value-number
+	a VDEF.
+
 2016-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline
