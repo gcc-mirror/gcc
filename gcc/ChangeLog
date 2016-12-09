@@ -1,3 +1,9 @@
+2016-12-09  Andre Vieira <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/78255
+	* gcc/postreload.c (reload_cse_simplify): Do not CSE a function if
+	NO_FUNCTION_CSE is true.
+
 2016-12-09  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR ipa/78027
