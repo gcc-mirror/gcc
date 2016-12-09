@@ -3869,7 +3869,14 @@ pretty_print_string (pretty_printer *pp, const char *str)
 	  break;
 
 	default:
-	  pp_character (pp, str[0]);
+	  if (!ISPRINT (str[0]))
+	    {
+	      char buf[5];
+	      sprintf (buf, "\\x%x", (unsigned char)str[0]);
+	      pp_string (pp, buf);
+	    }
+	  else
+	    pp_character (pp, str[0]);
 	  break;
 	}
       str++;
