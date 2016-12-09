@@ -1,3 +1,7 @@
+2016-12-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/dump-3.c: New test.
+
 2016-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78726
