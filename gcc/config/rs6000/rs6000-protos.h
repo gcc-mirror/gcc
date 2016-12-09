@@ -258,4 +258,11 @@ extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];
 extern unsigned char rs6000_hard_regno_nregs[][FIRST_PSEUDO_REGISTER];
 
 extern bool rs6000_linux_float_exceptions_rounding_supported_p (void);
+
+/* Pass management.  */
+namespace gcc { class context; }
+class rtl_opt_pass;
+
+extern rtl_opt_pass *make_pass_analyze_swaps (gcc::context *);
+
 #endif  /* rs6000-protos.h */

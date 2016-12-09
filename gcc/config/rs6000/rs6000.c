@@ -5203,15 +5203,6 @@ static void
 rs6000_option_override (void)
 {
   (void) rs6000_option_override_internal (true);
-
-  /* Register machine-specific passes.  This needs to be done at start-up.
-     It's convenient to do it here (like i386 does).  */
-  opt_pass *pass_analyze_swaps = make_pass_analyze_swaps (g);
-
-  struct register_pass_info analyze_swaps_info
-    = { pass_analyze_swaps, "cse1", 1, PASS_POS_INSERT_BEFORE };
-
-  register_pass (&analyze_swaps_info);
 }
 
 
@@ -41863,6 +41854,11 @@ public:
   virtual unsigned int execute (function *fun)
     {
       return rs6000_analyze_swaps (fun);
+    }
+
+  opt_pass *clone ()
+    {
+      return new pass_analyze_swaps (m_ctxt);
     }
 
 }; // class pass_analyze_swaps
