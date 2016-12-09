@@ -1,3 +1,8 @@
+2016-12-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78550
+	* g++.dg/cpp1y/pr78550.C: New.
+
 2016-12-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
