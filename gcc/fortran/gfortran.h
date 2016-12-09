@@ -1545,6 +1545,8 @@ typedef struct gfc_symbol
   unsigned equiv_built:1;
   /* Set if this variable is used as an index name in a FORALL.  */
   unsigned forall_index:1;
+  /* Set if the symbol is used in a function result specification .  */
+  unsigned fn_result_spec:1;
   /* Used to avoid multiple resolutions of a single symbol.  */
   unsigned resolved:1;
   /* Set if this is a module function or subroutine with the

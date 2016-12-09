@@ -2965,6 +2965,7 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   p->common_block = NULL;
   p->f2k_derived = NULL;
   p->assoc = NULL;
+  p->fn_result_spec = 0;
   
   return p;
 }

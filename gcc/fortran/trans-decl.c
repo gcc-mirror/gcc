@@ -356,12 +356,36 @@ gfc_sym_mangled_identifier (gfc_symbol * sym)
   if (sym->attr.is_bind_c == 1 && sym->binding_label)
     return get_identifier (sym->binding_label);
 
-  if (sym->module == NULL)
-    return gfc_sym_identifier (sym);
+  if (!sym->fn_result_spec)
+    {
+      if (sym->module == NULL)
+	return gfc_sym_identifier (sym);
+      else
+	{
+	  snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
+	  return get_identifier (name);
+	}
+    }
   else
     {
-      snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
-      return get_identifier (name);
+      /* This is an entity that is actually local to a module procedure
+	 that appears in the result specification expression.  Since
+	 sym->module will be a zero length string, we use ns->proc_name
+	 instead. */
+      if (sym->ns->proc_name && sym->ns->proc_name->module)
+	{
+	  snprintf (name, sizeof name, "__%s_MOD__%s_PROC_%s",
+		    sym->ns->proc_name->module,
+		    sym->ns->proc_name->name,
+		    sym->name);
+	  return get_identifier (name);
+	}
+      else
+	{
+	  snprintf (name, sizeof name, "__%s_PROC_%s",
+		    sym->ns->proc_name->name, sym->name);
+	  return get_identifier (name);
+	}
     }
 }
 
@@ -613,6 +637,16 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if (sym->attr.use_assoc || sym->attr.used_in_submodule)
     {
       DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+    }
+  else if (sym->fn_result_spec && !sym->ns->proc_name->module)
+    {
+
+      if (sym->ns->proc_name->attr.if_source != IFSRC_DECL)
+	DECL_EXTERNAL (decl) = 1;
+      else
+	TREE_STATIC (decl) = 1;
+
       TREE_PUBLIC (decl) = 1;
     }
   else if (sym->module && !sym->attr.result && !sym->attr.dummy)
@@ -1632,7 +1666,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Create string length decl first so that they can be used in the
      type declaration.  For associate names, the target character
      length is used. Set 'length' to a constant so that if the
-     string lenght is a variable, it is not finished a second time.  */
+     string length is a variable, it is not finished a second time.  */
   if (sym->ts.type == BT_CHARACTER)
     {
       if (sym->attr.associate_var
@@ -1654,7 +1688,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Symbols from modules should have their assembler names mangled.
      This is done here rather than in gfc_finish_var_decl because it
      is different for string length variables.  */
-  if (sym->module)
+  if (sym->module || sym->fn_result_spec)
     {
       gfc_set_decl_assembler_name (decl, gfc_sym_mangled_identifier (sym));
       if (sym->attr.use_assoc && !intrinsic_array_parameter)
@@ -4766,7 +4800,9 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   /* Create the variable.  */
   pushdecl (decl);
-  gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
+  gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE
+	      || (sym->ns->parent->proc_name->attr.flavor == FL_MODULE
+		  && sym->fn_result_spec));
   DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
   rest_of_decl_compilation (decl, 1, 0);
   gfc_module_add_decl (cur_module, decl);
@@ -6153,8 +6189,8 @@ gfc_generate_function_code (gfc_namespace * ns)
   previous_procedure_symbol = current_procedure_symbol;
   current_procedure_symbol = sym;
 
-  /* Check that the frontend isn't still using this.  */
-  gcc_assert (sym->tlink == NULL);
+  /* Initialize sym->tlink so that gfc_trans_deferred_vars does not get
+     lost or worse.  */
   sym->tlink = sym;
 
   /* Create the declaration for functions with global scope.  */
