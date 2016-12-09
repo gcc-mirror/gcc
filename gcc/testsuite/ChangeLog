@@ -1,3 +1,8 @@
+2016-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/72742
+	* gcc.c-torture/compile/pr72742.c: New test.
+
 2016-12-09  Martin Sebor  <msebor@redhat.com>
 
 	on arm-unknown-linux-gnueabi (and likely other ILP32) targets.
