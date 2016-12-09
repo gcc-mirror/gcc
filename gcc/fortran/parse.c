@@ -5556,11 +5556,11 @@ get_modproc_result (void)
       proc = gfc_current_ns->proc_name ? gfc_current_ns->proc_name : NULL;
       if (proc != NULL
 	  && proc->attr.function
-	  && proc->ts.interface
-	  && proc->ts.interface->result
-	  && proc->ts.interface->result != proc->ts.interface)
+	  && proc->tlink
+	  && proc->tlink->result
+	  && proc->tlink->result != proc->tlink)
 	{
-	  gfc_copy_dummy_sym (&proc->result, proc->ts.interface->result, 1);
+	  gfc_copy_dummy_sym (&proc->result, proc->tlink->result, 1);
 	  gfc_set_sym_referenced (proc->result);
 	  proc->result->attr.if_source = IFSRC_DECL;
 	  gfc_commit_symbol (proc->result);
