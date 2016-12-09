@@ -1,3 +1,10 @@
+2016-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/72742
+	* config/rs6000/rs6000.md (*and<mode>3_imm_mask_dot,
+	*and<mode>3_imm_mask_dot2): Add rs6000_is_valid_and_mask to insn
+	condition.
+
 2016-12-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/78683
