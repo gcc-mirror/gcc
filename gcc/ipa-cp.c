@@ -1895,9 +1895,9 @@ propagate_vr_accross_jump_function (cgraph_edge *cs,
       tree val = ipa_get_jf_constant (jfunc);
       if (TREE_CODE (val) == INTEGER_CST)
 	{
+	  val = fold_convert (param_type, val);
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
-	  val = fold_convert (param_type, val);
 	  jfunc->vr_known = true;
 	  jfunc->m_vr.type = VR_RANGE;
 	  jfunc->m_vr.min = val;
