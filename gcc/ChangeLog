@@ -1,3 +1,15 @@
+2016-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78726
+	* tree-ssa-reassoc.c (make_new_ssa_for_def): Add OPCODE and OP
+	argument.  For lhs uses in debug stmts, don't replace lhs with
+	new_lhs, but with a debug temp set to new_lhs opcode op.
+	(make_new_ssa_for_all_defs): Add OPCODE argument, pass OPCODE and
+	OP down to make_new_ssa_for_def.
+	(zero_one_operation): Call make_new_ssa_for_all_defs even when
+	stmts_to_fix is empty, if *def has not changed yet.  Pass
+	OPCODE to make_new_ssa_for_all_defs.
+
 2016-12-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78284

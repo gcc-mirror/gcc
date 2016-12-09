@@ -1153,12 +1153,12 @@ decrement_power (gimple *stmt)
    SSA.  Also return the new SSA.  */
 
 static tree
-make_new_ssa_for_def (gimple *stmt)
+make_new_ssa_for_def (gimple *stmt, enum tree_code opcode, tree op)
 {
   gimple *use_stmt;
   use_operand_p use;
   imm_use_iterator iter;
-  tree new_lhs;
+  tree new_lhs, new_debug_lhs = NULL_TREE;
   tree lhs = gimple_get_lhs (stmt);
 
   new_lhs = make_ssa_name (TREE_TYPE (lhs));
@@ -1167,8 +1167,28 @@ make_new_ssa_for_def (gimple *stmt)
   /* Also need to update GIMPLE_DEBUGs.  */
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
     {
+      tree repl = new_lhs;
+      if (is_gimple_debug (use_stmt))
+	{
+	  if (new_debug_lhs == NULL_TREE)
+	    {
+	      new_debug_lhs = make_node (DEBUG_EXPR_DECL);
+	      gdebug *def_temp
+		= gimple_build_debug_bind (new_debug_lhs,
+					   build2 (opcode, TREE_TYPE (lhs),
+						   new_lhs, op),
+					   stmt);
+	      DECL_ARTIFICIAL (new_debug_lhs) = 1;
+	      TREE_TYPE (new_debug_lhs) = TREE_TYPE (lhs);
+	      SET_DECL_MODE (new_debug_lhs, TYPE_MODE (TREE_TYPE (lhs)));
+	      gimple_set_uid (def_temp, gimple_uid (stmt));
+	      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	      gsi_insert_after (&gsi, def_temp, GSI_SAME_STMT);
+	    }
+	  repl = new_debug_lhs;
+	}
       FOR_EACH_IMM_USE_ON_STMT (use, iter)
-	SET_USE (use, new_lhs);
+	SET_USE (use, repl);
       update_stmt (use_stmt);
     }
   return new_lhs;
@@ -1179,7 +1199,7 @@ make_new_ssa_for_def (gimple *stmt)
    if *DEF is not OP.  */
 
 static void
-make_new_ssa_for_all_defs (tree *def, tree op,
+make_new_ssa_for_all_defs (tree *def, enum tree_code opcode, tree op,
 			   vec<gimple *> &stmts_to_fix)
 {
   unsigned i;
@@ -1189,10 +1209,10 @@ make_new_ssa_for_all_defs (tree *def, tree op,
       && TREE_CODE (*def) == SSA_NAME
       && (stmt = SSA_NAME_DEF_STMT (*def))
       && gimple_code (stmt) != GIMPLE_NOP)
-    *def = make_new_ssa_for_def (stmt);
+    *def = make_new_ssa_for_def (stmt, opcode, op);
 
   FOR_EACH_VEC_ELT (stmts_to_fix, i, stmt)
-    make_new_ssa_for_def (stmt);
+    make_new_ssa_for_def (stmt, opcode, op);
 }
 
 /* Find the single immediate use of STMT's LHS, and replace it
@@ -1232,6 +1252,7 @@ propagate_op_to_single_use (tree op, gimple *stmt, tree *def)
 static void
 zero_one_operation (tree *def, enum tree_code opcode, tree op)
 {
+  tree orig_def = *def;
   gimple *stmt = SSA_NAME_DEF_STMT (*def);
   /* PR72835 - Record the stmt chain that has to be updated such that
      we dont use the same LHS when the values computed are different.  */
@@ -1335,8 +1356,8 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
     }
   while (1);
 
-  if (stmts_to_fix.length () > 0)
-    make_new_ssa_for_all_defs (def, op, stmts_to_fix);
+  if (stmts_to_fix.length () > 0 || *def == orig_def)
+    make_new_ssa_for_all_defs (def, opcode, op, stmts_to_fix);
 }
 
 /* Returns true if statement S1 dominates statement S2.  Like
