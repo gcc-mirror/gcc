@@ -2199,14 +2199,15 @@ do {									     \
 
 /* The cntlzw and cntlzd instructions return 32 and 64 for input of zero.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = ((MODE) == SImode ? 32 : 64), 1)
+  ((VALUE) = GET_MODE_BITSIZE (MODE), 2)
 
 /* The CTZ patterns that are implemented in terms of CLZ return -1 for input of
-   zero.  The hardware instructions added in Power9 return 32 or 64.  */
+   zero.  The hardware instructions added in Power9 and the sequences using
+   popcount return 32 or 64.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)				\
-  ((!TARGET_CTZ)							\
-   ? ((VALUE) = -1, 1)							\
-   : ((VALUE) = ((MODE) == SImode ? 32 : 64), 1))
+  (TARGET_CTZ || TARGET_POPCNTD						\
+   ? ((VALUE) = GET_MODE_BITSIZE (MODE), 2)				\
+   : ((VALUE) = -1, 2))
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
