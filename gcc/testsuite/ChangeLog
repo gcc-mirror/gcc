@@ -1,3 +1,9 @@
+2016-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78726
+	* gcc.c-torture/execute/pr78726.c: New test.
+	* gcc.dg/guality/pr78726.c: New test.
+
 2016-12-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78284
