@@ -65,11 +65,11 @@ void* f_llong_2 (long long, long long) ALLOC_SIZE (1, 2);
 void* f_size_1 (size_t) ALLOC_SIZE (1);
 void* f_size_2 (size_t, size_t) ALLOC_SIZE (1, 2);
 
-unsigned long long
-unsigned_range (unsigned long long min, unsigned long long max)
+size_t
+unsigned_range (size_t min, size_t max)
 {
-  extern unsigned long long random_unsigned_value (void);
-  unsigned long long val = random_unsigned_value ();
+  extern size_t random_unsigned_value (void);
+  size_t val = random_unsigned_value ();
   if (val < min || max < val) val = min;
   return val;
 }
@@ -83,11 +83,11 @@ signed_range (long long min, long long max)
   return val;
 }
 
-unsigned long long
-unsigned_anti_range (unsigned long long min, unsigned long long max)
+size_t
+unsigned_anti_range (size_t min, size_t max)
 {
-  extern unsigned long long random_unsigned_value (void);
-  unsigned long long val = random_unsigned_value ();
+  extern size_t random_unsigned_value (void);
+  size_t val = random_unsigned_value ();
   if (min <= val && val <= max)
     val = min - 1;
   return val;
@@ -240,9 +240,8 @@ test_ushrt_cst (void)
   sink (f_ushrt_2 (0, max));
   sink (f_ushrt_2 (max, 0));
 
-#if USHRT_MAX < SIZE_MAX
-  sink (f_ushrt_2 (max, max));
-#endif
+  if (max < SIZE_MAX && (size_t)max * max < SIZE_MAX / 2)
+    sink (f_ushrt_2 (max, max));
 }
 
 void
@@ -295,8 +294,12 @@ test_uint_cst (void)
 
   sink (f_uint_1 (0));
   sink (f_uint_1 (1));
-  sink (f_uint_1 (max - 1));
-  sink (f_uint_1 (max));
+
+  if (max < SIZE_MAX)
+    {
+      sink (f_uint_1 (max - 1));
+      sink (f_uint_1 (max));
+    }
 }
 
 void
