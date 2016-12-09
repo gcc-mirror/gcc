@@ -10,6 +10,7 @@
 
 2016-12-09  Martin Sebor  <msebor@redhat.com>
 
+	* gcc.dg/attr-alloc_size-3.c: Avoid false positives and negatives
 	on arm-unknown-linux-gnueabi (and likely other ILP32) targets.
 
 2016-12-09  Andre Vieira <andre.simoesdiasvieira@arm.com>
