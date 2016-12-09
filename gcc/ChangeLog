@@ -1,6 +1,20 @@
 2016-12-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Look at the DR_BASE_ADDRESS object for forcing alignment.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78189
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Fix
+	alignment computation.
+
+2016-12-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2016-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78542
