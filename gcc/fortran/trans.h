@@ -719,7 +719,8 @@ void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree);
 
 /* Generate code to deallocate an array.  */
 tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool,
-				 gfc_expr *, int);
+				 gfc_expr *, int, tree a = NULL_TREE,
+				 tree c = NULL_TREE);
 tree gfc_deallocate_scalar_with_status (tree, tree, tree, bool, gfc_expr*,
 					gfc_typespec, bool c = false);
 

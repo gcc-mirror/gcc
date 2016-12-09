@@ -1,3 +1,27 @@
+2016-12-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-array.c (gfc_array_deallocate): Remove wrapper.
+	(gfc_trans_dealloc_allocated): Same.
+	(structure_alloc_comps): Restructure deallocation of (nested)
+	allocatable components.  Insert dealloc of sub-component into the block
+	guarded by the if != NULL for the component.
+	(gfc_trans_deferred_array): Use the almightly deallocate_with_status.
+	* trans-array.h: Remove prototypes.
+	* trans-expr.c (gfc_conv_procedure_call): Use the almighty deallocate_
+	with_status.
+	* trans-openmp.c (gfc_walk_alloc_comps): Likewise.
+	(gfc_omp_clause_assign_op): Likewise. 
+	(gfc_omp_clause_dtor): Likewise.
+	* trans-stmt.c (gfc_trans_deallocate): Likewise.
+	* trans.c (gfc_deallocate_with_status): Allow deallocation of scalar
+	and arrays as well as coarrays.
+	(gfc_deallocate_scalar_with_status): Get the data member for coarrays
+	only when freeing an array with descriptor.  And set correct caf_mode
+	when freeing components of coarrays.
+	* trans.h: Change prototype of gfc_deallocate_with_status to allow
+	adding statements into the block guarded by the if (pointer != 0) and
+	supply a coarray handle.
+
 2016-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44265

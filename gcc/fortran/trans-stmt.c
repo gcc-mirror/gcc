@@ -6489,8 +6489,9 @@ gfc_trans_deallocate (gfc_code *code)
 		    : GFC_CAF_COARRAY_DEREGISTER;
 	      else
 		caf_dtype = GFC_CAF_COARRAY_NOCOARRAY;
-	      tmp = gfc_array_deallocate (se.expr, pstat, errmsg, errlen,
-					  label_finish, expr, caf_dtype);
+	      tmp = gfc_deallocate_with_status (se.expr, pstat, errmsg, errlen,
+						label_finish, false, expr,
+						caf_dtype);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
 	  else if (TREE_CODE (se.expr) == COMPONENT_REF
