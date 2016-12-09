@@ -1,3 +1,47 @@
+2016-12-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78542
+	* gcc.dg/torture/pr78542.c: New testcase.
+
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78482
+	* gcc.dg/torture/pr78482.c: New testcase.
+
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71762
+	* gcc.dg/torture/pr71762-1.c: New testcase.
+	* gcc.dg/torture/pr71762-2.c: Likewise.
+	* gcc.dg/torture/pr71762-3.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-28.c: XFAIL.
+
+	2016-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71575
+	* gcc.dg/graphite/pr71575-1.c: New testcase.
+	* gcc.dg/graphite/pr71575-2.c: Likewise.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78224
+	* g++.dg/torture/pr78224.C: New testcase.
+
+	2016-11-05  David Edelsohn  <dje.gcc@gmail.com>
+		Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/78188
+	PR c++/71848
+	* g++.dg/ipa/pr78188.C: New test.
+
+	2016-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77646
+	* gcc.dg/torture/pr77646.c: New testcase.
+
 2016-12-08  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78551

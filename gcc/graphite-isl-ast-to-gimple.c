@@ -2493,9 +2493,6 @@ copy_cond_phi_nodes (basic_block bb, basic_block new_bb, vec<tree> iv_map)
       tree res = gimple_phi_result (phi);
       if (virtual_operand_p (res))
 	continue;
-      if (is_gimple_reg (res) && scev_analyzable_p (res, region->region))
-	/* Cond phi nodes should not be scev_analyzable_p.  */
-	gcc_unreachable ();
 
       gphi *new_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
       tree new_res = create_new_def_for (res, new_phi,
