@@ -1,3 +1,10 @@
+2016-12-09  Andre Vieira <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/78255
+	* gcc.target/aarch64/pr78255.c: New.
+	* gcc.target/arm/pr78255-1.c: New.
+	* gcc.target/arm/pr78255-2.c: New.
+
 2016-12-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/dimode-1.c: Update syntax on scan-assembler
