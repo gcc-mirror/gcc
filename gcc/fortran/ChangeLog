@@ -1,5 +1,11 @@
 2016-12-09  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/78505
+	* trans-stmt.c (gfc_trans_allocate): Add sync all after the execution
+	of the whole allocate-statement to adhere to the standard.
+
+2016-12-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	* trans-array.c (gfc_array_deallocate): Remove wrapper.
 	(gfc_trans_dealloc_allocated): Same.
 	(structure_alloc_comps): Restructure deallocation of (nested)
