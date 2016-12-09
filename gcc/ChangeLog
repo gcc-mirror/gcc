@@ -1,3 +1,13 @@
+2016-12-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/78683
+	* config/rs6000/rs6000.h (CLZ_DEFINED_VALUE_AT_ZERO): Use
+	GET_MODE_BITSIZE.  Return 2.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Use GET_MODE_BITSIZE.  Return 2.  Handle
+	TARGET_POPCNTD the same as TARGET_CTZ.
+	* config/rs6000/rs6000.md (ctz<mode>2): Reimplement.
+	(ffs<mode>2): Reimplement.
+
 2016-12-09  Andre Vieira <andre.simoesdiasvieira@arm.com>
 
 	PR rtl-optimization/78255
