@@ -599,6 +599,7 @@ x86_64-*-freebsd*)
 	md_unwind_header=i386/freebsd-unwind.h
 	;;
 i[34567]86-*-netbsdelf*)
+	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 x86_64-*-netbsd*)
 	tmake_file="${tmake_file} i386/t-crtstuff"
