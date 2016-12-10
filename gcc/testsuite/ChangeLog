@@ -1,3 +1,9 @@
+2016-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78758
+	* gfortran.dg/pr78758.f90: New test.
+	* gfortran.dg/pr38868.f: Remove again bogus warning.
+
 2016-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77903
