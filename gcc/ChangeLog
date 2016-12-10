@@ -1,3 +1,10 @@
+2016-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/78708
+	* lto-streamer-in.c (input_function): In addition to debug stmts
+	without -g, remove IFN_*SAN_* calls if corresponding flag_sanitize
+	bit is not enabled.
+
 2016-12-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-passes.def: New file.
@@ -10,8 +17,8 @@
 2016-12-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR ipa/78721
-	* ipa-cp.c (propagate_vr_accross_jump_function): drop_tree_overflow
-	after fold_convert.
+	* ipa-cp.c (propagate_vr_accross_jump_function): Call
+	drop_tree_overflow after fold_convert.
 
 2016-12-09  Jakub Jelinek  <jakub@redhat.com>
 
