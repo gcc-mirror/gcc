@@ -1,5 +1,9 @@
 2016-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/78758
+	* tree-object-size.c (compute_object_offset) <case ARRAY_REF>: Handle
+	non-zero low bound or non-standard element sizes.
+
 	PR sanitizer/78708
 	* lto-streamer-in.c (input_function): In addition to debug stmts
 	without -g, remove IFN_*SAN_* calls if corresponding flag_sanitize

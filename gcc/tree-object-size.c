@@ -138,13 +138,18 @@ compute_object_offset (const_tree expr, const_tree var)
 	return base;
 
       t = TREE_OPERAND (expr, 1);
+      tree low_bound, unit_size;
+      low_bound = array_ref_low_bound (CONST_CAST_TREE (expr));
+      unit_size = array_ref_element_size (CONST_CAST_TREE (expr));
+      if (! integer_zerop (low_bound))
+	t = fold_build2 (MINUS_EXPR, TREE_TYPE (t), t, low_bound);
       if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)
 	{
 	  code = MINUS_EXPR;
 	  t = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
 	}
       t = fold_convert (sizetype, t);
-      off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
+      off = size_binop (MULT_EXPR, unit_size, t);
       break;
 
     case MEM_REF:
