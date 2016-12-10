@@ -2786,6 +2786,7 @@ const char *gfc_print_wide_char (gfc_char_t);
 
 bool gfc_warning (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 bool gfc_warning_now (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
+bool gfc_warning_internal (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 bool gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
   ATTRIBUTE_GCC_GFC(3,4);
 
