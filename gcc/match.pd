@@ -2768,17 +2768,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (ncmp (convert:stype @0) { build_zero_cst (stype); })))))
 
 /* If we have A < 0 ? C : 0 where C is a power of 2, convert
-   this into a right shift followed by ANDing with C.  */
+   this into a right shift or sign extension followed by ANDing with C.  */
 (simplify
  (cond
   (lt @0 integer_zerop)
   integer_pow2p@1 integer_zerop)
- (with {
+ (if (!TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (with {
     int shift = element_precision (@0) - wi::exact_log2 (@1) - 1;
-  }
-  (bit_and
-   (convert (rshift @0 { build_int_cst (integer_type_node, shift); }))
-   @1)))
+   }
+   (if (shift >= 0)
+    (bit_and
+     (convert (rshift @0 { build_int_cst (integer_type_node, shift); }))
+     @1)
+    /* Otherwise ctype must be wider than TREE_TYPE (@0) and pure
+       sign extension followed by AND with C will achieve the effect.  */
+    (bit_and (convert @0) @1)))))
 
 /* When the addresses are not directly of decls compare base and offset.
    This implements some remaining parts of fold_comparison address

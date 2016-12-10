@@ -1,4 +1,11 @@
 2016-12-10  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/78720
+	* match.pd (A < 0 ? C : 0): Only optimize for signed A.  If shift
+	is negative, sign extend to @1's type and than AND with C.
+
+2016-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/78758
 	* tree-object-size.c (compute_object_offset) <case ARRAY_REF>: Handle
