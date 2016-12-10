@@ -1,3 +1,8 @@
+2016-12-10  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.gcc (i386-*-netbsd*): Make i486 the default arch on NetBSD.
+	Generally use cpu generic.
+
 2016-12-10  Jakub Jelinek  <jakub@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 

@@ -3061,6 +3061,12 @@ case ${target} in
     arch_without_sse2=yes
     arch_without_64bit=yes
     ;;
+  i386-*-netbsd*)
+    arch=i486
+    cpu=generic
+    arch_without_sse2=yes
+    arch_without_64bit=yes
+    ;;
   i386-*-*)
     arch=i386
     cpu=i386
