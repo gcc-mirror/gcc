@@ -1,3 +1,9 @@
+2016-12-10 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78350
+	* resolve.c (resolve_structure_cons): Remove the block that
+	tried to remove a charlen and rely on namespace cleanup.
+
 2016-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77903
