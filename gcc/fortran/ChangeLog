@@ -1,3 +1,14 @@
+2016-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78226
+	* error.c (gfc_warning_internal):  New function.
+	* frontend-passes.c (gfc_run_passes):  Call check_locus if
+	CHECKING_P is defined.
+	(check_locus_code):  New function.
+	(check_locus_expr):  New function.
+	(check_locus):  New function.
+	* gfortran.h:  Add prototype for gfc_warning_internal.
+
 2016-12-10 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78350

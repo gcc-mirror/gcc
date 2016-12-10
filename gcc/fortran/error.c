@@ -1160,6 +1160,24 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   return ret;
 }
 
+/* Internal warning, do not buffer.  */
+
+bool
+gfc_warning_internal (int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+  bool ret;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
+		       DK_WARNING);
+  diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
+  va_end (argp);
+  return ret;
+}
 
 /* Immediate error (i.e. do not buffer).  */
 
