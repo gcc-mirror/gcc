@@ -1110,15 +1110,59 @@ input_function (tree fn_decl, struct data_in *data_in,
       while (!gsi_end_p (bsi))
 	{
 	  gimple *stmt = gsi_stmt (bsi);
+	  bool remove = false;
 	  /* If we're recompiling LTO objects with debug stmts but
 	     we're not supposed to have debug stmts, remove them now.
 	     We can't remove them earlier because this would cause uid
 	     mismatches in fixups, but we can do it at this point, as
-	     long as debug stmts don't require fixups.  */
-	  if (!MAY_HAVE_DEBUG_STMTS && !flag_wpa && is_gimple_debug (stmt))
+	     long as debug stmts don't require fixups.
+	     Similarly remove all IFN_*SAN_* internal calls   */
+	  if (!flag_wpa)
+	    {
+	      if (!MAY_HAVE_DEBUG_STMTS && is_gimple_debug (stmt))
+		remove = true;
+	      if (is_gimple_call (stmt)
+		  && gimple_call_internal_p (stmt))
+		{
+		  switch (gimple_call_internal_fn (stmt))
+		    {
+		    case IFN_UBSAN_NULL:
+		      if ((flag_sanitize
+			  & (SANITIZE_NULL | SANITIZE_ALIGNMENT)) == 0)
+			remove = true;
+		      break;
+		    case IFN_UBSAN_BOUNDS:
+		      if ((flag_sanitize & SANITIZE_BOUNDS) == 0)
+			remove = true;
+		      break;
+		    case IFN_UBSAN_VPTR:
+		      if ((flag_sanitize & SANITIZE_VPTR) == 0)
+			remove = true;
+		      break;
+		    case IFN_UBSAN_OBJECT_SIZE:
+		      if ((flag_sanitize & SANITIZE_OBJECT_SIZE) == 0)
+			remove = true;
+		      break;
+		    case IFN_ASAN_MARK:
+		      if ((flag_sanitize & SANITIZE_ADDRESS) == 0)
+			remove = true;
+		      break;
+		    case IFN_TSAN_FUNC_EXIT:
+		      if ((flag_sanitize & SANITIZE_THREAD) == 0)
+			remove = true;
+		      break;
+		    default:
+		      break;
+		    }
+		  gcc_assert (!remove || gimple_call_lhs (stmt) == NULL_TREE);
+		}
+	    }
+	  if (remove)
 	    {
 	      gimple_stmt_iterator gsi = bsi;
 	      gsi_next (&bsi);
+	      unlink_stmt_vdef (stmt);
+	      release_defs (stmt);
 	      gsi_remove (&gsi, true);
 	    }
 	  else
