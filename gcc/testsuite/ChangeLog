@@ -1,5 +1,8 @@
 2016-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/78720
+	* gcc.c-torture/execute/pr78720.c: New test.
+
 	PR fortran/78758
 	* gfortran.dg/pr78758.f90: New test.
 	* gfortran.dg/pr38868.f: Remove again bogus warning.
