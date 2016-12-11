@@ -1,3 +1,12 @@
+2016-12-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70799
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p)
+	<case ASHIFT, case LSHIFTRT>: Consider all constant shifts.
+	Add FIXME comment.
+	(dimode_scalar_chain::compute_convert_gain): Reduce gain for
+	constant shifts larger or equal than 32.
+
 2016-12-11  Roger Pau Monné  <roger.pau@citrix.com>
 
 	* config/i386/x86-64.h: Append --32 to the assembler options when
