@@ -1,3 +1,9 @@
+2016-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78637
+	* parser.c (cp_parser_namespace_definition): Increment
+	nested_definition_count only if push_namespace succeeds.
+
 2016-12-08  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78551
