@@ -763,7 +763,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{HPPA Options}
 @gccoptlist{-march=@var{architecture-type} @gol
--mdisable-fpregs  -mdisable-indexing @gol
+-mcaller-copies  -mdisable-fpregs  -mdisable-indexing @gol
 -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
 -mfixed-range=@var{register-range} @gol
 -mjump-in-delay -mlinker-opt -mlong-calls @gol
@@ -17464,6 +17464,14 @@ other way around.
 @opindex mpa-risc-1-1
 @opindex mpa-risc-2-0
 Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0} respectively.
+
+@item -mcaller-copies
+@opindex mcaller-copies
+The caller copies function arguments passed by hidden reference.  This
+option should be used with care as it is not compatible with the default
+32-bit runtime.  However, only aggregates larger than eight bytes are
+passed by hidden reference and the option provides better compatibility
+with openmp.
 
 @item -mjump-in-delay
 @opindex mjump-in-delay
