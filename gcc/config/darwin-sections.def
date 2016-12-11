@@ -31,6 +31,11 @@ along with GCC; see the file COPYING3.  If not see
 DEF_SECTION (text_coal_section, SECTION_CODE|SECTION_NO_ANCHOR,
 	     ".section __TEXT,__textcoal_nt,coalesced,pure_instructions", 0)
 
+/* We define a picbase thunks section separately, so that we can override the
+   def to be '.text' for versions of ld64 that handle coalescing.  */
+DEF_SECTION (picbase_thunk_section, SECTION_CODE|SECTION_NO_ANCHOR,
+	     ".section __TEXT,__textcoal_nt,coalesced,pure_instructions", 0)
+
 DEF_SECTION (text_hot_section, SECTION_CODE,
 	     ".section __TEXT,__text_hot,regular,pure_instructions", 0)
 DEF_SECTION (text_cold_section, SECTION_CODE,

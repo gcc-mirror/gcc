@@ -96,6 +96,10 @@ int darwin_running_cxx;
 /* Some code-gen now depends on OS major version numbers (at least).  */
 int generating_for_darwin_version ;
 
+/* For older linkers we need to emit special sections (marked 'coalesced') for
+   for weak or single-definition items.  */
+static bool ld_uses_coal_sects = false;
+
 /* Section names.  */
 section * darwin_sections[NUM_DARWIN_SECTIONS];
 
@@ -219,6 +223,11 @@ darwin_init_sections (void)
   readonly_data_section = darwin_sections[const_section];
   exception_section = darwin_sections[darwin_exception_section];
   eh_frame_section = darwin_sections[darwin_eh_frame_section];
+
+  /* If our linker is new enough to coalesce weak symbols, then we
+     can just put picbase_thunks into the text section.  */
+  if (! ld_uses_coal_sects )
+    darwin_sections[picbase_thunk_section] = text_section;
 }
 
 int
@@ -473,7 +482,31 @@ indirection_hasher::equal (machopic_indirection *s, const char *k)
 }
 
 /* Return the name of the non-lazy pointer (if STUB_P is false) or
-   stub (if STUB_B is true) corresponding to the given name.  */
+   stub (if STUB_B is true) corresponding to the given name.
+
+  If we have a situation like:
+
+global_weak_symbol:
+  ....
+Lnon_weak_local:
+  ....
+
+  ld64 will be unable to split this into two atoms (because the "L" makes
+  the second symbol 'invisible').  This means that legitimate direct accesses
+  to the second symbol will appear to be non-allowed direct accesses to an
+  atom of type weak, global which are not allowed.
+
+  To avoid this, we make the indirections have a leading 'l' (lower-case L)
+  which has a special meaning: linker can see this and use it to determine
+  atoms, but it is not placed into the final symbol table.
+
+  The implementation here is somewhat heavy-handed in that it will also mark
+  indirections to the __IMPORT,__pointers section the same way which is
+  really unnecessary, since ld64 _can_ split those into atoms as they are
+  fixed size.  FIXME: determine if this is a penalty worth extra code to
+  fix.
+
+*/
 
 const char *
 machopic_indirection_name (rtx sym_ref, bool stub_p)
@@ -484,6 +517,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   machopic_indirection *p;
   bool needs_quotes;
   const char *suffix;
+  char L_or_l = 'L';
   const char *prefix = user_label_prefix;
   const char *quote = "";
   tree id;
@@ -518,9 +552,13 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   if (stub_p)
     suffix = STUB_SUFFIX;
   else
-    suffix = NON_LAZY_POINTER_SUFFIX;
+    {
+      suffix = NON_LAZY_POINTER_SUFFIX;
+      /* Let the linker see this.  */
+      L_or_l = 'l';
+    }
 
-  buffer = XALLOCAVEC (char, strlen ("&L")
+  buffer = XALLOCAVEC (char, 2  /* strlen ("&L") or ("&l") */
 		   + strlen (prefix)
 		   + namelen
 		   + strlen (suffix)
@@ -528,7 +566,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
 		   + 1 /* '\0' */);
 
   /* Construct the name of the non-lazy pointer or stub.  */
-  sprintf (buffer, "&%sL%s%s%s%s", quote, prefix, name, suffix, quote);
+  sprintf (buffer, "&%s%c%s%s%s%s", quote, L_or_l, prefix, name, suffix, quote);
 
   if (!machopic_indirections)
     machopic_indirections = hash_table<indirection_hasher>::create_ggc (37);
@@ -1217,9 +1255,9 @@ darwin_mark_decl_preserved (const char *name)
 }
 
 static section *
-darwin_rodata_section (int weak, bool zsize)
+darwin_rodata_section (int use_coal, bool zsize)
 {
-  return (weak
+  return (use_coal
 	  ? darwin_sections[const_coal_section]
 	  : (zsize ? darwin_sections[zobj_const_section]
 		   : darwin_sections[const_section]));
@@ -1388,7 +1426,8 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
     return darwin_sections[objc2_image_info_section];
 
   else if (!strncmp (p, "V2_EHTY", 7))
-    return darwin_sections[data_coal_section];
+    return ld_uses_coal_sects ? darwin_sections[data_coal_section]
+                              : data_section;
 
   else if (!strncmp (p, "V2_CSTR", 7))
     return darwin_sections[objc2_constant_string_object_section];
@@ -1487,20 +1526,22 @@ machopic_select_section (tree decl,
 			 int reloc,
 			 unsigned HOST_WIDE_INT align)
 {
-  bool zsize, one, weak, ro;
+  bool zsize, one, weak, use_coal, ro;
   section *base_section = NULL;
 
   weak = (DECL_P (decl)
 	  && DECL_WEAK (decl)
 	  && !lookup_attribute ("weak_import", DECL_ATTRIBUTES (decl)));
 
-  zsize = (DECL_P (decl) 
+  zsize = (DECL_P (decl)
 	   && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONST_DECL) 
 	   && tree_to_uhwi (DECL_SIZE_UNIT (decl)) == 0);
 
-  one = DECL_P (decl) 
+  one = DECL_P (decl)
 	&& TREE_CODE (decl) == VAR_DECL 
 	&& DECL_COMDAT_GROUP (decl);
+
+  use_coal = (weak || one) && ld_uses_coal_sects;
 
   ro = TREE_READONLY (decl) || TREE_CONSTANT (decl) ;
 
@@ -1512,7 +1553,7 @@ machopic_select_section (tree decl,
 
     case SECCAT_RODATA:
     case SECCAT_SRODATA:
-      base_section = darwin_rodata_section (weak, zsize);
+      base_section = darwin_rodata_section (use_coal, zsize);
       break;
 
     case SECCAT_RODATA_MERGE_STR:
@@ -1534,7 +1575,7 @@ machopic_select_section (tree decl,
     case SECCAT_DATA_REL_RO_LOCAL:
     case SECCAT_SDATA:
     case SECCAT_TDATA:
-      if (weak || one)
+      if (use_coal)
 	{
 	  if (ro)
 	    base_section = darwin_sections[const_data_coal_section];
@@ -1563,7 +1604,7 @@ machopic_select_section (tree decl,
     case SECCAT_BSS:
     case SECCAT_SBSS:
     case SECCAT_TBSS:
-      if (weak || one) 
+      if (use_coal)
 	base_section = darwin_sections[data_coal_section];
       else
 	{
@@ -2259,14 +2300,18 @@ darwin_asm_declare_constant_name (FILE *file, const char *name,
 static void
 darwin_emit_weak_or_comdat (FILE *fp, tree decl, const char *name,
 				  unsigned HOST_WIDE_INT size, 
+				  bool use_coal,
 				  unsigned int align)
 {
-  /* Since the sections used here are coalesed, they will not be eligible
-     for section anchors, and therefore we don't need to break that out.  */
+  /* Since the sections used here are coalesced, they will not be eligible
+     for section anchors, and therefore we don't need to break that out.
+     CHECKME: for modern linker on PowerPC.  */
  if (TREE_READONLY (decl) || TREE_CONSTANT (decl))
-    switch_to_section (darwin_sections[const_data_coal_section]);
+    switch_to_section (use_coal ? darwin_sections[const_data_coal_section]
+				: darwin_sections[const_data_section]);
   else
-    switch_to_section (darwin_sections[data_coal_section]);
+    switch_to_section (use_coal ? darwin_sections[data_coal_section]
+				: data_section);
 
   /* To be consistent, we'll allow darwin_asm_declare_object_name to assemble
      the align info for zero-sized items... but do it here otherwise.  */
@@ -2485,7 +2530,7 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
     {
       /* Weak or COMDAT objects are put in mergeable sections.  */
       darwin_emit_weak_or_comdat (fp, decl, name, size, 
-					DECL_ALIGN (decl));
+				  ld_uses_coal_sects, DECL_ALIGN (decl));
       return;
     } 
 
@@ -2599,7 +2644,7 @@ fprintf (fp, "# adcom: %s (%lld,%d) ro %d cst %d stat %d com %d pub %d"
     {
       /* Weak or COMDAT objects are put in mergable sections.  */
       darwin_emit_weak_or_comdat (fp, decl, name, size, 
-					DECL_ALIGN (decl));
+				  ld_uses_coal_sects, DECL_ALIGN (decl));
       return;
     } 
 
@@ -2669,7 +2714,7 @@ fprintf (fp, "# adloc: %s (%lld,%d) ro %d cst %d stat %d one %d pub %d"
     {
       /* Weak or COMDAT objects are put in mergable sections.  */
       darwin_emit_weak_or_comdat (fp, decl, name, size, 
-					DECL_ALIGN (decl));
+				  ld_uses_coal_sects, DECL_ALIGN (decl));
       return;
     } 
 
@@ -3050,6 +3095,12 @@ darwin_override_options (void)
 
       /* Earlier versions are not specifically accounted, until required.  */
     }
+
+  /* Older Darwin ld could not coalesce weak entities without them being
+     placed in special sections.  */
+  if (darwin_target_linker
+      && (strverscmp (darwin_target_linker, MIN_LD64_NO_COAL_SECTS) < 0))
+    ld_uses_coal_sects = true;
 
   /* In principle, this should be c-family only.  However, we really need to
      set sensible defaults for LTO as well, since the section selection stuff
@@ -3576,12 +3627,13 @@ darwin_function_section (tree decl, enum node_frequency freq,
 			  bool startup, bool exit)
 {
   /* Decide if we need to put this in a coalescable section.  */
-  bool weak = (decl 
+  bool weak = (decl
 	       && DECL_WEAK (decl)
 	       && (!DECL_ATTRIBUTES (decl)
 		   || !lookup_attribute ("weak_import", 
 					  DECL_ATTRIBUTES (decl))));
 
+  bool use_coal = weak && ld_uses_coal_sects;
   /* If there is a specified section name, we should not be trying to
      override.  */
   if (decl && DECL_SECTION_NAME (decl) != NULL)
@@ -3589,8 +3641,8 @@ darwin_function_section (tree decl, enum node_frequency freq,
 
   /* We always put unlikely executed stuff in the cold section.  */
   if (freq == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    return (weak) ? darwin_sections[text_cold_coal_section]
-		  : darwin_sections[text_cold_section];
+    return (use_coal) ? darwin_sections[text_cold_coal_section]
+		      : darwin_sections[text_cold_section];
 
   /* If we have LTO *and* feedback information, then let LTO handle
      the function ordering, it makes a better job (for normal, hot,
@@ -3600,23 +3652,23 @@ darwin_function_section (tree decl, enum node_frequency freq,
 
   /* Non-cold startup code should go to startup subsection.  */
   if (startup)
-    return (weak) ? darwin_sections[text_startup_coal_section]
-		  : darwin_sections[text_startup_section];
+    return (use_coal) ? darwin_sections[text_startup_coal_section]
+		      : darwin_sections[text_startup_section];
 
   /* Similarly for exit.  */
   if (exit)
-    return (weak) ? darwin_sections[text_exit_coal_section]
-		  : darwin_sections[text_exit_section];
+    return (use_coal) ? darwin_sections[text_exit_coal_section]
+		      : darwin_sections[text_exit_section];
 
   /* Place hot code.  */
   if (freq == NODE_FREQUENCY_HOT)
-    return (weak) ? darwin_sections[text_hot_coal_section]
-		  : darwin_sections[text_hot_section];
+    return (use_coal) ? darwin_sections[text_hot_coal_section]
+		      : darwin_sections[text_hot_section];
 
   /* Otherwise, default to the 'normal' non-reordered sections.  */
 default_function_sections:
-  return (weak) ? darwin_sections[text_coal_section]
-		: text_section;
+  return (use_coal) ? darwin_sections[text_coal_section]
+		    : text_section;
 }
 
 /* When a function is partitioned between sections, we need to insert a label
