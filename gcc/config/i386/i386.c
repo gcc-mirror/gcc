@@ -2809,10 +2809,9 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
     {
     case ASHIFT:
     case LSHIFTRT:
-      /* Consider only non-variable shifts narrower
-	 than general register width.  */
-      if (!(CONST_INT_P (XEXP (src, 1))
-	    && IN_RANGE (INTVAL (XEXP (src, 1)), 0, 31)))
+      /* FIXME: consider also variable shifts.  */
+      if (!CONST_INT_P (XEXP (src, 1))
+	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63))
 	return false;
       break;
 
@@ -3409,6 +3408,9 @@ dimode_scalar_chain::compute_convert_gain ()
 	  gain += ix86_cost->add;
     	  if (CONST_INT_P (XEXP (src, 0)))
 	    gain -= vector_const_cost (XEXP (src, 0));
+	  if (CONST_INT_P (XEXP (src, 1))
+	      && INTVAL (XEXP (src, 1)) >= 32)
+	    gain -= COSTS_N_INSNS (1);
 	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS

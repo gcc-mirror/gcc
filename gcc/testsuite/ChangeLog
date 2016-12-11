@@ -1,3 +1,8 @@
+2016-12-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70799
+	* gcc.target/i386/pr70799-3.c: New test.
+
 2016-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/78637
