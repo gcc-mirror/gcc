@@ -41433,6 +41433,12 @@ find_alignment_op (rtx_insn *insn, rtx base_reg)
       if (!base_def_link || base_def_link->next)
 	break;
 
+      /* With stack-protector code enabled, and possibly in other
+	 circumstances, there may not be an associated insn for 
+	 the def.  */
+      if (DF_REF_IS_ARTIFICIAL (base_def_link->ref))
+	break;
+
       rtx_insn *and_insn = DF_REF_INSN (base_def_link->ref);
       and_operation = alignment_mask (and_insn);
       if (and_operation != 0)
