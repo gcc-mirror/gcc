@@ -1,3 +1,10 @@
+2016-12-10  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	PR target/70118
+	* config/i386/mmintrin.h (__m64_u): New type
+	* config/i386/emmintrin.h (_mm_loadl_epi64, _mm_storel_epi64):
+	Make the allowed unaligned memory access explicit.
+
 2016-12-10  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	* config.gcc (i386-*-netbsd*): Make i486 the default arch on NetBSD.

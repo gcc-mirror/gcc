@@ -703,9 +703,9 @@ _mm_loadu_si128 (__m128i_u const *__P)
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_loadl_epi64 (__m128i const *__P)
+_mm_loadl_epi64 (__m128i_u const *__P)
 {
-  return _mm_set_epi64 ((__m64)0LL, *(__m64 *)__P);
+  return _mm_set_epi64 ((__m64)0LL, *(__m64_u *)__P);
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -721,9 +721,9 @@ _mm_storeu_si128 (__m128i_u *__P, __m128i __B)
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_storel_epi64 (__m128i *__P, __m128i __B)
+_mm_storel_epi64 (__m128i_u *__P, __m128i __B)
 {
-  *(long long *)__P = ((__v2di)__B)[0];
+  *(__m64_u *)__P = (__m64) ((__v2di)__B)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

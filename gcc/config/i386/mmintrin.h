@@ -37,6 +37,9 @@
    vector types, and their scalar components.  */
 typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
 
+/* Unaligned version of the same type  */
+typedef int __m64_u __attribute__ ((__vector_size__ (8), __may_alias__, __aligned__ (1)));
+
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v2si __attribute__ ((__vector_size__ (8)));
 typedef short __v4hi __attribute__ ((__vector_size__ (8)));
