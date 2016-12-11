@@ -1,5 +1,11 @@
 2016-12-11  Iain Sandoe  <iain@codesourcery.com>
 
+	* configure.ac (CROSS directory tests): Remove the assumption that
+	Darwin hosts contain suitable target sysroots in "/".
+	* configure: Regenerate.
+
+2016-12-11  Iain Sandoe  <iain@codesourcery.com>
+
 	PR rtl-optimization/71496
 	* config/rs6000/darwin.md (load_macho_picbase_si): Mark as non-
 	copyable.  (load_macho_picbase_di, reload_macho_picbase_si,
