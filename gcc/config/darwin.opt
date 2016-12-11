@@ -37,6 +37,9 @@ Driver RejectNegative Separate
 arch_errors_fatal
 Driver Alias(Zarch_errors_fatal)
 
+asm_macosx_version_min=
+Driver RejectNegative Joined
+
 bind_at_load
 Driver Alias(Zbind_at_load)
 
