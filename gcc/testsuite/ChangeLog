@@ -1,3 +1,8 @@
+2016-12-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/78695
+	* gcc.target/powerpc/swaps-stack-protector.c: New test.
+
 2016-12-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70799

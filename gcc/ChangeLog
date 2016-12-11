@@ -1,3 +1,9 @@
+2016-12-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/78695
+	* config/rs6000/rs6000.c (find_alignment_op): Discard from
+	consideration any artificial definition.
+
 2016-12-11  Iain Sandoe  <iain@codesourcery.com>
 
 	* configure.ac (CROSS directory tests): Remove the assumption that
