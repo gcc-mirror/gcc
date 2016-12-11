@@ -18184,8 +18184,8 @@ cp_parser_namespace_definition (cp_parser* parser)
               cp_parser_error (parser, "nested identifier required");
               break;
             }
-          ++nested_definition_count;
-          push_namespace (identifier);
+	  if (push_namespace (identifier))
+	    ++nested_definition_count;
         }
     }
 
