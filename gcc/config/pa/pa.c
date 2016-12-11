@@ -195,6 +195,8 @@ static bool pa_cannot_force_const_mem (machine_mode, rtx);
 static bool pa_legitimate_constant_p (machine_mode, rtx);
 static unsigned int pa_section_type_flags (tree, const char *, int);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool);
+static bool pa_callee_copies (cumulative_args_t, machine_mode,
+			      const_tree, bool);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -343,7 +345,7 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE pa_pass_by_reference
 #undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#define TARGET_CALLEE_COPIES pa_callee_copies
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES pa_arg_partial_bytes
 #undef TARGET_FUNCTION_ARG
@@ -10718,6 +10720,21 @@ pa_maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
     }
 
   return NULL_RTX;
+}
+
+/* Implement TARGET_CALLEE_COPIES.  The callee is responsible for copying
+   arguments passed by hidden reference in the 32-bit HP runtime.  Users
+   can override this behavior for better compatibility with openmp at the
+   risk of library incompatibilities.  Arguments are always passed by value
+   in the 64-bit HP runtime.  */
+
+static bool
+pa_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
+		  machine_mode mode ATTRIBUTE_UNUSED,
+		  const_tree type ATTRIBUTE_UNUSED,
+		  bool named ATTRIBUTE_UNUSED)
+{
+  return !TARGET_CALLER_COPIES;
 }
 
 #include "gt-pa.h"
