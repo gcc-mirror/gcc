@@ -46,6 +46,7 @@ test01()
 
   std::error_code ec;
   fs::path p1 = fs::temp_directory_path(ec);
+  VERIFY( !ec );
   VERIFY( exists(p1) );
 
   fs::path p2 = fs::temp_directory_path();
@@ -65,6 +66,7 @@ test02()
   std::error_code ec;
   fs::path p = fs::temp_directory_path(ec);
   VERIFY( ec );
+  VERIFY( p == fs::path() );
 
   std::error_code ec2;
   try {
@@ -75,10 +77,54 @@ test02()
   VERIFY( ec2 == ec );
 }
 
+void
+test03()
+{
+  auto p = __gnu_test::nonexistent_path();
+  create_directories(p/"tmp");
+  permissions(p, fs::perms::none);
+  setenv("TMPDIR", (p/"tmp").c_str(), 1);
+  std::error_code ec;
+  auto r = fs::temp_directory_path(ec); // libstdc++/PR71337
+  VERIFY( ec == std::make_error_code(std::errc::permission_denied) );
+  VERIFY( r == fs::path() );
+
+  std::error_code ec2;
+  try {
+    fs::temp_directory_path();
+  } catch (const fs::filesystem_error& e) {
+    ec2 = e.code();
+  }
+  VERIFY( ec2 == ec );
+
+  permissions(p, fs::perms::owner_all, ec);
+  remove_all(p, ec);
+}
+
+void
+test04()
+{
+  __gnu_test::scoped_file f;
+  setenv("TMPDIR", f.path.c_str(), 1);
+  std::error_code ec;
+  auto r = fs::temp_directory_path(ec);
+  VERIFY( ec == std::make_error_code(std::errc::not_a_directory) );
+  VERIFY( r == fs::path() );
+
+  std::error_code ec2;
+  try {
+    fs::temp_directory_path();
+  } catch (const fs::filesystem_error& e) {
+    ec2 = e.code();
+  }
+  VERIFY( ec2 == ec );
+}
 
 int
 main()
 {
   test01();
   test02();
+  test03();
+  test04();
 }
