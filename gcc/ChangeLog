@@ -1,3 +1,13 @@
+2016-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/constraints.md (T): Use special memory constraint.
+	(U): Minor tweak.
+	(W): Add TARGET_ARCH64 test.
+	* config/sparc/sparc.md (*movdi_insn_sp32): Replace 'W' with 'T'.
+	(*movdf_insn_sp32): Likewise.
+	(*mov<VM64:mode>_insn_sp32): Likewise.  Replace 'e' with 'f' in
+	conjunction with offsettable memory references.
+
 2016-12-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.c (nios2_emit_move_sequence): Call copy_rtx
