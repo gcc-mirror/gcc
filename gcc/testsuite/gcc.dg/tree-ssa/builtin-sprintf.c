@@ -166,26 +166,47 @@ test_c (char c)
   EQL (5,  6, "%c %c %c",  c,   c,   c);
 }
 
-/* Generate a pseudo-random value in the specified range.  The return
-   value must be unsigned char to work around limitations in the GCC
-   range information.  Similarly for the declaration of rand() whose
-   correct return value should be int, but that also prevents the range
-   information from making it to the printf pass.  */
+/* Generate a pseudo-random unsigned value.  */
 
-unsigned char uchar_range (unsigned min, unsigned max)
+unsigned __attribute__ ((noclone, noinline))
+unsigned_value (void)
 {
-  extern unsigned rand (void);
+  extern int rand ();
+  return rand ();
+}
 
-  unsigned x;
-  x = rand ();
+/* Generate a pseudo-random signed value.  */
 
-  if (x < min)
+int __attribute__ ((noclone, noinline))
+int_value (void)
+{
+  extern int rand ();
+  return rand ();
+}
+
+/* Generate an unsigned char value in the specified range.  */
+
+static unsigned char
+uchar_range (unsigned min, unsigned max)
+{
+  unsigned x = unsigned_value ();
+  if (x < min || max < x)
     x = min;
-  else if (max < x)
-    x = max;
-
   return x;
 }
+
+/* Generate a signed int value in the specified range.  */
+
+static int
+int_range (int min, int max)
+{
+  int val = int_value ();
+  if (val < min || max < val)
+    val = min;
+  return val;
+}
+
+#define IR(min, max) int_range (min, max)
 
 static void __attribute__ ((noinline, noclone))
 test_d_i (int i, long li)
@@ -266,9 +287,35 @@ test_d_i (int i, long li)
   RNG ( 1,  4,  5, "%hhi",     i);
   RNG ( 1,  3,  4, "%hhu",     i);
 
+  RNG ( 3,  4,  5, "%hhi",     IR (-128,  -10));
+  RNG ( 2,  4,  5, "%hhi",     IR (-128,   -1));
+  RNG ( 1,  4,  5, "%hhi",     IR (-128,    0));
+
+  RNG ( 1,  4,  5, "%1hhi",    IR (-128,    0));
+  RNG ( 1,  4,  5, "%2hhi",    IR (-128,    0));
+  RNG ( 1,  4,  5, "%3hhi",    IR (-128,    0));
+  RNG ( 1,  4,  5, "%4hhi",    IR (-128,    0));
+  RNG ( 1,  5,  6, "%5hhi",    IR (-128,    0));
+  RNG ( 1,  6,  7, "%6hhi",    IR (-128,    0));
+  RNG ( 2,  6,  7, "%6hhi",    IR (-128,   10));
+
+  RNG ( 0,  1,  2, "%.hhi",    IR (   0,    1));
+  RNG ( 0,  1,  2, "%.0hhi",   IR (   0,    1));
+  RNG ( 0,  1,  2, "%0.0hhi",  IR (   0,    1));   /* { dg-warning ".0. flag ignored with precision" } */
+  RNG ( 0,  1,  2, "%*.0hhi",  0, IR (   0,    1));
+
+  RNG ( 1,  2,  3, "%hhi",     IR (1024, 1034));
+  RNG ( 1,  4,  5, "%hhi",     IR (1024, 2048));
+  RNG ( 2,  3,  4, "%hhi",     IR (1034, 1151));
+
+  RNG ( 1,  2,  3, "%hhu",     IR (1024, 1034));
+  RNG ( 1,  3,  4, "%hhu",     IR (1024, 2048));
+  RNG ( 2,  3,  4, "%hhu",     IR (1034, 1151));
+
 #if __SIZEOF_SHORT__ == 2
   RNG ( 1,  6,  7, "%hi",      i);
   RNG ( 1,  5,  6, "%hu",      i);
+
 #elif __SIZEOF_SHORT__ == 4
   RNG ( 1, 11, 12, "%hi",      i);
   RNG ( 1, 10, 11, "%hu",      i);

@@ -8,6 +8,8 @@
    { dg-options "-O2 -Wformat -fdump-tree-optimized" }
    { dg-require-effective-target int32plus } */
 
+typedef __SIZE_TYPE__ size_t;
+
 #define CONCAT(a, b) a ## b
 #define CAT(a, b)    CONCAT (a, b)
 
@@ -49,6 +51,19 @@ void test_arg_int (int width, int prec, int i, int n)
   T ("%.*i", 0,    i);
 
   T ("%i", R (1, 10));
+
+  /* Each of the bounds of the ranges below results in just one byte
+     on output because they convert to the value 9 in type char, yet
+     other values in those ranges can result in up to four bytes.
+     For example, 4240 converts to -112.  Verify that the output
+     isn't folded into a constant.  This assumes __CHAR_BIT__ of 8.  */
+  T ("%hhi", R (4104, 4360) + 1);
+  T ("%hhu", R (4104, 4360) + 1);
+
+  /* Here, the range includes all possible lengths of output for
+     a 16-bit short and 32-bit int.  */
+  T ("%hi", R (65536, 65536 * 2));
+  T ("%hu", R (65536, 65536 * 2));
 
   T ("%'i", 1234567);
 
@@ -104,6 +119,7 @@ void test_invalid_directive (void)
   T ("abc%Q");    /* { dg-warning "unknown conversion type character .Q." } */
 }
 
+
 /* Use 'grep "^ *T (" builtin-sprintf-6.c  | wc -l' to determine
    the count for the directive below.
-   { dg-final { scan-tree-dump-times "snprintf" 42 "optimized"} } */
+   { dg-final { scan-tree-dump-times "snprintf" 46 "optimized"} } */

@@ -125,12 +125,61 @@ void test_s_nonconst (const char *s, const wchar_t *ws, struct Arrays *a)
 
   /* Exercise buffer overflow detection with non-const integer arguments.  */
 
-void test_hh_nonconst (int x)
+void test_hh_nonconst (int w, int p, int x, unsigned y)
 {
   T (1, "%hhi",         x);     /* { dg-warning "into a region" } */
   T (2, "%hhi",         x);     /* { dg-warning "into a region" } */
   T (3, "%hhi",         x);     /* { dg-warning "into a region" } */
   T (4, "%hhi",         x);     /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T (1, "%hhi",         y);     /* { dg-warning "between 1 and 4 bytes" } */
+  T (2, "%hhi",         y);     /* { dg-warning "into a region" } */
+  T (3, "%hhi",         y);     /* { dg-warning "into a region" } */
+  T (4, "%hhi",         y);     /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  /* Negative precision is treated as if none were specified.  */
+  T (1, "%.*hhi",   -1, x);     /* { dg-warning "between 1 and 4 bytes" } */
+  T (2, "%.*hhi",   -1, x);     /* { dg-warning "into a region" } */
+  T (3, "%.*hhi",   -1, x);     /* { dg-warning "into a region" } */
+  T (4, "%.*hhi",   -1, x);     /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  /* Zero precision means that zero argument formats as no bytes unless
+     length or flags make it otherwise.  */
+  T (1, "%.*hhi",    0, x);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (2, "%.*hhi",    0, x);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (3, "%.*hhi",    0, x);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (4, "%.*hhi",    0, x);     /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T (1, "%.*hhi",    0, y);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (2, "%.*hhi",    0, y);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (3, "%.*hhi",    0, y);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (4, "%.*hhi",    0, y);     /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T (1, "%#.*hhi",    0, y);    /* { dg-warning "between 0 and 4 bytes" } */
+  /* { dg-warning ".#. flag used" "-Wformat" { target *-*-* } .-1 } */
+  T (1, "%+.*hhi",    0, y);    /* { dg-warning "between 1 and 4 bytes" } */
+  T (1, "%-.*hhi",    0, y);    /* { dg-warning "between 0 and 4 bytes" } */
+  T (1, "% .*hhi",    0, y);    /* { dg-warning "between 1 and 4 bytes" } */
+
+  T (1, "%#.*hhi",    1, y);    /* { dg-warning "between 1 and 4 bytes" } */
+  /* { dg-warning ".#. flag used" "-Wformat" { target *-*-* } .-1 } */
+  T (1, "%+.*hhi",    1, y);    /* { dg-warning "between 2 and 4 bytes" } */
+  T (1, "%-.*hhi",    1, y);    /* { dg-warning "between 1 and 4 bytes" } */
+  T (1, "% .*hhi",    1, y);    /* { dg-warning "between 2 and 4 bytes" } */
+
+  T (1, "%#.*hhi",    p, y);    /* { dg-warning "writing 0 or more bytes" } */
+  /* { dg-warning ".#. flag used" "-Wformat" { target *-*-* } .-1 } */
+  T (1, "%+.*hhi",    p, y);    /* { dg-warning "writing 1 or more bytes" } */
+  T (1, "%-.*hhi",    p, y);    /* { dg-warning "writing 0 or more bytes" } */
+  T (1, "% .*hhi",    p, y);    /* { dg-warning "writing 1 or more bytes" } */
+
+  T (1, "%#.*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
+  /* { dg-warning ".#. flag used" "-Wformat" { target *-*-* } .-1 } */
+  T (1, "%+.*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
+  /* { dg-warning ".\\+. flag used" "-Wformat" { target *-*-* } .-1 } */
+  T (1, "%-.*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
+  T (1, "% .*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
+  /* { dg-warning ". . flag used" "-Wformat" { target *-*-* } .-1 } */
 }
 
 void test_h_nonconst (int x)

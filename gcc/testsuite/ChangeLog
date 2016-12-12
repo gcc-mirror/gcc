@@ -1,3 +1,23 @@
+2016-12-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78622
+	PR middle-end78606
+	* gcc.c-torture/execute/pr78622.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Remove "benign" undefined
+	behavior inadvertently introduced in a previous commit.  Tighten
+	up final checking.
+	* gcc.dg/tree-ssa/builtin-sprintf-5.c: Rename macros for clarity.
+	Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-6.c: Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-5.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-6.c: Remove xfails and
+	add a final optimization check.
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Add test cases.
+	* gcc.dg/tree-ssa/pr78622.c: New test.
+
 2016-12-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78392
