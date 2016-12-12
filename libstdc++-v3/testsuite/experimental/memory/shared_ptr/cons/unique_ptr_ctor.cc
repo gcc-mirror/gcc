@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
@@ -61,7 +61,6 @@ static_assert( !constructible< B[],  A[1] >(), "B[2] -> A[1] not compatible" );
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::unique_ptr<A> up(new A);
   std::experimental::shared_ptr<A> sp(std::move(up));
   VERIFY( up.get() == 0 );
@@ -84,7 +83,16 @@ test02()
   VERIFY( sp.get() != 0 );
   VERIFY( sp.use_count() == 1 );
 
-  VERIFY( sp[0].shared_from_this() != nullptr );
+  bool caught = false;
+  try
+  {
+    sp[0].shared_from_this(); // should not be set for arrays
+  }
+  catch (const std::bad_weak_ptr&)
+  {
+    caught = true;
+  }
+  VERIFY( caught );
 
   sp.reset();
   VERIFY( destroyed == 5 );

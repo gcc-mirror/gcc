@@ -259,7 +259,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //	{
       //	  void* __p = _M_refcount._M_get_deleter(typeid(__tag));
       //	  _M_ptr = static_cast<_Tp*>(__p);
-      //	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
       //	}
 
       // __weak_ptr::lock()
@@ -557,7 +556,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //	{
       //	  void* __p = _M_refcount._M_get_deleter(typeid(__tag));
       //	  _M_ptr = static_cast<_Tp*>(__p);
-      //	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
       //	}
 
       // __weak_ptr::lock()
@@ -740,16 +738,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp1, typename = _SafeConv<_Tp1>>
 	explicit
-	shared_ptr(_Tp1* __p) : _Base_type(__p) { }
+	shared_ptr(_Tp1* __p) : _Base_type(__p)
+	{ _M_enable_shared_from_this_with(__p); }
 
       template<typename _Tp1, typename _Deleter, typename = _SafeConv<_Tp1>>
 	shared_ptr(_Tp1* __p, _Deleter __d)
-	: _Base_type(__p, __d) { }
+	: _Base_type(__p, __d)
+	{ _M_enable_shared_from_this_with(__p); }
 
       template<typename _Tp1, typename _Deleter, typename _Alloc,
 	       typename = _SafeConv<_Tp1>>
 	shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
-	: _Base_type(__p, __d, __a) { }
+	: _Base_type(__p, __d, __a)
+	{ _M_enable_shared_from_this_with(__p); }
 
       template<typename _Deleter>
 	shared_ptr(nullptr_t __p, _Deleter __d)
@@ -785,13 +786,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1, typename = _Compatible<_Tp1>>
 	shared_ptr(std::auto_ptr<_Tp1>&& __r)
-	: _Base_type(std::move(__r)) { }
+	: _Base_type(std::move(__r))
+	{ _M_enable_shared_from_this_with(static_cast<_Tp1*>(this->get())); }
 #endif
 
       template<typename _Tp1, typename _Del,
 	       typename = _UniqCompatible<_Tp1, _Del>>
 	shared_ptr(unique_ptr<_Tp1, _Del>&& __r)
-	: _Base_type(std::move(__r)) { }
+	: _Base_type(std::move(__r))
+	{
+	  // XXX assume conversion from __r.get() to this->get() to __elem_t*
+	  // is a round trip, which might not be true in all cases.
+	  using __elem_t = typename unique_ptr<_Tp1, _Del>::element_type;
+	  _M_enable_shared_from_this_with(static_cast<__elem_t*>(this->get()));
+	}
 
       constexpr shared_ptr(nullptr_t __p)
       : _Base_type(__p) { }
@@ -853,7 +861,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
 		   _Args&&... __args)
 	: _Base_type(__tag, __a, std::forward<_Args>(__args)...)
-	{ }
+	{ _M_enable_shared_from_this_with(this->get()); }
 
       template<typename _Tp1, typename _Alloc, typename... _Args>
 	friend shared_ptr<_Tp1>
@@ -863,6 +871,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _Base_type(__r, std::nothrow) { }
 
       friend class weak_ptr<_Tp>;
+
+      template<typename _Yp>
+	using __esft_base_t =
+	  decltype(__expt_enable_shared_from_this_base(std::declval<_Yp*>()));
+
+      // Detect an accessible and unambiguous enable_shared_from_this base.
+      template<typename _Yp, typename = void>
+	struct __has_esft_base
+	: false_type { };
+
+      template<typename _Yp>
+	struct __has_esft_base<_Yp, __void_t<__esft_base_t<_Yp>>>
+	: __bool_constant<!is_array_v<_Tp>> { };  // ignore base for arrays
+
+      template<typename _Yp>
+	typename enable_if<__has_esft_base<_Yp>::value>::type
+	_M_enable_shared_from_this_with(const _Yp* __p) noexcept
+	{
+	  if (auto __base = __expt_enable_shared_from_this_base(__p))
+	    {
+	      __base->_M_weak_this
+		= shared_ptr<_Yp>(*this, const_cast<_Yp*>(__p));
+	    }
+	}
+
+      template<typename _Yp>
+	typename enable_if<!__has_esft_base<_Yp>::value>::type
+	_M_enable_shared_from_this_with(const _Yp*) noexcept
+	{ }
     };
 
   // C++14 §20.8.2.2.7 //DOING
@@ -1258,15 +1295,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_weak_assign(_Tp1* __p, const __shared_count<>& __n) const noexcept
 	{ _M_weak_this._M_assign(__p, __n); }
 
-      template<typename _Tp1>
-	friend void
-	__enable_shared_from_this_helper(const __shared_count<>& __pn,
-					 const enable_shared_from_this* __pe,
-					 const _Tp1* __px) noexcept
-	{
-	  if(__pe != 0)
-	    __pe->_M_weak_assign(const_cast<_Tp1*>(__px), __pn);
-	}
+      // Found by ADL when this is an associated class.
+      friend const enable_shared_from_this*
+      __expt_enable_shared_from_this_base(const enable_shared_from_this* __p)
+      { return __p; }
+
+      template<typename>
+	friend class shared_ptr;
 
       mutable weak_ptr<_Tp> _M_weak_this;
     };
