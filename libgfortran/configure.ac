@@ -222,6 +222,9 @@ fi
 AC_MSG_RESULT($ac_fdsections)
 AC_SUBST(SECTION_FLAGS)
 
+# Check linker hardware capability support.
+GCC_CHECK_LINKER_HWCAP
+
 # Find other programs we need.
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)
