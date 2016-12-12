@@ -1,3 +1,9 @@
+2016-12-12  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/78669
+	* ira.c (combine_and_move_insns): When deleting an insn, clear the
+	replace flag for all used regs in that insn.
+
 2016-12-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-opts.h: Move struct arm_arch_core_flag and
