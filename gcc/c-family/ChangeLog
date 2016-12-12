@@ -1,3 +1,9 @@
+2016-12-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78647
+	* c-common.c (attribute_fallthrough_p): Return false for
+	error_mark_node.
+
 2016-12-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78284

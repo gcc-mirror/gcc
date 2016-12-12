@@ -5558,6 +5558,8 @@ parse_optimize_options (tree args, bool attr_p)
 bool
 attribute_fallthrough_p (tree attr)
 {
+  if (attr == error_mark_node)
+   return false;
   tree t = lookup_attribute ("fallthrough", attr);
   if (t == NULL_TREE)
     return false;
