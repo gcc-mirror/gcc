@@ -19390,6 +19390,10 @@ thumb1_compute_save_reg_mask (void)
     if (df_regs_ever_live_p (reg) && callee_saved_reg_p (reg))
       mask |= 1 << reg;
 
+  /* Handle the frame pointer as a special case.  */
+  if (frame_pointer_needed)
+    mask |= 1 << HARD_FRAME_POINTER_REGNUM;
+
   if (flag_pic
       && !TARGET_SINGLE_PIC_BASE
       && arm_pic_register != INVALID_REGNUM
