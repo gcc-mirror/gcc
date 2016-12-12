@@ -6765,6 +6765,17 @@ proc check_effective_target_newlib {} {
     }]
 }
 
+# Some newlib versions don't provide a frexpl and instead depend
+# on frexp to implement long double conversions in their printf-like
+# functions.  This leads to broken results.  Detect such versions here.
+
+proc check_effective_target_newlib_broken_long_double_io {} {
+  if { [is-effective-target newlib] && ![is-effective-target frexpl] } {
+	return 1
+  }
+  return 0
+}
+
 # Return true if this is NOT a Bionic target.
 
 proc check_effective_target_non_bionic {} {
@@ -7379,6 +7390,21 @@ proc check_effective_target_pow10 { } {
 	}
     } "-lm" ]
 }
+
+# Return 1 if frexpl function exists.
+
+proc check_effective_target_frexpl { } {
+    return [check_runtime frexpl {
+	#include <math.h>
+	int main () {
+	long double x;
+	int y;
+	x = frexpl (5.0, &y);
+	return 0;
+	}
+    } "-lm" ]
+}
+
 
 # Return 1 if issignaling function exists.
 proc check_effective_target_issignaling {} {

@@ -1,3 +1,14 @@
+2016-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:
+	XFAIL run if newlib_broken_long_double_io.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stod.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stold.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
+	Likewise.
+
 2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/operations/is_empty.cc:
