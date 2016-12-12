@@ -1,3 +1,14 @@
+2016-12-12  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Backport from mainline
+	2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
+
+        PR rtl-optimization/77309
+        * combine.c (make_compound_operation): Allow EQ for IN_CODE, and
+        don't assume an equality comparison for plain COMPARE.
+        (simplify_comparison): Pass a more accurate code to
+        make_compound_operation.
+
 2016-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline
