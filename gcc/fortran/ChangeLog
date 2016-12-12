@@ -1,3 +1,12 @@
+2016-12-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78392
+	* expr.c (gfc_is_constant_expr): Specification functions are not
+	compile-time constants. Update documentation (add reference to F08
+	standard), add a FIXME.
+	(external_spec_function): Add reference to F08 standard.
+	* resolve.c (resolve_fl_variable): Ditto.
+
 2016-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78226

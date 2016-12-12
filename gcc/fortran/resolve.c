@@ -11825,8 +11825,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       && !sym->attr.pointer
       && is_non_constant_shape_array (sym))
     {
-      /* The shape of a main program or module array needs to be
-	 constant.  */
+      /* F08:C541. The shape of an array defined in a main program or module
+       * needs to be constant.  */
       gfc_error ("The module or main program array %qs at %L must "
 		 "have constant shape", sym->name, &sym->declared_at);
       specification_expr = saved_specification_expr;
