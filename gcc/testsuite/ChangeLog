@@ -1,3 +1,9 @@
+2016-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_newlib_broken_long_double_io): New check.
+	(check_effective_target_frexpl): Likewise.
+
 2016-12-12  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/78716
