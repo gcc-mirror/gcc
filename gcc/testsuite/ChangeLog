@@ -1,3 +1,8 @@
+2016-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78777
+	* g++.dg/torture/pr78777.C: New test.
+
 2016-12-12  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78622

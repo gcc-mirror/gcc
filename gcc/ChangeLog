@@ -1,5 +1,9 @@
 2016-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/78777
+	* gimple-ssa-strength-reduction.c (create_add_on_incoming_edge,
+	insert_initializers): Use stmt_ends_bb_p instead of is_ctrl_stmt.
+
 	PR other/78766
 	* opt-functions.awk (opt_args): Use [{] instead of { in regexps.
 	Formatting fix.
