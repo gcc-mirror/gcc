@@ -1,6 +1,14 @@
 2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/new/synopsis.cc: Add C++14 declarations.
+	* testsuite/18_support/headers/new/synopsis_cxx98.cc: New test.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2016-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78465

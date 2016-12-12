@@ -1,7 +1,7 @@
+// { dg-options "-std=gnu++98" }
 // { dg-do compile }
-// { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2007-2015 Free Software Foundation, Inc.
+// Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,19 +22,17 @@
 
 namespace std {
   class bad_alloc;
-  class bad_array_new_length;
   struct nothrow_t;
   extern const nothrow_t nothrow;
   typedef void (*new_handler)();
-  new_handler get_new_handler() noexcept;
-  new_handler set_new_handler(new_handler new_p) noexcept;
+  new_handler set_new_handler(new_handler new_p) throw();
 }
 
-void* operator new(std::size_t size);
-void* operator new(std::size_t size, const std::nothrow_t&) noexcept;
+void* operator new(std::size_t size) throw(std::bad_alloc);
+void* operator new(std::size_t size, const std::nothrow_t&) throw();
 void  operator delete(void* ptr) throw();
 void  operator delete(void* ptr, const std::nothrow_t&) throw();
-void* operator new[](std::size_t size);
+void* operator new[](std::size_t size) throw(std::bad_alloc);
 void* operator new[](std::size_t size, const std::nothrow_t&) throw();
 void  operator delete[](void* ptr) throw();
 void  operator delete[](void* ptr, const std::nothrow_t&) throw();
@@ -43,13 +41,3 @@ void* operator new  (std::size_t size, void* ptr) throw();
 void* operator new[](std::size_t size, void* ptr) throw();
 void  operator delete  (void* ptr, void*) throw();
 void  operator delete[](void* ptr, void*) throw();
-
-#if __cplusplus >= 201402L
-// C++14 sized deallocation functions
-void  operator delete(void* ptr, std::size_t size) noexcept;
-void  operator delete(void* ptr, std::size_t size,
-                      const std::nothrow_t&) noexcept;
-void  operator delete[](void* ptr, std::size_t size) noexcept;
-void  operator delete[](void* ptr, std::size_t size,
-                        const std::nothrow_t&) noexcept;
-#endif
