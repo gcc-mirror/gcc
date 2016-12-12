@@ -3089,6 +3089,13 @@ _cpp_lex_direct (cpp_reader *pfile)
       break;
     }
 
+  /* Ensure that any line notes are processed, so that we have the
+     correct physical line/column for the end-point of the token even
+     when a logical line is split via one or more backslashes.  */
+  if (buffer->cur >= buffer->notes[buffer->cur_note].pos
+      && !pfile->overlaid_buffer)
+    _cpp_process_line_notes (pfile, false);
+
   source_range tok_range;
   tok_range.m_start = result->src_loc;
   if (result->src_loc >= RESERVED_LOCATION_COUNT)

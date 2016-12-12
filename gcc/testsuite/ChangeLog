@@ -1,3 +1,12 @@
+2016-12-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78680
+	* gcc.dg/format/pr78680.c: New test case.
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c
+	(test_multiline_token): New function.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_backslash_continued_logical_lines): New function.
+
 2016-12-12  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78252
