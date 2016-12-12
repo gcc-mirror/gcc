@@ -3714,6 +3714,14 @@ combine_and_move_insns (void)
 	  remove_death (regno, use_insn);
 	  SET_REG_N_REFS (regno, 0);
 	  REG_FREQ (regno) = 0;
+	  df_ref use;
+	  FOR_EACH_INSN_USE (use, def_insn)
+	    {
+	      unsigned int use_regno = DF_REF_REGNO (use);
+	      if (!HARD_REGISTER_NUM_P (use_regno))
+		reg_equiv[use_regno].replace = 0;
+	    }
+
 	  delete_insn (def_insn);
 
 	  reg_equiv[regno].init_insns = NULL;
