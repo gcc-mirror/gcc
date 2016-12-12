@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-lstdc++fs" }
-// { dg-do run { target c++11 } }E
+// { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
 #include <experimental/filesystem>

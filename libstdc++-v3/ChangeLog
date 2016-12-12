@@ -1,5 +1,8 @@
 2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Remove stray character at end of dg-do directive.
+
 	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
 	Remove stray character at end of dg-do directive.
 
