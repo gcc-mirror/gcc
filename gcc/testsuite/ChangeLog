@@ -1,3 +1,8 @@
+2016-12-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78252
+	* g++.dg/cpp1y/lambda-mangle-1.C: New.
+
 2016-12-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78738
