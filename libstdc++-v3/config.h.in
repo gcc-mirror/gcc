@@ -937,7 +937,7 @@
 /* Define if _SC_NPROC_ONLN is available in <unistd.h>. */
 #undef _GLIBCXX_USE_SC_NPROC_ONLN
 
-/* Define if sendfile is available in <sys/stat.h>. */
+/* Define if sendfile is available in <sys/sendfile.h>. */
 #undef _GLIBCXX_USE_SENDFILE
 
 /* Define if struct stat has timespec members. */
