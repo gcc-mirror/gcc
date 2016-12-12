@@ -1145,7 +1145,9 @@ proc mips-dg-options { args } {
 		 || [mips_have_test_option_p options "HAS_INS"]
 		 || [mips_have_test_option_p options "HAS_MADD"]
 		 || [mips_have_test_option_p options "HAS_MADDPS"]
-		 || [mips_have_test_option_p options "-mdspr2"]) } {
+		 || [mips_have_test_option_p options "-mdspr2"]
+		 || [mips_have_test_option_p options "-mnan=2008"]
+		 || [mips_have_test_option_p options "-mabs=2008"]) } {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32r2"
 	    } else {

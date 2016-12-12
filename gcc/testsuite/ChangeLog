@@ -1,3 +1,8 @@
+2016-12-12  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): Upgrade to R2 for
+	-mnan=2008 and -mabs=2008.
+
 2016-12-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/78695
