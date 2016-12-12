@@ -127,6 +127,7 @@ DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/libgfortran.spec.in $(srcdir)/../depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+	$(top_srcdir)/../config/hwcaps.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
@@ -471,6 +472,7 @@ FCFLAGS = @FCFLAGS@
 FGREP = @FGREP@
 FPU_HOST_HEADER = @FPU_HOST_HEADER@
 GREP = @GREP@
+HWCAP_LDFLAGS = @HWCAP_LDFLAGS@
 IEEE_FLAGS = @IEEE_FLAGS@
 IEEE_SUPPORT = @IEEE_SUPPORT@
 INSTALL = @INSTALL@
@@ -599,6 +601,7 @@ toolexeclib_DATA = libgfortran.spec
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
+	$(HWCAP_LDFLAGS) \
 	-lm $(extra_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 

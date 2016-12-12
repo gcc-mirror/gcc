@@ -1,3 +1,7 @@
+2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* hwcaps.m4: New file.
+
 2016-12-08  Alan Modra  <amodra@gmail.com>
 
 	* elf.m4: Revert 2016-06-21 change.

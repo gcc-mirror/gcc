@@ -215,7 +215,7 @@ LIBITM_CHECK_ATTRIBUTE_DLLEXPORT
 LIBITM_CHECK_ATTRIBUTE_ALIAS
 
 # Check linker hardware capability support.
-LIBITM_CHECK_LINKER_HWCAP
+GCC_CHECK_LINKER_HWCAP
 # If defaulting to -mavx, don't clear hwcaps.
 AC_CHECK_DECL([__AVX__], [HWCAP_LDFLAGS=''])
 

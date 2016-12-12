@@ -1,3 +1,11 @@
+2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Call GCC_CHECK_LINKER_HWCAP.
+	* Makefile.am (libgfortran_la_LDFLAGS): Add HWCAP_LDFLAGS.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2016-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78379
