@@ -1,5 +1,10 @@
 2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Remove stray character at end of dg-do directive.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline
 	PR libstdc++/70975
 	PR libstdc++/71337
