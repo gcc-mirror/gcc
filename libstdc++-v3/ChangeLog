@@ -1,3 +1,8 @@
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Remove stray character at end of dg-do directive.
+
 2016-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant: Remove misplaced
