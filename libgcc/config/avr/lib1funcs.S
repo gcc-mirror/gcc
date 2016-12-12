@@ -3120,7 +3120,7 @@ ENDF __bswapdi2
 ;; r25:r18 = ashr64 (r25:r18, r17:r16)
 DEFUN __ashrdi3
     sbrc    r25, 7
-    neg     SS
+    com     SS
     ;; FALLTHRU
 ENDF  __ashrdi3
 
