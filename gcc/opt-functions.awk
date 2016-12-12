@@ -61,10 +61,10 @@ function opt_args(name, flags)
 	if (flags !~ " " name "\\(")
 		return ""
 	sub(".* " name "\\(", "", flags)
-	if (flags ~ "^{")
+	if (flags ~ "^[{]")
 	{
-		sub ("^{", "", flags)
-		sub("}\\).*", "", flags)
+		sub ("^[{]", "", flags)
+		sub ("}\\).*", "", flags)
 	}
 	else
 		sub("\\).*", "", flags)
