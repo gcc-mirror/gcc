@@ -1,3 +1,7 @@
+2016-12-12  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* combine.c (change_zero_ext): Handle mode expanding zero_extracts.
+
 2016-12-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78738
