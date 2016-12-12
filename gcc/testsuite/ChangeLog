@@ -1,3 +1,8 @@
+2016-12-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78392
+	* gfortran.dg/constant_shape.f90: New test case.
+
 2016-12-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/78647
