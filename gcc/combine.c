@@ -11237,18 +11237,24 @@ change_zero_ext (rtx pat)
       if (GET_CODE (x) == ZERO_EXTRACT
 	  && CONST_INT_P (XEXP (x, 1))
 	  && CONST_INT_P (XEXP (x, 2))
-	  && GET_MODE (XEXP (x, 0)) == mode)
+	  && GET_MODE (XEXP (x, 0)) != VOIDmode
+	  && GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
+	      <= GET_MODE_PRECISION (mode))
 	{
+	  machine_mode inner_mode = GET_MODE (XEXP (x, 0));
+
 	  size = INTVAL (XEXP (x, 1));
 
 	  int start = INTVAL (XEXP (x, 2));
 	  if (BITS_BIG_ENDIAN)
-	    start = GET_MODE_PRECISION (mode) - size - start;
+	    start = GET_MODE_PRECISION (inner_mode) - size - start;
 
 	  if (start)
-	    x = gen_rtx_LSHIFTRT (mode, XEXP (x, 0), GEN_INT (start));
+	    x = gen_rtx_LSHIFTRT (inner_mode, XEXP (x, 0), GEN_INT (start));
 	  else
 	    x = XEXP (x, 0);
+	  if (mode != inner_mode)
+	    x = gen_lowpart_SUBREG (mode, x);
 	}
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && SCALAR_INT_MODE_P (mode)
