@@ -116,54 +116,76 @@ void test_sprintf_chk_integer_value (void)
   T ( 9, "%8u", i (    1));
 }
 
+extern int rand (void);
+
 /* Functions to require optimization to figure out the range of the operand.
    Used to verify that the checker makes use of the range information to
    avoid diagnosing the output of sufficiently constrained arguments to
    integer directives.  */
 
-signed char*
-range_schar (signed char *val, signed char min, signed char max)
+signed char
+range_schar (signed char min, signed char max)
 {
-  if (*val < min || max < *val) __builtin_abort ();
-  return val;
+  signed char val = rand ();
+  return val < min || max < val ? min : val;
 }
 
-unsigned char*
-range_uchar (unsigned char *val, unsigned char min, unsigned char max)
+unsigned char
+range_uchar (unsigned char min, unsigned char max)
 {
-  if (*val < min || max < *val) __builtin_abort ();
-  return val;
+  unsigned char val = rand ();
+  return val < min || max < val ? min : val;
 }
 
-signed short*
-range_sshort (signed short *val, signed short min, signed short max)
+signed short
+range_sshrt (signed short min, signed short max)
 {
-  if (*val < min || max < *val) __builtin_abort ();
-  return val;
+  signed short val = rand ();
+  return val < min || max < val ? min : val;
 }
 
-unsigned short*
-range_ushort (unsigned short *val, unsigned short min, unsigned short max)
+unsigned short
+range_ushrt (unsigned short min, unsigned short max)
 {
-  if (*val < min || max < *val) __builtin_abort ();
-  return val;
+  unsigned short val = rand ();
+  return val < min || max < val ? min : val;
 }
 
-/* Helper to prevent GCC from figuring out the return value.  */
-extern int idx (void);
-
-/* Exercise ranges only in types signed and unsigned char and short.
-   No other types work due to bug 71690.  */
-
-void test_sprintf_chk_range_schar (signed char *a)
+signed int
+range_sint (signed int min, signed int max)
 {
-  (void)&a;
+  signed int val = rand ();
+  return val < min || max < val ? min : val;
+}
 
-  /* Ra creates a range of signed char for A [idx].  A different
-     value is used each time to prevent the ranges from intesecting
-     one another, possibly even eliminating some tests as a result
-     of the range being empty.  */
-#define R(min, max) *range_schar (a + idx (), min, max)
+unsigned int
+range_uint (unsigned int min, unsigned int max)
+{
+  unsigned int val = rand ();
+  return val < min || max < val ? min : val;
+}
+
+void test_sprintf_chk_range_schar (void)
+{
+#define R(min, max) range_sint (min, max)
+
+  T ( 0, "%hhi", R (0, 1));     /* { dg-warning ".%hhi. directive writing 1 byte into a region of size 0" } */
+  /* { dg-message "directive argument in the range \\\[0, 1\\\]" "note" { target *-*-* } .-1 } */
+
+  T ( 0, "%hhi", R (0, 127));   /* { dg-warning ".%hhi. directive writing between 1 and 3 bytes into a region of size 0" } */
+  /* { dg-message "directive argument in the range \\\[0, 127\\\]" "note" { target *-*-* } .-1 } */
+
+  T ( 0, "%hhi", R (1024, 1033));   /* { dg-warning ".%hhi. directive writing 1 byte into a region of size 0" } */
+  /* { dg-message "directive argument in the range \\\[1024, 1033\\\]" "note" { target *-*-* } .-1 } */
+
+  T ( 0, "%hhi", R (1024, 1034));   /* { dg-warning ".%hhi. directive writing between 1 and 2 bytes into a region of size 0" } */
+  /* { dg-message "directive argument in the range \\\[1024, 1034\\\]" "note" { target *-*-* } .-1 } */
+
+  T ( 0, "%hhi", R (1024, 2035));   /* { dg-warning ".%hhi. directive writing between 1 and 4 bytes into a region of size 0" } */
+  /* { dg-message "using the range \\\[0, -128\\\] for directive argument" "note" { target *-*-* } .-1 } */
+
+#undef R
+#define R(min, max) range_schar (min, max)
 
   T ( 0, "%i",  R (0, 9));      /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
   T ( 1, "%i",  R (0, 9));      /* { dg-warning "nul past the end" } */
@@ -192,47 +214,108 @@ void test_sprintf_chk_range_schar (signed char *a)
   T ( 6, "%i_%i_%i", R (0, 9), R (0, 10), R (0, 10)); /* { dg-warning "may write a terminating nul past the end|.%i. directive writing between 1 and 2 bytes into a region of size 1" } */
 }
 
-void test_sprintf_chk_range_uchar (unsigned char *a, unsigned char *b)
+void test_sprintf_chk_range_uchar (void)
 {
-  (void)&a;
-  (void)&b;
+#undef R
+#define R(min, max) range_uchar (min, max)
 
-#undef Ra
-#define Ra(min, max) *range_uchar (a + idx (), min, max)
+  T ( 0, "%i",  R (0,  9));   /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
+  T ( 1, "%i",  R (0,  9));   /* { dg-warning "nul past the end" } */
+  T ( 2, "%i",  R (0,  9));
+  T ( 2, "%i",  R (9, 10));   /* { dg-warning "may write a terminating nul past the end of the destination" } */
 
-  T ( 0, "%i",  Ra (0,  9));   /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
-  T ( 1, "%i",  Ra (0,  9));   /* { dg-warning "nul past the end" } */
-  T ( 2, "%i",  Ra (0,  9));
-  T ( 2, "%i",  Ra (9, 10));   /* { dg-warning "may write a terminating nul past the end of the destination" } */
-
-  T ( 3, "%i",  Ra (0,  99));
-  T ( 3, "%i",  Ra (0, 100));  /* { dg-warning "may write a terminating nul past the end of the destination" } */
+  T ( 3, "%i",  R (0,  99));
+  T ( 3, "%i",  R (0, 100));  /* { dg-warning "may write a terminating nul past the end of the destination" } */
 }
 
-void test_sprintf_chk_range_sshort (signed short *a, signed short *b)
+void test_sprintf_chk_range_sshrt (void)
 {
-  (void)&a;
-  (void)&b;
+#undef R
+#define R(min, max) range_sshrt (min, max)
 
-#undef Ra
-#define Ra(min, max) *range_sshort (a + idx (), min, max)
+  T ( 0, "%i",  R ( 0, 9));     /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
+  T ( 1, "%i",  R ( 0, 1));     /* { dg-warning "nul past the end" } */
+  T ( 1, "%i",  R ( 0, 9));     /* { dg-warning "nul past the end" } */
+  T ( 2, "%i",  R ( 0, 1));
+  T ( 2, "%i",  R ( 8, 9));
+  T ( 2, "%i",  R ( 0, 9));
+  T ( 2, "%i",  R (-1, 0));     /* { dg-warning "may write a terminating nul past the end of the destination" } */
+  T ( 2, "%i",  R ( 9, 10));    /* { dg-warning "may write a terminating nul past the end of the destination" } */
 
-  T ( 0, "%i",  Ra ( 0, 9));     /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
-  T ( 1, "%i",  Ra ( 0, 1));     /* { dg-warning "nul past the end" } */
-  T ( 1, "%i",  Ra ( 0, 9));     /* { dg-warning "nul past the end" } */
-  T ( 2, "%i",  Ra ( 0, 1));
-  T ( 2, "%i",  Ra ( 8, 9));
-  T ( 2, "%i",  Ra ( 0, 9));
-  T ( 2, "%i",  Ra (-1, 0));     /* { dg-warning "may write a terminating nul past the end of the destination" } */
-  T ( 2, "%i",  Ra ( 9, 10));    /* { dg-warning "may write a terminating nul past the end of the destination" } */
+  T ( 3, "%i",  R ( 0, 99));
+  T ( 3, "%i",  R (99, 999));   /* { dg-warning "may write a terminating nul past the end of the destination" } */
 
-  T ( 3, "%i",  Ra ( 0, 99));
-  T ( 3, "%i",  Ra (99, 999));   /* { dg-warning "may write a terminating nul past the end of the destination" } */
+  T ( 4, "%i",  R (  0,  999));
+  T ( 4, "%i",  R ( 99,  999));
+  T ( 4, "%i",  R (998,  999));
+  T ( 4, "%i",  R (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
+}
 
-  T ( 4, "%i",  Ra (  0,  999));
-  T ( 4, "%i",  Ra ( 99,  999));
-  T ( 4, "%i",  Ra (998,  999));
-  T ( 4, "%i",  Ra (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
+void test_sprintf_chk_range_ushrt (void)
+{
+#undef R
+#define R(min, max) range_ushrt (min, max)
+
+  T ( 0, "%i",  R ( 0, 9));     /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
+  T ( 1, "%i",  R ( 0, 1));     /* { dg-warning "nul past the end" } */
+  T ( 1, "%i",  R ( 0, 9));     /* { dg-warning "nul past the end" } */
+  T ( 2, "%i",  R ( 0, 1));
+  T ( 2, "%i",  R ( 8, 9));
+  T ( 2, "%i",  R ( 0, 9));
+  T ( 2, "%i",  R ( 9, 10));    /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T ( 3, "%i",  R ( 0, 99));
+  T ( 3, "%i",  R (99, 999));   /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T ( 4, "%i",  R (  0,  999));
+  T ( 4, "%i",  R ( 99,  999));
+  T ( 4, "%i",  R (998,  999));
+  T ( 4, "%i",  R (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
+}
+
+void test_sprintf_chk_range_sint (void)
+{
+#undef R
+#define R(min, max) range_sint (min, max)
+
+  T ( 0, "%i",  R ( 0, 9));     /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
+  T ( 1, "%i",  R ( 0, 1));     /* { dg-warning "nul past the end" } */
+  T ( 1, "%i",  R ( 0, 9));     /* { dg-warning "nul past the end" } */
+  T ( 2, "%i",  R ( 0, 1));
+  T ( 2, "%i",  R ( 8, 9));
+  T ( 2, "%i",  R ( 0, 9));
+  T ( 2, "%i",  R (-1, 0));     /* { dg-warning "may write a terminating nul past the end of the destination" } */
+  T ( 2, "%i",  R ( 9, 10));    /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T ( 3, "%i",  R ( 0, 99));
+  T ( 3, "%i",  R (99, 999));   /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T ( 4, "%i",  R (  0,  999));
+  T ( 4, "%i",  R ( 99,  999));
+  T ( 4, "%i",  R (998,  999));
+  T ( 4, "%i",  R (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
+}
+
+void test_sprintf_chk_range_uint (void)
+{
+#undef R
+#define R(min, max) range_uint (min, max)
+
+  T ( 0, "%i",  R ( 0, 9));     /* { dg-warning ".%i. directive writing 1 byte into a region of size 0" } */
+  T ( 1, "%i",  R ( 0, 1));     /* { dg-warning "nul past the end" } */
+  T ( 1, "%i",  R ( 0, 9));     /* { dg-warning "nul past the end" } */
+  T ( 2, "%i",  R ( 0, 1));
+  T ( 2, "%i",  R ( 8, 9));
+  T ( 2, "%i",  R ( 0, 9));
+  T ( 2, "%i",  R ( 9, 10));    /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T ( 3, "%i",  R ( 0, 99));
+  T ( 3, "%i",  R (99, 999));   /* { dg-warning "may write a terminating nul past the end of the destination" } */
+
+  T ( 4, "%i",  R (  0,  999));
+  T ( 4, "%i",  R ( 99,  999));
+  T ( 4, "%i",  R (998,  999));
+  T ( 4, "%i",  R (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
 }
 
 /* Verify that destination size in excess of INT_MAX (and, separately,

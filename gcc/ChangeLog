@@ -1,3 +1,23 @@
+2016-12-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78622
+	PR middle-end78606
+	* gimple-ssa-sprintf.c (min_bytes_remaining): Use res.knownrange
+	rather than res.bounded.
+	(get_width_and_precision): Set precision to -1 when negative.
+	(adjust_range_for_overflow): New function.
+	(format_integer): Correct the handling of the space, plus, and pound
+	flags, and the special case of zero precision.
+	Always set res.bounded to true unless either precision or width
+	is specified and unknown.
+	Call adjust_range_for_overflow.
+	Avoid use zero as the shortest value when precision is specified
+	but unknown.
+	(format_directive): Remove vestigial quoting.  Always inform of
+	argument value or range when it's available.
+	(add_bytes): Correct the computation of boundrange used to
+	decide whether a warning is of a "maybe" or "defnitely" kind.
+
 2016-12-12  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* combine.c (change_zero_ext): Handle mode expanding zero_extracts.
