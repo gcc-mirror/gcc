@@ -17471,7 +17471,7 @@ The caller copies function arguments passed by hidden reference.  This
 option should be used with care as it is not compatible with the default
 32-bit runtime.  However, only aggregates larger than eight bytes are
 passed by hidden reference and the option provides better compatibility
-with openmp.
+with OpenMP.
 
 @item -mjump-in-delay
 @opindex mjump-in-delay
