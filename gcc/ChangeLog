@@ -1,3 +1,10 @@
+2016-12-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78738
+	* config/i386/i386.h (X87_ENABLE_ARITH): Also enable for
+	flag_unsafe_math_optimizations.
+	(X87_ENABLE_FLOAT): Ditto.
+
 2016-12-12  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/78716
