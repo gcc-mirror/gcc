@@ -1,3 +1,8 @@
+2016-12-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_emit_move_sequence): Call copy_rtx
+	to avoid shared structure error.
+
 2016-12-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/78695

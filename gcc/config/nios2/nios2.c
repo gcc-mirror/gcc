@@ -2334,7 +2334,8 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 	    from = nios2_legitimize_constant_address (from);
 	  if (CONSTANT_P (from))
 	    {
-	      emit_insn (gen_rtx_SET (to, gen_rtx_HIGH (Pmode, from)));
+	      emit_insn (gen_rtx_SET (to,
+				      gen_rtx_HIGH (Pmode, copy_rtx (from))));
 	      emit_insn (gen_rtx_SET (to, gen_rtx_LO_SUM (Pmode, to, from)));
 	      set_unique_reg_note (get_last_insn (), REG_EQUAL,
 				   copy_rtx (operands[1]));
