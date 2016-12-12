@@ -2253,7 +2253,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
   insert_bb = single_succ_p (e->src) ? e->src : split_edge (e);
   gsi = gsi_last_bb (insert_bb);
 
-  if (!gsi_end_p (gsi) && is_ctrl_stmt (gsi_stmt (gsi)))
+  if (!gsi_end_p (gsi) && stmt_ends_bb_p (gsi_stmt (gsi)))
     {
       gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
       if (cast_stmt)
@@ -3243,7 +3243,7 @@ insert_initializers (slsr_cand_t c)
 	  gimple *basis_stmt = lookup_cand (c->basis)->cand_stmt;
 	  location_t loc = gimple_location (basis_stmt);
 
-	  if (!gsi_end_p (gsi) && is_ctrl_stmt (gsi_stmt (gsi)))
+	  if (!gsi_end_p (gsi) && stmt_ends_bb_p (gsi_stmt (gsi)))
 	    {
 	      if (cast_stmt)
 		{
