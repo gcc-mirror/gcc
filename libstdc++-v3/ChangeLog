@@ -1,6 +1,15 @@
 2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-05-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Fix test for sendfile.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/headers/new/synopsis.cc: Add C++14 declarations
