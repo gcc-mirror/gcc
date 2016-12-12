@@ -98,6 +98,26 @@ arm_rewrite_mcpu (int argc, const char **argv)
   return arm_rewrite_selected_cpu (argv[argc - 1]);
 }
 
+struct arm_arch_core_flag
+{
+  const char *const name;
+  const arm_feature_set flags;
+};
+
+static const struct arm_arch_core_flag arm_arch_core_flags[] =
+{
+#undef ARM_CORE
+#define ARM_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
+  {NAME, FLAGS},
+#include "config/arm/arm-cores.def"
+#undef ARM_CORE
+#undef ARM_ARCH
+#define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
+  {NAME, FLAGS},
+#include "config/arm/arm-arches.def"
+#undef ARM_ARCH
+};
+
 /* Called by the driver to check whether the target denoted by current
    command line options is a Thumb-only target.  ARGV is an array of
    -march and -mcpu values (ie. it contains the rhs after the equal
