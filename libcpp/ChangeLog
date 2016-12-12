@@ -1,3 +1,9 @@
+2016-12-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78680
+	* lex.c (_cpp_lex_direct): Ensure line notes are processed before
+	computing the end-point of the token.
+
 2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* include/cpplib.h (struct cpp_options): Add new member
