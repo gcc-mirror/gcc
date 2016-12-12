@@ -34,14 +34,14 @@ test01()
   const auto p = __gnu_test::nonexistent_path();
   fs::directory_iterator iter(p, ec);
   VERIFY( ec );
-  VERIFY( iter != fs::directory_iterator() );
+  VERIFY( iter == end(iter) );
 
   // Test empty directory.
   create_directory(p, fs::current_path(), ec);
   VERIFY( !ec );
   iter = fs::directory_iterator(p, ec);
   VERIFY( !ec );
-  VERIFY( iter == fs::directory_iterator() );
+  VERIFY( iter == end(iter) );
 
   // Test non-empty directory.
   create_directory_symlink(p, p / "l", ec);
@@ -51,20 +51,20 @@ test01()
   VERIFY( iter != fs::directory_iterator() );
   VERIFY( iter->path() == p/"l" );
   ++iter;
-  VERIFY( iter == fs::directory_iterator() );
+  VERIFY( iter == end(iter) );
 
   // Test inaccessible directory.
   permissions(p, fs::perms::none, ec);
   VERIFY( !ec );
   iter = fs::directory_iterator(p, ec);
   VERIFY( ec );
-  VERIFY( iter != fs::directory_iterator() );
+  VERIFY( iter == end(iter) );
 
   // Test inaccessible directory, skipping permission denied.
   const auto opts = fs::directory_options::skip_permission_denied;
   iter = fs::directory_iterator(p, opts, ec);
   VERIFY( !ec );
-  VERIFY( iter == fs::directory_iterator() );
+  VERIFY( iter == end(iter) );
 
   permissions(p, fs::perms::owner_all, ec);
   remove_all(p, ec);
@@ -84,12 +84,12 @@ test02()
   // Test post-increment (libstdc++/71005)
   auto iter = fs::directory_iterator(p, ec);
   VERIFY( !ec );
-  VERIFY( iter != fs::directory_iterator() );
+  VERIFY( iter != end(iter) );
   const auto entry1 = *iter;
   const auto entry2 = *iter++;
   VERIFY( entry1 == entry2 );
   VERIFY( entry1.path() == p/"l" );
-  VERIFY( iter == fs::directory_iterator() );
+  VERIFY( iter == end(iter) );
 
   remove_all(p, ec);
 }

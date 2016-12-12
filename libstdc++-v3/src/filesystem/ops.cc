@@ -28,7 +28,9 @@
 
 #include <experimental/filesystem>
 #include <functional>
+#include <ostream>
 #include <stack>
+#include <ext/stdio_filebuf.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -48,9 +50,6 @@
 #endif
 #ifdef _GLIBCXX_USE_SENDFILE
 # include <sys/sendfile.h>
-#else
-# include <ext/stdio_filebuf.h>
-# include <ostream>
 #endif
 #if _GLIBCXX_HAVE_UTIME_H
 # include <utime.h>
@@ -143,7 +142,11 @@ fs::canonical(const path& p, const path& base, error_code& ec)
 #endif
 
   if (!exists(pa, ec))
-    return result;
+    {
+      if (!ec)
+	ec = make_error_code(std::errc::no_such_file_or_directory);
+      return result;
+    }
   // else: we know there are (currently) no unresolvable symlink loops
 
   result = pa.root_path();
@@ -289,27 +292,24 @@ namespace
   }
 
   inline fs::file_time_type
-  file_time(const stat_type& st) noexcept
+  file_time(const stat_type& st, std::error_code& ec) noexcept
   {
     using namespace std::chrono;
-    return fs::file_time_type{
 #ifdef _GLIBCXX_USE_ST_MTIM
-	seconds{st.st_mtim.tv_sec} + nanoseconds{st.st_mtim.tv_nsec}
+    time_t s = st.st_mtim.tv_sec;
+    nanoseconds ns{st.st_mtim.tv_nsec};
 #else
-	seconds{st.st_mtime}
+    time_t s = st.st_mtime;
+    nanoseconds ns{};
 #endif
-    };
-  }
 
-  // Returns true if the file descriptor was successfully closed,
-  // otherwise returns false and the reason will be in errno.
-  inline bool
-  close_fd(int fd)
-  {
-    while (::close(fd))
-      if (errno != EINTR)
-	return false;
-    return true;
+    if (s >= (nanoseconds::max().count() / 1e9))
+      {
+	ec = std::make_error_code(std::errc::value_too_large); // EOVERFLOW
+	return fs::file_time_type::min();
+      }
+    ec.clear();
+    return fs::file_time_type{seconds{s} + ns};
   }
 
   bool
@@ -354,13 +354,25 @@ namespace
 	  from_st = &st2;
       }
     f = make_file_status(*from_st);
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 2712. copy_file() has a number of unspecified error conditions
+    if (!is_regular_file(f))
+      {
+	ec = std::make_error_code(std::errc::not_supported);
+	return false;
+      }
 
     using opts = fs::copy_options;
 
     if (exists(t))
       {
-	if (!is_other(t) && !is_other(f)
-	    && to_st->st_dev == from_st->st_dev
+	if (!is_regular_file(t))
+	  {
+	    ec = std::make_error_code(std::errc::not_supported);
+	    return false;
+	  }
+
+	if (to_st->st_dev == from_st->st_dev
 	    && to_st->st_ino == from_st->st_ino)
 	  {
 	    ec = std::make_error_code(std::errc::file_exists);
@@ -374,22 +386,27 @@ namespace
 	  }
 	else if (is_set(option, opts::update_existing))
 	  {
-	    if (file_time(*from_st) <= file_time(*to_st))
-	      {
-		ec.clear();
-		return false;
-	      }
+	    const auto from_mtime = file_time(*from_st, ec);
+	    if (ec)
+	      return false;
+	    if ((from_mtime <= file_time(*to_st, ec)) || ec)
+	      return false;
 	  }
 	else if (!is_set(option, opts::overwrite_existing))
 	  {
 	    ec = std::make_error_code(std::errc::file_exists);
 	    return false;
 	  }
+	else if (!is_regular_file(t))
+	  {
+	    ec = std::make_error_code(std::errc::not_supported);
+	    return false;
+	  }
       }
 
     struct CloseFD {
-      ~CloseFD() { if (fd != -1) close_fd(fd); }
-      bool close() { return close_fd(std::exchange(fd, -1)); }
+      ~CloseFD() { if (fd != -1) ::close(fd); }
+      bool close() { return ::close(std::exchange(fd, -1)) == 0; }
       int fd;
     };
 
@@ -416,7 +433,7 @@ namespace
 
 #ifdef _GLIBCXX_USE_FCHMOD
     if (::fchmod(out.fd, from_st->st_mode))
-#elif _GLIBCXX_USE_FCHMODAT
+#elif defined _GLIBCXX_USE_FCHMODAT
     if (::fchmodat(AT_FDCWD, to.c_str(), from_st->st_mode, 0))
 #else
     if (::chmod(to.c_str(), from_st->st_mode))
@@ -427,7 +444,33 @@ namespace
       }
 
 #ifdef _GLIBCXX_USE_SENDFILE
-    const auto n = ::sendfile(out.fd, in.fd, nullptr, from_st->st_size);
+    off_t offset = 0;
+    const auto n = ::sendfile(out.fd, in.fd, &offset, from_st->st_size);
+    if (n < 0 && (errno == ENOSYS || errno == EINVAL))
+      {
+#endif
+	__gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
+	__gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
+	if (sbin.is_open())
+	  in.fd = -1;
+	if (sbout.is_open())
+	  out.fd = -1;
+	if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
+	  {
+	    ec = std::make_error_code(std::errc::io_error);
+	    return false;
+	  }
+	if (!sbout.close() || !sbin.close())
+	  {
+	    ec.assign(errno, std::generic_category());
+	    return false;
+	  }
+
+	ec.clear();
+	return true;
+
+#ifdef _GLIBCXX_USE_SENDFILE
+      }
     if (n != from_st->st_size)
       {
 	ec.assign(errno, std::generic_category());
@@ -438,27 +481,10 @@ namespace
 	ec.assign(errno, std::generic_category());
 	return false;
       }
-#else
-    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-    if (sbin.is_open())
-      in.fd = -1;
-    if (sbout.is_open())
-      out.fd = -1;
-    if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
-      {
-	ec = std::make_error_code(std::errc::io_error);
-	return false;
-      }
-    if (!sbout.close() || !sbin.close())
-      {
-	ec.assign(errno, std::generic_category());
-	return false;
-      }
-#endif
 
     ec.clear();
     return true;
+#endif
   }
 }
 #endif
@@ -474,7 +500,8 @@ fs::copy(const path& from, const path& to, copy_options options,
 
   file_status f, t;
   stat_type from_st, to_st;
-  // N4099 doesn't check copy_symlinks here, but I think that's a defect.
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2681. filesystem::copy() cannot copy symlinks
   if (use_lstat || copy_symlinks
       ? ::lstat(from.c_str(), &from_st)
       : ::stat(from.c_str(), &from_st))
@@ -541,6 +568,10 @@ fs::copy(const path& from, const path& to, copy_options options,
 	  do_copy_file(from, to, options, &from_st, ptr,  ec);
 	}
     }
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2682. filesystem::copy() won't create a symlink to a directory
+  else if (is_directory(f) && create_symlinks)
+    ec = std::make_error_code(errc::is_a_directory);
   else if (is_directory(f) && (is_set(options, copy_options::recursive)
 			       || options == copy_options::none))
     {
@@ -553,7 +584,10 @@ fs::copy(const path& from, const path& to, copy_options options,
       for (const directory_entry& x : directory_iterator(from))
 	copy(x.path(), to/x.path().filename(), options, ec);
     }
-  // "Otherwise no effects." (should ec.clear() be called?)
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2683. filesystem::copy() says "no effects"
+  else
+    ec.clear();
 }
 
 bool
@@ -890,7 +924,7 @@ fs::equivalent(const path& p1, const path& p2)
 {
   error_code ec;
   auto result = equivalent(p1, p2, ec);
-  if (ec.value())
+  if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot check file equivalence",
 	  p1, p2, ec));
   return result;
@@ -900,25 +934,42 @@ bool
 fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
+  int err = 0;
+  file_status s1, s2;
   stat_type st1, st2;
-  if (::stat(p1.c_str(), &st1) == 0 && ::stat(p2.c_str(), &st2) == 0)
+  if (::stat(p1.c_str(), &st1) == 0)
+    s1 = make_file_status(st1);
+  else if (is_not_found_errno(errno))
+    s1.type(file_type::not_found);
+  else
+    err = errno;
+
+  if (::stat(p2.c_str(), &st2) == 0)
+    s2 = make_file_status(st2);
+  else if (is_not_found_errno(errno))
+    s2.type(file_type::not_found);
+  else
+    err = errno;
+
+  if (exists(s1) && exists(s2))
     {
-      file_status s1 = make_file_status(st1);
-      file_status s2 = make_file_status(st2);
       if (is_other(s1) && is_other(s2))
 	{
 	  ec = std::make_error_code(std::errc::not_supported);
 	  return false;
 	}
       ec.clear();
+      if (is_other(s1) || is_other(s2))
+	return false;
       return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
     }
-  else if (is_not_found_errno(errno))
-    {
-      ec = std::make_error_code(std::errc::no_such_file_or_directory);
-      return false;
-    }
-  ec.assign(errno, std::generic_category());
+  else if (!exists(s1) && !exists(s2))
+    ec = std::make_error_code(std::errc::no_such_file_or_directory);
+  else if (err)
+    ec.assign(err, std::generic_category());
+  else
+    ec.clear();
+  return false;
 #else
   ec = std::make_error_code(std::errc::not_supported);
 #endif
@@ -1000,20 +1051,24 @@ fs::hard_link_count(const path& p, error_code& ec) noexcept
 bool
 fs::is_empty(const path& p)
 {
-  return fs::is_directory(status(p))
-    ? fs::directory_iterator(p) == fs::directory_iterator()
-    : fs::file_size(p) == 0;
+  error_code ec;
+  bool e = is_empty(p, ec);
+  if (ec)
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot check if file is empty",
+					     p, ec));
+  return e;
 }
 
 bool
 fs::is_empty(const path& p, error_code& ec) noexcept
 {
   auto s = status(p, ec);
-  if (ec.value())
+  if (ec)
     return false;
-  return fs::is_directory(s)
+  bool empty = fs::is_directory(s)
     ? fs::directory_iterator(p, ec) == fs::directory_iterator()
     : fs::file_size(p, ec) == 0;
+  return ec ? false : empty;
 }
 
 fs::file_time_type
@@ -1029,7 +1084,7 @@ fs::last_write_time(const path& p)
 fs::file_time_type
 fs::last_write_time(const path& p, error_code& ec) noexcept
 {
-  return do_stat(p, ec, [](const auto& st) { return file_time(st); },
+  return do_stat(p, ec, [&ec](const auto& st) { return file_time(st, ec); },
 		 file_time_type::min());
 }
 
@@ -1050,6 +1105,11 @@ fs::last_write_time(const path& p __attribute__((__unused__)),
   auto s = chrono::duration_cast<chrono::seconds>(d);
 #if _GLIBCXX_USE_UTIMENSAT
   auto ns = chrono::duration_cast<chrono::nanoseconds>(d - s);
+  if (ns < ns.zero()) // tv_nsec must be non-negative and less than 10e9.
+    {
+      --s;
+      ns += chrono::seconds(1);
+    }
   struct ::timespec ts[2];
   ts[0].tv_sec = 0;
   ts[0].tv_nsec = UTIME_OMIT;
@@ -1082,10 +1142,12 @@ fs::permissions(const path& p, perms prms)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot set permissions", p, ec));
 }
 
-void fs::permissions(const path& p, perms prms, error_code& ec) noexcept
+void
+fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 {
   const bool add = is_set(prms, perms::add_perms);
   const bool remove = is_set(prms, perms::remove_perms);
+  const bool nofollow = is_set(prms, perms::symlink_nofollow);
   if (add && remove)
     {
       ec = std::make_error_code(std::errc::invalid_argument);
@@ -1094,24 +1156,33 @@ void fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 
   prms &= perms::mask;
 
-  if (add || remove)
+  file_status st;
+  if (add || remove || nofollow)
     {
-      auto st = status(p, ec);
+      st = nofollow ? symlink_status(p, ec) : status(p, ec);
       if (ec)
 	return;
       auto curr = st.permissions();
       if (add)
 	prms |= curr;
-      else
+      else if (remove)
 	prms = curr & ~prms;
     }
 
+  int err = 0;
 #if _GLIBCXX_USE_FCHMODAT
-  if (::fchmodat(AT_FDCWD, p.c_str(), static_cast<mode_t>(prms), 0))
+  const int flag = (nofollow && is_symlink(st)) ? AT_SYMLINK_NOFOLLOW : 0;
+  if (::fchmodat(AT_FDCWD, p.c_str(), static_cast<mode_t>(prms), flag))
+    err = errno;
 #else
-  if (::chmod(p.c_str(), static_cast<mode_t>(prms)))
+  if (nofollow && is_symlink(st))
+    ec = std::make_error_code(std::errc::operation_not_supported);
+  else if (::chmod(p.c_str(), static_cast<mode_t>(prms)))
+    err = errno;
 #endif
-    ec.assign(errno, std::generic_category());
+
+  if (err)
+    ec.assign(err, std::generic_category());
   else
     ec.clear();
 }
@@ -1142,6 +1213,7 @@ fs::path fs::read_symlink(const path& p, error_code& ec)
       ec.assign(errno, std::generic_category());
       return {};
     }
+  ec.clear();
   return path{buf.data(), buf.data()+len};
 #else
   ec = std::make_error_code(std::errc::not_supported);
@@ -1282,7 +1354,7 @@ fs::space(const path& p, error_code& ec) noexcept
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
 fs::file_status
-fs::status(const fs::path& p, std::error_code& ec) noexcept
+fs::status(const fs::path& p, error_code& ec) noexcept
 {
   file_status status;
   stat_type st;
@@ -1292,6 +1364,10 @@ fs::status(const fs::path& p, std::error_code& ec) noexcept
       ec.assign(err, std::generic_category());
       if (is_not_found_errno(err))
 	status.type(file_type::not_found);
+#ifdef EOVERFLOW
+      else if (err == EOVERFLOW)
+	status.type(file_type::unknown);
+#endif
     }
   else
     {
@@ -1390,12 +1466,17 @@ fs::path fs::temp_directory_path(error_code& ec)
   for (auto e = env; tmpdir == nullptr && *e != nullptr; ++e)
     tmpdir = ::getenv(*e);
   path p = tmpdir ? tmpdir : "/tmp";
-  if (exists(p) && is_directory(p))
+  auto st = status(p, ec);
+  if (!ec)
     {
-      ec.clear();
-      return p;
+      if (is_directory(st))
+	{
+	  ec.clear();
+	  return p;
+	}
+      else
+	ec = std::make_error_code(std::errc::not_a_directory);
     }
-  ec = std::make_error_code(std::errc::not_a_directory);
   return {};
 #endif
 }

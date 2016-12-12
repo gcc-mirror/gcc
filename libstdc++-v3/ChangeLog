@@ -1,3 +1,93 @@
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	PR libstdc++/70975
+	PR libstdc++/71337
+	PR libstdc++/78111
+	* include/experimental/bits/fs_dir.h (recursive_directory_iterator):
+	Overload pop (LWG 2706).
+	* include/experimental/bits/fs_fwd.h (perms::resolve_symlinks):
+	Replace with symlink_nofollow (LWG 2720).
+	* include/experimental/bits/fs_ops.h
+	(exists(const path&, error_code&)): Clear error if status is known
+	(LWG 2725).
+	* include/experimental/bits/fs_path.h (__is_path_src)
+	(_S_range_begin, _S_range_end): Overload to treat string_view as a
+	Source object.
+	(path::operator+=, path::compare): Overload for basic_string_view.
+	(path::path(string_type&&))
+	(path::operator=(string&&), path::assign(string_type&&)): Define
+	construction and assignment from string_type rvalues (LWG 2707).
+	(path::_S_convert<_Iter>(_Iter, _Iter)): Remove cv-qualifiers from
+	iterator's value_type.
+	(path::_S_convert<_Iter>(_Iter __first, __null_terminated)): Likewise.
+	Do not use operation not supported by input iterators.
+	(path::__is_path_iter_src): Add partial specialization for const
+	encoded character types.
+	* src/filesystem/dir.cc (open_dir): Return same value for errors
+	whether ignored or not.
+	(_Dir::advance(error_code*, directory_options)): Return false on
+	error.
+	(directory_iterator(const path&, directory_options, error_code*)):
+	Create end iterator on error (LWG 2723).
+	(recursive_directory_iterator(const path&, directory_options,
+	error_code*)): Likewise.
+	(recursive_directory_iterator::increment): Reset state on error.
+	(recursive_directory_iterator::pop): Define new overload.
+	* src/filesystem/ops.cc (canonical): Set error for non-existent path.
+	(file_time): Take error_code parameter and check for overflow.
+	(close_fd): Remove.
+	(do_copy_file): Report an error if source or destination is not a
+	regular file (LWG 2712). Pass error_code in file_time calls.  Just
+	use close(3) instead of close_fd, to prevent retrying on error.
+	Check if _GLIBCXX_USE_FCHMODAT is defined.
+	[_GLIBCXX_USE_SENDFILE]: Fallback to read/write operations in case
+	sendfile fails with ENOSYS or EINVAL. Pass non-null pointer to
+	sendfile for offset argument.
+	(copy): Update comment to refer to LWG 2681. Implement 2682 and 2683
+	resolutions.
+	(equivalent): Fix error handling and result when only one file exists.
+	(is_empty): Fix error handling.
+	(last_write_time(const path&, error_code&)): Pass error_code in
+	file_time calls.
+	(last_write_time(const path&, file_time_type, error_code&)): Handle
+	negative times correctly.
+	(permissions(const path&, perms, error_code&)): Handle
+	symlink_nofollow.
+	(read_symlink): Add missing ec.clear().
+	(status(const path&, error_code&)): Handle EOVERFLOW.
+	(temp_directory_path): Pass error_code argument to other filesystem
+	operations.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Update expected behaviour on error.
+	* testsuite/experimental/filesystem/iterators/pop.cc: New.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Update expected behaviour on error.
+	* testsuite/experimental/filesystem/operations/copy.cc: Update
+	expected behaviour for copying directories with create_symlinks.
+	Verify that error_code arguments are cleared if there's no error.
+	Remove files created by tests. Test copying directories.
+	* testsuite/experimental/filesystem/operations/copy_file.cc: Remove
+	files created by tests.
+	* testsuite/experimental/filesystem/operations/create_symlink.cc: New.
+	* testsuite/experimental/filesystem/operations/equivalent.cc: New.
+	* testsuite/experimental/filesystem/operations/exists.cc: Test
+	overload taking an error_code.
+	* testsuite/experimental/filesystem/operations/is_empty.cc: New.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	New.
+	* testsuite/experimental/filesystem/operations/permissions.cc: Test
+	overload taking error_code. Test symlink_nofollow on non-symlinks.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc: New.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: New.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Add testcase for inaccessible directory.
+	* testsuite/experimental/filesystem/path/construct/range.cc: Test
+	construction from input iterators with const value types.
+	* testsuite/experimental/filesystem/path/construct/string_view.cc:
+	New.
+	* testsuite/util/testsuite_fs.h (scoped_file): Define RAII helper.
+
 2016-12-07  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline

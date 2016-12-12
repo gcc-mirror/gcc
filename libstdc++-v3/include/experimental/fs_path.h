@@ -44,6 +44,9 @@
 #include <bits/stl_algobase.h>
 #include <bits/quoted_string.h>
 #include <bits/locale_conv.h>
+#if __cplusplus >= 201402L
+# include <experimental/string_view>
+#endif
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 # define _GLIBCXX_FILESYSTEM_IS_WINDOWS 1
@@ -60,6 +63,12 @@ inline namespace v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
+
+#if __cplusplus >= 201402L
+  template<typename _CharT, typename _Traits = std::char_traits<_CharT>>
+    using __basic_string_view
+      = std::experimental::basic_string_view<_CharT, _Traits>;
+#endif
 
   /**
    * @ingroup filesystem
@@ -86,6 +95,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template<typename _CharT, typename _Traits, typename _Alloc>
       static __is_encoded_char<_CharT>
       __is_path_src(const basic_string<_CharT, _Traits, _Alloc>&, int);
+
+#if __cplusplus >= 201402L
+    template<typename _CharT, typename _Traits>
+      static __is_encoded_char<_CharT>
+      __is_path_src(const __basic_string_view<_CharT, _Traits>&, int);
+#endif
 
     template<typename _Unknown>
       static std::false_type
@@ -130,6 +145,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_range_end(const basic_string<_CharT, _Traits, _Alloc>& __str)
       { return __str.data() + __str.size(); }
 
+#if __cplusplus >= 201402L
+    template<typename _CharT, typename _Traits>
+      static const _CharT*
+      _S_range_begin(const __basic_string_view<_CharT, _Traits>& __str)
+      { return __str.data(); }
+
+    template<typename _CharT, typename _Traits>
+      static const _CharT*
+      _S_range_end(const __basic_string_view<_CharT, _Traits>& __str)
+      { return __str.data() + __str.size(); }
+#endif
+
     template<typename _Tp,
 	     typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
 	     typename _Val = typename std::iterator_traits<_Iter>::value_type>
@@ -158,6 +185,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_split_cmpts();
       __p.clear();
     }
+
+    path(string_type&& __source)
+    : _M_pathname(std::move(__source))
+    { _M_split_cmpts(); }
 
     template<typename _Source,
 	     typename _Require = _Path<_Source>>
@@ -193,6 +224,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     path& operator=(const path& __p) = default;
     path& operator=(path&& __p) noexcept;
+    path& operator=(string_type&& __source);
+    path& assign(string_type&& __source);
 
     template<typename _Source>
       _Path<_Source>&
@@ -237,6 +270,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path& operator+=(const string_type& __x);
     path& operator+=(const value_type* __x);
     path& operator+=(value_type __x);
+#if __cplusplus >= 201402L
+    path& operator+=(__basic_string_view<value_type> __x);
+#endif
 
     template<typename _Source>
       _Path<_Source>&
@@ -305,6 +341,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     int compare(const path& __p) const noexcept;
     int compare(const string_type& __s) const;
     int compare(const value_type* __s) const;
+#if __cplusplus >= 201402L
+    int compare(const __basic_string_view<value_type> __s) const;
+#endif
 
     // decomposition
 
@@ -379,7 +418,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert(_Iter __first, _Iter __last)
       {
 	using __value_type = typename std::iterator_traits<_Iter>::value_type;
-	return _Cvt<__value_type>::_S_convert(__first, __last);
+	return _Cvt<typename remove_cv<__value_type>::type>::
+	  _S_convert(__first, __last);
       }
 
     template<typename _InputIterator>
@@ -387,10 +427,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert(_InputIterator __src, __null_terminated)
       {
 	using _Tp = typename std::iterator_traits<_InputIterator>::value_type;
-	std::basic_string<_Tp> __tmp;
-	while (*__src != _Tp{})
-	  __tmp.push_back(*__src++);
-	return _S_convert(__tmp.data(), __tmp.data() + __tmp.size());
+	std::basic_string<typename remove_cv<_Tp>::type> __tmp;
+	for (; *__src != _Tp{}; ++__src)
+	  __tmp.push_back(*__src);
+	return _S_convert(__tmp.c_str(), __tmp.c_str() + __tmp.size());
       }
 
     static string_type
@@ -565,6 +605,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     struct path::__is_encoded_char<char32_t> : std::true_type
     { using value_type = char32_t; };
 
+  template<typename _Tp>
+    struct path::__is_encoded_char<const _Tp> : __is_encoded_char<_Tp> { };
+
   struct path::_Cmpt : path
   {
     _Cmpt(string_type __s, _Type __t, size_t __pos)
@@ -722,6 +765,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   }
 
   inline path&
+  path::operator=(string_type&& __source)
+  { return *this = path(std::move(__source)); }
+
+  inline path&
+  path::assign(string_type&& __source)
+  { return *this = path(std::move(__source)); }
+
+  inline path&
   path::operator+=(const path& __p)
   {
     return operator+=(__p.native());
@@ -750,6 +801,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     _M_split_cmpts();
     return *this;
   }
+
+#if __cplusplus >= 201402L
+  inline path&
+  path::operator+=(__basic_string_view<value_type> __x)
+  {
+    _M_pathname.append(__x.data(), __x.size());
+    _M_split_cmpts();
+    return *this;
+  }
+#endif
 
   template<typename _CharT>
     inline path::_Path<_CharT*, _CharT*>&
@@ -891,6 +952,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline int
   path::compare(const value_type* __s) const { return compare(path(__s)); }
+
+#if __cplusplus >= 201402L
+  inline int
+  path::compare(__basic_string_view<value_type> __s) const
+  { return compare(path(__s)); }
+#endif
 
   inline path
   path::filename() const { return empty() ? path() : *--end(); }
