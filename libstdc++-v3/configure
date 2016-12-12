@@ -80096,6 +80096,7 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+       #include <limits.h>
        #include <stdlib.h>
        #include <unistd.h>
 
@@ -80128,6 +80129,7 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+       #include <limits.h>
        #include <stdlib.h>
        #include <unistd.h>
 
