@@ -80,7 +80,8 @@ static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
 static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
-				     HOST_WIDE_INT, machine_mode,
+				     HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+				     unsigned HOST_WIDE_INT, machine_mode,
 				     tree, int, alias_set_type, bool);
 static void store_constructor (tree, rtx, int, HOST_WIDE_INT, bool);
 static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT,
@@ -6077,7 +6078,10 @@ all_zeros_p (const_tree exp)
 
 static void
 store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
-			 HOST_WIDE_INT bitpos, machine_mode mode,
+			 HOST_WIDE_INT bitpos,
+			 unsigned HOST_WIDE_INT bitregion_start,
+			 unsigned HOST_WIDE_INT bitregion_end,
+			 machine_mode mode,
 			 tree exp, int cleared,
 			 alias_set_type alias_set, bool reverse)
 {
@@ -6112,8 +6116,8 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
 			 reverse);
     }
   else
-    store_field (target, bitsize, bitpos, 0, 0, mode, exp, alias_set, false,
-		 reverse);
+    store_field (target, bitsize, bitpos, bitregion_start, bitregion_end, mode,
+		 exp, alias_set, false, reverse);
 }
 
 
@@ -6148,6 +6152,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 {
   tree type = TREE_TYPE (exp);
   HOST_WIDE_INT exp_size = int_size_in_bytes (type);
+  HOST_WIDE_INT bitregion_end = size > 0 ? size * BITS_PER_UNIT - 1 : 0;
 
   switch (TREE_CODE (type))
     {
@@ -6225,7 +6230,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	    if (tree_fits_uhwi_p (DECL_SIZE (field)))
 	      bitsize = tree_to_uhwi (DECL_SIZE (field));
 	    else
-	      bitsize = -1;
+	      gcc_unreachable ();
 
 	    mode = DECL_MODE (field);
 	    if (DECL_BIT_FIELD (field))
@@ -6236,31 +6241,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 		&& tree_fits_shwi_p (bit_position (field)))
 	      {
 		bitpos = int_bit_position (field);
-		offset = 0;
+		offset = NULL_TREE;
 	      }
 	    else
-	      bitpos = tree_to_shwi (DECL_FIELD_BIT_OFFSET (field));
-
-	    if (offset)
-	      {
-	        machine_mode address_mode;
-		rtx offset_rtx;
-
-		offset
-		  = SUBSTITUTE_PLACEHOLDER_IN_EXPR (offset,
-						    make_tree (TREE_TYPE (exp),
-							       target));
-
-		offset_rtx = expand_normal (offset);
-		gcc_assert (MEM_P (to_rtx));
-
-		address_mode = get_address_mode (to_rtx);
-		if (GET_MODE (offset_rtx) != address_mode)
-		  offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
-
-		to_rtx = offset_address (to_rtx, offset_rtx,
-					 highest_pow2_factor (offset));
-	      }
+	      gcc_unreachable ();
 
 	    /* If this initializes a field that is smaller than a
 	       word, at the start of a word, try to widen it to a full
@@ -6308,7 +6292,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 		MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	      }
 
-	    store_constructor_field (to_rtx, bitsize, bitpos, mode,
+	    store_constructor_field (to_rtx, bitsize, bitpos,
+				     0, bitregion_end, mode,
 				     value, cleared,
 				     get_alias_set (TREE_TYPE (field)),
 				     reverse);
@@ -6468,7 +6453,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 			  }
 
 			store_constructor_field
-			  (target, bitsize, bitpos, mode, value, cleared,
+			  (target, bitsize, bitpos, 0, bitregion_end,
+			   mode, value, cleared,
 			   get_alias_set (elttype), reverse);
 		      }
 		  }
@@ -6571,7 +6557,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 		    target = copy_rtx (target);
 		    MEM_KEEP_ALIAS_SET_P (target) = 1;
 		  }
-		store_constructor_field (target, bitsize, bitpos, mode, value,
+		store_constructor_field (target, bitsize, bitpos, 0,
+					 bitregion_end, mode, value,
 					 cleared, get_alias_set (elttype),
 					 reverse);
 	      }
@@ -6705,7 +6692,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 		  ? TYPE_MODE (TREE_TYPE (value))
 		  : eltmode;
 		bitpos = eltpos * elt_size;
-		store_constructor_field (target, bitsize, bitpos, value_mode,
+		store_constructor_field (target, bitsize, bitpos, 0,
+					 bitregion_end, value_mode,
 					 value, cleared, alias, reverse);
 	      }
 	  }
