@@ -1,3 +1,8 @@
+2016-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/69481
+	* g++.dg/cpp0x/pr69481.C: New.
+
 2016-12-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78794
