@@ -1712,8 +1712,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	return 0;
 
       /* Special case: alternate returns.  If both f1->sym and f2->sym are
-	 NULL, then the leading formal arguments are alternate returns.  
-	 The previous conditional should catch argument lists with 
+	 NULL, then the leading formal arguments are alternate returns.
+	 The previous conditional should catch argument lists with
 	 different number of argument.  */
       if (f1 && f1->sym == NULL && f2 && f2->sym == NULL)
 	return 1;
@@ -4826,13 +4826,10 @@ gfc_check_dtio_interfaces (gfc_symbol *derived)
 }
 
 
-gfc_symbol *
-gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
+gfc_symtree*
+gfc_find_typebound_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
 {
   gfc_symtree *tb_io_st = NULL;
-  gfc_symbol *dtio_sub = NULL;
-  gfc_symbol *extended;
-  gfc_typebound_proc *tb_io_proc, *specific_proc;
   bool t = false;
 
   if (!derived || derived->attr.flavor != FL_DERIVED)
@@ -4869,6 +4866,19 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
 					    true,
 					    &derived->declared_at);
     }
+  return tb_io_st;
+}
+
+
+gfc_symbol *
+gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
+{
+  gfc_symtree *tb_io_st = NULL;
+  gfc_symbol *dtio_sub = NULL;
+  gfc_symbol *extended;
+  gfc_typebound_proc *tb_io_proc, *specific_proc;
+
+  tb_io_st = gfc_find_typebound_dtio_proc (derived, write, formatted);
 
   if (tb_io_st != NULL)
     {
@@ -4893,17 +4903,17 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
 	dtio_sub = st->n.tb->u.specific->n.sym;
       else
 	dtio_sub = specific_proc->u.specific->n.sym;
-    }
 
-  if (tb_io_st != NULL)
-    goto finish;
+      goto finish;
+    }
 
   /* If there is not a typebound binding, look for a generic
      DTIO interface.  */
   for (extended = derived; extended;
        extended = gfc_get_derived_super_type (extended))
     {
-      if (extended == NULL || extended->ns == NULL)
+      if (extended == NULL || extended->ns == NULL
+	  || extended->attr.flavor == FL_UNKNOWN)
 	return NULL;
 
       if (formatted == true)
