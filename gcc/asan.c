@@ -245,15 +245,6 @@ static unsigned HOST_WIDE_INT asan_shadow_offset_value;
 static bool asan_shadow_offset_computed;
 static vec<char *> sanitized_sections;
 
-/* Return true if STMT is ASAN_MARK poisoning internal function call.  */
-static inline bool
-asan_mark_poison_p (gimple *stmt)
-{
-  return (gimple_call_internal_p (stmt, IFN_ASAN_MARK)
-	  && tree_to_uhwi (gimple_call_arg (stmt, 0)) == ASAN_MARK_CLOBBER);
-
-}
-
 /* Set of variable declarations that are going to be guarded by
    use-after-scope sanitizer.  */
 
@@ -301,6 +292,13 @@ set_sanitized_sections (const char *sections)
       sanitized_sections.safe_push (xstrndup (s, len));
       s = *end ? end + 1 : end;
     }
+}
+
+bool
+asan_mark_p (gimple *stmt, enum asan_mark_flags flag)
+{
+  return (gimple_call_internal_p (stmt, IFN_ASAN_MARK)
+	  && tree_to_uhwi (gimple_call_arg (stmt, 0)) == flag);
 }
 
 bool
@@ -2222,7 +2220,8 @@ transform_statements (void)
 		 miss some instrumentation opportunities.  Do the same
 		 for a ASAN_MARK poisoning internal function.  */
 	      if (is_gimple_call (s)
-		  && (!nonfreeing_call_p (s) || asan_mark_poison_p (s)))
+		  && (!nonfreeing_call_p (s)
+		      || asan_mark_p (s, ASAN_MARK_POISON)))
 		empty_mem_ref_hash_table ();
 
 	      gsi_next (&i);
@@ -2777,9 +2776,8 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
 {
   gimple *g = gsi_stmt (*iter);
   location_t loc = gimple_location (g);
-  HOST_WIDE_INT flags = tree_to_shwi (gimple_call_arg (g, 0));
-  gcc_assert (flags < ASAN_MARK_LAST);
-  bool is_clobber = (flags & ASAN_MARK_CLOBBER) != 0;
+  HOST_WIDE_INT flag = tree_to_shwi (gimple_call_arg (g, 0));
+  bool is_poison = ((asan_mark_flags)flag) == ASAN_MARK_POISON;
 
   tree base = gimple_call_arg (g, 1);
   gcc_checking_assert (TREE_CODE (base) == ADDR_EXPR);
@@ -2827,7 +2825,7 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
 	  if (s > size_in_bytes)
 	    last_chunk_size = ASAN_SHADOW_GRANULARITY - (s - size_in_bytes);
 
-	  asan_store_shadow_bytes (iter, loc, shadow, offset, is_clobber,
+	  asan_store_shadow_bytes (iter, loc, shadow, offset, is_poison,
 				   size, last_chunk_size);
 	  offset += size;
 	}
@@ -2840,7 +2838,7 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
       gsi_insert_before (iter, g, GSI_SAME_STMT);
       tree sz_arg = gimple_assign_lhs (g);
 
-      tree fun = builtin_decl_implicit (is_clobber ? BUILT_IN_ASAN_CLOBBER_N
+      tree fun = builtin_decl_implicit (is_poison ? BUILT_IN_ASAN_CLOBBER_N
 					: BUILT_IN_ASAN_UNCLOBBER_N);
       g = gimple_build_call (fun, 2, base_addr, sz_arg);
       gimple_set_location (g, loc);

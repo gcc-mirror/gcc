@@ -1109,7 +1109,7 @@ build_asan_poison_call_expr (tree decl)
   return build_call_expr_internal_loc (UNKNOWN_LOCATION, IFN_ASAN_MARK,
 				       void_type_node, 3,
 				       build_int_cst (integer_type_node,
-						      ASAN_MARK_CLOBBER),
+						      ASAN_MARK_POISON),
 				       base, unit_size);
 }
 
@@ -1138,7 +1138,7 @@ asan_poison_variable (tree decl, bool poison, gimple_stmt_iterator *it,
   if (DECL_ALIGN_UNIT (decl) <= ASAN_SHADOW_GRANULARITY)
     SET_DECL_ALIGN (decl, BITS_PER_UNIT * ASAN_SHADOW_GRANULARITY);
 
-  HOST_WIDE_INT flags = poison ? ASAN_MARK_CLOBBER : ASAN_MARK_UNCLOBBER;
+  HOST_WIDE_INT flags = poison ? ASAN_MARK_POISON : ASAN_MARK_UNPOISON;
 
   gimple *g
     = gimple_build_call_internal (IFN_ASAN_MARK, 3,

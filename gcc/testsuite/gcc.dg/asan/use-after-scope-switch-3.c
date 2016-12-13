@@ -32,5 +32,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "ASAN_MARK \\(2, &a, \[0-9\]\\);" 4 "gimple" } }  */
-/* { dg-final { scan-tree-dump-times "ASAN_MARK \\(1, &a, \[0-9\]\\);" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "ASAN_MARK \\(UNPOISON, &a, \[0-9\]\\);" 4 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "ASAN_MARK \\(POISON, &a, \[0-9\]\\);" 1 "gimple" } }  */

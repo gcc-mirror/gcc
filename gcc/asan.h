@@ -75,12 +75,17 @@ enum asan_check_flags
 };
 
 /* Flags for Asan check builtins.  */
+#define IFN_ASAN_MARK_FLAGS DEF(POISON), DEF(UNPOISON)
+
 enum asan_mark_flags
 {
-  ASAN_MARK_CLOBBER = 1 << 0,
-  ASAN_MARK_UNCLOBBER = 1 << 1,
-  ASAN_MARK_LAST = 1 << 2
+#define DEF(X) ASAN_MARK_##X
+  IFN_ASAN_MARK_FLAGS
+#undef DEF
 };
+
+/* Return true if STMT is ASAN_MARK with FLAG as first argument.  */
+extern bool asan_mark_p (gimple *stmt, enum asan_mark_flags flag);
 
 /* Return the size of padding needed to insert after a protected
    decl of SIZE.  */
