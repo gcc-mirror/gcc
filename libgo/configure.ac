@@ -421,6 +421,9 @@ case "$target" in
 esac
 AC_SUBST(OSCFLAGS)
 
+dnl Check linker hardware capability support.
+GCC_CHECK_LINKER_HWCAP
+
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
 [libgo_cv_c_split_stack_supported],

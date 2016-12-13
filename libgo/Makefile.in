@@ -62,8 +62,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@GOC_IS_LLGO_TRUE@am__append_1 = libgo-llgo.la libgobegin-llgo.a
-@GOC_IS_LLGO_FALSE@am__append_2 = libgo.la libgobegin.a
+@USING_SPLIT_STACK_TRUE@am__append_1 = -XCClinker $(SPLIT_STACK)
+@GOC_IS_LLGO_TRUE@am__append_2 = libgo-llgo.la libgobegin-llgo.a
+@GOC_IS_LLGO_FALSE@am__append_3 = libgo.la libgobegin.a
 subdir = .
 DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -71,6 +72,7 @@ DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/../depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+	$(top_srcdir)/../config/hwcaps.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -319,6 +321,7 @@ GO_SPLIT_STACK = @GO_SPLIT_STACK@
 GO_SYSCALL_OS_ARCH_FILE = @GO_SYSCALL_OS_ARCH_FILE@
 GO_SYSCALL_OS_FILE = @GO_SYSCALL_OS_FILE@
 GREP = @GREP@
+HWCAP_LDFLAGS = @HWCAP_LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -460,7 +463,7 @@ AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
 	-I $(MULTIBUILDTOP)../../gcc/include
 
-@USING_SPLIT_STACK_TRUE@AM_LDFLAGS = -XCClinker $(SPLIT_STACK)
+AM_LDFLAGS = $(HWCAP_LDFLAGS) $(am__append_1)
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -1117,7 +1120,7 @@ CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgorpc_DATA) $(toolexeclibgoruntime_DATA) \
 	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotext_DATA) $(toolexeclibgotexttemplate_DATA) \
-	$(toolexeclibgounicode_DATA) $(am__append_1) $(am__append_2)
+	$(toolexeclibgounicode_DATA) $(am__append_2) $(am__append_3)
 
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.
@@ -3173,7 +3176,7 @@ s-sigtab: $(srcdir)/mksigtab.sh gen-sysinfo.go
 runtime.inc: s-runtime-inc; @true
 s-runtime-inc: runtime.lo Makefile
 	rm -f runtime.inc.tmp2
-	grep -v "#define _" runtime.inc.tmp | grep -v "#define c[01] " > runtime.inc.tmp2
+	grep -v "#define _" runtime.inc.tmp | grep -v "#define [cm][01234] " > runtime.inc.tmp2
 	for pattern in '_[GP][a-z]' _Max _Lock _Sig _Trace _MHeap _Num; do \
 	  grep "#define $$pattern" runtime.inc.tmp >> runtime.inc.tmp2; \
 	done

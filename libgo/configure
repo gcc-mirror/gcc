@@ -624,6 +624,9 @@ GO_SPLIT_STACK
 USING_SPLIT_STACK_FALSE
 USING_SPLIT_STACK_TRUE
 SPLIT_STACK
+HAVE_HWCAP_FALSE
+HAVE_HWCAP_TRUE
+HWCAP_LDFLAGS
 OSCFLAGS
 GO_SYSCALL_OS_ARCH_FILE
 GO_SYSCALL_OS_FILE
@@ -11103,7 +11106,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11106 "configure"
+#line 11109 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11209,7 +11212,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11212 "configure"
+#line 11215 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13908,6 +13911,53 @@ case "$target" in
 esac
 
 
+
+  test -z "$HWCAP_LDFLAGS" && HWCAP_LDFLAGS=''
+
+
+  ac_save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LFLAGS -mclear-hwcap"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -mclear-hwcap" >&5
+$as_echo_n "checking for -mclear-hwcap... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_hwcap_ldflags=yes
+else
+  ac_hwcap_ldflags=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  if test "$ac_hwcap_ldflags" = "yes"; then
+    HWCAP_LDFLAGS="-mclear-hwcap $HWCAP_LDFLAGS"
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_ldflags" >&5
+$as_echo "$ac_hwcap_ldflags" >&6; }
+
+  LDFLAGS="$ac_save_LDFLAGS"
+
+
+
+   if test $ac_hwcap_ldflags != no; then
+  HAVE_HWCAP_TRUE=
+  HAVE_HWCAP_FALSE='#'
+else
+  HAVE_HWCAP_TRUE='#'
+  HAVE_HWCAP_FALSE=
+fi
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -fsplit-stack is supported" >&5
 $as_echo_n "checking whether -fsplit-stack is supported... " >&6; }
 if test "${libgo_cv_c_split_stack_supported+set}" = set; then :
@@ -15686,6 +15736,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_BSD_TRUE}" && test -z "${LIBGO_IS_BSD_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_BSD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_HWCAP_TRUE}" && test -z "${HAVE_HWCAP_FALSE}"; then
+  as_fn_error "conditional \"HAVE_HWCAP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_SPLIT_STACK_TRUE}" && test -z "${USING_SPLIT_STACK_FALSE}"; then
