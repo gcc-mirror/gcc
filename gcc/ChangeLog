@@ -1,3 +1,11 @@
+2016-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78742
+	* tree.c (cst_and_fits_in_hwi): Look if the actual value fits.
+	* tree-object-size.c (compute_builtin_object_size): Use
+	tree_fits_shwi_p.
+	* tree-data-ref.c (initialize_matrix_A): Remove excess assert.
+
 2016-12-13  Martin Liska  <mliska@suse.cz>
 
 	* asan.c (asan_mark_poison_p): Remove.
