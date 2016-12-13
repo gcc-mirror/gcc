@@ -15105,6 +15105,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
      with identical values.  We'd never reach here at runtime in
      this case.  */
   if (icode == CODE_FOR_altivec_vsldoi_v4sf
+      || icode == CODE_FOR_altivec_vsldoi_v2df
       || icode == CODE_FOR_altivec_vsldoi_v4si
       || icode == CODE_FOR_altivec_vsldoi_v8hi
       || icode == CODE_FOR_altivec_vsldoi_v16qi)
