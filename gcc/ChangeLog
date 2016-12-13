@@ -1,3 +1,12 @@
+2016-12-13  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/78428
+	* expr.c (store_constructor_field): Add new arguments to the
+	function.
+	(store_constructor): Set up bitregion_end and add
+	gcc_unreachable to fields that have either non-constant size
+	or (and) offset.
+
 2016-12-13  Marek Polacek  <polacek@redhat.com>
 
 	* tree-data-ref.c (compute_overlap_steps_for_affine_univar): Change
