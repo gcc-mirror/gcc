@@ -997,8 +997,10 @@ IEEE binary128 format.  The @code{_Float64x} type is supported on all
 systems where @code{__float128} is supported.  The @code{_Float32}
 type is supported on all systems supporting IEEE binary32; the
 @code{_Float64} and @code{Float32x} types are supported on all systems
-supporting IEEE binary64.  GCC does not currently support
-@code{_Float16} or @code{_Float128x} on any systems.
+supporting IEEE binary64.  The @code{_Float16} type is supported on AArch64
+systems by default, and on ARM systems when the IEEE format for 16-bit
+floating-point types is selected with @option{-mfp16-format=ieee}.
+GCC does not currently support @code{_Float128x} on any systems.
 
 On the PowerPC, @code{__ibm128} provides access to the IBM extended
 double format, and it is intended to be used by the library functions
