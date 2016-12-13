@@ -1,3 +1,12 @@
+2016-12-13  Marek Polacek  <polacek@redhat.com>
+
+	* tree-data-ref.c (compute_overlap_steps_for_affine_univar): Change
+	parameters' type from int to HOST_WIDE_INT.
+	(compute_overlap_steps_for_affine_1_2): Change parameters' type from
+	int to HOST_WIDE_INT.
+	(build_classic_dist_vector_1): Likewise.
+	(add_multivariate_self_dist): Likewise.
+
 2016-12-13  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/78725
