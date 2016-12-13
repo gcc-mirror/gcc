@@ -1,3 +1,10 @@
+2016-12-13 Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: Add new test of the test suite
+	file.
+	* gcc.target/powerpc/builtins-3-p8.c: Add new test of the test suite
+	file.
+
 2016-12-13  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/78428

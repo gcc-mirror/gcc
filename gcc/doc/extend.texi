@@ -16517,6 +16517,8 @@ vector unsigned char vec_vslb (vector unsigned char,
                                vector unsigned char);
 
 vector float vec_sld (vector float, vector float, const int);
+vector double vec_sld (vector double, vector double, const int);
+
 vector signed int vec_sld (vector signed int,
                            vector signed int,
                            const int);
@@ -17749,6 +17751,7 @@ vector int vec_pack (vector long long, vector long long);
 vector unsigned int vec_pack (vector unsigned long long,
                               vector unsigned long long);
 vector bool int vec_pack (vector bool long long, vector bool long long);
+vector float vec_pack (vector double, vector double);
 
 vector int vec_packs (vector long long, vector long long);
 vector unsigned int vec_packs (vector unsigned long long,

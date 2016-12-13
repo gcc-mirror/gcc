@@ -22,13 +22,20 @@ test_eq_int (vector bool int x, vector bool int y)
 	return vec_cmpeq (x, y);
 }
 
+vector double
+test_shift_left_double (vector double x, vector double y)
+{
+	return vec_sld (x, y, /* shift_by */ 10);
+}
 
 /* Expected test results:
 
      test_eq_char              1 vcmpequb inst
      test_eq_short             1 vcmpequh inst
-     test_eq_int               1 vcmpequw inst */
+     test_eq_int               1 vcmpequw inst
+     test_shift_left_double    1 vsldoi inst */
 
 /* { dg-final { scan-assembler-times "vcmpequb" 1 } } */
 /* { dg-final { scan-assembler-times "vcmpequh" 1 } } */
 /* { dg-final { scan-assembler-times "vcmpequw" 1 } } */
+/* { dg-final { scan-assembler-times "vsldoi"   1 } } */

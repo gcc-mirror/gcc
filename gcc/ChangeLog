@@ -1,3 +1,14 @@
+2016-12-13  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add built-in support for
+	vector float vec_pack (vector double, vector double)
+	vector double vec_sld (vector double, vector double)
+	* config/rs6000/rs6000.c: Add icode check for vsldoi_v2df to allow
+	4-bit unsigned literal.
+	* config/rs6000/rs6000-builtin.def: Add definition for VSLDOI_2DF
+	* doc/extend.texi: Update the built-in documentation file for the
+	new powerpc vec_pack and vec_sld built-ins.
+
 2016-12-13  Martin Liska  <mliska@suse.cz>
 
 	* sanopt.c (sanopt_optimize_walker): Set contains_asan_mark.

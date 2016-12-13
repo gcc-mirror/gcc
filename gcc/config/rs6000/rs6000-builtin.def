@@ -958,6 +958,7 @@ BU_ALTIVEC_3 (VSLDOI_16QI,    "vsldoi_16qi",    CONST, 	altivec_vsldoi_v16qi)
 BU_ALTIVEC_3 (VSLDOI_8HI,     "vsldoi_8hi",     CONST, 	altivec_vsldoi_v8hi)
 BU_ALTIVEC_3 (VSLDOI_4SI,     "vsldoi_4si",     CONST, 	altivec_vsldoi_v4si)
 BU_ALTIVEC_3 (VSLDOI_4SF,     "vsldoi_4sf",     CONST, 	altivec_vsldoi_v4sf)
+BU_ALTIVEC_3 (VSLDOI_2DF,     "vsldoi_2df",     CONST, 	altivec_vsldoi_v2df)
 
 /* Altivec DST builtins.  */
 BU_ALTIVEC_D (DST,	      "dst",		MISC,  	altivec_dst)
