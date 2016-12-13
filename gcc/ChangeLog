@@ -1,3 +1,9 @@
+2016-12-13  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/78725
+	* tree-ssa-loop-split.c (split_at_bb_p): Check for overflow and
+	at correct use point.
+
 2016-12-13  Martin Liska  <mliska@suse.cz>
 
 	* asan.c (asan_expand_mark_ifn): Use renamed

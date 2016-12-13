@@ -102,10 +102,11 @@ split_at_bb_p (struct loop *loop, basic_block bb, tree *border, affine_iv *iv)
 
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
+  struct loop *useloop = loop_containing_stmt (stmt);
 
-  if (!simple_iv (loop, loop, op0, iv, false))
+  if (!simple_iv (loop, useloop, op0, iv, false))
     return NULL_TREE;
-  if (!simple_iv (loop, loop, op1, &iv2, false))
+  if (!simple_iv (loop, useloop, op1, &iv2, false))
     return NULL_TREE;
 
   /* Make it so that the first argument of the condition is
@@ -121,6 +122,8 @@ split_at_bb_p (struct loop *loop, basic_block bb, tree *border, affine_iv *iv)
   else if (integer_zerop (iv->step))
     return NULL_TREE;
   if (!integer_zerop (iv2.step))
+    return NULL_TREE;
+  if (!iv->no_overflow)
     return NULL_TREE;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
