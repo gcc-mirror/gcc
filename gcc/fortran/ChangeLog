@@ -1,3 +1,14 @@
+2016-12-13  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78737
+	* gfortran.h (gfc_find_typebound_dtio_proc): New prototype.
+	* interface.c (gfc_compare_interfaces): Whitespace fix.
+	(gfc_find_typebound_dtio_proc): New function.
+	(gfc_find_specific_dtio_proc): Use it. Improve error recovery.
+	* trans-io.c (get_dtio_proc): Implement polymorphic calls to DTIO
+	procedures.
+
 2016-12-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78392

@@ -3252,6 +3252,7 @@ int gfc_has_vector_subscript (gfc_expr*);
 gfc_intrinsic_op gfc_equivalent_op (gfc_intrinsic_op);
 bool gfc_check_typebound_override (gfc_symtree*, gfc_symtree*);
 void gfc_check_dtio_interfaces (gfc_symbol*);
+gfc_symtree* gfc_find_typebound_dtio_proc (gfc_symbol *, bool, bool);
 gfc_symbol* gfc_find_specific_dtio_proc (gfc_symbol*, bool, bool);
 
 
