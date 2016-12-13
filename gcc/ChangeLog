@@ -1,5 +1,14 @@
 2016-12-13  Martin Liska  <mliska@suse.cz>
 
+	* sanopt.c (sanopt_optimize_walker): Set contains_asan_mark.
+	(sanopt_optimize): Add new argument.
+	(sanitize_asan_mark_unpoison): New function.
+	(maybe_contains_asan_check): Likewise.
+	(sanitize_asan_mark_poison): Likewise.
+	(pass_sanopt::execute): Call the new functions.
+
+2016-12-13  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/78428
 	* expr.c (store_constructor_field): Add new arguments to the
 	function.
