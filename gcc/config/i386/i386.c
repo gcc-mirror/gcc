@@ -3419,6 +3419,11 @@ dimode_scalar_chain::compute_convert_gain ()
 	       || GET_CODE (src) == AND)
 	{
 	  gain += ix86_cost->add;
+	  /* Additional gain for andnot for targets without BMI.  */
+	  if (GET_CODE (XEXP (src, 0)) == NOT
+	      && !TARGET_BMI)
+	    gain += 2 * ix86_cost->add;
+
 	  if (CONST_INT_P (XEXP (src, 0)))
 	    gain -= vector_const_cost (XEXP (src, 0));
 	  if (CONST_INT_P (XEXP (src, 1)))
@@ -3431,7 +3436,7 @@ dimode_scalar_chain::compute_convert_gain ()
 	{
 	  /* Assume comparison cost is the same.  */
 	}
-      else if (GET_CODE (src) == CONST_INT)
+      else if (CONST_INT_P (src))
 	{
 	  if (REG_P (dst))
 	    gain += COSTS_N_INSNS (2);
