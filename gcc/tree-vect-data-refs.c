@@ -2390,7 +2390,9 @@ vect_analyze_group_access_1 (struct data_reference *dr)
       if (groupsize == 0)
         groupsize = count + gaps;
 
-      if (groupsize > UINT_MAX)
+      /* This could be UINT_MAX but as we are generating code in a very
+         inefficient way we have to cap earlier.  See PR78699 for example.  */
+      if (groupsize > 4096)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
