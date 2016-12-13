@@ -9337,6 +9337,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
       if (token == NULL_TREE)
 	{
 	  tmp = gfc_get_tree_for_caf_expr (expr1);
+	  if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+	    tmp = build_fold_indirect_ref (tmp);
 	  gfc_get_caf_token_offset (&caf_se, &token, NULL, tmp, NULL_TREE,
 				    expr1);
 	  token = gfc_build_addr_expr (NULL_TREE, token);
