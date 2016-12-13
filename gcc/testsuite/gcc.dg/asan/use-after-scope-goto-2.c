@@ -22,4 +22,4 @@ int main(int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "ASAN_MARK \\(2, &a, 4\\);" 1 "asan0" } }  */
+/* { dg-final { scan-tree-dump-times "ASAN_MARK \\(UNPOISON, &a, 4\\);" 1 "asan0" } }  */

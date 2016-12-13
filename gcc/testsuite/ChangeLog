@@ -1,3 +1,12 @@
+2016-12-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/asan/use-after-scope-goto-1.c: Update first argument of
+	scanned pattern ASAN_MARK.
+	* gcc.dg/asan/use-after-scope-goto-2.c: Likewise.
+	* gcc.dg/asan/use-after-scope-switch-1.c: Likewise.
+	* gcc.dg/asan/use-after-scope-switch-2.c: Likewise.
+	* gcc.dg/asan/use-after-scope-switch-3.c: Likewise.
+
 2016-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/77905

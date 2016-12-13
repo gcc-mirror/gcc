@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "trans-mem.h"
 #include "cfganal.h"
+#include "asan.h"
 
 #define INDENT(SPACE)							\
   do { int i; for (i = 0; i < SPACE; i++) pp_space (buffer); } while (0)
@@ -642,6 +643,14 @@ dump_gimple_call_args (pretty_printer *buffer, gcall *gs, int flags)
 #undef DEF
 	  enums = reduction_args;
 	  limit = ARRAY_SIZE (reduction_args);
+	  break;
+
+	case IFN_ASAN_MARK:
+#define DEF(X) #X
+	  static const char *const asan_mark_args[] = {IFN_ASAN_MARK_FLAGS};
+#undef DEF
+	  enums = asan_mark_args;
+	  limit = ARRAY_SIZE (asan_mark_args);
 	  break;
 
 	default:

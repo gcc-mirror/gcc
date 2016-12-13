@@ -1,3 +1,15 @@
+2016-12-13  Martin Liska  <mliska@suse.cz>
+
+	* asan.c (asan_mark_poison_p): Remove.
+	(asan_mark_p): New function.
+	(transform_statements): Use the function.
+	(asan_expand_mark_ifn): Do not use masked enum.
+	* asan.h (enum asan_mark_flags): Declare it via a macro.
+	* gimple-pretty-print.c (dump_gimple_call_args): Dump first
+	argument of ASAN_MARK.
+	* gimplify.c (build_asan_poison_call_expr): Use new enum values.
+	(asan_poison_variable): Likewise.
+
 2016-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/77905
