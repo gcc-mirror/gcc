@@ -4085,6 +4085,9 @@ decltype (new auto({parm#1})) f<int>(int)
 _Z1fIiERDaRKT_S1_
 auto& f<int>(int const&, int)
 --format=gnu-v3
+_Z1gIiEDcRKT_S0_
+decltype(auto) g<int>(int const&, int)
+--format=gnu-v3
 _Z1gILi1EEvR1AIXT_EER1BIXscbT_EE
 void g<1>(A<1>&, B<static_cast<bool>(1)>&)
 --format=gnu-v3
