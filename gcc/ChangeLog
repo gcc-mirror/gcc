@@ -1,3 +1,8 @@
+2016-12-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs600.c (rs6000_builtin_vectorization_cost):
+	Adjust unaligned load cost.
+
 2016-12-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78794
