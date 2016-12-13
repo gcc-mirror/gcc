@@ -3088,7 +3088,7 @@ bool gfc_check_init_expr (gfc_expr *);
 gfc_expr *gfc_build_conversion (gfc_expr *);
 void gfc_free_ref_list (gfc_ref *);
 void gfc_type_convert_binary (gfc_expr *, int);
-int gfc_is_constant_expr (gfc_expr *);
+bool gfc_is_constant_expr (gfc_expr *);
 bool gfc_simplify_expr (gfc_expr *, int);
 int gfc_has_vector_index (gfc_expr *);
 
@@ -3180,7 +3180,7 @@ bool gfc_resolve_iterator (gfc_iterator *, bool, bool);
 bool find_forall_index (gfc_expr *, gfc_symbol *, int);
 bool gfc_resolve_index (gfc_expr *, int);
 bool gfc_resolve_dim_arg (gfc_expr *);
-int gfc_is_formal_arg (void);
+bool gfc_is_formal_arg (void);
 void gfc_resolve_substring_charlen (gfc_expr *);
 match gfc_iso_c_sub_interface(gfc_code *, gfc_symbol *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);
@@ -3218,7 +3218,7 @@ gfc_array_ref *gfc_find_array_ref (gfc_expr *);
 tree gfc_conv_array_initializer (tree type, gfc_expr *);
 bool spec_size (gfc_array_spec *, mpz_t *);
 bool spec_dimen_size (gfc_array_spec *, int, mpz_t *);
-int gfc_is_compile_time_shape (gfc_array_spec *);
+bool gfc_is_compile_time_shape (gfc_array_spec *);
 
 bool gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 

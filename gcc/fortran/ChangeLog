@@ -1,3 +1,12 @@
+2016-12-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78798
+	* gfortran.h (gfc_is_constant_expr, gfc_is_formal_arg,
+	gfc_is_compile_time_shape): Return bool instead of int.
+	* array.c (gfc_is_compile_time_shape): Ditto.
+	* expr.c (gfc_is_constant_expr): Ditto.
+	* resolve.c (gfc_is_formal_arg): Ditto. Make formal_arg_flag bool.
+
 2016-12-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/77785
