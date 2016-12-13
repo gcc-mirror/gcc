@@ -538,7 +538,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	      tree offset = gimple_assign_rhs2 (def);
 	      ptr = gimple_assign_rhs1 (def);
 
-	      if (cst_and_fits_in_hwi (offset)
+	      if (tree_fits_shwi_p (offset)
 		  && compute_builtin_object_size (ptr, object_size_type, psize))
 		{
 		  /* Return zero when the offset is out of bounds.  */
