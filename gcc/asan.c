@@ -2838,8 +2838,9 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
       gsi_insert_before (iter, g, GSI_SAME_STMT);
       tree sz_arg = gimple_assign_lhs (g);
 
-      tree fun = builtin_decl_implicit (is_poison ? BUILT_IN_ASAN_CLOBBER_N
-					: BUILT_IN_ASAN_UNCLOBBER_N);
+      tree fun
+	= builtin_decl_implicit (is_poison ? BUILT_IN_ASAN_POISON_STACK_MEMORY
+				 : BUILT_IN_ASAN_UNPOISON_STACK_MEMORY);
       g = gimple_build_call (fun, 2, base_addr, sz_arg);
       gimple_set_location (g, loc);
       gsi_insert_after (iter, g, GSI_NEW_STMT);
