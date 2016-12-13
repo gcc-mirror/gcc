@@ -1,3 +1,13 @@
+2016-12-13  Iain Sandoe  <iain@codesourcery.com>
+
+	Backport from mainline
+	2016-12-11  Iain Sandoe  <iain@codesourcery.com>
+
+	PR rtl-optimization/71496
+	* config/rs6000/darwin.md (load_macho_picbase_si): Mark as non-
+	copyable.  (load_macho_picbase_di, reload_macho_picbase_si,
+	reload_macho_picbase_di): Likewise.
+
 2016-12-12  Bernd Schmidt  <bschmidt@redhat.com>
 
 	Backport from mainline
