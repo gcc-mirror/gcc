@@ -1,3 +1,11 @@
+2016-12-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77785
+	* resolve.c (resolve_symbol): Correct attr lookup to the _data
+	component.
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Indirect ref
+	pointers and references before retrieving the caf-token.
+
 2016-12-13  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

@@ -14044,8 +14044,8 @@ resolve_symbol (gfc_symbol *sym)
   if (flag_coarray == GFC_FCOARRAY_LIB && sym->ts.type == BT_CLASS
       && sym->ts.u.derived && CLASS_DATA (sym)
       && CLASS_DATA (sym)->attr.codimension
-      && (sym->ts.u.derived->attr.alloc_comp
-	  || sym->ts.u.derived->attr.pointer_comp))
+      && (CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp
+	  || CLASS_DATA (sym)->ts.u.derived->attr.pointer_comp))
     {
       gfc_error ("Sorry, allocatable/pointer components in polymorphic (CLASS) "
 		 "type coarrays at %L are unsupported", &sym->declared_at);
