@@ -1,3 +1,8 @@
+2016-12-13  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/extend.texi (Floating Types): Document availability of
+	_Float16 on ARM/AArch64.
+
 2016-12-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78699
