@@ -365,15 +365,13 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 static void
 dump_alias_template_specialization (cxx_pretty_printer *pp, tree t, int flags)
 {
-  tree name;
-
   gcc_assert (alias_template_specialization_p (t));
 
+  tree decl = TYPE_NAME (t);
   if (!(flags & TFF_UNQUALIFIED_NAME))
-    dump_scope (pp, CP_DECL_CONTEXT (TYPE_NAME (t)), flags);
-  name = TYPE_IDENTIFIER (t);
-  pp_cxx_tree_identifier (pp, name);
-  dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
+    dump_scope (pp, CP_DECL_CONTEXT (decl), flags);
+  pp_cxx_tree_identifier (pp, DECL_NAME (decl));
+  dump_template_parms (pp, DECL_TEMPLATE_INFO (decl),
 		       /*primary=*/false,
 		       flags & ~TFF_TEMPLATE_HEADER);
 }

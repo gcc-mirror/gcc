@@ -1,3 +1,16 @@
+2016-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/69481
+	* cp-tree.h (TYPE_TEMPLATE_INFO): Remove alias type checking.
+	(TYPE_ALIAS_TEMPLATE_INFO): New.
+	(TYPE_TEMPLATE_INFO_MAYBE_ALIAS): New.  Use those macros.
+	* error.c (dump_alias_template_specialization): Adjust.
+	* pt.c (maybe_process_partial_specialization,
+	iterative_has_template_arg, find_parameter_packs_r,
+	alias_template_specialization_p, dependent_alias_template_spec_p,
+	get_underlying_template, lookup_template_class_1, unify): Adjust
+	template using decl access.
+
 2016-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/78637
