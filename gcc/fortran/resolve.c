@@ -72,9 +72,9 @@ static bool first_actual_arg = false;
 
 static int omp_workshare_flag;
 
-/* Nonzero if we are processing a formal arglist. The corresponding function
+/* True if we are processing a formal arglist. The corresponding function
    resets the flag each time that it is read.  */
-static int formal_arg_flag = 0;
+static bool formal_arg_flag = false;
 
 /* True if we are resolving a specification expression.  */
 static bool specification_expr = false;
@@ -89,7 +89,7 @@ static bitmap_obstack labels_obstack;
 static bool inquiry_argument = false;
 
 
-int
+bool
 gfc_is_formal_arg (void)
 {
   return formal_arg_flag;
@@ -285,7 +285,7 @@ resolve_formal_arglist (gfc_symbol *proc)
       sym->attr.always_explicit = 1;
     }
 
-  formal_arg_flag = 1;
+  formal_arg_flag = true;
 
   for (f = proc->formal; f; f = f->next)
     {
@@ -530,7 +530,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 	    }
 	}
     }
-  formal_arg_flag = 0;
+  formal_arg_flag = false;
 }
 
 
@@ -14722,14 +14722,14 @@ resolve_symbol (gfc_symbol *sym)
      an error for host associated variables in the specification
      expression for an array_valued function.  */
   if (sym->attr.function && sym->as)
-    formal_arg_flag = 1;
+    formal_arg_flag = true;
 
   saved_specification_expr = specification_expr;
   specification_expr = true;
   gfc_resolve_array_spec (sym->as, check_constant);
   specification_expr = saved_specification_expr;
 
-  formal_arg_flag = 0;
+  formal_arg_flag = false;
 
   /* Resolve formal namespaces.  */
   if (sym->formal_ns && sym->formal_ns != gfc_current_ns

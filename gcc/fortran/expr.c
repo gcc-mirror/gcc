@@ -882,17 +882,16 @@ done:
 
 
 /* Determine if an expression is constant in the sense of F08:7.1.12.
- * This function expects that the expression has already been simplified.
- * FIXME: Return a bool, not an int.  */
+ * This function expects that the expression has already been simplified.  */
 
-int
+bool
 gfc_is_constant_expr (gfc_expr *e)
 {
   gfc_constructor *c;
   gfc_actual_arglist *arg;
 
   if (e == NULL)
-    return 1;
+    return true;
 
   switch (e->expr_type)
     {
@@ -902,7 +901,7 @@ gfc_is_constant_expr (gfc_expr *e)
 		  || gfc_is_constant_expr (e->value.op.op2)));
 
     case EXPR_VARIABLE:
-      return 0;
+      return false;
 
     case EXPR_FUNCTION:
     case EXPR_PPC:
@@ -915,7 +914,7 @@ gfc_is_constant_expr (gfc_expr *e)
 	{
 	  for (arg = e->value.function.actual; arg; arg = arg->next)
 	    if (!gfc_is_constant_expr (arg->expr))
-	      return 0;
+	      return false;
 	}
 
       if (e->value.function.isym
@@ -923,13 +922,13 @@ gfc_is_constant_expr (gfc_expr *e)
 	      || e->value.function.isym->pure
 	      || e->value.function.isym->inquiry
 	      || e->value.function.isym->transformational))
-	return 1;
+	return true;
 
-      return 0;
+      return false;
 
     case EXPR_CONSTANT:
     case EXPR_NULL:
-      return 1;
+      return true;
 
     case EXPR_SUBSTRING:
       return e->ref == NULL || (gfc_is_constant_expr (e->ref->u.ss.start)
@@ -943,14 +942,14 @@ gfc_is_constant_expr (gfc_expr *e)
 
       for (; c; c = gfc_constructor_next (c))
 	if (!gfc_is_constant_expr (c->expr))
-	  return 0;
+	  return false;
 
-      return 1;
+      return true;
 
 
     default:
       gfc_internal_error ("gfc_is_constant_expr(): Unknown expression type");
-      return 0;
+      return false;
     }
 }
 

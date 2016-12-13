@@ -2581,18 +2581,16 @@ gfc_find_array_ref (gfc_expr *e)
 
 /* Find out if an array shape is known at compile time.  */
 
-int
+bool
 gfc_is_compile_time_shape (gfc_array_spec *as)
 {
-  int i;
-
   if (as->type != AS_EXPLICIT)
-    return 0;
+    return false;
 
-  for (i = 0; i < as->rank; i++)
+  for (int i = 0; i < as->rank; i++)
     if (!gfc_is_constant_expr (as->lower[i])
 	|| !gfc_is_constant_expr (as->upper[i]))
-      return 0;
+      return false;
 
-  return 1;
+  return true;
 }
