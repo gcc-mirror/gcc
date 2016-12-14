@@ -1,3 +1,11 @@
+2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59874
+	* config/i386/i386-builtin.def: Add __builtin_clzs and __builtin_ctzs.
+	(ix86_fold_builtin): Handle IX86_BUILTIN_CTZS and IX86_BUILTIN_CLZS.
+	* config/i386/i386.md (*ctzhi2): New insn_and_split pattern.
+	(*clzhi2): Ditto.
+
 2016-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/77844

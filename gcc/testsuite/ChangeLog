@@ -1,3 +1,9 @@
+2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59874
+	* gcc.target/i386/pr59874-1.c: New test.
+	* gcc.target/i386/pr59874-2.c: Ditto.
+
 2016-12-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/torture/pr78515.c: Add -Wno-psabi for AIX.
