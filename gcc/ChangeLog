@@ -1,3 +1,11 @@
+2016-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78791
+	* config/i386/i386.h (enum ix86_stack_slot): Add SLOT_STV_TEMP.
+	* config/i386/i386.c (dimode_scalar_chain::make_vector_copies,
+	dimode_scalar_chain::convert_reg): Use SLOT_STV_TEMP instead of
+	SLOT_TEMP.
+
 2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59874
