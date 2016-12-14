@@ -2803,6 +2803,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   int i, n, na;
   unsigned long actual_size, formal_size;
   bool full_array = false;
+  gfc_array_ref *actual_arr_ref;
 
   actual = *ap;
 
@@ -2942,37 +2943,38 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 and assumed-shape dummies, the string length needs to match
 	 exactly.  */
       if (a->expr->ts.type == BT_CHARACTER
-	   && a->expr->ts.u.cl && a->expr->ts.u.cl->length
-	   && a->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
-	   && f->sym->ts.u.cl && f->sym->ts.u.cl && f->sym->ts.u.cl->length
-	   && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
-	   && (f->sym->attr.pointer || f->sym->attr.allocatable
-	       || (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
-	   && (mpz_cmp (a->expr->ts.u.cl->length->value.integer,
-			f->sym->ts.u.cl->length->value.integer) != 0))
-	 {
-	   if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
-	     gfc_warning (OPT_Wargument_mismatch,
-			  "Character length mismatch (%ld/%ld) between actual "
-			  "argument and pointer or allocatable dummy argument "
-			  "%qs at %L",
-			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
-			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
-			  f->sym->name, &a->expr->where);
-	   else if (where)
-	     gfc_warning (OPT_Wargument_mismatch,
-			  "Character length mismatch (%ld/%ld) between actual "
-			  "argument and assumed-shape dummy argument %qs "
-			  "at %L",
-			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
-			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
-			  f->sym->name, &a->expr->where);
-	   return 0;
-	 }
+	  && a->expr->ts.u.cl && a->expr->ts.u.cl->length
+	  && a->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && f->sym->ts.type == BT_CHARACTER && f->sym->ts.u.cl
+	  && f->sym->ts.u.cl->length
+	  && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && (f->sym->attr.pointer || f->sym->attr.allocatable
+	      || (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
+	  && (mpz_cmp (a->expr->ts.u.cl->length->value.integer,
+		       f->sym->ts.u.cl->length->value.integer) != 0))
+	{
+	  if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
+	    gfc_warning (OPT_Wargument_mismatch,
+			 "Character length mismatch (%ld/%ld) between actual "
+			 "argument and pointer or allocatable dummy argument "
+			 "%qs at %L",
+			 mpz_get_si (a->expr->ts.u.cl->length->value.integer),
+			 mpz_get_si (f->sym->ts.u.cl->length->value.integer),
+			 f->sym->name, &a->expr->where);
+	  else if (where)
+	    gfc_warning (OPT_Wargument_mismatch,
+			 "Character length mismatch (%ld/%ld) between actual "
+			 "argument and assumed-shape dummy argument %qs "
+			 "at %L",
+			 mpz_get_si (a->expr->ts.u.cl->length->value.integer),
+			 mpz_get_si (f->sym->ts.u.cl->length->value.integer),
+			 f->sym->name, &a->expr->where);
+	  return 0;
+	}
 
       if ((f->sym->attr.pointer || f->sym->attr.allocatable)
-	    && f->sym->ts.deferred != a->expr->ts.deferred
-	    && a->expr->ts.type == BT_CHARACTER)
+	  && f->sym->ts.deferred != a->expr->ts.deferred
+	  && a->expr->ts.type == BT_CHARACTER)
 	{
 	  if (where)
 	    gfc_error ("Actual argument at %L to allocatable or "
@@ -3195,15 +3197,20 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
+      /* Find the last array_ref.  */
+      actual_arr_ref = NULL;
+      if (a->expr->ref)
+	actual_arr_ref = gfc_find_array_ref (a->expr, true);
+
       if (f->sym->attr.volatile_
-	  && a->expr->ref && a->expr->ref->u.ar.type == AR_SECTION
+	  && actual_arr_ref && actual_arr_ref->type == AR_SECTION
 	  && !(f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
 	{
 	  if (where)
 	    gfc_error ("Array-section actual argument at %L is "
 		       "incompatible with the non-assumed-shape "
 		       "dummy argument %qs due to VOLATILE attribute",
-		       &a->expr->where,f->sym->name);
+		       &a->expr->where, f->sym->name);
 	  return 0;
 	}
 

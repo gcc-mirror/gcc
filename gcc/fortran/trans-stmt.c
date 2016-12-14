@@ -6483,7 +6483,8 @@ gfc_trans_deallocate (gfc_code *code)
 		    && !(!last && expr->symtree->n.sym->attr.pointer))
 		{
 		  if (is_coarray && expr->rank == 0
-		      && (!last || !last->u.c.component->attr.dimension))
+		      && (!last || !last->u.c.component->attr.dimension)
+		      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
 		    {
 		      /* Add the ref to the data member only, when this is not
 			 a regular array or deallocate_alloc_comp will try to
