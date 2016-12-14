@@ -1,3 +1,8 @@
+2016-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/77844
+	* g++.dg/opt/pr77844.C: New test.
+
 2016-12-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c/17308
