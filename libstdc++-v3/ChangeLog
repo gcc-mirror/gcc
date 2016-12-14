@@ -1,3 +1,12 @@
+2016-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59170
+	* python/libstdcxx/v6/printers.py (StdDebugIteratorPrinter): Use
+	_M_sequence and _M_version to detect invalid iterators.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Test debug mode vector
+	and test invalid iterators.
+	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: New test.
+
 2016-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:

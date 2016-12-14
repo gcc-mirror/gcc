@@ -27,6 +27,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <vector>
 #include <ext/slist>
 
 int
@@ -89,6 +90,20 @@ main()
   sll.push_front(23);
   sll.push_front(47);
 // { dg-final { note-test sll {__gnu_cxx::slist = {[0] = 47, [1] = 23}} } }
+
+  std::vector<int> v;
+  v.push_back(1);
+  v.push_back(2);
+  std::vector<int>::iterator viter0;
+// { dg-final { note-test viter0 {invalid iterator} } }
+  std::vector<int>::iterator viter1 = v.begin();
+  std::vector<int>::iterator viter2 = viter1 + 1;
+  v.erase(viter1);
+// { dg-final { note-test v {std::__debug::vector of length 1, capacity 2 = {2}} } }
+// { dg-final { note-test viter1 {invalid iterator} } }
+// { dg-final { note-test viter2 {invalid iterator} } }
+  std::vector<int>::iterator viter3 = v.begin();
+// { dg-final { note-test viter3 {2} } }
 
   __gnu_cxx::slist<int>::iterator slliter = sll.begin();
 // { dg-final { note-test slliter {47} } }

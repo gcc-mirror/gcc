@@ -501,6 +501,10 @@ class StdDebugIteratorPrinter:
     # Just strip away the encapsulating __gnu_debug::_Safe_iterator
     # and return the wrapped iterator value.
     def to_string (self):
+        base_type = gdb.lookup_type('__gnu_debug::_Safe_iterator_base')
+        safe_seq = self.val.cast(base_type)['_M_sequence']
+        if not safe_seq or self.val['_M_version'] != safe_seq['_M_version']:
+            return "invalid iterator"
         itype = self.val.type.template_argument(0)
         return self.val.cast(itype)
 
@@ -1507,8 +1511,8 @@ def build_libstdcxx_dictionary ():
                                   Tr1UnorderedSetPrinter)
 
     # These are the C++11 printer registrations for -D_GLIBCXX_DEBUG cases.
-    # The tr1 namespace printers do not seem to have any debug
-    # equivalents, so do no register them.
+    # The tr1 namespace containers do not have any debug equivalents,
+    # so do not register printers for them.
     libstdcxx_printer.add('std::__debug::unordered_map',
                           Tr1UnorderedMapPrinter)
     libstdcxx_printer.add('std::__debug::unordered_set',
