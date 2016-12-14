@@ -38,5 +38,6 @@ extern bool pass_by_reference (CUMULATIVE_ARGS *, machine_mode,
 extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
 				     tree, bool);
 extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
+extern bitmap get_nonnull_args (const_tree);
 
 #endif // GCC_CALLS_H

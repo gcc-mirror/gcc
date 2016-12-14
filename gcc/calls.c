@@ -1501,6 +1501,91 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
   error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
 }
 
+/* Return a bitmap with a bit set corresponding to each argument in
+   a function call expression CALLEXPR declared with attribute nonnull,
+   or null if none of the function's argument are nonnull.  The caller
+   must free the bitmap.  */
+
+bitmap
+get_nonnull_args (const_tree callexpr)
+{
+  tree fn = CALL_EXPR_FN (callexpr);
+  if (!fn || TREE_CODE (fn) != ADDR_EXPR)
+    return NULL;
+
+  tree fndecl = TREE_OPERAND (fn, 0);
+  tree fntype = TREE_TYPE (fndecl);
+  tree attrs = TYPE_ATTRIBUTES (fntype);
+  if (!attrs)
+    return NULL;
+
+  bitmap argmap = NULL;
+
+  /* A function declaration can specify multiple attribute nonnull,
+     each with zero or more arguments.  The loop below creates a bitmap
+     representing a union of all the arguments.  An empty (but non-null)
+     bitmap means that all arguments have been declaraed nonnull.  */
+  for ( ; attrs; attrs = TREE_CHAIN (attrs))
+    {
+      attrs = lookup_attribute ("nonnull", attrs);
+      if (!attrs)
+	break;
+
+      if (!argmap)
+	argmap = BITMAP_ALLOC (NULL);
+
+      if (!TREE_VALUE (attrs))
+	{
+	  /* Clear the bitmap in case a previous attribute nonnull
+	     set it and this one overrides it for all arguments.  */
+	  bitmap_clear (argmap);
+	  return argmap;
+	}
+
+      /* Iterate over the indices of the format arguments declared nonnull
+	 and set a bit for each.  */
+      for (tree idx = TREE_VALUE (attrs); idx; idx = TREE_CHAIN (idx))
+	{
+	  unsigned int val = TREE_INT_CST_LOW (TREE_VALUE (idx)) - 1;
+	  bitmap_set_bit (argmap, val);
+	}
+    }
+
+  return argmap;
+}
+
+/* In a call EXP to a function FNDECL some of whose arguments may have
+   been declared with attribute nonnull as described by NONNULLARGS,
+   check actual argument ARG at the zero-based position ARGPOS for
+   equality to null and issue a warning if it is not expected to be.  */
+
+static void
+maybe_warn_null_arg (tree fndecl, tree exp, tree arg,
+		     unsigned argpos, bitmap nonnullargs)
+{
+  if (!optimize
+      || !nonnullargs
+      || TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE
+      || !integer_zerop (arg)
+      || (!bitmap_empty_p (nonnullargs)
+	  && !bitmap_bit_p (nonnullargs, argpos)))
+    return;
+
+  ++argpos;
+
+  location_t exploc EXPR_LOCATION (exp);
+
+  if (warning_at (exploc, OPT_Wnonnull,
+		  "argument %u null where non-null expected", argpos))
+    {
+      if (DECL_IS_BUILTIN (fndecl))
+	inform (exploc, "in a call to built-in function %qD", fndecl);
+      else
+	inform (DECL_SOURCE_LOCATION (fndecl),
+		"in a call to function %qD declared here", fndecl);
+    }
+}
+
 /* Fill in ARGS_SIZE and ARGS array based on the parameters found in
    CALL_EXPR EXP.
 
@@ -1683,6 +1768,9 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
   /* Array for up to the two attribute alloc_size arguments.  */
   tree alloc_args[] = { NULL_TREE, NULL_TREE };
+
+  /* Get a bitmap of pointer argument numbers declared attribute nonnull.  */
+  bitmap nonnullargs = get_nonnull_args (exp);
 
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (argpos = 0; argpos < num_actuals; i--, argpos++)
@@ -1915,6 +2003,11 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       if (args[i].locate.size.var)
 	ADD_PARM_SIZE (*args_size, args[i].locate.size.var);
 
+      /* Check pointer argument for equality to NULL that is being passed
+	 to arguments declared with attribute nonnull and warn.  */
+      maybe_warn_null_arg (fndecl, exp, args[i].tree_value, argpos,
+			   nonnullargs);
+
       /* Increment ARGS_SO_FAR, which has info about which arg-registers
 	 have been used, etc.  */
 
@@ -1935,6 +2028,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 alloc_size.  */
       maybe_warn_alloc_args_overflow (fndecl, exp, alloc_args, alloc_idx);
     }
+
+  BITMAP_FREE (nonnullargs);
 }
 
 /* Update ARGS_SIZE to contain the total size for the argument block.
