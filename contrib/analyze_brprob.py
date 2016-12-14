@@ -69,6 +69,9 @@ import argparse
 
 from math import *
 
+counter_aggregates = set(['combined', 'first match', 'DS theory',
+    'no prediction'])
+
 def percentage(a, b):
     return 100.0 * a / b
 
@@ -91,12 +94,16 @@ class Summary:
     def __init__(self, name):
         self.name = name
         self.branches = 0
+        self.successfull_branches = 0
         self.count = 0
         self.hits = 0
         self.fits = 0
 
     def get_hitrate(self):
-        return self.hits / self.count
+        return 100.0 * self.hits / self.count
+
+    def get_branch_hitrate(self):
+        return 100.0 * self.successfull_branches / self.branches
 
     def count_formatted(self):
         v = self.count
@@ -105,6 +112,16 @@ class Summary:
                 return "%3.2f%s" % (v, unit)
             v /= 1000.0
         return "%.1f%s" % (v, 'Y')
+
+    def print(self, branches_max, count_max):
+        print('%-40s %8i %5.1f%% %11.2f%% %7.2f%% / %6.2f%% %14i %8s %5.1f%%' %
+            (self.name, self.branches,
+                percentage(self.branches, branches_max),
+                self.get_branch_hitrate(),
+                self.get_hitrate(),
+                percentage(self.fits, self.count),
+                self.count, self.count_formatted(),
+                percentage(self.count, count_max)))
 
 class Profile:
     def __init__(self, filename):
@@ -118,11 +135,16 @@ class Profile:
 
         s = self.heuristics[name]
         s.branches += 1
+
         s.count += count
         if prediction < 50:
             hits = count - hits
+        remaining = count - hits
+        if hits >= remaining:
+            s.successfull_branches += 1
+
         s.hits += hits
-        s.fits += max(hits, count - hits)
+        s.fits += max(hits, remaining)
 
     def add_loop_niter(self, niter):
         if niter > 0:
@@ -134,20 +156,40 @@ class Profile:
     def count_max(self):
         return max([v.count for k, v in self.heuristics.items()])
 
-    def dump(self, sorting):
-        sorter = lambda x: x[1].branches
-        if sorting == 'hitrate':
-            sorter = lambda x: x[1].get_hitrate()
-        elif sorting == 'coverage':
-            sorter = lambda x: x[1].count
+    def print_group(self, sorting, group_name, heuristics):
+        count_max = self.count_max()
+        branches_max = self.branches_max()
 
-        print('%-40s %8s %6s  %-16s %14s %8s %6s' % ('HEURISTICS', 'BRANCHES', '(REL)',
-              'HITRATE', 'COVERAGE', 'COVERAGE', '(REL)'))
-        for (k, v) in sorted(self.heuristics.items(), key = sorter):
-            print('%-40s %8i %5.1f%% %6.2f%% / %6.2f%% %14i %8s %5.1f%%' %
-            (k, v.branches, percentage(v.branches, self.branches_max ()),
-             percentage(v.hits, v.count), percentage(v.fits, v.count),
-             v.count, v.count_formatted(), percentage(v.count, self.count_max()) ))
+        sorter = lambda x: x.branches
+        if sorting == 'branch-hitrate':
+            sorter = lambda x: x.get_branch_hitrate()
+        elif sorting == 'hitrate':
+            sorter = lambda x: x.get_hitrate()
+        elif sorting == 'coverage':
+            sorter = lambda x: x.count
+        elif sorting == 'name':
+            sorter = lambda x: x.name.lower()
+
+        print('%-40s %8s %6s %12s %18s %14s %8s %6s' %
+            ('HEURISTICS', 'BRANCHES', '(REL)',
+            'BR. HITRATE', 'HITRATE', 'COVERAGE', 'COVERAGE', '(REL)'))
+        for h in sorted(heuristics, key = sorter):
+            h.print(branches_max, count_max)
+
+    def dump(self, sorting):
+        heuristics = self.heuristics.values()
+        if len(heuristics) == 0:
+            print('No heuristics available')
+            return
+
+        special = list(filter(lambda x: x.name in counter_aggregates,
+            heuristics))
+        normal = list(filter(lambda x: x.name not in counter_aggregates,
+            heuristics))
+
+        self.print_group(sorting, 'HEURISTICS', normal)
+        print()
+        self.print_group(sorting, 'HEURISTIC AGGREGATES', special)
 
         if len(self.niter_vector) > 0:
             print ('\nLoop count: %d' % len(self.niter_vector)),
@@ -155,11 +197,15 @@ class Profile:
             print('  median # of iter: %.2f' % median(self.niter_vector))
             for v in [1, 5, 10, 20, 30]:
                 cut = 0.01 * v
-                print('  avg. (%d%% cutoff) # of iter: %.2f' % (v, average_cutoff(self.niter_vector, cut)))
+                print('  avg. (%d%% cutoff) # of iter: %.2f'
+                    % (v, average_cutoff(self.niter_vector, cut)))
 
 parser = argparse.ArgumentParser()
-parser.add_argument('dump_file', metavar = 'dump_file', help = 'IPA profile dump file')
-parser.add_argument('-s', '--sorting', dest = 'sorting', choices = ['branches', 'hitrate', 'coverage'], default = 'branches')
+parser.add_argument('dump_file', metavar = 'dump_file',
+    help = 'IPA profile dump file')
+parser.add_argument('-s', '--sorting', dest = 'sorting',
+    choices = ['branches', 'branch-hitrate', 'hitrate', 'coverage', 'name'],
+    default = 'branches')
 
 args = parser.parse_args()
 
