@@ -1,3 +1,13 @@
+2016-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78786
+	* gimple-ssa-sprintf.c (target_dir_max): New macro.
+	(get_mpfr_format_length): New function.
+	(format_integer): Use HOST_WIDE_INT instead of int.
+	(format_floating_max): Same.
+	(format_floating): Call get_mpfr_format_length.
+	(format_directive): Use target_dir_max.
+
 2016-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78791
