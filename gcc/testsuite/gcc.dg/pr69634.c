@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-dce -fschedule-insns -fno-tree-vrp -fcompare-debug" } */
 /* { dg-additional-options "-Wno-psabi -mno-sse" { target i?86-*-* x86_64-*-* } } */
+/* { dg-additional-options "-Wno-psabi" { target powerpc-ibm-aix* } } */
 /* { dg-require-effective-target scheduling } */
 
 typedef unsigned short u16;

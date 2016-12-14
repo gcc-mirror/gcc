@@ -1,3 +1,9 @@
+2016-12-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/torture/pr78515.c: Add -Wno-psabi for AIX.
+	* gcc.dg/tree-ssa/forwprop-35.c: Add -Wno-psabi for AIX.
+	* gcc.dg/pr69634.c: Add -Wno-psabi for AIX.
+
 2016-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/77844
