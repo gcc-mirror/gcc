@@ -1,3 +1,9 @@
+2016-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78701
+	* pt.c (type_unification_real): Check tsubst arg doesn't have
+	remaining template parms before converting it.
+
 2016-12-08  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78551
