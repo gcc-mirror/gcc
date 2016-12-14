@@ -1,3 +1,8 @@
+2016-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78731
+	* gcc.dg/torture/pr78731.c: New testcase.
+
 2016-12-14  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/20040703-1.c: Update scanned pattern.
