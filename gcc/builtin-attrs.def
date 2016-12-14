@@ -72,6 +72,9 @@ DEF_ATTR_FOR_STRING (STR1, "1")
 		      ATTR_##VALUE1, ATTR_LIST_##VALUE2)
 DEF_LIST_INT_INT (1,0)
 DEF_LIST_INT_INT (1,2)
+DEF_LIST_INT_INT (1,3)
+DEF_LIST_INT_INT (1,4)
+DEF_LIST_INT_INT (1,5)
 DEF_LIST_INT_INT (2,0)
 DEF_LIST_INT_INT (2,3)
 DEF_LIST_INT_INT (3,0)
@@ -205,6 +208,40 @@ DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_4, ATTR_NONNULL, ATTR_LIST_4, \
 /* Nothrow functions whose fifth parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_5, ATTR_NONNULL, ATTR_LIST_5, \
 			ATTR_NOTHROW_LIST)
+
+/* Same as ATTR_NONNULL_1.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_1, ATTR_NONNULL, ATTR_LIST_1, ATTR_NULL)
+/* Functions like {v,}fprintf whose first and second parameters are
+   nonnull pointers.  As cancellation points the functions are not
+   nothrow.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_2, ATTR_NONNULL, ATTR_LIST_1_2, ATTR_NULL)
+/* The following don't have {v,}fprintf forms.  They exist only to
+   make it possible to declare {v,}{f,s}printf attributes using
+   the same macro.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_3, ATTR_NONNULL, ATTR_LIST_1_3, ATTR_NULL)
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_4, ATTR_NONNULL, ATTR_LIST_1_4, ATTR_NULL)
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_5, ATTR_NONNULL, ATTR_LIST_1_5, ATTR_NULL)
+
+/* Same as ATTR_NOTHROW_NONNULL_1.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_1, ATTR_NONNULL, ATTR_LIST_1,
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}sprintf whose first and second parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_2, ATTR_NONNULL, ATTR_LIST_1_2, \
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}snprintf whose first and third parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_3, ATTR_NONNULL, ATTR_LIST_1_3, \
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}sprintf_chk whose first and fourth parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_4, ATTR_NONNULL, ATTR_LIST_1_4, \
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}snprintf_chk whose first and fifth parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_5, ATTR_NONNULL, ATTR_LIST_1_5, \
+		    ATTR_NOTHROW_LIST)
+		
 /* Nothrow leaf functions which are type-generic.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_TYPEGENERIC_LEAF, ATTR_TYPEGENERIC, ATTR_NULL, \
 			ATTR_NOTHROW_LEAF_LIST)
@@ -245,17 +282,23 @@ DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL, ATTR_MALLOC, ATTR_NULL, \
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL_LEAF, ATTR_MALLOC, ATTR_NULL, \
 			ATTR_NOTHROW_NONNULL_LEAF)
 
-/* Construct a tree for a format attribute.  */
+/* Construct a tree for the format attribute (and implicitly nonnull).  */
 #define DEF_FORMAT_ATTRIBUTE(TYPE, FA, VALUES)				 \
   DEF_ATTR_TREE_LIST (ATTR_##TYPE##_##VALUES, ATTR_NULL,		 \
 		      ATTR_##TYPE, ATTR_LIST_##VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_FORMAT_##TYPE##_##VALUES, ATTR_FORMAT,	 \
 		      ATTR_##TYPE##_##VALUES, ATTR_NONNULL_##FA)
+
+/* Construct a tree for the format and nothrow attributes (format
+   implies nonnull).  */
 #define DEF_FORMAT_ATTRIBUTE_NOTHROW(TYPE, FA, VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_##TYPE##_##VALUES, ATTR_NULL,		 \
 		      ATTR_##TYPE, ATTR_LIST_##VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_FORMAT_##TYPE##_NOTHROW_##VALUES, ATTR_FORMAT,\
 		      ATTR_##TYPE##_##VALUES, ATTR_NOTHROW_NONNULL_##FA)
+
+/* Construct one tree for the format attribute and another for the format
+   and nothrow attributes (in both cases format implies nonnull).  */
 #define DEF_FORMAT_ATTRIBUTE_BOTH(TYPE, FA, VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_##TYPE##_##VALUES, ATTR_NULL,		 \
 		      ATTR_##TYPE, ATTR_LIST_##VALUES)			 \
@@ -263,6 +306,18 @@ DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL_LEAF, ATTR_MALLOC, ATTR_NULL, \
 		      ATTR_##TYPE##_##VALUES, ATTR_NONNULL_##FA)	 \
   DEF_ATTR_TREE_LIST (ATTR_FORMAT_##TYPE##_NOTHROW_##VALUES, ATTR_FORMAT,\
 		      ATTR_##TYPE##_##VALUES, ATTR_NOTHROW_NONNULL_##FA)
+
+/* Construct a pair of trees for the nonnull attribute for the first
+   argument, plus format printf attribute (format implies nonnull):
+   the first ordinary and the second nothrow.  */
+#define DEF_FORMAT_ATTRIBUTE_NONNULL(TYPE, FA, VALUES)			 \
+  DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_FORMAT_##TYPE##_##VALUES,   	 \
+  		      ATTR_FORMAT, ATTR_##TYPE##_##VALUES, 	 	 \
+		      ATTR_NONNULL_1_##FA)				 \
+  DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_FORMAT_##TYPE##_##VALUES,   \
+  		      ATTR_FORMAT, ATTR_##TYPE##_##VALUES, 	 	 \
+		      ATTR_NOTHROW_NONNULL_1_##FA)
+
 DEF_FORMAT_ATTRIBUTE(PRINTF,1,1_0)
 DEF_FORMAT_ATTRIBUTE(PRINTF,1,1_2)
 DEF_FORMAT_ATTRIBUTE_BOTH(PRINTF,2,2_0)
@@ -273,6 +328,26 @@ DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,4,4_0)
 DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,4,4_5)
 DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,5,5_0)
 DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,5,5_6)
+
+/* Attributes for fprintf(f, f, va).  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,1,1_2)
+/* Attributes for v{f,s}printf(d, f, va).  vsprintf is nothrow, vfprintf
+   is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,2,2_0)
+/* Attributes for {f,s}printf(d, f, ...).  sprintf is nothrow, fprintf
+   is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,2,2_3)
+/* Attributes for vprintf_chk.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,3,3_0)
+/* Attributes for printf_chk.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,3,3_4)
+/* Attributes for v{f,s}printf_chk(d, t, bos, f, va).  vsprintf_chk is
+   nothrow, vfprintf_chk is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,4,4_0)
+/* Attributes for {f,s}printf_chk(d, t, bos, f, ...).  sprintf_chk is
+   nothrow, fprintf_chk is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,4,4_5)
+
 DEF_FORMAT_ATTRIBUTE(SCANF,1,1_0)
 DEF_FORMAT_ATTRIBUTE(SCANF,1,1_2)
 DEF_FORMAT_ATTRIBUTE_BOTH(SCANF,2,2_0)

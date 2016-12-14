@@ -1,3 +1,29 @@
+2016-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/17308
+	* builtin-attrs.def (ATTR_NONNULL_1_1, ATTR_NONNULL_1_2): Defined.
+	(ATTR_NONNULL_1_3, ATTR_NONNULL_1_4, ATTR_NONNULL_1_5): Same.
+	(ATTR_NOTHROW_NONNULL_1_1, ATTR_NOTHROW_NONNULL_1_2): Same.
+	(ATTR_NOTHROW_NONNULL_1_3, ATTR_NOTHROW_NONNULL_1_4): Same.
+	(ATTR_NOTHROW_NONNULL_1_5): Same.
+	(ATTR_NONNULL_1_FORMAT_PRINTF_1_2): Same.
+	(ATTR_NONNULL_1_FORMAT_PRINTF_2_0): Same.
+	(ATTR_NONNULL_1_FORMAT_PRINTF_2_3): Same.
+	(ATTR_NONNULL_1_FORMAT_PRINTF_3_0): Same.
+	(ATTR_NONNULL_1_FORMAT_PRINTF_3_4): Same.
+	(ATTR_NONNULL_1_FORMAT_PRINTF_4_0): Same.
+	(ATTR_NONNULL_1_FORMAT_PRINTF_4_5): Same.
+	* builtins.c (validate_arg): Add argument.  Treat null pointers
+	passed to nonnull arguments as invalid.
+	(validate_arglist): Same.
+	* builtins.def (fprintf, fprintf_unlocked): Add nonnull attribute.
+	(printf, printf_unlocked, sprintf. vfprintf, vsprintf): Same.
+	(__sprintf_chk, __vsprintf_chk, __fprintf_chk, __vfprintf_chk): Same.
+	* calls.c (get_nonnull_ags, maybe_warn_null_arg): New functions.
+	(initialize_argument_information): Diagnose null pointers passed to
+	arguments declared nonnull.
+	* calls.h (get_nonnull_args): Declared.
+
 2016-12-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_split_vec_extract_var): On ISA

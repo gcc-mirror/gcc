@@ -5388,7 +5388,10 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
   if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
     return;
 
-  if (integer_zerop (param))
+  /* When not optimizing diagnose the simple cases of null arguments.
+     When optimization is enabled defer the checking until expansion
+     when more cases can be detected.  */
+  if (!optimize && integer_zerop (param))
     warning_at (*ploc, OPT_Wnonnull, "null argument where non-null required "
 		"(argument %lu)", (unsigned long) param_num);
 }
