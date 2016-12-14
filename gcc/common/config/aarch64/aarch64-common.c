@@ -145,7 +145,7 @@ struct arch_to_arch_name
    the default set of architectural feature flags they support.  */
 static const struct processor_name_to_arch all_cores[] =
 {
-#define AARCH64_CORE(NAME, X, IDENT, ARCH_IDENT, FLAGS, COSTS, IMP, PART) \
+#define AARCH64_CORE(NAME, X, IDENT, ARCH_IDENT, FLAGS, COSTS, IMP, PART, VARIANT) \
   {NAME, AARCH64_ARCH_##ARCH_IDENT, FLAGS},
 #include "config/aarch64/aarch64-cores.def"
   {"generic", AARCH64_ARCH_8A, AARCH64_FL_FOR_ARCH8},

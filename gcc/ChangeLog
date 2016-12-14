@@ -1,3 +1,28 @@
+2016-12-14  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def: Add -1 as the variant to all
+	of the cores.
+	(thunderx): Update to include LSE by default.
+	(thunderxt88p1): New core.
+	(thunderxt88): New core.
+	(thunderxt81): New core.
+	(thunderxt83): New core.
+	* config/aarch64/driver-aarch64.c (struct aarch64_core_data):
+	Add variant field.
+	(ALL_VARIANTS): New define.
+	(AARCH64_CORE): Support VARIANT operand.
+	(cpu_data): Likewise.
+	(host_detect_local_cpu): Parse variant field of /proc/cpuinfo.
+	Combine the arch and single core case and support variant searching.
+	* common/config/aarch64/aarch64-common.c (AARCH64_CORE):
+	Add VARIANT operand.
+	* config/aarch64/aarch64-opts.h (AARCH64_CORE): Likewise.
+	* config/aarch64/aarch64.c (AARCH64_CORE): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_CORE): Likewise.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AARCH64/mtune): Document thunderxt88,
+	thunderxt88p1, thunderxt81, thunderxt83 as available options.
+
 2016-12-14  Martin Jambor  <mjambor@suse.cz>
 
 	    * omp-offload.c: Fix coding style.
