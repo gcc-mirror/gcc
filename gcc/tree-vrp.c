@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadupdate.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "target.h"
 #include "case-cfn-macros.h"
 #include "params.h"
@@ -4003,8 +4003,8 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	     and pos is [0,N-1].  */
 	  {
 	    bool is_pos = cfn == CFN_GOACC_DIM_POS;
-	    int axis = get_oacc_ifn_dim_arg (stmt);
-	    int size = get_oacc_fn_dim_size (current_function_decl, axis);
+	    int axis = oacc_get_ifn_dim_arg (stmt);
+	    int size = oacc_get_fn_dim_size (current_function_decl, axis);
 
 	    if (!size)
 	      /* If it's dynamic, the backend might know a hardware

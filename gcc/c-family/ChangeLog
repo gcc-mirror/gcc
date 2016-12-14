@@ -1,3 +1,9 @@
+2016-12-14  Martin Jambor  <mjambor@suse.cz>
+
+	* c-omp.c: Include omp-general.h instead of omp-low.h.
+	(c_finish_oacc_wait): Adjusted call to find_omp_clause to use its new
+	name.
+
 2016-12-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c/17308

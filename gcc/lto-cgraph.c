@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "ipa-utils.h"
-#include "omp-low.h"
+#include "omp-offload.h"
 #include "ipa-chkp.h"
 
 /* True when asm nodes has been output.  */

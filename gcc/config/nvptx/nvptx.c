@@ -55,6 +55,7 @@
 #include "gimple.h"
 #include "stor-layout.h"
 #include "builtins.h"
+#include "omp-general.h"
 #include "omp-low.h"
 #include "gomp-constants.h"
 #include "dumpfile.h"
@@ -1389,7 +1390,7 @@ nvptx_expand_call (rtx retval, rtx address)
 	  if (DECL_STATIC_CHAIN (decl))
 	    cfun->machine->has_chain = true;
 
-	  tree attr = get_oacc_fn_attrib (decl);
+	  tree attr = oacc_get_fn_attrib (decl);
 	  if (attr)
 	    {
 	      tree dims = TREE_VALUE (attr);
@@ -4090,7 +4091,7 @@ nvptx_reorg (void)
   /* Determine launch dimensions of the function.  If it is not an
      offloaded function  (i.e. this is a regular compiler), the
      function has no neutering.  */
-  tree attr = get_oacc_fn_attrib (current_function_decl);
+  tree attr = oacc_get_fn_attrib (current_function_decl);
   if (attr)
     {
       /* If we determined this mask before RTL expansion, we could
@@ -4243,7 +4244,7 @@ nvptx_record_offload_symbol (tree decl)
 
     case FUNCTION_DECL:
       {
-	tree attr = get_oacc_fn_attrib (decl);
+	tree attr = oacc_get_fn_attrib (decl);
 	/* OpenMP offloading does not set this attribute.  */
 	tree dims = attr ? TREE_VALUE (attr) : NULL_TREE;
 

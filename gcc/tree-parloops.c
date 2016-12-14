@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "tree-hasher.h"
 #include "tree-parloops.h"
+#include "omp-general.h"
 #include "omp-low.h"
 #include "tree-ssa.h"
 #include "params.h"
@@ -2045,7 +2046,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
       tree clause = build_omp_clause (loc, OMP_CLAUSE_NUM_GANGS);
       OMP_CLAUSE_NUM_GANGS_EXPR (clause)
 	= build_int_cst (integer_type_node, n_threads);
-      set_oacc_fn_attrib (cfun->decl, clause, true, NULL);
+      oacc_set_fn_attrib (cfun->decl, clause, true, NULL);
     }
   else
     {
@@ -3199,7 +3200,7 @@ parallelize_loops (bool oacc_kernels_p)
 
   /* Do not parallelize loops in offloaded functions.  */
   if (!oacc_kernels_p
-      && get_oacc_fn_attrib (cfun->decl) != NULL)
+      && oacc_get_fn_attrib (cfun->decl) != NULL)
      return false;
 
   if (cfun->has_nonlocal_label)

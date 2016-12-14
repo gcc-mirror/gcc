@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "debug.h"
 #include "output.h"
-#include "omp-low.h"
+#include "omp-offload.h"
 #include "context.h"
 
 const char * const tls_model_names[]={"none", "emulated",

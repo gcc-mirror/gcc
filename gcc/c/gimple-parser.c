@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-lang.h"
 #include "c-family/c-objc.h"
 #include "plugin.h"
-#include "omp-low.h"
 #include "builtins.h"
 #include "gomp-constants.h"
 #include "c-family/c-indentation.h"

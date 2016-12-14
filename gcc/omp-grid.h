@@ -1,4 +1,5 @@
-/* Header file for openMP lowering directives.
+/* Lowering and expansion of OpenMP directives for HSA GPU agents.
+
    Copyright (C) 2013-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -11,21 +12,16 @@ version.
 GCC is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- for more details.
+for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_OMP_LOW_H
-#define GCC_OMP_LOW_H
+#ifndef GCC_OMP_GRID_H
+#define GCC_OMP_GRID_H
 
-extern tree omp_reduction_init_op (location_t, enum tree_code, tree);
-extern tree omp_reduction_init (tree, tree);
-extern tree omp_member_access_dummy_var (tree);
-extern tree omp_find_combined_for (gimple_stmt_iterator *gsi_p,
-				   bool *handled_ops_p,
-				   struct walk_stmt_info *wi);
+extern tree omp_grid_lastprivate_predicate (struct omp_for_data *fd);
+extern void omp_grid_gridify_all_targets (gimple_seq *body_p);
 
-
-#endif /* GCC_OMP_LOW_H */
+#endif /* GCC_OMP_GRID_H */

@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-match.h"
 #include "gomp-constants.h"
 #include "optabs-query.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "ipa-chkp.h"
 #include "tree-cfg.h"
 #include "fold-const-call.h"
@@ -3416,8 +3416,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 static tree
 fold_internal_goacc_dim (const gimple *call)
 {
-  int axis = get_oacc_ifn_dim_arg (call);
-  int size = get_oacc_fn_dim_size (current_function_decl, axis);
+  int axis = oacc_get_ifn_dim_arg (call);
+  int size = oacc_get_fn_dim_size (current_function_decl, axis);
   bool is_pos = gimple_call_internal_fn (call) == IFN_GOACC_DIM_POS;
   tree result = NULL_TREE;
 

@@ -1,5 +1,7 @@
-/* Header file for openMP lowering directives.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+/* Bits of OpenMP and OpenACC handling that is specific to device offloading
+   and a lowering pass for OpenACC device directives.
+
+   Copyright (C) 2005-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -11,21 +13,18 @@ version.
 GCC is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- for more details.
+for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_OMP_LOW_H
-#define GCC_OMP_LOW_H
+#ifndef GCC_OMP_DEVICE_H
+#define GCC_OMP_DEVICE_H
 
-extern tree omp_reduction_init_op (location_t, enum tree_code, tree);
-extern tree omp_reduction_init (tree, tree);
-extern tree omp_member_access_dummy_var (tree);
-extern tree omp_find_combined_for (gimple_stmt_iterator *gsi_p,
-				   bool *handled_ops_p,
-				   struct walk_stmt_info *wi);
+extern GTY(()) vec<tree, va_gc> *offload_funcs;
+extern GTY(()) vec<tree, va_gc> *offload_vars;
 
+extern void omp_finish_file (void);
 
-#endif /* GCC_OMP_LOW_H */
+#endif /* GCC_OMP_DEVICE_H */

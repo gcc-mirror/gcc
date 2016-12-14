@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "tree-chkp.h"
-#include "omp-low.h"
+#include "omp-offload.h"
 #include "hsa.h"
 #include "edit-context.h"
 

@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "gimple-expr.h"
 #include "c-pragma.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "gomp-constants.h"
 
 
@@ -45,7 +45,7 @@ c_finish_oacc_wait (location_t loc, tree parms, tree clauses)
   vec_alloc (args, nparms + 2);
   stmt = builtin_decl_explicit (BUILT_IN_GOACC_WAIT);
 
-  if (find_omp_clause (clauses, OMP_CLAUSE_ASYNC))
+  if (omp_find_clause (clauses, OMP_CLAUSE_ASYNC))
     t = OMP_CLAUSE_ASYNC_EXPR (clauses);
   else
     t = build_int_cst (integer_type_node, GOMP_ASYNC_SYNC);

@@ -54,7 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "tree-inline.h"
 #include "tree-ssa-live.h"
-#include "omp-low.h"
+#include "omp-general.h"
+#include "omp-expand.h"
 #include "tree-cfgcleanup.h"
 #include "gimplify.h"
 #include "attribs.h"
@@ -863,7 +864,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
       break;
 
     CASE_GIMPLE_OMP:
-      fallthru = make_gimple_omp_edges (bb, pcur_region, pomp_index);
+      fallthru = omp_make_gimple_edges (bb, pcur_region, pomp_index);
       break;
 
     case GIMPLE_TRANSACTION:
@@ -1006,7 +1007,7 @@ make_edges (void)
 
   XDELETE (bb_to_omp_idx);
 
-  free_omp_regions ();
+  omp_free_regions ();
 }
 
 /* Add SEQ after GSI.  Start new bb after GSI, and created further bbs as

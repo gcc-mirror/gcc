@@ -1,3 +1,21 @@
+2016-12-14  Martin Jambor  <mjambor@suse.cz>
+
+	* c-parser.c: Include omp-general.h and omp-offload.h instead of
+	omp-low.h.
+	(c_finish_oacc_routine): Adjusted call to
+	get_oacc_fn_attrib, build_oacc_routine_dims and replace_oacc_fn_attrib
+	to use their new names.
+	(c_parser_oacc_enter_exit_data): Adjusted call to find_omp_clause to
+	use its new name.
+	(c_parser_oacc_update): Likewise.
+	(c_parser_omp_simd): Likewise.
+	(c_parser_omp_target_update): Likewise.
+	* c-typeck.c: Include omp-general.h instead of omp-low.h.
+	(c_finish_omp_cancel): Adjusted call to find_omp_clause to use its new
+	name.
+	(c_finish_omp_cancellation_point): Likewise.
+	* gimple-parser.c: Do not include omp-low.h
+
 2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
