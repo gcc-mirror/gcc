@@ -1,3 +1,9 @@
+2016-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/72775
+	* init.c (perform_member_init): Diagnose member initializer for
+	flexible array member. 
+
 2016-12-14  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78701
