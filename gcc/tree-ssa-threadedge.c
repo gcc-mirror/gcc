@@ -574,7 +574,8 @@ simplify_control_stmt_condition (edge e,
 				 gimple stmt,
 				 gcond *dummy_cond,
 				 tree (*simplify) (gimple, gimple),
-				 bool handle_dominating_asserts)
+				 bool handle_dominating_asserts,
+				 bool backedge_seen)
 {
   tree cond, cached_lhs;
   enum gimple_code code = gimple_code (stmt);
@@ -593,7 +594,7 @@ simplify_control_stmt_condition (edge e,
       /* Get the current value of both operands.  */
       if (TREE_CODE (op0) == SSA_NAME)
 	{
-	  for (int i = 0; i < 2; i++)
+	  for (int i = 0; i < (backedge_seen ? 1 : 2); i++)
 	    {
 	      if (TREE_CODE (op0) == SSA_NAME
 		  && SSA_NAME_VALUE (op0))
@@ -605,7 +606,7 @@ simplify_control_stmt_condition (edge e,
 
       if (TREE_CODE (op1) == SSA_NAME)
 	{
-	  for (int i = 0; i < 2; i++)
+	  for (int i = 0; i < (backedge_seen ? 1 : 2); i++)
 	    {
 	      if (TREE_CODE (op1) == SSA_NAME
 		  && SSA_NAME_VALUE (op1))
@@ -689,7 +690,7 @@ simplify_control_stmt_condition (edge e,
 	 a loop invariant SSA_NAME used in the condition.  */
       if (cached_lhs)
 	{
-	  for (int i = 0; i < 2; i++)
+	  for (int i = 0; i < (backedge_seen ? 1 : 2); i++)
 	    {
 	      if (TREE_CODE (cached_lhs) == SSA_NAME
 		  && SSA_NAME_VALUE (cached_lhs))
@@ -940,7 +941,8 @@ thread_around_empty_blocks (edge taken_edge,
 
   /* Extract and simplify the condition.  */
   cond = simplify_control_stmt_condition (taken_edge, stmt, dummy_cond,
-					  simplify, handle_dominating_asserts);
+					  simplify, handle_dominating_asserts,
+					  *backedge_seen_p);
 
   /* If the condition can be statically computed and we have not already
      visited the destination edge, then add the taken edge to our thread
@@ -1326,7 +1328,8 @@ thread_through_normal_block (edge e,
 
       /* Extract and simplify the condition.  */
       cond = simplify_control_stmt_condition (e, stmt, dummy_cond, simplify,
-					      handle_dominating_asserts);
+					      handle_dominating_asserts,
+					      *backedge_seen_p);
 
       if (!cond)
 	return 0;

@@ -1,3 +1,12 @@
+2016-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78731
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition):
+	If we've seen a backedge to not walk the SSA value chain.
+	(thread_around_empty_blocks): Pass down whether we've seen
+	a backedge to simplify_control_stmt_condition.
+	(thread_through_normal_block): Likewise.
+
 2016-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline

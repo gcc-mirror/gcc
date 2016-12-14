@@ -1,3 +1,8 @@
+2016-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78731
+	* gcc.dg/torture/pr78731.c: New testcase.
+
 2016-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
