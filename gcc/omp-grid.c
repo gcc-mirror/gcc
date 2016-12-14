@@ -48,7 +48,7 @@ omp_grid_lastprivate_predicate (struct omp_for_data *fd)
   /* When dealing with a gridified loop, we need to check up to three collapsed
      iteration variables but they are not actually captured in this fd.
      Fortunately, we can easily rely on HSA builtins to get this
-     information. */
+     information.  */
 
   tree id, size;
   if (gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_GRID_LOOP
@@ -81,7 +81,7 @@ omp_grid_lastprivate_predicate (struct omp_for_data *fd)
 }
 
 /* Structure describing the basic properties of the loop we ara analyzing
-   whether it can be gridified and when it is gridified. */
+   whether it can be gridified and when it is gridified.  */
 
 struct grid_prop
 {
@@ -162,8 +162,9 @@ grid_find_single_omp_among_assignments_1 (gimple_seq seq, grid_prop *grid,
 	continue;
       if (gbind *bind = dyn_cast <gbind *> (stmt))
 	{
-	  if (!grid_find_single_omp_among_assignments_1 (gimple_bind_body (bind),
-							 grid, name, ret))
+	  gimple_seq bind_body = gimple_bind_body (bind);
+	  if (!grid_find_single_omp_among_assignments_1 (bind_body, grid, name,
+							 ret))
 	      return false;
 	}
       else if (is_gimple_omp (stmt))
@@ -325,7 +326,7 @@ grid_parallel_clauses_gridifiable (gomp_parallel *par, location_t tloc)
 
 /* Examine clauses and the body of omp loop statement GFOR and if something
    prevents gridification, issue a missed-optimization diagnostics and return
-   false, otherwise return true. GRID describes hitherto discovered properties
+   false, otherwise return true.  GRID describes hitherto discovered properties
    of the loop that is evaluated for possible gridification.  */
 
 static bool
@@ -414,7 +415,7 @@ grid_inner_loop_gridifiable_p (gomp_for *gfor, grid_prop *grid)
 
 /* Given distribute omp construct represented by DIST, which in the original
    source forms a compound construct with a looping construct, return true if it
-   can be turned into a gridified HSA kernel.  Otherwise return false. GRID
+   can be turned into a gridified HSA kernel.  Otherwise return false.  GRID
    describes hitherto discovered properties of the loop that is evaluated for
    possible gridification.  */
 
@@ -455,7 +456,7 @@ grid_dist_follows_simple_pattern (gomp_for *dist, grid_prop *grid)
 /* Given an omp loop statement GFOR, return true if it can participate in
    tiling gridification, i.e. in one where the distribute and parallel for
    loops do not form a compound statement.  GRID describes hitherto discovered
-   properties of the loop that is evaluated for possible gridification. */
+   properties of the loop that is evaluated for possible gridification.  */
 
 static bool
 grid_gfor_follows_tiling_pattern (gomp_for *gfor, grid_prop *grid)
@@ -599,7 +600,7 @@ grid_handle_call_in_distribute (gimple_stmt_iterator *gsi)
 /* Given a sequence of statements within a distribute omp construct or a
    parallel construct, which in the original source does not form a compound
    construct with a looping construct, return true if it does not prevent us
-   from turning it into a gridified HSA kernel.  Otherwise return false. GRID
+   from turning it into a gridified HSA kernel.  Otherwise return false.  GRID
    describes hitherto discovered properties of the loop that is evaluated for
    possible gridification.  IN_PARALLEL must be true if seq is within a
    parallel construct and flase if it is only within a distribute
@@ -910,7 +911,7 @@ grid_mark_variable_segment (tree var, enum grid_var_segment segment)
      their uses.  Fortunately, we do not have to do this because if they are
      not addressable, it means they are not used in atomic or parallel
      statements and so relaxed GPU consistency rules mean we can just keep them
-     private. */
+     private.  */
   if (!TREE_ADDRESSABLE (var))
     return;
 
@@ -961,7 +962,9 @@ grid_copy_leading_local_assignments (gimple_seq src, gimple_stmt_iterator *dst,
 	    (gimple_bind_body (bind), dst, tgt_bind, var_segment, wi);
 
 	  if (var_segment != GRID_SEGMENT_PRIVATE)
-	    for (tree var = gimple_bind_vars (bind); var; var = DECL_CHAIN (var))
+	    for (tree var = gimple_bind_vars (bind);
+		 var;
+		 var = DECL_CHAIN (var))
 	      grid_mark_variable_segment (var, var_segment);
 	  if (r)
 	    return r;
@@ -1191,7 +1194,8 @@ grid_process_kernel_body_copy (grid_prop *grid, gimple_seq seq,
   gcc_assert (teams);
   gimple_omp_teams_set_grid_phony (teams, true);
   stmt = grid_copy_leading_local_assignments (gimple_omp_body (teams), dst,
-					      tgt_bind, GRID_SEGMENT_GLOBAL, wi);
+					      tgt_bind, GRID_SEGMENT_GLOBAL,
+					      wi);
   gcc_checking_assert (stmt);
   gomp_for *dist = dyn_cast <gomp_for *> (stmt);
   gcc_assert (dist);
@@ -1278,7 +1282,8 @@ grid_attempt_target_gridification (gomp_target *target,
   gomp_for *inner_loop = grid_process_kernel_body_copy (&grid, kernel_seq, gsi,
 							tgt_bind, &wi);
 
-  gbind *old_bind = as_a <gbind *> (gimple_seq_first (gimple_omp_body (target)));
+  gbind *old_bind
+    = as_a <gbind *> (gimple_seq_first (gimple_omp_body (target)));
   gbind *new_bind = as_a <gbind *> (gimple_seq_first (kernel_seq));
   tree new_block = gimple_bind_block (new_bind);
   tree enc_block = BLOCK_SUPERCONTEXT (gimple_bind_block (old_bind));
@@ -1324,11 +1329,11 @@ grid_attempt_target_gridification (gomp_target *target,
       else
 	t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
       if (grid.tiling)
-        {
-          if (cond_code == GT_EXPR)
-            step = fold_build1 (NEGATE_EXPR, itype, step);
-          t = fold_build2 (MULT_EXPR, itype, t, step);
-        }
+	{
+	  if (cond_code == GT_EXPR)
+	    step = fold_build1 (NEGATE_EXPR, itype, step);
+	  t = fold_build2 (MULT_EXPR, itype, t, step);
+	}
 
       tree gs = fold_convert (uint32_type_node, t);
       gimple_seq tmpseq = NULL;
@@ -1360,7 +1365,7 @@ grid_attempt_target_gridification (gomp_target *target,
   return;
 }
 
-/* Walker function doing all the work for create_target_kernels. */
+/* Walker function doing all the work for create_target_kernels.  */
 
 static tree
 grid_gridify_all_targets_stmt (gimple_stmt_iterator *gsi,

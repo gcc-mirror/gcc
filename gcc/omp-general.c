@@ -418,7 +418,7 @@ omp_max_vf (void)
       || !flag_tree_loop_optimize
       || (!flag_tree_loop_vectorize
 	  && (global_options_set.x_flag_tree_loop_vectorize
-              || global_options_set.x_flag_tree_vectorize)))
+	      || global_options_set.x_flag_tree_vectorize)))
     return 1;
 
   int vf = 1;
@@ -442,7 +442,7 @@ omp_max_simt_vf (void)
   if (!optimize)
     return 0;
   if (ENABLE_OFFLOADING)
-    for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c; )
+    for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
       {
 	if (!strncmp (c, "nvptx", strlen ("nvptx")))
 	  return 32;
@@ -481,7 +481,7 @@ oacc_launch_pack (unsigned code, tree device, unsigned op)
    represented as a list of INTEGER_CST.  Those that are runtime
    exprs are represented as an INTEGER_CST of zero.
 
-   TOOO. Normally the attribute will just contain a single such list.  If
+   TODO: Normally the attribute will just contain a single such list.  If
    however it contains a list of lists, this will represent the use of
    device_type.  Each member of the outer list is an assoc list of
    dimensions, keyed by the device type.  The first entry will be the
@@ -566,8 +566,8 @@ tree
 oacc_build_routine_dims (tree clauses)
 {
   /* Must match GOMP_DIM ordering.  */
-  static const omp_clause_code ids[] =
-    {OMP_CLAUSE_GANG, OMP_CLAUSE_WORKER, OMP_CLAUSE_VECTOR, OMP_CLAUSE_SEQ};
+  static const omp_clause_code ids[]
+    = {OMP_CLAUSE_GANG, OMP_CLAUSE_WORKER, OMP_CLAUSE_VECTOR, OMP_CLAUSE_SEQ};
   int ix;
   int level = -1;
 
