@@ -2222,6 +2222,90 @@ handle_char_store (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Try to fold strstr (s, t) eq/ne s to memcmp (s, t, strlen (t)) eq/ne 0.  */
+
+static void
+fold_strstr_to_memcmp (tree rhs1, tree rhs2, gimple *stmt)
+{
+  if (TREE_CODE (rhs1) != SSA_NAME
+      || TREE_CODE (rhs2) != SSA_NAME)
+    return;
+
+  gimple *call_stmt = NULL;
+  for (int pass = 0; pass < 2; pass++)
+    {
+      gimple *g = SSA_NAME_DEF_STMT (rhs1);
+      if (gimple_call_builtin_p (g, BUILT_IN_STRSTR)
+	  && has_single_use (rhs1)
+	  && gimple_call_arg (g, 0) == rhs2)
+	{
+	  call_stmt = g;
+	  break;
+	}
+      std::swap (rhs1, rhs2);
+    }
+
+  if (call_stmt)
+    {
+      tree arg0 = gimple_call_arg (call_stmt, 0);
+
+      if (arg0 == rhs2)
+	{
+	  tree arg1 = gimple_call_arg (call_stmt, 1);
+	  tree arg1_len = NULL_TREE;
+	  int idx = get_stridx (arg1);
+
+	  if (idx)
+	    {
+	      if (idx < 0)
+		arg1_len = build_int_cst (size_type_node, ~idx);
+	      else
+		{
+		  strinfo *si = get_strinfo (idx);
+		  if (si)
+		    arg1_len = get_string_length (si);
+		}
+	    }
+
+	  if (arg1_len != NULL_TREE)
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (call_stmt);
+	      tree memcmp_decl = builtin_decl_explicit (BUILT_IN_MEMCMP);
+	      gcall *memcmp_call = gimple_build_call (memcmp_decl, 3,
+						      arg0, arg1, arg1_len);
+	      tree memcmp_lhs = make_ssa_name (integer_type_node);
+	      gimple_set_vuse (memcmp_call, gimple_vuse (call_stmt));
+	      gimple_call_set_lhs (memcmp_call, memcmp_lhs);
+	      gsi_remove (&gsi, true);
+	      gsi_insert_before (&gsi, memcmp_call, GSI_SAME_STMT);
+	      tree zero = build_zero_cst (TREE_TYPE (memcmp_lhs));
+
+	      if (is_gimple_assign (stmt))
+		{
+		  if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+		    {
+		      tree cond = gimple_assign_rhs1 (stmt);
+		      TREE_OPERAND (cond, 0) = memcmp_lhs;
+		      TREE_OPERAND (cond, 1) = zero;
+		    }
+		  else
+		    {
+		      gimple_assign_set_rhs1 (stmt, memcmp_lhs);
+		      gimple_assign_set_rhs2 (stmt, zero);
+		    }
+		}
+	      else
+		{
+		  gcond *cond = as_a<gcond *> (stmt);
+		  gimple_cond_set_lhs (cond, memcmp_lhs);
+		  gimple_cond_set_rhs (cond, zero);
+		}
+	      update_stmt (stmt);
+	    }
+	}
+    }
+}
+
 /* Attempt to optimize a single statement at *GSI using string length
    knowledge.  */
 
@@ -2302,7 +2386,23 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 	  else if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
 	    handle_pointer_plus (gsi);
 	}
-      else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
+    else if (TREE_CODE (lhs) == SSA_NAME && INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+      {
+	enum tree_code code = gimple_assign_rhs_code (stmt);
+	if (code == COND_EXPR)
+	  {
+	    tree cond = gimple_assign_rhs1 (stmt);
+	    enum tree_code cond_code = TREE_CODE (cond);
+
+	    if (cond_code == EQ_EXPR || cond_code == NE_EXPR)
+	      fold_strstr_to_memcmp (TREE_OPERAND (cond, 0),
+				     TREE_OPERAND (cond, 1), stmt);
+	  }
+	else if (code == EQ_EXPR || code == NE_EXPR)
+	  fold_strstr_to_memcmp (gimple_assign_rhs1 (stmt),
+				 gimple_assign_rhs2 (stmt), stmt);
+      }
+    else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
 	{
 	  tree type = TREE_TYPE (lhs);
 	  if (TREE_CODE (type) == ARRAY_TYPE)
@@ -2315,6 +2415,13 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 		return false;
 	    }
 	}
+    }
+  else if (gcond *cond = dyn_cast<gcond *> (stmt))
+    {
+      enum tree_code code = gimple_cond_code (cond);
+      if (code == EQ_EXPR || code == NE_EXPR)
+	fold_strstr_to_memcmp (gimple_cond_lhs (stmt),
+			       gimple_cond_rhs (stmt), stmt);
     }
 
   if (gimple_vdef (stmt))
