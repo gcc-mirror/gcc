@@ -2563,7 +2563,7 @@ cleanup:
    characterizes the reference.  */
 
 gfc_array_ref *
-gfc_find_array_ref (gfc_expr *e)
+gfc_find_array_ref (gfc_expr *e, bool allow_null)
 {
   gfc_ref *ref;
 
@@ -2573,7 +2573,12 @@ gfc_find_array_ref (gfc_expr *e)
       break;
 
   if (ref == NULL)
-    gfc_internal_error ("gfc_find_array_ref(): No ref found");
+    {
+      if (allow_null)
+	return NULL;
+      else
+	gfc_internal_error ("gfc_find_array_ref(): No ref found");
+    }
 
   return &ref->u.ar;
 }

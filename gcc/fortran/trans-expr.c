@@ -2864,9 +2864,9 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
     return 0;
 
   m = wrhs.to_shwi ();
-  /* There's no ABS for HOST_WIDE_INT, so here we go. It also takes care
-     of the asymmetric range of the integer type.  */
-  n = (unsigned HOST_WIDE_INT) (m < 0 ? -m : m);
+  /* Use the wide_int's routine to reliably get the absolute value on all
+     platforms.  Then convert it to a HOST_WIDE_INT like above.  */
+  n = wi::abs (wrhs).to_shwi ();
 
   type = TREE_TYPE (lhs);
   sgn = tree_int_cst_sgn (rhs);

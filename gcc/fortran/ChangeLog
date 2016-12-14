@@ -1,3 +1,22 @@
+2016-12-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78672
+	* array.c (gfc_find_array_ref): Add flag to return NULL when no ref is
+	found instead of erroring out.
+	* data.c (gfc_assign_data_value): Only constant expressions are valid
+	for initializers.
+	* gfortran.h: Reflect change of gfc_find_array_ref's signature.
+	* interface.c (compare_actual_formal): Access the non-elemental
+	array-ref.  Prevent taking a REF_COMPONENT for a REF_ARRAY.  Correct
+	indentation.
+	* module.c (load_omp_udrs): Clear typespec before reading into it.
+	* trans-decl.c (gfc_build_qualified_array): Prevent accessing the array
+	when it is a coarray.
+	* trans-expr.c (gfc_conv_cst_int_power): Use wi::abs()-function instead
+	of crutch preventing sanitizer's bickering here.
+	* trans-stmt.c (gfc_trans_deallocate): Only get data-component when it
+	is a descriptor-array here.
+
 2016-12-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78798

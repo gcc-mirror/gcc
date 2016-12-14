@@ -1053,7 +1053,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       layout_type (type);
     }
 
-  if (TYPE_NAME (type) != NULL_TREE
+  if (TYPE_NAME (type) != NULL_TREE && as->rank > 0
       && GFC_TYPE_ARRAY_UBOUND (type, as->rank - 1) != NULL_TREE
       && VAR_P (GFC_TYPE_ARRAY_UBOUND (type, as->rank - 1)))
     {

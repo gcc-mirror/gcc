@@ -3214,7 +3214,7 @@ bool gfc_check_constructor (gfc_expr *, bool (*)(gfc_expr *));
 bool gfc_array_size (gfc_expr *, mpz_t *);
 bool gfc_array_dimen_size (gfc_expr *, int, mpz_t *);
 bool gfc_array_ref_shape (gfc_array_ref *, mpz_t *);
-gfc_array_ref *gfc_find_array_ref (gfc_expr *);
+gfc_array_ref *gfc_find_array_ref (gfc_expr *, bool a = false);
 tree gfc_conv_array_initializer (tree type, gfc_expr *);
 bool spec_size (gfc_array_spec *, mpz_t *);
 bool spec_dimen_size (gfc_array_spec *, int, mpz_t *);

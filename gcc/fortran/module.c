@@ -4710,6 +4710,7 @@ load_omp_udrs (void)
 
       mio_lparen ();
       mio_pool_string (&name);
+      gfc_clear_ts (&ts);
       mio_typespec (&ts);
       if (strncmp (name, "operator ", sizeof ("operator ") - 1) == 0)
 	{
