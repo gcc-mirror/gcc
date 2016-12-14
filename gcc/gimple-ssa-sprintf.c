@@ -84,6 +84,12 @@ along with GCC; see the file COPYING3.  If not see
    to be used for optimization but it's good enough as is for warnings.  */
 #define target_mb_len_max   6
 
+/* The maximum number of bytes a single non-string directive can result
+   in.  This is the result of printf("%.*Lf", INT_MAX, -LDBL_MAX) for
+   LDBL_MAX_10_EXP of 4932.  */
+#define IEEE_MAX_10_EXP    4932
+#define target_dir_max()   (target_int_max () + IEEE_MAX_10_EXP + 2)
+
 namespace {
 
 const pass_data pass_data_sprintf_length = {
@@ -989,7 +995,7 @@ format_integer (const conversion_spec &spec, tree arg)
 	  gcc_unreachable ();
 	}
 
-      int len;
+      HOST_WIDE_INT len;
 
       if ((prec == HOST_WIDE_INT_MIN || prec == 0) && integer_zerop (arg))
 	{
@@ -1214,11 +1220,73 @@ format_integer (const conversion_spec &spec, tree arg)
   return res;
 }
 
+/* Return the number of bytes that a format directive consisting of FLAGS,
+   PRECision, format SPECification, and MPFR rounding specifier RNDSPEC,
+   would result for argument X under ideal conditions (i.e., if PREC
+   weren't excessive).  MPFR 3.1 allocates large amounts of memory for
+   values of PREC with large magnitude and can fail (see MPFR bug #21056).
+   This function works around those problems.  */
+
+static unsigned HOST_WIDE_INT
+get_mpfr_format_length (mpfr_ptr x, const char *flags, HOST_WIDE_INT prec,
+			char spec, char rndspec)
+{
+  char fmtstr[40];
+
+  HOST_WIDE_INT len = strlen (flags);
+
+  fmtstr[0] = '%';
+  memcpy (fmtstr + 1, flags, len);
+  memcpy (fmtstr + 1 + len, ".*R", 3);
+  fmtstr[len + 4] = rndspec;
+  fmtstr[len + 5] = spec;
+  fmtstr[len + 6] = '\0';
+
+  /* Avoid passing negative precisions with larger magnitude to MPFR
+     to avoid exposing its bugs.  (A negative precision is supposed
+     to be ignored.)  */
+  if (prec < 0)
+    prec = -1;
+
+  HOST_WIDE_INT p = prec;
+
+  if (TOUPPER (spec) == 'G')
+    {
+      /* For G/g, precision gives the maximum number of significant
+	 digits which is bounded by LDBL_MAX_10_EXP, or, for a 128
+	 bit IEEE extended precision, 4932.  Using twice as much
+	 here should be more than sufficient for any real format.  */
+      if ((IEEE_MAX_10_EXP * 2) < prec)
+	prec = IEEE_MAX_10_EXP * 2;
+      p = prec;
+    }
+  else
+    {
+      /* Cap precision arbitrarily at 1KB and add the difference
+	 (if any) to the MPFR result.  */
+      if (1024 < prec)
+	p = 1024;
+    }
+
+  len = mpfr_snprintf (NULL, 0, fmtstr, (int)p, x);
+
+  /* Handle the unlikely (impossible?) error by returning more than
+     the maximum dictated by the function's return type.  */
+  if (len < 0)
+    return target_dir_max () + 1;
+
+  /* Adjust the return value by the difference.  */
+  if (p < prec)
+    len += prec - p;
+
+  return len;
+}
+
 /* Return the number of bytes to format using the format specifier
    SPEC the largest value in the real floating TYPE.  */
 
-static int
-format_floating_max (tree type, char spec, int prec = -1)
+static unsigned HOST_WIDE_INT
+format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
 {
   machine_mode mode = TYPE_MODE (type);
 
@@ -1243,21 +1311,8 @@ format_floating_max (tree type, char spec, int prec = -1)
   mpfr_init2 (x, rfmt->p);
   mpfr_from_real (x, &rv, GMP_RNDN);
 
-  int n;
-
-  if (-1 < prec)
-    {
-      const char fmt[] = { '%', '.', '*', 'R', spec, '\0' };
-      n = mpfr_snprintf (NULL, 0, fmt, prec, x);
-    }
-  else
-    {
-      const char fmt[] = { '%', 'R', spec, '\0' };
-      n = mpfr_snprintf (NULL, 0, fmt, x);
-    }
-
   /* Return a value one greater to account for the leading minus sign.  */
-  return n + 1;
+  return 1 + get_mpfr_format_length (x, "", prec, spec, 'D');
 }
 
 /* Return a range representing the minimum and maximum number of bytes
@@ -1266,7 +1321,8 @@ format_floating_max (tree type, char spec, int prec = -1)
    is used when the directive argument or its value isn't known.  */
 
 static fmtresult
-format_floating (const conversion_spec &spec, int width, int prec)
+format_floating (const conversion_spec &spec, HOST_WIDE_INT width,
+		 HOST_WIDE_INT prec)
 {
   tree type;
   bool ldbl = false;
@@ -1357,7 +1413,7 @@ format_floating (const conversion_spec &spec, int width, int prec)
 	res.range.min = 2 + (prec < 0 ? 6 : prec);
 
 	/* Compute the maximum just once.  */
-	const int f_max[] = {
+	const HOST_WIDE_INT f_max[] = {
 	  format_floating_max (double_type_node, 'f', prec),
 	  format_floating_max (long_double_type_node, 'f', prec)
 	};
@@ -1372,10 +1428,10 @@ format_floating (const conversion_spec &spec, int width, int prec)
     case 'g':
       {
 	/* The minimum is the same as for '%F'.  */
-	res.range.min = 2 + (prec < 0 ? 6 : prec);
+	res.range.min = 1;
 
 	/* Compute the maximum just once.  */
-	const int g_max[] = {
+	const HOST_WIDE_INT g_max[] = {
 	  format_floating_max (double_type_node, 'g', prec),
 	  format_floating_max (long_double_type_node, 'g', prec)
 	};
@@ -1412,8 +1468,8 @@ format_floating (const conversion_spec &spec, tree arg)
   /* Set WIDTH to -1 when it's not specified, to INT_MIN when it is
      specified by the asterisk to an unknown value, and otherwise to
      a non-negative value corresponding to the specified width.  */
-  int width = -1;
-  int prec = -1;
+  HOST_WIDE_INT width = -1;
+  HOST_WIDE_INT prec = -1;
 
   /* The minimum and maximum number of bytes produced by the directive.  */
   fmtresult res;
@@ -1473,29 +1529,12 @@ format_floating (const conversion_spec &spec, tree arg)
 
       char fmtstr [40];
       char *pfmt = fmtstr;
-      *pfmt++ = '%';
 
       /* Append flags.  */
       for (const char *pf = "-+ #0"; *pf; ++pf)
 	if (spec.get_flag (*pf))
 	  *pfmt++ = *pf;
 
-      /* Append width when specified and precision.  */
-      if (-1 < width)
-	pfmt += sprintf (pfmt, "%i", width);
-      if (-1 < prec)
-	pfmt += sprintf (pfmt, ".%i", prec);
-
-      /* Append the MPFR 'R' floating type specifier (no length modifier
-	 is necessary or allowed by MPFR for mpfr_t values).  */
-      *pfmt++ = 'R';
-
-      /* Save the position of the MPFR rounding specifier and skip over
-	 it.  It will be set in each iteration in the loop below.  */
-      char* const rndspec = pfmt++;
-
-      /* Append the C type specifier and nul-terminate.  */
-      *pfmt++ = spec.specifier;
       *pfmt = '\0';
 
       for (int i = 0; i != sizeof minmax / sizeof *minmax; ++i)
@@ -1503,11 +1542,17 @@ format_floating (const conversion_spec &spec, tree arg)
 	  /* Use the MPFR rounding specifier to round down in the first
 	     iteration and then up.  In most but not all cases this will
 	     result in the same number of bytes.  */
-	  *rndspec = "DU"[i];
+	  char rndspec = "DU"[i];
 
-	  /* Format it and store the result in the corresponding
-	     member of the result struct.  */
-	  *minmax[i] = mpfr_snprintf (NULL, 0, fmtstr, mpfrval);
+	  /* Format it and store the result in the corresponding member
+	     of the result struct.  */
+	  unsigned HOST_WIDE_INT len
+	    = get_mpfr_format_length (mpfrval, fmtstr, prec,
+				      spec.specifier, rndspec);
+	  if (0 < width && len < (unsigned)width)
+	    len = width;
+
+	  *minmax[i] = len;
 	}
 
       /* The range of output is known even if the result isn't bounded.  */
@@ -1834,9 +1879,13 @@ format_directive (const pass_sprintf_length::call_info &info,
   if (!fmtres.knownrange)
     {
       /* Only when the range is known, check it against the host value
-	 of INT_MAX.  Otherwise the range doesn't correspond to known
-	 values of the argument.  */
-      if (fmtres.range.max >= target_int_max ())
+	 of INT_MAX + (the number of bytes of the "%.*Lf" directive with
+	 INT_MAX precision, which is the longest possible output of any
+	 single directive).  That's the largest valid byte count (though
+	 not valid call to a printf-like function because it can never
+	 return such a count).  Otherwise, the range doesn't correspond
+	 to known values of the argument.  */
+      if (fmtres.range.max > target_dir_max ())
 	{
 	  /* Normalize the MAX counter to avoid having to deal with it
 	     later.  The counter can be less than HOST_WIDE_INT_M1U
@@ -1850,7 +1899,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 	  res->number_chars = HOST_WIDE_INT_M1U;
 	}
 
-      if (fmtres.range.min >= target_int_max ())
+      if (fmtres.range.min > target_dir_max ())
 	{
 	  /* Disable exact length checking after a failure to determine
 	     even the minimum number of characters (it shouldn't happen
