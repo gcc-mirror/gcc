@@ -490,7 +490,7 @@ enum reg_class
 
 enum target_cpus
 {
-#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
+#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   TARGET_CPU_##INTERNAL_IDENT,
 #include "aarch64-cores.def"
   TARGET_CPU_generic
