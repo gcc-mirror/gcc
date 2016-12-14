@@ -1,3 +1,8 @@
+2016-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78701
+	* g++.dg/cpp0x/pr78701.C: New.
+
 2016-12-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc/testsuite/gcc.target/powerpc/vec-extract.h: If DO_TRACE is
