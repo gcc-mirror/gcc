@@ -1,5 +1,17 @@
 2016-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (num_elements): New function.
+	(StdMapPrinter.to_string, StdSetPrinter.to_string)
+	(StdDequePrinter.to_string, Tr1UnorderedSetPrinter.to_string)
+	(Tr1UnorderedMapPrinter.to_string): Use num_elements.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Adjust expected results
+	to use singular noun when there is only one element.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/tr1.cc: Likewise.
+
 	PR libstdc++/59170
 	* python/libstdcxx/v6/printers.py (StdDebugIteratorPrinter): Use
 	_M_sequence and _M_version to detect invalid iterators.

@@ -66,7 +66,7 @@ main()
 
   std::map<std::string, int> mp;
   mp["zardoz"] = 23;
-// { dg-final { note-test mp {std::__debug::map with 1 elements = {["zardoz"] = 23}} } }
+// { dg-final { note-test mp {std::__debug::map with 1 element = {["zardoz"] = 23}} } }
 
   std::map<std::string, int>::iterator mpiter = mp.begin();
 // { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
