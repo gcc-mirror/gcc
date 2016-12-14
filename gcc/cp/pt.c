@@ -18991,14 +18991,19 @@ type_unification_real (tree tparms,
 	  if (DECL_P (parm))
 	    input_location = DECL_SOURCE_LOCATION (parm);
 	  arg = tsubst_template_arg (arg, full_targs, complain, NULL_TREE);
-	  arg = convert_template_argument (parm, arg, full_targs, complain,
-					   i, NULL_TREE);
+	  if (!uses_template_parms (arg))
+	    arg = convert_template_argument (parm, arg, full_targs, complain,
+					     i, NULL_TREE);
+	  else if (saw_undeduced < 2)
+	    arg = NULL_TREE;
+	  else
+	    arg = error_mark_node;
 	  input_location = save_loc;
 	  *checks = get_deferred_access_checks ();
 	  pop_deferring_access_checks ();
 	  if (arg == error_mark_node)
 	    return 1;
-	  else
+	  else if (arg)
 	    {
 	      TREE_VEC_ELT (targs, i) = arg;
 	      /* The position of the first default template argument,
@@ -19006,7 +19011,6 @@ type_unification_real (tree tparms,
 		 Record that.  */
 	      if (!NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs))
 		SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs, i);
-	      continue;
 	    }
 	}
 

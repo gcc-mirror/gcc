@@ -1,5 +1,9 @@
 2016-12-14  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/78701
+	* pt.c (type_unification_real): Check tsubst arg doesn't have
+	remaining template parms before converting it.
+
 	PR c++/69481
 	* cp-tree.h (TYPE_TEMPLATE_INFO_MAYBE_ALIAS): Always use
 	TYPE_ALIAS_TEMPLATE_INFO for aliases.
