@@ -1,3 +1,8 @@
+2016-12-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/20040703-1.c: Update scanned pattern.
+	* gcc.dg/tree-ssa/dump-2.c: Likewise.
+
 2016-12-14  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.target/mips/msa-builtins-err.c (dg-options): Add 

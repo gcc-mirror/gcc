@@ -1,3 +1,10 @@
+2016-12-14  Martin Liska  <mliska@suse.cz>
+
+	* gimple-pretty-print.c (dump_probability): New function.
+	(dump_edge_probability): Use the function.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_bb_header): Likewise.
+
 2016-12-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
