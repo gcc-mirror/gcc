@@ -1,3 +1,10 @@
+2016-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/72775
+	* g++.dg/ext/flexary12.C: Adjust dg-error.
+	* g++.dg/ext/flexary20.C: New.
+	* g++.dg/ext/flexary21.C: New.
+
 2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59874
