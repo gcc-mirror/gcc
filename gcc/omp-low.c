@@ -2516,7 +2516,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
 	{
 	  bool ok = false;
-	  
+
 	  if (ctx)
 	    switch (gimple_code (ctx->stmt))
 	      {
@@ -3431,7 +3431,7 @@ omp_clause_aligned_alignment (tree clause)
 	       && GET_MODE_SIZE (vmode) < vs
 	       && GET_MODE_2XWIDER_MODE (vmode) != VOIDmode)
 	  vmode = GET_MODE_2XWIDER_MODE (vmode);
-	
+
 	tree type = lang_hooks.types.type_for_mode (mode, 1);
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)
 	  continue;
@@ -4851,7 +4851,7 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	  var = orig;
 
 	incoming = outgoing = var;
-	
+
 	if (!inner)
 	  {
 	    /* See if an outer construct also reduces this variable.  */
@@ -4879,7 +4879,7 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		  default:
 		    goto do_lookup;
 		  }
-		
+
 		outer = probe;
 		for (; cls;  cls = OMP_CLAUSE_CHAIN (cls))
 		  if (OMP_CLAUSE_CODE (cls) == OMP_CLAUSE_REDUCTION
@@ -4927,14 +4927,14 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		  }
 		incoming = outgoing = (t ? t : orig);
 	      }
-	      
+
 	  has_outer_reduction:;
 	  }
 
 	if (!ref_to_res)
 	  ref_to_res = integer_zero_node;
 
-        if (omp_is_reference (orig))
+	if (omp_is_reference (orig))
 	  {
 	    tree type = TREE_TYPE (var);
 	    const char *id = IDENTIFIER_POINTER (DECL_NAME (var));
@@ -5859,9 +5859,9 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   new_body = maybe_catch_exception (new_body);
 
-  t = gimple_build_omp_return
-        (!!omp_find_clause (gimple_omp_sections_clauses (stmt),
-			    OMP_CLAUSE_NOWAIT));
+  bool nowait = omp_find_clause (gimple_omp_sections_clauses (stmt),
+				 OMP_CLAUSE_NOWAIT) != NULL_TREE;
+  t = gimple_build_omp_return (nowait);
   gimple_seq_add_stmt (&new_body, t);
   maybe_add_implicit_barrier_cancel (ctx, &new_body);
 
@@ -5993,7 +5993,6 @@ static void
 lower_omp_single (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 {
   tree block;
-  gimple *t;
   gomp_single *single_stmt = as_a <gomp_single *> (gsi_stmt (*gsi_p));
   gbind *bind;
   gimple_seq bind_body, bind_body_tail = NULL, dlist;
@@ -6022,10 +6021,10 @@ lower_omp_single (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   bind_body = maybe_catch_exception (bind_body);
 
-  t = gimple_build_omp_return
-        (!!omp_find_clause (gimple_omp_single_clauses (single_stmt),
-			    OMP_CLAUSE_NOWAIT));
-  gimple_seq_add_stmt (&bind_body_tail, t);
+  bool nowait = omp_find_clause (gimple_omp_single_clauses (single_stmt),
+				 OMP_CLAUSE_NOWAIT) != NULL_TREE;
+  gimple *g = gimple_build_omp_return (nowait);
+  gimple_seq_add_stmt (&bind_body_tail, g);
   maybe_add_implicit_barrier_cancel (ctx, &bind_body_tail);
   if (ctx->record_type)
     {
@@ -6534,7 +6533,8 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    }
 
       lock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_NAME_START);
-      lock = build_call_expr_loc (loc, lock, 1, build_fold_addr_expr_loc (loc, decl));
+      lock = build_call_expr_loc (loc, lock, 1,
+				  build_fold_addr_expr_loc (loc, decl));
 
       unlock = builtin_decl_explicit (BUILT_IN_GOMP_CRITICAL_NAME_END);
       unlock = build_call_expr_loc (loc, unlock, 1,
@@ -6811,10 +6811,10 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			  gimple_omp_for_clauses (stmt),
 			  &oacc_head, &oacc_tail, ctx);
 
-  /* Add OpenACC partitioning and reduction markers just before the loop  */
+  /* Add OpenACC partitioning and reduction markers just before the loop.  */
   if (oacc_head)
     gimple_seq_add_seq (&body, oacc_head);
-  
+
   lower_omp_for_lastprivate (&fd, &body, &dlist, ctx);
 
   if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_FOR)
@@ -8667,8 +8667,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       lower_omp (gimple_try_cleanup_ptr (stmt), ctx);
       break;
     case GIMPLE_TRANSACTION:
-      lower_omp (gimple_transaction_body_ptr (
-                   as_a <gtransaction *> (stmt)),
+      lower_omp (gimple_transaction_body_ptr (as_a <gtransaction *> (stmt)),
 		 ctx);
       break;
     case GIMPLE_BIND:
@@ -8961,16 +8960,14 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
       kind = "OpenMP";
     }
 
-  /*
-     Previously we kept track of the label's entire context in diagnose_sb_[12]
+  /* Previously we kept track of the label's entire context in diagnose_sb_[12]
      so we could traverse it and issue a correct "exit" or "enter" error
      message upon a structured block violation.
 
      We built the context by building a list with tree_cons'ing, but there is
      no easy counterpart in gimple tuples.  It seems like far too much work
      for issuing exit/enter error messages.  If someone really misses the
-     distinct error message... patches welcome.
-   */
+     distinct error message... patches welcome.  */
 
 #if 0
   /* Try to avoid confusing the user by producing and error message

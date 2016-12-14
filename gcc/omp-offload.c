@@ -61,8 +61,8 @@ struct oacc_loop
 
   gcall *marker; /* Initial head marker.  */
 
-  gcall *heads[GOMP_DIM_MAX];  /* Head marker functions. */
-  gcall *tails[GOMP_DIM_MAX];  /* Tail marker functions. */
+  gcall *heads[GOMP_DIM_MAX];  /* Head marker functions.  */
+  gcall *tails[GOMP_DIM_MAX];  /* Tail marker functions.  */
 
   tree routine;  /* Pseudo-loop enclosing a routine.  */
 
@@ -273,7 +273,7 @@ oacc_thread_numbers (bool pos, int mask, gimple_seq *seq)
    operate on adjacent iterations.  At the worker and gang level,
    each gang/warp executes a set of contiguous iterations.  Chunking
    can override this such that each iteration engine executes a
-   contiguous chunk, and then moves on to stride to the next chunk.   */
+   contiguous chunk, and then moves on to stride to the next chunk.  */
 
 static void
 oacc_xform_loop (gcall *call)
@@ -521,7 +521,7 @@ oacc_parse_default_dims (const char *dims)
 /* Validate and update the dimensions for offloaded FN.  ATTRS is the
    raw attribute.  DIMS is an array of dimensions, which is filled in.
    LEVEL is the partitioning level of a routine, or -1 for an offload
-   region itself. USED is the mask of partitioned execution in the
+   region itself.  USED is the mask of partitioned execution in the
    function.  */
 
 static void
@@ -638,7 +638,7 @@ new_oacc_loop (oacc_loop *parent, gcall *marker)
   loop->marker = marker;
 
   /* TODO: This is where device_type flattening would occur for the loop
-     flags.   */
+     flags.  */
 
   loop->flags = TREE_INT_CST_LOW (gimple_call_arg (marker, 3));
 
@@ -880,7 +880,7 @@ oacc_loop_sibling_nreverse (oacc_loop *loop)
   do
     {
       if (loop->child)
-	loop->child = oacc_loop_sibling_nreverse  (loop->child);
+	loop->child = oacc_loop_sibling_nreverse (loop->child);
 
       oacc_loop *next = loop->sibling;
       loop->sibling = last;
@@ -1066,8 +1066,8 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	  loop->flags &= ~OLF_AUTO;
 	  if (seq_par)
 	    {
-	      loop->flags &=
-		~((GOMP_DIM_MASK (GOMP_DIM_MAX) - 1) << OLF_DIM_BASE);
+	      loop->flags
+		&= ~((GOMP_DIM_MASK (GOMP_DIM_MAX) - 1) << OLF_DIM_BASE);
 	      this_mask = 0;
 	    }
 	}
@@ -1183,14 +1183,14 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask)
       /* Allocate the loop at the innermost available level.  */
       unsigned this_mask = 0;
 
-      /* Determine the outermost partitioning used within this loop. */
+      /* Determine the outermost partitioning used within this loop.  */
       this_mask = loop->inner | GOMP_DIM_MASK (GOMP_DIM_MAX);
       this_mask = least_bit_hwi (this_mask);
 
       /* Pick the partitioning just inside that one.  */
       this_mask >>= 1;
 
-      /* And avoid picking one use by an outer loop. */
+      /* And avoid picking one use by an outer loop.  */
       this_mask &= ~outer_mask;
 
       if (!this_mask && noisy)
@@ -1476,7 +1476,7 @@ default_goacc_validate_dims (tree ARG_UNUSED (decl), int *dims,
   return changed;
 }
 
-/* Default dimension bound is unknown on accelerator and 1 on host. */
+/* Default dimension bound is unknown on accelerator and 1 on host.  */
 
 int
 default_goacc_dim_limit (int ARG_UNUSED (axis))

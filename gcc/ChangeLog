@@ -1,5 +1,14 @@
 2016-12-14  Martin Jambor  <mjambor@suse.cz>
 
+	    * omp-offload.c: Fix coding style.
+	    * omp-expand.c: Likewise.
+	    * omp-general.c: Likewise.
+	    * omp-grid.c: Likewise.
+	    * omp-low.c: Fix coding style of parts touched by the
+	      previous splitting patch.
+
+2016-12-14  Martin Jambor  <mjambor@suse.cz>
+
 	* omp-general.h: New file.
 	* omp-general.c: New file.
 	* omp-expand.h: Likewise.
