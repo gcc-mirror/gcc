@@ -1,5 +1,11 @@
 2016-12-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/78780
+	* trans-expr.c (gfc_trans_assignment_1): Improve check whether detour
+	caf-runtime routines is needed.
+
+2016-12-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/78672
 	* array.c (gfc_find_array_ref): Add flag to return NULL when no ref is
 	found instead of erroring out.
