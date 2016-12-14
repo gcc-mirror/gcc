@@ -32396,6 +32396,7 @@ enum ix86_builtins
 
   /* LZCNT */
   IX86_BUILTIN_LZCNT16,
+  IX86_BUILTIN_CLZS,
   IX86_BUILTIN_LZCNT32,
   IX86_BUILTIN_LZCNT64,
 
@@ -32422,6 +32423,7 @@ enum ix86_builtins
   IX86_BUILTIN_BEXTR32,
   IX86_BUILTIN_BEXTR64,
   IX86_BUILTIN_TZCNT16,
+  IX86_BUILTIN_CTZS,
   IX86_BUILTIN_TZCNT32,
   IX86_BUILTIN_TZCNT64,
 
@@ -33813,6 +33815,8 @@ static const struct builtin_description bdesc_args[] =
 
   /* LZCNT */
   { OPTION_MASK_ISA_LZCNT, CODE_FOR_lzcnt_hi, "__builtin_ia32_lzcnt_u16", IX86_BUILTIN_LZCNT16, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
+  /* Same as above, for backward compatibility.  */
+  { OPTION_MASK_ISA_LZCNT, CODE_FOR_lzcnt_hi, "__builtin_clzs", IX86_BUILTIN_CLZS, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
   { OPTION_MASK_ISA_LZCNT, CODE_FOR_lzcnt_si, "__builtin_ia32_lzcnt_u32", IX86_BUILTIN_LZCNT32, UNKNOWN, (int) UINT_FTYPE_UINT },
   { OPTION_MASK_ISA_LZCNT | OPTION_MASK_ISA_64BIT, CODE_FOR_lzcnt_di, "__builtin_ia32_lzcnt_u64", IX86_BUILTIN_LZCNT64, UNKNOWN, (int) UINT64_FTYPE_UINT64 },
 
@@ -33821,6 +33825,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_BMI | OPTION_MASK_ISA_64BIT, CODE_FOR_bmi_bextr_di, "__builtin_ia32_bextr_u64", IX86_BUILTIN_BEXTR64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
 
   { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_tzcnt_hi, "__builtin_ia32_tzcnt_u16", IX86_BUILTIN_TZCNT16, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
+  /* Same as above, for backward compatibility.  */
+  { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_tzcnt_hi, "__builtin_ctzs", IX86_BUILTIN_CTZS, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
   { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_tzcnt_si, "__builtin_ia32_tzcnt_u32", IX86_BUILTIN_TZCNT32, UNKNOWN, (int) UINT_FTYPE_UINT },
   { OPTION_MASK_ISA_BMI | OPTION_MASK_ISA_64BIT, CODE_FOR_bmi_tzcnt_di, "__builtin_ia32_tzcnt_u64", IX86_BUILTIN_TZCNT64, UNKNOWN, (int) UINT64_FTYPE_UINT64 },
 
@@ -37603,6 +37609,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
           return fold_builtin_cpu (fndecl, args);
 
 	case IX86_BUILTIN_TZCNT16:
+	case IX86_BUILTIN_CTZS:
 	case IX86_BUILTIN_TZCNT32:
 	case IX86_BUILTIN_TZCNT64:
 	  gcc_assert (n_args == 1);
@@ -37610,7 +37617,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    {
 	      tree type = TREE_TYPE (TREE_TYPE (fndecl));
 	      tree arg = args[0];
-	      if (fn_code == IX86_BUILTIN_TZCNT16)
+	      if (fn_code == IX86_BUILTIN_TZCNT16
+		  || fn_code == IX86_BUILTIN_CTZS)
 		arg = fold_convert (short_unsigned_type_node, arg);
 	      if (integer_zerop (arg))
 		return build_int_cst (type, TYPE_PRECISION (TREE_TYPE (arg)));
@@ -37620,6 +37628,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	  break;
 
 	case IX86_BUILTIN_LZCNT16:
+	case IX86_BUILTIN_CLZS:
 	case IX86_BUILTIN_LZCNT32:
 	case IX86_BUILTIN_LZCNT64:
 	  gcc_assert (n_args == 1);
@@ -37627,7 +37636,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    {
 	      tree type = TREE_TYPE (TREE_TYPE (fndecl));
 	      tree arg = args[0];
-	      if (fn_code == IX86_BUILTIN_LZCNT16)
+	      if (fn_code == IX86_BUILTIN_LZCNT16
+		  || fn_code == IX86_BUILTIN_CLZS)
 		arg = fold_convert (short_unsigned_type_node, arg);
 	      if (integer_zerop (arg))
 		return build_int_cst (type, TYPE_PRECISION (TREE_TYPE (arg)));

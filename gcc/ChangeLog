@@ -1,3 +1,11 @@
+2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59874
+	* config/i386/i386.c (enum ix86_builtins): Add IX86_BUILTIN_CLZS
+	and IX86_BUILTIN_CTZS.
+	(bdesc_args): Add __builtin_clzs and __builtin_ctzs.
+	(ix86_fold_builtin): Handle IX86_BUILTIN_CTZS and IX86_BUILTIN_CLZS.
+
 2016-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
