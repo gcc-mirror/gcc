@@ -1,3 +1,64 @@
+2016-12-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_split_vec_extract_var): On ISA
+	3.0/power9, add support to use the VEXTU{B,H,W}{L,R}X extract
+	instructions.
+	* config/rs6000/vsx.md (VSr2): Add IEEE 128-bit floating point
+	type constraint registers.
+	(VSr3): Likewise.
+	(FL_CONV): New mode iterator for binary floating types that have a
+	direct conversion from 64-bit integer to floating point.
+	(vsx_extract_<mode>_p9): Add support for the ISA 3.0/power9
+	VEXTU{B,H,W}{L,R}X extract instructions.
+	(vsx_extract_<mode>_p9 splitter): Add splitter to load up the
+	extract byte position into the GPR if we are using the
+	VEXTU{B,H,W}{L,R}X extract instructions.
+	(vsx_extract_<mode>_di_p9): Support extracts to GPRs.
+	(vsx_extract_<mode>_store_p9): Support extracting to GPRs so that
+	we can use reg+offset address instructions.
+	(vsx_extract_<mode>_var): Support extracts to GPRs.
+	(vsx_extract_<VSX_EXTRACT_I:mode>_<SDI:mode>_var): New combiner
+	insn to combine vector extracts with zero_extend.
+	(vsx_ext_<VSX_EXTRACT_I:VS_scalar>_fl_<FL_CONV:mode>): Optimize
+	extracting a small integer vector element and converting it to a
+	floating point type.
+	(vsx_ext_<VSX_EXTRACT_I:VS_scalar>_ufl_<FL_CONV:mode>): Likewise.
+	(UNSPEC_XXEXTRACTUW): New unspec.
+	(UNSPEC_XXINSERTW): Likewise.
+	(vextract4b): Add support for the vec_vextract4b built-in
+	function.
+	(vextract4b_internal): Likewise.
+	(vinsert4b): Add support for the vec_insert4b built-in function.
+	Include both a version that inserts element 1 from a V4SI object
+	and one that inserts a DI object.
+	(vinsert4b_internal): Likewise.
+	(vinsert4b_di): Likewise.
+	(vinsert4b_di_internal): Likewise.
+	* config/rs6000/predicates.md (const_0_to_11_operand): New
+	predicate, match 0..11.
+	* config/rs6000/rs6000-builtin.def (BU_P9V_VSX_3): Set built-in
+	type to ternary, not binary.
+	(BU_P9V_64BIT_VSX_3): Likewise.
+	(P9V_BUILTIN_VEXTRACT4B): Add support for vec_vinsert4b and
+	vec_extract4b non-overloaded built-in functions.
+	(P9V_BUILTIN_VINSERT4B): Likewise.
+	(P9V_BUILTIN_VINSERT4B_DI): Likewise.
+	(P9V_BUILTIN_VEC_VEXTULX): Move to section that adds 2 operand ISA
+	3.0 built-in functions.
+	(P9V_BUILTIN_VEC_VEXTURX): Likewise.
+	(P9V_BUILTIN_VEC_VEXTRACT4B): Add support for overloaded
+	vec_insert4b and vec_extract4 built-in functions.
+	(P9V_BUILTIN_VEC_VINSERT4B): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	overloaded support for vec_vinsert4b and vec_extract4b.
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Add checks for
+	the vec_insert4b and vec_extract4b byte number being a constant in
+	the range 0..11.
+	* config/rs6000/altivec.h (vec_vinsert4b): Support vec_vinsert4b
+	and vec_extract4b built-in functions.
+	* doc/extend.doc (PowerPC VSX built-in functions): Document
+	vec_insert4b and vec_extract4b.
+
 2016-12-14  Martin Liska  <mliska@suse.cz>
 
 	* gimple-pretty-print.c (dump_probability): New function.
