@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-cddce1" } */
 /* { dg-additional-options "-msse2" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-Wno-psabi" { target { powerpc-ibm-aix* } } } */
 
 typedef int v4si __attribute__((vector_size(16)));
 typedef float v4sf __attribute__((vector_size(16)));
