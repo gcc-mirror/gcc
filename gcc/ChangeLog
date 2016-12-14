@@ -1,3 +1,18 @@
+2016-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/77844
+	* valtrack.c: Include rtl-iter.h.
+	(struct rtx_subst_pair): Add insn field.
+	(propagate_for_debug_subst): If pair->to contains at least 2
+	regs, create a DEBUG_INSN with a debug temp before pair->insn
+	and replace from with the debug temp instead of pair->to.
+	(propagate_for_debug): Initialize p.insn.
+	* combine.c (insn_uid_check): New inline function.
+	(INSN_COST, LOG_LINKS): Use it instead of INSN_UID.
+	(find_single_use, combine_instructions,
+	cant_combine_insn_p, try_combine): Use NONDEBUG_INSN_P instead of
+	INSN_P.
+
 2016-12-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c/17308
