@@ -1,3 +1,9 @@
+2016-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/69481
+	* cp-tree.h (TYPE_TEMPLATE_INFO_MAYBE_ALIAS): Always use
+	TYPE_ALIAS_TEMPLATE_INFO for aliases.
+
 2016-12-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/69481

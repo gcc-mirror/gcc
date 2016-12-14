@@ -3049,18 +3049,18 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 	 ? CLASSTYPE_TEMPLATE_INFO (NODE)				\
 	 : NULL_TREE)))
 
-/* Template information for an alias template type.  */
+/* Template information (if any) for an alias type.  */
 #define TYPE_ALIAS_TEMPLATE_INFO(NODE)					\
   (DECL_LANG_SPECIFIC (TYPE_NAME (NODE))				\
    ? DECL_TEMPLATE_INFO (TYPE_NAME (NODE))				\
    : NULL_TREE)
 
-/* If NODE is a specialization of an alias template, this accessor
-   returns the template info for the alias template.  Otherwise behave
-   as TYPE_TEMPLATE_INFO.  */
+/* If NODE is a type alias, this accessor returns the template info
+   for the alias template (if any).  Otherwise behave as
+   TYPE_TEMPLATE_INFO.  */
 #define TYPE_TEMPLATE_INFO_MAYBE_ALIAS(NODE)				\
-  (TYPE_ALIAS_P (NODE) && DECL_LANG_SPECIFIC (TYPE_NAME (NODE))		\
-   ? DECL_TEMPLATE_INFO (TYPE_NAME (NODE))				\
+  (TYPE_ALIAS_P (NODE)							\
+   ? TYPE_ALIAS_TEMPLATE_INFO (NODE)					\
    : TYPE_TEMPLATE_INFO (NODE))
 
 /* Set the template information for an ENUMERAL_, RECORD_, or
