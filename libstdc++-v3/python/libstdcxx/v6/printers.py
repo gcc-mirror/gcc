@@ -508,6 +508,10 @@ class StdDebugIteratorPrinter:
         itype = self.val.type.template_argument(0)
         return self.val.cast(itype)
 
+def num_elements(num):
+    """Return either "1 element" or "N elements" depending on the argument."""
+    return '1 element' if num == 1 else '%d elements' % num
+
 class StdMapPrinter:
     "Print a std::map or std::multimap"
 
@@ -539,8 +543,8 @@ class StdMapPrinter:
         self.val = val
 
     def to_string (self):
-        return '%s with %d elements' % (self.typename,
-                                        len (RbtreeIterator (self.val)))
+        return '%s with %s' % (self.typename,
+                               num_elements(len(RbtreeIterator (self.val))))
 
     def children (self):
         rep_type = find_type(self.val.type, '_Rep_type')
@@ -579,8 +583,8 @@ class StdSetPrinter:
         self.val = val
 
     def to_string (self):
-        return '%s with %d elements' % (self.typename,
-                                        len (RbtreeIterator (self.val)))
+        return '%s with %s' % (self.typename,
+                               num_elements(len(RbtreeIterator (self.val))))
 
     def children (self):
         rep_type = find_type(self.val.type, '_Rep_type')
@@ -681,7 +685,7 @@ class StdDequePrinter:
 
         size = self.buffer_size * delta_n + delta_s + delta_e
 
-        return '%s with %d elements' % (self.typename, long (size))
+        return '%s with %s' % (self.typename, num_elements(long(size)))
 
     def children(self):
         start = self.val['_M_impl']['_M_start']
@@ -795,7 +799,8 @@ class Tr1UnorderedSetPrinter:
         return self.val['_M_h']
 
     def to_string (self):
-        return '%s with %d elements' % (self.typename, self.hashtable()['_M_element_count'])
+        count = self.hashtable()['_M_element_count']
+        return '%s with %s' % (self.typename, num_elements(count))
 
     @staticmethod
     def format_count (i):
@@ -820,7 +825,8 @@ class Tr1UnorderedMapPrinter:
         return self.val['_M_h']
 
     def to_string (self):
-        return '%s with %d elements' % (self.typename, self.hashtable()['_M_element_count'])
+        count = self.hashtable()['_M_element_count']
+        return '%s with %s' % (self.typename, num_elements(count))
 
     @staticmethod
     def flatten (list):

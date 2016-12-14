@@ -43,13 +43,13 @@ main()
 // { dg-final { note-test *flstciter {"dee"}} }
 
   std::unordered_map<std::string, int> um{ {"zardoz", 23} };
-// { dg-final { note-test um {std::__debug::unordered_map with 1 elements = {["zardoz"] = 23}} } }
+// { dg-final { note-test um {std::__debug::unordered_map with 1 element = {["zardoz"] = 23}} } }
 
   std::unordered_map<std::string, int>::iterator umiter = um.begin();
 // { dg-final { note-test umiter->first {"zardoz"} } }
 
   std::unordered_set<std::string> us{"barrel"};
-// { dg-final { note-test us {std::__debug::unordered_set with 1 elements = {[0] = "barrel"}} } }
+// { dg-final { note-test us {std::__debug::unordered_set with 1 element = {[0] = "barrel"}} } }
 
   std::unordered_set<std::string>::const_iterator usciter = us.begin();
 // { dg-final { note-test *usciter {"barrel"} } }
