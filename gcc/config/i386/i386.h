@@ -2400,6 +2400,7 @@ enum ix86_stack_slot
   SLOT_CW_FLOOR,
   SLOT_CW_CEIL,
   SLOT_CW_MASK_PM,
+  SLOT_STV_TEMP,
   MAX_386_STACK_LOCALS
 };
 
