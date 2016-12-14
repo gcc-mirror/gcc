@@ -1,3 +1,9 @@
+2016-12-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-strlen.c (fold_strstr_to_memcmp): New function.
+	(strlen_optimize_stmt): Call fold_strstr_to_memcmp.
+
 2016-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lra-constraints.c (process_address_1): Do not attempt to decompose
