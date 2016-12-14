@@ -1,3 +1,8 @@
+2016-12-14  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/mips16-attributes.c: Remove dg-skip-if for
+	-mmicromips.
+
 2016-12-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78780
