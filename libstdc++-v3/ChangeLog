@@ -1,3 +1,9 @@
+2016-12-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h
+	(_Rb_tree_impl(const _Key_compare&, const _Node_allocator&): Restore
+	before C++11 mode.
+
 2016-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (num_elements): New function.

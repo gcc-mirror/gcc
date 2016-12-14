@@ -685,6 +685,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { }
 #else
 	  _Rb_tree_impl() = default;
+	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
 #endif
 
 	  _Rb_tree_impl(const _Rb_tree_impl& __x)
@@ -692,8 +693,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  , _Base_key_compare(__x._M_key_compare)
 	  { }
 
-#if __cplusplus >= 201103L
-	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
+#if __cplusplus < 201103L
+	  _Rb_tree_impl(const _Key_compare& __comp, const _Node_allocator& __a)
+	  : _Node_allocator(__a), _Base_key_compare(__comp)
+	  { }
+#else
 	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
 	  : _Node_allocator(std::move(__a)), _Base_key_compare(__comp)
 	  { }
