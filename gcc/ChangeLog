@@ -1,3 +1,8 @@
+2016-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lra-constraints.c (process_address_1): Do not attempt to decompose
+	addresses for MEMs that satisfy fixed-form constraints.
+
 2016-12-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78788
