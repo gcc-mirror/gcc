@@ -1,3 +1,7 @@
+2016-12-14  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-openmp.c: Include omp-general.h.
+
 2016-12-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78780

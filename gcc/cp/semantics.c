@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "intl.h"
 #include "tree-iterator.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "convert.h"
 #include "gomp-constants.h"
 
@@ -8001,7 +8001,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (incrv));
   if (TREE_VEC_LENGTH (declv) > 1)
     {
-      tree c = find_omp_clause (clauses, OMP_CLAUSE_COLLAPSE);
+      tree c = omp_find_clause (clauses, OMP_CLAUSE_COLLAPSE);
       if (c)
 	collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (c));
       if (collapse != TREE_VEC_LENGTH (declv))
@@ -8264,8 +8264,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
      step at this point, fill it in.  */
   if (code == OMP_SIMD && !processing_template_decl
       && TREE_VEC_LENGTH (OMP_FOR_INCR (omp_for)) == 1)
-    for (tree c = find_omp_clause (clauses, OMP_CLAUSE_LINEAR); c;
-	 c = find_omp_clause (OMP_CLAUSE_CHAIN (c), OMP_CLAUSE_LINEAR))
+    for (tree c = omp_find_clause (clauses, OMP_CLAUSE_LINEAR); c;
+	 c = omp_find_clause (OMP_CLAUSE_CHAIN (c), OMP_CLAUSE_LINEAR))
       if (OMP_CLAUSE_LINEAR_STEP (c) == NULL_TREE)
 	{
 	  decl = TREE_OPERAND (TREE_VEC_ELT (OMP_FOR_INIT (omp_for), 0), 0);
@@ -8586,13 +8586,13 @@ finish_omp_cancel (tree clauses)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);
   int mask = 0;
-  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+  if (omp_find_clause (clauses, OMP_CLAUSE_PARALLEL))
     mask = 1;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_FOR))
     mask = 2;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_SECTIONS))
     mask = 4;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_TASKGROUP))
     mask = 8;
   else
     {
@@ -8601,7 +8601,7 @@ finish_omp_cancel (tree clauses)
       return;
     }
   vec<tree, va_gc> *vec = make_tree_vector ();
-  tree ifc = find_omp_clause (clauses, OMP_CLAUSE_IF);
+  tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
       tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
@@ -8623,13 +8623,13 @@ finish_omp_cancellation_point (tree clauses)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCELLATION_POINT);
   int mask = 0;
-  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+  if (omp_find_clause (clauses, OMP_CLAUSE_PARALLEL))
     mask = 1;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_FOR))
     mask = 2;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_SECTIONS))
     mask = 4;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_TASKGROUP))
     mask = 8;
   else
     {

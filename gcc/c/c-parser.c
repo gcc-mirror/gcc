@@ -52,7 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-lang.h"
 #include "c-family/c-objc.h"
 #include "plugin.h"
-#include "omp-low.h"
+#include "omp-general.h"
+#include "omp-offload.h"
 #include "builtins.h"
 #include "gomp-constants.h"
 #include "c-family/c-indentation.h"
@@ -13922,7 +13923,7 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
     clauses = c_parser_oacc_all_clauses (parser, OACC_EXIT_DATA_CLAUSE_MASK,
 					 "#pragma acc exit data");
 
-  if (find_omp_clause (clauses, OMP_CLAUSE_MAP) == NULL_TREE)
+  if (omp_find_clause (clauses, OMP_CLAUSE_MAP) == NULL_TREE)
     {
       error_at (loc, enter
 		? "%<#pragma acc enter data%> has no data movement clause"
@@ -14241,7 +14242,7 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
       return;
     }
 
-  if (get_oacc_fn_attrib (fndecl))
+  if (oacc_get_fn_attrib (fndecl))
     {
       error_at (data->loc,
 		"%<#pragma acc routine%> already applied to %qD", fndecl);
@@ -14259,8 +14260,8 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
     }
 
   /* Process the routine's dimension clauses.  */
-  tree dims = build_oacc_routine_dims (data->clauses);
-  replace_oacc_fn_attrib (fndecl, dims);
+  tree dims = oacc_build_routine_dims (data->clauses);
+  oacc_replace_fn_attrib (fndecl, dims);
 
   /* Add an "omp declare target" attribute.  */
   DECL_ATTRIBUTES (fndecl)
@@ -14292,7 +14293,7 @@ c_parser_oacc_update (c_parser *parser)
 
   tree clauses = c_parser_oacc_all_clauses (parser, OACC_UPDATE_CLAUSE_MASK,
 					    "#pragma acc update");
-  if (find_omp_clause (clauses, OMP_CLAUSE_MAP) == NULL_TREE)
+  if (omp_find_clause (clauses, OMP_CLAUSE_MAP) == NULL_TREE)
     {
       error_at (loc,
 		"%<#pragma acc update%> must contain at least one "
@@ -15263,7 +15264,7 @@ c_parser_omp_simd (location_t loc, c_parser *parser,
     {
       omp_split_clauses (loc, OMP_SIMD, mask, clauses, cclauses);
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
-      tree c = find_omp_clause (cclauses[C_OMP_CLAUSE_SPLIT_FOR],
+      tree c = omp_find_clause (cclauses[C_OMP_CLAUSE_SPLIT_FOR],
 				OMP_CLAUSE_ORDERED);
       if (c && OMP_CLAUSE_ORDERED_EXPR (c))
 	{
@@ -16107,8 +16108,8 @@ c_parser_omp_target_update (location_t loc, c_parser *parser,
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_UPDATE_CLAUSE_MASK,
 				"#pragma omp target update");
-  if (find_omp_clause (clauses, OMP_CLAUSE_TO) == NULL_TREE
-      && find_omp_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
+  if (omp_find_clause (clauses, OMP_CLAUSE_TO) == NULL_TREE
+      && omp_find_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
     {
       error_at (loc,
 		"%<#pragma omp target update%> must contain at least one "

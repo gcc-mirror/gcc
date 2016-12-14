@@ -1399,6 +1399,10 @@ OBJS = \
 	mode-switching.o \
 	modulo-sched.o \
 	multiple_target.o \
+	omp-offload.o \
+	omp-expand.o \
+	omp-general.o \
+	omp-grid.o \
 	omp-low.o \
 	omp-simd-clone.o \
 	optabs.o \
@@ -2479,8 +2483,10 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-scalar-evolution.c \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
+  $(srcdir)/omp-offload.h \
+  $(srcdir)/omp-offload.c \
+  $(srcdir)/omp-expand.c \
   $(srcdir)/omp-low.c \
-  $(srcdir)/omp-low.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   $(srcdir)/cgraphclones.c \
   $(srcdir)/tree-phinodes.c \
