@@ -9718,7 +9718,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   bool scalar_to_array;
   tree string_length;
   int n;
-  bool maybe_workshare = false;
+  bool maybe_workshare = false, lhs_refs_comp = false, rhs_refs_comp = false;
   symbol_attribute lhs_caf_attr, rhs_caf_attr, lhs_attr;
   bool is_poly_assign;
 
@@ -9758,8 +9758,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      mode.  */
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      lhs_caf_attr = gfc_caf_attr (expr1);
-      rhs_caf_attr = gfc_caf_attr (expr2);
+      lhs_caf_attr = gfc_caf_attr (expr1, false, &lhs_refs_comp);
+      rhs_caf_attr = gfc_caf_attr (expr2, false, &rhs_refs_comp);
     }
 
   if (lss != gfc_ss_terminator)
@@ -9959,10 +9959,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     }
   else if (flag_coarray == GFC_FCOARRAY_LIB
 	   && lhs_caf_attr.codimension && rhs_caf_attr.codimension
-	   && lhs_caf_attr.alloc_comp && rhs_caf_attr.alloc_comp)
+	   && ((lhs_caf_attr.allocatable && lhs_refs_comp)
+	       || (rhs_caf_attr.allocatable && rhs_refs_comp)))
     {
+      /* Only detour to caf_send[get][_by_ref] () when the lhs or rhs is an
+	 allocatable component, because those need to be accessed via the
+	 caf-runtime.  No need to check for coindexes here, because resolve
+	 has rewritten those already.  */
       gfc_code code;
       gfc_actual_arglist a1, a2;
+      /* Clear the structures to prevent accessing garbage.  */
+      memset (&code, '\0', sizeof (gfc_code));
+      memset (&a1, '\0', sizeof (gfc_actual_arglist));
+      memset (&a2, '\0', sizeof (gfc_actual_arglist));
       a1.expr = expr1;
       a1.next = &a2;
       a2.expr = expr2;
