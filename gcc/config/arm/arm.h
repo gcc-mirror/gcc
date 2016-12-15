@@ -340,14 +340,6 @@ typedef unsigned long arm_fpu_feature_set;
 #define FPU_FL_FP16	(1 << 1)	/* Half-precision.  */
 #define FPU_FL_CRYPTO	(1 << 2)	/* Crypto extensions.  */
 
-/* Which floating point model to use.  */
-enum arm_fp_model
-{
-  ARM_FP_MODEL_UNKNOWN,
-  /* VFP floating point model.  */
-  ARM_FP_MODEL_VFP
-};
-
 enum vfp_reg_type
 {
   VFP_NONE = 0,
