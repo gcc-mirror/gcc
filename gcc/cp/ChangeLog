@@ -1,3 +1,9 @@
+2016-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/78774
+	* pt.c (convert_template_argument): Avoid assuming operand type
+	is non-null since that of SCOPE_REF is not.
+
 2016-12-14  Martin Jambor  <mjambor@suse.cz>
 
 	* parser.c: Include omp-general.h and omp-offload.h instead of
