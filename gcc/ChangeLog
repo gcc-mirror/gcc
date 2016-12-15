@@ -1,5 +1,17 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-isa.h (isa_feature): Add bits for VFPv4, FPv5, fp16conv,
+	fP_dbl, fp_d32 and fp_crypto.
+	(ISA_ALL_FPU): Add all the new bits.
+	(ISA_VFPv2, ISA_VFPv3, ISA_VFPv4, ISA_FPv5): New macros.
+	(ISA_FP_ARMv8, ISA_FP_DBL, ISA_FP_D32, ISA_NEON, ISA_CRYPTO): Likewise.
+	* arm-fpus.def: Add ISA features to all FPUs.
+	* arm.h: (arm_fpu_desc): Add new field for ISA bits.
+	* arm.c (all_fpus): Initialize it.
+	* arm-tables.opt: Regenerated.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.h (FPU_FL_VFPv2) New feature bit.
 	(FPU_FL_VFPv3, FPU_FL_VFPv4, FPU_FL_VFPv5, FPU_FL_ARMv8): Likewise.
 	(FPU_VFPv2, FPU_VFPv3, FPU_VFPv4, FPU_VFPv5, FPU_ARMv8): New helper
