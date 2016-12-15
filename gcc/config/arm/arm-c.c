@@ -243,7 +243,8 @@ arm_pragma_target_parse (tree args, tree pop_target)
       /* handle_pragma_pop_options and handle_pragma_reset_options will set
        target_option_current_node, but not handle_pragma_target.  */
       target_option_current_node = cur_tree;
-      arm_configure_build_target (&arm_active_target, &global_options,
+      arm_configure_build_target (&arm_active_target,
+				  TREE_TARGET_OPTION (cur_tree),
 				  &global_options_set, false);
     }
 

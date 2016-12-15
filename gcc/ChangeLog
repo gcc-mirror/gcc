@@ -1,5 +1,19 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-protos.h (arm_configure_build_target): Change second argument
+	to cl_target_options.
+	* arm.c (arm_configure_build_target): Likewise.
+	(arm_option_restore): Update accordingly.
+	(arm_option_override): Create the target_option_default_node before
+	calling arm_configure_build_target.  Use it in call of latter.
+	Resynchronize after all other overrides have been calculated.
+	(arm_valid_target_attribute_tree): Use the target options for
+	reconfiguration.  Resynchronize after performing override checks.
+	* arm-c.c (arm_pragma_target_parse): Use target optiosn from cur_tree
+	to reconfigure the build target.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.h (TARGET_VFPD32): Use arm_active_target.
 	(TARGET_VFP3): Likewise.
 	(TARGET_VFP5): Likewise.

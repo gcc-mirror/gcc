@@ -2936,16 +2936,17 @@ arm_override_options_after_change_1 (struct gcc_options *opts)
 static void
 arm_override_options_after_change (void)
 {
-  arm_configure_build_target (&arm_active_target, &global_options,
+  arm_configure_build_target (&arm_active_target,
+			      TREE_TARGET_OPTION (target_option_default_node),
 			      &global_options_set, false);
 
   arm_override_options_after_change_1 (&global_options);
 }
 
 static void
-arm_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
+arm_option_restore (struct gcc_options *, struct cl_target_option *ptr)
 {
-  arm_configure_build_target (&arm_active_target, opts, &global_options_set,
+  arm_configure_build_target (&arm_active_target, ptr, &global_options_set,
 			      false);
 }
 
@@ -3070,7 +3071,7 @@ static sbitmap isa_quirkbits;
    architecture have been specified, but the two are not identical.  */
 void
 arm_configure_build_target (struct arm_build_target *target,
-			    struct gcc_options *opts,
+			    struct cl_target_option *opts,
 			    struct gcc_options *opts_set,
 			    bool warn_compatible)
 {
@@ -3306,7 +3307,13 @@ arm_option_override (void)
       gcc_assert (ok);
     }
 
-  arm_configure_build_target (&arm_active_target, &global_options,
+  /* Create the default target_options structure.  We need this early
+     to configure the overall build target.  */
+  target_option_default_node = target_option_current_node
+    = build_target_option_node (&global_options);
+
+  arm_configure_build_target (&arm_active_target,
+			      TREE_TARGET_OPTION (target_option_default_node),
 			      &global_options_set, true);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
@@ -3657,13 +3664,11 @@ arm_option_override (void)
   arm_option_check_internal (&global_options);
   arm_option_params_internal ();
 
+  /* Resynchronize the saved target options.  */
+  cl_target_option_save (TREE_TARGET_OPTION (target_option_default_node),
+			 &global_options);
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
-
-  /* Save the initial options in case the user does function specific
-     options or #pragma target.  */
-  target_option_default_node = target_option_current_node
-    = build_target_option_node (&global_options);
 
   /* Init initial mode for testing.  */
   thumb_flipper = TARGET_THUMB;
@@ -30326,15 +30331,22 @@ tree
 arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
 				 struct gcc_options *opts_set)
 {
+  tree t;
+
   if (!arm_valid_target_attribute_rec (args, opts))
     return NULL_TREE;
 
-  arm_configure_build_target (&arm_active_target, opts, opts_set, false);
+  t = build_target_option_node (opts);
+  arm_configure_build_target (&arm_active_target, TREE_TARGET_OPTION (t),
+			      opts_set, false);
   arm_option_check_internal (opts);
   /* Do any overrides, such as global options arch=xxx.  */
   arm_option_override_internal (opts, opts_set);
 
-  return build_target_option_node (opts);
+  /* Resynchronize the saved target options.  */
+  cl_target_option_save (TREE_TARGET_OPTION (t), opts);
+
+  return t;
 }
 
 static void 
