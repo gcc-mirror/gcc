@@ -449,6 +449,31 @@ extern int arm_arch_no_volatile_ce;
    than core registers.  */
 extern int prefer_neon_for_64bits;
 
+/* Structure defining the current overall architectural target and tuning.  */
+struct arm_build_target
+{
+  /* Name of the target CPU, if known, or NULL if the target CPU was not
+     specified by the user (and inferred from the -march option).  */
+  const char *core_name;
+  /* Name of the target ARCH.  NULL if there is a selected CPU.  */
+  const char *arch_name;
+  /* Preprocessor substring (never NULL).  */
+  const char *arch_pp_name;
+  /* CPU identifier for the core we're compiling for (architecturally).  */
+  enum processor_type arch_core;
+  /* The base architecture value.  */
+  enum base_architecture base_arch;
+  /* Bitmap encapsulating the isa_bits for the target environment.  */
+  sbitmap isa;
+  /* Flags used for tuning.  Long term, these move into tune_params.  */
+  unsigned int tune_flags;
+  /* Tables with more detailed tuning information.  */
+  const struct tune_params *tune;
+  /* CPU identifier for the tuning target.  */
+  enum processor_type tune_core;
+};
+
+extern struct arm_build_target arm_active_target;
 
 
 #endif /* ! GCC_ARM_PROTOS_H */

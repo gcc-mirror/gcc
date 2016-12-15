@@ -1,5 +1,18 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-protos.h (arm_build_target): New structure.
+	(arm_active_target): Declare it.
+	* arm.c (arm_active_target): New variable.
+	(bitmap_popcount): New function.
+	(feature_count): Delete.
+	(arm_initialize_isa): New function.
+	isa_fpubits): New variable.
+	(arm_configure_build_target): New function.
+	(arm_option_override): Initialize isa_fpubits and arm_active_target.isa.
+	Use arm_configure_build_target.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-isa.h: New file.
 	* arm-protos.h: Include it.
 	* arm-arches.def: Add new ISA field to all entries.  Drop bogus
