@@ -32,7 +32,7 @@
 enum processor_type
 {
 #undef ARM_CORE
-#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, TUNE_FLAGS, ARCH, ISA, FLAGS, COSTS) \
+#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, TUNE_FLAGS, ARCH, ISA, COSTS) \
   TARGET_CPU_##INTERNAL_IDENT,
 #include "arm-cores.def"
 #undef ARM_CORE
