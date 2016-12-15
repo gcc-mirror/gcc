@@ -1,3 +1,11 @@
+2016-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78680
+	PR preprocessor/78811
+	* lex.c (_cpp_lex_direct): Only determine the end-location of
+	the token and build a range for non-reserved start locations.
+	Do not do it for EOF tokens.
+
 2016-12-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/78680
