@@ -1,5 +1,11 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (TARGET_FPU_NAME): Delete.
+	* arm.c (arm_identify_fpu_from_isa): New function.
+	(arm_declare_function_name): Use it to get the name for the FPU.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-protos.h: Include sbitmap.h
 	(arm_configure_build_target): Make public.
 	* arm.c (arm_configure_build_target): Now not static.
