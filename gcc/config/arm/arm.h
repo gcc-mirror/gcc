@@ -164,10 +164,10 @@ extern tree arm_fp16_type_node;
 #define TARGET_VFPD32 (TARGET_FPU_FEATURES & FPU_FL_D32)
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (TARGET_FPU_REV >= 3)
+#define TARGET_VFP3 (TARGET_FPU_FEATURES & FPU_FL_VFPv3)
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (TARGET_FPU_REV >= 5)
+#define TARGET_VFP5 (TARGET_FPU_FEATURES & FPU_FL_VFPv5)
 
 /* FPU only supports VFP single-precision instructions.  */
 #define TARGET_VFP_SINGLE ((TARGET_FPU_FEATURES & FPU_FL_DBL) == 0)
@@ -190,10 +190,10 @@ extern tree arm_fp16_type_node;
   (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (TARGET_FPU_REV >= 4)
+#define TARGET_FMA (TARGET_FPU_FEATURES & FPU_FL_VFPv4)
 
 /* FPU is ARMv8 compatible.  */
-#define TARGET_FPU_ARMV8 (TARGET_FPU_REV >= 8)
+#define TARGET_FPU_ARMV8 (TARGET_FPU_FEATURES & FPU_FL_ARMv8)
 
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO							\
@@ -341,18 +341,34 @@ typedef unsigned long arm_fpu_feature_set;
 #define FPU_FL_CRYPTO	(1u << 2)	/* Crypto extensions.  */
 #define FPU_FL_DBL	(1u << 3)	/* Has double precision.  */
 #define FPU_FL_D32	(1u << 4)	/* Has 32 double precision regs.  */
+#define FPU_FL_VFPv2	(1u << 5)	/* Has VFPv2 features.  */
+#define FPU_FL_VFPv3	(1u << 6)	/* Has VFPv3 extensions.  */
+#define FPU_FL_VFPv4	(1u << 7)	/* Has VFPv4 extensions.  */
+#define FPU_FL_VFPv5	(1u << 8)	/* Has VFPv5 extensions.  */
+#define FPU_FL_ARMv8	(1u << 9)	/* Has ARMv8 extensions to VFP.  */
+
+/* Some useful combinations.  */
+#define FPU_VFPv2	(FPU_FL_VFPv2)
+#define FPU_VFPv3	(FPU_VFPv2 | FPU_FL_VFPv3)
+#define FPU_VFPv4	(FPU_VFPv3 | FPU_FL_VFPv4)
+#define FPU_VFPv5	(FPU_VFPv4 | FPU_FL_VFPv5)
+#define FPU_ARMv8	(FPU_VFPv5 | FPU_FL_ARMv8)
+
+#define FPU_DBL		(FPU_FL_DBL)
+#define FPU_D32		(FPU_DBL | FPU_FL_D32)
+#define FPU_NEON	(FPU_D32 | FPU_FL_NEON)
+#define FPU_CRYPTO	(FPU_NEON | FPU_FL_CRYPTO)
+#define FPU_FP16	(FPU_FL_FP16)
 
 extern const struct arm_fpu_desc
 {
   const char *name;
-  int rev;
   arm_fpu_feature_set features;
 } all_fpus[];
 
 /* Accessors.  */
 
 #define TARGET_FPU_NAME     (all_fpus[arm_fpu_index].name)
-#define TARGET_FPU_REV      (all_fpus[arm_fpu_index].rev)
 #define TARGET_FPU_FEATURES (all_fpus[arm_fpu_index].features)
 
 /* Which floating point hardware to schedule for.  */

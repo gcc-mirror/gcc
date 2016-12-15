@@ -19,31 +19,31 @@
 
 /* Before using #include to read this file, define a macro:
 
-      ARM_FPU(NAME, REV, FEATURES)
+      ARM_FPU(NAME, FEATURES)
 
    The arguments are the fields of struct arm_fpu_desc.
 
    genopt.sh assumes no whitespace up to the first "," in each entry.  */
 
-ARM_FPU("vfp",			2, FPU_FL_DBL)
-ARM_FPU("vfpv2",		2, FPU_FL_DBL)
-ARM_FPU("vfpv3",		3, FPU_FL_D32 | FPU_FL_DBL)
-ARM_FPU("vfpv3-fp16",		3, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_FP16)
-ARM_FPU("vfpv3-d16",		3, FPU_FL_DBL)
-ARM_FPU("vfpv3-d16-fp16", 	3, FPU_FL_DBL | FPU_FL_FP16)
-ARM_FPU("vfpv3xd",		3, FPU_FL_NONE)
-ARM_FPU("vfpv3xd-fp16",		3, FPU_FL_FP16)
-ARM_FPU("neon",			3, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_NEON)
-ARM_FPU("neon-vfpv3",		3, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_NEON)
-ARM_FPU("neon-fp16",		3, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_NEON | FPU_FL_FP16)
-ARM_FPU("vfpv4",		4, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_FP16)
-ARM_FPU("vfpv4-d16",		4, FPU_FL_DBL | FPU_FL_FP16)
-ARM_FPU("fpv4-sp-d16",		4, FPU_FL_FP16)
-ARM_FPU("fpv5-sp-d16",		5, FPU_FL_FP16)
-ARM_FPU("fpv5-d16",		5, FPU_FL_DBL | FPU_FL_FP16)
-ARM_FPU("neon-vfpv4",		4, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_NEON | FPU_FL_FP16)
-ARM_FPU("fp-armv8",		8, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_FP16)
-ARM_FPU("neon-fp-armv8", 	8, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_NEON | FPU_FL_FP16)
-ARM_FPU("crypto-neon-fp-armv8", 8, FPU_FL_D32 | FPU_FL_DBL | FPU_FL_NEON | FPU_FL_FP16 | FPU_FL_CRYPTO)
+ARM_FPU("vfp",			FPU_VFPv2 | FPU_DBL)
+ARM_FPU("vfpv2",		FPU_VFPv2 | FPU_DBL)
+ARM_FPU("vfpv3",		FPU_VFPv3 | FPU_D32)
+ARM_FPU("vfpv3-fp16",		FPU_VFPv3 | FPU_D32 | FPU_FP16)
+ARM_FPU("vfpv3-d16",		FPU_VFPv3 | FPU_DBL)
+ARM_FPU("vfpv3-d16-fp16", 	FPU_VFPv3 | FPU_DBL | FPU_FP16)
+ARM_FPU("vfpv3xd",		FPU_VFPv3)
+ARM_FPU("vfpv3xd-fp16",		FPU_VFPv3 | FPU_FP16)
+ARM_FPU("neon",			FPU_VFPv3 | FPU_NEON)
+ARM_FPU("neon-vfpv3",		FPU_VFPv3 | FPU_NEON)
+ARM_FPU("neon-fp16",		FPU_VFPv3 | FPU_NEON | FPU_FP16)
+ARM_FPU("vfpv4",		FPU_VFPv4 | FPU_D32 | FPU_FP16)
+ARM_FPU("vfpv4-d16",		FPU_VFPv4 | FPU_DBL | FPU_FP16)
+ARM_FPU("fpv4-sp-d16",		FPU_VFPv4 | FPU_FP16)
+ARM_FPU("fpv5-sp-d16",		FPU_VFPv5 | FPU_FP16)
+ARM_FPU("fpv5-d16",		FPU_VFPv5 | FPU_DBL | FPU_FP16)
+ARM_FPU("neon-vfpv4",		FPU_VFPv4 | FPU_NEON | FPU_FP16)
+ARM_FPU("fp-armv8",		FPU_ARMv8 | FPU_D32 | FPU_FP16)
+ARM_FPU("neon-fp-armv8", 	FPU_ARMv8 | FPU_NEON | FPU_FP16)
+ARM_FPU("crypto-neon-fp-armv8", FPU_ARMv8 | FPU_CRYPTO | FPU_FP16)
 /* Compatibility aliases.  */
-ARM_FPU("vfp3",			3, FPU_FL_D32 | FPU_FL_DBL)
+ARM_FPU("vfp3",			FPU_VFPv3 | FPU_D32)
