@@ -36,7 +36,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-12-08 19:25+0100\n"
+"PO-Revision-Date: 2016-12-15 01:25+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -10112,24 +10112,18 @@ msgid "Enable workaround for single erratum of AT697F processor"
 msgstr "Activa evitar el error único del procesador AT697F"
 
 #: config/sparc/sparc.opt:223
-#, fuzzy
-#| msgid "Enable workaround for single erratum of AT697F processor"
 msgid "Enable workarounds for the errata of the UT699 processor."
-msgstr "Activa evitar el error único del procesador AT697F."
+msgstr "Activa evitar el error único del procesador UT699."
 
 #: config/sparc/sparc.opt:252
 msgid "Specify the memory model in effect for the program."
 msgstr "Especifica el modelo de memoria en efecto para el programa."
 
 #: config/rs6000/darwin.opt:38 config/rs6000/sysv4.opt:141
-#, fuzzy
-#| msgid "Generate 64-bit code"
 msgid "Generate 64-bit code."
 msgstr "Genera código de 64-bit."
 
 #: config/rs6000/darwin.opt:42 config/rs6000/sysv4.opt:145
-#, fuzzy
-#| msgid "Generate 32-bit code"
 msgid "Generate 32-bit code."
 msgstr "Genera código de 32-bit."
 
@@ -10138,200 +10132,134 @@ msgid "Known CPUs (for use with the -mcpu= and -mtune= options):"
 msgstr "CPUs conocidos (para uso con las opciones -mcpu= y -mtune):"
 
 #: config/rs6000/476.opt:24
-#, fuzzy
-#| msgid "Preserve the PowerPC 476's link stack by matching up a blr with the bcl/bl insns used for GOT accesses"
 msgid "Preserve the PowerPC 476's link stack by matching up a blr with the bcl/bl insns used for GOT accesses."
 msgstr "Preserva la pila de enlace del PowerPC 476 emparejando un blr con las insns bcl/bl utilizadas para accesos GOT."
 
 #: config/rs6000/aix64.opt:24
-#, fuzzy
-#| msgid "Compile for 64-bit pointers"
 msgid "Compile for 64-bit pointers."
 msgstr "Compila para punteros de 64-bit."
 
 #: config/rs6000/aix64.opt:28
-#, fuzzy
-#| msgid "Compile for 32-bit pointers"
 msgid "Compile for 32-bit pointers."
 msgstr "Compila para punteros de 32-bit."
 
 #: config/rs6000/aix64.opt:32 config/rs6000/linux64.opt:28
-#, fuzzy
-#| msgid "Select code model"
 msgid "Select code model."
 msgstr "Selecciona el modelo de código."
 
 #: config/rs6000/aix64.opt:49
-#, fuzzy
-#| msgid "Support message passing with the Parallel Environment"
 msgid "Support message passing with the Parallel Environment."
-msgstr "Soporta el paso de mensajes con el Ambiente Paralelo."
+msgstr "Soporta el paso de mensajes con el Entorno Paralelo."
 
 #: config/rs6000/linux64.opt:24
-#, fuzzy
-#| msgid "Call mcount for profiling before a function prologue"
 msgid "Call mcount for profiling before a function prologue."
 msgstr "Llama a mcount para análisis de perfil antes del prólogo de una función."
 
 #: config/rs6000/rs6000.opt:109
-#, fuzzy
-#| msgid "Use PowerPC-64 instruction set"
 msgid "Use PowerPC-64 instruction set."
 msgstr "Usa el conjunto de instrucciones PowerPC-64."
 
 #: config/rs6000/rs6000.opt:113
-#, fuzzy
-#| msgid "Use PowerPC General Purpose group optional instructions"
 msgid "Use PowerPC General Purpose group optional instructions."
 msgstr "Usa el grupo opcional de instrucciones PowerPC de Propósito General."
 
 #: config/rs6000/rs6000.opt:117
-#, fuzzy
-#| msgid "Use PowerPC Graphics group optional instructions"
 msgid "Use PowerPC Graphics group optional instructions."
 msgstr "Usa el grupo opcional de instrucciones PowerPC de Gráficas."
 
 #: config/rs6000/rs6000.opt:121
-#, fuzzy
-#| msgid "Use PowerPC V2.01 single field mfcr instruction"
 msgid "Use PowerPC V2.01 single field mfcr instruction."
 msgstr "Usa las instrucciones mfcr de un solo campo de PowerPC V2.01."
 
 #: config/rs6000/rs6000.opt:125
-#, fuzzy
-#| msgid "Use PowerPC V2.02 popcntb instruction"
 msgid "Use PowerPC V2.02 popcntb instruction."
 msgstr "Usa la instrucción popcntb de PowerPC V2.02."
 
 #: config/rs6000/rs6000.opt:129
-#, fuzzy
-#| msgid "Use PowerPC V2.02 floating point rounding instructions"
 msgid "Use PowerPC V2.02 floating point rounding instructions."
 msgstr "Usa las instrucciones de redondeo de coma flotante de PowerPC V2.02."
 
 #: config/rs6000/rs6000.opt:133
-#, fuzzy
-#| msgid "Use PowerPC V2.05 compare bytes instruction"
 msgid "Use PowerPC V2.05 compare bytes instruction."
 msgstr "Usa la instrucción compare bytes de PowerPC V2.05."
 
 #: config/rs6000/rs6000.opt:137
-#, fuzzy
-#| msgid "Use extended PowerPC V2.05 move floating point to/from GPR instructions"
 msgid "Use extended PowerPC V2.05 move floating point to/from GPR instructions."
 msgstr "Usa las instrucciones GPR to/from move de coma flotante de PowerPC V2.05."
 
 #: config/rs6000/rs6000.opt:141
-#, fuzzy
-#| msgid "Use AltiVec instructions"
 msgid "Use AltiVec instructions."
 msgstr "Usa las instrucciones AltiVec."
 
 #: config/rs6000/rs6000.opt:145
-#, fuzzy
-#| msgid "Generate code in little endian mode"
 msgid "Generate Altivec instructions using little-endian element order."
-msgstr "Genera código en modo little endian."
+msgstr "Genera código instrucciones Altivec usando orden de elementos little endian."
 
 #: config/rs6000/rs6000.opt:149
-#, fuzzy
-#| msgid "Generate VRSAVE instructions when generating AltiVec code"
 msgid "Generate Altivec instructions using big-endian element order."
-msgstr "Genera instrucciones VRSAVE cuando se genere código AltiVec."
+msgstr "Genera instrucciones Altivec usando orden de elementos big endian."
 
 #: config/rs6000/rs6000.opt:153
-#, fuzzy
-#| msgid "Use decimal floating point instructions"
 msgid "Use decimal floating point instructions."
 msgstr "Usa instrucciones de coma flotante decimal."
 
 #: config/rs6000/rs6000.opt:157
-#, fuzzy
-#| msgid "Use 4xx half-word multiply instructions"
 msgid "Use 4xx half-word multiply instructions."
 msgstr "Usa las instrucciones de multiplicación half-word 4xx."
 
 #: config/rs6000/rs6000.opt:161
-#, fuzzy
-#| msgid "Use 4xx string-search dlmzb instruction"
 msgid "Use 4xx string-search dlmzb instruction."
 msgstr "Usa la instrucción dlmzb de búsqueda de cadena 4xx."
 
 #: config/rs6000/rs6000.opt:165
-#, fuzzy
-#| msgid "Generate load/store multiple instructions"
 msgid "Generate load/store multiple instructions."
 msgstr "Genera múltiples instrucciones load/store."
 
 #: config/rs6000/rs6000.opt:169
-#, fuzzy
-#| msgid "Generate string instructions for block moves"
 msgid "Generate string instructions for block moves."
 msgstr "Genera instrucciones de cadena para movimiento de bloques."
 
 #: config/rs6000/rs6000.opt:181
-#, fuzzy
-#| msgid "Use PowerPC V2.06 popcntd instruction"
 msgid "Use PowerPC V2.06 popcntd instruction."
 msgstr "Usa la instrucción popcntd de PowerPC V2.06."
 
 #: config/rs6000/rs6000.opt:185
-#, fuzzy
-#| msgid "Under -ffast-math, generate a FRIZ instruction for (double)(long long) conversions"
 msgid "Under -ffast-math, generate a FRIZ instruction for (double)(long long) conversions."
 msgstr "Con -ffast-math, genera una instrucción FRIZ para conversiones (double)(long long)."
 
 #: config/rs6000/rs6000.opt:193
-#, fuzzy
-#| msgid "Use vector/scalar (VSX) instructions"
 msgid "Use vector/scalar (VSX) instructions."
 msgstr "Usa instrucciones (VSX) vector/escalar."
 
 #: config/rs6000/rs6000.opt:240
-#, fuzzy
-#| msgid "Do not generate load/store with update instructions"
 msgid "Do not generate load/store with update instructions."
 msgstr "No genera load/store con instrucciones de actualización."
 
 #: config/rs6000/rs6000.opt:244
-#, fuzzy
-#| msgid "Generate load/store with update instructions"
 msgid "Generate load/store with update instructions."
 msgstr "Genera load/store con instrucciones de actualización."
 
 #: config/rs6000/rs6000.opt:252
-#, fuzzy
-#| msgid "Avoid generation of indexed load/store instructions when possible"
 msgid "Avoid generation of indexed load/store instructions when possible."
-msgstr "Evita la generación de instrucciones indizadas load/store cuando sea posible."
+msgstr "Evita la generación de instrucciones indexadas load/store cuando sea posible."
 
 #: config/rs6000/rs6000.opt:256
-#, fuzzy
-#| msgid "Mark __tls_get_addr calls with argument info"
 msgid "Mark __tls_get_addr calls with argument info."
 msgstr "Marca las llamadas __tls_get_addr con información de argumentos."
 
 #: config/rs6000/rs6000.opt:263
-#, fuzzy
-#| msgid "Schedule the start and end of the procedure"
 msgid "Schedule the start and end of the procedure."
-msgstr "Calendariza el inicio y el final del procedimiento."
+msgstr "Planifica el inicio y el final del procedimiento."
 
 #: config/rs6000/rs6000.opt:267
-#, fuzzy
-#| msgid "Return all structures in memory (AIX default)"
 msgid "Return all structures in memory (AIX default)."
 msgstr "Devuelve todas las estructuras en memoria (por defecto en AIX)."
 
 #: config/rs6000/rs6000.opt:271
-#, fuzzy
-#| msgid "Return small structures in registers (SVR4 default)"
 msgid "Return small structures in registers (SVR4 default)."
 msgstr "Devuelve las estructuras pequeñas en registros (por defecto en SVR4)."
 
 #: config/rs6000/rs6000.opt:275
-#, fuzzy
-#| msgid "Conform more closely to IBM XLC semantics"
 msgid "Conform more closely to IBM XLC semantics."
 msgstr "Conforma más cerca a la semántica XLC de IBM."
 
@@ -10344,148 +10272,100 @@ msgid "Assume that the reciprocal estimate instructions provide more accuracy."
 msgstr "Asume que las instrucciones estimadas recíprocas proveen más exactitud."
 
 #: config/rs6000/rs6000.opt:291
-#, fuzzy
-#| msgid "Do not place floating point constants in TOC"
 msgid "Do not place floating point constants in TOC."
 msgstr "No coloca las constantes de coma flotante en TOC."
 
 #: config/rs6000/rs6000.opt:295
-#, fuzzy
-#| msgid "Place floating point constants in TOC"
 msgid "Place floating point constants in TOC."
 msgstr "Coloca las constantes de coma flotante en TOC."
 
 #: config/rs6000/rs6000.opt:299
-#, fuzzy
-#| msgid "Do not place symbol+offset constants in TOC"
 msgid "Do not place symbol+offset constants in TOC."
 msgstr "No coloca las constantes símbolo+desplazamiento en TOC."
 
 #: config/rs6000/rs6000.opt:303
-#, fuzzy
-#| msgid "Place symbol+offset constants in TOC"
 msgid "Place symbol+offset constants in TOC."
 msgstr "Coloca las constantes símbolo+desplazamiento en TOC."
 
 #: config/rs6000/rs6000.opt:314
-#, fuzzy
-#| msgid "Use only one TOC entry per procedure"
 msgid "Use only one TOC entry per procedure."
 msgstr "Usa sólo una entrada TOC por procedimiento."
 
 #: config/rs6000/rs6000.opt:318
-#, fuzzy
-#| msgid "Put everything in the regular TOC"
 msgid "Put everything in the regular TOC."
 msgstr "Coloca todo en la TOC normal."
 
 #: config/rs6000/rs6000.opt:322
-#, fuzzy
-#| msgid "Generate VRSAVE instructions when generating AltiVec code"
 msgid "Generate VRSAVE instructions when generating AltiVec code."
 msgstr "Genera instrucciones VRSAVE cuando se genere código AltiVec."
 
 #: config/rs6000/rs6000.opt:326
-#, fuzzy
-#| msgid "Deprecated option.  Use -mno-vrsave instead"
 msgid "Deprecated option.  Use -mno-vrsave instead."
 msgstr "Opción obsoleta.  Use en su lugar -mno-vrsave."
 
 #: config/rs6000/rs6000.opt:330
-#, fuzzy
-#| msgid "Deprecated option.  Use -mvrsave instead"
 msgid "Deprecated option.  Use -mvrsave instead."
 msgstr "Opción obsoleta.  Use en su lugar -mvrsave."
 
 #: config/rs6000/rs6000.opt:334
-#, fuzzy
-#| msgid "Specify how many bytes should be moved inline before calling out to memcpy/memmove"
 msgid "Specify how many bytes should be moved inline before calling out to memcpy/memmove."
-msgstr "Especifica cúantos bytes se debe mover en inclusión en línea antes de llamar a memcp/memmove."
+msgstr "Especifica cúantos bytes se debe mover en inclusión en línea antes de llamar a memcpy/memmove."
 
 #: config/rs6000/rs6000.opt:338
-#, fuzzy
-#| msgid "Generate isel instructions"
 msgid "Generate isel instructions."
 msgstr "Genera instrucciones isel."
 
 #: config/rs6000/rs6000.opt:342
-#, fuzzy
-#| msgid "Deprecated option.  Use -mno-isel instead"
 msgid "Deprecated option.  Use -mno-isel instead."
 msgstr "Opción obsoleta.  Use en su lugar -mno-isel."
 
 #: config/rs6000/rs6000.opt:346
-#, fuzzy
-#| msgid "Deprecated option.  Use -misel instead"
 msgid "Deprecated option.  Use -misel instead."
 msgstr "Opción obsoleta.  Use en su lugar -misel."
 
 #: config/rs6000/rs6000.opt:350
-#, fuzzy
-#| msgid "Generate SPE SIMD instructions on E500"
 msgid "Generate SPE SIMD instructions on E500."
 msgstr "Genera instrucciones SPE SIMD en E500."
 
 #: config/rs6000/rs6000.opt:354
-#, fuzzy
-#| msgid "Generate PPC750CL paired-single instructions"
 msgid "Generate PPC750CL paired-single instructions."
 msgstr "Genera instrucciones par-sencillo PPC750CL."
 
 #: config/rs6000/rs6000.opt:358
-#, fuzzy
-#| msgid "Deprecated option.  Use -mno-spe instead"
 msgid "Deprecated option.  Use -mno-spe instead."
 msgstr "Opción obsoleta.  Use en su lugar -mno-spe."
 
 #: config/rs6000/rs6000.opt:362
-#, fuzzy
-#| msgid "Deprecated option.  Use -mspe instead"
 msgid "Deprecated option.  Use -mspe instead."
 msgstr "Opción obsoleta.  Use en su lugar -mspe."
 
 #: config/rs6000/rs6000.opt:366
-#, fuzzy
-#| msgid "-mdebug=\tEnable debug output"
 msgid "-mdebug=\tEnable debug output."
 msgstr "-mdebug=\tActiva la salida de depuración."
 
 #: config/rs6000/rs6000.opt:370
-#, fuzzy
-#| msgid "Use the AltiVec ABI extensions"
 msgid "Use the AltiVec ABI extensions."
 msgstr "Usa las extensiones de ABI AltiVec."
 
 #: config/rs6000/rs6000.opt:374
-#, fuzzy
-#| msgid "Do not use the AltiVec ABI extensions"
 msgid "Do not use the AltiVec ABI extensions."
 msgstr "No usa las extensiones de ABI AltiVec."
 
 #: config/rs6000/rs6000.opt:378
-#, fuzzy
-#| msgid "Use the SPE ABI extensions"
 msgid "Use the SPE ABI extensions."
 msgstr "Usa las extensiones de ABI SPE."
 
 #: config/rs6000/rs6000.opt:382
-#, fuzzy
-#| msgid "Do not use the SPE ABI extensions"
 msgid "Do not use the SPE ABI extensions."
 msgstr "No usa las extensiones de ABI SPE."
 
 #: config/rs6000/rs6000.opt:386
-#, fuzzy
-#| msgid "Use EABI"
 msgid "Use the ELFv1 ABI."
-msgstr "Usa EABI."
+msgstr "Usa el ABI ELFv1."
 
 #: config/rs6000/rs6000.opt:390
-#, fuzzy
-#| msgid "Use EABI"
 msgid "Use the ELFv2 ABI."
-msgstr "Usa EABI."
+msgstr "Usa el ABI ELFv2."
 
 #: config/rs6000/rs6000.opt:397
 msgid "using darwin64 ABI"
@@ -10504,50 +10384,34 @@ msgid "using IBM extended precision long double"
 msgstr "se usa long double de precisión extendida de IBM"
 
 #: config/rs6000/rs6000.opt:410
-#, fuzzy
-#| msgid "-mcpu=\tUse features of and schedule code for given CPU"
 msgid "-mcpu=\tUse features of and schedule code for given CPU."
-msgstr "-mcpu=\tUsa las características y el código de planificador para el CPU dado."
+msgstr "-mcpu=\tUsa las características y el código de planificador para la CPU dada."
 
 #: config/rs6000/rs6000.opt:414
-#, fuzzy
-#| msgid "-mtune=\tSchedule code for given CPU"
 msgid "-mtune=\tSchedule code for given CPU."
-msgstr "-mtune=\tCódigo de planificador para el CPU dado."
+msgstr "-mtune=\tCódigo de planificador para la CPU dada."
 
 #: config/rs6000/rs6000.opt:418
-#, fuzzy
-#| msgid "-mtraceback=\tSelect full, part, or no traceback table"
 msgid "-mtraceback=\tSelect full, part, or no traceback table."
 msgstr "-mtraceback=\tSelecciona la tabla full, part, ó sin traceback."
 
 #: config/rs6000/rs6000.opt:434
-#, fuzzy
-#| msgid "Avoid all range limits on call instructions"
 msgid "Avoid all range limits on call instructions."
 msgstr "Evita todos los límites de rango en las instrucciones de llamadas."
 
 #: config/rs6000/rs6000.opt:438
-#, fuzzy
-#| msgid "Generate Cell microcode"
 msgid "Generate Cell microcode."
 msgstr "Genera microcódigo Cell."
 
 #: config/rs6000/rs6000.opt:442
-#, fuzzy
-#| msgid "Warn when a Cell microcoded instruction is emitted"
 msgid "Warn when a Cell microcoded instruction is emitted."
 msgstr "Avisa cuando se emite una instrucción microcodificada Cell."
 
 #: config/rs6000/rs6000.opt:446
-#, fuzzy
-#| msgid "Warn about deprecated 'vector long ...' AltiVec type usage"
 msgid "Warn about deprecated 'vector long ...' AltiVec type usage."
 msgstr "Avisa sobre el uso del tipo AltiVec obsoleto 'vector long ...'."
 
 #: config/rs6000/rs6000.opt:450
-#, fuzzy
-#| msgid "-mfloat-gprs=\tSelect GPR floating point method"
 msgid "-mfloat-gprs=\tSelect GPR floating point method."
 msgstr "-mfloat-gprs=\tSelecciona el método de coma flotante GPR."
 
@@ -10556,32 +10420,22 @@ msgid "Valid arguments to -mfloat-gprs=:"
 msgstr "Argumentos válidos para -mfloat-gprs:"
 
 #: config/rs6000/rs6000.opt:470
-#, fuzzy
-#| msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)"
 msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)."
 msgstr "-mlong-double-<n>\tEspecifica el tamaño de long double (64 ó 128 bits)."
 
 #: config/rs6000/rs6000.opt:474
-#, fuzzy
-#| msgid "Enables a register move optimization"
 msgid "Enable Local Register Allocation."
-msgstr "Permite una optimización de movimiento de registros."
+msgstr "Permite Local Register Allocation."
 
 #: config/rs6000/rs6000.opt:478
-#, fuzzy
-#| msgid "Determine which dependences between insns are considered costly"
 msgid "Determine which dependences between insns are considered costly."
 msgstr "Determina cuáles dependencias entre insns se consideran costosas."
 
 #: config/rs6000/rs6000.opt:482
-#, fuzzy
-#| msgid "Specify which post scheduling nop insertion scheme to apply"
 msgid "Specify which post scheduling nop insertion scheme to apply."
-msgstr "Especifica cuál esquema de inserción de nop post calendarizados se debe aplicar."
+msgstr "Especifica cuál esquema de inserción de nop post planificados se debe aplicar."
 
 #: config/rs6000/rs6000.opt:486
-#, fuzzy
-#| msgid "Specify alignment of structure fields default/natural"
 msgid "Specify alignment of structure fields default/natural."
 msgstr "Especifica la alineación de los campos de estructuras default/natural."
 
@@ -10590,32 +10444,22 @@ msgid "Valid arguments to -malign-:"
 msgstr "Argumentos válidos para -malign-:"
 
 #: config/rs6000/rs6000.opt:500
-#, fuzzy
-#| msgid "Specify scheduling priority for dispatch slot restricted insns"
 msgid "Specify scheduling priority for dispatch slot restricted insns."
 msgstr "Especifica la prioridad de planificación para despachar insns restringidos por ranuras."
 
 #: config/rs6000/rs6000.opt:504
-#, fuzzy
-#| msgid "Single-precision floating point unit"
 msgid "Single-precision floating point unit."
 msgstr "Unidad de coma flotante de precisión simple."
 
 #: config/rs6000/rs6000.opt:508
-#, fuzzy
-#| msgid "Double-precision floating point unit"
 msgid "Double-precision floating point unit."
 msgstr "Unidad de coma flotante de precisión doble."
 
 #: config/rs6000/rs6000.opt:512
-#, fuzzy
-#| msgid "Floating point unit does not support divide & sqrt"
 msgid "Floating point unit does not support divide & sqrt."
 msgstr "La unidad de coma flotante no admite divide & sqrt."
 
 #: config/rs6000/rs6000.opt:516
-#, fuzzy
-#| msgid "-mfpu=\tSpecify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)"
 msgid "-mfpu=\tSpecify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)."
 msgstr "-mfpu=\tEspecifica FP (sp, dp, sp-lite, dp-lite) (implica -mxilinx-fpu)."
 
@@ -10628,102 +10472,92 @@ msgid "Use/do not use r11 to hold the static link in calls to functions via poin
 msgstr "Usa/no usa r11 para preservar el enlace estático en llamadas a funciones a través de punteros."
 
 #: config/rs6000/rs6000.opt:546
-#, fuzzy
-#| msgid "Control whether we save the TOC in the prologue for indirect calls or generate the save inline"
 msgid "Control whether we save the TOC in the prologue for indirect calls or generate the save inline."
 msgstr "Controla si se guarda la TOC en el prólogo para llamadas indirectas o genera el save en línea."
 
 #: config/rs6000/rs6000.opt:550
 msgid "Allow 128-bit integers in VSX registers."
-msgstr ""
+msgstr "Permite enteros de 128 bits en registros VSX."
 
 #: config/rs6000/rs6000.opt:554
 msgid "Fuse certain integer operations together for better performance on power8."
-msgstr ""
+msgstr "Fusiona ciertas operaciones de enteros para un mejor rendimiento en power8."
 
 #: config/rs6000/rs6000.opt:558
-#, fuzzy
-#| msgid "Align destination of the string operations"
 msgid "Allow sign extension in fusion operations."
-msgstr "Alinea el destino de las operaciones de cadenas."
+msgstr "Alinea la extensión de signo en las operaciones de fusión."
 
 #: config/rs6000/rs6000.opt:562
 msgid "Use/do not use vector and scalar instructions added in ISA 2.07."
-msgstr ""
+msgstr "Usa/no usa las instrucciones de vectores y escalares añadidas en ISA 2.07."
 
 #: config/rs6000/rs6000.opt:566
 msgid "Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions."
-msgstr ""
+msgstr "Usa instrucciones ISA 2.07 Category:Vector.AES y Category:Vector.SHA2."
 
 #: config/rs6000/rs6000.opt:570
 msgid "Use ISA 2.07 direct move between GPR & VSX register instructions."
-msgstr ""
+msgstr "Usa movimiento directo de ISA 2.07 entre las instrucciones de registro GPR & VSX."
 
 #: config/rs6000/rs6000.opt:574
-#, fuzzy
-#| msgid "Use vector/scalar (VSX) instructions"
 msgid "Use ISA 2.07 transactional memory (HTM) instructions."
-msgstr "Usa instrucciones (VSX) vector/escalar."
+msgstr "Usa instrucciones de memoria transaccionales (HTM) de ISA 2.07."
 
 #: config/rs6000/rs6000.opt:578
-#, fuzzy
-#| msgid "Generate load/store multiple instructions"
 msgid "Generate the quad word memory instructions (lq/stq)."
-msgstr "Genera múltiples instrucciones load/store."
+msgstr "Genera instrucciones de memoria quad word (lq/stq)."
 
 #: config/rs6000/rs6000.opt:582
 msgid "Generate the quad word memory atomic instructions (lqarx/stqcx)."
-msgstr ""
+msgstr "Genera instrucciones atómicas de memoria quad word (lqarx/stqcx)."
 
 #: config/rs6000/rs6000.opt:586
 msgid "Generate aggregate parameter passing code with at most 64-bit alignment."
-msgstr ""
+msgstr "Genera parámetros agregados pasando código con alineamiento de 64 bits a lo sumo."
 
 #: config/rs6000/rs6000.opt:590
 msgid "Allow double variables in upper registers with -mcpu=power7 or -mvsx."
-msgstr ""
+msgstr "Permite variables double en los registros superiores con -mcpu=power7 o -mvsx."
 
 #: config/rs6000/rs6000.opt:594
 msgid "Allow float variables in upper registers with -mcpu=power8 or -mpower8-vector."
-msgstr ""
+msgstr "Permite variables float en los registros superiores con -mcpu=power8 o -mpower8-vector."
 
 #: config/rs6000/rs6000.opt:598
 msgid "Allow float/double variables in upper registers if cpu allows it."
-msgstr ""
+msgstr "Permite variables float/double en los registros superiores si la cpu lo permite."
 
 #: config/rs6000/rs6000.opt:602
 msgid "Analyze and remove doubleword swaps from VSX computations."
-msgstr ""
+msgstr "Analiza y elimina intercambios de palabra doble en cómputos VSX."
 
 #: config/rs6000/rs6000.opt:606
 msgid "Fuse certain operations together for better performance on power9."
-msgstr ""
+msgstr "Fusiona ciertas operaciones para un mejor rendimiento en power9."
 
 #: config/rs6000/rs6000.opt:610
 msgid "Use/do not use certain scalar instructions added in ISA 3.0."
-msgstr ""
+msgstr "Usa/no usa ciertas instrucciones escalares añadidas en ISA 3.0."
 
 #: config/rs6000/rs6000.opt:614
-#, fuzzy
-#| msgid "Do not use PowerPC instruction set"
 msgid "Use/do not use vector instructions added in ISA 3.0."
-msgstr "No usa el conjunto de instrucciones PowerPC."
+msgstr "Usa/no usa instrucciones vectoriales añadidas en ISA 3.0."
 
 #: config/rs6000/rs6000.opt:618
 msgid "Use/do not use scalar register+offset memory instructions added in ISA 3.0."
-msgstr ""
+msgstr "Usa/no usa instrucciones de memoria registro+desplazamiento escalares añadidas en ISA 3.0."
 
 #: config/rs6000/rs6000.opt:622
 msgid "Use/do not use vector register+offset memory instructions added in ISA 3.0."
-msgstr ""
+msgstr "Usa/no usa instrucciones de memoria registro+desplazamiento vectoriales añadidas en ISA 3.0."
 
 #: config/rs6000/rs6000.opt:626
 msgid "Use/do not use register+offset memory instructions added in ISA 3.0."
-msgstr ""
+msgstr "Usa/no usa instrucciones de memoria registro+desplazamiento añadidas en ISA 3.0."
 
 #: config/rs6000/rs6000.opt:630
 msgid "Use/do not use the new min/max instructions defined in ISA 3.0."
-msgstr ""
+msgstr "Usa/no usa las nuevas instrucciones min/max definidas en ISA 3.0."
 
 #: config/rs6000/rs6000.opt:634
 #, fuzzy
@@ -10733,269 +10567,184 @@ msgstr "Serializar las referencias a memoria volátil con instrucciones MEMW."
 
 #: config/rs6000/rs6000.opt:638
 #, fuzzy
-#| msgid "Generate isel instructions"
 msgid "Generate the integer modulo instructions."
-msgstr "Genera instrucciones isel."
+msgstr "Genera las instrucciones módulo de enteros."
 
 #: config/rs6000/rs6000.opt:642
 msgid "Enable/disable IEEE 128-bit floating point via the __float128 keyword."
-msgstr ""
+msgstr "Activa/desactiva coma flotante de 128 bits IEEE mediante la palabra clave __float128."
 
 #: config/rs6000/rs6000.opt:646
-#, fuzzy
-#| msgid "Use decimal floating point instructions"
 msgid "Enable/disable using IEEE 128-bit floating point instructions."
-msgstr "Usa instrucciones de coma flotante decimal."
+msgstr "Activa/desactiva el uso de instrucciones de coma flotante de 128 bits IEEE."
 
 #: config/rs6000/rs6000.opt:650
 msgid "Enable/disable default conversions between __float128 & long double."
-msgstr ""
+msgstr "Activa/desactiva las conversiones predefinidas entre __float128 y long double."
 
 #: config/rs6000/sysv4.opt:24
-#, fuzzy
-#| msgid "Select ABI calling convention"
 msgid "Select ABI calling convention."
-msgstr "Selecciona la convención de llamada ABI."
+msgstr "Selecciona el convenio de llamadas ABI."
 
 #: config/rs6000/sysv4.opt:28 config/c6x/c6x.opt:42
-#, fuzzy
-#| msgid "Select method for sdata handling"
 msgid "Select method for sdata handling."
 msgstr "Selecciona el método para el manejo de sdata."
 
 #: config/rs6000/sysv4.opt:48 config/rs6000/sysv4.opt:52
-#, fuzzy
-#| msgid "Align to the base type of the bit-field"
 msgid "Align to the base type of the bit-field."
-msgstr "Alinea al tipo base del campo de bit."
+msgstr "Alinea al tipo base del campo de bits."
 
 #: config/rs6000/sysv4.opt:57 config/rs6000/sysv4.opt:61
-#, fuzzy
-#| msgid "Produce code relocatable at runtime"
 msgid "Produce code relocatable at runtime."
-msgstr "Produce código reubicable en el momento de ejecución."
+msgstr "Produce código reubicable en tiempo de ejecución."
 
 #: config/rs6000/sysv4.opt:65 config/rs6000/sysv4.opt:69
-#, fuzzy
-#| msgid "Produce little endian code"
 msgid "Produce little endian code."
 msgstr "Produce código little endian."
 
 #: config/rs6000/sysv4.opt:73 config/rs6000/sysv4.opt:77
-#, fuzzy
-#| msgid "Produce big endian code"
 msgid "Produce big endian code."
 msgstr "Produce código big endian."
 
 #: config/rs6000/sysv4.opt:82 config/rs6000/sysv4.opt:86
 #: config/rs6000/sysv4.opt:95 config/rs6000/sysv4.opt:137
 #: config/rs6000/sysv4.opt:149
-#, fuzzy
-#| msgid "no description yet"
 msgid "no description yet."
 msgstr "sin descripción aún."
 
 #: config/rs6000/sysv4.opt:90
-#, fuzzy
-#| msgid "Assume all variable arg functions are prototyped"
 msgid "Assume all variable arg functions are prototyped."
-msgstr "Asume que todas las funciones de argumentos variables tienen prototipos."
+msgstr "Asume que todas las funciones de argumentos variables tienen prototipo."
 
 #: config/rs6000/sysv4.opt:99
-#, fuzzy
-#| msgid "Use EABI"
 msgid "Use EABI."
 msgstr "Usa EABI."
 
 #: config/rs6000/sysv4.opt:103
-#, fuzzy
-#| msgid "Allow bit-fields to cross word boundaries"
 msgid "Allow bit-fields to cross word boundaries."
 msgstr "Permite que los campos de bits crucen los límites de word."
 
 #: config/rs6000/sysv4.opt:107
-#, fuzzy
-#| msgid "Use alternate register names"
 msgid "Use alternate register names."
 msgstr "Usa nombres de registro alternativos."
 
 #: config/rs6000/sysv4.opt:113
-#, fuzzy
-#| msgid "Use default method for sdata handling"
 msgid "Use default method for sdata handling."
-msgstr "Selecciona el método por defecto para el manejo de sdata."
+msgstr "Selecciona el método predefinido para el manejo de sdata."
 
 #: config/rs6000/sysv4.opt:117
-#, fuzzy
-#| msgid "Link with libsim.a, libc.a and sim-crt0.o"
 msgid "Link with libsim.a, libc.a and sim-crt0.o."
 msgstr "Enlaza con libsim.a, libc.a y sim-crt0.o."
 
 #: config/rs6000/sysv4.opt:121
-#, fuzzy
-#| msgid "Link with libads.a, libc.a and crt0.o"
 msgid "Link with libads.a, libc.a and crt0.o."
 msgstr "Enlaza con libads.a, libc.a y crt0.o."
 
 #: config/rs6000/sysv4.opt:125
-#, fuzzy
-#| msgid "Link with libyk.a, libc.a and crt0.o"
 msgid "Link with libyk.a, libc.a and crt0.o."
 msgstr "Enlaza con libyk.a, libc.a y crt0.o."
 
 #: config/rs6000/sysv4.opt:129
-#, fuzzy
-#| msgid "Link with libmvme.a, libc.a and crt0.o"
 msgid "Link with libmvme.a, libc.a and crt0.o."
 msgstr "Enlaza con libmvme.a, libc.a y crt0.o."
 
 #: config/rs6000/sysv4.opt:133
-#, fuzzy
-#| msgid "Set the PPC_EMB bit in the ELF flags header"
 msgid "Set the PPC_EMB bit in the ELF flags header."
 msgstr "Establece el bit PPC_EMB en las banderas del encabezado ELF."
 
 #: config/rs6000/sysv4.opt:153
-#, fuzzy
-#| msgid "Generate code to use a non-exec PLT and GOT"
 msgid "Generate code to use a non-exec PLT and GOT."
 msgstr "Genera código para usar un PTL y GOT no ejecutables."
 
 #: config/rs6000/sysv4.opt:157
-#, fuzzy
-#| msgid "Generate code for old exec BSS PLT"
 msgid "Generate code for old exec BSS PLT."
 msgstr "Genera código para ejecutables BSS PLT antiguos."
 
 #: config/alpha/alpha.opt:27
-#, fuzzy
-#| msgid "Use fp registers"
 msgid "Use fp registers."
 msgstr "Usa registros fp."
 
 #: config/alpha/alpha.opt:35
-#, fuzzy
-#| msgid "Request IEEE-conformant math library routines (OSF/1)"
 msgid "Request IEEE-conformant math library routines (OSF/1)."
 msgstr "Requiere rutinas de biblioteca matemática que cumplan con IEEE (OSF/1)."
 
 #: config/alpha/alpha.opt:39
-#, fuzzy
-#| msgid "Emit IEEE-conformant code, without inexact exceptions"
 msgid "Emit IEEE-conformant code, without inexact exceptions."
 msgstr "Emite código que cumpla con IEEE, sin excepciones inexactas."
 
 #: config/alpha/alpha.opt:46
-#, fuzzy
-#| msgid "Do not emit complex integer constants to read-only memory"
 msgid "Do not emit complex integer constants to read-only memory."
 msgstr "No emite constantes enteras complejas a memoria de sólo lectura."
 
 #: config/alpha/alpha.opt:50
-#, fuzzy
-#| msgid "Use VAX fp"
 msgid "Use VAX fp."
 msgstr "Usa fp de VAX."
 
 #: config/alpha/alpha.opt:54
-#, fuzzy
-#| msgid "Do not use VAX fp"
 msgid "Do not use VAX fp."
 msgstr "No usa fp de VAX."
 
 #: config/alpha/alpha.opt:58
-#, fuzzy
-#| msgid "Emit code for the byte/word ISA extension"
 msgid "Emit code for the byte/word ISA extension."
 msgstr "Emite código para la extensión ISA byte/word."
 
 #: config/alpha/alpha.opt:62
-#, fuzzy
-#| msgid "Emit code for the motion video ISA extension"
 msgid "Emit code for the motion video ISA extension."
 msgstr "Emite código para la extensión ISA de video en movimiento."
 
 #: config/alpha/alpha.opt:66
-#, fuzzy
-#| msgid "Emit code for the fp move and sqrt ISA extension"
 msgid "Emit code for the fp move and sqrt ISA extension."
 msgstr "Emite código para la extensión ISA de move y sqrt de fp."
 
 #: config/alpha/alpha.opt:70
-#, fuzzy
-#| msgid "Emit code for the counting ISA extension"
 msgid "Emit code for the counting ISA extension."
 msgstr "Emite código para la extensión ISA de conteo."
 
 #: config/alpha/alpha.opt:74
-#, fuzzy
-#| msgid "Emit code using explicit relocation directives"
 msgid "Emit code using explicit relocation directives."
 msgstr "Emite código usando directivas explícitas de reubicación."
 
 #: config/alpha/alpha.opt:78
-#, fuzzy
-#| msgid "Emit 16-bit relocations to the small data areas"
 msgid "Emit 16-bit relocations to the small data areas."
 msgstr "Emite reubicaciones de 16-bit a las áreas de datos small."
 
 #: config/alpha/alpha.opt:82
-#, fuzzy
-#| msgid "Emit 32-bit relocations to the small data areas"
 msgid "Emit 32-bit relocations to the small data areas."
 msgstr "Emite reubicaciones de 32-bit a las áreas de datos small."
 
 #: config/alpha/alpha.opt:86
-#, fuzzy
-#| msgid "Emit direct branches to local functions"
 msgid "Emit direct branches to local functions."
 msgstr "Emite ramificaciones directas a funciones locales."
 
 #: config/alpha/alpha.opt:90
-#, fuzzy
-#| msgid "Emit indirect branches to local functions"
 msgid "Emit indirect branches to local functions."
 msgstr "Emite ramificaciones indirectas a funciones locales."
 
 #: config/alpha/alpha.opt:94
-#, fuzzy
-#| msgid "Emit rdval instead of rduniq for thread pointer"
 msgid "Emit rdval instead of rduniq for thread pointer."
 msgstr "Emite rdval en lugar de rduniq para un puntero thread."
 
 #: config/alpha/alpha.opt:106
-#, fuzzy
-#| msgid "Use features of and schedule given CPU"
 msgid "Use features of and schedule given CPU."
 msgstr "Usa las características y el planificador del CPU dado."
 
 #: config/alpha/alpha.opt:110
-#, fuzzy
-#| msgid "Schedule given CPU"
 msgid "Schedule given CPU."
-msgstr "Calendariza para el CPU dado."
+msgstr "Planifica para el CPU dado."
 
 #: config/alpha/alpha.opt:114
-#, fuzzy
-#| msgid "Control the generated fp rounding mode"
 msgid "Control the generated fp rounding mode."
 msgstr "Controla el modo de redondeo generado de fp."
 
 #: config/alpha/alpha.opt:118
-#, fuzzy
-#| msgid "Control the IEEE trap mode"
 msgid "Control the IEEE trap mode."
 msgstr "Controla el modo de captura IEEE."
 
 #: config/alpha/alpha.opt:122
-#, fuzzy
-#| msgid "Control the precision given to fp exceptions"
 msgid "Control the precision given to fp exceptions."
 msgstr "Controla la precisión dada a las excepciones de fp."
 
 #: config/alpha/alpha.opt:126
-#, fuzzy
-#| msgid "Tune expected memory latency"
 msgid "Tune expected memory latency."
 msgstr "Ajusta la latencia esperada de memoria."
 
@@ -11004,128 +10753,100 @@ msgid "Compile with 32 bit longs and pointers, which is the only supported"
 msgstr "Compila con longs y punteros de 32 bit, el cual es el único admitido"
 
 #: config/tilepro/tilepro.opt:28 config/tilegx/tilegx.opt:26
-#, fuzzy
-#| msgid "-mcpu=CPU\tUse features of and schedule code for given CPU"
 msgid "-mcpu=CPU\tUse features of and schedule code for given CPU."
-msgstr "-mcpu=CPU\tUsa las características y el código de planificador para el CPU dado."
+msgstr "-mcpu=CPU\tUsa las características y el código de planificador para la CPU dada."
 
 #: config/tilepro/tilepro.opt:32
 msgid "Known TILEPro CPUs (for use with the -mcpu= option):"
 msgstr "CPUs TILEPro conocidos (para uso con la opción -mcpu=):"
 
 #: config/lm32/lm32.opt:24
-#, fuzzy
-#| msgid "Enable multiply instructions"
 msgid "Enable multiply instructions."
 msgstr "Activa las instrucciones multiply."
 
 #: config/lm32/lm32.opt:28
-#, fuzzy
-#| msgid "Enable divide and modulus instructions"
 msgid "Enable divide and modulus instructions."
 msgstr "Activa las instrucciones divide y modulus."
 
 #: config/lm32/lm32.opt:32
-#, fuzzy
-#| msgid "Enable barrel shift instructions"
 msgid "Enable barrel shift instructions."
 msgstr "Activa las instrucciones barrel shift."
 
 #: config/lm32/lm32.opt:36
-#, fuzzy
-#| msgid "Enable sign extend instructions"
 msgid "Enable sign extend instructions."
 msgstr "Activa las instrucciones de signo extendido."
 
 #: config/lm32/lm32.opt:40
-#, fuzzy
-#| msgid "Enable user-defined instructions"
 msgid "Enable user-defined instructions."
 msgstr "Activa las instrucciones definidas por el usuario."
 
 #: config/nios2/elf.opt:26
-#, fuzzy
-#| msgid "Link with the fast floating-point library"
 msgid "Link with a limited version of the C library."
-msgstr "Enlaza con la biblioteca de coma flotante fast."
+msgstr "Enlaza con una versión limitada de la biblioteca de C."
 
 #: config/nios2/elf.opt:30
 msgid "Name of system library to link against."
-msgstr ""
+msgstr "Nombre de la biblioteca del sistema con la que enlazar."
 
 #: config/nios2/elf.opt:34
 msgid "Name of the startfile."
-msgstr ""
+msgstr "Nombre del fichero de inicio."
 
 #: config/nios2/elf.opt:38
 msgid "Link with HAL BSP."
-msgstr ""
+msgstr "Enlaza con HAL BSP."
 
 #: config/nios2/nios2.opt:35
 msgid "Enable DIV, DIVU."
-msgstr ""
+msgstr "Activa DIV, DIVU."
 
 #: config/nios2/nios2.opt:39
-#, fuzzy
-#| msgid "Enable clip instructions"
 msgid "Enable MUL instructions."
-msgstr "Activa las instrucciones clip."
+msgstr "Activa las instrucciones MUL."
 
 #: config/nios2/nios2.opt:43
 msgid "Enable MULX instructions, assume fast shifter."
-msgstr ""
+msgstr "Activa las instrucciones MULX, asume desplazador rápido."
 
 #: config/nios2/nios2.opt:47
-#, fuzzy
-#| msgid "Use the software emulation for divides (default)"
 msgid "Use table based fast divide (default at -O3)."
-msgstr "Usa la emulación de división por software (por defecto)."
+msgstr "Usa la división rápida basada en tablas (lo predefinido con -O3)."
 
 #: config/nios2/nios2.opt:51
-#, fuzzy
-#| msgid "Enable unaligned load/store instruction"
 msgid "All memory accesses use I/O load/store instructions."
-msgstr "Activa la instrucción load/store sin alineación."
+msgstr "Todos los accesos a memoria usan instrucciones load/store de E/S."
 
 #: config/nios2/nios2.opt:55
-#, fuzzy
-#| msgid "Enable unaligned load/store instruction"
 msgid "Volatile memory accesses use I/O load/store instructions."
-msgstr "Activa la instrucción load/store sin alineación."
+msgstr "Los accesos a memoria volátil usan instrucciones load/store de E/S."
 
 #: config/nios2/nios2.opt:59
 msgid "Volatile memory accesses do not use I/O load/store instructions."
-msgstr ""
+msgstr "Los accesos a memoria volátil no usan instrucciones load/store de E/S."
 
 #: config/nios2/nios2.opt:63
-#, fuzzy
-#| msgid "unusual TP-relative address"
 msgid "Enable/disable GP-relative addressing."
-msgstr "dirección relativa a TP inusual."
+msgstr "Activa/desactiva direccionamiento relativo a GP."
 
 #: config/nios2/nios2.opt:67
 msgid "Valid options for GP-relative addressing (for -mgpopt):"
-msgstr ""
+msgstr "Opciones válidas para direccionamiento relativo a GP (para -mgpopt):"
 
 #: config/nios2/nios2.opt:86
 msgid "Equivalent to -mgpopt=local."
-msgstr ""
+msgstr "Equivalente a -mgpopt=local."
 
 #: config/nios2/nios2.opt:90
 msgid "Equivalent to -mgpopt=none."
-msgstr ""
+msgstr "Equivalente a -mgpopt=none."
 
 #: config/nios2/nios2.opt:94 config/c6x/c6x.opt:30 config/mep/mep.opt:82
 #: config/mips/mips.opt:134 config/tilegx/tilegx.opt:45
-#, fuzzy
-#| msgid "Use big-endian byte order"
 msgid "Use big-endian byte order."
 msgstr "Usa el orden de byte big-endian."
 
 #: config/nios2/nios2.opt:98 config/c6x/c6x.opt:34 config/mep/mep.opt:86
 #: config/mips/mips.opt:138 config/tilegx/tilegx.opt:49
-#, fuzzy
-#| msgid "Use little-endian byte order"
 msgid "Use little-endian byte order."
 msgstr "Usa el orden de byte little-endian."
 
@@ -11715,19 +11436,15 @@ msgstr ""
 
 #: config/nios2/nios2.opt:574
 msgid "Valid Nios II ISA levels (for -march):"
-msgstr ""
+msgstr "Niveles Nios II ISA válidos (para -march):"
 
 #: config/nios2/nios2.opt:584
-#, fuzzy
-#| msgid "Enable saturation instructions"
 msgid "Enable generation of R2 BMX instructions."
-msgstr "Activa las instrucciones de saturación."
+msgstr "Activa la generación de instrucciones R2 BMX."
 
 #: config/nios2/nios2.opt:588
-#, fuzzy
-#| msgid "Enable saturation instructions"
 msgid "Enable generation of R2 CDX instructions."
-msgstr "Activa las instrucciones de saturación."
+msgstr "Activa la generación de instrucciones R2 CDX."
 
 #: config/rx/rx.opt:29
 msgid "Store doubles in 64 bits."
@@ -11762,8 +11479,6 @@ msgid "Maximum size of global and static variables which can be placed into the 
 msgstr "Tamaño máximo de las variables global y static que se pueden colocar en el área de datos small."
 
 #: config/rx/rx.opt:93
-#, fuzzy
-#| msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatable syntax."
 msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax."
 msgstr "Genera salida de ensamblador que es compatible con el ensamblador AS100 de Renesas.  Esto puede restringir algunas de las capacidades del compilador.  Por defecto se genera sintaxis compatible con GAS."
 
@@ -11789,67 +11504,51 @@ msgstr "Activa el modo Datos-Independientes-de-Posición (PID)."
 
 #: config/rx/rx.opt:129
 msgid "Warn when multiple, different, fast interrupt handlers are in the compilation unit."
-msgstr ""
+msgstr "Avisa cuando hay múltiples y distintos manejadores de interrupciones rápidos en la unidad de compilación."
 
 #: config/rx/rx.opt:135
 msgid "Enable the use of the old, broken, ABI where all stacked function arguments are aligned to 32-bits."
-msgstr ""
+msgstr "Activa el uso del ABI antiguo y roto donde todos los argumentos de función apilados estén alineados a 32 bits."
 
 #: config/rx/rx.opt:139
 msgid "Enable the use the standard RX ABI where all stacked function arguments are naturally aligned.  This is the default."
-msgstr ""
+msgstr "Activa el uso del RX ABI estándar donde todos los argumentos de función apilados estén alineados de forma natural.  Esto es lo predefinido."
 
 #: config/rx/rx.opt:145
-#, fuzzy
-#| msgid "Enable the use of the short load instructions"
 msgid "Enable the use of the LRA register allocator."
-msgstr "Activa el uso de las instrucciones short load."
+msgstr "Activa el uso del asignador de registros LRA."
 
 #: config/rx/rx.opt:151
 msgid "Enables or disables the use of the SMOVF, SMOVB, SMOVU, SUNTIL, SWHILE and RMPA instructions.  Enabled by default."
-msgstr ""
+msgstr "Activa o desactiva el uso de las instrucciones SMOVF, SMOVB, SMOVU, SUNTIL, SWHILE y RMPA.  Activado por defecto."
 
 #: config/rx/rx.opt:157
-#, fuzzy
-#| msgid "Always generate long calls"
 msgid "Always use JSR, never BSR, for calls."
-msgstr "Genera siempre llamadas long."
+msgstr "Usa siempre JSR, nunca BSR, para llamadas."
 
 #: config/visium/visium.opt:25
-#, fuzzy
-#| msgid "Link with libyk.a, libc.a and crt0.o"
 msgid "Link with libc.a and libdebug.a."
-msgstr "Enlaza con libyk.a, libc.a y crt0.o."
+msgstr "Enlaza con libc.a y libdebug.a."
 
 #: config/visium/visium.opt:29
-#, fuzzy
-#| msgid "Link with libsim.a, libc.a and sim-crt0.o"
 msgid "Link with libc.a and libsim.a."
-msgstr "Enlaza con libsim.a, libc.a y sim-crt0.o."
+msgstr "Enlaza con libc.a y libsim.a."
 
 #: config/visium/visium.opt:33
-#, fuzzy
-#| msgid "Use hardware FP"
 msgid "Use hardware FP (default)."
-msgstr "Usa FP de hardware."
+msgstr "Usa FP de hardware (predeterminado)."
 
 #: config/visium/visium.opt:65
-#, fuzzy
-#| msgid "Generate code for CR16C+ architecture (Default)"
 msgid "Generate code for the supervisor mode (default)."
-msgstr "Genera código para la arquitectura CR16C+ (Por defecto)."
+msgstr "Genera código para el modo supervisor (predeterminado)."
 
 #: config/visium/visium.opt:69
-#, fuzzy
-#| msgid "Generate code for the Boehm GC"
 msgid "Generate code for the user mode."
-msgstr "Genera código para el GC de Boehm."
+msgstr "Genera código para el modo de usuario."
 
 #: config/visium/visium.opt:73
-#, fuzzy
-#| msgid "Does nothing. Preserved for backward compatibility."
 msgid "Only retained for backward compatibility."
-msgstr "No hace nada. Preservado por compatibilidad hacia atrás."
+msgstr "Preservado por compatibilidad hacia atrás."
 
 #: config/fused-madd.opt:22
 msgid "%<-mfused-madd%> is deprecated; use %<-ffp-contract=%> instead"
@@ -11857,75 +11556,53 @@ msgstr "%<-mfused-madd%> es obsoleto; utilice en su lugar %<-ffp-contract=%>"
 
 #: config/sol2.opt:32
 msgid "Clear hardware capabilities when linking."
-msgstr ""
+msgstr "Quita las capacidades del hardware al enlazar."
 
 #: config/sol2.opt:36
-#, fuzzy
-#| msgid "Pass -z text to linker"
 msgid "Pass -z text to linker."
 msgstr "Pasa -z texto al enlazador."
 
 #: config/moxie/moxie.opt:31
-#, fuzzy
-#| msgid "Enable MPY||ADD and MPY||SUB instructions"
 msgid "Enable MUL.X and UMUL.X instructions."
-msgstr "Activa las instrucciones MPY||ADD y MPY||SUB."
+msgstr "Activa las instrucciones MUL.X y UMUL.X."
 
 #: config/microblaze/microblaze.opt:40
-#, fuzzy
-#| msgid "Use software emulation for floating point (default)"
 msgid "Use software emulation for floating point (default)."
 msgstr "Usa emulación de software para coma flotante (por defecto)."
 
 #: config/microblaze/microblaze.opt:44
-#, fuzzy
-#| msgid "Use hardware floating point instructions"
 msgid "Use hardware floating point instructions."
 msgstr "Usa instrucciones de coma flotante por hardware."
 
 #: config/microblaze/microblaze.opt:48
-#, fuzzy
-#| msgid "Use table lookup optimization for small signed integer divisions"
 msgid "Use table lookup optimization for small signed integer divisions."
-msgstr "Usa las optimización de búsqueda de tabla para divisiones enteras small con signo."
+msgstr "Usa las optimización de búsqueda en tabla para divisiones de enteros pequeños con signo."
 
 #: config/microblaze/microblaze.opt:52
-#, fuzzy
-#| msgid "-mcpu=PROCESSOR\t\tUse features of and schedule code for given CPU"
 msgid "-mcpu=PROCESSOR\t\tUse features of and schedule code for given CPU."
-msgstr "-mcpu=PROCESADOR\t\tUsa las características y el código de planificador para el CPU dado."
+msgstr "-mcpu=PROCESADOR\t\tUsa las características y el código de planificador para la CPU dada."
 
 #: config/microblaze/microblaze.opt:56
-#, fuzzy
-#| msgid "Don't optimize block moves, use memcpy"
 msgid "Don't optimize block moves, use memcpy."
-msgstr "No optimiza los movimientos de bloques, usa memcpy."
+msgstr "No optimiza los movimientos de bloques; usa memcpy."
 
 #: config/microblaze/microblaze.opt:68
-#, fuzzy
-#| msgid "Use the soft multiply emulation (default)"
 msgid "Use the soft multiply emulation (default)."
 msgstr "Usa la emulación de multiplicación por software (por defecto)."
 
 #: config/microblaze/microblaze.opt:72
 msgid "Use reorder instructions (swap and byte reversed load/store) (default)."
-msgstr ""
+msgstr "Usa instrucciones de reordenación (load/store de intercambio y de bytes invertidos) (predeterminado)."
 
 #: config/microblaze/microblaze.opt:76
-#, fuzzy
-#| msgid "Use the software emulation for divides (default)"
 msgid "Use the software emulation for divides (default)."
 msgstr "Usa la emulación de división por software (por defecto)."
 
 #: config/microblaze/microblaze.opt:80
-#, fuzzy
-#| msgid "Use the hardware barrel shifter instead of emulation"
 msgid "Use the hardware barrel shifter instead of emulation."
 msgstr "Usa el corredor de barril de hardware en lugar de la emulación."
 
 #: config/microblaze/microblaze.opt:84
-#, fuzzy
-#| msgid "Use pattern compare instructions"
 msgid "Use pattern compare instructions."
 msgstr "Usa instrucciones de comparación de patrones."
 
@@ -11935,14 +11612,10 @@ msgid "%qs is deprecated; use -fstack-check"
 msgstr "%qs es obsoleto; utilice -fstack-check"
 
 #: config/microblaze/microblaze.opt:88
-#, fuzzy
-#| msgid "Check for stack overflow at runtime"
 msgid "Check for stack overflow at runtime."
 msgstr "Revisa desbordamientos de pila en tiempo de ejecución."
 
 #: config/microblaze/microblaze.opt:92 config/iq2000/iq2000.opt:65
-#, fuzzy
-#| msgid "Use GP relative sdata/sbss sections"
 msgid "Use GP relative sdata/sbss sections."
 msgstr "Utiliza secciones sdata/sbss relativas a GP."
 
@@ -11952,14 +11625,10 @@ msgid "%qs is deprecated; use -fno-zero-initialized-in-bss"
 msgstr "%qs es obsoleto; utilice -fno-zero-initialized-in-bss"
 
 #: config/microblaze/microblaze.opt:96
-#, fuzzy
-#| msgid "Clear the BSS to zero and place zero initialized in BSS"
 msgid "Clear the BSS to zero and place zero initialized in BSS."
 msgstr "Borra el BSS a cero y coloca el cero inicializado en BSS."
 
 #: config/microblaze/microblaze.opt:100
-#, fuzzy
-#| msgid "Use multiply high instructions for high part of 32x32 multiply"
 msgid "Use multiply high instructions for high part of 32x32 multiply."
 msgstr "Usa instrucciones high de multiplicación para la parte high de la multiplicación 32x32."
 
