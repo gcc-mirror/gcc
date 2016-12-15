@@ -326,44 +326,10 @@ extern tree arm_fp16_type_node;
   {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
-/* FPU feature sets.  */
-
-typedef unsigned long arm_fpu_feature_set;
-
-/* Test for an FPU feature.  */
-#define ARM_FPU_FSET_HAS(S,F) (((S) & (F)) == (F))
-
-/* FPU Features.  */
-#define FPU_FL_NONE	(0u)
-#define FPU_FL_NEON	(1u << 0)	/* NEON instructions.  */
-#define FPU_FL_FP16	(1u << 1)	/* Half-precision.  */
-#define FPU_FL_CRYPTO	(1u << 2)	/* Crypto extensions.  */
-#define FPU_FL_DBL	(1u << 3)	/* Has double precision.  */
-#define FPU_FL_D32	(1u << 4)	/* Has 32 double precision regs.  */
-#define FPU_FL_VFPv2	(1u << 5)	/* Has VFPv2 features.  */
-#define FPU_FL_VFPv3	(1u << 6)	/* Has VFPv3 extensions.  */
-#define FPU_FL_VFPv4	(1u << 7)	/* Has VFPv4 extensions.  */
-#define FPU_FL_VFPv5	(1u << 8)	/* Has VFPv5 extensions.  */
-#define FPU_FL_ARMv8	(1u << 9)	/* Has ARMv8 extensions to VFP.  */
-
-/* Some useful combinations.  */
-#define FPU_VFPv2	(FPU_FL_VFPv2)
-#define FPU_VFPv3	(FPU_VFPv2 | FPU_FL_VFPv3)
-#define FPU_VFPv4	(FPU_VFPv3 | FPU_FL_VFPv4)
-#define FPU_VFPv5	(FPU_VFPv4 | FPU_FL_VFPv5)
-#define FPU_ARMv8	(FPU_VFPv5 | FPU_FL_ARMv8)
-
-#define FPU_DBL		(FPU_FL_DBL)
-#define FPU_D32		(FPU_DBL | FPU_FL_D32)
-#define FPU_NEON	(FPU_D32 | FPU_FL_NEON)
-#define FPU_CRYPTO	(FPU_NEON | FPU_FL_CRYPTO)
-#define FPU_FP16	(FPU_FL_FP16)
-
 extern const struct arm_fpu_desc
 {
   const char *name;
   enum isa_feature isa_bits[isa_num_bits];
-  arm_fpu_feature_set features;
 } all_fpus[];
 
 /* Which floating point hardware to schedule for.  */
