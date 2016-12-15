@@ -158,6 +158,16 @@ extern char *read_file (const location &loc, const char *path);
 
 extern void forcibly_ggc_collect ();
 
+/* Convert a path relative to SRCDIR/gcc/testsuite/selftests
+   to a real path (either absolute, or relative to pwd).
+   The result should be freed by the caller.  */
+
+extern char *locate_file (const char *path);
+
+/* The path of SRCDIR/testsuite/selftests.  */
+
+extern const char *path_to_selftest_files;
+
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();

@@ -1896,15 +1896,19 @@ rest.cross: specs
 # Specify -o /dev/null so the output of -S is discarded. More importantly
 # It does not try to create a file with the name "null.s" on POSIX and
 # "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
-SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -fself-test -o /dev/null
+# Specify the path to gcc/testsuite/selftests within the srcdir
+# as an argument to -fself-test.
+SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -o /dev/null \
+	-fself-test=$(srcdir)/testsuite/selftests
 
 # Run the selftests during the build once we have a driver and a cc1,
 # so that self-test failures are caught as early as possible.
 # Use "s-selftest" to ensure that we only run the selftests if the
-# driver or cc1 change.
+# driver, cc1, or selftest data change.
 .PHONY: selftest
 selftest: s-selftest
-s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
+s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs \
+  $(srcdir)/testsuite/selftests
 	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS)
 	$(STAMP) $@
 

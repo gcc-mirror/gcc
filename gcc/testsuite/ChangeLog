@@ -1,3 +1,11 @@
+2016-12-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/78213
+	* gcc.dg/cpp/pr71591.c: Add a fake value for the argument of
+	-fself-test.
+	* gcc.dg/pr78213.c: Disable this test.
+	* selftests/example.txt: New file.
+
 2016-12-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78786
