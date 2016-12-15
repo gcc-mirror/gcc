@@ -231,6 +231,8 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
+static void arm_option_restore (struct gcc_options *,
+				struct cl_target_option *);
 static void arm_override_options_after_change (void);
 static void arm_option_print (FILE *, int, struct cl_target_option *);
 static void arm_set_current_function (tree);
@@ -407,6 +409,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE arm_override_options_after_change
+
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE arm_option_restore
 
 #undef TARGET_OPTION_PRINT
 #define TARGET_OPTION_PRINT arm_option_print
@@ -2932,7 +2937,17 @@ arm_override_options_after_change_1 (struct gcc_options *opts)
 static void
 arm_override_options_after_change (void)
 {
+  arm_configure_build_target (&arm_active_target, &global_options,
+			      &global_options_set, false);
+
   arm_override_options_after_change_1 (&global_options);
+}
+
+static void
+arm_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
+{
+  arm_configure_build_target (&arm_active_target, opts, &global_options_set,
+			      false);
 }
 
 /* Reset options between modes that the user has specified.  */
@@ -3048,13 +3063,13 @@ arm_initialize_isa (sbitmap isa, const enum isa_feature *isa_bits)
     bitmap_set_bit (isa, *(isa_bits++));
 }
 
-static sbitmap isa_fpubits;
+static sbitmap isa_all_fpubits;
 static sbitmap isa_quirkbits;
 
 /* Configure a build target TARGET from the user-specified options OPTS and
    OPTS_SET.  If WARN_COMPATIBLE, emit a diagnostic if both the CPU and
    architecture have been specified, but the two are not identical.  */
-static void
+void
 arm_configure_build_target (struct arm_build_target *target,
 			    struct gcc_options *opts,
 			    struct gcc_options *opts_set,
@@ -3063,6 +3078,7 @@ arm_configure_build_target (struct arm_build_target *target,
   const struct processors *arm_selected_tune = NULL;
   const struct processors *arm_selected_arch = NULL;
   const struct processors *arm_selected_cpu = NULL;
+  const struct arm_fpu_desc *arm_selected_fpu = NULL;
 
   bitmap_clear (target->isa);
   target->core_name = NULL;
@@ -3093,7 +3109,7 @@ arm_configure_build_target (struct arm_build_target *target,
 	  /* Ignore any bits that are quirk bits.  */
 	  bitmap_and_compl (cpu_isa, cpu_isa, isa_quirkbits);
 	  /* Ignore (for now) any bits that might be set by -mfpu.  */
-	  bitmap_and_compl (cpu_isa, cpu_isa, isa_fpubits);
+	  bitmap_and_compl (cpu_isa, cpu_isa, isa_all_fpubits);
 
 	  if (!bitmap_empty_p (cpu_isa))
 	    {
@@ -3239,6 +3255,13 @@ arm_configure_build_target (struct arm_build_target *target,
 
   gcc_assert (arm_selected_cpu);
 
+  arm_selected_fpu = &all_fpus[opts->x_arm_fpu_index];
+  auto_sbitmap fpu_bits(isa_num_bits);
+
+  arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
+  bitmap_and_compl (target->isa, target->isa, isa_all_fpubits);
+  bitmap_ior (target->isa, target->isa, fpu_bits);
+
   /* The selected cpu may be an architecture, so lookup tuning by core ID.  */
   if (!arm_selected_tune)
     arm_selected_tune = &all_cores[arm_selected_cpu->core];
@@ -3263,10 +3286,26 @@ arm_option_override (void)
   isa_quirkbits = sbitmap_alloc (isa_num_bits);
   arm_initialize_isa (isa_quirkbits, quirk_bitlist);
 
-  isa_fpubits = sbitmap_alloc (isa_num_bits);
-  arm_initialize_isa (isa_fpubits, fpu_bitlist);
+  isa_all_fpubits = sbitmap_alloc (isa_num_bits);
+  arm_initialize_isa (isa_all_fpubits, fpu_bitlist);
 
   arm_active_target.isa = sbitmap_alloc (isa_num_bits);
+
+  if (!global_options_set.x_arm_fpu_index)
+    {
+      const char *target_fpu_name;
+      bool ok;
+
+#ifdef FPUTYPE_DEFAULT
+      target_fpu_name = FPUTYPE_DEFAULT;
+#else
+      target_fpu_name = "vfp";
+#endif
+
+      ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &arm_fpu_index,
+				  CL_TARGET);
+      gcc_assert (ok);
+    }
 
   arm_configure_build_target (&arm_active_target, &global_options,
 			      &global_options_set, true);
@@ -3377,22 +3416,6 @@ arm_option_override (void)
 
   if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
     error ("iwmmxt abi requires an iwmmxt capable cpu");
-
-  if (!global_options_set.x_arm_fpu_index)
-    {
-      const char *target_fpu_name;
-      bool ok;
-
-#ifdef FPUTYPE_DEFAULT
-      target_fpu_name = FPUTYPE_DEFAULT;
-#else
-      target_fpu_name = "vfp";
-#endif
-
-      ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &arm_fpu_index,
-				  CL_TARGET);
-      gcc_assert (ok);
-    }
 
   /* If soft-float is specified then don't use FPU.  */
   if (TARGET_SOFT_FLOAT)
@@ -30293,8 +30316,6 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 	  error ("attribute(target(\"%s\")) is unknown", q);
 	  return false;
 	}
-
-      arm_option_check_internal (opts);
     }
 
   return true;
@@ -30309,6 +30330,8 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
   if (!arm_valid_target_attribute_rec (args, opts))
     return NULL_TREE;
 
+  arm_configure_build_target (&arm_active_target, opts, opts_set, false);
+  arm_option_check_internal (opts);
   /* Do any overrides, such as global options arch=xxx.  */
   arm_option_override_internal (opts, opts_set);
 

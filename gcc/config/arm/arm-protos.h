@@ -24,6 +24,7 @@
 
 #include "arm-flags.h"
 #include "arm-isa.h"
+#include "sbitmap.h"
 
 extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
@@ -223,6 +224,9 @@ extern bool arm_change_mode_p (tree);
 
 extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 					     struct gcc_options *);
+extern void arm_configure_build_target (struct arm_build_target *,
+					struct gcc_options *,
+					struct gcc_options *, bool);
 extern void arm_pr_long_calls (struct cpp_reader *);
 extern void arm_pr_no_long_calls (struct cpp_reader *);
 extern void arm_pr_long_calls_off (struct cpp_reader *);

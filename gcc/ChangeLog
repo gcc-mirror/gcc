@@ -1,5 +1,26 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-protos.h: Include sbitmap.h
+	(arm_configure_build_target): Make public.
+	* arm.c (arm_configure_build_target): Now not static.
+	(arm_valid_target_attribute_rec): Move internal option check to...
+	(arm_valid_target_attribute_tree0: ... here.  Also reconfingure the
+	active target.
+	(arm_override_options_after_change): Call arm_configure_build_target.
+	(isa_all_fpubits): Renamed from isa_fpubits.
+	(arm_option_restore): New function.
+	(TARGET_OPTION_RESTORE): Register it.
+	(arm_configure_build_target): Initialize the FPU capability bits in
+	the isa.
+	(arm_option_override): Move the code that forces the setting of the
+	FPU option before the call to arm_configure_build_target.
+	* arm.opt (march): Mark as Save.
+	(mcpu, mtune): Likewise.
+	* arm-c.c (arm_pragma_target_parse): Reconfigure the build target
+	after pragmas change the target options.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-isa.h (isa_feature): Add bits for VFPv4, FPv5, fp16conv,
 	fP_dbl, fp_d32 and fp_crypto.
 	(ISA_ALL_FPU): Add all the new bits.
