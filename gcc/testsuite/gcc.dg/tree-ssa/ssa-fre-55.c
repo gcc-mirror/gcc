@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-optimized" } */
-/* { dg-prune-output "non-standard ABI extension" } */
+/* { dg-options "-O -fdump-tree-optimized -Wno-psabi" } */
 
 typedef int v4si __attribute__((vector_size(16)));
 
