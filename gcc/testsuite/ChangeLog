@@ -1,3 +1,8 @@
+2016-12-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/tree-ssa/ssa-fre-55.c: Add -Wno-psabi.
+	* gcc.dg/tree-ssa/pr71179.c: Same.
+
 2016-12-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78800
