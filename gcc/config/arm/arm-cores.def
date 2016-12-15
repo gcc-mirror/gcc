@@ -124,13 +124,13 @@ ARM_CORE("arm1026ej-s",	arm1026ejs, arm1026ejs,	TF_LDSCHED,			  5TEJ,	ISA_FEAT(I
 
 /* V6 Architecture Processors */
 ARM_CORE("arm1136j-s",		arm1136js, arm1136js,		TF_LDSCHED,	  6J,	ISA_FEAT(ISA_ARMv6j), 9e)
-ARM_CORE("arm1136jf-s",		arm1136jfs, arm1136jfs,		TF_LDSCHED,	  6J,	ISA_FEAT(ISA_ARMv6j) ISA_FEAT(isa_bit_VFPv2), 9e)
+ARM_CORE("arm1136jf-s",		arm1136jfs, arm1136jfs,		TF_LDSCHED,	  6J,	ISA_FEAT(ISA_ARMv6j) ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL), 9e)
 ARM_CORE("arm1176jz-s",		arm1176jzs, arm1176jzs,		TF_LDSCHED,	  6KZ,	ISA_FEAT(ISA_ARMv6kz), 9e)
-ARM_CORE("arm1176jzf-s",	arm1176jzfs, arm1176jzfs,	TF_LDSCHED,	  6KZ,	ISA_FEAT(ISA_ARMv6kz) ISA_FEAT(isa_bit_VFPv2), 9e)
+ARM_CORE("arm1176jzf-s",	arm1176jzfs, arm1176jzfs,	TF_LDSCHED,	  6KZ,	ISA_FEAT(ISA_ARMv6kz) ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL), 9e)
 ARM_CORE("mpcorenovfp",		mpcorenovfp, mpcorenovfp,	TF_LDSCHED,	  6K,	ISA_FEAT(ISA_ARMv6k), 9e)
-ARM_CORE("mpcore",		mpcore, mpcore,			TF_LDSCHED,	  6K,	ISA_FEAT(ISA_ARMv6k) ISA_FEAT(isa_bit_VFPv2), 9e)
+ARM_CORE("mpcore",		mpcore, mpcore,			TF_LDSCHED,	  6K,	ISA_FEAT(ISA_ARMv6k) ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL), 9e)
 ARM_CORE("arm1156t2-s",		arm1156t2s, arm1156t2s,		TF_LDSCHED,	  6T2,	ISA_FEAT(ISA_ARMv6t2), v6t2)
-ARM_CORE("arm1156t2f-s",	arm1156t2fs, arm1156t2fs,	TF_LDSCHED,	  6T2,	ISA_FEAT(ISA_ARMv6t2) ISA_FEAT(isa_bit_VFPv2), v6t2)
+ARM_CORE("arm1156t2f-s",	arm1156t2fs, arm1156t2fs,	TF_LDSCHED,	  6T2,	ISA_FEAT(ISA_ARMv6t2) ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL), v6t2)
 
 /* V6M Architecture Processors */
 ARM_CORE("cortex-m1",		cortexm1, cortexm1,		TF_LDSCHED,	  6M,	ISA_FEAT(ISA_ARMv6m), v6m)

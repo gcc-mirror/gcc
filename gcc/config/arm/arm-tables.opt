@@ -464,69 +464,71 @@ EnumValue
 Enum(arm_arch) String(iwmmxt2) Value(34)
 
 Enum
-Name(arm_fpu) Type(int)
+Name(arm_fpu) Type(enum fpu_type)
 Known ARM FPUs (for use with the -mfpu= option):
 
 EnumValue
-Enum(arm_fpu) String(vfp) Value(0)
+Enum(arm_fpu) String(vfp) Value(TARGET_FPU_vfp)
 
 EnumValue
-Enum(arm_fpu) String(vfpv2) Value(1)
+Enum(arm_fpu) String(vfpv2) Value(TARGET_FPU_vfpv2)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3) Value(2)
+Enum(arm_fpu) String(vfpv3) Value(TARGET_FPU_vfpv3)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3-fp16) Value(3)
+Enum(arm_fpu) String(vfpv3-fp16) Value(TARGET_FPU_vfpv3_fp16)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3-d16) Value(4)
+Enum(arm_fpu) String(vfpv3-d16) Value(TARGET_FPU_vfpv3_d16)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3-d16-fp16) Value(5)
+Enum(arm_fpu) String(vfpv3-d16-fp16) Value(TARGET_FPU_vfpv3_d16_fp16)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3xd) Value(6)
+Enum(arm_fpu) String(vfpv3xd) Value(TARGET_FPU_vfpv3xd)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3xd-fp16) Value(7)
+Enum(arm_fpu) String(vfpv3xd-fp16) Value(TARGET_FPU_vfpv3xd_fp16)
 
 EnumValue
-Enum(arm_fpu) String(neon) Value(8)
+Enum(arm_fpu) String(neon) Value(TARGET_FPU_neon)
 
 EnumValue
-Enum(arm_fpu) String(neon-vfpv3) Value(9)
+Enum(arm_fpu) String(neon-vfpv3) Value(TARGET_FPU_neon_vfpv3)
 
 EnumValue
-Enum(arm_fpu) String(neon-fp16) Value(10)
+Enum(arm_fpu) String(neon-fp16) Value(TARGET_FPU_neon_fp16)
 
 EnumValue
-Enum(arm_fpu) String(vfpv4) Value(11)
+Enum(arm_fpu) String(vfpv4) Value(TARGET_FPU_vfpv4)
 
 EnumValue
-Enum(arm_fpu) String(neon-vfpv4) Value(12)
+Enum(arm_fpu) String(neon-vfpv4) Value(TARGET_FPU_neon_vfpv4)
 
 EnumValue
-Enum(arm_fpu) String(vfpv4-d16) Value(13)
+Enum(arm_fpu) String(vfpv4-d16) Value(TARGET_FPU_vfpv4_d16)
 
 EnumValue
-Enum(arm_fpu) String(fpv4-sp-d16) Value(14)
+Enum(arm_fpu) String(fpv4-sp-d16) Value(TARGET_FPU_fpv4_sp_d16)
 
 EnumValue
-Enum(arm_fpu) String(fpv5-sp-d16) Value(15)
+Enum(arm_fpu) String(fpv5-sp-d16) Value(TARGET_FPU_fpv5_sp_d16)
 
 EnumValue
-Enum(arm_fpu) String(fpv5-d16) Value(16)
+Enum(arm_fpu) String(fpv5-d16) Value(TARGET_FPU_fpv5_d16)
 
 EnumValue
-Enum(arm_fpu) String(fp-armv8) Value(17)
+Enum(arm_fpu) String(fp-armv8) Value(TARGET_FPU_fp_armv8)
 
 EnumValue
-Enum(arm_fpu) String(neon-fp-armv8) Value(18)
+Enum(arm_fpu) String(neon-fp-armv8) Value(TARGET_FPU_neon_fp_armv8)
 
 EnumValue
-Enum(arm_fpu) String(crypto-neon-fp-armv8) Value(19)
+Enum(arm_fpu) String(crypto-neon-fp-armv8) Value(TARGET_FPU_crypto_neon_fp_armv8)
 
 EnumValue
-Enum(arm_fpu) String(vfp3) Value(20)
+Enum(arm_fpu) String(vfp3) Value(TARGET_FPU_vfp3)
 
+EnumValue
+Enum(arm_fpu) String(auto) Value(TARGET_FPU_auto)

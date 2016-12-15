@@ -1,5 +1,28 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-fpus.def: Add CNAME field to all FPU definitions.
+	* genopt.sh: Use explicit enumeration tags for FPU entries.
+	* arm-tables.opt: Regenerated.
+	* arm.opt (mfpu): Provide initial value.
+	* arm-opts.h (enum fpu_type): Build the enumeration from the list of
+	available FPUs.  Add 'auto' entry on the end.
+	* arm.c (arm_configure_build_target): Only do explicit configuration
+	of the FPU features if the selected FPU is not 'auto'.
+	(arm_option_override): Adjust initialization of arm_fpu_index.
+	Emit an error if we have a hard float ABI request, but the processor
+	does not support floating-point.
+	(arm_option_print): Handle -mfpu=auto.
+	(arm_valid_target_attribute_rec): Don't permit fpu=auto in pragmas
+	or function attributes.
+	(arm_identify_fpu_from_isa): Handle effective soft-float when
+	the FPU is automatically detected.
+	* arm-cores.def (arm1136jf-s): Add feature ISA_FP_DBL.
+	(arm1176jzf-s): Likewise.
+	(mpcore): Likewise.
+	(arm1156t2f-s): Likewise.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-fpus.def (ARM_FPU): Remove features field from all definitions.
 	* arm.h (arm_fpu_feature_set): Delete typedef.
 	(FPU_FL_NONE): Delete.

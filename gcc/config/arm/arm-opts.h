@@ -40,6 +40,16 @@ enum processor_type
   TARGET_CPU_arm_none
 };
 
+/* The various ARM FPUs.  */
+enum fpu_type
+{
+#undef ARM_FPU
+#define ARM_FPU(NAME, CNAME, ISA) TARGET_FPU_##CNAME,
+#include "arm-fpus.def"
+  TARGET_FPU_auto
+#undef ARM_FPU
+};
+
 /* Which __fp16 format to use.
    The enumeration values correspond to the numbering for the
    Tag_ABI_FP_16bit_format attribute.
