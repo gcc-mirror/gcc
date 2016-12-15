@@ -1,5 +1,18 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-isa.h: New file.
+	* arm-protos.h: Include it.
+	* arm-arches.def: Add new ISA field to all entries.  Drop bogus
+	armv8.1-a+crc architecture.
+	* arm-cores.def: Similarly.  Group ARMv8 cores by profile.
+	* arm-opts.h (enum processor_type): Adjust for new field.
+	* arm.c (struct processors): New field 'isa_bits'.
+	(all_cores, all_architectures): Initialize new field.
+	* arm-tables.opt: Regenerated.
+	* arm-tune.md: Regenerated.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-arches.def (ARM_ARCH): Add extra field TUNE_FLAGS, move
 	tuning properties from architectural FLAGS field.
 	* arm-cores.def (ARM_CORE): Likewise.
