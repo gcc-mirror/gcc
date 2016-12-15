@@ -3225,14 +3225,14 @@ bool gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 
 /* interface.c -- FIXME: some of these should be in symbol.c */
 void gfc_free_interface (gfc_interface *);
-int gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
-int gfc_compare_types (gfc_typespec *, gfc_typespec *);
+bool gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
+bool gfc_compare_types (gfc_typespec *, gfc_typespec *);
 bool gfc_check_dummy_characteristics (gfc_symbol *, gfc_symbol *,
 				      bool, char *, int);
 bool gfc_check_result_characteristics (gfc_symbol *, gfc_symbol *,
 				       char *, int);
-int gfc_compare_interfaces (gfc_symbol*, gfc_symbol*, const char *, int, int,
-			    char *, int, const char *, const char *);
+bool gfc_compare_interfaces (gfc_symbol*, gfc_symbol*, const char *, int, int,
+			     char *, int, const char *, const char *);
 void gfc_check_interfaces (gfc_namespace *);
 bool gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);
 void gfc_ppc_use (gfc_component *, gfc_actual_arglist **, locus *);
@@ -3248,7 +3248,7 @@ void gfc_set_current_interface_head (gfc_interface *);
 gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
 bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);
 bool gfc_check_operator_interface (gfc_symbol*, gfc_intrinsic_op, locus);
-int gfc_has_vector_subscript (gfc_expr*);
+bool gfc_has_vector_subscript (gfc_expr*);
 gfc_intrinsic_op gfc_equivalent_op (gfc_intrinsic_op);
 bool gfc_check_typebound_override (gfc_symtree*, gfc_symtree*);
 void gfc_check_dtio_interfaces (gfc_symbol*);
