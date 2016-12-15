@@ -1,3 +1,9 @@
+2016-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-35.c: Use -Wno-psabi everywhere.
+	* gcc.dg/torture/pr78515.c: Likewise.
+	* gcc.dg/pr69634.c: Likewise.
+
 2016-12-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78519
