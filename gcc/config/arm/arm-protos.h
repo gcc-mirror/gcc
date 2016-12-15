@@ -353,10 +353,6 @@ extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 
 extern bool arm_is_constant_pool_ref (rtx);
 
-/* The bits in this mask specify which
-   instructions we are allowed to generate.  */
-extern arm_feature_set insn_flags;
-
 /* The bits in this mask specify which instruction scheduling options should
    be used.  */
 extern unsigned int tune_flags;
@@ -390,6 +386,9 @@ extern int arm_arch6m;
 
 /* Nonzero if this chip supports the ARM 7 extensions.  */
 extern int arm_arch7;
+
+/* Nonzero if this chip supports the ARM 7ve extensions.  */
+extern int arm_arch7ve;
 
 /* Nonzero if instructions not present in the 'M' profile can be used.  */
 extern int arm_arch_notm;

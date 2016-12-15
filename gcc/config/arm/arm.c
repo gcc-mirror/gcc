@@ -779,10 +779,6 @@ int arm_fpu_attr;
 rtx thumb_call_via_label[14];
 static int thumb_call_reg_needed;
 
-/* The bits in this mask specify which
-   instructions we are allowed to generate.  */
-arm_feature_set insn_flags = ARM_FSET_EMPTY;
-
 /* The bits in this mask specify which instruction scheduling options should
    be used.  */
 unsigned int tune_flags = 0;
@@ -827,6 +823,9 @@ int arm_arch6m = 0;
 
 /* Nonzero if this chip supports the ARM 7 extensions.  */
 int arm_arch7 = 0;
+
+/* Nonzero if this chip supports the ARM 7ve extensions.  */
+int arm_arch7ve = 0;
 
 /* Nonzero if instructions not present in the 'M' profile can be used.  */
 int arm_arch_notm = 0;
@@ -2316,11 +2315,6 @@ static const struct processors all_architectures[] =
   {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, ARM_FSET_EMPTY, NULL}
 };
 
-
-/* These are populated as commandline arguments are processed, or NULL
-   if not specified.  */
-static const struct processors *arm_selected_cpu;
-
 /* The name of the preprocessor macro to define for this architecture.  PROFILE
    is replaced by the architecture name (eg. 8A) in arm_option_override () and
    is thus chosen to be big enough to hold the longest architecture name.  */
@@ -2821,13 +2815,14 @@ arm_option_check_internal (struct gcc_options *opts)
   const struct arm_fpu_desc *fpu_desc = &all_fpus[opts->x_arm_fpu_index];
 
   /* iWMMXt and NEON are incompatible.  */
-    if (TARGET_IWMMXT
-	&& ARM_FPU_FSET_HAS (fpu_desc->features, FPU_FL_NEON))
+  if (TARGET_IWMMXT
+      && ARM_FPU_FSET_HAS (fpu_desc->features, FPU_FL_NEON))
     error ("iWMMXt and NEON are incompatible");
 
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
-  if (TARGET_ARM_P (flags) && !ARM_FSET_HAS_CPU1 (insn_flags, FL_NOTM))
+  if (TARGET_ARM_P (flags)
+      && !bitmap_bit_p (arm_active_target.isa, isa_bit_notm))
     error ("target CPU does not support ARM mode");
 
   /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
@@ -2949,7 +2944,7 @@ arm_option_override_internal (struct gcc_options *opts,
 {
   arm_override_options_after_change_1 (opts);
 
-  if (TARGET_INTERWORK && !ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB))
+  if (TARGET_INTERWORK && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
     {
       /* The default is to enable interworking, so this warning message would
 	 be confusing to users who have just compiled with, eg, -march=armv3.  */
@@ -2958,7 +2953,7 @@ arm_option_override_internal (struct gcc_options *opts,
     }
 
   if (TARGET_THUMB_P (opts->x_target_flags)
-      && !(ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB)))
+      && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
     {
       warning (0, "target CPU does not support THUMB instructions");
       opts->x_target_flags &= ~MASK_THUMB;
@@ -3069,8 +3064,7 @@ arm_configure_build_target (struct arm_build_target *target,
 {
   const struct processors *arm_selected_tune = NULL;
   const struct processors *arm_selected_arch = NULL;
-
-  arm_selected_cpu = NULL;
+  const struct processors *arm_selected_cpu = NULL;
 
   bitmap_clear (target->isa);
   target->core_name = NULL;
@@ -3284,7 +3278,6 @@ arm_option_override (void)
 #endif
 
   sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_active_target.arch_pp_name);
-  insn_flags = arm_selected_cpu->flags;
   arm_base_arch = arm_active_target.base_arch;
 
   arm_tune = arm_active_target.tune_core;
@@ -3298,7 +3291,8 @@ arm_option_override (void)
   /* BPABI targets use linker tricks to allow interworking on cores
      without thumb support.  */
   if (TARGET_INTERWORK
-      && !(ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB) || TARGET_BPABI))
+      && !TARGET_BPABI
+      && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
     {
       warning (0, "target CPU does not support interworking" );
       target_flags &= ~MASK_INTERWORK;
@@ -3319,46 +3313,55 @@ arm_option_override (void)
   if (TARGET_APCS_REENT)
     warning (0, "APCS reentrant code not supported.  Ignored");
 
-  /* Initialize boolean versions of the flags, for use in the arm.md file.  */
-  arm_arch3m = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH3M);
-  arm_arch4 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH4);
-  arm_arch4t = arm_arch4 && (ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB));
-  arm_arch5 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH5);
-  arm_arch5e = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH5E);
-  arm_arch6 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH6);
-  arm_arch6k = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH6K);
-  arm_arch6kz = arm_arch6k && ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH6KZ);
-  arm_arch_notm = ARM_FSET_HAS_CPU1 (insn_flags, FL_NOTM);
+  /* Initialize boolean versions of the architectural flags, for use
+     in the arm.md file.  */
+  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv3m);
+  arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv4);
+  arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
+  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5);
+  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5e);
+  arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6);
+  arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6k);
+  arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
   arm_arch6m = arm_arch6 && !arm_arch_notm;
-  arm_arch7 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH7);
-  arm_arch7em = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH7EM);
-  arm_arch8 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH8);
-  arm_arch8_1 = ARM_FSET_HAS_CPU2 (insn_flags, FL2_ARCH8_1);
-  arm_arch8_2 = ARM_FSET_HAS_CPU2 (insn_flags, FL2_ARCH8_2);
-  arm_arch_thumb1 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB);
-  arm_arch_thumb2 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB2);
-  arm_arch_xscale = ARM_FSET_HAS_CPU1 (insn_flags, FL_XSCALE);
-
-  arm_ld_sched = (tune_flags & TF_LDSCHED) != 0;
-  arm_tune_strongarm = (tune_flags & TF_STRONG) != 0;
-  arm_tune_wbuf = (tune_flags & TF_WBUF) != 0;
-  arm_tune_xscale = (tune_flags & TF_XSCALE) != 0;
-  arm_arch_iwmmxt = ARM_FSET_HAS_CPU1 (insn_flags, FL_IWMMXT);
-  arm_arch_iwmmxt2 = ARM_FSET_HAS_CPU1 (insn_flags, FL_IWMMXT2);
-  arm_arch_thumb_hwdiv = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB_DIV);
-  arm_arch_arm_hwdiv = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARM_DIV);
-  arm_arch_no_volatile_ce = ARM_FSET_HAS_CPU1 (insn_flags, FL_NO_VOLATILE_CE);
-  arm_tune_cortex_a9 = (arm_tune == TARGET_CPU_cortexa9) != 0;
-  arm_arch_crc = ARM_FSET_HAS_CPU1 (insn_flags, FL_CRC32);
-  arm_arch_cmse = ARM_FSET_HAS_CPU2 (insn_flags, FL2_CMSE);
-  arm_m_profile_small_mul = (tune_flags & TF_SMALLMUL) != 0;
-  arm_fp16_inst = ARM_FSET_HAS_CPU2 (insn_flags, FL2_FP16INST);
+  arm_arch7 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv7);
+  arm_arch7em = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv7em);
+  arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8);
+  arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8_1);
+  arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8_2);
+  arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
+  arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
+  arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
+  arm_arch_iwmmxt = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt);
+  arm_arch_iwmmxt2 = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt2);
+  arm_arch_thumb_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_tdiv);
+  arm_arch_arm_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_adiv);
+  arm_arch_crc = bitmap_bit_p (arm_active_target.isa, isa_bit_crc32);
+  arm_arch_cmse = bitmap_bit_p (arm_active_target.isa, isa_bit_cmse);
+  arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
+  arm_arch7ve
+    = (arm_arch6k && arm_arch7 && arm_arch_thumb_hwdiv && arm_arch_arm_hwdiv);
   if (arm_fp16_inst)
     {
       if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
 	error ("selected fp16 options are incompatible.");
       arm_fp16_format = ARM_FP16_FORMAT_IEEE;
     }
+
+
+  /* Set up some tuning parameters.  */
+  arm_ld_sched = (tune_flags & TF_LDSCHED) != 0;
+  arm_tune_strongarm = (tune_flags & TF_STRONG) != 0;
+  arm_tune_wbuf = (tune_flags & TF_WBUF) != 0;
+  arm_tune_xscale = (tune_flags & TF_XSCALE) != 0;
+  arm_tune_cortex_a9 = (arm_tune == TARGET_CPU_cortexa9) != 0;
+  arm_m_profile_small_mul = (tune_flags & TF_SMALLMUL) != 0;
+
+  /* And finally, set up some quirks.  */
+  arm_arch_no_volatile_ce
+    = bitmap_bit_p (arm_active_target.isa, isa_quirk_no_volatile_ce);
+  arm_arch6kz
+    = arm_arch6k && bitmap_bit_p (arm_active_target.isa, isa_quirk_ARMv6kz);
 
   /* V5 code we generate is completely interworking capable, so we turn off
      TARGET_INTERWORK here to avoid many tests later on.  */
