@@ -26,6 +26,7 @@
 #define ARM_OPTS_H
 
 #include "arm-flags.h"
+#include "arm-isa.h"
 
 /* The various ARM cores.  */
 enum processor_type
