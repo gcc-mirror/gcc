@@ -1,5 +1,20 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (vfp_reg_type): Delete.
+	(TARGET_FPU_REGS): Delete.
+	(arm_fpu_desc): Delete regs field.
+	(FPU_FL_NONE, FPU_FL_NEON, FPU_FL_FP16, FPU_FL_CRYPTO): Use unsigned
+	values.
+	(FPU_FL_DBL, FPU_FL_D32): Define.
+	(TARGET_VFPD32): Use feature test.
+	(TARGET_VFP_SINGLE): Likewise.
+	(TARGET_VFP_DOUBLE): Likewise.
+	* arm-fpus.def: Update all entries for new feature bits.
+	* arm.c (all_fpus): Update initializer macro.
+	(arm_can_inline_p): Remove test on fpu regs.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.h (arm_fp_model): Delete.
 
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
