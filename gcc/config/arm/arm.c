@@ -3276,9 +3276,9 @@ arm_option_override (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_selected_cpu->arch);
+  sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_active_target.arch_pp_name);
   insn_flags = arm_selected_cpu->flags;
-  arm_base_arch = arm_selected_cpu->base_arch;
+  arm_base_arch = arm_active_target.base_arch;
 
   arm_tune = arm_active_target.tune_core;
   tune_flags = arm_active_target.tune_flags;
@@ -26012,12 +26012,13 @@ arm_file_start (void)
 			     arm_active_target.arch_name);
 	    }
         }
-      else if (strncmp (arm_selected_cpu->name, "generic", 7) == 0)
-	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_cpu->name + 8);
+      else if (strncmp (arm_active_target.core_name, "generic", 7) == 0)
+	asm_fprintf (asm_out_file, "\t.arch %s\n",
+		     arm_active_target.core_name + 8);
       else
 	{
 	  const char* truncated_name
-	    = arm_rewrite_selected_cpu (arm_selected_cpu->name);
+	    = arm_rewrite_selected_cpu (arm_active_target.core_name);
 	  asm_fprintf (asm_out_file, "\t.cpu %s\n", truncated_name);
 	}
 
