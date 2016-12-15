@@ -161,7 +161,7 @@ extern tree arm_fp16_type_node;
    to be more careful with TARGET_NEON as noted below.  */
 
 /* FPU is has the full VFPv3/NEON register file of 32 D registers.  */
-#define TARGET_VFPD32 (TARGET_FPU_REGS == VFP_REG_D32)
+#define TARGET_VFPD32 (TARGET_FPU_FEATURES & FPU_FL_D32)
 
 /* FPU supports VFPv3 instructions.  */
 #define TARGET_VFP3 (TARGET_FPU_REV >= 3)
@@ -170,10 +170,10 @@ extern tree arm_fp16_type_node;
 #define TARGET_VFP5 (TARGET_FPU_REV >= 5)
 
 /* FPU only supports VFP single-precision instructions.  */
-#define TARGET_VFP_SINGLE (TARGET_FPU_REGS == VFP_REG_SINGLE)
+#define TARGET_VFP_SINGLE ((TARGET_FPU_FEATURES & FPU_FL_DBL) == 0)
 
 /* FPU supports VFP double-precision instructions.  */
-#define TARGET_VFP_DOUBLE (TARGET_FPU_REGS != VFP_REG_SINGLE)
+#define TARGET_VFP_DOUBLE (TARGET_FPU_FEATURES & FPU_FL_DBL)
 
 /* FPU supports half-precision floating-point with NEON element load/store.  */
 #define TARGET_NEON_FP16					\
@@ -335,24 +335,17 @@ typedef unsigned long arm_fpu_feature_set;
 #define ARM_FPU_FSET_HAS(S,F) (((S) & (F)) == (F))
 
 /* FPU Features.  */
-#define FPU_FL_NONE	(0)
-#define FPU_FL_NEON	(1 << 0)	/* NEON instructions.  */
-#define FPU_FL_FP16	(1 << 1)	/* Half-precision.  */
-#define FPU_FL_CRYPTO	(1 << 2)	/* Crypto extensions.  */
-
-enum vfp_reg_type
-{
-  VFP_NONE = 0,
-  VFP_REG_D16,
-  VFP_REG_D32,
-  VFP_REG_SINGLE
-};
+#define FPU_FL_NONE	(0u)
+#define FPU_FL_NEON	(1u << 0)	/* NEON instructions.  */
+#define FPU_FL_FP16	(1u << 1)	/* Half-precision.  */
+#define FPU_FL_CRYPTO	(1u << 2)	/* Crypto extensions.  */
+#define FPU_FL_DBL	(1u << 3)	/* Has double precision.  */
+#define FPU_FL_D32	(1u << 4)	/* Has 32 double precision regs.  */
 
 extern const struct arm_fpu_desc
 {
   const char *name;
   int rev;
-  enum vfp_reg_type regs;
   arm_fpu_feature_set features;
 } all_fpus[];
 
@@ -360,7 +353,6 @@ extern const struct arm_fpu_desc
 
 #define TARGET_FPU_NAME     (all_fpus[arm_fpu_index].name)
 #define TARGET_FPU_REV      (all_fpus[arm_fpu_index].rev)
-#define TARGET_FPU_REGS     (all_fpus[arm_fpu_index].regs)
 #define TARGET_FPU_FEATURES (all_fpus[arm_fpu_index].features)
 
 /* Which floating point hardware to schedule for.  */

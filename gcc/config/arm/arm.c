@@ -2323,8 +2323,8 @@ char arm_arch_name[] = "__ARM_ARCH_PROFILE__";
 
 const struct arm_fpu_desc all_fpus[] =
 {
-#define ARM_FPU(NAME, REV, VFP_REGS, FEATURES) \
-  { NAME, REV, VFP_REGS, FEATURES },
+#define ARM_FPU(NAME, REV, FEATURES) \
+  { NAME, REV, FEATURES },
 #include "arm-fpus.def"
 #undef ARM_FPU
 };
@@ -30216,10 +30216,6 @@ arm_can_inline_p (tree caller, tree callee)
 
   /* Callee's fpu features should be a subset of the caller's.  */
   if ((caller_fpu->features & callee_fpu->features) != callee_fpu->features)
-    return false;
-
-  /* Need same FPU regs.  */
-  if (callee_fpu->regs != callee_fpu->regs)
     return false;
 
   /* OK to inline between different modes.
