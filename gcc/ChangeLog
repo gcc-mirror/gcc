@@ -1,5 +1,9 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (arm_fp_model): Delete.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-cores.def: Remove FLAGS field from all core definitions.
 	* arm-arches.def: Likewise.
 	* arm-opts.h (enum processor_type): Remove FLAGS parameter from
