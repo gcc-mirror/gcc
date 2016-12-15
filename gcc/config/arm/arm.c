@@ -2323,8 +2323,8 @@ char arm_arch_name[] = "__ARM_ARCH_PROFILE__";
 
 const struct arm_fpu_desc all_fpus[] =
 {
-#define ARM_FPU(NAME, FEATURES) \
-  { NAME, FEATURES },
+#define ARM_FPU(NAME, ISA, FEATURES)		\
+  { NAME, {ISA isa_nobit}, FEATURES },
 #include "arm-fpus.def"
 #undef ARM_FPU
 };

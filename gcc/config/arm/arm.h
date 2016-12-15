@@ -363,6 +363,7 @@ typedef unsigned long arm_fpu_feature_set;
 extern const struct arm_fpu_desc
 {
   const char *name;
+  enum isa_feature isa_bits[isa_num_bits];
   arm_fpu_feature_set features;
 } all_fpus[];
 
