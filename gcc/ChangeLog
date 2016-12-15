@@ -1,3 +1,19 @@
+2016-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78680
+	PR preprocessor/78811
+	* input.c (struct selftest::lexer_test): Add field
+	m_implicitly_expect_EOF.
+	(selftest::lexer_error_sink): New class.
+	(selftest::lexer_error_sink::s_singleton): New global.
+	(selftest::lexer_test::lexer_test): Initialize new field
+	"m_implicitly_expect_EOF".
+	(selftest::lexer_test::~lexer_test): Conditionalize the
+	check for the EOF token on the new field.
+	(selftest::test_lexer_string_locations_raw_string_unterminated):
+	New function.
+	(selftest::input_c_tests): Call the new test.
+
 2016-12-15  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.h (TARGET_BACKTRACE): Use crtl->is_leaf.
