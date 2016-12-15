@@ -30227,6 +30227,7 @@ arm_can_inline_p (tree caller, tree callee)
 {
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+  bool can_inline = true;
 
   struct cl_target_option *caller_opts
 	= TREE_TARGET_OPTION (caller_tree ? caller_tree
@@ -30236,19 +30237,29 @@ arm_can_inline_p (tree caller, tree callee)
 	= TREE_TARGET_OPTION (callee_tree ? callee_tree
 					   : target_option_default_node);
 
-  const struct arm_fpu_desc *caller_fpu
-    = &all_fpus[caller_opts->x_arm_fpu_index];
-  const struct arm_fpu_desc *callee_fpu
-    = &all_fpus[callee_opts->x_arm_fpu_index];
+  if (callee_opts == caller_opts)
+    return true;
 
-  /* Callee's fpu features should be a subset of the caller's.  */
-  if ((caller_fpu->features & callee_fpu->features) != callee_fpu->features)
-    return false;
+  /* Callee's ISA features should be a subset of the caller's.  */
+  struct arm_build_target caller_target;
+  struct arm_build_target callee_target;
+  caller_target.isa = sbitmap_alloc (isa_num_bits);
+  callee_target.isa = sbitmap_alloc (isa_num_bits);
+
+  arm_configure_build_target (&caller_target, caller_opts, &global_options_set,
+			      false);
+  arm_configure_build_target (&callee_target, callee_opts, &global_options_set,
+			      false);
+  if (!bitmap_subset_p (callee_target.isa, caller_target.isa))
+    can_inline = false;
+
+  sbitmap_free (caller_target.isa);
+  sbitmap_free (callee_target.isa);
 
   /* OK to inline between different modes.
      Function with mode specific instructions, e.g using asm,
      must be explicitly protected with noinline.  */
-  return true;
+  return can_inline;
 }
 
 /* Hook to fix function's alignment affected by target attribute.  */
