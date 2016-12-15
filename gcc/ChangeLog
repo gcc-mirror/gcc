@@ -1,5 +1,16 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.c (arm_selected_tune): Delete static variable.
+	(arm_selected_arch): Likewise.
+	(arm_configure_build_target): Declare local versions of arm_selected
+	target and arm_selected_arch.  Initialize more fields in target
+	data structure.
+	(arm_option_override): Use arm_active_target instead of
+	arm_selected_tune and arm_selected_arch.
+	(asm_file_start): Use arm_active_target.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-protos.h (arm_build_target): New structure.
 	(arm_active_target): Declare it.
 	* arm.c (arm_active_target): New variable.
