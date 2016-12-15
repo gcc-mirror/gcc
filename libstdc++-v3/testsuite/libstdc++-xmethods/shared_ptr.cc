@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,11 +28,13 @@ struct x_struct
 int
 main ()
 {
-  std::unique_ptr<int> p(new int(10));
+  std::shared_ptr<int> p(new int(10));
 
-  std::unique_ptr<x_struct> q(new x_struct{23});
+  std::shared_ptr<x_struct> q(new x_struct{23});
 
-  std::unique_ptr<x_struct[]> r(new x_struct[2]{ {46}, {69} });
+  std::shared_ptr<x_struct[]> r(new x_struct[2]{ {46}, {69} });
+
+  std::shared_ptr<x_struct[3]> s(new x_struct[2]{ {92}, {115} });
 
 // { dg-final { note-test *p 10 } }
 // { dg-final { regexp-test p.get() 0x.* } }
@@ -56,6 +58,13 @@ main ()
 // { dg-final { whatis-test r.get() "x_struct \*" } }
 // { dg-final { whatis-test r\[1].y int } }
 
+// { dg-final { note-test s\[1] {\{y = 115\}} } }
+// { dg-final { regexp-test s.get() 0x.* } }
+// { dg-final { note-test s\[1].y 115 } }
+
+// { dg-final { whatis-test s\[1] x_struct } }
+// { dg-final { whatis-test s.get() "x_struct \*" } }
+// { dg-final { whatis-test s\[1].y int } }
 
   return 0;  // Mark SPOT
 }

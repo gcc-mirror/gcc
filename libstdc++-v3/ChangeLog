@@ -1,3 +1,19 @@
+2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker.__init__): Use
+	correct element type for unique_ptr<T[]>.
+	(UniquePtrGetWorker._supports, UniquePtrDerefWorker._supports): New
+	functions to disable unsupported operators for unique_ptr<T[]>.
+	(UniquePtrSubscriptWorker): New worker for operator[].
+	(UniquePtrMethodsMatcher.__init__): Register UniquePtrSubscriptWorker.
+	(UniquePtrMethodsMatcher.match): Call _supports on the chosen worker.
+	(SharedPtrGetWorker, SharedPtrDerefWorker, SharedPtrSubscriptWorker)
+	(SharedPtrUseCountWorker, SharedPtrUniqueWorker): New workers.
+	(SharedPtrMethodsMatcher): New matcher for shared_ptr.
+	(register_libstdcxx_xmethods): Register SharedPtrMethodsMatcher.
+	* testsuite/libstdc++-xmethods/unique_ptr.cc: Test arrays.
+	* testsuite/libstdc++-xmethods/shared_ptr.cc: New test.
+
 2016-12-14  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_tree.h
