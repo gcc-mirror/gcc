@@ -1,5 +1,33 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-fpus.def (ARM_FPU): Remove features field from all definitions.
+	* arm.h (arm_fpu_feature_set): Delete typedef.
+	(FPU_FL_NONE): Delete.
+	(FPU_FL_NEON): Delete.
+	(FPU_FL_FP16): Delete.
+	(FPU_FL_CRYPTO): Delete.
+	(FPU_FL_DBL): Delete.
+	(FPU_FL_D32): Delete.
+	(FPU_FL_VFPv2): Delete.
+	(FPU_FL_VFPv3): Delete.
+	(FPU_FL_VFPv4): Delete.
+	(FPU_FL_VFPv5): Delete.
+	(FPU_FL_AMRv8): Delete.
+	(FPU_VFPv2): Delete.
+	(FPU_VFPv3): Delete.
+	(FPU_VFPv4): Delete.
+	(FPU_VFPv5): Delete.
+	(FPU_ARMv8): Delete.
+	(FPU_DBL): Delete.
+	(FPU_D32): Delete.
+	(FPU_NEON): Delete.
+	(FPU_CRYPTO): Delete.
+	(FPU_FP16): Delete.
+	(arm_fpu_desc): Delete features field.
+	* arm.c (all_fpus): Don't initialize feature field.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (arm_can_inline_p): Use ISA features for determining
 	inlinability.
 
