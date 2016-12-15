@@ -369,7 +369,6 @@ extern const struct arm_fpu_desc
 
 /* Accessors.  */
 
-#define TARGET_FPU_NAME     (all_fpus[arm_fpu_index].name)
 #define TARGET_FPU_FEATURES (all_fpus[arm_fpu_index].features)
 
 /* Which floating point hardware to schedule for.  */

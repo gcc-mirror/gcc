@@ -3256,7 +3256,7 @@ arm_configure_build_target (struct arm_build_target *target,
   gcc_assert (arm_selected_cpu);
 
   arm_selected_fpu = &all_fpus[opts->x_arm_fpu_index];
-  auto_sbitmap fpu_bits(isa_num_bits);
+  auto_sbitmap fpu_bits (isa_num_bits);
 
   arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
   bitmap_and_compl (target->isa, target->isa, isa_all_fpubits);
@@ -30433,6 +30433,26 @@ arm_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
   return ret;
 }
 
+/* Match an ISA feature bitmap to a named FPU.  We always use the
+   first entry that exactly matches the feature set, so that we
+   effectively canonicalize the FPU name for the assembler.  */
+static const char*
+arm_identify_fpu_from_isa (sbitmap isa)
+{
+  auto_sbitmap fpubits (isa_num_bits);
+  auto_sbitmap cand_fpubits (isa_num_bits);
+
+  bitmap_and (fpubits, isa, isa_all_fpubits);
+  for (unsigned int i = 0; i < ARRAY_SIZE (all_fpus); i++)
+    {
+      arm_initialize_isa (cand_fpubits, all_fpus[i].isa_bits);
+      if (bitmap_equal_p (fpubits, cand_fpubits))
+	return all_fpus[i].name;
+    }
+  /* We must find an entry, or things have gone wrong.  */
+  gcc_unreachable ();
+}
+
 void
 arm_declare_function_name (FILE *stream, const char *name, tree decl)
 {
@@ -30454,7 +30474,9 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
     fprintf (stream, "\t.arm\n");
 
   asm_fprintf (asm_out_file, "\t.fpu %s\n",
-	       TARGET_SOFT_FLOAT ? "softvfp" : TARGET_FPU_NAME);
+	       (TARGET_SOFT_FLOAT
+		? "softvfp"
+		: arm_identify_fpu_from_isa (arm_active_target.isa)));
 
   if (TARGET_POKE_FUNCTION_NAME)
     arm_poke_function_name (stream, (const char *) name);
