@@ -1,5 +1,21 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-builtins.c: Include sbitmap.h.
+	(def_mbuiltin): Change first parameter to a flag bit.  Use it to test
+	available features in the current target.
+	(struct builtin_description): Change type of feature field.
+	(IWMMXT_BUILTIN): Use the isa_features types.
+	(IWMMXT2_BUILTIN): Likewise.
+	(IWMMXT_BUILTIN2): Likewise.
+	(IWMMXT2_BUILTIN2): Likewise.
+	(CRC32_BUILTIN): Likewise.
+	(CRYPTO_BUILTIN): Likewise.
+	(iwmmx_builtin): Likewise.
+	(iwmmx2_builtin): Likewise.
+	(arm_iwmmxt_builtin): Check for specific feature bits.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-isa.h (enum isa_feature): Add isa_quirk_cm3_ldrd.
 	(ISA_ALL_QUIRKS): New macro.
 	* arm-cores.def (cortex-m3): Add isa_quirk_cm3_ldrd to isa feature list.
