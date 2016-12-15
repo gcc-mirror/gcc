@@ -7259,7 +7259,7 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
 
 /* Return std::tuple_size<TYPE>::value.  */
 
-tree
+static tree
 get_tuple_size (tree type)
 {
   tree args = make_tree_vec (1);
@@ -7268,6 +7268,9 @@ get_tuple_size (tree type)
 				     /*in_decl*/NULL_TREE,
 				     /*context*/std_node,
 				     /*entering_scope*/false, tf_none);
+  inst = complete_type (inst);
+  if (inst == error_mark_node || !COMPLETE_TYPE_P (inst))
+    return NULL_TREE;
   tree val = lookup_qualified_name (inst, get_identifier ("value"),
 				    /*type*/false, /*complain*/false);
   if (TREE_CODE (val) == VAR_DECL || TREE_CODE (val) == CONST_DECL)
@@ -7275,12 +7278,12 @@ get_tuple_size (tree type)
   if (TREE_CODE (val) == INTEGER_CST)
     return val;
   else
-    return NULL_TREE;
+    return error_mark_node;
 }
 
 /* Return std::tuple_element<I,TYPE>::type.  */
 
-tree
+static tree
 get_tuple_element_type (tree type, unsigned i)
 {
   tree args = make_tree_vec (2);
@@ -7297,7 +7300,7 @@ get_tuple_element_type (tree type, unsigned i)
 
 /* Return e.get<i>() or get<i>(e).  */
 
-tree
+static tree
 get_tuple_decomp_init (tree decl, unsigned i)
 {
   tree get_id = get_identifier ("get");
@@ -7342,6 +7345,7 @@ store_decomp_type (tree v, tree t)
     decomp_type_table = hash_map<tree,tree>::create_ggc (13);
   decomp_type_table->put (v, t);
 }
+
 tree
 lookup_decomp_type (tree v)
 {
@@ -7502,6 +7506,12 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
     }
   else if (tree tsize = get_tuple_size (type))
     {
+      if (tsize == error_mark_node)
+	{
+	  error_at (loc, "%<std::tuple_size<%T>::value%> is not an integral "
+			 "constant expression", type);
+	  goto error_out;
+	}
       eltscnt = tree_to_uhwi (tsize);
       if (count != eltscnt)
 	goto cnt_mismatch;

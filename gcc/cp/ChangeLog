@@ -1,3 +1,15 @@
+2016-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	P0490R0 GB 20: decomposition declaration should commit to tuple
+	interpretation early
+	* decl.c (get_tuple_size): Make static.  If inst is error_mark_node
+	or non-complete type, return NULL_TREE, otherwise if
+	lookup_qualified_name fails or doesn't fold into INTEGER_CST, return
+	error_mark_node.
+	(get_tuple_element_type, get_tuple_decomp_init): Make static.
+	(cp_finish_decomp): Pass LOC to get_tuple_size.  If it returns
+	error_mark_node, complain and fail.
+
 2016-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/77585
