@@ -1,3 +1,18 @@
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm-arches.def (ARM_ARCH): Add extra field TUNE_FLAGS, move
+	tuning properties from architectural FLAGS field.
+	* arm-cores.def (ARM_CORE): Likewise.
+	* arm-protos.h (TF_LDSCHED, TF_WBUF, TF_CO_PROC): New macros.
+	(TF_SMALLMUL, TF_STRONG, TF_SCALE, TF_NOMODE32): New macros.
+	(FL_LDSCHED, FL_STRONG, FL_WBUF, FL_SMALLMUL): Delete.
+	(FL_TUNE): Remove deleted elements.
+	(tune_flags): Convert type to unsigned int.
+	* arm.c (struct processors): Add new field tune_flags.
+	(all_cores, all_arches): Initialize it.
+	(arm_option_override): Adapt uses of tune_flags.  Use tune_flags
+	for deciding when we should have slow multiply operations.
+
 2016-12-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78519

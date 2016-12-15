@@ -785,7 +785,7 @@ arm_feature_set insn_flags = ARM_FSET_EMPTY;
 
 /* The bits in this mask specify which instruction scheduling options should
    be used.  */
-arm_feature_set tune_flags = ARM_FSET_EMPTY;
+unsigned int tune_flags = 0;
 
 /* The highest ARM architecture version supported by the
    target.  */
@@ -950,6 +950,7 @@ struct processors
 {
   const char *const name;
   enum processor_type core;
+  unsigned int tune_flags;
   const char *arch;
   enum base_architecture base_arch;
   const arm_feature_set flags;
@@ -2287,12 +2288,12 @@ const struct tune_params arm_fa726te_tune =
 static const struct processors all_cores[] =
 {
   /* ARM Cores */
-#define ARM_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
-  {NAME, TARGET_CPU_##IDENT, #ARCH, BASE_ARCH_##ARCH,	  \
+#define ARM_CORE(NAME, X, IDENT, TUNE_FLAGS, ARCH, FLAGS, COSTS) \
+  {NAME, TARGET_CPU_##IDENT, TUNE_FLAGS, #ARCH, BASE_ARCH_##ARCH, \
    FLAGS, &arm_##COSTS##_tune},
 #include "arm-cores.def"
 #undef ARM_CORE
-  {NULL, TARGET_CPU_arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
+  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
 };
 
 static const struct processors all_architectures[] =
@@ -2301,11 +2302,11 @@ static const struct processors all_architectures[] =
   /* We don't specify tuning costs here as it will be figured out
      from the core.  */
 
-#define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
-  {NAME, TARGET_CPU_##CORE, #ARCH, BASE_ARCH_##ARCH, FLAGS, NULL},
+#define ARM_ARCH(NAME, CORE, TUNE_FLAGS, ARCH, FLAGS)			\
+  {NAME, TARGET_CPU_##CORE, TUNE_FLAGS, #ARCH, BASE_ARCH_##ARCH, FLAGS, NULL},
 #include "arm-arches.def"
 #undef ARM_ARCH
-  {NULL, TARGET_CPU_arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
+  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
 };
 
 
@@ -3177,7 +3178,7 @@ arm_option_override (void)
   arm_base_arch = arm_selected_cpu->base_arch;
 
   arm_tune = arm_selected_tune->core;
-  tune_flags = arm_selected_tune->flags;
+  tune_flags = arm_selected_tune->tune_flags;
   current_tune = arm_selected_tune->tune;
 
   /* TBD: Dwarf info for apcs frame is not handled yet.  */
@@ -3228,10 +3229,10 @@ arm_option_override (void)
   arm_arch_thumb2 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB2);
   arm_arch_xscale = ARM_FSET_HAS_CPU1 (insn_flags, FL_XSCALE);
 
-  arm_ld_sched = ARM_FSET_HAS_CPU1 (tune_flags, FL_LDSCHED);
-  arm_tune_strongarm = ARM_FSET_HAS_CPU1 (tune_flags, FL_STRONG);
-  arm_tune_wbuf = ARM_FSET_HAS_CPU1 (tune_flags, FL_WBUF);
-  arm_tune_xscale = ARM_FSET_HAS_CPU1 (tune_flags, FL_XSCALE);
+  arm_ld_sched = (tune_flags & TF_LDSCHED) != 0;
+  arm_tune_strongarm = (tune_flags & TF_STRONG) != 0;
+  arm_tune_wbuf = (tune_flags & TF_WBUF) != 0;
+  arm_tune_xscale = (tune_flags & TF_XSCALE) != 0;
   arm_arch_iwmmxt = ARM_FSET_HAS_CPU1 (insn_flags, FL_IWMMXT);
   arm_arch_iwmmxt2 = ARM_FSET_HAS_CPU1 (insn_flags, FL_IWMMXT2);
   arm_arch_thumb_hwdiv = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB_DIV);
@@ -3240,7 +3241,7 @@ arm_option_override (void)
   arm_tune_cortex_a9 = (arm_tune == TARGET_CPU_cortexa9) != 0;
   arm_arch_crc = ARM_FSET_HAS_CPU1 (insn_flags, FL_CRC32);
   arm_arch_cmse = ARM_FSET_HAS_CPU2 (insn_flags, FL2_CMSE);
-  arm_m_profile_small_mul = ARM_FSET_HAS_CPU1 (insn_flags, FL_SMALLMUL);
+  arm_m_profile_small_mul = (tune_flags & TF_SMALLMUL) != 0;
   arm_fp16_inst = ARM_FSET_HAS_CPU2 (insn_flags, FL2_FP16INST);
   if (arm_fp16_inst)
     {
@@ -3324,7 +3325,7 @@ arm_option_override (void)
 
   /* For arm2/3 there is no need to do any scheduling if we are doing
      software floating-point.  */
-  if (TARGET_SOFT_FLOAT && !ARM_FSET_HAS_CPU1 (tune_flags, FL_MODE32))
+  if (TARGET_SOFT_FLOAT && (tune_flags & TF_NO_MODE32))
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
   /* Use the cp15 method if it is available.  */
