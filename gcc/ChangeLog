@@ -1,5 +1,21 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (FPU_FL_VFPv2) New feature bit.
+	(FPU_FL_VFPv3, FPU_FL_VFPv4, FPU_FL_VFPv5, FPU_FL_ARMv8): Likewise.
+	(FPU_VFPv2, FPU_VFPv3, FPU_VFPv4, FPU_VFPv5, FPU_ARMv8): New helper
+	macros.
+	(FPU_DBL, FPU_D32, FPU_NEON, FPU_CRYPTO, FPU_FP16): Likewise.
+	(TARGET_FPU_REV): Delete.
+	(TARGET_VFP3): Use feature bits.
+	(TARGET_VFP5): Likewise.
+	(TARGET_FMA): Likewise.
+	(TARGET_FPU_ARMV8): Likewise.
+	(struct arm_fpu_desc): Delete rev field.
+	* arm-fpus.def: Delete REV entry, use new feature bits and macros.
+	* arm.c (all_fpus): Delete rev field.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.h (vfp_reg_type): Delete.
 	(TARGET_FPU_REGS): Delete.
 	(arm_fpu_desc): Delete regs field.
