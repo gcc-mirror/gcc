@@ -2319,9 +2319,7 @@ static const struct processors all_architectures[] =
 
 /* These are populated as commandline arguments are processed, or NULL
    if not specified.  */
-static const struct processors *arm_selected_arch;
 static const struct processors *arm_selected_cpu;
-static const struct processors *arm_selected_tune;
 
 /* The name of the preprocessor macro to define for this architecture.  PROFILE
    is replaced by the architecture name (eg. 8A) in arm_option_override () and
@@ -3068,9 +3066,10 @@ arm_configure_build_target (struct arm_build_target *target,
 			    struct gcc_options *opts_set,
 			    bool warn_compatible)
 {
-  arm_selected_arch = NULL;
+  const struct processors *arm_selected_tune = NULL;
+  const struct processors *arm_selected_arch = NULL;
+
   arm_selected_cpu = NULL;
-  arm_selected_tune = NULL;
 
   bitmap_clear (target->isa);
   target->core_name = NULL;
@@ -3119,17 +3118,24 @@ arm_configure_build_target (struct arm_build_target *target,
 		 Prefer the CPU setting.  */
 	      arm_selected_arch = NULL;
 	    }
+
+	  target->core_name = arm_selected_cpu->name;
 	}
       else
 	{
 	  /* Pick a CPU based on the architecture.  */
 	  arm_selected_cpu = arm_selected_arch;
 	  target->arch_name = arm_selected_arch->name;
+	  /* Note: target->core_name is left unset in this path.  */
 	}
     }
-
+  else if (arm_selected_cpu)
+    {
+      target->core_name = arm_selected_cpu->name;
+      arm_initialize_isa (target->isa, arm_selected_cpu->isa_bits);
+    }
   /* If the user did not specify a processor, choose one for them.  */
-  if (!arm_selected_cpu)
+  else
     {
       const struct processors * sel;
       auto_sbitmap sought_isa (isa_num_bits);
@@ -3229,16 +3235,27 @@ arm_configure_build_target (struct arm_build_target *target,
 	    }
 	  arm_selected_cpu = sel;
 	}
+
+      /* Now we know the CPU, we can finally initialize the target
+	 structure.  */
+      target->core_name = arm_selected_cpu->name;
+      arm_initialize_isa (target->isa, arm_selected_cpu->isa_bits);
     }
 
   gcc_assert (arm_selected_cpu);
+
   /* The selected cpu may be an architecture, so lookup tuning by core ID.  */
   if (!arm_selected_tune)
     arm_selected_tune = &all_cores[arm_selected_cpu->core];
 
+  /* Finish initializing the target structure.  */
   target->arch_pp_name = arm_selected_cpu->arch;
+  target->base_arch = arm_selected_cpu->base_arch;
+  target->arch_core = arm_selected_cpu->core;
+
   target->tune_flags = arm_selected_tune->tune_flags;
   target->tune = arm_selected_tune->tune;
+  target->tune_core = arm_selected_tune->core;
 }
 
 /* Fix up any incompatible options that the user has specified.  */
@@ -3263,9 +3280,9 @@ arm_option_override (void)
   insn_flags = arm_selected_cpu->flags;
   arm_base_arch = arm_selected_cpu->base_arch;
 
-  arm_tune = arm_selected_tune->core;
-  tune_flags = arm_selected_tune->tune_flags;
-  current_tune = arm_selected_tune->tune;
+  arm_tune = arm_active_target.tune_core;
+  tune_flags = arm_active_target.tune_flags;
+  current_tune = arm_active_target.tune;
 
   /* TBD: Dwarf info for apcs frame is not handled yet.  */
   if (TARGET_APCS_FRAME)
@@ -25957,10 +25974,16 @@ arm_file_start (void)
 
   if (TARGET_BPABI)
     {
-      if (arm_selected_arch)
+      /* We don't have a specified CPU.  Use the architecture to
+	 generate the tags.
+
+	 Note: it might be better to do this unconditionally, then the
+	 assembler would not need to know about all new CPU names as
+	 they are added.  */
+      if (!arm_active_target.core_name)
         {
 	  /* armv7ve doesn't support any extensions.  */
-	  if (strcmp (arm_selected_arch->name, "armv7ve") == 0)
+	  if (strcmp (arm_active_target.arch_name, "armv7ve") == 0)
 	    {
 	      /* Keep backward compatability for assemblers
 		 which don't support armv7ve.  */
@@ -25972,20 +25995,21 @@ arm_file_start (void)
 	    }
 	  else
 	    {
-	      const char* pos = strchr (arm_selected_arch->name, '+');
+	      const char* pos = strchr (arm_active_target.arch_name, '+');
 	      if (pos)
 		{
 		  char buf[32];
-		  gcc_assert (strlen (arm_selected_arch->name)
+		  gcc_assert (strlen (arm_active_target.arch_name)
 			      <= sizeof (buf) / sizeof (*pos));
-		  strncpy (buf, arm_selected_arch->name,
-				(pos - arm_selected_arch->name) * sizeof (*pos));
-		  buf[pos - arm_selected_arch->name] = '\0';
+		  strncpy (buf, arm_active_target.arch_name,
+			   (pos - arm_active_target.arch_name) * sizeof (*pos));
+		  buf[pos - arm_active_target.arch_name] = '\0';
 		  asm_fprintf (asm_out_file, "\t.arch %s\n", buf);
 		  asm_fprintf (asm_out_file, "\t.arch_extension %s\n", pos + 1);
 		}
 	      else
-		asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_arch->name);
+		asm_fprintf (asm_out_file, "\t.arch %s\n",
+			     arm_active_target.arch_name);
 	    }
         }
       else if (strncmp (arm_selected_cpu->name, "generic", 7) == 0)
