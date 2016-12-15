@@ -1279,7 +1279,8 @@ build_receiver_ref (tree var, bool by_ref, omp_context *ctx)
    this is some variable.  */
 
 static tree
-build_outer_var_ref (tree var, omp_context *ctx, bool lastprivate = false)
+build_outer_var_ref (tree var, omp_context *ctx,
+		     enum omp_clause_code code = OMP_CLAUSE_ERROR)
 {
   tree x;
 
@@ -1288,7 +1289,7 @@ build_outer_var_ref (tree var, omp_context *ctx, bool lastprivate = false)
   else if (is_variable_sized (var))
     {
       x = TREE_OPERAND (DECL_VALUE_EXPR (var), 0);
-      x = build_outer_var_ref (x, ctx, lastprivate);
+      x = build_outer_var_ref (x, ctx, code);
       x = build_simple_mem_ref (x);
     }
   else if (is_taskreg_ctx (ctx))
@@ -1296,11 +1297,17 @@ build_outer_var_ref (tree var, omp_context *ctx, bool lastprivate = false)
       bool by_ref = use_pointer_for_field (var, NULL);
       x = build_receiver_ref (var, by_ref, ctx);
     }
-  else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	   && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+  else if ((gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+	    && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+	   || (code == OMP_CLAUSE_PRIVATE
+	       && (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+		   || gimple_code (ctx->stmt) == GIMPLE_OMP_SECTIONS
+		   || gimple_code (ctx->stmt) == GIMPLE_OMP_SINGLE)))
     {
-      /* #pragma omp simd isn't a worksharing construct, and can reference even
-	 private vars in its linear etc. clauses.  */
+      /* #pragma omp simd isn't a worksharing construct, and can reference
+	 even private vars in its linear etc. clauses.
+	 Similarly for OMP_CLAUSE_PRIVATE with outer ref, that can refer
+	 to private vars in all worksharing constructs.  */
       x = NULL_TREE;
       if (ctx->outer && is_taskreg_ctx (ctx))
 	x = lookup_decl (var, ctx->outer);
@@ -1309,7 +1316,7 @@ build_outer_var_ref (tree var, omp_context *ctx, bool lastprivate = false)
       if (x == NULL_TREE)
 	x = var;
     }
-  else if (lastprivate && is_taskloop_ctx (ctx))
+  else if (code == OMP_CLAUSE_LASTPRIVATE && is_taskloop_ctx (ctx))
     {
       gcc_assert (ctx->outer);
       splay_tree_node n
@@ -1346,7 +1353,7 @@ build_outer_var_ref (tree var, omp_context *ctx, bool lastprivate = false)
 	  gcc_assert (outer
 		      && gimple_code (outer->stmt) != GIMPLE_OMP_GRID_BODY);
 	}
-	x = lookup_decl (var, outer);
+      x = lookup_decl (var, outer);
     }
   else if (is_reference (var))
     /* This can happen with orphaned constructs.  If var is reference, it is
@@ -4941,7 +4948,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (is_task_ctx (ctx))
 		    x = build_receiver_ref (var, false, ctx);
 		  else
-		    x = build_outer_var_ref (var, ctx);
+		    x = build_outer_var_ref (var, ctx, OMP_CLAUSE_PRIVATE);
 		}
 	      else
 		x = NULL;
@@ -5511,7 +5518,7 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
 		x = ovar;
 	    }
 	  if (!x)
-	    x = build_outer_var_ref (var, ctx, true);
+	    x = build_outer_var_ref (var, ctx, OMP_CLAUSE_LASTPRIVATE);
 	  if (is_reference (var))
 	    new_var = build_simple_mem_ref_loc (clause_loc, new_var);
 	  x = lang_hooks.decls.omp_clause_assign_op (c, x, new_var);
@@ -9603,7 +9610,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   struct loop *loop = body_bb->loop_father;
   if (loop != entry_bb->loop_father)
     {
-      gcc_assert (loop->header == body_bb);
+      gcc_assert (broken_loop || loop->header == body_bb);
       gcc_assert (broken_loop
 		  || loop->latch == region->cont
 		  || single_pred (loop->latch) == region->cont);

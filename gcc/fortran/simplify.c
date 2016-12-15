@@ -2373,7 +2373,7 @@ gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
   if (UNLIMITED_POLY (a) || UNLIMITED_POLY (mold))
     return NULL;
 
-  /* Return .false. if the dynamic type can never be the same.  */
+  /* Return .false. if the dynamic type can never be an extension.  */
   if ((a->ts.type == BT_CLASS && mold->ts.type == BT_CLASS
        && !gfc_type_is_extension_of
 			(mold->ts.u.derived->components->ts.u.derived,
@@ -2383,18 +2383,19 @@ gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
 			 mold->ts.u.derived->components->ts.u.derived))
       || (a->ts.type == BT_DERIVED && mold->ts.type == BT_CLASS
 	  && !gfc_type_is_extension_of
-			(a->ts.u.derived,
-			 mold->ts.u.derived->components->ts.u.derived)
-	  && !gfc_type_is_extension_of
 			(mold->ts.u.derived->components->ts.u.derived,
 			 a->ts.u.derived))
       || (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
 	  && !gfc_type_is_extension_of
 			(mold->ts.u.derived,
-			 a->ts.u.derived->components->ts.u.derived)))
+			 a->ts.u.derived->components->ts.u.derived)
+	  && !gfc_type_is_extension_of
+			(a->ts.u.derived->components->ts.u.derived,
+			 mold->ts.u.derived)))
     return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
 
-  if (mold->ts.type == BT_DERIVED
+  /* Return .true. if the dynamic type is guaranteed to be an extension.  */
+  if (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
       && gfc_type_is_extension_of (mold->ts.u.derived,
 				   a->ts.u.derived->components->ts.u.derived))
     return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, true);

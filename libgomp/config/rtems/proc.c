@@ -66,7 +66,7 @@ allocate_thread_pool_reservoir (unsigned long count, unsigned long priority,
   res->index = count;
   res->priority = priority;
   gomp_sem_init (&res->available, count);
-  gomp_mutex_init (&res->lock);
+  pthread_spin_init (&res->lock, PTHREAD_PROCESS_PRIVATE);
   for (i = 0; i < count; ++i)
     res->pools[i] = &pools[i];
   gomp_thread_pool_reservoirs[scheduler] = res;

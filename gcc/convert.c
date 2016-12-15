@@ -644,10 +644,11 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	 to TYPE.  */
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       || outprec != GET_MODE_PRECISION (TYPE_MODE (type)))
-	return build1 (NOP_EXPR, type,
-		       convert (lang_hooks.types.type_for_mode
-				(TYPE_MODE (type), TYPE_UNSIGNED (type)),
-				expr));
+	{
+	  expr = convert (lang_hooks.types.type_for_mode
+			  (TYPE_MODE (type), TYPE_UNSIGNED (type)), expr);
+	  return maybe_fold_build1_loc (dofold, loc, NOP_EXPR, type, expr);
+	}
 
       /* Here detect when we can distribute the truncation down past some
 	 arithmetic.  For example, if adding two longs and converting to an

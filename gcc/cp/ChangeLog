@@ -1,3 +1,134 @@
+2016-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78701
+	* pt.c (type_unification_real): Check tsubst arg doesn't have
+	remaining template parms before converting it.
+
+2016-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78551
+	* constexpr.c (extract_string_elt): New.  Broken out of ...
+	(cxx_eval_array_reference): ... here.  Call it.
+	(cxx_eval_store_expression): Convert init by STRING_CST into
+	CONSTRUCTOR, if needed.
+
+2016-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78649
+	* pt.c (tsubst_init): Don't call build_value_init if decl's type
+	is error_mark_node.
+
+	2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/72808
+	* decl.c (finish_enum_value_list): Call fixup_type_variants on
+	current_class_type after
+	insert_late_enum_def_into_classtype_sorted_fields.
+
+	2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77591
+	* typeck.c (maybe_warn_about_returning_address_of_local): Optimize
+	whats_returned through fold_for_warn.
+
+	2016-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77739
+	* cp-gimplify.c (cp_gimplify_tree) <case VEC_INIT_EXPR>: Pass
+	false as handle_invisiref_parm_p to cp_genericize_tree.
+	(struct cp_genericize_data): Add handle_invisiref_parm_p field.
+	(cp_genericize_r): Don't wrap is_invisiref_parm into references
+	if !wtd->handle_invisiref_parm_p.
+	(cp_genericize_tree): Add handle_invisiref_parm_p argument,
+	set wtd.handle_invisiref_parm_p to it.
+	(cp_genericize): Pass true as handle_invisiref_parm_p to
+	cp_genericize_tree.  Formatting fix.
+
+	2016-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77285
+	* mangle.c (mangle_tls_init_fn, mangle_tls_wrapper_fn): Call
+	check_abi_tags.
+
+	2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78089
+	* parser.c (cp_parser_postfix_expression): Replace return statement in
+	the first switch with setting postfix_expression to the return
+	expression and break;.
+
+	2016-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77467
+	* constexpr.c (enum constexpr_switch_state): New.
+	(struct constexpr_ctx): Add css_state field.
+	(label_matches): Add CTX and STMT arguments, remove I and
+	DEFAULT_LABEL.  For CASE_LABEL_EXPR assert ctx->css_state != NULL,
+	handle default labels according to css_state.
+	(cxx_eval_statement_list): Remove statement skipping, label_matches
+	and default_label handling code.
+	(cxx_eval_loop_expr): Exit after first iteration even if
+	switches (jump_target).
+	(cxx_eval_switch_expr): Set up css_state field in ctx, if default
+	label has been seen in the body, but no cases matched, evaluate
+	the body second time.
+	(cxx_eval_constant_expression): Handle stmt skipping and label_matches
+	here.  Handle PREDICT_EXPR.  For MODIFY_EXPR or INIT_EXPR, assert
+	statement is not skipped.  For COND_EXPR during skipping, don't
+	evaluate condition, just the then block and if still skipping at the
+	end also the else block.
+	(cxx_eval_outermost_constant_expr): Adjust constexpr_ctx initializer.
+	(is_sub_constant_expr): Likewise.
+
+	2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77722
+	* cp-gimplify.c (cp_ubsan_maybe_instrument_return): Instrument also
+	functions that have just a STATEMENT_LIST instead of BIND_EXPR, or
+	BIND_EXPR with some statement rather than STATEMENT_LIST as body.
+
+	2016-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77638
+	* parser.c (cp_parser_template_declaration_after_parameter): For 2
+	argument operator"" template set ok to false for
+	parm == error_mark_node.
+
+	PR c++/77637
+	* parser.c (cp_parser_std_attribute_list): Reject ... without
+	preceding attribute.
+
+	2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77482
+	* error.c (dump_simple_decl): Only check DECL_DECLARED_CONCEPT_P
+	if DECL_LANG_SPECIFIC is non-NULL.  Fix up formatting.
+
+	PR c++/77375
+	* class.c (check_bases): Set CLASSTYPE_HAS_MUTABLE if any
+	TYPE_HAS_MUTABLE_P for any bases.
+
+2016-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71274
+	* decl2.c (maybe_instantiate_decl): Split out from mark_used.
+	(decl_constant_var_p): Use it instead.
+
+	PR c++/71515
+	* pt.c (resolve_typename_type): Try to avoid calling
+	currently_open_class.
+
+	PR c++/77907
+	* constexpr.c (cxx_eval_constant_expression): Use cp_fold_convert.
+
+	PR c++/57728
+	* pt.c (do_type_instantiation): Don't mess with non-user-provided
+	member functions.
+
 2016-11-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67631 - list-init and explicit conversions

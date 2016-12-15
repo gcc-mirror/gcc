@@ -1,3 +1,444 @@
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-10-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Include <limits.h>
+	for PATH_MAX in realpath test.
+	* configure: Regenerate.
+
+	Backport from mainline
+	2016-05-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Fix test for sendfile.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/new/synopsis.cc: Add C++14 declarations
+	and use effective-target to do test for C++11 and later.
+	* testsuite/18_support/headers/new/synopsis_cxx98.cc: New test.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78465
+	* testsuite/29_atomics/headers/atomic/macros.cc: Replace runtime tests
+	with preprocessor conditions.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h (experimental::shared_ptr):
+	Change relevant constructors to call _M_enable_shared_from_this_with.
+	(experimental::shared_ptr::__efst_base_t)
+	(experimental::shared_ptr::__has_efst_base): Helpers to detect
+	accessible and unambiguous enable_shared_from_this bases.
+	(experimental::shared_ptr::_M_enable_shared_from_this_with): Define.
+	(experimental::__enable_shared_from_this_helper): Remove overload for
+	std::experimental::enable_shared_from_this.
+	(experimental::__expt_enable_shared_from_this_base): Define friend
+	function to select a std::experimental::enable_shared_from_this base.
+	* testsuite/experimental/memory/shared_ptr/cons/
+	enable_shared_from_this.cc: New test.
+	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
+	Adjust expected behaviour for shared_ptr<A[]>.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Remove stray character at end of dg-do directive.
+
+2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	PR libstdc++/70975
+	PR libstdc++/71337
+	PR libstdc++/78111
+	* include/experimental/bits/fs_dir.h (recursive_directory_iterator):
+	Overload pop (LWG 2706).
+	* include/experimental/bits/fs_fwd.h (perms::resolve_symlinks):
+	Replace with symlink_nofollow (LWG 2720).
+	* include/experimental/bits/fs_ops.h
+	(exists(const path&, error_code&)): Clear error if status is known
+	(LWG 2725).
+	* include/experimental/bits/fs_path.h (__is_path_src)
+	(_S_range_begin, _S_range_end): Overload to treat string_view as a
+	Source object.
+	(path::operator+=, path::compare): Overload for basic_string_view.
+	(path::path(string_type&&))
+	(path::operator=(string&&), path::assign(string_type&&)): Define
+	construction and assignment from string_type rvalues (LWG 2707).
+	(path::_S_convert<_Iter>(_Iter, _Iter)): Remove cv-qualifiers from
+	iterator's value_type.
+	(path::_S_convert<_Iter>(_Iter __first, __null_terminated)): Likewise.
+	Do not use operation not supported by input iterators.
+	(path::__is_path_iter_src): Add partial specialization for const
+	encoded character types.
+	* src/filesystem/dir.cc (open_dir): Return same value for errors
+	whether ignored or not.
+	(_Dir::advance(error_code*, directory_options)): Return false on
+	error.
+	(directory_iterator(const path&, directory_options, error_code*)):
+	Create end iterator on error (LWG 2723).
+	(recursive_directory_iterator(const path&, directory_options,
+	error_code*)): Likewise.
+	(recursive_directory_iterator::increment): Reset state on error.
+	(recursive_directory_iterator::pop): Define new overload.
+	* src/filesystem/ops.cc (canonical): Set error for non-existent path.
+	(file_time): Take error_code parameter and check for overflow.
+	(close_fd): Remove.
+	(do_copy_file): Report an error if source or destination is not a
+	regular file (LWG 2712). Pass error_code in file_time calls.  Just
+	use close(3) instead of close_fd, to prevent retrying on error.
+	Check if _GLIBCXX_USE_FCHMODAT is defined.
+	[_GLIBCXX_USE_SENDFILE]: Fallback to read/write operations in case
+	sendfile fails with ENOSYS or EINVAL. Pass non-null pointer to
+	sendfile for offset argument.
+	(copy): Update comment to refer to LWG 2681. Implement 2682 and 2683
+	resolutions.
+	(equivalent): Fix error handling and result when only one file exists.
+	(is_empty): Fix error handling.
+	(last_write_time(const path&, error_code&)): Pass error_code in
+	file_time calls.
+	(last_write_time(const path&, file_time_type, error_code&)): Handle
+	negative times correctly.
+	(permissions(const path&, perms, error_code&)): Handle
+	symlink_nofollow.
+	(read_symlink): Add missing ec.clear().
+	(status(const path&, error_code&)): Handle EOVERFLOW.
+	(temp_directory_path): Pass error_code argument to other filesystem
+	operations.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Update expected behaviour on error.
+	* testsuite/experimental/filesystem/iterators/pop.cc: New.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Update expected behaviour on error.
+	* testsuite/experimental/filesystem/operations/copy.cc: Update
+	expected behaviour for copying directories with create_symlinks.
+	Verify that error_code arguments are cleared if there's no error.
+	Remove files created by tests. Test copying directories.
+	* testsuite/experimental/filesystem/operations/copy_file.cc: Remove
+	files created by tests.
+	* testsuite/experimental/filesystem/operations/create_symlink.cc: New.
+	* testsuite/experimental/filesystem/operations/equivalent.cc: New.
+	* testsuite/experimental/filesystem/operations/exists.cc: Test
+	overload taking an error_code.
+	* testsuite/experimental/filesystem/operations/is_empty.cc: New.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	New.
+	* testsuite/experimental/filesystem/operations/permissions.cc: Test
+	overload taking error_code. Test symlink_nofollow on non-symlinks.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc: New.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: New.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Add testcase for inaccessible directory.
+	* testsuite/experimental/filesystem/path/construct/range.cc: Test
+	construction from input iterators with const value types.
+	* testsuite/experimental/filesystem/path/construct/string_view.cc:
+	New.
+	* testsuite/util/testsuite_fs.h (scoped_file): Define RAII helper.
+
+2016-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-12-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_assert2.cc: Move dg-do run first.
+
+2016-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71856
+	* doc/xml/manual/using.xml: Document macro.
+	* include/bits/c++config [_GLIBCXX_DEBUG || _GLIBCXX_PARALLEL]
+	(__glibcxx_assert): Rename to __glibcxx_assert_impl.
+	[_GLIBCXX_DEBUG] (__glibcxx_assert): Expand to __glibcxx_assert_impl.
+	* include/parallel/base.h [_GLIBCXX_PARALLEL_ASSERTIONS]
+	(_GLIBCXX_PARALLEL_ASSERT): Expand to __glibcxx_assert_impl.
+	[!_GLIBCXX_PARALLEL_ASSERTIONS] (_GLIBCXX_PARALLEL_ASSERT): Define as
+	empty.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_assert2.cc: New test.
+
+2016-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-11-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/77459
+	* src/c++11/debug.cc (format_word): Delete.
+	(print_literal): New. Replace call to print_word for literals.
+
+2016-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78326
+	* include/experimental/memory_resource (memory_resource::_S_max_align):
+	Change access to protected.
+
+	Backport from mainline
+	2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
+	Add tests for valid and invalid conversions.
+	* testsuite/experimental/memory/shared_ptr/cons/weak_ptr_ctor.cc:
+	Likewise.
+
+	Backport from mainline
+	2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::_Compatible): Just use
+	is_convertible for non-array specialization.
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::_UniqCompatible): New
+	constraint for conversions from unique_ptr.
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::__shared_ptr): Constrain.
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::reset): Likewise.
+	(__sp_compatible_v): New variable template for trait.
+	(__sp_is_constructible): New trait to check shared_ptr constraints.
+	(__sp_is_constructible_v): New variable template for trait.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::_SafeConv): New
+	constraint for construction/reset, using __sp_is_constructible_v.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::_UniqCompatible): New
+	constraint for conversions from unique_ptr.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::__shared_ptr): Constrain.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::reset): Likewise.
+	(shared_ptr::_SafeConv): Constraint for checking constructors.
+	(shared_ptr(Tp1*), shared_ptr(_Tp1, _Deleter))
+	(shared_ptr(_Tp1, _Deleter, _Alloc)): Constrain with _SafeConv.
+	(shared_ptr(const weak_ptr<_Tp1>&)): Constrain with _Compatible.
+	(shared_ptr(auto_ptr<_Tp1>&&)): Fix, remove TODO.
+	* testsuite/experimental/memory/shared_ptr/cons/pointer_ctor.cc:
+	Remove tests using invalid conversions.
+	* testsuite/experimental/memory/shared_ptr/cons/pointer_ctor_neg.cc:
+	New test.
+	* testsuite/experimental/memory/shared_ptr/cons/torture.cc: New test.
+	* testsuite/experimental/memory/shared_ptr/modifiers/reset.cc: Remove
+	tests using invalid conversions.
+	* testsuite/experimental/memory/shared_ptr/modifiers/reset_neg.cc: New
+	test.
+	* testsuite/experimental/memory/shared_ptr/observers/use_count.cc:
+	Remove tests using invalid conversions.
+
+	Backport from mainline
+	2016-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h: Fix indentation.
+
+	Backport from mainline
+	2016-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h (shared_ptr(shared_ptr&&)):
+	Remove const from parameter.
+	(operator<(const shared_ptr<T>&, nullptr_t)): Use correct
+	specialization of std::less.
+	* testsuite/experimental/memory/shared_ptr/comparison/comparison.cc:
+	Test comparison with nullptr and actually call test functions.
+
+	Backport from mainline
+	2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 2484 status.
+	* libsupc++/nested_exception.h (_Throw_with_nested_impl)
+	(_Throw_with_nested_helper): Remove.
+	(__throw_with_nested_impl): New overloaded functions to implement
+	throw_with_nested logic.
+	(throw_with_nested): Call __throw_with_nested_impl.
+	(_Rethrow_if_nested_impl): Remove
+	(__rethrow_if_nested_impl): New overloaded functions to implement
+	rethrow_if_nested logic.
+	(rethrow_if_nested): Call __rethrow_if_nested_impl.
+	* testsuite/18_support/nested_exception/rethrow_if_nested.cc: Test
+	problem cases from LWG 2484.
+
+	Backport from mainline
+	2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
+	Register printer for std::__cxx11::list.
+	* python/libstdcxx/v6/xmethods.py (ListMethodsMatcher.match): Match
+	std::__cxx11::list as well as std::list.
+
+	Backport from mainline
+	2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 2442 status.
+	* include/std/mutex [_GLIBCXX_HAVE_TLS] (__once_call_impl): Remove.
+	(call_once): Use lambda expression and std::__invoke instead of
+	__bind_simple and __once_call_impl.
+	* testsuite/30_threads/call_once/dr2442.cc: New test.
+
+	Backport from mainline
+	2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h (allocator<T>::is_always_equal): Define.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Test for
+	is_always_equal.
+	* testsuite/util/testsuite_allocator.h
+	(uneq_allocator::is_always_equal): Define as false_type.
+
+	Backport from mainline
+	2016-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update status.
+	* include/std/scoped_allocator (__outer_allocator_t, __outermost_type):
+	New helpers for recursive OUTERMOST.
+	(__outermost): Use __outermost_type::_S_outermost.
+	(__do_outermost, scoped_allocator_adaptor::__outermost_type): Remove.
+	(scoped_allocator_adaptor::__outermost_alloc_traits): Use new
+	__outermost_type helper.
+	(scoped_allocator_adaptor::_Constructible): New alias template.
+	(scoped_allocator_adaptor::scoped_allocator_adaptor<_Outer2>):
+	Constrain template constructors.
+	* testsuite/20_util/scoped_allocator/3.cc: New test.
+	* testsuite/20_util/scoped_allocator/outermost.cc: New test.
+
+	Backport from mainline
+	2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/51960
+	* doc/xml/manual/intro.xml: Document DR 2127 change.
+	* doc/html/*: Regenerate.
+	* include/bits/stl_raw_storage_iter.h (operator=(_Tp&&)): Add.
+	(operator++(), operator++(int)): Use injected class name.
+	* testsuite/20_util/raw_storage_iterator/dr2127.cc: New test.
+
+	Backport from mainline
+	2016-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (_Unwrap): Rename to __inv_unwrap.
+	(__invfwd): Adjust.
+	(__invoke_impl): Remove unused template parameters.
+	* testsuite/20_util/function_objects/invoke/59768.cc: Remove unused
+	parameter.
+	* testsuite/20_util/function_objects/invoke/ref_ext.cc: Copy 59768.cc
+	and test __invoke extension for C++11.
+
+2016-12-07  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
+	2016-12-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Constrain optional's __constexpr_addressof in its return type
+	and use a constexpr addressof for optional, if available.
+	* include/experimental/optional (__constexpr_addressof):
+	Constrain in the return type instead of in a template parameter.
+	(_Has_addressof_mem)
+	(_Has_addressof_free, _Has_addressof, __constexpr_addressof):
+	Guard with #ifndef __cpp_lib_addressof_constexpr.
+	(operator->()): Use std::__addressof if it's constexpr.
+
+2016-12-06  Aditya Kumar  <hiraditya@msn.com>
+
+	* src/c++11/shared_ptr.cc (_Sp_locker::_Sp_locker(const void* p)): Add
+	noexcept on constructor.
+	(_Sp_locker::_Sp_locker(const void* p1, const void* p2)): Same.
+
+2016-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2016-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Update comments.
+	(__CORRECT_ISO_CPP11_MATH_H_PROTO): Rename to ...
+	(__CORRECT_ISO_CPP11_MATH_H_PROTO_FP): ... this.
+	Add test for C++11 <math.h> integral overloads.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* include/c_global/cmath [__cplusplus >= 201103L]: Reflect
+	__CORRECT_ISO_CPP11_MATH_H_PROTO to
+	__CORRECT_ISO_CPP11_MATH_H_PROTO_FP rename.
+	* include/c_global/cmath [_GLIBCXX_USE_C99_MATH &&
+	!_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC && __cplusplus >= 201103L]
+	(std::fpclassify): Wrap in !__CORRECT_ISO_CPP11_MATH_H_PROTO_INT.
+	(std::isfinite): Likewise.
+	(std::isinf): Likewise.
+	(std::isnan): Likewise.
+	(std::isnormal): Likewise.
+	(std::signbit): Likewise.
+	(std::isgreater): Likewise.
+	(std::isgreaterequal): Likewise.
+	(std::isless): Likewise.
+	(std::islessequal): Likewise.
+	(std::islessgreater): Likewise.
+	(std::isunordered): Likewise.
+	[__cplusplus >= 201103L && _GLIBCXX_USE_C99_MATH_TR1]
+	(std::acosh): Likewise.
+	(std::asinh): Likewise.
+	(std::atanh): Likewise.
+	(std::cbrt): Likewise.
+	(std::copysign): Likewise.
+	(std::erf): Likewise.
+	(std::erfc): Likewise.
+	(std::exp2): Likewise.
+	(std::expm1): Likewise.
+	(std::fdim): Likewise.
+	(std::fma): Likewise.
+	(std::fmax): Likewise.
+	(std::fmin): Likewise.
+	(std::hypot): Likewise.
+	(std::ilogb): Likewise.
+	(std::lgamma): Likewise.
+	(std::llrint): Likewise.
+	(std::llround): Likewise.
+	(std::log1p): Likewise.
+	(std::log2): Likewise.
+	(std::logb): Likewise.
+	(std::lrint): Likewise.
+	(std::lround): Likewise.
+	(std::nearbyint): Likewise.
+	(std::nextafter): Likewise.
+	(std::nexttoward): Likewise.
+	(std::remainder): Likewise.
+	(std::remquo): Likewise.
+	(std::rint): Likewise.
+	(std::round): Likewise.
+	(std::scalbln): Likewise.
+	(std::scalbn): Likewise.
+	(std::tgamma): Likewise.
+	(std::trunc): Likewise.
+	* include/tr1/cmath [_GLIBCXX_USE_C99_MATH_TR1 && __cplusplus >=
+	201103L]: Reflect __CORRECT_ISO_CPP11_MATH_H_PROTO to
+	__CORRECT_ISO_CPP11_MATH_H_PROTO_FP rename.
+
+2016-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/reverse_iterator/71771.cc: Replace calls to
+	C++14 std::rbeing and std::rend.  Use dg-options instead of
+	effective-target.
+	* testsuite/27_io/headers/cstdio/functions_neg.cc: Use dg-options
+	instead of effective-target.
+	* testsuite/experimental/numeric/77801.cc: Likewise.
+
+2016-11-23  Felix Morgner  <felix.morgner@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78490
+	* include/experimental/propagate_const (propagate_const::operator=):
+	Add missing return statements.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/Makefile.am
+	(check-DEJAGNU $(check_DEJAGNU_normal_targets)): Fix detection
+	of -j argument.
+	* testsuite/Makefile.in: Regenereate.
+
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/any/typedefs.cc: Fix license text.

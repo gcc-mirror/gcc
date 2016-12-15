@@ -20,4 +20,4 @@ int lookup2 (int i)
   return a[i+1];
 }
 
-/* { dg-final { scan-tree-dump-times "L\\\$?C\\\.*0" 2 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "\[lL\]\\\$?C\\\.*0" 2 "gimple" } } */

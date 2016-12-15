@@ -2237,9 +2237,9 @@ fix = {
  */
 fix = {
     hackname  = hpux11_fabsf;
+    mach      = "*-hp-hpux11*";
     files     = math.h;
     select    = "^[ \t]*#[ \t]*define[ \t]+fabsf\\(.*";
-    bypass    = "__cplusplus";
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
@@ -3752,6 +3752,23 @@ _EOArg_;
 			sizeof (__x_s) == sizeof (double) ? \\
 			(int) (((unsigned *) &__x_s)[1] >> 31) : \\
 			(int) (((unsigned short *) &__x_s)[4] >> 15)); })
+#endif
+_EOText_;
+};
+
+/*
+ * Some versions of Solaris 10+ <math.h> #undef libstdc++-internal macros.
+ */
+fix = {
+    hackname  = solaris_math_12;
+    files     = math.h;
+    mach      = '*-*-solaris2*';
+    select    = '#undef.*_GLIBCXX_USE_C99_MATH';
+    sed       = "/#undef[ \t]*_GLIBCXX_USE_C99_MATH/d";
+    test_text = << _EOText_
+#if __cplusplus >= 201103L
+#undef  _GLIBCXX_USE_C99_MATH
+#undef  _GLIBCXX_USE_C99_MATH_TR1
 #endif
 _EOText_;
 };

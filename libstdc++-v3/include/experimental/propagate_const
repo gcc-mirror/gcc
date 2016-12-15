@@ -154,6 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr propagate_const& operator=(propagate_const<_Up>&& __pu)
       {
 	_M_t = std::move(get_underlying(__pu));
+	return *this;
       }
 
       template <typename _Up, typename =
@@ -164,6 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr propagate_const& operator=(_Up&& __u)
       {
 	_M_t = std::forward<_Up>(__u);
+	return *this;
       }
 
       // [propagate_const.const_observers], const observers

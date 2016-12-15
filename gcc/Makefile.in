@@ -3829,7 +3829,7 @@ check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
 # testsuites like objc or go.
 $(lang_checks_parallelized): check-% : site.exp
 	-rm -rf $(TESTSUITEDIR)/$*-parallel
-	@if [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
+	@if [ -n "$(filter -j%, $(MFLAGS))" ]; then \
 	  test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR) || true; \
 	  test -d $(TESTSUITEDIR)/$*-parallel || mkdir $(TESTSUITEDIR)/$*-parallel || true; \
 	  GCC_RUNTEST_PARALLELIZE_DIR=`${PWD_COMMAND}`/$(TESTSUITEDIR)/$(check_p_tool)-parallel ; \

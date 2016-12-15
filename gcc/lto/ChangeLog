@@ -1,3 +1,11 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/78472
+	* lto.c (hash_canonical_type): Ignore zero-sized fields.
+
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

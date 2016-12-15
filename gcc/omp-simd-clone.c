@@ -600,8 +600,9 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 
 	  if (node->definition)
 	    sc->args[i].simd_array
-	      = create_tmp_simd_array (IDENTIFIER_POINTER (DECL_NAME (parm)),
-				       parm_type, sc->simdlen);
+	      = create_tmp_simd_array (DECL_NAME (parm)
+				       ? IDENTIFIER_POINTER (DECL_NAME (parm))
+				       : NULL, parm_type, sc->simdlen);
 	}
       adjustments.safe_push (adj);
     }
@@ -1077,7 +1078,7 @@ simd_clone_adjust (struct cgraph_node *node)
      return values accordingly.  */
   tree iter = create_tmp_var (unsigned_type_node, "iter");
   tree iter1 = make_ssa_name (iter);
-  tree iter2 = make_ssa_name (iter);
+  tree iter2 = NULL_TREE;
   ipa_simd_modify_function_body (node, adjustments, retval, iter1);
 
   /* Initialize the iteration variable.  */
@@ -1090,39 +1091,57 @@ simd_clone_adjust (struct cgraph_node *node)
 
   pop_gimplify_context (NULL);
 
+  gimple *g;
+  basic_block incr_bb = NULL;
+  struct loop *loop = NULL;
+
   /* Create a new BB right before the original exit BB, to hold the
      iteration increment and the condition/branch.  */
-  basic_block orig_exit = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), 0)->src;
-  basic_block incr_bb = create_empty_bb (orig_exit);
-  add_bb_to_loop (incr_bb, body_bb->loop_father);
-  /* The succ of orig_exit was EXIT_BLOCK_PTR_FOR_FN (cfun), with an empty
-     flag.  Set it now to be a FALLTHRU_EDGE.  */
-  gcc_assert (EDGE_COUNT (orig_exit->succs) == 1);
-  EDGE_SUCC (orig_exit, 0)->flags |= EDGE_FALLTHRU;
-  for (unsigned i = 0;
-       i < EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds); ++i)
+  if (EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds))
     {
-      edge e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), i);
-      redirect_edge_succ (e, incr_bb);
+      basic_block orig_exit = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), 0)->src;
+      incr_bb = create_empty_bb (orig_exit);
+      add_bb_to_loop (incr_bb, body_bb->loop_father);
+      /* The succ of orig_exit was EXIT_BLOCK_PTR_FOR_FN (cfun), with an empty
+	 flag.  Set it now to be a FALLTHRU_EDGE.  */
+      gcc_assert (EDGE_COUNT (orig_exit->succs) == 1);
+      EDGE_SUCC (orig_exit, 0)->flags |= EDGE_FALLTHRU;
+      for (unsigned i = 0;
+	   i < EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds); ++i)
+	{
+	  edge e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), i);
+	  redirect_edge_succ (e, incr_bb);
+	}
     }
-  edge e = make_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-  e->probability = REG_BR_PROB_BASE;
-  gsi = gsi_last_bb (incr_bb);
-  gimple *g = gimple_build_assign (iter2, PLUS_EXPR, iter1,
-				   build_int_cst (unsigned_type_node, 1));
-  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+  else if (node->simdclone->inbranch)
+    {
+      incr_bb = create_empty_bb (entry_bb);
+      add_bb_to_loop (incr_bb, body_bb->loop_father);
+    }
 
-  /* Mostly annotate the loop for the vectorizer (the rest is done below).  */
-  struct loop *loop = alloc_loop ();
-  cfun->has_force_vectorize_loops = true;
-  loop->safelen = node->simdclone->simdlen;
-  loop->force_vectorize = true;
-  loop->header = body_bb;
+  if (incr_bb)
+    {
+      edge e = make_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+      e->probability = REG_BR_PROB_BASE;
+      gsi = gsi_last_bb (incr_bb);
+      iter2 = make_ssa_name (iter);
+      g = gimple_build_assign (iter2, PLUS_EXPR, iter1,
+			       build_int_cst (unsigned_type_node, 1));
+      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+
+      /* Mostly annotate the loop for the vectorizer (the rest is done
+	 below).  */
+      loop = alloc_loop ();
+      cfun->has_force_vectorize_loops = true;
+      loop->safelen = node->simdclone->simdlen;
+      loop->force_vectorize = true;
+      loop->header = body_bb;
+    }
 
   /* Branch around the body if the mask applies.  */
   if (node->simdclone->inbranch)
     {
-      gimple_stmt_iterator gsi = gsi_last_bb (loop->header);
+      gsi = gsi_last_bb (loop->header);
       tree mask_array
 	= node->simdclone->args[node->simdclone->nargs - 1].simd_array;
       tree mask;
@@ -1196,50 +1215,59 @@ simd_clone_adjust (struct cgraph_node *node)
       FALLTHRU_EDGE (loop->header)->flags = EDGE_FALSE_VALUE;
     }
 
+  basic_block latch_bb = NULL;
+  basic_block new_exit_bb = NULL;
+
   /* Generate the condition.  */
-  g = gimple_build_cond (LT_EXPR,
-			 iter2,
-			 build_int_cst (unsigned_type_node,
-					node->simdclone->simdlen),
-			 NULL, NULL);
-  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
-  e = split_block (incr_bb, gsi_stmt (gsi));
-  basic_block latch_bb = e->dest;
-  basic_block new_exit_bb;
-  new_exit_bb = split_block_after_labels (latch_bb)->dest;
-  loop->latch = latch_bb;
+  if (incr_bb)
+    {
+      gsi = gsi_last_bb (incr_bb);
+      g = gimple_build_cond (LT_EXPR, iter2,
+			     build_int_cst (unsigned_type_node,
+					    node->simdclone->simdlen),
+			     NULL, NULL);
+      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+      edge e = split_block (incr_bb, gsi_stmt (gsi));
+      latch_bb = e->dest;
+      new_exit_bb = split_block_after_labels (latch_bb)->dest;
+      loop->latch = latch_bb;
 
-  redirect_edge_succ (FALLTHRU_EDGE (latch_bb), body_bb);
+      redirect_edge_succ (FALLTHRU_EDGE (latch_bb), body_bb);
 
-  make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
-  /* The successor of incr_bb is already pointing to latch_bb; just
-     change the flags.
-     make_edge (incr_bb, latch_bb, EDGE_TRUE_VALUE);  */
-  FALLTHRU_EDGE (incr_bb)->flags = EDGE_TRUE_VALUE;
+      make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
+      /* The successor of incr_bb is already pointing to latch_bb; just
+	 change the flags.
+	 make_edge (incr_bb, latch_bb, EDGE_TRUE_VALUE);  */
+      FALLTHRU_EDGE (incr_bb)->flags = EDGE_TRUE_VALUE;
+    }
 
   gphi *phi = create_phi_node (iter1, body_bb);
   edge preheader_edge = find_edge (entry_bb, body_bb);
-  edge latch_edge = single_succ_edge (latch_bb);
+  edge latch_edge = NULL;
   add_phi_arg (phi, build_zero_cst (unsigned_type_node), preheader_edge,
 	       UNKNOWN_LOCATION);
-  add_phi_arg (phi, iter2, latch_edge, UNKNOWN_LOCATION);
-
-  /* Generate the new return.  */
-  gsi = gsi_last_bb (new_exit_bb);
-  if (retval
-      && TREE_CODE (retval) == VIEW_CONVERT_EXPR
-      && TREE_CODE (TREE_OPERAND (retval, 0)) == RESULT_DECL)
-    retval = TREE_OPERAND (retval, 0);
-  else if (retval)
+  if (incr_bb)
     {
-      retval = build1 (VIEW_CONVERT_EXPR,
-		       TREE_TYPE (TREE_TYPE (node->decl)),
-		       retval);
-      retval = force_gimple_operand_gsi (&gsi, retval, true, NULL,
-					 false, GSI_CONTINUE_LINKING);
+      latch_edge = single_succ_edge (latch_bb);
+      add_phi_arg (phi, iter2, latch_edge, UNKNOWN_LOCATION);
+
+      /* Generate the new return.  */
+      gsi = gsi_last_bb (new_exit_bb);
+      if (retval
+	  && TREE_CODE (retval) == VIEW_CONVERT_EXPR
+	  && TREE_CODE (TREE_OPERAND (retval, 0)) == RESULT_DECL)
+	retval = TREE_OPERAND (retval, 0);
+      else if (retval)
+	{
+	  retval = build1 (VIEW_CONVERT_EXPR,
+			   TREE_TYPE (TREE_TYPE (node->decl)),
+			   retval);
+	  retval = force_gimple_operand_gsi (&gsi, retval, true, NULL,
+					     false, GSI_CONTINUE_LINKING);
+	}
+      g = gimple_build_return (retval);
+      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
     }
-  g = gimple_build_return (retval);
-  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
 
   /* Handle aligned clauses by replacing default defs of the aligned
      uniform args with __builtin_assume_aligned (arg_N(D), alignment)
@@ -1355,7 +1383,8 @@ simd_clone_adjust (struct cgraph_node *node)
 	  {
 	    def = make_ssa_name (TREE_TYPE (orig_arg));
 	    iter1 = make_ssa_name (TREE_TYPE (orig_arg));
-	    iter2 = make_ssa_name (TREE_TYPE (orig_arg));
+	    if (incr_bb)
+	      iter2 = make_ssa_name (TREE_TYPE (orig_arg));
 	    gsi = gsi_after_labels (entry_bb);
 	    g = gimple_build_assign (def, orig_arg);
 	    gsi_insert_before (&gsi, g, GSI_NEW_STMT);
@@ -1368,23 +1397,27 @@ simd_clone_adjust (struct cgraph_node *node)
 	    else
 	      {
 		iter1 = make_ssa_name (orig_arg);
-		iter2 = make_ssa_name (orig_arg);
+		if (incr_bb)
+		  iter2 = make_ssa_name (orig_arg);
 	      }
 	  }
 	if (def)
 	  {
 	    phi = create_phi_node (iter1, body_bb);
 	    add_phi_arg (phi, def, preheader_edge, UNKNOWN_LOCATION);
-	    add_phi_arg (phi, iter2, latch_edge, UNKNOWN_LOCATION);
-	    enum tree_code code = INTEGRAL_TYPE_P (TREE_TYPE (orig_arg))
-				  ? PLUS_EXPR : POINTER_PLUS_EXPR;
-	    tree addtype = INTEGRAL_TYPE_P (TREE_TYPE (orig_arg))
-			   ? TREE_TYPE (orig_arg) : sizetype;
-	    tree addcst = simd_clone_linear_addend (node, i, addtype,
-						    entry_bb);
-	    gsi = gsi_last_bb (incr_bb);
-	    g = gimple_build_assign (iter2, code, iter1, addcst);
-	    gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    if (incr_bb)
+	      {
+		add_phi_arg (phi, iter2, latch_edge, UNKNOWN_LOCATION);
+		enum tree_code code = INTEGRAL_TYPE_P (TREE_TYPE (orig_arg))
+				      ? PLUS_EXPR : POINTER_PLUS_EXPR;
+		tree addtype = INTEGRAL_TYPE_P (TREE_TYPE (orig_arg))
+			       ? TREE_TYPE (orig_arg) : sizetype;
+		tree addcst = simd_clone_linear_addend (node, i, addtype,
+							entry_bb);
+		gsi = gsi_last_bb (incr_bb);
+		g = gimple_build_assign (iter2, code, iter1, addcst);
+		gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	      }
 
 	    imm_use_iterator iter;
 	    use_operand_p use_p;
@@ -1417,10 +1450,11 @@ simd_clone_adjust (struct cgraph_node *node)
 	  {
 	    tree rtype = TREE_TYPE (TREE_TYPE (orig_arg));
 	    iter1 = make_ssa_name (orig_arg);
-	    iter2 = make_ssa_name (orig_arg);
+	    if (incr_bb)
+	      iter2 = make_ssa_name (orig_arg);
 	    tree iter3 = make_ssa_name (rtype);
 	    tree iter4 = make_ssa_name (rtype);
-	    tree iter5 = make_ssa_name (rtype);
+	    tree iter5 = incr_bb ? make_ssa_name (rtype) : NULL_TREE;
 	    gsi = gsi_after_labels (entry_bb);
 	    gimple *load
 	      = gimple_build_assign (iter3, build_simple_mem_ref (def));
@@ -1431,24 +1465,30 @@ simd_clone_adjust (struct cgraph_node *node)
 	    tree ptr = build_fold_addr_expr (array);
 	    phi = create_phi_node (iter1, body_bb);
 	    add_phi_arg (phi, ptr, preheader_edge, UNKNOWN_LOCATION);
-	    add_phi_arg (phi, iter2, latch_edge, UNKNOWN_LOCATION);
-	    g = gimple_build_assign (iter2, POINTER_PLUS_EXPR, iter1,
-				     TYPE_SIZE_UNIT (TREE_TYPE (iter3)));
-	    gsi = gsi_last_bb (incr_bb);
-	    gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    if (incr_bb)
+	      {
+		add_phi_arg (phi, iter2, latch_edge, UNKNOWN_LOCATION);
+		g = gimple_build_assign (iter2, POINTER_PLUS_EXPR, iter1,
+					 TYPE_SIZE_UNIT (TREE_TYPE (iter3)));
+		gsi = gsi_last_bb (incr_bb);
+		gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	      }
 
 	    phi = create_phi_node (iter4, body_bb);
 	    add_phi_arg (phi, iter3, preheader_edge, UNKNOWN_LOCATION);
-	    add_phi_arg (phi, iter5, latch_edge, UNKNOWN_LOCATION);
-	    enum tree_code code = INTEGRAL_TYPE_P (TREE_TYPE (iter3))
-				  ? PLUS_EXPR : POINTER_PLUS_EXPR;
-	    tree addtype = INTEGRAL_TYPE_P (TREE_TYPE (iter3))
-			   ? TREE_TYPE (iter3) : sizetype;
-	    tree addcst = simd_clone_linear_addend (node, i, addtype,
-						    entry_bb);
-	    g = gimple_build_assign (iter5, code, iter4, addcst);
-	    gsi = gsi_last_bb (incr_bb);
-	    gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    if (incr_bb)
+	      {
+		add_phi_arg (phi, iter5, latch_edge, UNKNOWN_LOCATION);
+		enum tree_code code = INTEGRAL_TYPE_P (TREE_TYPE (iter3))
+				      ? PLUS_EXPR : POINTER_PLUS_EXPR;
+		tree addtype = INTEGRAL_TYPE_P (TREE_TYPE (iter3))
+			       ? TREE_TYPE (iter3) : sizetype;
+		tree addcst = simd_clone_linear_addend (node, i, addtype,
+							entry_bb);
+		g = gimple_build_assign (iter5, code, iter4, addcst);
+		gsi = gsi_last_bb (incr_bb);
+		gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	      }
 
 	    g = gimple_build_assign (build_simple_mem_ref (iter1), iter4);
 	    gsi = gsi_after_labels (body_bb);
@@ -1464,7 +1504,7 @@ simd_clone_adjust (struct cgraph_node *node)
 		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		  SET_USE (use_p, iter1);
 
-	    if (!TYPE_READONLY (rtype))
+	    if (!TYPE_READONLY (rtype) && incr_bb)
 	      {
 		tree v = make_ssa_name (rtype);
 		tree aref = build4 (ARRAY_REF, rtype, array,
@@ -1480,7 +1520,8 @@ simd_clone_adjust (struct cgraph_node *node)
       }
 
   calculate_dominance_info (CDI_DOMINATORS);
-  add_loop (loop, loop->header->loop_father);
+  if (loop)
+    add_loop (loop, loop->header->loop_father);
   update_ssa (TODO_update_ssa);
 
   pop_cfun ();

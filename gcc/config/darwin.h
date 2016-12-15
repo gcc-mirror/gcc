@@ -165,6 +165,12 @@ extern GTY(()) int darwin_ms_struct;
    specifying the handling of options understood by generic Unix
    linkers, and for positional arguments like libraries.  */
 
+#if LD64_HAS_EXPORT_DYNAMIC
+#define DARWIN_EXPORT_DYNAMIC " %{rdynamic:-export_dynamic}"
+#else
+#define DARWIN_EXPORT_DYNAMIC " %{rdynamic: %nrdynamic is not supported}"
+#endif
+
 #define LINK_COMMAND_SPEC_A \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker)" \
@@ -185,7 +191,9 @@ extern GTY(()) int darwin_ms_struct;
     %{!nostdlib:%{!nodefaultlibs:\
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
-      %(link_ssp) %(link_gcc_c_sequence)\
+      %(link_ssp) \
+      " DARWIN_EXPORT_DYNAMIC " %<rdynamic \
+      %(link_gcc_c_sequence) \
     }}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} %{F*} }}}}}}}"
 
@@ -391,10 +399,27 @@ extern GTY(()) int darwin_ms_struct;
    %:version-compare(>< 10.6 10.8 mmacosx-version-min= -lcrt1.10.6.o)	\
    %{fgnu-tm: -lcrttms.o}"
 
-/* Default Darwin ASM_SPEC, very simple.  */
+#ifdef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
+/* Emit macosx version (but only major).  */
+#define ASM_MMACOSX_VERSION_MIN_SPEC \
+  " %{asm_macosx_version_min=*: -mmacosx-version-min=%*} %<asm_macosx_version_min=*"
+#else
+#define ASM_MMACOSX_VERSION_MIN_SPEC " %<asm_macosx_version_min=*"
+#endif
+
+/* When we detect that we're cctools or llvm as, we need to insert the right
+   additional options.  */
+#if HAVE_GNU_AS
+#define ASM_OPTIONS ""
+#else
+#define ASM_OPTIONS "%{v} %{w:-W} %{I*}"
+#endif
+
+/* Default Darwin ASM_SPEC, very simple. */
 #define ASM_SPEC "-arch %(darwin_arch) \
+  " ASM_OPTIONS " \
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
-  %{static}"
+  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
 
 /* Default ASM_DEBUG_SPEC.  Darwin's as cannot currently produce dwarf
    debugging data.  */
@@ -718,9 +743,16 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
   { "weak_import", 0, 0, true, false, false,				     \
     darwin_handle_weak_import_attribute, false }
 
+/* Make local constant labels linker-visible, so that if one follows a
+   weak_global constant, ld64 will be able to separate the atoms.  */
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM))
+  do {							\
+    if (strcmp ("LC", PREFIX) == 0)			\
+      sprintf (LABEL, "*%s%ld", "lC", (long)(NUM));	\
+    else						\
+      sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
+  } while (0)
 
 #undef TARGET_ASM_MARK_DECL_PRESERVED
 #define TARGET_ASM_MARK_DECL_PRESERVED darwin_mark_decl_preserved
@@ -929,5 +961,16 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    10.5 is the only version that fully supports all our archs so that's the
    fall-back default.  */
 #define DEF_MIN_OSX_VERSION "10.5"
+
+/* Later versions of ld64 support coalescing weak code/data without requiring
+   that they be placed in specially identified sections.  This is the earliest
+   _tested_ version known to support this so far.  */
+#define MIN_LD64_NO_COAL_SECTS "236.4"
+
+#ifndef LD64_VERSION
+#define LD64_VERSION "85.2"
+#else
+#define DEF_LD64 LD64_VERSION
+#endif
 
 #endif /* CONFIG_DARWIN_H */

@@ -26,7 +26,7 @@
 using std::experimental::propagate_const;
 using std::unique_ptr;
 
-// { dg-error "no type" "" { target *-*-* } 159 }
+// { dg-error "no type" "" { target *-*-* } 160 }
 
 int main()
 {

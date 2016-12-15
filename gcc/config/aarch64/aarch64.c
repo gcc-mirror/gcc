@@ -9280,18 +9280,6 @@ aarch64_classify_symbol (rtx x, rtx offset)
 
   if (GET_CODE (x) == SYMBOL_REF)
     {
-      if (aarch64_cmodel == AARCH64_CMODEL_LARGE)
-	{
-	  /* This is alright even in PIC code as the constant
-	     pool reference is always PC relative and within
-	     the same translation unit.  */
-	  if (nopcrelative_literal_loads
-	      && CONSTANT_POOL_ADDRESS_P (x))
-	    return SYMBOL_SMALL_ABSOLUTE;
-	  else
-	    return SYMBOL_FORCE_TO_MEM;
-	}
-
       if (aarch64_tls_symbol_p (x))
 	return aarch64_classify_tls_symbol (x);
 
@@ -9331,6 +9319,16 @@ aarch64_classify_symbol (rtx x, rtx offset)
 	    return (aarch64_cmodel == AARCH64_CMODEL_SMALL_SPIC
 		    ?  SYMBOL_SMALL_GOT_28K : SYMBOL_SMALL_GOT_4G);
 	  return SYMBOL_SMALL_ABSOLUTE;
+
+	case AARCH64_CMODEL_LARGE:
+	  /* This is alright even in PIC code as the constant
+	     pool reference is always PC relative and within
+	     the same translation unit.  */
+	  if (nopcrelative_literal_loads
+	      && CONSTANT_POOL_ADDRESS_P (x))
+	    return SYMBOL_SMALL_ABSOLUTE;
+	  else
+	    return SYMBOL_FORCE_TO_MEM;
 
 	default:
 	  gcc_unreachable ();

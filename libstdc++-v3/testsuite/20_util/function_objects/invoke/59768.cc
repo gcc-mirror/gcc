@@ -21,7 +21,7 @@
 #include <functional>
 
 struct A {
-  void foo(int n) { }
+  void foo(int) { }
 };
 
 void

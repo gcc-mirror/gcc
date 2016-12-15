@@ -265,6 +265,7 @@ You should have received a copy of the GNU General Public License
   return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 (define_insn "load_macho_picbase_di"
@@ -281,6 +282,7 @@ You should have received a copy of the GNU General Public License
   return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 (define_expand "macho_correct_pic"
@@ -416,6 +418,7 @@ You should have received a copy of the GNU General Public License
     return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 (define_insn "reload_macho_picbase_di"
@@ -439,6 +442,7 @@ You should have received a copy of the GNU General Public License
     return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 ;; We need to restore the PIC register, at the site of nonlocal label.

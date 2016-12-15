@@ -11050,7 +11050,7 @@ ix86_code_end (void)
 #if TARGET_MACHO
       if (TARGET_MACHO)
 	{
-	  switch_to_section (darwin_sections[text_coal_section]);
+	  switch_to_section (darwin_sections[picbase_thunk_section]);
 	  fputs ("\t.weak_definition\t", asm_out_file);
 	  assemble_name (asm_out_file, name);
 	  fputs ("\n\t.private_extern\t", asm_out_file);
@@ -11084,6 +11084,9 @@ ix86_code_end (void)
       current_function_decl = decl;
       allocate_struct_function (decl, false);
       init_function_start (decl);
+      /* We're about to hide the function body from callees of final_* by
+	 emitting it directly; tell them we're a thunk, if they care.  */
+      cfun->is_thunk = true;
       first_function_block_is_cold = false;
       /* Make sure unwind info is emitted for the thunk if needed.  */
       final_start_function (emit_barrier (), asm_out_file, 1);
@@ -13709,36 +13712,68 @@ ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED, HOST_WIDE_INT)
   if (pic_offset_table_rtx
       && !ix86_use_pseudo_pic_reg ())
     SET_REGNO (pic_offset_table_rtx, REAL_PIC_OFFSET_TABLE_REGNUM);
-#if TARGET_MACHO
-  /* Mach-O doesn't support labels at the end of objects, so if
-     it looks like we might want one, insert a NOP.  */
-  {
-    rtx_insn *insn = get_last_insn ();
-    rtx_insn *deleted_debug_label = NULL;
-    while (insn
-	   && NOTE_P (insn)
-	   && NOTE_KIND (insn) != NOTE_INSN_DELETED_LABEL)
-      {
-	/* Don't insert a nop for NOTE_INSN_DELETED_DEBUG_LABEL
-	   notes only, instead set their CODE_LABEL_NUMBER to -1,
-	   otherwise there would be code generation differences
-	   in between -g and -g0.  */
-	if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_DELETED_DEBUG_LABEL)
-	  deleted_debug_label = insn;
-	insn = PREV_INSN (insn);
-      }
-    if (insn
-	&& (LABEL_P (insn)
-	    || (NOTE_P (insn)
-		&& NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL)))
-      fputs ("\tnop\n", file);
-    else if (deleted_debug_label)
-      for (insn = deleted_debug_label; insn; insn = NEXT_INSN (insn))
-	if (NOTE_KIND (insn) == NOTE_INSN_DELETED_DEBUG_LABEL)
-	  CODE_LABEL_NUMBER (insn) = -1;
-  }
-#endif
 
+  if (TARGET_MACHO)
+    {
+      rtx_insn *insn = get_last_insn ();
+      rtx_insn *deleted_debug_label = NULL;
+
+      /* Mach-O doesn't support labels at the end of objects, so if
+         it looks like we might want one, take special action.
+        First, collect any sequence of deleted debug labels.  */
+      while (insn
+	     && NOTE_P (insn)
+	     && NOTE_KIND (insn) != NOTE_INSN_DELETED_LABEL)
+	{
+	  /* Don't insert a nop for NOTE_INSN_DELETED_DEBUG_LABEL
+	     notes only, instead set their CODE_LABEL_NUMBER to -1,
+	     otherwise there would be code generation differences
+	     in between -g and -g0.  */
+	  if (NOTE_P (insn) && NOTE_KIND (insn)
+	      == NOTE_INSN_DELETED_DEBUG_LABEL)
+	    deleted_debug_label = insn;
+	  insn = PREV_INSN (insn);
+	}
+
+      /* If we have:
+	 label:
+	    barrier
+	  then this needs to be detected, so skip past the barrier.  */
+
+      if (insn && BARRIER_P (insn))
+	insn = PREV_INSN (insn);
+
+      /* Up to now we've only seen notes or barriers.  */
+      if (insn)
+	{
+	  if (LABEL_P (insn)
+	      || (NOTE_P (insn)
+		  && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))
+	    /* Trailing label.  */
+	    fputs ("\tnop\n", file);
+	  else if (cfun && ! cfun->is_thunk)
+	    {
+	      /* See if we have a completely empty function body, skipping
+	         the special case of the picbase thunk emitted as asm.  */
+	      while (insn && ! INSN_P (insn))
+		insn = PREV_INSN (insn);
+	      /* If we don't find any insns, we've got an empty function body;
+		 I.e. completely empty - without a return or branch.  This is
+		 taken as the case where a function body has been removed
+		 because it contains an inline __builtin_unreachable().  GCC
+		 declares that reaching __builtin_unreachable() means UB so
+		 we're not obliged to do anything special; however, we want
+		 non-zero-sized function bodies.  To meet this, and help the
+		 user out, let's trap the case.  */
+	      if (insn == NULL)
+		fputs ("\tud2\n", file);
+	    }
+	}
+      else if (deleted_debug_label)
+	for (insn = deleted_debug_label; insn; insn = NEXT_INSN (insn))
+	  if (NOTE_KIND (insn) == NOTE_INSN_DELETED_DEBUG_LABEL)
+	    CODE_LABEL_NUMBER (insn) = -1;
+    }
 }
 
 /* Return a scratch register to use in the split stack prologue.  The
@@ -22739,6 +22774,7 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
     cmp_op1 = force_reg (cmp_ops_mode, cmp_op1);
 
   if (optimize
+      || (maskcmp && cmp_mode != mode)
       || (op_true && reg_overlap_mentioned_p (dest, op_true))
       || (op_false && reg_overlap_mentioned_p (dest, op_false)))
     dest = gen_reg_rtx (maskcmp ? cmp_mode : mode);
@@ -32360,6 +32396,7 @@ enum ix86_builtins
 
   /* LZCNT */
   IX86_BUILTIN_LZCNT16,
+  IX86_BUILTIN_CLZS,
   IX86_BUILTIN_LZCNT32,
   IX86_BUILTIN_LZCNT64,
 
@@ -32386,6 +32423,7 @@ enum ix86_builtins
   IX86_BUILTIN_BEXTR32,
   IX86_BUILTIN_BEXTR64,
   IX86_BUILTIN_TZCNT16,
+  IX86_BUILTIN_CTZS,
   IX86_BUILTIN_TZCNT32,
   IX86_BUILTIN_TZCNT64,
 
@@ -33777,6 +33815,8 @@ static const struct builtin_description bdesc_args[] =
 
   /* LZCNT */
   { OPTION_MASK_ISA_LZCNT, CODE_FOR_lzcnt_hi, "__builtin_ia32_lzcnt_u16", IX86_BUILTIN_LZCNT16, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
+  /* Same as above, for backward compatibility.  */
+  { OPTION_MASK_ISA_LZCNT, CODE_FOR_lzcnt_hi, "__builtin_clzs", IX86_BUILTIN_CLZS, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
   { OPTION_MASK_ISA_LZCNT, CODE_FOR_lzcnt_si, "__builtin_ia32_lzcnt_u32", IX86_BUILTIN_LZCNT32, UNKNOWN, (int) UINT_FTYPE_UINT },
   { OPTION_MASK_ISA_LZCNT | OPTION_MASK_ISA_64BIT, CODE_FOR_lzcnt_di, "__builtin_ia32_lzcnt_u64", IX86_BUILTIN_LZCNT64, UNKNOWN, (int) UINT64_FTYPE_UINT64 },
 
@@ -33785,6 +33825,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_BMI | OPTION_MASK_ISA_64BIT, CODE_FOR_bmi_bextr_di, "__builtin_ia32_bextr_u64", IX86_BUILTIN_BEXTR64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
 
   { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_tzcnt_hi, "__builtin_ia32_tzcnt_u16", IX86_BUILTIN_TZCNT16, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
+  /* Same as above, for backward compatibility.  */
+  { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_tzcnt_hi, "__builtin_ctzs", IX86_BUILTIN_CTZS, UNKNOWN, (int) UINT16_FTYPE_UINT16 },
   { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_tzcnt_si, "__builtin_ia32_tzcnt_u32", IX86_BUILTIN_TZCNT32, UNKNOWN, (int) UINT_FTYPE_UINT },
   { OPTION_MASK_ISA_BMI | OPTION_MASK_ISA_64BIT, CODE_FOR_bmi_tzcnt_di, "__builtin_ia32_tzcnt_u64", IX86_BUILTIN_TZCNT64, UNKNOWN, (int) UINT64_FTYPE_UINT64 },
 
@@ -37567,6 +37609,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
           return fold_builtin_cpu (fndecl, args);
 
 	case IX86_BUILTIN_TZCNT16:
+	case IX86_BUILTIN_CTZS:
 	case IX86_BUILTIN_TZCNT32:
 	case IX86_BUILTIN_TZCNT64:
 	  gcc_assert (n_args == 1);
@@ -37574,7 +37617,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    {
 	      tree type = TREE_TYPE (TREE_TYPE (fndecl));
 	      tree arg = args[0];
-	      if (fn_code == IX86_BUILTIN_TZCNT16)
+	      if (fn_code == IX86_BUILTIN_TZCNT16
+		  || fn_code == IX86_BUILTIN_CTZS)
 		arg = fold_convert (short_unsigned_type_node, arg);
 	      if (integer_zerop (arg))
 		return build_int_cst (type, TYPE_PRECISION (TREE_TYPE (arg)));
@@ -37584,6 +37628,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	  break;
 
 	case IX86_BUILTIN_LZCNT16:
+	case IX86_BUILTIN_CLZS:
 	case IX86_BUILTIN_LZCNT32:
 	case IX86_BUILTIN_LZCNT64:
 	  gcc_assert (n_args == 1);
@@ -37591,7 +37636,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    {
 	      tree type = TREE_TYPE (TREE_TYPE (fndecl));
 	      tree arg = args[0];
-	      if (fn_code == IX86_BUILTIN_LZCNT16)
+	      if (fn_code == IX86_BUILTIN_LZCNT16
+		  || fn_code == IX86_BUILTIN_CLZS)
 		arg = fold_convert (short_unsigned_type_node, arg);
 	      if (integer_zerop (arg))
 		return build_int_cst (type, TYPE_PRECISION (TREE_TYPE (arg)));

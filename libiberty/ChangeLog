@@ -1,3 +1,23 @@
+2016-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78761
+	* cp-demangle.c (cplus_demangle_type): Demangle Dc as decltype(auto).
+	* testsuite/demangle-expected: Add test for decltype(auto).
+
+2016-12-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78252
+	* cp-demangle.c (struct d_print_info): Add is_lambda_arg field.
+	(d_print_init): Initialize it.
+	(d_print_comp_inner) <DEMANGLE_COMPONENT_TEMPLATE_PARAM>: Check
+	is_lambda_arg for auto.
+	<DEMANGLE_COMPONENT_REFERENCE,
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE>: Skip smashing check when
+	is_lambda_arg.
+	<DEMANGLE_COMPONENT_LAMBDA>: Increment is_lambda_arg around arg
+	printing.
+	* testsuite/demangle-expected: Add lambda auto mangling cases. 
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.

@@ -1237,7 +1237,7 @@
   "ld<four_s_if_si>_tls\t%0, %1, tls_ie_load(%2)"
   [(set_attr "type" "X1_2cycle")])
 
-(define_insn "*zero_extract<mode>"
+(define_insn_and_split "*zero_extract<mode>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
 	(zero_extract:I48MODE
          (match_operand:I48MODE 1 "reg_or_0_operand" "r")
@@ -1245,6 +1245,18 @@
          (match_operand:I48MODE 3 "u6bit_cint_operand" "n")))]
   ""
   "bfextu\t%0, %r1, %3, %3+%2-1"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extract:I48MODE
+                       (match_dup 1)
+                       (match_dup 2)
+                       (match_dup 3)))]
+{
+  HOST_WIDE_INT bit_width = INTVAL (operands[2]);
+  HOST_WIDE_INT bit_offset = INTVAL (operands[3]);
+
+  if (bit_offset + bit_width > 64)
+    operands[2] = GEN_INT (64 - bit_offset);
+}
   [(set_attr "type" "X0")])
 
 (define_insn "*sign_extract_low32"
@@ -1256,7 +1268,7 @@
   "INTVAL (operands[3]) == 0 && INTVAL (operands[2]) == 32"
   "addxi\t%0, %r1, 0")
 
-(define_insn "*sign_extract"
+(define_insn_and_split "*sign_extract"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
 	(sign_extract:I48MODE
          (match_operand:I48MODE 1 "reg_or_0_operand" "r")
@@ -1264,6 +1276,18 @@
          (match_operand:I48MODE 3 "u6bit_cint_operand" "n")))]
   ""
   "bfexts\t%0, %r1, %3, %3+%2-1"
+  "&& reload_completed"
+  [(set (match_dup 0) (sign_extract:I48MODE
+                       (match_dup 1)
+                       (match_dup 2)
+                       (match_dup 3)))]
+{
+  HOST_WIDE_INT bit_width = INTVAL (operands[2]);
+  HOST_WIDE_INT bit_offset = INTVAL (operands[3]);
+
+  if (bit_offset + bit_width > 64)
+    operands[2] = GEN_INT (64 - bit_offset);
+}
   [(set_attr "type" "X0")])
 
 
@@ -2748,6 +2772,12 @@
   ""
   "nop"
   [(set_attr "type" "Y01")])
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "raise; moveli zero, 6"
+  [(set_attr "type" "cannot_bundle")])
 
 
 ;;

@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 
 #include <iterator>
 #include <testsuite_iterators.h>
@@ -39,5 +40,7 @@ test01()
   int i[2];
   __gnu_test::test_container<int, __gnu_test::bidirectional_iterator_wrapper>
     c(i);
-  diff2(std::rbegin(c), std::rend(c));
+  using reverse_iterator
+    = std::reverse_iterator<__gnu_test::bidirectional_iterator_wrapper<int>>;
+  diff2(reverse_iterator(c.end()), reverse_iterator(c.begin()));
 }

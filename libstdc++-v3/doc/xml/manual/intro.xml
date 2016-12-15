@@ -898,6 +898,12 @@ requirements of the license of GCC.
     <listitem><para>Adjust constraints to allow safe conversions.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2127">2127</link>:
+	<emphasis>Move-construction with <code>raw_storage_iterator</code></emphasis>
+    </term>
+    <listitem><para>Add assignment operator taking an rvalue.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2132">2132</link>:
 	<emphasis><code>std::function</code> ambiguity</emphasis>
     </term>
@@ -1003,6 +1009,13 @@ requirements of the license of GCC.
     <listitem><para>Add <code>noexcept</code>.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2442">2442</link>:
+       <emphasis><code>call_once()</code> shouldn't <code>DECAY_COPY()</code></emphasis>
+    </term>
+    <listitem><para>Remove indirection through call wrapper that made copies
+    of arguments and forward arguments straight to <code>std::invoke</code>.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2454">2454</link>:
        <emphasis>Add <code>raw_storage_iterator::base()</code> member
        </emphasis>
@@ -1031,6 +1044,13 @@ requirements of the license of GCC.
     <listitem><para>Divide by the object type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2484">2484</link>:
+       <emphasis><code>rethrow_if_nested()</code>  is doubly unimplementable
+       </emphasis>
+    </term>
+    <listitem><para>Avoid using <code>dynamic_cast</code> when it would be
+    ill-formed.
+    </para></listitem></varlistentry>
 
   </variablelist>
 

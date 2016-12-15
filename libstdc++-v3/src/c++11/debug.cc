@@ -529,11 +529,6 @@ namespace
   using _Error_formatter = __gnu_debug::_Error_formatter;
   using _Parameter = __gnu_debug::_Error_formatter::_Parameter;
 
-  template<typename _Tp>
-    int
-    format_word(char* buf, int n, const char* fmt, _Tp s)
-    { return std::min(__builtin_snprintf(buf, n, fmt, s), n - 1); }
-
   void
   get_max_length(std::size_t& max_length)
   {
@@ -559,6 +554,11 @@ namespace
     bool	_M_first_line;
     bool	_M_wordwrap;
   };
+
+  template<size_t Length>
+    void
+    print_literal(PrintContext& ctx, const char(&word)[Length])
+    { print_word(ctx, word, Length - 1); }
 
   void
   print_word(PrintContext& ctx, const char* word,
@@ -610,27 +610,28 @@ namespace
       }
     else
       {
-	print_word(ctx, "\n", 1);
+	print_literal(ctx, "\n");
 	print_word(ctx, word, count);
       }
   }
 
-  void
-  print_type(PrintContext& ctx,
-	     const type_info* info,
-	     const char* unknown_name)
-  {
-    if (!info)
-      print_word(ctx, unknown_name);
-    else
-      {
-	int status;
-	char* demangled_name =
-	  __cxxabiv1::__cxa_demangle(info->name(), NULL, NULL, &status);
-	print_word(ctx, status == 0 ? demangled_name : info->name());
-	free(demangled_name);
-      }
-  }
+  template<size_t Length>
+    void
+    print_type(PrintContext& ctx,
+	       const type_info* info,
+	       const char(&unknown_name)[Length])
+    {
+      if (!info)
+	print_literal(ctx, unknown_name);
+      else
+	{
+	  int status;
+	  char* demangled_name =
+	    __cxxabiv1::__cxa_demangle(info->name(), NULL, NULL, &status);
+	  print_word(ctx, status == 0 ? demangled_name : info->name());
+	  free(demangled_name);
+	}
+    }
 
   bool
   print_field(PrintContext& ctx,
@@ -767,20 +768,18 @@ namespace
   {
     if (type._M_name)
       {
-	const int bufsize = 64;
-	char buf[bufsize];
-	int written
-	  = format_word(buf, bufsize, "\"%s\"", type._M_name);
-	print_word(ctx, buf, written);
+	print_literal(ctx, "\"");
+	print_word(ctx, type._M_name);
+	print_literal(ctx, "\"");
       }
 
-    print_word(ctx, " {\n");
+    print_literal(ctx, " {\n");
 
     if (type._M_type)
       {
-	print_word(ctx, "  type = ");
+	print_literal(ctx, "  type = ");
 	print_type(ctx, type._M_type, "<unknown type>");
-	print_word(ctx, ";\n");
+	print_literal(ctx, ";\n");
       }
   }
 
@@ -792,9 +791,9 @@ namespace
 
     if (inst._M_name)
       {
-	int written
-	  = format_word(buf, bufsize, "\"%s\" ", inst._M_name);
-	print_word(ctx, buf, written);
+	print_literal(ctx, "\"");
+	print_word(ctx, inst._M_name);
+	print_literal(ctx, "\" ");
       }
 
     int written
@@ -803,7 +802,7 @@ namespace
 
     if (inst._M_type)
       {
-	print_word(ctx, "  type = ");
+	print_literal(ctx, "  type = ");
 	print_type(ctx, inst._M_type, "<unknown type>");
       }
   }
@@ -821,36 +820,36 @@ namespace
 	{
 	  const auto& ite = variant._M_iterator;
 
-	  print_word(ctx, "iterator ");
+	  print_literal(ctx, "iterator ");
 	  print_description(ctx, ite);
 
 	  if (ite._M_type)
 	    {
 	      if (ite._M_constness != _Error_formatter::__unknown_constness)
 		{
-		  print_word(ctx, " (");
+		  print_literal(ctx, " (");
 		  print_field(ctx, param, "constness");
-		  print_word(ctx, " iterator)");
+		  print_literal(ctx, " iterator)");
 		}
 
-	      print_word(ctx, ";\n");
+	      print_literal(ctx, ";\n");
 	    }
 
 	  if (ite._M_state != _Error_formatter::__unknown_state)
 	    {
-	      print_word(ctx, "  state = ");
+	      print_literal(ctx, "  state = ");
 	      print_field(ctx, param, "state");
-	      print_word(ctx, ";\n");
+	      print_literal(ctx, ";\n");
 	    }
 
 	  if (ite._M_sequence)
 	    {
-	      print_word(ctx, "  references sequence ");
+	      print_literal(ctx, "  references sequence ");
 	      if (ite._M_seq_type)
 		{
-		  print_word(ctx, "with type '");
+		  print_literal(ctx, "with type '");
 		  print_field(ctx, param, "seq_type");
-		  print_word(ctx, "' ");
+		  print_literal(ctx, "' ");
 		}
 
 	      int written
@@ -858,34 +857,34 @@ namespace
 	      print_word(ctx, buf, written);
 	    }
 
-	  print_word(ctx, "}\n", 2);
+	  print_literal(ctx, "}\n");
 	}
 	break;
 
       case _Parameter::__sequence:
-	print_word(ctx, "sequence ");
+	print_literal(ctx, "sequence ");
 	print_description(ctx, variant._M_sequence);
 
 	if (variant._M_sequence._M_type)
-	  print_word(ctx, ";\n", 2);
+	  print_literal(ctx, ";\n");
 
-	print_word(ctx, "}\n", 2);
+	print_literal(ctx, "}\n");
 	break;
 
       case _Parameter::__instance:
-	print_word(ctx, "instance ");
+	print_literal(ctx, "instance ");
 	print_description(ctx, variant._M_instance);
 
 	if (variant._M_instance._M_type)
-	  print_word(ctx, ";\n", 2);
+	  print_literal(ctx, ";\n");
 
-	print_word(ctx, "}\n", 2);
+	print_literal(ctx, "}\n");
 	break;
 
       case _Parameter::__iterator_value_type:
-	print_word(ctx, "iterator::value_type ");
+	print_literal(ctx, "iterator::value_type ");
 	print_description(ctx, variant._M_iterator_value_type);
-	print_word(ctx, "}\n", 2);
+	print_literal(ctx, "}\n");
 	break;
 
       default:
@@ -1000,38 +999,36 @@ namespace __gnu_debug
   void
   _Error_formatter::_M_error() const
   {
-    const int bufsize = 128;
-    char buf[bufsize];
-
     // Emit file & line number information
     bool go_to_next_line = false;
     PrintContext ctx;
     if (_M_file)
       {
-	int written = format_word(buf, bufsize, "%s:", _M_file);
-	print_word(ctx, buf, written);
+	print_word(ctx, _M_file);
+	print_literal(ctx, ":");
 	go_to_next_line = true;
       }
 
     if (_M_line > 0)
       {
+	char buf[64];
 	int written = __builtin_sprintf(buf, "%u:", _M_line);
 	print_word(ctx, buf, written);
 	go_to_next_line = true;
       }
 
     if (go_to_next_line)
-      print_word(ctx, "\n", 1);
+      print_literal(ctx, "\n");
 
     if (ctx._M_max_length)
       ctx._M_wordwrap = true;
 
-    print_word(ctx, "Error: ");
+    print_literal(ctx, "Error: ");
 
     // Print the error message
     assert(_M_text);
     print_string(ctx, _M_text, _M_parameters, _M_num_parameters);
-    print_word(ctx, ".\n", 2);
+    print_literal(ctx, ".\n");
 
     // Emit descriptions of the objects involved in the operation
     ctx._M_first_line = true;
@@ -1047,7 +1044,7 @@ namespace __gnu_debug
 	  case _Parameter::__iterator_value_type:
 	    if (!has_header)
 	      {
-		print_word(ctx, "\nObjects involved in the operation:\n");
+		print_literal(ctx, "\nObjects involved in the operation:\n");
 		has_header = true;
 	      }
 	    print_description(ctx, _M_parameters[i]);

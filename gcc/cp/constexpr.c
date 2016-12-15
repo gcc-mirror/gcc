@@ -891,6 +891,18 @@ struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
   static bool equal (constexpr_call *, constexpr_call *);
 };
 
+enum constexpr_switch_state {
+  /* Used when processing a switch for the first time by cxx_eval_switch_expr
+     and default: label for that switch has not been seen yet.  */
+  css_default_not_seen,
+  /* Used when processing a switch for the first time by cxx_eval_switch_expr
+     and default: label for that switch has been seen already.  */
+  css_default_seen,
+  /* Used when processing a switch for the second time by
+     cxx_eval_switch_expr, where default: label should match.  */
+  css_default_processing
+};
+
 /* The constexpr expansion context.  CALL is the current function
    expansion, CTOR is the current aggregate initializer, OBJECT is the
    object being initialized by CTOR, either a VAR_DECL or a _REF.  VALUES
@@ -910,6 +922,8 @@ struct constexpr_ctx {
   tree ctor;
   /* The object we're building the CONSTRUCTOR for.  */
   tree object;
+  /* If inside SWITCH_EXPR.  */
+  constexpr_switch_state *css_state;
   /* Whether we should error on a non-constant expression or fail quietly.  */
   bool quiet;
   /* Whether we are strictly conforming to constant expression rules or
@@ -2048,6 +2062,27 @@ diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
     }
 }
 
+/* Extract element INDEX consisting of CHARS_PER_ELT chars from
+   STRING_CST STRING.  */
+
+static tree
+extract_string_elt (tree string, unsigned chars_per_elt, unsigned index)
+{
+  tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (string)));
+  tree r;
+
+  if (chars_per_elt == 1)
+    r = build_int_cst (type, TREE_STRING_POINTER (string)[index]);
+  else
+    {
+      const unsigned char *ptr
+	= ((const unsigned char *)TREE_STRING_POINTER (string)
+	   + index * chars_per_elt);
+      r = native_interpret_expr (type, ptr, chars_per_elt);
+    }
+  return r;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to reduce a reference to an array slot.  */
 
@@ -2128,16 +2163,9 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
       tree r;
       if (TREE_CODE (ary) == CONSTRUCTOR)
 	r = (*CONSTRUCTOR_ELTS (ary))[i].value;
-      else if (elem_nchars == 1)
-	r = build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
-			   TREE_STRING_POINTER (ary)[i]);
       else
-	{
-	  tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (ary)));
-	  r = native_interpret_expr (type, (const unsigned char *)
-				     TREE_STRING_POINTER (ary)
-				     + i * elem_nchars, elem_nchars);
-	}
+	r = extract_string_elt (ary, elem_nchars, i);
+
       if (r)
 	/* Don't VERIFY_CONSTANT here.  */
 	return r;
@@ -3152,6 +3180,35 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp) = no_zero_init;
 	}
+      else if (TREE_CODE (*valp) == STRING_CST)
+	{
+	  /* An array was initialized with a string constant, and now
+	     we're writing into one of its elements.  Explode the
+	     single initialization into a set of element
+	     initializations.  */
+	  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+	  tree string = *valp;
+	  tree elt_type = TREE_TYPE (type);
+	  unsigned chars_per_elt = (TYPE_PRECISION (elt_type)
+				    / TYPE_PRECISION (char_type_node));
+	  unsigned num_elts = TREE_STRING_LENGTH (string) / chars_per_elt;
+	  tree ary_ctor = build_constructor (type, NULL);
+
+	  vec_safe_reserve (CONSTRUCTOR_ELTS (ary_ctor), num_elts);
+	  for (unsigned ix = 0; ix != num_elts; ix++)
+	    {
+	      constructor_elt elt = 
+		{
+		  build_int_cst (size_type_node, ix),
+		  extract_string_elt (string, chars_per_elt, ix)
+		};
+	      CONSTRUCTOR_ELTS (ary_ctor)->quick_push (elt);
+	    }
+	  
+	  *valp = ary_ctor;
+	}
+
       /* If the value of object is already zero-initialized, any new ctors for
 	 subobjects will also be zero-initialized.  */
       no_zero_init = CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp);
@@ -3367,14 +3424,12 @@ switches (tree *jump_target)
 }
 
 /* Subroutine of cxx_eval_statement_list.  Determine whether the statement
-   at I matches *jump_target.  If we're looking for a case label and we see
-   the default label, copy I into DEFAULT_LABEL.  */
+   STMT matches *jump_target.  If we're looking for a case label and we see
+   the default label, note it in ctx->css_state.  */
 
 static bool
-label_matches (tree *jump_target, tree_stmt_iterator i,
-	       tree_stmt_iterator& default_label)
+label_matches (const constexpr_ctx *ctx, tree *jump_target, tree stmt)
 {
-  tree stmt = tsi_stmt (i);
   switch (TREE_CODE (*jump_target))
     {
     case LABEL_DECL:
@@ -3386,8 +3441,18 @@ label_matches (tree *jump_target, tree_stmt_iterator i,
     case INTEGER_CST:
       if (TREE_CODE (stmt) == CASE_LABEL_EXPR)
 	{
+	  gcc_assert (ctx->css_state != NULL);
 	  if (!CASE_LOW (stmt))
-	    default_label = i;
+	    {
+	      /* default: should appear just once in a SWITCH_EXPR
+		 body (excluding nested SWITCH_EXPR).  */
+	      gcc_assert (*ctx->css_state != css_default_seen);
+	      /* When evaluating SWITCH_EXPR body for the second time,
+		 return true for the default: label.  */
+	      if (*ctx->css_state == css_default_processing)
+		return true;
+	      *ctx->css_state = css_default_seen;
+	    }
 	  else if (CASE_HIGH (stmt))
 	    {
 	      if (tree_int_cst_le (CASE_LOW (stmt), *jump_target)
@@ -3414,7 +3479,6 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
 			 tree *jump_target)
 {
   tree_stmt_iterator i;
-  tree_stmt_iterator default_label = tree_stmt_iterator();
   tree local_target;
   /* In a statement-expression we want to return the last value.  */
   tree r = NULL_TREE;
@@ -3425,18 +3489,7 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
     }
   for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
     {
-    reenter:
       tree stmt = tsi_stmt (i);
-      if (*jump_target)
-	{
-	  if (TREE_CODE (stmt) == STATEMENT_LIST)
-	    /* The label we want might be inside.  */;
-	  else if (label_matches (jump_target, i, default_label))
-	    /* Found it.  */
-	    *jump_target = NULL_TREE;
-	  else
-	    continue;
-	}
       r = cxx_eval_constant_expression (ctx, stmt, false,
 					non_constant_p, overflow_p,
 					jump_target);
@@ -3444,12 +3497,6 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
 	break;
       if (returns (jump_target) || breaks (jump_target))
 	break;
-    }
-  if (switches (jump_target) && !tsi_end_p (default_label))
-    {
-      i = default_label;
-      *jump_target = NULL_TREE;
-      goto reenter;
     }
   return r;
 }
@@ -3478,7 +3525,10 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	   iter != save_exprs.end(); ++iter)
 	new_ctx.values->remove (*iter);
     }
-  while (!returns (jump_target) && !breaks (jump_target) && !*non_constant_p);
+  while (!returns (jump_target)
+	 && !breaks (jump_target)
+	 && !switches (jump_target)
+	 && !*non_constant_p);
 
   if (breaks (jump_target))
     *jump_target = NULL_TREE;
@@ -3501,8 +3551,20 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
   *jump_target = cond;
 
   tree body = TREE_OPERAND (t, 1);
-  cxx_eval_statement_list (ctx, body,
-			   non_constant_p, overflow_p, jump_target);
+  constexpr_ctx new_ctx = *ctx;
+  constexpr_switch_state css = css_default_not_seen;
+  new_ctx.css_state = &css;
+  cxx_eval_constant_expression (&new_ctx, body, false,
+				non_constant_p, overflow_p, jump_target);
+  if (switches (jump_target) && css == css_default_seen)
+    {
+      /* If the SWITCH_EXPR body has default: label, process it once again,
+	 this time instructing label_matches to return true for default:
+	 label on switches (jump_target).  */
+      css = css_default_processing;
+      cxx_eval_constant_expression (&new_ctx, body, false,
+				    non_constant_p, overflow_p, jump_target);
+    }
   if (breaks (jump_target) || switches (jump_target))
     *jump_target = NULL_TREE;
   return NULL_TREE;
@@ -3522,6 +3584,27 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
   constexpr_ctx new_ctx;
   tree r = t;
 
+  if (jump_target && *jump_target)
+    {
+      /* If we are jumping, ignore all statements/expressions except those
+	 that could have LABEL_EXPR or CASE_LABEL_EXPR in their bodies.  */
+      switch (TREE_CODE (t))
+	{
+	case BIND_EXPR:
+	case STATEMENT_LIST:
+	case LOOP_EXPR:
+	case COND_EXPR:
+	  break;
+	case LABEL_EXPR:
+	case CASE_LABEL_EXPR:
+	  if (label_matches (ctx, jump_target, t))
+	    /* Found it.  */
+	    *jump_target = NULL_TREE;
+	  return NULL_TREE;
+	default:
+	  return NULL_TREE;
+	}
+    }
   if (t == error_mark_node)
     {
       *non_constant_p = true;
@@ -3579,6 +3662,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case LABEL_DECL:
     case LABEL_EXPR:
     case CASE_LABEL_EXPR:
+    case PREDICT_EXPR:
       return t;
 
     case PARM_DECL:
@@ -3683,6 +3767,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case INIT_EXPR:
     case MODIFY_EXPR:
+      gcc_assert (jump_target == NULL || *jump_target == NULL_TREE);
       r = cxx_eval_store_expression (ctx, t, lval,
 				     non_constant_p, overflow_p);
       break;
@@ -3911,6 +3996,22 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case COND_EXPR:
+      if (jump_target && *jump_target)
+	{
+	  /* When jumping to a label, the label might be either in the
+	     then or else blocks, so process then block first in skipping
+	     mode first, and if we are still in the skipping mode at its end,
+	     process the else block too.  */
+	  r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1),
+					    lval, non_constant_p, overflow_p,
+					    jump_target);
+	  if (*jump_target)
+	    r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 2),
+					      lval, non_constant_p, overflow_p,
+					      jump_target);
+	  break;
+	}
+      /* FALLTHRU */
     case VEC_COND_EXPR:
       r = cxx_eval_conditional_expression (ctx, t, lval,
 					   non_constant_p, overflow_p,
@@ -3971,7 +4072,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  {
 	    if (same_type_ignoring_top_level_qualifiers_p (type,
 							   TREE_TYPE (op)))
-	      STRIP_NOPS (t);
+	      return cp_fold_convert (type, op);
 	    else
 	      {
 		if (!ctx->quiet)
@@ -4143,7 +4244,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   bool overflow_p = false;
   hash_map<tree,tree> map;
 
-  constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL,
+  constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL,
 			allow_non_constant, strict };
 
   tree type = initialized_type (t);
@@ -4263,7 +4364,7 @@ is_sub_constant_expr (tree t)
   bool overflow_p = false;
   hash_map <tree, tree> map;
 
-  constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, true, true };
+  constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL, true, true };
 
   cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
 				&overflow_p);

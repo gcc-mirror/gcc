@@ -1,3 +1,615 @@
+2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59874
+	* config/i386/i386.c (enum ix86_builtins): Add IX86_BUILTIN_CLZS
+	and IX86_BUILTIN_CTZS.
+	(bdesc_args): Add __builtin_clzs and __builtin_ctzs.
+	(ix86_fold_builtin): Handle IX86_BUILTIN_CTZS and IX86_BUILTIN_CLZS.
+
+2016-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78796
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Merge large
+	model checks into switch.
+
+2016-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2016-11-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* tree-ssa-math-opts.c (struct symbolic_number): Improve comment.
+
+2016-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2016-11-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/77673
+	* tree-ssa-math-opts.c (struct symbolic_number): Add new src field.
+	(init_symbolic_number): Initialize src field from src parameter.
+	(perform_symbolic_merge): Select most dominated statement as the
+	source statement.  Set src field of resulting n structure from the
+	input src with the lowest address.
+	(find_bswap_or_nop): Rename source_stmt into ins_stmt.
+	(bswap_replace): Rename src_stmt into ins_stmt.  Initially get source
+	of load from src field rather than insertion statement.  Cancel
+	optimization if statement analyzed is not dominated by the insertion
+	statement.
+	(pass_optimize_bswap::execute): Rename src_stmt to ins_stmt.  Compute
+	dominance information.
+
+2016-12-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-12-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/72717
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): If the
+	V2DImode elements are SUBREG's convert the result into DImode
+	rather than failing in emit_move_insn.
+
+2016-12-13  Iain Sandoe  <iain@codesourcery.com>
+
+	Backport from mainline
+	2016-12-11  Iain Sandoe  <iain@codesourcery.com>
+
+	PR rtl-optimization/71496
+	* config/rs6000/darwin.md (load_macho_picbase_si): Mark as non-
+	copyable.  (load_macho_picbase_di, reload_macho_picbase_si,
+	reload_macho_picbase_di): Likewise.
+
+2016-12-12  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Backport from mainline
+	2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
+
+        PR rtl-optimization/77309
+        * combine.c (make_compound_operation): Allow EQ for IN_CODE, and
+        don't assume an equality comparison for plain COMPARE.
+        (simplify_comparison): Pass a more accurate code to
+        make_compound_operation.
+
+2016-12-12 Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2016-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/77904
+	* config/arm/arm.c (thumb1_compute_save_reg_mask): Mark frame pointer
+	in save register mask if it is needed.
+
+2016-12-11  Iain Sandoe  <iain@codesourcery.com>
+
+	Backport from mainline
+	2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+		    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/67710
+	* config.in: Regenerate
+	* config/darwin-driver.c (darwin_driver_init): Emit a version string
+	for the assembler.
+	* config/darwin.h(ASM_MMACOSX_VERSION_MIN_SPEC): New, new tests.
+	* config/darwin.opt(asm_macosx_version_min): New.
+	* config/i386/darwin.h: Handle ASM_MMACOSX_VERSION_MIN_SPEC.
+	* configure: Regenerate
+	* configure.ac: Check for mmacosx-version-min handling.
+
+2016-12-11  Iain Sandoe  <iain@codesourcery.com>
+
+	Backport from mainline
+	2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/57438
+	* config/i386/i386.c (ix86_code_end): Note that we emitted code
+	where the function might otherwise appear empty for picbase thunks.
+	(ix86_output_function_epilogue): If we find a zero-sized function
+	assume that reaching it is UB and trap.  If we find a trailing label
+	append a nop.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): If we
+	find a zero-sized function assume that reaching it is UB and trap.
+	If we find a trailing label, append a nop.
+
+2016-12-11 Iain Sandoe  <iain@codesourcery.com>
+
+	Backport from mainline
+	2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
+	* config/darwin-sections.def (picbase_thunk_section): New.
+	* config/darwin.c (darwin_init_sections): Set up picbase thunk
+	section. (darwin_rodata_section, darwin_objc2_section,
+	machopic_select_section, darwin_asm_declare_constant_name,
+	darwin_emit_weak_or_comdat, darwin_function_section): Don’t use
+	coalesced with newer linkers.
+	(darwin_override_options): Decide on usage of coalesed sections
+	on the basis of the target linker version.
+	* config/darwin.h (MIN_LD64_NO_COAL_SECTS): New.
+	* config/darwin.opt  (mtarget-linker): New.
+	* config/i386/i386.c (ix86_code_end): Do not force the thunks into
+	a coalesced section, instead use a thunks section.
+
+	Backport from mainline
+	2016-11-28  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
+	* configure.ac (with_ld64): Use portable method to extract the
+	major part of the version number.
+	* configure: Regenerated.
+
+	Backport from mainline
+	2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
+	* configure.ac (with-ld64): New var, set for Darwin, set on
+	detection of ld64, gcc_cv_ld64_export_dynamic: New, New test.
+	* config/darwin.h: Use LD64_HAS_DYNAMIC export. DEF_LD64: New,
+	define.
+	* config/darwin10.h(DEF_LD64): Update for this target version.
+	* config/darwin12.h(LINK_GCC_C_SEQUENCE_SPEC): Remove rdynamic
+	test.  (DEF_LD64): Update for this target version.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
+	Backport from mainline
+	2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
+	* config/darwin.c (imachopic_indirection_name): Make data
+	section indirections linker-visible.
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Make local
+	constant labels linker-visible.
+
+2016-12-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2016-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/77933
+	* config/arm/arm.c (thumb1_expand_prologue): Distinguish between lr
+	being live in the function and lr needing to be saved.  Distinguish
+	between already saved pushable registers and registers to push.
+	Check for LR being an available pushable register.
+
+2016-12-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR C++/78550
+	* convert.c (convert_to_integer_1): Maybe fold conversions to
+	integral types with fewer bits than its mode.
+
+2016-12-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Look at the DR_BASE_ADDRESS object for forcing alignment.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78189
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Fix
+	alignment computation.
+
+2016-12-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78542
+	* tree-ssa-ccp.c (evaluate_stmt): Only valueize simplification
+	if allowed.
+
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78482
+	* tree-cfgcleanup.c: Include tree-ssa-loop-niter.h.
+	(remove_forwarder_block_with_phi): When merging with a loop
+	header creates a new latch reset number of iteration information
+	of the loop.
+
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71762
+	* match.pd ((~X & Y) -> X < Y, (X & ~Y) -> Y < X,
+	(~X | Y) -> X <= Y, (X | ~Y) -> Y <= X): Remove.
+
+	2016-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71575
+	* graphite-isl-ast-to-gimple.c (copy_cond_phi_nodes): Remove
+	bogus assert.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78224
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds):
+	Split the fallthru edge in case its successor may have PHIs.
+
+	2016-11-05  David Edelsohn  <dje.gcc@gmail.com>
+		Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/78188
+	PR c++/71848
+	* ipa-comdats.c (pass_ipa_comdats::gate): Require HAVE_COMDAT_GROUP.
+
+	2016-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77646
+	* tree-ssa-sccvn.c (visit_reference_op_call): Always value-number
+	a VDEF.
+
+2016-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from mainline
+	2016-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77957
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Don't
+	return early if !optional_tbtab.
+
+2016-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78540
+	* rtl.h (remove_reg_equal_equiv_notes): Return bool instead of void.
+	* rtlanal.c (remove_reg_equal_equiv_notes): Return true if any
+	note has been removed.
+	* postreload.c (reload_combine_recognize_pattern): If
+	remove_reg_equal_equiv_notes returns true, call df_notes_rescan.
+
+	PR rtl-optimization/78546
+	* simplify-rtx.c (neg_const_int): When negating most negative
+	number in mode wider than HOST_BITS_PER_WIDE_INT, use
+	simplify_const_unary_operation to produce CONST_DOUBLE or
+	CONST_WIDE_INT.
+	(simplify_plus_minus): Hanlde the case where neg_const_int
+	doesn't return a CONST_INT.
+
+	PR fortran/78298
+	* tree-nested.c (convert_local_reference_stmt): After adding
+	shared (FRAME.NN) clause to omp parallel, task or target,
+	add it also to all outer omp parallel, task or target constructs.
+
+	2016-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69183
+	* omp-low.c (build_outer_var_ref): Change lastprivate argument
+	to code, pass it recursively, adjust uses.  For OMP_CLAUSE_PRIVATE
+	on worksharing constructs, treat it like clauses on simd construct.
+	Formatting fix.
+	(lower_rec_input_clauses): For OMP_CLAUSE_PRIVATE_OUTER_REF pass
+	OMP_CLAUSE_PRIVATE as last argument to build_outer_var_ref.
+	(lower_lastprivate_clauses): Pass OMP_CLAUSE_LASTPRIVATE instead
+	of true as last argument to build_outer_var_ref.
+
+	2016-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78416
+	* expmed.c (expand_divmod): Use wide_int for computation of
+	op1_is_pow2.  Don't set it if op1 is 0.  Formatting fixes.
+	Use size <= HOST_BITS_PER_WIDE_INT instead of
+	HOST_BITS_PER_WIDE_INT >= size.
+
+	2016-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/67335
+	* omp-simd-clone.c (simd_clone_adjust_argument_types): Use NULL prefix
+	for tmp simd array if DECL_NAME (parm) is NULL.
+
+	2016-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78419
+	* multiple_target.c (get_attr_len): Start with argnum and increment
+	argnum on every arg.  Use strchr in a loop instead of counting commas
+	manually.
+	(get_attr_str): Increment argnum for every comma in the string.
+	(separate_attrs): Use for instead of while loop, simplify.
+	(expand_target_clones): Rename defenition argument to definition.
+	Free attrs and attr_str even when diagnosing errors.  Temporarily
+	change input_location around targetm.target_option.valid_attribute_p
+	calls.  Don't emit warning or errors if that function fails.
+
+	2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78378
+	* combine.c (make_extraction): Use force_to_mode for non-{REG,MEM}
+	inner only if pos is 0.  Fix up formatting.
+
+	PR fortran/78299
+	* omp-low.c (expand_omp_for_static_nochunk): Don't assert
+	that loop->header == body_bb if broken_loop.
+
+	2016-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77834
+	* dse.c (dse_step5): Call scan_reads even if just
+	insn_info->frame_read.  Improve and fix dump file messages.
+
+	PR target/78227
+	* config/i386/i386.c (ix86_expand_sse_cmp): Force dest into
+	cmp_mode argument even for -O0 if cmp_mode != mode and maskcmp.
+
+	2016-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77834
+	* alias.c (nonoverlapping_memrefs_p): Return 0 if exprx or expry
+	doesn't have rtl set.
+
+	2016-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/77919
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Only avoid forcing
+	into memory if both modes are complex and their inner modes have the
+	same precision.  If the two modes are different complex modes, convert
+	each part separately and generate a new CONCAT.
+
+	2016-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/77919
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Force CONCAT into
+	MEM if mode1 is not a complex mode.
+
+	2016-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78025
+	* omp-simd-clone.c (simd_clone_adjust): Handle noreturn declare simd
+	functions.
+
+	2016-10-26  Jakub Jelinek  <jakub@redhat.com>
+		    Martin Liska  <mliska@suse.cz>
+
+	PR fortran/77973
+	* gimplify.c (gimplify_adjust_omp_clauses_1): For all added map
+	clauses with OMP_CLAUSE_SIZE being a decl, call omp_notice_variable
+	on outer context if any.
+
+	2016-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/66343
+	* ubsan.c (ubsan_ids): New GTY(()) array.
+	(ubsan_type_descriptor, ubsan_create_data): Use ubsan_ids
+	instead of static local counters.
+
+	2016-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77665
+	* tree-inline.c (remap_gimple_stmt): Set has_simduid_loops
+	for all IFN_GOMP_SIMD_* internal fns, not just for
+	IFN_GOMP_SIMD_ORDERED_*.
+
+	2016-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77624
+	* builtins.c (fold_builtin_atomic_always_lock_free): Only look through
+	cast to void * if the cast is from some other pointer type.
+
+	2016-09-19  Jakub Jelinek  <jakub@redhat.com>
+		    Jan Hubicka  <jh@suse.cz>
+
+	PR target/77587
+	* cgraph.c (cgraph_node::rtl_info): Pass &avail to
+	ultimate_alias_target call, return NULL if avail < AVAIL_AVAILABLE.
+	Call ultimate_alias_target just once, not up to 4 times.
+
+2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2016-11-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.md (arm_addsi3): Add alternative for addition of
+	general register with general register or ARM constant into SP
+	register.
+
+2016-12-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-12-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	            Stefan Freudenberger  <stefan@reservoir.com>
+
+	PR tree-optimization/78646
+	* gimple-ssa-strength-reduction.c (replace_ref): The pointer
+	addition used for the memory base expression should have the type
+	of the candidate.
+
+2016-12-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-09-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	            Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/72827
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Avoid
+	reg+reg addressing for TImode.
+	(rs6000_legitimate_address_p): Only allow register indirect
+	addressing for TImode, even without TARGET_QUAD_MEMORY.
+
+2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390-modes.def (CCVEQANY, CCVH, CCVHANY, CCVHU)
+	(CCVHUANY): Remove modes.
+	(CCVIH, CCVIHU, CCVIALL, CCVIANY, CCVFALL, CCVFANY): Add modes and
+	documentation.
+	* config/s390/s390.c (s390_match_ccmode_set): Rename cc modes.
+	(s390_expand_vec_compare_scalar): Pick one of the cc consumer
+	modes.
+	(s390_branch_condition_mask): Adjust to use the new cc consumer
+	modes.  The new modes allow for proper reversal in the middle-end.
+	(s390_expand_vec_compare_cc): Determine the proper cc producer and
+	consumer modes for a comparison.
+	* config/s390/s390.md: Rename CCVH to CCVIH and CCVHU to CCVIHU
+	throughout the file.
+	* config/s390/vx-builtins.md: Likewise.
+
+2016-12-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-12-01  Alan Modra  <amodra@gmail.com>
+
+	* gcc/config/rs6000/rs6000.c (insn_is_swappable_p): Properly
+	look inside UNSPEC_VSX_XXSPLTW vec.
+
+2016-12-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2016-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78101
+	* config/rs6000/predicates.md (fusion_addis_mem_combo_load): Add
+	the appropriate checks for SFmode/DFmode load/stores in GPR
+	registers.
+	(fusion_addis_mem_combo_store): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Rename
+	fusion_fpr_* to fusion_vsx_* and add in support for ISA 3.0 scalar
+	d-form instructions for traditional Altivec registers.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/rs6000/rs6000.md (p9 fusion store peephole2): Remove
+	early clobber from scratch register.  Do not match if the register
+	being stored is the scratch register.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_load): Rename fusion_fpr_*
+	to fusion_vsx_* and add in support for ISA 3.0 scalar d-form
+	instructions for traditional Altivec registers.
+	(fusion_fpr_<P:mode>_<FPR_FUSION:mode>_load): Likewise.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_store): Likewise.
+	(fusion_fpr_<P:mode>_<FPR_FUSION:mode>_store): Likewise.
+
+2016-12-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/48863
+	PR inline-asm/70184
+	* tree-ssa-ter.c (temp_expr_table): Add reg_vars_cnt field.
+	(new_temp_expr_table): Initialise reg_vars_cnt.
+	(free_temp_expr_table): Release reg_vars_cnt.
+	(process_replaceable): Add reg_vars_cnt argument, set reg_vars_cnt
+	field of TAB.
+	(find_replaceable_in_bb): Use the above to record register variable
+	write occurrences and cancel replacement across them.
+
+2016-11-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backported from mainline
+	2016-11-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/78426
+	* config/sh/sh-mem.cc (sh_expand_cmpnstr): Use copy_to_mode_reg
+	instead of force_reg.
+	(sh_expand_setmem): Likewise.
+
+2016-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/78429
+	* tree.h (wi::fits_to_boolean_p): New predicate.
+	(wi::fits_to_tree_p): Use it for boolean types.
+	* tree.c (int_fits_type_p): Likewise.
+
+2016-11-24  Martin Liska  <mliska@suse.cz>
+
+	Backported from mainline
+	2016-11-22  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/78309
+	* ipa-icf.c (void sem_item::set_hash): Update m_hash_set.
+	(sem_function::get_hash): Use the new field.
+	(sem_function::parse): Remove an argument from ctor.
+	(sem_variable::parse): Likewise.
+	(sem_variable::get_hash): Use the new field.
+	(sem_item_optimizer::read_section): Use new ctor and set hash.
+	* ipa-icf.h: _hash is removed from sem_item::sem_item,
+	sem_variable::sem_variable, sem_function::sem_function.
+
+2016-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<any_or:code>hi_1): Fix operand 2 constraints.
+	(kxnor<mode>): Return "#" for alternative 0.
+
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/78472
+	* tree.c (gimple_canonical_types_compatible_p): Ignore zero-sized
+	fields.
+
+	2016-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78305
+	* fold-const.c (negate_expr_p): Fix multiplication case.
+
+	2016-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78333
+	* gimplify.c (gimplify_function_tree): Do not instrument
+	GNU extern inline functions.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78228
+	* tree-ssa-phiopt.c (abs_replacement): Avoid introducing
+	undefined behavior.
+
+	2016-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78185
+	* loop-invariant.c (find_exits): Record entering inner
+	loops as possibly exiting to handle infinite sub-loops.
+	* tree-ssa-loop-im.c: Include tree-ssa-loop-niter.h.
+	(fill_always_executed_in_1): Honor infinite child loops.
+
+	2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77855
+	* tree-ssa-pre.c (prune_clobbered_mems): Queue exprs to remove
+	instead of removing the current item while iterating over the set
+	which is not safe.
+
+2016-11-22  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline
+	2016-11-22  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.md (trap): New pattern.
+	* config/tilepro/tilepro.md (trap): Likewise.
+
+2016-11-22  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline
+	2016-11-22  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.md (*zero_extract): Use
+	define_insn_and_split instead of define_insn; Handle pos + size >
+	64.
+	(*sign_extract): Likewise.
+
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in ($(lang_checks_parallelized)): Fix detection
+	of -j argument.
+
+2016-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/77822
+	* config/aarch64/aarch64.md (*tb<optab><mode>1): Use
+	aarch64_simd_shift_imm_<mode> predicate for operand 1.
+	(<optab>, ANY_EXTRACT): Use tighter predicates on operands 2 and 3
+	to restrict them to an appropriate range and add FAIL check if the
+	region they specify is out of range.  Delete useless constraint
+	strings.
+	(*<optab><mode>, ANY_EXTRACT): Add appropriate predicates on operands
+	2 and 3 to restrict their range and add pattern predicate.
+
 2016-11-18  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline

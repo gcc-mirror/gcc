@@ -801,13 +801,19 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       if (join_tgt_in_edge_from_call == NULL)
         return false;
       free_dominance_info (CDI_DOMINATORS);
+      /* We don't want to handle PHIs.  */
+      if (EDGE_COUNT (join_tgt_in_edge_from_call->dest->preds) > 1)
+	join_tgt_bb = split_edge (join_tgt_in_edge_from_call);
+      else
+	join_tgt_bb = join_tgt_in_edge_from_call->dest;
     }
   else
-    join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
+    {
+      join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
+      join_tgt_bb = join_tgt_in_edge_from_call->dest;
+    }
 
   bi_call_bsi = gsi_for_stmt (bi_call);
-
-  join_tgt_bb = join_tgt_in_edge_from_call->dest;
 
   /* Now it is time to insert the first conditional expression
      into bi_call_bb and split this bb so that bi_call is

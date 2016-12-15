@@ -271,6 +271,11 @@ AC_ARG_WITH(gnu-ld,
 gnu_ld_flag="$with_gnu_ld",
 gnu_ld_flag=no)
 
+case $target in
+    *darwin*) ld64_flag=yes;; # Darwin can only use a ld64-compatible linker.
+    *) ld64_flag=no;;
+esac
+
 # With pre-defined ld
 AC_ARG_WITH(ld,
 [AS_HELP_STRING([--with-ld], [arrange to use the specified ld (full pathname)])],
@@ -280,6 +285,8 @@ if test x"${DEFAULT_LINKER+set}" = x"set"; then
     AC_MSG_ERROR([cannot execute: $DEFAULT_LINKER: check --with-ld or env. var. DEFAULT_LINKER])
   elif $DEFAULT_LINKER -v < /dev/null 2>&1 | grep GNU > /dev/null; then
     gnu_ld_flag=yes
+  elif $DEFAULT_LINKER -v < /dev/null 2>&1 | grep ld64- > /dev/null; then
+    ld64_flag=yes
   fi
   AC_DEFINE_UNQUOTED(DEFAULT_LINKER,"$DEFAULT_LINKER",
 	[Define to enable the use of a default linker.])
@@ -3645,6 +3652,20 @@ AC_DEFINE_UNQUOTED(HAVE_LTO_PLUGIN, $gcc_cv_lto_plugin,
   [Define to the level of your linker's plugin support.])
 AC_MSG_RESULT($gcc_cv_lto_plugin)
 
+# Target OS-specific assembler checks.
+
+case "$target_os" in
+  darwin*)
+    gcc_GAS_CHECK_FEATURE([-mmacosx-version-min option],
+      gcc_cv_as_mmacosx_version_min,,
+      [-mmacosx-version-min=10.1], [.text],,
+      [AC_DEFINE(HAVE_AS_MMACOSX_VERSION_MIN_OPTION, 1,
+	[Define if your Mac OS X assembler supports the -mmacos-version-min option.])])
+    ;;
+esac
+
+# Target CPU-specific assembler checks.
+
 case "$target" in
   aarch64*-*-*)
     gcc_GAS_CHECK_FEATURE([-mabi option], gcc_cv_as_aarch64_mabi,,
@@ -5147,6 +5168,59 @@ AC_DEFINE_UNQUOTED(HAVE_LD_COMPRESS_DEBUG, $gcc_cv_ld_compress_debug,
 AC_DEFINE_UNQUOTED(LD_COMPRESS_DEBUG_OPTION, "$gcc_cv_ld_compress_debug_option",
 [Define to the linker option to enable compressed debug sections.])
 AC_MSG_RESULT($gcc_cv_ld_compress_debug)
+
+if test x"$ld64_flag" = x"yes"; then
+
+  # Set defaults for possibly untestable items.
+  gcc_cv_ld64_export_dynamic=0
+
+  if test "$build" = "$host"; then
+    darwin_try_test=1
+  else
+    darwin_try_test=0
+  fi
+
+  # On Darwin, because of FAT library support, it is often possible to execute
+  # exes from compatible archs even when the host differs from the build system.
+  case "$build","$host" in
+    x86_64-*-darwin*,i?86-*-darwin* | powerpc64*-*-darwin*,powerpc*-*-darwin*)
+	darwin_try_test=1;;
+    *) ;;
+  esac
+
+  # If the configurer specified a minimum ld64 version to be supported, then use
+  # that to determine feature support.
+  if test x"${gcc_cv_ld64_version}" != x; then
+    AC_MSG_CHECKING(ld64 specified version)
+    gcc_cv_ld64_major=`echo "$gcc_cv_ld64_version" | sed -e 's/\..*//'`
+    AC_MSG_RESULT($gcc_cv_ld64_major)
+   if test "$gcc_cv_ld64_major" -ge 236; then
+      gcc_cv_ld64_export_dynamic=1
+    fi
+  elif test -x "$gcc_cv_ld" -a "$darwin_try_test" -eq 1; then
+    # If the version was not specified, try to find it.
+    AC_MSG_CHECKING(linker version)
+    if test x"${gcc_cv_ld64_version}" = x; then
+      gcc_cv_ld64_version=`$gcc_cv_ld -v 2>&1 | grep ld64 | sed s/.*ld64-// | awk '{print $1}'`
+    fi
+    AC_MSG_RESULT($gcc_cv_ld64_version)
+
+    AC_MSG_CHECKING(linker for -export_dynamic support)
+    gcc_cv_ld64_export_dynamic=1
+    if $gcc_cv_ld -export_dynamic < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
+      gcc_cv_ld64_export_dynamic=0
+    fi
+    AC_MSG_RESULT($gcc_cv_ld64_export_dynamic)
+  fi
+
+  if test x"${gcc_cv_ld64_version}" != x; then
+    AC_DEFINE_UNQUOTED(LD64_VERSION, "${gcc_cv_ld64_version}",
+      [Define to ld64 version.])
+  fi
+
+  AC_DEFINE_UNQUOTED(LD64_HAS_EXPORT_DYNAMIC, $gcc_cv_ld64_export_dynamic,
+  [Define to 1 if ld64 supports '-export_dynamic'.])
+fi
 
 # --------
 # UNSORTED

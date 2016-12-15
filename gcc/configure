@@ -3631,6 +3631,11 @@ else
 fi
 
 
+case $target in
+    *darwin*) ld64_flag=yes;; # Darwin can only use a ld64-compatible linker.
+    *) ld64_flag=no;;
+esac
+
 # With pre-defined ld
 
 # Check whether --with-ld was given.
@@ -3643,6 +3648,8 @@ if test x"${DEFAULT_LINKER+set}" = x"set"; then
     as_fn_error "cannot execute: $DEFAULT_LINKER: check --with-ld or env. var. DEFAULT_LINKER" "$LINENO" 5
   elif $DEFAULT_LINKER -v < /dev/null 2>&1 | grep GNU > /dev/null; then
     gnu_ld_flag=yes
+  elif $DEFAULT_LINKER -v < /dev/null 2>&1 | grep ld64- > /dev/null; then
+    ld64_flag=yes
   fi
 
 cat >>confdefs.h <<_ACEOF
@@ -18453,7 +18460,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18456 "configure"
+#line 18463 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18559,7 +18566,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18562 "configure"
+#line 18569 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24456,6 +24463,45 @@ _ACEOF
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_lto_plugin" >&5
 $as_echo "$gcc_cv_lto_plugin" >&6; }
 
+# Target OS-specific assembler checks.
+
+case "$target_os" in
+  darwin*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mmacosx-version-min option" >&5
+$as_echo_n "checking assembler for -mmacosx-version-min option... " >&6; }
+if test "${gcc_cv_as_mmacosx_version_min+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_mmacosx_version_min=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mmacosx-version-min=10.1 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_mmacosx_version_min=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mmacosx_version_min" >&5
+$as_echo "$gcc_cv_as_mmacosx_version_min" >&6; }
+if test $gcc_cv_as_mmacosx_version_min = yes; then
+
+$as_echo "#define HAVE_AS_MMACOSX_VERSION_MIN_OPTION 1" >>confdefs.h
+
+fi
+    ;;
+esac
+
+# Target CPU-specific assembler checks.
+
 case "$target" in
   aarch64*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mabi option" >&5
@@ -28068,6 +28114,71 @@ _ACEOF
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_compress_debug" >&5
 $as_echo "$gcc_cv_ld_compress_debug" >&6; }
+
+if test x"$ld64_flag" = x"yes"; then
+
+  # Set defaults for possibly untestable items.
+  gcc_cv_ld64_export_dynamic=0
+
+  if test "$build" = "$host"; then
+    darwin_try_test=1
+  else
+    darwin_try_test=0
+  fi
+
+  # On Darwin, because of FAT library support, it is often possible to execute
+  # exes from compatible archs even when the host differs from the build system.
+  case "$build","$host" in
+    x86_64-*-darwin*,i?86-*-darwin* | powerpc64*-*-darwin*,powerpc*-*-darwin*)
+	darwin_try_test=1;;
+    *) ;;
+  esac
+
+  # If the configurer specified a minimum ld64 version to be supported, then use
+  # that to determine feature support.
+  if test x"${gcc_cv_ld64_version}" != x; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking ld64 specified version" >&5
+$as_echo_n "checking ld64 specified version... " >&6; }
+    gcc_cv_ld64_major=`echo "$gcc_cv_ld64_version" | sed -e 's/\..*//'`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_major" >&5
+$as_echo "$gcc_cv_ld64_major" >&6; }
+   if test "$gcc_cv_ld64_major" -ge 236; then
+      gcc_cv_ld64_export_dynamic=1
+    fi
+  elif test -x "$gcc_cv_ld" -a "$darwin_try_test" -eq 1; then
+    # If the version was not specified, try to find it.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker version" >&5
+$as_echo_n "checking linker version... " >&6; }
+    if test x"${gcc_cv_ld64_version}" = x; then
+      gcc_cv_ld64_version=`$gcc_cv_ld -v 2>&1 | grep ld64 | sed s/.*ld64-// | awk '{print $1}'`
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_version" >&5
+$as_echo "$gcc_cv_ld64_version" >&6; }
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for -export_dynamic support" >&5
+$as_echo_n "checking linker for -export_dynamic support... " >&6; }
+    gcc_cv_ld64_export_dynamic=1
+    if $gcc_cv_ld -export_dynamic < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
+      gcc_cv_ld64_export_dynamic=0
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_export_dynamic" >&5
+$as_echo "$gcc_cv_ld64_export_dynamic" >&6; }
+  fi
+
+  if test x"${gcc_cv_ld64_version}" != x; then
+
+cat >>confdefs.h <<_ACEOF
+#define LD64_VERSION "${gcc_cv_ld64_version}"
+_ACEOF
+
+  fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD64_HAS_EXPORT_DYNAMIC $gcc_cv_ld64_export_dynamic
+_ACEOF
+
+fi
 
 # --------
 # UNSORTED

@@ -6404,7 +6404,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	   can be used in constant-expressions.  */
 	if (!cast_valid_in_integral_constant_expression_p (type)
 	    && cp_parser_non_integral_constant_expression (parser, NIC_CAST))
-	  return error_mark_node;
+	  {
+	    postfix_expression = error_mark_node;
+	    break;
+	  }
 
 	switch (keyword)
 	  {
@@ -6484,7 +6487,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	parser->type_definition_forbidden_message = saved_message;
 	/* `typeid' may not appear in an integral constant expression.  */
 	if (cp_parser_non_integral_constant_expression (parser, NIC_TYPEID))
-	  return error_mark_node;
+	  postfix_expression = error_mark_node;
       }
       break;
 
@@ -6576,23 +6579,28 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    /*cast_p=*/false, /*allow_expansion_p=*/true,
 		    /*non_constant_p=*/NULL);
 	if (vec == NULL)
-	  return error_mark_node;
+	  {
+	    postfix_expression = error_mark_node;
+	    break;
+	  }
 
 	FOR_EACH_VEC_ELT (*vec, i, p)
 	  mark_exp_read (p);
 
 	if (vec->length () == 2)
-	  return build_x_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1],
-					 tf_warning_or_error);
+	  postfix_expression
+	    = build_x_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1],
+				     tf_warning_or_error);
 	else if (vec->length () == 3)
-	  return build_x_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2],
-					 tf_warning_or_error);
+	  postfix_expression
+	    = build_x_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2],
+				     tf_warning_or_error);
 	else
-	{
-	  error_at (loc, "wrong number of arguments to "
-	      "%<__builtin_shuffle%>");
-	  return error_mark_node;
-	}
+	  {
+	    error_at (loc, "wrong number of arguments to "
+			   "%<__builtin_shuffle%>");
+	    postfix_expression = error_mark_node;
+	  }
 	break;
       }
 
@@ -24058,8 +24066,12 @@ cp_parser_std_attribute_list (cp_parser *parser)
       if (token->type == CPP_ELLIPSIS)
 	{
 	  cp_lexer_consume_token (parser->lexer);
-	  TREE_VALUE (attribute)
-	    = make_pack_expansion (TREE_VALUE (attribute));
+	  if (attribute == NULL_TREE)
+	    error_at (token->location,
+		      "expected attribute before %<...%>");
+	  else
+	    TREE_VALUE (attribute)
+	      = make_pack_expansion (TREE_VALUE (attribute));
 	  token = cp_lexer_peek_token (parser->lexer);
 	}
       if (token->type != CPP_COMMA)
@@ -25533,7 +25545,8 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
 	      tree type = INNERMOST_TEMPLATE_PARMS (parm_type);
 	      tree parm_list = TREE_VEC_ELT (parameter_list, 1);
 	      tree parm = INNERMOST_TEMPLATE_PARMS (parm_list);
-	      if (TREE_TYPE (parm) != TREE_TYPE (type)
+	      if (parm == error_mark_node
+		  || TREE_TYPE (parm) != TREE_TYPE (type)
 		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 		ok = false;
 	    }

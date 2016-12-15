@@ -1,3 +1,31 @@
+2016-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.h: Use standard GPLv3 with runtime exception
+	boilerplate.
+
+2016-12-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from mainline
+	2016-12-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgomp/config/rtems/pool.h (gomp_thread_pool_reservoir): Use
+	pthread_spinlock_t instead of gomp_mutex_t lock.
+	(gomp_get_thread_pool): Likewise.
+	(gomp_release_thread_pool): Likewise.
+	* libgomp/config/rtems/proc.c (allocate_thread_pool_reservoir):
+	Likewise.
+
+2016-12-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from mainline
+	2016-12-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/pool.h (gomp_get_thread_pool): Return proper
+	thread pool in case nthreads == 1.
+
 2016-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

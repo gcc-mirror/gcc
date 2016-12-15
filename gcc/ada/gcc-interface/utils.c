@@ -1622,10 +1622,7 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
   character subtypes with RM_Size = Esize = CHAR_TYPE_SIZE into signed
   types.  The idea is to ensure that the bit pattern contained in the
   Esize'd objects is not changed, even though the numerical value will
-  be interpreted differently depending on the signedness.
-
-  For character types, the bounds are implicit and, therefore, need to
-  be adjusted.  Morever, the debug info needs the unsigned version.  */
+  be interpreted differently depending on the signedness.  */
 
 void
 finish_character_type (tree char_type)
@@ -1639,11 +1636,32 @@ finish_character_type (tree char_type)
        ? unsigned_char_type_node
        : copy_type (gnat_unsigned_type_for (char_type)));
 
+  /* Create an unsigned version of the type and set it as debug type.  */
   TYPE_NAME (unsigned_char_type) = TYPE_NAME (char_type);
   TYPE_STRING_FLAG (unsigned_char_type) = TYPE_STRING_FLAG (char_type);
   TYPE_ARTIFICIAL (unsigned_char_type) = TYPE_ARTIFICIAL (char_type);
-
   SET_TYPE_DEBUG_TYPE (char_type, unsigned_char_type);
+
+  /* If this is a subtype, make the debug type a subtype of the debug type
+     of the base type and convert literal RM bounds to unsigned.  */
+  if (TREE_TYPE (char_type))
+    {
+      tree base_unsigned_char_type = TYPE_DEBUG_TYPE (TREE_TYPE (char_type));
+      tree min_value = TYPE_RM_MIN_VALUE (char_type);
+      tree max_value = TYPE_RM_MAX_VALUE (char_type);
+
+      if (TREE_CODE (min_value) == INTEGER_CST)
+	min_value = fold_convert (base_unsigned_char_type, min_value);
+      if (TREE_CODE (max_value) == INTEGER_CST)
+	max_value = fold_convert (base_unsigned_char_type, max_value);
+
+      TREE_TYPE (unsigned_char_type) = base_unsigned_char_type;
+      SET_TYPE_RM_MIN_VALUE (unsigned_char_type, min_value);
+      SET_TYPE_RM_MAX_VALUE (unsigned_char_type, max_value);
+    }
+
+  /* Adjust the RM bounds of the original type to unsigned; that's especially
+     important for types since they are implicit in this case.  */
   SET_TYPE_RM_MIN_VALUE (char_type, TYPE_MIN_VALUE (unsigned_char_type));
   SET_TYPE_RM_MAX_VALUE (char_type, TYPE_MAX_VALUE (unsigned_char_type));
 }

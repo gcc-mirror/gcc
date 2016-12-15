@@ -8982,10 +8982,10 @@ int_fits_type_p (const_tree c, const_tree type)
   bool ok_for_low_bound, ok_for_high_bound;
   signop sgn_c = TYPE_SIGN (TREE_TYPE (c));
 
-  /* Short-circuit boolean types since various transformations assume that
-     they can only take values 0 and 1.  */
+  /* Non-standard boolean types can have arbitrary precision but various
+     transformations assume that they can only take values 0 and +/-1.  */
   if (TREE_CODE (type) == BOOLEAN_TYPE)
-    return integer_zerop (c) || integer_onep (c);
+    return wi::fits_to_boolean_p (c, type);
 
 retry:
   type_low_bound = TYPE_MIN_VALUE (type);
@@ -13506,10 +13506,14 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 	     f1 || f2;
 	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	  {
-	    /* Skip non-fields.  */
-	    while (f1 && TREE_CODE (f1) != FIELD_DECL)
+	    /* Skip non-fields and zero-sized fields.  */
+	    while (f1 && (TREE_CODE (f1) != FIELD_DECL
+			  || (DECL_SIZE (f1)
+			      && integer_zerop (DECL_SIZE (f1)))))
 	      f1 = TREE_CHAIN (f1);
-	    while (f2 && TREE_CODE (f2) != FIELD_DECL)
+	    while (f2 && (TREE_CODE (f2) != FIELD_DECL
+			  || (DECL_SIZE (f2)
+			      && integer_zerop (DECL_SIZE (f2)))))
 	      f2 = TREE_CHAIN (f2);
 	    if (!f1 || !f2)
 	      break;
