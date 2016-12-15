@@ -88,7 +88,7 @@ static void arm_add_gc_roots (void);
 static int arm_gen_constant (enum rtx_code, machine_mode, rtx,
 			     unsigned HOST_WIDE_INT, rtx, rtx, int, int);
 static unsigned bit_count (unsigned long);
-static unsigned feature_count (const arm_feature_set*);
+static unsigned bitmap_popcount (const sbitmap);
 static int arm_address_register_rtx_p (rtx, int);
 static int arm_legitimate_index_p (machine_mode, rtx, RTX_CODE, int);
 static bool is_called_in_ARM_mode (tree);
@@ -790,6 +790,10 @@ unsigned int tune_flags = 0;
 /* The highest ARM architecture version supported by the
    target.  */
 enum base_architecture arm_base_arch = BASE_ARCH_0;
+
+/* Active target architecture and tuning.  */
+
+struct arm_build_target arm_active_target;
 
 /* The following are used in the arm.md file as equivalents to bits
    in the above two flag variables.  */
@@ -2376,12 +2380,17 @@ bit_count (unsigned long value)
   return count;
 }
 
-/* Return the number of features in feature-set SET.  */
+/* Return the number of bits set in BMAP.  */
 static unsigned
-feature_count (const arm_feature_set * set)
+bitmap_popcount (const sbitmap bmap)
 {
-  return (bit_count (ARM_FSET_CPU1 (*set))
-	  + bit_count (ARM_FSET_CPU2 (*set)));
+  unsigned int count = 0;
+  unsigned int n = 0;
+  sbitmap_iterator sbi;
+
+  EXECUTE_IF_SET_IN_BITMAP (bmap, 0, n, sbi)
+    count++;
+  return count;
 }
 
 typedef struct
@@ -3038,100 +3047,149 @@ arm_option_override_internal (struct gcc_options *opts,
 #endif
 }
 
-/* Fix up any incompatible options that the user has specified.  */
+/* Convert a static initializer array of feature bits to sbitmap
+   representation.  */
 static void
-arm_option_override (void)
+arm_initialize_isa (sbitmap isa, const enum isa_feature *isa_bits)
+{
+  bitmap_clear (isa);
+  while (*isa_bits != isa_nobit)
+    bitmap_set_bit (isa, *(isa_bits++));
+}
+
+static sbitmap isa_fpubits;
+
+/* Configure a build target TARGET from the user-specified options OPTS and
+   OPTS_SET.  If WARN_COMPATIBLE, emit a diagnostic if both the CPU and
+   architecture have been specified, but the two are not identical.  */
+static void
+arm_configure_build_target (struct arm_build_target *target,
+			    struct gcc_options *opts,
+			    struct gcc_options *opts_set,
+			    bool warn_compatible)
 {
   arm_selected_arch = NULL;
   arm_selected_cpu = NULL;
   arm_selected_tune = NULL;
 
-  if (global_options_set.x_arm_arch_option)
-    arm_selected_arch = &all_architectures[arm_arch_option];
+  bitmap_clear (target->isa);
+  target->core_name = NULL;
+  target->arch_name = NULL;
 
-  if (global_options_set.x_arm_cpu_option)
+  if (opts_set->x_arm_arch_option)
+    arm_selected_arch = &all_architectures[opts->x_arm_arch_option];
+
+  if (opts_set->x_arm_cpu_option)
     {
-      arm_selected_cpu = &all_cores[(int) arm_cpu_option];
-      arm_selected_tune = &all_cores[(int) arm_cpu_option];
+      arm_selected_cpu = &all_cores[(int) opts->x_arm_cpu_option];
+      arm_selected_tune = &all_cores[(int) opts->x_arm_cpu_option];
     }
 
-  if (global_options_set.x_arm_tune_option)
-    arm_selected_tune = &all_cores[(int) arm_tune_option];
-
-#ifdef SUBTARGET_OVERRIDE_OPTIONS
-  SUBTARGET_OVERRIDE_OPTIONS;
-#endif
+  if (opts_set->x_arm_tune_option)
+    arm_selected_tune = &all_cores[(int) opts->x_arm_tune_option];
 
   if (arm_selected_arch)
     {
+      arm_initialize_isa (target->isa, arm_selected_arch->isa_bits);
+
       if (arm_selected_cpu)
 	{
-	  const arm_feature_set tuning_flags = ARM_FSET_MAKE_CPU1 (FL_TUNE);
-	  arm_feature_set selected_flags;
-	  ARM_FSET_XOR (selected_flags, arm_selected_cpu->flags,
-			arm_selected_arch->flags);
-	  ARM_FSET_EXCLUDE (selected_flags, selected_flags, tuning_flags);
-	  /* Check for conflict between mcpu and march.  */
-	  if (!ARM_FSET_IS_EMPTY (selected_flags))
+	  auto_sbitmap cpu_isa (isa_num_bits);
+
+	  arm_initialize_isa (cpu_isa, arm_selected_cpu->isa_bits);
+	  bitmap_xor (cpu_isa, cpu_isa, target->isa);
+	  /* Ignore (for now) any bits that might be set by -mfpu.  */
+	  bitmap_and_compl (cpu_isa, cpu_isa, isa_fpubits);
+
+	  if (!bitmap_empty_p (cpu_isa))
 	    {
-	      warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
-		       arm_selected_cpu->name, arm_selected_arch->name);
+	      if (warn_compatible)
+		warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
+			 arm_selected_cpu->name, arm_selected_arch->name);
 	      /* -march wins for code generation.
-	         -mcpu wins for default tuning.  */
+		 -mcpu wins for default tuning.  */
 	      if (!arm_selected_tune)
 		arm_selected_tune = arm_selected_cpu;
 
 	      arm_selected_cpu = arm_selected_arch;
 	    }
 	  else
-	    /* -mcpu wins.  */
-	    arm_selected_arch = NULL;
+	    {
+	      /* Architecture and CPU are essentially the same.
+		 Prefer the CPU setting.  */
+	      arm_selected_arch = NULL;
+	    }
 	}
       else
-	/* Pick a CPU based on the architecture.  */
-	arm_selected_cpu = arm_selected_arch;
+	{
+	  /* Pick a CPU based on the architecture.  */
+	  arm_selected_cpu = arm_selected_arch;
+	  target->arch_name = arm_selected_arch->name;
+	}
     }
 
   /* If the user did not specify a processor, choose one for them.  */
   if (!arm_selected_cpu)
     {
       const struct processors * sel;
-      arm_feature_set sought = ARM_FSET_EMPTY;;
+      auto_sbitmap sought_isa (isa_num_bits);
+      bitmap_clear (sought_isa);
+      auto_sbitmap default_isa (isa_num_bits);
 
       arm_selected_cpu = &all_cores[TARGET_CPU_DEFAULT];
       gcc_assert (arm_selected_cpu->name);
 
+      /* RWE: All of the selection logic below (to the end of this
+	 'if' clause) looks somewhat suspect.  It appears to be mostly
+	 there to support forcing thumb support when the default CPU
+	 does not have thumb (somewhat dubious in terms of what the
+	 user might be expecting).  I think it should be removed once
+	 support for the pre-thumb era cores is removed.  */
       sel = arm_selected_cpu;
-      insn_flags = sel->flags;
+      arm_initialize_isa (default_isa, sel->isa_bits);
 
-      /* Now check to see if the user has specified some command line
-	 switch that require certain abilities from the cpu.  */
+      /* Now check to see if the user has specified any command line
+	 switches that require certain abilities from the cpu.  */
 
       if (TARGET_INTERWORK || TARGET_THUMB)
 	{
-	  ARM_FSET_ADD_CPU1 (sought, FL_THUMB);
-	  ARM_FSET_ADD_CPU1 (sought, FL_MODE32);
+	  bitmap_set_bit (sought_isa, isa_bit_thumb);
+	  bitmap_set_bit (sought_isa, isa_bit_mode32);
 
 	  /* There are no ARM processors that support both APCS-26 and
-	     interworking.  Therefore we force FL_MODE26 to be removed
-	     from insn_flags here (if it was set), so that the search
-	     below will always be able to find a compatible processor.  */
-	  ARM_FSET_DEL_CPU1 (insn_flags, FL_MODE26);
+	     interworking.  Therefore we forcibly remove MODE26 from
+	     from the isa features here (if it was set), so that the
+	     search below will always be able to find a compatible
+	     processor.  */
+	  bitmap_clear_bit (default_isa, isa_bit_mode26);
 	}
 
-      if (!ARM_FSET_IS_EMPTY (sought)
-	  && !(ARM_FSET_CPU_SUBSET (sought, insn_flags)))
+      /* If there are such requirements and the default CPU does not
+	 satisfy them, we need to run over the complete list of
+	 cores looking for one that is satisfactory.  */
+      if (!bitmap_empty_p (sought_isa)
+	  && !bitmap_subset_p (sought_isa, default_isa))
 	{
+	  auto_sbitmap candidate_isa (isa_num_bits);
+	  /* We're only interested in a CPU with at least the
+	     capabilities of the default CPU and the required
+	     additional features.  */
+	  bitmap_ior (default_isa, default_isa, sought_isa);
+
 	  /* Try to locate a CPU type that supports all of the abilities
 	     of the default CPU, plus the extra abilities requested by
 	     the user.  */
 	  for (sel = all_cores; sel->name != NULL; sel++)
-	    if (ARM_FSET_CPU_SUBSET (sought, sel->flags))
-	      break;
+	    {
+	      arm_initialize_isa (candidate_isa, sel->isa_bits);
+	      /* An exact match?  */
+	      if (bitmap_equal_p (default_isa, candidate_isa))
+		break;
+	    }
 
 	  if (sel->name == NULL)
 	    {
-	      unsigned current_bit_count = 0;
+	      unsigned current_bit_count = isa_num_bits;
 	      const struct processors * best_fit = NULL;
 
 	      /* Ideally we would like to issue an error message here
@@ -3141,32 +3199,34 @@ arm_option_override (void)
 		 ought to use the -mcpu=<name> command line option to
 		 override the default CPU type.
 
-		 If we cannot find a cpu that has both the
-		 characteristics of the default cpu and the given
+		 If we cannot find a CPU that has exactly the
+		 characteristics of the default CPU and the given
 		 command line options we scan the array again looking
-		 for a best match.  */
+		 for a best match.  The best match must have at least
+		 the capabilities of the perfect match.  */
 	      for (sel = all_cores; sel->name != NULL; sel++)
 		{
-		  arm_feature_set required = ARM_FSET_EMPTY;
-		  ARM_FSET_UNION (required, sought, insn_flags);
-		  if (ARM_FSET_CPU_SUBSET (required, sel->flags))
+		  arm_initialize_isa (candidate_isa, sel->isa_bits);
+
+		  if (bitmap_subset_p (default_isa, candidate_isa))
 		    {
 		      unsigned count;
-		      arm_feature_set flags;
-		      ARM_FSET_INTER (flags, sel->flags, insn_flags);
-		      count = feature_count (&flags);
 
-		      if (count >= current_bit_count)
+		      bitmap_and_compl (candidate_isa, candidate_isa,
+					default_isa);
+		      count = bitmap_popcount (candidate_isa);
+
+		      if (count < current_bit_count)
 			{
 			  best_fit = sel;
 			  current_bit_count = count;
 			}
 		    }
-		}
-	      gcc_assert (best_fit);
-	      sel = best_fit;
-	    }
 
+		  gcc_assert (best_fit);
+		  sel = best_fit;
+		}
+	    }
 	  arm_selected_cpu = sel;
 	}
     }
@@ -3175,6 +3235,29 @@ arm_option_override (void)
   /* The selected cpu may be an architecture, so lookup tuning by core ID.  */
   if (!arm_selected_tune)
     arm_selected_tune = &all_cores[arm_selected_cpu->core];
+
+  target->arch_pp_name = arm_selected_cpu->arch;
+  target->tune_flags = arm_selected_tune->tune_flags;
+  target->tune = arm_selected_tune->tune;
+}
+
+/* Fix up any incompatible options that the user has specified.  */
+static void
+arm_option_override (void)
+{
+  static const enum isa_feature fpu_bitlist[] = { ISA_ALL_FPU, isa_nobit };
+
+  isa_fpubits = sbitmap_alloc (isa_num_bits);
+  arm_initialize_isa (isa_fpubits, fpu_bitlist);
+
+  arm_active_target.isa = sbitmap_alloc (isa_num_bits);
+
+  arm_configure_build_target (&arm_active_target, &global_options,
+			      &global_options_set, true);
+
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
 
   sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_selected_cpu->arch);
   insn_flags = arm_selected_cpu->flags;
