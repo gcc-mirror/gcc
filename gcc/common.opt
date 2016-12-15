@@ -2152,9 +2152,9 @@ fselective-scheduling2
 Common Report Var(flag_selective_scheduling2) Optimization
 Run selective scheduling after reload.
 
-fself-test
-Common Undocumented Var(flag_self_test)
-Run self-tests.
+fself-test=
+Common Undocumented Joined Var(flag_self_test)
+Run self-tests, using the given path to locate test files.
 
 fsel-sched-pipelining
 Common Report Var(flag_sel_sched_pipelining) Init(0) Optimization

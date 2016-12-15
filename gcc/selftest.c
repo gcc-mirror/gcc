@@ -198,6 +198,21 @@ read_file (const location &loc, const char *path)
   return result;
 }
 
+/* The path of SRCDIR/testsuite/selftests.  */
+
+const char *path_to_selftest_files = NULL;
+
+/* Convert a path relative to SRCDIR/testsuite/selftests
+   to a real path (either absolute, or relative to pwd).
+   The result should be freed by the caller.  */
+
+char *
+locate_file (const char *name)
+{
+  ASSERT_NE (NULL, path_to_selftest_files);
+  return concat (path_to_selftest_files, "/", name, NULL);
+}
+
 /* Selftests for libiberty.  */
 
 /* Verify that xstrndup generates EXPECTED when called on SRC and N.  */
@@ -281,6 +296,18 @@ test_read_file ()
   free (buf);
 }
 
+/* Verify locate_file (and read_file).  */
+
+static void
+test_locate_file ()
+{
+  char *path = locate_file ("example.txt");
+  char *buf = read_file (SELFTEST_LOCATION, path);
+  ASSERT_STREQ ("example of a selftest file\n", buf);
+  free (buf);
+  free (path);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -290,6 +317,7 @@ selftest_c_tests ()
   test_assertions ();
   test_named_temp_file ();
   test_read_file ();
+  test_locate_file ();
 }
 
 } // namespace selftest

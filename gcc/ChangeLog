@@ -1,3 +1,21 @@
+2016-12-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (SELFTEST_FLAGS): Add path argument to -fself-test.
+	(s-selftest): Add dependency on the selftests data directory.
+	* common.opt (fself-test): Rename to...
+	(fself-test=): ...this, documenting the meaning of the argument.
+	* selftest-run-tests.c (along): Likewise.
+	* selftest-run-tests.c: Include "options.h".
+	(selftest::run_tests): Initialize selftest::path_to_selftest_files
+	from flag_self_test.
+	* selftest.c (selftest::path_to_selftest_files): New global.
+	(selftest::locate_file): New function.
+	(selftest::test_locate_file): New function.
+	(selftest_c_tests): Likewise.
+	(selftest::selftest_c_tests): Call test_locate_file.
+	* selftest.h (selftest::locate_file): New decl.
+	(selftest::path_to_selftest_files): New decl.
+
 2016-12-14  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-cores.def: Add -1 as the variant to all
