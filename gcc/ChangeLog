@@ -1,3 +1,48 @@
+2016-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-cp.c (class ipcp_bits_lattice): Formatting fixes.
+	(print_ipcp_constant_value): Likewise.
+	(ipcp_cloning_candidate_p): Likewise.
+	(ipcp_bits_lattice::get_value_and_mask): Likewise.
+	(ipcp_bits_lattice::meet_with_1): Likewise.
+	(ipcp_bits_lattice::meet_with): Likewise.
+	(initialize_node_lattices): Likewise.
+	(ipcp_lattice::add_value): Likewise.
+	(propagate_vals_accross_pass_through): Renamed to ...
+	(propagate_vals_across_pass_through): ... this function.
+	(propagate_vals_accross_ancestor): Renamed to ...
+	(propagate_vals_across_ancestor): ... this.
+	(propagate_scalar_accross_jump_function): Renamed to ...
+	(propagate_scalar_across_jump_function): ... this.
+	Adjust calls to above functions.
+	(propagate_context_accross_jump_function): Renamed to ...
+	(propagate_context_across_jump_function): ... this.
+	(propagate_bits_accross_jump_function): Renamed to ...
+	(propagate_bits_accross_jump_function): ... this.  Formatting fixes.
+	(propagate_vr_accross_jump_function): Renamed to ...
+	(propagate_vr_across_jump_function): ... this.
+	(merge_agg_lats_step): Formatting fixes.
+	(propagate_constants_accross_call): Renamed to ...
+	(propagate_constants_across_call): ... this.  Adjust calls to above
+	functions.
+	(ipa_get_indirect_edge_target_1): Formatting fixes.
+	(gather_context_independent_values): Likewise.
+	(estimate_local_effects): Likewise.
+	(add_all_node_vals_to_toposort): Likewise.
+	(propagate_constants_topo): Adjust calls to above functions.
+	(get_replacement_map): Formatting fixes.
+	(dump_profile_updates): Likewise.
+	(update_profiling_info): Likewise.
+	(update_specialized_profile): Likewise.
+	(create_specialized_node): Likewise.
+	(find_more_contexts_for_caller_subset): Likewise.
+	(decide_whether_version_node): Likewise.
+	(identify_dead_nodes): Likewise.
+	(ipcp_decision_stage): Likewise.
+	(ipcp_store_bits_results): Likewise.
+	(ipcp_store_vr_results): Likewise.
+	(ipcp_driver): Likewise.
+
 2016-12-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/78680
