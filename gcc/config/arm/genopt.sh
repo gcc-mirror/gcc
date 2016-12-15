@@ -77,19 +77,22 @@ awk -F'[(, 	]+' 'BEGIN {
 
 cat <<EOF
 Enum
-Name(arm_fpu) Type(int)
+Name(arm_fpu) Type(enum fpu_type)
 Known ARM FPUs (for use with the -mfpu= option):
 
 EOF
 
-awk -F'[(, 	]+' 'BEGIN {
-    value = 0
-}
+awk -F'[(, 	]+' '
 /^ARM_FPU/ {
     name = $2
+    enum = $3
     gsub("\"", "", name)
     print "EnumValue"
-    print "Enum(arm_fpu) String(" name ") Value(" value ")"
+    print "Enum(arm_fpu) String(" name ") Value(TARGET_FPU_" enum ")"
     print ""
-    value++
+}
+END {
+    print "EnumValue"
+    print "Enum(arm_fpu) String(auto) Value(TARGET_FPU_auto)"
 }' $1/arm-fpus.def
+

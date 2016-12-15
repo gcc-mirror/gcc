@@ -2328,7 +2328,8 @@ char arm_arch_name[] = "__ARM_ARCH_PROFILE__";
 
 const struct arm_fpu_desc all_fpus[] =
 {
-#define ARM_FPU(NAME, ISA)		\
+#undef ARM_FPU
+#define ARM_FPU(NAME, CNAME, ISA)	\
   { NAME, {ISA isa_nobit} },
 #include "arm-fpus.def"
 #undef ARM_FPU
@@ -3255,12 +3256,19 @@ arm_configure_build_target (struct arm_build_target *target,
 
   gcc_assert (arm_selected_cpu);
 
-  arm_selected_fpu = &all_fpus[opts->x_arm_fpu_index];
-  auto_sbitmap fpu_bits (isa_num_bits);
+  if (opts->x_arm_fpu_index != TARGET_FPU_auto)
+    {
+      arm_selected_fpu = &all_fpus[opts->x_arm_fpu_index];
+      auto_sbitmap fpu_bits (isa_num_bits);
 
-  arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
-  bitmap_and_compl (target->isa, target->isa, isa_all_fpubits);
-  bitmap_ior (target->isa, target->isa, fpu_bits);
+      arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
+      bitmap_and_compl (target->isa, target->isa, isa_all_fpubits);
+      bitmap_ior (target->isa, target->isa, fpu_bits);
+    }
+  else if (target->core_name == NULL)
+    /* To support this we need to be able to parse FPU feature options
+       from the architecture string.  */
+    sorry ("-mfpu=auto not currently supported without an explicit CPU.");
 
   /* The selected cpu may be an architecture, so lookup tuning by core ID.  */
   if (!arm_selected_tune)
@@ -3295,6 +3303,7 @@ arm_option_override (void)
     {
       const char *target_fpu_name;
       bool ok;
+      int fpu_index;
 
 #ifdef FPUTYPE_DEFAULT
       target_fpu_name = FPUTYPE_DEFAULT;
@@ -3302,9 +3311,10 @@ arm_option_override (void)
       target_fpu_name = "vfp";
 #endif
 
-      ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &arm_fpu_index,
+      ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &fpu_index,
 				  CL_TARGET);
       gcc_assert (ok);
+      arm_fpu_index = (enum fpu_type) fpu_index;
     }
 
   /* Create the default target_options structure.  We need this early
@@ -3448,7 +3458,11 @@ arm_option_override (void)
 	arm_pcs_default = ARM_PCS_AAPCS_IWMMXT;
       else if (arm_float_abi == ARM_FLOAT_ABI_HARD
 	       && TARGET_HARD_FLOAT)
-	arm_pcs_default = ARM_PCS_AAPCS_VFP;
+	{
+	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
+	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv2))
+	    error ("-mfloat-abi=hard: selected processor lacks an FPU");
+	}
       else
 	arm_pcs_default = ARM_PCS_AAPCS;
     }
@@ -30210,14 +30224,17 @@ static void
 arm_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 {
   int flags = ptr->x_target_flags;
-  const struct arm_fpu_desc *fpu_desc = &all_fpus[ptr->x_arm_fpu_index];
+  const char *fpu_name;
+
+  fpu_name = (ptr->x_arm_fpu_index == TARGET_FPU_auto
+	      ? "auto" : all_fpus[ptr->x_arm_fpu_index].name);
 
   fprintf (file, "%*sselected arch %s\n", indent, "",
 	   TARGET_THUMB2_P (flags) ? "thumb2" :
 	   TARGET_THUMB_P (flags) ? "thumb1" :
 	   "arm");
 
-  fprintf (file, "%*sselected fpu %s\n", indent, "", fpu_desc->name);
+  fprintf (file, "%*sselected fpu %s\n", indent, "", fpu_name);
 }
 
 /* Hook to determine if one function can safely inline another.  */
@@ -30319,12 +30336,22 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 
       else if (!strncmp (q, "fpu=", 4))
 	{
+	  int fpu_index;
 	  if (! opt_enum_arg_to_value (OPT_mfpu_, q+4,
-				       &opts->x_arm_fpu_index, CL_TARGET))
+				       &fpu_index, CL_TARGET))
 	    {
 	      error ("invalid fpu for attribute(target(\"%s\"))", q);
 	      return false;
 	    }
+	  if (fpu_index == TARGET_FPU_auto)
+	    {
+	      /* This doesn't really make sense until we support
+		 general dynamic selection of the architecture and all
+		 sub-features.  */
+	      sorry ("auto fpu selection not currently permitted here");
+	      return false;
+	    }
+	  opts->x_arm_fpu_index = (enum fpu_type) fpu_index;
 	}
       else
 	{
@@ -30465,6 +30492,12 @@ arm_identify_fpu_from_isa (sbitmap isa)
   auto_sbitmap cand_fpubits (isa_num_bits);
 
   bitmap_and (fpubits, isa, isa_all_fpubits);
+
+  /* If there are no ISA feature bits relating to the FPU, we must be
+     doing soft-float.  */
+  if (bitmap_empty_p (fpubits))
+    return "softvfp";
+
   for (unsigned int i = 0; i < ARRAY_SIZE (all_fpus); i++)
     {
       arm_initialize_isa (cand_fpubits, all_fpus[i].isa_bits);

@@ -19,31 +19,33 @@
 
 /* Before using #include to read this file, define a macro:
 
-      ARM_FPU(NAME, ISA)
+      ARM_FPU(NAME, CNAME, ISA)
 
-   The arguments are the fields of struct arm_fpu_desc.
+   NAME is the publicly visible option name.
+   CNAME is a C-compatible variable name substring.
+   ISA is the list of feature bits that this FPU provides.
 
    genopt.sh assumes no whitespace up to the first "," in each entry.  */
 
-ARM_FPU("vfp",			ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL))
-ARM_FPU("vfpv2",		ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL))
-ARM_FPU("vfpv3",		ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_D32))
-ARM_FPU("vfpv3-fp16",		ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_D32) ISA_FEAT(isa_bit_fp16conv))
-ARM_FPU("vfpv3-d16",		ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_DBL))
-ARM_FPU("vfpv3-d16-fp16",	ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_DBL) ISA_FEAT(isa_bit_fp16conv))
-ARM_FPU("vfpv3xd",		ISA_FEAT(ISA_VFPv3))
-ARM_FPU("vfpv3xd-fp16",		ISA_FEAT(ISA_VFPv3) ISA_FEAT(isa_bit_fp16conv))
-ARM_FPU("neon",			ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_NEON))
-ARM_FPU("neon-vfpv3",		ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_NEON))
-ARM_FPU("neon-fp16",		ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_NEON) ISA_FEAT(isa_bit_fp16conv))
-ARM_FPU("vfpv4",		ISA_FEAT(ISA_VFPv4) ISA_FEAT(ISA_FP_D32))
-ARM_FPU("neon-vfpv4",		ISA_FEAT(ISA_VFPv4) ISA_FEAT(ISA_NEON))
-ARM_FPU("vfpv4-d16",		ISA_FEAT(ISA_VFPv4) ISA_FEAT(ISA_FP_DBL))
-ARM_FPU("fpv4-sp-d16",		ISA_FEAT(ISA_VFPv4))
-ARM_FPU("fpv5-sp-d16",		ISA_FEAT(ISA_FPv5))
-ARM_FPU("fpv5-d16",		ISA_FEAT(ISA_FPv5) ISA_FEAT(ISA_FP_DBL))
-ARM_FPU("fp-armv8",		ISA_FEAT(ISA_FP_ARMv8) ISA_FEAT(ISA_FP_D32))
-ARM_FPU("neon-fp-armv8",	ISA_FEAT(ISA_FP_ARMv8) ISA_FEAT(ISA_NEON))
-ARM_FPU("crypto-neon-fp-armv8", ISA_FEAT(ISA_FP_ARMv8) ISA_FEAT(ISA_CRYPTO))
+ARM_FPU("vfp",			vfp,		      ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL))
+ARM_FPU("vfpv2",		vfpv2,		      ISA_FEAT(ISA_VFPv2) ISA_FEAT(ISA_FP_DBL))
+ARM_FPU("vfpv3",		vfpv3,		      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_D32))
+ARM_FPU("vfpv3-fp16",		vfpv3_fp16,	      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_D32) ISA_FEAT(isa_bit_fp16conv))
+ARM_FPU("vfpv3-d16",		vfpv3_d16,	      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_DBL))
+ARM_FPU("vfpv3-d16-fp16",	vfpv3_d16_fp16,	      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_DBL) ISA_FEAT(isa_bit_fp16conv))
+ARM_FPU("vfpv3xd",		vfpv3xd,	      ISA_FEAT(ISA_VFPv3))
+ARM_FPU("vfpv3xd-fp16",		vfpv3xd_fp16,	      ISA_FEAT(ISA_VFPv3) ISA_FEAT(isa_bit_fp16conv))
+ARM_FPU("neon",			neon,		      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_NEON))
+ARM_FPU("neon-vfpv3",		neon_vfpv3,	      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_NEON))
+ARM_FPU("neon-fp16",		neon_fp16,	      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_NEON) ISA_FEAT(isa_bit_fp16conv))
+ARM_FPU("vfpv4",		vfpv4,		      ISA_FEAT(ISA_VFPv4) ISA_FEAT(ISA_FP_D32))
+ARM_FPU("neon-vfpv4",		neon_vfpv4,	      ISA_FEAT(ISA_VFPv4) ISA_FEAT(ISA_NEON))
+ARM_FPU("vfpv4-d16",		vfpv4_d16,	      ISA_FEAT(ISA_VFPv4) ISA_FEAT(ISA_FP_DBL))
+ARM_FPU("fpv4-sp-d16",		fpv4_sp_d16,	      ISA_FEAT(ISA_VFPv4))
+ARM_FPU("fpv5-sp-d16",		fpv5_sp_d16,	      ISA_FEAT(ISA_FPv5))
+ARM_FPU("fpv5-d16",		fpv5_d16,	      ISA_FEAT(ISA_FPv5) ISA_FEAT(ISA_FP_DBL))
+ARM_FPU("fp-armv8",		fp_armv8,	      ISA_FEAT(ISA_FP_ARMv8) ISA_FEAT(ISA_FP_D32))
+ARM_FPU("neon-fp-armv8",	neon_fp_armv8,	      ISA_FEAT(ISA_FP_ARMv8) ISA_FEAT(ISA_NEON))
+ARM_FPU("crypto-neon-fp-armv8", crypto_neon_fp_armv8, ISA_FEAT(ISA_FP_ARMv8) ISA_FEAT(ISA_CRYPTO))
 /* Compatibility aliases.  */
-ARM_FPU("vfp3",			ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_D32))
+ARM_FPU("vfp3",			vfp3,		      ISA_FEAT(ISA_VFPv3) ISA_FEAT(ISA_FP_D32))
