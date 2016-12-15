@@ -1,6 +1,6 @@
 /* PR target/77834 */
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-pre -Wno-psabi" } */
+/* { dg-options "-O -ftree-pre -Wno-psabi -w" } */
 /* { dg-additional-options "-mstringop-strategy=libcall" { target i?86-*-* x86_64-*-* } } */
 
 typedef int V __attribute__ ((vector_size (64)));
