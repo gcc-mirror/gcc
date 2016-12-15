@@ -7379,9 +7379,10 @@ convert_template_argument (tree parm,
           /* Reject template arguments that are references to built-in
              functions with no library fallbacks.  */
           const_tree inner = TREE_OPERAND (val, 0);
-          if (TREE_CODE (TREE_TYPE (inner)) == REFERENCE_TYPE
-              && TREE_CODE (TREE_TYPE (TREE_TYPE (inner))) == FUNCTION_TYPE
-              && TREE_CODE (TREE_TYPE (inner)) == REFERENCE_TYPE
+	  const_tree innertype = TREE_TYPE (inner);
+	  if (innertype
+	      && TREE_CODE (innertype) == REFERENCE_TYPE
+	      && TREE_CODE (TREE_TYPE (innertype)) == FUNCTION_TYPE
               && 0 < TREE_OPERAND_LENGTH (inner)
               && reject_gcc_builtin (TREE_OPERAND (inner, 0)))
               return error_mark_node;
