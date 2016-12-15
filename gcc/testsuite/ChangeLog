@@ -1,3 +1,22 @@
+2016-12-15  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx512bw-kmovd-1.c: New test.
+	* gcc.target/i386/avx512bw-kmovd-2.c: Ditto.
+	* gcc.target/i386/avx512bw-kmovd-3.c: Ditto.
+	* gcc.target/i386/avx512bw-kmovd-4.c: Ditto.
+	* gcc.target/i386/avx512bw-kmovq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kmovq-2.c: Ditto.
+	* gcc.target/i386/avx512bw-kmovq-3.c: Ditto.
+	* gcc.target/i386/avx512bw-kmovq-4.c: Ditto.
+	* gcc.target/i386/avx512dq-kmovb-2.c: Ditto.
+	* gcc.target/i386/avx512dq-kmovb-3.c: Ditto.
+	* gcc.target/i386/avx512dq-kmovb-4.c: Ditto.
+	* gcc.target/i386/avx512dq-kmovb-5.c: Ditto.
+	* gcc.target/i386/avx512f-kmovw-2.c: Ditto.
+	* gcc.target/i386/avx512f-kmovw-3.c: Ditto.
+	* gcc.target/i386/avx512f-kmovw-4.c: Ditto.
+	* gcc.target/i386/avx512f-kmovw-5.c: Ditto.
+
 2016-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	P0490R0 GB 20: decomposition declaration should commit to tuple

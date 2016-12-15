@@ -34,6 +34,34 @@
 #define __DISABLE_AVX512DQ__
 #endif /* __AVX512DQ__ */
 
+extern __inline unsigned int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_cvtmask8_u32 (__mmask8 __A)
+{
+  return (unsigned int) __builtin_ia32_kmovb ((__mmask8 ) __A);
+}
+	
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_cvtu32_mask8 (unsigned int __A)
+{
+  return (__mmask8) __builtin_ia32_kmovb ((__mmask8) __A);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_load_mask8 (__mmask8 *__A)
+{
+  return (__mmask8) __builtin_ia32_kmovb (*(__mmask8 *) __A);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_store_mask8 (__mmask8 *__A, __mmask8 __B)
+{
+  *(__mmask8 *) __A = __builtin_ia32_kmovb (__B);
+}
+
 extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _knot_mask8 (__mmask8 __A)

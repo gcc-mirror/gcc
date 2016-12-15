@@ -1309,9 +1309,9 @@
 ;; Mask variant shift mnemonics
 (define_code_attr mshift [(ashift "shiftl") (lshiftrt "shiftr")])
 
-(define_expand "kmovw"
-  [(set (match_operand:HI 0 "nonimmediate_operand")
-	(match_operand:HI 1 "nonimmediate_operand"))]
+(define_expand "kmov<mskmodesuffix>"
+  [(set (match_operand:SWI1248_AVX512BWDQ 0 "nonimmediate_operand")
+	(match_operand:SWI1248_AVX512BWDQ 1 "nonimmediate_operand"))]
   "TARGET_AVX512F
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))")
 

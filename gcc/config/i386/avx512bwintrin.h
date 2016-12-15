@@ -40,6 +40,62 @@ typedef char __v64qi __attribute__ ((__vector_size__ (64)));
 
 typedef unsigned long long __mmask64;
 
+extern __inline unsigned int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_cvtmask32_u32 (__mmask32 __A)
+{
+  return (unsigned int) __builtin_ia32_kmovd ((__mmask32) __A);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_cvtmask64_u64 (__mmask64 __A)
+{
+  return (unsigned long long) __builtin_ia32_kmovq ((__mmask64) __A);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_cvtu32_mask32 (unsigned int __A)
+{
+  return (__mmask32) __builtin_ia32_kmovd ((__mmask32) __A);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_cvtu64_mask64 (unsigned long long __A)
+{
+  return (__mmask64) __builtin_ia32_kmovq ((__mmask64) __A);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_load_mask32 (__mmask32 *__A)
+{
+  return (__mmask32) __builtin_ia32_kmovd (*__A);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_load_mask64 (__mmask64 *__A)
+{
+  return (__mmask64) __builtin_ia32_kmovq (*(__mmask64 *) __A);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_store_mask32 (__mmask32 *__A, __mmask32 __B)
+{
+  *(__mmask32 *) __A = __builtin_ia32_kmovd (__B);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_store_mask64 (__mmask64 *__A, __mmask64 __B)
+{
+  *(__mmask64 *) __A = __builtin_ia32_kmovq (__B);
+}
+
 extern __inline __mmask32
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _knot_mask32 (__mmask32 __A)
