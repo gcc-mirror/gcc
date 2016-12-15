@@ -2828,8 +2828,7 @@ arm_option_check_internal (struct gcc_options *opts)
       && !bitmap_bit_p (arm_active_target.isa, isa_bit_notm))
     error ("target CPU does not support ARM mode");
 
-  /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
-     from here where no function is being compiled currently.  */
+  /* TARGET_BACKTRACE cannot be used here as crtl->is_leaf is not set yet.  */
   if ((TARGET_TPCS_FRAME || TARGET_TPCS_LEAF_FRAME) && TARGET_ARM_P (flags))
     warning (0, "enabling backtrace support is only meaningful when compiling for the Thumb");
 
@@ -20587,7 +20586,7 @@ static bool
 thumb_force_lr_save (void)
 {
   return !cfun->machine->lr_save_eliminated
-	 && (!leaf_function_p ()
+	 && (!crtl->is_leaf
 	     || thumb_far_jump_used_p ()
 	     || df_regs_ever_live_p (LR_REGNUM));
 }
@@ -20692,7 +20691,6 @@ arm_get_frame_offsets (void)
 {
   struct arm_stack_offsets *offsets;
   unsigned long func_type;
-  int leaf;
   int saved;
   int core_saved;
   HOST_WIDE_INT frame_size;
@@ -20700,24 +20698,12 @@ arm_get_frame_offsets (void)
 
   offsets = &cfun->machine->stack_offsets;
 
-  /* We need to know if we are a leaf function.  Unfortunately, it
-     is possible to be called after start_sequence has been called,
-     which causes get_insns to return the insns for the sequence,
-     not the function, which will cause leaf_function_p to return
-     the incorrect result.
-
-     to know about leaf functions once reload has completed, and the
-     frame size cannot be changed after that time, so we can safely
-     use the cached value.  */
-
   if (reload_completed)
     return offsets;
 
   /* Initially this is the size of the local variables.  It will translated
      into an offset once we have determined the size of preceding data.  */
   frame_size = ROUND_UP_WORD (get_frame_size ());
-
-  leaf = leaf_function_p ();
 
   /* Space for variadic functions.  */
   offsets->saved_args = crtl->args.pretend_args_size;
@@ -20772,7 +20758,7 @@ arm_get_frame_offsets (void)
 
   /* A leaf function does not need any stack alignment if it has nothing
      on the stack.  */
-  if (leaf && frame_size == 0
+  if (crtl->is_leaf && frame_size == 0
       /* However if it calls alloca(), we have a dynamically allocated
 	 block of BIGGEST_ALIGNMENT on stack, so still do stack alignment.  */
       && ! cfun->calls_alloca)
@@ -24124,9 +24110,6 @@ thumb_far_jump_used_p (void)
   rtx_insn *insn;
   bool far_jump = false;
   unsigned int func_size = 0;
-
-  /* This test is only important for leaf functions.  */
-  /* assert (!leaf_function_p ()); */
 
   /* If we have already decided that far jumps may be used,
      do not bother checking again, and always return true even if
@@ -27679,7 +27662,7 @@ arm_frame_pointer_required (void)
     return true;
 
   /* The frame pointer is required for non-leaf APCS frames.  */
-  if (TARGET_ARM && TARGET_APCS_FRAME && !leaf_function_p ())
+  if (TARGET_ARM && TARGET_APCS_FRAME && !crtl->is_leaf)
     return true;
 
   /* If we are probing the stack in the prologue, we will have a faulting
