@@ -1,3 +1,8 @@
+2016-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi: Clean up @xref{...} uses.
+	* doc/invoke.texi: Likewise.
+
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm-fpus.def: Add CNAME field to all FPU definitions.
