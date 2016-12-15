@@ -1,5 +1,13 @@
 2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/59161
+	* python/libstdcxx/v6/printers.py (StdListIteratorPrinter.to_string)
+	(StdSlistIteratorPrinter.to_string, StdVectorIteratorPrinter.to_string)
+	(StdRbtreeIteratorPrinter.to_string, StdDequeIteratorPrinter.to_string)
+	(StdDebugIteratorPrinter.to_string): Return string instead of
+	gdb.Value.
+	* testsuite/libstdc++-prettyprinters/59161.cc: New test.
+
 	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.to_string):
 	Remove redundant parentheses.
 	(RbtreeIterator, StdRbtreeIteratorPrinter): Add docstrings.
