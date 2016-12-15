@@ -1,5 +1,22 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (TARGET_VFPD32): Use arm_active_target.
+	(TARGET_VFP3): Likewise.
+	(TARGET_VFP5): Likewise.
+	(TARGET_VFP_SINGLE): Likewise.
+	(TARGET_VFP_DOUBLE): Likewise.
+	(TARGET_NEON_FP16): Likewise.
+	(TARGET_FP16): Likewise.
+	(TARGET_FMA): Likewise.
+	(TARGET_FPU_ARMV8): Likewise.
+	(TARGET_CRYPTO): Likewise.
+	(TARGET_NEON): Likewise.
+	(TARGET_FPU_FEATURES): Delete.
+	* arm.c (arm_option_check_internal): Check for iwmmxt conflict with
+	Neon using arm_active_target.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.h (TARGET_FPU_NAME): Delete.
 	* arm.c (arm_identify_fpu_from_isa): New function.
 	(arm_declare_function_name): Use it to get the name for the FPU.
