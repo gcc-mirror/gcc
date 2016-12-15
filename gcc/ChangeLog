@@ -1,5 +1,19 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-protos.h (insn_flags): Delete declaration.
+	(arm_arch7ve): Declare.
+	* arm.c (insn_flags): Delete.
+	(arm_arch7ve): New variable.
+	(arm_selected_cpu): Delete.
+	(arm_option_check_internal): Use new ISA bitmap.
+	(arm_option_override_internal): Likewise.
+	(arm_configure_build_target): Declare arm_selected_cpu locally.
+	(arm_option_override): Use new ISA bitmap.  Initialize arm_arch7ve.
+	Rearrange variable intialization by general function.
+	* arm.h (TARGET_HAVE_LPAE): Use arm_arch7ve.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-builtins.c: Include sbitmap.h.
 	(def_mbuiltin): Change first parameter to a flag bit.  Use it to test
 	available features in the current target.
