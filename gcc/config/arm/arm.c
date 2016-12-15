@@ -3056,6 +3056,7 @@ arm_initialize_isa (sbitmap isa, const enum isa_feature *isa_bits)
 }
 
 static sbitmap isa_fpubits;
+static sbitmap isa_quirkbits;
 
 /* Configure a build target TARGET from the user-specified options OPTS and
    OPTS_SET.  If WARN_COMPATIBLE, emit a diagnostic if both the CPU and
@@ -3097,6 +3098,8 @@ arm_configure_build_target (struct arm_build_target *target,
 
 	  arm_initialize_isa (cpu_isa, arm_selected_cpu->isa_bits);
 	  bitmap_xor (cpu_isa, cpu_isa, target->isa);
+	  /* Ignore any bits that are quirk bits.  */
+	  bitmap_and_compl (cpu_isa, cpu_isa, isa_quirkbits);
 	  /* Ignore (for now) any bits that might be set by -mfpu.  */
 	  bitmap_and_compl (cpu_isa, cpu_isa, isa_fpubits);
 
@@ -3263,6 +3266,10 @@ static void
 arm_option_override (void)
 {
   static const enum isa_feature fpu_bitlist[] = { ISA_ALL_FPU, isa_nobit };
+  static const enum isa_feature quirk_bitlist[] = { ISA_ALL_QUIRKS, isa_nobit};
+
+  isa_quirkbits = sbitmap_alloc (isa_num_bits);
+  arm_initialize_isa (isa_quirkbits, quirk_bitlist);
 
   isa_fpubits = sbitmap_alloc (isa_num_bits);
   arm_initialize_isa (isa_fpubits, fpu_bitlist);
@@ -3510,7 +3517,7 @@ arm_option_override (void)
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
     {
-      if (arm_selected_cpu->core == TARGET_CPU_cortexm3)
+      if (bitmap_bit_p (arm_active_target.isa, isa_quirk_cm3_ldrd))
 	fix_cm3_ldrd = 1;
       else
 	fix_cm3_ldrd = 0;

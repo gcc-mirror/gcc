@@ -1,5 +1,17 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-isa.h (enum isa_feature): Add isa_quirk_cm3_ldrd.
+	(ISA_ALL_QUIRKS): New macro.
+	* arm-cores.def (cortex-m3): Add isa_quirk_cm3_ldrd to isa feature list.
+	* arm.c (isa_quirkbits): New feature-list bitmap.
+	(arm_configure_build_target): Ignore quirk bits when comparing an
+	architecture feature list with a CPU feature list.
+	(arm_option_override): Initialize_isa_quirkbits.  If the user has
+	not specified -m[no-]fix-cortex-m3-ldrd, automatically enable the
+	feature if isa_quirk_cm3_ldrd appears in the isa feature list.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (arm_option_override): Use arm_active_target as source of
 	information for arm_base_arch and arm_arch_name.
 	* (arm_file_start): Use arm_active_target for core name.
