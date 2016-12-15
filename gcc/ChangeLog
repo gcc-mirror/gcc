@@ -1,5 +1,11 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.c (arm_option_override): Use arm_active_target as source of
+	information for arm_base_arch and arm_arch_name.
+	* (arm_file_start): Use arm_active_target for core name.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (arm_selected_tune): Delete static variable.
 	(arm_selected_arch): Likewise.
 	(arm_configure_build_target): Declare local versions of arm_selected
