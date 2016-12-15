@@ -1,3 +1,9 @@
+2016-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	P0490R0 GB 20: decomposition declaration should commit to tuple
+	interpretation early
+	* g++.dg/cpp1z/decomp10.C (f1): Adjust expected diagnostics.
+
 2016-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/77585
