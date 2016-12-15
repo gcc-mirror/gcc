@@ -1,3 +1,12 @@
+2016-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78800
+	* interface.c (compare_allocatable): Avoid additional errors on bad
+	class declarations.
+	(compare_parameter): Put the result of gfc_expr_attr into a variable,
+	in order to avoid calling it multiple times. Exit early on bad class
+	declarations to avoid ICE.
+
 2016-12-14  Martin Jambor  <mjambor@suse.cz>
 
 	* trans-openmp.c: Include omp-general.h.
