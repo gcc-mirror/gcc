@@ -2815,11 +2815,10 @@ static void
 arm_option_check_internal (struct gcc_options *opts)
 {
   int flags = opts->x_target_flags;
-  const struct arm_fpu_desc *fpu_desc = &all_fpus[opts->x_arm_fpu_index];
 
   /* iWMMXt and NEON are incompatible.  */
   if (TARGET_IWMMXT
-      && ARM_FPU_FSET_HAS (fpu_desc->features, FPU_FL_NEON))
+      && bitmap_bit_p (arm_active_target.isa, isa_bit_neon))
     error ("iWMMXt and NEON are incompatible");
 
   /* Make sure that the processor choice does not conflict with any of the
