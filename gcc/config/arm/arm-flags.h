@@ -22,6 +22,16 @@
 #ifndef GCC_ARM_FLAGS_H
 #define GCC_ARM_FLAGS_H
 
+/* Flags used to identify a few tuning properties.  These are for legacy
+   purposes only.  Do not add any more of these: use the main tuning tables.  */
+#define TF_LDSCHED	(1U << 0)
+#define TF_WBUF		(1U << 1)
+#define TF_CO_PROC	(1U << 2)
+#define TF_SMALLMUL	(1U << 3)
+#define TF_STRONG	(1U << 4)
+#define TF_XSCALE	(1U << 5)
+#define TF_NO_MODE32	(1U << 6)
+
 /* Flags used to identify the presence of processor capabilities.  */
 
 /* Bit values used to identify processor capabilities.  */
@@ -34,16 +44,15 @@
 #define FL_ARCH4      (1U << 4)		/* Architecture rel 4.  */
 #define FL_ARCH5      (1U << 5)		/* Architecture rel 5.  */
 #define FL_THUMB      (1U << 6)		/* Thumb aware.  */
-#define FL_LDSCHED    (1U << 7)		/* Load scheduling necessary.  */
-#define FL_STRONG     (1U << 8)		/* StrongARM.  */
+/* Spare	      (1U << 7)	 */
+/* Spare	      (1U << 8)  */
 #define FL_ARCH5E     (1U << 9)		/* DSP extensions to v5.  */
 #define FL_XSCALE     (1U << 10)	/* XScale.  */
-/* spare	      (1U << 11) */
+/* Spare	      (1U << 11) */
 #define FL_ARCH6      (1U << 12)	/* Architecture rel 6.  Adds
 					   media instructions.  */
 #define FL_VFPV2      (1U << 13)	/* Vector Floating Point V2.  */
-#define FL_WBUF	      (1U << 14)	/* Schedule for write buffer ops.
-					   Note: ARM6 & 7 derivatives only.  */
+/* Spare	      (1U << 14) */
 #define FL_ARCH6K     (1U << 15)	/* Architecture rel 6 K extensions.  */
 #define FL_THUMB2     (1U << 16)	/* Thumb-2.  */
 #define FL_NOTM	      (1U << 17)	/* Instructions not present in the 'M'
@@ -57,7 +66,7 @@
 #define FL_ARM_DIV    (1U << 23)	/* Hardware divide (ARM mode).  */
 #define FL_ARCH8      (1U << 24)	/* Architecture 8.  */
 #define FL_CRC32      (1U << 25)	/* ARMv8 CRC32 instructions.  */
-#define FL_SMALLMUL   (1U << 26)	/* Small multiply supported.  */
+/* Spare	      (1U << 26) */
 #define FL_NO_VOLATILE_CE  (1U << 27)	/* No volatile memory in IT block.  */
 
 #define FL_IWMMXT     (1U << 29)	/* XScale v2 or "Intel Wireless MMX
@@ -73,8 +82,7 @@
 #define FL2_CMSE      (1U << 3)		/* ARMv8-M Security Extensions.  */
 
 /* Flags that only effect tuning, not available instructions.  */
-#define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \
-			 | FL_CO_PROC)
+#define FL_TUNE		(FL_VFPV2)
 
 #define FL_FOR_ARCH2		FL_NOTM
 #define FL_FOR_ARCH3		(FL_FOR_ARCH2 | FL_MODE32)

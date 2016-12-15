@@ -358,7 +358,7 @@ extern arm_feature_set insn_flags;
 
 /* The bits in this mask specify which instruction scheduling options should
    be used.  */
-extern arm_feature_set tune_flags;
+extern unsigned int tune_flags;
 
 /* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
 extern int arm_arch3m;

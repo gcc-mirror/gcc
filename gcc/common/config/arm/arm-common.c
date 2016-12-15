@@ -107,12 +107,12 @@ struct arm_arch_core_flag
 static const struct arm_arch_core_flag arm_arch_core_flags[] =
 {
 #undef ARM_CORE
-#define ARM_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
+#define ARM_CORE(NAME, X, IDENT, TUNE_FLAGS, ARCH, FLAGS, COSTS) \
   {NAME, FLAGS},
 #include "config/arm/arm-cores.def"
 #undef ARM_CORE
 #undef ARM_ARCH
-#define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
+#define ARM_ARCH(NAME, CORE, TUNE_FLAGS, ARCH, FLAGS)	\
   {NAME, FLAGS},
 #include "config/arm/arm-arches.def"
 #undef ARM_ARCH
