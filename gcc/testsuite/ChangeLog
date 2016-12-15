@@ -1,5 +1,10 @@
 2016-12-14  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/78519
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-7.c: New test.
+
+2016-12-14  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/78774
 	* g++.dg/cpp1y/pr78774.C: New test.
 
