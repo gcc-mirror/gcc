@@ -12926,12 +12926,6 @@ Slice_construction_expression::create_array_val()
   go_assert(this->valtype_ != NULL);
 
   Expression_list* vals = this->vals();
-  if (this->vals() == NULL || this->vals()->empty())
-    {
-      // We need to create a unique value for the empty array literal.
-      vals = new Expression_list;
-      vals->push_back(NULL);
-    }
   return new Fixed_array_construction_expression(
       this->valtype_, this->indexes(), vals, loc);
 }
