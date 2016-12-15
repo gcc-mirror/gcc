@@ -1,3 +1,12 @@
+2016-12-15  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.h (TARGET_BACKTRACE): Use crtl->is_leaf.
+	* config/arm/arm.c (arm_option_check_internal): Improve comment.
+	(thumb_force_lr_save): Use crtl->is_leaf.
+	(arm_get_frame_offsets): Remove comment.  Use crtl->is_leaf.
+	(thumb_far_jump_used_p): Remove comment.
+	(arm_frame_pointer_required): Use crtl->is_leaf.
+
 2016-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/extend.texi: Clean up @xref{...} uses.
