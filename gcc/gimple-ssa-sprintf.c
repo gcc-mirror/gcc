@@ -439,7 +439,7 @@ struct result_range
 struct fmtresult
 {
   fmtresult ()
-  : argmin (), argmax (), knownrange (), bounded (), constant ()
+  : argmin (), argmax (), knownrange (), bounded (), constant (), nullp ()
   {
     range.min = range.max = HOST_WIDE_INT_MAX;
   }
@@ -467,6 +467,9 @@ struct fmtresult
      are also constant (such as determined by constant propagation,
      though not value range propagation).  */
   bool constant;
+
+  /* True when the argument is a null pointer.  */
+  bool nullp;
 };
 
 /* Description of a conversion specification.  */
@@ -1765,6 +1768,16 @@ format_string (const conversion_spec &spec, tree arg)
 	      res.range.min = 0;
 	    }
 	}
+      else if (arg && integer_zerop (arg))
+	{
+	  /* Handle null pointer argument.  */
+
+	  fmtresult res;
+	  res.range.min = 0;
+	  res.range.max = HOST_WIDE_INT_MAX;
+	  res.nullp = true;
+	  return res;
+	}
       else
 	{
 	  /* For a '%s' and '%ls' directive with a non-constant string,
@@ -1910,12 +1923,26 @@ format_directive (const pass_sprintf_length::call_info &info,
 	}
     }
 
+  if (fmtres.nullp)
+    {
+      fmtwarn (dirloc, pargrange, NULL,
+	       OPT_Wformat_length_,
+	       "%<%.*s%> directive argument is null",
+	       (int)cvtlen, cvtbeg);
+
+      /* Don't bother processing the rest of the format string.  */
+      res->warned = true;
+      res->number_chars = HOST_WIDE_INT_M1U;
+      res->number_chars_min = res->number_chars_max = res->number_chars;
+      return;
+    }
+
+  bool warned = res->warned;
+
   /* Compute the number of available bytes in the destination.  There
      must always be at least one byte of space for the terminating
      NUL that's appended after the format string has been processed.  */
   unsigned HOST_WIDE_INT navail = min_bytes_remaining (info.objsize, *res);
-
-  bool warned = res->warned;
 
   if (fmtres.range.min < fmtres.range.max)
     {
@@ -2871,6 +2898,9 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       return;
     }
 
+  /* The first argument is a pointer to the destination.  */
+  tree dstptr = gimple_call_arg (info.callstmt, 0);
+
   info.format = gimple_call_arg (info.callstmt, idx_format);
 
   if (idx_dstsize == HOST_WIDE_INT_M1U)
@@ -2878,7 +2908,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       /* For non-bounded functions like sprintf, determine the size
 	 of the destination from the object or pointer passed to it
 	 as the first argument.  */
-      dstsize = get_destination_size (gimple_call_arg (info.callstmt, 0));
+      dstsize = get_destination_size (dstptr);
     }
   else if (tree size = gimple_call_arg (info.callstmt, idx_dstsize))
     {
@@ -2948,6 +2978,20 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
     }
   else
     {
+      /* For calls to non-bounded functions or to those of bounded
+	 functions with a non-zero size, warn if the destination
+	 pointer is null.  */
+      if (integer_zerop (dstptr))
+	{
+	  /* This is diagnosed with -Wformat only when the null is a constant
+	     pointer.  The warning here diagnoses instances where the pointer
+	     is not constant.  */
+	  location_t loc = gimple_location (info.callstmt);
+	  warning_at (EXPR_LOC_OR_LOC (dstptr, loc),
+		      OPT_Wformat_length_, "null destination pointer");
+	  return;
+	}
+
       /* Set the object size to the smaller of the two arguments
 	 of both have been specified and they're not equal.  */
       info.objsize = dstsize < objsize ? dstsize : objsize;
@@ -2971,7 +3015,8 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       /* This is diagnosed with -Wformat only when the null is a constant
 	 pointer.  The warning here diagnoses instances where the pointer
 	 is not constant.  */
-      warning_at (EXPR_LOC_OR_LOC (info.format, input_location),
+      location_t loc = gimple_location (info.callstmt);
+      warning_at (EXPR_LOC_OR_LOC (info.format, loc),
 		  OPT_Wformat_length_, "null format string");
       return;
     }

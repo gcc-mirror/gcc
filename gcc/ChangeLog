@@ -1,3 +1,11 @@
+2016-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78519
+	* gimple-ssa-sprintf.c (format_string): Handle null pointers.
+	(format_directive): Diagnose null pointer arguments.
+	(pass_sprintf_length::handle_gimple_call): Diagnose null destination
+	pointers.  Correct location of null format string in diagnostics.
+
 2016-12-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (SELFTEST_FLAGS): Add path argument to -fself-test.
