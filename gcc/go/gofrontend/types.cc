@@ -2261,7 +2261,7 @@ Type::gc_symbol_constructor(Gogo* gogo)
 
   vals->push_back(Expression::make_integer_ul(GC_END, uintptr_t, bloc));
 
-  Expression* len = Expression::make_integer_ul(vals->size() + 1, NULL,
+  Expression* len = Expression::make_integer_ul(vals->size(), NULL,
 						bloc);
   Array_type* gc_symbol_type = Type::make_array_type(uintptr_t, len);
   return Expression::make_array_composite_literal(gc_symbol_type, vals, bloc);
