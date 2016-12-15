@@ -1,5 +1,19 @@
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-cores.def: Remove FLAGS field from all core definitions.
+	* arm-arches.def: Likewise.
+	* arm-opts.h (enum processor_type): Remove FLAGS parameter from
+	ARM_CORES macro.
+	(arm_arch_core_flags): Likewise, plus ARM_ARCH macro.
+	* arm-protos.h (FL_*): Delete.
+	(arm_feature_set): Delete.
+	(ARM_FSET_*): Delete.
+	* arm.c (struct processors): Delete flags field.
+	(all_cores): Delete FLAGS parameter from macro, don't initialize flags.
+	(all architectures): Likewise.
+
+2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-opts.h (struct arm_arch_core_flag): Add new field ISA.
 	Initialize it.
    	(arm_arch_core_flag): Delete flags field.
