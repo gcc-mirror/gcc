@@ -953,6 +953,7 @@ struct processors
   unsigned int tune_flags;
   const char *arch;
   enum base_architecture base_arch;
+  enum isa_feature isa_bits[isa_num_bits];
   const arm_feature_set flags;
   const struct tune_params *const tune;
 };
@@ -2288,12 +2289,13 @@ const struct tune_params arm_fa726te_tune =
 static const struct processors all_cores[] =
 {
   /* ARM Cores */
-#define ARM_CORE(NAME, X, IDENT, TUNE_FLAGS, ARCH, FLAGS, COSTS) \
+#define ARM_CORE(NAME, X, IDENT, TUNE_FLAGS, ARCH, ISA, FLAGS, COSTS)	\
   {NAME, TARGET_CPU_##IDENT, TUNE_FLAGS, #ARCH, BASE_ARCH_##ARCH, \
-   FLAGS, &arm_##COSTS##_tune},
+   {ISA isa_nobit}, FLAGS, &arm_##COSTS##_tune},
 #include "arm-cores.def"
 #undef ARM_CORE
-  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
+  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit},
+   ARM_FSET_EMPTY, NULL}
 };
 
 static const struct processors all_architectures[] =
@@ -2302,11 +2304,12 @@ static const struct processors all_architectures[] =
   /* We don't specify tuning costs here as it will be figured out
      from the core.  */
 
-#define ARM_ARCH(NAME, CORE, TUNE_FLAGS, ARCH, FLAGS)			\
-  {NAME, TARGET_CPU_##CORE, TUNE_FLAGS, #ARCH, BASE_ARCH_##ARCH, FLAGS, NULL},
+#define ARM_ARCH(NAME, CORE, TUNE_FLAGS, ARCH, ISA, FLAGS)		\
+  {NAME, TARGET_CPU_##CORE, TUNE_FLAGS, #ARCH, BASE_ARCH_##ARCH,	\
+  {ISA isa_nobit}, FLAGS, NULL},
 #include "arm-arches.def"
 #undef ARM_ARCH
-  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
+  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, ARM_FSET_EMPTY, NULL}
 };
 
 
