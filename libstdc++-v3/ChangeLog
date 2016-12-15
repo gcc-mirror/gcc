@@ -1,5 +1,14 @@
 2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/59170
+	* python/libstdcxx/v6/printers.py (StdListIteratorPrinter.to_string)
+	(StdSlistIteratorPrinter.to_string, StdVectorIteratorPrinter.to_string)
+	(StdRbtreeIteratorPrinter.to_string)
+	(StdDequeIteratorPrinter.to_string): Add check for value-initialized
+	iterators.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test them.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
 	PR libstdc++/59161
 	* python/libstdcxx/v6/printers.py (StdListIteratorPrinter.to_string)
 	(StdSlistIteratorPrinter.to_string, StdVectorIteratorPrinter.to_string)
