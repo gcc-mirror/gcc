@@ -2075,13 +2075,13 @@ done:
 static int
 compare_allocatable (gfc_symbol *formal, gfc_expr *actual)
 {
-  symbol_attribute attr;
-
   if (formal->attr.allocatable
       || (formal->ts.type == BT_CLASS && CLASS_DATA (formal)->attr.allocatable))
     {
-      attr = gfc_expr_attr (actual);
-      if (!attr.allocatable)
+      symbol_attribute attr = gfc_expr_attr (actual);
+      if (actual->ts.type == BT_CLASS && !attr.class_ok)
+	return 1;
+      else if (!attr.allocatable)
 	return 0;
     }
 
@@ -2237,6 +2237,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return 0;
     }
 
+  symbol_attribute actual_attr = gfc_expr_attr (actual);
+  if (actual->ts.type == BT_CLASS && !actual_attr.class_ok)
+    return 1;
+
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && actual->ts.type != BT_HOLLERITH
       && formal->ts.type != BT_ASSUMED
@@ -2277,9 +2281,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			formal->name, &actual->where);
 	  return 0;
 	}
-
-      if (!gfc_expr_attr (actual).class_ok)
-	return 0;
 
       if ((!UNLIMITED_POLY (formal) || !UNLIMITED_POLY(actual))
 	  && !gfc_compare_derived_types (CLASS_DATA (actual)->ts.u.derived,
@@ -2345,7 +2346,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       /* F2015, 12.5.2.8.  */
       if (formal->attr.dimension
 	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
-	  && gfc_expr_attr (actual).dimension
+	  && actual_attr.dimension
 	  && !gfc_is_simply_contiguous (actual, true, true))
 	{
 	  if (where)
@@ -2406,7 +2407,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     }
 
   if (formal->attr.allocatable && !formal->attr.codimension
-      && gfc_expr_attr (actual).codimension)
+      && actual_attr.codimension)
     {
       if (formal->attr.intent == INTENT_OUT)
 	{
