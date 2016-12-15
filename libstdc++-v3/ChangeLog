@@ -1,5 +1,14 @@
 2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.to_string):
+	Remove redundant parentheses.
+	(RbtreeIterator, StdRbtreeIteratorPrinter): Add docstrings.
+	(StdForwardListPrinter.to_string): Remove redundant parentheses.
+	(StdExpOptionalPrinter.to_string): Use string formatting instead of
+	concatenation.
+	(StdVariantPrinter.to_string, StdNodeHandlePrinter.to_string)
+	(TemplateTypePrinter): Adjust whitespace.
+
 	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker.__init__): Use
 	correct element type for unique_ptr<T[]>.
 	(UniquePtrGetWorker._supports, UniquePtrDerefWorker._supports): New

@@ -133,8 +133,8 @@ class UniquePointerPrinter:
             v = self.val['_M_t']['_M_head_impl']
         else:
             raise ValueError("Unsupported implementation for unique_ptr: %s" % self.val.type.fields()[0].type.tag)
-        return ('std::unique_ptr<%s> containing %s' % (str(v.type.target()),
-                                                       str(v)))
+        return 'std::unique_ptr<%s> containing %s' % (str(v.type.target()),
+                                                      str(v))
 
 def get_value_from_aligned_membuf(buf, valtype):
     """Returns the value held in a __gnu_cxx::__aligned_membuf."""
@@ -428,6 +428,11 @@ class StdStackOrQueuePrinter:
         return None
 
 class RbtreeIterator(Iterator):
+    """
+    Turn an RB-tree-based container (std::map, std::set etc.) into
+    a Python iterable object.
+    """
+
     def __init__(self, rbtree):
         self.size = rbtree['_M_t']['_M_impl']['_M_node_count']
         self.node = rbtree['_M_t']['_M_impl']['_M_header']['_M_left']
@@ -480,7 +485,7 @@ def get_value_from_Rb_tree_node(node):
 # std::map::iterator), and has nothing to do with the RbtreeIterator
 # class above.
 class StdRbtreeIteratorPrinter:
-    "Print std::map::iterator"
+    "Print std::map::iterator, std::set::iterator, etc."
 
     def __init__ (self, typename, val):
         self.val = val
@@ -891,8 +896,8 @@ class StdForwardListPrinter:
 
     def to_string(self):
         if self.val['_M_impl']['_M_head']['_M_next'] == 0:
-            return 'empty %s' % (self.typename)
-        return '%s' % (self.typename)
+            return 'empty %s' % self.typename
+        return '%s' % self.typename
 
 class SingleObjContainerPrinter(object):
     "Base class for printers of containers of single objects"
@@ -994,9 +999,10 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
 
     def to_string (self):
         if self.contained_value is None:
-            return self.typename + " [no contained value]"
+            return "%s [no contained value]" % self.typename
         if hasattr (self.visualizer, 'children'):
-            return self.typename + " containing " + self.visualizer.to_string ()
+            return "%s containing %s" % (self.typename,
+                                         self.visualizer.to_string())
         return self.typename
 
 class StdVariantPrinter(SingleObjContainerPrinter):
@@ -1032,7 +1038,8 @@ class StdVariantPrinter(SingleObjContainerPrinter):
         if self.contained_value is None:
             return "%s [no contained value]" % self.typename
         if hasattr(self.visualizer, 'children'):
-            return "%s [index %d] containing %s" % (self.typename, self.index, self.visualizer.to_string())
+            return "%s [index %d] containing %s" % (self.typename, self.index,
+                                                    self.visualizer.to_string())
         return "%s [index %d]" % (self.typename, self.index)
 
 class StdNodeHandlePrinter(SingleObjContainerPrinter):
@@ -1060,7 +1067,6 @@ class StdNodeHandlePrinter(SingleObjContainerPrinter):
                                                    'array')
 
     def to_string(self):
-
         desc = 'node handle for '
         if not self.is_rb_tree_node:
             desc += 'unordered '
@@ -1230,7 +1236,8 @@ class Printer(object):
 libstdcxx_printer = None
 
 class TemplateTypePrinter(object):
-    r"""A type printer for class templates.
+    r"""
+    A type printer for class templates.
 
     Recognizes type names that match a regular expression.
     Replaces them with a formatted string which can use replacement field
