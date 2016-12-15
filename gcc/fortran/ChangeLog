@@ -1,5 +1,30 @@
 2016-12-15  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/78798
+	* gfortran.h (gfc_compare_derived_types,gfc_compare_types,
+	gfc_compare_interfaces,gfc_has_vector_subscript): Return bool instead
+	of int.
+	* interface.c (compare_components): Ditto.
+	(gfc_compare_union_types): Rename to compare_union_types, declare as
+	static, return bool.
+	(gfc_compare_derived_types): Return bool instead of int.
+	(gfc_compare_types): Ditto.
+	(compare_type): Ditto.
+	(compare_rank): Ditto.
+	(compare_type_rank): Ditto.
+	(compare_type_rank_if): Ditto.
+	(count_types_test): Ditto.
+	(generic_correspondence): Ditto.
+	(gfc_compare_interfaces): Ditto.
+	(check_interface0): Ditto.
+	(check_interface1): Ditto.
+	(compare_allocatable): Ditto.
+	(compare_parameter): Ditto.
+	(gfc_has_vector_subscript): Ditto.
+	(compare_actual_formal): Ditto.
+
+2016-12-15  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/78800
 	* interface.c (compare_allocatable): Avoid additional errors on bad
 	class declarations.
