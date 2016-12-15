@@ -160,7 +160,7 @@ ARM_CORE("cortex-r7",		cortexr7, cortexr7,		TF_LDSCHED, 	  7R,	ISA_FEAT(ISA_ARMv
 ARM_CORE("cortex-r8",		cortexr8, cortexr7,		TF_LDSCHED, 	  7R,	ISA_FEAT(ISA_ARMv7r) ISA_FEAT(isa_bit_adiv), ARM_FSET_MAKE_CPU1 (FL_ARM_DIV | FL_FOR_ARCH7R), cortex)
 ARM_CORE("cortex-m7",		cortexm7, cortexm7,		TF_LDSCHED, 	  7EM,	ISA_FEAT(ISA_ARMv7em) ISA_FEAT(isa_quirk_no_volatile_ce), ARM_FSET_MAKE_CPU1 (FL_NO_VOLATILE_CE | FL_FOR_ARCH7EM), cortex_m7)
 ARM_CORE("cortex-m4",		cortexm4, cortexm4,		TF_LDSCHED, 	  7EM,	ISA_FEAT(ISA_ARMv7em), ARM_FSET_MAKE_CPU1 (FL_FOR_ARCH7EM), v7m)
-ARM_CORE("cortex-m3",		cortexm3, cortexm3,		TF_LDSCHED, 	  7M,	ISA_FEAT(ISA_ARMv7m), ARM_FSET_MAKE_CPU1 (FL_FOR_ARCH7M), v7m)
+ARM_CORE("cortex-m3",		cortexm3, cortexm3,		TF_LDSCHED, 	  7M,	ISA_FEAT(ISA_ARMv7m) ISA_FEAT(isa_quirk_cm3_ldrd), ARM_FSET_MAKE_CPU1 (FL_FOR_ARCH7M), v7m)
 ARM_CORE("marvell-pj4",		marvell_pj4, marvell_pj4,	TF_LDSCHED, 	  7A,	ISA_FEAT(ISA_ARMv7a), ARM_FSET_MAKE_CPU1 (FL_FOR_ARCH7A), marvell_pj4)
 
 /* V7 big.LITTLE implementations */
