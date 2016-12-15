@@ -1057,7 +1057,7 @@ implements conversions between @code{__fp16} and other types as library
 calls.
 
 It is recommended that portable code use the @code{_Float16} type defined
-by ISO/IEC TS 18661-3:2015 (@xref{Floating Types}).
+by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
 
 @node Decimal Float
 @section Decimal Floating Types
@@ -2089,7 +2089,7 @@ union foo f = @{ .d = 4 @};
 converts 4 to a @code{double} to store it in the union using
 the second element.  By contrast, casting 4 to type @code{union foo}
 stores it into the union as the integer @code{i}, since it is
-an integer.  (@xref{Cast to Union}.)
+an integer.  @xref{Cast to Union}.
 
 You can combine this technique of naming elements with ordinary C
 initialization of successive elements.  Each initializer element that
@@ -2181,7 +2181,7 @@ specified is a union type.  You can specify the type either with the
 @code{union} keyword or with a @code{typedef} name that refers to
 a union.  A cast to a union actually creates a compound literal and
 yields an lvalue, not an rvalue like true casts do.
-(@xref{Compound Literals}.)
+@xref{Compound Literals}.
 
 The types that may be cast to the union type are those of the members
 of the union.  Thus, given the following union and variables:

@@ -7262,8 +7262,8 @@ release to an another.
 @opindex fno-keep-inline-dllexport
 This is a more fine-grained version of @option{-fkeep-inline-functions},
 which applies only to functions that are declared using the @code{dllexport}
-attribute or declspec (@xref{Function Attributes,,Declaring Attributes of
-Functions}.)
+attribute or declspec.  @xref{Function Attributes,,Declaring Attributes of
+Functions}.
 
 @item -fkeep-inline-functions
 @opindex fkeep-inline-functions
