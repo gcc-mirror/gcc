@@ -1,3 +1,28 @@
+2016-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ffs<mode>2): Generate CCCmode flags register
+	for TARGET_BMI.
+	(ffssi2_no_cmove): Ditto.
+	(*tzcnt<mode>_1_falsedep_1): New insn_and_split pattern.
+	(*tzcnt<mode>_1_falsedep): New insn pattern.
+
+	(LT_ZCNT): New mode iterator.
+	(lt_zcnt): New mode attribute.
+	(lt_zcnt_type): New mode attribute.
+	(<lt_zcnt>_<mode>): Macroize expander from bmi_tzcnt_<mode> and
+	lzcnt_<mode> using LT_ZCNT mode iterator.
+	(*<lt_zcnt>_<mode>_falsedep_1): Macroize insn from
+	*bmi_tzcnt_<mode>_falsedep_1 and *lzcnt_<mode>_falsedep_1
+	using LT_ZCNT mode iterator.
+	(*<lt_zcnt>_<mode>_falsedep): Macroize insn from
+	*bmi_tzcnt_<mode>_falsedep and *lzcnt_<mode>_falsedep
+	using LT_ZCNT mode iterator.
+	(*<lt_zcnt>_<mode>): Macroize insn from *bmi_tzcnt_<mode>
+	and *lzcnt_<mode> using LT_ZCNT mode iterator.
+	* config/i386/i386-builtin.def (__builtin_ia32_tzcnt_u16)
+	(__builtin_ia32_tzcnt_u32, __builtin_ia32_tzcnt_u64, __builtin_ctzs):
+	Update for rename.
+
 2016-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-cp.c (class ipcp_bits_lattice): Formatting fixes.
