@@ -125,32 +125,6 @@
    (set_attr "type" "multiple")]
 )
 
-;; Thumb-2 does not have rsc, so use a clever trick with shifter operands.
-(define_insn_and_split "*thumb2_negdi2"
-  [(set (match_operand:DI         0 "s_register_operand" "=&r,r")
-	(neg:DI (match_operand:DI 1 "s_register_operand"  "?r,0")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_THUMB2"
-  "#" ; negs\\t%Q0, %Q1\;sbc\\t%R0, %R1, %R1, lsl #1
-  "&& reload_completed"
-  [(parallel [(set (reg:CC CC_REGNUM)
-		   (compare:CC (const_int 0) (match_dup 1)))
-	      (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1)))])
-   (set (match_dup 2) (minus:SI (minus:SI (match_dup 3)
-                                          (ashift:SI (match_dup 3)
-                                                     (const_int 1)))
-                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
-  {
-    operands[2] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[3] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }
-  [(set_attr "conds" "clob")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
-
 (define_insn_and_split "*thumb2_abssi2"
   [(set (match_operand:SI         0 "s_register_operand" "=&r,l,r")
 	(abs:SI (match_operand:SI 1 "s_register_operand" "r,0,0")))
