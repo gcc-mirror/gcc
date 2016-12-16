@@ -6009,6 +6009,19 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    {
 	      var = gfc_create_var (type, "pstr");
 
+	      /* Emit a DECL_EXPR for the VLA type.  */
+	      tmp = TREE_TYPE (type);
+	      if (TYPE_SIZE (tmp)
+		  && TREE_CODE (TYPE_SIZE (tmp)) != INTEGER_CST)
+		{
+		  tmp = build_decl (input_location, TYPE_DECL, NULL_TREE, tmp);
+		  DECL_ARTIFICIAL (tmp) = 1;
+		  DECL_IGNORED_P (tmp) = 1;
+		  tmp = fold_build1_loc (input_location, DECL_EXPR,
+					 TREE_TYPE (tmp), tmp);
+		  gfc_add_expr_to_block (&se->pre, tmp);
+		}
+
 	      if ((!comp && sym->attr.allocatable)
 		  || (comp && comp->attr.allocatable))
 		{
