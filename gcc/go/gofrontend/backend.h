@@ -389,19 +389,19 @@ class Backend
   virtual Bstatement*
   error_statement() = 0;
 
-  // Create an expression statement.
+  // Create an expression statement within the specified function.
   virtual Bstatement*
-  expression_statement(Bexpression*) = 0;
+  expression_statement(Bfunction*, Bexpression*) = 0;
 
-  // Create a variable initialization statement.  This initializes a
-  // local variable at the point in the program flow where it is
-  // declared.
+  // Create a variable initialization statement in the specified
+  // function.  This initializes a local variable at the point in the
+  // program flow where it is declared.
   virtual Bstatement*
-  init_statement(Bvariable* var, Bexpression* init) = 0;
+  init_statement(Bfunction*, Bvariable* var, Bexpression* init) = 0;
 
-  // Create an assignment statement.
+  // Create an assignment statement within the specified function.
   virtual Bstatement*
-  assignment_statement(Bexpression* lhs, Bexpression* rhs,
+  assignment_statement(Bfunction*, Bexpression* lhs, Bexpression* rhs,
 		       Location) = 0;
 
   // Create a return statement, passing the representation of the
@@ -410,9 +410,10 @@ class Backend
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   Location) = 0;
 
-  // Create an if statement.  ELSE_BLOCK may be NULL.
+  // Create an if statement within a function.  ELSE_BLOCK may be NULL.
   virtual Bstatement*
-  if_statement(Bexpression* condition, Bblock* then_block, Bblock* else_block,
+  if_statement(Bfunction*, Bexpression* condition,
+               Bblock* then_block, Bblock* else_block,
 	       Location) = 0;
 
   // Create a switch statement where the case values are constants.

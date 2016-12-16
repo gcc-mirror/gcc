@@ -285,6 +285,7 @@ Variable_declaration_statement::do_flatten(Gogo* gogo, Named_object* function,
 Bstatement*
 Variable_declaration_statement::do_get_backend(Translate_context* context)
 {
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
   Variable* var = this->var_->var_value();
   Bvariable* bvar = this->var_->get_backend_variable(context->gogo(),
 						     context->function());
@@ -293,7 +294,7 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
   if (!var->is_in_heap())
     {
       go_assert(binit != NULL);
-      return context->backend()->init_statement(bvar, binit);
+      return context->backend()->init_statement(bfunction, bvar, binit);
     }
 
   // Something takes the address of this variable, so the value is
@@ -316,12 +317,12 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
       Expression* e = Expression::make_temporary_reference(temp, loc);
       e = Expression::make_unary(OPERATOR_MULT, e, loc);
       Bexpression* be = e->get_backend(context);
-      set = context->backend()->assignment_statement(be, binit, loc);
+      set = context->backend()->assignment_statement(bfunction, be, binit, loc);
     }
 
   Expression* ref = Expression::make_temporary_reference(temp, loc);
   Bexpression* bref = ref->get_backend(context);
-  Bstatement* sinit = context->backend()->init_statement(bvar, bref);
+  Bstatement* sinit = context->backend()->init_statement(bfunction, bvar, bref);
 
   std::vector<Bstatement*> stats;
   stats.reserve(3);
@@ -896,6 +897,10 @@ int Mark_lvalue_varexprs::expression(Expression** ppexpr)
       return TRAVERSE_EXIT;
     }
 
+  Unary_expression* ue = e->unary_expression();
+  if (ue && ue->op() == OPERATOR_MULT)
+    return TRAVERSE_CONTINUE;
+
   return TRAVERSE_EXIT;
 }
 
@@ -907,7 +912,8 @@ Assignment_statement::do_get_backend(Translate_context* context)
   if (this->lhs_->is_sink_expression())
     {
       Bexpression* rhs = this->rhs_->get_backend(context);
-      return context->backend()->expression_statement(rhs);
+      Bfunction* bfunction = context->function()->func_value()->get_decl();
+      return context->backend()->expression_statement(bfunction, rhs);
     }
 
   Mark_lvalue_varexprs mlve;
@@ -918,7 +924,9 @@ Assignment_statement::do_get_backend(Translate_context* context)
       Expression::convert_for_assignment(context->gogo(), this->lhs_->type(),
                                          this->rhs_, this->location());
   Bexpression* rhs = conv->get_backend(context);
-  return context->backend()->assignment_statement(lhs, rhs, this->location());
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  return context->backend()->assignment_statement(bfunction, lhs, rhs,
+                                                  this->location());
 }
 
 // Dump the AST representation for an assignment statement.
@@ -1801,7 +1809,8 @@ Bstatement*
 Expression_statement::do_get_backend(Translate_context* context)
 {
   Bexpression* bexpr = this->expr_->get_backend(context);
-  return context->backend()->expression_statement(bexpr);
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  return context->backend()->expression_statement(bfunction, bexpr);
 }
 
 // Dump the AST representation for an expression statement
@@ -2582,7 +2591,8 @@ Go_statement::do_get_backend(Translate_context* context)
   Expression* call = Runtime::make_call(Runtime::GO, this->location(), 2,
 					fn, arg);
   Bexpression* bcall = call->get_backend(context);
-  return context->backend()->expression_statement(bcall);
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  return context->backend()->expression_statement(bfunction, bcall);
 }
 
 // Dump the AST representation for go statement.
@@ -2620,7 +2630,8 @@ Defer_statement::do_get_backend(Translate_context* context)
   Expression* call = Runtime::make_call(Runtime::DEFERPROC, loc, 3,
 					ds, fn, arg);
   Bexpression* bcall = call->get_backend(context);
-  return context->backend()->expression_statement(bcall);
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  return context->backend()->expression_statement(bfunction, bcall);
 }
 
 // Dump the AST representation for defer statement.
@@ -3032,7 +3043,8 @@ Label_statement::do_get_backend(Translate_context* context)
   if (this->label_->is_dummy_label())
     {
       Bexpression* bce = context->backend()->boolean_constant_expression(false);
-      return context->backend()->expression_statement(bce);
+      Bfunction* bfunction = context->function()->func_value()->get_decl();
+      return context->backend()->expression_statement(bfunction, bce);
     }
   Blabel* blabel = this->label_->get_backend_label(context);
   return context->backend()->label_definition_statement(blabel);
@@ -3157,7 +3169,9 @@ If_statement::do_get_backend(Translate_context* context)
   Bblock* else_block = (this->else_block_ == NULL
 			? NULL
 			: this->else_block_->get_backend(context));
-  return context->backend()->if_statement(cond, then_block, else_block,
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  return context->backend()->if_statement(bfunction,
+                                          cond, then_block, else_block,
 					  this->location());
 }
 
@@ -4478,7 +4492,8 @@ Send_statement::do_get_backend(Translate_context* context)
 
   context->gogo()->lower_expression(context->function(), NULL, &call);
   Bexpression* bcall = call->get_backend(context);
-  Bstatement* s = context->backend()->expression_statement(bcall);
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  Bstatement* s = context->backend()->expression_statement(bfunction, bcall);
 
   if (btemp == NULL)
     return s;
@@ -4912,7 +4927,7 @@ Select_clauses::get_backend(Translate_context* context,
       if (s == NULL)
 	clauses[i] = g;
       else
-	clauses[i] = context->backend()->compound_statement(s, g);
+        clauses[i] = context->backend()->compound_statement(s, g);
     }
 
   Expression* selref = Expression::make_temporary_reference(sel, location);
@@ -4923,7 +4938,10 @@ Select_clauses::get_backend(Translate_context* context,
   Bexpression* bcall = call->get_backend(context);
 
   if (count == 0)
-    return context->backend()->expression_statement(bcall);
+    {
+      Bfunction* bfunction = context->function()->func_value()->get_decl();
+      return context->backend()->expression_statement(bfunction, bcall);
+    }
 
   std::vector<Bstatement*> statements;
   statements.reserve(2);

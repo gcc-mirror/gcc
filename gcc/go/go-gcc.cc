@@ -361,21 +361,22 @@ class Gcc_backend : public Backend
   { return this->make_statement(error_mark_node); }
 
   Bstatement*
-  expression_statement(Bexpression*);
+  expression_statement(Bfunction*, Bexpression*);
 
   Bstatement*
-  init_statement(Bvariable* var, Bexpression* init);
+  init_statement(Bfunction*, Bvariable* var, Bexpression* init);
 
   Bstatement*
-  assignment_statement(Bexpression* lhs, Bexpression* rhs, Location);
+  assignment_statement(Bfunction*, Bexpression* lhs, Bexpression* rhs,
+		       Location);
 
   Bstatement*
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   Location);
 
   Bstatement*
-  if_statement(Bexpression* condition, Bblock* then_block, Bblock* else_block,
-	       Location);
+  if_statement(Bfunction*, Bexpression* condition, Bblock* then_block,
+	       Bblock* else_block, Location);
 
   Bstatement*
   switch_statement(Bfunction* function, Bexpression* value,
@@ -1972,7 +1973,7 @@ Gcc_backend::stack_allocation_expression(int64_t size, Location location)
 // An expression as a statement.
 
 Bstatement*
-Gcc_backend::expression_statement(Bexpression* expr)
+Gcc_backend::expression_statement(Bfunction*, Bexpression* expr)
 {
   return this->make_statement(expr->get_tree());
 }
@@ -1980,7 +1981,7 @@ Gcc_backend::expression_statement(Bexpression* expr)
 // Variable initialization.
 
 Bstatement*
-Gcc_backend::init_statement(Bvariable* var, Bexpression* init)
+Gcc_backend::init_statement(Bfunction*, Bvariable* var, Bexpression* init)
 {
   tree var_tree = var->get_decl();
   tree init_tree = init->get_tree();
@@ -2013,8 +2014,8 @@ Gcc_backend::init_statement(Bvariable* var, Bexpression* init)
 // Assignment.
 
 Bstatement*
-Gcc_backend::assignment_statement(Bexpression* lhs, Bexpression* rhs,
-				  Location location)
+Gcc_backend::assignment_statement(Bfunction* bfn, Bexpression* lhs,
+				  Bexpression* rhs, Location location)
 {
   tree lhs_tree = lhs->get_tree();
   tree rhs_tree = rhs->get_tree();
@@ -2029,8 +2030,8 @@ Gcc_backend::assignment_statement(Bexpression* lhs, Bexpression* rhs,
   // anything anyhow.
   if (int_size_in_bytes(TREE_TYPE(lhs_tree)) == 0
       || int_size_in_bytes(TREE_TYPE(rhs_tree)) == 0)
-    return this->compound_statement(this->expression_statement(lhs),
-				    this->expression_statement(rhs));
+    return this->compound_statement(this->expression_statement(bfn, lhs),
+				    this->expression_statement(bfn, rhs));
 
   // Sometimes the same unnamed Go type can be created multiple times
   // and thus have multiple tree representations.  Make sure this does
@@ -2194,8 +2195,9 @@ Gcc_backend::exception_handler_statement(Bstatement* bstat,
 // If.
 
 Bstatement*
-Gcc_backend::if_statement(Bexpression* condition, Bblock* then_block,
-			  Bblock* else_block, Location location)
+Gcc_backend::if_statement(Bfunction*, Bexpression* condition,
+			  Bblock* then_block, Bblock* else_block,
+			  Location location)
 {
   tree cond_tree = condition->get_tree();
   tree then_tree = then_block->get_tree();
@@ -2700,8 +2702,9 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
   // Don't initialize VAR with BINIT, but still evaluate BINIT for
   // its side effects.
   if (this->type_size(btype) == 0 && init_tree != NULL_TREE)
-    *pstatement = this->compound_statement(this->expression_statement(binit),
-					   *pstatement);
+    *pstatement =
+      this->compound_statement(this->expression_statement(function, binit),
+			       *pstatement);
 
   return new Bvariable(var);
 }
