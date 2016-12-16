@@ -1,3 +1,8 @@
+2016-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt61.adb: New test.
+	* gnat.dg/opt61_pkg.ad[sb]: New helper.
+
 2016-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR c++/71694
