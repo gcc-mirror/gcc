@@ -1,3 +1,11 @@
+2016-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/78408
+	* tree-ssa-ccp.c: Include tree-dfa.h.
+	(optimize_memcpy): New function.
+	(pass_fold_builtins::execute): Use it.  Remove useless conditional
+	break after BUILT_IN_VA_*.
+
 2016-12-16  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/78819
