@@ -1,5 +1,9 @@
 2016-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/ubfiz_lsl_1.c: New test.
+
+2016-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/ubfx_lsr_1.c: New test.
 
 2016-12-16  Jakub Jelinek  <jakub@redhat.com>

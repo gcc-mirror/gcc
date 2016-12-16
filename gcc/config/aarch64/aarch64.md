@@ -4439,6 +4439,24 @@
   [(set_attr "type" "bfx")]
 )
 
+;; When the bit position and width of the equivalent extraction add up to 32
+;; we can use a W-reg LSL instruction taking advantage of the implicit
+;; zero-extension of the X-reg.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(and:DI (ashift:DI (match_operand:DI 1 "register_operand")
+			     (match_operand 2 "const_int_operand"))
+		 (match_operand 3 "const_int_operand")))]
+ "aarch64_mask_and_shift_for_ubfiz_p (DImode, operands[3], operands[2])
+  && (INTVAL (operands[2]) + popcount_hwi (INTVAL (operands[3])))
+      == GET_MODE_BITSIZE (SImode)"
+  [(set (match_dup 0)
+	(zero_extend:DI (ashift:SI (match_dup 4) (match_dup 2))))]
+  {
+    operands[4] = gen_lowpart (SImode, operands[1]);
+  }
+)
+
 (define_insn "bswap<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (bswap:GPI (match_operand:GPI 1 "register_operand" "r")))]
