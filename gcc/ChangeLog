@@ -1,3 +1,7 @@
+2016-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md: New define_split above insv<mode>.
+
 2016-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/78408
