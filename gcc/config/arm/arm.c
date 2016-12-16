@@ -27633,7 +27633,7 @@ arm_mangle_type (const_tree type)
 static const int thumb_core_reg_alloc_order[] =
 {
    3,  2,  1,  0,  4,  5,  6,  7,
-  14, 12,  8,  9, 10, 11
+  12, 14,  8,  9, 10, 11
 };
 
 /* Adjust register allocation order when compiling for Thumb.  */
