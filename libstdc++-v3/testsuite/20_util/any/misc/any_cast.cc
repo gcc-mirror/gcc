@@ -106,9 +106,22 @@ void test03()
   MoveDeleted&& md3 = any_cast<MoveDeleted&&>(any(std::move(md)));
 }
 
+void test04()
+{
+  struct ExplicitCopy
+  {
+    ExplicitCopy() = default;
+    explicit ExplicitCopy(const ExplicitCopy&) = default;
+  };
+  any x = ExplicitCopy();
+  ExplicitCopy ec{any_cast<ExplicitCopy>(x)};
+  ExplicitCopy ec2{any_cast<ExplicitCopy>(std::move(x))};
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
 }
