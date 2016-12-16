@@ -4325,6 +4325,26 @@
   [(set_attr "type" "bfx")]
 )
 
+;; When the bit position and width add up to 32 we can use a W-reg LSR
+;; instruction taking advantage of the implicit zero-extension of the X-reg.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extract:DI (match_operand:DI 1 "register_operand")
+			 (match_operand 2
+			   "aarch64_simd_shift_imm_offset_di")
+			 (match_operand 3
+			   "aarch64_simd_shift_imm_di")))]
+  "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]), 1,
+	     GET_MODE_BITSIZE (DImode) - 1)
+   && (INTVAL (operands[2]) + INTVAL (operands[3]))
+       == GET_MODE_BITSIZE (SImode)"
+  [(set (match_dup 0)
+	(zero_extend:DI (lshiftrt:SI (match_dup 4) (match_dup 3))))]
+  {
+    operands[4] = gen_lowpart (SImode, operands[1]);
+  }
+)
+
 ;; Bitfield Insert (insv)
 (define_expand "insv<mode>"
   [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand")
