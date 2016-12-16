@@ -30,6 +30,7 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 extern int cp_decl_dwarf_attribute (const_tree, int);
 extern int cp_type_dwarf_attribute (const_tree, int);
 extern void cp_common_init_ts (void);
+extern tree cp_unit_size_without_reusable_padding (tree);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
    specific to C++ or ObjC++ go in cp/cp-lang.c and objcp/objcp-lang.c,
@@ -137,6 +138,9 @@ extern void cp_common_init_ts (void);
 #define LANG_HOOKS_DECL_DWARF_ATTRIBUTE cp_decl_dwarf_attribute
 #undef LANG_HOOKS_TYPE_DWARF_ATTRIBUTE
 #define LANG_HOOKS_TYPE_DWARF_ATTRIBUTE cp_type_dwarf_attribute
+#undef LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING
+#define LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING cp_unit_size_without_reusable_padding
+
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING cxx_omp_predetermined_sharing
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR

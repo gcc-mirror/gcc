@@ -1,3 +1,10 @@
+2016-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR c++/71694
+	* cp-objcp-common.h (cp_unit_size_without_reusable_padding): Declare.
+	(LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING): Define.
+	* cp-objcp-common.c (cp_unit_size_without_reusable_padding): New.
+
 2016-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	P0490R0 GB 20: decomposition declaration should commit to tuple

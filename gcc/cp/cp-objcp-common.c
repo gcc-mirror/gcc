@@ -252,6 +252,16 @@ cp_type_dwarf_attribute (const_tree type, int attr)
   return -1;
 }
 
+/* Return the unit size of TYPE without reusable tail padding.  */
+
+tree
+cp_unit_size_without_reusable_padding (tree type)
+{
+  if (CLASS_TYPE_P (type))
+    return CLASSTYPE_SIZE_UNIT (type);
+  return TYPE_SIZE_UNIT (type);
+}
+
 /* Stubs to keep c-opts.c happy.  */
 void
 push_file_scope (void)
