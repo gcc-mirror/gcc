@@ -1129,19 +1129,20 @@
 )
 
 (define_insn "*subsi3_carryin"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-        (minus:SI (minus:SI (match_operand:SI 1 "reg_or_int_operand" "r,I")
-                            (match_operand:SI 2 "s_register_operand" "r,r"))
-                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
+	(minus:SI (minus:SI (match_operand:SI 1 "reg_or_int_operand" "r,I,Pz")
+			    (match_operand:SI 2 "s_register_operand" "r,r,r"))
+		  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
   "@
    sbc%?\\t%0, %1, %2
-   rsc%?\\t%0, %2, %1"
+   rsc%?\\t%0, %2, %1
+   sbc%?\\t%0, %2, %2, lsl #1"
   [(set_attr "conds" "use")
-   (set_attr "arch" "*,a")
+   (set_attr "arch" "*,a,t2")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "adc_reg,adc_imm")]
+   (set_attr "type" "adc_reg,adc_imm,alu_shift_imm")]
 )
 
 (define_insn "*subsi3_carryin_const"
@@ -4681,12 +4682,13 @@
 
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
 ;; The first alternative allows the common case of a *full* overlap.
-(define_insn_and_split "*arm_negdi2"
+(define_insn_and_split "*negdi2_insn"
   [(set (match_operand:DI         0 "s_register_operand" "=r,&r")
 	(neg:DI (match_operand:DI 1 "s_register_operand"  "0,r")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM"
-  "#"   ; "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
+  "TARGET_32BIT"
+  "#"	; rsbs %Q0, %Q1, #0; rsc %R0, %R1, #0	       (ARM)
+	; negs %Q0, %Q1    ; sbc %R0, %R1, %R1, lsl #1 (Thumb-2)
   "&& reload_completed"
   [(parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (const_int 0) (match_dup 1)))
