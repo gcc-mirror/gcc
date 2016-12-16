@@ -1,3 +1,12 @@
+2016-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h (_Rb_tree::_M_erase_aux(const_iterator)):
+	Add assertion for undefined argument.
+	(_Rb_tree::_M_erase_aux(const_iterator, const_iterator)): Call
+	_M_erase_aux directly instead of through erase.
+	(_Rb_tree::_M_erase_aux(const Key&)): Likewise.
+	* testsuite/23_containers/map/modifiers/erase/end_neg.cc: New test.
+
 2016-12-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2769, Redundant const in the return type of
