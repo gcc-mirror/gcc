@@ -1607,10 +1607,16 @@ inline void
 vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
-  size_t sz = sizeof (T) * (len - oldlen);
-  safe_grow (len PASS_MEM_STAT);
-  if (sz != 0)
-    memset (&(address ()[oldlen]), 0, sz);
+  gcc_checking_assert (oldlen <= len);
+
+  if (size_t sz = sizeof (T) * (len - oldlen))
+    {
+      safe_grow (len PASS_MEM_STAT);
+
+      T *p = address ();
+      gcc_assert (p != NULL);
+      memset (p + oldlen, 0, sz);
+    }
 }
 
 
