@@ -8096,6 +8096,15 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
   int unsignedp = TYPE_UNSIGNED (type);
   machine_mode mode = TYPE_MODE (type);
   machine_mode orig_mode = mode;
+  static bool expanding_cond_expr_using_cmove = false;
+
+  /* Conditional move expansion can end up TERing two operands which,
+     when recursively hitting conditional expressions can result in
+     exponential behavior if the cmove expansion ultimatively fails.
+     It's hardly profitable to TER a cmove into a cmove so avoid doing
+     that by failing early if we end up recursing.  */
+  if (expanding_cond_expr_using_cmove)
+    return NULL_RTX;
 
   /* If we cannot do a conditional move on the mode, try doing it
      with the promoted mode. */
@@ -8109,6 +8118,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
   else
     temp = assign_temp (type, 0, 1);
 
+  expanding_cond_expr_using_cmove = true;
   start_sequence ();
   expand_operands (treeop1, treeop2,
 		   temp, &op1, &op2, EXPAND_NORMAL);
@@ -8143,6 +8153,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
       if (comparison_mode == VOIDmode)
 	comparison_mode = TYPE_MODE (TREE_TYPE (treeop0));
     }
+  expanding_cond_expr_using_cmove = false;
 
   if (GET_MODE (op1) != mode)
     op1 = gen_lowpart (mode, op1);
