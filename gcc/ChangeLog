@@ -1,5 +1,27 @@
 2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.h (LINK_SPEC): Tidy up.
+	(ENDFILE_SPEC): Likewise.
+	(LIB_SPEC): Likewise.
+	(STARTFILE_SPEC): Include gcrt0 when profiling.
+	(FUNCTION_PROFILER): Use __mcount.
+	* config/arc/arc.opt (mucb-mcount): Remove.
+	* doc/invoke.texi (ARC): Remove mucb-mcount doc.
+	* arc/arc-protos.h (arc_profile_call): Remove.
+	* config/arc/arc.c (write_profile_sections): Likewise.
+	(arc_profile_call): Likewise.
+	(unspec_prof_hash): Likewise.
+	(unspec_prof_htab_eq): Likewise.
+	(arc_legitimate_constant_p): Remove UNSPEC_PROF.
+	(arc_reorg): Remove call to write_profile_sections.
+	* config/arc/arc.md (call): Remove call to arc_profile_call.
+	(call_value): Likewise.
+	(sibcall): Likewise.
+	(sibcall_value): Likewise.
+	(define_constants): Remove UNSPEC_PROF.
+
+2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (mulsidi_600): Change to insn_and_split,
 	generate new mul64 insn for core multiplication work.
 	(umulsidi_600): Likewise, but use mulu64 insn.

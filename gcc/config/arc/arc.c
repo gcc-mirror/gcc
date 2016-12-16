@@ -3610,97 +3610,6 @@ arc_print_operand_address (FILE *file , rtx addr)
     }
 }
 
-/* Called via walk_stores.  DATA points to a hash table we can use to
-   establish a unique SYMBOL_REF for each counter, which corresponds to
-   a caller-callee pair.
-   X is a store which we want to examine for an UNSPEC_PROF, which
-   would be an address loaded into a register, or directly used in a MEM.
-   If we found an UNSPEC_PROF, if we encounter a new counter the first time,
-   write out a description and a data allocation for a 32 bit counter.
-   Also, fill in the appropriate symbol_ref into each UNSPEC_PROF instance.  */
-
-static void
-write_profile_sections (rtx dest ATTRIBUTE_UNUSED, rtx x, void *data)
-{
-  rtx *srcp, src;
-  htab_t htab = (htab_t) data;
-  rtx *slot;
-
-  if (GET_CODE (x) != SET)
-    return;
-  srcp = &SET_SRC (x);
-  if (MEM_P (*srcp))
-    srcp = &XEXP (*srcp, 0);
-  else if (MEM_P (SET_DEST (x)))
-    srcp = &XEXP (SET_DEST (x), 0);
-  src = *srcp;
-  if (GET_CODE (src) != CONST)
-    return;
-  src = XEXP (src, 0);
-  if (GET_CODE (src) != UNSPEC || XINT (src, 1) != UNSPEC_PROF)
-    return;
-
-  gcc_assert (XVECLEN (src, 0) == 3);
-  if (!htab_elements (htab))
-    {
-      output_asm_insn (".section .__arc_profile_desc, \"a\"\n"
-		       "\t.long %0 + 1\n",
-		       &XVECEXP (src, 0, 0));
-    }
-  slot = (rtx *) htab_find_slot (htab, src, INSERT);
-  if (*slot == HTAB_EMPTY_ENTRY)
-    {
-      static int count_nr;
-      char buf[24];
-      rtx count;
-
-      *slot = src;
-      sprintf (buf, "__prof_count%d", count_nr++);
-      count = gen_rtx_SYMBOL_REF (Pmode, xstrdup (buf));
-      XVECEXP (src, 0, 2) = count;
-      output_asm_insn (".section\t.__arc_profile_desc, \"a\"\n"
-		       "\t.long\t%1\n"
-		       "\t.section\t.__arc_profile_counters, \"aw\"\n"
-		       "\t.type\t%o2, @object\n"
-		       "\t.size\t%o2, 4\n"
-		       "%o2:\t.zero 4",
-		       &XVECEXP (src, 0, 0));
-      *srcp = count;
-    }
-  else
-    *srcp = XVECEXP (*slot, 0, 2);
-}
-
-/* Hash function for UNSPEC_PROF htab.  Use both the caller's name and
-   the callee's name (if known).  */
-
-static hashval_t
-unspec_prof_hash (const void *x)
-{
-  const_rtx u = (const_rtx) x;
-  const_rtx s1 = XVECEXP (u, 0, 1);
-
-  return (htab_hash_string (XSTR (XVECEXP (u, 0, 0), 0))
-	  ^ (s1->code == SYMBOL_REF ? htab_hash_string (XSTR (s1, 0)) : 0));
-}
-
-/* Equality function for UNSPEC_PROF htab.  Two pieces of UNSPEC_PROF rtl
-   shall refer to the same counter if both caller name and callee rtl
-   are identical.  */
-
-static int
-unspec_prof_htab_eq (const void *x, const void *y)
-{
-  const_rtx u0 = (const_rtx) x;
-  const_rtx u1 = (const_rtx) y;
-  const_rtx s01 = XVECEXP (u0, 0, 1);
-  const_rtx s11 = XVECEXP (u1, 0, 1);
-
-  return (!strcmp (XSTR (XVECEXP (u0, 0, 0), 0),
-		   XSTR (XVECEXP (u1, 0, 0), 0))
-	  && rtx_equal_p (s01, s11));
-}
-
 /* Conditional execution support.
 
    This is based on the ARM port but for now is much simpler.
@@ -5438,7 +5347,6 @@ arc_legitimate_constant_p (machine_mode mode, rtx x)
 	  case UNSPEC_TLS_GD:
 	  case UNSPEC_TLS_IE:
 	  case UNSPEC_TLS_OFF:
-	  case UNSPEC_PROF:
 	    return true;
 
 	  default:
@@ -6359,47 +6267,6 @@ arc_is_shortcall_p (rtx sym_ref)
 
 }
 
-/* Emit profiling code for calling CALLEE.  Return true if a special
-   call pattern needs to be generated.  */
-
-bool
-arc_profile_call (rtx callee)
-{
-  rtx from = XEXP (DECL_RTL (current_function_decl), 0);
-
-  if (TARGET_UCB_MCOUNT)
-    /* Profiling is done by instrumenting the callee.  */
-    return false;
-
-  if (CONSTANT_P (callee))
-    {
-      rtx count_ptr
-	= gen_rtx_CONST (Pmode,
-			 gen_rtx_UNSPEC (Pmode,
-					 gen_rtvec (3, from, callee,
-						    CONST0_RTX (Pmode)),
-					 UNSPEC_PROF));
-      rtx counter = gen_rtx_MEM (SImode, count_ptr);
-      /* ??? The increment would better be done atomically, but as there is
-	 no proper hardware support, that would be too expensive.  */
-      emit_move_insn (counter,
-		      force_reg (SImode, plus_constant (SImode, counter, 1)));
-      return false;
-    }
-  else
-    {
-      rtx count_list_ptr
-	= gen_rtx_CONST (Pmode,
-			 gen_rtx_UNSPEC (Pmode,
-					 gen_rtvec (3, from, CONST0_RTX (Pmode),
-						    CONST0_RTX (Pmode)),
-					 UNSPEC_PROF));
-      emit_move_insn (gen_rtx_REG (Pmode, 8), count_list_ptr);
-      emit_move_insn (gen_rtx_REG (Pmode, 9), callee);
-      return true;
-    }
-}
-
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
@@ -6620,25 +6487,6 @@ arc_reorg (void)
 
   cfun->machine->arc_reorg_started = 1;
   arc_reorg_in_progress = 1;
-
-  /* Emit special sections for profiling.  */
-  if (crtl->profile)
-    {
-      section *save_text_section;
-      rtx_insn *insn;
-      int size = get_max_uid () >> 4;
-      htab_t htab = htab_create (size, unspec_prof_hash, unspec_prof_htab_eq,
-				 NULL);
-
-      save_text_section = in_section;
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (NONJUMP_INSN_P (insn))
-	  walk_stores (PATTERN (insn), write_profile_sections, htab);
-      if (htab_elements (htab))
-	in_section = 0;
-      switch_to_section (save_text_section);
-      htab_delete (htab);
-    }
 
   /* Link up loop ends with their loop start.  */
   {

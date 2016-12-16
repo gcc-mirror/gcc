@@ -121,12 +121,11 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 		   -X %{mbig-endian:-EB} \
 		   %{EB} %{EL} \
 		   %{marclinux*} \
-		   %{!marclinux*: %{pg|p|profile:-marclinux_prof;: -marclinux}} \
+		   %{!marclinux*: -marclinux} \
 		   %{!z:-z max-page-size=0x2000 -z common-page-size=0x2000} \
 		   %{shared:-shared}"
 #else
-#define LINK_SPEC "%{mbig-endian:-EB} %{EB} %{EL}\
-  %{pg|p:-marcelf_prof;mA7|mARC700|mcpu=arc700|mcpu=ARC700: -marcelf}"
+#define LINK_SPEC "%{mbig-endian:-EB} %{EB} %{EL}"
 #endif
 
 #if DEFAULT_LIBC != LIBC_UCLIBC
@@ -135,7 +134,7 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 #define EXTRA_SPECS \
   { "arc_tls_extra_start_spec", ARC_TLS_EXTRA_START_SPEC }, \
 
-#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti%O%s %{pg|p:crtg.o%s} " \
+#define STARTFILE_SPEC "%{pg|p:gcrt0.o%s}%{!pg:%{!p:crt0.o%s}} crti%O%s " \
   "%(arc_tls_extra_start_spec) crtbegin.o%s"
 #else
 #define STARTFILE_SPEC							\
@@ -143,7 +142,7 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 #endif
 
 #if DEFAULT_LIBC != LIBC_UCLIBC
-#define ENDFILE_SPEC "%{pg|p:crtgend.o%s} crtend.o%s crtn%O%s"
+#define ENDFILE_SPEC "crtend.o%s crtn%O%s"
 #else
 #define ENDFILE_SPEC							\
   LINUX_OR_ANDROID_LD (GNU_USER_TARGET_ENDFILE_SPEC, ANDROID_ENDFILE_SPEC)
@@ -154,12 +153,11 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 #define LIB_SPEC  \
   "%{pthread:-lpthread} \
    %{shared:-lc} \
-   %{!shared:%{pg|p|profile:-lgmon -u profil --defsym __profil=profil} -lc}"
+   %{!shared:%{profile:-lc_p}%{!profile:-lc}}"
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 #else
 #undef LIB_SPEC
-/* -lc_p not present for arc-elf32-* : ashwin */
-#define LIB_SPEC "%{!shared:%{g*:-lg} %{pg|p:-lgmon} -lc}"
+#define LIB_SPEC "%{!shared:%{g*:-lg} -lc}"
 #endif
 
 #ifndef DRIVER_ENDIAN_SELF_SPECS
@@ -916,12 +914,14 @@ extern int arc_initial_elimination_offset(int from, int to);
   (OFFSET) = arc_initial_elimination_offset ((FROM), (TO))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.
-   We actually emit the profiler code at the call site, so leave this one
-   empty.  */
-#define FUNCTION_PROFILER(FILE, LABELNO) \
-  if (TARGET_UCB_MCOUNT) \
-    fprintf (FILE, "\t%s\n", arc_output_libcall ("__mcount"))
+   for profiling a function entry.  */
+#define FUNCTION_PROFILER(FILE, LABELNO)			\
+  do {								\
+  if (flag_pic)							\
+    fprintf (FILE, "\tbl\t__mcount@plt\n");			\
+  else								\
+    fprintf (FILE, "\tbl\t__mcount\n");				\
+  } while (0);
 
 #define NO_PROFILE_COUNTERS  1
 

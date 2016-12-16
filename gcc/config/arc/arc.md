@@ -9,7 +9,7 @@
 ;;    Saurabh Verma (saurabh.verma@codito.com)
 ;;    Ramana Radhakrishnan(ramana.radhakrishnan@codito.com)
 ;;
-;;    Profiling support and performance improvements by
+;;    Performance improvements by
 ;;    Joern Rennecke (joern.rennecke@embecosm.com)
 ;;
 
@@ -165,9 +165,7 @@
   ])
 
 (define_constants
-  [(UNSPEC_PROF 18) ; profile callgraph counter
-
-   (R0_REG 0)
+  [(R0_REG 0)
    (R1_REG 1)
    (R2_REG 2)
    (R3_REG 3)
@@ -4108,13 +4106,6 @@
 
     gcc_assert (MEM_P (operands[0]));
     callee  = XEXP (operands[0], 0);
-    if (crtl->profile && arc_profile_call (callee))
-      {
-	emit_call_insn (gen_call_prof (gen_rtx_SYMBOL_REF (Pmode,
-							   \"_mcount_call\"),
-				       operands[1]));
-	DONE;
-      }
     /* This is to decide if we should generate indirect calls by loading the
        32 bit address of the callee into a register before performing the
        branch and link - this exposes cse opportunities.
@@ -4177,14 +4168,6 @@
 
     gcc_assert (MEM_P (operands[1]));
     callee = XEXP (operands[1], 0);
-    if (crtl->profile && arc_profile_call (callee))
-      {
-	emit_call_insn (gen_call_value_prof (operands[0],
-					     gen_rtx_SYMBOL_REF (Pmode,
-							    \"_mcount_call\"),
-					     operands[2]));
-	DONE;
-      }
      /* See the comment in define_expand \"call\".  */
     if (GET_CODE (callee) != REG
 	&& (GET_CODE (callee) == PLUS || arc_is_longcall_p (callee)))
@@ -4667,13 +4650,6 @@
 
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
-    if (crtl->profile && arc_profile_call (callee))
-      {
-	emit_insn (gen_sibcall_prof
-		    (gen_rtx_SYMBOL_REF (Pmode, \"_mcount_call\"),
-		     operands[1], operands[2]));
-	DONE;
-      }
     if (GET_CODE (callee) != REG
 	&& (GET_CODE (callee) == PLUS || arc_is_longcall_p (callee)))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
@@ -4693,13 +4669,6 @@
 
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
-    if (crtl->profile && arc_profile_call (XEXP (operands[1], 0)))
-      {
-	emit_insn (gen_sibcall_value_prof
-		    (operands[0], gen_rtx_SYMBOL_REF (Pmode, \"_mcount_call\"),
-		     operands[2], operands[3]));
-	DONE;
-      }
     if (GET_CODE (callee) != REG && arc_is_longcall_p (callee))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
   }"
