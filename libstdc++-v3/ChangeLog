@@ -1,3 +1,15 @@
+2016-12-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2769, Redundant const in the return type of
+	any_cast(const any&).
+	* include/std/any (_AnyCast): New.
+	(any_cast(const any&)): Use it and add an explicit cast for return.
+	(any_cast(any&)): Likewise.
+	(any_cast(any&&)): Likewise.
+	* testsuite/20_util/any/misc/any_cast.cc: Add a test for a type
+	that has an explicit copy constructor.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust.
+
 2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59170

@@ -433,6 +433,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return any(in_place_type<_Tp>, __il, std::forward<_Args>(__args)...);
     }
 
+  template <typename _Tp>
+    using _AnyCast = remove_cv_t<remove_reference_t<_Tp>>;
   /**
    * @brief Access the contained object.
    *
@@ -448,9 +450,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(any::__is_valid_cast<_ValueType>(),
 	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<add_const_t<remove_reference_t<_ValueType>>>(&__any);
+      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
       if (__p)
-	return *__p;
+	return static_cast<_ValueType>(*__p);
       __throw_bad_any_cast();
     }
 
@@ -471,9 +473,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(any::__is_valid_cast<_ValueType>(),
 	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<remove_reference_t<_ValueType>>(&__any);
+      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
       if (__p)
-	return *__p;
+	return static_cast<_ValueType>(*__p);
       __throw_bad_any_cast();
     }
 
@@ -485,9 +487,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(any::__is_valid_cast<_ValueType>(),
 	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<remove_reference_t<_ValueType>>(&__any);
+      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
       if (__p)
-	return *__p;
+	return static_cast<_ValueType>(*__p);
       __throw_bad_any_cast();
     }
 
@@ -499,9 +501,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(any::__is_valid_cast<_ValueType>(),
 	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<remove_reference_t<_ValueType>>(&__any);
+      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
       if (__p)
-	return std::move(*__p);
+	return static_cast<_ValueType>(std::move(*__p));
       __throw_bad_any_cast();
     }
   // @}
