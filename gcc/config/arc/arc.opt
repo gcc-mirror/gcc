@@ -409,10 +409,6 @@ mlra-priority-noncompact
 Target RejectNegative Var(arc_lra_prioritytag, ARC_LRA_PRIORITY_NONCOMPACT)
 Reduce priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY.
 
-mucb-mcount
-Target Report Var(TARGET_UCB_MCOUNT)
-instrument with mcount calls as in the ucb code.
-
 ; backward-compatibility aliases, translated by DRIVER_SELF_SPECS
 
 mEA

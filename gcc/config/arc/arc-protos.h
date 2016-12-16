@@ -70,7 +70,6 @@ extern bool arc_raw_symbolic_reference_mentioned_p (rtx, bool);
 extern bool arc_legitimate_pic_operand_p (rtx);
 extern bool arc_is_longcall_p (rtx);
 extern bool arc_is_shortcall_p (rtx);
-extern bool arc_profile_call (rtx callee);
 extern bool valid_brcc_with_delay_p (rtx *);
 extern bool small_data_pattern (rtx , machine_mode);
 extern rtx arc_rewrite_small_data (rtx);

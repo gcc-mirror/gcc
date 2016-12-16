@@ -1,3 +1,25 @@
+2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config.host (arc*-*-linux-uclibc*): Remove libgmon, crtg, and
+	crtgend.
+	(arc*-*-elf*): Likewise.
+	* config/arc/t-arc: Remove old gmon lib targets.
+	* config/arc/crtg.S: Remove.
+	* config/arc/crtgend.S: Likewise.
+	* config/arc/gmon/atomic.h: Likewise.
+	* config/arc/gmon/auxreg.h: Likewise.
+	* config/arc/gmon/dcache_linesz.S: Likewise.
+	* config/arc/gmon/gmon.c: Likewise.
+	* config/arc/gmon/machine-gmon.h: Likewise.
+	* config/arc/gmon/mcount.c: Likewise.
+	* config/arc/gmon/prof-freq-stub.S: Likewise.
+	* config/arc/gmon/prof-freq.c: Likewise.
+	* config/arc/gmon/profil.S: Likewise.
+	* config/arc/gmon/sys/gmon.h: Likewise.
+	* config/arc/gmon/sys/gmon_out.h: Likewise.
+	* config/arc/t-arc-newlib: Likewise.
+	* config/arc/t-arc700-uClibc: Renamed to t-arc-uClibc.
+
 2016-12-12  George Spelvin  <linux@sciencehorizons.net>
 
 	* config/avr/lib1funcs.S (__ashrdi3): Fix typo from r243545.
