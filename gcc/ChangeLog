@@ -1,3 +1,7 @@
+2016-12-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (thumb_core_reg_alloc_order): Swap R12 and R14.
+
 2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (call_prof): Remove.
