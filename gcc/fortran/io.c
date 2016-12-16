@@ -486,12 +486,13 @@ format_lex (void)
 		  if (c == delim)
 		    {
 		      c = next_char (NONSTRING);
-
 		      if (c == '\0')
 			{
 			  token = FMT_END;
 			  break;
 			}
+		      if (c == delim)
+			continue;
 		      unget_char ();
 		      break;
 		    }

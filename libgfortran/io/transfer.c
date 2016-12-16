@@ -1264,6 +1264,33 @@ require_numeric_type (st_parameter_dt *dtp, bt actual, const fnode *f)
   return 1;
 }
 
+static char *
+get_dt_format (char *p, gfc_charlen_type *length)
+{
+  char delim = p[-1];  /* The delimiter is always the first character back.  */
+  char c, *q, *res;
+  gfc_charlen_type len = *length; /* This length already correct, less 'DT'.  */
+
+  res = q = xmalloc (len + 2);
+
+  /* Set the beginning of the string to 'DT', length adjusted below.  */
+  *q++ = 'D';
+  *q++ = 'T';
+
+  /* The string may contain doubled quotes so scan and skip as needed.  */
+  for (; len > 0; len--)
+    {
+      c = *q++ = *p++;
+      if (c == delim)
+	p++;  /* Skip the doubled delimiter.  */
+    }
+
+  /* Adjust the string length by two now that we are done.  */
+  *length += 2;
+
+  return res;
+}
+
 
 /* This function is in the main loop for a formatted data transfer
    statement.  It would be natural to implement this as a coroutine
@@ -1420,7 +1447,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  gfc_charlen_type child_iomsg_len;
 	  int noiostat;
 	  int *child_iostat = NULL;
-	  char *iotype = f->u.udf.string;
+	  char *iotype;
 	  gfc_charlen_type iotype_len = f->u.udf.string_len;
 
 	  /* Build the iotype string.  */
@@ -1430,13 +1457,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	      iotype = dt;
 	    }
 	  else
-	    {
-	      iotype_len += 2;
-	      iotype = xmalloc (iotype_len);
-	      iotype[0] = dt[0];
-	      iotype[1] = dt[1];
-	      memcpy (iotype + 2, f->u.udf.string, f->u.udf.string_len);
-	    }
+	    iotype = get_dt_format (f->u.udf.string, &iotype_len);
 
 	  /* Set iostat, intent(out).  */
 	  noiostat = 0;
@@ -1890,7 +1911,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  gfc_charlen_type child_iomsg_len;
 	  int noiostat;
 	  int *child_iostat = NULL;
-	  char *iotype = f->u.udf.string;
+	  char *iotype;
 	  gfc_charlen_type iotype_len = f->u.udf.string_len;
 
 	  /* Build the iotype string.  */
@@ -1900,13 +1921,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	      iotype = dt;
 	    }
 	  else
-	    {
-	      iotype_len += 2;
-	      iotype = xmalloc (iotype_len);
-	      iotype[0] = dt[0];
-	      iotype[1] = dt[1];
-	      memcpy (iotype + 2, f->u.udf.string, f->u.udf.string_len);
-	    }
+	    iotype = get_dt_format (f->u.udf.string, &iotype_len);
 
 	  /* Set iostat, intent(out).  */
 	  noiostat = 0;

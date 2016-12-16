@@ -1,3 +1,11 @@
+2016-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78622
+	* io/transfer.c (get_dt_format): New static function to alloc
+	and set the DT iotype string, handling doubled quotes.
+	(formatted_transfer_scalar_read,
+	formatted_transfer_scalar_write): Use new function.
+
 2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Call GCC_CHECK_LINKER_HWCAP.
