@@ -1864,13 +1864,14 @@ finish_bitfield_representative (tree repr, tree field)
     }
   else
     {
-      /* ???  If you consider that tail-padding of this struct might be
-         re-used when deriving from it we cannot really do the following
-	 and thus need to set maxsize to bitsize?  Also we cannot
-	 generally rely on maxsize to fold to an integer constant, so
-	 use bitsize as fallback for this case.  */
-      tree maxsize = size_diffop (TYPE_SIZE_UNIT (DECL_CONTEXT (field)),
-				  DECL_FIELD_OFFSET (repr));
+      /* Note that if the C++ FE sets up tail-padding to be re-used it
+         creates a as-base variant of the type with TYPE_SIZE adjusted
+	 accordingly.  So it is safe to include tail-padding here.  */
+      tree aggsize = lang_hooks.types.unit_size_without_reusable_padding
+							(DECL_CONTEXT (field));
+      tree maxsize = size_diffop (aggsize, DECL_FIELD_OFFSET (repr));
+      /* We cannot generally rely on maxsize to fold to an integer constant,
+	 so use bitsize as fallback for this case.  */
       if (tree_fits_uhwi_p (maxsize))
 	maxbitsize = (tree_to_uhwi (maxsize) * BITS_PER_UNIT
 		      - tree_to_uhwi (DECL_FIELD_BIT_OFFSET (repr)));

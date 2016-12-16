@@ -1,5 +1,10 @@
 2016-12-16  Richard Biener  <rguenther@suse.de>
 
+	PR c++/71694
+	* g++.dg/pr71694.C: New testcase.
+
+2016-12-16  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/71632
 	* gcc.dg/pr71632.c: New testcase.
 

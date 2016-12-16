@@ -1,5 +1,18 @@
 2016-12-16  Richard Biener  <rguenther@suse.de>
 
+	PR c++/71694
+	* langhooks-def.h (lhd_unit_size_without_reusable_padding): Declare.
+	(LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Adjust.
+	* langhooks.h (struct lang_hooks_for_types): Add
+	unit_size_without_reusable_padding.
+	* langhooks.c (lhd_unit_size_without_reusable_padding): New.
+	* stor-layout.c (finish_bitfield_representative): Use
+	unit_size_without_reusable_padding langhook to decide on the
+	last representatives size.
+
+2016-12-16  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/71632
 	* expr.c (expand_cond_expr_using_cmove): Bail out early if
 	we end up recursing via TER.

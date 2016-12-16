@@ -729,6 +729,15 @@ lhd_type_dwarf_attribute (const_tree, int)
   return -1;
 }
 
+/* Default implementation of LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING.
+   Just return TYPE_SIZE_UNIT unadjusted.  */
+
+tree
+lhd_unit_size_without_reusable_padding (tree t)
+{
+  return TYPE_SIZE_UNIT (t);
+}
+
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */
 
 bool
