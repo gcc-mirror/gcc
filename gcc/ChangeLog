@@ -1,3 +1,10 @@
+2016-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/78819
+	* tree-vrp.c (find_switch_asserts): Return if the insertion limit is 0.
+	Don't register an assertion if the default case shares a label with
+	another case.
+
 2016-12-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.md (subsi3_carryin): Add Thumb-2 RSC #0.

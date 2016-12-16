@@ -6051,10 +6051,17 @@ find_switch_asserts (basic_block bb, gswitch *last)
   /* Now register along the default label assertions that correspond to the
      anti-range of each label.  */
   int insertion_limit = PARAM_VALUE (PARAM_MAX_VRP_SWITCH_ASSERTIONS);
+  if (insertion_limit == 0)
+    return;
+
+  /* We can't do this if the default case shares a label with another case.  */
+  tree default_cl = gimple_switch_default_label (last);
   for (idx = 1; idx < n; idx++)
     {
       tree min, max;
       tree cl = gimple_switch_label (last, idx);
+      if (CASE_LABEL (cl) == CASE_LABEL (default_cl))
+	continue;
 
       min = CASE_LOW (cl);
       max = CASE_HIGH (cl);
@@ -6065,6 +6072,8 @@ find_switch_asserts (basic_block bb, gswitch *last)
 	{
 	  tree next_min, next_max;
 	  tree next_cl = gimple_switch_label (last, idx);
+	  if (CASE_LABEL (next_cl) == CASE_LABEL (default_cl))
+	    break;
 
 	  next_min = CASE_LOW (next_cl);
 	  next_max = CASE_HIGH (next_cl);
