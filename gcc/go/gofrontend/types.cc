@@ -1471,8 +1471,8 @@ Type::convert_builtin_named_types(Gogo* gogo)
 }
 
 // Return the type of a type descriptor.  We should really tie this to
-// runtime.Type rather than copying it.  This must match commonType in
-// libgo/go/runtime/type.go.
+// runtime.Type rather than copying it.  This must match the struct "_type"
+// declared in libgo/go/runtime/type.go.
 
 Type*
 Type::make_type_descriptor_type()
@@ -1519,7 +1519,7 @@ Type::make_type_descriptor_type()
 
       // Forward declaration for the type descriptor type.
       Named_object* named_type_descriptor_type =
-	Named_object::make_type_declaration("commonType", NULL, bloc);
+	Named_object::make_type_declaration("_type", NULL, bloc);
       Type* ft = Type::make_forward_declaration(named_type_descriptor_type);
       Type* pointer_type_descriptor_type = Type::make_pointer_type(ft);
 
@@ -1565,7 +1565,7 @@ Type::make_type_descriptor_type()
 				       "ptrToThis",
 				       pointer_type_descriptor_type);
 
-      Named_type* named = Type::make_builtin_named_type("commonType",
+      Named_type* named = Type::make_builtin_named_type("_type",
 							type_descriptor_type);
 
       named_type_descriptor_type->set_type_value(named);
@@ -3882,7 +3882,7 @@ Function_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(4);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_FUNC,
 						    name, NULL, true));
@@ -4395,7 +4395,7 @@ Pointer_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       vals->reserve(2);
 
       Struct_field_list::const_iterator p = fields->begin();
-      go_assert(p->is_field_name("commonType"));
+      go_assert(p->is_field_name("_type"));
       vals->push_back(this->type_descriptor_constructor(gogo,
 							RUNTIME_TYPE_KIND_PTR,
 							name, methods, false));
@@ -5305,7 +5305,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   go_assert(methods == NULL || name == NULL);
 
   Struct_field_list::const_iterator ps = fields->begin();
-  go_assert(ps->is_field_name("commonType"));
+  go_assert(ps->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_STRUCT,
 						    name, methods, true));
@@ -6719,7 +6719,7 @@ Array_type::array_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_ARRAY,
 						    name, NULL, true));
@@ -6758,7 +6758,7 @@ Array_type::slice_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(2);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_SLICE,
 						    name, NULL, true));
@@ -7243,7 +7243,7 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(12);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_MAP,
 						    name, NULL, true));
@@ -7681,7 +7681,7 @@ Channel_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_CHAN,
 						    name, NULL, true));
@@ -8570,7 +8570,7 @@ Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ivals->reserve(2);
 
   Struct_field_list::const_iterator pif = ifields->begin();
-  go_assert(pif->is_field_name("commonType"));
+  go_assert(pif->is_field_name("_type"));
   const int rt = RUNTIME_TYPE_KIND_INTERFACE;
   ivals->push_back(this->type_descriptor_constructor(gogo, rt, name, NULL,
 						     true));
