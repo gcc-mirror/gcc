@@ -12,10 +12,6 @@
 ;;    Profiling support and performance improvements by
 ;;    Joern Rennecke (joern.rennecke@embecosm.com)
 ;;
-;;    Support for DSP multiply instructions and mul64
-;;    instructions for ARC600; and improvements in flag setting
-;;    instructions by
-;;    Muhammad Khurram Riaz (Khurram.Riaz@arc.com)
 
 ;; This file is part of GCC.
 
@@ -2054,14 +2050,26 @@
   [(set_attr "is_sfunc" "yes")
    (set_attr "predicable" "yes")])
 
-(define_insn "mulsidi_600"
+(define_insn_and_split "mulsidi_600"
+  [(set (match_operand:DI 0 "register_operand"                               "=c, c,c,  c")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"  "%Rcq#q, c,c,  c"))
+		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "Rcq#q,cL,L,C32"))))
+   (clobber (reg:DI MUL64_OUT_REG))]
+  "TARGET_MUL64_SET"
+  "#"
+  "TARGET_MUL64_SET"
+  [(const_int 0)]
+  "emit_insn (gen_mul64 (operands[1], operands[2]));
+   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+   DONE;"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "mul64"
   [(set (reg:DI MUL64_OUT_REG)
-	(mult:DI (sign_extend:DI
-		   (match_operand:SI 0 "register_operand"  "%Rcq#q,c,c,c"))
-		 (sign_extend:DI
-; assembler issue for "I", see mulsi_600
-;		   (match_operand:SI 1 "register_operand" "Rcq#q,cL,I,Cal"))))]
-		   (match_operand:SI 1 "register_operand" "Rcq#q,cL,L,C32"))))]
+	(mult:DI
+	 (sign_extend:DI (match_operand:SI 0 "register_operand" "%Rcq#q, c,c,  c"))
+	 (sign_extend:DI (match_operand:SI 1 "nonmemory_operand" "Rcq#q,cL,L,C32"))))]
   "TARGET_MUL64_SET"
   "mul64%? \t0, %0, %1%&"
   [(set_attr "length" "*,4,4,8")
@@ -2070,14 +2078,26 @@
    (set_attr "predicable" "yes,yes,no,yes")
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
 
-(define_insn "umulsidi_600"
+(define_insn_and_split "umulsidi_600"
+  [(set (match_operand:DI 0 "register_operand"                            "=c,c, c")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"   "%c,c, c"))
+		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "cL,L,C32"))))
+   (clobber (reg:DI MUL64_OUT_REG))]
+  "TARGET_MUL64_SET"
+  "#"
+  "TARGET_MUL64_SET"
+  [(const_int 0)]
+  "emit_insn (gen_mulu64 (operands[1], operands[2]));
+   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+   DONE;"
+  [(set_attr "type" "umulti")
+   (set_attr "length" "8")])
+
+(define_insn "mulu64"
   [(set (reg:DI MUL64_OUT_REG)
-	(mult:DI (zero_extend:DI
-		   (match_operand:SI 0 "register_operand"  "%c,c,c"))
-		 (sign_extend:DI
-; assembler issue for "I", see mulsi_600
-;		   (match_operand:SI 1 "register_operand" "cL,I,Cal"))))]
-		   (match_operand:SI 1 "register_operand" "cL,L,C32"))))]
+	(mult:DI
+	 (zero_extend:DI (match_operand:SI 0 "register_operand"  "%c,c,c"))
+	 (zero_extend:DI (match_operand:SI 1 "nonmemory_operand" "cL,L,C32"))))]
   "TARGET_MUL64_SET"
   "mulu64%? \t0, %0, %1%&"
   [(set_attr "length" "4,4,8")
@@ -2141,9 +2161,7 @@
     }
   else if (TARGET_MUL64_SET)
     {
-      operands[2] = force_reg (SImode, operands[2]);
-      emit_insn (gen_mulsidi_600 (operands[1], operands[2]));
-      emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+      emit_insn (gen_mulsidi_600 (operands[0], operands[1], operands[2]));
       DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
@@ -2375,9 +2393,7 @@
     }
   else if (TARGET_MUL64_SET)
     {
-      operands[2] = force_reg (SImode, operands[2]);
-      emit_insn (gen_umulsidi_600 (operands[1], operands[2]));
-      emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+      emit_insn (gen_umulsidi_600 (operands[0], operands[1], operands[2]));
       DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)

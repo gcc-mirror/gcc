@@ -1,3 +1,15 @@
+2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsidi_600): Change to insn_and_split,
+	generate new mul64 insn for core multiplication work.
+	(umulsidi_600): Likewise, but use mulu64 insn.
+	(mul64): New pattern, content taken from old mulsidi_600 insn
+	pattern.
+	(mulu64): Likewise, but using umulsidi_600.
+	(mulsidi3): Remove move to destination, this is now handled by
+	mulsidi_600 insn_and_split.
+	(umulsidi3): Likewise, but using umulsidi_600.
+
 2016-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR c++/71694
