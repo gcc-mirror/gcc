@@ -802,9 +802,6 @@ sanitize_asan_mark_poison (void)
 	  if (maybe_contains_asan_check (stmt))
 	    {
 	      bitmap_set_bit (with_check, bb->index);
-if (dump_file)
-fprintf (dump_file, "setting bit %d\n", bb->index);
-
 	      break;
 	    }
 	}
