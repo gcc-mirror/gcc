@@ -1,3 +1,8 @@
+2016-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71632
+	* gcc.dg/pr71632.c: New testcase.
+
 2016-12-15  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* gcc.target/i386/avx512bw-kmovd-1.c: New test.

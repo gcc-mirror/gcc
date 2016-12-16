@@ -1,3 +1,9 @@
+2016-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71632
+	* expr.c (expand_cond_expr_using_cmove): Bail out early if
+	we end up recursing via TER.
+
 2016-12-15  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/78817
