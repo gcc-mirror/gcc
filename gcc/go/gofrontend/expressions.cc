@@ -964,8 +964,12 @@ Set_and_use_temporary_expression::do_get_backend(Translate_context* context)
   Bvariable* bvar = this->statement_->get_backend_variable(context);
   Bexpression* lvar_ref = gogo->backend()->var_expression(bvar, VE_rvalue, loc);
 
+  Named_object* fn = context->function();
+  go_assert(fn != NULL);
+  Bfunction* bfn = fn->func_value()->get_or_make_decl(gogo, fn);
   Bexpression* bexpr = this->expr_->get_backend(context);
-  Bstatement* set = gogo->backend()->assignment_statement(lvar_ref, bexpr, loc);
+  Bstatement* set = gogo->backend()->assignment_statement(bfn, lvar_ref,
+                                                          bexpr, loc);
   Bexpression* var_ref = gogo->backend()->var_expression(bvar, VE_lvalue, loc);
   Bexpression* ret = gogo->backend()->compound_expression(set, var_ref, loc);
   return ret;
@@ -4229,8 +4233,12 @@ Unary_expression::do_get_backend(Translate_context* context)
               gogo->backend()->var_expression(bvar, VE_lvalue, loc);
           Bexpression* bval = sut->expression()->get_backend(context);
 
+          Named_object* fn = context->function();
+          go_assert(fn != NULL);
+          Bfunction* bfn =
+              fn->func_value()->get_or_make_decl(gogo, fn);
           Bstatement* bassign =
-              gogo->backend()->assignment_statement(bvar_expr, bval, loc);
+              gogo->backend()->assignment_statement(bfn, bvar_expr, bval, loc);
           Bexpression* bvar_addr =
               gogo->backend()->address_expression(bvar_expr, loc);
 	  return gogo->backend()->compound_expression(bassign, bvar_addr, loc);
@@ -10197,8 +10205,10 @@ Call_expression::do_get_backend(Translate_context* context)
       Expression* call_ref =
           Expression::make_temporary_reference(this->call_temp_, location);
       Bexpression* bcall_ref = call_ref->get_backend(context);
+      Bfunction* bfunction = context->function()->func_value()->get_decl();
       Bstatement* assn_stmt =
-          gogo->backend()->assignment_statement(bcall_ref, call, location);
+          gogo->backend()->assignment_statement(bfunction,
+                                                bcall_ref, call, location);
 
       this->call_ = this->set_results(context, bcall_ref);
 
@@ -10235,11 +10245,13 @@ Call_expression::set_results(Translate_context* context, Bexpression* call)
 	Expression::make_temporary_reference(temp, loc);
       ref->set_is_lvalue();
 
+      Bfunction* bfunction = context->function()->func_value()->get_decl();
       Bexpression* result_ref = ref->get_backend(context);
       Bexpression* call_result =
           gogo->backend()->struct_field_expression(call, i, loc);
       Bstatement* assn_stmt =
-           gogo->backend()->assignment_statement(result_ref, call_result, loc);
+          gogo->backend()->assignment_statement(bfunction,
+                                                result_ref, call_result, loc);
 
       Bexpression* result =
           gogo->backend()->compound_expression(assn_stmt, call_result, loc);
@@ -10248,7 +10260,8 @@ Call_expression::set_results(Translate_context* context, Bexpression* call)
         results = result;
       else
         {
-          Bstatement* expr_stmt = gogo->backend()->expression_statement(result);
+          Bstatement* expr_stmt =
+              gogo->backend()->expression_statement(bfunction, result);
           results =
               gogo->backend()->compound_expression(expr_stmt, results, loc);
         }
@@ -11951,7 +11964,9 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
 
   Bexpression* bcond =
       gogo->backend()->conditional_expression(NULL, bnil_check, bcrash, NULL, loc);
-  Bstatement* cond_statement = gogo->backend()->expression_statement(bcond);
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  Bstatement* cond_statement =
+      gogo->backend()->expression_statement(bfunction, bcond);
   return gogo->backend()->compound_expression(cond_statement, bclosure, loc);
 }
 
@@ -14151,7 +14166,8 @@ Heap_expression::do_get_backend(Translate_context* context)
     gogo->backend()->indirect_expression(expr_btype, space, true, loc);
 
   Bexpression* bexpr = this->expr_->get_backend(context);
-  Bstatement* assn = gogo->backend()->assignment_statement(ref, bexpr, loc);
+  Bstatement* assn = gogo->backend()->assignment_statement(fndecl, ref,
+                                                           bexpr, loc);
   decl = gogo->backend()->compound_statement(decl, assn);
   space = gogo->backend()->var_expression(space_temp, VE_rvalue, loc);
   return gogo->backend()->compound_expression(decl, space, loc);
@@ -15451,7 +15467,9 @@ Compound_expression::do_get_backend(Translate_context* context)
 {
   Gogo* gogo = context->gogo();
   Bexpression* binit = this->init_->get_backend(context);
-  Bstatement* init_stmt = gogo->backend()->expression_statement(binit);
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  Bstatement* init_stmt = gogo->backend()->expression_statement(bfunction,
+                                                                binit);
   Bexpression* bexpr = this->expr_->get_backend(context);
   return gogo->backend()->compound_expression(init_stmt, bexpr,
 					      this->location());

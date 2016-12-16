@@ -661,7 +661,7 @@ Gogo::recompute_init_priorities()
 // package.
 
 void
-Gogo::init_imports(std::vector<Bstatement*>& init_stmts)
+Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
 {
   go_assert(this->is_main_package());
 
@@ -703,7 +703,8 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts)
       Bexpression* pfunc_call =
 	this->backend()->call_expression(pfunc_code, empty_args,
 					 NULL, unknown_loc);
-      init_stmts.push_back(this->backend()->expression_statement(pfunc_call));
+      init_stmts.push_back(this->backend()->expression_statement(bfunction,
+                                                                 pfunc_call));
     }
 }
 
@@ -726,7 +727,8 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts)
 
 void
 Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
-		       std::vector<Bstatement*>& init_stmts)
+		       std::vector<Bstatement*>& init_stmts,
+                       Bfunction* init_bfn)
 {
   if (var_gc.empty())
     return;
@@ -830,7 +832,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   Translate_context context(this, NULL, NULL, NULL);
   Bexpression* bcall = register_roots->get_backend(&context);
-  init_stmts.push_back(this->backend()->expression_statement(bcall));
+  init_stmts.push_back(this->backend()->expression_statement(init_bfn, bcall));
 }
 
 // Get the name to use for the import control function.  If there is a
@@ -1253,14 +1255,19 @@ Gogo::write_globals()
   std::vector<Bexpression*> const_decls;
   std::vector<Bfunction*> func_decls;
 
-  // The init function declaration, if necessary.
+  // The init function declaration and associated Bfunction, if necessary.
   Named_object* init_fndecl = NULL;
+  Bfunction* init_bfn = NULL;
 
   std::vector<Bstatement*> init_stmts;
   std::vector<Bstatement*> var_init_stmts;
 
   if (this->is_main_package())
-    this->init_imports(init_stmts);
+    {
+      init_fndecl = this->initialization_function_decl();
+      init_bfn = init_fndecl->func_value()->get_or_make_decl(this, init_fndecl);
+      this->init_imports(init_stmts, init_bfn);
+    }
 
   // A list of variable initializations.
   Var_inits var_inits;
@@ -1345,7 +1352,11 @@ Gogo::write_globals()
 	      else
 		{
 		  if (init_fndecl == NULL)
-		    init_fndecl = this->initialization_function_decl();
+                    {
+                      init_fndecl = this->initialization_function_decl();
+                      Function* func = init_fndecl->func_value();
+                      init_bfn = func->get_or_make_decl(this, init_fndecl);
+                    }
 		  var_init_fn = init_fndecl;
 		}
               Bexpression* var_binit = var->get_init(this, var_init_fn);
@@ -1364,15 +1375,15 @@ Gogo::write_globals()
 		}
 	      else if (is_sink)
 	        var_init_stmt =
-                    this->backend()->expression_statement(var_binit);
+                    this->backend()->expression_statement(init_bfn, var_binit);
 	      else
                 {
                   Location loc = var->location();
                   Bexpression* var_expr =
                       this->backend()->var_expression(bvar, VE_lvalue, loc);
                   var_init_stmt =
-                      this->backend()->assignment_statement(var_expr, var_binit,
-                                                            loc);
+                      this->backend()->assignment_statement(init_bfn, var_expr,
+                                                            var_binit, loc);
                 }
 	    }
 	  else
@@ -1402,7 +1413,7 @@ Gogo::write_globals()
               Btype* btype = no->var_value()->type()->get_backend(this);
               Bexpression* zero = this->backend()->zero_expression(btype);
               Bstatement* zero_stmt =
-                  this->backend()->expression_statement(zero);
+                  this->backend()->expression_statement(init_bfn, zero);
 	      var_inits.push_back(Var_init(no, zero_stmt));
 	    }
 
@@ -1412,7 +1423,7 @@ Gogo::write_globals()
     }
 
   // Register global variables with the garbage collector.
-  this->register_gc_vars(var_gc, init_stmts);
+  this->register_gc_vars(var_gc, init_stmts, init_bfn);
 
   // Simple variable initializations, after all variables are
   // registered.
@@ -1446,7 +1457,8 @@ Gogo::write_globals()
       Bexpression* call = this->backend()->call_expression(func_code,
                                                            empty_args,
 							   NULL, func_loc);
-      init_stmts.push_back(this->backend()->expression_statement(call));
+      Bstatement* ist = this->backend()->expression_statement(initfn, call);
+      init_stmts.push_back(ist);
     }
 
   // Set up a magic function to do all the initialization actions.
@@ -5594,7 +5606,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
       for (size_t i = 0; i < vars.size(); ++i)
 	{
           Bstatement* init_stmt =
-              gogo->backend()->init_statement(vars[i], var_inits[i]);
+              gogo->backend()->init_statement(this->fndecl_, vars[i],
+                                              var_inits[i]);
           init.push_back(init_stmt);
 	}
       if (defer_init != NULL)
@@ -5666,7 +5679,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
 					this->defer_stack(end_loc));
   Translate_context context(gogo, named_function, NULL, NULL);
   Bexpression* defer = call->get_backend(&context);
-  stmts.push_back(gogo->backend()->expression_statement(defer));
+  stmts.push_back(gogo->backend()->expression_statement(this->fndecl_, defer));
 
   Bstatement* ret_bstmt = this->return_value(gogo, named_function, end_loc);
   if (ret_bstmt != NULL)
@@ -5705,7 +5718,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
       Bexpression* bref = ref->get_backend(&context);
       ret = gogo->backend()->conditional_expression(NULL, bref, ret, NULL,
                                                     end_loc);
-      stmts.push_back(gogo->backend()->expression_statement(ret));
+      stmts.push_back(gogo->backend()->expression_statement(this->fndecl_, ret));
     }
 
   go_assert(*fini == NULL);
@@ -6547,6 +6560,8 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
 
   Translate_context context(gogo, function, NULL, NULL);
   Bblock* bblock = this->preinit_->get_backend(&context);
+  Bfunction* bfunction =
+      function->func_value()->get_or_make_decl(gogo, function);
 
   // It's possible to have pre-init statements without an initializer
   // if the pre-init statements set the variable.
@@ -6556,7 +6571,8 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
       if (var_decl == NULL)
         {
           Bexpression* init_bexpr = this->init_->get_backend(&context);
-          decl_init = gogo->backend()->expression_statement(init_bexpr);
+          decl_init = gogo->backend()->expression_statement(bfunction,
+                                                            init_bexpr);
         }
       else
 	{
@@ -6566,7 +6582,8 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
           Bexpression* val = val_expr->get_backend(&context);
           Bexpression* var_ref =
               gogo->backend()->var_expression(var_decl, VE_lvalue, loc);
-          decl_init = gogo->backend()->assignment_statement(var_ref, val, loc);
+          decl_init = gogo->backend()->assignment_statement(bfunction, var_ref,
+                                                            val, loc);
 	}
     }
   Bstatement* block_stmt = gogo->backend()->block_statement(bblock);
