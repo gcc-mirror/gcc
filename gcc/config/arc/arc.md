@@ -4140,20 +4140,6 @@
    (set_attr "predicable" "no,no,yes,yes,no,yes,no,yes")
    (set_attr "length" "*,*,4,4,4,4,4,8")])
 
-(define_insn "call_prof"
-  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "Cbr,Cal"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:SI 31))
-   (use (reg:SI 8))
-   (use (reg:SI 9))]
-   ""
-  "@
-   bl%!%* %P0;2
-   jl%! %^%S0"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes,yes")
-   (set_attr "length" "4,8")])
-
 (define_expand "call_value"
   ;; operand 2 is stack_size_rtx
   ;; operand 3 is next_arg_register
@@ -4202,22 +4188,6 @@
 ; There is a bl_s instruction (16 bit opcode branch-and-link), but we can't
 ; use it for lack of inter-procedural branch shortening.
 ; Link-time relaxation would help...
-
-
-(define_insn "call_value_prof"
-  [(set (match_operand 0 "dest_reg_operand" "=r,r")
-	(call (mem:SI (match_operand:SI 1 "symbolic_operand" "Cbr,Cal"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:SI 31))
-   (use (reg:SI 8))
-   (use (reg:SI 9))]
-   ""
-  "@
-   bl%!%* %P1;1
-   jl%! %^%S1"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes,yes")
-   (set_attr "length" "4,8")])
 
 (define_insn "nop"
   [(const_int 0)]
@@ -4710,39 +4680,6 @@
   [(set_attr "type" "call,call,call,call,call_no_delay_slot")
    (set_attr "predicable" "yes,no,no,yes,yes")
    (set_attr "iscompact" "false,false,maybe,false,false")
-   (set_attr "is_SIBCALL" "yes")]
-)
-
-(define_insn "sibcall_prof"
- [(call (mem:SI (match_operand:SI 0 "call_address_operand" "Cbr,Cal"))
-	(match_operand 1 "" ""))
-  (simple_return)
-  (use (match_operand 2 "" ""))
-  (use (reg:SI 8))
-  (use (reg:SI 9))]
-  ""
-  "@
-   b%!%* %P0;2
-   j%! %^%S0;2"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes")
-   (set_attr "is_SIBCALL" "yes")]
-)
-
-(define_insn "sibcall_value_prof"
- [(set (match_operand 0 "dest_reg_operand" "")
-       (call (mem:SI (match_operand:SI 1 "call_address_operand" "Cbr,Cal"))
-	     (match_operand 2 "" "")))
-  (simple_return)
-  (use (match_operand 3 "" ""))
-  (use (reg:SI 8))
-  (use (reg:SI 9))]
-  ""
-  "@
-   b%!%* %P1;1
-   j%! %^%S1;1"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes")
    (set_attr "is_SIBCALL" "yes")]
 )
 

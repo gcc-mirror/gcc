@@ -1,5 +1,12 @@
 2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (call_prof): Remove.
+	(call_value_prof): Likewise.
+	(sibcall_prof): Likewise.
+	(sibcall_value_prof): Likewise.
+
+2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.h (LINK_SPEC): Tidy up.
 	(ENDFILE_SPEC): Likewise.
 	(LIB_SPEC): Likewise.
