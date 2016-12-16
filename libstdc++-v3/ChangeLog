@@ -1,5 +1,9 @@
 2016-12-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_map.h (map::erase(iterator)): Add Doxygen markup
+	to reuse documentation for erase(const_iterator) overload.
+	* include/bits/stl_multimap.h (multimap::erase(iterator)): Likewise.
+
 	* include/bits/stl_tree.h (_Rb_tree::_M_erase_aux(const_iterator)):
 	Add assertion for undefined argument.
 	(_Rb_tree::_M_erase_aux(const_iterator, const_iterator)): Call

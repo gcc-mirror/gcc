@@ -669,6 +669,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  and that if the element is itself a pointer, the pointed-to memory is
        *  not touched in any way.  Managing the pointer is the user's
        *  responsibility.
+       *
+       * @{
        */
       iterator
       erase(const_iterator __position)
@@ -679,6 +681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       erase(iterator __position)
       { return _M_t.erase(__position); }
+      // @}
 #else
       /**
        *  @brief Erases an element from a %multimap.
