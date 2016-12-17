@@ -740,7 +740,6 @@ sanitize_asan_mark_unpoison (void)
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
-	  bool next = true;
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
 	    {
@@ -753,12 +752,11 @@ sanitize_asan_mark_unpoison (void)
 		  unlink_stmt_vdef (stmt);
 		  release_defs (stmt);
 		  gsi_remove (&gsi, true);
-		  next = false;
+		  continue;
 		}
 	    }
 
-	  if (next)
-	    gsi_next (&gsi);
+	  gsi_next (&gsi);
 	}
     }
 }
@@ -840,7 +838,6 @@ sanitize_asan_mark_poison (void)
       gimple_stmt_iterator gsi;
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
 	{
-	  bool prev = true;
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (maybe_contains_asan_check (stmt))
 	    break;
@@ -850,12 +847,13 @@ sanitize_asan_mark_poison (void)
 		fprintf (dump_file, "Removing ASAN_MARK poison\n");
 	      unlink_stmt_vdef (stmt);
 	      release_defs (stmt);
-	      gsi_remove (&gsi, true);
-	      prev = false;
+	      gimple_stmt_iterator gsi2 = gsi;
+	      gsi_prev (&gsi);
+	      gsi_remove (&gsi2, true);
+	      continue;
 	    }
 
-	  if (prev)
-	    gsi_prev (&gsi);
+	  gsi_prev (&gsi);
 	}
     }
 }

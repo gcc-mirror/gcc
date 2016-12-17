@@ -1,3 +1,12 @@
+2016-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/78832
+	* sanopt.c (sanitize_asan_mark_unpoison): Remove next variable, use
+	continue if gsi_next should be skipped.
+	(sanitize_asan_mark_poison): Remove prev variable, use continue if
+	gsi_prev should be skipped.  When removing ASAN_MARK, do gsi_prev
+	first and gsi_remove on a previously made copy of the iterator.
+
 2016-12-17  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* config/i386/avx512bwintrin.h: Add new k-mask intrinsics.
