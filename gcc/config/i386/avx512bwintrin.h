@@ -40,6 +40,20 @@ typedef char __v64qi __attribute__ ((__vector_size__ (64)));
 
 typedef unsigned long long __mmask64;
 
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kadd_mask32 (__mmask32 __A, __mmask32 __B)
+{
+  return (__mmask32) __builtin_ia32_kaddsi ((__mmask32) __A, (__mmask32) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kadd_mask64 (__mmask64 __A, __mmask64 __B)
+{
+  return (__mmask64) __builtin_ia32_kadddi ((__mmask64) __A, (__mmask64) __B);
+}
+
 extern __inline unsigned int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _cvtmask32_u32 (__mmask32 __A)

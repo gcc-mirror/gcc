@@ -1,3 +1,10 @@
+2016-12-17  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx512bw-kaddd-1.c: New test.
+	* gcc.target/i386/avx512bw-kaddq-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kaddb-1.c: Ditto.
+	* gcc.target/i386/avx512f-kaddw-1.c: Ditto.
+
 2016-12-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78239
@@ -224,7 +231,7 @@
 
 2016-12-14  Toma Tabacu  <toma.tabacu@imgtec.com>
 
-	* gcc.target/mips/msa-builtins-err.c (dg-options): Add 
+	* gcc.target/mips/msa-builtins-err.c (dg-options): Add
 	-ffat-lto-objects option.
 
 2016-12-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
