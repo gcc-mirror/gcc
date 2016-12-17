@@ -1306,9 +1306,6 @@
 (define_mode_iterator SWI1248_AVX512BW
   [QI HI (SI "TARGET_AVX512BW") (DI "TARGET_AVX512BW")])
 
-;; Mask variant shift mnemonics
-(define_code_attr mshift [(ashift "shiftl") (lshiftrt "shiftr")])
-
 (define_expand "kmov<mskmodesuffix>"
   [(set (match_operand:SWI1248_AVX512BWDQ 0 "nonimmediate_operand")
 	(match_operand:SWI1248_AVX512BWDQ 1 "nonimmediate_operand"))]
@@ -1403,6 +1400,21 @@
 	       (const_string "HI")
 	   ]
 	   (const_string "<MODE>")))])
+
+(define_insn "kadd<mode>"
+  [(set (match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "=k")
+	(plus:SWI1248_AVX512BWDQ
+	  (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")
+	  (match_operand:SWI1248_AVX512BWDQ 2 "register_operand" "k")))
+   (unspec [(const_int 0)] UNSPEC_MASKOP)]
+  "TARGET_AVX512F"
+  "kadd<mskmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "msklog")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<MODE>")])
+
+;; Mask variant shift mnemonics
+(define_code_attr mshift [(ashift "shiftl") (lshiftrt "shiftr")])
 
 (define_insn "*k<code><mode>"
   [(set (match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "=k")

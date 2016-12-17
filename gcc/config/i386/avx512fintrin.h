@@ -9984,6 +9984,13 @@ _mm512_maskz_expandloadu_epi32 (__mmask16 __U, void const *__P)
 #define _kxnor_mask16 _mm512_kxnor
 #define _kxor_mask16 _mm512_kxor
 
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kadd_mask16 (__mmask16 __A, __mmask16 __B)
+{
+  return (__mmask16) __builtin_ia32_kaddhi ((__mmask16) __A, (__mmask16) __B);
+}
+
 extern __inline unsigned int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _cvtmask16_u32 (__mmask16 __A)

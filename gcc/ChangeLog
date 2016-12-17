@@ -1,3 +1,13 @@
+2016-12-17  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* config/i386/avx512bwintrin.h: Add new k-mask intrinsics.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512fintrin.h: Ditto.
+	* config/i386/i386-builtin.def (__builtin_ia32_kaddqi,
+	__builtin_ia32_kaddhi, __builtin_ia32_kaddsi,
+	__builtin_ia32_kadddi): New.
+	* config/i386/sse.md (kadd<mode>): New.
+
 2016-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*tzcnt<mode>_1): Merge *tzcnt<mode>_1_falsedep_1
