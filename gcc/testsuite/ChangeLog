@@ -1,3 +1,9 @@
+2016-12-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78746
+	* charlen_03.f90: Remove test. 
+	* charlen_10.f90: Ditto.
+
 2016-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/78832
