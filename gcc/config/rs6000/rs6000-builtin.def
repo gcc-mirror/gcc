@@ -898,6 +898,23 @@
 		     | RS6000_BTC_PREDICATE),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
+#define BU_P9_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P9_BUILTIN_SCALAR_ ## ENUM,		/* ENUM */	\
+		    "__builtin_scalar_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9_64BIT_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P9_BUILTIN_SCALAR_ ## ENUM,		/* ENUM */	\
+		    "__builtin_scalar_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR				\
+		    | RS6000_BTM_64BIT,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_P9V_OVERLOAD_1(ENUM, NAME)					\
   RS6000_BUILTIN_1 (P9V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
 		    "__builtin_vec_" NAME,		/* NAME */	\
@@ -921,6 +938,15 @@
 		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_P9_OVERLOAD_2(ENUM, NAME)					\
+  RS6000_BUILTIN_2 (P9_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 #endif
 
 
@@ -2151,6 +2177,16 @@ BU_P9V_OVERLOAD_1 (VPRTYB,	"vprtyb")
 BU_P9V_OVERLOAD_1 (VPRTYBD,	"vprtybd")
 BU_P9V_OVERLOAD_1 (VPRTYBQ,	"vprtybq")
 BU_P9V_OVERLOAD_1 (VPRTYBW,	"vprtybw")
+
+/* 2 argument functions added in ISA 3.0 (power9).  */
+BU_P9_2 (CMPRB,	"byte_in_range",	CONST,	cmprb)
+BU_P9_2 (CMPRB2,	"byte_in_either_range",	CONST,	cmprb2)
+BU_P9_64BIT_2 (CMPEQB,	"byte_in_set",	CONST,	cmpeqb)
+
+/* 2 argument overloaded functions added in ISA 3.0 (power9).  */
+BU_P9_OVERLOAD_2 (CMPRB,	"byte_in_range")
+BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
+BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 /* 1 argument IEEE 128-bit floating-point functions.  */
 BU_FLOAT128_1 (FABSQ,		"fabsq",       CONST, abskf2)

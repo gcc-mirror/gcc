@@ -15117,6 +15117,27 @@ long long __builtin_darn (void);
 long long __builtin_darn_raw (void);
 int __builtin_darn_32 (void);
 
+unsigned int scalar_extract_exp (double source);
+unsigned long long int scalar_extract_sig (double source);
+
+double
+scalar_insert_exp (unsigned long long int significand, unsigned long long int exponent);
+
+int scalar_cmp_exp_gt (double arg1, double arg2);
+int scalar_cmp_exp_lt (double arg1, double arg2);
+int scalar_cmp_exp_eq (double arg1, double arg2);
+int scalar_cmp_exp_unordered (double arg1, double arg2);
+
+int scalar_test_data_class (float source, unsigned int condition);
+int scalar_test_data_class (double source, unsigned int condition);
+
+int scalar_test_neg (float source);
+int scalar_test_neg (double source);
+
+int __builtin_byte_in_set (unsigned char u, unsigned long long set);
+int __builtin_byte_in_range (unsigned char u, unsigned int range);
+int __builtin_byte_in_either_range (unsigned char u, unsigned int ranges);
+
 int __builtin_dfp_dtstsfi_lt (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_lt (unsigned int comparison, _Decimal128 value);
 int __builtin_dfp_dtstsfi_lt_dd (unsigned int comparison, _Decimal64 value);
@@ -15136,23 +15157,6 @@ int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal128 value);
 int __builtin_dfp_dtstsfi_ov_dd (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov_td (unsigned int comparison, _Decimal128 value);
-
-unsigned int scalar_extract_exp (double source);
-unsigned long long int scalar_extract_sig (double source);
-
-double
-scalar_insert_exp (unsigned long long int significand, unsigned long long int exponent);
-
-int scalar_cmp_exp_gt (double arg1, double arg2);
-int scalar_cmp_exp_lt (double arg1, double arg2);
-int scalar_cmp_exp_eq (double arg1, double arg2);
-int scalar_cmp_exp_unordered (double arg1, double arg2);
-
-int scalar_test_data_class (float source, unsigned int condition);
-int scalar_test_data_class (double source, unsigned int condition);
-
-int scalar_test_neg (float source);
-int scalar_test_neg (double source);
 @end smallexample
 
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
@@ -15206,6 +15210,24 @@ If all of the enabled test conditions are false, the return value is 0.
 
 The @code{scalar_test_neg} built-in functions return a non-zero value
 if their @code{source} argument holds a negative value.
+
+The @code{__builtin_byte_in_set} function requires a
+64-bit environment supporting ISA 3.0 or later.  This function returns
+a non-zero value if and only if its @code{u} argument exactly equals one of
+the eight bytes contained within its 64-bit @code{set} argument.
+
+The @code{__builtin_byte_in_range} and
+@code{__builtin_byte_in_either_range} require an environment
+supporting ISA 3.0 or later.  For these two functions, the
+@code{range} argument is encoded as 4 bytes, organized as
+@code{hi_1:lo_1:hi_2:lo_2}.
+The @code{__builtin_byte_in_range} function returns a
+non-zero value if and only if its @code{u} argument is within the
+range bounded between @code{lo_2} and @code{hi_2} inclusive.
+The @code{__builtin_byte_in_either_range} function returns non-zero if
+and only if its @code{u} argument is within either the range bounded
+between @code{lo_1} and @code{hi_1} inclusive or the range bounded
+between @code{lo_2} and @code{hi_2} inclusive.
 
 The @code{__builtin_dfp_dtstsfi_lt} function returns a non-zero value
 if and only if the number of signficant digits of its @code{value} argument

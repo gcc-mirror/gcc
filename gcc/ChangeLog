@@ -1,3 +1,38 @@
+2016-12-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.md (UNSPEC_CMPRB): New unspec value.
+	(UNSPEC_CMPRB2): New unspec value.
+	(UNSPEC_CMPEQB): New unspec value.
+	(cmprb): New expansion.
+	(*cmprb_internal): New insn.
+	(*setb_internal): New insn.
+	(cmprb2): New expansion.
+	(*cmprb2_internal): New insn.
+	(cmpeqb): New expansion.
+	(*cmpeqb_internal): New insn.
+	* config/rs6000/rs6000-builtin.def (BU_P9_2): New macro.
+	(BU_P9_64BIT_2): Likewise.
+	(BU_P9_OVERLOAD_2): Likewise.
+	(CMPRB): Add byte-in-range built-in function.
+	(CMBRB2): Add byte-in-either-range built-in function.
+	(CMPEQB): Add byte-in-set built-in function.
+	(CMPRB): Add overload support for byte-in-range function.
+	(CMPRB2): Add overload support for byte-in-either-range function.
+	(CMPEQB): Add overload support for byte-in-set built-in function.
+	* config/rs6000/rs6000-c.c (P9_BUILTIN_CMPRB): Macro expansion to
+	define argument types for new builtin. 
+	(P9_BUILTIN_CMPRB2): Likewise.
+	(P9_BUILTIN_CMPEQB): Likewise.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Rearrange
+	the order of presentation for certain built-in functions
+	(scalar_extract_exp, scalar_extract_sig, scalar_insert_exp)
+	(scalar_cmp_exp_gt, scalar_cmp_exp_lt, scalar_cmp_exp_eq)
+	(scalar_cmp_exp_unordered, scalar_test_data_class)
+	(scalar_test_neg) to improve locality and flow.  Document
+	the new __builtin_scalar_byte_in_set,
+	__builtin_scalar_byte_in_range, and
+	__builtin_scalar_byte_in_either_range functions.
+
 2016-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md: New define_split above bswap<mode>2.
