@@ -1,3 +1,7 @@
+2016-12-17  Matthias Klose  <doko@ubuntu.com>
+
+	* config/arc/gmon: Remove empty directory.
+
 2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config.host (arc*-*-linux-uclibc*): Remove libgmon, crtg, and
