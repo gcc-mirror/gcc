@@ -1,3 +1,27 @@
+2016-12-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*tzcnt<mode>_1): Merge *tzcnt<mode>_1_falsedep_1
+	and *tzcnt<mode>_1 to define_insn_and_split pattern.  Adjust split
+	condition to split after epilogue_completed.
+	(ctz<mode>2): Remove expander.
+	(ctz<mode>2): Merge *ctz<mode>2_falsedep_1 and *ctz<mode>2 to
+	define_insn_and_split pattern.  Adjust split condition to split
+	after epilogue_completed.
+	(clz<mode>2_lznct): Remove expander.
+	(clz<mode>2_lzcnt): Merge *clz<mode>2_lzcnt_falsedep_1 and
+	*clz<mode>2 to define_insn_and_split pattern.  Adjust split
+	condition to split after epilogue_completed.
+	(<lt_zcnt>_<mode>): Remove expander.
+	(<lt_zcnt>_<mode>): Merge *<lt_zcnt>_<mode>_falsedep_1 and
+	*<lt_zcnt>_<mode> to define_insn_and_split pattern.  Adjust split
+	condition to split after epilogue_completed.
+	(<lt_zcnt>_hi): New insn pattern.
+	(popcount<mode>2): Remove expander.
+	(popcount<mode>2): Merge *popcount<mode>2_falsedep_1 and
+	*popcount<mode>2 to define_insn_and_split pattern.  Adjust split
+	condition to split after epilogue_completed.
+	(popcounthi2): New insn pattern.
+
 2016-12-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.md (UNSPEC_CMPRB): New unspec value.
@@ -20,7 +44,7 @@
 	(CMPRB2): Add overload support for byte-in-either-range function.
 	(CMPEQB): Add overload support for byte-in-set built-in function.
 	* config/rs6000/rs6000-c.c (P9_BUILTIN_CMPRB): Macro expansion to
-	define argument types for new builtin. 
+	define argument types for new builtin.
 	(P9_BUILTIN_CMPRB2): Likewise.
 	(P9_BUILTIN_CMPEQB): Likewise.
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Rearrange
@@ -421,9 +445,9 @@
 
 	* arm-opts.h (struct arm_arch_core_flag): Add new field ISA.
 	Initialize it.
-   	(arm_arch_core_flag): Delete flags field.
-    	(arm_arch_core_flags): Don't initialize flags field.
- 	* common/config/arm/arm-common.c (check_isa_bits_for): New function.
+	(arm_arch_core_flag): Delete flags field.
+	(arm_arch_core_flags): Don't initialize flags field.
+	* common/config/arm/arm-common.c (check_isa_bits_for): New function.
 	(arm_target_thumb_only): Use new isa bits arrays.
 
 2016-12-15  Richard Earnshaw  <rearnsha@arm.com>
