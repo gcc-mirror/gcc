@@ -1,3 +1,8 @@
+2016-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/78832
+	* gcc.dg/asan/pr78832.c: New test.
+
 2016-12-17  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* gcc.target/i386/avx512bw-kaddd-1.c: New test.
