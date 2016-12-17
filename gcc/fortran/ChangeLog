@@ -1,7 +1,14 @@
 2016-12-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78239
-	* decl.c(char_len_param_value): Also check for -fimplicit-none
+	* decl.c (char_len_param_value):  Actually commit
+	previous change.
+
+
+2016-12-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78239
+	* decl.c( char_len_param_value): Also check for -fimplicit-none
 	when determining if implicit none is in force.
 
 2016-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
