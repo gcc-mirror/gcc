@@ -1,3 +1,11 @@
+2016-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lra-constraints.c (process_address): Add forward declaration.
+	(simplify_operand_subreg): In the MEM case, if the adjusted memory
+	reference is not sufficient aligned and the address was invalid,
+	reload the address before reloading the original memory reference.
+	Fix long lines and add a final return for the sake of clarity.
+
 2016-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/78832
