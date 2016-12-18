@@ -1,3 +1,8 @@
+2016-12-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/78545
+	* intrinsics/date_and_time.c: Fix comments for GMTIME and LTIME.
+
 2016-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/78622
