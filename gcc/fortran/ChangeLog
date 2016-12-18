@@ -1,3 +1,8 @@
+2016-12-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/78545
+	* intrinsic.texi: Fix documentation for GMTIME and LTIME.
+
 2016-12-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78848
