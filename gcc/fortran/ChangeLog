@@ -1,5 +1,11 @@
 2016-12-18  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/78848
+	* trans-io.c (get_dtio_proc): Generate non-typebound DTIO call for class
+	variables, if no typebound DTIO procedure is available.
+
+2016-12-18  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/78592
 	* interfac.c (gfc_find_specific_dtio_proc): Fixup for r243005, making
 	sure that the generic list is followed through until the end.
