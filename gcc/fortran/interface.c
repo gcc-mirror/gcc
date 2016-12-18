@@ -4949,17 +4949,19 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
 	  && tb_io_st->n.sym->generic)
 	{
 	  for (gfc_interface *intr = tb_io_st->n.sym->generic;
-	       intr && intr->sym && intr->sym->formal;
-	       intr = intr->next)
+	       intr && intr->sym; intr = intr->next)
 	    {
-	      gfc_symbol *fsym = intr->sym->formal->sym;
-	      if ((fsym->ts.type == BT_CLASS
-		   && CLASS_DATA (fsym)->ts.u.derived == extended)
-		  || (fsym->ts.type == BT_DERIVED
-		      && fsym->ts.u.derived == extended))
+	      if (intr->sym->formal)
 		{
-		  dtio_sub = intr->sym;
-		  break;
+		  gfc_symbol *fsym = intr->sym->formal->sym;
+		  if ((fsym->ts.type == BT_CLASS
+		      && CLASS_DATA (fsym)->ts.u.derived == extended)
+		      || (fsym->ts.type == BT_DERIVED
+			  && fsym->ts.u.derived == extended))
+		    {
+		      dtio_sub = intr->sym;
+		      break;
+		    }
 		}
 	    }
 	}
