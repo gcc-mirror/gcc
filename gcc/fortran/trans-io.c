@@ -2180,41 +2180,39 @@ get_dtio_proc (gfc_typespec * ts, gfc_code * code, gfc_symbol **dtio_sub)
       formatted = true;
     }
 
-  if (ts->type == BT_DERIVED)
+  if (ts->type == BT_CLASS)
+    derived = ts->u.derived->components->ts.u.derived;
+  else
+    derived = ts->u.derived;
+
+  gfc_symtree *tb_io_st = gfc_find_typebound_dtio_proc (derived,
+						  last_dt == WRITE, formatted);
+  if (ts->type == BT_CLASS && tb_io_st)
     {
-      derived = ts->u.derived;
+      // polymorphic DTIO call  (based on the dynamic type)
+      gfc_se se;
+      gfc_expr *expr = gfc_find_and_cut_at_last_class_ref (code->expr1);
+      gfc_add_vptr_component (expr);
+      gfc_add_component_ref (expr,
+			     tb_io_st->n.tb->u.generic->specific_st->name);
+      *dtio_sub = tb_io_st->n.tb->u.generic->specific->u.specific->n.sym;
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      gfc_conv_expr (&se, expr);
+      gfc_free_expr (expr);
+      return se.expr;
+    }
+  else
+    {
+      // non-polymorphic DTIO call (based on the declared type)
       *dtio_sub = gfc_find_specific_dtio_proc (derived, last_dt == WRITE,
 					      formatted);
 
       if (*dtio_sub)
 	return gfc_build_addr_expr (NULL, gfc_get_symbol_decl (*dtio_sub));
     }
-  else if (ts->type == BT_CLASS)
-    {
-      gfc_symtree *tb_io_st;
-
-      derived = ts->u.derived->components->ts.u.derived;
-      tb_io_st = gfc_find_typebound_dtio_proc (derived,
-					       last_dt == WRITE, formatted);
-      if (tb_io_st)
-	{
-	  gfc_se se;
-	  gfc_expr *expr = gfc_find_and_cut_at_last_class_ref (code->expr1);
-	  gfc_add_vptr_component (expr);
-	  gfc_add_component_ref (expr,
-				 tb_io_st->n.tb->u.generic->specific_st->name);
-	  *dtio_sub = tb_io_st->n.tb->u.generic->specific->u.specific->n.sym;
-	  gfc_init_se (&se, NULL);
-	  se.want_pointer = 1;
-	  gfc_conv_expr (&se, expr);
-	  gfc_free_expr (expr);
-	  return se.expr;
-	}
-    }
-
 
   return NULL_TREE;
-
 }
 
 /* Generate the call for a scalar transfer node.  */

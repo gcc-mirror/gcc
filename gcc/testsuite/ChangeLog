@@ -1,5 +1,10 @@
 2016-12-18  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/78848
+	* gfortran.dg/dtio_22.f90: New test.
+
+2016-12-18  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/78592
 	* gfortran.dg/dtio_21.f90: New test.
 
