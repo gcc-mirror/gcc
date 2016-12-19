@@ -1,5 +1,11 @@
 2016-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	PR target/78748
+	* config/s390/s390.md ("*andc_split_<mode>"): Allow memory destination
+	only if it coincides with operand 2.
+
+2016-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* combine.c (change_zero_ext): Skip generation of redundant AND.
 
 2016-12-19  Krister Walfridsson  <krister.walfridsson@gmail.com>
