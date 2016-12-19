@@ -5790,12 +5790,11 @@ create_main_function (tree fndecl)
   {
     tree array_type, array, var;
     vec<constructor_elt, va_gc> *v = NULL;
+    static const int noptions = 7;
 
-    /* Passing a new option to the library requires four modifications:
-     + add it to the tree_cons list below
-          + change the array size in the call to build_array_type
-          + change the first argument to the library call
-            gfor_fndecl_set_options
+    /* Passing a new option to the library requires three modifications:
+          + add it to the tree_cons list below
+          + change the noptions variable above
           + modify the library (runtime/compile_options.c)!  */
 
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
@@ -5806,12 +5805,6 @@ create_main_function (tree fndecl)
                                            gfc_option.allow_std));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
                             build_int_cst (integer_type_node, pedantic));
-    /* TODO: This is the old -fdump-core option, which is unused but
-       passed due to ABI compatibility; remove when bumping the
-       library ABI.  */
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-                            build_int_cst (integer_type_node,
-                                           0));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
                             build_int_cst (integer_type_node, flag_backtrace));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
@@ -5820,26 +5813,18 @@ create_main_function (tree fndecl)
                             build_int_cst (integer_type_node,
                                            (gfc_option.rtcheck
                                             & GFC_RTCHECK_BOUNDS)));
-    /* TODO: This is the -frange-check option, which no longer affects
-       library behavior; when bumping the library ABI this slot can be
-       reused for something else. As it is the last element in the
-       array, we can instead leave it out altogether.  */
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-                            build_int_cst (integer_type_node, 0));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
                             build_int_cst (integer_type_node,
                                            gfc_option.fpe_summary));
 
-    array_type = build_array_type (integer_type_node,
-				   build_index_type (size_int (8)));
+    array_type = build_array_type_nelts (integer_type_node, noptions);
     array = build_constructor (array_type, v);
     TREE_CONSTANT (array) = 1;
     TREE_STATIC (array) = 1;
 
     /* Create a static variable to hold the jump table.  */
     var = build_decl (input_location, VAR_DECL,
-		      create_tmp_var_name ("options"),
-		      array_type);
+		      create_tmp_var_name ("options"), array_type);
     DECL_ARTIFICIAL (var) = 1;
     DECL_IGNORED_P (var) = 1;
     TREE_CONSTANT (var) = 1;
@@ -5851,7 +5836,7 @@ create_main_function (tree fndecl)
 
     tmp = build_call_expr_loc (input_location,
 			   gfor_fndecl_set_options, 2,
-			   build_int_cst (integer_type_node, 9), var);
+			   build_int_cst (integer_type_node, noptions), var);
     gfc_add_expr_to_block (&body, tmp);
   }
 

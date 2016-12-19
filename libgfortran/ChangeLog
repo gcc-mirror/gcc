@@ -1,3 +1,7 @@
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/compile_options.c (set_options): Remove unused elements.
+
 2016-12-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* Actually remove files that should have been removed by r243799.
