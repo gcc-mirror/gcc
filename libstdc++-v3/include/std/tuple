@@ -607,7 +607,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _U1, typename _U2, typename = typename
 	       enable_if<__and_<is_convertible<_U1, _T1>,
-				is_convertible<_U2, _T2>>::value>::type>
+				is_convertible<_U2, _T2>,
+				__not_<is_same<typename decay<_U1>::type,
+					       allocator_arg_t>>>
+			 ::value>::type>
         explicit
         constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
