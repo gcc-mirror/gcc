@@ -114,7 +114,6 @@ gfor_helper_src= \
 intrinsics/associated.c \
 intrinsics/abort.c \
 intrinsics/args.c \
-intrinsics/bit_intrinsics.c \
 intrinsics/cshift0.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \

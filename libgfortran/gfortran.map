@@ -1055,8 +1055,6 @@ GFORTRAN_1.1 {
 
 GFORTRAN_1.2 {
   global:
-    _gfortran_clz128;
-    _gfortran_ctz128;
     _gfortran_is_extension_of;
 } GFORTRAN_1.1;
 
