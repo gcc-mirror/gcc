@@ -1,3 +1,8 @@
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/chmod.c (chmod_internal): Fix case where mode_t is
+	different from unsigned int.
+
 2016-12-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/78545

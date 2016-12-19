@@ -82,16 +82,10 @@ chmod_internal (char *file, char *mode, gfc_charlen_type mode_len)
 
   if (mode[0] >= '0' && mode[0] <= '9')
     {
-#ifdef __MINGW32__
       unsigned fmode;
       if (sscanf (mode, "%o", &fmode) != 1)
 	return 1;
-      file_mode = (mode_t) fmode;
-#else
-      if (sscanf (mode, "%o", &file_mode) != 1)
-	return 1;
-#endif
-      return chmod (file, file_mode);
+      return chmod (file, (mode_t) fmode);
     }
 
   /* Read the current file mode. */
