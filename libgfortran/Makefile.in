@@ -326,13 +326,12 @@ am__objects_37 = size_from_kind.lo $(am__objects_36)
 @IEEE_SUPPORT_TRUE@am__objects_39 = ieee_helper.lo
 am__objects_40 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
 	eoshift2.lo erfc_scaled.lo extends_type_of.lo fnum.lo \
-	ierrno.lo ishftc.lo iso_c_generated_procs.lo iso_c_binding.lo \
-	mvbits.lo move_alloc.lo pack_generic.lo selected_char_kind.lo \
-	size.lo spread_generic.lo string_intrinsics.lo rand.lo \
-	random.lo reshape_generic.lo reshape_packed.lo \
-	selected_int_kind.lo selected_real_kind.lo unpack_generic.lo \
-	in_pack_generic.lo in_unpack_generic.lo $(am__objects_38) \
-	$(am__objects_39)
+	ierrno.lo ishftc.lo mvbits.lo move_alloc.lo pack_generic.lo \
+	selected_char_kind.lo size.lo spread_generic.lo \
+	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
+	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
+	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
+	$(am__objects_38) $(am__objects_39)
 @IEEE_SUPPORT_TRUE@am__objects_41 = ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
 am__objects_42 =
@@ -615,14 +614,13 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/args.c intrinsics/cshift0.c intrinsics/eoshift0.c \
 	intrinsics/eoshift2.c intrinsics/erfc_scaled.c \
 	intrinsics/extends_type_of.c intrinsics/fnum.c \
-	intrinsics/ierrno.c intrinsics/ishftc.c \
-	intrinsics/iso_c_generated_procs.c intrinsics/iso_c_binding.c \
-	intrinsics/mvbits.c intrinsics/move_alloc.c \
-	intrinsics/pack_generic.c intrinsics/selected_char_kind.c \
-	intrinsics/size.c intrinsics/spread_generic.c \
-	intrinsics/string_intrinsics.c intrinsics/rand.c \
-	intrinsics/random.c intrinsics/reshape_generic.c \
-	intrinsics/reshape_packed.c intrinsics/selected_int_kind.f90 \
+	intrinsics/ierrno.c intrinsics/ishftc.c intrinsics/mvbits.c \
+	intrinsics/move_alloc.c intrinsics/pack_generic.c \
+	intrinsics/selected_char_kind.c intrinsics/size.c \
+	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
+	intrinsics/rand.c intrinsics/random.c \
+	intrinsics/reshape_generic.c intrinsics/reshape_packed.c \
+	intrinsics/selected_int_kind.f90 \
 	intrinsics/selected_real_kind.f90 intrinsics/unpack_generic.c \
 	runtime/in_pack_generic.c runtime/in_unpack_generic.c \
 	$(am__append_3) $(am__append_4)
@@ -1496,8 +1494,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iparity_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iparity_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ishftc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iso_c_binding.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iso_c_generated_procs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kill.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgfortran_c.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
@@ -4956,20 +4952,6 @@ ishftc.lo: intrinsics/ishftc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/ishftc.c' object='ishftc.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
-
-iso_c_generated_procs.lo: intrinsics/iso_c_generated_procs.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iso_c_generated_procs.lo -MD -MP -MF $(DEPDIR)/iso_c_generated_procs.Tpo -c -o iso_c_generated_procs.lo `test -f 'intrinsics/iso_c_generated_procs.c' || echo '$(srcdir)/'`intrinsics/iso_c_generated_procs.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/iso_c_generated_procs.Tpo $(DEPDIR)/iso_c_generated_procs.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/iso_c_generated_procs.c' object='iso_c_generated_procs.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_generated_procs.lo `test -f 'intrinsics/iso_c_generated_procs.c' || echo '$(srcdir)/'`intrinsics/iso_c_generated_procs.c
-
-iso_c_binding.lo: intrinsics/iso_c_binding.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iso_c_binding.lo -MD -MP -MF $(DEPDIR)/iso_c_binding.Tpo -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/iso_c_binding.Tpo $(DEPDIR)/iso_c_binding.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/iso_c_binding.c' object='iso_c_binding.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
 
 mvbits.lo: intrinsics/mvbits.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mvbits.lo -MD -MP -MF $(DEPDIR)/mvbits.Tpo -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
