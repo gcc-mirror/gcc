@@ -125,7 +125,6 @@ intrinsics/ierrno.c \
 intrinsics/ishftc.c \
 intrinsics/iso_c_generated_procs.c \
 intrinsics/iso_c_binding.c \
-intrinsics/malloc.c \
 intrinsics/mvbits.c \
 intrinsics/move_alloc.c \
 intrinsics/pack_generic.c \
@@ -139,7 +138,6 @@ intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
 intrinsics/selected_int_kind.f90 \
 intrinsics/selected_real_kind.f90 \
-intrinsics/transpose_generic.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
 runtime/in_unpack_generic.c
@@ -470,19 +468,6 @@ $(srcdir)/generated/matmul_l4.c \
 $(srcdir)/generated/matmul_l8.c \
 $(srcdir)/generated/matmul_l16.c
 
-i_transpose_c= \
-$(srcdir)/generated/transpose_i4.c \
-$(srcdir)/generated/transpose_i8.c \
-$(srcdir)/generated/transpose_i16.c \
-$(srcdir)/generated/transpose_r4.c \
-$(srcdir)/generated/transpose_r8.c \
-$(srcdir)/generated/transpose_r10.c \
-$(srcdir)/generated/transpose_r16.c \
-$(srcdir)/generated/transpose_c4.c \
-$(srcdir)/generated/transpose_c8.c \
-$(srcdir)/generated/transpose_c10.c \
-$(srcdir)/generated/transpose_c16.c
-
 i_shape_c= \
 $(srcdir)/generated/shape_i1.c \
 $(srcdir)/generated/shape_i2.c \
@@ -563,42 +548,6 @@ $(srcdir)/generated/in_unpack_c4.c \
 $(srcdir)/generated/in_unpack_c8.c \
 $(srcdir)/generated/in_unpack_c10.c \
 $(srcdir)/generated/in_unpack_c16.c
-
-i_exponent_c = \
-$(srcdir)/generated/exponent_r4.c \
-$(srcdir)/generated/exponent_r8.c \
-$(srcdir)/generated/exponent_r10.c \
-$(srcdir)/generated/exponent_r16.c
-
-i_spacing_c = \
-$(srcdir)/generated/spacing_r4.c \
-$(srcdir)/generated/spacing_r8.c \
-$(srcdir)/generated/spacing_r10.c \
-$(srcdir)/generated/spacing_r16.c
-
-i_rrspacing_c = \
-$(srcdir)/generated/rrspacing_r4.c \
-$(srcdir)/generated/rrspacing_r8.c \
-$(srcdir)/generated/rrspacing_r10.c \
-$(srcdir)/generated/rrspacing_r16.c
-
-i_fraction_c = \
-$(srcdir)/generated/fraction_r4.c \
-$(srcdir)/generated/fraction_r8.c \
-$(srcdir)/generated/fraction_r10.c \
-$(srcdir)/generated/fraction_r16.c
-
-i_nearest_c = \
-$(srcdir)/generated/nearest_r4.c \
-$(srcdir)/generated/nearest_r8.c \
-$(srcdir)/generated/nearest_r10.c \
-$(srcdir)/generated/nearest_r16.c
-
-i_set_exponent_c = \
-$(srcdir)/generated/set_exponent_r4.c \
-$(srcdir)/generated/set_exponent_r8.c \
-$(srcdir)/generated/set_exponent_r10.c \
-$(srcdir)/generated/set_exponent_r16.c
 
 i_pow_c = \
 $(srcdir)/generated/pow_i4_i4.c \
@@ -683,9 +632,9 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/matmul.m4 m4/matmull.m4 m4/ifunction_logical.m4 \
     m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
-    m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
-    m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
-    m4/misc_specifics.m4 m4/rrspacing.m4 m4/spacing.m4 m4/pack.m4 \
+    m4/eoshift1.m4 m4/eoshift3.m4 \
+    m4/pow.m4 \
+    m4/misc_specifics.m4 m4/pack.m4 \
     m4/unpack.m4 m4/spread.m4 m4/bessel.m4 m4/norm2.m4 m4/parity.m4 \
     m4/iall.m4 m4/iany.m4 m4/iparity.m4
 
@@ -693,10 +642,9 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
     $(i_product_c) $(i_sum_c) $(i_bessel_c) $(i_iall_c) $(i_iany_c) \
     $(i_iparity_c) $(i_norm2_c) $(i_parity_c) \
-    $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
+    $(i_matmul_c) $(i_matmull_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
-    $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
-    $(i_pow_c) $(i_rrspacing_c) $(i_spacing_c) $(i_pack_c) $(i_unpack_c) \
+    $(i_pow_c) $(i_pack_c) $(i_unpack_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc
 
@@ -1000,9 +948,6 @@ $(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS1)
 $(i_parity_c): m4/parity.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 parity.m4 > $@
 
-$(i_transpose_c): m4/transpose.m4 $(I_M4_DEPS)
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 transpose.m4 > $@
-
 $(i_shape_c): m4/shape.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 shape.m4 > $@
 
@@ -1026,24 +971,6 @@ $(in_pack_c): m4/in_pack.m4 $(I_M4_DEPS)
 
 $(in_unpack_c): m4/in_unpack.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_unpack.m4 > $@
-
-$(i_exponent_c): m4/exponent.m4 m4/mtype.m4
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 exponent.m4 > $@
-
-$(i_rrspacing_c): m4/rrspacing.m4 m4/mtype.m4
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 rrspacing.m4 > $@
-
-$(i_spacing_c): m4/spacing.m4 m4/mtype.m4
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 spacing.m4 > $@
-
-$(i_fraction_c): m4/fraction.m4 m4/mtype.m4
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 fraction.m4 > $@
-
-$(i_nearest_c): m4/nearest.m4 m4/mtype.m4
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 nearest.m4 > $@
-
-$(i_set_exponent_c): m4/set_exponent.m4 m4/mtype.m4
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 set_exponent.m4 > $@
 
 $(i_pow_c): m4/pow.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $@
