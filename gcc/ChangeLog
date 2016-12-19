@@ -1,3 +1,16 @@
+2016-12-19  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (expand_strn_compare): Declare.
+	* config/rs6000/rs6000.md (UNSPEC_CMPB): New unspec.
+	(cmpb<mode>3): pattern for generating cmpb.
+	(cmpstrnsi): pattern to expand strncmp ().
+	* config/rs6000/rs6000.opt (mstring-compare-inline-limit): Add a new
+	target option for controlling how much code inline expansion of
+	strncmp() will be allowed to generate.
+	* config/rs6000/rs6000.c (expand_strncmp_align_check): generate code
+	for runtime page crossing check of strncmp () args.
+	(expand_strn_compare): Function to do builtin expansion of strncmp ().
+
 2016-12-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl-function.c (print_rtx_function): Update
