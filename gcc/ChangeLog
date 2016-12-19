@@ -1,12 +1,7 @@
 2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
-	*  config/rs6000/rs6000.c: Add handling for early expansion of
-	vector multiply builtins.
-
-2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
-
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling for
-	early expansion of vector subtract builtins.
+	early expansion of vector multiply and subtract builtins.
 
 2016-12-19  David Malcolm  <dmalcolm@redhat.com>
 
