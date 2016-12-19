@@ -1,3 +1,7 @@
+2016-12-19  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2016-12-01  Ma Jiang  <ma.jiang@zte.com.cn>
 
 	* config/acx.m4: Change "tail +16c" to "tail -c +17".
