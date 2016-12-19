@@ -359,16 +359,16 @@ enum
 };
 
 extern Sched* runtime_getsched() __asm__ (GOSYM_PREFIX "runtime.getsched");
+extern bool* runtime_getCgoHasExtraM()
+  __asm__ (GOSYM_PREFIX "runtime.getCgoHasExtraM");
 
 Sched*	runtime_sched;
 int32	runtime_gomaxprocs;
-uint32	runtime_needextram = 1;
 M	runtime_m0;
 G	runtime_g0;	// idle goroutine for m0
 G*	runtime_lastg;
 M*	runtime_allm;
 P**	runtime_allp;
-M*	runtime_extram;
 int8*	runtime_goos;
 int32	runtime_ncpu;
 bool	runtime_precisestack;
@@ -418,7 +418,9 @@ static void pidleput(P*);
 static void injectglist(G*);
 static bool preemptall(void);
 static bool exitsyscallfast(void);
-static void allgadd(G*);
+
+void allgadd(G*)
+  __asm__(GOSYM_PREFIX "runtime.allgadd");
 
 bool runtime_isstarted;
 
@@ -498,55 +500,6 @@ struct field_align
   Hchan *p;
 };
 
-// main_init_done is a signal used by cgocallbackg that initialization
-// has been completed.  It is made before _cgo_notify_runtime_init_done,
-// so all cgo calls can rely on it existing.  When main_init is
-// complete, it is closed, meaning cgocallbackg can reliably receive
-// from it.
-Hchan *runtime_main_init_done;
-
-// The chan bool type, for runtime_main_init_done.
-
-extern const struct __go_type_descriptor bool_type_descriptor
-  __asm__ (GOSYM_PREFIX "__go_tdn_bool");
-
-static struct __go_channel_type chan_bool_type_descriptor =
-  {
-    /* __common */
-    {
-      /* __code */
-      GO_CHAN,
-      /* __align */
-      __alignof (Hchan *),
-      /* __field_align */
-      offsetof (struct field_align, p) - 1,
-      /* __size */
-      sizeof (Hchan *),
-      /* __hash */
-      0, /* This value doesn't matter.  */
-      /* __hashfn */
-      NULL,
-      /* __equalfn */
-      NULL,
-      /* __gc */
-      NULL, /* This value doesn't matter */
-      /* __reflection */
-      NULL, /* This value doesn't matter */
-      /* __uncommon */
-      NULL,
-      /* __pointer_to_this */
-      NULL
-    },
-    /* __element_type */
-    &bool_type_descriptor,
-    /* __dir */
-    CHANNEL_BOTH_DIR
-  };
-
-extern Hchan *makechan (ChanType *, int64)
-  __asm__ (GOSYM_PREFIX "runtime.makechan");
-extern void closechan(Hchan *) __asm__ (GOSYM_PREFIX "runtime.closechan");
-
 static void
 initDone(void *arg __attribute__ ((unused))) {
 	runtime_unlockOSThread();
@@ -593,13 +546,13 @@ runtime_main(void* dummy __attribute__((unused)))
 		runtime_throw("runtime_main not on m0");
 	__go_go(runtime_MHeap_Scavenger, nil);
 
-	runtime_main_init_done = makechan(&chan_bool_type_descriptor, 0);
+	makeMainInitDone();
 
 	_cgo_notify_runtime_init_done();
 
 	main_init();
 
-	closechan(runtime_main_init_done);
+	closeMainInitDone();
 
 	if(g->_defer != &d || (void*)d.pfn != initDone)
 		runtime_throw("runtime: bad defer entry after init");
@@ -1043,10 +996,12 @@ runtime_mstart(void* mp)
 	// Install signal handlers; after minit so that minit can
 	// prepare the thread to be able to handle the signals.
 	if(m == &runtime_m0) {
-		if(runtime_iscgo && !runtime_cgoHasExtraM) {
-			runtime_cgoHasExtraM = true;
-			runtime_newextram();
-			runtime_needextram = 0;
+		if(runtime_iscgo) {
+			bool* cgoHasExtraM = runtime_getCgoHasExtraM();
+			if(!*cgoHasExtraM) {
+				*cgoHasExtraM = true;
+				runtime_newextram();
+			}
 		}
 		runtime_initsig(false);
 	}
@@ -1079,10 +1034,13 @@ struct CgoThreadStart
 	void (*fn)(void);
 };
 
+M* runtime_allocm(P*, bool, byte**, uintptr*)
+	__asm__(GOSYM_PREFIX "runtime.allocm");
+
 // Allocate a new m unassociated with any thread.
 // Can use p for allocation context if needed.
 M*
-runtime_allocm(P *p, int32 stacksize, byte** ret_g0_stack, uintptr* ret_g0_stacksize)
+runtime_allocm(P *p, bool allocatestack, byte** ret_g0_stack, uintptr* ret_g0_stacksize)
 {
 	M *mp;
 
@@ -1099,7 +1057,7 @@ runtime_allocm(P *p, int32 stacksize, byte** ret_g0_stack, uintptr* ret_g0_stack
 
 	mp = runtime_mal(sizeof *mp);
 	mcommoninit(mp);
-	mp->g0 = runtime_malg(stacksize, ret_g0_stack, ret_g0_stacksize);
+	mp->g0 = runtime_malg(allocatestack, false, ret_g0_stack, ret_g0_stacksize);
 	mp->g0->m = mp;
 
 	if(p == (P*)g->m->p)
@@ -1125,90 +1083,26 @@ allocg(void)
 	return gp;
 }
 
-static M* lockextra(bool nilokay);
-static void unlockextra(M*);
+void setGContext(void) __asm__ (GOSYM_PREFIX "runtime.setGContext");
 
-// needm is called when a cgo callback happens on a
-// thread without an m (a thread not created by Go).
-// In this case, needm is expected to find an m to use
-// and return with m, g initialized correctly.
-// Since m and g are not set now (likely nil, but see below)
-// needm is limited in what routines it can call. In particular
-// it can only call nosplit functions (textflag 7) and cannot
-// do any scheduling that requires an m.
-//
-// In order to avoid needing heavy lifting here, we adopt
-// the following strategy: there is a stack of available m's
-// that can be stolen. Using compare-and-swap
-// to pop from the stack has ABA races, so we simulate
-// a lock by doing an exchange (via casp) to steal the stack
-// head and replace the top pointer with MLOCKED (1).
-// This serves as a simple spin lock that we can use even
-// without an m. The thread that locks the stack in this way
-// unlocks the stack by storing a valid stack head pointer.
-//
-// In order to make sure that there is always an m structure
-// available to be stolen, we maintain the invariant that there
-// is always one more than needed. At the beginning of the
-// program (if cgo is in use) the list is seeded with a single m.
-// If needm finds that it has taken the last m off the list, its job
-// is - once it has installed its own m so that it can do things like
-// allocate memory - to create a spare m and put it on the list.
-//
-// Each of these extra m's also has a g0 and a curg that are
-// pressed into service as the scheduling stack and current
-// goroutine for the duration of the cgo callback.
-//
-// When the callback is done with the m, it calls dropm to
-// put the m back on the list.
-//
-// Unlike the gc toolchain, we start running on curg, since we are
-// just going to return and let the caller continue.
+// setGContext sets up a new goroutine context for the current g.
 void
-runtime_needm(void)
+setGContext()
 {
-	M *mp;
+	int val;
 
-	if(runtime_needextram) {
-		// Can happen if C/C++ code calls Go from a global ctor.
-		// Can not throw, because scheduler is not initialized yet.
-		int rv __attribute__((unused));
-		rv = runtime_write(2, "fatal error: cgo callback before cgo call\n",
-			sizeof("fatal error: cgo callback before cgo call\n")-1);
-		runtime_exit(1);
-	}
-
-	// Lock extra list, take head, unlock popped list.
-	// nilokay=false is safe here because of the invariant above,
-	// that the extra list always contains or will soon contain
-	// at least one m.
-	mp = lockextra(false);
-
-	// Set needextram when we've just emptied the list,
-	// so that the eventual call into cgocallbackg will
-	// allocate a new m for the extra list. We delay the
-	// allocation until then so that it can be done
-	// after exitsyscall makes sure it is okay to be
-	// running at all (that is, there's no garbage collection
-	// running right now).
-	mp->needextram = mp->schedlink == 0;
-	unlockextra((M*)mp->schedlink);
-
-	// Install g (= m->curg).
-	runtime_setg(mp->curg);
-
-	// Initialize g's context as in mstart.
 	initcontext();
-	g->atomicstatus = _Gsyscall;
 	g->entry = nil;
 	g->param = nil;
 #ifdef USING_SPLIT_STACK
 	__splitstack_getcontext(&g->stackcontext[0]);
+	val = 0;
+	__splitstack_block_signals(&val, nil);
 #else
-	g->gcinitialsp = &mp;
+	g->gcinitialsp = &val;
 	g->gcstack = nil;
 	g->gcstacksize = 0;
-	g->gcnextsp = &mp;
+	g->gcnextsp = &val;
 #endif
 	getcontext(ucontext_arg(&g->context[0]));
 
@@ -1219,168 +1113,21 @@ runtime_needm(void)
 		pfn(gp);
 		*(int*)0x22 = 0x22;
 	}
-
-	// Initialize this thread to use the m.
-	runtime_minit();
-
-#ifdef USING_SPLIT_STACK
-	{
-		int dont_block_signals = 0;
-		__splitstack_block_signals(&dont_block_signals, nil);
-	}
-#endif
 }
 
-// newextram allocates an m and puts it on the extra list.
-// It is called with a working local m, so that it can do things
-// like call schedlock and allocate.
+void makeGContext(G*, byte*, uintptr)
+	__asm__(GOSYM_PREFIX "runtime.makeGContext");
+
+// makeGContext makes a new context for a g.
 void
-runtime_newextram(void)
-{
-	M *mp, *mnext;
-	G *gp;
-	byte *g0_sp, *sp;
-	uintptr g0_spsize, spsize;
+makeGContext(G* gp, byte* sp, uintptr spsize) {
 	ucontext_t *uc;
 
-	// Create extra goroutine locked to extra m.
-	// The goroutine is the context in which the cgo callback will run.
-	// The sched.pc will never be returned to, but setting it to
-	// runtime.goexit makes clear to the traceback routines where
-	// the goroutine stack ends.
-	mp = runtime_allocm(nil, StackMin, &g0_sp, &g0_spsize);
-	gp = runtime_malg(StackMin, &sp, &spsize);
-	gp->atomicstatus = _Gdead;
-	gp->m = mp;
-	mp->curg = gp;
-	mp->locked = _LockInternal;
-	mp->lockedg = gp;
-	gp->lockedm = mp;
-	gp->goid = runtime_xadd64(&runtime_sched->goidgen, 1);
-	// put on allg for garbage collector
-	allgadd(gp);
-
-	// The context for gp will be set up in runtime_needm.  But
-	// here we need to set up the context for g0.
-	uc = ucontext_arg(&mp->g0->context[0]);
+	uc = ucontext_arg(&gp->context[0]);
 	getcontext(uc);
-	uc->uc_stack.ss_sp = g0_sp;
-	uc->uc_stack.ss_size = (size_t)g0_spsize;
+	uc->uc_stack.ss_sp = sp;
+	uc->uc_stack.ss_size = (size_t)spsize;
 	makecontext(uc, kickoff, 0);
-
-	// Add m to the extra list.
-	mnext = lockextra(true);
-	mp->schedlink = (uintptr)mnext;
-	unlockextra(mp);
-}
-
-// dropm is called when a cgo callback has called needm but is now
-// done with the callback and returning back into the non-Go thread.
-// It puts the current m back onto the extra list.
-//
-// The main expense here is the call to signalstack to release the
-// m's signal stack, and then the call to needm on the next callback
-// from this thread. It is tempting to try to save the m for next time,
-// which would eliminate both these costs, but there might not be
-// a next time: the current thread (which Go does not control) might exit.
-// If we saved the m for that thread, there would be an m leak each time
-// such a thread exited. Instead, we acquire and release an m on each
-// call. These should typically not be scheduling operations, just a few
-// atomics, so the cost should be small.
-//
-// TODO(rsc): An alternative would be to allocate a dummy pthread per-thread
-// variable using pthread_key_create. Unlike the pthread keys we already use
-// on OS X, this dummy key would never be read by Go code. It would exist
-// only so that we could register at thread-exit-time destructor.
-// That destructor would put the m back onto the extra list.
-// This is purely a performance optimization. The current version,
-// in which dropm happens on each cgo call, is still correct too.
-// We may have to keep the current version on systems with cgo
-// but without pthreads, like Windows.
-void
-runtime_dropm(void)
-{
-	M *mp, *mnext;
-
-	// Undo whatever initialization minit did during needm.
-	runtime_unminit();
-
-	// Clear m and g, and return m to the extra list.
-	// After the call to setg we can only call nosplit functions.
-	mp = g->m;
-	runtime_setg(nil);
-
-	mp->curg->atomicstatus = _Gdead;
-	mp->curg->gcstack = nil;
-	mp->curg->gcnextsp = nil;
-
-	mnext = lockextra(true);
-	mp->schedlink = (uintptr)mnext;
-	unlockextra(mp);
-}
-
-#define MLOCKED ((M*)1)
-
-// lockextra locks the extra list and returns the list head.
-// The caller must unlock the list by storing a new list head
-// to runtime.extram. If nilokay is true, then lockextra will
-// return a nil list head if that's what it finds. If nilokay is false,
-// lockextra will keep waiting until the list head is no longer nil.
-static M*
-lockextra(bool nilokay)
-{
-	M *mp;
-	void (*yield)(void);
-
-	for(;;) {
-		mp = runtime_atomicloadp(&runtime_extram);
-		if(mp == MLOCKED) {
-			yield = runtime_osyield;
-			yield();
-			continue;
-		}
-		if(mp == nil && !nilokay) {
-			runtime_usleep(1);
-			continue;
-		}
-		if(!runtime_casp(&runtime_extram, mp, MLOCKED)) {
-			yield = runtime_osyield;
-			yield();
-			continue;
-		}
-		break;
-	}
-	return mp;
-}
-
-static void
-unlockextra(M *mp)
-{
-	runtime_atomicstorep(&runtime_extram, mp);
-}
-
-static int32
-countextra()
-{
-	M *mp, *mc;
-	int32 c;
-
-	for(;;) {
-		mp = runtime_atomicloadp(&runtime_extram);
-		if(mp == MLOCKED) {
-			runtime_osyield();
-			continue;
-		}
-		if(!runtime_casp(&runtime_extram, mp, MLOCKED)) {
-			runtime_osyield();
-			continue;
-		}
-		c = 0;
-		for(mc = mp; mc != nil; mc = (M*)mc->schedlink)
-			c++;
-		runtime_atomicstorep(&runtime_extram, mp);
-		return c;
-	}
 }
 
 // Create a new m.  It will start off with a call to fn, or else the scheduler.
@@ -1389,7 +1136,7 @@ newm(void(*fn)(void), P *p)
 {
 	M *mp;
 
-	mp = runtime_allocm(p, -1, nil, nil);
+	mp = runtime_allocm(p, false, nil, nil);
 	mp->nextp = (uintptr)p;
 	mp->mstartfn = (uintptr)(void*)fn;
 
@@ -2287,16 +2034,35 @@ syscall_runtime_AfterFork(void)
 
 // Allocate a new g, with a stack big enough for stacksize bytes.
 G*
-runtime_malg(int32 stacksize, byte** ret_stack, uintptr* ret_stacksize)
+runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* ret_stacksize)
 {
+	uintptr stacksize;
 	G *newg;
-
-	newg = allocg();
-	if(stacksize >= 0) {
+	byte* unused_stack;
+	uintptr unused_stacksize;
 #if USING_SPLIT_STACK
-		int dont_block_signals = 0;
-		size_t ss_stacksize;
+	int dont_block_signals = 0;
+	size_t ss_stacksize;
+#endif
 
+	if (ret_stack == nil) {
+		ret_stack = &unused_stack;
+	}
+	if (ret_stacksize == nil) {
+		ret_stacksize = &unused_stacksize;
+	}
+	newg = allocg();
+	if(allocatestack) {
+		stacksize = StackMin;
+		if(signalstack) {
+			stacksize = 32 * 1024; // OS X wants >= 8K, GNU/Linux >= 2K
+#ifdef SIGSTKSZ
+			if(stacksize < SIGSTKSZ)
+				stacksize = SIGSTKSZ;
+#endif
+		}
+
+#if USING_SPLIT_STACK
 		*ret_stack = __splitstack_makecontext(stacksize,
 						      &newg->stackcontext[0],
 						      &ss_stacksize);
@@ -2361,7 +2127,7 @@ __go_go(void (*fn)(void*), void* arg)
 	} else {
 		uintptr malsize;
 
-		newg = runtime_malg(StackMin, &sp, &malsize);
+		newg = runtime_malg(true, false, &sp, &malsize);
 		spsize = (size_t)malsize;
 		allgadd(newg);
 	}
@@ -2376,30 +2142,17 @@ __go_go(void (*fn)(void*), void* arg)
 	}
 	newg->goid = p->goidcache++;
 
-	{
-		// Avoid warnings about variables clobbered by
-		// longjmp.
-		byte * volatile vsp = sp;
-		size_t volatile vspsize = spsize;
-		G * volatile vnewg = newg;
-		ucontext_t * volatile uc;
+	makeGContext(newg, sp, (uintptr)spsize);
 
-		uc = ucontext_arg(&vnewg->context[0]);
-		getcontext(uc);
-		uc->uc_stack.ss_sp = vsp;
-		uc->uc_stack.ss_size = vspsize;
-		makecontext(uc, kickoff, 0);
+	runqput(p, newg);
 
-		runqput(p, vnewg);
-
-		if(runtime_atomicload(&runtime_sched->npidle) != 0 && runtime_atomicload(&runtime_sched->nmspinning) == 0 && fn != runtime_main)  // TODO: fast atomic
-			wakep();
-		g->m->locks--;
-		return vnewg;
-	}
+	if(runtime_atomicload(&runtime_sched->npidle) != 0 && runtime_atomicload(&runtime_sched->nmspinning) == 0 && fn != runtime_main)  // TODO: fast atomic
+		wakep();
+	g->m->locks--;
+	return newg;
 }
 
-static void
+void
 allgadd(G *gp)
 {
 	G **new;
@@ -2902,7 +2655,7 @@ checkdead(void)
 	}
 
 	// -1 for sysmon
-	run = runtime_sched->mcount - runtime_sched->nmidle - runtime_sched->nmidlelocked - 1 - countextra();
+	run = runtime_sched->mcount - runtime_sched->nmidle - runtime_sched->nmidlelocked - 1;
 	if(run > 0)
 		return;
 	// If we are dying because of a signal caught on an already idle thread,
@@ -3532,12 +3285,6 @@ void
 sync_atomic_runtime_procUnpin()
 {
 	procUnpin();
-}
-
-void
-runtime_proc_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
-{
-	enqueue1(wbufp, (Obj){(byte*)&runtime_main_init_done, sizeof runtime_main_init_done, 0});
 }
 
 // Return whether we are waiting for a GC.  This gc toolchain uses

@@ -249,6 +249,24 @@ func funcPC(f interface{}) uintptr {
 }
 
 // For gccgo, to communicate from the C code to the Go code.
+//go:linkname setIsCgo runtime.setIsCgo
+func setIsCgo() {
+	iscgo = true
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname makeMainInitDone runtime.makeMainInitDone
+func makeMainInitDone() {
+	main_init_done = make(chan bool)
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname closeMainInitDone runtime.closeMainInitDone
+func closeMainInitDone() {
+	close(main_init_done)
+}
+
+// For gccgo, to communicate from the C code to the Go code.
 //go:linkname setCpuidECX runtime.setCpuidECX
 func setCpuidECX(v uint32) {
 	cpuid_ecx = v
@@ -299,6 +317,9 @@ var writeBarrier struct {
 	needed  bool   // whether we need a write barrier for current GC phase
 	cgo     bool   // whether we need a write barrier for a cgo check
 	alignme uint64 // guarantee alignment so that compiler can use a 32 or 64-bit load
+}
+
+func queueRescan(*g) {
 }
 
 // Here for gccgo until we port atomic_pointer.go and mgc.go.
@@ -446,6 +467,8 @@ func cpuprofAdd(stk []uintptr) {
 func Breakpoint()
 func LockOSThread()
 func UnlockOSThread()
+func lockOSThread()
+func unlockOSThread()
 func allm() *m
 func allgs() []*g
 
@@ -499,8 +522,6 @@ func getZerobase() *uintptr {
 }
 
 // Temporary for gccgo until we port proc.go.
-func needm()
-func dropm()
 func sigprof()
 func mcount() int32
 func gcount() int32
@@ -527,6 +548,12 @@ func dumpregs(*_siginfo_t, unsafe.Pointer)
 //go:linkname getsched runtime.getsched
 func getsched() *schedt {
 	return &sched
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname getCgoHasExtraM runtime.getCgoHasExtraM
+func getCgoHasExtraM() *bool {
+	return &cgoHasExtraM
 }
 
 // Throw and rethrow an exception.

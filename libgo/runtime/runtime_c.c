@@ -99,43 +99,12 @@ runtime_cputicks(void)
 void
 runtime_mpreinit(M *mp)
 {
-	int32 stacksize = 32 * 1024;	// OS X wants >=8K, Linux >=2K
-
-#ifdef SIGSTKSZ
-	if(stacksize < SIGSTKSZ)
-		stacksize = SIGSTKSZ;
-#endif
-
-	mp->gsignal = runtime_malg(stacksize, (byte**)&mp->gsignalstack, &mp->gsignalstacksize);
+	mp->gsignal = runtime_malg(true, true, (byte**)&mp->gsignalstack, &mp->gsignalstacksize);
 	mp->gsignal->m = mp;
 }
 
-// Called to initialize a new m (including the bootstrap m).
-// Called on the new thread, can not allocate memory.
 void
-runtime_minit(void)
-{
-	M* m;
-	sigset_t sigs;
-
-	// Initialize signal handling.
-	m = runtime_m();
-	runtime_signalstack(m->gsignalstack, m->gsignalstacksize);
-	if (sigemptyset(&sigs) != 0)
-		runtime_throw("sigemptyset");
-	pthread_sigmask(SIG_SETMASK, &sigs, nil);
-}
-
-// Called from dropm to undo the effect of an minit.
-void
-runtime_unminit(void)
-{
-	runtime_signalstack(nil, 0);
-}
-
-
-void
-runtime_signalstack(byte *p, int32 n)
+runtime_signalstack(byte *p, uintptr n)
 {
 	stack_t st;
 

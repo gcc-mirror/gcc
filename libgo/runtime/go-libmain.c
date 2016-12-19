@@ -61,6 +61,7 @@ initfn (int argc, char **argv, char** env __attribute__ ((unused)))
 
   runtime_isarchive = true;
 
+  setIsCgo ();
   runtime_cpuinit ();
   runtime_initsig(true);
 

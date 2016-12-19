@@ -1283,7 +1283,6 @@ markroot(ParFor *desc, uint32 i)
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allm, sizeof runtime_allm, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allp, sizeof runtime_allp, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&work, sizeof work, 0});
-		runtime_proc_scan(&wbuf, enqueue1);
 		break;
 
 	case RootFinalizers:

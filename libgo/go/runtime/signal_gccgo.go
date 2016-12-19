@@ -17,18 +17,19 @@ import (
 func sigaction(signum int32, act *_sigaction, oact *_sigaction) int32
 
 //extern sigprocmask
-func sigprocmask(how int32, set *_sigset_t, oldset *_sigset_t) int32
+func sigprocmask(how int32, set *sigset, oldset *sigset) int32
 
-// The argument should be simply *_sigset_t, but that fails on GNU/Linux
-// which sometimes uses _sigset_t and sometimes uses ___sigset_t.
 //extern sigfillset
-func sigfillset(set unsafe.Pointer) int32
+func sigfillset(set *sigset) int32
 
 //extern sigemptyset
-func sigemptyset(set *_sigset_t) int32
+func sigemptyset(set *sigset) int32
 
 //extern sigaddset
-func sigaddset(set *_sigset_t, signum int32) int32
+func sigaddset(set *sigset, signum int32) int32
+
+//extern sigdelset
+func sigdelset(set *sigset, signum int32) int32
 
 //extern sigaltstack
 func sigaltstack(ss *_stack_t, oss *_stack_t) int32
@@ -57,9 +58,19 @@ func (c *sigctxt) sigcode() uint64 {
 }
 
 //go:nosplit
+func msigsave(mp *m) {
+	sigprocmask(_SIG_SETMASK, nil, &mp.sigmask)
+}
+
+//go:nosplit
+func msigrestore(sigmask sigset) {
+	sigprocmask(_SIG_SETMASK, &sigmask, nil)
+}
+
+//go:nosplit
 func sigblock() {
-	var set _sigset_t
-	sigfillset(unsafe.Pointer(&set))
+	var set sigset
+	sigfillset(&set)
 	sigprocmask(_SIG_SETMASK, &set, nil)
 }
 
@@ -81,7 +92,7 @@ func setsig(i int32, fn uintptr, restart bool) {
 	if restart {
 		sa.sa_flags |= _SA_RESTART
 	}
-	sigfillset(unsafe.Pointer(&sa.sa_mask))
+	sigfillset((*sigset)(unsafe.Pointer(&sa.sa_mask)))
 	setSigactionHandler(&sa, fn)
 	sigaction(i, &sa, nil)
 }
@@ -117,10 +128,12 @@ func getsig(i int32) uintptr {
 	return getSigactionHandler(&sa)
 }
 
+func signalstack(p unsafe.Pointer, n uintptr)
+
 //go:nosplit
 //go:nowritebarrierrec
 func updatesigmask(m sigmask) {
-	var mask _sigset_t
+	var mask sigset
 	sigemptyset(&mask)
 	for i := int32(0); i < _NSIG; i++ {
 		if m[(i-1)/32]&(1<<((uint(i)-1)&31)) != 0 {
@@ -131,7 +144,7 @@ func updatesigmask(m sigmask) {
 }
 
 func unblocksig(sig int32) {
-	var mask _sigset_t
+	var mask sigset
 	sigemptyset(&mask)
 	sigaddset(&mask, sig)
 	sigprocmask(_SIG_UNBLOCK, &mask, nil)
