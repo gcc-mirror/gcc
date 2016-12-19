@@ -1,3 +1,9 @@
+2016-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/cpp.texi: Clean up anachronistic C99 references and remove 
+	discussion of very old GCC versions.
+	(Differences from previous versions): Delete entire section.
+
 2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling for
