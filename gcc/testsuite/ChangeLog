@@ -1,4 +1,17 @@
 2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	*  gcc.dg/vmx/mult-even-odd-be-order.c: Mark
+	variables as volatile.
+	*  gcc.target/powerpc/fold-vec-mult-char.c: New.
+	*  gcc.target/powerpc/fold-vec-mult-float.c: New.
+	*  gcc.target/powerpc/fold-vec-mult-floatdouble.c: New.
+	*  gcc.target/powerpc/fold-vec-mult-int.c: New.
+	*  gcc.target/powerpc/fold-vec-mult-int128-p8.c: New.
+	*  gcc.target/powerpc/fold-vec-mult-int128-p9.c: New.
+	*  gcc.target/powerpc/fold-vec-mult-longlong.c: New.
+	*  gcc.target/powerpc/fold-vec-mult-short.c: New.
+
+2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
  
 	* gcc.target/powerpc/fold-vec-sub-char.c: New.
 	* gcc.target/powerpc/fold-vec-sub-float.c: New.
