@@ -1,3 +1,10 @@
+2016-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_r): For
+	non-virtual pseudos in compact mode, wrap the regno in '<' and '>'
+	rather than using a '%' prefix.
+	* rtl-tests.c (selftest::test_dumping_regs): Update for above change.
+
 2016-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/78748

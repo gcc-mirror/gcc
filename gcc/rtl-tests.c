@@ -104,9 +104,9 @@ test_dumping_regs ()
     }
 
   /* Test dumping of non-virtual pseudos.  */
-  ASSERT_RTL_DUMP_EQ ("(reg:SI %0)",
+  ASSERT_RTL_DUMP_EQ ("(reg:SI <0>)",
     gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 1));
-  ASSERT_RTL_DUMP_EQ ("(reg:SI %1)",
+  ASSERT_RTL_DUMP_EQ ("(reg:SI <1>)",
     gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 2));
 }
 
