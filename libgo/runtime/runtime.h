@@ -52,7 +52,7 @@ typedef uintptr		uintreg;
 
 /* Defined types.  */
 
-typedef	uint8			bool;
+typedef	_Bool			bool;
 typedef	uint8			byte;
 typedef	struct	g		G;
 typedef	struct	mutex		Lock;
@@ -240,7 +240,6 @@ extern	M*	runtime_allm;
 extern	P**	runtime_allp;
 extern	Sched*  runtime_sched;
 extern	int32	runtime_gomaxprocs;
-extern	uint32	runtime_needextram;
 extern	uint32	runtime_panicking(void)
   __asm__ (GOSYM_PREFIX "runtime.getPanicking");
 extern	int8*	runtime_goos;
@@ -298,15 +297,13 @@ void	runtime_ready(G*);
 String	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*, intgo);
 void*	runtime_mstart(void*);
-G*	runtime_malg(int32, byte**, uintptr*);
+G*	runtime_malg(bool, bool, byte**, uintptr*)
+	__asm__(GOSYM_PREFIX "runtime.malg");
 void	runtime_mpreinit(M*);
-void	runtime_minit(void);
-void	runtime_unminit(void);
-void	runtime_needm(void)
-  __asm__ (GOSYM_PREFIX "runtime.needm");
-void	runtime_dropm(void)
-  __asm__ (GOSYM_PREFIX "runtime.dropm");
-void	runtime_signalstack(byte*, int32);
+void	runtime_minit(void)
+  __asm__ (GOSYM_PREFIX "runtime.minit");
+void	runtime_signalstack(byte*, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.signalstack");
 MCache*	runtime_allocmcache(void)
   __asm__ (GOSYM_PREFIX "runtime.allocmcache");
 void	runtime_freemcache(MCache*);
@@ -345,7 +342,8 @@ int32	runtime_round2(int32 x); // round x up to a power of 2.
 
 void runtime_setg(G*)
   __asm__ (GOSYM_PREFIX "runtime.setg");
-void runtime_newextram(void);
+void runtime_newextram(void)
+  __asm__ (GOSYM_PREFIX "runtime.newextram");
 #define runtime_exit(s) exit(s)
 #define runtime_breakpoint() __builtin_trap()
 void	runtime_gosched(void);
@@ -523,9 +521,12 @@ void	runtime_procyield(uint32)
   __asm__(GOSYM_PREFIX "runtime.procyield");
 void	runtime_osyield(void)
   __asm__(GOSYM_PREFIX "runtime.osyield");
-void	runtime_lockOSThread(void);
-void	runtime_unlockOSThread(void);
-bool	runtime_lockedOSThread(void);
+void	runtime_lockOSThread(void)
+  __asm__(GOSYM_PREFIX "runtime.lockOSThread");
+void	runtime_unlockOSThread(void)
+  __asm__(GOSYM_PREFIX "runtime.unlockOSThread");
+bool	runtime_lockedOSThread(void)
+  __asm__(GOSYM_PREFIX "runtime.lockedOSThread");
 
 void	runtime_printcreatedby(G*)
   __asm__(GOSYM_PREFIX "runtime.printcreatedby");
@@ -587,8 +588,6 @@ struct time_now_ret now() __asm__ (GOSYM_PREFIX "time.now")
 extern void _cgo_wait_runtime_init_done (void);
 extern void _cgo_notify_runtime_init_done (void);
 extern _Bool runtime_iscgo;
-extern _Bool runtime_cgoHasExtraM;
-extern Hchan *runtime_main_init_done;
 extern uintptr __go_end __attribute__ ((weak));
 extern void *getitab(const struct __go_type_descriptor *,
 		     const struct __go_type_descriptor *,
@@ -596,5 +595,11 @@ extern void *getitab(const struct __go_type_descriptor *,
   __asm__ (GOSYM_PREFIX "runtime.getitab");
 
 extern void runtime_cpuinit(void);
+extern void setIsCgo(void)
+  __asm__ (GOSYM_PREFIX "runtime.setIsCgo");
 extern void setCpuidECX(uint32)
   __asm__ (GOSYM_PREFIX "runtime.setCpuidECX");
+extern void makeMainInitDone(void)
+  __asm__ (GOSYM_PREFIX "runtime.makeMainInitDone");
+extern void closeMainInitDone(void)
+  __asm__ (GOSYM_PREFIX "runtime.closeMainInitDone");

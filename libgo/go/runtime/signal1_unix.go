@@ -327,7 +327,7 @@ func ensureSigM() {
 //go:norace
 //go:nowritebarrierrec
 func badsignal(sig uintptr, c *sigctxt) {
-	needm()
+	needm(0)
 	if !sigsend(uint32(sig)) {
 		// A foreign thread received the signal sig, and the
 		// Go code does not want to handle it.

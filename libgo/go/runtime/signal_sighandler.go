@@ -52,8 +52,8 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 
 		// All signals were blocked due to the sigaction mask;
 		// unblock them.
-		var set _sigset_t
-		sigfillset(unsafe.Pointer(&set))
+		var set sigset
+		sigfillset(&set)
 		sigprocmask(_SIG_UNBLOCK, &set, nil)
 
 		sigpanic()

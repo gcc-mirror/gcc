@@ -479,8 +479,6 @@ type m struct {
 	dropextram bool // drop after call is done
 
 	gcing int32
-
-	cgomal *cgoMal // allocations via _cgo_allocate
 }
 
 type p struct {
@@ -800,14 +798,6 @@ var (
 // required size and picking an appropriate offset when we use the
 // array.
 type g_ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(unsafe.Pointer(nil))]unsafe.Pointer
-
-// cgoMal tracks allocations made by _cgo_allocate
-// FIXME: _cgo_allocate has been removed from gc and can probably be
-// removed from gccgo too.
-type cgoMal struct {
-	next  *cgoMal
-	alloc unsafe.Pointer
-}
 
 // sigset is the Go version of the C type sigset_t.
 // _sigset_t is defined by the Makefile from <signal.h>.

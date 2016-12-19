@@ -543,4 +543,3 @@ int32	runtime_setgcpercent(int32)
 #define PoisonStack ((uintptr)0x6868686868686868ULL)
 
 struct Workbuf;
-void	runtime_proc_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
