@@ -1,3 +1,58 @@
+2016-12-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* Makefile.am: Remove exponent, fraction, nearest, rrspacing,
+	set_exponent, spacing, transpose, malloc, transpose_generic.
+	* Makefile.in: Regenerate.
+	* generated/exponent_r10.c: Remove.
+	* generated/exponent_r16.c: Remove.
+	* generated/exponent_r4.c: Remove.
+	* generated/exponent_r8.c: Remove.
+	* generated/fraction_r10.c: Remove.
+	* generated/fraction_r16.c: Remove.
+	* generated/fraction_r4.c: Remove.
+	* generated/fraction_r8.c: Remove.
+	* generated/nearest_r10.c: Remove.
+	* generated/nearest_r16.c: Remove.
+	* generated/nearest_r4.c: Remove.
+	* generated/nearest_r8.c: Remove.
+	* generated/rrspacing_r10.c: Remove.
+	* generated/rrspacing_r16.c: Remove.
+	* generated/rrspacing_r4.c: Remove.
+	* generated/rrspacing_r8.c: Remove.
+	* generated/set_exponent_r10.c: Remove.
+	* generated/set_exponent_r16.c: Remove.
+	* generated/set_exponent_r4.c: Remove.
+	* generated/set_exponent_r8.c: Remove.
+	* generated/spacing_r10.c: Remove.
+	* generated/spacing_r16.c: Remove.
+	* generated/spacing_r4.c: Remove.
+	* generated/spacing_r8.c: Remove.
+	* generated/transpose_c10.c: Remove.
+	* generated/transpose_c16.c: Remove.
+	* generated/transpose_c4.c: Remove.
+	* generated/transpose_c8.c: Remove.
+	* generated/transpose_i16.c: Remove.
+	* generated/transpose_i4.c: Remove.
+	* generated/transpose_i8.c: Remove.
+	* generated/transpose_r10.c: Remove.
+	* generated/transpose_r16.c: Remove.
+	* generated/transpose_r4.c: Remove.
+	* generated/transpose_r8.c: Remove.
+	* gfortran.map: Remove exponent, fraction, nearest, rrspacing,
+	set_exponent, spacing, transpose, malloc, free, transpose_generic,
+	store_exe_path.
+	* intrinsics/malloc.c: Remove.
+	* intrinsics/transpose_generic.c: Remove.
+	* libgfortran.h (store_exe_path): Remove.
+	* m4/exponent.m4: Remove.
+	* m4/fraction.m4: Remove.
+	* m4/nearest.m4: Remove.
+	* m4/rrspacing.m4: Remove.
+	* m4/set_exponent.m4: Remove.
+	* m4/spacing.m4: Remove.
+	* m4/transpose.m4: Remove.
+	* runtime/main.c (store_exe_path): Remove.
+
 2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsics/chmod.c (chmod_internal): Fix case where mode_t is

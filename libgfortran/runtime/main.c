@@ -71,15 +71,6 @@ static int argc_save;
 static char **argv_save;
 
 
-void
-store_exe_path (const char * argv0 __attribute__ ((unused)))
-{
-  /* This function is now useless, but is retained due to ABI compatibility.
-    Remove when bumping the library ABI.  */
-  ;
-}
-
-
 /* Set the saved values of the command line arguments.  */
 
 void
