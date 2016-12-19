@@ -650,7 +650,7 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
 				    : gfor_fndecl_error_stop_numeric)
 				 : (flag_coarray == GFC_FCOARRAY_LIB
 				    ? gfor_fndecl_caf_stop_numeric
-				    : gfor_fndecl_stop_numeric_f08), 1,
+				    : gfor_fndecl_stop_numeric), 1,
 				 fold_convert (gfc_int4_type_node, se.expr));
     }
   else
