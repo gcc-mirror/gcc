@@ -1,3 +1,13 @@
+2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+ 
+	* gcc.target/powerpc/fold-vec-sub-char.c: New.
+	* gcc.target/powerpc/fold-vec-sub-float.c: New.
+	* gcc.target/powerpc/fold-vec-sub-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-sub-int.c: New.
+	* gcc.target/powerpc/fold-vec-sub-int128.c: New.
+	* gcc.target/powerpc/fold-vec-sub-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-sub-short.c: New.
+
 2016-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/78748

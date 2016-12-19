@@ -16564,6 +16564,24 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    /* Flavors of vec_sub.  We deliberately don't expand
+       P8V_BUILTIN_VSUBUQM. */
+    case ALTIVEC_BUILTIN_VSUBUBM:
+    case ALTIVEC_BUILTIN_VSUBUHM:
+    case ALTIVEC_BUILTIN_VSUBUWM:
+    case P8V_BUILTIN_VSUBUDM:
+    case ALTIVEC_BUILTIN_VSUBFP:
+    case VSX_BUILTIN_XVSUBDP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, MINUS_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
     default:
       break;
     }
