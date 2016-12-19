@@ -1,5 +1,14 @@
 2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* Makefile.am: Remove ISO_C_BINDING runtime functions.
+	* Makefile.in: Regenerate.
+	* gfortran.map: Remove all __iso_c_binding_c_f_pointer_* symbols.
+	* intrinsics/iso_c_binding.h: Remove.
+	* intrinsics/iso_c_binding.c: Remove.
+	* intrinsics/iso_c_generated_procs.c: Remove.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* Makefile.am: Remove intrinsics/bit_intrinsics.c.
 	* Makefile.in: Regenerate.
 	* gfortran.map: Remove _gfortran_clz128 and _gfortran_ctz128.
