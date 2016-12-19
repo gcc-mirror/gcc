@@ -1,6 +1,10 @@
+2016-12-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*popcounthi2_1): New insn_and_split pattern.
+
 2016-12-19  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* doc/cpp.texi: Clean up anachronistic C99 references and remove 
+	* doc/cpp.texi: Clean up anachronistic C99 references and remove
 	discussion of very old GCC versions.
 	(Differences from previous versions): Delete entire section.
 
@@ -183,8 +187,7 @@
 	* config/arc/arc.md (mulsidi_600): Change to insn_and_split,
 	generate new mul64 insn for core multiplication work.
 	(umulsidi_600): Likewise, but use mulu64 insn.
-	(mul64): New pattern, content taken from old mulsidi_600 insn
-	pattern.
+	(mul64): New pattern, content taken from old mulsidi_600 insn pattern.
 	(mulu64): Likewise, but using umulsidi_600.
 	(mulsidi3): Remove move to destination, this is now handled by
 	mulsidi_600 insn_and_split.
