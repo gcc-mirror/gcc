@@ -11289,8 +11289,13 @@ change_zero_ext (rtx pat)
       else
 	continue;
 
-      wide_int mask = wi::mask (size, false, GET_MODE_PRECISION (mode));
-      x = gen_rtx_AND (mode, x, immed_wide_int_const (mask, mode));
+      if (!(GET_CODE (x) == LSHIFTRT
+	    && CONST_INT_P (XEXP (x, 1))
+	    && size + INTVAL (XEXP (x, 1)) == GET_MODE_PRECISION (mode)))
+	{
+	  wide_int mask = wi::mask (size, false, GET_MODE_PRECISION (mode));
+	  x = gen_rtx_AND (mode, x, immed_wide_int_const (mask, mode));
+	}
 
       SUBST (**iter, x);
       changed = true;
