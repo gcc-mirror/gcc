@@ -1,5 +1,10 @@
 2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.map: Remove _gfortran_stop_numeric_f08.
+	* runtime/stop.c: Rename stop_numeric_f08 into stop_numeric.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* Makefile.am: Remove ISO_C_BINDING runtime functions.
 	* Makefile.in: Regenerate.
 	* gfortran.map: Remove all __iso_c_binding_c_f_pointer_* symbols.

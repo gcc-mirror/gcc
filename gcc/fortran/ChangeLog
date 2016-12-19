@@ -1,3 +1,10 @@
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans.h: Remove gfor_fndecl_stop_numeric_f08.
+	* trans-decl.c: Remove gfor_fndecl_stop_numeric_f08.
+	* trans-stmt.c (gfc_trans_stop): Use gfor_fndecl_stop_numeric
+	instead of gfor_fndecl_stop_numeric_f08.
+
 2016-12-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78545

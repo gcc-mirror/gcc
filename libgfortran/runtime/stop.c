@@ -90,24 +90,6 @@ void
 stop_numeric (GFC_INTEGER_4 code)
 {
   report_exception ();
-  if (code == -1)
-    code = 0;
-  else
-    st_printf ("STOP %d\n", (int)code);
-
-  exit (code);
-}
-
-
-/* A Fortran 2008 numeric STOP statement.  */
-
-extern _Noreturn void stop_numeric_f08 (GFC_INTEGER_4);
-export_proto(stop_numeric_f08);
-
-void
-stop_numeric_f08 (GFC_INTEGER_4 code)
-{
-  report_exception ();
   st_printf ("STOP %d\n", (int)code);
   exit (code);
 }
