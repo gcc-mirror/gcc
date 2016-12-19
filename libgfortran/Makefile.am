@@ -122,8 +122,6 @@ intrinsics/extends_type_of.c \
 intrinsics/fnum.c \
 intrinsics/ierrno.c \
 intrinsics/ishftc.c \
-intrinsics/iso_c_generated_procs.c \
-intrinsics/iso_c_binding.c \
 intrinsics/mvbits.c \
 intrinsics/move_alloc.c \
 intrinsics/pack_generic.c \
