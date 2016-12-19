@@ -1,3 +1,7 @@
+2016-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* combine.c (change_zero_ext): Skip generation of redundant AND.
+
 2016-12-19  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	* config/netbsd.h (LINK_EH_SPEC): Define.
