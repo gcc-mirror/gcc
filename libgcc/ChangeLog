@@ -1,3 +1,9 @@
+2016-12-19  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.host (*-*-netbsd*): Add t-eh-dw2-dip to tmake_file.
+	* crtstuff.c (BSD_DL_ITERATE_PHDR_AVAILABLE): Define for NetBSD.
+	* unwind-dw2-fde-dip.c (USE_PT_GNU_EH_FRAME, ElfW): Likewise.
+
 2016-12-17  Matthias Klose  <doko@ubuntu.com>
 
 	* config/arc/gmon: Remove empty directory.
