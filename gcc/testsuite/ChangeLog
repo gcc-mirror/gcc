@@ -1,3 +1,8 @@
+2016-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/78748
+	* gcc.c-torture/compile/pr78748.c: New test.
+
 2016-12-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78848
