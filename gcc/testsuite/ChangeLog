@@ -1,18 +1,21 @@
-2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+2016-12-19  Uros Bizjak  <ubizjak@gmail.com>
 
-	*  gcc.dg/vmx/mult-even-odd-be-order.c: Mark
-	variables as volatile.
-	*  gcc.target/powerpc/fold-vec-mult-char.c: New.
-	*  gcc.target/powerpc/fold-vec-mult-float.c: New.
-	*  gcc.target/powerpc/fold-vec-mult-floatdouble.c: New.
-	*  gcc.target/powerpc/fold-vec-mult-int.c: New.
-	*  gcc.target/powerpc/fold-vec-mult-int128-p8.c: New.
-	*  gcc.target/powerpc/fold-vec-mult-int128-p9.c: New.
-	*  gcc.target/powerpc/fold-vec-mult-longlong.c: New.
-	*  gcc.target/powerpc/fold-vec-mult-short.c: New.
+	* gcc.target/i386/pr59874-3.c: New test.
 
 2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
- 
+
+	* gcc.dg/vmx/mult-even-odd-be-order.c: Mark variables as volatile.
+	* gcc.target/powerpc/fold-vec-mult-char.c: New.
+	* gcc.target/powerpc/fold-vec-mult-float.c: New.
+	* gcc.target/powerpc/fold-vec-mult-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-mult-int.c: New.
+	* gcc.target/powerpc/fold-vec-mult-int128-p8.c: New.
+	* gcc.target/powerpc/fold-vec-mult-int128-p9.c: New.
+	* gcc.target/powerpc/fold-vec-mult-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-mult-short.c: New.
+
+2016-12-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-sub-char.c: New.
 	* gcc.target/powerpc/fold-vec-sub-float.c: New.
 	* gcc.target/powerpc/fold-vec-sub-floatdouble.c: New.
@@ -39,7 +42,7 @@
 2016-12-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78746
-	* charlen_03.f90: Remove test. 
+	* charlen_03.f90: Remove test.
 	* charlen_10.f90: Ditto.
 
 2016-12-17  Jakub Jelinek  <jakub@redhat.com>
