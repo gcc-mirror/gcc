@@ -1,3 +1,10 @@
+2016-12-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78545
+	* intrinsic.texi: Minor documentation fixes for non-standard
+	time-related intrinsics. Add references to standard intrinsics and
+	linkify some existing references.
+
 2016-12-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/78545

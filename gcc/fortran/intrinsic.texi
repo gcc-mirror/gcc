@@ -4583,7 +4583,7 @@ end program test_cshift
 @table @asis
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
-@code{TIME8}, to a string. The output will be of the form @samp{Sat
+@ref{TIME8}, to a string. The output will be of the form @samp{Sat
 Aug 19 18:13:14 1995}.
 
 This intrinsic is provided in both subroutine and function forms; however,
@@ -5843,7 +5843,7 @@ the dynamic type of A is an extension type of the dynamic type of MOLD.
 @table @asis
 @item @emph{Description}:
 @code{FDATE(DATE)} returns the current date (using the same format as
-@code{CTIME}) in @var{DATE}. It is equivalent to @code{CALL CTIME(DATE,
+@ref{CTIME}) in @var{DATE}. It is equivalent to @code{CALL CTIME(DATE,
 TIME())}.
 
 This intrinsic is provided in both subroutine and function forms; however,
@@ -7157,7 +7157,7 @@ See @code{GETPID} for an example.
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME}
+Given a system time value @var{TIME} (as provided by the @ref{TIME}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the UTC time zone (Universal Coordinated Time, also known in some
 countries as GMT, Greenwich Mean Time), using @code{gmtime(3)}.
@@ -7201,7 +7201,7 @@ effect, zero if not, and negative if the information is not available.
 @end enumerate
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
 
 @end table
 
@@ -7879,8 +7879,10 @@ program test_idate
   print *, tarray(3)
 end program test_idate
 @end smallexample
-@end table
 
+@item @emph{See also}:
+@ref{DATE_AND_TIME}
+@end table
 
 
 @node IEOR
@@ -8699,6 +8701,9 @@ program test_itime
   print *, tarray(3)
 end program test_itime
 @end smallexample
+
+@item @emph{See also}:
+@ref{DATE_AND_TIME}
 @end table
 
 
@@ -9650,7 +9655,7 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME}
+Given a system time value @var{TIME} (as provided by the @ref{TIME}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the local time zone using @code{localtime(3)}.
 
@@ -9693,7 +9698,7 @@ effect, zero if not, and negative if the information is not available.
 @end enumerate
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{TIME}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{TIME}, @ref{TIME8}
 
 @end table
 
@@ -13885,7 +13890,7 @@ IF (THIS_IMAGE(HUGE(1)) /= THIS_IMAGE())
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 function @code{time(3)} in the C standard library). This value is
-suitable for passing to @code{CTIME}, @code{GMTIME}, and @code{LTIME}.
+suitable for passing to @ref{CTIME}, @ref{GMTIME}, and @ref{LTIME}.
 
 This intrinsic is not fully portable, such as to systems with 32-bit
 @code{INTEGER} types but supporting times wider than 32 bits. Therefore,
@@ -13910,7 +13915,7 @@ Function
 The return value is a scalar of type @code{INTEGER(4)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
 
 @end table
 
@@ -13926,7 +13931,7 @@ The return value is a scalar of type @code{INTEGER(4)}.
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 function @code{time(3)} in the C standard library). This value is
-suitable for passing to @code{CTIME}, @code{GMTIME}, and @code{LTIME}.
+suitable for passing to @ref{CTIME}, @ref{GMTIME}, and @ref{LTIME}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{time(3)}. On a system with a 32-bit
@@ -13949,7 +13954,7 @@ Function
 The return value is a scalar of type @code{INTEGER(8)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK8}, @ref{TIME}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK8}, @ref{TIME}
 
 @end table
 
