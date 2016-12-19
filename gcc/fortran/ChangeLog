@@ -1,5 +1,10 @@
 2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* trans-decl.c (create_main_function): Remove unused elements to
+	the set_options call.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* trans.h: Remove gfor_fndecl_stop_numeric_f08.
 	* trans-decl.c: Remove gfor_fndecl_stop_numeric_f08.
 	* trans-stmt.c (gfc_trans_stop): Use gfor_fndecl_stop_numeric
