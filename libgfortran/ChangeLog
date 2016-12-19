@@ -1,3 +1,10 @@
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* Makefile.am: Remove intrinsics/bit_intrinsics.c.
+	* Makefile.in: Regenerate.
+	* gfortran.map: Remove _gfortran_clz128 and _gfortran_ctz128.
+	* intrinsics/bit_intrinsics.c: Remove.
+
 2016-12-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* Makefile.am: Remove exponent, fraction, nearest, rrspacing,
