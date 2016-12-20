@@ -1,3 +1,9 @@
+2016-12-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/tls/pr78796.c: dg-add-options tls.
+	* gcc.target/powerpc/fold-vec-mult-int.c: power8-vector.
+	* gcc.target/powerpc/fold-vec-mult-longlong.c: -maix64.
+
 2016-12-20  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/gimplefe-19.c: New testcase.
