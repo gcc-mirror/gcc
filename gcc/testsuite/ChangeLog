@@ -1,3 +1,13 @@
+2016-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/71237
+	* gnat.dg/vect1.adb: Add -fno-vect-cost-model to dg-options.
+	* gnat.dg/vect2.adb: Likewise.
+	* gnat.dg/vect3.adb: Likewise.
+	* gnat.dg/vect4.adb: Likewise.
+	* gnat.dg/vect5.adb: Likewise.
+	* gnat.dg/vect6.adb: Likewise.
+
 2016-12-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr59874-3.c: New test.
