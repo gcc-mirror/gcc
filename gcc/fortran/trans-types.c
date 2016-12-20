@@ -961,10 +961,6 @@ gfc_init_types (void)
 			wi::mask (n, UNSIGNED,
 				  TYPE_PRECISION (size_type_node)));
 
-  boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
-  boolean_true_node = build_int_cst (boolean_type_node, 1);
-  boolean_false_node = build_int_cst (boolean_type_node, 0);
-
   /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
   gfc_charlen_int_kind = 4;
   gfc_charlen_type_node = gfc_get_int_type (gfc_charlen_int_kind);
