@@ -1,3 +1,8 @@
+2016-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78694
+	* gcc.c-torture/compile/pr78694.c: New test.
+
 2016-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR testsuite/71232
