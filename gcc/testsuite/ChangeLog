@@ -1,3 +1,8 @@
+2016-12-20  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.dg/sms-3.c: Add -fno-sched-pressure for powerpc.
+	* gcc.dg/sms-6.c: Likewise.
+
 2016-12-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/tls/alias-1.c: dg-add-options tls.
