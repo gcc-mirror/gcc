@@ -1,6 +1,6 @@
 2016-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
-	PR testsuite/71237
+	PR testsuite/71232
 	* gnat.dg/vect1.adb: Add -fno-vect-cost-model to dg-options.
 	* gnat.dg/vect2.adb: Likewise.
 	* gnat.dg/vect3.adb: Likewise.
