@@ -215,7 +215,7 @@ c_parser_gimple_compound_statement (c_parser *parser, gimple_seq *seq)
 expr_stmt:
 	  c_parser_gimple_statement (parser, seq);
 	  if (! c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
-	    return return_p;
+	    c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
 	}
     }
   c_parser_consume_token (parser);
@@ -327,9 +327,12 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
     case CPP_NOT:
     case CPP_MULT: /* pointer deref */
       rhs = c_parser_gimple_unary_expression (parser);
-      assign = gimple_build_assign (lhs.value, rhs.value);
-      gimple_set_location (assign, loc);
-      gimple_seq_add_stmt (seq, assign);
+      if (rhs.value != error_mark_node)
+	{
+	  assign = gimple_build_assign (lhs.value, rhs.value);
+	  gimple_set_location (assign, loc);
+	  gimple_seq_add_stmt (seq, assign);
+	}
       return;
 
     default:;
@@ -385,10 +388,13 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
       && lookup_name (c_parser_peek_token (parser)->value))
     {
       rhs = c_parser_gimple_unary_expression (parser);
-      gimple *call = gimple_build_call_from_tree (rhs.value);
-      gimple_call_set_lhs (call, lhs.value);
-      gimple_seq_add_stmt (seq, call);
-      gimple_set_location (call, loc);
+      if (rhs.value != error_mark_node)
+	{
+	  gimple *call = gimple_build_call_from_tree (rhs.value);
+	  gimple_call_set_lhs (call, lhs.value);
+	  gimple_seq_add_stmt (seq, call);
+	  gimple_set_location (call, loc);
+	}
       return;
     }
 
@@ -802,7 +808,10 @@ c_parser_gimple_postfix_expression_after_primary (c_parser *parser,
 	    tree idx = c_parser_gimple_unary_expression (parser).value;
 
 	    if (! c_parser_require (parser, CPP_CLOSE_SQUARE, "expected %<]%>"))
-	      break;
+	      {
+		c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+		break;
+	      }
 
 	    start = expr.get_start ();
 	    finish = c_parser_tokens_buf (parser, 0)->location;
