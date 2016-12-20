@@ -1,3 +1,11 @@
+2016-12-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_compound_statement): Improve
+	error recovery.
+	(c_parser_gimple_statement): Only build assigns for non-error
+	stmts.
+	(c_parser_gimple_postfix_expression_after): Improve error recovery.
+
 2016-12-14  Martin Jambor  <mjambor@suse.cz>
 
 	* c-parser.c: Include omp-general.h and omp-offload.h instead of
