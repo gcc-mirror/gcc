@@ -1,3 +1,7 @@
+2016-12-20  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-19.c: New testcase.
+
 2016-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/78694
