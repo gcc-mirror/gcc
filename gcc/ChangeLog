@@ -1,3 +1,9 @@
+2016-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78694
+	* config/arm/arm.c (dump_minipool): Copy mp->value before emitting it
+	in the minipool to avoid invalid RTL sharing.
+
 2016-12-19  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (expand_strn_compare): Declare.
