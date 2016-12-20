@@ -1,3 +1,15 @@
+2016-12-20  James Greenhalgh  <james.greenhalghj@arm.com>
+
+	* common.opt (excess_precision): Tag as SetByCombined.
+	* opts.c (set_fast_math_flags): Also set
+	flag_excess_precision_cmdline.
+	(fast_math_flags_set_p): Also check flag_excess_precision_cmdline.
+	* doc/invoke.texi (-fexcess-precision): Drop text saying the
+	option has no effect under -ffast-math, make it clear that
+	-ffast-math will cause -fexcess-precision=fast by default even for
+	standards compliant modes.
+	(-ffast-math): Document that this sets -fexcess-precision=fast.
+
 2016-12-20  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (execute_one_pass): Handle going out of SSA w/o

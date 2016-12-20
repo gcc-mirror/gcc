@@ -9109,12 +9109,12 @@ both casts and assignments cause values to be rounded to their
 semantic types (whereas @option{-ffloat-store} only affects
 assignments).  This option is enabled by default for C if a strict
 conformance option such as @option{-std=c99} is used.
+@option{-ffast-math} enables @option{-fexcess-precision=fast} by default
+regardless of whether a strict conformance option is used.
 
 @opindex mfpmath
 @option{-fexcess-precision=standard} is not implemented for languages
-other than C, and has no effect if
-@option{-funsafe-math-optimizations} or @option{-ffast-math} is
-specified.  On the x86, it also has no effect if @option{-mfpmath=sse}
+other than C.  On the x86, it has no effect if @option{-mfpmath=sse}
 or @option{-mfpmath=sse+387} is specified; in the former case, IEEE
 semantics apply without excess precision, and in the latter, rounding
 is unpredictable.
@@ -9123,7 +9123,8 @@ is unpredictable.
 @opindex ffast-math
 Sets the options @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
 @option{-ffinite-math-only}, @option{-fno-rounding-math},
-@option{-fno-signaling-nans} and @option{-fcx-limited-range}.
+@option{-fno-signaling-nans}, @option{-fcx-limited-range} and
+@option{-fexcess-precision=fast}.
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
