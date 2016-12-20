@@ -9,4 +9,4 @@ foo (void)
   return bar ((void*)bar);
 }
 
-/* { dg-final { scan-assembler "b\\s+bar" } } */
+/* { dg-final { scan-assembler "bl?\\s+bar" } } */
