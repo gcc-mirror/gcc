@@ -1,3 +1,7 @@
+2016-12-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/tls/alias-1.c: dg-add-options tls.
+
 2016-12-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/pr78255-2.c: Fix to work for targets
