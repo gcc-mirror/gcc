@@ -1,3 +1,7 @@
+2016-12-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-types.c (gfc_init_types): Don't redefine boolean type node.
+
 2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans-decl.c (create_main_function): Remove unused elements to
