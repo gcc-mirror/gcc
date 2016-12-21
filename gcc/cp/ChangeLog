@@ -1,3 +1,9 @@
+2016-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78749 - friend in anonymous namespace
+	* decl.c (wrapup_globals_for_namespace): Don't complain about friend
+	pseudo-template instantiations.
+
 2016-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR c++/71694
