@@ -25,8 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 #include <stdlib.h>
-#include <math.h>
-#include <assert.h>'
+#include <math.h>'
 
 include(iparm.m4)dnl
 include(ifunction.m4)dnl

@@ -24,8 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 extern void *internal_pack (gfc_array_char *);

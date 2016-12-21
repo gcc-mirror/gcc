@@ -24,7 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <string.h>
 #include <stdlib.h>
 
 extern void system_sub (const char *fcmd, GFC_INTEGER_4 * status,

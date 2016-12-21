@@ -32,7 +32,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <errno.h>
 #define star_fill(p, n) memset(p, '*', n)
 
 typedef unsigned char uchar;

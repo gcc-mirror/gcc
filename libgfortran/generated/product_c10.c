@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 #include <stdlib.h>
-#include <assert.h>
 
 
 #if defined (HAVE_GFC_COMPLEX_10) && defined (HAVE_GFC_COMPLEX_10)
