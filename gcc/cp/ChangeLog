@@ -1,5 +1,8 @@
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (coerce_template_parms): Consider variadic_args_p before
+	complaining about too many template arguments.
+
 	* pt.c (process_partial_specialization): Use
 	get_partial_spec_bindings to check that the partial specialization
 	is more specialized than the primary template.
