@@ -257,7 +257,6 @@ GFORTRAN_7 {
     _gfortran_fstat_i4_sub;
     _gfortran_fstat_i8;
     _gfortran_fstat_i8_sub;
-    _gfortran_ftell2;
     _gfortran_ftell;
     _gfortran_ftell_i1_sub;
     _gfortran_ftell_i2_sub;

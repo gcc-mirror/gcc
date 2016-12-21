@@ -2604,7 +2604,7 @@ gfc_resolve_ftell (gfc_expr *f, gfc_expr *u)
       gfc_convert_type (u, &ts, 2);
     }
 
-  f->value.function.name = gfc_get_string (PREFIX ("ftell2"));
+  f->value.function.name = gfc_get_string (PREFIX ("ftell"));
 }
 
 

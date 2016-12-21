@@ -1,5 +1,11 @@
 2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.map: Remove _gfortran_ftell2.
+	* io/intrinsics.c (ftell): Remove.
+	(ftell2): Rename to ftell.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.map: Move all _gfortran_* __iso_c_binding_* symbols
 	to GFORTRAN_7. Rename F2C_1.0 to GFORTRAN_F2C_7. Move all C99
 	compatibility symbols to GFORTRAN_C99_7.
