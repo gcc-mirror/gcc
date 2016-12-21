@@ -6863,6 +6863,27 @@ coerce_template_template_parm (tree parm,
   return 1;
 }
 
+/* Subroutine of unify for the case when PARM is a
+   BOUND_TEMPLATE_TEMPLATE_PARM.  */
+
+static int
+unify_bound_ttp_args (tree tparms, tree targs, tree parm, tree arg,
+		      bool explain_p)
+{
+  tree parmvec = TYPE_TI_ARGS (parm);
+  tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
+
+  /* The template template parm might be variadic and the argument
+     not, so flatten both argument lists.  */
+  parmvec = expand_template_argument_pack (parmvec);
+  argvec = expand_template_argument_pack (argvec);
+
+  if (unify (tparms, targs, parmvec, argvec,
+	     UNIFY_ALLOW_NONE, explain_p))
+    return 1;
+
+  return 0;
+}
 
 /* Return 1 if PARM_PARMS and ARG_PARMS matches using rule for
    template template parameters.  Both PARM_PARMS and ARG_PARMS are
@@ -19391,9 +19412,12 @@ try_class_unification (tree tparms, tree targs, tree parm, tree arg,
 {
   tree copy_of_targs;
 
-  if (!CLASSTYPE_TEMPLATE_INFO (arg)
-      || (most_general_template (CLASSTYPE_TI_TEMPLATE (arg))
-	  != most_general_template (CLASSTYPE_TI_TEMPLATE (parm))))
+  if (!CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P (arg))
+    return NULL_TREE;
+  else if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    /* Matches anything.  */;
+  else if (most_general_template (CLASSTYPE_TI_TEMPLATE (arg))
+	   != most_general_template (CLASSTYPE_TI_TEMPLATE (parm)))
     return NULL_TREE;
 
   /* We need to make a new template argument vector for the call to
@@ -19427,6 +19451,13 @@ try_class_unification (tree tparms, tree targs, tree parm, tree arg,
      with S<I, I, I>.  If we kept the already deduced knowledge, we
      would reject the possibility I=1.  */
   copy_of_targs = make_tree_vec (TREE_VEC_LENGTH (targs));
+
+  if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    {
+      if (unify_bound_ttp_args (tparms, copy_of_targs, parm, arg, explain_p))
+	return NULL_TREE;
+      return arg;
+    }
 
   /* If unification failed, we're done.  */
   if (unify (tparms, copy_of_targs, CLASSTYPE_TI_ARGS (parm),
@@ -19832,6 +19863,25 @@ unify_array_domain (tree tparms, tree targs,
 		UNIFY_ALLOW_INTEGER, explain_p);
 }
 
+/* Returns whether T, a P or A in unify, is a type, template or expression.  */
+
+enum pa_kind_t { pa_type, pa_tmpl, pa_expr };
+
+static pa_kind_t
+pa_kind (tree t)
+{
+  if (PACK_EXPANSION_P (t))
+    t = PACK_EXPANSION_PATTERN (t);
+  if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
+      || TREE_CODE (t) == UNBOUND_CLASS_TEMPLATE
+      || DECL_TYPE_TEMPLATE_P (t))
+    return pa_tmpl;
+  else if (TYPE_P (t))
+    return pa_type;
+  else
+    return pa_expr;
+}
+
 /* Deduce the value of template parameters.  TPARMS is the (innermost)
    set of template parameters to a template.  TARGS is the bindings
    for those template parameters, as determined thus far; TARGS may
@@ -19985,6 +20035,11 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       return unify_success (explain_p);
     }
 
+  /* If parm and arg aren't the same kind of thing (template, type, or
+     expression), fail early.  */
+  if (pa_kind (parm) != pa_kind (arg))
+    return unify_invalid (explain_p);
+
   /* Immediately reject some pairs that won't unify because of
      cv-qualification mismatches.  */
   if (TREE_CODE (arg) == TREE_CODE (parm)
@@ -20053,100 +20108,32 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
       if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
 	{
+	  if (strict_in & UNIFY_ALLOW_DERIVED)
+	    {
+	      /* First try to match ARG directly.  */
+	      tree t = try_class_unification (tparms, targs, parm, arg,
+					      explain_p);
+	      if (!t)
+		{
+		  /* Otherwise, look for a suitable base of ARG, as below.  */
+		  enum template_base_result r;
+		  r = get_template_base (tparms, targs, parm, arg,
+					 explain_p, &t);
+		  if (!t)
+		    return unify_no_common_base (explain_p, r, parm, arg);
+		  arg = t;
+		}
+	    }
 	  /* ARG must be constructed from a template class or a template
 	     template parameter.  */
-	  if (TREE_CODE (arg) != BOUND_TEMPLATE_TEMPLATE_PARM
-	      && !CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P (arg))
+	  else if (TREE_CODE (arg) != BOUND_TEMPLATE_TEMPLATE_PARM
+		   && !CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P (arg))
 	    return unify_template_deduction_failure (explain_p, parm, arg);
-	  {
-	    tree parmvec = TYPE_TI_ARGS (parm);
-	    tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
-	    tree full_argvec = add_to_template_args (targs, argvec);
-	    tree parm_parms 
-              = DECL_INNERMOST_TEMPLATE_PARMS
-	          (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (parm));
-	    int i, len;
-            int parm_variadic_p = 0;
 
-	    /* The resolution to DR150 makes clear that default
-	       arguments for an N-argument may not be used to bind T
-	       to a template template parameter with fewer than N
-	       parameters.  It is not safe to permit the binding of
-	       default arguments as an extension, as that may change
-	       the meaning of a conforming program.  Consider:
+	  /* Deduce arguments T, i from TT<T> or TT<i>.  */
+	  if (unify_bound_ttp_args (tparms, targs, parm, arg, explain_p))
+	    return 1;
 
-		  struct Dense { static const unsigned int dim = 1; };
-
-		  template <template <typename> class View,
-			    typename Block>
-		  void operator+(float, View<Block> const&);
-
-		  template <typename Block,
-			    unsigned int Dim = Block::dim>
-		  struct Lvalue_proxy { operator float() const; };
-
-		  void
-		  test_1d (void) {
-		    Lvalue_proxy<Dense> p;
-		    float b;
-		    b + p;
-		  }
-
-	      Here, if Lvalue_proxy is permitted to bind to View, then
-	      the global operator+ will be used; if they are not, the
-	      Lvalue_proxy will be converted to float.  */
-	    if (coerce_template_parms (parm_parms,
-                                       full_argvec,
-				       TYPE_TI_TEMPLATE (parm),
-				       complain,
-				       /*require_all_args=*/true,
-				       /*use_default_args=*/false)
-		== error_mark_node)
-	      return 1;
-
-	    /* Deduce arguments T, i from TT<T> or TT<i>.
-	       We check each element of PARMVEC and ARGVEC individually
-	       rather than the whole TREE_VEC since they can have
-	       different number of elements.  */
-
-            parmvec = expand_template_argument_pack (parmvec);
-            argvec = expand_template_argument_pack (argvec);
-
-            len = TREE_VEC_LENGTH (parmvec);
-
-            /* Check if the parameters end in a pack, making them
-               variadic.  */
-            if (len > 0
-                && PACK_EXPANSION_P (TREE_VEC_ELT (parmvec, len - 1)))
-              parm_variadic_p = 1;
-            
-             for (i = 0; i < len - parm_variadic_p; ++i)
-	       /* If the template argument list of P contains a pack
-		  expansion that is not the last template argument, the
-		  entire template argument list is a non-deduced
-		  context.  */
-	       if (PACK_EXPANSION_P (TREE_VEC_ELT (parmvec, i)))
-		 return unify_success (explain_p);
-
-            if (TREE_VEC_LENGTH (argvec) < len - parm_variadic_p)
-              return unify_too_few_arguments (explain_p,
-					      TREE_VEC_LENGTH (argvec), len);
-
-             for (i = 0; i < len - parm_variadic_p; ++i)
-	      {
-		RECUR_AND_CHECK_FAILURE (tparms, targs,
-					 TREE_VEC_ELT (parmvec, i),
-					 TREE_VEC_ELT (argvec, i),
-					 UNIFY_ALLOW_NONE, explain_p);
-	      }
-
-	    if (parm_variadic_p
-		&& unify_pack_expansion (tparms, targs,
-					 parmvec, argvec,
-					 DEDUCE_EXACT,
-					 /*subr=*/true, explain_p))
-	      return 1;
-	  }
 	  arg = TYPE_TI_TEMPLATE (arg);
 
 	  /* Fall through to deduce template name.  */
