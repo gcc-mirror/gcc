@@ -1,3 +1,9 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.def (DW_FORM_ref_sup): Renamed to ...
+	(DW_FORM_ref_sup4): ... this.  New form.
+	(DW_FORM_ref_sup8): New form.
+
 2016-11-03  David Tolnay <dtolnay@gmail.com>
 	    Mark Wielaard  <mark@klomp.org>
 
