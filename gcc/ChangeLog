@@ -1,3 +1,10 @@
+2016-12-21  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR sanitizer/65479
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	-fasynchronous-unwind-tables option when -fsanitize=address is
+	specified.
+
 2016-12-21  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/71321
