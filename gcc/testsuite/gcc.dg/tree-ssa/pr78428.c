@@ -1,6 +1,6 @@
 /* PR tree-optimization/78428.  */
 /* { dg-options "-O2" } */
-/* { dg-do run } */
+/* { dg-do run { target int32plus } } */
 
 struct S0
 {

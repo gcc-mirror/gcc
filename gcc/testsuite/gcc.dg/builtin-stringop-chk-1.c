@@ -105,7 +105,7 @@ test2 (const H h)
   unsigned char buf[21];
   memset (buf + 16, 0, 8); /* { dg-warning "writing 8 " "memset" } */
 
-  typedef struct { int i, j, k, l; } S;
+  typedef struct { __INT32_TYPE__ i, j, k, l; } S;
   S *s[3];
   memset (s, 0, sizeof (S) * 3); /* { dg-warning "writing 48 " "memset" } */
 

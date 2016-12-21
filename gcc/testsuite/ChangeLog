@@ -1,3 +1,16 @@
+2016-12-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/builtin-object-size-16.c (ia0, ia1, ia9): Handle case
+	where neither short nor int has a size of 4; use long.
+	* gcc.dg/builtin-object-size-17.c: Same.
+	* gcc.dg/builtin-stringop-chk-1.c (test2) <struct S>: Use int32_t
+	for components as 4 components are supposed to occupy 16 bytes.
+	* gcc.dg/pr78408-1.c: Require target size32plus.
+	* gcc.dg/pr78408-2.c: Same.
+	* gcc.dg/tree-ssa/pr78428.c. Require target int32plus.
+	* gcc.dg/tree-ssa/tailcall-7.c: Require target trampolines.
+
 2016-12-21  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.target/mips/msa-builtins.c (msa_insert_d): Tweak expected output.
