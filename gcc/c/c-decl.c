@@ -5400,11 +5400,21 @@ grokdeclarator (const struct c_declarator *declarator,
   if (TREE_CODE (type) == ERROR_MARK)
     return error_mark_node;
   if (expr == NULL)
-    expr = &expr_dummy;
+    {
+      expr = &expr_dummy;
+      expr_dummy = NULL_TREE;
+    }
   if (expr_const_operands == NULL)
     expr_const_operands = &expr_const_operands_dummy;
 
-  *expr = declspecs->expr;
+  if (declspecs->expr)
+    {
+      if (*expr)
+	*expr = build2 (COMPOUND_EXPR, TREE_TYPE (declspecs->expr), *expr,
+			declspecs->expr);
+      else
+	*expr = declspecs->expr;
+    }
   *expr_const_operands = declspecs->expr_const_operands;
 
   if (decl_context == FUNCDEF)
