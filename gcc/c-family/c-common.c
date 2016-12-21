@@ -5250,11 +5250,21 @@ c_determine_visibility (tree decl)
   return false;
 }
 
+/* Data to communicate through check_function_arguments_recurse between
+   check_function_nonnull and check_nonnull_arg.  */
+
+struct nonnull_arg_ctx
+{
+  location_t loc;
+  bool warned_p;
+};
+
 /* Check the argument list of a function call for null in argument slots
    that are marked as requiring a non-null pointer argument.  The NARGS
-   arguments are passed in the array ARGARRAY.  */
+   arguments are passed in the array ARGARRAY.  Return true if we have
+   warned.  */
 
-static void
+static bool
 check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
 {
   tree a;
@@ -5262,7 +5272,7 @@ check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
 
   attrs = lookup_attribute ("nonnull", attrs);
   if (attrs == NULL_TREE)
-    return;
+    return false;
 
   a = attrs;
   /* See if any of the nonnull attributes has no arguments.  If so,
@@ -5273,9 +5283,10 @@ check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
       a = lookup_attribute ("nonnull", TREE_CHAIN (a));
     while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE);
 
+  struct nonnull_arg_ctx ctx = { loc, false };
   if (a != NULL_TREE)
     for (i = 0; i < nargs; i++)
-      check_function_arguments_recurse (check_nonnull_arg, &loc, argarray[i],
+      check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[i],
 					i + 1);
   else
     {
@@ -5291,10 +5302,11 @@ check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
 	    }
 
 	  if (a != NULL_TREE)
-	    check_function_arguments_recurse (check_nonnull_arg, &loc,
+	    check_function_arguments_recurse (check_nonnull_arg, &ctx,
 					      argarray[i], i + 1);
 	}
     }
+  return ctx.warned_p;
 }
 
 /* Check that the Nth argument of a function call (counting backwards
@@ -5379,7 +5391,7 @@ nonnull_check_p (tree args, unsigned HOST_WIDE_INT param_num)
 static void
 check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
 {
-  location_t *ploc = (location_t *) ctx;
+  struct nonnull_arg_ctx *pctx = (struct nonnull_arg_ctx *) ctx;
 
   /* Just skip checking the argument if it's not a pointer.  This can
      happen if the "nonnull" attribute was given without an operand
@@ -5391,9 +5403,12 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
   /* When not optimizing diagnose the simple cases of null arguments.
      When optimization is enabled defer the checking until expansion
      when more cases can be detected.  */
-  if (!optimize && integer_zerop (param))
-    warning_at (*ploc, OPT_Wnonnull, "null argument where non-null required "
-		"(argument %lu)", (unsigned long) param_num);
+  if (integer_zerop (param))
+    {
+      warning_at (pctx->loc, OPT_Wnonnull, "null argument where non-null "
+		  "required (argument %lu)", (unsigned long) param_num);
+      pctx->warned_p = true;
+    }
 }
 
 /* Helper for nonnull attribute handling; fetch the operand number
@@ -5587,16 +5602,19 @@ attribute_fallthrough_p (tree attr)
 
 /* Check for valid arguments being passed to a function with FNTYPE.
    There are NARGS arguments in the array ARGARRAY.  LOC should be used for
-   diagnostics.  */
-void
+   diagnostics.  Return true if -Wnonnull warning has been diagnosed.  */
+bool
 check_function_arguments (location_t loc, const_tree fntype, int nargs,
 			  tree *argarray)
 {
+  bool warned_p = false;
+
   /* Check for null being passed in a pointer argument that must be
      non-null.  We also need to do this if format checking is enabled.  */
 
   if (warn_nonnull)
-    check_function_nonnull (loc, TYPE_ATTRIBUTES (fntype), nargs, argarray);
+    warned_p = check_function_nonnull (loc, TYPE_ATTRIBUTES (fntype),
+				       nargs, argarray);
 
   /* Check for errors in format strings.  */
 
@@ -5605,6 +5623,7 @@ check_function_arguments (location_t loc, const_tree fntype, int nargs,
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
+  return warned_p;
 }
 
 /* Generic argument checking recursion routine.  PARAM is the argument to

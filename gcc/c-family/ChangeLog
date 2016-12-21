@@ -1,3 +1,14 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/78817
+	* c-common.c (struct nonnull_arg_ctx): New type.
+	(check_function_nonnull): Return bool instead of void.  Use
+	nonnull_arg_ctx as context rather than just location_t.
+	(check_nonnull_arg): Adjust for the new context type, set
+	warned_p to true if a warning has been diagnosed.
+	(check_function_arguments): Return bool instead of void.
+	* c-common.h (check_function_arguments): Adjust prototype.
+
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (-fnew-ttp-matching): New flag.

@@ -144,6 +144,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-query.h"
 #include "tree-ssa-ccp.h"
 #include "tree-dfa.h"
+#include "diagnostic-core.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -3315,4 +3316,98 @@ gimple_opt_pass *
 make_pass_fold_builtins (gcc::context *ctxt)
 {
   return new pass_fold_builtins (ctxt);
+}
+
+/* A simple pass that emits some warnings post IPA.  */
+
+namespace {
+
+const pass_data pass_data_post_ipa_warn =
+{
+  GIMPLE_PASS, /* type */
+  "post_ipa_warn", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_post_ipa_warn : public gimple_opt_pass
+{
+public:
+  pass_post_ipa_warn (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_post_ipa_warn, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_post_ipa_warn (m_ctxt); }
+  virtual bool gate (function *) { return warn_nonnull != 0; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_fold_builtins
+
+unsigned int
+pass_post_ipa_warn::execute (function *fun)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (!is_gimple_call (stmt) || gimple_no_warning_p (stmt))
+	    continue;
+
+	  if (warn_nonnull)
+	    {
+	      bitmap nonnullargs
+		= get_nonnull_args (gimple_call_fntype (stmt));
+	      if (nonnullargs)
+		{
+		  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
+		    {
+		      tree arg = gimple_call_arg (stmt, i);
+		      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
+			continue;
+		      if (!integer_zerop (arg))
+			continue;
+		      if (!bitmap_empty_p (nonnullargs)
+			  && !bitmap_bit_p (nonnullargs, i))
+			continue;
+
+		      location_t loc = gimple_location (stmt);
+		      if (warning_at (loc, OPT_Wnonnull,
+				      "argument %u null where non-null "
+				      "expected", i + 1))
+			{
+			  tree fndecl = gimple_call_fndecl (stmt);
+			  if (fndecl && DECL_IS_BUILTIN (fndecl))
+			    inform (loc, "in a call to built-in function %qD",
+				    fndecl);
+			  else if (fndecl)
+			    inform (DECL_SOURCE_LOCATION (fndecl),
+				    "in a call to function %qD declared here",
+				    fndecl);
+
+			}
+		    }
+		  BITMAP_FREE (nonnullargs);
+		}
+	    }
+	}
+    }
+  return 0;
+}
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_post_ipa_warn (gcc::context *ctxt)
+{
+  return new pass_post_ipa_warn (ctxt);
 }
