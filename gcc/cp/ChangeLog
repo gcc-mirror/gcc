@@ -1,5 +1,10 @@
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (convert_template_argument): Pass args to do_auto_deduction.
+	(mark_template_parm): Handle deducibility from type of non-type
+	argument here.
+	(for_each_template_parm_r): Not here.
+
 	* ptree.c (cxx_print_type): Print args of
 	BOUND_TEMPLATE_TEMPLATE_PARM.
 	(cxx_print_decl): Print DECL_TEMPLATE_PARMS.

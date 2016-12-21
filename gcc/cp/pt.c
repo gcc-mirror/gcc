@@ -4467,6 +4467,15 @@ mark_template_parm (tree t, void* data)
       tpd->arg_uses_template_parms[tpd->current_arg] = 1;
     }
 
+  /* In C++17 the type of a non-type argument is a deduced context.  */
+  if (cxx_dialect >= cxx1z
+      && TREE_CODE (t) == TEMPLATE_PARM_INDEX)
+    for_each_template_parm (TREE_TYPE (t),
+			    &mark_template_parm,
+			    data,
+			    NULL,
+			    /*include_nondeduced_p=*/false);
+
   /* Return zero so that for_each_template_parm will continue the
      traversal of the tree; we want to mark *every* template parm.  */
   return 0;
@@ -7328,14 +7337,16 @@ convert_template_argument (tree parm,
     }
   else
     {
-      tree t = tsubst (TREE_TYPE (parm), args, complain, in_decl);
+      tree t = TREE_TYPE (parm);
 
       if (tree a = type_uses_auto (t))
 	{
-	  t = do_auto_deduction (t, arg, a, complain, adc_unspecified);
+	  t = do_auto_deduction (t, arg, a, complain, adc_unify, args);
 	  if (t == error_mark_node)
 	    return error_mark_node;
 	}
+      else
+	t = tsubst (t, args, complain, in_decl);
 
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
@@ -8956,12 +8967,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return t;
       else if (!fn)
 	return t;
-
-      /* In C++17 we can deduce a type argument from the type of a non-type
-	 argument.  */
-      if (cxx_dialect >= cxx1z
-	  && TREE_CODE (t) == TEMPLATE_PARM_INDEX)
-	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
     case TEMPLATE_DECL:
