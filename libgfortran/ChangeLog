@@ -1,3 +1,7 @@
+2016-12-21  Release Manager
+
+	* GCC 6.3.0 released.
+
 2016-10-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
