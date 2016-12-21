@@ -1,3 +1,9 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77767
+	* c-decl.c (grokdeclarator): If *expr is non-NULL, append expression
+	to *expr instead of overwriting it.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
