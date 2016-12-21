@@ -1,5 +1,12 @@
 2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR libfortran/70311
+	* intrinsics/selected_char_kind.c: Include <strings.h> header.
+	* runtime/environ.c: Include <strings.h> header.
+	* runtime/string.c: Include <strings.h> header.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.map: Remove _gfortran_ftell2.
 	* io/intrinsics.c (ftell): Remove.
 	(ftell2): Rename to ftell.

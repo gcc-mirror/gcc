@@ -25,7 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#include <string.h>
+#include <strings.h>
 
 
 extern GFC_INTEGER_4 selected_char_kind (gfc_charlen_type, char *);
