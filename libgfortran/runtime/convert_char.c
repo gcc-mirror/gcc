@@ -24,9 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 
 extern void convert_char1_to_char4 (gfc_char4_t **, gfc_charlen_type,
 				    const unsigned char *);

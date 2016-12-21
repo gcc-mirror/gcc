@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#include <string.h>
 #include <errno.h>
 
 #ifdef HAVE_SYS_STAT_H

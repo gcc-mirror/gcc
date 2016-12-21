@@ -1,5 +1,367 @@
 2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* intrinsics/abort.c: Remove unused headers.
+	* intrinsics/access.c: Remove unused headers.
+	* intrinsics/chdir.c: Remove unused headers.
+	* intrinsics/chmod.c: Remove unused headers.
+	* intrinsics/cshift0.c: Remove unused headers.
+	* intrinsics/ctime.c: Remove unused headers.
+	* intrinsics/eoshift0.c: Remove unused headers.
+	* intrinsics/eoshift2.c: Remove unused headers.
+	* intrinsics/extends_type_of.c: Remove unused headers.
+	* intrinsics/link.c: Remove unused headers.
+	* intrinsics/pack_generic.c: Remove unused headers.
+	* intrinsics/perror.c: Remove unused headers.
+	* intrinsics/rename.c: Remove unused headers.
+	* intrinsics/reshape_generic.c: Remove unused headers.
+	* intrinsics/sleep.c: Remove unused headers.
+	* intrinsics/spread_generic.c: Remove unused headers.
+	* intrinsics/stat.c: Remove unused headers.
+	* intrinsics/string_intrinsics.c: Remove unused headers.
+	* intrinsics/symlnk.c: Remove unused headers.
+	* intrinsics/system.c: Remove unused headers.
+	* intrinsics/umask.c: Remove unused headers.
+	* intrinsics/unlink.c: Remove unused headers.
+	* intrinsics/unpack_generic.c: Remove unused headers.
+	* io/read.c: Remove unused headers.
+	* io/transfer.c: Remove unused headers.
+	* io/unix.c: Remove unused headers.
+	* io/write.c: Remove unused headers.
+	* m4/all.m4: Remove unused headers.
+	* m4/any.m4: Remove unused headers.
+	* m4/bessel.m4: Remove unused headers.
+	* m4/count.m4: Remove unused headers.
+	* m4/cshift0.m4: Remove unused headers.
+	* m4/cshift1.m4: Remove unused headers.
+	* m4/eoshift1.m4: Remove unused headers.
+	* m4/eoshift3.m4: Remove unused headers.
+	* m4/iall.m4: Remove unused headers.
+	* m4/iany.m4: Remove unused headers.
+	* m4/in_pack.m4: Remove unused headers.
+	* m4/in_unpack.m4: Remove unused headers.
+	* m4/iparity.m4: Remove unused headers.
+	* m4/maxloc0.m4: Remove unused headers.
+	* m4/maxloc1.m4: Remove unused headers.
+	* m4/maxval.m4: Remove unused headers.
+	* m4/minloc0.m4: Remove unused headers.
+	* m4/minloc1.m4: Remove unused headers.
+	* m4/minval.m4: Remove unused headers.
+	* m4/norm2.m4: Remove unused headers.
+	* m4/pack.m4: Remove unused headers.
+	* m4/parity.m4: Remove unused headers.
+	* m4/product.m4: Remove unused headers.
+	* m4/reshape.m4: Remove unused headers.
+	* m4/shape.m4: Remove unused headers.
+	* m4/spread.m4: Remove unused headers.
+	* m4/sum.m4: Remove unused headers.
+	* m4/unpack.m4: Remove unused headers.
+	* runtime/backtrace.c: Remove unused headers.
+	* runtime/convert_char.c: Remove unused headers.
+	* runtime/in_pack_generic.c: Remove unused headers.
+	* runtime/in_unpack_generic.c: Remove unused headers.
+	* runtime/main.c: Remove unused headers.
+	* runtime/stop.c: Remove unused headers.
+	* generated/all_l1.c: Regenerate.
+	* generated/all_l16.c: Regenerate.
+	* generated/all_l2.c: Regenerate.
+	* generated/all_l4.c: Regenerate.
+	* generated/all_l8.c: Regenerate.
+	* generated/any_l1.c: Regenerate.
+	* generated/any_l16.c: Regenerate.
+	* generated/any_l2.c: Regenerate.
+	* generated/any_l4.c: Regenerate.
+	* generated/any_l8.c: Regenerate.
+	* generated/bessel_r10.c: Regenerate.
+	* generated/bessel_r16.c: Regenerate.
+	* generated/bessel_r4.c: Regenerate.
+	* generated/bessel_r8.c: Regenerate.
+	* generated/count_16_l.c: Regenerate.
+	* generated/count_1_l.c: Regenerate.
+	* generated/count_2_l.c: Regenerate.
+	* generated/count_4_l.c: Regenerate.
+	* generated/count_8_l.c: Regenerate.
+	* generated/cshift0_c10.c: Regenerate.
+	* generated/cshift0_c16.c: Regenerate.
+	* generated/cshift0_c4.c: Regenerate.
+	* generated/cshift0_c8.c: Regenerate.
+	* generated/cshift0_i1.c: Regenerate.
+	* generated/cshift0_i16.c: Regenerate.
+	* generated/cshift0_i2.c: Regenerate.
+	* generated/cshift0_i4.c: Regenerate.
+	* generated/cshift0_i8.c: Regenerate.
+	* generated/cshift0_r10.c: Regenerate.
+	* generated/cshift0_r16.c: Regenerate.
+	* generated/cshift0_r4.c: Regenerate.
+	* generated/cshift0_r8.c: Regenerate.
+	* generated/cshift1_16.c: Regenerate.
+	* generated/cshift1_4.c: Regenerate.
+	* generated/cshift1_8.c: Regenerate.
+	* generated/eoshift1_16.c: Regenerate.
+	* generated/eoshift1_4.c: Regenerate.
+	* generated/eoshift1_8.c: Regenerate.
+	* generated/eoshift3_16.c: Regenerate.
+	* generated/eoshift3_4.c: Regenerate.
+	* generated/eoshift3_8.c: Regenerate.
+	* generated/iall_i1.c: Regenerate.
+	* generated/iall_i16.c: Regenerate.
+	* generated/iall_i2.c: Regenerate.
+	* generated/iall_i4.c: Regenerate.
+	* generated/iall_i8.c: Regenerate.
+	* generated/iany_i1.c: Regenerate.
+	* generated/iany_i16.c: Regenerate.
+	* generated/iany_i2.c: Regenerate.
+	* generated/iany_i4.c: Regenerate.
+	* generated/iany_i8.c: Regenerate.
+	* generated/in_pack_c10.c: Regenerate.
+	* generated/in_pack_c16.c: Regenerate.
+	* generated/in_pack_c4.c: Regenerate.
+	* generated/in_pack_c8.c: Regenerate.
+	* generated/in_pack_i1.c: Regenerate.
+	* generated/in_pack_i16.c: Regenerate.
+	* generated/in_pack_i2.c: Regenerate.
+	* generated/in_pack_i4.c: Regenerate.
+	* generated/in_pack_i8.c: Regenerate.
+	* generated/in_pack_r10.c: Regenerate.
+	* generated/in_pack_r16.c: Regenerate.
+	* generated/in_pack_r4.c: Regenerate.
+	* generated/in_pack_r8.c: Regenerate.
+	* generated/in_unpack_c10.c: Regenerate.
+	* generated/in_unpack_c16.c: Regenerate.
+	* generated/in_unpack_c4.c: Regenerate.
+	* generated/in_unpack_c8.c: Regenerate.
+	* generated/in_unpack_i1.c: Regenerate.
+	* generated/in_unpack_i16.c: Regenerate.
+	* generated/in_unpack_i2.c: Regenerate.
+	* generated/in_unpack_i4.c: Regenerate.
+	* generated/in_unpack_i8.c: Regenerate.
+	* generated/in_unpack_r10.c: Regenerate.
+	* generated/in_unpack_r16.c: Regenerate.
+	* generated/in_unpack_r4.c: Regenerate.
+	* generated/in_unpack_r8.c: Regenerate.
+	* generated/iparity_i1.c: Regenerate.
+	* generated/iparity_i16.c: Regenerate.
+	* generated/iparity_i2.c: Regenerate.
+	* generated/iparity_i4.c: Regenerate.
+	* generated/iparity_i8.c: Regenerate.
+	* generated/maxloc0_16_i1.c: Regenerate.
+	* generated/maxloc0_16_i16.c: Regenerate.
+	* generated/maxloc0_16_i2.c: Regenerate.
+	* generated/maxloc0_16_i4.c: Regenerate.
+	* generated/maxloc0_16_i8.c: Regenerate.
+	* generated/maxloc0_16_r10.c: Regenerate.
+	* generated/maxloc0_16_r16.c: Regenerate.
+	* generated/maxloc0_16_r4.c: Regenerate.
+	* generated/maxloc0_16_r8.c: Regenerate.
+	* generated/maxloc0_4_i1.c: Regenerate.
+	* generated/maxloc0_4_i16.c: Regenerate.
+	* generated/maxloc0_4_i2.c: Regenerate.
+	* generated/maxloc0_4_i4.c: Regenerate.
+	* generated/maxloc0_4_i8.c: Regenerate.
+	* generated/maxloc0_4_r10.c: Regenerate.
+	* generated/maxloc0_4_r16.c: Regenerate.
+	* generated/maxloc0_4_r4.c: Regenerate.
+	* generated/maxloc0_4_r8.c: Regenerate.
+	* generated/maxloc0_8_i1.c: Regenerate.
+	* generated/maxloc0_8_i16.c: Regenerate.
+	* generated/maxloc0_8_i2.c: Regenerate.
+	* generated/maxloc0_8_i4.c: Regenerate.
+	* generated/maxloc0_8_i8.c: Regenerate.
+	* generated/maxloc0_8_r10.c: Regenerate.
+	* generated/maxloc0_8_r16.c: Regenerate.
+	* generated/maxloc0_8_r4.c: Regenerate.
+	* generated/maxloc0_8_r8.c: Regenerate.
+	* generated/maxloc1_16_i1.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxloc1_16_i2.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/maxloc1_4_i1.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc1_4_i2.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_8_i1.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_8_i2.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/maxval_i1.c: Regenerate.
+	* generated/maxval_i16.c: Regenerate.
+	* generated/maxval_i2.c: Regenerate.
+	* generated/maxval_i4.c: Regenerate.
+	* generated/maxval_i8.c: Regenerate.
+	* generated/maxval_r10.c: Regenerate.
+	* generated/maxval_r16.c: Regenerate.
+	* generated/maxval_r4.c: Regenerate.
+	* generated/maxval_r8.c: Regenerate.
+	* generated/minloc0_16_i1.c: Regenerate.
+	* generated/minloc0_16_i16.c: Regenerate.
+	* generated/minloc0_16_i2.c: Regenerate.
+	* generated/minloc0_16_i4.c: Regenerate.
+	* generated/minloc0_16_i8.c: Regenerate.
+	* generated/minloc0_16_r10.c: Regenerate.
+	* generated/minloc0_16_r16.c: Regenerate.
+	* generated/minloc0_16_r4.c: Regenerate.
+	* generated/minloc0_16_r8.c: Regenerate.
+	* generated/minloc0_4_i1.c: Regenerate.
+	* generated/minloc0_4_i16.c: Regenerate.
+	* generated/minloc0_4_i2.c: Regenerate.
+	* generated/minloc0_4_i4.c: Regenerate.
+	* generated/minloc0_4_i8.c: Regenerate.
+	* generated/minloc0_4_r10.c: Regenerate.
+	* generated/minloc0_4_r16.c: Regenerate.
+	* generated/minloc0_4_r4.c: Regenerate.
+	* generated/minloc0_4_r8.c: Regenerate.
+	* generated/minloc0_8_i1.c: Regenerate.
+	* generated/minloc0_8_i16.c: Regenerate.
+	* generated/minloc0_8_i2.c: Regenerate.
+	* generated/minloc0_8_i4.c: Regenerate.
+	* generated/minloc0_8_i8.c: Regenerate.
+	* generated/minloc0_8_r10.c: Regenerate.
+	* generated/minloc0_8_r16.c: Regenerate.
+	* generated/minloc0_8_r4.c: Regenerate.
+	* generated/minloc0_8_r8.c: Regenerate.
+	* generated/minloc1_16_i1.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/minloc1_16_i2.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/minloc1_4_i1.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc1_4_i2.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/minloc1_8_i1.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/minloc1_8_i2.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/minval_i1.c: Regenerate.
+	* generated/minval_i16.c: Regenerate.
+	* generated/minval_i2.c: Regenerate.
+	* generated/minval_i4.c: Regenerate.
+	* generated/minval_i8.c: Regenerate.
+	* generated/minval_r10.c: Regenerate.
+	* generated/minval_r16.c: Regenerate.
+	* generated/minval_r4.c: Regenerate.
+	* generated/minval_r8.c: Regenerate.
+	* generated/norm2_r10.c: Regenerate.
+	* generated/norm2_r16.c: Regenerate.
+	* generated/norm2_r4.c: Regenerate.
+	* generated/norm2_r8.c: Regenerate.
+	* generated/pack_c10.c: Regenerate.
+	* generated/pack_c16.c: Regenerate.
+	* generated/pack_c4.c: Regenerate.
+	* generated/pack_c8.c: Regenerate.
+	* generated/pack_i1.c: Regenerate.
+	* generated/pack_i16.c: Regenerate.
+	* generated/pack_i2.c: Regenerate.
+	* generated/pack_i4.c: Regenerate.
+	* generated/pack_i8.c: Regenerate.
+	* generated/pack_r10.c: Regenerate.
+	* generated/pack_r16.c: Regenerate.
+	* generated/pack_r4.c: Regenerate.
+	* generated/pack_r8.c: Regenerate.
+	* generated/parity_l1.c: Regenerate.
+	* generated/parity_l16.c: Regenerate.
+	* generated/parity_l2.c: Regenerate.
+	* generated/parity_l4.c: Regenerate.
+	* generated/parity_l8.c: Regenerate.
+	* generated/product_c10.c: Regenerate.
+	* generated/product_c16.c: Regenerate.
+	* generated/product_c4.c: Regenerate.
+	* generated/product_c8.c: Regenerate.
+	* generated/product_i1.c: Regenerate.
+	* generated/product_i16.c: Regenerate.
+	* generated/product_i2.c: Regenerate.
+	* generated/product_i4.c: Regenerate.
+	* generated/product_i8.c: Regenerate.
+	* generated/product_r10.c: Regenerate.
+	* generated/product_r16.c: Regenerate.
+	* generated/product_r4.c: Regenerate.
+	* generated/product_r8.c: Regenerate.
+	* generated/reshape_c10.c: Regenerate.
+	* generated/reshape_c16.c: Regenerate.
+	* generated/reshape_c4.c: Regenerate.
+	* generated/reshape_c8.c: Regenerate.
+	* generated/reshape_i16.c: Regenerate.
+	* generated/reshape_i4.c: Regenerate.
+	* generated/reshape_i8.c: Regenerate.
+	* generated/reshape_r10.c: Regenerate.
+	* generated/reshape_r16.c: Regenerate.
+	* generated/reshape_r4.c: Regenerate.
+	* generated/reshape_r8.c: Regenerate.
+	* generated/shape_i1.c: Regenerate.
+	* generated/shape_i16.c: Regenerate.
+	* generated/shape_i2.c: Regenerate.
+	* generated/shape_i4.c: Regenerate.
+	* generated/shape_i8.c: Regenerate.
+	* generated/spread_c10.c: Regenerate.
+	* generated/spread_c16.c: Regenerate.
+	* generated/spread_c4.c: Regenerate.
+	* generated/spread_c8.c: Regenerate.
+	* generated/spread_i1.c: Regenerate.
+	* generated/spread_i16.c: Regenerate.
+	* generated/spread_i2.c: Regenerate.
+	* generated/spread_i4.c: Regenerate.
+	* generated/spread_i8.c: Regenerate.
+	* generated/spread_r10.c: Regenerate.
+	* generated/spread_r16.c: Regenerate.
+	* generated/spread_r4.c: Regenerate.
+	* generated/spread_r8.c: Regenerate.
+	* generated/sum_c10.c: Regenerate.
+	* generated/sum_c16.c: Regenerate.
+	* generated/sum_c4.c: Regenerate.
+	* generated/sum_c8.c: Regenerate.
+	* generated/sum_i1.c: Regenerate.
+	* generated/sum_i16.c: Regenerate.
+	* generated/sum_i2.c: Regenerate.
+	* generated/sum_i4.c: Regenerate.
+	* generated/sum_i8.c: Regenerate.
+	* generated/sum_r10.c: Regenerate.
+	* generated/sum_r16.c: Regenerate.
+	* generated/sum_r4.c: Regenerate.
+	* generated/sum_r8.c: Regenerate.
+	* generated/unpack_c10.c: Regenerate.
+	* generated/unpack_c16.c: Regenerate.
+	* generated/unpack_c4.c: Regenerate.
+	* generated/unpack_c8.c: Regenerate.
+	* generated/unpack_i1.c: Regenerate.
+	* generated/unpack_i16.c: Regenerate.
+	* generated/unpack_i2.c: Regenerate.
+	* generated/unpack_i4.c: Regenerate.
+	* generated/unpack_i8.c: Regenerate.
+	* generated/unpack_r10.c: Regenerate.
+	* generated/unpack_r16.c: Regenerate.
+	* generated/unpack_r4.c: Regenerate.
+	* generated/unpack_r8.c: Regenerate.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR libfortran/70311
 	* intrinsics/selected_char_kind.c: Include <strings.h> header.
 	* runtime/environ.c: Include <strings.h> header.

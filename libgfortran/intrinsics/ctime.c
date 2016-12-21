@@ -27,7 +27,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "time_1.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 

@@ -36,7 +36,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <assert.h>
 
 #include <string.h>
 #include <errno.h>

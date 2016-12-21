@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;

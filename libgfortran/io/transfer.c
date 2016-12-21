@@ -32,7 +32,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "format.h"
 #include "unix.h"
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
 

@@ -23,7 +23,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
 
 void PREFIX(abort) (void);
 export_proto_np(PREFIX(abort));
