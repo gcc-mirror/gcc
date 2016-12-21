@@ -24,7 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <limits.h>
 
 
 #if defined (HAVE_GFC_INTEGER_2) && defined (HAVE_GFC_INTEGER_16)
