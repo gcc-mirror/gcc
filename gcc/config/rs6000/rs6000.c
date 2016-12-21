@@ -1807,6 +1807,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_LRA_P
 #define TARGET_LRA_P rs6000_lra_p
 
+#undef TARGET_COMPUTE_PRESSURE_CLASSES
+#define TARGET_COMPUTE_PRESSURE_CLASSES rs6000_compute_pressure_classes
+
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE rs6000_can_eliminate
 
@@ -5104,6 +5107,12 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
       maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 400,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+
+      /* Use the 'model' -fsched-pressure algorithm by default.  */
+      maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM,
+			     SCHED_PRESSURE_MODEL,
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
@@ -37959,6 +37968,32 @@ static bool
 rs6000_lra_p (void)
 {
   return TARGET_LRA;
+}
+
+/* Compute register pressure classes.  We implement the target hook to avoid
+   IRA picking something like NON_SPECIAL_REGS as a pressure class, which can
+   lead to incorrect estimates of number of available registers and therefor
+   increased register pressure/spill.   */
+static int
+rs6000_compute_pressure_classes (enum reg_class *pressure_classes)
+{
+  int n;
+
+  n = 0;
+  pressure_classes[n++] = GENERAL_REGS;
+  if (TARGET_VSX)
+    pressure_classes[n++] = VSX_REGS;
+  else
+    {
+      if (TARGET_ALTIVEC)
+	pressure_classes[n++] = ALTIVEC_REGS;
+      if (TARGET_HARD_FLOAT && TARGET_FPRS)
+	pressure_classes[n++] = FLOAT_REGS;
+    }
+  pressure_classes[n++] = CR_REGS;
+  pressure_classes[n++] = SPECIAL_REGS;
+
+  return n;
 }
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
