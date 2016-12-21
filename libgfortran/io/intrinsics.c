@@ -272,29 +272,11 @@ gf_ftell (int unit)
 }
 
 
-/* Here is the ftell function with an incorrect return type; retained
-   due to ABI compatibility.  */
-
-extern size_t PREFIX(ftell) (int *);
+extern GFC_IO_INT PREFIX(ftell) (int *);
 export_proto_np(PREFIX(ftell));
 
-size_t
-PREFIX(ftell) (int * unit)
-{
-  return gf_ftell (*unit);
-}
-
-
-/* Here is the ftell function with the correct return type, ensuring
-   that large files can be supported as long as the target supports
-   large integers; as of 4.8 the FTELL intrinsic function will call
-   this one instead of the old ftell above.  */
-
-extern GFC_IO_INT PREFIX(ftell2) (int *);
-export_proto_np(PREFIX(ftell2));
-
 GFC_IO_INT
-PREFIX(ftell2) (int * unit)
+PREFIX(ftell) (int * unit)
 {
   return gf_ftell (*unit);
 }
