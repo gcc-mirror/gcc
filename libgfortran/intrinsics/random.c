@@ -31,10 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <gthr.h>
 #include <string.h>
 
-/* For getosrandom.  */
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

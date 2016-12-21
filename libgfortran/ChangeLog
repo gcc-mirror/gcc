@@ -1,5 +1,133 @@
 2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* intrinsics/random.c: Do not include <sys/types.h> header.
+	* m4/maxloc0.m4: Do not include <limits.h> header.
+	* m4/maxloc1.m4: Do not include <limits.h> header.
+	* m4/minloc0.m4: Do not include <limits.h> header.
+	* m4/minloc1.m4: Do not include <limits.h> header.
+	* m4/norm2.m4: Do not include <math.h> header.
+	* m4/parity.m4: Do not include <math.h> header.
+	* runtime/minimal.c: Remove <limits.h> and <errno.h> headers.
+	* generated/maxloc0_16_i1.c: Regenerate.
+	* generated/maxloc0_16_i16.c: Regenerate.
+	* generated/maxloc0_16_i2.c: Regenerate.
+	* generated/maxloc0_16_i4.c: Regenerate.
+	* generated/maxloc0_16_i8.c: Regenerate.
+	* generated/maxloc0_16_r10.c: Regenerate.
+	* generated/maxloc0_16_r16.c: Regenerate.
+	* generated/maxloc0_16_r4.c: Regenerate.
+	* generated/maxloc0_16_r8.c: Regenerate.
+	* generated/maxloc0_4_i1.c: Regenerate.
+	* generated/maxloc0_4_i16.c: Regenerate.
+	* generated/maxloc0_4_i2.c: Regenerate.
+	* generated/maxloc0_4_i4.c: Regenerate.
+	* generated/maxloc0_4_i8.c: Regenerate.
+	* generated/maxloc0_4_r10.c: Regenerate.
+	* generated/maxloc0_4_r16.c: Regenerate.
+	* generated/maxloc0_4_r4.c: Regenerate.
+	* generated/maxloc0_4_r8.c: Regenerate.
+	* generated/maxloc0_8_i1.c: Regenerate.
+	* generated/maxloc0_8_i16.c: Regenerate.
+	* generated/maxloc0_8_i2.c: Regenerate.
+	* generated/maxloc0_8_i4.c: Regenerate.
+	* generated/maxloc0_8_i8.c: Regenerate.
+	* generated/maxloc0_8_r10.c: Regenerate.
+	* generated/maxloc0_8_r16.c: Regenerate.
+	* generated/maxloc0_8_r4.c: Regenerate.
+	* generated/maxloc0_8_r8.c: Regenerate.
+	* generated/maxloc1_16_i1.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxloc1_16_i2.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/maxloc1_4_i1.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc1_4_i2.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_8_i1.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_8_i2.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/minloc0_16_i1.c: Regenerate.
+	* generated/minloc0_16_i16.c: Regenerate.
+	* generated/minloc0_16_i2.c: Regenerate.
+	* generated/minloc0_16_i4.c: Regenerate.
+	* generated/minloc0_16_i8.c: Regenerate.
+	* generated/minloc0_16_r10.c: Regenerate.
+	* generated/minloc0_16_r16.c: Regenerate.
+	* generated/minloc0_16_r4.c: Regenerate.
+	* generated/minloc0_16_r8.c: Regenerate.
+	* generated/minloc0_4_i1.c: Regenerate.
+	* generated/minloc0_4_i16.c: Regenerate.
+	* generated/minloc0_4_i2.c: Regenerate.
+	* generated/minloc0_4_i4.c: Regenerate.
+	* generated/minloc0_4_i8.c: Regenerate.
+	* generated/minloc0_4_r10.c: Regenerate.
+	* generated/minloc0_4_r16.c: Regenerate.
+	* generated/minloc0_4_r4.c: Regenerate.
+	* generated/minloc0_4_r8.c: Regenerate.
+	* generated/minloc0_8_i1.c: Regenerate.
+	* generated/minloc0_8_i16.c: Regenerate.
+	* generated/minloc0_8_i2.c: Regenerate.
+	* generated/minloc0_8_i4.c: Regenerate.
+	* generated/minloc0_8_i8.c: Regenerate.
+	* generated/minloc0_8_r10.c: Regenerate.
+	* generated/minloc0_8_r16.c: Regenerate.
+	* generated/minloc0_8_r4.c: Regenerate.
+	* generated/minloc0_8_r8.c: Regenerate.
+	* generated/minloc1_16_i1.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/minloc1_16_i2.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/minloc1_4_i1.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc1_4_i2.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/minloc1_8_i1.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/minloc1_8_i2.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/norm2_r10.c: Regenerate.
+	* generated/norm2_r16.c: Regenerate.
+	* generated/norm2_r4.c: Regenerate.
+	* generated/norm2_r8.c: Regenerate.
+	* generated/parity_l1.c: Regenerate.
+	* generated/parity_l16.c: Regenerate.
+	* generated/parity_l2.c: Regenerate.
+	* generated/parity_l4.c: Regenerate.
+	* generated/parity_l8.c: Regenerate.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* libgfortran.h: Include <stdlib.h> header.
 	* intrinsics/access.c: Do not include <stdlib.h> header.
 	* intrinsics/chdir.c: Do not include <stdlib.h> header.
