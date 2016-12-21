@@ -1,3 +1,8 @@
+2016-12-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: XFAIL
+	lwz on AIX.
+
 2016-12-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/unsigned-extend-2.c: Update testcase.
