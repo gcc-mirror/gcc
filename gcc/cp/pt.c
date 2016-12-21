@@ -4606,7 +4606,18 @@ process_partial_specialization (tree decl)
 	     "primary template because it replaces multiple parameters "
 	     "with a pack expansion");
       inform (DECL_SOURCE_LOCATION (maintmpl), "primary template here");
+      /* Avoid crash in process_partial_specialization.  */
       return decl;
+    }
+
+  /* If we aren't in a dependent class, we can actually try deduction.  */
+  else if (tpd.level == 1
+	   && !get_partial_spec_bindings (maintmpl, maintmpl, specargs))
+    {
+      if (permerror (input_location, "partial specialization %qD is not "
+		     "more specialized than", decl))
+	inform (DECL_SOURCE_LOCATION (maintmpl), "primary template %qD",
+		maintmpl);
     }
 
   /* [temp.class.spec]

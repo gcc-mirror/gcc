@@ -14,7 +14,7 @@ template<typename T, typename T::foo V>
 struct Y { };
 
 template<typename T, typename U, U v>
-struct Y<T, v> { }; // { dg-error "not deducible|U" "" { target { ! c++1z } } }
+struct Y<T, v> { }; // { dg-error "" }
 
 
 template<typename T, T V>

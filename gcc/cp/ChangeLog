@@ -1,5 +1,9 @@
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (process_partial_specialization): Use
+	get_partial_spec_bindings to check that the partial specialization
+	is more specialized than the primary template.
+
 	* pt.c (convert_template_argument): Pass args to do_auto_deduction.
 	(mark_template_parm): Handle deducibility from type of non-type
 	argument here.
