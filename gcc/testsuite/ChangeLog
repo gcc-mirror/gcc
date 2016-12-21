@@ -1,3 +1,7 @@
+2016-12-21  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/msa-builtins.c (msa_insert_d): Tweak expected output.
+
 2016-12-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/78867

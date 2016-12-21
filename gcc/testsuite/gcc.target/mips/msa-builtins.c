@@ -481,7 +481,7 @@
 /* { dg-final { scan-assembler-times "msa_insert_h:.*insert\\.h.*msa_insert_h" 1 } } */
 /* { dg-final { scan-assembler-times "msa_insert_w:.*insert\\.w.*msa_insert_w" 1 } } */
 /* { dg-final { scan-assembler-times "msa_insert_d:.*insert\\.d.*msa_insert_d" 1 { target mips64 } } } */
-/* { dg-final { scan-assembler-times "msa_insert_d:.*sra.*insert.w.*insert.w.*msa_insert_d" 1 { target {! mips64 } } } } */
+/* { dg-final { scan-assembler "msa_insert_d:.*(sra.*insert.w.*insert.w|insert.w.*sra.*insert.w).*msa_insert_d" { target {! mips64 } } } } */
 /* { dg-final { scan-assembler-times "msa_insve_b:.*insve\\.b.*msa_insve_b" 1 } } */
 /* { dg-final { scan-assembler-times "msa_insve_h:.*insve\\.h.*msa_insve_h" 1 } } */
 /* { dg-final { scan-assembler-times "msa_insve_w:.*insve\\.w.*msa_insve_w" 1 } } */
