@@ -1111,8 +1111,10 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
                                || TREE_CODE (x) == TYPE_DECL)))
                    /* Don't check for internally generated vars unless
                       it's an implicit typedef (see create_implicit_typedef
-                      in decl.c).  */
-		   && (!DECL_ARTIFICIAL (x) || DECL_IMPLICIT_TYPEDEF_P (x)))
+                      in decl.c) or anonymous union variable.  */
+		   && (!DECL_ARTIFICIAL (x)
+		       || DECL_IMPLICIT_TYPEDEF_P (x)
+		       || (VAR_P (x) && DECL_ANON_UNION_VAR_P (x))))
 	    {
 	      bool nowarn = false;
 
