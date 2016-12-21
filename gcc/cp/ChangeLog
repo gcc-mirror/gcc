@@ -1,5 +1,9 @@
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/72707
+	* name-lookup.c (pushdecl_maybe_friend_1): Do check shadowing of
+	artificial x if it is an anonymous union variable.
+
 	PR bootstrap/78817
 	* typeck.c (cp_build_function_call_vec): If check_function_arguments
 	returns true, set TREE_NO_WARNING on CALL_EXPR.
