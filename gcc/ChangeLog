@@ -1,3 +1,8 @@
+2016-12-22  Andrew Pinski  <apinski@cavium.com>
+
+        * match.pd (max:c @0 (plus@2 @0 INTEGER_CST@1)): New Pattern.
+	(min:c @0 (plus@2 @0 INTEGER_CST@1)) : New Pattern.
+
 2016-12-20  James Greenhalgh  <james.greenhalghj@arm.com>
 
 	* common.opt (excess_precision): Tag as SetByCombined.
