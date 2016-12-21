@@ -1048,9 +1048,10 @@ init_softstack_frame (FILE *file, unsigned alignment, HOST_WIDE_INT size)
 	   bits, reg_stack, reg_frame, size);
 
   /* Usually 'crtl->is_leaf' is computed during register allocator
-     initialization, which is not done on NVPTX.  Compute it now.  */
-  gcc_assert (!crtl->is_leaf);
-  crtl->is_leaf = leaf_function_p ();
+     initialization (which is not done on NVPTX) or for pressure-sensitive
+     optimizations.  Initialize it here, except if already set.  */
+  if (!crtl->is_leaf)
+    crtl->is_leaf = leaf_function_p ();
   if (!crtl->is_leaf)
     fprintf (file, "\t\tst.shared.u%d [%s], %s;\n",
 	     bits, reg_sspslot, reg_stack);

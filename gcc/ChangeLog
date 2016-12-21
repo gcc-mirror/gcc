@@ -1,6 +1,12 @@
-2016-12-22  Andrew Pinski  <apinski@cavium.com>
+2016-12-21  Alexander Monakov  <amonakov@ispras.ru>
 
-        * match.pd (max:c @0 (plus@2 @0 INTEGER_CST@1)): New Pattern.
+	PR target/78831
+	* config/nvptx/nvptx.c (init_softstack_frame): Remove assert.  Compute
+	crtl->is_leaf only if unset.  Adjust comment.
+
+2016-12-21  Andrew Pinski  <apinski@cavium.com>
+
+	* match.pd (max:c @0 (plus@2 @0 INTEGER_CST@1)): New Pattern.
 	(min:c @0 (plus@2 @0 INTEGER_CST@1)) : New Pattern.
 
 2016-12-20  James Greenhalgh  <james.greenhalghj@arm.com>
