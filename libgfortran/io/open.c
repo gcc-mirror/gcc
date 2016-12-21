@@ -33,7 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <errno.h>
-#include <stdlib.h>
 
 
 static const st_option access_opt[] = {
