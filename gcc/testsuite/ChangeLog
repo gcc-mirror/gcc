@@ -1,3 +1,8 @@
+2016-12-22  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* gcc.dg/max.c: New Testcase.
+	* gcc.dg/min.c: New Testcase.
+
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/77767

@@ -1373,6 +1373,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && operand_equal_p (@1, TYPE_MIN_VALUE (type), OEP_ONLY_CONST))
    @0)))
 
+/* max (a, a + CST) -> a + CST where CST is positive.  */
+/* max (a, a + CST) -> a where CST is negative.  */
+(simplify
+ (max:c @0 (plus@2 @0 INTEGER_CST@1))
+  (if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+   (if (tree_int_cst_sgn (@1) > 0)
+    @2
+    @0)))
+
+/* min (a, a + CST) -> a where CST is positive.  */
+/* min (a, a + CST) -> a + CST where CST is negative. */
+(simplify
+ (min:c @0 (plus@2 @0 INTEGER_CST@1))
+  (if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+   (if (tree_int_cst_sgn (@1) > 0)
+    @0
+    @2)))
+
 /* (convert (minmax ((convert (x) c)))) -> minmax (x c) if x is promoted
    and the outer convert demotes the expression back to x's type.  */
 (for minmax (min max)
