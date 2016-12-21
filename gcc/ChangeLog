@@ -1,3 +1,10 @@
+2016-12-21  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/71321
+	* config/i386/i386.md (lea<mode>_general_2b, lea<mode>_general_3b): New
+	patterns.
+	* config/i386/predicates.md (const123_operand): New.
+
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 

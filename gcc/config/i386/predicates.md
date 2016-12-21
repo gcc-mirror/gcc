@@ -765,6 +765,14 @@
   return i == 2 || i == 4 || i == 8;
 })
 
+;; Match 1, 2, or 3.  Used for lea shift amounts.
+(define_predicate "const123_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT i = INTVAL (op);
+  return i == 1 || i == 2 || i == 3;
+})
+
 ;; Match 2, 3, 6, or 7
 (define_predicate "const2367_operand"
   (match_code "const_int")

@@ -1,3 +1,8 @@
+2016-12-21  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/71321
+	* gcc.target/i386/pr71321.c: New test.
+
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/78866
