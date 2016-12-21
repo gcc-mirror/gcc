@@ -29,7 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "unix.h"
 #include <string.h>
 #include <ctype.h>
-#include <stdlib.h>
 #include <assert.h>
 
 typedef unsigned char uchar;

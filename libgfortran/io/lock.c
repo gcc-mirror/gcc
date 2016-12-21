@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "io.h"
 #include <string.h>
-#include <stdlib.h>
 
 /* library_start()-- Called with a library call is entered.  */
 

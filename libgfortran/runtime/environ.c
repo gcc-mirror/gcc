@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
 #include <ctype.h>
 
 #ifdef HAVE_UNISTD_H

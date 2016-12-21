@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 #include <errno.h>
-#include <stdlib.h>
 
 /* SUBROUTINE PERROR(STRING)
    CHARACTER(len=*), INTENT(IN) :: STRING   */

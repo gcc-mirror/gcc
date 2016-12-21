@@ -31,7 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/stat.h>
 #endif
 
-#include <stdlib.h>
 
 
 #ifdef HAVE_STAT
