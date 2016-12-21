@@ -1,4 +1,12 @@
-2016-12-22  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+2016-12-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/mmcu: New folder for compile-tests with -mmcu=.
+	* gcc.target/avr/mmcu/avr-mmcu.exp: New file.
+	* gcc.target/avr/pr58545.c: Move to gcc.target/avr/mmcu.
+	* gcc.target/avr/tiny-caller-save.c: Dito.
+	* gcc.target/avr/tiny-memx.c: Dito.
+
+2016-12-21  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
 	* gcc.dg/max.c: New Testcase.
 	* gcc.dg/min.c: New Testcase.
