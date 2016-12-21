@@ -147,7 +147,7 @@ static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (location_t, tree, tree);
 static tree fold_builtin_inf (location_t, tree, int);
 static tree rewrite_call_expr (location_t, tree, int, tree, int, ...);
-static bool validate_arg (const_tree, enum tree_code code, bool = false);
+static bool validate_arg (const_tree, enum tree_code code);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
 static tree fold_builtin_memcmp (location_t, tree, tree, tree);
@@ -1050,12 +1050,12 @@ validate_arglist (const_tree callexpr, ...)
   init_const_call_expr_arg_iterator (callexpr, &iter);
 
   /* Get a bitmap of pointer argument numbers declared attribute nonnull.  */
-  bitmap argmap = get_nonnull_args (callexpr);
+  tree fn = CALL_EXPR_FN (callexpr);
+  bitmap argmap = get_nonnull_args (TREE_TYPE (TREE_TYPE (fn)));
 
   for (unsigned argno = 1; ; ++argno)
     {
       code = (enum tree_code) va_arg (ap, int);
-      bool nonnull = false;
 
       switch (code)
 	{
@@ -1072,15 +1072,21 @@ validate_arglist (const_tree callexpr, ...)
 	  /* The actual argument must be nonnull when either the whole
 	     called function has been declared nonnull, or when the formal
 	     argument corresponding to the actual argument has been.  */
-	  if (argmap)
-	    nonnull = bitmap_empty_p (argmap) || bitmap_bit_p (argmap, argno);
+	  if (argmap
+	      && (bitmap_empty_p (argmap) || bitmap_bit_p (argmap, argno)))
+	    {
+	      arg = next_const_call_expr_arg (&iter);
+	      if (!validate_arg (arg, code) || integer_zerop (arg))
+		goto end;
+	      break;
+	    }
 	  /* FALLTHRU */
 	default:
 	  /* If no parameters remain or the parameter's code does not
 	     match the specified code, return false.  Otherwise continue
 	     checking any remaining arguments.  */
 	  arg = next_const_call_expr_arg (&iter);
-	  if (!validate_arg (arg, code, nonnull))
+	  if (!validate_arg (arg, code))
 	    goto end;
 	  break;
 	}
@@ -9134,17 +9140,15 @@ rewrite_call_expr (location_t loc, tree exp, int skip, tree fndecl, int n, ...)
 }
 
 /* Validate a single argument ARG against a tree code CODE representing
-   a type.  When NONNULL is true consider a pointer argument valid only
-   if it's non-null.  Return true when argument is valid.  */
+   a type.  Return true when argument is valid.  */
 
 static bool
-validate_arg (const_tree arg, enum tree_code code, bool nonnull /*= false*/)
+validate_arg (const_tree arg, enum tree_code code)
 {
   if (!arg)
     return false;
   else if (code == POINTER_TYPE)
-    return POINTER_TYPE_P (TREE_TYPE (arg))
-      && (!nonnull || !integer_zerop (arg));
+    return POINTER_TYPE_P (TREE_TYPE (arg));
   else if (code == INTEGER_TYPE)
     return INTEGRAL_TYPE_P (TREE_TYPE (arg));
   return code == TREE_CODE (TREE_TYPE (arg));

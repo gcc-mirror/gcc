@@ -1,5 +1,9 @@
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/78817
+	* c-typeck.c (build_function_call_vec): If check_function_arguments
+	returns true, set TREE_NO_WARNING on CALL_EXPR.
+
 	PR c/77767
 	* c-decl.c (grokdeclarator): If *expr is non-NULL, append expression
 	to *expr instead of overwriting it.

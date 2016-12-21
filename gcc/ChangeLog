@@ -1,3 +1,23 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/78817
+	* tree-pass.h (make_pass_post_ipa_warn): Declare.
+	* builtins.c (validate_arglist): Adjust get_nonnull_args call.
+	Check for NULL pointer argument to nonnull arg here.
+	(validate_arg): Revert 2016-12-14 changes.
+	* calls.h (get_nonnull_args): Remove declaration.
+	* tree-ssa-ccp.c: Include diagnostic-core.h.
+	(pass_data_post_ipa_warn): New variable.
+	(pass_post_ipa_warn): New class.
+	(pass_post_ipa_warn::execute): New method.
+	(make_pass_post_ipa_warn): New function.
+	* tree.h (get_nonnull_args): Declare.
+	* tree.c (get_nonnull_args): New function.
+	* calls.c (maybe_warn_null_arg): Removed.
+	(maybe_warn_null_arg): Removed.
+	(initialize_argument_information): Revert 2016-12-14 changes.
+	* passes.def: Add pass_post_ipa_warn after first ccp after IPA.
+
 2016-12-21  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR rtl-optimization/11488

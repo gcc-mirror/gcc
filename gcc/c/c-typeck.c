@@ -3110,15 +3110,15 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */
-  check_function_arguments (loc, fntype, nargs, argarray);
+  bool warned_p = check_function_arguments (loc, fntype, nargs, argarray);
 
   if (name != NULL_TREE
       && !strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10))
     {
       if (require_constant_value)
-	result =
-	  fold_build_call_array_initializer_loc (loc, TREE_TYPE (fntype),
-						 function, nargs, argarray);
+	result
+	  = fold_build_call_array_initializer_loc (loc, TREE_TYPE (fntype),
+						   function, nargs, argarray);
       else
 	result = fold_build_call_array_loc (loc, TREE_TYPE (fntype),
 					    function, nargs, argarray);
@@ -3129,6 +3129,10 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   else
     result = build_call_array_loc (loc, TREE_TYPE (fntype),
 				   function, nargs, argarray);
+  /* If -Wnonnull warning has been diagnosed, avoid diagnosing it again
+     later.  */
+  if (warned_p && TREE_CODE (result) == CALL_EXPR)
+    TREE_NO_WARNING (result) = 1;
 
   /* In this improbable scenario, a nested function returns a VM type.
      Create a TARGET_EXPR so that the call always has a LHS, much as
