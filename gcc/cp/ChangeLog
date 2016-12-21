@@ -1,5 +1,9 @@
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
+	* ptree.c (cxx_print_type): Print args of
+	BOUND_TEMPLATE_TEMPLATE_PARM.
+	(cxx_print_decl): Print DECL_TEMPLATE_PARMS.
+
 	PR c++/78767 - ICE with inherited constructor default argument
 	* method.c (strip_inheriting_ctors): Strip template as appropriate.
 
