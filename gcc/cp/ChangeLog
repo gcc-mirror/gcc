@@ -1,5 +1,11 @@
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42329
+	* pt.c (unify_bound_ttp_args): Split out from unify.
+	(try_class_unification): Handle BOUND_TEMPLATE_TEMPLATE_PARM.
+	(unify): Check for type/non-type mismatch early.
+	[BOUND_TEMPLATE_TEMPLATE_PARM]: Try get_template_base.
+
 	* pt.c (coerce_template_parms): Consider variadic_args_p before
 	complaining about too many template arguments.
 
