@@ -1,3 +1,10 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR driver/78863
+	* gcc.c (driver::build_option_suggestions): Do not add
+	-fsanitize=all as a suggestion candidate.
+
 2016-12-21  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/78831
