@@ -1,3 +1,8 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77767
+	* gcc.c-torture/execute/pr77767.c: New test.
+
 2016-12-20  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.dg/sms-3.c: Add -fno-sched-pressure for powerpc.

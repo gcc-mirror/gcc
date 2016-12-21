@@ -1,3 +1,9 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77767
+	* c-decl.c (grokdeclarator): If *expr is non-NULL, append expression
+	to *expr instead of overwriting it.
+
 2016-12-20  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_compound_statement): Improve
