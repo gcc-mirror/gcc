@@ -1,3 +1,8 @@
+2016-12-21  Martin Liska  <mliska@suse.cz>
+
+	PR driver/78863
+	* gcc.dg/spellcheck-options-13.c: New test.
+
 2016-12-21  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.target/nvptx/decl-shared.c (v_common): Add 'common' attribute to
