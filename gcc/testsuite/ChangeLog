@@ -1,3 +1,8 @@
+2016-12-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78867
+	* gfortran.dg/string_length_4.f90: New test.
+
 2016-12-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/mmcu: New folder for compile-tests with -mmcu=.
