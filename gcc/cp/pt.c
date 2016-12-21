@@ -7658,7 +7658,7 @@ coerce_template_parms (tree parms,
   variadic_args_p = pack_expansion_args_count (inner_args);
 
   nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;
-  if ((nargs > nparms && !variadic_p)
+  if ((nargs - variadic_args_p > nparms && !variadic_p)
       || (nargs < nparms - variadic_p
 	  && require_all_args
 	  && !variadic_args_p
