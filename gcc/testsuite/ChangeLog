@@ -1,3 +1,9 @@
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77830
+	* g++.dg/cpp1y/pr77830.C: New test.
+	* g++.dg/cpp0x/pr65398.C: Adjust expected diagnostics.
+
 2016-12-21  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/71321
