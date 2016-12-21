@@ -1,5 +1,5 @@
 static int v_internal __attribute__((shared,used));
-int v_common __attribute__((shared));
+int v_common __attribute__((shared,common));
 int v_extdef __attribute__((shared,nocommon));
 extern int v_extdecl __attribute__((shared));
 
