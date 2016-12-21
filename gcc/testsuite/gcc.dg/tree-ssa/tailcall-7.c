@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target trampolines } } */
 /* { dg-options "-O2 -fdump-tree-tailc-details" } */
 
 struct s { int x; };

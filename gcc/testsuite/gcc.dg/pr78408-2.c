@@ -1,5 +1,5 @@
 /* PR c/78408 */
-/* { dg-do compile } */
+/* { dg-do compile { target size32plus } } */
 /* { dg-options "-O2 -fdump-tree-fab1-details" } */
 /* { dg-final { scan-tree-dump-not "after previous" "fab1" } } */
 

@@ -64,6 +64,10 @@ static short ia9[9];
 extern int ia0[0];
 static int ia1[1];
 static int ia9[9];
+#elif __SIZEOF_LONG__ == 4
+extern long ia0[0];
+static long ia1[1];
+static long ia9[9];
 #endif
 
 static char a2x2[2][2];
