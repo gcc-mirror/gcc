@@ -1,5 +1,26 @@
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
+	Implement P0522R0, matching of template template arguments.
+	* pt.c (coerce_template_template_parms): Allow a template argument
+	that's less specialized than the parameter.
+	(unify_bound_ttp_args): Adjust parm's args to apply to arg's
+	template.
+	(coerce_template_args_for_ttp): Split out from
+	lookup_template_class_1.
+	(coerce_ttp_args_for_tta, store_defaulted_ttp)
+	(lookup_defaulted_ttp, add_defaults_to_ttp): New.
+	(process_partial_specialization): Set DECL_CONTEXT of
+	template template-parameters.
+	(coerce_template_parms): Only inform when complain.
+	(expand_template_argument_pack): Handle error_mark_node.
+	(convert_template_argument, template_args_equal, unify): Handle
+	any_targ_node.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_ANY_TARG.
+	(any_targ_node): New.
+	* decl.c (cxx_init_decl_processing): Set it.
+	* name-lookup.c (consider_binding_level): Ignore names with embedded
+	spaces.
+
 	PR c++/42329
 	* pt.c (unify_bound_ttp_args): Split out from unify.
 	(try_class_unification): Handle BOUND_TEMPLATE_TEMPLATE_PARM.

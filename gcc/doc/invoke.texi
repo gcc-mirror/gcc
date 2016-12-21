@@ -201,6 +201,7 @@ in the following sections.
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
 -fnew-inheriting-ctors @gol
+-fnew-ttp-matching @gol
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
@@ -2454,6 +2455,14 @@ Enable the P0136 adjustment to the semantics of C++11 constructor
 inheritance.  This is part of C++17 but also considered to be a Defect
 Report against C++11 and C++14.  This flag is enabled by default
 unless @option{-fabi-version=10} or lower is specified.
+
+@item -fnew-ttp-matching
+@opindex fnew-ttp-matching
+Enable the P0522 resolution to Core issue 150, template template
+parameters and default arguments: this allows a template with default
+template arguments as an argument for a template template parameter
+with fewer template parameters.  This flag is enabled by default for
+@option{-std=c++1z}.
 
 @item -fno-nonansi-builtins
 @opindex fno-nonansi-builtins

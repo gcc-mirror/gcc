@@ -1443,6 +1443,10 @@ C++ ObjC++ Joined Ignore Warn(switch %qs is no longer supported)
 fnew-abi
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
+fnew-ttp-matching
+C++ ObjC++ Var(flag_new_ttp)
+Implement resolution of DR 150 for matching of template template arguments.
+
 fnext-runtime
 ObjC ObjC++ LTO Report RejectNegative Var(flag_next_runtime)
 Generate code for NeXT (Apple Mac OS X) runtime environment.

@@ -1,3 +1,8 @@
+2016-12-21  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (-fnew-ttp-matching): New flag.
+	* c-opts.c (c_common_post_options): Default on if -std=c++1z.
+
 2016-12-14  Martin Jambor  <mjambor@suse.cz>
 
 	* c-omp.c: Include omp-general.h instead of omp-low.h.

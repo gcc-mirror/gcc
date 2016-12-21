@@ -1,4 +1,4 @@
-2016-12-16  Jason Merrill  <jason@redhat.com>
+2016-12-21  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/util/testsuite_tr1.h (test_property): Don't define both
 	variadic and non-variadic overloads.

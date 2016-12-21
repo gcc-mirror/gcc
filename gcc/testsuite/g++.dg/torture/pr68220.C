@@ -1,3 +1,4 @@
+// { dg-options -fno-new-ttp-matching }
 // { dg-do compile }
 namespace mpl {
 template <typename, typename = int> struct lambda;

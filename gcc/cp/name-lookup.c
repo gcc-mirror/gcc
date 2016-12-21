@@ -4758,8 +4758,10 @@ consider_binding_level (tree name, best_match <tree, tree> &bm,
 	  && DECL_ANTICIPATED (d))
 	continue;
 
-      if (DECL_NAME (d))
-	bm.consider (DECL_NAME (d));
+      if (tree name = DECL_NAME (d))
+	/* Ignore internal names with spaces in them.  */
+	if (!strchr (IDENTIFIER_POINTER (name), ' '))
+	  bm.consider (DECL_NAME (d));
     }
 }
 
