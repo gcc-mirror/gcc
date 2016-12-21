@@ -1,3 +1,7 @@
+2016-12-21  Release Manager
+
+	* GCC 6.3.0 released.
+
 2016-12-09  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk
