@@ -1,5 +1,8 @@
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78767 - ICE with inherited constructor default argument
+	* method.c (strip_inheriting_ctors): Strip template as appropriate.
+
 	PR c++/78749 - friend in anonymous namespace
 	* decl.c (wrapup_globals_for_namespace): Don't complain about friend
 	pseudo-template instantiations.
