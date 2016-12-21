@@ -3836,6 +3836,9 @@ check_for_bare_parameter_packs (tree t)
 tree
 expand_template_argument_pack (tree args)
 {
+  if (args == error_mark_node)
+    return error_mark_node;
+
   tree result_args = NULL_TREE;
   int in_arg, out_arg = 0, nargs = args ? TREE_VEC_LENGTH (args) : 0;
   int num_result_args = -1;
@@ -4757,6 +4760,15 @@ process_partial_specialization (tree decl)
   SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
   DECL_TEMPLATE_INFO (tmpl) = build_template_info (maintmpl, specargs);
   DECL_PRIMARY_TEMPLATE (tmpl) = maintmpl;
+
+  /* Give template template parms a DECL_CONTEXT of the template
+     for which they are a parameter.  */
+  for (i = 0; i < ntparms; ++i)
+    {
+      tree parm = TREE_VALUE (TREE_VEC_ELT (inner_parms, i));
+      if (TREE_CODE (parm) == TEMPLATE_DECL)
+	DECL_CONTEXT (parm) = tmpl;
+    }
 
   if (VAR_P (decl))
     /* We didn't register this in check_explicit_specialization so we could
@@ -6863,11 +6875,164 @@ coerce_template_template_parm (tree parm,
   return 1;
 }
 
+/* Coerce template argument list ARGLIST for use with template
+   template-parameter TEMPL.  */
+
+static tree
+coerce_template_args_for_ttp (tree templ, tree arglist,
+			      tsubst_flags_t complain)
+{
+  /* Consider an example where a template template parameter declared as
+
+     template <class T, class U = std::allocator<T> > class TT
+
+     The template parameter level of T and U are one level larger than
+     of TT.  To proper process the default argument of U, say when an
+     instantiation `TT<int>' is seen, we need to build the full
+     arguments containing {int} as the innermost level.  Outer levels,
+     available when not appearing as default template argument, can be
+     obtained from the arguments of the enclosing template.
+
+     Suppose that TT is later substituted with std::vector.  The above
+     instantiation is `TT<int, std::allocator<T> >' with TT at
+     level 1, and T at level 2, while the template arguments at level 1
+     becomes {std::vector} and the inner level 2 is {int}.  */
+
+  tree outer = DECL_CONTEXT (templ);
+  if (outer)
+    {
+      if (DECL_TEMPLATE_SPECIALIZATION (outer))
+	/* We want arguments for the partial specialization, not arguments for
+	   the primary template.  */
+	outer = template_parms_to_args (DECL_TEMPLATE_PARMS (outer));
+      else
+	outer = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (outer)));
+    }
+  else if (current_template_parms)
+    {
+      /* This is an argument of the current template, so we haven't set
+	 DECL_CONTEXT yet.  */
+      tree relevant_template_parms;
+
+      /* Parameter levels that are greater than the level of the given
+	 template template parm are irrelevant.  */
+      relevant_template_parms = current_template_parms;
+      while (TMPL_PARMS_DEPTH (relevant_template_parms)
+	     != TEMPLATE_TYPE_LEVEL (TREE_TYPE (templ)))
+	relevant_template_parms = TREE_CHAIN (relevant_template_parms);
+
+      outer = template_parms_to_args (relevant_template_parms);
+    }
+
+  if (outer)
+    arglist = add_to_template_args (outer, arglist);
+
+  tree parmlist = DECL_INNERMOST_TEMPLATE_PARMS (templ);
+  return coerce_template_parms (parmlist, arglist, templ,
+				complain,
+				/*require_all_args=*/true,
+				/*use_default_args=*/true);
+}
+
+/* A cache of template template parameters with match-all default
+   arguments.  */
+static GTY((deletable)) hash_map<tree,tree> *defaulted_ttp_cache;
+static void
+store_defaulted_ttp (tree v, tree t)
+{
+  if (!defaulted_ttp_cache)
+    defaulted_ttp_cache = hash_map<tree,tree>::create_ggc (13);
+  defaulted_ttp_cache->put (v, t);
+}
+static tree
+lookup_defaulted_ttp (tree v)
+{
+  if (defaulted_ttp_cache)
+    if (tree *p = defaulted_ttp_cache->get (v))
+      return *p;
+  return NULL_TREE;
+}
+
+/* T is a bound template template-parameter.  Copy its arguments into default
+   arguments of the template template-parameter's template parameters.  */
+
+static tree
+add_defaults_to_ttp (tree otmpl)
+{
+  if (tree c = lookup_defaulted_ttp (otmpl))
+    return c;
+
+  tree ntmpl = copy_node (otmpl);
+
+  tree ntype = copy_node (TREE_TYPE (otmpl));
+  TYPE_STUB_DECL (ntype) = TYPE_NAME (ntype) = ntmpl;
+  TYPE_MAIN_VARIANT (ntype) = ntype;
+  TYPE_POINTER_TO (ntype) = TYPE_REFERENCE_TO (ntype) = NULL_TREE;
+  TYPE_NAME (ntype) = ntmpl;
+  SET_TYPE_STRUCTURAL_EQUALITY (ntype);
+
+  tree idx = TEMPLATE_TYPE_PARM_INDEX (ntype)
+    = copy_node (TEMPLATE_TYPE_PARM_INDEX (ntype));
+  TEMPLATE_PARM_DECL (idx) = ntmpl;
+  TREE_TYPE (ntmpl) = TREE_TYPE (idx) = ntype;
+
+  tree oparms = DECL_TEMPLATE_PARMS (otmpl);
+  tree parms = DECL_TEMPLATE_PARMS (ntmpl) = copy_node (oparms);
+  TREE_CHAIN (parms) = TREE_CHAIN (oparms);
+  tree vec = TREE_VALUE (parms) = copy_node (TREE_VALUE (parms));
+  for (int i = 0; i < TREE_VEC_LENGTH (vec); ++i)
+    {
+      tree o = TREE_VEC_ELT (vec, i);
+      if (!template_parameter_pack_p (TREE_VALUE (o)))
+	{
+	  tree n = TREE_VEC_ELT (vec, i) = copy_node (o);
+	  TREE_PURPOSE (n) = any_targ_node;
+	}
+    }
+
+  store_defaulted_ttp (otmpl, ntmpl);
+  return ntmpl;
+}
+
+/* ARG is a bound potential template template-argument, and PARGS is a list
+   of arguments for the corresponding template template-parameter.  Adjust
+   PARGS as appropriate for application to ARG's template, and if ARG is a
+   BOUND_TEMPLATE_TEMPLATE_PARM, possibly adjust it to add default template
+   arguments to the template template parameter.  */
+
+static tree
+coerce_ttp_args_for_tta (tree& arg, tree pargs, tsubst_flags_t complain)
+{
+  ++processing_template_decl;
+  tree arg_tmpl = TYPE_TI_TEMPLATE (arg);
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (arg_tmpl))
+    {
+      /* When comparing two template template-parameters in partial ordering,
+	 rewrite the one currently being used as an argument to have default
+	 arguments for all parameters.  */
+      arg_tmpl = add_defaults_to_ttp (arg_tmpl);
+      pargs = coerce_template_args_for_ttp (arg_tmpl, pargs, complain);
+      if (pargs != error_mark_node)
+	arg = bind_template_template_parm (TREE_TYPE (arg_tmpl),
+					   TYPE_TI_ARGS (arg));
+    }
+  else
+    {
+      tree aparms
+	= INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (arg_tmpl));
+      pargs = coerce_template_parms (aparms, pargs, arg_tmpl, complain,
+				       /*require_all*/true,
+				       /*use_default*/true);
+    }
+  --processing_template_decl;
+  return pargs;
+}
+
 /* Subroutine of unify for the case when PARM is a
    BOUND_TEMPLATE_TEMPLATE_PARM.  */
 
 static int
-unify_bound_ttp_args (tree tparms, tree targs, tree parm, tree arg,
+unify_bound_ttp_args (tree tparms, tree targs, tree parm, tree& arg,
 		      bool explain_p)
 {
   tree parmvec = TYPE_TI_ARGS (parm);
@@ -6878,8 +7043,25 @@ unify_bound_ttp_args (tree tparms, tree targs, tree parm, tree arg,
   parmvec = expand_template_argument_pack (parmvec);
   argvec = expand_template_argument_pack (argvec);
 
-  if (unify (tparms, targs, parmvec, argvec,
+  tree nparmvec = parmvec;
+  if (flag_new_ttp)
+    {
+      /* In keeping with P0522R0, adjust P's template arguments
+	 to apply to A's template; then flatten it again.  */
+      nparmvec = coerce_ttp_args_for_tta (arg, parmvec, tf_none);
+      nparmvec = expand_template_argument_pack (nparmvec);
+    }
+
+  if (unify (tparms, targs, nparmvec, argvec,
 	     UNIFY_ALLOW_NONE, explain_p))
+    return 1;
+
+  /* If the P0522 adjustment eliminated a pack expansion, deduce
+     empty packs.  */
+  if (flag_new_ttp
+      && TREE_VEC_LENGTH (nparmvec) < TREE_VEC_LENGTH (parmvec)
+      && unify_pack_expansion (tparms, targs, parmvec, argvec,
+			       DEDUCE_EXACT, /*sub*/true, explain_p))
     return 1;
 
   return 0;
@@ -6913,6 +7095,48 @@ coerce_template_template_parms (tree parm_parms,
 
   nparms = TREE_VEC_LENGTH (parm_parms);
   nargs = TREE_VEC_LENGTH (arg_parms);
+
+  if (flag_new_ttp)
+    {
+      /* P0522R0: A template template-parameter P is at least as specialized as
+	 a template template-argument A if, given the following rewrite to two
+	 function templates, the function template corresponding to P is at
+	 least as specialized as the function template corresponding to A
+	 according to the partial ordering rules for function templates
+	 ([temp.func.order]). Given an invented class template X with the
+	 template parameter list of A (including default arguments):
+
+	 * Each of the two function templates has the same template parameters,
+	 respectively, as P or A.
+
+	 * Each function template has a single function parameter whose type is
+	 a specialization of X with template arguments corresponding to the
+	 template parameters from the respective function template where, for
+	 each template parameter PP in the template parameter list of the
+	 function template, a corresponding template argument AA is formed. If
+	 PP declares a parameter pack, then AA is the pack expansion
+	 PP... ([temp.variadic]); otherwise, AA is the id-expression PP.
+
+	 If the rewrite produces an invalid type, then P is not at least as
+	 specialized as A.  */
+
+      /* So coerce P's args to apply to A's parms, and then deduce between A's
+	 args and the converted args.  If that succeeds, A is at least as
+	 specialized as P, so they match.*/
+      tree pargs = template_parms_level_to_args (parm_parms);
+      ++processing_template_decl;
+      pargs = coerce_template_parms (arg_parms, pargs, NULL_TREE, tf_none,
+				     /*require_all*/true, /*use_default*/true);
+      --processing_template_decl;
+      if (pargs != error_mark_node)
+	{
+	  tree targs = make_tree_vec (nargs);
+	  tree aargs = template_parms_level_to_args (arg_parms);
+	  if (!unify (arg_parms, targs, aargs, pargs, UNIFY_ALLOW_NONE,
+		      /*explain*/false))
+	    return 1;
+	}
+    }
 
   /* Determine whether we have a parameter pack at the end of the
      template template parameter's template parameter list.  */
@@ -7171,6 +7395,9 @@ convert_template_argument (tree parm,
   /* Trivially convert placeholders. */
   if (TREE_CODE (arg) == WILDCARD_DECL)
     return convert_wildcard_argument (parm, arg);
+
+  if (arg == any_targ_node)
+    return arg;
 
   if (TREE_CODE (arg) == TREE_LIST
       && TREE_CODE (TREE_VALUE (arg)) == OFFSET_REF)
@@ -7822,8 +8049,9 @@ coerce_template_parms (tree parms,
 						     in_decl);
 	      if (conv == error_mark_node)
 		{
-		  inform (input_location, "so any instantiation with a "
-			 "non-empty parameter pack would be ill-formed");
+		  if (complain & tf_error)
+		    inform (input_location, "so any instantiation with a "
+			    "non-empty parameter pack would be ill-formed");
 		  ++lost;
 		}
 	      else if (TYPE_P (conv) && !TYPE_P (pattern))
@@ -7987,6 +8215,8 @@ template_args_equal (tree ot, tree nt)
     return 1;
   if (nt == NULL_TREE || ot == NULL_TREE)
     return false;
+  if (nt == any_targ_node || ot == any_targ_node)
+    return true;
 
   if (TREE_CODE (nt) == TREE_VEC)
     /* For member templates */
@@ -8328,57 +8558,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (templ))
     {
-      /* Create a new TEMPLATE_DECL and TEMPLATE_TEMPLATE_PARM node to store
-	 template arguments */
-
       tree parm;
-      tree arglist2;
-      tree outer;
-
-      parmlist = DECL_INNERMOST_TEMPLATE_PARMS (templ);
-
-      /* Consider an example where a template template parameter declared as
-
-	   template <class T, class U = std::allocator<T> > class TT
-
-	 The template parameter level of T and U are one level larger than
-	 of TT.  To proper process the default argument of U, say when an
-	 instantiation `TT<int>' is seen, we need to build the full
-	 arguments containing {int} as the innermost level.  Outer levels,
-	 available when not appearing as default template argument, can be
-	 obtained from the arguments of the enclosing template.
-
-	 Suppose that TT is later substituted with std::vector.  The above
-	 instantiation is `TT<int, std::allocator<T> >' with TT at
-	 level 1, and T at level 2, while the template arguments at level 1
-	 becomes {std::vector} and the inner level 2 is {int}.  */
-
-      outer = DECL_CONTEXT (templ);
-      if (outer)
-	outer = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (outer)));
-      else if (current_template_parms)
-	{
-	  /* This is an argument of the current template, so we haven't set
-	     DECL_CONTEXT yet.  */
-	  tree relevant_template_parms;
-
-	  /* Parameter levels that are greater than the level of the given
-	     template template parm are irrelevant.  */
-	  relevant_template_parms = current_template_parms;
-	  while (TMPL_PARMS_DEPTH (relevant_template_parms)
-		 != TEMPLATE_TYPE_LEVEL (TREE_TYPE (templ)))
-	    relevant_template_parms = TREE_CHAIN (relevant_template_parms);
-
-	  outer = template_parms_to_args (relevant_template_parms);
-	}
-
-      if (outer)
-	arglist = add_to_template_args (outer, arglist);
-
-      arglist2 = coerce_template_parms (parmlist, arglist, templ,
-					complain,
-					/*require_all_args=*/true,
-					/*use_default_args=*/true);
+      tree arglist2 = coerce_template_args_for_ttp (templ, arglist, complain);
       if (arglist2 == error_mark_node
 	  || (!uses_template_parms (arglist2)
 	      && check_instantiated_args (templ, arglist2, complain)))
@@ -19948,6 +20129,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       || arg == init_list_type_node)
     /* We can't deduce anything from this, but we might get all the
        template args from other function args.  */
+    return unify_success (explain_p);
+
+  if (parm == any_targ_node || arg == any_targ_node)
     return unify_success (explain_p);
 
   /* If PARM uses template parameters, then we can't bail out here,

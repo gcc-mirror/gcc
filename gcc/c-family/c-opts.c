@@ -920,6 +920,10 @@ c_common_post_options (const char **pfilename)
   if (!global_options_set.x_flag_new_inheriting_ctors)
     flag_new_inheriting_ctors = abi_version_at_least (11);
 
+  /* For GCC 7, only enable DR150 resolution by default if -std=c++1z.  */
+  if (!global_options_set.x_flag_new_ttp)
+    flag_new_ttp = (cxx_dialect >= cxx1z);
+
   if (cxx_dialect >= cxx11)
     {
       /* If we're allowing C++0x constructs, don't warn about C++98

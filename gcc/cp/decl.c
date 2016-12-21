@@ -4161,6 +4161,9 @@ cxx_init_decl_processing (void)
   global_type_node = make_node (LANG_TYPE);
   record_unknown_type (global_type_node, "global type");
 
+  any_targ_node = make_node (LANG_TYPE);
+  record_unknown_type (any_targ_node, "any type");
+
   /* Now, C++.  */
   current_lang_name = lang_name_cplusplus;
 
