@@ -1,3 +1,8 @@
+2016-12-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-pretty-print.c (dump_generic_node): Change dump format for
+	REALPART_EXPR and IMAGPART_EXPR with TDF_GIMPLE.
+
 2016-12-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* varasm.c (build_constant_desc): Use the alignment of the var

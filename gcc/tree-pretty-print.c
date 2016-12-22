@@ -2451,15 +2451,31 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
       break;
 
     case REALPART_EXPR:
-      pp_string (pp, "REALPART_EXPR <");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_greater (pp);
+      if (flags & TDF_GIMPLE)
+	{
+	  pp_string (pp, "__real ");
+	  dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+	}
+      else
+	{
+	  pp_string (pp, "REALPART_EXPR <");
+	  dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+	  pp_greater (pp);
+	}
       break;
 
     case IMAGPART_EXPR:
-      pp_string (pp, "IMAGPART_EXPR <");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_greater (pp);
+      if (flags & TDF_GIMPLE)
+	{
+	  pp_string (pp, "__imag ");
+	  dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+	}
+      else
+	{
+	  pp_string (pp, "IMAGPART_EXPR <");
+	  dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+	  pp_greater (pp);
+	}
       break;
 
     case VA_ARG_EXPR:
