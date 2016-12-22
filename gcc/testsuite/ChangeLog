@@ -1,3 +1,7 @@
+2016-12-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/gimplefe-20.c: New test-case.
+
 2016-12-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/litpool-str-1.c: New test.
