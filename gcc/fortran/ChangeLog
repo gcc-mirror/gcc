@@ -1,3 +1,10 @@
+2016-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/78239
+	* decl.c (char_len_param_value): Also check for -fimplicit-none
+	when determining if implicit none is in force.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
