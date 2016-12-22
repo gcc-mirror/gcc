@@ -1,3 +1,8 @@
+2016-12-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* varasm.c (build_constant_desc): Use the alignment of the var
+	decl instead of the original expression.
+
 2016-12-22  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Define
