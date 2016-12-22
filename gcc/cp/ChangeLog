@@ -1,5 +1,8 @@
 2016-12-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78906
+	* pt.c (finish_template_variable): Use most_general_template.
+
 	PR c++/78898
 	PR c++/42329
 	* pt.c (unify): Don't look for a class template from a non-class.
