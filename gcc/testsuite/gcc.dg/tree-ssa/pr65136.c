@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int32plus } } */
 /* { dg-options "-O2 -fdump-rtl-expand-details" } */
 
 int foo(unsigned int cc )

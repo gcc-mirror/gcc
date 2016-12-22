@@ -4,7 +4,11 @@
 #pragma pack(1)
 struct S0
 {
+#if __SIZEOF_INT >= 4
   int f0:24;
+#else
+  __INT32_TYPE__ f0:24;
+#endif
 };
 
 struct S1

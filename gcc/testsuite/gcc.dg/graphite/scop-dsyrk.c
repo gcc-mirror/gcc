@@ -1,3 +1,4 @@
+/* { dg-require-effective-target size32plus } */
 #define NMAX 3000
 #define MEASURE_TIME 1
 

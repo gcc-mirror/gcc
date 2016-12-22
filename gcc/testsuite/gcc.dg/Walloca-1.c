@@ -27,7 +27,7 @@ void foo1 (size_t len, size_t len2, size_t len3)
   // { dg-warning "unbounded use of 'alloca'" "" { target { ! lp64 } } 26 }
   useit (s);
 
-  s = alloca(90000);		/* { dg-warning "is too large" } */
+  s = alloca (30000);		/* { dg-warning "is too large" } */
   useit (s);
 
   if (len < 2000)

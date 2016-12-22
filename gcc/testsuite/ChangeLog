@@ -1,3 +1,30 @@
+2016-12-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/pr35258.c (main) <temp>: Use an integer value that has
+	at least a size of 4.
+	* gcc.dg/Walloca-1.c (foo1): Use alloca with 30000 (instead of 90000).
+	* gcc.dg/graphite/pr46185.c: Require int32plus, size32plus.
+	* gcc.dg/graphite/isl-ast-op-select.c: Same.
+	* gcc.dg/graphite/pr42205-1.c: Require int32plus.
+	* gcc.dg/graphite/pr42221.c: Same.
+	* gcc.dg/tree-ssa/pr65136.c: Same.
+	* gcc.dg/tree-ssa/sra-20.c: Same.
+	* gcc.dg/graphite/scop-0.c: Require size32plus.
+	* gcc.dg/graphite/scop-22.c: Same.
+	* gcc.dg/graphite/scop-3.c: Same.
+	* gcc.dg/graphite/scop-dsyr2k.c: Same.
+	* gcc.dg/graphite/scop-dsyrk.c: Same.
+	* gcc.dg/graphite/scop-mvt.c: Same.
+	* gcc.dg/graphite/scop-sor.c: Same.
+	* gcc.dg/tree-ssa/pr68529-3.c: Same.
+	* gcc.dg/tree-ssa/pr66449.c [long != pointer]: Use intptr_t if.
+	* gcc.dg/tree-ssa/pr70919.c [int <= 2]: Use 32-bit int as needed.
+	* gcc.dg/tree-ssa/pr71408.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-8.c (f2) [long != pointer]: Use
+	uintptr_t instead of long for int representation of address.
+	* gcc.dg/tree-ssa/tailcall-7-run.c: Require trampolines.
+
 2016-12-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78858
