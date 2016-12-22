@@ -1,6 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-original" } */
 
+#if __SIZEOF_INT__ < 4
+#define unsigned __UINT32_TYPE__
+#endif
+
 unsigned f(unsigned x)
 {
 	return (x >> 29) & 32;
