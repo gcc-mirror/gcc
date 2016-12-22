@@ -1337,18 +1337,8 @@ Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
 	}
     }
 
-  // FIXME: This adds in pkgpath twice for hidden symbols, which is
-  // pointless.
-  const std::string& name(no->name());
-  if (!Gogo::is_hidden_name(name))
-    ret.append(name);
-  else
-    {
-      ret.append(1, '.');
-      ret.append(Gogo::pkgpath_for_symbol(Gogo::hidden_name_pkgpath(name)));
-      ret.append(1, '.');
-      ret.append(Gogo::unpack_hidden_name(name));
-    }
+  std::string mname(Gogo::mangle_possibly_hidden_name(no->name()));
+  ret.append(mname);
 
   return ret;
 }
@@ -5638,8 +5628,9 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	  if (p->is_anonymous())
 	    ret->append("0_");
 	  else
-	    {
-	      std::string n = Gogo::unpack_hidden_name(p->field_name());
+            {
+
+              std::string n(Gogo::mangle_possibly_hidden_name(p->field_name()));
 	      char buf[20];
 	      snprintf(buf, sizeof buf, "%u_",
 		       static_cast<unsigned int>(n.length()));
@@ -8712,17 +8703,7 @@ Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	{
 	  if (!p->name().empty())
 	    {
-	      std::string n;
-	      if (!Gogo::is_hidden_name(p->name()))
-		n = p->name();
-	      else
-		{
-		  n = ".";
-		  std::string pkgpath = Gogo::hidden_name_pkgpath(p->name());
-		  n.append(Gogo::pkgpath_for_symbol(pkgpath));
-		  n.append(1, '.');
-		  n.append(Gogo::unpack_hidden_name(p->name()));
-		}
+	      std::string n(Gogo::mangle_possibly_hidden_name(p->name()));
 	      char buf[20];
 	      snprintf(buf, sizeof buf, "%u_",
 		       static_cast<unsigned int>(n.length()));
