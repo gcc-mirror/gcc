@@ -1,7 +1,8 @@
 /* Machine description pattern tests.  */
 
-/* { dg-do run } */
+/* { dg-do compile } */
 /* { dg-options "-mmvcle -dP -save-temps" } */
+/* { dg-do run { target { s390_useable_hw } } } */
 
 __attribute__ ((noinline))
 void test(char *p, char c, int len)
@@ -16,8 +17,8 @@ void test2(char *p, int c, int len)
 }
 
 /* Check that the right patterns are used.  */
-/* { dg-final { scan-assembler-times {c"?:9 .*{[*]setmem_long_?3?1?z?}} 1 } } */
-/* { dg-final { scan-assembler-times {c"?:15 .*{[*]setmem_long_and_?3?1?z?}} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {c"?:10 .*{[*]setmem_long_?3?1?z?}} 1 } } */
+/* { dg-final { scan-assembler-times {c"?:16 .*{[*]setmem_long_and_?3?1?z?}} 1 { xfail *-*-* } } } */
 
 #define LEN 500
 char buf[LEN + 2];

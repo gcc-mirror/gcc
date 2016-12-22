@@ -533,6 +533,8 @@ proc gcc-dg-runtest { testcases flags default-extra-flags } {
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
 	foreach flags_t $option_list {
+	    global torture_current_flags
+	    set torture_current_flags "$flags_t"
 	    verbose "Testing $nshort, $flags $flags_t" 1
 	    dg-test $test "$flags $flags_t" ${default-extra-flags}
 	}

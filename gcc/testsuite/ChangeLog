@@ -1,3 +1,23 @@
+2016-12-22  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/md/setmem_long-1.c: Use "s390_useable_hw".
+	* gcc.target/s390/md/rXsbg_mode_sXl.c: Likewise.
+	* gcc.target/s390/md/andc-splitter-1.c: Likewise.
+	* gcc.target/s390/md/andc-splitter-2.c: Likewise.
+	* lib/gcc-dg.exp (gcc-dg-runtest): Export torture_current_flags.
+	* gcc.target/s390/s390.exp: Import torture_current_flags.
+	(check_effective_target_s390_useable_hw): New.
+	(check_effective_target_s390_z900_hw): New.
+	(check_effective_target_s390_z990_hw): New.
+	(check_effective_target_s390_z9_ec_hw): New.
+	(check_effective_target_s390_z10_hw): New.
+	(check_effective_target_s390_z196_hw): New.
+	(check_effective_target_s390_zEC12_hw): New.
+	(check_effective_target_s390_z13_hw): New.
+	(check_effective_target_z10_instructions): Removed.
+	(torture tests): Add optimization level without -march=.
+	Reorder torture tests for good cache usage.
+
 2016-12-22  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/78886
