@@ -16,7 +16,7 @@
 # demangled       - mutilado
 # hardware        - hardware
 # hotness         - calentura
-# insns           - TBD
+# insns           - instrucciones  #: config/frv/frv.opt:126
 # instruction     - instrucción
 # iv optimization - optimización iv
 # omp (OpenMP)    - omp
@@ -36,7 +36,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-12-15 01:25+0100\n"
+"PO-Revision-Date: 2016-12-23 00:40+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -11633,140 +11633,94 @@ msgid "Use multiply high instructions for high part of 32x32 multiply."
 msgstr "Usa instrucciones high de multiplicación para la parte high de la multiplicación 32x32."
 
 #: config/microblaze/microblaze.opt:104
-#, fuzzy
-#| msgid "Use hardware floating point conversion instructions"
 msgid "Use hardware floating point conversion instructions."
 msgstr "Usa instrucciones de conversión de coma flotante de hardware."
 
 #: config/microblaze/microblaze.opt:108
-#, fuzzy
-#| msgid "Use hardware floating point square root instruction"
 msgid "Use hardware floating point square root instruction."
 msgstr "Usa instrucciones de raíz cuadrada de coma flotante de hardware."
 
 #: config/microblaze/microblaze.opt:112
-#, fuzzy
-#| msgid "Description for mxl-mode-executable"
 msgid "Description for mxl-mode-executable."
 msgstr "Descripción para mxl-mode-executable."
 
 #: config/microblaze/microblaze.opt:116
-#, fuzzy
-#| msgid "Description for mxl-mode-xmdstub"
 msgid "Description for mxl-mode-xmdstub."
 msgstr "Descripción para mxl-mode-xmdstub."
 
 #: config/microblaze/microblaze.opt:120
-#, fuzzy
-#| msgid "Description for mxl-mode-bootstrap"
 msgid "Description for mxl-mode-bootstrap."
 msgstr "Descripción para mxl-mode-bootstrap."
 
 #: config/microblaze/microblaze.opt:124
-#, fuzzy
-#| msgid "Description for mxl-mode-novectors"
 msgid "Description for mxl-mode-novectors."
 msgstr "Descripción para mxl-mode-novectors."
 
 #: config/microblaze/microblaze.opt:128
-#, fuzzy
-#| msgid "Use hardware quad FP instructions"
 msgid "Use hardware prefetch instruction"
-msgstr "Usa instrucciones de FP quad de hardware"
+msgstr "Usa instrucciones de precargado de hardware"
 
 #: config/vax/vax.opt:23 config/vax/vax.opt:27
-#, fuzzy
-#| msgid "Target DFLOAT double precision code"
 msgid "Target DFLOAT double precision code."
 msgstr "Apunta a código DFLOAT de doble precisión."
 
 #: config/vax/vax.opt:31 config/vax/vax.opt:35
-#, fuzzy
-#| msgid "Generate GFLOAT double precision code"
 msgid "Generate GFLOAT double precision code."
 msgstr "Genera código GFLOAT de doble precisión."
 
 #: config/vax/vax.opt:39
-#, fuzzy
-#| msgid "Generate code for GNU assembler (gas)"
 msgid "Generate code for GNU assembler (gas)."
 msgstr "Genera código para el ensamblador de GNU (gas)."
 
 #: config/vax/vax.opt:43
-#, fuzzy
-#| msgid "Generate code for UNIX assembler"
 msgid "Generate code for UNIX assembler."
 msgstr "Genera código para el ensamblador UNIX."
 
 #: config/vax/vax.opt:47
-#, fuzzy
-#| msgid "Use VAXC structure conventions"
 msgid "Use VAXC structure conventions."
-msgstr "Usa convenciones de estructura VAXC."
+msgstr "Usa los convenios de estructura VAXC."
 
 #: config/vax/vax.opt:51
-#, fuzzy
-#| msgid "Use new adddi3/subdi3 patterns"
 msgid "Use new adddi3/subdi3 patterns."
-msgstr "Usa patrones nuevos adddi3/subdi3."
+msgstr "Usa los patrones nuevos adddi3/subdi3."
 
 #: config/frv/frv.opt:30
-#, fuzzy
-#| msgid "Use 4 media accumulators"
 msgid "Use 4 media accumulators."
 msgstr "Usa 4 acumuladores de medios."
 
 #: config/frv/frv.opt:34
-#, fuzzy
-#| msgid "Use 8 media accumulators"
 msgid "Use 8 media accumulators."
 msgstr "Usa 8 acumuladores de medios."
 
 #: config/frv/frv.opt:38
-#, fuzzy
-#| msgid "Enable label alignment optimizations"
 msgid "Enable label alignment optimizations."
 msgstr "Activa las optimizaciones de alineación de etiquetas."
 
 #: config/frv/frv.opt:42
-#, fuzzy
-#| msgid "Dynamically allocate cc registers"
 msgid "Dynamically allocate cc registers."
 msgstr "Asigna dinámicamente los registros cc."
 
 #: config/frv/frv.opt:49
-#, fuzzy
-#| msgid "Set the cost of branches"
 msgid "Set the cost of branches."
 msgstr "Establece el costo de las ramificaciones."
 
 #: config/frv/frv.opt:53
-#, fuzzy
-#| msgid "Enable conditional execution other than moves/scc"
 msgid "Enable conditional execution other than moves/scc."
 msgstr "Activa la ejecución condicional en lugar de moves/scc."
 
 #: config/frv/frv.opt:57
-#, fuzzy
-#| msgid "Change the maximum length of conditionally-executed sequences"
 msgid "Change the maximum length of conditionally-executed sequences."
 msgstr "Cambia la longitud máxima de las secuencias ejecutadas condicionalmente."
 
 #: config/frv/frv.opt:61
-#, fuzzy
-#| msgid "Change the number of temporary registers that are available to conditionally-executed sequences"
 msgid "Change the number of temporary registers that are available to conditionally-executed sequences."
 msgstr "Cambia el número de registros temporales disponibles para secuencias ejecutadas condicionalmente."
 
 #: config/frv/frv.opt:65
-#, fuzzy
-#| msgid "Enable conditional moves"
 msgid "Enable conditional moves."
 msgstr "Activa moves condicionales."
 
 #: config/frv/frv.opt:69
-#, fuzzy
-#| msgid "Set the target CPU type"
 msgid "Set the target CPU type."
 msgstr "Especifica el tipo del CPU destino."
 
@@ -11775,170 +11729,114 @@ msgid "Known FR-V CPUs (for use with the -mcpu= option):"
 msgstr "CPUs FR-V conocidos (para usar con la opción -mcpu=):"
 
 #: config/frv/frv.opt:122
-#, fuzzy
-#| msgid "Use fp double instructions"
 msgid "Use fp double instructions."
 msgstr "Usa instrucciones fp double."
 
 #: config/frv/frv.opt:126
-#, fuzzy
-#| msgid "Change the ABI to allow double word insns"
 msgid "Change the ABI to allow double word insns."
 msgstr "Cambia la ABI para permitir instrucciones double word."
 
 #: config/frv/frv.opt:134
-#, fuzzy
-#| msgid "Just use icc0/fcc0"
 msgid "Just use icc0/fcc0."
 msgstr "Usa solamente icc0/fcc0."
 
 #: config/frv/frv.opt:138
-#, fuzzy
-#| msgid "Only use 32 FPRs"
 msgid "Only use 32 FPRs."
 msgstr "Usa solamente 32 FPRs."
 
 #: config/frv/frv.opt:142
-#, fuzzy
-#| msgid "Use 64 FPRs"
 msgid "Use 64 FPRs."
 msgstr "Usa 64 FPRs."
 
 #: config/frv/frv.opt:146
-#, fuzzy
-#| msgid "Only use 32 GPRs"
 msgid "Only use 32 GPRs."
 msgstr "Usa solamente 32 GPRs."
 
 #: config/frv/frv.opt:150
-#, fuzzy
-#| msgid "Use 64 GPRs"
 msgid "Use 64 GPRs."
 msgstr "Usa 64 GPRs."
 
 #: config/frv/frv.opt:154
-#, fuzzy
-#| msgid "Enable use of GPREL for read-only data in FDPIC"
 msgid "Enable use of GPREL for read-only data in FDPIC."
 msgstr "Activa el uso de GPREL para datos de sólo lectura en FDPIC."
 
 #: config/frv/frv.opt:166
-#, fuzzy
-#| msgid "Enable PIC support for building libraries"
 msgid "Enable PIC support for building libraries."
 msgstr "Activa el soporte PIC para construir bibliotecas."
 
 #: config/frv/frv.opt:170
-#, fuzzy
-#| msgid "Follow the EABI linkage requirements"
 msgid "Follow the EABI linkage requirements."
 msgstr "Sigue los requerimientos de enlace de EABI."
 
 #: config/frv/frv.opt:174
-#, fuzzy
-#| msgid "Disallow direct calls to global functions"
 msgid "Disallow direct calls to global functions."
-msgstr "Desactiva las llamdas directas a funciones globales."
+msgstr "Desactiva las llamadas directas a funciones globales."
 
 #: config/frv/frv.opt:178
-#, fuzzy
-#| msgid "Use media instructions"
 msgid "Use media instructions."
 msgstr "Usa instrucciones de medios."
 
 #: config/frv/frv.opt:182
-#, fuzzy
-#| msgid "Use multiply add/subtract instructions"
 msgid "Use multiply add/subtract instructions."
 msgstr "Usa instrucciones acumular/sustraer de multiplicar."
 
 #: config/frv/frv.opt:186
-#, fuzzy
-#| msgid "Enable optimizing &&/|| in conditional execution"
 msgid "Enable optimizing &&/|| in conditional execution."
 msgstr "Activa la optimización &&/|| en la ejecución condicional."
 
 #: config/frv/frv.opt:190
-#, fuzzy
-#| msgid "Enable nested conditional execution optimizations"
 msgid "Enable nested conditional execution optimizations."
 msgstr "Activa las optimizaciones de ejecución condicional anidada."
 
 #: config/frv/frv.opt:195
-#, fuzzy
-#| msgid "Do not mark ABI switches in e_flags"
 msgid "Do not mark ABI switches in e_flags."
 msgstr "No marca las opciones ABI en e_flags."
 
 #: config/frv/frv.opt:199
-#, fuzzy
-#| msgid "Remove redundant membars"
 msgid "Remove redundant membars."
 msgstr "Remueve miembros redundantes."
 
 #: config/frv/frv.opt:203
-#, fuzzy
-#| msgid "Pack VLIW instructions"
 msgid "Pack VLIW instructions."
 msgstr "Empaca las instrucciones VLIW."
 
 #: config/frv/frv.opt:207
-#, fuzzy
-#| msgid "Enable setting GPRs to the result of comparisons"
 msgid "Enable setting GPRs to the result of comparisons."
 msgstr "Permite establecer los GPRs al resultado de las comparaciones."
 
 #: config/frv/frv.opt:211
-#, fuzzy
-#| msgid "Change the amount of scheduler lookahead"
 msgid "Change the amount of scheduler lookahead."
 msgstr "Cambia la cantidad de vista hacia adelante del planificador."
 
 #: config/frv/frv.opt:219
-#, fuzzy
-#| msgid "Assume a large TLS segment"
 msgid "Assume a large TLS segment."
 msgstr "Asume un segmento TLS grande."
 
 #: config/frv/frv.opt:223
-#, fuzzy
-#| msgid "Do not assume a large TLS segment"
 msgid "Do not assume a large TLS segment."
 msgstr "No asume un segmento TLS grande."
 
 #: config/frv/frv.opt:228
-#, fuzzy
-#| msgid "Cause gas to print tomcat statistics"
 msgid "Cause gas to print tomcat statistics."
 msgstr "Causa que gas muestre estadísticas de tomcat."
 
 #: config/frv/frv.opt:233
-#, fuzzy
-#| msgid "Link with the library-pic libraries"
 msgid "Link with the library-pic libraries."
 msgstr "Enlaza con las bibliotecas de pic de biblioteca."
 
 #: config/frv/frv.opt:237
-#, fuzzy
-#| msgid "Allow branches to be packed with other instructions"
 msgid "Allow branches to be packed with other instructions."
 msgstr "Permite que las ramificaciones se empaquen con otras instrucciones."
 
 #: config/mn10300/mn10300.opt:30
-#, fuzzy
-#| msgid "Target the AM33 processor"
 msgid "Target the AM33 processor."
 msgstr "Apunta al procesador AM33."
 
 #: config/mn10300/mn10300.opt:34
-#, fuzzy
-#| msgid "Target the AM33/2.0 processor"
 msgid "Target the AM33/2.0 processor."
 msgstr "Apunta al procesador AM33/2.0."
 
 #: config/mn10300/mn10300.opt:38
-#, fuzzy
-#| msgid "Target the AM34 processor"
 msgid "Target the AM34 processor."
 msgstr "Apunta al procesador AM34."
 
