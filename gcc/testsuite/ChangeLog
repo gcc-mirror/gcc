@@ -50,6 +50,7 @@
 	* gcc.dg/tree-ssa/pr66449.c [long != pointer]: Use intptr_t if.
 	* gcc.dg/tree-ssa/pr70919.c [int <= 2]: Use 32-bit int as needed.
 	* gcc.dg/tree-ssa/pr71408.c: Same.
+	* gcc.dg/fold-and-rshift-2.c: Same.
 	* gcc.dg/tree-ssa/ssa-dom-thread-8.c (f2) [long != pointer]: Use
 	uintptr_t instead of long for int representation of address.
 	* gcc.dg/tree-ssa/tailcall-7-run.c: Require trampolines.
