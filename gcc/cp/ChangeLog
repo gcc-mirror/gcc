@@ -1,3 +1,9 @@
+2016-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78898
+	PR c++/42329
+	* pt.c (unify): Don't look for a class template from a non-class.
+
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72707
