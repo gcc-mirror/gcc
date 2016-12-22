@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target trampolines } } */
 /* { dg-options "-O2" } */
 /* { dg-additional-sources "tailcall-7.c" } */
 
