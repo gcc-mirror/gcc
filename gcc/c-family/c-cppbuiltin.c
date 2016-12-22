@@ -985,6 +985,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define_formatted (pfile, "__STDCPP_DEFAULT_NEW_ALIGNMENT__=%d",
 				aligned_new_threshold);
 	}
+      if (flag_new_ttp)
+	cpp_define (pfile, "__cpp_template_template_args=201611");
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */

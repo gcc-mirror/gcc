@@ -1,3 +1,9 @@
+2016-12-22  Jason Merrill  <jason@redhat.com>
+
+	Implement P0522R0, matching of template template arguments.
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__cpp_template_template_args.
+
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/78817
