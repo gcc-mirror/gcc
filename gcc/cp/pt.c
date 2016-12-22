@@ -20292,7 +20292,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
       if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
 	{
-	  if (strict_in & UNIFY_ALLOW_DERIVED)
+	  if ((strict_in & UNIFY_ALLOW_DERIVED)
+	      && CLASS_TYPE_P (arg))
 	    {
 	      /* First try to match ARG directly.  */
 	      tree t = try_class_unification (tparms, targs, parm, arg,
