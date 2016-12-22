@@ -1,7 +1,8 @@
 /* Machine description pattern tests.  */
 
-/* { dg-do run } */
+/* { dg-do compile } */
 /* { dg-options "-save-temps -dP" } */
+/* { dg-do run { target { s390_useable_hw } } } */
 /* Skip test if -O0 is present on the command line:
 
     { dg-skip-if "" { *-*-* } { "-O0" } { "" } }
@@ -13,26 +14,26 @@
 __attribute__ ((noinline))
 unsigned int andc_vv(unsigned int a, unsigned int b)
 { return ~b & a; }
-/* { dg-final { scan-assembler ":15 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":15 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":16 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":16 .\* \{\\*xorsi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned int andc_pv(unsigned int *a, unsigned int b)
 { return ~b & *a; }
-/* { dg-final { scan-assembler ":21 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":21 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":22 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":22 .\* \{\\*xorsi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned int andc_vp(unsigned int a, unsigned int *b)
 { return ~*b & a; }
-/* { dg-final { scan-assembler ":27 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":27 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":28 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":28 .\* \{\\*xorsi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned int andc_pp(unsigned int *a, unsigned int *b)
 { return ~*b & *a; }
-/* { dg-final { scan-assembler ":33 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":33 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":34 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":34 .\* \{\\*xorsi3\}" } } */
 
 /* { dg-final { scan-assembler-times "\tnr\?k\?\t" 4 } } */
 /* { dg-final { scan-assembler-times "\txr\?k\?\t" 4 } } */

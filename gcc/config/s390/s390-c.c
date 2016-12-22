@@ -320,6 +320,8 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
 {
   s390_def_or_undef_macro (pfile, MASK_OPT_HTM, old_opts, opts,
 			   "__HTM__", "__HTM__");
+  s390_def_or_undef_macro (pfile, MASK_OPT_VX, old_opts, opts,
+			   "__S390_VX__", "__S390_VX__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__VEC__=10301", "__VEC__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
@@ -328,6 +330,21 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__bool=__attribute__((s390_vector_bool)) unsigned",
 			   "__bool");
+  {
+    char macro_def[64];
+    int arch_level;
+    gcc_assert (s390_arch != PROCESSOR_NATIVE);
+    arch_level = (int)s390_arch + 3;
+    if (s390_arch >= PROCESSOR_2094_Z9_EC)
+      /* Z9_EC has the same level as Z9_109.  */
+      arch_level--;
+    /* Review when a new arch is added and increase the value.  */
+    char dummy[23 - 2 * PROCESSOR_max] __attribute__((unused));
+    sprintf (macro_def, "__S390_ARCH_LEVEL__=%d", arch_level);
+    cpp_undef (pfile, "__S390_ARCH_LEVEL__");
+    cpp_define (pfile, macro_def);
+  }
+
   if (!flag_iso)
     {
       s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,

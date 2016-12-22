@@ -1,3 +1,8 @@
+2016-12-22  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Define
+	__S390_ARCH_LEVEL__.
+
 2016-12-22  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/78886
