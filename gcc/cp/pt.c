@@ -9000,6 +9000,7 @@ finish_template_variable (tree var, tsubst_flags_t complain)
   tree tmpl_args = DECL_TI_ARGS (DECL_TEMPLATE_RESULT (templ));
   arglist = add_outermost_template_args (tmpl_args, arglist);
 
+  templ = most_general_template (templ);
   tree parms = DECL_TEMPLATE_PARMS (templ);
   arglist = coerce_innermost_template_parms (parms, arglist, templ, complain,
 					     /*req_all*/true,
