@@ -1,3 +1,10 @@
+2016-12-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-expr.c (trans_class_assignment): Allocate memory of _vptr->size
+        before assigning an allocatable class object.
+	(gfc_trans_assignment_1): Flag that (re-)alloc of the class object
+	shall be done.
+
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/78866

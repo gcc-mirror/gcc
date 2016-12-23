@@ -9625,17 +9625,38 @@ is_runtime_conformable (gfc_expr *expr1, gfc_expr *expr2)
 
 static tree
 trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
-			gfc_se *lse, gfc_se *rse, bool use_vptr_copy)
+			gfc_se *lse, gfc_se *rse, bool use_vptr_copy,
+			bool class_realloc)
 {
-  tree tmp;
-  tree fcn;
-  tree stdcopy, to_len, from_len;
+  tree tmp, fcn, stdcopy, to_len, from_len, vptr;
   vec<tree, va_gc> *args = NULL;
 
-  tmp = trans_class_vptr_len_assignment (block, lhs, rhs, rse, &to_len,
+  vptr = trans_class_vptr_len_assignment (block, lhs, rhs, rse, &to_len,
 					 &from_len);
 
-  fcn = gfc_vptr_copy_get (tmp);
+  /* Generate allocation of the lhs.  */
+  if (class_realloc)
+    {
+      stmtblock_t alloc;
+      tree class_han;
+
+      tmp = gfc_vptr_size_get (vptr);
+      class_han = GFC_CLASS_TYPE_P (TREE_TYPE (lse->expr))
+	  ? gfc_class_data_get (lse->expr) : lse->expr;
+      gfc_init_block (&alloc);
+      gfc_allocate_using_malloc (&alloc, class_han, tmp, NULL_TREE);
+      tmp = fold_build2_loc (input_location, EQ_EXPR,
+			     boolean_type_node, class_han,
+			     build_int_cst (prvoid_type_node, 0));
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+			     gfc_unlikely (tmp,
+					   PRED_FORTRAN_FAIL_ALLOC),
+			     gfc_finish_block (&alloc),
+			     build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&lse->pre, tmp);
+    }
+
+  fcn = gfc_vptr_copy_get (vptr);
 
   tmp = GFC_CLASS_TYPE_P (TREE_TYPE (rse->expr))
       ? gfc_class_data_get (rse->expr) : rse->expr;
@@ -9961,15 +9982,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     }
 
   if (is_poly_assign)
-    {
-      tmp = trans_class_assignment (&body, expr1, expr2, &lse, &rse,
-				    use_vptr_copy || (lhs_attr.allocatable
-						      && !lhs_attr.dimension));
-      /* Modify the expr1 after the assignment, to allow the realloc below.
-	 Therefore only needed, when realloc_lhs is enabled.  */
-      if (flag_realloc_lhs && !lhs_attr.pointer)
-	gfc_add_data_component (expr1);
-    }
+    tmp = trans_class_assignment (&body, expr1, expr2, &lse, &rse,
+				  use_vptr_copy || (lhs_attr.allocatable
+						    && !lhs_attr.dimension),
+				  flag_realloc_lhs && !lhs_attr.pointer);
   else if (flag_coarray == GFC_FCOARRAY_LIB
 	   && lhs_caf_attr.codimension && rhs_caf_attr.codimension
 	   && ((lhs_caf_attr.allocatable && lhs_refs_comp)
@@ -10011,7 +10027,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   if (lss == gfc_ss_terminator)
     {
       /* F2003: Add the code for reallocation on assignment.  */
-      if (flag_realloc_lhs && is_scalar_reallocatable_lhs (expr1))
+      if (flag_realloc_lhs && is_scalar_reallocatable_lhs (expr1)
+	  && !is_poly_assign)
 	alloc_scalar_allocatable_for_assignment (&block, string_length,
 						 expr1, expr2);
 
