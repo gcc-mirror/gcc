@@ -1,3 +1,7 @@
+2016-12-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/class_assign_1.f08: New test.
+
 2016-12-23  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.target/mips/oddspreg-2.c (dg-options): Remove dg-skip-if for
