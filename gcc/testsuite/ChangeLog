@@ -1,3 +1,16 @@
+2016-12-23  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/oddspreg-2.c (dg-options): Remove dg-skip-if for
+	-fno-fat-lto-objects and add the -ffat-lto-objects option, along with
+	an explanation for its purpose.
+	* gcc.target/mips/oddspreg-3.c (dg-options): Likewise.
+	* gcc.target/mips/oddspreg-6.c (dg-options): Likewise.
+	* gcc.target/mips/no-dsp-1.c: Add an explanation for the purpose of
+	-ffat-lto-objects.
+	* gcc.target/mips/pr54240.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-14.c: Likewise.
+	* gcc.target/mips/soft-float-1.c: Likewise.
+
 2016-12-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/gimplefe-20.c: New test-case.
