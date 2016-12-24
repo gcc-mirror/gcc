@@ -1,3 +1,15 @@
+2016-12-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78901
+	* except.c (nothrow_libfn_p): Expect libc_name_p to return
+	const struct libc_name_struct *, if it returns NULL, return 0,
+	otherwise check c_ver and use flag_isoc99 or flag_isoc11.
+	* cfns.gperf: Add %struct-type and libc_name_struct definition.
+	For all C89 C library functions add , 89 after the name, add
+	C99 C library functions with , 99 and C11 C library functions
+	with , 11 suffix.
+	* cfns.h: Regenerated.
+
 2016-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78906
