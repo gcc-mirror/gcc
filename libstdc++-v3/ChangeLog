@@ -1,3 +1,7 @@
+2016-12-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/ext/random.tcc: Fix usage of _OutputIteratorConcept.
+
 2016-12-21  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/util/testsuite_tr1.h (test_property): Don't define both
