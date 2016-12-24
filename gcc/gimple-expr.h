@@ -105,11 +105,7 @@ static inline bool
 virtual_operand_p (tree op)
 {
   if (TREE_CODE (op) == SSA_NAME)
-    {
-      op = SSA_NAME_VAR (op);
-      if (!op)
-	return false;
-    }
+    return SSA_NAME_IS_VIRTUAL_OPERAND (op);
 
   if (TREE_CODE (op) == VAR_DECL)
     return VAR_DECL_IS_VIRTUAL_OPERAND (op);

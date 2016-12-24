@@ -1,3 +1,12 @@
+2016-12-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-core.h (tree_base): Document the meaning of public_flag
+	for SSA names.
+	* tree.h (SSA_NAME_IS_VIRTUAL_OPERAND): New macro.
+	(SET_SSA_NAME_VAR_OR_IDENTIFIER): Record whether the variable
+	is a virtual operand.
+	* gimple-expr.h (virtual_operand_p): Use SSA_NAME_IS_VIRTUAL_OPERAND.
+
 2016-12-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree-pretty-print.c (dump_generic_node): Change dump format for

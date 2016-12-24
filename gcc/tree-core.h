@@ -1091,6 +1091,9 @@ struct GTY(()) tree_base {
        FALLTHROUGH_LABEL_P in
 	   LABEL_DECL
 
+       SSA_NAME_IS_VIRTUAL_OPERAND in
+	   SSA_NAME
+
    private_flag:
 
        TREE_PRIVATE in
