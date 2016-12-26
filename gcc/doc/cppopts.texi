@@ -9,7 +9,6 @@
 @c If this file is included with the flag ``cppmanual'' set, it is
 @c formatted for inclusion in the CPP manual; otherwise the main GCC manual.
 
-@table @gcctabopt
 @item -D @var{name}
 @opindex D
 Predefine @var{name} as a macro, with definition @code{1}.
@@ -67,64 +66,38 @@ of system headers are not defeated
 If @var{dir} begins with @code{=}, then the @code{=} will be replaced
 by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
-@item -o @var{file}
-@opindex o
-Write output to @var{file}.  This is the same as specifying @var{file}
-as the second non-option argument to @command{cpp}.  @command{gcc} has a
-different interpretation of a second non-option argument, so you must
-use @option{-o} to specify the output file.
-
-@item -Wall
-@opindex Wall
-Turns on all optional warnings which are desirable for normal code.
-At present this is @option{-Wcomment}, @option{-Wtrigraphs},
-@option{-Wmultichar} and a warning about integer promotion causing a
-change of sign in @code{#if} expressions.  Note that many of the
-preprocessor's warnings are on by default and have no options to
-control them.
-
 @item -Wcomment
 @itemx -Wcomments
 @opindex Wcomment
 @opindex Wcomments
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a backslash-newline appears in a @samp{//} comment.
-(Both forms have the same effect.)
+This warning is enabled by @option{-Wall}.
 
 @item -Wtrigraphs
 @opindex Wtrigraphs
 @anchor{Wtrigraphs}
-Most trigraphs in comments cannot affect the meaning of the program.
-However, a trigraph that would form an escaped newline (@samp{??/} at
-the end of a line) can, by changing where the comment begins or ends.
-Therefore, only trigraphs that would form escaped newlines produce
-warnings inside a comment.
+Warn if any trigraphs are encountered that might change the meaning of
+the program.  Trigraphs within comments are not warned about,
+except those that would form escaped newlines.
 
 This option is implied by @option{-Wall}.  If @option{-Wall} is not
 given, this option is still enabled unless trigraphs are enabled.  To
 get trigraph conversion without warnings, but get the other
 @option{-Wall} warnings, use @samp{-trigraphs -Wall -Wno-trigraphs}.
 
-@item -Wtraditional
-@opindex Wtraditional
-Warn about certain constructs that behave differently in traditional and
-ISO C@.  Also warn about ISO C constructs that have no traditional C
-equivalent, and problematic constructs which should be avoided.
-@ifset cppmanual
-@xref{Traditional Mode}.
-@end ifset
-
 @item -Wundef
 @opindex Wundef
-Warn whenever an identifier which is not a macro is encountered in an
-@samp{#if} directive, outside of @samp{defined}.  Such identifiers are
-replaced with zero.
+@opindex Wno-undef
+Warn if an undefined identifier is evaluated in an @code{#if} directive.
+Such identifiers are replaced with zero.
 
 @item -Wexpansion-to-defined
 @opindex Wexpansion-to-defined
 Warn whenever @samp{defined} is encountered in the expansion of a macro
 (including the case where the macro is expanded by an @samp{#if} directive).
 Such usage is not portable.
+This warning is also enabled by @option{-Wpedantic} and @option{-Wextra}.
 
 @item -Wunused-macros
 @opindex Wunused-macros
@@ -147,9 +120,10 @@ Alternatively, you could provide a dummy use with something like:
 #endif
 @end smallexample
 
-@item -Wendif-labels
+@item -Wno-endif-labels
+@opindex Wno-endif-labels
 @opindex Wendif-labels
-Warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
+Do not warn whenever an @code{#else} or an @code{#endif} are followed by text.
 This usually happens in code of the form
 
 @smallexample
@@ -163,33 +137,6 @@ This usually happens in code of the form
 @noindent
 The second and third @code{FOO} should be in comments, but often are not
 in older programs.  This warning is on by default.
-
-@item -Werror
-@opindex Werror
-Make all warnings into hard errors.  Source code which triggers warnings
-will be rejected.
-
-@item -Wsystem-headers
-@opindex Wsystem-headers
-Issue warnings for code in system headers.  These are normally unhelpful
-in finding bugs in your own code, therefore suppressed.  If you are
-responsible for the system library, you may want to see them.
-
-@item -w
-@opindex w
-Suppress all warnings, including those which GNU CPP issues by default.
-
-@item -pedantic
-@opindex pedantic
-Issue all the mandatory diagnostics listed in the C standard.  Some of
-them are left out by default, since they trigger frequently on harmless
-code.
-
-@item -pedantic-errors
-@opindex pedantic-errors
-Issue all the mandatory diagnostics, and make all mandatory diagnostics
-into errors.  This includes mandatory diagnostics that GCC issues
-without @samp{-pedantic} but treats as warnings.
 
 @item -M
 @opindex M
@@ -368,60 +315,6 @@ generic mode.
 which selected both the language and the standards conformance level.
 This option has been removed, because it conflicts with the @option{-l}
 option.
-
-@item -std=@var{standard}
-@itemx -ansi
-@opindex ansi
-@opindex std=
-Specify the standard to which the code should conform.  Currently CPP
-knows about C and C++ standards; others may be added in the future.
-
-@var{standard}
-may be one of:
-@table @code
-@item c90
-@itemx c89
-@itemx iso9899:1990
-The ISO C standard from 1990.  @samp{c90} is the customary shorthand for
-this version of the standard.
-
-The @option{-ansi} option is equivalent to @option{-std=c90}.
-
-@item iso9899:199409
-The 1990 C standard, as amended in 1994.
-
-@item iso9899:1999
-@itemx c99
-@itemx iso9899:199x
-@itemx c9x
-The revised ISO C standard, published in December 1999.  Before
-publication, this was known as C9X@.
-
-@item iso9899:2011
-@itemx c11
-@itemx c1x
-The revised ISO C standard, published in December 2011.  Before
-publication, this was known as C1X@.
-
-@item gnu90
-@itemx gnu89
-The 1990 C standard plus GNU extensions.  This is the default.
-
-@item gnu99
-@itemx gnu9x
-The 1999 C standard plus GNU extensions.
-
-@item gnu11
-@itemx gnu1x
-The 2011 C standard plus GNU extensions.
-
-@item c++98
-The 1998 ISO C++ standard plus amendments.
-
-@item gnu++98
-The same as @option{-std=c++98} plus GNU extensions.  This is the
-default for C++ code.
-@end table
 
 @item -I-
 @opindex I-
@@ -714,9 +607,11 @@ touch foo.h; cpp -dM foo.h
 @noindent
 will show all the predefined macros.
 
+@ifclear cppmanual
 If you use @option{-dM} without the @option{-E} option, @option{-dM} is
 interpreted as a synonym for @option{-fdump-rtl-mach}.
 @xref{Developer Options, , ,gcc}.
+@end ifclear
 
 @item D
 @opindex dD
@@ -778,28 +673,38 @@ the source line.
 
 The @option{-CC} option is generally used to support lint comments.
 
-@item -traditional-cpp
+@cindex traditional C language
+@cindex C language, traditional
+@item -traditional
+@itemx -traditional-cpp
 @opindex traditional-cpp
-Try to imitate the behavior of old-fashioned C preprocessors, as
+@opindex traditional
+
+Try to imitate the behavior of pre-standard C preprocessors, as
 opposed to ISO C preprocessors.
 @ifset cppmanual
 @xref{Traditional Mode}.
 @end ifset
+@ifclear cppmanual
+See the GNU CPP manual for details.
+@end ifclear
+
+Note that GCC does not otherwise attempt to emulate a pre-standard 
+C compiler, and these options are only supported with the @option{-E} 
+switch, or when invoking CPP explicitly.
 
 @item -trigraphs
 @opindex trigraphs
-Process trigraph sequences.
-@ifset cppmanual
-@xref{Initial processing}.
-@end ifset
-@ifclear cppmanual
+Support ISO C trigraphs.
 These are three-character sequences, all starting with @samp{??}, that
 are defined by ISO C to stand for single characters.  For example,
 @samp{??/} stands for @samp{\}, so @samp{'??/n'} is a character
-constant for a newline.  By default, GCC ignores trigraphs, but in
-standard-conforming modes it converts them.  See the @option{-std} and
-@option{-ansi} options.
+constant for a newline.
+@ifset cppmanual
+@xref{Initial processing}.
+@end ifset
 
+@ifclear cppmanual
 The nine trigraphs and their replacements are
 
 @smallexample
@@ -808,22 +713,14 @@ Replacement:      [    ]    @{    @}    #    \    ^    |    ~
 @end smallexample
 @end ifclear
 
+By default, GCC ignores trigraphs, but in
+standard-conforming modes it converts them.  See the @option{-std} and
+@option{-ansi} options.
+
 @item -remap
 @opindex remap
 Enable special code to work around file systems which only permit very
 short file names, such as MS-DOS@.
-
-@item --help
-@itemx --target-help
-@opindex help
-@opindex target-help
-Print text describing all the command-line options instead of
-preprocessing anything.
-
-@item -v
-@opindex v
-Verbose mode.  Print out GNU CPP's version number at the beginning of
-execution, and report the final form of the include path.
 
 @item -H
 @opindex H
@@ -833,9 +730,3 @@ activities.  Each name is indented to show how deep in the
 printed, even if they are found to be invalid; an invalid precompiled
 header file is printed with @samp{...x} and a valid one with @samp{...!} .
 
-@item -version
-@itemx --version
-@opindex version
-Print out GNU CPP's version number.  With one dash, proceed to
-preprocess as normal.  With two dashes, exit immediately.
-@end table

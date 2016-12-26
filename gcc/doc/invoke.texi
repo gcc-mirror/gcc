@@ -185,8 +185,7 @@ in the following sections.
 -fms-extensions -fplan9-extensions -fsso-struct=@var{endianness}
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
--funsigned-bitfields  -funsigned-char @gol
--trigraphs -traditional -traditional-cpp}
+-funsigned-bitfields  -funsigned-char}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -472,7 +471,8 @@ Objective-C and Objective-C++ Dialects}.
 -imultilib @var{dir} -isysroot @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
 -P  -fdebug-cpp -ftrack-macro-expansion -fworking-directory @gol
--remap -trigraphs  -undef  -U@var{macro}  @gol
+-remap -traditional -traditional-cpp -trigraphs  @gol
+-undef  -U@var{macro}  @gol
 -Wp,@var{option} -Xpreprocessor @var{option} -no-integrated-cpp}
 
 @item Assembler Option
@@ -2100,22 +2100,6 @@ elements of the type of the field, and permits referring to anonymous
 fields declared using a typedef.  @xref{Unnamed Fields,,Unnamed
 struct/union fields within structs/unions}, for details.  This is only
 supported for C, not C++.
-
-@item -trigraphs
-@opindex trigraphs
-Support ISO C trigraphs.  The @option{-ansi} option (and @option{-std}
-options for strict ISO C conformance) implies @option{-trigraphs}.
-
-@cindex traditional C language
-@cindex C language, traditional
-@item -traditional
-@itemx -traditional-cpp
-@opindex traditional-cpp
-@opindex traditional
-Formerly, these options caused GCC to attempt to emulate a pre-standard
-C compiler.  They are now only supported with the @option{-E} switch.
-The preprocessor continues to support a pre-standard mode.  See the GNU
-CPP manual for details.
 
 @item -fcond-mismatch
 @opindex fcond-mismatch
@@ -3838,13 +3822,6 @@ of error, as programmers often forget that this type is signed on some
 machines.
 This warning is enabled by @option{-Wall}.
 
-@item -Wcomment
-@opindex Wcomment
-@opindex Wno-comment
-Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
-comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
-This warning is enabled by @option{-Wall}.
-
 @item -Wno-coverage-mismatch
 @opindex Wno-coverage-mismatch
 Warn if feedback profiles do not match when using the
@@ -4609,13 +4586,6 @@ This warning is enabled by default for C and C++ programs.
 @opindex Wno-sync-nand
 Warn when @code{__sync_fetch_and_nand} and @code{__sync_nand_and_fetch}
 built-in functions are used.  These functions changed semantics in GCC 4.4.
-
-@item -Wtrigraphs
-@opindex Wtrigraphs
-@opindex Wno-trigraphs
-Warn if any trigraphs are encountered that might change the meaning of
-the program (trigraphs within comments are not warned about).
-This warning is enabled by @option{-Wall}.
 
 @item -Wunused-but-set-parameter
 @opindex Wunused-but-set-parameter
@@ -5457,21 +5427,6 @@ except when the same as the default promotion.
 Warn when a declaration is found after a statement in a block.  This
 construct, known from C++, was introduced with ISO C99 and is by default
 allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Declarations}.
-
-@item -Wexpansion-to-defined
-@opindex Wexpansion-to-defined
-Warn whenever @samp{defined} is encountered in the expansion of a macro.
-This warning is also enabled by @option{-Wpedantic} and @option{-Wextra}.
-
-@item -Wundef
-@opindex Wundef
-@opindex Wno-undef
-Warn if an undefined identifier is evaluated in an @code{#if} directive.
-
-@item -Wno-endif-labels
-@opindex Wno-endif-labels
-@opindex Wendif-labels
-Do not warn whenever an @code{#else} or an @code{#endif} are followed by text.
 
 @item -Wshadow
 @opindex Wshadow
@@ -11371,9 +11326,9 @@ This option may be useful in conjunction with the @option{-B} or
 @option{-wrapper} options to specify an alternate preprocessor or
 perform additional processing of the program source between
 normal preprocessing and compilation.
-@end table
 
 @include cppopts.texi
+@end table
 
 @node Assembler Options
 @section Passing Options to the Assembler
