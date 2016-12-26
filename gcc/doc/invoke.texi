@@ -1105,7 +1105,8 @@ See RS/6000 and PowerPC Options.
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
 -mcbcond -mno-cbcond  -mfmaf  -mno-fmaf  @gol
 -mpopc  -mno-popc  -msubxc  -mno-subxc@gol
--mfix-at697f -mfix-ut699}
+-mfix-at697f -mfix-ut699 @gol
+-mlra -mno-lra}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -23285,6 +23286,13 @@ between the two sides of function calls, as per the 32-bit ABI@.
 The default is @option{-mno-std-struct-return}.  This option has no effect
 in 64-bit mode.
 
+@item -mlra
+@itemx -mno-lra
+@opindex mlra
+@opindex mno-lra
+Enable Local Register Allocation.  This is experimental for SPARC, so by
+default the compiler uses standard reload (i.e. @option{-mno-lra}).
+
 @item -mcpu=@var{cpu_type}
 @opindex mcpu
 Set the instruction set, register set, and instruction scheduling parameters
@@ -23540,7 +23548,7 @@ Total Store Order
 Sequential Consistency
 @end table
 
-These memory models are formally defined in Appendix D of the Sparc V9
+These memory models are formally defined in Appendix D of the SPARC-V9
 architecture manual, as set in the processor's @code{PSTATE.MM} field.
 
 @item -mstack-bias
