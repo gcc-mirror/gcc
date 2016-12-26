@@ -252,7 +252,7 @@ handler (int sig __attribute__ ((unused)),
 	  uctxt->uc_mcontext.gregs[REG_IP_IDX] =
 	    (greg_t)get_next_inst_ip ((uint8_t *)ip);
 	  if (__mpxrt_mode () == MPX_RT_STOP)
-	    exit (255);
+	    __mpxrt_stop ();
 	  return;
 
 	default:
@@ -269,7 +269,7 @@ handler (int sig __attribute__ ((unused)),
       __mpxrt_write (VERB_ERROR, ", ip = 0x");
       __mpxrt_write_uint (VERB_ERROR, ip, 16);
       __mpxrt_write (VERB_ERROR, "\n");
-      exit (255);
+      __mpxrt_stop ();
     }
   else
     {
@@ -278,7 +278,7 @@ handler (int sig __attribute__ ((unused)),
       __mpxrt_write (VERB_ERROR, "! at 0x");
       __mpxrt_write_uint (VERB_ERROR, ip, 16);
       __mpxrt_write (VERB_ERROR, "\n");
-      exit (255);
+      __mpxrt_stop ();
     }
 }
 
