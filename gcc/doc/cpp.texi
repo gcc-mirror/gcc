@@ -4285,51 +4285,54 @@ You can also make or cancel assertions using command-line options.
 @cindex invocation
 @cindex command line
 
-Most often when you use the C preprocessor you will not have to invoke it
-explicitly: the C compiler will do so automatically.  However, the
-preprocessor is sometimes useful on its own.  All the options listed
-here are also acceptable to the C compiler and have the same meaning,
-except that the C compiler has different rules for specifying the output
-file.
+Most often when you use the C preprocessor you do not have to invoke it
+explicitly: the C compiler does so automatically.  However, the
+preprocessor is sometimes useful on its own.  You can invoke the 
+preprocessor either with the @command{cpp} command, or via @command{gcc -E}.
+In GCC, the preprocessor is actually integrated with the compiler
+rather than a separate program, and both of these commands invoke
+GCC and tell it to stop after the preprocessing phase.
 
-@emph{Note:} Whether you use the preprocessor by way of @command{gcc}
-or @command{cpp}, the @dfn{compiler driver} is run first.  This
-program's purpose is to translate your command into invocations of the
-programs that do the actual work.  Their command-line interfaces are
-similar but not identical to the documented interface, and may change
-without notice.
+The @command {cpp} options listed here are also accepted by
+@command{gcc} and have the same meaning.  Likewise the @command{cpp}
+command accepts all the usual @command{gcc} driver options, although those
+pertaining to compilation phases after preprocessing are ignored.
+
+Only options specific to preprocessing behavior are documented here.
+Refer to the GCC manual for full documentation of other driver options.
 
 @ignore
 @c man begin SYNOPSIS
 cpp [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
     [@option{-I}@var{dir}@dots{}] [@option{-iquote}@var{dir}@dots{}]
-    [@option{-W}@var{warn}@dots{}]
     [@option{-M}|@option{-MM}] [@option{-MG}] [@option{-MF} @var{filename}]
     [@option{-MP}] [@option{-MQ} @var{target}@dots{}]
     [@option{-MT} @var{target}@dots{}]
-    [@option{-P}] [@option{-fno-working-directory}]
-    [@option{-x} @var{language}] [@option{-std=}@var{standard}]
-    @var{infile} @var{outfile}
+    @var{infile} [[@option{-o}] @var{outfile}]
 
-Only the most useful options are listed here; see below for the remainder.
+Only the most useful options are given above; see below for a more
+complete list of preprocessor-specific options.  
+In addition, @command{cpp} accepts most @command{gcc} driver options, which
+are not listed here.  Refer to the GCC documentation for details.
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7),
-gcc(1), as(1), ld(1), and the Info entries for @file{cpp}, @file{gcc}, and
-@file{binutils}.
+gcc(1), and the Info entries for @file{cpp} and @file{gcc}.
 @c man end
 @end ignore
 
 @c man begin OPTIONS
-The C preprocessor expects two file names as arguments, @var{infile} and
+The @command{cpp} command expects two file names as arguments, @var{infile} and
 @var{outfile}.  The preprocessor reads @var{infile} together with any
 other files it specifies with @samp{#include}.  All the output generated
 by the combined input files is written in @var{outfile}.
 
 Either @var{infile} or @var{outfile} may be @option{-}, which as
 @var{infile} means to read from standard input and as @var{outfile}
-means to write to standard output.  Also, if either file is omitted, it
+means to write to standard output.  If either file is omitted, it
 means the same as if @option{-} had been specified for that file.
+You can also use the @option{-o @var{outfile}} option to specify the 
+output file.
 
 Unless otherwise noted, or the option ends in @samp{=}, all options
 which take an argument may have that argument appear either immediately
@@ -4343,7 +4346,10 @@ options may @emph{not} be grouped: @option{-dM} is very different from
 @w{@samp{-d -M}}.
 
 @cindex options
+
+@table @gcctabopt
 @include cppopts.texi
+@end table
 @c man end
 
 @node Environment Variables
