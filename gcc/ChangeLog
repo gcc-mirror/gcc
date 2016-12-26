@@ -1,3 +1,7 @@
+2016-12-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC options): Add missing documentation for -mlra.
+
 2016-12-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/cpp.texi (Invocation): Revise to indicate that GCC driver
