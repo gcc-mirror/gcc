@@ -1,3 +1,37 @@
+2016-12-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* config/i386/i386.md (addqi_ext_1): Canonicalize insn pattern w.r.t.
+	zero_extract RTXes.
+	(*addqi_ext_2): Ditto.
+	(testqi_ext_ccno_0): Canonicalize expander w.r.t. zero_extract RTXes.
+	(testqi_ext_1_ccno): Rename from testqi_ext_ccno_0.
+	(*testqi_ext_0): Merge with *testqi_ext_1.
+	(*testqi_ext_1): Canonicalize insn pattern w.r.t. zero_extract RTXes.
+	Update corresponding splitter.
+	(*testqi_ext_2): Canonicalize insn pattern w.r.t. zero_extract RTXes.
+	(*andqi_ext_0): Merge with *andqi_ext_1.
+	(andqi_ext_1): Canonicalize insn pattern w.r.t. zero_extract RTXes.
+	Rename from *andqi_ext_1.  Update corresponding splitter and
+	peephole2 patterns.
+	(*andqi_ext_1_cc): Rename from *andqi_ext_0_cc.
+	(*andqi_ext_2): Canonicalize insn pattern w.r.t. zero_extract RTXes.
+	(*<any_or:code>qi_ext_0): Merge with *andqi_ext_1.
+	(*<any_or:code>qi_ext_1): Canonicalize insn pattern w.r.t.
+	zero_extract RTXes.  Update corresponding splitter.
+	(*<any_or:code>qi_ext_2): Canonicalize insn pattern w.r.t.
+	zero_extract RTXes.
+	(xorqi_cc_ext_1): Canonicalize expander w.r.t. zero_extract RTXes.
+	(xorqi_ext_1_cc): Rename from xorqi_cc_ext_1.
+	(*xorqi_cc_ext_1): Canonicalize insn pattern w.r.t. zero_extract RTXes.
+	Update corresponding splitter.
+	(*xorqi_ext_1_cc): Rename from *xorqi_cc_ext_1.
+	(isinfxf2): Update calls to renamed expanders.
+	(isinf<mode>2): Ditto.
+	* config/i386/i386.c (ix86_expand_fp_compare): Ditto.
+	(ix86_emit_fp_unordered_jump): Ditto.
+	(ix86_emit_i387_round): Ditto.
+
 2016-12-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (SPARC options): Add missing documentation for -mlra.
@@ -89,7 +123,8 @@
 	(rs6000_option_optimization_table): Enable -fsched-pressure.
 	* config/rs6000/rs6000.c (TARGET_COMPUTE_PRESSURE_CLASSES): Define
 	target hook.
-	(rs6000_option_override_internal): Set default -fsched-pressure algorithm.
+	(rs6000_option_override_internal): Set default -fsched-pressure
+	algorithm.
 	(rs6000_compute_pressure_classes): Implement target hook.
 
 2016-12-21  Bill Seurer  <seurer@linux.vnet.ibm.com>
