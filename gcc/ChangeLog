@@ -8,16 +8,16 @@
 
 	* doc/cpp.texi (Invocation): Revise to indicate that GCC driver
 	options are only documented in the GCC manual.
-	* doc/cppopts.texi: Delete documentation of GCC driver options 
+	* doc/cppopts.texi: Delete documentation of GCC driver options
 	-o, -Wall, -Wtraditional, -Werror, -Wsystem-headers, -w,
-	-pedantic, -pedantic-errors, -std=, -ansi, --help, --target-help, 
-	-v, -version.  Update -Wcomment, -Wtrigraphs, -Wundef, 
-	-Wexpansion-to-defined, -Wno-endif-labels, -traditional, 
+	-pedantic, -pedantic-errors, -std=, -ansi, --help, --target-help,
+	-v, -version.  Update -Wcomment, -Wtrigraphs, -Wundef,
+	-Wexpansion-to-defined, -Wno-endif-labels, -traditional,
 	-traditional-cpp, -trigraphs to merge text previously in GCC manual.
 	* doc/invoke.texi (Option Summary): Move -trigraphs, -traditional,
 	and -traditional-cpp from C dialect options to preprocessor options.
 	(C Dialect Options): Likewise.
-	(Warning Options): Delete documentation of -Wcomment, -Wtrigraphs, 
+	(Warning Options): Delete documentation of -Wcomment, -Wtrigraphs,
 	-Wexpansion-to-defined, -Wundef, and -Wno-endif-labels.
 
 2016-12-24  Richard Sandiford  <richard.sandiford@arm.com>
