@@ -1,3 +1,7 @@
+2016-12-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Don't bootstrap libmpx unless --with-build-config
