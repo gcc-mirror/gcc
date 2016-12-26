@@ -2,6 +2,8 @@
 
 	* doc/invoke.texi (SPARC options): Add missing documentation for -mlra.
 
+	* doc/cpp.texi (Invocation): Remove space in command.
+
 2016-12-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/cpp.texi (Invocation): Revise to indicate that GCC driver

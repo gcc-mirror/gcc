@@ -4293,7 +4293,7 @@ In GCC, the preprocessor is actually integrated with the compiler
 rather than a separate program, and both of these commands invoke
 GCC and tell it to stop after the preprocessing phase.
 
-The @command {cpp} options listed here are also accepted by
+The @command{cpp} options listed here are also accepted by
 @command{gcc} and have the same meaning.  Likewise the @command{cpp}
 command accepts all the usual @command{gcc} driver options, although those
 pertaining to compilation phases after preprocessing are ignored.
