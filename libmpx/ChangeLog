@@ -1,3 +1,16 @@
+2016-12-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* mpxrt/libtool-version: New version.
+	* mpxrt/mpxrt-utils.c (set_mpx_rt_stop_handler): New function.
+	(print_help): Add help for CHKP_RT_STOP_HANDLER environment
+	variable.
+	(__mpxrt_init_env_vars): Add initialization of stop_handler.
+	(__mpxrt_stop_handler): New function.
+	(__mpxrt_stop): Ditto.
+	* mpxrt/mpxrt-utils.h (mpx_rt_stop_mode_handler_t): New enum.
+	* mpxrt/mpxrt.c (handler): Replace exit(255) with __mpxrt_stop
+	function call.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.
