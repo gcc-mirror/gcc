@@ -1,3 +1,8 @@
+2016-12-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* gcc.target/i386/pr78904.c: New test.
+
 2016-12-23  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.dg/class_assign_1.f08: New test.
