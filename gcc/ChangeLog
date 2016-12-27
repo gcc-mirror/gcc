@@ -1,7 +1,7 @@
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_secondary_reload): Require QImode
-	intermediate for mask register spill only for !TARGET_AVX512DQ.
+	intermediate for QImode mask register spill only for !TARGET_AVX512DQ.
 	Always use true_regnum to determine operand regno.
 
 2016-12-27  Sandra Loosemore  <sandra@codesourcery.com>
