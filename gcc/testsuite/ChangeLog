@@ -1,3 +1,8 @@
+2016-12-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p9-vinsert4b-2.c: Update test to test for 13
+	being out of bounds instead of 12.
+
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904

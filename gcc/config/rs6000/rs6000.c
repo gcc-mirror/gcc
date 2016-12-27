@@ -15839,9 +15839,9 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       if (arg1 == error_mark_node)
 	return expand_call (exp, target, false);
 
-      if (TREE_CODE (arg1) != INTEGER_CST || TREE_INT_CST_LOW (arg1) > 11)
+      if (TREE_CODE (arg1) != INTEGER_CST || TREE_INT_CST_LOW (arg1) > 12)
 	{
-	  error ("second argument to vec_vextract4b must 0..11");
+	  error ("second argument to vec_vextract4b must 0..12");
 	  return expand_call (exp, target, false);
 	}
       break;
@@ -15856,9 +15856,9 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       if (arg2 == error_mark_node)
 	return expand_call (exp, target, false);
 
-      if (TREE_CODE (arg2) != INTEGER_CST || TREE_INT_CST_LOW (arg2) > 11)
+      if (TREE_CODE (arg2) != INTEGER_CST || TREE_INT_CST_LOW (arg2) > 12)
 	{
-	  error ("third argument to vec_vinsert4b must 0..11");
+	  error ("third argument to vec_vinsert4b must 0..12");
 	  return expand_call (exp, target, false);
 	}
       break;

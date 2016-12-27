@@ -8,7 +8,7 @@
 vector signed char
 ins_v4si (vector int vi, vector signed char vc)
 {
-  return vec_vinsert4b (vi, vc, 12);	/* { dg-error "vec_vinsert4b" } */
+  return vec_vinsert4b (vi, vc, 13);	/* { dg-error "vec_vinsert4b" } */
 }
 
 vector unsigned char
@@ -20,7 +20,7 @@ ins_di (long di, vector unsigned char vc, long n)
 long
 vext1 (vector signed char vc)
 {
-  return vec_vextract4b (vc, 12);	/* { dg-error "vec_vextract4b" } */
+  return vec_vextract4b (vc, 13);	/* { dg-error "vec_vextract4b" } */
 }
 
 long

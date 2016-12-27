@@ -1,3 +1,21 @@
+2016-12-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (const_0_to_12_operand): Rename
+	predicate and change test from 0..11 to 0..12 to match the
+	semantics of the word extract/insert instructions.  Change all
+	callers.
+	(const_0_to_11_operand): Likewise.
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Likewise.
+	* config/rs6000/vsx.md (vextract4b): Likewise.
+	(vextract4b_internal): Likewise.
+	(vinsert4b): Likewise.
+	(vinsert4b_internal): Likewise.
+	(vinsert4b_di): Likewise.
+	(vinsert4b_di_internal): Likewise.
+	* config/rs6000/rs6000.md (zero_extendsi<mode>2): Fix offset used
+	in xxextractuw to zero extend the word in the vector registers.
+	(lfiwzx): Likewise.
+
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_secondary_reload): Require QImode
