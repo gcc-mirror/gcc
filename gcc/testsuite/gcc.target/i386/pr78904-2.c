@@ -11,34 +11,34 @@ struct S1
 
 extern struct S1 t;
 
-struct S1 test_and (struct S1 a, struct S1 b)
+struct S1 test_and (struct S1 a)
 {
-  a.val &= b.val;
+  a.val &= t.val;
 
   return a;
 }
 
 /* { dg-final { scan-assembler "\[ \t\]andb\[^\n\r]*, %.h" } } */
 
-struct S1 test_or (struct S1 a, struct S1 b)
+struct S1 test_or (struct S1 a)
 {
-  a.val |= b.val;
+  a.val |= t.val;
 
   return a;
 }
 
 /* { dg-final { scan-assembler "\[ \t\]orb\[^\n\r]*, %.h" } } */
 
-struct S1 test_xor (struct S1 a, struct S1 b)
+struct S1 test_xor (struct S1 a)
 {
-  a.val ^= b.val;
+  a.val ^= t.val;
 
   return a;
 }
 
 /* { dg-final { scan-assembler "\[ \t\]xorb\[^\n\r]*, %.h" } } */
 
-struct S1 test_add (struct S1 a, struct S1 b)
+struct S1 test_add (struct S1 a)
 {
   a.val += t.val;
 
