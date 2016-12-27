@@ -1,3 +1,14 @@
+2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* config/i386/i386.md (*cmpqi_ext_1, *extvqi, *extzvqi): Use
+	nonimmediate_operand instead of nonimmediate_x64nomem_operand.
+	(*cmpqi_ext_3, insv<mode>_1, addqi_ext_1, *testqi_ext_1, andqi_ext_1)
+	(*<any_or:code>qi_ext_1, *xorqi_ext_1_cc): Use general_operand
+	instead of general_x64nomem_operand.
+	* config/i386/predicates.md (nonimmediate_x64nomem_operand): Remove.
+	(general_x64nomem_operand): Ditto.
+
 2016-12-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904
