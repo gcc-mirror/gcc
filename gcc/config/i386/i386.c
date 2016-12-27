@@ -39752,24 +39752,19 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
   /* QImode spills from non-QI registers require
      intermediate register on 32bit targets.  */
   if (mode == QImode
-      && (MAYBE_MASK_CLASS_P (rclass)
-	  || (!TARGET_64BIT && !in_p
-	      && INTEGER_CLASS_P (rclass)
-	      && MAYBE_NON_Q_CLASS_P (rclass))))
+      && ((!TARGET_64BIT && !in_p
+	   && INTEGER_CLASS_P (rclass)
+	   && MAYBE_NON_Q_CLASS_P (rclass))
+	  || (!TARGET_AVX512DQ
+	      && MAYBE_MASK_CLASS_P (rclass))))
     {
-      int regno;
-
-      if (REG_P (x))
-	regno = REGNO (x);
-      else
-	regno = -1;
-
-      if (regno >= FIRST_PSEUDO_REGISTER || SUBREG_P (x))
-	regno = true_regnum (x);
+      int regno = true_regnum (x);
 
       /* Return Q_REGS if the operand is in memory.  */
       if (regno == -1)
 	return Q_REGS;
+
+      return NO_REGS;
     }
 
   /* This condition handles corner case where an expression involving
