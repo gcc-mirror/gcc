@@ -250,7 +250,8 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option -fno-diagnostics-show-caret @gol
--fdiagnostics-parseable-fixits -fdiagnostics-generate-patch}
+-fdiagnostics-parseable-fixits -fdiagnostics-generate-patch @gol
+-fno-show-column}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -3545,6 +3546,12 @@ are printed.  For example:
 
 The diff may or may not be colorized, following the same rules
 as for diagnostics (see @option{-fdiagnostics-color}).
+
+@item -fno-show-column
+@opindex fno-show-column
+Do not print column numbers in diagnostics.  This may be necessary if
+diagnostics are being scanned by a program that does not understand the
+column numbers, such as @command{dejagnu}.
 
 @end table
 

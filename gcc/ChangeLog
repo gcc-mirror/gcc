@@ -1,3 +1,10 @@
+2016-12-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/cppopts.texi: Delete redundant documentation for -x.  Move
+	-fno-show-column documentation to...
+	* doc/invoke.texi (Diagnostic Message Formatting Options):  ...here.
+	Update the option summary.
+
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (VI_512): Remove.
