@@ -1,3 +1,8 @@
+2016-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/78922
+	* config/i386/stringop.opt: Remove.
+
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904
