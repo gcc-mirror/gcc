@@ -30,14 +30,20 @@
 #include <assert.h>
 #include "mpxrt/mpxrt.h"
 
-void *
-__mpx_wrapper_malloc (size_t size)
+/* Since internal MPX wrapper calls must avoid PLT which will clear bound
+   registers, we make them static with an external alias.  */
+#define EXTERN_ALIAS(f) \
+  __typeof (f) __##f __attribute__((alias(#f)));
+
+static void *
+mpx_wrapper_malloc (size_t size)
 {
   void *p = (void *)malloc (size);
   if (!p) return __bnd_null_ptr_bounds (p);
   return __bnd_set_ptr_bounds (p, size);
 }
 
+EXTERN_ALIAS (mpx_wrapper_malloc)
 
 void *
 __mpx_wrapper_mmap (void *addr, size_t length, int prot, int flags,
@@ -52,7 +58,7 @@ void *
 __mpx_wrapper_realloc (void *ptr, size_t n)
 {
   if (!ptr)
-    return __mpx_wrapper_malloc (n);
+    return mpx_wrapper_malloc (n);
 
   /* We don't kwnow how much data is copied by realloc
      and therefore may check only lower bounds.  */
@@ -74,8 +80,8 @@ __mpx_wrapper_calloc (size_t n_elements, size_t element_size)
   return __bnd_set_ptr_bounds (p, n_elements * element_size);
 }
 
-void *
-__mpx_wrapper_memset (void *dstpp, int c, size_t len)
+static void *
+mpx_wrapper_memset (void *dstpp, int c, size_t len)
 {
   if (len > 0)
     {
@@ -85,10 +91,12 @@ __mpx_wrapper_memset (void *dstpp, int c, size_t len)
   return dstpp;
 }
 
+EXTERN_ALIAS (mpx_wrapper_memset)
+
 void
 __mpx_wrapper_bzero (void *dst, size_t len)
 {
-  __mpx_wrapper_memset (dst, 0, len);
+  mpx_wrapper_memset (dst, 0, len);
 }
 
 /* The mpx_pointer type is used for getting bits
@@ -484,8 +492,8 @@ move_bounds (void *dst, const void *src, size_t n)
   return;
 }
 
-void *
-__mpx_wrapper_memmove (void *dst, const void *src, size_t n)
+static void *
+mpx_wrapper_memmove (void *dst, const void *src, size_t n)
 {
   if (n == 0)
     return dst;
@@ -513,17 +521,20 @@ __mpx_wrapper_memmove (void *dst, const void *src, size_t n)
   return dst;
 }
 
+EXTERN_ALIAS (mpx_wrapper_memmove)
 
-void *
-__mpx_wrapper_memcpy (void *dst, const void *src, size_t n)
+static void *
+mpx_wrapper_memcpy (void *dst, const void *src, size_t n)
 {
-  return __mpx_wrapper_memmove (dst, src, n);
+  return mpx_wrapper_memmove (dst, src, n);
 }
+
+EXTERN_ALIAS (mpx_wrapper_memcpy)
 
 void *
 __mpx_wrapper_mempcpy (void *dst, const void *src, size_t n)
 {
-  return (char *)__mpx_wrapper_memcpy (dst, src, n) + n;
+  return (char *)mpx_wrapper_memcpy (dst, src, n) + n;
 }
 
 char *

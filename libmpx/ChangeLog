@@ -1,3 +1,13 @@
+2016-12-27  H.J. Lu  <hongjiu.lu@intel.com>
+	    Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* mpxwrap/libtool-version: New version.
+	* mpxwrap/mpx_wrappers.c (__mpx_wrapper_realloc): Make it
+	static with external alias.
+	(__mpx_wrapper_bzero): Ditto.
+	(mpx_wrapper_memcpy): Ditto.
+	(__mpx_wrapper_mempcpy): Ditto.
+
 2016-12-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* mpxrt/libtool-version: New version.
