@@ -1,3 +1,13 @@
+2016-12-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* c-family/c.opt (flag_chkp_flexible_struct_trailing_arrays):
+	Add new option.
+	(fchkp-narrow-to-innermost-array): Fix typo.
+	* doc/cpp.texi (flag_chkp_flexible_struct_trailing_arrays): Ditto.
+	* tree-chkp.c (chkp_may_narrow_to_field ): Forbid
+	narrowing when flag_chkp_flexible_struct_trailing_arrays is used
+	and the field is the last array field in the structure.
+
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (andqi_ext_1): Use general_operand

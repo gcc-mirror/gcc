@@ -447,7 +447,7 @@ Objective-C and Objective-C++ Dialects}.
 -fchkp-treat-zero-dynamic-size-as-infinite -fchkp-check-read @gol
 -fchkp-check-read -fchkp-check-write -fchkp-store-bounds @gol
 -fchkp-instrument-calls -fchkp-instrument-marked-only @gol
--fchkp-use-wrappers @gol
+-fchkp-use-wrappers -fchkp-flexible-struct-trailing-arrays@gol
 -fstack-protector -fstack-protector-all -fstack-protector-strong @gol
 -fstack-protector-explicit -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -10953,6 +10953,13 @@ and @option{-fchkp-first-field-has-own-bounds}.  Enabled by default.
 Forces Pointer Bounds Checker to use narrowed bounds for the address of the
 first field in the structure.  By default a pointer to the first field has
 the same bounds as a pointer to the whole structure.
+
+@item -fchkp-flexible-struct-trailing-arrays
+@opindex fchkp-flexible-struct-trailing-arrays
+@opindex fno-chkp-flexible-struct-trailing-arrays
+Forces Pointer Bounds Checker to treat all trailing arrays in structures as
+possibly flexible.  By default only array fields with zero length or that are
+marked with attribute bnd_variable_size are treated as flexible.
 
 @item -fchkp-narrow-to-innermost-array
 @opindex fchkp-narrow-to-innermost-array
