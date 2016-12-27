@@ -2125,25 +2125,17 @@ argument_rank_mismatch (const char *name, locus *where,
 
   /* TS 29113, C407b.  */
   if (rank2 == -1)
-    {
-      gfc_error ("The assumed-rank array at %L requires that the dummy argument"
-		 " %qs has assumed-rank", where, name);
-    }
+    gfc_error ("The assumed-rank array at %L requires that the dummy argument"
+	       " %qs has assumed-rank", where, name);
   else if (rank1 == 0)
-    {
-      gfc_error (OPT_Wargument_mismatch, "Rank mismatch in argument %qs at %L "
-		 "(scalar and rank-%d)", name, where, rank2);
-    }
+    gfc_error_opt (OPT_Wargument_mismatch, "Rank mismatch in argument %qs "
+		   "at %L (scalar and rank-%d)", name, where, rank2);
   else if (rank2 == 0)
-    {
-      gfc_error (OPT_Wargument_mismatch, "Rank mismatch in argument %qs at %L "
-		 "(rank-%d and scalar)", name, where, rank1);
-    }
+    gfc_error_opt (OPT_Wargument_mismatch, "Rank mismatch in argument %qs "
+		   "at %L (rank-%d and scalar)", name, where, rank1);
   else
-    {
-      gfc_error (OPT_Wargument_mismatch, "Rank mismatch in argument %qs at %L "
-		 "(rank-%d and rank-%d)", name, where, rank1, rank2);
-    }
+    gfc_error_opt (OPT_Wargument_mismatch, "Rank mismatch in argument %qs "
+		   "at %L (rank-%d and rank-%d)", name, where, rank1, rank2);
 }
 
 
@@ -2192,9 +2184,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error (OPT_Wargument_mismatch,
-		       "Interface mismatch in dummy procedure %qs at %L: %s",
-		       formal->name, &actual->where, err);
+	    gfc_error_opt (OPT_Wargument_mismatch,
+			   "Interface mismatch in dummy procedure %qs at %L:"
+			   " %s", formal->name, &actual->where, err);
 	  return false;
 	}
 
@@ -2220,9 +2212,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   err, sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error (OPT_Wargument_mismatch,
-		       "Interface mismatch in dummy procedure %qs at %L: %s",
-		       formal->name, &actual->where, err);
+	    gfc_error_opt (OPT_Wargument_mismatch,
+			   "Interface mismatch in dummy procedure %qs at %L:"
+			   " %s", formal->name, &actual->where, err);
 	  return false;
 	}
     }
@@ -2251,10 +2243,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 					 CLASS_DATA (actual)->ts.u.derived)))
     {
       if (where)
-	gfc_error (OPT_Wargument_mismatch,
-		   "Type mismatch in argument %qs at %L; passed %s to %s",
-		   formal->name, where, gfc_typename (&actual->ts),
-		   gfc_typename (&formal->ts));
+	gfc_error_opt (OPT_Wargument_mismatch,
+		       "Type mismatch in argument %qs at %L; passed %s to %s",
+		       formal->name, where, gfc_typename (&actual->ts),
+		       gfc_typename (&formal->ts));
       return false;
     }
 
@@ -4551,9 +4543,9 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
       if (!gfc_check_dummy_characteristics (proc_formal->sym, old_formal->sym,
 					check_type, err, sizeof(err)))
 	{
-	  gfc_error (OPT_Wargument_mismatch,
-		     "Argument mismatch for the overriding procedure "
-		     "%qs at %L: %s", proc->name, &where, err);
+	  gfc_error_opt (OPT_Wargument_mismatch,
+			 "Argument mismatch for the overriding procedure "
+			 "%qs at %L: %s", proc->name, &where, err);
 	  return false;
 	}
 
