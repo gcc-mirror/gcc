@@ -3813,7 +3813,7 @@
 (define_expand "vextract4b"
   [(set (match_operand:DI 0 "gpc_reg_operand")
 	(unspec:DI [(match_operand:V16QI 1 "vsx_register_operand")
-		    (match_operand:QI 2 "const_0_to_11_operand")]
+		    (match_operand:QI 2 "const_0_to_12_operand")]
 		   UNSPEC_XXEXTRACTUW))]
   "TARGET_P9_VECTOR"
 {
@@ -3824,7 +3824,7 @@
 (define_insn_and_split "*vextract4b_internal"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=wj,r")
 	(unspec:DI [(match_operand:V16QI 1 "vsx_register_operand" "wa,v")
-		    (match_operand:QI 2 "const_0_to_11_operand" "n,n")]
+		    (match_operand:QI 2 "const_0_to_12_operand" "n,n")]
 		   UNSPEC_XXEXTRACTUW))]
   "TARGET_P9_VECTOR"
   "@
@@ -3852,7 +3852,7 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand")
 	(unspec:V16QI [(match_operand:V4SI 1 "vsx_register_operand")
 		       (match_operand:V16QI 2 "vsx_register_operand")
-		       (match_operand:QI 3 "const_0_to_11_operand")]
+		       (match_operand:QI 3 "const_0_to_12_operand")]
 		   UNSPEC_XXINSERTW))]
   "TARGET_P9_VECTOR"
 {
@@ -3870,7 +3870,7 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI [(match_operand:V4SI 1 "vsx_register_operand" "wa")
 		       (match_operand:V16QI 2 "vsx_register_operand" "0")
-		       (match_operand:QI 3 "const_0_to_11_operand" "n")]
+		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
 		   UNSPEC_XXINSERTW))]
   "TARGET_P9_VECTOR"
   "xxinsertw %x0,%x1,%3"
@@ -3880,7 +3880,7 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand")
 	(unspec:V16QI [(match_operand:DI 1 "vsx_register_operand")
 		       (match_operand:V16QI 2 "vsx_register_operand")
-		       (match_operand:QI 3 "const_0_to_11_operand")]
+		       (match_operand:QI 3 "const_0_to_12_operand")]
 		   UNSPEC_XXINSERTW))]
   "TARGET_P9_VECTOR"
 {
@@ -3892,7 +3892,7 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI [(match_operand:DI 1 "vsx_register_operand" "wj")
 		       (match_operand:V16QI 2 "vsx_register_operand" "0")
-		       (match_operand:QI 3 "const_0_to_11_operand" "n")]
+		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
 		   UNSPEC_XXINSERTW))]
   "TARGET_P9_VECTOR"
   "xxinsertw %x0,%x1,%3"
