@@ -1,5 +1,10 @@
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (andqi_ext_1): Use general_operand
+	predicate for operand 2.
+
+2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/78904
 	* config/i386/i386.md (*cmpqi_ext_1, *extvqi, *extzvqi): Use
 	nonimmediate_operand instead of nonimmediate_x64nomem_operand.
