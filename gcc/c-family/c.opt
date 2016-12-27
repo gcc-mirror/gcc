@@ -1207,7 +1207,13 @@ narrowing is on, field bounds are used.  Otherwise full object bounds are used.
 fchkp-narrow-to-innermost-array
 C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
 Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of
-nested static arryas access.  By default outermost array is used.
+nested static arrays access.  By default outermost array is used.
+
+fchkp-flexible-struct-trailing-arrays
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_flexible_struct_trailing_arrays)
+Forces Pointer Bounds Checker to treat all trailing arrays in structures as
+possibly flexible.  By default only arrays fields with zero length or that are
+marked with attribute bnd_variable_size are treated as flexible.
 
 fchkp-optimize
 C ObjC C++ ObjC++ LTO Report Var(flag_chkp_optimize) Init(-1)

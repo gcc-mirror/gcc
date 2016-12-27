@@ -1,3 +1,9 @@
+2016-12-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* gcc.target/i386/mpx/vla-trailing-1-lbv.c: New test.
+	* gcc.target/i386/mpx/vla-trailing-1-nov.c: Ditto.
+	* gcc.target/i386/mpx/vla-trailing-1-ubv.c: Ditto.
+
 2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904
