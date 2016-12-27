@@ -1,3 +1,10 @@
+2016-12-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (VI_512): Remove.
+	(vcond<V_512:mode><VI_AVX512BW:mode>): Use VI_AVX512BW
+	mode iterator instead of VI_512.
+	(vcondu<V_512:mode><VI_AVX512BW:mode>): Ditto.
+
 2016-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/78922
