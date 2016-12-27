@@ -5,6 +5,10 @@
 
 2016-12-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
+        * gcc.target/i386/mpx/memcpy-1.c: New test.
+
+2016-12-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
 	* gcc.target/i386/mpx/vla-trailing-1-lbv.c: New test.
 	* gcc.target/i386/mpx/vla-trailing-1-nov.c: Ditto.
 	* gcc.target/i386/mpx/vla-trailing-1-ubv.c: Ditto.
