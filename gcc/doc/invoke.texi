@@ -272,7 +272,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wdisabled-optimization @gol
 -Wno-discarded-qualifiers -Wno-discarded-array-qualifiers @gol
 -Wno-div-by-zero -Wdouble-promotion -Wduplicated-cond @gol
--Wempty-body  -Wenum-compare -Wno-endif-labels @gol
+-Wempty-body  -Wenum-compare  -Wno-endif-labels -Wexpansion-to-defined @gol
 -Werror  -Werror=* -Wfatal-errors -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-length=@var{n} @gol
 -Wformat-nonliteral @gol
@@ -316,8 +316,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wunsafe-loop-optimizations @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
--Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
--Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
+-Wunused-label  -Wunused-local-typedefs  -Wunused-macros @gol
+-Wunused-parameter -Wno-unused-result @gol
+-Wunused-value -Wunused-variable @gol
 -Wunused-const-variable -Wunused-const-variable=@var{n} @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
@@ -463,20 +464,22 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
 @gccoptlist{-A@var{question}=@var{answer} @gol
 -A-@var{question}@r{[}=@var{answer}@r{]} @gol
--C  -dD  -dI  -dM  -dN @gol
--D@var{macro}@r{[}=@var{defn}@r{]}  -E  -H @gol
--idirafter @var{dir} @gol
--include @var{file}  -imacros @var{file} @gol
--iprefix @var{file}  -iwithprefix @var{dir} @gol
--iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
--imultilib @var{dir} -isysroot @var{dir} @gol
--M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
--P  -fdebug-cpp -ftrack-macro-expansion -fworking-directory @gol
--remap -traditional -traditional-cpp -trigraphs  @gol
--undef  -U@var{macro}  @gol
--Wp,@var{option} -Xpreprocessor @var{option} -no-integrated-cpp}
+-C  -CC  -D@var{macro}@r{[}=@var{defn}@r{]} @gol
+-dD  -dI  -dM  -dN  -dU @gol
+-fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
+-fexec-charset=@var{charset}  -fextended-identifiers  @gol
+-finput-charset=@var{charset}  -fno-canonical-system-headers @gol
+-fpch-deps  -fpch-preprocess  -fpreprocessed @gol
+-ftabstop=@var{width}  -ftrack-macro-expansion  @gol
+-fwide-exec-charset=@var{charset}  -fworking-directory @gol
+-H  -imacros @var{file}  -include @var{file} @gol
+-M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT @gol
+-no-integrated-cpp  -P  -remap @gol
+-traditional  -traditional-cpp  -trigraphs @gol
+-U@var{macro}  -undef  @gol
+-Wp,@var{option}  -Xpreprocessor @var{option}}
 
-@item Assembler Option
+@item Assembler Options
 @xref{Assembler Options,,Passing Options to the Assembler}.
 @gccoptlist{-Wa,@var{option}  -Xassembler @var{option}}
 
@@ -493,9 +496,14 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
-@gccoptlist{-B@var{prefix} -I@var{dir} -iplugindir=@var{dir} @gol
--iquote@var{dir} -L@var{dir} -no-canonical-prefixes -I- @gol
---sysroot=@var{dir} --no-sysroot-suffix}
+@gccoptlist{-B@var{prefix}  -I@var{dir}  -I- @gol
+-idirafter @var{dir} @gol
+-imacros @var{file}  -imultilib @var{dir} @gol
+-iplugindir=@var{dir} -iprefix @var{file} @gol
+-iquote @var{dir}  -isysroot @var{dir}  -isystem @var{dir} @gol
+-iwithprefix @var{dir} -iwithprefixbefore @var{dir}  @gol
+-L@var{dir}  -no-canonical-prefixes  --no-sysroot-suffix @gol
+-nostdinc  -nostdinc++ --sysroot=@var{dir}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
@@ -5637,6 +5645,8 @@ range of the data type, but do not warn for constant expressions.  For
 example, warn if an unsigned variable is compared against zero with
 @code{<} or @code{>=}.  This warning is also enabled by
 @option{-Wextra}.
+
+@include cppwarnopts.texi
 
 @item -Wbad-function-cast @r{(C and Objective-C only)}
 @opindex Wbad-function-cast
@@ -11305,7 +11315,15 @@ Some of these options make sense only together with @option{-E} because
 they cause the preprocessor output to be unsuitable for actual
 compilation.
 
+In addition to the options listed here, there are a number of options 
+to control search paths for include files documented in 
+@ref{Directory Options}.  
+Options to control preprocessor diagnostics are listed in 
+@ref{Warning Options}.
+
 @table @gcctabopt
+@include cppopts.texi
+
 @item -Wp,@var{option}
 @opindex Wp
 You can use @option{-Wp,@var{option}} to bypass the compiler driver
@@ -11342,7 +11360,6 @@ This option may be useful in conjunction with the @option{-B} or
 perform additional processing of the program source between
 normal preprocessing and compilation.
 
-@include cppopts.texi
 @end table
 
 @node Assembler Options
@@ -11712,25 +11729,7 @@ These options specify directories to search for header files, for
 libraries and for parts of the compiler:
 
 @table @gcctabopt
-@item -I@var{dir}
-@opindex I
-Add the directory @var{dir} to the head of the list of directories to be
-searched for header files.  This can be used to override a system header
-file, substituting your own version, since these directories are
-searched before the system header file directories.  However, you should
-not use this option to add directories that contain vendor-supplied
-system header files (use @option{-isystem} for that).  If you use more than
-one @option{-I} option, the directories are scanned in left-to-right
-order; the standard system directories come after.
-
-If a standard system include directory, or a directory specified with
-@option{-isystem}, is also specified with @option{-I}, the @option{-I}
-option is ignored.  The directory is still searched but as a
-system directory at its normal position in the system include chain.
-This is to ensure that GCC's procedure to fix buggy system headers and
-the ordering for the @code{include_next} directive are not inadvertently changed.
-If you really need to change the search order for system directories,
-use the @option{-nostdinc} and/or @option{-isystem} options.
+@include cppdiropts.texi
 
 @item -iplugindir=@var{dir}
 @opindex iplugindir=
@@ -11738,13 +11737,6 @@ Set the directory to search for plugins that are passed
 by @option{-fplugin=@var{name}} instead of
 @option{-fplugin=@var{path}/@var{name}.so}.  This option is not meant
 to be used by the user, but only passed by the driver.
-
-@item -iquote@var{dir}
-@opindex iquote
-Add the directory @var{dir} to the head of the list of directories to
-be searched for header files only for the case of @code{#include
-"@var{file}"}; they are not searched for @code{#include <@var{file}>},
-otherwise just like @option{-I}.
 
 @item -L@var{dir}
 @opindex L
@@ -11826,31 +11818,6 @@ headers may for example be found in
 @file{@var{dir}/usr/include}.  This option disables the addition of
 such a suffix.
 
-@item -I-
-@opindex I-
-This option has been deprecated.  Please use @option{-iquote} instead for
-@option{-I} directories before the @option{-I-} and remove the @option{-I-}
-option.
-Any directories you specify with @option{-I} options before the @option{-I-}
-option are searched only for the case of @code{#include "@var{file}"};
-they are not searched for @code{#include <@var{file}>}.
-
-If additional directories are specified with @option{-I} options after
-the @option{-I-} option, these directories are searched for all @code{#include}
-directives.  (Ordinarily @emph{all} @option{-I} directories are used
-this way.)
-
-In addition, the @option{-I-} option inhibits the use of the current
-directory (where the current input file came from) as the first search
-directory for @code{#include "@var{file}"}.  There is no way to
-override this effect of @option{-I-}.  With @option{-I.} you can specify
-searching the directory that is current when the compiler is
-invoked.  That is not exactly the same as what the preprocessor does
-by default, but it is often satisfactory.
-
-@option{-I-} does not inhibit the use of the standard system directories
-for header files.  Thus, @option{-I-} and @option{-nostdinc} are
-independent.
 @end table
 
 @node Code Gen Options
