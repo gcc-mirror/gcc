@@ -1037,6 +1037,10 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const0_operand")))
 
+(define_predicate "norex_memory_operand"
+  (and (match_operand 0 "memory_operand")
+       (not (match_test "x86_extended_reg_mentioned_p (op)"))))
+
 ;; Return true for RTX codes that force SImode address.
 (define_predicate "SImode_address_operand"
   (match_code "subreg,zero_extend,and"))
