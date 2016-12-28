@@ -1,3 +1,16 @@
+2016-12-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/cppdiropts.texi, doc/cppwarnopts.texi:  New files, split from...
+	* doc/cppopts.texi: .... here.
+	* doc/cpp.texi (Invocation): Adjust includes.
+	* doc/invoke.texi (Option Summary): Add missing preprocesor-related
+	options.  Adjust sorting and formatting.
+	(Warning Options): Include cppwarnopts.texi.
+	(Preprocessor Options): Add pointers and list the specific 
+	preprocessor options from cppopts.texi first instead of last.
+	(Directory Options): Move/merge documentation of -I, -iquote, and
+	-I- to cppdiropts.texi.  Include that file here.
+
 2016-12-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/predicates.md (const_0_to_12_operand): Rename

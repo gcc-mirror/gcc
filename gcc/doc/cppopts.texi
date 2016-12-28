@@ -47,97 +47,6 @@ standard predefined macros remain defined.
 @xref{Standard Predefined Macros}.
 @end ifset
 
-@item -I @var{dir}
-@opindex I
-Add the directory @var{dir} to the list of directories to be searched
-for header files.
-@ifset cppmanual
-@xref{Search Path}.
-@end ifset
-Directories named by @option{-I} are searched before the standard
-system include directories.  If the directory @var{dir} is a standard
-system include directory, the option is ignored to ensure that the
-default search order for system directories and the special treatment
-of system headers are not defeated
-@ifset cppmanual
-(@pxref{System Headers})
-@end ifset
-.
-If @var{dir} begins with @code{=}, then the @code{=} will be replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
-
-@item -Wcomment
-@itemx -Wcomments
-@opindex Wcomment
-@opindex Wcomments
-Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
-comment, or whenever a backslash-newline appears in a @samp{//} comment.
-This warning is enabled by @option{-Wall}.
-
-@item -Wtrigraphs
-@opindex Wtrigraphs
-@anchor{Wtrigraphs}
-Warn if any trigraphs are encountered that might change the meaning of
-the program.  Trigraphs within comments are not warned about,
-except those that would form escaped newlines.
-
-This option is implied by @option{-Wall}.  If @option{-Wall} is not
-given, this option is still enabled unless trigraphs are enabled.  To
-get trigraph conversion without warnings, but get the other
-@option{-Wall} warnings, use @samp{-trigraphs -Wall -Wno-trigraphs}.
-
-@item -Wundef
-@opindex Wundef
-@opindex Wno-undef
-Warn if an undefined identifier is evaluated in an @code{#if} directive.
-Such identifiers are replaced with zero.
-
-@item -Wexpansion-to-defined
-@opindex Wexpansion-to-defined
-Warn whenever @samp{defined} is encountered in the expansion of a macro
-(including the case where the macro is expanded by an @samp{#if} directive).
-Such usage is not portable.
-This warning is also enabled by @option{-Wpedantic} and @option{-Wextra}.
-
-@item -Wunused-macros
-@opindex Wunused-macros
-Warn about macros defined in the main file that are unused.  A macro
-is @dfn{used} if it is expanded or tested for existence at least once.
-The preprocessor will also warn if the macro has not been used at the
-time it is redefined or undefined.
-
-Built-in macros, macros defined on the command line, and macros
-defined in include files are not warned about.
-
-@emph{Note:} If a macro is actually used, but only used in skipped
-conditional blocks, then CPP will report it as unused.  To avoid the
-warning in such a case, you might improve the scope of the macro's
-definition by, for example, moving it into the first skipped block.
-Alternatively, you could provide a dummy use with something like:
-
-@smallexample
-#if defined the_macro_causing_the_warning
-#endif
-@end smallexample
-
-@item -Wno-endif-labels
-@opindex Wno-endif-labels
-@opindex Wendif-labels
-Do not warn whenever an @code{#else} or an @code{#endif} are followed by text.
-This usually happens in code of the form
-
-@smallexample
-#if FOO
-@dots{}
-#else FOO
-@dots{}
-#endif FOO
-@end smallexample
-
-@noindent
-The second and third @code{FOO} should be in comments, but often are not
-in older programs.  This warning is on by default.
-
 @item -M
 @opindex M
 @cindex @command{make}
@@ -295,36 +204,7 @@ You should not write this @code{#pragma} in your own code, but it is
 safe to edit the filename if the PCH file is available in a different
 location.  The filename may be absolute or it may be relative to GCC's
 current directory.
-
 @end ifclear
-@item -I-
-@opindex I-
-Split the include path.  Any directories specified with @option{-I}
-options before @option{-I-} are searched only for headers requested with
-@code{@w{#include "@var{file}"}}; they are not searched for
-@code{@w{#include <@var{file}>}}.  If additional directories are
-specified with @option{-I} options after the @option{-I-}, those
-directories are searched for all @samp{#include} directives.
-
-In addition, @option{-I-} inhibits the use of the directory of the current
-file directory as the first search directory for @code{@w{#include
-"@var{file}"}}.
-@ifset cppmanual
-@xref{Search Path}.
-@end ifset
-This option has been deprecated.
-
-@item -nostdinc
-@opindex nostdinc
-Do not search the standard system directories for header files.
-Only the directories you have specified with @option{-I} options
-(and the directory of the current file, if appropriate) are searched.
-
-@item -nostdinc++
-@opindex nostdinc++
-Do not search for header files in the C++-specific standard directories,
-but do still search the other standard directories.  (This option is
-used when building the C++ library.)
 
 @item -include @var{file}
 @opindex include
@@ -347,65 +227,6 @@ processing its declarations.
 
 All files specified by @option{-imacros} are processed before all files
 specified by @option{-include}.
-
-@item -idirafter @var{dir}
-@opindex idirafter
-Search @var{dir} for header files, but do it @emph{after} all
-directories specified with @option{-I} and the standard system directories
-have been exhausted.  @var{dir} is treated as a system include directory.
-If @var{dir} begins with @code{=}, then the @code{=} will be replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
-
-@item -iprefix @var{prefix}
-@opindex iprefix
-Specify @var{prefix} as the prefix for subsequent @option{-iwithprefix}
-options.  If the prefix represents a directory, you should include the
-final @samp{/}.
-
-@item -iwithprefix @var{dir}
-@itemx -iwithprefixbefore @var{dir}
-@opindex iwithprefix
-@opindex iwithprefixbefore
-Append @var{dir} to the prefix specified previously with
-@option{-iprefix}, and add the resulting directory to the include search
-path.  @option{-iwithprefixbefore} puts it in the same place @option{-I}
-would; @option{-iwithprefix} puts it where @option{-idirafter} would.
-
-@item -isysroot @var{dir}
-@opindex isysroot
-This option is like the @option{--sysroot} option, but applies only to
-header files (except for Darwin targets, where it applies to both header
-files and libraries).  See the @option{--sysroot} option for more
-information.
-
-@item -imultilib @var{dir}
-@opindex imultilib
-Use @var{dir} as a subdirectory of the directory containing
-target-specific C++ headers.
-
-@item -isystem @var{dir}
-@opindex isystem
-Search @var{dir} for header files, after all directories specified by
-@option{-I} but before the standard system directories.  Mark it
-as a system directory, so that it gets the same special treatment as
-is applied to the standard system directories.
-@ifset cppmanual
-@xref{System Headers}.
-@end ifset
-If @var{dir} begins with @code{=}, then the @code{=} will be replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
-
-@item -iquote @var{dir}
-@opindex iquote
-Search @var{dir} only for header files requested with
-@code{@w{#include "@var{file}"}}; they are not searched for
-@code{@w{#include <@var{file}>}}, before all directories specified by
-@option{-I} and before the standard system directories.
-@ifset cppmanual
-@xref{Search Path}.
-@end ifset
-If @var{dir} begins with @code{=}, then the @code{=} will be replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
 @item -fdirectives-only
 @opindex fdirectives-only

@@ -4349,6 +4349,8 @@ options may @emph{not} be grouped: @option{-dM} is very different from
 
 @table @gcctabopt
 @include cppopts.texi
+@include cppdiropts.texi
+@include cppwarnopts.texi
 @end table
 @c man end
 
