@@ -1,3 +1,11 @@
+2016-12-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* config/i386/constraints.md (Bn): New special memory constraint.
+	* config/i386/predicates.md (norex_memory_operand): New predicate.
+	* config/i386/i386.md (*extzvqi_mem_rex64): New insn pattern and
+	corresponding peephole2 pattern.
+
 2016-12-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/cppdiropts.texi, doc/cppwarnopts.texi:  New files, split from...
@@ -6,7 +14,7 @@
 	* doc/invoke.texi (Option Summary): Add missing preprocesor-related
 	options.  Adjust sorting and formatting.
 	(Warning Options): Include cppwarnopts.texi.
-	(Preprocessor Options): Add pointers and list the specific 
+	(Preprocessor Options): Add pointers and list the specific
 	preprocessor options from cppopts.texi first instead of last.
 	(Directory Options): Move/merge documentation of -I, -iquote, and
 	-I- to cppdiropts.texi.  Include that file here.

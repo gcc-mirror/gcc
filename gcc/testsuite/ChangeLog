@@ -1,3 +1,9 @@
+2016-12-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* gcc.target/i386/pr78904-4.c: New test.
+	* gcc.target/i386/pr78904-5.c: Ditto.
+
 2016-12-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p9-vinsert4b-2.c: Update test to test for 13
