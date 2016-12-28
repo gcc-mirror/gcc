@@ -15,11 +15,6 @@ extern unsigned char t[256];
 
 void foo (struct S1 a, size_t i)
 {
-  t[i] = a.val;
-}
-
-void bar (struct S1 a, size_t i)
-{
   register size_t _i __asm ("r10") = i;
 
   asm volatile ("" : "+r" (_i));
