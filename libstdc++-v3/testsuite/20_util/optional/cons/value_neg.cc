@@ -35,5 +35,10 @@ int main()
     std::optional<X> ox2 = 42; // { dg-error "conversion" }
     std::optional<std::unique_ptr<int>> oup{new int};
     std::optional<std::unique_ptr<int>> oup2 = new int;  // { dg-error "conversion" }
+    struct U { explicit U(std::in_place_t); };
+    std::optional<U> ou(std::in_place); // { dg-error "no matching" }
+    // { dg-error "no type" "" { target { *-*-* } } 438 }
+    // { dg-error "no type" "" { target { *-*-* } } 448 }
+    // { dg-error "no type" "" { target { *-*-* } } 505 }
   }
 }

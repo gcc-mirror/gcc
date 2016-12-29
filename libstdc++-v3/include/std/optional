@@ -128,15 +128,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _Optional_base{} { }
 
       // Constructors for engaged optionals.
-      template<typename... _Args>
+      template<typename... _Args,
+	       enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
         constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
         : _M_payload(std::forward<_Args>(__args)...), _M_engaged(true) { }
 
       template<typename _Up, typename... _Args,
-               enable_if_t<is_constructible<_Tp,
-                                            initializer_list<_Up>&,
-                                            _Args&&...>::value,
-                           int>...>
+               enable_if_t<is_constructible_v<_Tp,
+					      initializer_list<_Up>&,
+					      _Args&&...>, bool> = false>
         constexpr explicit _Optional_base(in_place_t,
                                           initializer_list<_Up> __il,
                                           _Args&&... __args)
@@ -264,15 +264,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Optional_base(nullopt_t) noexcept
       : _Optional_base{} { }
 
-      template<typename... _Args>
+      template<typename... _Args,
+	       enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
         constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
         : _M_payload(std::forward<_Args>(__args)...), _M_engaged(true) { }
 
       template<typename _Up, typename... _Args,
-               enable_if_t<is_constructible<_Tp,
-                                            initializer_list<_Up>&,
-                                            _Args&&...>::value,
-			   int>...>
+               enable_if_t<is_constructible_v<_Tp,
+					      initializer_list<_Up>&,
+					      _Args&&...>, bool> = false>
         constexpr explicit _Optional_base(in_place_t,
                                           initializer_list<_Up> __il,
                                           _Args&&... __args)
@@ -432,6 +432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template <typename _Up = _Tp,
                 enable_if_t<__and_<
 			      __not_<is_same<optional<_Tp>, decay_t<_Up>>>,
+			      __not_<is_same<in_place_t, decay_t<_Up>>>,
 			      is_constructible<_Tp, _Up&&>,
 			      is_convertible<_Up&&, _Tp>
 			      >::value, bool> = true>
@@ -441,6 +442,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template <typename _Up = _Tp,
                 enable_if_t<__and_<
 			      __not_<is_same<optional<_Tp>, decay_t<_Up>>>,
+			      __not_<is_same<in_place_t, decay_t<_Up>>>,
 			      is_constructible<_Tp, _Up&&>,
 			      __not_<is_convertible<_Up&&, _Tp>>
 			      >::value, bool> = false>
@@ -499,15 +501,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  emplace(std::move(*__t));
       }
 
-      template<typename... _Args>
+      template<typename... _Args,
+	       enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
       explicit constexpr optional(in_place_t, _Args&&... __args)
         : _Base(std::in_place, std::forward<_Args>(__args)...) { }
 
       template<typename _Up, typename... _Args,
-               enable_if_t<is_constructible<_Tp,
-                                            initializer_list<_Up>&,
-                                            _Args&&...>::value,
-                           int>...>
+               enable_if_t<is_constructible_v<_Tp,
+					      initializer_list<_Up>&,
+					      _Args&&...>, bool> = false>
       explicit constexpr optional(in_place_t,
 				  initializer_list<_Up> __il,
 				  _Args&&... __args)
