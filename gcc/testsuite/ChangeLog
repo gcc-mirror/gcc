@@ -1,3 +1,8 @@
+2016-12-29  Martin Liska  <mliska@suse.cz>
+
+	PR c/78933
+	* g++.dg/pr78933.C: New test.
+
 2016-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904

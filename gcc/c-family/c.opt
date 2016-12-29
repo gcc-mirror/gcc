@@ -1655,7 +1655,7 @@ Follow the C++17 evaluation order requirements for assignment expressions,
 shift, member function calls, etc.
 
 fstrong-eval-order=
-C++ ObjC++ Common Var(flag_strong_eval_order) Joined Enum(strong_eval_order) Init(-1)
+C++ ObjC++ Common Var(flag_strong_eval_order) Joined Enum(strong_eval_order) RejectNegative Init(-1)
 Follow the C++17 evaluation order requirements for assignment expressions,
 shift, member function calls, etc.
 
