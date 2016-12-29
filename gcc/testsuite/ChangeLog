@@ -1,3 +1,8 @@
+2016-12-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* gcc.target/i386/pr78904-6.c: New test.
+
 2016-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/mpx/memcpy-1.c: Include mpx-check.h.

@@ -1,3 +1,9 @@
+2016-12-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* config/i386/i386.md (*extvqi): Remove insn pattern.
+	(divmodqi4): Update expander to generate QImode zero-extract from AH.
+
 2016-12-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_builtin): Fix typos in
