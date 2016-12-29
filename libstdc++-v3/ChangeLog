@@ -1,3 +1,23 @@
+2016-12-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2842, in_place_t check for optional::optional(U&&)
+	should decay U.
+	* include/std/optional (_Optional_base(in_place_t, _Args&&...)):
+	Constrain.
+	(_Optional_base(in_place_t, initializer_list<_Up>, _Args&&...)):
+	Turn the int-pack constraint hack into a saner bool.
+	(_Optional_base<_Tp, false>::_Optional_base(in_place_t, _Args&&...)):
+	Constrain.
+	(_Optional_base<_Tp, false>::_Optional_base(in_place_t,
+	initializer_list<_Up>, _Args&&...)):
+	Turn the int-pack constraint hack into a saner bool.
+	(optional(_Up&&)): Constrain against in_place_t.
+	(optional(in_place_t, _Args&&...)): Constrain.
+	(constexpr optional(in_place_t, initializer_list<_Up>, _Args&&...)):
+	Turn the int-pack constraint hack into a saner bool.
+	* testsuite/20_util/optional/cons/value_neg.cc: Add a test for
+	a type that is constructible from in_place.
+
 2016-12-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/ext/random.tcc: Fix usage of _OutputIteratorConcept.
