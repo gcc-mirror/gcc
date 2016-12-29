@@ -1,3 +1,9 @@
+2016-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/mpx/memcpy-1.c: Include mpx-check.h.
+	(main): Renamed to ...
+	(mpx_test): ... this.  Add argc and argv arguments.
+
 2016-12-29  Martin Liska  <mliska@suse.cz>
 
 	PR c/78933
