@@ -1,3 +1,10 @@
+2016-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Cilk Plus Builtins): cilkplus.org now uses
+	https by default.
+	* doc/passes.texi (Cilk Plus Transformation): Ditto.
+	* doc/generic.texi (Statements for C++): Ditto, and use @uref.
+
 2016-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904
