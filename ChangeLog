@@ -1,3 +1,7 @@
+2016-12-29  Ben Elliston  <bje@gnu.org>
+
+	* config.sub: Import latest version.
+
 2016-12-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
