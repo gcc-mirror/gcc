@@ -1,3 +1,8 @@
+2016-12-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (Standards): Remove broken reference to
+	objc.toodarkpark.net and avoid list with now just one item.
+
 2016-12-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904
