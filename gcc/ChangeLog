@@ -1,5 +1,11 @@
 2016-12-30  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*testqi_ext_3): Merge insn pattern and
+	corresponding splitter to define_insn_and_split.  Use wi::shifted_mask
+	helper function to calculate mask.
+
+2016-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/predicates.md (ext_register_operand): Do not reject
 	registers without upper parts here.
 	* config/i386/i386.md (extv<mode>): Copy registers without
