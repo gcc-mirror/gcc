@@ -1,3 +1,8 @@
+2016-12-29  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Lower ITER_COUNT to 100
+	for AARCH64.
+
 2016-12-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904
