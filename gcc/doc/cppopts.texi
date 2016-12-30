@@ -39,6 +39,28 @@ are given on the command line.  All @option{-imacros @var{file}} and
 Cancel any previous definition of @var{name}, either built in or
 provided with a @option{-D} option.
 
+@item -include @var{file}
+@opindex include
+Process @var{file} as if @code{#include "file"} appeared as the first
+line of the primary source file.  However, the first directory searched
+for @var{file} is the preprocessor's working directory @emph{instead of}
+the directory containing the main source file.  If not found there, it
+is searched for in the remainder of the @code{#include "@dots{}"} search
+chain as normal.
+
+If multiple @option{-include} options are given, the files are included
+in the order they appear on the command line.
+
+@item -imacros @var{file}
+@opindex imacros
+Exactly like @option{-include}, except that any output produced by
+scanning @var{file} is thrown away.  Macros it defines remain defined.
+This allows you to acquire all the macros from a header without also
+processing its declarations.
+
+All files specified by @option{-imacros} are processed before all files
+specified by @option{-include}.
+
 @item -undef
 @opindex undef
 Do not predefine any system-specific or GCC-specific macros.  The
@@ -177,56 +199,20 @@ a dependency output file as a side-effect of the compilation process.
 Like @option{-MD} except mention only user header files, not system
 header files.
 
-@ifclear cppmanual
-@item -fpch-deps
-@opindex fpch-deps
-When using precompiled headers (@pxref{Precompiled Headers}), this flag
-will cause the dependency-output flags to also list the files from the
-precompiled header's dependencies.  If not specified only the
-precompiled header would be listed and not the files that were used to
-create it because those files are not consulted when a precompiled
-header is used.
+@item -fpreprocessed
+@opindex fpreprocessed
+Indicate to the preprocessor that the input file has already been
+preprocessed.  This suppresses things like macro expansion, trigraph
+conversion, escaped newline splicing, and processing of most directives.
+The preprocessor still recognizes and removes comments, so that you can
+pass a file preprocessed with @option{-C} to the compiler without
+problems.  In this mode the integrated preprocessor is little more than
+a tokenizer for the front ends.
 
-@item -fpch-preprocess
-@opindex fpch-preprocess
-This option allows use of a precompiled header (@pxref{Precompiled
-Headers}) together with @option{-E}.  It inserts a special @code{#pragma},
-@code{#pragma GCC pch_preprocess "@var{filename}"} in the output to mark
-the place where the precompiled header was found, and its @var{filename}.
-When @option{-fpreprocessed} is in use, GCC recognizes this @code{#pragma}
-and loads the PCH@.
-
-This option is off by default, because the resulting preprocessed output
-is only really suitable as input to GCC@.  It is switched on by
+@option{-fpreprocessed} is implicit if the input file has one of the
+extensions @samp{.i}, @samp{.ii} or @samp{.mi}.  These are the
+extensions that GCC uses for preprocessed files created by
 @option{-save-temps}.
-
-You should not write this @code{#pragma} in your own code, but it is
-safe to edit the filename if the PCH file is available in a different
-location.  The filename may be absolute or it may be relative to GCC's
-current directory.
-@end ifclear
-
-@item -include @var{file}
-@opindex include
-Process @var{file} as if @code{#include "file"} appeared as the first
-line of the primary source file.  However, the first directory searched
-for @var{file} is the preprocessor's working directory @emph{instead of}
-the directory containing the main source file.  If not found there, it
-is searched for in the remainder of the @code{#include "@dots{}"} search
-chain as normal.
-
-If multiple @option{-include} options are given, the files are included
-in the order they appear on the command line.
-
-@item -imacros @var{file}
-@opindex imacros
-Exactly like @option{-include}, except that any output produced by
-scanning @var{file} is thrown away.  Macros it defines remain defined.
-This allows you to acquire all the macros from a header without also
-processing its declarations.
-
-All files specified by @option{-imacros} are processed before all files
-specified by @option{-include}.
 
 @item -fdirectives-only
 @opindex fdirectives-only
@@ -267,40 +253,12 @@ enabled by default for C99 (and later C standard versions) and C++.
 @opindex fno-canonical-system-headers
 When preprocessing, do not shorten system header paths with canonicalization.
 
-@item -fpreprocessed
-@opindex fpreprocessed
-Indicate to the preprocessor that the input file has already been
-preprocessed.  This suppresses things like macro expansion, trigraph
-conversion, escaped newline splicing, and processing of most directives.
-The preprocessor still recognizes and removes comments, so that you can
-pass a file preprocessed with @option{-C} to the compiler without
-problems.  In this mode the integrated preprocessor is little more than
-a tokenizer for the front ends.
-
-@option{-fpreprocessed} is implicit if the input file has one of the
-extensions @samp{.i}, @samp{.ii} or @samp{.mi}.  These are the
-extensions that GCC uses for preprocessed files created by
-@option{-save-temps}.
-
 @item -ftabstop=@var{width}
 @opindex ftabstop
 Set the distance between tab stops.  This helps the preprocessor report
 correct column numbers in warnings or errors, even if tabs appear on the
 line.  If the value is less than 1 or greater than 100, the option is
 ignored.  The default is 8.
-
-@item -fdebug-cpp
-@opindex fdebug-cpp
-This option is only useful for debugging GCC.  When used with
-@option{-E}, dumps debugging information about location maps.  Every
-token in the output is preceded by the dump of the map its location
-belongs to.  The dump of the map holding the location of a token would
-be:
-@smallexample
-@{@samp{P}:@file{/file/path};@samp{F}:@file{/includer/path};@samp{L}:@var{line_num};@samp{C}:@var{col_num};@samp{S}:@var{system_header_p};@samp{M}:@var{map_address};@samp{E}:@var{macro_expansion_p},@samp{loc}:@var{location}@}
-@end smallexample
-
-When used without @option{-E}, this option has no effect.
 
 @item -ftrack-macro-expansion@r{[}=@var{level}@r{]}
 @opindex ftrack-macro-expansion
@@ -350,6 +308,35 @@ or this command-line option.  Currently the command-line option takes
 precedence if there's a conflict.  @var{charset} can be any encoding
 supported by the system's @code{iconv} library routine.
 
+@ifclear cppmanual
+@item -fpch-deps
+@opindex fpch-deps
+When using precompiled headers (@pxref{Precompiled Headers}), this flag
+will cause the dependency-output flags to also list the files from the
+precompiled header's dependencies.  If not specified only the
+precompiled header would be listed and not the files that were used to
+create it because those files are not consulted when a precompiled
+header is used.
+
+@item -fpch-preprocess
+@opindex fpch-preprocess
+This option allows use of a precompiled header (@pxref{Precompiled
+Headers}) together with @option{-E}.  It inserts a special @code{#pragma},
+@code{#pragma GCC pch_preprocess "@var{filename}"} in the output to mark
+the place where the precompiled header was found, and its @var{filename}.
+When @option{-fpreprocessed} is in use, GCC recognizes this @code{#pragma}
+and loads the PCH@.
+
+This option is off by default, because the resulting preprocessed output
+is only really suitable as input to GCC@.  It is switched on by
+@option{-save-temps}.
+
+You should not write this @code{#pragma} in your own code, but it is
+safe to edit the filename if the PCH file is available in a different
+location.  The filename may be absolute or it may be relative to GCC's
+current directory.
+@end ifclear
+
 @item -fworking-directory
 @opindex fworking-directory
 @opindex fno-working-directory
@@ -380,70 +367,6 @@ it does not use shell special characters.
 Cancel an assertion with the predicate @var{predicate} and answer
 @var{answer}.
 
-@item -dCHARS
-@var{CHARS} is a sequence of one or more of the following characters,
-and must not be preceded by a space.  Other characters are interpreted
-by the compiler proper, or reserved for future versions of GCC, and so
-are silently ignored.  If you specify characters whose behavior
-conflicts, the result is undefined.
-
-@table @samp
-@item M
-@opindex dM
-Instead of the normal output, generate a list of @samp{#define}
-directives for all the macros defined during the execution of the
-preprocessor, including predefined macros.  This gives you a way of
-finding out what is predefined in your version of the preprocessor.
-Assuming you have no file @file{foo.h}, the command
-
-@smallexample
-touch foo.h; cpp -dM foo.h
-@end smallexample
-
-@noindent
-will show all the predefined macros.
-
-@ifclear cppmanual
-If you use @option{-dM} without the @option{-E} option, @option{-dM} is
-interpreted as a synonym for @option{-fdump-rtl-mach}.
-@xref{Developer Options, , ,gcc}.
-@end ifclear
-
-@item D
-@opindex dD
-Like @samp{M} except in two respects: it does @emph{not} include the
-predefined macros, and it outputs @emph{both} the @samp{#define}
-directives and the result of preprocessing.  Both kinds of output go to
-the standard output file.
-
-@item N
-@opindex dN
-Like @samp{D}, but emit only the macro names, not their expansions.
-
-@item I
-@opindex dI
-Output @samp{#include} directives in addition to the result of
-preprocessing.
-
-@item U
-@opindex dU
-Like @samp{D} except that only macros that are expanded, or whose
-definedness is tested in preprocessor directives, are output; the
-output is delayed until the use or test of the macro; and
-@samp{#undef} directives are also output for macros tested but
-undefined at the time.
-@end table
-
-@item -P
-@opindex P
-Inhibit generation of linemarkers in the output from the preprocessor.
-This might be useful when running the preprocessor on something that is
-not C code, and will be sent to a program which might be confused by the
-linemarkers.
-@ifset cppmanual
-@xref{Preprocessor Output}.
-@end ifset
-
 @item -C
 @opindex C
 Do not discard comments.  All comments are passed through to the output
@@ -468,6 +391,16 @@ of that macro from inadvertently commenting out the remainder of
 the source line.
 
 The @option{-CC} option is generally used to support lint comments.
+
+@item -P
+@opindex P
+Inhibit generation of linemarkers in the output from the preprocessor.
+This might be useful when running the preprocessor on something that is
+not C code, and will be sent to a program which might be confused by the
+linemarkers.
+@ifset cppmanual
+@xref{Preprocessor Output}.
+@end ifset
 
 @cindex traditional C language
 @cindex C language, traditional
@@ -525,4 +458,71 @@ activities.  Each name is indented to show how deep in the
 @samp{#include} stack it is.  Precompiled header files are also
 printed, even if they are found to be invalid; an invalid precompiled
 header file is printed with @samp{...x} and a valid one with @samp{...!} .
+
+@item -dCHARS
+@var{CHARS} is a sequence of one or more of the following characters,
+and must not be preceded by a space.  Other characters are interpreted
+by the compiler proper, or reserved for future versions of GCC, and so
+are silently ignored.  If you specify characters whose behavior
+conflicts, the result is undefined.
+
+@table @samp
+@item M
+@opindex dM
+Instead of the normal output, generate a list of @samp{#define}
+directives for all the macros defined during the execution of the
+preprocessor, including predefined macros.  This gives you a way of
+finding out what is predefined in your version of the preprocessor.
+Assuming you have no file @file{foo.h}, the command
+
+@smallexample
+touch foo.h; cpp -dM foo.h
+@end smallexample
+
+@noindent
+will show all the predefined macros.
+
+@ifclear cppmanual
+If you use @option{-dM} without the @option{-E} option, @option{-dM} is
+interpreted as a synonym for @option{-fdump-rtl-mach}.
+@xref{Developer Options, , ,gcc}.
+@end ifclear
+
+@item D
+@opindex dD
+Like @samp{M} except in two respects: it does @emph{not} include the
+predefined macros, and it outputs @emph{both} the @samp{#define}
+directives and the result of preprocessing.  Both kinds of output go to
+the standard output file.
+
+@item N
+@opindex dN
+Like @samp{D}, but emit only the macro names, not their expansions.
+
+@item I
+@opindex dI
+Output @samp{#include} directives in addition to the result of
+preprocessing.
+
+@item U
+@opindex dU
+Like @samp{D} except that only macros that are expanded, or whose
+definedness is tested in preprocessor directives, are output; the
+output is delayed until the use or test of the macro; and
+@samp{#undef} directives are also output for macros tested but
+undefined at the time.
+@end table
+
+@item -fdebug-cpp
+@opindex fdebug-cpp
+This option is only useful for debugging GCC.  When used with
+@option{-E}, dumps debugging information about location maps.  Every
+token in the output is preceded by the dump of the map its location
+belongs to.  The dump of the map holding the location of a token would
+be:
+@smallexample
+@{@samp{P}:@file{/file/path};@samp{F}:@file{/includer/path};@samp{L}:@var{line_num};@samp{C}:@var{col_num};@samp{S}:@var{system_header_p};@samp{M}:@var{map_address};@samp{E}:@var{macro_expansion_p},@samp{loc}:@var{location}@}
+@end smallexample
+
+When used without @option{-E}, this option has no effect.
 
