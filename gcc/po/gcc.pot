@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2016-12-27 15:42+0100\n"
+"POT-Creation-Date: 2016-12-30 20:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -7546,7 +7546,10 @@ msgid "Thumb: Generate (leaf) stack frames even if not needed."
 msgstr ""
 
 #: config/arm/arm.opt:231
-msgid "Print CPU tuning information as comment in assembler file.  This is"
+msgid ""
+"Print CPU tuning information as comment in assembler file.  This is an "
+"option used only for regression testing of the compiler and not intended for "
+"ordinary use in compiling code."
 msgstr ""
 
 #: config/arm/arm.opt:242
@@ -7579,7 +7582,8 @@ msgstr ""
 
 #: config/arm/arm.opt:266
 msgid ""
-"Avoid overlapping destination and address registers on LDRD instructions"
+"Avoid overlapping destination and address registers on LDRD instructions "
+"that may trigger Cortex-M3 errata."
 msgstr ""
 
 #: config/arm/arm.opt:271
@@ -7611,7 +7615,9 @@ msgid "Known ARM FPUs (for use with the -mfpu= option):"
 msgstr ""
 
 #: config/tilepro/tilepro.opt:23
-msgid "Compile with 32 bit longs and pointers, which is the only supported"
+msgid ""
+"Compile with 32 bit longs and pointers, which is the only supported behavior "
+"and thus the flag is ignored."
 msgstr ""
 
 #: config/tilepro/tilepro.opt:28 config/tilegx/tilegx.opt:26
@@ -7781,7 +7787,13 @@ msgid "Enable hardware floating point."
 msgstr ""
 
 #: config/s390/s390.opt:116
-msgid "Takes two non-negative integer numbers separated by a comma."
+msgid ""
+"Takes two non-negative integer numbers separated by a comma. Prepend the "
+"function label with the number of two-byte Nop instructions indicated by the "
+"first.  Append Nop instructions covering the number of halfwords indicated "
+"by the second after the label.  Nop instructions of the largest possible "
+"size are used (six, four or two bytes), beginning with the largest possible "
+"size.  Using 0 for both values disables hotpatching."
 msgstr ""
 
 #: config/s390/s390.opt:134
@@ -7829,7 +7841,9 @@ msgid "Use the mvcle instruction for block moves."
 msgstr ""
 
 #: config/s390/s390.opt:178
-msgid "Enable the z vector language extension providing the context-sensitive"
+msgid ""
+"Enable the z vector language extension providing the context-sensitive "
+"vector macro and enable the Altivec-style builtins in vecintrin.h."
 msgstr ""
 
 #: config/s390/s390.opt:183
@@ -7845,7 +7859,9 @@ msgid "z/Architecture."
 msgstr ""
 
 #: config/s390/s390.opt:195
-msgid "Set the branch costs for conditional branch instructions.  Reasonable"
+msgid ""
+"Set the branch costs for conditional branch instructions.  Reasonable values "
+"are small, non-negative integers.  The default branch cost is 1."
 msgstr ""
 
 #: config/darwin.opt:56 common.opt:336 common.opt:339 common.opt:2813
@@ -8486,15 +8502,20 @@ msgstr ""
 
 #: config/i386/i386.opt:567
 msgid ""
-"Generate vzeroupper instruction before a transfer of control flow out of"
+"Generate vzeroupper instruction before a transfer of control flow out of the "
+"function."
 msgstr ""
 
 #: config/i386/i386.opt:572
-msgid "Disable Scalar to Vector optimization pass transforming 64-bit integer"
+msgid ""
+"Disable Scalar to Vector optimization pass transforming 64-bit integer "
+"computations into a vector ones."
 msgstr ""
 
 #: config/i386/i386.opt:577
-msgid "Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4"
+msgid ""
+"Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4 or "
+"znver1 and Haifa scheduling is selected."
 msgstr ""
 
 #: config/i386/i386.opt:582
@@ -8790,7 +8811,9 @@ msgid "Generate __mcount_loc section with all mcount or __fentry__ calls."
 msgstr ""
 
 #: config/i386/i386.opt:844
-msgid "Generate mcount/__fentry__ calls as nops. To activate they need to be"
+msgid ""
+"Generate mcount/__fentry__ calls as nops. To activate they need to be "
+"patched in."
 msgstr ""
 
 #: config/i386/i386.opt:849
@@ -9027,7 +9050,9 @@ msgid "Enable strict 32-bit psABI struct return checking."
 msgstr ""
 
 #: config/sparc/sparc.opt:218
-msgid "Enable workaround for single erratum of AT697F processor"
+msgid ""
+"Enable workaround for single erratum of AT697F processor (corresponding to "
+"erratum #13 of AT697E processor)."
 msgstr ""
 
 #: config/sparc/sparc.opt:223
@@ -10163,7 +10188,9 @@ msgid "PC relative literal loads."
 msgstr ""
 
 #: config/aarch64/aarch64.opt:154
-msgid "When calculating the reciprocal square root approximation,"
+msgid ""
+"When calculating the reciprocal square root approximation, uses one less "
+"step than otherwise, thus reducing latency and precision."
 msgstr ""
 
 #: config/h8300/h8300.opt:23
@@ -10720,7 +10747,9 @@ msgid "Program is entirely located in low 64k of memory."
 msgstr ""
 
 #: config/bfin/bfin.opt:56
-msgid "Work around a hardware anomaly by adding a number of NOPs before a"
+msgid ""
+"Work around a hardware anomaly by adding a number of NOPs before a CSYNC or "
+"SSYNC instruction."
 msgstr ""
 
 #: config/bfin/bfin.opt:61
@@ -10733,7 +10762,8 @@ msgstr ""
 
 #: config/bfin/bfin.opt:69
 msgid ""
-"Generate code that won't be linked against any other ID shared libraries,"
+"Generate code that won't be linked against any other ID shared libraries, "
+"but may be used as a shared library."
 msgstr ""
 
 #: config/bfin/bfin.opt:86
@@ -11313,8 +11343,14 @@ msgstr ""
 msgid "Select ABI calling convention."
 msgstr ""
 
-#: config/rs6000/sysv4.opt:48 config/rs6000/sysv4.opt:52
+#: config/rs6000/sysv4.opt:48
 msgid "Align to the base type of the bit-field."
+msgstr ""
+
+#: config/rs6000/sysv4.opt:52
+msgid ""
+"Align to the base type of the bit-field. Don't assume that unaligned "
+"accesses are handled by the system."
 msgstr ""
 
 #: config/rs6000/sysv4.opt:57 config/rs6000/sysv4.opt:61
@@ -11591,7 +11627,9 @@ msgid "Functions which return values must end with return statements."
 msgstr ""
 
 #: common.opt:235
-msgid "Enable coverage-guided fuzzing code instrumentation."
+msgid ""
+"Enable coverage-guided fuzzing code instrumentation. Inserts call to "
+"__sanitizer_cov_trace_pc into every basic block."
 msgstr ""
 
 #: common.opt:302
@@ -11918,7 +11956,9 @@ msgid "-fasan-shadow-offset=<number>\tUse custom shadow memory offset."
 msgstr ""
 
 #: common.opt:944
-msgid "-fsanitize-sections=<sec1,sec2,...>\tSanitize global variables"
+msgid ""
+"-fsanitize-sections=<sec1,sec2,...>\tSanitize global variables in user-"
+"defined sections."
 msgstr ""
 
 #: common.opt:949
@@ -11943,11 +11983,15 @@ msgid "Generate auto-inc/dec instructions."
 msgstr ""
 
 #: common.opt:969
-msgid "Use sample profile information for call graph node weights. The default"
+msgid ""
+"Use sample profile information for call graph node weights. The default "
+"profile file is fbdata.afdo in 'pwd'."
 msgstr ""
 
 #: common.opt:974
-msgid "Use sample profile information for call graph node weights. The profile"
+msgid ""
+"Use sample profile information for call graph node weights. The profile file "
+"is specified in the argument."
 msgstr ""
 
 #: common.opt:983
@@ -12151,7 +12195,9 @@ msgid "Suppress output of addresses in debugging dumps."
 msgstr ""
 
 #: common.opt:1212
-msgid "Collect and dump debug information into temporary file if ICE in C/C++"
+msgid ""
+"Collect and dump debug information into temporary file if ICE in C/C++ "
+"compiler occured."
 msgstr ""
 
 #: common.opt:1217
@@ -12277,12 +12323,14 @@ msgstr ""
 
 #: common.opt:1349
 msgid ""
-"Perform redundant load after store elimination in global common subexpression"
+"Perform redundant load after store elimination in global common "
+"subexpression elimination."
 msgstr ""
 
 #: common.opt:1354
 msgid ""
-"Perform global common subexpression elimination after register allocation has"
+"Perform global common subexpression elimination after register allocation "
+"has finished."
 msgstr ""
 
 #: common.opt:1371
@@ -12300,7 +12348,9 @@ msgid "Enable Graphite Identity transformation."
 msgstr ""
 
 #: common.opt:1384
-msgid "Enable hoisting adjacent loads to encourage generating conditional move"
+msgid ""
+"Enable hoisting adjacent loads to encourage generating conditional move "
+"instructions."
 msgstr ""
 
 #: common.opt:1393
@@ -12479,8 +12529,12 @@ msgstr ""
 msgid "unknown IRA region %qs"
 msgstr ""
 
-#: common.opt:1607 common.opt:1612
-msgid "Use IRA based register pressure calculation"
+#: common.opt:1607
+msgid "Use IRA based register pressure calculation in RTL hoist optimizations."
+msgstr ""
+
+#: common.opt:1612
+msgid "Use IRA based register pressure calculation in RTL loop optimizations."
 msgstr ""
 
 #: common.opt:1617
@@ -12740,7 +12794,9 @@ msgid "Insert arc-based program profiling code."
 msgstr ""
 
 #: common.opt:1888
-msgid "Set the top-level directory for storing the profile data."
+msgid ""
+"Set the top-level directory for storing the profile data. The default is "
+"'pwd'."
 msgstr ""
 
 #: common.opt:1893
@@ -12795,7 +12851,9 @@ msgid "Return small aggregates in registers."
 msgstr ""
 
 #: common.opt:1950
-msgid "Tell DSE that the storage for a C++ object is dead when the constructor"
+msgid ""
+"Tell DSE that the storage for a C++ object is dead when the constructor "
+"starts and when the destructor finishes."
 msgstr ""
 
 #: common.opt:1958
@@ -12961,7 +13019,9 @@ msgid "Show column numbers in diagnostics, when available.  Default on."
 msgstr ""
 
 #: common.opt:2140
-msgid "Emit function prologues only before parts of the function that need it,"
+msgid ""
+"Emit function prologues only before parts of the function that need it, "
+"rather than at the top of the function."
 msgstr ""
 
 #: common.opt:2145
@@ -13160,12 +13220,18 @@ msgid "Enable string length optimizations on trees."
 msgstr ""
 
 #: common.opt:2370
-msgid "Detect paths that trigger erroneous or undefined behavior due to"
+msgid ""
+"Detect paths that trigger erroneous or undefined behavior due to "
+"dereferencing a null pointer.  Isolate those paths from the main control "
+"flow and turn the statement with erroneous or undefined behavior into a trap."
 msgstr ""
 
 #: common.opt:2376
 msgid ""
-"Detect paths that trigger erroneous or undefined behavior due a null value"
+"Detect paths that trigger erroneous or undefined behavior due a null value "
+"being used in a way forbidden by a returns_nonnull or nonnull attribute.  "
+"Isolate those paths from the main control flow and turn the statement with "
+"erroneous or undefined behavior into a trap."
 msgstr ""
 
 #: common.opt:2383
@@ -13243,7 +13309,9 @@ msgid "Split paths leading to loop backedges."
 msgstr ""
 
 #: common.opt:2463
-msgid "Assume common declarations may be overridden with ones with a larger"
+msgid ""
+"Assume common declarations may be overridden with ones with a larger "
+"trailing array."
 msgstr ""
 
 #: common.opt:2468
@@ -13263,7 +13331,9 @@ msgid "Allow loop optimizations to assume that the loops behave in normal way."
 msgstr ""
 
 #: common.opt:2487
-msgid "Allow optimization for floating-point arithmetic which may change the"
+msgid ""
+"Allow optimization for floating-point arithmetic which may change the result "
+"of the operation due to rounding."
 msgstr ""
 
 #: common.opt:2492
@@ -14113,7 +14183,8 @@ msgstr ""
 
 #: c-family/c.opt:610
 msgid ""
-"Suggest that the override keyword be used when the declaration of a virtual"
+"Suggest that the override keyword be used when the declaration of a virtual "
+"function overrides another."
 msgstr ""
 
 #: c-family/c.opt:615
@@ -14494,7 +14565,9 @@ msgid "Where shorter, use canonicalized paths to systems headers."
 msgstr ""
 
 #: c-family/c.opt:1055
-msgid "Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to"
+msgid ""
+"Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to "
+"control instrumentation.  Currently available for C, C++ and ObjC."
 msgstr ""
 
 #: c-family/c.opt:1060
@@ -14503,27 +14576,34 @@ msgstr ""
 
 #: c-family/c.opt:1064
 msgid ""
-"Use zero bounds for all incoming arguments in 'main' function.  It helps when"
+"Use zero bounds for all incoming arguments in 'main' function.  It helps "
+"when instrumented binaries are used with legacy libs."
 msgstr ""
 
 #: c-family/c.opt:1069
 msgid ""
-"Forces Pointer Bounds Checker to use narrowed bounds for address of the first"
+"Forces Pointer Bounds Checker to use narrowed bounds for address of the "
+"first field in the structure.  By default pointer to the first field has the "
+"same bounds as pointer to the whole structure."
 msgstr ""
 
 #: c-family/c.opt:1075
 msgid ""
-"Control how Pointer Bounds Checker handle pointers to object fields.  When"
+"Control how Pointer Bounds Checker handle pointers to object fields.  When "
+"narrowing is on, field bounds are used.  Otherwise full object bounds are "
+"used."
 msgstr ""
 
 #: c-family/c.opt:1080
 msgid ""
 "Forces Pointer Bounds Checker to use bounds of the innermost arrays in case "
-"of"
+"of nested static arryas access.  By default outermost array is used."
 msgstr ""
 
 #: c-family/c.opt:1085
-msgid "Allow Pointer Bounds Checker optimizations.  By default allowed"
+msgid ""
+"Allow Pointer Bounds Checker optimizations.  By default allowed on "
+"optimization levels >0."
 msgstr ""
 
 #: c-family/c.opt:1090
@@ -14537,15 +14617,21 @@ msgid ""
 msgstr ""
 
 #: c-family/c.opt:1098
-msgid "Use statically initialized variable for vars bounds instead of"
+msgid ""
+"Use statically initialized variable for vars bounds instead of generating "
+"them each time it is required."
 msgstr ""
 
 #: c-family/c.opt:1103
-msgid "Use statically initialized variable for constant bounds instead of"
+msgid ""
+"Use statically initialized variable for constant bounds instead of "
+"generating them each time it is required."
 msgstr ""
 
 #: c-family/c.opt:1108
-msgid "With this option zero size obtained dynamically for objects with"
+msgid ""
+"With this option zero size obtained dynamically for objects with incomplete "
+"type will be treated as infinite."
 msgstr ""
 
 #: c-family/c.opt:1113
@@ -14962,7 +15048,7 @@ msgstr ""
 #: c-family/c.opt:1593
 msgid ""
 "Interpret imaginary, fixed-point, or other gnu number suffix as the "
-"corresponding"
+"corresponding number literal rather than a user-defined number literal."
 msgstr ""
 
 #: c-family/c.opt:1598
@@ -15073,7 +15159,9 @@ msgid "Deprecated in favor of -std=c99."
 msgstr ""
 
 #: c-family/c.opt:1723 c-family/c.opt:1728
-msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical"
+msgid ""
+"Conform to the ISO 1998 C++ standard revised by the 2003 technical "
+"corrigendum with GNU extensions."
 msgstr ""
 
 #: c-family/c.opt:1733
