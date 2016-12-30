@@ -36,7 +36,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-12-23 00:40+0100\n"
+"PO-Revision-Date: 2016-12-27 12:31+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -11841,148 +11841,106 @@ msgid "Target the AM34 processor."
 msgstr "Apunta al procesador AM34."
 
 #: config/mn10300/mn10300.opt:46
-#, fuzzy
-#| msgid "Work around hardware multiply bug"
 msgid "Work around hardware multiply bug."
 msgstr "Evita el error de multiplicación de hardware."
 
 #: config/mn10300/mn10300.opt:55
-#, fuzzy
-#| msgid "Enable linker relaxations"
 msgid "Enable linker relaxations."
 msgstr "Activa la relajación del enlazador."
 
 #: config/mn10300/mn10300.opt:59
-#, fuzzy
-#| msgid "Return pointers in both a0 and d0"
 msgid "Return pointers in both a0 and d0."
 msgstr "Devuelve punteros tanto en a0 como en d0."
 
 #: config/mn10300/mn10300.opt:63
-#, fuzzy
-#| msgid "Allow gcc to generate LIW instructions"
 msgid "Allow gcc to generate LIW instructions."
 msgstr "Permite a gcc generar instrucciones LIW."
 
 #: config/mn10300/mn10300.opt:67
-#, fuzzy
-#| msgid "Allow gcc to generate the SETLB and Lcc instructions"
 msgid "Allow gcc to generate the SETLB and Lcc instructions."
 msgstr "Permite a gcc generar las instrucciones SETLB y Lcc."
 
 #: config/nds32/nds32.opt:26
-#, fuzzy
-#| msgid "Generate code in big endian mode"
 msgid "Generate code in big-endian mode."
 msgstr "Genera código en modo big endian."
 
 #: config/nds32/nds32.opt:30
-#, fuzzy
-#| msgid "Generate code in little endian mode"
 msgid "Generate code in little-endian mode."
 msgstr "Genera código en modo little endian."
 
 #: config/nds32/nds32.opt:34
-#, fuzzy
-#| msgid "Reschedule instructions before register allocation"
 msgid "Use reduced-set registers for register allocation."
-msgstr "Recalendariza las instrucciones antes del alojamiento de registros."
+msgstr "Usa un juego reducido de registros para asignación de registros."
 
 #: config/nds32/nds32.opt:38
-#, fuzzy
-#| msgid "Reschedule instructions before register allocation"
 msgid "Use full-set registers for register allocation."
-msgstr "Recalendariza las instrucciones antes del alojamiento de registros."
+msgstr "Usa el juego completo de registros para asignación de registros."
 
 #: config/nds32/nds32.opt:42
-#, fuzzy
-#| msgid "enable conditional move instruction usage."
 msgid "Generate conditional move instructions."
-msgstr "activa el uso de la instrucción move condicional."
+msgstr "Genera instrucciones move condicionales."
 
 #: config/nds32/nds32.opt:46
-#, fuzzy
-#| msgid "Generate bit instructions"
 msgid "Generate performance extension instructions."
-msgstr "Genera instrucciones bit."
+msgstr "Genera instrucciones de extensión del rendimiento."
 
 #: config/nds32/nds32.opt:50
-#, fuzzy
-#| msgid "Generate isel instructions"
 msgid "Generate v3 push25/pop25 instructions."
-msgstr "Genera instrucciones isel."
+msgstr "Genera instrucciones v3 push25/pop25."
 
 #: config/nds32/nds32.opt:54
-#, fuzzy
-#| msgid "Generate bit instructions"
 msgid "Generate 16-bit instructions."
-msgstr "Genera instrucciones bit."
+msgstr "Genera instrucciones de 16 bits."
 
 #: config/nds32/nds32.opt:58
 msgid "Specify the size of each interrupt vector, which must be 4 or 16."
-msgstr ""
+msgstr "Especifica el tamaño de cada vector de interrupciones, que ha de ser 4 o 16."
 
 #: config/nds32/nds32.opt:62
 msgid "Specify the size of each cache block, which must be a power of 2 between 4 and 512."
-msgstr ""
+msgstr "Especifica el tamaño de cada bloque de caché, que ha de ser potencia de 2 entre 4 y 512."
 
 #: config/nds32/nds32.opt:70
-#, fuzzy
-#| msgid "Known ARM architectures (for use with the -march= option):"
 msgid "Known arch types (for use with the -march= option):"
-msgstr "Arquitecturas ARM conocidas (para usar con la opción -march=):"
+msgstr "Tipos de arquitectura conocidos (para usar con la opción -march=):"
 
 #: config/nds32/nds32.opt:83
 msgid "Specify the address generation strategy for code model."
-msgstr ""
+msgstr "Especifica la estrategia de generación de direcciones para modelo de código."
 
 #: config/nds32/nds32.opt:87
-#, fuzzy
-#| msgid "Known code models (for use with the -mcmodel= option):"
 msgid "Known cmodel types (for use with the -mcmodel= option):"
-msgstr "Modelos de código conocidos (para uso con la opción -mcmodel=):"
+msgstr "Tipos de modelos de código conocidos (para uso con la opción -mcmodel=):"
 
 #: config/nds32/nds32.opt:100
-#, fuzzy
-#| msgid "Warn when all constructors and destructors are private"
 msgid "Enable constructor/destructor feature."
-msgstr "Avisa cuando todos los constructores y destructores son privados."
+msgstr "Activa la opción constructor/destructor."
 
 #: config/nds32/nds32.opt:104
-#, fuzzy
-#| msgid "Generate isel instructions"
 msgid "Guide linker to relax instructions."
-msgstr "Genera instrucciones isel."
+msgstr "Guía al enlazador para que relaje las instrucciones."
 
 #: config/iq2000/iq2000.opt:31
-#, fuzzy
-#| msgid "Specify CPU for code generation purposes"
 msgid "Specify CPU for code generation purposes."
-msgstr "Especifica el CPU para propósitos de generación de código."
+msgstr "Especifica la CPU para propósitos de generación de código."
 
 #: config/iq2000/iq2000.opt:47
 msgid "Specify CPU for scheduling purposes."
-msgstr "Especifica el CPU para propósitos de planificación."
+msgstr "Especifica la CPU para propósitos de planificación."
 
 #: config/iq2000/iq2000.opt:51
 msgid "Known IQ2000 CPUs (for use with the -mcpu= option):"
 msgstr "CPUs IQ2000 conocidos (para uso con la opción -mcpu=):"
 
 #: config/iq2000/iq2000.opt:61 config/mips/mips.opt:142
-#, fuzzy
-#| msgid "Use ROM instead of RAM"
 msgid "Use ROM instead of RAM."
 msgstr "Usa la ROM en lugar de la RAM."
 
 #: config/iq2000/iq2000.opt:70
-#, fuzzy
-#| msgid "No default crt0.o"
 msgid "No default crt0.o."
-msgstr "No define a crt0.o por defecto."
+msgstr "Sin crt0.o predeterminada."
 
 #: config/iq2000/iq2000.opt:74 config/mips/mips.opt:393
-#, fuzzy
-#| msgid "Put uninitialized constants in ROM (needs -membedded-data)"
 msgid "Put uninitialized constants in ROM (needs -membedded-data)."
 msgstr "Pone las constantes sin inicializar en ROM (necesita -membedded-data)."
 
@@ -11991,136 +11949,96 @@ msgid "Known C6X ISAs (for use with the -march= option):"
 msgstr "ISAs C6X conocidas (para uso con la opción -march=):"
 
 #: config/c6x/c6x.opt:46
-#, fuzzy
-#| msgid "Valid arguments for the -msdata= option"
 msgid "Valid arguments for the -msdata= option."
 msgstr "Argumentos válidos para la opción -msdata=."
 
 #: config/c6x/c6x.opt:59
-#, fuzzy
-#| msgid "Compile for the DSBT shared library ABI"
 msgid "Compile for the DSBT shared library ABI."
 msgstr "Compila para la ABI de biblioteca compartida DSBT."
 
 #: config/cris/linux.opt:27
-#, fuzzy
-#| msgid "Together with -fpic and -fPIC, do not use GOTPLT references"
 msgid "Together with -fpic and -fPIC, do not use GOTPLT references."
 msgstr "Junto con -fpic y -fPIC, no utiliza referencias GOTPLT."
 
 #: config/cris/cris.opt:45
-#, fuzzy
-#| msgid "Work around bug in multiplication instruction"
 msgid "Work around bug in multiplication instruction."
 msgstr "Evita el error en la instrucción de multiplicación."
 
 #: config/cris/cris.opt:51
-#, fuzzy
-#| msgid "Compile for ETRAX 4 (CRIS v3)"
 msgid "Compile for ETRAX 4 (CRIS v3)."
 msgstr "Compila para ETRAX 4 (CRIS v3)."
 
 #: config/cris/cris.opt:56
-#, fuzzy
-#| msgid "Compile for ETRAX 100 (CRIS v8)"
 msgid "Compile for ETRAX 100 (CRIS v8)."
 msgstr "Compila para ETRAX 100 (CRIS v8)."
 
 #: config/cris/cris.opt:64
-#, fuzzy
-#| msgid "Emit verbose debug information in assembly code"
 msgid "Emit verbose debug information in assembly code."
 msgstr "Emite información de depuración detallada en el código ensamblador."
 
 #: config/cris/cris.opt:71
-#, fuzzy
-#| msgid "Do not use condition codes from normal instructions"
 msgid "Do not use condition codes from normal instructions."
 msgstr "No usa códigos de condición para las instrucciones normales."
 
 #: config/cris/cris.opt:80
-#, fuzzy
-#| msgid "Do not emit addressing modes with side-effect assignment"
 msgid "Do not emit addressing modes with side-effect assignment."
 msgstr "No emite modos de direccionamiento con asignaciones colaterales."
 
 #: config/cris/cris.opt:89
-#, fuzzy
-#| msgid "Do not tune stack alignment"
 msgid "Do not tune stack alignment."
 msgstr "No ajusta la alineación de la pila."
 
 #: config/cris/cris.opt:98
-#, fuzzy
-#| msgid "Do not tune writable data alignment"
 msgid "Do not tune writable data alignment."
 msgstr "No ajusta la alineación de los datos modificables."
 
 #: config/cris/cris.opt:107
-#, fuzzy
-#| msgid "Do not tune code and read-only data alignment"
 msgid "Do not tune code and read-only data alignment."
 msgstr "No ajusta la alineación del código y de datos de sólo lectura."
 
 #: config/cris/cris.opt:116
-#, fuzzy
-#| msgid "Align code and data to 32 bits"
 msgid "Align code and data to 32 bits."
 msgstr "Alinea código y datos a 32 bits."
 
 #: config/cris/cris.opt:133
-#, fuzzy
-#| msgid "Don't align items in code or data"
 msgid "Don't align items in code or data."
 msgstr "No alinea los elementos en el código o los datos."
 
 #: config/cris/cris.opt:142
-#, fuzzy
-#| msgid "Do not emit function prologue or epilogue"
 msgid "Do not emit function prologue or epilogue."
 msgstr "No emite el prólogo o epílogo de funciones."
 
 #: config/cris/cris.opt:149
-#, fuzzy
-#| msgid "Use the most feature-enabling options allowed by other options"
 msgid "Use the most feature-enabling options allowed by other options."
 msgstr "Usa la mayor cantidad de características permitidas por otras opciones."
 
 #: config/cris/cris.opt:158
-#, fuzzy
-#| msgid "Override -mbest-lib-options"
 msgid "Override -mbest-lib-options."
 msgstr "Anula -mbest-lib-options."
 
 #: config/cris/cris.opt:165
-#, fuzzy
-#| msgid "-march=ARCH\tGenerate code for the specified chip or CPU version"
 msgid "-march=ARCH\tGenerate code for the specified chip or CPU version."
 msgstr "-march=ARQ\tGenera código para el chip o la versión de CPU especificados."
 
 #: config/cris/cris.opt:169
-#, fuzzy
-#| msgid "-mtune=ARCH\tTune alignment for the specified chip or CPU version"
 msgid "-mtune=ARCH\tTune alignment for the specified chip or CPU version."
 msgstr "-mtune=ARQ\tAjusta la alineación para el chip o la versión de CPU especificados."
 
 #: config/cris/cris.opt:173
-#, fuzzy
-#| msgid "-mmax-stackframe=SIZE\tWarn when a stackframe is larger than the specified size"
 msgid "-mmax-stackframe=SIZE\tWarn when a stackframe is larger than the specified size."
 msgstr "-mmax-stackframe=TAM\tAvisa cuando un marco de pila es más grande que el tamaño especificado."
 
 #: config/cris/cris.opt:180
 msgid "Emit traps as \"break 8\", default for CRIS v3 and up.  If disabled, calls to abort() are used."
-msgstr ""
+msgstr "Emite traps como \"break 8\", predeterminado para CRIS v3 y superior.  Si está desactivado, se usan llamadas a abort()."
 
 #: config/cris/cris.opt:184
 msgid "Emit checks causing \"break 8\" instructions to execute when applying atomic builtins on misaligned memory."
-msgstr ""
+msgstr "Emite comprobaciones haciendo que las instrucciones \"break 8\" se ejecuten cuando se aplican funciones internas atómicas sobre memoria desalineada."
 
 #: config/cris/cris.opt:188
 msgid "Handle atomic builtins that may be applied to unaligned data by calling library functions. Overrides -mtrap-unaligned-atomic."
-msgstr ""
+msgstr "Maneja las funciones internas atómicas que pueden aplicarse a datos desalineados mediante llamadas a funciones de biblioteca. Anula -mtrap-unaligned-atomic."
 
 #: config/sh/superh.opt:6
 msgid "Board name [and memory region]."
@@ -12131,116 +12049,78 @@ msgid "Runtime name."
 msgstr "Nombre del entorno de ejecución."
 
 #: config/sh/sh.opt:48
-#, fuzzy
-#| msgid "Generate SH1 code"
 msgid "Generate SH1 code."
 msgstr "Genera código SH1."
 
 #: config/sh/sh.opt:52
-#, fuzzy
-#| msgid "Generate SH2 code"
 msgid "Generate SH2 code."
 msgstr "Genera código SH2."
 
 #: config/sh/sh.opt:56
-#, fuzzy
-#| msgid "Generate default double-precision SH2a-FPU code"
 msgid "Generate default double-precision SH2a-FPU code."
 msgstr "Genera código FPU de SH2a de doble precisión por defecto."
 
 #: config/sh/sh.opt:60
-#, fuzzy
-#| msgid "Generate SH2a FPU-less code"
 msgid "Generate SH2a FPU-less code."
 msgstr "Genera código SH2a sin FPU."
 
 #: config/sh/sh.opt:64
-#, fuzzy
-#| msgid "Generate default single-precision SH2a-FPU code"
 msgid "Generate default single-precision SH2a-FPU code."
 msgstr "Genera código FPU de SH2a de precisión simple."
 
 #: config/sh/sh.opt:68
-#, fuzzy
-#| msgid "Generate only single-precision SH2a-FPU code"
 msgid "Generate only single-precision SH2a-FPU code."
 msgstr "Genera solamente código FPU de SH2a de precisión simple."
 
 #: config/sh/sh.opt:72
-#, fuzzy
-#| msgid "Generate SH2e code"
 msgid "Generate SH2e code."
 msgstr "Genera código SH2e."
 
 #: config/sh/sh.opt:76
-#, fuzzy
-#| msgid "Generate SH3 code"
 msgid "Generate SH3 code."
 msgstr "Genera código SH3."
 
 #: config/sh/sh.opt:80
-#, fuzzy
-#| msgid "Generate SH3e code"
 msgid "Generate SH3e code."
 msgstr "Genera código SH3e."
 
 #: config/sh/sh.opt:84
-#, fuzzy
-#| msgid "Generate SH4 code"
 msgid "Generate SH4 code."
 msgstr "Genera código SH4."
 
 #: config/sh/sh.opt:88
-#, fuzzy
-#| msgid "Generate SH4-100 code"
 msgid "Generate SH4-100 code."
 msgstr "Genera código SH4-100."
 
 #: config/sh/sh.opt:92
-#, fuzzy
-#| msgid "Generate SH4-200 code"
 msgid "Generate SH4-200 code."
 msgstr "Genera código SH4-200."
 
 #: config/sh/sh.opt:98
-#, fuzzy
-#| msgid "Generate SH4-300 code"
 msgid "Generate SH4-300 code."
 msgstr "Genera código SH4-300."
 
 #: config/sh/sh.opt:102
-#, fuzzy
-#| msgid "Generate SH4 FPU-less code"
 msgid "Generate SH4 FPU-less code."
 msgstr "Genera código SH4 sin FPU."
 
 #: config/sh/sh.opt:106
-#, fuzzy
-#| msgid "Generate SH4-100 FPU-less code"
 msgid "Generate SH4-100 FPU-less code."
 msgstr "Genera código SH4-100 sin FPU."
 
 #: config/sh/sh.opt:110
-#, fuzzy
-#| msgid "Generate SH4-200 FPU-less code"
 msgid "Generate SH4-200 FPU-less code."
 msgstr "Genera código SH4-200 sin FPU."
 
 #: config/sh/sh.opt:114
-#, fuzzy
-#| msgid "Generate SH4-300 FPU-less code"
 msgid "Generate SH4-300 FPU-less code."
 msgstr "Genera código SH4-300 sin FPU."
 
 #: config/sh/sh.opt:118
-#, fuzzy
-#| msgid "Generate code for SH4 340 series (MMU/FPU-less)"
 msgid "Generate code for SH4 340 series (MMU/FPU-less)."
 msgstr "Genera código para SH4 series 340 (sin MMU/FPU)."
 
 #: config/sh/sh.opt:123
-#, fuzzy
-#| msgid "Generate code for SH4 400 series (MMU/FPU-less)"
 msgid "Generate code for SH4 400 series (MMU/FPU-less)."
 msgstr "Genera código para SH4 series 400 (sin MMU/FPU)."
 
@@ -12249,156 +12129,107 @@ msgid "Generate code for SH4 500 series (FPU-less)."
 msgstr "Genera código para SH4 series 500 (sin FPU)."
 
 #: config/sh/sh.opt:133
-#, fuzzy
-#| msgid "Generate default single-precision SH4 code"
 msgid "Generate default single-precision SH4 code."
 msgstr "Genera código SH4 de precisión simple por defecto."
 
 #: config/sh/sh.opt:137
-#, fuzzy
-#| msgid "Generate default single-precision SH4-100 code"
 msgid "Generate default single-precision SH4-100 code."
 msgstr "Genera código SH4-100 de precisión simple por defecto."
 
 #: config/sh/sh.opt:141
-#, fuzzy
-#| msgid "Generate default single-precision SH4-200 code"
 msgid "Generate default single-precision SH4-200 code."
 msgstr "Genera código SH4-200 de precisión simple por defecto."
 
 #: config/sh/sh.opt:145
-#, fuzzy
-#| msgid "Generate default single-precision SH4-300 code"
 msgid "Generate default single-precision SH4-300 code."
 msgstr "Genera código SH4-300 de precisión simple por defecto."
 
 #: config/sh/sh.opt:149
-#, fuzzy
-#| msgid "Generate only single-precision SH4 code"
 msgid "Generate only single-precision SH4 code."
 msgstr "Genera código SH4 solamente de precisión simple."
 
 #: config/sh/sh.opt:153
-#, fuzzy
-#| msgid "Generate only single-precision SH4-100 code"
 msgid "Generate only single-precision SH4-100 code."
 msgstr "Genera código SH4-100 solamente de precisión simple."
 
 #: config/sh/sh.opt:157
-#, fuzzy
-#| msgid "Generate only single-precision SH4-200 code"
 msgid "Generate only single-precision SH4-200 code."
 msgstr "Genera código SH4-200 solamente de precisión simple."
 
 #: config/sh/sh.opt:161
-#, fuzzy
-#| msgid "Generate only single-precision SH4-300 code"
 msgid "Generate only single-precision SH4-300 code."
 msgstr "Genera código SH4-300 solamente de precisión simple."
 
 #: config/sh/sh.opt:165
-#, fuzzy
-#| msgid "Generate SH4a code"
 msgid "Generate SH4a code."
 msgstr "Genera código SH4a."
 
 #: config/sh/sh.opt:169
-#, fuzzy
-#| msgid "Generate SH4a FPU-less code"
 msgid "Generate SH4a FPU-less code."
 msgstr "Genera código SH4a sin FPU."
 
 #: config/sh/sh.opt:173
-#, fuzzy
-#| msgid "Generate default single-precision SH4a code"
 msgid "Generate default single-precision SH4a code."
 msgstr "Genera código SH4a de precisión simple por defecto."
 
 #: config/sh/sh.opt:177
-#, fuzzy
-#| msgid "Generate only single-precision SH4a code"
 msgid "Generate only single-precision SH4a code."
 msgstr "Genera código SH4a solamente de precisión simple."
 
 #: config/sh/sh.opt:181
-#, fuzzy
-#| msgid "Generate SH4al-dsp code"
 msgid "Generate SH4al-dsp code."
 msgstr "Genera código SH4al-dsp."
 
 #: config/sh/sh.opt:185
-#, fuzzy
-#| msgid "Generate 32-bit SHmedia code"
 msgid "Generate 32-bit SHmedia code."
 msgstr "Genera código SHmedia de 32-bit."
 
 #: config/sh/sh.opt:189
-#, fuzzy
-#| msgid "Generate 32-bit FPU-less SHmedia code"
 msgid "Generate 32-bit FPU-less SHmedia code."
 msgstr "Genera código SHmedia de 32-bit sin FPU."
 
 #: config/sh/sh.opt:193
-#, fuzzy
-#| msgid "Generate 64-bit SHmedia code"
 msgid "Generate 64-bit SHmedia code."
 msgstr "Genera código SHmedia de 64-bit."
 
 #: config/sh/sh.opt:197
-#, fuzzy
-#| msgid "Generate 64-bit FPU-less SHmedia code"
 msgid "Generate 64-bit FPU-less SHmedia code."
 msgstr "Genera código SHmedia de 64-bit sin FPU."
 
 #: config/sh/sh.opt:201
-#, fuzzy
-#| msgid "Generate SHcompact code"
 msgid "Generate SHcompact code."
 msgstr "Genera código SHcompact."
 
 #: config/sh/sh.opt:205
-#, fuzzy
-#| msgid "Generate FPU-less SHcompact code"
 msgid "Generate FPU-less SHcompact code."
 msgstr "Genera código SHcompact sin FPU."
 
 #: config/sh/sh.opt:217
-#, fuzzy
-#| msgid "Generate code in big endian mode"
 msgid "Generate code in big endian mode."
 msgstr "Genera código en modo big endian."
 
 #: config/sh/sh.opt:221
-#, fuzzy
-#| msgid "Generate 32-bit offsets in switch tables"
 msgid "Generate 32-bit offsets in switch tables."
 msgstr "Genera desplazamientos de 32-bit en las tablas de switch."
 
 #: config/sh/sh.opt:225
-#, fuzzy
-#| msgid "Generate bit instructions"
 msgid "Generate bit instructions."
-msgstr "Genera instrucciones bit."
+msgstr "Genera instrucciones de bit."
 
 #: config/sh/sh.opt:229
-#, fuzzy
-#| msgid "Cost to assume for a branch insn"
 msgid "Cost to assume for a branch insn."
 msgstr "Costo de asumir una ramificación de insn."
 
 #: config/sh/sh.opt:233
 msgid "Assume that zero displacement conditional branches are fast."
-msgstr ""
+msgstr "Asume que las ramificaciones condicionales con desplazamiento cero son rápidas."
 
 #: config/sh/sh.opt:236 config/sh/sh.opt:240
-#, fuzzy, c-format
-#| msgid "Deprecated.  This switch has no effect"
+#, c-format
 msgid "%qs is deprecated and has no effect"
-msgstr "Obsoleto.  Esta opción no tiene efecto"
+msgstr "%qs está obsoleto y no tiene ningún efecto"
 
 #: config/sh/sh.opt:237
-#, fuzzy
-#| msgid "Enable cbranchdi4 pattern"
 msgid "Enable cbranchdi4 pattern."
 msgstr "Activa el patrón cbranchdi4."
 
@@ -12408,105 +12239,73 @@ msgstr "Emite el patrón cmpeqdi_t aún cuando -mcbranchdi está en efecto."
 
 #: config/sh/sh.opt:245
 msgid "Force the usage of delay slots for conditional branches."
-msgstr ""
+msgstr "Fuerza el uso de ranuras de retardo para las ramificaciones condicionales."
 
 #: config/sh/sh.opt:249
-#, fuzzy
-#| msgid "Enable SH5 cut2 workaround"
 msgid "Enable SH5 cut2 workaround."
 msgstr "Permite evitar cut2 en SH5."
 
 #: config/sh/sh.opt:253
-#, fuzzy
-#| msgid "Align doubles at 64-bit boundaries"
 msgid "Align doubles at 64-bit boundaries."
 msgstr "Alinea doubles en límites de 64-bit."
 
 #: config/sh/sh.opt:257
-#, fuzzy
-#| msgid "Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table"
 msgid "Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table."
-msgstr "Estrategia de división, uno de: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table."
+msgstr "Estrategia de división, una de las siguientes: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table."
 
 #: config/sh/sh.opt:261
-#, fuzzy
-#| msgid "Specify name for 32 bit signed division function"
 msgid "Specify name for 32 bit signed division function."
 msgstr "Especifica un nombre para la función de división de 32 bit con signo."
 
 #: config/sh/sh.opt:265
-#, fuzzy
-#| msgid "Generate LP64 code"
 msgid "Generate ELF FDPIC code."
-msgstr "Genera código LP64."
+msgstr "Genera código ELF FDPIC."
 
 #: config/sh/sh.opt:269
 msgid "Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required."
 msgstr "Activa el uso de registros de coma flotante de 64-bit en instrucciones. fmov.  Vea -mdalign si se requiere alineación de 64-bit."
 
 #: config/sh/sh.opt:277
-#, fuzzy
-#| msgid "Cost to assume for gettr insn"
 msgid "Cost to assume for gettr insn."
 msgstr "Costo de asumir la instrucción gettr."
 
 #: config/sh/sh.opt:281 config/sh/sh.opt:331
-#, fuzzy
-#| msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions"
 msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions."
 msgstr "Sigue las convenciones de llamada Renesas (anteriormente Hitachi) / SuperH."
 
 #: config/sh/sh.opt:285
-#, fuzzy
-#| msgid "Increase the IEEE compliance for floating-point comparisons"
 msgid "Increase the IEEE compliance for floating-point comparisons."
 msgstr "Incrementa el cumplimiento con IEEE para las comparaciones de coma flotante."
 
 #: config/sh/sh.opt:289
-#, fuzzy
-#| msgid "Enable the use of the indexed addressing mode for SHmedia32/SHcompact"
 msgid "Enable the use of the indexed addressing mode for SHmedia32/SHcompact."
-msgstr "Permite el uso del modo de direccionamiento indizado para SHmedia32/SHcompact."
+msgstr "Permite el uso del modo de direccionamiento indexado para SHmedia32/SHcompact."
 
 #: config/sh/sh.opt:293
-#, fuzzy
-#| msgid "inline code to invalidate instruction cache entries after setting up nested function trampolines"
 msgid "inline code to invalidate instruction cache entries after setting up nested function trampolines."
 msgstr "Código inline para invalidar las entradas de caché de instruciones después de establecerer los trampolines de funciones anidadas."
 
 #: config/sh/sh.opt:297
-#, fuzzy
-#| msgid "Assume symbols might be invalid"
 msgid "Assume symbols might be invalid."
 msgstr "Asume que los símbolos pueden ser no válidos."
 
 #: config/sh/sh.opt:301 config/arc/arc.opt:209
-#, fuzzy
-#| msgid "Annotate assembler instructions with estimated addresses"
 msgid "Annotate assembler instructions with estimated addresses."
 msgstr "Anota las instrucciones de ensamblador con direcciones estimadas."
 
 #: config/sh/sh.opt:305
-#, fuzzy
-#| msgid "Generate code in little endian mode"
 msgid "Generate code in little endian mode."
 msgstr "Genera código en modo little endian."
 
 #: config/sh/sh.opt:309
-#, fuzzy
-#| msgid "Mark MAC register as call-clobbered"
 msgid "Mark MAC register as call-clobbered."
 msgstr "Marca los registros MAC como sobreescritos por llamada."
 
 #: config/sh/sh.opt:315
-#, fuzzy
-#| msgid "Make structs a multiple of 4 bytes (warning: ABI altered)"
 msgid "Make structs a multiple of 4 bytes (warning: ABI altered)."
-msgstr "Marca los structs como un múltiplo de 4 bytes (aviso: se altera la ABI)."
+msgstr "Construye los structs como un múltiplo de 4 bytes (aviso: se altera la ABI)."
 
 #: config/sh/sh.opt:319
-#, fuzzy
-#| msgid "Emit function-calls using global offset table when generating PIC"
 msgid "Emit function-calls using global offset table when generating PIC."
 msgstr "Emite llamadas a función usando la tabla de desplazamiento global al generar PIC."
 
@@ -12515,34 +12314,26 @@ msgid "Assume pt* instructions won't trap"
 msgstr "Asume que las instrucciones pt* no capturarán"
 
 #: config/sh/sh.opt:327
-#, fuzzy
-#| msgid "Shorten address references during linking"
 msgid "Shorten address references during linking."
 msgstr "Abrevia las referencias de direcciones durante el enlace."
 
 #: config/sh/sh.opt:335
 msgid "Deprecated.  Use -matomic= instead to select the atomic model."
-msgstr ""
+msgstr "Obsoleta.  Utilice -matomic= en su lugar para seleccionar el modelo atómico."
 
 #: config/sh/sh.opt:339
-#, fuzzy
-#| msgid "Generate code for built-in atomic operations"
 msgid "Specify the model for atomic operations."
-msgstr "Genera código para operaciones atómicas internas."
+msgstr "Especifica el modelo para operaciones atómicas."
 
 #: config/sh/sh.opt:343
 msgid "Use tas.b instruction for __atomic_test_and_set."
-msgstr ""
+msgstr "Usa la instrucción tas.b para __atomic_test_and_set."
 
 #: config/sh/sh.opt:347
-#, fuzzy
-#| msgid "Deprecated.  Use -Os instead"
 msgid "Deprecated.  Use -Os instead."
 msgstr "Obsoleto. Utilice en su lugar -Os."
 
 #: config/sh/sh.opt:351
-#, fuzzy
-#| msgid "Cost to assume for a multiply insn"
 msgid "Cost to assume for a multiply insn."
 msgstr "Costo de asumir una instrucción multiply."
 
@@ -12555,198 +12346,134 @@ msgid "Pretend a branch-around-a-move is a conditional move."
 msgstr "Pretende que una ramificación-alrededor-de-un-movimiento es un movimiento condicional."
 
 #: config/sh/sh.opt:365
-#, fuzzy
-#| msgid "Enable the use of the short load instructions"
 msgid "Enable the use of the fsca instruction."
-msgstr "Activa el uso de las instrucciones short load."
+msgstr "Activa el uso de la instrucción fsca."
 
 #: config/sh/sh.opt:369
-#, fuzzy
-#| msgid "Enable the use of the short load instructions"
 msgid "Enable the use of the fsrra instruction."
-msgstr "Activa el uso de las instrucciones short load."
+msgstr "Activa el uso de la instrucción fsrra."
 
 #: config/sh/sh.opt:373
 msgid "Use LRA instead of reload (transitional)."
-msgstr ""
+msgstr "Usa LRA en lugar de reload (transicional)."
 
 #: config/fr30/fr30.opt:23
-#, fuzzy
-#| msgid "Assume small address space"
 msgid "Assume small address space."
 msgstr "Asume espacio de direcciones small."
 
 #: config/mep/mep.opt:23
-#, fuzzy
-#| msgid "Enable absolute difference instructions"
 msgid "Enable absolute difference instructions."
 msgstr "Activa las instrucciones de diferencia absoluta."
 
 #: config/mep/mep.opt:27
-#, fuzzy
-#| msgid "Enable all optional instructions"
 msgid "Enable all optional instructions."
 msgstr "Activa todas las instrucciones opcionales."
 
 #: config/mep/mep.opt:31
-#, fuzzy
-#| msgid "Enable average instructions"
 msgid "Enable average instructions."
 msgstr "Activa las instrucciones promedio."
 
 #: config/mep/mep.opt:35
-#, fuzzy
-#| msgid "Variables this size and smaller go in the based section. (default 0)"
 msgid "Variables this size and smaller go in the based section. (default 0)."
 msgstr "Las variables de este tamaño y menores van en la sección basada. (por defecto 0)."
 
 #: config/mep/mep.opt:39
-#, fuzzy
-#| msgid "Enable bit manipulation instructions"
 msgid "Enable bit manipulation instructions."
 msgstr "Activa las instrucciones de manipulación de bits."
 
 #: config/mep/mep.opt:43
-#, fuzzy
-#| msgid "Section to put all const variables in (tiny, near, far) (no default)"
 msgid "Section to put all const variables in (tiny, near, far) (no default)."
 msgstr "Sección para poner todas las variables const en (tiny, near, far) (sin valor por defecto)."
 
 #: config/mep/mep.opt:47
-#, fuzzy
-#| msgid "Enable clip instructions"
 msgid "Enable clip instructions."
 msgstr "Activa las instrucciones clip."
 
 #: config/mep/mep.opt:51
-#, fuzzy
-#| msgid "Configuration name"
 msgid "Configuration name."
 msgstr "Nombre de configuración."
 
 #: config/mep/mep.opt:55
-#, fuzzy
-#| msgid "Enable MeP Coprocessor"
 msgid "Enable MeP Coprocessor."
 msgstr "Habilita el Coprocesador MeP."
 
 #: config/mep/mep.opt:59
-#, fuzzy
-#| msgid "Enable MeP Coprocessor with 32-bit registers"
 msgid "Enable MeP Coprocessor with 32-bit registers."
 msgstr "Habilita el Coprocesador MeP con registros de 32-bit."
 
 #: config/mep/mep.opt:63
-#, fuzzy
-#| msgid "Enable MeP Coprocessor with 64-bit registers"
 msgid "Enable MeP Coprocessor with 64-bit registers."
 msgstr "Habilita el Coprocesador MeP con registros de 64-bit."
 
 #: config/mep/mep.opt:67
-#, fuzzy
-#| msgid "Enable IVC2 scheduling"
 msgid "Enable IVC2 scheduling."
 msgstr "Activa la planificación IVC2."
 
 #: config/mep/mep.opt:71
-#, fuzzy
-#| msgid "Const variables default to the near section"
 msgid "Const variables default to the near section."
-msgstr "Las variables cons van por defecto a la sección near."
+msgstr "Las variables const van por defecto a la sección near."
 
 #: config/mep/mep.opt:78
-#, fuzzy
-#| msgid "Enable 32-bit divide instructions"
 msgid "Enable 32-bit divide instructions."
 msgstr "Activa las instrucciones divide de 32-bit."
 
 #: config/mep/mep.opt:93
-#, fuzzy
-#| msgid "__io vars are volatile by default"
 msgid "__io vars are volatile by default."
 msgstr "__io vars son volatile por defecto."
 
 #: config/mep/mep.opt:97
-#, fuzzy
-#| msgid "All variables default to the far section"
 msgid "All variables default to the far section."
 msgstr "Todas las variables van por defecto a la sección far."
 
 #: config/mep/mep.opt:101
-#, fuzzy
-#| msgid "Enable leading zero instructions"
 msgid "Enable leading zero instructions."
 msgstr "Activa las instrucciones con ceros al inicio."
 
 #: config/mep/mep.opt:108
-#, fuzzy
-#| msgid "All variables default to the near section"
 msgid "All variables default to the near section."
 msgstr "Todas las variables van por defecto a la sección near."
 
 #: config/mep/mep.opt:112
-#, fuzzy
-#| msgid "Enable min/max instructions"
 msgid "Enable min/max instructions."
 msgstr "Activa las instrucciones min/max."
 
 #: config/mep/mep.opt:116
-#, fuzzy
-#| msgid "Enable 32-bit multiply instructions"
 msgid "Enable 32-bit multiply instructions."
 msgstr "Activa las instrucciones multiply de 32-bit."
 
 #: config/mep/mep.opt:120
-#, fuzzy
-#| msgid "Disable all optional instructions"
 msgid "Disable all optional instructions."
 msgstr "Desactiva todas las instrucciones opcionales."
 
 #: config/mep/mep.opt:127
-#, fuzzy
-#| msgid "Allow gcc to use the repeat/erepeat instructions"
 msgid "Allow gcc to use the repeat/erepeat instructions."
 msgstr "Permite a gcc usar las instrucciones repeat/erepeat."
 
 #: config/mep/mep.opt:131
-#, fuzzy
-#| msgid "All variables default to the tiny section"
 msgid "All variables default to the tiny section."
 msgstr "Todas las variables van por defecto a la sección tiny."
 
 #: config/mep/mep.opt:135
-#, fuzzy
-#| msgid "Enable saturation instructions"
 msgid "Enable saturation instructions."
 msgstr "Activa las instrucciones de saturación."
 
 #: config/mep/mep.opt:139
-#, fuzzy
-#| msgid "Use sdram version of runtime"
 msgid "Use sdram version of runtime."
 msgstr "Usa la versión sdram de tiempo de ejecución."
 
 #: config/mep/mep.opt:147
-#, fuzzy
-#| msgid "Use simulator runtime without vectors"
 msgid "Use simulator runtime without vectors."
 msgstr "Usa el simulador de tiempo de ejecución sin vectores."
 
 #: config/mep/mep.opt:151
-#, fuzzy
-#| msgid "All functions default to the far section"
 msgid "All functions default to the far section."
 msgstr "Todas las funciones van por defecto en la sección far."
 
 #: config/mep/mep.opt:155
-#, fuzzy
-#| msgid "Variables this size and smaller go in the tiny section. (default 4)"
 msgid "Variables this size and smaller go in the tiny section. (default 4)."
 msgstr "Las variables de este tamaño y menores van en la sección tiny. (por defecto 4)."
 
 #: config/mips/mips.opt:32
-#, fuzzy
-#| msgid "-mabi=ABI\tGenerate code that conforms to the given ABI"
 msgid "-mabi=ABI\tGenerate code that conforms to the given ABI."
 msgstr "-mabi=ABI\tGenera código que cumpla con la ABI dada."
 
@@ -12755,372 +12482,254 @@ msgid "Known MIPS ABIs (for use with the -mabi= option):"
 msgstr "ABIs MIPS conocidos (para uso con la opción -mabi=):"
 
 #: config/mips/mips.opt:55
-#, fuzzy
-#| msgid "Generate code that can be used in SVR4-style dynamic objects"
 msgid "Generate code that can be used in SVR4-style dynamic objects."
 msgstr "Genera código que se pueda usar en objetos dinámicos de estilo SVR4."
 
 #: config/mips/mips.opt:59
-#, fuzzy
-#| msgid "Use PMC-style 'mad' instructions"
 msgid "Use PMC-style 'mad' instructions."
 msgstr "Usa instrucciones 'mad' de estilo PMC."
 
 #: config/mips/mips.opt:63
-#, fuzzy
-#| msgid "Use multiply add/subtract instructions"
 msgid "Use integer madd/msub instructions."
-msgstr "Usa instrucciones acumular/sustraer de multiplicar."
+msgstr "Usa instrucciones madd/msub de enteros."
 
 #: config/mips/mips.opt:67
-#, fuzzy
-#| msgid "-march=ISA\tGenerate code for the given ISA"
 msgid "-march=ISA\tGenerate code for the given ISA."
 msgstr "-march=ISA\tGenera código para el ISA dado."
 
 #: config/mips/mips.opt:71
-#, fuzzy
-#| msgid "-mbranch-cost=COST\tSet the cost of branches to roughly COST instructions"
 msgid "-mbranch-cost=COST\tSet the cost of branches to roughly COST instructions."
 msgstr "-mbranch-cost=COSTO\tEstablece el costo de las ramificaciones aproximadamente a COSTO instrucciones."
 
 #: config/mips/mips.opt:75
-#, fuzzy
-#| msgid "Use Branch Likely instructions, overriding the architecture default"
 msgid "Use Branch Likely instructions, overriding the architecture default."
-msgstr "Usa instrucciones Branch Likely, sobreponiendo el valor por defecto para la arquitectura."
+msgstr "Usa instrucciones Branch Likely, anulando el valor predeterminado de la arquitectura."
 
 #: config/mips/mips.opt:79
-#, fuzzy
-#| msgid "Switch on/off MIPS16 ASE on alternating functions for compiler testing"
 msgid "Switch on/off MIPS16 ASE on alternating functions for compiler testing."
-msgstr "Activa/desactiva el ASE de MIPS16 en funciones alternates para pruebas del compilador."
+msgstr "Activa/desactiva el ASE de MIPS16 en funciones alternantes para pruebas del compilador."
 
 #: config/mips/mips.opt:83
-#, fuzzy
-#| msgid "Trap on integer divide by zero"
 msgid "Trap on integer divide by zero."
 msgstr "Atrapa la división entera por cero."
 
 #: config/mips/mips.opt:87
-#, fuzzy
-#| msgid "-mcode-readable=SETTING\tSpecify when instructions are allowed to access code"
 msgid "-mcode-readable=SETTING\tSpecify when instructions are allowed to access code."
-msgstr "-mcode-readable=OPCIÓN\tEspecifica cuando se permite que las instrucciones accedan código."
+msgstr "-mcode-readable=OPCIÓN\tEspecifica cuándo se permite que las instrucciones accedan al código."
 
 #: config/mips/mips.opt:91
 msgid "Valid arguments to -mcode-readable=:"
 msgstr "Argumentos válidos para -fcode-readable=:"
 
 #: config/mips/mips.opt:104
-#, fuzzy
-#| msgid "Use branch-and-break sequences to check for integer divide by zero"
 msgid "Use branch-and-break sequences to check for integer divide by zero."
 msgstr "Usa secuencias ramifica-y-para para revisar la división entera por cero."
 
 #: config/mips/mips.opt:108
-#, fuzzy
-#| msgid "Use trap instructions to check for integer divide by zero"
 msgid "Use trap instructions to check for integer divide by zero."
 msgstr "Usa instrucciones trap para revisar la división entera por cero."
 
 #: config/mips/mips.opt:112
-#, fuzzy
-#| msgid "Allow the use of MDMX instructions"
 msgid "Allow the use of MDMX instructions."
 msgstr "Permite el uso de las instrucciones MDMX."
 
 #: config/mips/mips.opt:116
-#, fuzzy
-#| msgid "Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations"
 msgid "Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations."
 msgstr "Permite que las instrucciones de coma flotante de hardware cubran tanto operaciones de 32-bit como de 64-bit."
 
 #: config/mips/mips.opt:120
-#, fuzzy
-#| msgid "Use MIPS-DSP instructions"
 msgid "Use MIPS-DSP instructions."
 msgstr "Usa instrucciones MIPS-DSP."
 
 #: config/mips/mips.opt:124
-#, fuzzy
-#| msgid "Use MIPS-DSP REV 2 instructions"
 msgid "Use MIPS-DSP REV 2 instructions."
 msgstr "Usa instrucciones MIPS-DSP REV 2."
 
 #: config/mips/mips.opt:146
-#, fuzzy
-#| msgid "Use the bit-field instructions"
 msgid "Use Enhanced Virtual Addressing instructions."
-msgstr "Usa las instrucciones de campos de bit."
+msgstr "Usa las instrucciones de direccionamiento virtual mejorado."
 
 #: config/mips/mips.opt:150
-#, fuzzy
-#| msgid "Use NewABI-style %reloc() assembly operators"
 msgid "Use NewABI-style %reloc() assembly operators."
 msgstr "Usa los operadores de ensamblador %reloc() del estilo NewABI."
 
 #: config/mips/mips.opt:154
-#, fuzzy
-#| msgid "Use -G for data that is not defined by the current object"
 msgid "Use -G for data that is not defined by the current object."
 msgstr "Usa -G para los datos que están definidos por el objeto actual."
 
 #: config/mips/mips.opt:158
-#, fuzzy
-#| msgid "Work around certain 24K errata"
 msgid "Work around certain 24K errata."
-msgstr "Evita errores de ciertos 24K."
+msgstr "Evita ciertos errores de 24K."
 
 #: config/mips/mips.opt:162
-#, fuzzy
-#| msgid "Work around certain R4000 errata"
 msgid "Work around certain R4000 errata."
-msgstr "Evita errores de ciertos R4000."
+msgstr "Evita ciertos errores de R4000."
 
 #: config/mips/mips.opt:166
-#, fuzzy
-#| msgid "Work around certain R4400 errata"
 msgid "Work around certain R4400 errata."
-msgstr "Evita errores de ciertos R4400."
+msgstr "Evita ciertos errores de R4400."
 
 #: config/mips/mips.opt:170
-#, fuzzy
-#| msgid "Work around certain R4000 errata"
 msgid "Work around certain RM7000 errata."
-msgstr "Evita errores de ciertos R4000."
+msgstr "Evita ciertos errores de R4000."
 
 #: config/mips/mips.opt:174
-#, fuzzy
-#| msgid "Work around certain R10000 errata"
 msgid "Work around certain R10000 errata."
-msgstr "Evita errores de ciertos R10000."
+msgstr "Evita ciertos errores de R10000."
 
 #: config/mips/mips.opt:178
-#, fuzzy
-#| msgid "Work around errata for early SB-1 revision 2 cores"
 msgid "Work around errata for early SB-1 revision 2 cores."
 msgstr "Evita los errores para núcleos tempranos SB-1 revisión 2."
 
 #: config/mips/mips.opt:182
-#, fuzzy
-#| msgid "Work around certain VR4120 errata"
 msgid "Work around certain VR4120 errata."
-msgstr "Evita errores de ciertos VR4120."
+msgstr "Evita ciertos errores de VR4120."
 
 #: config/mips/mips.opt:186
-#, fuzzy
-#| msgid "Work around VR4130 mflo/mfhi errata"
 msgid "Work around VR4130 mflo/mfhi errata."
 msgstr "Evita el error mflo/mfhi del VR4130."
 
 #: config/mips/mips.opt:190
-#, fuzzy
-#| msgid "Work around an early 4300 hardware bug"
 msgid "Work around an early 4300 hardware bug."
 msgstr "Evita el error de hardware de los primeros 4300."
 
 #: config/mips/mips.opt:194
-#, fuzzy
-#| msgid "FP exceptions are enabled"
 msgid "FP exceptions are enabled."
 msgstr "Las excepciones FP están activadas."
 
 #: config/mips/mips.opt:198
-#, fuzzy
-#| msgid "Use 32-bit floating-point registers"
 msgid "Use 32-bit floating-point registers."
 msgstr "Usa los registros de coma flotante de 32-bit."
 
 #: config/mips/mips.opt:202
 msgid "Conform to the o32 FPXX ABI."
-msgstr ""
+msgstr "Conforma al o32 FPXX ABI."
 
 #: config/mips/mips.opt:206
-#, fuzzy
-#| msgid "Use 64-bit floating-point registers"
 msgid "Use 64-bit floating-point registers."
 msgstr "Usa los registros de coma flotante de 64-bit."
 
 #: config/mips/mips.opt:210
-#, fuzzy
-#| msgid "-mflush-func=FUNC\tUse FUNC to flush the cache before calling stack trampolines"
 msgid "-mflush-func=FUNC\tUse FUNC to flush the cache before calling stack trampolines."
 msgstr "-mflush-func=FUNC\tUsa FUNC para vaciar el caché antes de llamar a los trampolines de pila."
 
 #: config/mips/mips.opt:214
 msgid "-mabs=MODE\tSelect the IEEE 754 ABS/NEG instruction execution mode."
-msgstr ""
+msgstr "-mabs=MODO\tSelecciona el modo de ejecución de instrucciones IEEE 754 ABS/NEG."
 
 #: config/mips/mips.opt:218
 msgid "-mnan=ENCODING\tSelect the IEEE 754 NaN data encoding."
-msgstr ""
+msgstr "-mnan=CODIFICACIÓN\tSelecciona la codificación de datos IEEE 754 NaN."
 
 #: config/mips/mips.opt:222
-#, fuzzy
-#| msgid "Known MIPS CPUs (for use with the -march= and -mtune= options):"
 msgid "Known MIPS IEEE 754 settings (for use with the -mabs= and -mnan= options):"
-msgstr "CPUs MIPS conocidos (para uso con las opciones -march= y -mtune=):"
+msgstr "Configuración de lso MIPS IEEE 754 conocidos (para uso con las opciones -mabs= y -mnan=):"
 
 #: config/mips/mips.opt:232
-#, fuzzy
-#| msgid "Use 32-bit general registers"
 msgid "Use 32-bit general registers."
 msgstr "Usa los registros generales de 32-bit."
 
 #: config/mips/mips.opt:236
-#, fuzzy
-#| msgid "Use 64-bit general registers"
 msgid "Use 64-bit general registers."
 msgstr "Usa los registros generales de 64-bit."
 
 #: config/mips/mips.opt:240
-#, fuzzy
-#| msgid "Use GP-relative addressing to access small data"
 msgid "Use GP-relative addressing to access small data."
 msgstr "Usa el direccionamiento relativo al GP para acceder a datos small."
 
 #: config/mips/mips.opt:244
-#, fuzzy
-#| msgid "When generating -mabicalls code, allow executables to use PLTs and copy relocations"
 msgid "When generating -mabicalls code, allow executables to use PLTs and copy relocations."
 msgstr "Al generar código -mabicalls, permite que los ejecutables usen PLTs y copien reubicaciones."
 
 #: config/mips/mips.opt:248
-#, fuzzy
-#| msgid "Allow the use of hardware floating-point ABI and instructions"
 msgid "Allow the use of hardware floating-point ABI and instructions."
 msgstr "Permite el uso de la ABI y las instrucciones de coma flotante de hardware."
 
 #: config/mips/mips.opt:252
-#, fuzzy
-#| msgid "Generate code that can be safely linked with MIPS16 code."
 msgid "Generate code that is link-compatible with MIPS16 and microMIPS code."
-msgstr "Genera código que se puede enlazar sin problemas con código MIPS16."
+msgstr "Genera código que se puede enlazar con código MIPS16 microMIPS."
 
 #: config/mips/mips.opt:256
-#, fuzzy
-#| msgid "Does nothing. Preserved for backward compatibility."
 msgid "An alias for minterlink-compressed provided for backward-compatibility."
-msgstr "No hace nada. Preservado por compatibilidad hacia atrás."
+msgstr "Sinónimo de minterlink-compressed, preservado por compatibilidad hacia atrás."
 
 #: config/mips/mips.opt:260
-#, fuzzy
-#| msgid "-mipsN\tGenerate code for ISA level N"
 msgid "-mipsN\tGenerate code for ISA level N."
 msgstr "-mipsN\tGenera código para ISA nivel N."
 
 #: config/mips/mips.opt:264
-#, fuzzy
-#| msgid "Generate MIPS16 code"
 msgid "Generate MIPS16 code."
 msgstr "Genera código MIPS16."
 
 #: config/mips/mips.opt:268
-#, fuzzy
-#| msgid "Use MIPS-3D instructions"
 msgid "Use MIPS-3D instructions."
 msgstr "Usa instrucciones MIPS-3D."
 
 #: config/mips/mips.opt:272
-#, fuzzy
-#| msgid "Use ll, sc and sync instructions"
 msgid "Use ll, sc and sync instructions."
 msgstr "Usa las instrucciones ll, sc y sync."
 
 #: config/mips/mips.opt:276
-#, fuzzy
-#| msgid "Use -G for object-local data"
 msgid "Use -G for object-local data."
 msgstr "Usa -G para los datos del objeto local."
 
 #: config/mips/mips.opt:280
-#, fuzzy
-#| msgid "Use indirect calls"
 msgid "Use indirect calls."
 msgstr "Usa llamadas indirectas."
 
 #: config/mips/mips.opt:284
-#, fuzzy
-#| msgid "Use a 32-bit long type"
 msgid "Use a 32-bit long type."
 msgstr "Usa un tipo long de 32-bit."
 
 #: config/mips/mips.opt:288
-#, fuzzy
-#| msgid "Use a 64-bit long type"
 msgid "Use a 64-bit long type."
 msgstr "Usa un tipo long de 64-bit."
 
 #: config/mips/mips.opt:292
-#, fuzzy
-#| msgid "Pass the address of the ra save location to _mcount in $12"
 msgid "Pass the address of the ra save location to _mcount in $12."
 msgstr "Pasa la dirección de la ubicación de ra save a _mcount en $12."
 
 #: config/mips/mips.opt:296
-#, fuzzy
-#| msgid "Don't optimize block moves"
 msgid "Don't optimize block moves."
 msgstr "No optimiza los movimientos de bloques."
 
 #: config/mips/mips.opt:300
-#, fuzzy
-#| msgid "Use SmartMIPS instructions"
 msgid "Use microMIPS instructions."
-msgstr "Usa instrucciones SmartMIPS."
+msgstr "Usa instrucciones microMIPS."
 
 #: config/mips/mips.opt:304
-#, fuzzy
-#| msgid "Allow the use of MT instructions"
 msgid "Allow the use of MT instructions."
 msgstr "Permite el uso de las instrucciones MT."
 
 #: config/mips/mips.opt:308
-#, fuzzy
-#| msgid "Prevent the use of all floating-point operations"
 msgid "Prevent the use of all floating-point operations."
 msgstr "Previene el uso de todas las instrucciones de coma flotante."
 
 #: config/mips/mips.opt:312
-#, fuzzy
-#| msgid "Use MIPS-3D instructions"
 msgid "Use MCU instructions."
-msgstr "Usa instrucciones MIPS-3D."
+msgstr "Usa instrucciones MCU."
 
 #: config/mips/mips.opt:316
-#, fuzzy
-#| msgid "Do not use a cache-flushing function before calling stack trampolines"
 msgid "Do not use a cache-flushing function before calling stack trampolines."
 msgstr "No usa una función que vacíe el caché antes de llamar los trampolines de pila."
 
 #: config/mips/mips.opt:320
-#, fuzzy
-#| msgid "Do not use MDMX instructions"
 msgid "Do not use MDMX instructions."
 msgstr "No usa instrucciones MDMX."
 
 #: config/mips/mips.opt:324
-#, fuzzy
-#| msgid "Generate normal-mode code"
 msgid "Generate normal-mode code."
 msgstr "Genera código normal-mode."
 
 #: config/mips/mips.opt:328
-#, fuzzy
-#| msgid "Do not use MIPS-3D instructions"
 msgid "Do not use MIPS-3D instructions."
 msgstr "No usa instrucciones MIPS-3D."
 
 #: config/mips/mips.opt:332
-#, fuzzy
-#| msgid "Use paired-single floating-point instructions"
 msgid "Use paired-single floating-point instructions."
 msgstr "Usa instrucciones apareadas-sencillas de coma flotante."
 
 #: config/mips/mips.opt:336
-#, fuzzy
-#| msgid "-mr10k-cache-barrier=SETTING\tSpecify when r10k cache barriers should be inserted"
 msgid "-mr10k-cache-barrier=SETTING\tSpecify when r10k cache barriers should be inserted."
 msgstr "-mr10k-cache-barrier=OPCIÓN\tEspecifica cuando se deben insertar las barreras de caché de r10k."
 
@@ -13129,94 +12738,64 @@ msgid "Valid arguments to -mr10k-cache-barrier=:"
 msgstr "Argumentos válidos para -mr10k-cache-barrier=:"
 
 #: config/mips/mips.opt:353
-#, fuzzy
-#| msgid "Try to allow the linker to turn PIC calls into direct calls"
 msgid "Try to allow the linker to turn PIC calls into direct calls."
 msgstr "Trata de permitir que el enlazador convierta las llamadas PIC a llamadas directas."
 
 #: config/mips/mips.opt:357
-#, fuzzy
-#| msgid "When generating -mabicalls code, make the code suitable for use in shared libraries"
 msgid "When generating -mabicalls code, make the code suitable for use in shared libraries."
 msgstr "Al generar código -mabicalls, hace que el código sea adecuado para su uso en bibliotecas compartidas."
 
 #: config/mips/mips.opt:361
-#, fuzzy
-#| msgid "Restrict the use of hardware floating-point instructions to 32-bit operations"
 msgid "Restrict the use of hardware floating-point instructions to 32-bit operations."
 msgstr "Restringe el uso de instrucciones de coma flotante de hardware para operaciones de 32-bit."
 
 #: config/mips/mips.opt:365
-#, fuzzy
-#| msgid "Use SmartMIPS instructions"
 msgid "Use SmartMIPS instructions."
 msgstr "Usa instrucciones SmartMIPS."
 
 #: config/mips/mips.opt:369
-#, fuzzy
-#| msgid "Prevent the use of all hardware floating-point instructions"
 msgid "Prevent the use of all hardware floating-point instructions."
 msgstr "Previene el uso de todas las instrucciones de coma flotante de hardware."
 
 #: config/mips/mips.opt:373
-#, fuzzy
-#| msgid "Optimize lui/addiu address loads"
 msgid "Optimize lui/addiu address loads."
 msgstr "Optimiza las cargas de las direcciones lui/addiu."
 
 #: config/mips/mips.opt:377
-#, fuzzy
-#| msgid "Assume all symbols have 32-bit values"
 msgid "Assume all symbols have 32-bit values."
 msgstr "Asume que todos los símbolos tienen valores de 32-bit."
 
 #: config/mips/mips.opt:381
-#, fuzzy
-#| msgid "Use synci instruction to invalidate i-cache"
 msgid "Use synci instruction to invalidate i-cache."
 msgstr "Usa la instrucción synci para invalidar el i-caché."
 
 #: config/mips/mips.opt:389
-#, fuzzy
-#| msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR"
 msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR."
 msgstr "-mtune=PROCESADOR\tOptimiza la salida para el PROCESADOR."
 
 #: config/mips/mips.opt:397
-#, fuzzy
-#| msgid "Use decimal floating point instructions"
 msgid "Use Virtualization Application Specific instructions."
-msgstr "Usa instrucciones de coma flotante decimal."
+msgstr "Usa instrucciones específicas de aplicación de virtualización."
 
 #: config/mips/mips.opt:401
-#, fuzzy
-#| msgid "Use vector/scalar (VSX) instructions"
 msgid "Use eXtended Physical Address (XPA) instructions."
-msgstr "Usa instrucciones (VSX) vector/escalar."
+msgstr "Usa instrucciones de direcciones físicas extendidas (XPA)."
 
 #: config/mips/mips.opt:405
-#, fuzzy
-#| msgid "Perform VR4130-specific alignment optimizations"
 msgid "Perform VR4130-specific alignment optimizations."
 msgstr "Realiza optimizaciones de alineación específicas para VR4130."
 
 #: config/mips/mips.opt:409
-#, fuzzy
-#| msgid "Lift restrictions on GOT size"
 msgid "Lift restrictions on GOT size."
 msgstr "Levanta restricciones en el tamaño de GOT."
 
 #: config/mips/mips.opt:413
-#, fuzzy
-#| msgid "Don't allocate floats and doubles in extended-precision registers"
 msgid "Enable use of odd-numbered single-precision registers."
-msgstr "No aloja floats y doubles en registros de precisión extendida."
+msgstr "Activa el uso de registros de precisión sencilla impares."
 
 #: config/mips/mips.opt:417
-#, fuzzy
-#| msgid "Optimize for space rather than speed"
 msgid "Optimize frame header."
-msgstr "Optimiza para espacio en lugar de velocidad."
+msgstr "Optimiza la cabecera de marco."
 
 #: config/mips/mips.opt:424
 #, fuzzy
@@ -13226,11 +12805,11 @@ msgstr "Activa la eliminación de almacenamiento muerto."
 
 #: config/mips/mips.opt:428
 msgid "Specify the compact branch usage policy."
-msgstr ""
+msgstr "Especifica la política de uso de ramificación compacta."
 
 #: config/mips/mips.opt:432
 msgid "Policies available for use with -mcompact-branches=:"
-msgstr ""
+msgstr "Políticas disponibles para usar con -mcompact-branches=:"
 
 #: config/mips/mips-tables.opt:24
 msgid "Known MIPS CPUs (for use with the -march= and -mtune= options):"
@@ -13253,120 +12832,92 @@ msgid "Compile with 64 bit longs and pointers."
 msgstr "Compila con longs y punteros de 64 bit."
 
 #: config/tilegx/tilegx.opt:53
-#, fuzzy
-#| msgid "Use given x86-64 code model"
 msgid "Use given TILE-Gx code model."
-msgstr "Usa el modelo de código del x86-64 dado."
+msgstr "Usa el modelo de código del TILE-Gx dado."
 
 #: config/arc/arc.opt:26
-#, fuzzy
-#| msgid "Generate code in big endian mode"
 msgid "Compile code for big endian mode."
-msgstr "Genera código en modo big endian."
+msgstr "Compila código para modo big endian."
 
 #: config/arc/arc.opt:30
-#, fuzzy
-#| msgid "Stores doubles in 32 bits.  This is the default."
 msgid "Compile code for little endian mode.  This is the default."
-msgstr "Almacena dobles en 32 bits.  Este es el valor por defecto."
+msgstr "Compila código para modo little endian.  Este es el valor predefinido."
 
 #: config/arc/arc.opt:34
 msgid "Disable ARCompact specific pass to generate conditional execution instructions."
-msgstr ""
+msgstr "Desactiva el paso específico ARCompact para generar instrucciones de ejecución condicional."
 
 #: config/arc/arc.opt:38
 msgid "Generate ARCompact 32-bit code for ARC600 processor."
-msgstr ""
+msgstr "Genera código de 32 bits ARCompact para el procesador ARC600."
 
 #: config/arc/arc.opt:42
-#, fuzzy
-#| msgid "Same as -mcpu=i386"
 msgid "Same as -mA6."
-msgstr "Igual que -mcpu=i386."
+msgstr "Igual que -mA6."
 
 #: config/arc/arc.opt:46
 msgid "Generate ARCompact 32-bit code for ARC601 processor."
-msgstr ""
+msgstr "Genera código de 32 bits ARCompact para el procesador ARC601."
 
 #: config/arc/arc.opt:50
 msgid "Generate ARCompact 32-bit code for ARC700 processor."
-msgstr ""
+msgstr "Genera código de 32 bits ARCompact para el procesador ARC700."
 
 #: config/arc/arc.opt:54
-#, fuzzy
-#| msgid "Same as -mcpu=i386"
 msgid "Same as -mA7."
-msgstr "Igual que -mcpu=i386."
+msgstr "Igual que -mA7."
 
 #: config/arc/arc.opt:58
 msgid "-mmpy-option={0,1,2,3,4,5,6,7,8,9} Compile ARCv2 code with a multiplier design option.  Option 2 is default on."
-msgstr ""
+msgstr "-mmpy-option={0,1,2,3,4,5,6,7,8,9} Compila código ARCv2 con una opción de diseño de multiplicador.  La opción 2 es la activa predefinida."
 
 #: config/arc/arc.opt:62
-#, fuzzy
-#| msgid "Enable clip instructions"
 msgid "Enable DIV-REM instructions for ARCv2."
-msgstr "Activa las instrucciones clip."
+msgstr "Activa las instrucciones DIV-REM para ARCv2."
 
 #: config/arc/arc.opt:66
-#, fuzzy
-#| msgid "Enable barrel shift instructions"
 msgid "Enable code density instructions for ARCv2."
-msgstr "Activa las instrucciones barrel shift."
+msgstr "Activa las instrucciones de densidad de código para ARCv2."
 
 #: config/arc/arc.opt:70
-#, fuzzy
-#| msgid "preferentially allocate registers that allow short instruction generation."
 msgid "Tweak register allocation to help 16-bit instruction generation."
-msgstr "aloja de preferencia registros que permitan la generación de instrucciones short."
+msgstr "Retoca la asignación de registros para ayudar a la generación de instrucciones de 16 bits."
 
 #: config/arc/arc.opt:80
 msgid "Use ordinarily cached memory accesses for volatile references."
-msgstr ""
+msgstr "Usa accesos normales a memoria cacheada para referencias volátiles."
 
 #: config/arc/arc.opt:84
-#, fuzzy
-#| msgid "Don't use data cache for volatile mem refs"
 msgid "Enable cache bypass for volatile references."
-msgstr "No usar el caché de datos para referencias a memoria volatile."
+msgstr "Activa el bypass de caché para referencias volátiles."
 
 #: config/arc/arc.opt:88
-#, fuzzy
-#| msgid "Generate string instructions for block moves"
 msgid "Generate instructions supported by barrel shifter."
-msgstr "Genera instrucciones de cadena para movimiento de bloques."
+msgstr "Genera instrucciones admitidas por el barrel shift."
 
 #: config/arc/arc.opt:92
-#, fuzzy
-#| msgid "Generate bit instructions"
 msgid "Generate norm instruction."
-msgstr "Genera instrucciones bit."
+msgstr "Genera instrucciones norm."
 
 #: config/arc/arc.opt:96
-#, fuzzy
-#| msgid "Generate isel instructions"
 msgid "Generate swap instruction."
-msgstr "Genera instrucciones isel."
+msgstr "Genera instrucciones swap."
 
 #: config/arc/arc.opt:100
-#, fuzzy
-#| msgid "Generate load/store multiple instructions"
 msgid "Generate mul64 and mulu64 instructions."
-msgstr "Genera múltiples instrucciones load/store."
+msgstr "Genera instrucciones mul64 y mulu64."
 
 #: config/arc/arc.opt:104
-#, fuzzy
-#| msgid "Do not generate multm instructions"
 msgid "Do not generate mpy instructions for ARC700."
-msgstr "No generar instrucciones multm."
+msgstr "No generar instrucciones mpy para ARC700."
 
 #: config/arc/arc.opt:108
 msgid "Generate Extended arithmetic instructions.  Currently only divaw, adds, subs and sat16 are supported."
-msgstr ""
+msgstr "Genera instrucciones de aritmética extendida.  Actualmente solo se dispone de divaw, adds, subs y sat16."
 
 #: config/arc/arc.opt:112
 msgid "Dummy flag. This is the default unless FPX switches are provided explicitly."
-msgstr ""
+msgstr "Indicador tonto. Es el predefinido a menos que que se proporcionen switches FPX explícitamente."
 
 #: config/arc/arc.opt:116
 #, fuzzy
