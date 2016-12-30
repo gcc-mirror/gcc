@@ -2138,7 +2138,10 @@ Type::gc_symbol_pointer(Gogo* gogo)
   Location bloc = Linemap::predeclared_location();
   Bexpression* var_expr =
       gogo->backend()->var_expression(t->gc_symbol_var_, VE_rvalue, bloc);
-  return gogo->backend()->address_expression(var_expr, bloc);
+  Bexpression* addr_expr =
+      gogo->backend()->address_expression(var_expr, bloc);
+  Btype* ubtype = Type::lookup_integer_type("uintptr")->get_backend(gogo);
+  return gogo->backend()->convert_expression(ubtype, addr_expr, bloc);
 }
 
 // A mapping from unnamed types to GC symbol variables.
