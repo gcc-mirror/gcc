@@ -740,9 +740,9 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
                                                           "__size", uint_type);
 
   Location builtin_loc = Linemap::predeclared_location();
-  Expression* length = Expression::make_integer_ul(var_gc.size(), NULL,
-						   builtin_loc);
-
+  unsigned roots_len = var_gc.size() + this->gc_roots_.size() + 1;
+  Expression* length = Expression::make_integer_ul(roots_len, NULL,
+                                                   builtin_loc);
   Array_type* root_array_type = Type::make_array_type(root_type, length);
   Type* ptdt = Type::make_type_descriptor_ptr_type();
   Struct_type* root_list_type =
