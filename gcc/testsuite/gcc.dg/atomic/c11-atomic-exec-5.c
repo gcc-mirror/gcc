@@ -24,7 +24,7 @@
 			 | FE_OVERFLOW		\
 			 | FE_UNDERFLOW)
 
-#if defined __alpha__
+#if defined __alpha__ || defined __aarch64__
   #define ITER_COUNT 100
 #else
   #define ITER_COUNT 10000
