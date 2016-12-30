@@ -1,3 +1,9 @@
+2016-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/78745
+	* exgettext: Handle multi-line help texts in *.opt files.
+	* gcc.pot: Regenerate.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
