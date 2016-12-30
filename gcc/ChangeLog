@@ -1,3 +1,12 @@
+2016-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (ext_register_operand): Do not reject
+	registers without upper parts here.
+	* config/i386/i386.md (extv<mode>): Copy registers without
+	upper parts in operand 1 to a pseudo.
+	(extzv<mode>): Ditto.
+	(insv<mode>): Ditto.
+
 2016-12-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/standards.texi (Standards): Remove broken reference to
