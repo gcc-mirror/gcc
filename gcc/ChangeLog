@@ -1,3 +1,8 @@
+2016-12-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/cppopts.texi: Reorder table entries to put the most 
+	commonly-used options first and debug options last.
+
 2016-12-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*testqi_ext_3): Merge insn pattern and
