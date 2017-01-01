@@ -1,3 +1,8 @@
+2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/77674
+	* g++.dg/torture/pr77674.C: New testcase.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
