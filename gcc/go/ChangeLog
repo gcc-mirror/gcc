@@ -1,3 +1,7 @@
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2016-12-16  Than McIntosh  <thanm@google.com>
 
 	* go-gcc.cc (Gcc_backend::expression_statement): Add Bfunction*
@@ -1340,7 +1344,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2016 Free Software Foundation, Inc.
+Copyright (C) 2010-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
