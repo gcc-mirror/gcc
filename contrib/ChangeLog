@@ -1,3 +1,8 @@
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (TestsuiteFilter): Skip params/README.
+	(GCCCmdLine): Remove libjava and libjava/testsuite add_dir.
+
 2016-12-14  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: Add new column to output and new sorting
