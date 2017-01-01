@@ -1,7 +1,11 @@
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
-	Richard Biener  <rguenther@suse.de>
-    
-    	* config-lang.in (gtfiles): Add c/c-parser.h.
+	    Richard Biener  <rguenther@suse.de>
+
+	* config-lang.in (gtfiles): Add c/c-parser.h.
 
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
@@ -3691,7 +3695,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2016 Free Software Foundation, Inc.
+Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
