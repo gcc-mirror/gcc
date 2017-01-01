@@ -1,3 +1,7 @@
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2016-12-01  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Don't use pkg-config to check for bdw-gc.
@@ -3437,7 +3441,7 @@ Mon Sep 21 23:27:10 1998  Ovidiu Predescu <ovidiu@slip.net>
 
 	* New directory.  Moved files from ../gcc/objc.
 
-Copyright (C) 1998-2016 Free Software Foundation, Inc.
+Copyright (C) 1998-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,3 +1,7 @@
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2016-11-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR lto/78562
@@ -5556,7 +5560,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2016 Free Software Foundation, Inc.
+Copyright (C) 2006-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

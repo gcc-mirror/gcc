@@ -1,5 +1,7 @@
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	* libitm.texi: Bump @copying's copyright year.
 
 2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>

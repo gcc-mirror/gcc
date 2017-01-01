@@ -1,3 +1,7 @@
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2016-12-19  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	* config.host (*-*-netbsd*): Add t-eh-dw2-dip to tmake_file.
@@ -8255,7 +8259,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2016 Free Software Foundation, Inc.
+Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
