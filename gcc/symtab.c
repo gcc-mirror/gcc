@@ -2214,6 +2214,9 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
 {
   if (!definition)
     return false;
+  if (transparent_alias)
+    return definition
+	   && get_alias_target()->binds_to_current_def_p (ref);
   if (decl_binds_to_current_def_p (decl))
     return true;
 
@@ -2225,8 +2228,6 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
   if (DECL_EXTERNAL (decl))
     return false;
 
-  if (!externally_visible)
-    debug ();
   gcc_assert (externally_visible);
 
   if (ref)
