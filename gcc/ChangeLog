@@ -1,3 +1,11 @@
+2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/77484
+	* predict.def (PRED_CALL): Update hitrate.
+	(PRED_INDIR_CALL, PRED_POLYMORPHIC_CALL): New predictors.
+	* predict.c (tree_estimate_probability_bb): Split CALL predictor
+	into direct/indirect/polymorphic variants.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
