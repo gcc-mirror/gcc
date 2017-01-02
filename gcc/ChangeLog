@@ -1,3 +1,14 @@
+2017-01-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78967
+	* config/i386/i386.md (UNSPEC_NOREX_MEM): New unspec.
+	(*insvqi_1): New insn pattern.
+	(*insvqi_1_mem_rex64): Ditto.
+	(*insvqi_2): Ditto.
+	(*insvqi_3): Rename from *insvqi.
+
+	(*extzvqi_mem_rex64): Add UNSPEC_NOREX_MEM tag.
+
 2017-01-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/cfg.texi (Edges): Remove reference to Java.

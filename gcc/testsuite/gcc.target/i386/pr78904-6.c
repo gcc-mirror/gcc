@@ -18,4 +18,4 @@ void foo (struct S1 a, size_t i)
   t[i] = a.val;
 }
 
-/* { dg-final { scan-assembler "\[ \t\]movb\[\t \]*%.h," } } */
+/* { dg-final { scan-assembler "\[ \t\]movb\[\t \]*%.h, t" } } */
