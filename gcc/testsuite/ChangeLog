@@ -1,3 +1,14 @@
+2017-01-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78967
+	* gcc.target/i386/pr78967-1.c: New test.
+	* gcc.target/i386/pr78967-2.c: Ditto.
+	* gcc.target/i386/pr78967-3.c: Ditto.
+
+	* gcc.target/i386/pr78904-2.c: Tighten scan-asm patterns.
+	* gcc.target/i386/pr78904-4.c: Ditto.
+	* gcc.target/i386/pr78904-6.c: Ditto.
+
 2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/77674
