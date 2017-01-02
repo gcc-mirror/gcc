@@ -1,3 +1,8 @@
+2017-01-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/cfg.texi (Edges): Remove reference to Java.
+	(Maintaining the CFG): Ditto.
+
 2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/77674
