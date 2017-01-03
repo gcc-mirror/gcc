@@ -131,7 +131,7 @@ public:
   void handle_gimple_call (gimple_stmt_iterator*);
 
   struct call_info;
-  bool compute_format_length (const call_info &, format_result *);
+  bool compute_format_length (call_info &, format_result *);
 };
 
 bool
@@ -710,7 +710,8 @@ struct pass_sprintf_length::call_info
 
   /* True for bounded functions like snprintf that specify a zero-size
      buffer as a request to compute the size of output without actually
-     writing any.  */
+     writing any.  NOWRITE is cleared in response to the %n directive
+     which has side-effects similar to writing output.  */
   bool nowrite;
 };
 
@@ -2357,7 +2358,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
    that caused the processing to be terminated early).  */
 
 bool
-pass_sprintf_length::compute_format_length (const call_info &info,
+pass_sprintf_length::compute_format_length (call_info &info,
 					    format_result *res)
 {
   /* The variadic argument counter.  */
@@ -2624,6 +2625,9 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 	  return false;
 
 	case 'n':
+	  /* %n has side-effects even when nothing is actually printed to
+	     any buffer.  */
+	  info.nowrite = false;
 	  break;
 
 	case 'c':
