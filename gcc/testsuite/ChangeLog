@@ -1,3 +1,10 @@
+2017-01-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/dg-test-1.c: Add tests of relative line specifications
+	with more than one digit.
+	* lib/gcc-dg.exp (process-message): Support more than one digit
+	in relative line specifications.
+
 2017-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78965
