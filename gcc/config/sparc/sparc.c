@@ -1523,6 +1523,10 @@ sparc_option_override (void)
   if (TARGET_ARCH32)
     target_flags &= ~MASK_STACK_BIAS;
 
+  /* Use LRA instead of reload, unless otherwise instructed.  */
+  if (!(target_flags_explicit & MASK_LRA))
+    target_flags |= MASK_LRA;
+
   /* Supply a default value for align_functions.  */
   if (align_functions == 0
       && (sparc_cpu == PROCESSOR_ULTRASPARC
