@@ -1279,7 +1279,6 @@ markroot(ParFor *desc, uint32 i)
 		// For gccgo we use this for all the other global roots.
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_m0, sizeof runtime_m0, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_g0, sizeof runtime_g0, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_allg, sizeof runtime_allg, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allm, sizeof runtime_allm, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allp, sizeof runtime_allp, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&work, sizeof work, 0});
@@ -1334,9 +1333,9 @@ markroot(ParFor *desc, uint32 i)
 
 	default:
 		// the rest is scanning goroutine stacks
-		if(i - RootCount >= runtime_allglen)
+		if(i - RootCount >= runtime_getallglen())
 			runtime_throw("markroot: bad index");
-		gp = runtime_allg[i - RootCount];
+		gp = runtime_getallg(i - RootCount);
 		// remember when we've first observed the G blocked
 		// needed only to output in traceback
 		if((gp->atomicstatus == _Gwaiting || gp->atomicstatus == _Gsyscall) && gp->waitsince == 0)
@@ -2243,7 +2242,7 @@ gc(struct gc_args *args)
 	work.nwait = 0;
 	work.ndone = 0;
 	work.nproc = runtime_gcprocs();
-	runtime_parforsetup(work.markfor, work.nproc, RootCount + runtime_allglen, false, &markroot_funcval);
+	runtime_parforsetup(work.markfor, work.nproc, RootCount + runtime_getallglen(), false, &markroot_funcval);
 	if(work.nproc > 1) {
 		runtime_noteclear(&work.alldone);
 		runtime_helpgc(work.nproc);

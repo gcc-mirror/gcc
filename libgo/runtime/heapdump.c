@@ -311,8 +311,8 @@ dumpgs(void)
 	uint32 i;
 
 	// goroutines & stacks
-	for(i = 0; i < runtime_allglen; i++) {
-		gp = runtime_allg[i];
+	for(i = 0; i < runtime_getallglen(); i++) {
+		gp = runtime_getallg(i);
 		switch(gp->atomicstatus){
 		default:
 			runtime_printf("unexpected G.status %d\n", gp->atomicstatus);

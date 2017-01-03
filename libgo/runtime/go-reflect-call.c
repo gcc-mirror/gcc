@@ -9,7 +9,6 @@
 #include <stdlib.h>
 
 #include "runtime.h"
-#include "go-alloc.h"
 #include "go-assert.h"
 #include "go-type.h"
 
