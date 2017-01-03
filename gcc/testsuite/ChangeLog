@@ -1,6 +1,14 @@
 2017-01-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-12-21  Martin Liska  <mliska@suse.cz>
+
+	PR driver/78863
+	* gcc.dg/spellcheck-options-13.c: New test.
+
+2017-01-03  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2016-12-22  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/78886
