@@ -3643,8 +3643,7 @@ mark_label_nuses (rtx x)
 rtx_insn *
 try_split (rtx pat, rtx_insn *trial, int last)
 {
-  rtx_insn *before = PREV_INSN (trial);
-  rtx_insn *after = NEXT_INSN (trial);
+  rtx_insn *before, *after;
   rtx note;
   rtx_insn *seq, *tem;
   int probability;
@@ -3817,6 +3816,9 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  insn = PREV_INSN (insn);
 	}
     }
+
+  before = PREV_INSN (trial);
+  after = NEXT_INSN (trial);
 
   tem = emit_insn_after_setloc (seq, trial, INSN_LOCATION (trial));
 
