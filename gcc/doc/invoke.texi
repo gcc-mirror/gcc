@@ -21184,8 +21184,7 @@ This switch has been deprecated.  Use @option{-misel} and
 
 @item -mlra
 @opindex mlra
-Enable Local Register Allocation.  This is still experimental for PowerPC,
-so by default the compiler uses standard reload
+Enable Local Register Allocation. By default the port uses LRA.
 (i.e. @option{-mno-lra}).
 
 @item -mspe
