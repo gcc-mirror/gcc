@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 2009-2014, Free Software Foundation, Inc.      --
+--             Copyright (C) 2009-2017, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the mipsel version of this package
+--  This is the MIPS version of this package
 
 --  This package encapsulates cpu specific differences between implementations
 --  of GNU/Linux, in order to share s-osinte-linux.ads.
@@ -43,6 +43,7 @@ package System.Linux is
    -- Time --
    ----------
 
+   subtype int         is Interfaces.C.int;
    subtype long        is Interfaces.C.long;
    subtype suseconds_t is Interfaces.C.long;
    subtype time_t      is Interfaces.C.long;
@@ -69,7 +70,7 @@ package System.Linux is
    EINVAL    : constant := 22;
    ENOMEM    : constant := 12;
    EPERM     : constant := 1;
-   ETIMEDOUT : constant := 110;
+   ETIMEDOUT : constant := 145;
 
    -------------
    -- Signals --
@@ -82,45 +83,52 @@ package System.Linux is
    SIGTRAP    : constant := 5; --  trace trap (not reset)
    SIGIOT     : constant := 6; --  IOT instruction
    SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the  future
+   SIGEMT     : constant := 7; --  EMT
    SIGFPE     : constant := 8; --  floating point exception
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
-   SIGBUS     : constant := 7; --  bus error
+   SIGBUS     : constant := 10; --  bus error
    SIGSEGV    : constant := 11; --  segmentation violation
+   SIGSYS     : constant := 12; --  bad system call
    SIGPIPE    : constant := 13; --  write on a pipe with no one to read it
    SIGALRM    : constant := 14; --  alarm clock
    SIGTERM    : constant := 15; --  software termination signal from kill
-   SIGUSR1    : constant := 10; --  user defined signal 1
-   SIGUSR2    : constant := 12; --  user defined signal 2
-   SIGCLD     : constant := 17; --  alias for SIGCHLD
-   SIGCHLD    : constant := 17; --  child status change
-   SIGPWR     : constant := 30; --  power-fail restart
-   SIGWINCH   : constant := 28; --  window size change
-   SIGURG     : constant := 23; --  urgent condition on IO channel
-   SIGPOLL    : constant := 29; --  pollable event occurred
-   SIGIO      : constant := 29; --  I/O now possible (4.2 BSD)
-   SIGLOST    : constant := 29; --  File lock lost
-   SIGSTOP    : constant := 19; --  stop (cannot be caught or ignored)
-   SIGTSTP    : constant := 20; --  user stop requested from tty
-   SIGCONT    : constant := 18; --  stopped process has been continued
-   SIGTTIN    : constant := 21; --  background tty read attempted
-   SIGTTOU    : constant := 22; --  background tty write attempted
-   SIGVTALRM  : constant := 26; --  virtual timer expired
-   SIGPROF    : constant := 27; --  profiling timer expired
-   SIGXCPU    : constant := 24; --  CPU time limit exceeded
-   SIGXFSZ    : constant := 25; --  filesize limit exceeded
-   SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
-   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
+   SIGUSR1    : constant := 16; --  user defined signal 1
+   SIGUSR2    : constant := 17; --  user defined signal 2
+   SIGCLD     : constant := 18; --  alias for SIGCHLD
+   SIGCHLD    : constant := 18; --  child status change
+   SIGPWR     : constant := 19; --  power-fail restart
+   SIGWINCH   : constant := 20; --  window size change
+   SIGURG     : constant := 21; --  urgent condition on IO channel
+   SIGPOLL    : constant := 22; --  pollable event occurred
+   SIGIO      : constant := 22; --  I/O now possible (4.2 BSD)
+   SIGSTOP    : constant := 23; --  stop (cannot be caught or ignored)
+   SIGTSTP    : constant := 24; --  user stop requested from tty
+   SIGCONT    : constant := 25; --  stopped process has been continued
+   SIGTTIN    : constant := 26; --  background tty read attempted
+   SIGTTOU    : constant := 27; --  background tty write attempted
+   SIGVTALRM  : constant := 28; --  virtual timer expired
+   SIGPROF    : constant := 29; --  profiling timer expired
+   SIGXCPU    : constant := 30; --  CPU time limit exceeded
+   SIGXFSZ    : constant := 31; --  filesize limit exceeded
+
    SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
    SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
    SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
 
+   --  These don't exist for Linux/MIPS.  The constants are present
+   --  so that we can continue to use a-intnam-linux.ads.
+   SIGLOST    : constant := 0; --  File lock lost
+   SIGSTKFLT  : constant := 0; --  coprocessor stack fault (Linux)
+   SIGUNUSED  : constant := 0; --  unused signal (GNU/Linux)
+
    --  struct_sigaction offsets
 
-   sa_handler_pos : constant := Standard'Address_Size / 8;
-   sa_mask_pos    : constant := 2 * Standard'Address_Size / 8;
+   sa_handler_pos : constant := int'Size / 8;
+   sa_mask_pos    : constant := int'Size / 8 +
+                                Standard'Address_Size / 8;
    sa_flags_pos   : constant := 0;
 
-   SA_SIGINFO  : constant := 16#04#;
+   SA_SIGINFO  : constant := 16#08#;
    SA_ONSTACK  : constant := 16#08000000#;
 
 end System.Linux;

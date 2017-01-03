@@ -1,5 +1,10 @@
 2017-01-03  James Cowgill  <James.Cowgill@imgtec.com>
 
+	* s-linux-mips.ads: Use correct signal and errno constants.
+	(sa_handler_pos, sa_mask_pos): Fix offsets for 64-bit MIPS.
+
+2017-01-03  James Cowgill  <James.Cowgill@imgtec.com>
+
 	* s-linux-mips.ads: Rename from s-linux-mipsel.ads.
 	* gcc-interface/Makefile.in (MIPS/Linux): Merge mips and mipsel
 	sections.
