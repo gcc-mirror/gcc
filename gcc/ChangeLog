@@ -1,3 +1,7 @@
+2017-01-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/md.texi (Standard Names): Remove reference to Java frontend.
+
 2017-01-03  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (gen_enumeration_type_die): When
