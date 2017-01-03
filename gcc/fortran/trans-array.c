@@ -1909,7 +1909,8 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	  mpz_init_set_ui (char_len, 1);
 	  mpz_add (char_len, char_len, ref->u.ss.end->value.integer);
 	  mpz_sub (char_len, char_len, ref->u.ss.start->value.integer);
-	  *len = gfc_conv_mpz_to_tree_type (char_len, gfc_charlen_type_node);
+	  *len = gfc_conv_mpz_to_tree (char_len, gfc_default_integer_kind);
+	  *len = convert (gfc_charlen_type_node, *len);
 	  mpz_clear (char_len);
 	  return;
 

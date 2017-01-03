@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-require-effective-target ilp32 }
 !
 subroutine foo(i)
   implicit none
