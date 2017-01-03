@@ -483,9 +483,11 @@ struct conversion_spec
   /* Numeric precision as in "%.32s".  */
   int precision;
 
-  /* Width specified via the '*' character.  */
+  /* Width specified via the '*' character.  Need not be INTEGER_CST.
+     For vararg functions set to void_node.  */
   tree star_width;
-  /* Precision specified via the asterisk.  */
+  /* Precision specified via the asterisk.  Need not be INTEGER_CST.
+     For vararg functions set to void_node.  */
   tree star_precision;
 
   /* Length modifier.  */
@@ -1246,15 +1248,26 @@ get_mpfr_format_length (mpfr_ptr x, const char *flags, HOST_WIDE_INT prec,
   fmtstr[len + 5] = spec;
   fmtstr[len + 6] = '\0';
 
-  /* Avoid passing negative precisions with larger magnitude to MPFR
-     to avoid exposing its bugs.  (A negative precision is supposed
-     to be ignored.)  */
-  if (prec < 0)
-    prec = -1;
+  spec = TOUPPER (spec);
+  if (spec == 'E' || spec == 'F')
+    {
+      /* For %e, specify the precision explicitly since mpfr_sprintf
+	 does its own thing just to be different (see MPFR bug 21088).  */
+      if (prec < 0)
+	prec = 6;
+    }
+  else
+    {
+      /* Avoid passing negative precisions with larger magnitude to MPFR
+	 to avoid exposing its bugs.  (A negative precision is supposed
+	 to be ignored.)  */
+      if (prec < 0)
+	prec = -1;
+    }
 
   HOST_WIDE_INT p = prec;
 
-  if (TOUPPER (spec) == 'G')
+  if (spec == 'G')
     {
       /* For G/g, precision gives the maximum number of significant
 	 digits which is bounded by LDBL_MAX_10_EXP, or, for a 128
@@ -1287,7 +1300,8 @@ get_mpfr_format_length (mpfr_ptr x, const char *flags, HOST_WIDE_INT prec,
 }
 
 /* Return the number of bytes to format using the format specifier
-   SPEC the largest value in the real floating TYPE.  */
+   SPEC and the precision PREC the largest value in the real floating
+   TYPE.  */
 
 static unsigned HOST_WIDE_INT
 format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
@@ -1329,7 +1343,6 @@ format_floating (const conversion_spec &spec, HOST_WIDE_INT width,
 		 HOST_WIDE_INT prec)
 {
   tree type;
-  bool ldbl = false;
 
   switch (spec.modifier)
     {
@@ -1340,12 +1353,10 @@ format_floating (const conversion_spec &spec, HOST_WIDE_INT width,
 
     case FMT_LEN_L:
       type = long_double_type_node;
-      ldbl = true;
       break;
 
     case FMT_LEN_ll:
       type = long_double_type_node;
-      ldbl = true;
       break;
 
     default:
@@ -1355,95 +1366,94 @@ format_floating (const conversion_spec &spec, HOST_WIDE_INT width,
   /* The minimum and maximum number of bytes produced by the directive.  */
   fmtresult res;
 
-  /* Log10 of of the maximum number of exponent digits for the type.  */
-  int logexpdigs = 2;
+  /* The result is always bounded (though the range may be all of int).  */
+  res.bounded = true;
 
-  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2)
+  /* The minimum output as determined by flags.  It's always at least 1.  */
+  int flagmin = (1 /* for the first digit */
+		 + (spec.get_flag ('+') | spec.get_flag (' '))
+		 + (prec == 0 && spec.get_flag ('#')));
+
+  if (width == INT_MIN || prec == INT_MIN)
     {
-      /* The base in which the exponent is represented should always
-	 be 2 in GCC.  */
-
-      const double log10_2 = .30102999566398119521;
-
-      /* Compute T_MAX_EXP for base 2.  */
-      int expdigs = REAL_MODE_FORMAT (TYPE_MODE (type))->emax * log10_2;
-      logexpdigs = ilog (expdigs, 10);
+      /* When either width or precision is specified but unknown
+	 the upper bound is the maximum.  Otherwise it will be
+	 computed for each directive below.  */
+      res.range.max = HOST_WIDE_INT_MAX;
     }
+  else
+    res.range.max = HOST_WIDE_INT_M1U;
 
   switch (spec.specifier)
     {
     case 'A':
     case 'a':
       {
-	/* The minimum output is "0x.p+0".  */
-	res.range.min = 6 + (prec > 0 ? prec : 0);
-	res.range.max = (width == INT_MIN
-			 ? HOST_WIDE_INT_MAX
-			 : format_floating_max (type, 'a', prec));
+	res.range.min = flagmin + 5 + (prec > 0 ? prec + 1 : 0);
+	if (res.range.max == HOST_WIDE_INT_M1U)
+	  {
+	    /* Compute the upper bound for -TYPE_MAX.  */
+	    res.range.max = format_floating_max (type, 'a', prec);
+	  }
 
-	/* The output of "%a" is fully specified only when precision
-	   is explicitly specified and width isn't unknown.  */
-	res.bounded = INT_MIN != width && -1 < prec;
 	break;
       }
 
     case 'E':
     case 'e':
       {
-	bool sign = spec.get_flag ('+') || spec.get_flag (' ');
 	/* The minimum output is "[-+]1.234567e+00" regardless
 	   of the value of the actual argument.  */
-	res.range.min = (sign
-			 + 1 /* unit */ + (prec < 0 ? 7 : prec ? prec + 1 : 0)
+	res.range.min = (flagmin
+			 + (prec == INT_MIN
+			    ? 0 : prec < 0 ? 7 : prec ? prec + 1 : 0)
 			 + 2 /* e+ */ + 2);
-	/* Unless width is uknown the maximum output is the minimum plus
-	   sign (unless already included), plus the difference between
-	   the minimum exponent of 2 and the maximum exponent for the type.  */
-	res.range.max = (width == INT_MIN
-			 ? HOST_WIDE_INT_M1U
-			 : res.range.min + !sign + logexpdigs - 2);
 
-	/* "%e" is fully specified and the range of bytes is bounded
-	   unless width is unknown.  */
-	res.bounded = INT_MIN != width;
+	if (res.range.max == HOST_WIDE_INT_M1U)
+	  {
+	    /* MPFR uses a precision of 16 by default for some reason.
+	       Set it to the C default of 6.  */
+	    res.range.max = format_floating_max (type, 'e',
+						 -1 == prec ? 6 : prec);
+	  }
 	break;
       }
 
     case 'F':
     case 'f':
       {
-	/* The minimum output is "1.234567" regardless of the value
-	   of the actual argument.  */
-	res.range.min = 2 + (prec < 0 ? 6 : prec);
+	/* The lower bound when precision isn't specified is 8 bytes
+	   ("1.23456" since precision is taken to be 6).  When precision
+	   is zero, the lower bound is 1 byte (e.g., "1").  Otherwise,
+	   when precision is greater than zero, then the lower bound
+	   is 2 plus precision (plus flags).  */
+	res.range.min = (flagmin
+			 + (prec != INT_MIN)   /* for decimal point */
+			 + (prec == INT_MIN
+			    ? 0 : prec < 0 ? 6 : prec ? prec : -1));
 
-	/* Compute the maximum just once.  */
-	const HOST_WIDE_INT f_max[] = {
-	  format_floating_max (double_type_node, 'f', prec),
-	  format_floating_max (long_double_type_node, 'f', prec)
-	};
-	res.range.max = width == INT_MIN ? HOST_WIDE_INT_MAX : f_max [ldbl];
-
-	/* "%f" is fully specified and the range of bytes is bounded
-	   unless width is unknown.  */
-	res.bounded = INT_MIN != width;
+	if (res.range.max == HOST_WIDE_INT_M1U)
+	  {
+	    /* Compute the upper bound for -TYPE_MAX.  */
+	    res.range.max = format_floating_max (type, 'f', prec);
+	  }
 	break;
       }
+
     case 'G':
     case 'g':
       {
-	/* The minimum is the same as for '%F'.  */
-	res.range.min = 1;
-
-	/* Compute the maximum just once.  */
-	const HOST_WIDE_INT g_max[] = {
-	  format_floating_max (double_type_node, 'g', prec),
-	  format_floating_max (long_double_type_node, 'g', prec)
-	};
-	res.range.max = width == INT_MIN ? HOST_WIDE_INT_MAX : g_max [ldbl];
-
-	/* "%g" is fully specified and the range of bytes is bounded
-	   unless width is unknown.  */
-	res.bounded = INT_MIN != width;
+	/* The %g output depends on precision and the exponent of
+	   the argument.  Since the value of the argument isn't known
+	   the lower bound on the range of bytes (not counting flags
+	   or width) is 1.  */
+	res.range.min = flagmin;
+	if (res.range.max == HOST_WIDE_INT_M1U)
+	  {
+	    /* Compute the upper bound for -TYPE_MAX which should be
+	       the lesser of %e and %f.  */
+	    res.range.max = format_floating_max (type, 'g', prec);
+	  }
 	break;
       }
 
@@ -1453,6 +1463,7 @@ format_floating (const conversion_spec &spec, HOST_WIDE_INT width,
 
   if (width > 0)
     {
+      /* If width has been specified use it to adjust the range.  */
       if (res.range.min < (unsigned)width)
 	res.range.min = width;
       if (res.range.max < (unsigned)width)
@@ -1469,9 +1480,9 @@ format_floating (const conversion_spec &spec, HOST_WIDE_INT width,
 static fmtresult
 format_floating (const conversion_spec &spec, tree arg)
 {
-  /* Set WIDTH to -1 when it's not specified, to INT_MIN when it is
-     specified by the asterisk to an unknown value, and otherwise to
-     a non-negative value corresponding to the specified width.  */
+  /* Set WIDTH to -1 when it's not specified, to HOST_WIDE_INT_MIN when
+     it is specified by the asterisk to an unknown value, and otherwise
+     to a non-negative value corresponding to the specified width.  */
   HOST_WIDE_INT width = -1;
   HOST_WIDE_INT prec = -1;
 
@@ -1498,13 +1509,13 @@ format_floating (const conversion_spec &spec, tree arg)
   else if (spec.star_precision)
     {
       if (TREE_CODE (spec.star_precision) == INTEGER_CST)
-	prec = tree_to_shwi (spec.star_precision);
-      else
 	{
-	  /* FIXME: Handle non-constant precision.  */
-	  res.range.min = res.range.max = HOST_WIDE_INT_M1U;
-	  return res;
+	  prec = tree_to_shwi (spec.star_precision);
+	  if (prec < 0)
+	    prec = -1;
 	}
+      else
+	prec = INT_MIN;
     }
   else if (res.constant && TOUPPER (spec.specifier) != 'A')
     {
@@ -1515,11 +1526,6 @@ format_floating (const conversion_spec &spec, tree arg)
 
   if (res.constant)
     {
-      /* Set up an array to easily iterate over.  */
-      unsigned HOST_WIDE_INT* const minmax[] = {
-	&res.range.min, &res.range.max
-      };
-
       /* Get the real type format desription for the target.  */
       const REAL_VALUE_TYPE *rvp = TREE_REAL_CST_PTR (arg);
       const real_format *rfmt = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)));
@@ -1541,26 +1547,42 @@ format_floating (const conversion_spec &spec, tree arg)
 
       *pfmt = '\0';
 
-      for (int i = 0; i != sizeof minmax / sizeof *minmax; ++i)
+      {
+	/* Set up an array to easily iterate over below.  */
+	unsigned HOST_WIDE_INT* const minmax[] = {
+	  &res.range.min, &res.range.max
+	};
+	
+	for (int i = 0; i != sizeof minmax / sizeof *minmax; ++i)
+	  {
+	    /* Use the MPFR rounding specifier to round down in the first
+	       iteration and then up.  In most but not all cases this will
+	       result in the same number of bytes.  */
+	    char rndspec = "DU"[i];
+
+	    /* Format it and store the result in the corresponding member
+	       of the result struct.  */
+	    unsigned HOST_WIDE_INT len
+	      = get_mpfr_format_length (mpfrval, fmtstr, prec,
+					spec.specifier, rndspec);
+	    if (0 < width && len < (unsigned)width)
+	      len = width;
+
+	    *minmax[i] = len;
+	}
+      }
+
+      /* Make sure the minimum is less than the maximum (MPFR rounding
+	 in the call to mpfr_snprintf can result in the reverse.  */
+      if (res.range.max < res.range.min)
 	{
-	  /* Use the MPFR rounding specifier to round down in the first
-	     iteration and then up.  In most but not all cases this will
-	     result in the same number of bytes.  */
-	  char rndspec = "DU"[i];
-
-	  /* Format it and store the result in the corresponding member
-	     of the result struct.  */
-	  unsigned HOST_WIDE_INT len
-	    = get_mpfr_format_length (mpfrval, fmtstr, prec,
-				      spec.specifier, rndspec);
-	  if (0 < width && len < (unsigned)width)
-	    len = width;
-
-	  *minmax[i] = len;
+	  unsigned HOST_WIDE_INT tmp = res.range.min;
+	  res.range.min = res.range.max;
+	  res.range.max = tmp;
 	}
 
       /* The range of output is known even if the result isn't bounded.  */
-      if (width == INT_MIN)
+      if (width == HOST_WIDE_INT_MIN)
 	{
 	  res.knownrange = false;
 	  res.range.max = HOST_WIDE_INT_MAX;
@@ -2420,10 +2442,10 @@ pass_sprintf_length::compute_format_length (call_info &info,
 	{
 	  /* Similarly to the block above, this could be either a POSIX
 	     positional argument or a width, depending on what follows.  */
-	  if (gimple_call_num_args (info.callstmt) <= argno)
-	    return false;
-
-	  spec.star_width = gimple_call_arg (info.callstmt, argno++);
+	  if (argno < gimple_call_num_args (info.callstmt))
+	    spec.star_width = gimple_call_arg (info.callstmt, argno++);
+	  else
+	    spec.star_width = void_node;
 	  ++pf;
 	}
 
@@ -2499,7 +2521,10 @@ pass_sprintf_length::compute_format_length (call_info &info,
 	    }
 	  else if ('*' == *pf)
 	    {
-	      spec.star_width = gimple_call_arg (info.callstmt, argno++);
+	      if (argno < gimple_call_num_args (info.callstmt))
+		spec.star_width = gimple_call_arg (info.callstmt, argno++);
+	      else
+		spec.star_width = void_node;
 	      ++pf;
 	    }
 	  else if ('\'' == *pf)
@@ -2527,7 +2552,10 @@ pass_sprintf_length::compute_format_length (call_info &info,
 	    }
 	  else if ('*' == *pf)
 	    {
-	      spec.star_precision = gimple_call_arg (info.callstmt, argno++);
+	      if (argno < gimple_call_num_args (info.callstmt))
+		spec.star_precision = gimple_call_arg (info.callstmt, argno++);
+	      else
+		spec.star_precision = void_node;
 	      ++pf;
 	    }
 	  else
@@ -2795,11 +2823,11 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	    fprintf (dump_file,
 		     " %s-bounds return value in range [%lu, %lu]%s.\n",
 		     inbounds,
-		     (unsigned long)res.number_chars_min,
-		     (unsigned long)res.number_chars_max, ign);
+		     (unsigned long)res.number_chars_min - 1,
+		     (unsigned long)res.number_chars_max - 1, ign);
 	  else
 	    fprintf (dump_file, " %s-bounds return value %lu%s.\n",
-		     inbounds, (unsigned long)res.number_chars, ign);
+		     inbounds, (unsigned long)res.number_chars - 1, ign);
 	}
     }
 }
