@@ -70,7 +70,6 @@ export_proto_np(PREFIX(getlog));
 void
 PREFIX(getlog) (char * login, gfc_charlen_type login_len)
 {
-  int p_len;
   char *p;
 
   memset (login, ' ', login_len); /* Blank the string.  */
@@ -107,7 +106,7 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
   if (p == NULL)
     goto cleanup;
 
-  p_len = strlen (p);
+  gfc_charlen_type p_len = strlen (p);
   if (login_len < p_len)
     p_len = login_len;
   memcpy (login, p, p_len);
