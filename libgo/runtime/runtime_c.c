@@ -25,7 +25,8 @@ extern volatile intgo runtime_MemProfileRate
 
 struct gotraceback_ret {
 	int32 level;
-	bool crash;
+	bool  all;
+	bool  crash;
 };
 
 extern struct gotraceback_ret gotraceback(void)

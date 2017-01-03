@@ -556,7 +556,7 @@ func GoroutineProfile(p []StackRecord) (n int, ok bool) {
 	stopTheWorld("profile")
 
 	n = 1
-	for _, gp1 := range allgs() {
+	for _, gp1 := range allgs {
 		if isOK(gp1) {
 			n++
 		}
@@ -571,7 +571,7 @@ func GoroutineProfile(p []StackRecord) (n int, ok bool) {
 		r = r[1:]
 
 		// Save other goroutines.
-		for _, gp1 := range allgs() {
+		for _, gp1 := range allgs {
 			if isOK(gp1) {
 				if len(r) == 0 {
 					// Should be impossible, but better to return a

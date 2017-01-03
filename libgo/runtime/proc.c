@@ -361,6 +361,10 @@ enum
 extern Sched* runtime_getsched() __asm__ (GOSYM_PREFIX "runtime.getsched");
 extern bool* runtime_getCgoHasExtraM()
   __asm__ (GOSYM_PREFIX "runtime.getCgoHasExtraM");
+extern P** runtime_getAllP()
+  __asm__ (GOSYM_PREFIX "runtime.getAllP");
+extern G* allocg(void)
+  __asm__ (GOSYM_PREFIX "runtime.allocg");
 
 Sched*	runtime_sched;
 int32	runtime_gomaxprocs;
@@ -373,11 +377,6 @@ int8*	runtime_goos;
 int32	runtime_ncpu;
 bool	runtime_precisestack;
 static int32	newprocs;
-
-static	Lock allglock;	// the following vars are protected by this lock or by stoptheworld
-G**	runtime_allg;
-uintptr runtime_allglen;
-static	uintptr allgcap;
 
 bool	runtime_isarchive;
 
@@ -403,7 +402,6 @@ static void startlockedm(G*);
 static void sysmon(void);
 static uint32 retake(int64);
 static void incidlelocked(int32);
-static void checkdead(void);
 static void exitsyscall0(G*);
 static void park0(G*);
 static void goexit0(G*);
@@ -421,6 +419,8 @@ static bool exitsyscallfast(void);
 
 void allgadd(G*)
   __asm__(GOSYM_PREFIX "runtime.allgadd");
+void checkdead(void)
+  __asm__(GOSYM_PREFIX "runtime.checkdead");
 
 bool runtime_isstarted;
 
@@ -482,7 +482,7 @@ runtime_schedinit(void)
 			n = _MaxGomaxprocs;
 		procs = n;
 	}
-	runtime_allp = runtime_malloc((_MaxGomaxprocs+1)*sizeof(runtime_allp[0]));
+	runtime_allp = runtime_getAllP();
 	procresize(procs);
 
 	// Can not enable GC until all roots are registered.
@@ -586,85 +586,25 @@ runtime_main(void* dummy __attribute__((unused)))
 		*(int32*)0 = 0;
 }
 
-void
-runtime_tracebackothers(G * volatile me)
+void getTraceback(G*, G*) __asm__(GOSYM_PREFIX "runtime.getTraceback");
+
+// getTraceback stores a traceback of gp in the g's traceback field
+// and then returns to me.  We expect that gp's traceback is not nil.
+// It works by saving me's current context, and checking gp's traceback field.
+// If gp's traceback field is not nil, it starts running gp.
+// In places where we call getcontext, we check the traceback field.
+// If it is not nil, we collect a traceback, and then return to the
+// goroutine stored in the traceback field, which is me.
+void getTraceback(G* me, G* gp)
 {
-	G * volatile gp;
-	Traceback tb;
-	int32 traceback;
-	Slice slice;
-	volatile uintptr i;
-
-	tb.gp = me;
-	traceback = runtime_gotraceback(nil);
-	
-	// Show the current goroutine first, if we haven't already.
-	if((gp = g->m->curg) != nil && gp != me) {
-		runtime_printf("\n");
-		runtime_goroutineheader(gp);
-		gp->traceback = &tb;
-
 #ifdef USING_SPLIT_STACK
-		__splitstack_getcontext(&me->stackcontext[0]);
+	__splitstack_getcontext(&me->stackcontext[0]);
 #endif
-		getcontext(ucontext_arg(&me->context[0]));
+	getcontext(ucontext_arg(&me->stackcontext[0]));
 
-		if(gp->traceback != nil) {
-		  runtime_gogo(gp);
-		}
-
-		slice.__values = &tb.locbuf[0];
-		slice.__count = tb.c;
-		slice.__capacity = tb.c;
-		runtime_printtrace(slice, nil);
-		runtime_printcreatedby(gp);
+	if (gp->traceback != nil) {
+		runtime_gogo(gp);
 	}
-
-	runtime_lock(&allglock);
-	for(i = 0; i < runtime_allglen; i++) {
-		gp = runtime_allg[i];
-		if(gp == me || gp == g->m->curg || gp->atomicstatus == _Gdead)
-			continue;
-		if(gp->issystem && traceback < 2)
-			continue;
-		runtime_printf("\n");
-		runtime_goroutineheader(gp);
-
-		// Our only mechanism for doing a stack trace is
-		// _Unwind_Backtrace.  And that only works for the
-		// current thread, not for other random goroutines.
-		// So we need to switch context to the goroutine, get
-		// the backtrace, and then switch back.
-
-		// This means that if g is running or in a syscall, we
-		// can't reliably print a stack trace.  FIXME.
-
-		if(gp->atomicstatus == _Grunning) {
-			runtime_printf("\tgoroutine running on other thread; stack unavailable\n");
-			runtime_printcreatedby(gp);
-		} else if(gp->atomicstatus == _Gsyscall) {
-			runtime_printf("\tgoroutine in C code; stack unavailable\n");
-			runtime_printcreatedby(gp);
-		} else {
-			gp->traceback = &tb;
-
-#ifdef USING_SPLIT_STACK
-			__splitstack_getcontext(&me->stackcontext[0]);
-#endif
-			getcontext(ucontext_arg(&me->context[0]));
-
-			if(gp->traceback != nil) {
-				runtime_gogo(gp);
-			}
-
-			slice.__values = &tb.locbuf[0];
-			slice.__count = tb.c;
-			slice.__capacity = tb.c;
-			runtime_printtrace(slice, nil);
-			runtime_printcreatedby(gp);
-		}
-	}
-	runtime_unlock(&allglock);
 }
 
 static void
@@ -1065,22 +1005,6 @@ runtime_allocm(P *p, bool allocatestack, byte** ret_g0_stack, uintptr* ret_g0_st
 	g->m->locks--;
 
 	return mp;
-}
-
-static G*
-allocg(void)
-{
-	G *gp;
-	// static Type *gtype;
-	
-	// if(gtype == nil) {
-	// 	Eface e;
-	// 	runtime_gc_g_ptr(&e);
-	// 	gtype = ((PtrType*)e.__type_descriptor)->__element_type;
-	// }
-	// gp = runtime_cnew(gtype);
-	gp = runtime_malloc(sizeof(G));
-	return gp;
 }
 
 void setGContext(void) __asm__ (GOSYM_PREFIX "runtime.setGContext");
@@ -2129,6 +2053,7 @@ __go_go(void (*fn)(void*), void* arg)
 
 		newg = runtime_malg(true, false, &sp, &malsize);
 		spsize = (size_t)malsize;
+		newg->atomicstatus = _Gdead;
 		allgadd(newg);
 	}
 
@@ -2150,31 +2075,6 @@ __go_go(void (*fn)(void*), void* arg)
 		wakep();
 	g->m->locks--;
 	return newg;
-}
-
-void
-allgadd(G *gp)
-{
-	G **new;
-	uintptr cap;
-
-	runtime_lock(&allglock);
-	if(runtime_allglen >= allgcap) {
-		cap = 4096/sizeof(new[0]);
-		if(cap < 2*allgcap)
-			cap = 2*allgcap;
-		new = runtime_malloc(cap*sizeof(new[0]));
-		if(new == nil)
-			runtime_throw("runtime: cannot allocate memory");
-		if(runtime_allg != nil) {
-			runtime_memmove(new, runtime_allg, runtime_allglen*sizeof(new[0]));
-			runtime_free(runtime_allg);
-		}
-		runtime_allg = new;
-		allgcap = cap;
-	}
-	runtime_allg[runtime_allglen++] = gp;
-	runtime_unlock(&allglock);
 }
 
 // Put on gfree list.
@@ -2349,29 +2249,6 @@ bool
 runtime_lockedOSThread(void)
 {
 	return g->lockedm != nil && g->m->lockedg != nil;
-}
-
-int32
-runtime_gcount(void)
-{
-	G *gp;
-	int32 n, s;
-	uintptr i;
-
-	n = 0;
-	runtime_lock(&allglock);
-	// TODO(dvyukov): runtime.NumGoroutine() is O(N).
-	// We do not want to increment/decrement centralized counter in newproc/goexit,
-	// just to make runtime.NumGoroutine() faster.
-	// Compromise solution is to introduce per-P counters of active goroutines.
-	for(i = 0; i < runtime_allglen; i++) {
-		gp = runtime_allg[i];
-		s = gp->atomicstatus;
-		if(s == _Grunnable || s == _Grunning || s == _Gsyscall || s == _Gwaiting)
-			n++;
-	}
-	runtime_unlock(&allglock);
-	return n;
 }
 
 int32
@@ -2638,59 +2515,6 @@ incidlelocked(int32 v)
 	runtime_unlock(&runtime_sched->lock);
 }
 
-// Check for deadlock situation.
-// The check is based on number of running M's, if 0 -> deadlock.
-static void
-checkdead(void)
-{
-	G *gp;
-	int32 run, grunning, s;
-	uintptr i;
-
-	// For -buildmode=c-shared or -buildmode=c-archive it's OK if
-	// there are no running goroutines.  The calling program is
-	// assumed to be running.
-	if(runtime_isarchive) {
-		return;
-	}
-
-	// -1 for sysmon
-	run = runtime_sched->mcount - runtime_sched->nmidle - runtime_sched->nmidlelocked - 1;
-	if(run > 0)
-		return;
-	// If we are dying because of a signal caught on an already idle thread,
-	// freezetheworld will cause all running threads to block.
-	// And runtime will essentially enter into deadlock state,
-	// except that there is a thread that will call runtime_exit soon.
-	if(runtime_panicking() > 0)
-		return;
-	if(run < 0) {
-		runtime_printf("runtime: checkdead: nmidle=%d nmidlelocked=%d mcount=%d\n",
-			runtime_sched->nmidle, runtime_sched->nmidlelocked, runtime_sched->mcount);
-		runtime_throw("checkdead: inconsistent counts");
-	}
-	grunning = 0;
-	runtime_lock(&allglock);
-	for(i = 0; i < runtime_allglen; i++) {
-		gp = runtime_allg[i];
-		if(gp->isbackground)
-			continue;
-		s = gp->atomicstatus;
-		if(s == _Gwaiting)
-			grunning++;
-		else if(s == _Grunnable || s == _Grunning || s == _Gsyscall) {
-			runtime_unlock(&allglock);
-			runtime_printf("runtime: checkdead: find g %D in status %d\n", gp->goid, s);
-			runtime_throw("checkdead: runnable g");
-		}
-	}
-	runtime_unlock(&allglock);
-	if(grunning == 0)  // possible if main goroutine calls runtime_Goexit()
-		runtime_throw("no goroutines (main called runtime.Goexit) - deadlock!");
-	g->m->throwing = -1;  // do not dump full stacks
-	runtime_throw("all goroutines are asleep - deadlock!");
-}
-
 static void
 sysmon(void)
 {
@@ -2830,94 +2654,6 @@ static bool
 preemptall(void)
 {
 	return false;
-}
-
-void
-runtime_schedtrace(bool detailed)
-{
-	static int64 starttime;
-	int64 now;
-	int64 id1, id2, id3;
-	int32 i, t, h;
-	uintptr gi;
-	const char *fmt;
-	M *mp, *lockedm;
-	G *gp, *lockedg;
-	P *p;
-
-	now = runtime_nanotime();
-	if(starttime == 0)
-		starttime = now;
-
-	runtime_lock(&runtime_sched->lock);
-	runtime_printf("SCHED %Dms: gomaxprocs=%d idleprocs=%d threads=%d idlethreads=%d runqueue=%d",
-		(now-starttime)/1000000, runtime_gomaxprocs, runtime_sched->npidle, runtime_sched->mcount,
-		runtime_sched->nmidle, runtime_sched->runqsize);
-	if(detailed) {
-		runtime_printf(" gcwaiting=%d nmidlelocked=%d nmspinning=%d stopwait=%d sysmonwait=%d\n",
-			runtime_sched->gcwaiting, runtime_sched->nmidlelocked, runtime_sched->nmspinning,
-			runtime_sched->stopwait, runtime_sched->sysmonwait);
-	}
-	// We must be careful while reading data from P's, M's and G's.
-	// Even if we hold schedlock, most data can be changed concurrently.
-	// E.g. (p->m ? p->m->id : -1) can crash if p->m changes from non-nil to nil.
-	for(i = 0; i < runtime_gomaxprocs; i++) {
-		p = runtime_allp[i];
-		if(p == nil)
-			continue;
-		mp = (M*)p->m;
-		h = runtime_atomicload(&p->runqhead);
-		t = runtime_atomicload(&p->runqtail);
-		if(detailed)
-			runtime_printf("  P%d: status=%d schedtick=%d syscalltick=%d m=%d runqsize=%d gfreecnt=%d\n",
-				i, p->status, p->schedtick, p->syscalltick, mp ? mp->id : -1, t-h, p->gfreecnt);
-		else {
-			// In non-detailed mode format lengths of per-P run queues as:
-			// [len1 len2 len3 len4]
-			fmt = " %d";
-			if(runtime_gomaxprocs == 1)
-				fmt = " [%d]\n";
-			else if(i == 0)
-				fmt = " [%d";
-			else if(i == runtime_gomaxprocs-1)
-				fmt = " %d]\n";
-			runtime_printf(fmt, t-h);
-		}
-	}
-	if(!detailed) {
-		runtime_unlock(&runtime_sched->lock);
-		return;
-	}
-	for(mp = runtime_allm; mp; mp = mp->alllink) {
-		p = (P*)mp->p;
-		gp = mp->curg;
-		lockedg = mp->lockedg;
-		id1 = -1;
-		if(p)
-			id1 = p->id;
-		id2 = -1;
-		if(gp)
-			id2 = gp->goid;
-		id3 = -1;
-		if(lockedg)
-			id3 = lockedg->goid;
-		runtime_printf("  M%d: p=%D curg=%D mallocing=%d throwing=%d gcing=%d"
-			" locks=%d dying=%d helpgc=%d spinning=%d blocked=%d lockedg=%D\n",
-			mp->id, id1, id2,
-			mp->mallocing, mp->throwing, mp->gcing, mp->locks, mp->dying, mp->helpgc,
-			mp->spinning, mp->blocked, id3);
-	}
-	runtime_lock(&allglock);
-	for(gi = 0; gi < runtime_allglen; gi++) {
-		gp = runtime_allg[gi];
-		mp = gp->m;
-		lockedm = gp->lockedm;
-		runtime_printf("  G%D: status=%d(%S) m=%d lockedm=%d\n",
-			gp->goid, gp->atomicstatus, gp->waitreason, mp ? mp->id : -1,
-			lockedm ? lockedm->id : -1);
-	}
-	runtime_unlock(&allglock);
-	runtime_unlock(&runtime_sched->lock);
 }
 
 // Put mp on midle list.
@@ -3355,20 +3091,6 @@ M**
 runtime_go_allm()
 {
 	return &runtime_allm;
-}
-
-extern Slice runtime_go_allgs(void)
-  __asm__ (GOSYM_PREFIX "runtime.allgs");
-
-Slice
-runtime_go_allgs()
-{
-	Slice s;
-
-	s.__values = runtime_allg;
-	s.__count = runtime_allglen;
-	s.__capacity = allgcap;
-	return s;
 }
 
 intgo NumCPU(void) __asm__ (GOSYM_PREFIX "runtime.NumCPU");

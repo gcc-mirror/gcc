@@ -7,6 +7,7 @@
 #include "go-assert.h"
 #include <complex.h>
 #include <signal.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,8 +22,6 @@
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
 #endif
-
-#include "go-alloc.h"
 
 #define _STRINGIFY2_(x) #x
 #define _STRINGIFY_(x) _STRINGIFY2_(x)
@@ -233,8 +232,10 @@ enum
  */
 extern	uintptr* runtime_getZerobase(void)
   __asm__(GOSYM_PREFIX "runtime.getZerobase");
-extern	G**	runtime_allg;
-extern	uintptr runtime_allglen;
+extern G* runtime_getallg(intgo)
+  __asm__(GOSYM_PREFIX "runtime.getallg");
+extern uintptr runtime_getallglen(void)
+  __asm__(GOSYM_PREFIX "runtime.getallglen");
 extern	G*	runtime_lastg;
 extern	M*	runtime_allm;
 extern	P**	runtime_allp;
@@ -309,13 +310,9 @@ MCache*	runtime_allocmcache(void)
 void	runtime_freemcache(MCache*);
 void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
-#define runtime_malloc(s) __go_alloc(s)
-#define runtime_free(p) __go_free(p)
 #define runtime_getcallersp(p) __builtin_frame_address(0)
 int32	runtime_mcount(void)
   __asm__ (GOSYM_PREFIX "runtime.mcount");
-int32	runtime_gcount(void)
-  __asm__ (GOSYM_PREFIX "runtime.gcount");
 void	runtime_mcall(void(*)(G*));
 uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
 int32	runtime_timediv(int64, int32, int32*)

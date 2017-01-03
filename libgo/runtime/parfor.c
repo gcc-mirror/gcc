@@ -5,6 +5,7 @@
 // Parallel for algorithm.
 
 #include "runtime.h"
+#include "malloc.h"
 #include "arch.h"
 
 struct ParForThread
@@ -27,7 +28,7 @@ runtime_parforalloc(uint32 nthrmax)
 
 	// The ParFor object is followed by CacheLineSize padding
 	// and then nthrmax ParForThread.
-	desc = (ParFor*)runtime_malloc(sizeof(ParFor) + CacheLineSize + nthrmax * sizeof(ParForThread));
+	desc = (ParFor*)runtime_mallocgc(sizeof(ParFor) + CacheLineSize + nthrmax * sizeof(ParForThread), 0, FlagNoInvokeGC);
 	desc->thr = (ParForThread*)((byte*)(desc+1) + CacheLineSize);
 	desc->nthrmax = nthrmax;
 	return desc;

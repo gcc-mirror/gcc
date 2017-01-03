@@ -13,7 +13,6 @@
 #include <unistd.h>
 
 #include "runtime.h"
-#include "go-alloc.h"
 #include "array.h"
 #include "arch.h"
 #include "malloc.h"

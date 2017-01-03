@@ -14,7 +14,6 @@
 #include "unwind-pe.h"
 
 #include "runtime.h"
-#include "go-alloc.h"
 
 /* The code for a Go exception.  */
 

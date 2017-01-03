@@ -476,21 +476,12 @@ func UnlockOSThread()
 func lockOSThread()
 func unlockOSThread()
 func allm() *m
-func allgs() []*g
-
-//go:nosplit
-func readgstatus(gp *g) uint32 {
-	return atomic.Load(&gp.atomicstatus)
-}
 
 // Temporary for gccgo until we port malloc.go
 func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
 
 // Temporary for gccgo until we port mheap.go
 func setprofilebucket(p unsafe.Pointer, b *bucket)
-
-// Currently in proc.c.
-func tracebackothers(*g)
 
 // Temporary for gccgo until we port mgc.go.
 func setgcpercent(int32) int32
@@ -530,9 +521,7 @@ func getZerobase() *uintptr {
 // Temporary for gccgo until we port proc.go.
 func sigprof()
 func mcount() int32
-func gcount() int32
 func goexit1()
-func schedtrace(bool)
 func freezetheworld()
 
 // Get signal trampoline, written in C.
@@ -562,6 +551,30 @@ func getCgoHasExtraM() *bool {
 	return &cgoHasExtraM
 }
 
+// Temporary for gccgo until we port proc.go.
+//go:linkname getAllP runtime.getAllP
+func getAllP() **p {
+	return &allp[0]
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname allocg runtime.allocg
+func allocg() *g {
+	return new(g)
+}
+
+// Temporary for gccgo until we port the garbage collector.
+//go:linkname getallglen runtime.getallglen
+func getallglen() uintptr {
+	return allglen
+}
+
+// Temporary for gccgo until we port the garbage collector.
+//go:linkname getallg runtime.getallg
+func getallg(i int) *g {
+	return allgs[i]
+}
+
 // Throw and rethrow an exception.
 func throwException()
 func rethrowException()
@@ -579,3 +592,27 @@ func getPanicking() uint32 {
 
 // Temporary for gccgo until we port mcache.go.
 func allocmcache() *mcache
+
+// Temporary for gccgo until we port mgc.go.
+// This is just so that allgadd will compile.
+var work struct {
+	rescan struct {
+		lock mutex
+		list []guintptr
+	}
+}
+
+// gcount is temporary for gccgo until more of proc.go is ported.
+// This is a copy of the C function we used to use.
+func gcount() int32 {
+	n := int32(0)
+	lock(&allglock)
+	for _, gp := range allgs {
+		s := readgstatus(gp)
+		if s == _Grunnable || s == _Grunning || s == _Gsyscall || s == _Gwaiting {
+			n++
+		}
+	}
+	unlock(&allglock)
+	return n
+}

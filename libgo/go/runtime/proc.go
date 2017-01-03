@@ -11,21 +11,57 @@ import (
 
 // Functions temporarily called by C code.
 //go:linkname newextram runtime.newextram
+//go:linkname checkdead runtime.checkdead
+//go:linkname schedtrace runtime.schedtrace
+//go:linkname allgadd runtime.allgadd
 
 // Functions temporarily in C that have not yet been ported.
 func allocm(*p, bool, *unsafe.Pointer, *uintptr) *m
 func malg(bool, bool, *unsafe.Pointer, *uintptr) *g
-func allgadd(*g)
 
 // C functions for ucontext management.
 func setGContext()
 func makeGContext(*g, unsafe.Pointer, uintptr)
+func getTraceback(me, gp *g)
 
 // main_init_done is a signal used by cgocallbackg that initialization
 // has been completed. It is made before _cgo_notify_runtime_init_done,
 // so all cgo calls can rely on it existing. When main_init is complete,
 // it is closed, meaning cgocallbackg can reliably receive from it.
 var main_init_done chan bool
+
+var (
+	allgs    []*g
+	allglock mutex
+)
+
+func allgadd(gp *g) {
+	if readgstatus(gp) == _Gidle {
+		throw("allgadd: bad status Gidle")
+	}
+
+	lock(&allglock)
+	allgs = append(allgs, gp)
+	allglen = uintptr(len(allgs))
+
+	// Grow GC rescan list if necessary.
+	if len(allgs) > cap(work.rescan.list) {
+		lock(&work.rescan.lock)
+		l := work.rescan.list
+		// Let append do the heavy lifting, but keep the
+		// length the same.
+		work.rescan.list = append(l[:cap(l)], 0)[:len(l)]
+		unlock(&work.rescan.lock)
+	}
+	unlock(&allglock)
+}
+
+// All reads and writes of g's status go through readgstatus, casgstatus
+// castogscanstatus, casfrom_Gscanstatus.
+//go:nosplit
+func readgstatus(gp *g) uint32 {
+	return atomic.Load(&gp.atomicstatus)
+}
 
 // If asked to move to or from a Gscanstatus this will throw. Use the castogscanstatus
 // and casfrom_Gscanstatus instead.
@@ -327,4 +363,171 @@ func lockextra(nilokay bool) *m {
 //go:nosplit
 func unlockextra(mp *m) {
 	atomic.Storeuintptr(&extram, uintptr(unsafe.Pointer(mp)))
+}
+
+// Check for deadlock situation.
+// The check is based on number of running M's, if 0 -> deadlock.
+func checkdead() {
+	// For -buildmode=c-shared or -buildmode=c-archive it's OK if
+	// there are no running goroutines. The calling program is
+	// assumed to be running.
+	if islibrary || isarchive {
+		return
+	}
+
+	// If we are dying because of a signal caught on an already idle thread,
+	// freezetheworld will cause all running threads to block.
+	// And runtime will essentially enter into deadlock state,
+	// except that there is a thread that will call exit soon.
+	if panicking > 0 {
+		return
+	}
+
+	// -1 for sysmon
+	run := sched.mcount - sched.nmidle - sched.nmidlelocked - 1
+	if run > 0 {
+		return
+	}
+	if run < 0 {
+		print("runtime: checkdead: nmidle=", sched.nmidle, " nmidlelocked=", sched.nmidlelocked, " mcount=", sched.mcount, "\n")
+		throw("checkdead: inconsistent counts")
+	}
+
+	grunning := 0
+	lock(&allglock)
+	for i := 0; i < len(allgs); i++ {
+		gp := allgs[i]
+		if isSystemGoroutine(gp) {
+			continue
+		}
+		s := readgstatus(gp)
+		switch s &^ _Gscan {
+		case _Gwaiting:
+			grunning++
+		case _Grunnable,
+			_Grunning,
+			_Gsyscall:
+			unlock(&allglock)
+			print("runtime: checkdead: find g ", gp.goid, " in status ", s, "\n")
+			throw("checkdead: runnable g")
+		}
+	}
+	unlock(&allglock)
+	if grunning == 0 { // possible if main goroutine calls runtime·Goexit()
+		throw("no goroutines (main called runtime.Goexit) - deadlock!")
+	}
+
+	// Maybe jump time forward for playground.
+	gp := timejump()
+	if gp != nil {
+		// Temporarily commented out for gccgo.
+		// For gccgo this code will never run anyhow.
+		// casgstatus(gp, _Gwaiting, _Grunnable)
+		// globrunqput(gp)
+		// _p_ := pidleget()
+		// if _p_ == nil {
+		// 	throw("checkdead: no p for timer")
+		// }
+		// mp := mget()
+		// if mp == nil {
+		// 	// There should always be a free M since
+		// 	// nothing is running.
+		// 	throw("checkdead: no m for timer")
+		// }
+		// nmp.nextp.set(_p_)
+		// notewakeup(&mp.park)
+		// return
+	}
+
+	getg().m.throwing = -1 // do not dump full stacks
+	throw("all goroutines are asleep - deadlock!")
+}
+
+var starttime int64
+
+func schedtrace(detailed bool) {
+	now := nanotime()
+	if starttime == 0 {
+		starttime = now
+	}
+
+	gomaxprocs := int32(GOMAXPROCS(0))
+
+	lock(&sched.lock)
+	print("SCHED ", (now-starttime)/1e6, "ms: gomaxprocs=", gomaxprocs, " idleprocs=", sched.npidle, " threads=", sched.mcount, " spinningthreads=", sched.nmspinning, " idlethreads=", sched.nmidle, " runqueue=", sched.runqsize)
+	if detailed {
+		print(" gcwaiting=", sched.gcwaiting, " nmidlelocked=", sched.nmidlelocked, " stopwait=", sched.stopwait, " sysmonwait=", sched.sysmonwait, "\n")
+	}
+	// We must be careful while reading data from P's, M's and G's.
+	// Even if we hold schedlock, most data can be changed concurrently.
+	// E.g. (p->m ? p->m->id : -1) can crash if p->m changes from non-nil to nil.
+	for i := int32(0); i < gomaxprocs; i++ {
+		_p_ := allp[i]
+		if _p_ == nil {
+			continue
+		}
+		mp := _p_.m.ptr()
+		h := atomic.Load(&_p_.runqhead)
+		t := atomic.Load(&_p_.runqtail)
+		if detailed {
+			id := int32(-1)
+			if mp != nil {
+				id = mp.id
+			}
+			print("  P", i, ": status=", _p_.status, " schedtick=", _p_.schedtick, " syscalltick=", _p_.syscalltick, " m=", id, " runqsize=", t-h, " gfreecnt=", _p_.gfreecnt, "\n")
+		} else {
+			// In non-detailed mode format lengths of per-P run queues as:
+			// [len1 len2 len3 len4]
+			print(" ")
+			if i == 0 {
+				print("[")
+			}
+			print(t - h)
+			if i == gomaxprocs-1 {
+				print("]\n")
+			}
+		}
+	}
+
+	if !detailed {
+		unlock(&sched.lock)
+		return
+	}
+
+	for mp := allm(); mp != nil; mp = mp.alllink {
+		_p_ := mp.p.ptr()
+		gp := mp.curg
+		lockedg := mp.lockedg
+		id1 := int32(-1)
+		if _p_ != nil {
+			id1 = _p_.id
+		}
+		id2 := int64(-1)
+		if gp != nil {
+			id2 = gp.goid
+		}
+		id3 := int64(-1)
+		if lockedg != nil {
+			id3 = lockedg.goid
+		}
+		print("  M", mp.id, ": p=", id1, " curg=", id2, " mallocing=", mp.mallocing, " throwing=", mp.throwing, " preemptoff=", mp.preemptoff, ""+" locks=", mp.locks, " dying=", mp.dying, " helpgc=", mp.helpgc, " spinning=", mp.spinning, " blocked=", mp.blocked, " lockedg=", id3, "\n")
+	}
+
+	lock(&allglock)
+	for gi := 0; gi < len(allgs); gi++ {
+		gp := allgs[gi]
+		mp := gp.m
+		lockedm := gp.lockedm
+		id1 := int32(-1)
+		if mp != nil {
+			id1 = mp.id
+		}
+		id2 := int32(-1)
+		if lockedm != nil {
+			id2 = lockedm.id
+		}
+		print("  G", gp.goid, ": status=", readgstatus(gp), "(", gp.waitreason, ") m=", id1, " lockedm=", id2, "\n")
+	}
+	unlock(&allglock)
+	unlock(&sched.lock)
 }
