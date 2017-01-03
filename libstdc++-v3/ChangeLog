@@ -1,5 +1,10 @@
 2017-01-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/78956
+	* include/std/thread (thread(const thread&&)): Add deleted
+	constructor.
+	* testsuite/30_threads/thread/cons/lwg2097.cc: New test.
+
 	* doc/xml/manual/spine.xml: Update copyright years.
 	* doc/xml/manual/build_hacking.xml: Fix spelling of libbuilddir.
 	* doc/xml/manual/test.xml: Likewise.
