@@ -339,11 +339,11 @@ gfc_build_io_library_fndecls (void)
 
   iocall[IOCALL_X_CHARACTER] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character")), ".wW",
-	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_CHARACTER_WRITE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character_write")), ".wR",
-	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_CHARACTER_WIDE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character_wide")), ".wW",

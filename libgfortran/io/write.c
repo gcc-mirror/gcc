@@ -2380,6 +2380,7 @@ void
 namelist_write (st_parameter_dt *dtp)
 {
   namelist_info * t1, *t2, *dummy = NULL;
+  index_type i;
   index_type dummy_offset = 0;
   char c;
   char * dummy_name = NULL;
@@ -2401,7 +2402,7 @@ namelist_write (st_parameter_dt *dtp)
   write_character (dtp, "&", 1, 1, NODELIM);
 
   /* Write namelist name in upper case - f95 std.  */
-  for (gfc_charlen_type i = 0; i < dtp->namelist_name_len; i++ )
+  for (i = 0 ;i < dtp->namelist_name_len ;i++ )
     {
       c = toupper ((int) dtp->namelist_name[i]);
       write_character (dtp, &c, 1 ,1, NODELIM);
