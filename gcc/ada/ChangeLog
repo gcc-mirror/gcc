@@ -1,3 +1,9 @@
+2017-01-03  James Cowgill  <James.Cowgill@imgtec.com>
+
+	* s-linux-mips.ads: Rename from s-linux-mipsel.ads.
+	* gcc-interface/Makefile.in (MIPS/Linux): Merge mips and mipsel
+	sections.
+
 2017-01-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads: Bump copyright year.
