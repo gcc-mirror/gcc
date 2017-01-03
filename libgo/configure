@@ -15490,6 +15490,32 @@ $as_echo "#define HAVE_AS_X86_64_UNWIND_SECTION_TYPE 1" >>confdefs.h
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler supports AES instructions" >&5
+$as_echo_n "checking assembler supports AES instructions... " >&6; }
+if test "${libgo_cv_as_x86_aes+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+libgo_cv_as_x86_aes=yes
+echo 'aesenc %xmm0, %xmm1' > conftest.s
+CFLAGS_hold=$CFLAGS
+if test "$libgo_cv_c_unused_arguments" = yes; then
+  CFLAGS="$CFLAGS -Qunused-arguments"
+fi
+if $CC $CFLAGS -c conftest.s 2>&1 | grep -i error > /dev/null; then
+    libgo_cv_as_x86_aes=no
+fi
+CFLAGS=$CFLAGS_hold
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_as_x86_aes" >&5
+$as_echo "$libgo_cv_as_x86_aes" >&6; }
+if test "x$libgo_cv_as_x86_aes" = xyes; then
+
+$as_echo "#define HAVE_AS_X86_AES 1" >>confdefs.h
+
+fi
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure

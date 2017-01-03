@@ -233,6 +233,7 @@ func alginit() {
 	// Install aes hash algorithm if we have the instructions we need
 	if (GOARCH == "386" || GOARCH == "amd64") &&
 		GOOS != "nacl" &&
+		support_aes &&
 		cpuid_ecx&(1<<25) != 0 && // aes (aesenc)
 		cpuid_ecx&(1<<9) != 0 && // sse3 (pshufb)
 		cpuid_ecx&(1<<19) != 0 { // sse4.1 (pinsr{d,q})

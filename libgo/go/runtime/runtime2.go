@@ -771,7 +771,8 @@ var (
 
 	// Information about what cpu features are available.
 	// Set on startup.
-	cpuid_ecx uint32
+	cpuid_ecx   uint32
+	support_aes bool
 
 //	cpuid_edx         uint32
 //	cpuid_ebx7        uint32

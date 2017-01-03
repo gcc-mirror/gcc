@@ -272,6 +272,12 @@ func setCpuidECX(v uint32) {
 	cpuid_ecx = v
 }
 
+// For gccgo, to communicate from the C code to the Go code.
+//go:linkname setSupportAES runtime.setSupportAES
+func setSupportAES(v bool) {
+	support_aes = v
+}
+
 // typedmemmove copies a typed value.
 // For gccgo for now.
 //go:nosplit

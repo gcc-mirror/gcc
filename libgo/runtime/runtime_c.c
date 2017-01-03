@@ -190,5 +190,9 @@ runtime_cpuinit()
 	if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
 		setCpuidECX(ecx);
 	}
+
+#if defined(HAVE_AS_X86_AES)
+	setSupportAES(true);
+#endif
 #endif
 }
