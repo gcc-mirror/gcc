@@ -1,3 +1,9 @@
+2017-01-03  James Cowgill  <James.Cowgill@imgtec.com>
+
+	PR rtl-optimization/65618
+	* emit-rtl.c (try_split): Move initialization of "before" and
+	"after" to just before the call to emit_insn_after_setloc.
+
 2017-01-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/md.texi (Standard Names): Remove reference to Java frontend.
