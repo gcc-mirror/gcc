@@ -6534,8 +6534,7 @@ function.
 @cindex @code{trap} instruction pattern
 @item @samp{trap}
 This pattern, if defined, signals an error, typically by causing some
-kind of signal to be raised.  Among other places, it is used by the Java
-front end to signal `invalid array index' exceptions.
+kind of signal to be raised.
 
 @cindex @code{ctrap@var{MM}4} instruction pattern
 @item @samp{ctrap@var{MM}4}
