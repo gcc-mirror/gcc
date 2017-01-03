@@ -1,6 +1,14 @@
 2017-01-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-12-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/78886
+	* gcc.dg/tree-ssa/pr78886.c: New test.
+
+2017-01-03  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2016-12-13  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/78428

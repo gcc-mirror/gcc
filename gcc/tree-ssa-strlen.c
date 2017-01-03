@@ -1891,6 +1891,9 @@ handle_builtin_malloc (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    return;
+
   gcc_assert (get_stridx (lhs) == 0);
   int idx = new_stridx (lhs);
   tree length = NULL_TREE;
