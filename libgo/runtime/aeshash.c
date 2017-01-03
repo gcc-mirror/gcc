@@ -12,7 +12,7 @@ uintptr aeshashbody(void*, uintptr, uintptr, Slice)
 uintptr aeshashbody(void*, uintptr, uintptr, Slice)
 	__attribute__((no_split_stack));
 
-#if defined(__i386__) || defined(__x86_64__)
+#if (defined(__i386__) || defined(__x86_64__)) && defined(HAVE_AS_X86_AES)
 
 #include <emmintrin.h>
 #include <tmmintrin.h>
@@ -573,7 +573,7 @@ uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
 
 #endif // !defined(__x86_64__)
 
-#else // !defined(__i386__) && !defined(__x86_64__)
+#else // !defined(__i386__) && !defined(__x86_64__) || !defined(HAVE_AS_X86_AES)
 
 uintptr aeshashbody(void* p __attribute__((unused)),
 		    uintptr seed __attribute__((unused)),
@@ -583,4 +583,4 @@ uintptr aeshashbody(void* p __attribute__((unused)),
 	runtime_throw("impossible call to aeshashbody");
 }
 
-#endif // !defined(__i386__) && !defined(__x86_64__)
+#endif // !defined(__i386__) && !defined(__x86_64__) || !defined(HAVE_AS_X86_AES)

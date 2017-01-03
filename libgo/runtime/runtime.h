@@ -599,6 +599,8 @@ extern void setIsCgo(void)
   __asm__ (GOSYM_PREFIX "runtime.setIsCgo");
 extern void setCpuidECX(uint32)
   __asm__ (GOSYM_PREFIX "runtime.setCpuidECX");
+extern void setSupportAES(bool)
+  __asm__ (GOSYM_PREFIX "runtime.setSupportAES");
 extern void makeMainInitDone(void)
   __asm__ (GOSYM_PREFIX "runtime.makeMainInitDone");
 extern void closeMainInitDone(void)
