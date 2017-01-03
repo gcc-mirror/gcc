@@ -1,3 +1,13 @@
+2017-01-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78696
+	* gimple-ssa-sprintf.c (format_floating): Correct handling of
+	precision.  Use MPFR for %f for greater fidelity.  Correct handling
+	of %g.
+	(pass_sprintf_length::compute_format_length): Set width and precision
+	specified by asrerisk to void_node for vararg functions.
+	(try_substitute_return_value): Adjust dump output.
+
 2017-01-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* doc/invoke.texi (RS6000 options): LRA is enabled by default.

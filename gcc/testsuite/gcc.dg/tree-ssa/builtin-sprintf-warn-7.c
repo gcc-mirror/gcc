@@ -63,11 +63,14 @@ void test_floating_a_var (double x)
 
   T (0, "%.*a", INT_MIN, x);     /* { dg-warning "writing between 6 and 24 bytes" } */
 
-  T (0, "%.*a", INT_MAX, x);     /* { dg-warning "writing between 2147483653 and 2147483658 bytes" } */
+  /* Expected output is "0x0." followed by INT_MAX digits followed by
+     "p+" followed by 1 to four digits, with a byte count in the range
+     [3 + INT_MAX + 2 + 1, 3 + INT_MAX + 2 + 4].  */
+  T (0, "%.*a", INT_MAX, x);     /* { dg-warning "writing between 2147483654 and 2147483658 bytes" } */
 
   T (0, "%*.*a", INT_MIN, INT_MIN, x);   /* { dg-warning "writing 2147483648 bytes" } */
 
-  T (0, "%*.*a", INT_MAX, INT_MAX, x);   /* { dg-warning "writing between 2147483653 and 2147483658 bytes" } */
+  T (0, "%*.*a", INT_MAX, INT_MAX, x);   /* { dg-warning "writing between 2147483654 and 2147483658 bytes" } */
 }
 
 void test_floating_e_cst (void)
@@ -75,7 +78,7 @@ void test_floating_e_cst (void)
   T (0, "%*e",  INT_MIN, 0.);     /* { dg-warning "writing 2147483648 bytes" } */
   T (0, "%*e",  INT_MAX, 0.);     /* { dg-warning "writing 2147483647 bytes" } */
 
-  T (0, "%.*e", INT_MIN, 0.);     /* { dg-warning "writing 5 bytes" } */
+  T (0, "%.*e", INT_MIN, 0.);     /* { dg-warning "writing 12 bytes" } */
 
   T (0, "%.*e", INT_MAX, 0.);     /* { dg-warning "writing 2147483653 bytes" } */
 
@@ -103,7 +106,7 @@ void test_floating_f_cst (void)
   T (0, "%*f",  INT_MIN, 0.);     /* { dg-warning "writing 2147483648 bytes" } */
   T (0, "%*f",  INT_MAX, 0.);     /* { dg-warning "writing 2147483647 bytes" } */
 
-  T (0, "%.*f", INT_MIN, 0.);     /* { dg-warning "writing 1 byte" } */
+  T (0, "%.*f", INT_MIN, 0.);     /* { dg-warning "writing 8 byte" } */
 
   T (0, "%.*f", INT_MAX, 0.);     /* { dg-warning "writing 2147483649 bytes" } */
 
