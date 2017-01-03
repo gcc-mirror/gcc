@@ -1141,7 +1141,7 @@ static atom_type last_atom;
 
 #define MAX_ATOM_SIZE 100
 
-static int atom_int;
+static HOST_WIDE_INT atom_int;
 static char *atom_string, atom_name[MAX_ATOM_SIZE];
 
 
@@ -1271,7 +1271,7 @@ parse_string (void)
 }
 
 
-/* Parse a small integer.  */
+/* Parse an integer. Should fit in a HOST_WIDE_INT.  */
 
 static void
 parse_integer (int c)
@@ -1288,8 +1288,6 @@ parse_integer (int c)
 	}
 
       atom_int = 10 * atom_int + c - '0';
-      if (atom_int > 99999999)
-	bad_module ("Integer overflow");
     }
 
 }
@@ -1631,11 +1629,12 @@ write_char (char out)
 static void
 write_atom (atom_type atom, const void *v)
 {
-  char buffer[20];
+  char buffer[32];
 
   /* Workaround -Wmaybe-uninitialized false positive during
      profiledbootstrap by initializing them.  */
-  int i = 0, len;
+  int len;
+  HOST_WIDE_INT i = 0;
   const char *p;
 
   switch (atom)
@@ -1654,11 +1653,9 @@ write_atom (atom_type atom, const void *v)
       break;
 
     case ATOM_INTEGER:
-      i = *((const int *) v);
-      if (i < 0)
-	gfc_internal_error ("write_atom(): Writing negative integer");
+      i = *((const HOST_WIDE_INT *) v);
 
-      sprintf (buffer, "%d", i);
+      snprintf (buffer, sizeof (buffer), HOST_WIDE_INT_PRINT_DEC, i);
       p = buffer;
       break;
 
@@ -1766,11 +1763,26 @@ static void
 mio_integer (int *ip)
 {
   if (iomode == IO_OUTPUT)
-    write_atom (ATOM_INTEGER, ip);
+    {
+      HOST_WIDE_INT hwi = *ip;
+      write_atom (ATOM_INTEGER, &hwi);
+    }
   else
     {
       require_atom (ATOM_INTEGER);
       *ip = atom_int;
+    }
+}
+
+static void
+mio_hwi (HOST_WIDE_INT *hwi)
+{
+  if (iomode == IO_OUTPUT)
+    write_atom (ATOM_INTEGER, hwi);
+  else
+    {
+      require_atom (ATOM_INTEGER);
+      *hwi = atom_int;
     }
 }
 
@@ -1783,7 +1795,7 @@ mio_intrinsic_op (gfc_intrinsic_op* op)
   /* FIXME: Would be nicer to do this via the operators symbolic name.  */
   if (iomode == IO_OUTPUT)
     {
-      int converted = (int) *op;
+      HOST_WIDE_INT converted = (HOST_WIDE_INT) *op;
       write_atom (ATOM_INTEGER, &converted);
     }
   else
@@ -2680,7 +2692,7 @@ mio_array_ref (gfc_array_ref *ar)
     {
       for (i = 0; i < ar->dimen; i++)
 	{
-	  int tmp = (int)ar->dimen_type[i];
+	  HOST_WIDE_INT tmp = (HOST_WIDE_INT)ar->dimen_type[i];
 	  write_atom (ATOM_INTEGER, &tmp);
 	}
     }
@@ -3382,6 +3394,7 @@ fix_mio_expr (gfc_expr *e)
 static void
 mio_expr (gfc_expr **ep)
 {
+  HOST_WIDE_INT hwi;
   gfc_expr *e;
   atom_type t;
   int flag;
@@ -3596,7 +3609,9 @@ mio_expr (gfc_expr **ep)
 	  break;
 
 	case BT_CHARACTER:
-	  mio_integer (&e->value.character.length);
+	  hwi = e->value.character.length;
+	  mio_hwi (&hwi);
+	  e->value.character.length = hwi;
 	  e->value.character.string
 	    = CONST_CAST (gfc_char_t *,
 			  mio_allocated_wide_string (e->value.character.string,
