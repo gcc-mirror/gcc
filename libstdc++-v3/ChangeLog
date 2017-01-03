@@ -1,3 +1,10 @@
+2017-01-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/xml/manual/build_hacking.xml: Fix spelling of libbuilddir.
+	* doc/xml/manual/test.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2017-01-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/faq.xml: Update address of C++ ABI link.

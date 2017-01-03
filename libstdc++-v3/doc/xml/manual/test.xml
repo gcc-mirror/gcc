@@ -556,7 +556,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     <para>
       The tests will be compiled with a set of default compiler flags defined
       by the
-      <filename><replaceable>libbuildir</replaceable>/scripts/testsuite_flags</filename>
+      <filename><replaceable>libbuilddir</replaceable>/scripts/testsuite_flags</filename>
       file, as well as options specified in individual tests. You can run
       the tests with different options by adding them to the output of
       the <option>--cxxflags</option> option of that script, or by setting
@@ -585,7 +585,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
       To run the libstdc++ test suite under the
       <link linkend="manual.ext.debug_mode">debug mode</link>, use
       <userinput>make check-debug</userinput>. Alternatively, edit
-      <filename><replaceable>libbuildir</replaceable>/scripts/testsuite_flags</filename>
+      <filename><replaceable>libbuilddir</replaceable>/scripts/testsuite_flags</filename>
       to add the compile-time flag <option>-D_GLIBCXX_DEBUG</option> to the
       result printed by the <option>--cxxflags</option>
       option. Additionally, add the
