@@ -1,3 +1,9 @@
+2017-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC options): Document -mlra as the default.
+	* config/sparc/sparc.c (sparc_option_override): Force LRA unless
+	-mlra/-mno-lra was passed to the compiler.
+
 2017-01-03  James Cowgill  <James.Cowgill@imgtec.com>
 
 	PR rtl-optimization/65618

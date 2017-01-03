@@ -23271,8 +23271,8 @@ in 64-bit mode.
 @itemx -mno-lra
 @opindex mlra
 @opindex mno-lra
-Enable Local Register Allocation.  This is experimental for SPARC, so by
-default the compiler uses standard reload (i.e. @option{-mno-lra}).
+Enable Local Register Allocation.  This is the default for SPARC since GCC 7
+so @option{-mno-lra} needs to be passed to get old Reload.
 
 @item -mcpu=@var{cpu_type}
 @opindex mcpu
