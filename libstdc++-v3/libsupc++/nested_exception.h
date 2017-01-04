@@ -39,10 +39,6 @@
 #include <bits/c++config.h>
 #include <bits/move.h>
 
-#if ATOMIC_INT_LOCK_FREE < 2
-#  error This platform does not support exception propagation.
-#endif
-
 extern "C++" {
 
 namespace std

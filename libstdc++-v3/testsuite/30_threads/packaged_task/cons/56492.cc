@@ -3,7 +3,6 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //

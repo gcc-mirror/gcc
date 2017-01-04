@@ -4480,6 +4480,43 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
     [Define to the letter to which size_t is mangled.])
 ])
 
+dnl
+dnl Determine whether std::exception_ptr symbols should be exported with
+dnl the symbol versions from GCC 4.6.0 or GCC 7.1.0, depending on which
+dnl release first added support for std::exception_ptr. Originally it was
+dnl only supported for targets with always-lock-free atomics for int, but
+dnl since GCC 7.1 it is supported for all targets.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER], [
+  if test $enable_symvers != no; then
+    AC_MSG_CHECKING([for first version to support std::exception_ptr])
+    case ${target} in
+      aarch64-*-* | alpha-*-* | hppa*-*-* | i?86-*-* | x86_64-*-* | \
+      m68k-*-* | powerpc*-*-* | s390*-*-* | *-*-solaris* )
+        ac_exception_ptr_since_gcc46=yes
+        ;;
+      *)
+        # If the value of this macro changes then we will need to hardcode
+        # yes/no here for additional targets based on the original value.
+        AC_TRY_COMPILE([], [
+          #if __GCC_ATOMIC_INT_LOCK_FREE <= 1
+          # error atomic int not always lock free
+          #endif
+          ],
+          [ac_exception_ptr_since_gcc46=yes],
+          [ac_exception_ptr_since_gcc46=no])
+        ;;
+    esac
+    if test x"$ac_exception_ptr_since_gcc46" = x"yes" ; then
+      AC_DEFINE(HAVE_EXCEPTION_PTR_SINCE_GCC46, 1,
+        [Define to 1 if GCC 4.6 supported std::exception_ptr for the target])
+      AC_MSG_RESULT([4.6.0])
+    else
+      AC_MSG_RESULT([7.1.0])
+    fi
+  fi
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

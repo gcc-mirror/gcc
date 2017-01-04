@@ -80664,6 +80664,55 @@ _ACEOF
 
 
 
+# Check which release added std::exception_ptr for the target
+
+  if test $enable_symvers != no; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for first version to support std::exception_ptr" >&5
+$as_echo_n "checking for first version to support std::exception_ptr... " >&6; }
+    case ${target} in
+      aarch64-*-* | alpha-*-* | hppa*-*-* | i?86-*-* | x86_64-*-* | \
+      m68k-*-* | powerpc*-*-* | s390*-*-* | *-*-solaris* )
+        ac_exception_ptr_since_gcc46=yes
+        ;;
+      *)
+        # If the value of this macro changes then we will need to hardcode
+        # yes/no here for additional targets based on the original value.
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+          #if __GCC_ATOMIC_INT_LOCK_FREE <= 1
+          # error atomic int not always lock free
+          #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_exception_ptr_since_gcc46=yes
+else
+  ac_exception_ptr_since_gcc46=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        ;;
+    esac
+    if test x"$ac_exception_ptr_since_gcc46" = x"yes" ; then
+
+$as_echo "#define HAVE_EXCEPTION_PTR_SINCE_GCC46 1" >>confdefs.h
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: 4.6.0" >&5
+$as_echo "4.6.0" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: 7.1.0" >&5
+$as_echo "7.1.0" >&6; }
+    fi
+  fi
+
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

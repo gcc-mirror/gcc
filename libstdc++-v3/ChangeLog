@@ -1,3 +1,40 @@
+2017-01-04  Pauli Nieminen  <suokkos@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64735
+	* acinclude.m4 (GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER): Define.
+	* config.h.in: Regenerate.
+	* config/abi/pre/gnu.ver [HAVE_EXCEPTION_PTR_SINCE_GCC46]
+	(GLIBCXX_3.4.15, GLIBCXX_3.4.21, CXXABI_1.3.3, CXXABI_1.3.5): Make
+	exports for exception_ptr, nested_exception, and future conditional.
+	[HAVE_EXCEPTION_PTR_SINCE_GCC46] (GLIBCXX_3.4.23, CXXABI_1.3.11): Add
+	exports for exception_ptr, nested_exception, and future conditional.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER.
+	* include/std/future: Remove check for ATOMIC_INT_LOCK_FREE
+	* libsupc++/eh_atomics.h: New file for internal use only.
+	(__eh_atomic_inc, __eh_atomic_dec): New.
+	* libsupc++/eh_ptr.cc (exception_ptr::_M_addref)
+	(exception_ptr::_M_release) (__gxx_dependent_exception_cleanup)
+	(rethrow_exception): Use eh_atomics.h reference counting helpers.
+	* libsupc++/eh_throw.cc (__gxx_exception_cleanup): Likewise.
+	* libsupc++/eh_tm.cc (free_any_cxa_exception): Likewise.
+	* libsupc++/exception: Remove check for ATOMIC_INT_LOCK_FREE.
+	* libsupc++/exception_ptr.h: Likewise.
+	* libsupc++/guard.cc: Include header for ATOMIC_INT_LOCK_FREE macro.
+	* libsupc++/nested_exception.cc: Remove check for
+	ATOMIC_INT_LOCK_FREE.
+	* libsupc++/nested_exception.h: Likewise.
+	* src/c++11/future.cc: Likewise.
+	* testsuite/18_support/exception_ptr/*: Remove atomic builtins checks.
+	* testsuite/18_support/nested_exception/*: Likewise.
+	* testsuite/30_threads/async/*: Likewise.
+	* testsuite/30_threads/future/*: Likewise.
+	* testsuite/30_threads/headers/future/types_std_c++0x.cc: Likewise.
+	* testsuite/30_threads/packaged_task/*: Likewise.
+	* testsuite/30_threads/promise/*: Likewise.
+	* testsuite/30_threads/shared_future/*: Likewise.
+
 2017-01-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/documentation_hacking.xml: sourceforge.net now

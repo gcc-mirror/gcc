@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
