@@ -1,3 +1,11 @@
+2017-01-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimizatin/67955
+	* tree-ssa-alias.c (same_addr_size_stores_p): Check offsets first.
+	Allow any SSA_VAR_P as the base objects.  Use integer_zerop.  Verify
+	the points-to solution does not include pt_null.  Use DECL_PT_UID
+	unconditionally.
+
 2017-01-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (HI/SImode test with imm to QImode splitters):
