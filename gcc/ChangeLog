@@ -1,3 +1,10 @@
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/77569
+	* input.c (ebcdic_execution_charset::on_error): Don't use strstr for
+	a substring of the message, but strcmp with the whole message.  Ifdef
+	ENABLE_NLS, translate the message first using dgettext.
+
 2017-01-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimizatin/78856

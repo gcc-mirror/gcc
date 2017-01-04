@@ -2026,9 +2026,14 @@ class ebcdic_execution_charset : public lexer_test_options
     ATTRIBUTE_FPTR_PRINTF(5,0)
   {
     gcc_assert (s_singleton);
+    /* Avoid exgettext from picking this up, it is translated in libcpp.  */
+    const char *msg = "conversion from %s to %s not supported by iconv";
+#ifdef ENABLE_NLS
+    msg = dgettext ("cpplib", msg);
+#endif
     /* Detect and record errors emitted by libcpp/charset.c:init_iconv_desc
        when the local iconv build doesn't support the conversion.  */
-    if (strstr (msgid, "not supported by iconv"))
+    if (strcmp (msgid, msg) == 0)
       {
 	s_singleton->m_num_iconv_errors++;
 	return true;
