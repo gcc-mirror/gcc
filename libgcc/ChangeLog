@@ -1,3 +1,8 @@
+2017-01-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/sfp-machine.h (_FP_CHOOSENAN): Always preserve NaN
+	payload if [__mips_nan2008].
+
 2017-01-04  Alan Modra  <amodra@gmail.com>
 
 	* Makefile.in (configure_deps): Update.
