@@ -1,3 +1,11 @@
+2017-01-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71055
+	* gcc.dg/torture/pr71055.c: New testcase.
+
 2017-01-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
