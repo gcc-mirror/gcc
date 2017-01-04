@@ -722,10 +722,6 @@ go_format_type (struct godump_container *container, tree type,
 
   switch (TREE_CODE (type))
     {
-    case ENUMERAL_TYPE:
-      obstack_grow (ob, "int", 3);
-      break;
-
     case TYPE_DECL:
       {
 	void **slot;
@@ -741,6 +737,7 @@ go_format_type (struct godump_container *container, tree type,
       }
       break;
 
+    case ENUMERAL_TYPE:
     case INTEGER_TYPE:
       {
 	const char *s;

@@ -1,3 +1,8 @@
+2017-01-03  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (go_format_type): Treat ENUMERAL_TYPE like
+	INTEGER_TYPE.
+
 2017-01-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78696
