@@ -642,12 +642,13 @@ extern tree c_cast_expr (location_t, struct c_type_name *, tree);
 extern tree build_c_cast (location_t, tree, tree);
 extern void store_init_value (location_t, tree, tree, tree);
 extern void maybe_warn_string_init (location_t, tree, struct c_expr);
-extern void start_init (tree, tree, int);
+extern void start_init (tree, tree, int, rich_location *);
 extern void finish_init (void);
 extern void really_start_incremental_init (tree);
 extern void finish_implicit_inits (location_t, struct obstack *);
 extern void push_init_level (location_t, int, struct obstack *);
-extern struct c_expr pop_init_level (location_t, int, struct obstack *);
+extern struct c_expr pop_init_level (location_t, int, struct obstack *,
+				     location_t);
 extern void set_init_index (location_t, tree, tree, struct obstack *);
 extern void set_init_label (location_t, tree, location_t, struct obstack *);
 extern void process_init_element (location_t, struct c_expr, bool,
