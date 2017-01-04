@@ -1,3 +1,8 @@
+2017-01-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: sourceforge.net now
+	defaults to https; adjust reference.
+
 2017-01-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78956
