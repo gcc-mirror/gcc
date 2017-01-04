@@ -1,3 +1,13 @@
+2017-01-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78534
+	PR fortran/78976
+	* gfortran.dg/dependency_49.f90: Change scan-tree-dump-times
+	due to gfc_trans_string_copy change to avoid -Wstringop-overflow.
+	* gfortran.dg/transfer_intrinsic_1.f90: Change
+	scan-tree-dump-times due to gfc_trans_string_copy change to
+	avoid -Wstringop-overflow.
+
 2017-01-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/78856
