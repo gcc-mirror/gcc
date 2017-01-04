@@ -1,3 +1,7 @@
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* picflag.m4: Remove stray \xA0 in comment.
+
 2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* hwcaps.m4: New file.
@@ -13,6 +17,10 @@
 
 	* bootstrap-asan.mk: Replace LSAN_OPTIONS=detect_leaks=0 with
 	ASAN_OPTIONS=detect_leaks=0:use_odr_indicator=1.
+
+2016-12-01  Ma Jiang  <ma.jiang@zte.com.cn>
+
+	* acx.m4: Change "tail +16c" to "tail -c +17".
 
 2016-12-01  Matthias Klose  <doko@ubuntu.com>
 

@@ -1,3 +1,7 @@
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2016-12-29  Ben Elliston  <bje@gnu.org>
 
 	* config.sub: Import latest version.
@@ -18,8 +22,7 @@
 
 2016-12-01  Ma Jiang  <ma.jiang@zte.com.cn>
 
-	* config/acx.m4: Change "tail +16c" to "tail -c +17".
-	* configure: Regenerated.
+	* configure: Regenerate.
 
 2016-12-01  Matthias Klose  <doko@ubuntu.com>
 

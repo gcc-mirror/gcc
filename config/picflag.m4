@@ -12,7 +12,7 @@ case "${$2}" in
 	  # If we are using a compiler supporting mdynamic-no-pic
 	  # and the option has been tested as safe to add, then cancel
 	  # it here, since the code generated is incompatible with shared
-	  # libs.
+	  # libs.
 	  *-mdynamic-no-pic*) $1='-fno-common -mno-dynamic-no-pic' ;;
 	  *) $1=-fno-common ;;
 	esac
