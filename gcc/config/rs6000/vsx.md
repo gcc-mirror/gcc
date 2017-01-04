@@ -2628,7 +2628,7 @@
 (define_insn_and_split "*vsx_extract_<mode>_store_p9"
   [(set (match_operand:<VS_scalar> 0 "memory_operand" "=Z,m")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "<VSX_EX>,<VSX_EX>")
+	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "<VSX_EX>,v")
 	 (parallel [(match_operand:QI 2 "const_int_operand" "n,n")])))
    (clobber (match_scratch:<VS_scalar> 3 "=<VSX_EX>,&r"))
    (clobber (match_scratch:SI 4 "=X,&r"))]
