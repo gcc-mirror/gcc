@@ -18,7 +18,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
 
 #include <future>
 

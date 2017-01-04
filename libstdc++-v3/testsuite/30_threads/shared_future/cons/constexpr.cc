@@ -2,7 +2,6 @@
 // { dg-options "-fno-inline -g0" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
 // { dg-final { scan-assembler-not "_ZNSt13shared_futureIvEC2Ev" } }
 // { dg-final { scan-assembler-not "_ZNSt13shared_futureIiEC2Ev" } }
 

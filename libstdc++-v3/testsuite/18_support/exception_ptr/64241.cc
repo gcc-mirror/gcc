@@ -17,7 +17,6 @@
 
 // { dg-options "-fno-exceptions -O0" }
 // { dg-do run { target c++11 } }
-// { dg-require-atomic-builtins "" }
 
 #include <exception>
 #include <testsuite_hooks.h>

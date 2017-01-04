@@ -1,7 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //

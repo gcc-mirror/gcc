@@ -419,6 +419,9 @@ GLIBCXX_CHECK_FILESYSTEM_DEPS
 # For Transactional Memory TS
 GLIBCXX_CHECK_SIZE_T_MANGLING
 
+# Check which release added std::exception_ptr for the target
+GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

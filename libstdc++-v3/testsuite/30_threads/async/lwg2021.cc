@@ -20,7 +20,6 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
 
 // LWG 2021. Further incorrect usages of result_of
 // Arguments to result_of should use decay.

@@ -123,6 +123,9 @@
 /* Define if EWOULDBLOCK exists. */
 #undef HAVE_EWOULDBLOCK
 
+/* Define to 1 if GCC 4.6 supported std::exception_ptr for the target */
+#undef HAVE_EXCEPTION_PTR_SINCE_GCC46
+
 /* Define to 1 if you have the <execinfo.h> header file. */
 #undef HAVE_EXECINFO_H
 
