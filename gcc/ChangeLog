@@ -1,5 +1,8 @@
 2017-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* optc-gen.awk: Emit #error for -W*/-f*/-m* Enum without
+	RejectNegative.
+
 	* dwarf2out.c (output_loc_list): Don't throw away 64K+ location
 	descriptions for -gdwarf-5 and emit them as uleb128 instead of
 	2-byte data.
