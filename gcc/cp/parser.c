@@ -766,7 +766,7 @@ cp_lexer_previous_token (cp_lexer *lexer)
   /* Skip past purged tokens.  */
   while (tp->purged_p)
     {
-      gcc_assert (tp != lexer->buffer->address ());
+      gcc_assert (tp != vec_safe_address (lexer->buffer));
       tp--;
     }
 
