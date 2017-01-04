@@ -685,6 +685,12 @@ DW_OP (DW_OP_HP_unmod_range, 0xe5)
 DW_OP (DW_OP_HP_tls, 0xe6)
 /* PGI (STMicroelectronics) extensions.  */
 DW_OP (DW_OP_PGI_omp_thread_num, 0xf8)
+/* AARCH64 extensions.
+   DW_OP_AARCH64_operation takes one mandatory unsigned LEB128 operand.
+   Bits[6:0] of this operand is the action code, all others bits are initialized
+   to 0 except explicitly documented for one action.  Please refer AArch64 DWARF
+   ABI documentation for details.  */
+DW_OP (DW_OP_AARCH64_operation, 0xea)
 DW_END_OP
 
 DW_FIRST_ATE (DW_ATE_void, 0x0)
@@ -766,7 +772,8 @@ DW_CFA (DW_CFA_hi_user, 0x3f)
 
 /* SGI/MIPS specific.  */
 DW_CFA (DW_CFA_MIPS_advance_loc8, 0x1d)
-/* GNU extensions.  */
+/* GNU extensions.
+   NOTE: DW_CFA_GNU_window_save is multiplexed on Sparc and AArch64.  */
 DW_CFA (DW_CFA_GNU_window_save, 0x2d)
 DW_CFA (DW_CFA_GNU_args_size, 0x2e)
 DW_CFA (DW_CFA_GNU_negative_offset_extended, 0x2f)
