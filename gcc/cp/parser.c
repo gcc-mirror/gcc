@@ -12799,9 +12799,11 @@ cp_parser_simple_declaration (cp_parser* parser,
 	    }
 	}
 
-      if (auto_result)
+      if (auto_result
+	  && (!processing_template_decl || !type_uses_auto (auto_result)))
 	{
-	  if (last_type && last_type != error_mark_node
+	  if (last_type
+	      && last_type != error_mark_node
 	      && !same_type_p (auto_result, last_type))
 	    {
 	      /* If the list of declarators contains more than one declarator,
