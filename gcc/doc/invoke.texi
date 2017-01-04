@@ -295,7 +295,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses -Wno-pedantic-ms-format @gol
 -Wplacement-new -Wplacement-new=@var{n} @gol
--Wpointer-arith  -Wno-pointer-to-int-cast @gol
+-Wpointer-arith  -Wpointer-compare  -Wno-pointer-to-int-cast @gol
 -Wno-pragmas -Wredundant-decls -Wrestrict  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshadow=global, -Wshadow=local, -Wshadow=compatible-local @gol
@@ -5636,6 +5636,22 @@ of @code{void}.  GNU C assigns these types a size of 1, for
 convenience in calculations with @code{void *} pointers and pointers
 to functions.  In C++, warn also when an arithmetic operation involves
 @code{NULL}.  This warning is also enabled by @option{-Wpedantic}.
+
+@item -Wpointer-compare
+@opindex Wpointer-compare
+@opindex Wno-pointer-compare
+Warn if a pointer is compared with a zero character constant.  This usually
+means that the pointer was meant to be dereferenced.  For example:
+
+@smallexample
+const char *p = foo ();
+if (p == '\0')
+  return 42;
+@end smallexample
+
+Note that the code above is invalid in C++11.
+
+This warning is enabled by default.
 
 @item -Wtype-limits
 @opindex Wtype-limits

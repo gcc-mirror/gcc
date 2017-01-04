@@ -1,3 +1,8 @@
+2017-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64767
+	* doc/invoke.texi: Document -Wpointer-compare.
+
 2017-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* optc-gen.awk: Emit #error for -W*/-f*/-m* Enum without

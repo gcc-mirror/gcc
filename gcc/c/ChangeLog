@@ -1,3 +1,12 @@
+2017-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64767
+	* c-parser.c (c_parser_postfix_expression): Mark zero character
+	constants by setting original_type in c_expr.
+	* c-typeck.c (parser_build_binary_op): Warn when a pointer is compared
+	with a zero character constant.
+	(char_type_p): New function.
+
 2017-01-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Create a

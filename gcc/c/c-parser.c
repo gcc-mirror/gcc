@@ -7540,6 +7540,9 @@ c_parser_postfix_expression (c_parser *parser)
     case CPP_CHAR32:
     case CPP_WCHAR:
       expr.value = c_parser_peek_token (parser)->value;
+      /* For the purpose of warning when a pointer is compared with
+	 a zero character constant.  */
+      expr.original_type = char_type_node;
       set_c_expr_source_range (&expr, tok_range);
       c_parser_consume_token (parser);
       break;

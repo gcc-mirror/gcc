@@ -870,6 +870,10 @@ Wpointer-sign
 C ObjC Var(warn_pointer_sign) Warning LangEnabledBy(C ObjC,Wall || Wpedantic)
 Warn when a pointer differs in signedness in an assignment.
 
+Wpointer-compare
+C ObjC C++ ObjC++ Var(warn_pointer_compare) Init(1) Warning
+Warn when a pointer is compared with a zero character constant.
+
 Wpointer-to-int-cast
 C ObjC Var(warn_pointer_to_int_cast) Init(1) Warning
 Warn when a pointer is cast to an integer of a different size.
