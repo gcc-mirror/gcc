@@ -1799,21 +1799,23 @@ aclocal_deps = \
 	$(srcdir)/../lt~obsolete.m4 \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/codeset.m4 \
-	$(srcdir)/../config/extensions.m4 \
-	$(srcdir)/../config/gettext-sister.m4 \
+	$(srcdir)/../config/depstand.m4 \
+	$(srcdir)/../config/dfp.m4 \
 	$(srcdir)/../config/gcc-plugin.m4 \
+	$(srcdir)/../config/gettext-sister.m4 \
 	$(srcdir)/../config/iconv.m4 \
 	$(srcdir)/../config/lcmessage.m4 \
+	$(srcdir)/../config/lead-dot.m4 \
 	$(srcdir)/../config/lib-ld.m4 \
 	$(srcdir)/../config/lib-link.m4 \
 	$(srcdir)/../config/lib-prefix.m4 \
+	$(srcdir)/../config/mmap.m4 \
 	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/picflag.m4 \
 	$(srcdir)/../config/progtest.m4 \
         $(srcdir)/../config/stdint.m4 \
-	$(srcdir)/../config/unwind_ipinfo.m4 \
 	$(srcdir)/../config/warnings.m4 \
-	$(srcdir)/../config/dfp.m4 \
-	$(srcdir)/../config/mmap.m4 \
+	$(srcdir)/../config/zlib.m4 \
 	$(srcdir)/acinclude.m4
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4

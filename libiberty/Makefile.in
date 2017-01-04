@@ -484,7 +484,8 @@ configure_deps = $(srcdir)/aclocal.m4 \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/no-executables.m4 \
 	$(srcdir)/../config/override.m4 \
-	$(srcdir)/../config/warnings.m4 \
+	$(srcdir)/../config/picflag.m4 \
+	$(srcdir)/../config/warnings.m4
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(configure_deps)
 	cd $(srcdir) && $(AUTOCONF)

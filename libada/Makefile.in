@@ -189,8 +189,10 @@ AUTOCONF = autoconf
 configure_deps = \
 	$(srcdir)/configure.ac \
 	$(srcdir)/../config/acx.m4 \
+	$(srcdir)/../config/multi.m4 \
 	$(srcdir)/../config/override.m4 \
-	$(srcdir)/../config/multi.m4
+	$(srcdir)/../config/picflag.m4 \
+	$(srcdir)/../config/unwind_ipinfo.m4
 
 $(srcdir)/configure: @MAINT@ $(configure_deps)
 	cd $(srcdir) && $(AUTOCONF)

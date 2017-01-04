@@ -37,13 +37,6 @@
 #endif
 
 
-/* Define to 0/1 if you want also extra run-time checking that might affect
-   code generation. */
-#ifndef USED_FOR_TARGET
-#undef ENABLE_EXTRA_CHECKING
-#endif
-
-
 /* Define 0/1 to force the choice for exception handling model. */
 #ifndef USED_FOR_TARGET
 #undef CONFIG_SJLJ_EXCEPTIONS
@@ -112,6 +105,13 @@
 /* Define if you want more run-time sanity checks for dataflow. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_DF_CHECKING
+#endif
+
+
+/* Define to 0/1 if you want extra run-time checking that might affect code
+   generation. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_EXTRA_CHECKING
 #endif
 
 
