@@ -1,3 +1,12 @@
+2017-01-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78968
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Check for __cxa_thread_atexit.
+	* libsupc++/atexit_thread.cc [_GLIBCXX_HAVE___CXA_THREAD_ATEXIT]:
+	Don't define __cxa_thread_atexit if libc provides it.
+
 2017-01-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement 2801, Default-constructibility of unique_ptr.

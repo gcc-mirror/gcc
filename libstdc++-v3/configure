@@ -28031,12 +28031,14 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
   fi
 
-  for ac_func in __cxa_thread_atexit_impl
+  for ac_func in __cxa_thread_atexit_impl __cxa_thread_atexit
 do :
-  ac_fn_c_check_func "$LINENO" "__cxa_thread_atexit_impl" "ac_cv_func___cxa_thread_atexit_impl"
-if test "x$ac_cv_func___cxa_thread_atexit_impl" = x""yes; then :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE___CXA_THREAD_ATEXIT_IMPL 1
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi
