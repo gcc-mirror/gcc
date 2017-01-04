@@ -255,7 +255,7 @@ if $GLIBCXX_IS_NATIVE; then
   # For TLS support.
   GCC_CHECK_TLS
 
-  AC_CHECK_FUNCS(__cxa_thread_atexit_impl)
+  AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
 
   # For iconv support.

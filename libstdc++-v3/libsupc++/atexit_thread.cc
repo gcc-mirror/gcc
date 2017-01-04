@@ -30,7 +30,11 @@
 #include <windows.h>
 #endif
 
-#if _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL
+#if _GLIBCXX_HAVE___CXA_THREAD_ATEXIT
+
+// Libc provides __cxa_thread_atexit definition.
+
+#elif _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL
 
 extern "C" int __cxa_thread_atexit_impl (void (*func) (void *),
 					 void *arg, void *d);
