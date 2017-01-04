@@ -7494,6 +7494,7 @@ struct initializer_stack
   char top_level;
   char require_constant_value;
   char require_constant_elements;
+  rich_location *missing_brace_richloc;
 };
 
 static struct initializer_stack *initializer_stack;
@@ -7501,7 +7502,8 @@ static struct initializer_stack *initializer_stack;
 /* Prepare to parse and output the initializer for variable DECL.  */
 
 void
-start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
+start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level,
+	    rich_location *richloc)
 {
   const char *locus;
   struct initializer_stack *p = XNEW (struct initializer_stack);
@@ -7517,6 +7519,7 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
   p->spelling_size = spelling_size;
   p->top_level = constructor_top_level;
   p->next = initializer_stack;
+  p->missing_brace_richloc = richloc;
   initializer_stack = p;
 
   constructor_decl = decl;
@@ -7701,6 +7704,8 @@ really_start_incremental_init (tree type)
     }
 }
 
+extern location_t last_init_list_comma;
+
 /* Called when we see an open brace for a nested initializer.  Finish
    off any pending levels with implicit braces.  */
 void
@@ -7711,14 +7716,16 @@ finish_implicit_inits (location_t loc, struct obstack *braced_init_obstack)
       if (RECORD_OR_UNION_TYPE_P (constructor_type)
 	  && constructor_fields == 0)
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE
 	       && constructor_max_index
 	       && tree_int_cst_lt (constructor_max_index,
 				   constructor_index))
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else
 	break;
@@ -7837,7 +7844,12 @@ push_init_level (location_t loc, int implicit,
     }
 
   if (implicit == 1)
-    found_missing_braces = 1;
+    {
+      found_missing_braces = 1;
+      if (initializer_stack->missing_brace_richloc)
+	initializer_stack->missing_brace_richloc->add_fixit_insert_before
+	  (loc, "{");
+    }
 
   if (RECORD_OR_UNION_TYPE_P (constructor_type))
     {
@@ -7915,7 +7927,8 @@ push_init_level (location_t loc, int implicit,
 
 struct c_expr
 pop_init_level (location_t loc, int implicit,
-		struct obstack *braced_init_obstack)
+		struct obstack *braced_init_obstack,
+		location_t insert_before)
 {
   struct constructor_stack *p;
   struct c_expr ret;
@@ -7929,10 +7942,15 @@ pop_init_level (location_t loc, int implicit,
 	 pop any inner levels that didn't have explicit braces.  */
       while (constructor_stack->implicit)
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      insert_before),
 			      true, braced_init_obstack);
       gcc_assert (!constructor_range_stack);
     }
+  else
+    if (initializer_stack->missing_brace_richloc)
+      initializer_stack->missing_brace_richloc->add_fixit_insert_before
+	(insert_before, "}");
 
   /* Now output all pending elements.  */
   constructor_incremental = 1;
@@ -7989,8 +8007,12 @@ pop_init_level (location_t loc, int implicit,
   /* Warn when some structs are initialized with direct aggregation.  */
   if (!implicit && found_missing_braces && warn_missing_braces
       && !constructor_zeroinit)
-    warning_init (loc, OPT_Wmissing_braces,
-		  "missing braces around initializer");
+    {
+      gcc_assert (initializer_stack->missing_brace_richloc);
+      warning_at_rich_loc (initializer_stack->missing_brace_richloc,
+			   OPT_Wmissing_braces,
+			   "missing braces around initializer");
+    }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
   if (warn_missing_field_initializers
@@ -8129,7 +8151,8 @@ set_designator (location_t loc, int array,
 	 braces.  */
       while (constructor_stack->implicit)
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       constructor_designated = 1;
       return 0;
@@ -9198,7 +9221,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       if (RECORD_OR_UNION_TYPE_P (constructor_type)
 	  && constructor_fields == 0)
 	process_init_element (loc,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else if ((TREE_CODE (constructor_type) == ARRAY_TYPE
 		|| VECTOR_TYPE_P (constructor_type))
@@ -9206,7 +9230,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	       && tree_int_cst_lt (constructor_max_index,
 				   constructor_index))
 	process_init_element (loc,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else
 	break;
@@ -9539,7 +9564,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      gcc_assert (constructor_stack->implicit);
 	      process_init_element (loc,
 				    pop_init_level (loc, 1,
-						    braced_init_obstack),
+						    braced_init_obstack,
+						    last_init_list_comma),
 				    true, braced_init_obstack);
 	    }
 	  for (p = range_stack;
@@ -9549,7 +9575,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      gcc_assert (constructor_stack->implicit);
 	      process_init_element (loc,
 				    pop_init_level (loc, 1,
-						    braced_init_obstack),
+						    braced_init_obstack,
+						    last_init_list_comma),
 				    true, braced_init_obstack);
 	    }
 

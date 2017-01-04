@@ -1,3 +1,32 @@
+2017-01-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Create a
+	rich_location at init_loc and parse it to start_init.
+	(last_init_list_comma): New global.
+	(c_parser_braced_init): Update last_init_list_comma when parsing
+	commas.  Pass it to pop_init_level.  Pass location of closing
+	brace to pop_init_level.
+	(c_parser_postfix_expression_after_paren_type): Create a
+	rich_location at type_loc and parse it to start_init.
+	(c_parser_omp_declare_reduction): Likewise for loc.
+	* c-tree.h (start_init): Add rich_location * param.
+	(pop_init_level): Add location_t param.
+	* c-typeck.c (struct initializer_stack): Add field
+	"missing_brace_richloc".
+	(start_init): Add richloc param, use it to initialize
+	the stack node's missing_brace_richloc.
+	(last_init_list_comma): New decl.
+	(finish_implicit_inits): Pass last_init_list_comma to
+	pop_init_level.
+	(push_init_level): When finding missing open braces, add fix-it
+	hints to the richloc.
+	(pop_init_level): Add "insert_before" param and pass it
+	when calling pop_init_level.  Add fixits about missing
+	close braces to any richloc.  Use the richloc for the
+	-Wmissing-braces warning.
+	(set_designator): Pass last_init_list_comma to pop_init_level.
+	(process_init_element): Likewise.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

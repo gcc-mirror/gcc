@@ -1847,8 +1847,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      c_parser_consume_token (parser);
 	      if (auto_type_p)
 		{
-		  start_init (NULL_TREE, asm_name, global_bindings_p ());
 		  init_loc = c_parser_peek_token (parser)->location;
+		  rich_location richloc (line_table, init_loc);
+		  start_init (NULL_TREE, asm_name, global_bindings_p (), &richloc);
 		  init = c_parser_expr_no_commas (parser, NULL);
 		  if (TREE_CODE (init.value) == COMPONENT_REF
 		      && DECL_C_BIT_FIELD (TREE_OPERAND (init.value, 1)))
@@ -1904,8 +1905,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		      || !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
 		    c_finish_omp_declare_simd (parser, d, NULL_TREE,
 					       omp_declare_simd_clauses);
-		  start_init (d, asm_name, global_bindings_p ());
 		  init_loc = c_parser_peek_token (parser)->location;
+		  rich_location richloc (line_table, init_loc);
+		  start_init (d, asm_name, global_bindings_p (), &richloc);
 		  init = c_parser_initializer (parser);
 		  finish_init ();
 		}
@@ -4325,6 +4327,11 @@ c_parser_initializer (c_parser *parser)
     }
 }
 
+/* The location of the last comma within the current initializer list,
+   or UNKNOWN_LOCATION if not within one.  */
+
+location_t last_init_list_comma;
+
 /* Parse a braced initializer list.  TYPE is the type specified for a
    compound literal, and NULL_TREE for other initializers and for
    nested braced lists.  NESTED_P is true for nested braced lists,
@@ -4362,7 +4369,10 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
 	  if (parser->error)
 	    break;
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
-	    c_parser_consume_token (parser);
+	    {
+	      last_init_list_comma = c_parser_peek_token (parser)->location;
+	      c_parser_consume_token (parser);
+	    }
 	  else
 	    break;
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
@@ -4376,13 +4386,13 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, "expected %<}%>");
-      pop_init_level (brace_loc, 0, &braced_init_obstack);
+      pop_init_level (brace_loc, 0, &braced_init_obstack, last_init_list_comma);
       obstack_free (&braced_init_obstack, NULL);
       return ret;
     }
   location_t close_loc = next_tok->location;
   c_parser_consume_token (parser);
-  ret = pop_init_level (brace_loc, 0, &braced_init_obstack);
+  ret = pop_init_level (brace_loc, 0, &braced_init_obstack, close_loc);
   obstack_free (&braced_init_obstack, NULL);
   set_c_expr_source_range (&ret, brace_loc, close_loc);
   return ret;
@@ -8218,7 +8228,8 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   tree type_expr = NULL_TREE;
   bool type_expr_const = true;
   check_compound_literal_type (type_loc, type_name);
-  start_init (NULL_TREE, NULL, 0);
+  rich_location richloc (line_table, type_loc);
+  start_init (NULL_TREE, NULL, 0, &richloc);
   type = groktypename (type_name, &type_expr, &type_expr_const);
   start_loc = c_parser_peek_token (parser)->location;
   if (type != error_mark_node && C_TYPE_VARIABLE_SIZE (type))
@@ -17140,8 +17151,9 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
 	      else
 		{
 		  tree st = push_stmt_list ();
-		  start_init (omp_priv, NULL_TREE, 0);
 		  location_t loc = c_parser_peek_token (parser)->location;
+		  rich_location richloc (line_table, loc);
+		  start_init (omp_priv, NULL_TREE, 0, &richloc);
 		  struct c_expr init = c_parser_initializer (parser);
 		  finish_init ();
 		  finish_decl (omp_priv, loc, init.value,
