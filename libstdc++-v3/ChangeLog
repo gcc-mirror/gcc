@@ -1,3 +1,20 @@
+2017-01-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement 2801, Default-constructibility of unique_ptr.
+	* include/bits/unique_ptr.h (__uniq_ptr_impl::_DeleterConstraint): New.
+	(unique_ptr::_DeleterConstraint): Likewise.
+	(unique_ptr()): Constrain.
+	(unique_ptr(pointer)): Likewise.
+	(unique_ptr(nullptr_t)): Likewise.
+	(unique_ptr<_Tp[], _Dp>::_DeleterConstraint): New.
+	(unique_ptr<_Tp[], _Dp>::unique_ptr()): Constrain.
+	(unique_ptr<_Tp[], _Dp>::unique_ptr(_Up)): Likewise.
+	(unique_ptr<_Tp[], _Dp>::unique_ptr(nullptr_t)): Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/default.cc: New.
+	* testsuite/20_util/unique_ptr/cons/ptr_deleter_neg.cc: Adjust.
+
 2017-01-04  Pauli Nieminen  <suokkos@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
