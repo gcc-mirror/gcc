@@ -748,17 +748,23 @@ class GCCCmdLine (CmdLine):
 
         self.default_dirs = [
             'gcc',
+            'include',
             'libada',
             'libatomic',
             'libbacktrace',
+            'libcc1',
             'libcpp',
             'libdecnumber',
             'libgcc',
             'libgfortran',
             'libgomp',
+            'libiberty',
             'libitm',
             'libobjc',
+            'libssp',
             'libstdc++-v3',
+            'libvtv',
+            'lto-plugin',
             ]
 
 GCCCmdLine().main()

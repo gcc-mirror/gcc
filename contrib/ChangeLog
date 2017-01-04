@@ -1,3 +1,8 @@
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GCCCmdLine): Add include, libcc1, libiberty,
+	libssp, libvtv and lto-plugin to default_dirs.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py (TestsuiteFilter): Skip params/README.
