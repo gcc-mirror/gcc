@@ -373,7 +373,7 @@ enum { E11 };
 /* { dg-final { scan-file godump-1.out "(?n)^const _E11 = 0$" } } */
 
 enum { EV11 } e1_v1;
-/* { dg-final { scan-file godump-1.out "(?n)^var _e1_v1 int$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _e1_v1 u?int\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _EV11 = 0$" } } */
 
 enum { E21, E22 };
@@ -381,7 +381,7 @@ enum { E21, E22 };
 /* { dg-final { scan-file godump-1.out "(?n)^const _E22 = 1$" } } */
 
 enum { EV21, EV22 } e2_v1;
-/* { dg-final { scan-file godump-1.out "(?n)^var _e2_v1 int$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _e2_v1 u?int\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _EV21 = 0$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _EV22 = 1$" } } */
 
@@ -392,12 +392,12 @@ enum { EN1 = 3, EN2 = 77, EN3 = -1, EN4 };
 /* { dg-final { scan-file godump-1.out "(?n)^const _EN4 = 0$" } } */
 
 typedef enum { ET1, ET2 } et_t;
-/* { dg-final { scan-file godump-1.out "(?n)^type _et_t int$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _et_t u?int\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _ET1 = 0$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _ET2 = 1$" } } */
 
 enum { ETV1, ETV2 } et_v1;
-/* { dg-final { scan-file godump-1.out "(?n)^var _et_v1 int$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _et_v1 u?int\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _ETV1 = 0$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _ETV2 = 1$" } } */
 

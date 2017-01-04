@@ -1,3 +1,8 @@
+2017-01-03  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.misc-tests/godump-1.c: Update for accurate representation of
+	enums.
+
 2017-01-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78696
