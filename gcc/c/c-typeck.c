@@ -3595,6 +3595,18 @@ parser_build_unary_op (location_t loc, enum tree_code code, struct c_expr arg)
   return result;
 }
 
+/* Returns true if TYPE is a character type, *not* including wchar_t.  */
+
+static bool
+char_type_p (tree type)
+{
+  return (type == char_type_node
+	  || type == unsigned_char_type_node
+	  || type == signed_char_type_node
+	  || type == char16_type_node
+	  || type == char32_type_node);
+}
+
 /* This is the entry point used by the parser to build binary operators
    in the input.  CODE, a tree_code, specifies the binary operator, and
    ARG1 and ARG2 are the operands.  In addition to constructing the
@@ -3714,6 +3726,21 @@ parser_build_binary_op (location_t location, enum tree_code code,
 	      && !integer_zerop (tree_strip_nop_conversions (arg1.value))))
 	warning_at (location, OPT_Waddress,
 		    "comparison with string literal results in unspecified behavior");
+      /* Warn for ptr == '\0', it's likely that it should've been ptr[0].  */
+      if (POINTER_TYPE_P (type1)
+	   && null_pointer_constant_p (arg2.value)
+	   && char_type_p (type2)
+	   && warning_at (location, OPT_Wpointer_compare,
+			  "comparison between pointer and zero character "
+			  "constant"))
+	inform (arg1.get_start (), "did you mean to dereference the pointer?");
+      else if (POINTER_TYPE_P (type2)
+	       && null_pointer_constant_p (arg1.value)
+	       && char_type_p (type1)
+	       && warning_at (location, OPT_Wpointer_compare,
+			      "comparison between pointer and zero character "
+			      "constant"))
+	inform (arg2.get_start (), "did you mean to dereference the pointer?");
     }
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
