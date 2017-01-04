@@ -1,3 +1,8 @@
+2017-01-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/78856
+	* gcc.c-torture/execute/pr78856.c: New test.
+
 2017-01-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78953
