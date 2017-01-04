@@ -12723,8 +12723,17 @@ cp_parser_simple_declaration (cp_parser* parser,
       break;
 
   tree last_type;
+  bool auto_specifier_p;
+  /* NULL_TREE if both variable and function declaration are allowed,
+     error_mark_node if function declaration are not allowed and
+     a FUNCTION_DECL that should be diagnosed if it is followed by
+     variable declarations.  */
+  tree auto_function_declaration;
 
   last_type = NULL_TREE;
+  auto_specifier_p
+    = decl_specifiers.type && type_uses_auto (decl_specifiers.type);
+  auto_function_declaration = NULL_TREE;
 
   /* Keep going until we hit the `;' at the end of the simple
      declaration.  */
@@ -12769,6 +12778,26 @@ cp_parser_simple_declaration (cp_parser* parser,
 	 otherwise.)  */
       if (cp_parser_error_occurred (parser))
 	goto done;
+
+      if (auto_specifier_p && cxx_dialect >= cxx14)
+	{
+	  /* If the init-declarator-list contains more than one
+	     init-declarator, they shall all form declarations of
+	     variables.  */
+	  if (auto_function_declaration == NULL_TREE)
+	    auto_function_declaration
+	      = TREE_CODE (decl) == FUNCTION_DECL ? decl : error_mark_node;
+	  else if (TREE_CODE (decl) == FUNCTION_DECL
+		   || auto_function_declaration != error_mark_node)
+	    {
+	      error_at (decl_specifiers.locations[ds_type_spec],
+			"non-variable %qD in declaration with more than one "
+			"declarator with placeholder type",
+			TREE_CODE (decl) == FUNCTION_DECL
+			? decl : auto_function_declaration);
+	      auto_function_declaration = error_mark_node;
+	    }
+	}
 
       if (auto_result)
 	{
