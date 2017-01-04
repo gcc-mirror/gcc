@@ -1,6 +1,6 @@
 /* Like sprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.
-   Copyright (C) 1997, 2003, 2013 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of the libiberty library.
