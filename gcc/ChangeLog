@@ -1,3 +1,23 @@
+2016-12-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78900
+	* config/rs6000/rs6000.c (rs6000_split_signbit): Change some
+	assertions.  Add support for doing the signbit if the IEEE 128-bit
+	floating point value is in a GPR.
+	* config/rs6000/rs6000.md (Fsignbit): Delete.
+	(signbit<mode>2_dm): Delete using <Fsignbit> and just use "wa".
+	Update the length attribute if the value is in a GPR.
+	(signbit<mode>2_dm_<su>ext): Add combiner pattern to eliminate
+	the sign or zero extension instruction, since the value is always
+	0/1.
+	(signbit<mode>2_dm2): Delete using <Fsignbit>.
+
+	PR target/78953
+	* config/rs6000/vsx.md (vsx_extract_<mode>_store_p9): If we are
+	extracting SImode to a GPR register so that we can generate a
+	store, limit the vector to be in a traditional Altivec register
+	for the vextuwrx instruction.
+
 2017-01-03  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_format_type): Treat ENUMERAL_TYPE like
