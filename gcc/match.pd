@@ -1515,6 +1515,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (tem)
      (shiftrotate @0 { tem; }))))))
 
+/* Simplify X << Y where Y's low width bits are 0 to X, as only valid
+   Y is 0.  Similarly for X >> Y.  */
+#if GIMPLE
+(for shift (lshift rshift)
+ (simplify
+  (shift @0 SSA_NAME@1)
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+    (with {
+      int width = ceil_log2 (element_precision (TREE_TYPE (@0)));
+      int prec = TYPE_PRECISION (TREE_TYPE (@1));
+     }
+     (if ((get_nonzero_bits (@1) & wi::mask (width, false, prec)) == 0)
+      @0)))))
+#endif
+
 /* Rewrite an LROTATE_EXPR by a constant into an
    RROTATE_EXPR by a new constant.  */
 (simplify
