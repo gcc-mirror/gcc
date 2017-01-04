@@ -1,3 +1,10 @@
+2017-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77545
+	PR c++/77284
+	* g++.dg/cpp0x/range-for32.C: New test.
+	* g++.dg/cpp0x/range-for33.C: New test.
+
 2017-01-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/Wmissing-braces-fixits.c: New test case.
