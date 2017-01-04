@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1.0\n"
+"Project-Id-Version: cpplib 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2016-05-12 23:30+0300\n"
+"PO-Revision-Date: 2017-01-04 02:11+0200\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "Language: fi\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: charset.c:674
 #, c-format
@@ -139,7 +139,7 @@ msgstr "muunnetaan ohjaussarja suoritusmerkistöön"
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr ""
+msgstr "avautuva sulje puuttuu"
 
 #: charset.c:1827 charset.c:1891
 msgid "character constant too long for its type"
@@ -535,10 +535,9 @@ msgid "imaginary number in preprocessor expression"
 msgstr "imaginääriluku esikääntäjän lausekkeessa"
 
 #: expr.c:1162
-#, fuzzy, c-format
-#| msgid "\"%s\" is not defined"
+#, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
-msgstr "”%s” on määrittelemättä"
+msgstr "”%s” on määrittelemättä, evaluoituu 0:ksi"
 
 #: expr.c:1175
 msgid "assertions are a GCC extension"
