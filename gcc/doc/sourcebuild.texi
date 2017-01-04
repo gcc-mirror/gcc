@@ -1766,6 +1766,10 @@ PowerPC target supports @code{-mhtm}
 @item powerpc_p8vector_ok
 PowerPC target supports @code{-mpower8-vector}
 
+@item powerpc_popcntb_ok
+PowerPC target supports the @code{popcntb} instruction, indicating
+that this target supports @code{-mcpu=power5}.
+
 @item powerpc_ppu_ok
 PowerPC target supports @code{-mcpu=cell}.
 

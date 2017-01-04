@@ -2746,6 +2746,26 @@ proc check_effective_target_dfprt { } {
     }]
 }
 
+proc check_effective_target_powerpc_popcntb_ok { } {
+    return [check_cached_effective_target powerpc_popcntb_ok {
+
+	# Disable on Darwin.
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    check_runtime_nocache powerpc_popcntb_ok {
+		volatile int r;
+		volatile int a = 0x12345678;
+		int main()
+		{
+		    asm volatile ("popcntb %0,%1" : "=r" (r) : "r" (a));
+		    return 0;
+		}
+	    } "-mcpu=power5"
+	}
+    }]
+}
+
 # Return 1 if the target supports executing DFP hardware instructions,
 # 0 otherwise.  Cache the result.
 
