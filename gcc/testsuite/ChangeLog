@@ -1,5 +1,7 @@
 2017-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp1y/auto-fn34.C: New test.
+
 	PR c++/71182
 	* g++.dg/cpp0x/pr71182.C: New test.
 
