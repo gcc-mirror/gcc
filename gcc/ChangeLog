@@ -7,7 +7,7 @@
 	iteration information and handle case of a thread path walking
 	into an irreducible region.
 
-2016-12-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+2017-01-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78900
 	* config/rs6000/rs6000.c (rs6000_split_signbit): Change some
