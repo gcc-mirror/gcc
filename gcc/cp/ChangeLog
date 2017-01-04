@@ -1,5 +1,9 @@
 2017-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78693
+	* parser.c (cp_parser_simple_declaration): Only complain about
+	inconsistent auto deduction if auto_result doesn't use auto.
+
 	* parser.c (cp_parser_simple_declaration): Diagnose function
 	declaration among more than one init-declarators with auto
 	specifier.
