@@ -211,29 +211,45 @@ lambda_function (tree lambda)
 }
 
 /* Returns the type to use for the FIELD_DECL corresponding to the
-   capture of EXPR.
-   The caller should add REFERENCE_TYPE for capture by reference.  */
+   capture of EXPR.  EXPLICIT_INIT_P indicates whether this is a
+   C++14 init capture, and BY_REFERENCE_P indicates whether we're
+   capturing by reference.  */
 
 tree
-lambda_capture_field_type (tree expr, bool explicit_init_p)
+lambda_capture_field_type (tree expr, bool explicit_init_p,
+			   bool by_reference_p)
 {
   tree type;
   bool is_this = is_this_parameter (tree_strip_nop_conversions (expr));
+
   if (!is_this && type_dependent_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
       DECLTYPE_FOR_INIT_CAPTURE (type) = explicit_init_p;
+      DECLTYPE_FOR_REF_CAPTURE (type) = by_reference_p;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
   else if (!is_this && explicit_init_p)
     {
-      type = make_auto ();
-      type = do_auto_deduction (type, expr, type);
+      tree auto_node = make_auto ();
+      
+      type = auto_node;
+      if (by_reference_p)
+	/* Add the reference now, so deduction doesn't lose
+	   outermost CV qualifiers of EXPR.  */
+	type = build_reference_type (type);
+      type = do_auto_deduction (type, expr, auto_node);
     }
   else
-    type = non_reference (unlowered_expr_type (expr));
+    {
+      type = non_reference (unlowered_expr_type (expr));
+
+      if (!is_this && by_reference_p)
+	type = build_reference_type (type);
+    }
+
   return type;
 }
 
@@ -504,9 +520,11 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
     }
   else
     {
-      type = lambda_capture_field_type (initializer, explicit_init_p);
+      type = lambda_capture_field_type (initializer, explicit_init_p,
+					by_reference_p);
       if (type == error_mark_node)
 	return error_mark_node;
+
       if (id == this_identifier && !by_reference_p)
 	{
 	  gcc_assert (POINTER_TYPE_P (type));
@@ -514,17 +532,19 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	  initializer = cp_build_indirect_ref (initializer, RO_NULL,
 					       tf_warning_or_error);
 	}
-      if (id != this_identifier && by_reference_p)
+
+      if (dependent_type_p (type))
+	;
+      else if (id != this_identifier && by_reference_p)
 	{
-	  type = build_reference_type (type);
-	  if (!dependent_type_p (type) && !lvalue_p (initializer))
+	  if (!lvalue_p (initializer))
 	    error ("cannot capture %qE by reference", initializer);
 	}
       else
 	{
 	  /* Capture by copy requires a complete type.  */
 	  type = complete_type (type);
-	  if (!dependent_type_p (type) && !COMPLETE_TYPE_P (type))
+	  if (!COMPLETE_TYPE_P (type))
 	    {
 	      error ("capture by copy of incomplete type %qT", type);
 	      cxx_incomplete_type_inform (type);

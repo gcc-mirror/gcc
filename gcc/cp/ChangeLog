@@ -1,3 +1,14 @@
+2017-01-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/66735
+	* cp-tree.h (DECLTYPE_FOR_REF_CAPTURE): New.
+	(lambda_capture_field_type): Update prototype.
+	* lambda.c (lambda_capture_field_type): Add is_reference parm.
+	Add referenceness here.
+	(add_capture): Adjust lambda_capture_field_type call, refactor
+	error checking.
+	* pt.c (tsubst): Adjust lambda_capture_field_type call.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
