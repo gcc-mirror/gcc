@@ -1,3 +1,8 @@
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/78957
+	* c.opt (fsso-struct=): Add RejectNegative.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
