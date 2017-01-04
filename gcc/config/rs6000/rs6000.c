@@ -3934,6 +3934,67 @@ rs6000_option_override_internal (bool global_init_p)
 
   gcc_assert (cpu_index >= 0);
 
+  if (have_cpu)
+    {
+#ifndef HAVE_AS_POWER9
+      if (processor_target_table[rs6000_cpu_index].processor 
+	  == PROCESSOR_POWER9)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power9 instructions because "
+		   "assembler lacks power9 support");
+	}
+#endif
+#ifndef HAVE_AS_POWER8
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER8)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power8 instructions because "
+		   "assembler lacks power8 support");
+	}
+#endif
+#ifndef HAVE_AS_POPCNTD
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER7)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power7 instructions because "
+		   "assembler lacks power7 support");
+	}
+#endif
+#ifndef HAVE_AS_DFP
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER6)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power6 instructions because "
+		   "assembler lacks power6 support");
+	}
+#endif
+#ifndef HAVE_AS_POPCNTB
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER5)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power5 instructions because "
+		   "assembler lacks power5 support");
+	}
+#endif
+
+      if (!have_cpu)
+	{
+	  /* PowerPC 64-bit LE requires at least ISA 2.07.  */
+	  const char *default_cpu = (!TARGET_POWERPC64
+				     ? "powerpc"
+				     : (BYTES_BIG_ENDIAN
+					? "powerpc64"
+					: "powerpc64le"));
+
+	  rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
+	}
+    }
+
   /* If we have a cpu, either through an explicit -mcpu=<xxx> or if the
      compiler was configured with --with-cpu=<xxx>, replace all of the ISA bits
      with those from the cpu, except for options that were explicitly set.  If
@@ -17371,6 +17432,8 @@ spe_init_builtins (void)
 	  continue;
 	}
 
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
       switch (insn_data[d->icode].operand[1].mode)
 	{
 	case V2SImode:
@@ -17401,6 +17464,8 @@ spe_init_builtins (void)
 	  continue;
 	}
 
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
       switch (insn_data[d->icode].operand[1].mode)
 	{
 	case V2SImode:
@@ -17467,6 +17532,9 @@ paired_init_builtins (void)
 		     d->name);
 	  continue;
 	}
+
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
 
       if (TARGET_DEBUG_BUILTIN)
 	fprintf (stderr, "paired pred #%d, insn = %s [%d], mode = %s\n",
@@ -17837,6 +17905,8 @@ altivec_init_builtins (void)
     {
       HOST_WIDE_INT mask = d->mask;
 
+      /* It is expected that these dst built-in functions may have
+	 d->icode equal to CODE_FOR_nothing.  */
       if ((mask & builtin_mask) != mask)
 	{
 	  if (TARGET_DEBUG_BUILTIN)
@@ -17866,7 +17936,11 @@ altivec_init_builtins (void)
       if (rs6000_overloaded_builtin_p (d->code))
 	mode1 = VOIDmode;
       else
-	mode1 = insn_data[d->icode].operand[1].mode;
+	{
+	  /* Cannot define builtin if the instruction is disabled.  */
+	  gcc_assert (d->icode != CODE_FOR_nothing);
+	  mode1 = insn_data[d->icode].operand[1].mode;
+	}
 
       switch (mode1)
 	{
@@ -17914,6 +17988,8 @@ altivec_init_builtins (void)
 	  continue;
 	}
 
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
       mode0 = insn_data[d->icode].operand[0].mode;
 
       switch (mode0)
@@ -18100,6 +18176,9 @@ htm_init_builtins (void)
       tree gpr_type_node;
       tree rettype;
       tree argtype;
+
+      /* It is expected that these htm built-in functions may have
+	 d->icode equal to CODE_FOR_nothing.  */
 
       if (TARGET_32BIT && TARGET_POWERPC64)
 	gpr_type_node = long_long_unsigned_type_node;

@@ -1,3 +1,18 @@
+2017-01-04  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/78056
+	* gcc.target/powerpc/pr78056-1.c: New test.
+	* gcc.target/powerpc/pr78056-2.c: New test.
+	* gcc.target/powerpc/pr78056-3.c: New test.
+	* gcc.target/powerpc/pr78056-4.c: New test.
+	* gcc.target/powerpc/pr78056-5.c: New test.
+	* gcc.target/powerpc/pr78056-6.c: New test.
+	* gcc.target/powerpc/pr78056-7.c: New test.
+	* gcc.target/powerpc/pr78056-8.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_powerpc_popcntb_ok): New procedure to test
+	whether the effective target supports the popcntb instruction.
+
 2017-01-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/67955

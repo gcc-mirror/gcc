@@ -1,3 +1,23 @@
+2017-01-04  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/78056
+	* doc/sourcebuild.texi (PowerPC-specific attributes): Add
+	documentation of the powerpc_popcntb_ok attribute.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	code to issue warning messages if a requested CPU configuration is
+	not supported by the binary (assembler and loader) toolchain.
+	(spe_init_builtins): Add two assertions to prevent ICE if attempt is
+	made to define a built-in function that has been disabled.
+	(paired_init_builtins): Add assertion to prevent ICE if attempt is
+	made to define a built-in function that has been disabled.
+	(altivec_init_builtins): Add comment explaining why definition
+	of the DST built-in functions is not preceded by an assertion
+	check.  Add assertions to prevent ICE if attempts are made to
+	define an altivec predicate or an abs* built-in function that has
+	been disabled.
+	(htm_init_builtins): Add comment explaining why definition of the
+	htm built-in functions is not preceded by an assertion check.
+
 2017-01-04  Jeff Law  <law@redhat.com>
 
 	PR tree-optimizatin/67955
