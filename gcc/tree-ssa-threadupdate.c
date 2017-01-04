@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "dbgcnt.h"
 #include "tree-cfg.h"
+#include "tree-vectorizer.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an
@@ -2084,10 +2085,8 @@ mark_threaded_blocks (bitmap threaded_blocks)
   /* Look for jump threading paths which cross multiple loop headers.
 
      The code to thread through loop headers will change the CFG in ways
-     that break assumptions made by the loop optimization code.
-
-     We don't want to blindly cancel the requests.  We can instead do better
-     by trimming off the end of the jump thread path.  */
+     that invalidate the cached loop iteration information.  So we must
+     detect that case and wipe the cached information.  */
   EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
@@ -2102,26 +2101,16 @@ mark_threaded_blocks (bitmap threaded_blocks)
 		   i++)
 		{
 		  basic_block dest = (*path)[i]->e->dest;
+		  basic_block src = (*path)[i]->e->src;
 		  crossed_headers += (dest == dest->loop_father->header);
+		  /* If we step from a block outside an irreducible region
+		     to a block inside an irreducible region, then we have
+		     crossed into a loop.  */
+		  crossed_headers += ((src->flags & BB_IRREDUCIBLE_LOOP)
+				      != (dest->flags & BB_IRREDUCIBLE_LOOP));
 		  if (crossed_headers > 1)
 		    {
-		      /* Trim from entry I onwards.  */
-		      for (unsigned int j = i; j < path->length (); j++)
-			delete (*path)[j];
-		      path->truncate (i);
-
-		      /* Now that we've truncated the path, make sure
-			 what's left is still valid.   We need at least
-			 two edges on the path and the last edge can not
-			 be a joiner.  This should never happen, but let's
-			 be safe.  */
-		      if (path->length () < 2
-			  || (path->last ()->type
-			      == EDGE_COPY_SRC_JOINER_BLOCK))
-			{
-			  delete_jump_thread_path (path);
-			  e->aux = NULL;
-			}
+		      vect_free_loop_info_assumptions (dest->loop_father);
 		      break;
 		    }
 		}

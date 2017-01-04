@@ -1,3 +1,12 @@
+2017-01-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimizatin/78856
+	* tree-ssa-threadupdate.c: Include tree-vectorizer.h.
+	(mark_threaded_blocks): Remove code to truncate thread paths that
+	cross multiple loop headers.  Instead invalidate the cached loop
+	iteration information and handle case of a thread path walking
+	into an irreducible region.
+
 2016-12-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78900
