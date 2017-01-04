@@ -9586,7 +9586,7 @@ output_loc_list (dw_loc_list_ref list_head)
 	 perhaps put it into DW_TAG_dwarf_procedure and refer to that
 	 in the expression, but >= 64KB expressions for a single value
 	 in a single range are unlikely very useful.  */
-      if (size > 0xffff)
+      if (dwarf_version < 5 && size > 0xffff)
 	continue;
       if (dwarf_version >= 5)
 	{
@@ -9637,8 +9637,6 @@ output_loc_list (dw_loc_list_ref list_head)
 		    {
 		      if (strcmp (curr2->begin, curr2->end) == 0
 			  && !curr2->force)
-			continue;
-		      if ((unsigned long) size_of_locs (curr2->expr) > 0xffff)
 			continue;
 		      break;
 		    }
@@ -9740,8 +9738,13 @@ output_loc_list (dw_loc_list_ref list_head)
 	}
 
       /* Output the block length for this list of location operations.  */
-      gcc_assert (size <= 0xffff);
-      dw2_asm_output_data (2, size, "%s", "Location expression size");
+      if (dwarf_version >= 5)
+	dw2_asm_output_data_uleb128 (size, "Location expression size");
+      else
+	{
+	  gcc_assert (size <= 0xffff);
+	  dw2_asm_output_data (2, size, "Location expression size");
+	}
 
       output_loc_sequence (curr->expr, -1);
     }

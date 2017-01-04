@@ -1,3 +1,9 @@
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_loc_list): Don't throw away 64K+ location
+	descriptions for -gdwarf-5 and emit them as uleb128 instead of
+	2-byte data.
+
 2017-01-04  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/78056
