@@ -1,3 +1,11 @@
+2017-01-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78910
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-7.c: Adjust text of expected
+	diagnostics.
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Add test cases.
+	* gcc.dg/tree-ssa/pr78910.c: New test.
+
 2017-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sso-10.c: New test.

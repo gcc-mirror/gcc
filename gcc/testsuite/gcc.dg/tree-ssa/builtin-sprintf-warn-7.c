@@ -35,11 +35,16 @@ void test_integer_var (int i)
   T (0, "%*d",  INT_MAX, i);     /* { dg-warning "writing 2147483647 bytes" } */
 
   T (0, "%.*d", INT_MIN, i);     /* { dg-warning "writing between 1 and 11 bytes" } */
-  T (0, "%.*d", INT_MAX, i);     /* { dg-warning "writing 2147483647 bytes" } */
+
+  /* The following writes INT_MAX digits and, when i is negative, a minus
+     sign.  */
+  T (0, "%.*d", INT_MAX, i);     /* { dg-warning "writing between 2147483647 and 2147483648 bytes" } */
 
   T (0, "%*.*d", INT_MIN, INT_MIN, i);   /* { dg-warning "writing 2147483648 bytes" } */
 
-  T (0, "%*.*d", INT_MAX, INT_MAX, i);   /* { dg-warning "writing 2147483647 bytes" } */
+  /* The following writes INT_MAX digits and, when i is negative, a minus
+     sign.  */
+  T (0, "%*.*d", INT_MAX, INT_MAX, i);   /* { dg-warning "writing between 2147483647 and 2147483648 bytes" } */
 }
 
 void test_floating_a_cst (void)

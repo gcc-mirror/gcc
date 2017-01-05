@@ -549,17 +549,18 @@ ilog (unsigned HOST_WIDE_INT x, int base)
 }
 
 /* Return the number of bytes resulting from converting into a string
-   the INTEGER_CST tree node X in BASE.  PLUS indicates whether 1 for
-   a plus sign should be added for positive numbers, and PREFIX whether
-   the length of an octal ('O') or hexadecimal ('0x') prefix should be
-   added for nonzero numbers.  Return -1 if X cannot be represented.  */
+   the INTEGER_CST tree node X in BASE with a minimum of PREC digits.
+   PLUS indicates whether 1 for a plus sign should be added for positive
+   numbers, and PREFIX whether the length of an octal ('O') or hexadecimal
+   ('0x') prefix should be added for nonzero numbers.  Return -1 if X cannot
+   be represented.  */
 
-static int
-tree_digits (tree x, int base, bool plus, bool prefix)
+static HOST_WIDE_INT
+tree_digits (tree x, int base, HOST_WIDE_INT prec, bool plus, bool prefix)
 {
   unsigned HOST_WIDE_INT absval;
 
-  int res;
+  HOST_WIDE_INT res;
 
   if (TYPE_UNSIGNED (TREE_TYPE (x)))
     {
@@ -591,7 +592,9 @@ tree_digits (tree x, int base, bool plus, bool prefix)
 	return -1;
     }
 
-  res += ilog (absval, base);
+  int ndigs = ilog (absval, base);
+
+  res += prec < ndigs ? ndigs : prec;
 
   if (prefix && absval)
     {
@@ -1022,10 +1025,9 @@ format_integer (const conversion_spec &spec, tree arg)
 	  /* True when a conversion is preceded by a prefix indicating the base
 	     of the argument (octal or hexadecimal).  */
 	  bool maybebase = spec.get_flag ('#');
-	  len = tree_digits (arg, base, maybesign, maybebase);
-
-	  if (len < prec)
-	    len = prec;
+	  len = tree_digits (arg, base, prec, maybesign, maybebase);
+	  if (len < 1)
+	    len = HOST_WIDE_INT_MAX;
 	}
 
       if (len < width)
