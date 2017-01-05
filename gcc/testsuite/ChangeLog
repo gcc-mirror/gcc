@@ -1,3 +1,8 @@
+2017-01-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/memcpy-2.c: New test.
+	* gcc.target/s390/memset-2.c: New test.
+
 2017-01-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/memcpy-1.c: New test.
