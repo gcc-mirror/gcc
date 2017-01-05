@@ -1,3 +1,52 @@
+2017-01-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71977
+	PR target/70568
+	PR target/78823
+	* config/rs6000/predicates.md (sf_subreg_operand): New predicate.
+	(altivec_register_operand): Do not return true if the operand
+	contains a SUBREG mixing SImode and SFmode.
+	(vsx_register_operand): Likewise.
+	(vsx_reg_sfsubreg_ok): New predicate.
+	(vfloat_operand): Do not return true if the operand contains a
+	SUBREG mixing SImode and SFmode.
+	(vint_operand): Likewise.
+	(vlogical_operand): Likewise.
+	(gpc_reg_operand): Likewise.
+	(int_reg_operand): Likewise.
+	* config/rs6000/rs6000-protos.h (valid_sf_si_move): Add
+	declaration.
+	* config/rs6000/rs6000.c (valid_sf_si_move): New function to
+	determine if a MOVSI or MOVSF operation contains SUBREGs that mix
+	SImode and SFmode.
+	(rs6000_emit_move_si_sf_subreg): New helper function.
+	(rs6000_emit_move): Call rs6000_emit_move_si_sf_subreg to possbily
+	fixup SUBREGs involving SImode and SFmode.
+	* config/rs6000/vsx.md (SFBOOL_*): New constants that are operand
+	numbers for the new peephole2 optimization.
+	(peephole2 for SFmode unions): New peephole2 to optimize cases in
+	the GLIBC math library that do AND/IOR/XOR operations on single
+	precision floating point.
+	* config/rs6000/rs6000.h (TARGET_NO_SF_SUBREG): New internal
+	target macros to say whether we need to avoid SUBREGs mixing
+	SImode and SFmode.
+	(TARGET_ALLOW_SF_SUBREG): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_SF_FROM_SI): New unspecs.
+	(UNSPEC_SI_FROM_SF): Likewise.
+	(iorxor): Change spacing.
+	(and_ior_xor): New iterator for AND, IOR, and XOR.
+	(movsi_from_sf): New insns for SImode/SFmode SUBREG support.
+	(movdi_from_sf_zero_ext): Likewise.
+	(mov<mode>_hardfloat, FMOVE32 iterator): Use register_operand
+	instead of gpc_reg_operand.  Add SImode/SFmode SUBREG support.
+	(movsf_from_si): New insn for SImode/SFmode SUBREG support.
+	(fma<mode>4): Use gpc_reg_operand instead of register_operand.
+	(fms<mode>4): Likewise.
+	(fnma<mode>4): Likewise.
+	(fnms<mode>4): Likewise.
+	(nfma<mode>4): Likewise.
+	(nfms<mode>4): Likewise.
+
 2017-01-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/64767
