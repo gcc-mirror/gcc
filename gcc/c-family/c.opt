@@ -1631,7 +1631,7 @@ C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fsso-struct=
 C ObjC Joined RejectNegative Enum(sso_struct) Var(default_sso) Init(SSO_NATIVE)
--fsso-struct=[big-endian|little-endian]	Set the default scalar storage order.
+-fsso-struct=[big-endian|little-endian|native]	Set the default scalar storage order.
 
 Enum
 Name(sso_struct) Type(enum scalar_storage_order_kind) UnknownError(unrecognized scalar storage order value %qs)
@@ -1641,6 +1641,9 @@ Enum(sso_struct) String(big-endian) Value(SSO_BIG_ENDIAN)
 
 EnumValue
 Enum(sso_struct) String(little-endian) Value(SSO_LITTLE_ENDIAN)
+
+EnumValue
+Enum(sso_struct) String(native) Value(SSO_NATIVE)
 
 fstats
 C++ ObjC++ Var(flag_detailed_statistics)
