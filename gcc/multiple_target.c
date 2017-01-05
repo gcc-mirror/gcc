@@ -42,7 +42,7 @@ static void
 create_dispatcher_calls (struct cgraph_node *node)
 {
   cgraph_edge *e;
-  cgraph_edge *e_next;
+  cgraph_edge *e_next = NULL;
 
   /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
   for (e = node->callers; e ;e = (e == NULL) ? e_next : e->next_caller)
