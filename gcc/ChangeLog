@@ -1,5 +1,10 @@
 2017-01-04  Alexandre Oliva <aoliva@redhat.com>
 
+	* input.c (assert_char_at_range): Default-initialize
+	actual_range.
+
+2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+
 	* df-scan.c (df_ref_create_structure): Make regno unsigned,
 	to match the caller.
 

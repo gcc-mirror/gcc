@@ -2173,7 +2173,7 @@ assert_char_at_range (const location &loc,
   cpp_reader *pfile = test.m_parser;
   string_concat_db *concats = &test.m_concats;
 
-  source_range actual_range;
+  source_range actual_range = source_range();
   const char *err
     = get_source_range_for_char (pfile, concats, strloc, type, idx,
 				 &actual_range);
