@@ -305,6 +305,20 @@ gsi_last_nondebug_bb (basic_block bb)
   return i;
 }
 
+/* Return true if I is followed only by debug statements in its
+   sequence.  */
+
+static inline bool
+gsi_one_nondebug_before_end_p (gimple_stmt_iterator i)
+{
+  if (gsi_one_before_end_p (i))
+    return true;
+  if (gsi_end_p (i))
+    return false;
+  gsi_next_nondebug (&i);
+  return gsi_end_p (i);
+}
+
 /* Iterates I statement iterator to the next non-virtual statement.  */
 
 static inline void

@@ -1,5 +1,10 @@
 2017-01-04  Alexandre Oliva <aoliva@redhat.com>
 
+	* gimple-iterator.h (gsi_one_nondebug_before_end_p): New.
+	* tree-eh.c (cleanup_empty_eh): Skip more debug stmts.
+
+2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+
 	* multiple_target.c (create_dispatcher_calls): Init e_next.
 	* tree-ssa-loop-split.c (split_loop): Init border.
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Init
