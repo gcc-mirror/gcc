@@ -1620,8 +1620,7 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	  is_vla = true;
 	}
 
-      if (asan_sanitize_use_after_scope ()
-	  && !asan_no_sanitize_address_p ()
+      if (asan_poisoned_variables
 	  && !is_vla
 	  && TREE_ADDRESSABLE (decl)
 	  && !TREE_STATIC (decl)
@@ -6413,8 +6412,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      else
 		cleanup = clobber;
 	    }
-	  if (asan_sanitize_use_after_scope ()
-	      && dbg_cnt (asan_use_after_scope))
+	  if (asan_poisoned_variables && dbg_cnt (asan_use_after_scope))
 	    {
 	      tree asan_cleanup = build_asan_poison_call_expr (temp);
 	      if (asan_cleanup)
@@ -11426,7 +11424,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  /* If the label is used in a goto statement, or address of the label
 	     is taken, we need to unpoison all variables that were seen so far.
 	     Doing so would prevent us from reporting a false positives.  */
-	  if (asan_sanitize_use_after_scope ()
+	  if (asan_poisoned_variables
 	      && asan_used_labels != NULL
 	      && asan_used_labels->contains (label))
 	    asan_poison_variables (asan_poisoned_variables, false, pre_p);
@@ -12531,10 +12529,14 @@ gimplify_function_tree (tree fndecl)
       && !needs_to_live_in_memory (ret))
     DECL_GIMPLE_REG_P (ret) = 1;
 
-  asan_poisoned_variables = new hash_set<tree> ();
+  if (asan_sanitize_use_after_scope () && !asan_no_sanitize_address_p ())
+    asan_poisoned_variables = new hash_set<tree> ();
   bind = gimplify_body (fndecl, true);
-  delete asan_poisoned_variables;
-  asan_poisoned_variables = NULL;
+  if (asan_poisoned_variables)
+    {
+      delete asan_poisoned_variables;
+      asan_poisoned_variables = NULL;
+    }
 
   /* The tree body of the function is no longer needed, replace it
      with the new GIMPLE body.  */
