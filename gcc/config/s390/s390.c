@@ -5348,34 +5348,46 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 {
   const int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
 
-  if (GET_CODE (len) == CONST_INT && INTVAL (len) == 0)
+  if (GET_CODE (len) == CONST_INT && INTVAL (len) <= 0)
     return;
 
   gcc_assert (GET_CODE (val) == CONST_INT || GET_MODE (val) == QImode);
 
-  if (GET_CODE (len) == CONST_INT && INTVAL (len) > 0 && INTVAL (len) <= 257)
+  /* Expand setmem/clrmem for a constant length operand without a
+     loop if it will be shorter that way.
+     With a constant length and without pfd argument a
+     clrmem loop is 32 bytes -> 5.3 * xc
+     setmem loop is 36 bytes -> 3.6 * (mvi/stc + mvc) */
+  if (GET_CODE (len) == CONST_INT
+      && ((INTVAL (len) <= 256 * 5 && val == const0_rtx)
+	  || INTVAL (len) <= 257 * 3)
+      && (!TARGET_MVCLE || INTVAL (len) <= 256))
     {
-      if (val == const0_rtx && INTVAL (len) <= 256)
-        emit_insn (gen_clrmem_short (dst, GEN_INT (INTVAL (len) - 1)));
+      HOST_WIDE_INT o, l;
+
+      if (val == const0_rtx)
+	/* clrmem: emit 256 byte blockwise XCs.  */
+	for (l = INTVAL (len), o = 0; l > 0; l -= 256, o += 256)
+	  {
+	    rtx newdst = adjust_address (dst, BLKmode, o);
+	    emit_insn (gen_clrmem_short (newdst,
+					 GEN_INT (l > 256 ? 255 : l - 1)));
+	  }
       else
-	{
-	  /* Initialize memory by storing the first byte.  */
-	  emit_move_insn (adjust_address (dst, QImode, 0), val);
-
-	  if (INTVAL (len) > 1)
-	    {
-	      /* Initiate 1 byte overlap move.
-	         The first byte of DST is propagated through DSTP1.
-		 Prepare a movmem for:  DST+1 = DST (length = LEN - 1).
-		 DST is set to size 1 so the rest of the memory location
-		 does not count as source operand.  */
-	      rtx dstp1 = adjust_address (dst, VOIDmode, 1);
-	      set_mem_size (dst, 1);
-
-	      emit_insn (gen_movmem_short (dstp1, dst,
-					   GEN_INT (INTVAL (len) - 2)));
-	    }
-	}
+	/* setmem: emit 1(mvi) + 256(mvc) byte blockwise memsets by
+	   setting first byte to val and using a 256 byte mvc with one
+	   byte overlap to propagate the byte.  */
+	for (l = INTVAL (len), o = 0; l > 0; l -= 257, o += 257)
+	  {
+	    rtx newdst = adjust_address (dst, BLKmode, o);
+	    emit_move_insn (adjust_address (dst, QImode, o), val);
+	    if (l > 1)
+	      {
+		rtx newdstp1 = adjust_address (dst, BLKmode, o + 1);
+		emit_insn (gen_movmem_short (newdstp1, newdst,
+					     GEN_INT (l > 257 ? 255 : l - 2)));
+	      }
+	  }
     }
 
   else if (TARGET_MVCLE)
