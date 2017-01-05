@@ -1,3 +1,10 @@
+2017-01-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-12-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/litpool-str-1.c: New test.
+
 2017-01-04  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

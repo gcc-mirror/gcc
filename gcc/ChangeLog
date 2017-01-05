@@ -1,3 +1,11 @@
+2017-01-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-12-22  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* varasm.c (build_constant_desc): Use the alignment of the var
+	decl instead of the original expression.
+
 2017-01-04  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
