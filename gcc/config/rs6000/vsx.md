@@ -3897,3 +3897,149 @@
   "TARGET_P9_VECTOR"
   "xxinsertw %x0,%x1,%3"
   [(set_attr "type" "vecperm")])
+
+
+
+;; Operand numbers for the following peephole2
+(define_constants
+  [(SFBOOL_TMP_GPR		 0)		;; GPR temporary
+   (SFBOOL_TMP_VSX		 1)		;; vector temporary
+   (SFBOOL_MFVSR_D		 2)		;; move to gpr dest
+   (SFBOOL_MFVSR_A		 3)		;; move to gpr src
+   (SFBOOL_BOOL_D		 4)		;; and/ior/xor dest
+   (SFBOOL_BOOL_A1		 5)		;; and/ior/xor arg1
+   (SFBOOL_BOOL_A2		 6)		;; and/ior/xor arg1
+   (SFBOOL_SHL_D		 7)		;; shift left dest
+   (SFBOOL_SHL_A		 8)		;; shift left arg
+   (SFBOOL_MTVSR_D		 9)		;; move to vecter dest
+   (SFBOOL_BOOL_A_DI		10)		;; SFBOOL_BOOL_A1/A2 as DImode
+   (SFBOOL_TMP_VSX_DI		11)		;; SFBOOL_TMP_VSX as DImode
+   (SFBOOL_MTVSR_D_V4SF		12)])		;; SFBOOL_MTVSRD_D as V4SFmode
+
+;; Attempt to optimize some common GLIBC operations using logical operations to
+;; pick apart SFmode operations.  For example, there is code from e_powf.c
+;; after macro expansion that looks like:
+;;
+;;	typedef union {
+;;	  float value;
+;;	  uint32_t word;
+;;	} ieee_float_shape_type;
+;;
+;;	float t1;
+;;	int32_t is;
+;;
+;;	do {
+;;	  ieee_float_shape_type gf_u;
+;;	  gf_u.value = (t1);
+;;	  (is) = gf_u.word;
+;;	} while (0);
+;;
+;;	do {
+;;	  ieee_float_shape_type sf_u;
+;;	  sf_u.word = (is & 0xfffff000);
+;;	  (t1) = sf_u.value;
+;;	} while (0);
+;;
+;;
+;; This would result in two direct move operations (convert to memory format,
+;; direct move to GPR, do the AND operation, direct move to VSX, convert to
+;; scalar format).  With this peephole, we eliminate the direct move to the
+;; GPR, and instead move the integer mask value to the vector register after a
+;; shift and do the VSX logical operation.
+
+;; The insns for dealing with SFmode in GPR registers looks like:
+;; (set (reg:V4SF reg2) (unspec:V4SF [(reg:SF reg1)] UNSPEC_VSX_CVDPSPN))
+;;
+;; (set (reg:DI reg3) (unspec:DI [(reg:V4SF reg2)] UNSPEC_P8V_RELOAD_FROM_VSX))
+;;
+;; (set (reg:DI reg3) (lshiftrt:DI (reg:DI reg3) (const_int 32)))
+;;
+;; (set (reg:DI reg5) (and:DI (reg:DI reg3) (reg:DI reg4)))
+;;
+;; (set (reg:DI reg6) (ashift:DI (reg:DI reg5) (const_int 32)))
+;;
+;; (set (reg:SF reg7) (unspec:SF [(reg:DI reg6)] UNSPEC_P8V_MTVSRD))
+;;
+;; (set (reg:SF reg7) (unspec:SF [(reg:SF reg7)] UNSPEC_VSX_CVSPDPN))
+
+(define_peephole2
+  [(match_scratch:DI SFBOOL_TMP_GPR "r")
+   (match_scratch:V4SF SFBOOL_TMP_VSX "wa")
+
+   ;; MFVSRD
+   (set (match_operand:DI SFBOOL_MFVSR_D "int_reg_operand")
+	(unspec:DI [(match_operand:V4SF SFBOOL_MFVSR_A "vsx_register_operand")]
+		   UNSPEC_P8V_RELOAD_FROM_VSX))
+
+   ;; SRDI
+   (set (match_dup SFBOOL_MFVSR_D)
+	(lshiftrt:DI (match_dup SFBOOL_MFVSR_D)
+		     (const_int 32)))
+
+   ;; AND/IOR/XOR operation on int
+   (set (match_operand:SI SFBOOL_BOOL_D "int_reg_operand")
+	(and_ior_xor:SI (match_operand:SI SFBOOL_BOOL_A1 "int_reg_operand")
+			(match_operand:SI SFBOOL_BOOL_A2 "reg_or_cint_operand")))
+
+   ;; SLDI
+   (set (match_operand:DI SFBOOL_SHL_D "int_reg_operand")
+	(ashift:DI (match_operand:DI SFBOOL_SHL_A "int_reg_operand")
+		   (const_int 32)))
+
+   ;; MTVSRD
+   (set (match_operand:SF SFBOOL_MTVSR_D "vsx_register_operand")
+	(unspec:SF [(match_dup SFBOOL_SHL_D)] UNSPEC_P8V_MTVSRD))]
+
+  "TARGET_POWERPC64 && TARGET_DIRECT_MOVE
+   /* The REG_P (xxx) tests prevents SUBREG's, which allows us to use REGNO
+      to compare registers, when the mode is different.  */
+   && REG_P (operands[SFBOOL_MFVSR_D]) && REG_P (operands[SFBOOL_BOOL_D])
+   && REG_P (operands[SFBOOL_BOOL_A1]) && REG_P (operands[SFBOOL_SHL_D])
+   && REG_P (operands[SFBOOL_SHL_A])   && REG_P (operands[SFBOOL_MTVSR_D])
+   && (REG_P (operands[SFBOOL_BOOL_A2])
+       || CONST_INT_P (operands[SFBOOL_BOOL_A2]))
+   && (REGNO (operands[SFBOOL_BOOL_D]) == REGNO (operands[SFBOOL_MFVSR_D])
+       || peep2_reg_dead_p (3, operands[SFBOOL_MFVSR_D]))
+   && (REGNO (operands[SFBOOL_MFVSR_D]) == REGNO (operands[SFBOOL_BOOL_A1])
+       || (REG_P (operands[SFBOOL_BOOL_A2])
+	   && REGNO (operands[SFBOOL_MFVSR_D])
+		== REGNO (operands[SFBOOL_BOOL_A2])))
+   && REGNO (operands[SFBOOL_BOOL_D]) == REGNO (operands[SFBOOL_SHL_A])
+   && (REGNO (operands[SFBOOL_SHL_D]) == REGNO (operands[SFBOOL_BOOL_D])
+       || peep2_reg_dead_p (4, operands[SFBOOL_BOOL_D]))
+   && peep2_reg_dead_p (5, operands[SFBOOL_SHL_D])"
+  [(set (match_dup SFBOOL_TMP_GPR)
+	(ashift:DI (match_dup SFBOOL_BOOL_A_DI)
+		   (const_int 32)))
+
+   (set (match_dup SFBOOL_TMP_VSX_DI)
+	(match_dup SFBOOL_TMP_GPR))
+
+   (set (match_dup SFBOOL_MTVSR_D_V4SF)
+	(and_ior_xor:V4SF (match_dup SFBOOL_MFVSR_A)
+			  (match_dup SFBOOL_TMP_VSX)))]
+{
+  rtx bool_a1 = operands[SFBOOL_BOOL_A1];
+  rtx bool_a2 = operands[SFBOOL_BOOL_A2];
+  int regno_mfvsr_d = REGNO (operands[SFBOOL_MFVSR_D]);
+  int regno_tmp_vsx = REGNO (operands[SFBOOL_TMP_VSX]);
+  int regno_mtvsr_d = REGNO (operands[SFBOOL_MTVSR_D]);
+
+  if (CONST_INT_P (bool_a2))
+    {
+      rtx tmp_gpr = operands[SFBOOL_TMP_GPR];
+      emit_move_insn (tmp_gpr, bool_a2);
+      operands[SFBOOL_BOOL_A_DI] = tmp_gpr;
+    }
+  else
+    {
+      int regno_bool_a1 = REGNO (bool_a1);
+      int regno_bool_a2 = REGNO (bool_a2);
+      int regno_bool_a = (regno_mfvsr_d == regno_bool_a1
+			  ? regno_bool_a2 : regno_bool_a1);
+      operands[SFBOOL_BOOL_A_DI] = gen_rtx_REG (DImode, regno_bool_a);
+    }
+
+  operands[SFBOOL_TMP_VSX_DI] = gen_rtx_REG (DImode, regno_tmp_vsx);
+  operands[SFBOOL_MTVSR_D_V4SF] = gen_rtx_REG (V4SFmode, regno_mtvsr_d);
+})

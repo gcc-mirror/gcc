@@ -1,3 +1,13 @@
+2016-12-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71977
+	PR target/70568
+	PR target/78823
+	* gcc.target/powerpc/pr71977-1.c: New tests to check whether on
+	64-bit VSX systems with direct move, whether we optimize common
+	code sequences in the GLIBC math library for float math functions.
+	* gcc.target/powerpc/pr71977-2.c: Likewise.
+
 2017-01-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/64767
