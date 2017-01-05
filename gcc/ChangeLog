@@ -1,5 +1,10 @@
 2017-01-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_expand_setmem): Unroll the loop for
+	small constant length operands.
+
+2017-01-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_expand_setmem): Avoid overlapping bytes
 	between loop iterations.
 
