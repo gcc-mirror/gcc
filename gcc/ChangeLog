@@ -1,3 +1,9 @@
+2017-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (fvect-cost-model): Remove RejectNegative flag, use
+	3 argument Alias with unlimited for the negative form.
+	(fno-vect-cost-model): Removed.
+
 2017-01-05  Martin Liska  <mliska@suse.cz>
 
 	* hsa-gen.c (gen_hsa_divmod): New function.
