@@ -4702,7 +4702,7 @@ load_omp_udrs (void)
   mio_lparen ();
   while (peek_atom () != ATOM_RPAREN)
     {
-      const char *name, *newname;
+      const char *name = NULL, *newname;
       char *altname;
       gfc_typespec ts;
       gfc_symtree *st;
