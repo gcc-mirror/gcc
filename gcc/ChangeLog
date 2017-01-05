@@ -1,3 +1,8 @@
+2017-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*testqi_ext_3): No need to handle memory
+	operands in a special way.  Assert that pos+len <= mode precision.
+
 2017-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* common.opt (fvect-cost-model): Remove RejectNegative flag, use
@@ -208,8 +213,7 @@
 	(signbit<mode>2_dm): Delete using <Fsignbit> and just use "wa".
 	Update the length attribute if the value is in a GPR.
 	(signbit<mode>2_dm_<su>ext): Add combiner pattern to eliminate
-	the sign or zero extension instruction, since the value is always
-	0/1.
+	the sign or zero extension instruction, since the value is always 0/1.
 	(signbit<mode>2_dm2): Delete using <Fsignbit>.
 
 	PR target/78953
@@ -220,8 +224,7 @@
 
 2017-01-03  Ian Lance Taylor  <iant@google.com>
 
-	* godump.c (go_format_type): Treat ENUMERAL_TYPE like
-	INTEGER_TYPE.
+	* godump.c (go_format_type): Treat ENUMERAL_TYPE like INTEGER_TYPE.
 
 2017-01-03  Martin Sebor  <msebor@redhat.com>
 
