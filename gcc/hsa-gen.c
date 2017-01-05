@@ -4345,6 +4345,40 @@ gen_hsa_popcount (gcall *call, hsa_bb *hbb)
   gen_hsa_popcount_to_dest (dest, arg, hbb);
 }
 
+/* Emit instructions that implement DIVMOD builtin STMT.
+   Instructions are appended to basic block HBB.  */
+
+static void
+gen_hsa_divmod (gcall *call, hsa_bb *hbb)
+{
+  tree lhs = gimple_call_lhs (call);
+  if (lhs == NULL_TREE)
+    return;
+
+  tree rhs0 = gimple_call_arg (call, 0);
+  tree rhs1 = gimple_call_arg (call, 1);
+
+  hsa_op_with_type *arg0 = hsa_reg_or_immed_for_gimple_op (rhs0, hbb);
+  hsa_op_with_type *arg1 = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
+
+  hsa_op_reg *dest0 = new hsa_op_reg (arg0->m_type);
+  hsa_op_reg *dest1 = new hsa_op_reg (arg1->m_type);
+
+  hsa_insn_basic *insn = new hsa_insn_basic (3, BRIG_OPCODE_DIV, dest0->m_type,
+					     dest0, arg0, arg1);
+  hbb->append_insn (insn);
+  insn = new hsa_insn_basic (3, BRIG_OPCODE_REM, dest1->m_type, dest1, arg0,
+			     arg1);
+  hbb->append_insn (insn);
+
+  hsa_op_reg *dest = hsa_cfun->reg_for_gimple_ssa (lhs);
+  BrigType16_t src_type = hsa_bittype_for_type (dest0->m_type);
+
+  insn = new hsa_insn_packed (3, BRIG_OPCODE_COMBINE, dest->m_type,
+			      src_type, dest, dest0, dest1);
+  hbb->append_insn (insn);
+}
+
 /* Set VALUE to a shadow kernel debug argument and append a new instruction
    to HBB basic block.  */
 
@@ -5048,6 +5082,10 @@ gen_hsa_insn_for_internal_fn_call (gcall *stmt, hsa_bb *hbb)
 
     case IFN_POPCOUNT:
       gen_hsa_popcount (stmt, hbb);
+      break;
+
+    case IFN_DIVMOD:
+      gen_hsa_divmod (stmt, hbb);
       break;
 
     case IFN_ACOS:
