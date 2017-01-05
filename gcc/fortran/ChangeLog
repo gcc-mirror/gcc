@@ -1,3 +1,7 @@
+2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+
+	* module.c (load_omp_udrs): Initialize name.
+
 2017-01-02  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/78534
