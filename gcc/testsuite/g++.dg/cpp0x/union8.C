@@ -1,4 +1,4 @@
-// PR c++/60184
+// PR c++/78890
 // { dg-do compile { target c++11 } }
 
 union Test1 {
@@ -11,10 +11,16 @@ union Test2 {
 
 const int Test2::kConstant = 10;
 
+int k;
+
 union Test3 {
-  int& kConstant;	// { dg-error "may not have reference type" }
+  static int& kRef;
 };
 
+int& Test3::kRef = k;
+
 union Test4 {
-  const int& kConstant = 10;	// { dg-error "may not have reference type" }
+  static const int& kRef;
 };
+
+const int& Test4::kRef = 10;
