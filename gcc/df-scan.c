@@ -2483,7 +2483,7 @@ df_ref_create_structure (enum df_ref_class cl,
 			 int ref_flags)
 {
   df_ref this_ref = NULL;
-  int regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
+  unsigned int regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
   struct df_scan_problem_data *problem_data
     = (struct df_scan_problem_data *) df_scan->problem_data;
 
