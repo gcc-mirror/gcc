@@ -183,7 +183,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   unsigned nbbs = loop->num_nodes;
   unsigned int vectorization_factor = 0;
-  tree scalar_type;
+  tree scalar_type = NULL_TREE;
   gphi *phi;
   tree vectype;
   unsigned int nunits;
