@@ -1,3 +1,10 @@
+2017-01-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78910
+	* gimple-ssa-sprintf.c (tree_digits): Add an argument.
+	(format_integer): Correct off-by-one error in the handling
+	of precision with negative numbers in signed conversions..
+
 2017-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (C Dialect Options): Document it.
