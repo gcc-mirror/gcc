@@ -685,6 +685,19 @@ rtx_addr_can_trap_p (const_rtx x)
   return rtx_addr_can_trap_p_1 (x, 0, 0, VOIDmode, false);
 }
 
+/* Return true if X contains a MEM subrtx.  */
+
+bool
+contains_mem_rtx_p (rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (MEM_P (*iter))
+      return true;
+
+  return false;
+}
+
 /* Return true if X is an address that is known to not be zero.  */
 
 bool

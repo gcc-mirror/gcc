@@ -1,3 +1,14 @@
+2017-01-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimizatin/78812
+	* rtl.h (contains_mem_rtx_p): Prototype.
+	* ifcvt.c (containts_mem_rtx_p): Move from here to...
+	* rtlanal.c (contains_mem_rtx_p): Here and remvoe static linkage.
+	* gcse.c (prune_expressions): Use contains_mem_rtx_p to discover
+	and prune MEMs that are not at the toplevel of a SET_SRC rtx.  Look
+	through ZERO_EXTEND and SIGN_EXTEND when trying to avoid pruning
+	MEMs.
+
 2017-01-04  Alexandre Oliva <aoliva@redhat.com>
 
 	* input.c (assert_char_at_range): Default-initialize

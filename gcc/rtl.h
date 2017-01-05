@@ -3090,6 +3090,7 @@ extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
+extern bool contains_mem_rtx_p (rtx x);
 
 /* Overload for refers_to_regno_p for checking a single register.  */
 inline bool
