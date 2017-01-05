@@ -456,8 +456,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
       private _Function_base
     {
-      typedef _Res _Signature_type(_ArgTypes...);
-
       template<typename _Func,
 	       typename _Res2 = typename result_of<_Func&(_ArgTypes...)>::type>
 	struct _Callable : __check_func_return_type<_Res2, _Res> { };
@@ -715,7 +713,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       function(_Functor __f)
       : _Function_base()
       {
-	typedef _Function_handler<_Signature_type, _Functor> _My_handler;
+	typedef _Function_handler<_Res(_ArgTypes...), _Functor> _My_handler;
 
 	if (_My_handler::_M_not_empty_function(__f))
 	  {
