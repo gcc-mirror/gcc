@@ -1,3 +1,9 @@
+2017-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78765
+	* pt.c (convert_nontype_argument): Don't try and see if integral
+	or enum expressions are constants prematurely.
+
 2017-01-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/64767

@@ -1,3 +1,8 @@
+2017-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78765
+	* g++.dg/cpp0x/pr78765.C: New.
+
 2017-01-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/memcpy-2.c: New test.
