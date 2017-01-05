@@ -1,5 +1,11 @@
 2017-01-05  Martin Liska  <mliska@suse.cz>
 
+	* hsa-gen.c (gen_hsa_divmod): New function.
+	(gen_hsa_insn_for_internal_fn_call): Use the function
+	for IFN_DIVMOD.
+
+2017-01-05  Martin Liska  <mliska@suse.cz>
+
 	PR pch/78970
 	* gcc.c (lookup_compiler): Reject '-' filename for a precompiled
 	header.
