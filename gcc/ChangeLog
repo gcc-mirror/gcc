@@ -12,8 +12,7 @@
 2017-01-05  Martin Liska  <mliska@suse.cz>
 
 	* hsa-gen.c (gen_hsa_divmod): New function.
-	(gen_hsa_insn_for_internal_fn_call): Use the function
-	for IFN_DIVMOD.
+	(gen_hsa_insn_for_internal_fn_call): Use the function for IFN_DIVMOD.
 
 2017-01-05  Martin Liska  <mliska@suse.cz>
 
@@ -49,13 +48,11 @@
 	* rtlanal.c (contains_mem_rtx_p): Here and remove static linkage.
 	* gcse.c (prune_expressions): Use contains_mem_rtx_p to discover
 	and prune MEMs that are not at the toplevel of a SET_SRC rtx.  Look
-	through ZERO_EXTEND and SIGN_EXTEND when trying to avoid pruning
-	MEMs.
+	through ZERO_EXTEND and SIGN_EXTEND when trying to avoid pruning MEMs.
 
 2017-01-04  Alexandre Oliva <aoliva@redhat.com>
 
-	* input.c (assert_char_at_range): Default-initialize
-	actual_range.
+	* input.c (assert_char_at_range): Default-initialize actual_range.
 
 2017-01-04  Alexandre Oliva <aoliva@redhat.com>
 
@@ -95,8 +92,7 @@
 	(vlogical_operand): Likewise.
 	(gpc_reg_operand): Likewise.
 	(int_reg_operand): Likewise.
-	* config/rs6000/rs6000-protos.h (valid_sf_si_move): Add
-	declaration.
+	* config/rs6000/rs6000-protos.h (valid_sf_si_move): Add declaration.
 	* config/rs6000/rs6000.c (valid_sf_si_move): New function to
 	determine if a MOVSI or MOVSF operation contains SUBREGs that mix
 	SImode and SFmode.
