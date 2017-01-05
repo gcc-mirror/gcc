@@ -2233,7 +2233,7 @@ process_define_subst (void)
 class gen_reader : public rtx_reader
 {
  public:
-  gen_reader () : rtx_reader () {}
+  gen_reader () : rtx_reader (false) {}
   void handle_unknown_directive (file_location, const char *);
 };
 

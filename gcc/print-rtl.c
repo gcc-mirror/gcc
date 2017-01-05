@@ -577,7 +577,7 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
     string:
 
       if (str == 0)
-	fputs (" \"\"", m_outfile);
+	fputs (" (nil)", m_outfile);
       else
 	fprintf (m_outfile, " (\"%s\")", str);
       m_sawclose = 1;

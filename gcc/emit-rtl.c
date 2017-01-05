@@ -1374,6 +1374,19 @@ maybe_set_first_label_num (rtx_code_label *x)
   if (CODE_LABEL_NUMBER (x) < first_label_num)
     first_label_num = CODE_LABEL_NUMBER (x);
 }
+
+/* For use by the RTL function loader, when mingling with normal
+   functions.
+   Ensure that label_num is greater than the label num of X, to avoid
+   duplicate labels in the generated assembler.  */
+
+void
+maybe_set_max_label_num (rtx_code_label *x)
+{
+  if (CODE_LABEL_NUMBER (x) >= label_num)
+    label_num = CODE_LABEL_NUMBER (x) + 1;
+}
+
 
 /* Return a value representing some low-order bits of X, where the number
    of low-order bits is given by MODE.  Note that no conversion is done

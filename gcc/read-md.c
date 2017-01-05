@@ -17,13 +17,31 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* This file is compiled twice: once for the generator programs
+   once for the compiler.  */
+#ifdef GENERATOR_FILE
 #include "bconfig.h"
+#else
+#include "config.h"
+#endif
 #include "system.h"
 #include "coretypes.h"
+#ifdef GENERATOR_FILE
 #include "errors.h"
+#endif /* #ifdef GENERATOR_FILE */
 #include "statistics.h"
 #include "vec.h"
 #include "read-md.h"
+
+#ifndef GENERATOR_FILE
+
+/* Minimal reimplementation of errors.c for use by RTL frontend
+   within cc1.  */
+
+int have_error = 0;
+
+#endif /* #ifndef GENERATOR_FILE */
+
 
 /* Associates PTR (which can be a string, etc.) with the file location
    specified by FILENAME and LINENO.  */
@@ -424,14 +442,16 @@ md_reader::peek_char (void)
 /* Read an rtx code name into NAME.  It is terminated by any of the
    punctuation chars of rtx printed syntax.  */
 
-void
-md_reader::read_name (struct md_name *name)
+bool
+md_reader::read_name_1 (struct md_name *name, file_location *out_loc)
 {
   int c;
   size_t i;
   int angle_bracket_depth;
 
   c = read_skip_spaces ();
+
+  *out_loc = get_current_location ();
 
   i = 0;
   angle_bracket_depth = 0;
@@ -464,7 +484,7 @@ md_reader::read_name (struct md_name *name)
     }
 
   if (i == 0)
-    fatal_with_file_and_line ("missing name or number");
+    return false;
 
   name->buffer[i] = 0;
   name->string = name->buffer;
@@ -485,6 +505,36 @@ md_reader::read_name (struct md_name *name)
 	}
       while (def);
     }
+
+  return true;
+}
+
+/* Read an rtx code name into NAME.  It is terminated by any of the
+   punctuation chars of rtx printed syntax.  */
+
+file_location
+md_reader::read_name (struct md_name *name)
+{
+  file_location loc;
+  if (!read_name_1 (name, &loc))
+    fatal_with_file_and_line ("missing name or number");
+  return loc;
+}
+
+file_location
+md_reader::read_name_or_nil (struct md_name *name)
+{
+  file_location loc;
+  if (!read_name_1 (name, &loc))
+    {
+      file_location loc = get_current_location ();
+      read_skip_construct (0, loc);
+      /* Skip the ')'.  */
+      read_char ();
+      name->buffer[0] = 0;
+      name->string = name->buffer;
+    }
+  return loc;
 }
 
 /* Subroutine of the string readers.  Handles backslash escapes.
@@ -629,6 +679,14 @@ md_reader::read_string (int star_if_braced)
       if (star_if_braced)
 	obstack_1grow (&m_string_obstack, '*');
       stringbuf = read_braced_string ();
+    }
+  else if (saw_paren && c == 'n')
+    {
+      /* Handle (nil) by returning NULL.  */
+      require_char ('i');
+      require_char ('l');
+      require_char_ws (')');
+      return NULL;
     }
   else
     fatal_with_file_and_line ("expected `\"' or `{', found `%c'", c);
@@ -924,8 +982,9 @@ md_reader::traverse_enum_types (htab_trav callback, void *info)
 
 /* Constructor for md_reader.  */
 
-md_reader::md_reader ()
-: m_toplevel_fname (NULL),
+md_reader::md_reader (bool compact)
+: m_compact (compact),
+  m_toplevel_fname (NULL),
   m_base_dir (NULL),
   m_read_md_file (NULL),
   m_read_md_filename (NULL),
@@ -1129,6 +1188,8 @@ md_reader::add_include_path (const char *arg)
   m_last_dir_md_include_ptr = &dirtmp->next;
 }
 
+#ifdef GENERATOR_FILE
+
 /* The main routine for reading .md files.  Try to process all the .md
    files specified on the command line and return true if no error occurred.
 
@@ -1232,6 +1293,24 @@ md_reader::read_md_files (int argc, const char **argv,
       handle_toplevel_file ();
     }
 
+  return !have_error;
+}
+
+#endif /* #ifdef GENERATOR_FILE */
+
+/* Read FILENAME.  */
+
+bool
+md_reader::read_file (const char *filename)
+{
+  m_read_md_filename = filename;
+  m_read_md_file = fopen (m_read_md_filename, "r");
+  if (m_read_md_file == 0)
+    {
+      perror (m_read_md_filename);
+      return false;
+    }
+  handle_toplevel_file ();
   return !have_error;
 }
 
