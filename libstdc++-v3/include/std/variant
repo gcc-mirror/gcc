@@ -604,17 +604,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Array_type, typename _Variant_tuple, typename _Index_seq>
     struct __gen_vtable_impl;
 
-  template<typename _Result_type, typename _Visitor, size_t... __unused,
+  template<typename _Result_type, typename _Visitor, size_t... __dimensions,
 	   typename... _Variants, size_t... __indices>
     struct __gen_vtable_impl<
-	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __unused...>,
+	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __dimensions...>,
 	tuple<_Variants...>, std::index_sequence<__indices...>>
     {
       using _Next =
 	  remove_reference_t<typename _Nth_type<sizeof...(__indices),
 			     _Variants...>::type>;
       using _Array_type =
-	  _Multi_array<_Result_type (*)(_Visitor, _Variants...), __unused...>;
+	  _Multi_array<_Result_type (*)(_Visitor, _Variants...),
+		       __dimensions...>;
 
       static constexpr _Array_type
       _S_apply()
