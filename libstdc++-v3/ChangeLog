@@ -1,3 +1,8 @@
+2017-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function::_Signature_type): Remove.
+	(function::function(_Functor)): Adjust.
+
 2017-01-05  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/78996
