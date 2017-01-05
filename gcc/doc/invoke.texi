@@ -2166,9 +2166,9 @@ basic integer types such as @code{int} are signed types.
 @item -fsso-struct=@var{endianness}
 @opindex fsso-struct
 Set the default scalar storage order of structures and unions to the
-specified endianness.  The accepted values are @samp{big-endian} and
-@samp{little-endian}.  If the option is not passed, the compiler uses
-the native endianness of the target.  This option is not supported for C++.
+specified endianness.  The accepted values are @samp{big-endian},
+@samp{little-endian} and @samp{native} for the native endianness of
+the target (the default).  This option is not supported for C++.
 
 @strong{Warning:} the @option{-fsso-struct} switch causes GCC to generate
 code that is not binary compatible with code generated without it if the

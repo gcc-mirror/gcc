@@ -1,3 +1,7 @@
+2017-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (C Dialect Options): Document it.
+
 2017-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71016

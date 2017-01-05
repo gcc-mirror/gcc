@@ -1,3 +1,7 @@
+2017-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c.opt (fsso-struct): Add 'native' value.
+
 2017-01-05  Martin Liska  <mliska@suse.cz>
 
 	PR pch/78970
