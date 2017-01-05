@@ -1,5 +1,9 @@
 2017-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78931
+	* decl.c (cp_finish_decomp): Remove probe variable, if tt is
+	REFERENCE_REF_P, set tt to its operand.
+
 	PR c++/78890
 	* class.c (check_field_decls): Diagnose REFERENCE_TYPE fields in
 	unions even for C++11 and later.

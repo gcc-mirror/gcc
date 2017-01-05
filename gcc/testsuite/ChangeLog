@@ -1,5 +1,8 @@
 2017-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78931
+	* g++.dg/cpp1z/decomp19.C: New test.
+
 	PR c++/78890
 	* g++.dg/init/ref14.C: Expect error even in C++11 and later.
 	* g++.dg/init/union1.C: Likewise.
