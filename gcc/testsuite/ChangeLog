@@ -1,3 +1,8 @@
+2017-01-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr71670.c: Require p9vector.
+	* gcc.target/powerpc/p9-novsx.c: Same.
+
 2017-01-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftests/asr_div1.rtl: New file.
