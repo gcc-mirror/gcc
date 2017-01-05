@@ -1,3 +1,8 @@
+
+2017-01-05  Martin Liska  <mliska@suse.cz>
+
+	* vimrc: Update indentation definition.
+
 2017-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py (GCCCmdLine): Add include, libcc1, libiberty,
