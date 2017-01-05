@@ -1,3 +1,13 @@
+2017-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/71016
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Pass cond_stmt to
+	factor_out_conditional_conversion.  Formatting fix.
+	(factor_out_conditional_conversion): Add cond_stmt argument.
+	If arg1 is INTEGER_CST, punt if new_arg0 is not any operand of
+	cond_stmt and if arg0_def_stmt is not the only stmt in its bb.
+	Formatting fix.
+
 2017-01-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add read-md.o, read-rtl.o,

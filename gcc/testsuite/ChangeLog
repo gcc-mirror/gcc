@@ -1,5 +1,10 @@
 2017-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/71016
+	* gcc.target/i386/pr71016.c: New test.
+	* gcc.target/aarch64/pr71016.c: New test.
+	* gcc.dg/tree-ssa/pr66726-3.c: New test.
+
 	PR c++/78931
 	* g++.dg/cpp1z/decomp19.C: New test.
 
