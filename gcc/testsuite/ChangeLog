@@ -1,3 +1,13 @@
+2017-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78890
+	* g++.dg/init/ref14.C: Expect error even in C++11 and later.
+	* g++.dg/init/union1.C: Likewise.
+	* g++.dg/cpp0x/union6.C: Expect errors.
+	* g++.dg/cpp0x/union8.C: New test.
+	* g++.dg/cpp0x/pr78890-1.C: New test.
+	* g++.dg/cpp0x/pr78890-2.C: New test.
+
 2017-01-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr71670.c: Require p9vector.
