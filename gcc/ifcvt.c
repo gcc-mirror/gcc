@@ -3010,19 +3010,6 @@ noce_operand_ok (const_rtx op)
   return ! may_trap_p (op);
 }
 
-/* Return true if X contains a MEM subrtx.  */
-
-static bool
-contains_mem_rtx_p (rtx x)
-{
-  subrtx_iterator::array_type array;
-  FOR_EACH_SUBRTX (iter, array, x, ALL)
-    if (MEM_P (*iter))
-      return true;
-
-  return false;
-}
-
 /* Return true iff basic block TEST_BB is valid for noce if-conversion.
    The condition used in this if-conversion is in COND.
    In practice, check that TEST_BB ends with a single set
