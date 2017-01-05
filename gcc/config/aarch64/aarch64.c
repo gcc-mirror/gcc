@@ -64,6 +64,8 @@
 #include "sched-int.h"
 #include "target-globals.h"
 #include "common/common-target.h"
+#include "selftest.h"
+#include "selftest-rtl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -14605,6 +14607,52 @@ aarch64_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Target-specific selftests.  */
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftest for the RTL loader.
+   Verify that the RTL loader copes with a dump from
+   print_rtx_function.  This is essentially just a test that class
+   function_reader can handle a real dump, but it also verifies
+   that lookup_reg_by_dump_name correctly handles hard regs.
+   The presence of hard reg names in the dump means that the test is
+   target-specific, hence it is in this file.  */
+
+static void
+aarch64_test_loading_full_dump ()
+{
+  rtl_dump_test t (SELFTEST_LOCATION, locate_file ("aarch64/times-two.rtl"));
+
+  ASSERT_STREQ ("times_two", IDENTIFIER_POINTER (DECL_NAME (cfun->decl)));
+
+  rtx_insn *insn_1 = get_insn_by_uid (1);
+  ASSERT_EQ (NOTE, GET_CODE (insn_1));
+
+  rtx_insn *insn_15 = get_insn_by_uid (15);
+  ASSERT_EQ (INSN, GET_CODE (insn_15));
+  ASSERT_EQ (USE, GET_CODE (PATTERN (insn_15)));
+
+  /* Verify crtl->return_rtx.  */
+  ASSERT_EQ (REG, GET_CODE (crtl->return_rtx));
+  ASSERT_EQ (0, REGNO (crtl->return_rtx));
+  ASSERT_EQ (SImode, GET_MODE (crtl->return_rtx));
+}
+
+/* Run all target-specific selftests.  */
+
+static void
+aarch64_run_selftests (void)
+{
+  aarch64_test_loading_full_dump ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -14976,6 +15024,11 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_OMIT_STRUCT_RETURN_REG
 #define TARGET_OMIT_STRUCT_RETURN_REG true
+
+#if CHECKING_P
+#undef TARGET_RUN_TARGET_SELFTESTS
+#define TARGET_RUN_TARGET_SELFTESTS selftest::aarch64_run_selftests
+#endif /* #if CHECKING_P */
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

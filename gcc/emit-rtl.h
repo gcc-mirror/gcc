@@ -510,4 +510,6 @@ extern int get_mem_align_offset (rtx, unsigned int);
    MODE and adjusted by OFFSET.  */
 extern rtx widen_memory_access (rtx, machine_mode, HOST_WIDE_INT);
 
+extern void maybe_set_max_label_num (rtx_code_label *x);
+
 #endif /* GCC_EMIT_RTL_H */

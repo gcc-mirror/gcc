@@ -1420,6 +1420,9 @@ OBJS = \
 	print-rtl-function.o \
 	print-tree.o \
 	profile.o \
+	read-md.o \
+	read-rtl.o \
+	read-rtl-function.o \
 	real.o \
 	realmpfr.o \
 	recog.o \
@@ -1447,6 +1450,7 @@ OBJS = \
 	sel-sched-ir.o \
 	sel-sched-dump.o \
 	sel-sched.o \
+	selftest-rtl.o \
 	selftest-run-tests.o \
 	sese.o \
 	shrink-wrap.o \

@@ -1,3 +1,27 @@
+2017-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftests/asr_div1.rtl: New file.
+	* selftests/aarch64: New subdirectory.
+	* selftests/aarch64/times-two.rtl: New file.
+	* selftests/bb-index.rtl: New file.
+	* selftests/cfg-test.rtl: New file.
+	* selftests/const-int.rtl: New file.
+	* selftests/example-labels.rtl: New file.
+	* selftests/insn-with-mode.rtl: New file.
+	* selftests/jump-to-label-ref.rtl: New file.
+	* selftests/jump-to-return.rtl: New file.
+	* selftests/jump-to-simple-return.rtl: New file.
+	* selftests/mem.rtl: New file.
+	* selftests/note-insn-deleted.rtl: New file.
+	* selftests/note_insn_basic_block.rtl: New file.
+	* selftests/simple-cse.rtl: New file.
+	* selftests/symbol-ref.rtl: New file.
+	* selftests/x86_64: New subdirectory.
+	* selftests/x86_64/call-insn.rtl: New file.
+	* selftests/x86_64/copy-hard-reg-into-frame.rtl: New file.
+	* selftests/x86_64/times-two.rtl: New file.
+	* selftests/x86_64/unspec.rtl: New file.
+
 2017-01-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78765

@@ -1909,7 +1909,8 @@ instantiate_decls (tree fndecl)
     instantiate_decl_rtl (DECL_RTL (DECL_VALUE_EXPR (decl)));
 
   /* Now process all variables defined in the function or its subblocks.  */
-  instantiate_decls_1 (DECL_INITIAL (fndecl));
+  if (DECL_INITIAL (fndecl))
+    instantiate_decls_1 (DECL_INITIAL (fndecl));
 
   FOR_EACH_LOCAL_DECL (cfun, ix, decl)
     if (DECL_RTL_SET_P (decl))

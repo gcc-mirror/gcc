@@ -1,0 +1,16 @@
+(function "test"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cinsn 1 (set (reg:SI <1>)
+                    (plus:SI (reg:SI <0>)
+                             (const_int 1))) (nil))
+      (cinsn 2 (set (reg:SI <2>)
+                    (plus:SI (reg:SI <0>)
+                             (const_int 1))) (nil))
+      (cinsn 3 (set (mem:SI (reg:SI <3>) [1 i+0 S4 A32])
+                    (mult:SI (reg:SI <1>) (reg:SI <2>))) (nil))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

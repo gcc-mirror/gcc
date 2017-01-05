@@ -1,3 +1,121 @@
+2017-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add read-md.o, read-rtl.o,
+	read-rtl-function.o, and selftest-rtl.o.
+	* config/aarch64/aarch64.c: Include selftest.h and
+	selftest-rtl.h.
+	(selftest::aarch64_test_loading_full_dump): New function.
+	(selftest::aarch64_run_selftests): New function.
+	(TARGET_RUN_TARGET_SELFTESTS): Wire it up to
+	selftest::aarch64_run_selftests.
+	* config/i386/i386.c
+	(selftest::ix86_test_loading_dump_fragment_1): New function.
+	(selftest::ix86_test_loading_call_insn): New function.
+	(selftest::ix86_test_loading_full_dump): New function.
+	(selftest::ix86_test_loading_unspec): New function.
+	(selftest::ix86_run_selftests): Call the new functions.
+	* emit-rtl.c (maybe_set_max_label_num): New function.
+	* emit-rtl.h (maybe_set_max_label_num): New decl.
+	* function.c (instantiate_decls): Guard call to
+	instantiate_decls_1 with if (DECL_INITIAL (fndecl)).
+	* function-tests.c (selftest::verify_three_block_rtl_cfg): Remove
+	"static".
+	* gensupport.c (gen_reader::gen_reader): Pass "false"
+	for new "compact" param of rtx_reader.
+	* print-rtl.c (rtx_writer::print_rtx_operand): Print "(nil)"
+	rather than an empty string for NULL strings.
+	* read-md.c: Potentially include config.h rather than bconfig.h.
+	Wrap include of errors.h with #ifdef GENERATOR_FILE.
+	(have_error): New global, copied from errors.c.
+	(md_reader::read_name): Rename to...
+	(md_reader::read_name_1): ...this, adding "out_loc" param,
+	and converting "missing name or number" to returning false, rather
+	than failing.
+	(md_reader::read_name): Reimplement in terms of read_name_1.
+	(md_reader::read_name_or_nil): New function.
+	(md_reader::read_string): Handle "(nil)" by returning NULL.
+	(md_reader::md_reader): Add new param "compact".
+	(md_reader::read_md_files): Wrap with #ifdef GENERATOR_FILE.
+	(md_reader::read_file): New method.
+	* read-md.h (md_reader::md_reader): Add new param "compact".
+	(md_reader::read_file): New method.
+	(md_reader::is_compact): New accessor.
+	(md_reader::read_name): Convert return type from void to
+	file_location.
+	(md_reader::read_name_or_nil): New decl.
+	(md_reader::read_name_1): New decl.
+	(md_reader::m_compact): New field.
+	(noop_reader::noop_reader): Pass "false" for new "compact" param
+	of rtx_reader.
+	(rtx_reader::rtx_reader): Add new "compact" param.
+	(rtx_reader::read_rtx_operand): Make virtual and convert return
+	type from void to rtx.
+	(rtx_reader::read_until): New decl.
+	(rtx_reader::handle_any_trailing_information): New virtual
+	function.
+	(rtx_reader::postprocess): New virtual function.
+	(rtx_reader::finalize_string): New virtual function.
+	(rtx_reader::m_in_call_function_usage): New field.
+	(rtx_reader::m_reuse_rtx_by_id): New field.
+	* read-rtl-function.c: New file.
+	* selftest-rtl.c (selftest::assert_rtx_ptr_eq_at): New function.
+	* selftest-rtl.h (ASSERT_RTX_PTR_EQ): New macro.
+	(selftest::verify_three_block_rtl_cfg): New decl.
+	* read-rtl-function.h: New file.
+	* read-rtl.c: Potentially include config.h rather than bconfig.h.
+	For host, include function.h, memmodel.h, and emit-rtl.h.
+	(one_time_initialization): New function.
+	(struct compact_insn_name): New struct.
+	(compact_insn_names): New array.
+	(find_code): Handle insn codes in compact dumps.
+	(apply_subst_iterator): Wrap with #ifdef GENERATOR_FILE.
+	(bind_subst_iter_and_attr): Likewise.
+	(add_condition_to_string): Likewise.
+	(add_condition_to_rtx): Likewise.
+	(apply_attribute_uses): Likewise.
+	(add_current_iterators): Likewise.
+	(apply_iterators): Likewise.
+	(initialize_iterators): Guard usage of apply_subst_iterator with
+	#ifdef GENERATOR_FILE.
+	(read_conditions): Wrap with #ifdef GENERATOR_FILE.
+	(md_reader::read_mapping): Likewise.
+	(add_define_attr_for_define_subst): Likewise.
+	(add_define_subst_attr): Likewise.
+	(read_subst_mapping): Likewise.
+	(check_code_iterator): Likewise.
+	(rtx_reader::read_rtx): Likewise.  Move one-time initialization
+	logic to...
+	(one_time_initialization): New function.
+	(rtx_reader::read_until): New method.
+	(read_flags): New function.
+	(parse_reg_note_name): New function.
+	(rtx_reader::read_rtx_code): Initialize "iterator" to NULL.
+	Handle reuse_rtx ids.
+	Wrap iterator lookup within #ifdef GENERATOR_FILE.
+	Add parsing support for RTL dumps, mirroring the special-cases in
+	print_rtx, by calling read_flags, reading REG_NOTE names, INSN_UID
+	values, and calling handle_any_trailing_information.
+	(rtx_reader::read_rtx_operand): Convert return type from void
+	to rtx, returning return_rtx.  Handle case 'e'.  Call
+	finalize_string on XSTR and XTMPL fields.
+	(rtx_reader::read_nested_rtx):  Handle dumps in which trailing
+	 "(nil)" values were omitted.  Call the postprocess vfunc on the
+	return_rtx.
+	(rtx_reader::rtx_reader): Add new "compact" param and pass to base
+	class ctor.  Initialize m_in_call_function_usage.  Call
+	one_time_initialization.
+	* rtl-tests.c (selftest::test_uncond_jump): Call
+	set_new_first_and_last_insn.
+	* rtl.h (read_rtx): Wrap decl with #ifdef GENERATOR_FILE.
+	* selftest-rtl.c: New file.
+	* selftest-rtl.h (class selftest::rtl_dump_test): New class.
+	(selftest::get_insn_by_uid): New decl.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	read_rtl_function_c_tests.
+	* selftest.h  (selftest::read_rtl_function_c_tests): New decl.
+	* tree-dfa.c (ssa_default_def): Return NULL_TREE for rtl function
+	dumps.
+
 2017-01-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*testqi_ext_3): No need to handle memory
