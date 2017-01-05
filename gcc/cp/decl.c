@@ -7593,10 +7593,9 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	else
 	  {
 	    tree tt = finish_non_static_data_member (field, t, NULL_TREE);
-	    tree probe = tt;
-	    if (REFERENCE_REF_P (probe))
-	      probe = TREE_OPERAND (probe, 0);
-	    TREE_TYPE (v[i]) = TREE_TYPE (probe);
+	    if (REFERENCE_REF_P (tt))
+	      tt = TREE_OPERAND (tt, 0);
+	    TREE_TYPE (v[i]) = TREE_TYPE (tt);
 	    layout_decl (v[i], 0);
 	    SET_DECL_VALUE_EXPR (v[i], tt);
 	    DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
