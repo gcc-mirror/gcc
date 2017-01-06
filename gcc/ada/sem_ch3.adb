@@ -11947,9 +11947,11 @@ package body Sem_Ch3 is
          Append    : Boolean;
          Item      : Node_Id;
          Next_Item : Node_Id;
+         Priv_Item : Node_Id;
 
       begin
          Item := First_Rep_Item (Full);
+         Priv_Item := First_Rep_Item (Priv);
 
          --  If no existing rep items on full type, we can just link directly
          --  to the list of items on the private type, if any exist.. Same if
@@ -11960,14 +11962,24 @@ package body Sem_Ch3 is
               or else Entity (Item) = Full_Base)
              and then Present (First_Rep_Item (Priv))
          then
-            Set_First_Rep_Item (Full, First_Rep_Item (Priv));
+            Set_First_Rep_Item (Full, Priv_Item);
 
          --  Otherwise, search to the end of items currently linked to the full
          --  subtype and append the private items to the end. However, if Priv
          --  and Full already have the same list of rep items, then the append
          --  is not done, as that would create a circularity.
+         --
+         --  The partial view may have a predicate and the rep item lists of
+         --  both views agree when inherited from the same ancestor. In that
+         --  case, simply propagate the list from one view to the other.
+         --  A more complex analysis needed here ???
 
-         elsif Item /= First_Rep_Item (Priv) then
+         elsif Present (Priv_Item)
+           and then Item = Next_Rep_Item (Priv_Item)
+         then
+            Set_First_Rep_Item (Full, Priv_Item);
+
+         elsif Item /= Priv_Item then
             Append := True;
             loop
                Next_Item := Next_Rep_Item (Item);

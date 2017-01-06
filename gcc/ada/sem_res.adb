@@ -4265,10 +4265,12 @@ package body Sem_Res is
                --  Apply predicate tests except in certain special cases. Note
                --  that it might be more consistent to apply these only when
                --  expansion is active (in Exp_Ch6.Expand_Actuals), as we do
-               --  for the outbound predicate tests ???
+               --  for the outbound predicate tests ??? In any case indicate
+               --  the function being called, for better warnings if the call
+               --  leads to an infinite recursion.
 
                if Predicate_Tests_On_Arguments (Nam) then
-                  Apply_Predicate_Check (A, F_Typ);
+                  Apply_Predicate_Check (A, F_Typ, Nam);
                end if;
 
                --  Apply required constraint checks

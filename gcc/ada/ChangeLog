@@ -1,3 +1,21 @@
+2017-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Get_Default_Iterator): For a derived type, the
+	alias of the inherited op is the parent iterator, no need to
+	examine dispatch table positions which might not be established
+	yet if type is not frozen.
+	* sem_disp.adb (Check_Controlling_Formals): The formal of a
+	predicate function may be a subtype of a tagged type.
+	* sem_ch3.adb (Complete_Private_Subtype): Adjust inheritance
+	of representation items for the completion of a type extension
+	where a predicate applies to the partial view.
+	* checks.ads, checks.adb (Apply_Predicate_Check): Add optional
+	parameter that designates function whose actual receives a
+	predicate check, to improve warning message when the check will
+	lead to infinite recursion.
+	* sem_res.adb (Resolve_Actuals): Pass additional parameter to
+	Apply_Predicate_Check.
+
 2017-01-06  Tristan Gingold  <gingold@adacore.com>
 
 	* s-rident.ads (Profile_Info): Remove No_Entry_Queue from

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -234,7 +234,13 @@ package body Sem_Disp is
                         Formal);
                   end if;
 
-               elsif not Subtypes_Statically_Match (Typ, Etype (Formal)) then
+               --  Within a predicate function, the formal may be a subtype
+               --  of a tagged type, given that the predicate is expressed
+               --  in terms of the subtype.
+
+               elsif not Subtypes_Statically_Match (Typ, Etype (Formal))
+                 and then not Is_Predicate_Function (Subp)
+               then
                   Error_Msg_N
                     ("parameter subtype does not match controlling type",
                      Formal);
