@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -471,7 +471,7 @@ package body Stylesw is
                   Write_Line ("unrecognized switch -gnaty" & C & " ignored");
                else
                   Err_Col := Err_Col - 1;
-                  Bad_Style_Switch ("invalid style switch: " & C);
+                  Bad_Style_Switch ("invalid style switch");
                   return;
                end if;
             end case;
@@ -580,7 +580,7 @@ package body Stylesw is
                   Write_Line ("unrecognized switch -gnaty-" & C & " ignored");
                else
                   Err_Col := Err_Col - 1;
-                  Bad_Style_Switch ("invalid style switch: " & C);
+                  Bad_Style_Switch ("invalid style switch");
                   return;
                end if;
             end case;

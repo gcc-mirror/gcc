@@ -7798,7 +7798,16 @@ package body Sem_Ch4 is
          Ref := Empty;
          Typ := Underlying_Type (Base_Type (Typ));
 
-         Inspect_Primitives   (Typ, Ref);
+         Inspect_Primitives (Typ, Ref);
+
+         --  Now look for explicit declarations of an indexing operation.
+         --  If the type is private the operation may be declared in the
+         --  visible part that contains the partial view.
+
+         if Is_Private_Type (T) then
+            Inspect_Declarations (T, Ref);
+         end if;
+
          Inspect_Declarations (Typ, Ref);
 
          return Ref;

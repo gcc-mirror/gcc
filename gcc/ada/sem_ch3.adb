@@ -11960,7 +11960,7 @@ package body Sem_Ch3 is
          if (No (Item)
               or else Nkind (Item) /= N_Aspect_Specification
               or else Entity (Item) = Full_Base)
-             and then Present (First_Rep_Item (Priv))
+           and then Present (First_Rep_Item (Priv))
          then
             Set_First_Rep_Item (Full, Priv_Item);
 
@@ -14182,7 +14182,8 @@ package body Sem_Ch3 is
            Governed_By   => Assoc_List,
            Into          => Comp_List,
            Report_Errors => Errors);
-         pragma Assert (not Errors);
+         pragma Assert (not Errors
+           or else Serious_Errors_Detected > 0);
 
          Create_All_Components;
 
