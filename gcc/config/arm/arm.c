@@ -814,6 +814,9 @@ int arm_arch5 = 0;
 /* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
 int arm_arch5e = 0;
 
+/* Nonzero if this chip supports the ARM Architecture 5TE extensions.  */
+int arm_arch5te = 0;
+
 /* Nonzero if this chip supports the ARM Architecture 6 extensions.  */
 int arm_arch6 = 0;
 
@@ -3372,6 +3375,8 @@ arm_option_override (void)
   arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5);
   arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5e);
+  arm_arch5te = arm_arch5e
+    && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6);
   arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6k);
   arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
@@ -30923,6 +30928,18 @@ arm_coproc_builtin_available (enum unspecv builtin)
 	/* Only present in ARMv5*, ARMv6 (but not ARMv6-M), ARMv7* and
 	   ARMv8-{A,M}.  */
 	if (arm_arch5)
+	  return true;
+	break;
+      case VUNSPEC_MCRR:
+      case VUNSPEC_MRRC:
+	/* Only present in ARMv5TE, ARMv6 (but not ARMv6-M), ARMv7* and
+	   ARMv8-{A,M}.  */
+	if (arm_arch6 || arm_arch5te)
+	  return true;
+	break;
+      case VUNSPEC_MCRR2:
+      case VUNSPEC_MRRC2:
+	if (arm_arch6)
 	  return true;
 	break;
       default:

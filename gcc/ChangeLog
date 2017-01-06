@@ -1,5 +1,25 @@
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm.md (<mcrr>): New.
+	(<mrrc>): New.
+	* config/arm/arm.c (arm_arch5te): New.
+	(arm_option_override): Set arm_arch5te.
+	(arm_coproc_builtin_available): Add support for mcrr, mcrr2, mrrc
+	and mrrc2.
+	* config/arm/arm-builtins.c (MCRR_QUALIFIERS): Define to...
+	(arm_mcrr_qualifiers): ... this. New.
+	(MRRC_QUALIFIERS): Define to...
+	(arm_mrrc_qualifiers): ... this. New.
+	* config/arm/arm_acle.h (__arm_mcrr, __arm_mcrr2, __arm_mrrc,
+	__arm_mrrc2): New.
+	* config/arm/arm_acle_builtins.def (mcrr, mcrr2, mrrc, mrrc2): New.
+	* config/arm/iterators.md (MCRRI, mcrr, MCRR): New.
+	(MRRCI, mrrc, MRRC): New.
+	* config/arm/unspecs.md (VUNSPEC_MCRR, VUNSPEC_MCRR2, VUNSPEC_MRRC,
+	VUNSPEC_MRRC2): New.
+
+2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm.md (<mcr>): New.
 	(<mrc>): New.
 	* config/arm/arm.c (arm_coproc_builtin_available): Add

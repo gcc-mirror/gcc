@@ -8279,7 +8279,7 @@ proc check_effective_target_arm_coproc2_ok { } {
 
 # Return 1 if the target supports all coprocessor instructions checked by
 # check_effective_target_arm_coproc2_ok in addition the following: mcrr and
-mrrc.
+# mrrc.
 proc check_effective_target_arm_coproc3_ok_nocache { } {
     if { ![check_effective_target_arm_coproc2_ok] } {
 	return 0

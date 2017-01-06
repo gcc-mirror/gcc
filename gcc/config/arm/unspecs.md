@@ -164,6 +164,10 @@
   VUNSPEC_MCR2		; Represent the coprocessor mcr2 instruction.
   VUNSPEC_MRC		; Represent the coprocessor mrc instruction.
   VUNSPEC_MRC2		; Represent the coprocessor mrc2 instruction.
+  VUNSPEC_MCRR		; Represent the coprocessor mcrr instruction.
+  VUNSPEC_MCRR2		; Represent the coprocessor mcrr2 instruction.
+  VUNSPEC_MRRC		; Represent the coprocessor mrrc instruction.
+  VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
 ])
 
 ;; Enumerators for NEON unspecs.
