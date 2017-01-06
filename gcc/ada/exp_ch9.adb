@@ -9768,6 +9768,7 @@ package body Exp_Ch9 is
       --  initialization routine.
 
       declare
+         Max      : Uint;
          Maxs     : constant List_Id := New_List;
          Count    : Int;
          Item     : Entity_Id;
@@ -9786,69 +9787,80 @@ package body Exp_Ch9 is
             while Present (Item) loop
                if Is_Entry (Item) then
                   Count := Count + 1;
+                  Max   := Get_Max_Queue_Length (Item);
 
-                  Append_To (Maxs,
-                    Make_Integer_Literal (Loc,
-                      Intval => Get_Max_Queue_Length (Item)));
+                  --  The package System_Tasking_Protected_Objects_Single_Entry
+                  --  is only used in cases where queue length is 1, so if this
+                  --  package is being used and there is a value supplied for
+                  --  it print an error message and halt compilation.
+
+                  if Max /= 0
+                    and then Corresponding_Runtime_Package (Prot_Typ) =
+                               System_Tasking_Protected_Objects_Single_Entry
+                  then
+                     Error_Msg_N
+                       ("max_queue_length cannot be applied to entries under "
+                        & "the Ravenscar profile", Item);
+                     raise Program_Error;
+                  end if;
+
+                  Append_To (Maxs, Make_Integer_Literal (Loc, Intval => Max));
                end if;
 
                Next_Entity (Item);
             end loop;
 
-            --  Create the declaration of the array object. Generate:
-
-            --    Maxs_Id : aliased Protected_Entry_Queue_Max_Array
-            --                        (1 .. Count) := (..., ...);
-            --      or
-            --    Maxs_Id : aliased Protected_Entry_Queue_Max := <value>;
-
-            Maxs_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_External_Name (Chars (Prot_Typ), 'B'));
-
             case Corresponding_Runtime_Package (Prot_Typ) is
                when System_Tasking_Protected_Objects_Entries =>
-                  Expr := Make_Aggregate (Loc, Maxs);
 
-                  Obj_Def :=
-                    Make_Subtype_Indication (Loc,
-                      Subtype_Mark =>
-                        New_Occurrence_Of
-                          (RTE (RE_Protected_Entry_Queue_Max_Array), Loc),
-                      Constraint   =>
-                        Make_Index_Or_Discriminant_Constraint (Loc,
-                          Constraints => New_List (
-                            Make_Range (Loc,
-                              Make_Integer_Literal (Loc, 1),
-                              Make_Integer_Literal (Loc, Count)))));
+                  --  Create the declaration of the array object. Generate:
+
+                  --    Maxs_Id : aliased Protected_Entry_Queue_Max_Array
+                  --                        (1 .. Count) := (..., ...);
+
+                  Maxs_Id :=
+                    Make_Defining_Identifier (Loc,
+                      Chars => New_External_Name (Chars (Prot_Typ), 'B'));
+
+                  Max_Vals :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Maxs_Id,
+                      Aliased_Present     => True,
+                      Object_Definition   =>
+                        Make_Subtype_Indication (Loc,
+                          Subtype_Mark =>
+                            New_Occurrence_Of
+                              (RTE (RE_Protected_Entry_Queue_Max_Array), Loc),
+                          Constraint   =>
+                            Make_Index_Or_Discriminant_Constraint (Loc,
+                              Constraints => New_List (
+                                Make_Range (Loc,
+                                  Make_Integer_Literal (Loc, 1),
+                                  Make_Integer_Literal (Loc, Count))))),
+                      Expression          => Make_Aggregate (Loc, Maxs));
+
+                  --  A pointer to this array will be placed in the
+                  --  corresponding record by its initialization procedure so
+                  --  this needs to be analyzed here.
+
+                  Insert_After (Current_Node, Max_Vals);
+                  Current_Node := Max_Vals;
+                  Analyze (Max_Vals);
+
+                  Set_Entry_Max_Queue_Lengths_Array (Prot_Typ, Maxs_Id);
 
                when System_Tasking_Protected_Objects_Single_Entry =>
-                  Expr := Make_Integer_Literal (Loc, Intval (First (Maxs)));
 
-                  Obj_Def :=
-                    New_Occurrence_Of
-                      (RTE (RE_Protected_Entry_Queue_Max), Loc);
+                  --  If this section is entered this means the package
+                  --  System_Tasking_Protected_Objects_Single_Entry is being
+                  --  used and that it correctly has no Max_Queue_Length
+                  --  specified, so fall through and continue normally.
+
+                  null;
 
                when others =>
                   raise Program_Error;
             end case;
-
-            Max_Vals :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Maxs_Id,
-                Aliased_Present     => True,
-                Object_Definition   => Obj_Def,
-                Expression          => Expr);
-
-            --  A pointer to this array will be placed in the corresponding
-            --  record by its initialization procedure so this needs to be
-            --  analyzed here.
-
-            Insert_After (Current_Node, Max_Vals);
-            Current_Node := Max_Vals;
-            Analyze (Max_Vals);
-
-            Set_Entry_Max_Queue_Lengths_Array (Prot_Typ, Maxs_Id);
          end if;
       end;
 
@@ -14201,7 +14213,9 @@ package body Exp_Ch9 is
             --  naturals representing the entry queue maximums for each entry
             --  in the protected type. Zero represents no max.
 
-            if Has_Entry then
+            if Has_Entry
+              and then Pkg_Id /= System_Tasking_Protected_Objects_Single_Entry
+            then
                Append_To (Args,
                  Make_Attribute_Reference (Loc,
                    Prefix         =>
@@ -14212,9 +14226,7 @@ package body Exp_Ch9 is
             --  Edge cases exist where entry initialization functions are
             --  called, but no entries exist, so null is appended.
 
-            elsif Pkg_Id = System_Tasking_Protected_Objects_Single_Entry
-              or else Pkg_Id = System_Tasking_Protected_Objects_Entries
-            then
+            elsif Pkg_Id = System_Tasking_Protected_Objects_Entries then
                Append_To (Args, Make_Null (Loc));
             end if;
 

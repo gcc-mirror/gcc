@@ -17691,13 +17691,6 @@ package body Sem_Prag is
 
                Entry_Id := Unique_Defining_Entity (Entry_Decl);
 
-               --  Pragma illegally applied to an entry family
-
-               if Ekind (Entry_Id) = E_Entry_Family then
-                  Error_Pragma ("pragma % cannot apply to entry families");
-                  return;
-               end if;
-
             --  Otherwise the pragma is associated with an illegal construct
 
             else

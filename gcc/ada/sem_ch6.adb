@@ -7183,6 +7183,15 @@ package body Sem_Ch6 is
          return Ctype <= Mode_Conformant
            or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
 
+      --  Another confusion between views in a nested instance with an
+      --  actual private type whose full view is not in scope.
+
+      elsif Ekind (Type_2) = E_Private_Subtype
+        and then In_Instance
+        and then Etype (Type_2) = Type_1
+      then
+         return True;
+
       --  In Ada 2012, incomplete types (including limited views) can appear
       --  as actuals in instantiations.
 
