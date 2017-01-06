@@ -4358,8 +4358,7 @@ package body Exp_Ch7 is
 
                Create_Append (Checks,
                  Make_Pragma (Ploc,
-                   Pragma_Identifier            =>
-                     Make_Identifier (Ploc, Name_Check),
+                   Chars                        => Name_Check,
                    Pragma_Argument_Associations => Assoc));
             end if;
 
@@ -4392,7 +4391,7 @@ package body Exp_Ch7 is
             Rep_Item := First_Rep_Item (T);
             while Present (Rep_Item) loop
                if Nkind (Rep_Item) = N_Pragma
-                 and then Pragma_Name (Rep_Item) = Name_Invariant
+                 and then Pragma_Name_Mapped (Rep_Item) = Name_Invariant
                then
                   --  Stop the traversal of the rep item chain once a specific
                   --  item is encountered.

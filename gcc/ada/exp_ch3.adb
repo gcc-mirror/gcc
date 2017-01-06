@@ -2758,7 +2758,7 @@ package body Exp_Ch3 is
                            --  Conversion for Priority expression
 
                            if Nam = Name_Priority then
-                              if Pragma_Name (Ritem) = Name_Priority
+                              if Pragma_Name_Mapped (Ritem) = Name_Priority
                                 and then not GNAT_Mode
                               then
                                  Exp := Convert_To (RTE (RE_Priority), Exp);

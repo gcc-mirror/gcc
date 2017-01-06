@@ -11012,10 +11012,16 @@ package Sinfo is
 
    procedure Map_Pragma_Name (From, To : Name_Id);
    --  Used in the implementation of pragma Rename_Pragma. Maps pragma name
-   --  From to pragma name To, we From can be used as a synonym for To.
+   --  From to pragma name To, so From can be used as a synonym for To.
+
+   Too_Many_Pragma_Mappings : exception;
+   --  Raised if Map_Pragma_Name is called too many times. We expect that few
+   --  programs will use it at all, and those that do will use it approximately
+   --  once or twice.
 
    function Pragma_Name_Mapped (N : Node_Id) return Name_Id;
-   --  ????Work in progress.
+   --  Same as Pragma_Name, except that if From has been mapped to To, and
+   --  Pragma_Name (N) = From, then this returns To.
 
    -----------------------------
    -- Syntactic Parent Tables --

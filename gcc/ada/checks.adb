@@ -2412,8 +2412,7 @@ package body Checks is
          begin
             Prag :=
               Make_Pragma (Loc,
-                Pragma_Identifier            =>
-                  Make_Identifier (Loc, Prag_Nam),
+                Chars => Prag_Nam,
                 Pragma_Argument_Associations => New_List (
                   Make_Pragma_Argument_Association (Loc,
                     Chars      => Name_Check,

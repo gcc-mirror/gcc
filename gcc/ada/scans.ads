@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,10 +44,6 @@ package Scans is
    --  The following type is used to identify token types returned by Scan.
    --  The class column in this table indicates the token classes which
    --  apply to the token, as defined by subsequent subtype declarations.
-
-   --  Note: Namet.Is_Keyword_Name depends on the fact that the first entry in
-   --  this type declaration is *not* for a reserved word. For details on why
-   --  there is this requirement, see Initialize_Ada_Keywords below.
 
    type Token_Type is (
 
@@ -227,6 +223,11 @@ package Scans is
       No_Token);
       --  No_Token is used for initializing Token values to indicate that
       --  no value has been set yet.
+
+   function Keyword_Name (Token : Token_Type) return Name_Id;
+   --  Given a token that is a reserved word, return the corresponding Name_Id
+   --  in lower case. E.g. Keyword_Name (Tok_Begin) = Name_Find ("begin").
+   --  It is an error to pass any other kind of token.
 
    --  Note: in the RM, operator symbol is a special case of string literal.
    --  We distinguish at the lexical level in this compiler, since there are

@@ -3901,7 +3901,7 @@ package body Exp_Util is
 
       begin
          if Nkind (N) = N_Pragma
-           and then Get_Pragma_Id (Pragma_Name (N)) = Pragma_Annotate
+           and then Get_Pragma_Id (N) = Pragma_Annotate
            and then List_Length (Pragma_Argument_Associations (N)) = 2
          then
             declare
@@ -6856,7 +6856,7 @@ package body Exp_Util is
 
       return
         Make_Pragma (Loc,
-          Pragma_Identifier            => Make_Identifier (Loc, Name_Check),
+          Chars                        => Name_Check,
           Pragma_Argument_Associations => Arg_List);
    end Make_Predicate_Check;
 

@@ -1306,7 +1306,7 @@ package body Sem_Attr is
             if Nkind (Prag) = N_Aspect_Specification then
                Prag_Nam := Chars (Identifier (Prag));
             else
-               Prag_Nam := Pragma_Name (Prag);
+               Prag_Nam := Pragma_Name_Mapped (Prag);
             end if;
 
             if Prag_Nam = Name_Check then

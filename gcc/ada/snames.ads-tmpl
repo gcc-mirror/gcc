@@ -796,6 +796,7 @@ package Snames is
    Name_Proof_In                       : constant Name_Id := N + $;
    Name_Reason                         : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;
+   Name_Renamed                        : constant Name_Id := N + $;
    Name_Requires                       : constant Name_Id := N + $;
    Name_Restricted                     : constant Name_Id := N + $;
    Name_Result_Mechanism               : constant Name_Id := N + $;
