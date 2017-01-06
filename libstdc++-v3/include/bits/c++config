@@ -423,7 +423,7 @@ namespace std
 #endif
 
 // Debug Mode implies checking assertions.
-#ifdef _GLIBCXX_DEBUG
+#if defined(_GLIBCXX_DEBUG) && !defined(_GLIBCXX_ASSERTIONS)
 # define _GLIBCXX_ASSERTIONS 1
 #endif
 
