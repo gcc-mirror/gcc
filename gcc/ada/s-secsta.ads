@@ -42,10 +42,6 @@ package System.Secondary_Stack is
    --  which causes the binder to generate an appropriate assignment in the
    --  binder generated file.
 
-   function Minimum_Secondary_Stack_Size return Natural;
-   --  The minimum size of the secondary stack so that the internal
-   --  requirements of the stack are met.
-
    procedure SS_Init
      (Stk  : in out Address;
       Size : Natural := Default_Secondary_Stack_Size);

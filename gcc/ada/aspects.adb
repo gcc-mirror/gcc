@@ -599,7 +599,6 @@ package body Aspects is
     Aspect_Read                         => Aspect_Read,
     Aspect_Relative_Deadline            => Aspect_Relative_Deadline,
     Aspect_Scalar_Storage_Order         => Aspect_Scalar_Storage_Order,
-    Aspect_Secondary_Stack_Size         => Aspect_Secondary_Stack_Size,
     Aspect_Shared                       => Aspect_Atomic,
     Aspect_Shared_Passive               => Aspect_Shared_Passive,
     Aspect_Simple_Storage_Pool          => Aspect_Simple_Storage_Pool,

@@ -1,3 +1,11 @@
+2017-01-06  Patrick Bernardi  <bernardi@adacore.com>
+
+	* aspects.adb, aspects.ads, exp_ch3.adb, exp_ch9.adb, par-prag.adb,
+	sem_ch13.adb, sem_prag.adb, sem_prag.ads, snames.adb-tmpl,
+	snames.ads-tmpl, s-secsta.adb, s-secsta.ads, s-tarest.adb,
+	s-tarest.ads, s-taskin.adb, s-taskin.ads, s-tassta.adb, s-tassta.ads:
+	Reverted previous change for now.
+
 2017-01-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Build_Initialization_Call): Apply predicate

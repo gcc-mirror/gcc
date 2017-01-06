@@ -11553,15 +11553,14 @@ package body Exp_Ch9 is
    --  values of this task. The general form of this type declaration is
 
    --    type taskV (discriminants) is record
-   --      _Task_Id              : Task_Id;
-   --      entry_family          : array (bounds) of Void;
-   --      _Priority             : Integer            := priority_expression;
-   --      _Size                 : Size_Type          := size_expression;
-   --      _Secondary_Stack_Size : Size_Type          := size_expression;
-   --      _Task_Info            : Task_Info_Type     := task_info_expression;
-   --      _CPU                  : Integer            := cpu_range_expression;
-   --      _Relative_Deadline    : Time_Span          := time_span_expression;
-   --      _Domain               : Dispatching_Domain := dd_expression;
+   --      _Task_Id           : Task_Id;
+   --      entry_family       : array (bounds) of Void;
+   --      _Priority          : Integer            := priority_expression;
+   --      _Size              : Size_Type          := size_expression;
+   --      _Task_Info         : Task_Info_Type     := task_info_expression;
+   --      _CPU               : Integer            := cpu_range_expression;
+   --      _Relative_Deadline : Time_Span          := time_span_expression;
+   --      _Domain            : Dispatching_Domain := dd_expression;
    --    end record;
 
    --  The discriminants are present only if the corresponding task type has
@@ -11584,13 +11583,6 @@ package body Exp_Ch9 is
    --  task definition. The expression captures the argument that was present
    --  in the pragma, and is used to override the task stack size otherwise
    --  associated with the task type.
-
-   --  The _Secondary_Stack_Size field is present only the task entity has a
-   --  Secondary_Stack_Size rep item. It will be filled at the freeze point,
-   --  when the record init proc is built, to capture the expression of the
-   --  rep item (see Build_Record_Init_Proc in Exp_Ch3). Note that it cannot
-   --  be filled here since aspect evaluations are delayed till the freeze
-   --  point.
 
    --  The _Priority field is present only if the task entity has a Priority or
    --  Interrupt_Priority rep item (pragma, aspect specification or attribute
@@ -11929,24 +11921,6 @@ package body Exp_Ch9 is
                    Expression (First (
                      Pragma_Argument_Associations (
                        Get_Rep_Pragma (TaskId, Name_Storage_Size))))))));
-      end if;
-
-      --  Add the _Secondary_Stack_Size component if a
-      --  Secondary_Stack_Size rep item is present.
-
-      if Has_Rep_Item (TaskId, Name_Secondary_Stack_Size,
-                       Check_Parents => False)
-      then
-         Append_To (Cdecls,
-           Make_Component_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uSecondary_Stack_Size),
-
-             Component_Definition =>
-               Make_Component_Definition (Loc,
-                 Aliased_Present    => False,
-                 Subtype_Indication =>
-                   New_Occurrence_Of (RTE (RE_Size_Type), Loc))));
       end if;
 
       --  Add the _Task_Info component if a Task_Info pragma is present
@@ -14138,29 +14112,6 @@ package body Exp_Ch9 is
       else
          Append_To (Args,
            New_Occurrence_Of (Storage_Size_Variable (Ttyp), Loc));
-      end if;
-
-      --  Secondary_Stack_Size parameter. Set Default_Secondary_Stack_Size
-      --  unless there is a Secondary_Stack_Size rep item, in which case we
-      --  take the value from the rep item. If the restriction
-      --  No_Secondary_Stack is active then a size of 0 is passed regardless
-      --  to prevent the allocation of the unused stack.
-
-      if Restriction_Active (No_Secondary_Stack) then
-         Append_To (Args, Make_Integer_Literal (Loc, 0));
-
-      elsif Has_Rep_Item (Ttyp, Name_Secondary_Stack_Size,
-                       Check_Parents => False)
-      then
-         Append_To (Args,
-             Make_Selected_Component (Loc,
-               Prefix        => Make_Identifier (Loc, Name_uInit),
-               Selector_Name =>
-                 Make_Identifier (Loc, Name_uSecondary_Stack_Size)));
-
-      else
-         Append_To (Args,
-           New_Occurrence_Of (RTE (RE_Unspecified_Size), Loc));
       end if;
 
       --  Task_Info parameter. Set to Unspecified_Task_Info unless there is a

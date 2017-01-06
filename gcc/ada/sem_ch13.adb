@@ -2065,7 +2065,6 @@ package body Sem_Ch13 is
                     Aspect_Scalar_Storage_Order |
                     Aspect_Size                 |
                     Aspect_Small                |
-                    Aspect_Secondary_Stack_Size |
                     Aspect_Simple_Storage_Pool  |
                     Aspect_Storage_Pool         |
                     Aspect_Stream_Size          |
@@ -2429,7 +2428,7 @@ package body Sem_Ch13 is
                         end if;
                      end;
 
-                     --  Handling for these aspects in subprograms is complete
+                     --  Handling for these Aspects in subprograms is complete
 
                      goto Continue;
 
@@ -5696,47 +5695,6 @@ package body Sem_Ch13 is
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
          end Scalar_Storage_Order;
-
-         --------------------------
-         -- Secondary_Stack_Size --
-         --------------------------
-
-         when Attribute_Secondary_Stack_Size => Secondary_Stack_Size :
-         begin
-            --  Secondary_Stack_Size attribute definition clause not allowed
-            --  except from aspect specification.
-
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N ("Secondary Stack Size can only be " &
-                               "defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  Check_Restriction (No_Secondary_Stack, Expr);
-
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the discriminants must be restored
-
-                  Push_Scope_And_Install_Discriminants (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, Any_Integer);
-                  Uninstall_Discriminants_And_Pop_Scope (U_Ent);
-
-                  if not Is_OK_Static_Expression (Expr) then
-                     Check_Restriction (Static_Storage_Size, Expr);
-                  end if;
-               end if;
-
-            else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
-            end if;
-         end Secondary_Stack_Size;
 
          ----------
          -- Size --
@@ -9190,9 +9148,6 @@ package body Sem_Ch13 is
 
          when Aspect_Relative_Deadline =>
             T := RTE (RE_Time_Span);
-
-         when Aspect_Secondary_Stack_Size =>
-            T := Standard_Integer;
 
          when Aspect_Small =>
             T := Universal_Real;
