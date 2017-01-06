@@ -347,7 +347,11 @@ package body Sem_Eval is
 
       --  Here we have a static predicate (note that it could have arisen from
       --  an explicitly specified Dynamic_Predicate whose expression met the
-      --  rules for being predicate-static).
+      --  rules for being predicate-static). If the expression is known at
+      --  compile time and obeys the predicate, then it is static and must be
+      --  labeled as such, which matters e.g. for case statements. The original
+      --  expression may be a type conversion of a variable with a known value,
+      --  which might otherwise not be marked static.
 
       --  Case of real static predicate
 
@@ -356,6 +360,7 @@ package body Sem_Eval is
               (Val => Make_Real_Literal (Sloc (Expr), Expr_Value_R (Expr)),
                Typ => Typ)
          then
+            Set_Is_Static_Expression (Expr);
             return;
          end if;
 
@@ -365,6 +370,7 @@ package body Sem_Eval is
          if Real_Or_String_Static_Predicate_Matches
               (Val => Expr_Value_S (Expr), Typ => Typ)
          then
+            Set_Is_Static_Expression (Expr);
             return;
          end if;
 
@@ -376,6 +382,7 @@ package body Sem_Eval is
          --  If static predicate matches, nothing to do
 
          if Choices_Match (Expr, Static_Discrete_Predicate (Typ)) = Match then
+            Set_Is_Static_Expression (Expr);
             return;
          end if;
       end if;

@@ -1,3 +1,16 @@
+2017-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Check_Expression_Against_Static_Predicate):
+	If expression is compile-time known and obeys a static predicate
+	it must be labelled as static, to prevent spurious warnings and
+	run-time errors, e.g. in case statements. This is relevant when
+	the expression is the result of constant-folding a type conversion
+	whose expression is a variable with a known static value.
+
+2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb, sem_attr.ads: Minor reformatting.
+
 2017-01-06  Justin Squirek  <squirek@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): Add entry for
