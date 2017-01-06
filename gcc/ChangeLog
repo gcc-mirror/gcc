@@ -7,7 +7,7 @@
 
 2017-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* doc/invoke.texi (C Dialect Options): Document it.
+	* doc/invoke.texi (C Dialect Options): Adjust -fsso-struct entry.
 
 2017-01-05  Jakub Jelinek  <jakub@redhat.com>
 
