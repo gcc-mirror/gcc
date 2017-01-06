@@ -1255,7 +1255,7 @@ rtx_reader::read_rtx_code (const char *code_name)
   if (strcmp (code_name, "reuse_rtx") == 0)
     {
       read_name (&name);
-      long idx = atoi (name.string);
+      unsigned idx = atoi (name.string);
       /* Look it up by ID.  */
       gcc_assert (idx < m_reuse_rtx_by_id.length ());
       return_rtx = m_reuse_rtx_by_id[idx];
