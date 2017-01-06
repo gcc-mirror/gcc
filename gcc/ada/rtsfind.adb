@@ -1351,7 +1351,7 @@ package body Rtsfind is
       --  is System. If so, return the value from the already compiled
       --  declaration and otherwise do a regular find.
 
-      --  Not pleasant, but these kinds of annoying recursion when
+      --  Not pleasant, but these kinds of annoying recursion senarios when
       --  writing an Ada compiler in Ada have to be broken somewhere.
 
       if Present (Main_Unit_Entity)

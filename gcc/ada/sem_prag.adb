@@ -17659,6 +17659,86 @@ package body Sem_Prag is
             end loop;
          end Main_Storage;
 
+         ----------------------
+         -- Max_Queue_Length --
+         ----------------------
+
+         --  pragma Max_Queue_Length (static_integer_EXPRESSION);
+
+         when Pragma_Max_Queue_Length => Max_Queue_Length : declare
+            Arg        : Node_Id;
+            Entry_Decl : Node_Id;
+            Entry_Id   : Entity_Id;
+            Val        : Uint;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+
+            Entry_Decl :=
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
+
+            --  Entry declaration
+
+            if Nkind (Entry_Decl) = N_Entry_Declaration then
+
+               --  Entry illegally within a task
+
+               if Nkind (Parent (N)) = N_Task_Definition then
+                  Error_Pragma ("pragma % cannot apply to task entries");
+                  return;
+               end if;
+
+               Entry_Id := Unique_Defining_Entity (Entry_Decl);
+
+               --  Pragma illegally applied to an entry family
+
+               if Ekind (Entry_Id) = E_Entry_Family then
+                  Error_Pragma ("pragma % cannot apply to entry families");
+                  return;
+               end if;
+
+            --  Otherwise the pragma is associated with an illegal construct
+
+            else
+               Error_Pragma ("pragma % must apply to a protected entry");
+               return;
+            end if;
+
+            --  Mark the pragma as Ghost if the related subprogram is also
+            --  Ghost. This also ensures that any expansion performed further
+            --  below will produce Ghost nodes.
+
+            Mark_Pragma_As_Ghost (N, Entry_Id);
+
+            --  Analyze the Integer expression
+
+            Arg := Get_Pragma_Arg (Arg1);
+            Check_Arg_Is_OK_Static_Expression (Arg, Any_Integer);
+
+            Val := Expr_Value (Arg);
+
+            if Val <= 0 then
+               Error_Pragma_Arg
+                 ("argument for pragma% must be positive", Arg1);
+
+            elsif not UI_Is_In_Int_Range (Val) then
+               Error_Pragma_Arg
+                 ("argument for pragma% out of range of Integer", Arg1);
+
+            end if;
+
+            --  Manually subsitute the expression value of the pragma argument
+            --  if it not an integer literally because this is not taken care
+            --  of automatically elsewhere.
+
+            if Nkind (Arg) /= N_Integer_Literal then
+               Rewrite (Arg, Make_Integer_Literal (Sloc (Arg), Val));
+            end if;
+
+            Record_Rep_Item (Entry_Id, N);
+         end Max_Queue_Length;
+
          -----------------
          -- Memory_Size --
          -----------------
@@ -28642,6 +28722,7 @@ package body Sem_Prag is
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,
+      Pragma_Max_Queue_Length               =>  0,
       Pragma_Memory_Size                    =>  0,
       Pragma_No_Return                      =>  0,
       Pragma_No_Body                        =>  0,

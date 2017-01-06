@@ -1154,6 +1154,11 @@ package Einfo is
 --       accept statement for a member of the family, and in the prefix of
 --       'COUNT when it applies to a family member.
 
+--    Entry_Max_Queue_Lengths_Array (Node35)
+--       Defined in protected types for which Has_Entries is true. Contains the
+--       defining identifier for the array of naturals used by the runtime to
+--       limit the queue size of each entry individually.
+
 --    Entry_Parameters_Type (Node15)
 --       Defined in entries. Points to the access-to-record type that is
 --       constructed by the expander to hold a reference to the parameter
@@ -6381,6 +6386,7 @@ package Einfo is
    --    Stored_Constraint                   (Elist23)
    --    Anonymous_Object                    (Node30)
    --    Contract                            (Node34)
+   --    Entry_Max_Queue_Lengths_Array       (Node35)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Sec_Stack_Needed_For_Return         (Flag167)  ???
@@ -6928,6 +6934,7 @@ package Einfo is
    function Entry_Formal                        (Id : E) return E;
    function Entry_Index_Constant                (Id : E) return E;
    function Entry_Index_Type                    (Id : E) return E;
+   function Entry_Max_Queue_Lengths_Array       (Id : E) return E;
    function Entry_Parameters_Type               (Id : E) return E;
    function Enum_Pos_To_Rep                     (Id : E) return E;
    function Enumeration_Pos                     (Id : E) return U;
@@ -7608,6 +7615,7 @@ package Einfo is
    procedure Set_Entry_Component                 (Id : E; V : E);
    procedure Set_Entry_Formal                    (Id : E; V : E);
    procedure Set_Entry_Index_Constant            (Id : E; V : E);
+   procedure Set_Entry_Max_Queue_Lengths_Array   (Id : E; V : E);
    procedure Set_Entry_Parameters_Type           (Id : E; V : E);
    procedure Set_Enum_Pos_To_Rep                 (Id : E; V : E);
    procedure Set_Enumeration_Pos                 (Id : E; V : U);
@@ -8921,6 +8929,7 @@ package Einfo is
    pragma Inline (Set_Entry_Cancel_Parameter);
    pragma Inline (Set_Entry_Component);
    pragma Inline (Set_Entry_Formal);
+   pragma Inline (Set_Entry_Max_Queue_Lengths_Array);
    pragma Inline (Set_Entry_Parameters_Type);
    pragma Inline (Set_Enum_Pos_To_Rep);
    pragma Inline (Set_Enumeration_Pos);

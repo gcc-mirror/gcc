@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,12 @@ package System.Tasking.Protected_Objects.Entries is
 
    type Protected_Entry_Queue_Array is
      array (Protected_Entry_Index range <>) of Entry_Queue;
+
+   type Protected_Entry_Queue_Max_Array is
+     array (Positive_Protected_Entry_Index range <>) of Natural;
+
+   type Protected_Entry_Queue_Max_Access is
+     access all Protected_Entry_Queue_Max_Array;
 
    --  The following declarations define an array that contains the string
    --  names of entries and entry family members, together with an associated
@@ -144,6 +150,10 @@ package System.Tasking.Protected_Objects.Entries is
 
       Entry_Queues : Protected_Entry_Queue_Array (1 .. Num_Entries);
 
+      Entry_Queue_Maxs : Protected_Entry_Queue_Max_Access;
+      --  Access to an array of naturals representing the max value for
+      --  each entry's queue length. A value of 0 signifies no max.
+
       Entry_Names : Protected_Entry_Names_Access := null;
       --  An array of string names which denotes entry [family member] names.
       --  The structure is indexed by protected entry index and contains Num_
@@ -178,6 +188,7 @@ package System.Tasking.Protected_Objects.Entries is
      (Object           : Protection_Entries_Access;
       Ceiling_Priority : Integer;
       Compiler_Info    : System.Address;
+      Entry_Queue_Maxs : Protected_Entry_Queue_Max_Access;
       Entry_Bodies     : Protected_Entry_Body_Access;
       Find_Body_Index  : Find_Body_Index_Access);
    --  Initialize the Object parameter so that it can be used by the runtime

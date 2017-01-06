@@ -8351,6 +8351,24 @@ package body Sem_Util is
       pragma Assert (Name_Buffer (Name_Len + 1) = ' ');
    end Get_Library_Unit_Name_String;
 
+   --------------------------
+   -- Get_Max_Queue_Length --
+   --------------------------
+
+   function Get_Max_Queue_Length (Id : Entity_Id) return Uint is
+      Prag : constant Entity_Id := Get_Pragma (Id, Pragma_Max_Queue_Length);
+
+   begin
+      --  A value of 0 represents no maximum specified and entries and entry
+      --  families with no Max_Queue_Length aspect or pragma defaults to it.
+
+      if not Has_Max_Queue_Length (Id) or else not Present (Prag) then
+         return Uint_0;
+      end if;
+
+      return Intval (Expression (First (Pragma_Argument_Associations (Prag))));
+   end Get_Max_Queue_Length;
+
    ------------------------
    -- Get_Name_Entity_Id --
    ------------------------
@@ -9648,15 +9666,25 @@ package body Sem_Util is
       return False;
    end Has_Interfaces;
 
+   --------------------------
+   -- Has_Max_Queue_Length --
+   --------------------------
+
+   function Has_Max_Queue_Length (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind (Id) = E_Entry
+          and then Present (Get_Pragma (Id, Pragma_Max_Queue_Length));
+   end Has_Max_Queue_Length;
+
    ---------------------------------
    -- Has_No_Obvious_Side_Effects --
    ---------------------------------
 
    function Has_No_Obvious_Side_Effects (N : Node_Id) return Boolean is
    begin
-      --  For now, just handle literals, constants, and non-volatile
-      --  variables and expressions combining these with operators or
-      --  short circuit forms.
+      --  For now handle literals, constants, and non-volatile variables and
+      --  expressions combining these with operators or short circuit forms.
 
       if Nkind (N) in N_Numeric_Or_String_Literal then
          return True;

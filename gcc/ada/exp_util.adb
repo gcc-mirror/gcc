@@ -4912,35 +4912,28 @@ package body Exp_Util is
          --    Obj.Func (Formal => Actual) N_Function_Call, whose Name is an
          --                                N_Selected_Component
 
-         case Nkind (Expr) is
-            when N_Function_Call =>
+         loop
+            if Nkind (Expr) = N_Function_Call then
                Expr := Name (Expr);
-
-               --  Check for "Obj.Func (Formal => Actual)" case
-
-               if Nkind (Expr) = N_Selected_Component then
-                  Expr := Selector_Name (Expr);
-               end if;
 
             --  "Obj.Func (Actual)" case
 
-            when N_Indexed_Component =>
+            elsif Nkind (Expr) = N_Indexed_Component then
                Expr := Prefix (Expr);
 
-               if Nkind (Expr) = N_Selected_Component then
-                  Expr := Selector_Name (Expr);
-               end if;
+            --  "Obj.Func" or "Obj.Func (Formal => Actual) case
 
-            --  "Obj.Func" case
-
-            when N_Selected_Component =>
+            elsif Nkind (Expr) = N_Selected_Component then
                Expr := Selector_Name (Expr);
 
-            when others => null;
-         end case;
+            else
+               exit;
+            end if;
+         end loop;
 
          return
-           Nkind_In (Expr, N_Expanded_Name, N_Identifier)
+           Nkind (Expr) in N_Has_Entity
+             and then Present (Entity (Expr))
              and then Ekind (Entity (Expr)) = E_Function
              and then Needs_Finalization (Etype (Entity (Expr)));
       end Is_Controlled_Function_Call;

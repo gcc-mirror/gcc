@@ -931,6 +931,10 @@ package Sem_Util is
    --  Retrieve the fully expanded name of the library unit declared by
    --  Decl_Node into the name buffer.
 
+   function Get_Max_Queue_Length (Id : Entity_Id) return Uint;
+   --  Return the argument of pragma Max_Queue_Length or zero if the annotation
+   --  is not present. It is assumed that Id denotes an entry.
+
    function Get_Name_Entity_Id (Id : Name_Id) return Entity_Id;
    pragma Inline (Get_Name_Entity_Id);
    --  An entity value is associated with each name in the name table. The
@@ -1103,6 +1107,10 @@ package Sem_Util is
    --  any abstract interface types. In case of private types the argument
    --  Use_Full_View controls if the check is done using its full view (if
    --  available).
+
+   function Has_Max_Queue_Length (Id : Entity_Id) return Boolean;
+   --  Determine whether Id is subject to pragma Max_Queue_Length. It is
+   --  assumed that Id denotes an entry.
 
    function Has_No_Obvious_Side_Effects (N : Node_Id) return Boolean;
    --  This is a simple minded function for determining whether an expression

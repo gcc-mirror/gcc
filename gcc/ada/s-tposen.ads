@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,10 +182,16 @@ package System.Tasking.Protected_Objects.Single_Entry is
 
    type Protection_Entry_Access is access all Protection_Entry;
 
+   type Protected_Entry_Queue_Max is new Natural;
+
+   type Protected_Entry_Queue_Max_Access is
+     access all Protected_Entry_Queue_Max;
+
    procedure Initialize_Protection_Entry
      (Object            : Protection_Entry_Access;
       Ceiling_Priority  : Integer;
       Compiler_Info     : System.Address;
+      Entry_Queue_Max   : Protected_Entry_Queue_Max_Access;
       Entry_Body        : Entry_Body_Access);
    --  Initialize the Object parameter so that it can be used by the run time
    --  to keep track of the runtime state of a protected object.
@@ -270,6 +276,10 @@ private
 
       Entry_Queue : Entry_Call_Link;
       --  Place to store the waiting entry call (if any)
+
+      Entry_Queue_Max : Protected_Entry_Queue_Max_Access;
+      --  Access to a natural representing the max value for the single
+      --  entry's queue length. A value of 0 signifies no max.
    end record;
 
 end System.Tasking.Protected_Objects.Single_Entry;

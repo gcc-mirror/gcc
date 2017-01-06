@@ -116,6 +116,7 @@ package Aspects is
       Aspect_Link_Name,
       Aspect_Linker_Section,                -- GNAT
       Aspect_Machine_Radix,
+      Aspect_Max_Queue_Length,              -- GNAT
       Aspect_Object_Size,                   -- GNAT
       Aspect_Obsolescent,                   -- GNAT
       Aspect_Output,
@@ -247,6 +248,7 @@ package Aspects is
       Aspect_Inline_Always              => True,
       Aspect_Invariant                  => True,
       Aspect_Lock_Free                  => True,
+      Aspect_Max_Queue_Length           => True,
       Aspect_Object_Size                => True,
       Aspect_Persistent_BSS             => True,
       Aspect_Predicate                  => True,
@@ -353,6 +355,7 @@ package Aspects is
       Aspect_Link_Name                  => Expression,
       Aspect_Linker_Section             => Expression,
       Aspect_Machine_Radix              => Expression,
+      Aspect_Max_Queue_Length           => Expression,
       Aspect_Object_Size                => Expression,
       Aspect_Obsolescent                => Optional_Expression,
       Aspect_Output                     => Name,
@@ -460,6 +463,7 @@ package Aspects is
       Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
       Aspect_Machine_Radix                => Name_Machine_Radix,
+      Aspect_Max_Queue_Length             => Name_Max_Queue_Length,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
       Aspect_No_Return                    => Name_No_Return,
       Aspect_No_Tagged_Streams            => Name_No_Tagged_Streams,
@@ -731,6 +735,7 @@ package Aspects is
       Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
+      Aspect_Max_Queue_Length             => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,
       Aspect_No_Tagged_Streams            => Never_Delay,
       Aspect_Obsolescent                  => Never_Delay,
