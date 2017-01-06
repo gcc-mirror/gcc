@@ -42,14 +42,12 @@ ACLOCAL_AMFLAGS = -I ./config -I ../config
 
 AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
 	$(SPLIT_STACK) $(WARN_CFLAGS) \
-	$(STRINGOPS_FLAG) $(OSCFLAGS) \
+	$(STRINGOPS_FLAG) $(HWCAP_CFLAGS) $(OSCFLAGS) \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
 	-I $(MULTIBUILDTOP)../../gcc/include
 
-AM_LDFLAGS = $(HWCAP_LDFLAGS)
-
 if USING_SPLIT_STACK
-AM_LDFLAGS += -XCClinker $(SPLIT_STACK)
+AM_LDFLAGS = -XCClinker $(SPLIT_STACK)
 endif
 
 # Multilib support.

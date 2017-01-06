@@ -421,8 +421,8 @@ case "$target" in
 esac
 AC_SUBST(OSCFLAGS)
 
-dnl Check linker hardware capability support.
-GCC_CHECK_LINKER_HWCAP
+dnl Check if assembler supports disabling hardware capability support.
+GCC_CHECK_ASSEMBLER_HWCAP
 
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
