@@ -1,3 +1,7 @@
+2017-01-06  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+	* gcc.dg/memcmp-1.c: New.
+	* gcc.dg/strncmp-1.c: New.
+
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/acle/mcrr: New.
