@@ -415,7 +415,13 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
-      if Bind_Main_Program and not CodePeer_Mode then
+      --  Call s_stalib_adafinal to await termination of tasks and so on. We
+      --  want to do this if there is a main program, either in Ada or in some
+      --  other language. (Note that Bind_Main_Program is True for Ada mains,
+      --  but False for mains in other languages.) We do not want to do this if
+      --  we're binding a library.
+
+      if not Bind_For_Library and not CodePeer_Mode then
          WBI ("      procedure s_stalib_adafinal;");
          Set_String ("      pragma Import (C, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
@@ -442,7 +448,7 @@ package body Bindgen is
       --  on whether this is the main program or a library.
 
       if not CodePeer_Mode then
-         if Bind_Main_Program then
+         if not Bind_For_Library then
             WBI ("      s_stalib_adafinal;");
          elsif Lib_Final_Built then
             WBI ("      finalize_library;");
@@ -906,7 +912,7 @@ package body Bindgen is
       --  tasks are non-terminating, so we do not want library-level
       --  finalization.
 
-      elsif Bind_Main_Program
+      elsif not Bind_For_Library
         and then not Configurable_Run_Time_On_Target
         and then not Suppress_Standard_Library_On_Target
       then

@@ -19042,7 +19042,6 @@ package body Sem_Prag is
          --           [New_Name =>] IDENTIFIER,
          --           [Renamed  =>] pragma_IDENTIFIER);
 
-         pragma Warnings (Off);
          when Pragma_Rename_Pragma => Rename_Pragma : declare
             New_Name : constant Node_Id := Get_Pragma_Arg (Arg1);
             Old_Name : constant Node_Id := Get_Pragma_Arg (Arg2);
@@ -19076,7 +19075,6 @@ package body Sem_Prag is
 
             Map_Pragma_Name (From => Chars (New_Name), To => Chars (Old_Name));
          end Rename_Pragma;
-         pragma Warnings (On);
 
          -------------
          -- Polling --
