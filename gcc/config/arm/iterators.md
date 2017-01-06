@@ -976,3 +976,15 @@
 
 (define_int_attr mrc [(VUNSPEC_MRC "mrc") (VUNSPEC_MRC2 "mrc2")])
 (define_int_attr MRC [(VUNSPEC_MRC "MRC") (VUNSPEC_MRC2 "MRC2")])
+
+;; An iterator for the MCRR coprocessor instructions
+(define_int_iterator MCRRI [VUNSPEC_MCRR VUNSPEC_MCRR2])
+
+(define_int_attr mcrr [(VUNSPEC_MCRR "mcrr") (VUNSPEC_MCRR2 "mcrr2")])
+(define_int_attr MCRR [(VUNSPEC_MCRR "MCRR") (VUNSPEC_MCRR2 "MCRR2")])
+
+;; An iterator for the MRRC coprocessor instructions
+(define_int_iterator MRRCI [VUNSPEC_MRRC VUNSPEC_MRRC2])
+
+(define_int_attr mrrc [(VUNSPEC_MRRC "mrrc") (VUNSPEC_MRRC2 "mrrc2")])
+(define_int_attr MRRC [(VUNSPEC_MRRC "MRRC") (VUNSPEC_MRRC2 "MRRC2")])
