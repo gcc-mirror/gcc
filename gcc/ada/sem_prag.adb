@@ -7704,8 +7704,7 @@ package body Sem_Prag is
 
          Rewrite (N,
            Make_Pragma (Loc,
-             Pragma_Identifier            =>
-               Make_Identifier (Loc, Nam),
+             Chars                        => Nam,
              Pragma_Argument_Associations => New_List (
                Make_Pragma_Argument_Association (Loc,
                  Expression =>
@@ -16565,8 +16564,8 @@ package body Sem_Prag is
                   if Is_Imported (Def_Id)
                     and then Present (First_Rep_Item (Def_Id))
                     and then Nkind (First_Rep_Item (Def_Id)) = N_Pragma
-                    and then
-                      Pragma_Name (First_Rep_Item (Def_Id)) = Name_Interface
+                    and then Pragma_Name (First_Rep_Item (Def_Id)) =
+                      Name_Interface
                   then
                      null;
                   else
@@ -19035,6 +19034,29 @@ package body Sem_Prag is
             end if;
          end Persistent_BSS;
 
+         --------------------
+         -- Rename_Pragma --
+         --------------------
+
+         --  pragma Rename_Pragma (
+         --           [New_Name =>] IDENTIFIER,
+         --           [Renames  =>] pragma_IDENTIFIER);
+
+         --  ??? this is work in progress
+
+         pragma Warnings (Off);
+         when Pragma_Rename_Pragma => Rename_Pragma : declare
+            GNAT_Pragma_Arg : constant Node_Id := Get_Pragma_Arg (Arg2);
+            Synonym         : constant Node_Id := Get_Pragma_Arg (Arg1);
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (2);
+            Check_Optional_Identifier (Arg1, Name_New_Name);
+            Check_Optional_Identifier (Arg2, Name_Renames);
+         end Rename_Pragma;
+         pragma Warnings (On);
+
          -------------
          -- Polling --
          -------------
@@ -19672,7 +19694,7 @@ package body Sem_Prag is
 
                Import :=
                  Make_Pragma (Loc,
-                   Pragma_Identifier => Make_Identifier (Loc, Name_Import),
+                   Chars                        => Name_Import,
                    Pragma_Argument_Associations => New_List (
                      Make_Pragma_Argument_Association (Loc,
                        Expression => Make_Identifier (Loc, Name_Intrinsic)),
@@ -28766,6 +28788,7 @@ package body Sem_Prag is
       Pragma_Refined_Post                   => -1,
       Pragma_Refined_State                  => -1,
       Pragma_Relative_Deadline              =>  0,
+      Pragma_Rename_Pragma                  =>  0,
       Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,
       Pragma_Remote_Types                   => -1,

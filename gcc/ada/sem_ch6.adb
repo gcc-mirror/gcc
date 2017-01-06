@@ -3643,7 +3643,7 @@ package body Sem_Ch6 is
               (Body_Id, Body_Id, 'b', Set_Ref => False, Force => True);
 
             --  If the body is an entry wrapper created for an entry with
-            --  preconditions, it must compiled in the context of the
+            --  preconditions, it must be compiled in the context of the
             --  enclosing synchronized object, because it may mention other
             --  operations of the type.
 
@@ -4018,7 +4018,7 @@ package body Sem_Ch6 is
       End_Scope;
 
       --  If we are compiling an entry wrapper, remove the enclosing
-      --  syncrhonized object from the stack.
+      --  synchronized object from the stack.
 
       if Is_Entry_Wrapper (Body_Id) then
          End_Scope;

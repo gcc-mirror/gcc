@@ -6287,8 +6287,8 @@ package body Sem_Res is
 
       --  A protected function cannot be called within the definition of the
       --  enclosing protected type, unless it is part of a pre/postcondition
-      --  on another protected operation. This may appear in the entry
-      --  wrapper created for an entry with preconditions.
+      --  on another protected operation. This may appear in the entry wrapper
+      --  created for an entry with preconditions.
 
       if Is_Protected_Type (Scope (Nam))
         and then In_Open_Scopes (Scope (Nam))
