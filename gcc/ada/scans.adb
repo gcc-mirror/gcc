@@ -140,7 +140,6 @@ package body Scans is
       --  Ada 2012 reserved words
 
       Set_Reserved (Name_Some, Tok_Some);
-
    end Initialize_Ada_Keywords;
 
    ------------------
@@ -151,6 +150,7 @@ package body Scans is
       Tok : String := Token'Img;
       pragma Assert (Tok (1 .. 4) = "TOK_");
       Name : String renames Tok (5 .. Tok'Last);
+
    begin
       --  Convert to lower case. We don't want to add a dependence on a
       --  general-purpose To_Lower routine, so we convert "by hand" here.
@@ -160,7 +160,7 @@ package body Scans is
          pragma Assert (Name (J) in 'A' .. 'Z');
          Name (J) :=
            Character'Val (Character'Pos (Name (J)) +
-                            (Character'Pos ('a') - Character'Pos ('A')));
+             (Character'Pos ('a') - Character'Pos ('A')));
       end loop;
 
       return Name_Find (Name);
