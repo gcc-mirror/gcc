@@ -158,6 +158,13 @@ arm_load1_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_none, qualifier_struct_load_store_lane_index };
 #define LOAD1LANE_QUALIFIERS (arm_load1_lane_qualifiers)
 
+/* unsigned T (unsigned T, unsigned T, unsigned T).  */
+static enum arm_type_qualifiers
+arm_unsigned_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned };
+#define UBINOP_QUALIFIERS (arm_unsigned_binop_qualifiers)
+
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
    a DImode pointer to the location to store to, so we must use
@@ -243,17 +250,16 @@ typedef struct {
   VAR11 (T, N, A, B, C, D, E, F, G, H, I, J, K) \
   VAR1 (T, N, L)
 
-/* The builtin data can be found in arm_neon_builtins.def,
-   arm_vfp_builtins.def.  The entries in arm_neon_builtins.def require
-   TARGET_NEON to be true.  The feature tests are checked when the
-   builtins are expanded.
+/* The builtin data can be found in arm_neon_builtins.def, arm_vfp_builtins.def
+   and arm_acle_builtins.def.  The entries in arm_neon_builtins.def require
+   TARGET_NEON to be true.  The feature tests are checked when the builtins are
+   expanded.
 
-   The mode entries in the following table correspond to the "key"
-   type of the instruction variant, i.e. equivalent to that which
-   would be specified after the assembler mnemonic, which usually
-   refers to the last vector operand.  The modes listed per
-   instruction should be the same as those defined for that
-   instruction's pattern, for instance in neon.md.  */
+   The mode entries in the following table correspond to the "key" type of the
+   instruction variant, i.e. equivalent to that which would be specified after
+   the assembler mnemonic for neon instructions, which usually refers to the
+   last vector operand.  The modes listed per instruction should be the same as
+   those defined for that instruction's pattern, for instance in neon.md.  */
 
 static arm_builtin_datum vfp_builtin_data[] =
 {
@@ -266,6 +272,15 @@ static arm_builtin_datum neon_builtin_data[] =
 };
 
 #undef CF
+#undef VAR1
+#define VAR1(T, N, A) \
+  {#N, UP (A), CODE_FOR_##N, 0, T##_QUALIFIERS},
+
+static arm_builtin_datum acle_builtin_data[] =
+{
+#include "arm_acle_builtins.def"
+};
+
 #undef VAR1
 
 #define VAR1(T, N, X) \
@@ -519,13 +534,6 @@ enum arm_builtins
 
   ARM_BUILTIN_WMERGE,
 
-  ARM_BUILTIN_CRC32B,
-  ARM_BUILTIN_CRC32H,
-  ARM_BUILTIN_CRC32W,
-  ARM_BUILTIN_CRC32CB,
-  ARM_BUILTIN_CRC32CH,
-  ARM_BUILTIN_CRC32CW,
-
   ARM_BUILTIN_GET_FPSCR,
   ARM_BUILTIN_SET_FPSCR,
 
@@ -559,6 +567,14 @@ enum arm_builtins
 
 #include "arm_neon_builtins.def"
 
+#undef VAR1
+#define VAR1(T, N, X) \
+  ARM_BUILTIN_##N,
+
+  ARM_BUILTIN_ACLE_BASE,
+
+#include "arm_acle_builtins.def"
+
   ARM_BUILTIN_MAX
 };
 
@@ -567,6 +583,9 @@ enum arm_builtins
 
 #define ARM_BUILTIN_NEON_PATTERN_START \
   (ARM_BUILTIN_NEON_BASE + 1)
+
+#define ARM_BUILTIN_ACLE_PATTERN_START \
+  (ARM_BUILTIN_ACLE_BASE + 1)
 
 #undef CF
 #undef VAR1
@@ -1016,7 +1035,7 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
   gcc_assert (ftype != NULL);
 
   if (print_type_signature_p
-      && IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_MAX - 1))
+      && IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_ACLE_BASE - 1))
     snprintf (namebuf, sizeof (namebuf), "%s_%s_%s",
 	      prefix, d->name, type_signature);
   else
@@ -1026,6 +1045,23 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
   fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
 				 NULL, NULL_TREE);
   arm_builtin_decls[fcode] = fndecl;
+}
+
+/* Set up ACLE builtins, even builtins for instructions that are not
+   in the current target ISA to allow the user to compile particular modules
+   with different target specific options that differ from the command line
+   options.  Such builtins will be rejected in arm_expand_builtin.  */
+
+static void
+arm_init_acle_builtins (void)
+{
+  unsigned int i, fcode = ARM_BUILTIN_ACLE_PATTERN_START;
+
+  for (i = 0; i < ARRAY_SIZE (acle_builtin_data); i++, fcode++)
+    {
+      arm_builtin_datum *d = &acle_builtin_data[i];
+      arm_init_builtin (fcode, d, "__builtin_arm");
+    }
 }
 
 /* Set up all the NEON builtins, even builtins for instructions that are not
@@ -1302,18 +1338,6 @@ static const struct builtin_description bdesc_2arg[] =
   FP_BUILTIN (get_fpscr, GET_FPSCR)
   FP_BUILTIN (set_fpscr, SET_FPSCR)
 #undef FP_BUILTIN
-
-#define CRC32_BUILTIN(L, U) \
-  {isa_nobit, CODE_FOR_##L, "__builtin_arm_"#L, \
-   ARM_BUILTIN_##U, UNKNOWN, 0},
-   CRC32_BUILTIN (crc32b, CRC32B)
-   CRC32_BUILTIN (crc32h, CRC32H)
-   CRC32_BUILTIN (crc32w, CRC32W)
-   CRC32_BUILTIN (crc32cb, CRC32CB)
-   CRC32_BUILTIN (crc32ch, CRC32CH)
-   CRC32_BUILTIN (crc32cw, CRC32CW)
-#undef CRC32_BUILTIN
-
 
 #define CRYPTO_BUILTIN(L, U)					   \
   {isa_nobit, CODE_FOR_crypto_##L,	"__builtin_arm_crypto_"#L, \
@@ -1771,42 +1795,6 @@ arm_init_fp16_builtins (void)
 					       "__fp16");
 }
 
-static void
-arm_init_crc32_builtins ()
-{
-  tree si_ftype_si_qi
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intQI_type_node, NULL_TREE);
-  tree si_ftype_si_hi
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intHI_type_node, NULL_TREE);
-  tree si_ftype_si_si
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intSI_type_node, NULL_TREE);
-
-  arm_builtin_decls[ARM_BUILTIN_CRC32B]
-    = add_builtin_function ("__builtin_arm_crc32b", si_ftype_si_qi,
-                            ARM_BUILTIN_CRC32B, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32H]
-    = add_builtin_function ("__builtin_arm_crc32h", si_ftype_si_hi,
-                            ARM_BUILTIN_CRC32H, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32W]
-    = add_builtin_function ("__builtin_arm_crc32w", si_ftype_si_si,
-                            ARM_BUILTIN_CRC32W, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CB]
-    = add_builtin_function ("__builtin_arm_crc32cb", si_ftype_si_qi,
-                            ARM_BUILTIN_CRC32CB, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CH]
-    = add_builtin_function ("__builtin_arm_crc32ch", si_ftype_si_hi,
-                            ARM_BUILTIN_CRC32CH, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CW]
-    = add_builtin_function ("__builtin_arm_crc32cw", si_ftype_si_si,
-                            ARM_BUILTIN_CRC32CW, BUILT_IN_MD, NULL, NULL_TREE);
-}
-
 void
 arm_init_builtins (void)
 {
@@ -1824,8 +1812,7 @@ arm_init_builtins (void)
       arm_init_crypto_builtins ();
     }
 
-  if (TARGET_CRC32)
-    arm_init_crc32_builtins ();
+  arm_init_acle_builtins ();
 
   if (TARGET_HARD_FLOAT)
     {
@@ -2107,6 +2094,7 @@ arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
   machine_mode mode[SIMD_MAX_BUILTIN_ARGS];
   tree formals;
   int argc = 0;
+  rtx_insn * insn;
 
   if (have_retval
       && (!target
@@ -2271,7 +2259,17 @@ constant_arg:
   if (!pat)
     return 0;
 
+  /* Check whether our current target implements the pattern chosen for this
+     builtin and error out if not.  */
+  start_sequence ();
   emit_insn (pat);
+  insn = get_insns ();
+  end_sequence ();
+
+  if (recog_memoized (insn) < 0)
+    error ("this builtin is not supported for this target");
+  else
+    emit_insn (insn);
 
   return target;
 }
@@ -2292,7 +2290,7 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
   int k;
   bool neon = false;
 
-  if (IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_MAX - 1))
+  if (IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_ACLE_BASE - 1))
     neon = true;
 
   is_void = !!(d->qualifiers[0] & qualifier_void);
@@ -2347,6 +2345,20 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
   return arm_expand_builtin_args
     (target, d->mode, fcode, icode, !is_void, exp,
      &args[1]);
+}
+
+/* Expand an ACLE builtin, i.e. those registered only if their respective
+   target constraints are met.  This check happens within
+   arm_expand_builtin_args.  */
+
+static rtx
+arm_expand_acle_builtin (int fcode, tree exp, rtx target)
+{
+
+  arm_builtin_datum *d
+    = &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START];
+
+  return arm_expand_builtin_1 (fcode, exp, target, d);
 }
 
 /* Expand a Neon builtin, i.e. those registered only if TARGET_NEON holds.
@@ -2442,6 +2454,9 @@ arm_expand_builtin (tree exp,
   int selector;
   int mask;
   int imm;
+
+  if (fcode >= ARM_BUILTIN_ACLE_BASE)
+    return arm_expand_acle_builtin (fcode, exp, target);
 
   if (fcode >= ARM_BUILTIN_NEON_BASE)
     return arm_expand_neon_builtin (fcode, exp, target);
