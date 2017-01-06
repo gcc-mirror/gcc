@@ -2345,11 +2345,11 @@ package Sem_Util is
    --  views of the same entity have the same unique defining entity:
    --    * entry declaration and entry body
    --    * package spec, package body, and package body stub
-   --    * protected type declaration, protected body and protected body stub
+   --    * protected type declaration, protected body, and protected body stub
    --    * private view and full view of a deferred constant
    --    * private view and full view of a type
-   --    * subprogram declaration, subprogram and subprogram body stub
-   --    * task type declaration, task body and task body stub
+   --    * subprogram declaration, subprogram, and subprogram body stub
+   --    * task type declaration, task body, and task body stub
    --  In other cases, return the defining entity for N.
 
    function Unique_Entity (E : Entity_Id) return Entity_Id;

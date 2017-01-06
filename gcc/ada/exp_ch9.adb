@@ -9769,22 +9769,23 @@ package body Exp_Ch9 is
 
       if Has_Entries (Prot_Typ) then
          declare
-            Need_Array : Boolean := False;
-            Maxs       : List_Id;
             Count      : Int;
             Item       : Entity_Id;
-            Maxs_Id    : Entity_Id;
             Max_Vals   : Node_Id;
+            Maxes      : List_Id;
+            Maxes_Id   : Entity_Id;
+            Need_Array : Boolean := False;
 
          begin
             --  First check if there is any Max_Queue_Length pragma
 
-            Item  := First_Entity (Prot_Typ);
+            Item := First_Entity (Prot_Typ);
             while Present (Item) loop
                if Is_Entry (Item) and then Has_Max_Queue_Length (Item) then
                   Need_Array := True;
                   exit;
                end if;
+
                Next_Entity (Item);
             end loop;
 
@@ -9793,15 +9794,15 @@ package body Exp_Ch9 is
             --  queue length.
 
             if Need_Array then
-               Maxs := New_List;
                Count := 0;
                Item  := First_Entity (Prot_Typ);
+               Maxes := New_List;
                while Present (Item) loop
                   if Is_Entry (Item) then
                      Count := Count + 1;
-                     Append_To (Maxs,
-                        Make_Integer_Literal (Loc,
-                           Get_Max_Queue_Length (Item)));
+                     Append_To (Maxes,
+                       Make_Integer_Literal
+                         (Loc, Get_Max_Queue_Length (Item)));
                   end if;
 
                   Next_Entity (Item);
@@ -9809,16 +9810,16 @@ package body Exp_Ch9 is
 
                --  Create the declaration of the array object. Generate:
 
-               --    Maxs_Id : aliased Protected_Entry_Queue_Max_Array
-               --                        (1 .. Count) := (..., ...);
+               --    Maxes_Id : aliased Protected_Entry_Queue_Max_Array
+               --                         (1 .. Count) := (..., ...);
 
-               Maxs_Id :=
+               Maxes_Id :=
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Chars (Prot_Typ), 'B'));
 
                Max_Vals :=
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier => Maxs_Id,
+                   Defining_Identifier => Maxes_Id,
                    Aliased_Present     => True,
                    Constant_Present    => True,
                    Object_Definition   =>
@@ -9832,17 +9833,17 @@ package body Exp_Ch9 is
                              Make_Range (Loc,
                                Make_Integer_Literal (Loc, 1),
                                Make_Integer_Literal (Loc, Count))))),
-                   Expression          => Make_Aggregate (Loc, Maxs));
+                   Expression          => Make_Aggregate (Loc, Maxes));
 
-               --  A pointer to this array will be placed in the
-               --  corresponding record by its initialization procedure so
-               --  this needs to be analyzed here.
+               --  A pointer to this array will be placed in the corresponding
+               --  record by its initialization procedure so this needs to be
+               --  analyzed here.
 
                Insert_After (Current_Node, Max_Vals);
                Current_Node := Max_Vals;
                Analyze (Max_Vals);
 
-               Set_Entry_Max_Queue_Lengths_Array (Prot_Typ, Maxs_Id);
+               Set_Entry_Max_Queue_Lengths_Array (Prot_Typ, Maxes_Id);
             end if;
          end;
       end if;
@@ -14192,7 +14193,7 @@ package body Exp_Ch9 is
                      raise Program_Error;
             end case;
 
-            --  Entry_Queue_Maxs parameter. This is an access to an array of
+            --  Entry_Queue_Maxes parameter. This is an access to an array of
             --  naturals representing the entry queue maximums for each entry
             --  in the protected type. Zero represents no max. The access is
             --  null if there is no limit for all entries (usual case).
