@@ -2324,4 +2324,14 @@
   (set_attr "mode"      "SI")
   (set_attr "length"    "4")])
 
+; This is used in compiling the unwind routines.
+(define_expand "eh_return"
+  [(use (match_operand 0 "general_operand" ""))]
+  ""
+  "
+{
+  microblaze_eh_return (operands[0]);
+  DONE;
+}")
+
 (include "sync.md")

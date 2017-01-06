@@ -1,3 +1,19 @@
+2017-01-06  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
+	    David Holsgrove <david.holsgrove@xilinx.com>
+
+	* common/config/microblaze/microblaze-common.c
+	(TARGET_EXCEPT_UNWIND_INFO): Remove.
+	* config/microblaze/microblaze-protos.h (microblaze_eh_return):
+	New prototype.
+	* config/microblaze/microblaze.c (microblaze_must_save_register)
+	(microblaze_expand_epilogue, microblaze_return_addr): Handle
+	calls_eh_return.
+	(microblaze_eh_return): New function.
+	* config/microblaze/microblaze.h (RETURN_ADDR_OFFSET)
+	(EH_RETURN_DATA_REGNO, MB_EH_STACKADJ_REGNUM)
+	(EH_RETURN_STACKADJ_RTX, ASM_PREFERRED_EH_DATA_FORMAT): New macros.
+	* config/microblaze/microblaze.md (eh_return): New pattern.
+
 2017-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* system.h (GCC_DIAGNOSTIC_PUSH_IGNORED, GCC_DIAGNOSTIC_POP,
