@@ -1,5 +1,15 @@
 2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2017-01-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78956
+	* include/std/thread (thread(const thread&&)): Add deleted
+	constructor.
+	* testsuite/30_threads/thread/cons/lwg2097.cc: New test.
+
+2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/78991
 	* include/bits/predefined_ops.h (_Iter_comp_iter, _Iter_comp_val)
 	(_Val_comp_iter, _Iter_equals_val, _Iter_pred, _Iter_comp_to_val)
