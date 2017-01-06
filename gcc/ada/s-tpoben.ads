@@ -148,8 +148,6 @@ package System.Tasking.Protected_Objects.Entries is
       --  A function which maps the entry index in a call (which denotes the
       --  queue of the proper entry) into the body of the entry.
 
-      Entry_Queues : Protected_Entry_Queue_Array (1 .. Num_Entries);
-
       Entry_Queue_Maxes : Protected_Entry_Queue_Max_Access;
       --  Access to an array of naturals representing the max value for each
       --  entry's queue length. A value of 0 signifies no max.
@@ -158,6 +156,9 @@ package System.Tasking.Protected_Objects.Entries is
       --  An array of string names which denotes entry [family member] names.
       --  The structure is indexed by protected entry index and contains Num_
       --  Entries components.
+
+      Entry_Queues : Protected_Entry_Queue_Array (1 .. Num_Entries);
+      --  Action and barrier subprograms for the protected type.
    end record;
 
    --  No default initial values for this type, since call records will need to
