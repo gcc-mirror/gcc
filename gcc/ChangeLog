@@ -1,5 +1,8 @@
 2017-01-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* system.h (GCC_DIAGNOSTIC_PUSH_IGNORED, GCC_DIAGNOSTIC_POP,
+	GCC_DIAGNOSTIC_STRINGIFY): Define.
+
 	* read-rtl.c (rtx_reader::read_rtx_code): Avoid -Wsign-compare
 	warning.
 
