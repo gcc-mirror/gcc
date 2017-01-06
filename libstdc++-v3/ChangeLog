@@ -1,3 +1,14 @@
+2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78991
+	* include/bits/predefined_ops.h (_Iter_comp_iter, _Iter_comp_val)
+	(_Val_comp_iter, _Iter_equals_val, _Iter_pred, _Iter_comp_to_val)
+	(_Iter_comp_to_iter, _Iter_negate): Make constructors explicit and
+	move function objects.
+	(__iter_comp_iter, __iter_comp_val, __val_comp_iter, __pred_iter)
+	(__iter_comp_val, __iter_comp_iter, __negate): Move function objects.
+	* testsuite/25_algorithms/sort/78991.cc: New test.
+
 2017-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/std_function.h (function::_Signature_type): Remove.
