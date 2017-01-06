@@ -160,6 +160,10 @@
   VUNSPEC_STC2		; Represent the coprocessor stc2 instruction.
   VUNSPEC_STCL		; Represent the coprocessor stcl instruction.
   VUNSPEC_STC2L		; Represent the coprocessor stc2l instruction.
+  VUNSPEC_MCR		; Represent the coprocessor mcr instruction.
+  VUNSPEC_MCR2		; Represent the coprocessor mcr2 instruction.
+  VUNSPEC_MRC		; Represent the coprocessor mrc instruction.
+  VUNSPEC_MRC2		; Represent the coprocessor mrc2 instruction.
 ])
 
 ;; Enumerators for NEON unspecs.
