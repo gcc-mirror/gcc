@@ -3840,24 +3840,29 @@ package body Sem_Attr is
       when Attribute_Finalization_Size =>
          Check_E0;
 
+         --  The prefix denotes an object
+
          if Is_Object_Reference (P) then
             Analyze_And_Resolve (P);
             Check_Object_Reference (P);
 
-         --  Redundant type verification for accurate error output
+         --  Check the prefix is a type to avoid an error message stating the
+         --  prefix must exclusively denote one
 
-         elsif not Is_Entity_Name (P)
-           or else not Is_Type (Entity (P))
-         then
-            Error_Attr_P ("prefix of % attribute must be a definite type or" &
-                          " an object");
-         else
+         elsif Is_Entity_Name (P) and then Is_Type (Entity (P)) then
+
             Check_Type;
             Check_Not_Incomplete_Type;
             if Is_Class_Wide_Type (Etype (P)) then
-               Error_Attr_P ("prefix of % attribute cannot be applied to " &
-                             "a class-wide type");
+               Error_Attr_P
+                 ("prefix of % attribute cannot denote a class-wide type");
             end if;
+
+         --  The prefix does not denote an object or a type
+
+         else
+            Error_Attr_P
+              ("prefix of % attribute must be a definite type or an object");
          end if;
 
          Set_Etype (N, Universal_Integer);
