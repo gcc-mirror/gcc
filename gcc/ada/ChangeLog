@@ -1,3 +1,45 @@
+2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Rewrite_Stream_Proc_Call): Use
+	an unchecked type conversion when performing a view conversion
+	to/from a private type. In all other cases use a regular type
+	conversion to ensure that any relevant checks are properly
+	installed.
+
+2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb, sem_ch8.adb: Minor reformatting.
+
+2017-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Explain_Non_Static_Bound): Suppress cascaded
+	error on case expression that is an entity, when coverage is
+	incomplete and entity has a static value obtained by local
+	propagation.
+	(Handle_Static_Predicate): New procedure, subsidiary of
+	Check_Choices, to handle case alternatives that are either
+	subtype names or subtype indications involving subtypes that
+	have static predicates.
+
+2017-01-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.adb, g-socket.ads, g-sothco.ads:
+	(GNAT.Socket): Add support for Busy_Polling and Generic_Option
+
+2017-01-06  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Activate_Elaborate_All_Desirable): Don't add
+	Elaborate_All(P) to P itself. That could happen in obscure cases,
+	and always introduced a cycle (P body must be elaborated before
+	P body).
+	* lib-writ.ads: Comment clarification.
+	* ali-util.ads: Minor comment fix.
+	* ali.adb: Minor reformatting.
+
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb: Improve comment.
+
 2017-01-03  James Cowgill  <James.Cowgill@imgtec.com>
 
 	* s-linux-mips.ads: Use correct signal and errno constants.

@@ -7744,9 +7744,9 @@ package body Sem_Ch8 is
             New_T := Etype (New_F);
             Old_T := Etype (Old_F);
 
-            --  If the new type is a renaming of the old one, as is the
-            --  case for actuals in instances, retain its name, to simplify
-            --  later disambiguation.
+            --  If the new type is a renaming of the old one, as is the case
+            --  for actuals in instances, retain its name, to simplify later
+            --  disambiguation.
 
             if Nkind (Parent (New_T)) = N_Subtype_Declaration
               and then Is_Entity_Name (Subtype_Indication (Parent (New_T)))
@@ -7760,6 +7760,7 @@ package body Sem_Ch8 is
             Next_Formal (New_F);
             Next_Formal (Old_F);
          end loop;
+
          pragma Assert (No (Old_F));
 
          if Ekind_In (Old_S, E_Function, E_Enumeration_Literal) then

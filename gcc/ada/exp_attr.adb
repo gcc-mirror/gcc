@@ -1568,9 +1568,10 @@ package body Exp_Attr is
 
       procedure Rewrite_Stream_Proc_Call (Pname : Entity_Id) is
          Item       : constant Node_Id   := Next (First (Exprs));
+         Item_Typ   : constant Entity_Id := Etype (Item);
          Formal     : constant Entity_Id := Next_Formal (First_Formal (Pname));
          Formal_Typ : constant Entity_Id := Etype (Formal);
-         Is_Written : constant Boolean   := (Ekind (Formal) /= E_In_Parameter);
+         Is_Written : constant Boolean   := Ekind (Formal) /= E_In_Parameter;
 
       begin
          --  The expansion depends on Item, the second actual, which is
@@ -1583,7 +1584,7 @@ package body Exp_Attr is
 
          if Nkind (Item) = N_Indexed_Component
            and then Is_Packed (Base_Type (Etype (Prefix (Item))))
-           and then Base_Type (Etype (Item)) /= Base_Type (Formal_Typ)
+           and then Base_Type (Item_Typ) /= Base_Type (Formal_Typ)
            and then Is_Written
          then
             declare
@@ -1595,23 +1596,22 @@ package body Exp_Attr is
                Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,
-                   Object_Definition    =>
-                     New_Occurrence_Of (Formal_Typ, Loc));
+                   Object_Definition   => New_Occurrence_Of (Formal_Typ, Loc));
                Set_Etype (Temp, Formal_Typ);
 
                Assn :=
                  Make_Assignment_Statement (Loc,
-                   Name => New_Copy_Tree (Item),
+                   Name       => New_Copy_Tree (Item),
                    Expression =>
                      Unchecked_Convert_To
-                       (Etype (Item), New_Occurrence_Of (Temp, Loc)));
+                       (Item_Typ, New_Occurrence_Of (Temp, Loc)));
 
                Rewrite (Item, New_Occurrence_Of (Temp, Loc));
                Insert_Actions (N,
                  New_List (
                    Decl,
                    Make_Procedure_Call_Statement (Loc,
-                     Name => New_Occurrence_Of (Pname, Loc),
+                     Name                   => New_Occurrence_Of (Pname, Loc),
                      Parameter_Associations => Exprs),
                    Assn));
 
@@ -1626,17 +1626,25 @@ package body Exp_Attr is
          --  operation is not inherited), we are all set, and can use the
          --  argument unchanged.
 
-         --  For all other cases we do an unchecked conversion of the second
-         --  parameter to the type of the formal of the procedure we are
-         --  calling. This deals with the private type cases, and with going
-         --  to the root type as required in elementary type case.
-
          if not Is_Class_Wide_Type (Entity (Pref))
            and then not Is_Class_Wide_Type (Etype (Item))
-           and then Base_Type (Etype (Item)) /= Base_Type (Formal_Typ)
+           and then Base_Type (Item_Typ) /= Base_Type (Formal_Typ)
          then
-            Rewrite (Item,
-              Unchecked_Convert_To (Formal_Typ, Relocate_Node (Item)));
+            --  Perform a view conversion when either the argument or the
+            --  formal parameter are of a private type.
+
+            if Is_Private_Type (Formal_Typ)
+              or else Is_Private_Type (Item_Typ)
+            then
+               Rewrite (Item,
+                 Unchecked_Convert_To (Formal_Typ, Relocate_Node (Item)));
+
+            --  Otherwise perform a regular type conversion to ensure that all
+            --  relevant checks are installed.
+
+            else
+               Rewrite (Item, Convert_To (Formal_Typ, Relocate_Node (Item)));
+            end if;
 
             --  For untagged derived types set Assignment_OK, to prevent
             --  copies from being created when the unchecked conversion
@@ -1665,7 +1673,7 @@ package body Exp_Attr is
 
          Rewrite (N,
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (Pname, Loc),
+             Name                   => New_Occurrence_Of (Pname, Loc),
              Parameter_Associations => Exprs));
 
          Analyze (N);

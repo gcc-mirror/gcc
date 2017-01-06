@@ -446,6 +446,15 @@ package body Sem_Elab is
          return;
       end if;
 
+      --  If an instance of a generic package contains a controlled object (so
+      --  we're calling Initialize at elaboration time), and the instance is in
+      --  a package body P that says "with P;", then we need to return without
+      --  adding "pragma Elaborate_All (P);" to P.
+
+      if U = Main_Unit_Entity then
+         return;
+      end if;
+
       Itm := First (CI);
       while Present (Itm) loop
          if Nkind (Itm) = N_With_Clause then
@@ -495,10 +504,8 @@ package body Sem_Elab is
       end if;
 
       --  Here if we do not find with clause on spec or body. We just ignore
-      --  this case, it means that the elaboration involves some other unit
+      --  this case; it means that the elaboration involves some other unit
       --  than the unit being compiled, and will be caught elsewhere.
-
-      null;
    end Activate_Elaborate_All_Desirable;
 
    ------------------
@@ -528,7 +535,7 @@ package body Sem_Elab is
        --  Generate a call to Error_Msg_NE with parameters Msg_D or Msg_S (for
        --  dynamic or static elaboration model), N and Ent. Msg_D is a real
        --  warning (output if Msg_D is non-null and Elab_Warnings is set),
-       --  Msg_S is an info message (output if Elab_Info_Messages is set.
+       --  Msg_S is an info message (output if Elab_Info_Messages is set).
 
       function Find_W_Scope return Entity_Id;
       --  Find top-level scope for called entity (not following renamings

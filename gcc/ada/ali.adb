@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2056,8 +2056,7 @@ package body ALI is
                         --  Store AD indication unless ignore required
 
                         if not Ignore_ED then
-                           Withs.Table (Withs.Last).Elab_All_Desirable :=
-                             True;
+                           Withs.Table (Withs.Last).Elab_All_Desirable := True;
                         end if;
 
                      elsif Nextc = 'E' then
