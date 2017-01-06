@@ -8163,6 +8163,7 @@ package body Sem_Util is
    is
       Btyp : Entity_Id := Base_Type (T);
       Lit  : Node_Id;
+      LLoc : Source_Ptr;
 
    begin
       --  In the case where the literal is of type Character, Wide_Character
@@ -8173,6 +8174,7 @@ package body Sem_Util is
 
       if Is_Standard_Character_Type (T) then
          Set_Character_Literal_Name (UI_To_CC (Pos));
+
          return
            Make_Character_Literal (Loc,
              Chars              => Name_Find,
@@ -8190,9 +8192,26 @@ package body Sem_Util is
          Lit := First_Literal (Btyp);
          for J in 1 .. UI_To_Int (Pos) loop
             Next_Literal (Lit);
+
+            --  If Lit is Empty, Pos is not in range, so raise Constraint_Error
+            --  inside the loop to avoid calling Next_Literal on Empty.
+
+            if No (Lit) then
+               raise Constraint_Error;
+            end if;
          end loop;
 
-         return New_Occurrence_Of (Lit, Loc);
+         --  Create a new node from Lit, with source location provided by Loc
+         --  if not equal to No_Location, or by copying the source location of
+         --  Lit otherwise.
+
+         LLoc := Loc;
+
+         if LLoc = No_Location then
+            LLoc := Sloc (Lit);
+         end if;
+
+         return New_Occurrence_Of (Lit, LLoc);
       end if;
    end Get_Enum_Lit_From_Pos;
 

@@ -917,9 +917,12 @@ package Sem_Util is
       Loc : Source_Ptr) return Node_Id;
    --  This function returns an identifier denoting the E_Enumeration_Literal
    --  entity for the specified value from the enumeration type or subtype T.
-   --  The second argument is the Pos value, which is assumed to be in range.
-   --  The third argument supplies a source location for constructed nodes
-   --  returned by this function.
+   --  The second argument is the Pos value. Constraint_Error is raised if
+   --  argument Pos is not in range. The third argument supplies a source
+   --  location for constructed nodes returned by this function. If No_Location
+   --  is supplied as source location, the location of the returned node is
+   --  copied from the original source location for the enumeration literal,
+   --  when available.
 
    function Get_Iterable_Type_Primitive
      (Typ : Entity_Id;

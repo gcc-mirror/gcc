@@ -1,3 +1,48 @@
+2017-01-06  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration):
+	Remove declaration generation in the case of
+	System_Tasking_Protected_Objects_Single_Entry being used,
+	and add a warning message when this is detected to occur.
+	(Make_Initialize_Protection): Remove reference pass in the case
+	of System_Tasking_Protected_Objects_Single_Entry.
+	* rtsfind.ads: Remove RE_Protected_Entry_Queue_Max
+	* s-tposen.adb (Initialize_Protection_Entry): Remove
+	Entry_Queue_Max parameter.
+	* s-tposen.ads: Remove the types use to store the entry queue
+	maximum.
+	* sem_prag.adb (Analyze_Pragma): Remove entry families restriction
+
+2017-01-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Get_Enum_Lit_From_Pos): Strengthen
+	behavior of function, to also accept out of range positions
+	and raise Constraint_Error in such case, and to copy sloc from
+	literal if No_Location passed as location.
+	* uintp.adb, uintp.ads (UI_To_Int, UI_To_CC): Strengthen behavior
+	of functions to raise Constraint_Error in case of value not in
+	appropriate range.
+
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_util.adb, s-taprop-linux.adb (Finalize_TCB): Remove call to
+	Invalidate_Stack_Cache.
+
+2017-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-os_lib.adb: Minor fix to the signature of Readlink.
+
+2017-01-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Conforming_Types): Handle another
+	confusion between views in a nested instance with an actual
+	private type whose full view is not in scope.
+
+2017-01-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch5.adb (Expand_N_If_Statement): Obey existing comment and
+	mark a rewritten if statement as explicit (Comes_From_Source).
+
 2017-01-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_prag.adb, rtsfind.adb, sem_util.adb: Minor typo fixes.

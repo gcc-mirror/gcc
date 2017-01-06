@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2015, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2016, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,6 @@ with System.Tasking.Debug;
 with System.Interrupt_Management;
 with System.OS_Constants;
 with System.OS_Primitives;
-with System.Stack_Checking.Operations;
 with System.Multiprocessors;
 
 with System.Soft_Links;
@@ -58,7 +57,6 @@ package body System.Task_Primitives.Operations is
 
    package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
-   package SC renames System.Stack_Checking.Operations;
 
    use System.Tasking.Debug;
    use System.Tasking;
@@ -1047,8 +1045,6 @@ package body System.Task_Primitives.Operations is
       if T.Known_Tasks_Index /= -1 then
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
-
-      SC.Invalidate_Stack_Cache (T.Common.Compiler_Data.Pri_Stack_Info'Access);
 
       ATCB_Allocation.Free_ATCB (T);
    end Finalize_TCB;
