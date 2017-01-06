@@ -100,7 +100,6 @@ package Sem_Prag is
       Pragma_Remote_Access_Type           => True,
       Pragma_Remote_Call_Interface        => True,
       Pragma_Remote_Types                 => True,
-      Pragma_Secondary_Stack_Size         => True,
       Pragma_Shared                       => True,
       Pragma_Shared_Passive               => True,
       Pragma_Simple_Storage_Pool_Type     => True,

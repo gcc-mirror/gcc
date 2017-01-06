@@ -170,15 +170,6 @@ package body System.Secondary_Stack is
      Ada.Unchecked_Conversion (Address, Fixed_Stack_Ptr);
    --  Convert from address stored in task data structures
 
-   ----------------------------------
-   -- Minumum_Secondary_Stack_Size --
-   ----------------------------------
-
-   function Minimum_Secondary_Stack_Size return Natural is
-   begin
-      return Dummy_Fixed_Stack.Mem'Position;
-   end Minimum_Secondary_Stack_Size;
-
    --------------
    -- Allocate --
    --------------
@@ -441,7 +432,7 @@ package body System.Secondary_Stack is
             Fixed_Stack.Top  := 0;
             Fixed_Stack.Max  := 0;
 
-            if Size <= Dummy_Fixed_Stack.Mem'Position then
+            if Size < Dummy_Fixed_Stack.Mem'Position then
                Fixed_Stack.Last := 0;
             else
                Fixed_Stack.Last :=

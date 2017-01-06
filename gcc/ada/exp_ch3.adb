@@ -1485,7 +1485,7 @@ package body Exp_Ch3 is
                   --  The constraints come from the discriminant default exps,
                   --  they must be reevaluated, so we use New_Copy_Tree but we
                   --  ensure the proper Sloc (for any embedded calls).
-                  --  In addtion, if a predicate check is needed on the value
+                  --  In addition, if a predicate check is needed on the value
                   --  of the discriminant, insert it ahead of the call.
 
                   Arg := New_Copy_Tree (Arg, New_Sloc => Loc);
@@ -1495,7 +1495,7 @@ package body Exp_Ch3 is
                     and then not Predicates_Ignored (Etype (Discr))
                   then
                      Prepend_To (Res,
-                        Make_Predicate_Check (Etype (Discr), Arg));
+                       Make_Predicate_Check (Etype (Discr), Arg));
                   end if;
                end if;
             end if;
@@ -1741,7 +1741,7 @@ package body Exp_Ch3 is
          end if;
 
          --  If a component type has a predicate, add check to the component
-         --  assignment. Discriminants are hnndled at the point of the call,
+         --  assignment. Discriminants are handled at the point of the call,
          --  which provides for a better error message.
 
          if Comes_From_Source (Exp)
@@ -2730,17 +2730,15 @@ package body Exp_Ch3 is
                      Actions := Build_Assignment (Id, Expression (Decl));
                   end if;
 
-               --  CPU, Dispatching_Domain, Priority and
-               --  Secondary_Stack_Size components are filled with the
-               --  corresponding rep item expression of the concurrent
-               --  type (if any).
+               --  CPU, Dispatching_Domain, Priority and Size components are
+               --  filled with the corresponding rep item expression of the
+               --  concurrent type (if any).
 
                elsif Ekind (Scope (Id)) = E_Record_Type
                  and then Present (Corresponding_Concurrent_Type (Scope (Id)))
                  and then Nam_In (Chars (Id), Name_uCPU,
                                               Name_uDispatching_Domain,
-                                              Name_uPriority,
-                                              Name_uSecondary_Stack_Size)
+                                              Name_uPriority)
                then
                   declare
                      Exp   : Node_Id;
@@ -2756,9 +2754,6 @@ package body Exp_Ch3 is
 
                      elsif Chars (Id) = Name_uPriority then
                         Nam := Name_Priority;
-
-                     elsif Chars (Id) = Name_uSecondary_Stack_Size then
-                        Nam := Name_Secondary_Stack_Size;
                      end if;
 
                      --  Get the Rep Item (aspect specification, attribute

@@ -1452,7 +1452,6 @@ begin
            Pragma_Ravenscar                      |
            Pragma_Rename_Pragma                  |
            Pragma_Reviewable                     |
-           Pragma_Secondary_Stack_Size           |
            Pragma_Share_Generic                  |
            Pragma_Shared                         |
            Pragma_Shared_Passive                 |

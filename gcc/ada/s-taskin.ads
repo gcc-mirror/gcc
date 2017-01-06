@@ -702,13 +702,6 @@ package System.Tasking is
       --  need to do different things depending on the situation.
       --
       --  Protection: Self.L
-
-      Secondary_Stack_Size : System.Parameters.Size_Type;
-      --  Secondary_Stack_Size is the size of the secondary stack for the
-      --  task. Defined here since it is the responsibility of the task to
-      --  creates its own secondary stack.
-      --
-      --  Protected: Only accessed by Self
    end record;
 
    ---------------------------------------
@@ -1163,19 +1156,18 @@ package System.Tasking is
    --  System.Tasking.Initialization being present, as was done before.
 
    procedure Initialize_ATCB
-     (Self_ID              : Task_Id;
-      Task_Entry_Point     : Task_Procedure_Access;
-      Task_Arg             : System.Address;
-      Parent               : Task_Id;
-      Elaborated           : Access_Boolean;
-      Base_Priority        : System.Any_Priority;
-      Base_CPU             : System.Multiprocessors.CPU_Range;
-      Domain               : Dispatching_Domain_Access;
-      Task_Info            : System.Task_Info.Task_Info_Type;
-      Stack_Size           : System.Parameters.Size_Type;
-      Secondary_Stack_Size : System.Parameters.Size_Type;
-      T                    : Task_Id;
-      Success              : out Boolean);
+     (Self_ID          : Task_Id;
+      Task_Entry_Point : Task_Procedure_Access;
+      Task_Arg         : System.Address;
+      Parent           : Task_Id;
+      Elaborated       : Access_Boolean;
+      Base_Priority    : System.Any_Priority;
+      Base_CPU         : System.Multiprocessors.CPU_Range;
+      Domain           : Dispatching_Domain_Access;
+      Task_Info        : System.Task_Info.Task_Info_Type;
+      Stack_Size       : System.Parameters.Size_Type;
+      T                : Task_Id;
+      Success          : out Boolean);
    --  Initialize fields of the TCB for task T, and link into global TCB
    --  structures. Call this only with abort deferred and holding RTS_Lock.
    --  Self_ID is the calling task (normally the activator of T). Success is
