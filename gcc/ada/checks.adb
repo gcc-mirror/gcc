@@ -2605,7 +2605,11 @@ package body Checks is
    -- Apply_Predicate_Check --
    ---------------------------
 
-   procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id) is
+   procedure Apply_Predicate_Check
+     (N   : Node_Id;
+      Typ : Entity_Id;
+      Fun : Entity_Id := Empty)
+   is
       S : Entity_Id;
 
    begin
@@ -2633,11 +2637,18 @@ package body Checks is
          --  is likely to be a common error, and thus deserves a warning.
 
          elsif Present (S) and then S = Predicate_Function (Typ) then
-            Error_Msg_N
-              ("predicate check includes a function call that "
-               & "requires a predicate check??", Parent (N));
+            Error_Msg_NE
+              ("predicate check includes a call to& that "
+               & "requires a predicate check??", Parent (N), Fun);
             Error_Msg_N
               ("\this will result in infinite recursion??", Parent (N));
+
+            if Is_First_Subtype (Typ) then
+               Error_Msg_NE
+               ("\use an explicit subtype of& to carry the predicate",
+                  Parent (N), Typ);
+            end if;
+
             Insert_Action (N,
               Make_Raise_Storage_Error (Sloc (N),
                 Reason => SE_Infinite_Recursion));

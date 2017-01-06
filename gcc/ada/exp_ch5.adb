@@ -3769,14 +3769,17 @@ package body Exp_Ch5 is
                elsif Is_Derived_Type (T) then
 
                   --  The default iterator must be a primitive operation of the
-                  --  type, at the same dispatch slot position.
+                  --  type, at the same dispatch slot position. The DT position
+                  --  may not be established if type is not frozen yet.
 
                   Prim := First_Elmt (Primitive_Operations (T));
                   while Present (Prim) loop
                      Op := Node (Prim);
 
-                     if Chars (Op) = Chars (Iter)
-                       and then DT_Position (Op) = DT_Position (Iter)
+                     if Alias (Op) = Iter
+                       or else (Chars (Op) = Chars (Iter)
+                         and then Present (DTC_Entity (Op))
+                         and then DT_Position (Op) = DT_Position (Iter))
                      then
                         return Op;
                      end if;
