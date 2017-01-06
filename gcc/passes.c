@@ -2273,6 +2273,67 @@ override_gate_status (opt_pass *pass, tree func, bool gate_status)
   return gate_status;
 }
 
+/* Determine if PASS_NAME matches CRITERION.
+   Not a pure predicate, since it can update CRITERION, to support
+   matching the Nth invocation of a pass.
+   Subroutine of should_skip_pass_p.  */
+
+static bool
+determine_pass_name_match (const char *pass_name, char *criterion)
+{
+  size_t namelen = strlen (pass_name);
+  if (! strncmp (pass_name, criterion, namelen))
+    {
+      /* The following supports starting with the Nth invocation
+	 of a pass (where N does not necessarily is equal to the
+	 dump file suffix).  */
+      if (criterion[namelen] == '\0'
+	  || (criterion[namelen] == '1'
+	      && criterion[namelen + 1] == '\0'))
+	return true;
+      else
+	{
+	  if (criterion[namelen + 1] == '\0')
+	    --criterion[namelen];
+	  return false;
+	}
+    }
+  else
+    return false;
+}
+
+/* For skipping passes until "startwith" pass.
+   Return true iff PASS should be skipped.
+   Clear cfun->pass_startwith when encountering the "startwith" pass,
+   so that all subsequent passes are run.  */
+
+static bool
+should_skip_pass_p (opt_pass *pass)
+{
+  if (!cfun)
+    return false;
+  if (!cfun->pass_startwith)
+    return false;
+
+  /* We can't skip the lowering phase yet -- ideally we'd
+     drive that phase fully via properties.  */
+  if (!(cfun->curr_properties & PROP_ssa))
+    return false;
+
+  if (determine_pass_name_match (pass->name, cfun->pass_startwith))
+    {
+      cfun->pass_startwith = NULL;
+      return false;
+    }
+
+  /* And also run any property provider.  */
+  if (pass->properties_provided != 0)
+    return false;
+
+  /* If we get here, then we have a "startwith" that we haven't seen yet;
+     skip the pass.  */
+  return true;
+}
 
 /* Execute PASS. */
 
@@ -2313,40 +2374,8 @@ execute_one_pass (opt_pass *pass)
       return false;
     }
 
-  /* For skipping passes until startwith pass */
-  if (cfun
-      && cfun->pass_startwith
-      /* But we can't skip the lowering phase yet -- ideally we'd
-         drive that phase fully via properties.  */
-      && (cfun->curr_properties & PROP_ssa))
-    {
-      size_t namelen = strlen (pass->name);
-      /* We have to at least start when we leave SSA.  */
-      if (pass->properties_destroyed & PROP_ssa)
-	cfun->pass_startwith = NULL;
-      else if (! strncmp (pass->name, cfun->pass_startwith, namelen))
-	{
-	  /* The following supports starting with the Nth invocation
-	     of a pass (where N does not necessarily is equal to the
-	     dump file suffix).  */
-	  if (cfun->pass_startwith[namelen] == '\0'
-	      || (cfun->pass_startwith[namelen] == '1'
-		  && cfun->pass_startwith[namelen + 1] == '\0'))
-	    cfun->pass_startwith = NULL;
-	  else
-	    {
-	      if (cfun->pass_startwith[namelen + 1] != '\0')
-		return true;
-	      --cfun->pass_startwith[namelen];
-	      return true;
-	    }
-	}
-      /* And also run any property provider.  */
-      else if (pass->properties_provided != 0)
-	;
-      else
-	return true;
-    }
+  if (should_skip_pass_p (pass))
+    return true;
 
   /* Pass execution event trigger: useful to identify passes being
      executed.  */
