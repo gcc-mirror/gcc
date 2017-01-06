@@ -9767,102 +9767,85 @@ package body Exp_Ch9 is
       --  type. This object is later passed to the appropriate protected object
       --  initialization routine.
 
-      declare
-         Max      : Uint;
-         Maxs     : constant List_Id := New_List;
-         Count    : Int;
-         Item     : Entity_Id;
-         Maxs_Id  : Entity_Id;
-         Max_Vals : Node_Id;
+      if Has_Entries (Prot_Typ) then
+         declare
+            Need_Array : Boolean := False;
+            Maxs       : List_Id;
+            Count      : Int;
+            Item       : Entity_Id;
+            Maxs_Id    : Entity_Id;
+            Max_Vals   : Node_Id;
 
-      begin
-         if Has_Entries (Prot_Typ) then
+         begin
+            --  First check if there is any Max_Queue_Length pragma
+
+            Item  := First_Entity (Prot_Typ);
+            while Present (Item) loop
+               if Is_Entry (Item) and then Has_Max_Queue_Length (Item) then
+                  Need_Array := True;
+                  exit;
+               end if;
+               Next_Entity (Item);
+            end loop;
 
             --  Gather the Max_Queue_Length values of all entries in a list. A
             --  value of zero indicates that the entry has no limitation on its
             --  queue length.
 
-            Count := 0;
-            Item  := First_Entity (Prot_Typ);
-            while Present (Item) loop
-               if Is_Entry (Item) then
-                  Count := Count + 1;
-                  Max   := Get_Max_Queue_Length (Item);
-
-                  --  The package System_Tasking_Protected_Objects_Single_Entry
-                  --  is only used in cases where queue length is 1, so if this
-                  --  package is being used and there is a value supplied for
-                  --  it print an error message and halt compilation.
-
-                  if Max /= 0
-                    and then Corresponding_Runtime_Package (Prot_Typ) =
-                               System_Tasking_Protected_Objects_Single_Entry
-                  then
-                     Error_Msg_N
-                       ("max_queue_length cannot be applied to entries under "
-                        & "the Ravenscar profile", Item);
-                     raise Program_Error;
+            if Need_Array then
+               Maxs := New_List;
+               Count := 0;
+               Item  := First_Entity (Prot_Typ);
+               while Present (Item) loop
+                  if Is_Entry (Item) then
+                     Count := Count + 1;
+                     Append_To (Maxs,
+                        Make_Integer_Literal (Loc,
+                           Get_Max_Queue_Length (Item)));
                   end if;
 
-                  Append_To (Maxs, Make_Integer_Literal (Loc, Intval => Max));
-               end if;
+                  Next_Entity (Item);
+               end loop;
 
-               Next_Entity (Item);
-            end loop;
+               --  Create the declaration of the array object. Generate:
 
-            case Corresponding_Runtime_Package (Prot_Typ) is
-               when System_Tasking_Protected_Objects_Entries =>
+               --    Maxs_Id : aliased Protected_Entry_Queue_Max_Array
+               --                        (1 .. Count) := (..., ...);
 
-                  --  Create the declaration of the array object. Generate:
+               Maxs_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (Prot_Typ), 'B'));
 
-                  --    Maxs_Id : aliased Protected_Entry_Queue_Max_Array
-                  --                        (1 .. Count) := (..., ...);
+               Max_Vals :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Maxs_Id,
+                   Aliased_Present     => True,
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     Make_Subtype_Indication (Loc,
+                       Subtype_Mark =>
+                         New_Occurrence_Of
+                           (RTE (RE_Protected_Entry_Queue_Max_Array), Loc),
+                       Constraint   =>
+                         Make_Index_Or_Discriminant_Constraint (Loc,
+                           Constraints => New_List (
+                             Make_Range (Loc,
+                               Make_Integer_Literal (Loc, 1),
+                               Make_Integer_Literal (Loc, Count))))),
+                   Expression          => Make_Aggregate (Loc, Maxs));
 
-                  Maxs_Id :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_External_Name (Chars (Prot_Typ), 'B'));
+               --  A pointer to this array will be placed in the
+               --  corresponding record by its initialization procedure so
+               --  this needs to be analyzed here.
 
-                  Max_Vals :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Maxs_Id,
-                      Aliased_Present     => True,
-                      Object_Definition   =>
-                        Make_Subtype_Indication (Loc,
-                          Subtype_Mark =>
-                            New_Occurrence_Of
-                              (RTE (RE_Protected_Entry_Queue_Max_Array), Loc),
-                          Constraint   =>
-                            Make_Index_Or_Discriminant_Constraint (Loc,
-                              Constraints => New_List (
-                                Make_Range (Loc,
-                                  Make_Integer_Literal (Loc, 1),
-                                  Make_Integer_Literal (Loc, Count))))),
-                      Expression          => Make_Aggregate (Loc, Maxs));
+               Insert_After (Current_Node, Max_Vals);
+               Current_Node := Max_Vals;
+               Analyze (Max_Vals);
 
-                  --  A pointer to this array will be placed in the
-                  --  corresponding record by its initialization procedure so
-                  --  this needs to be analyzed here.
-
-                  Insert_After (Current_Node, Max_Vals);
-                  Current_Node := Max_Vals;
-                  Analyze (Max_Vals);
-
-                  Set_Entry_Max_Queue_Lengths_Array (Prot_Typ, Maxs_Id);
-
-               when System_Tasking_Protected_Objects_Single_Entry =>
-
-                  --  If this section is entered this means the package
-                  --  System_Tasking_Protected_Objects_Single_Entry is being
-                  --  used and that it correctly has no Max_Queue_Length
-                  --  specified, so fall through and continue normally.
-
-                  null;
-
-               when others =>
-                  raise Program_Error;
-            end case;
-         end if;
-      end;
+               Set_Entry_Max_Queue_Lengths_Array (Prot_Typ, Maxs_Id);
+            end if;
+         end;
+      end if;
 
       --  Emit declaration for Entry_Bodies_Array, now that the addresses of
       --  all protected subprograms have been collected.
@@ -14209,19 +14192,24 @@ package body Exp_Ch9 is
                      raise Program_Error;
             end case;
 
-            --  Entry_Queue_Maxs parameter. This is a pointer to an array of
+            --  Entry_Queue_Maxs parameter. This is an access to an array of
             --  naturals representing the entry queue maximums for each entry
-            --  in the protected type. Zero represents no max.
+            --  in the protected type. Zero represents no max. The access is
+            --  null if there is no limit for all entries (usual case).
 
             if Has_Entry
               and then Pkg_Id /= System_Tasking_Protected_Objects_Single_Entry
             then
-               Append_To (Args,
-                 Make_Attribute_Reference (Loc,
-                   Prefix         =>
-                     New_Occurrence_Of
-                       (Entry_Max_Queue_Lengths_Array (Ptyp), Loc),
-                   Attribute_Name => Name_Unrestricted_Access));
+               if Present (Entry_Max_Queue_Lengths_Array (Ptyp)) then
+                  Append_To (Args,
+                    Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        New_Occurrence_Of
+                          (Entry_Max_Queue_Lengths_Array (Ptyp), Loc),
+                      Attribute_Name => Name_Unrestricted_Access));
+               else
+                  Append_To (Args, Make_Null (Loc));
+               end if;
 
             --  Edge cases exist where entry initialization functions are
             --  called, but no entries exist, so null is appended.

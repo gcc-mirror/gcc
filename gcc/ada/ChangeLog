@@ -1,3 +1,27 @@
+2017-01-06  Yannick Moy  <moy@adacore.com>
+
+	* ghost.adb Minor fixing of references to SPARK RM.
+	(Check_Ghost_Context): Check whether reference is to a lvalue
+	before issuing an error about violation of SPARK RM 6.9(13)
+	when declaration has Ghost policy Check and reference has Ghost
+	policy Ignore.
+	* sem_util.adb Minor indentation.
+	* sem_ch10.adb (Analyze_Package_Body_Stub, Analyze_Protected_Body_Stub,
+	Analyze_Task_Body_Stub): Set Ekind of the defining identifier.
+	* sem_util.ads (Unique_Defining_Entity): Document the result
+	for package body stubs.
+
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (abort): Macro to call Abort_Propagation.
+	* s-tpoben.ads (Protected_Entry_Queue_Max_Access): Make it access
+	constant.
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration):
+	Do not generate the Entry_Max_Queue_Lengths_Array if all default
+	values.
+	* exp_util.adb (Corresponding_Runtime_Package): Consider
+	Max_Queue_Length pragma.
+
 2017-01-06  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Protected_Type_Declaration):

@@ -70,7 +70,7 @@ package System.Tasking.Protected_Objects.Entries is
      array (Positive_Protected_Entry_Index range <>) of Natural;
 
    type Protected_Entry_Queue_Max_Access is
-     access all Protected_Entry_Queue_Max_Array;
+     access constant Protected_Entry_Queue_Max_Array;
 
    --  The following declarations define an array that contains the string
    --  names of entries and entry family members, together with an associated
