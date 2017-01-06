@@ -885,6 +885,7 @@ package Snames is
    Name_Exponent                       : constant Name_Id := N + $;
    Name_External_Tag                   : constant Name_Id := N + $;
    Name_Fast_Math                      : constant Name_Id := N + $; -- GNAT
+   Name_Finalization_Size              : constant Name_Id := N + $; -- GNAT
    Name_First                          : constant Name_Id := N + $;
    Name_First_Bit                      : constant Name_Id := N + $;
    Name_First_Valid                    : constant Name_Id := N + $; -- Ada 12
@@ -1524,6 +1525,7 @@ package Snames is
       Attribute_Exponent,
       Attribute_External_Tag,
       Attribute_Fast_Math,
+      Attribute_Finalization_Size,
       Attribute_First,
       Attribute_First_Bit,
       Attribute_First_Valid,

@@ -3833,6 +3833,16 @@ package body Sem_Attr is
          Check_Standard_Prefix;
          Rewrite (N, New_Occurrence_Of (Boolean_Literals (Fast_Math), Loc));
 
+      -----------------------
+      -- Finalization_Size --
+      -----------------------
+
+      when Attribute_Finalization_Size =>
+         Check_E0;
+         Analyze_And_Resolve (P);
+         Check_Object_Reference (P);
+         Set_Etype (N, Universal_Integer);
+
       -----------
       -- First --
       -----------
@@ -8397,6 +8407,13 @@ package body Sem_Attr is
       when Attribute_Exponent =>
          Fold_Uint (N,
            Eval_Fat.Exponent (P_Base_Type, Expr_Value_R (E1)), Static);
+
+      -----------------------
+      -- Finalization_Size --
+      -----------------------
+
+      when Attribute_Finalization_Size =>
+         null;
 
       -----------
       -- First --

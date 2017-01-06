@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -241,6 +241,16 @@ package Sem_Attr is
       --  a representation value for the type, it returns the corresponding
       --  enumeration value. Constraint_Error is raised if no value of the
       --  enumeration type corresponds to the given integer value.
+
+      -----------------------
+      -- Finalization_Size --
+      -----------------------
+
+      Attribute_Finalization_Size => True,
+      --  For every object, Finalization_Size will return the size of the
+      --  internal header required for finalization (including padding). If
+      --  the type is not controlled or contains no controlled components
+      --  then the result is always zero.
 
       -----------------
       -- Fixed_Value --
