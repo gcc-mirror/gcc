@@ -987,11 +987,15 @@ promote_symbol (symtab_node *node)
   TREE_PUBLIC (node->decl) = 1;
   DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
-  ipa_ref *ref;
+  if (symtab->dump_file)
+    fprintf (symtab->dump_file,
+	     "Promoting as hidden: %s (%s)\n", node->name (),
+	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
 
-  /* Promoting a symbol also promotes all trasparent aliases with exception
+  /* Promoting a symbol also promotes all transparent aliases with exception
      of weakref where the visibility flags are always wrong and set to 
      !PUBLIC.  */
+  ipa_ref *ref;
   for (unsigned i = 0; node->iterate_direct_aliases (i, ref); i++)
     {
       struct symtab_node *alias = ref->referring;
@@ -1000,13 +1004,13 @@ promote_symbol (symtab_node *node)
 	  TREE_PUBLIC (alias->decl) = 1;
 	  DECL_VISIBILITY (alias->decl) = VISIBILITY_HIDDEN;
 	  DECL_VISIBILITY_SPECIFIED (alias->decl) = true;
+	  if (symtab->dump_file)
+	    fprintf (symtab->dump_file,
+		     "Promoting alias as hidden: %s\n",
+		     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
 	}
       gcc_assert (!alias->weakref || TREE_PUBLIC (alias->decl));
     }
-
-  if (symtab->dump_file)
-    fprintf (symtab->dump_file,
-	    "Promoting as hidden: %s\n", node->name ());
 }
 
 /* Return true if NODE needs named section even if it won't land in
