@@ -9424,8 +9424,9 @@ package body Exp_Ch9 is
 
                --  Create the declaration of the array object. Generate:
 
-               --    Maxes_Id : aliased Protected_Entry_Queue_Max_Array
-               --                         (1 .. Count) := (..., ...);
+               --    Maxes_Id : aliased constant
+               --                 Protected_Entry_Queue_Max_Array
+               --                   (1 .. Count) := (..., ...);
 
                Maxes_Id :=
                  Make_Defining_Identifier (Loc,
@@ -9497,9 +9498,9 @@ package body Exp_Ch9 is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Body_Id,
              Aliased_Present     => True,
+             Constant_Present    => True,
              Object_Definition   => Obj_Def,
-             Expression          => Expr,
-             Constant_Present    => True);
+             Expression          => Expr);
 
          --  A pointer to this array will be placed in the corresponding record
          --  by its initialization procedure so this needs to be analyzed here.
