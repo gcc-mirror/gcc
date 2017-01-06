@@ -24599,7 +24599,7 @@ package body Sem_Prag is
       In_Out_Items   : Elist_Id := No_Elist;
       Out_Items      : Elist_Id := No_Elist;
       Proof_In_Items : Elist_Id := No_Elist;
-      --  These list contain the entities of all Input, In_Out, Output and
+      --  These lists contain the entities of all Input, In_Out, Output and
       --  Proof_In items defined in the corresponding Global pragma.
 
       Repeat_Items : Elist_Id := No_Elist;
@@ -24656,7 +24656,7 @@ package body Sem_Prag is
       procedure Collect_Global_Items
         (List : Node_Id;
          Mode : Name_Id := Name_Input);
-      --  Gather all input, in out, output and Proof_In items from node List
+      --  Gather all Input, In_Out, Output and Proof_In items from node List
       --  and separate them in lists In_Items, In_Out_Items, Out_Items and
       --  Proof_In_Items. Flags Has_In_State, Has_In_Out_State, Has_Out_State
       --  and Has_Proof_In_State are set when there is at least one abstract
