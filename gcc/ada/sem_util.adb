@@ -8359,8 +8359,8 @@ package body Sem_Util is
       Prag : constant Entity_Id := Get_Pragma (Id, Pragma_Max_Queue_Length);
 
    begin
-      --  A value of 0 represents no maximum specified and entries and entry
-      --  families with no Max_Queue_Length aspect or pragma defaults to it.
+      --  A value of 0 represents no maximum specified, and entries and entry
+      --  families with no Max_Queue_Length aspect or pragma default to it.
 
       if not Has_Max_Queue_Length (Id) or else not Present (Prag) then
          return Uint_0;

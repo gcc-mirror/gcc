@@ -17728,8 +17728,8 @@ package body Sem_Prag is
 
             end if;
 
-            --  Manually subsitute the expression value of the pragma argument
-            --  if it not an integer literally because this is not taken care
+            --  Manually substitute the expression value of the pragma argument
+            --  if it's not an integer literal because this is not taken care
             --  of automatically elsewhere.
 
             if Nkind (Arg) /= N_Integer_Literal then

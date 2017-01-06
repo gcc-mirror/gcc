@@ -1,3 +1,7 @@
+2017-01-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb, rtsfind.adb, sem_util.adb: Minor typo fixes.
+
 2017-01-06  Tristan Gingold  <gingold@adacore.com>
 
 	* ada.ads, a-unccon.ads: Add pragma No_Elaboration_Code_All.
