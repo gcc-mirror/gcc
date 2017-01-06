@@ -152,6 +152,14 @@
   VUNSPEC_PROBE_STACK_RANGE ; Represent stack range probing.
   VUNSPEC_CDP		; Represent the coprocessor cdp instruction.
   VUNSPEC_CDP2		; Represent the coprocessor cdp2 instruction.
+  VUNSPEC_LDC		; Represent the coprocessor ldc instruction.
+  VUNSPEC_LDC2		; Represent the coprocessor ldc2 instruction.
+  VUNSPEC_LDCL		; Represent the coprocessor ldcl instruction.
+  VUNSPEC_LDC2L		; Represent the coprocessor ldc2l instruction.
+  VUNSPEC_STC		; Represent the coprocessor stc instruction.
+  VUNSPEC_STC2		; Represent the coprocessor stc2 instruction.
+  VUNSPEC_STCL		; Represent the coprocessor stcl instruction.
+  VUNSPEC_STC2L		; Represent the coprocessor stc2l instruction.
 ])
 
 ;; Enumerators for NEON unspecs.

@@ -1,5 +1,32 @@
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm.md (*ldc): New.
+	(*stc): New.
+	(<ldc>): New.
+	(<stc>): New.
+	* config/arm/arm.c (arm_coproc_builtin_available): Add
+	support for ldc,ldcl,stc,stcl,ldc2,ldc2l,stc2 and stc2l.
+	(arm_coproc_ldc_stc_legitimate_address): New.
+	* config/arm/arm-builtins.c (arm_type_qualifiers): Add
+	'qualifier_const_pointer'.
+	(LDC_QUALIFIERS): Define to...
+	(arm_ldc_qualifiers): ... this. New.
+	(STC_QUALIFIERS): Define to...
+	(arm_stc_qualifiers): ... this. New.
+	* config/arm/arm-protos.h
+	(arm_coproc_ldc_stc_legitimate_address): New.
+	* config/arm/arm_acle.h (__arm_ldc, __arm_ldcl, __arm_stc,
+	__arm_stcl, __arm_ldc2, __arm_ldc2l, __arm_stc2, __arm_stc2l): New.
+	* config/arm/arm_acle_builtins.def (ldc, ldc2, ldcl, ldc2l, stc,
+	stc2, stcl, stc2l): New.
+	* config/arm/constraints.md (Uz): New.
+	* config/arm/iterators.md (LDCI, STCI, ldc, stc, LDC STC): New.
+	* config/arm/unspecs.md (VUNSPEC_LDC, VUNSPEC_LDC2, VUNSPEC_LDCL,
+	VUNSPEC_LDC2L, VUNSPEC_STC, VUNSPEC_STC2, VUNSPEC_STCL,
+	VUNSPEC_STC2L): New.
+
+2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm.md (<cdp>): New.
 	* config/arm/arm.c (neon_const_bounds): Rename this ...
 	(arm_const_bounds): ... this.

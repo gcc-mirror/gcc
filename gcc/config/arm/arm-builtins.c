@@ -51,6 +51,8 @@ enum arm_type_qualifiers
   qualifier_const = 0x2, /* 1 << 1  */
   /* T *foo.  */
   qualifier_pointer = 0x4, /* 1 << 2  */
+  /* const T * foo.  */
+  qualifier_const_pointer = 0x6,
   /* Used when expanding arguments if an operand could
      be an immediate.  */
   qualifier_immediate = 0x8, /* 1 << 3  */
@@ -178,6 +180,23 @@ arm_cdp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned_immediate };
 #define CDP_QUALIFIERS \
   (arm_cdp_qualifiers)
+
+/* void (unsigned immediate, unsigned immediate,  const void *).  */
+static enum arm_type_qualifiers
+arm_ldc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_const_pointer };
+#define LDC_QUALIFIERS \
+  (arm_ldc_qualifiers)
+
+/* void (unsigned immediate, unsigned immediate,  void *).  */
+static enum arm_type_qualifiers
+arm_stc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_pointer };
+#define STC_QUALIFIERS \
+  (arm_stc_qualifiers)
+
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
    a DImode pointer to the location to store to, so we must use

@@ -41,6 +41,33 @@ __arm_cdp (const unsigned int __coproc, const unsigned int __opc1,
   return __builtin_arm_cdp (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
 }
 
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_ldc (const unsigned int __coproc, const unsigned int __CRd,
+	   const void * __p)
+{
+  return __builtin_arm_ldc (__coproc, __CRd, __p);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_ldcl (const unsigned int __coproc, const unsigned int __CRd,
+	    const void * __p)
+{
+  return __builtin_arm_ldcl (__coproc, __CRd, __p);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_stc (const unsigned int __coproc, const unsigned int __CRd,
+	   void * __p)
+{
+  return __builtin_arm_stc (__coproc, __CRd, __p);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_stcl (const unsigned int __coproc, const unsigned int __CRd,
+	    void * __p)
+{
+  return __builtin_arm_stcl (__coproc, __CRd, __p);
+}
 #if __ARM_ARCH >= 5
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_cdp2 (const unsigned int __coproc, const unsigned int __opc1,
@@ -48,6 +75,34 @@ __arm_cdp2 (const unsigned int __coproc, const unsigned int __opc1,
 	    const unsigned int __CRm, const unsigned int __opc2)
 {
   return __builtin_arm_cdp2 (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_ldc2 (const unsigned int __coproc, const unsigned int __CRd,
+	    const void * __p)
+{
+  return __builtin_arm_ldc2 (__coproc, __CRd, __p);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_ldc2l (const unsigned int __coproc, const unsigned int __CRd,
+	     const void * __p)
+{
+  return __builtin_arm_ldc2l (__coproc, __CRd, __p);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_stc2 (const unsigned int __coproc, const unsigned int __CRd,
+	    void * __p)
+{
+  return __builtin_arm_stc2 (__coproc, __CRd, __p);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_stc2l (const unsigned int __coproc, const unsigned int __CRd,
+	     void * __p)
+{
+  return __builtin_arm_stc2l (__coproc, __CRd, __p);
 }
 #endif /*  __ARM_ARCH >= 5.  */
 #endif /* (!__thumb__ || __thumb2__) &&  __ARM_ARCH >= 4.  */

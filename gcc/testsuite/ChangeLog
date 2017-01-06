@@ -1,5 +1,16 @@
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* gcc.target/arm/acle/ldc: New.
+	* gcc.target/arm/acle/ldc2: New.
+	* gcc.target/arm/acle/ldcl: New.
+	* gcc.target/arm/acle/ldc2l: New.
+	* gcc.target/arm/acle/stc: New.
+	* gcc.target/arm/acle/stc2: New.
+	* gcc.target/arm/acle/stcl: New.
+	* gcc.target/arm/acle/stc2l: New.
+
+2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* gcc.target/arm/acle/acle.exp: Run tests for different options
 	and make sure fat-lto-objects is used such that we can still do
 	assemble scans.

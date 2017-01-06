@@ -948,3 +948,19 @@
 (define_int_iterator CDPI [VUNSPEC_CDP VUNSPEC_CDP2])
 (define_int_attr cdp [(VUNSPEC_CDP "cdp") (VUNSPEC_CDP2 "cdp2")])
 (define_int_attr CDP [(VUNSPEC_CDP "CDP") (VUNSPEC_CDP2 "CDP2")])
+
+;; An iterator for the LDC coprocessor instruction
+(define_int_iterator LDCI [VUNSPEC_LDC VUNSPEC_LDC2
+			   VUNSPEC_LDCL VUNSPEC_LDC2L])
+(define_int_attr ldc [(VUNSPEC_LDC "ldc") (VUNSPEC_LDC2 "ldc2")
+		      (VUNSPEC_LDCL "ldcl") (VUNSPEC_LDC2L "ldc2l")])
+(define_int_attr LDC [(VUNSPEC_LDC "LDC") (VUNSPEC_LDC2 "LDC2")
+		      (VUNSPEC_LDCL "LDCL") (VUNSPEC_LDC2L "LDC2L")])
+
+;; An iterator for the STC coprocessor instructions
+(define_int_iterator STCI [VUNSPEC_STC VUNSPEC_STC2
+			   VUNSPEC_STCL VUNSPEC_STC2L])
+(define_int_attr stc [(VUNSPEC_STC "stc") (VUNSPEC_STC2 "stc2")
+		      (VUNSPEC_STCL "stcl") (VUNSPEC_STC2L "stc2l")])
+(define_int_attr STC [(VUNSPEC_STC "STC") (VUNSPEC_STC2 "STC2")
+		      (VUNSPEC_STCL "STCL") (VUNSPEC_STC2L "STC2L")])
