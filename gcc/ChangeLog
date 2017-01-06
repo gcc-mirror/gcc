@@ -1,5 +1,27 @@
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm-builtins.c (arm_unsigned_binop_qualifiers): New.
+	(UBINOP_QUALIFIERS): New.
+	(si_UP): Define.
+	(acle_builtin_data): New. Change comment.
+	(arm_builtins): Remove ARM_BUILTIN_CRC32B, ARM_BUILTIN_CRC32H,
+	ARM_BUILTIN_CRC32W, ARM_BUILTIN_CRC32CB, ARM_BUILTIN_CRC32CH,
+	ARM_BUILTIN_CRC32CW. Add ARM_BUILTIN_ACLE_BASE and include
+	arm_acle_builtins.def.
+	(ARM_BUILTIN_ACLE_PATTERN_START): Define.
+	(arm_init_acle_builtins): New.
+	(CRC32_BUILTIN): Remove.
+	(bdesc_2arg): Remove entries for crc32b, crc32h, crc32w,
+	crc32cb, crc32ch and crc32cw.
+	(arm_init_crc32_builtins): Remove.
+	(arm_init_builtins): Use arm_init_acle_builtins rather
+	than arm_init_crc32_builtins.
+	(arm_expand_acle_builtin): New.
+	(arm_expand_builtin): Use 'arm_expand_acle_builtin'.
+	* config/arm/arm_acle_builtins.def: New.
+
+2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm-builtins.c (neon_builtin_datum): Rename to ..
 	(arm_builtin_datum): ... this.
 	(arm_init_neon_builtin): Rename to ...
