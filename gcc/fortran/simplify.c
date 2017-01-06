@@ -610,9 +610,18 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
 	  n++;
 	  if (n < result->rank)
 	    {
-	      count [n]++;
+#pragma GCC diagnostic push
+	      /* If the nested loop is unrolled GFC_MAX_DIMENSIONS
+		 times, we'd warn for the last iteration, because the
+		 array index will have already been incremented to the
+		 array sizes, and we can't tell that this must make
+		 the test against result->rank false, because ranks
+		 must not exceed GFC_MAX_DIMENSIONS.  */
+#pragma GCC diagnostic ignored "-Warray-bounds"
+	      count[n]++;
 	      base += sstride[n];
 	      dest += dstride[n];
+#pragma GCC diagnostic pop
 	    }
 	  else
 	    done = true;
