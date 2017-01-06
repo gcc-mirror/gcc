@@ -348,17 +348,17 @@ package body System.Tasking.Protected_Objects.Operations is
            or else Object.Entry_Queue_Maxes /= null
          then
             --  Need to check the queue length. Computing the length is an
-            --  unusual case and is slow (need to walk the queue)
+            --  unusual case and is slow (need to walk the queue).
 
             Queue_Length := Queuing.Count_Waiting (Object.Entry_Queues (E));
 
             if (Run_Time_Restrictions.Set (Max_Entry_Queue_Length)
-                and then Queue_Length >=
+                 and then Queue_Length >=
                    Run_Time_Restrictions.Value (Max_Entry_Queue_Length))
               or else
-              (Object.Entry_Queue_Maxes /= null
-                 and then Object.Entry_Queue_Maxes (Index) /= 0
-                 and then Queue_Length >= Object.Entry_Queue_Maxes (Index))
+                (Object.Entry_Queue_Maxes /= null
+                  and then Object.Entry_Queue_Maxes (Index) /= 0
+                  and then Queue_Length >= Object.Entry_Queue_Maxes (Index))
             then
                --  This violates the Max_Entry_Queue_Length restriction or the
                --  Max_Queue_Length bound, raise Program_Error.

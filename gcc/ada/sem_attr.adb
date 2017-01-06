@@ -4488,9 +4488,11 @@ package body Sem_Attr is
 
          if Is_Ignored (Enclosing_Pragma) then
             Rewrite (N, Relocate_Node (P));
-         end if;
+            Preanalyze_And_Resolve (N);
 
-         Preanalyze_And_Resolve (P);
+         else
+            Preanalyze_And_Resolve (P);
+         end if;
       end Loop_Entry;
 
       -------------
