@@ -613,8 +613,8 @@ package body Einfo is
    --    Has_Pragma_Unused               Flag294
    --    Is_Ignored_Transient            Flag295
    --    Has_Partial_Visible_Refinement  Flag296
+   --    Is_Entry_Wrapper                Flag297
 
-   --    (unused)                        Flag297
    --    (unused)                        Flag298
    --    (unused)                        Flag299
    --    (unused)                        Flag300
@@ -2196,6 +2196,11 @@ package body Einfo is
    begin
       return Flag52 (Id);
    end Is_Entry_Formal;
+
+   function Is_Entry_Wrapper (Id : E) return B is
+   begin
+      return Flag297 (Id);
+   end Is_Entry_Wrapper;
 
    function Is_Exception_Handler (Id : E) return B is
    begin
@@ -5286,6 +5291,11 @@ package body Einfo is
    begin
       Set_Flag52 (Id, V);
    end Set_Is_Entry_Formal;
+
+   procedure Set_Is_Entry_Wrapper (Id : E; V : B := True) is
+   begin
+      Set_Flag297 (Id, V);
+   end Set_Is_Entry_Wrapper;
 
    procedure Set_Is_Exception_Handler (Id : E; V : B := True) is
    begin

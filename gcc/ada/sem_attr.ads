@@ -247,10 +247,10 @@ package Sem_Attr is
       -----------------------
 
       Attribute_Finalization_Size => True,
-      --  For every object, Finalization_Size returns the size of the hidden
-      --  header used for finalization purposes as if the object was allocated
-      --  on the heap. The size of the header does take into account any extra
-      --  padding due to alignment issues.
+      --  For every object or non-class-wide-type, Finalization_Size returns
+      --  the size of the hidden header used for finalization purposes as if
+      --  the object or type was allocated on the heap. The size of the header
+      --  does take into account any extra padding due to alignment issues.
 
       -----------------
       -- Fixed_Value --

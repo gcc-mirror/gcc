@@ -3839,8 +3839,27 @@ package body Sem_Attr is
 
       when Attribute_Finalization_Size =>
          Check_E0;
-         Analyze_And_Resolve (P);
-         Check_Object_Reference (P);
+
+         if Is_Object_Reference (P) then
+            Analyze_And_Resolve (P);
+            Check_Object_Reference (P);
+
+         --  Redundant type verification for accurate error output
+
+         elsif not Is_Entity_Name (P)
+           or else not Is_Type (Entity (P))
+         then
+            Error_Attr_P ("prefix of % attribute must be a definite type or" &
+                          " an object");
+         else
+            Check_Type;
+            Check_Not_Incomplete_Type;
+            if Is_Class_Wide_Type (Etype (P)) then
+               Error_Attr_P ("prefix of % attribute cannot be applied to " &
+                             "a class-wide type");
+            end if;
+         end if;
+
          Set_Etype (N, Universal_Integer);
 
       -----------

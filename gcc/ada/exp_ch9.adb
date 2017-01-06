@@ -1495,6 +1495,7 @@ package body Exp_Ch9 is
       Wrapper_Id :=
         Make_Defining_Identifier (Loc, New_External_Name (Chars (E), 'E'));
       Set_Contract_Wrapper (E, Wrapper_Id);
+      Set_Is_Entry_Wrapper (Wrapper_Id);
 
       --  The wrapper body is analyzed when the enclosing type is frozen
 
