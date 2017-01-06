@@ -5709,6 +5709,14 @@ package body Checks is
       elsif Expr_Known_Valid (Expr) then
          return;
 
+      --  No check needed within a generated predicate function. Validity
+      --  of input value will have been checked earlier.
+
+      elsif Ekind (Current_Scope) = E_Function
+        and then Is_Predicate_Function (Current_Scope)
+      then
+         return;
+
       --  Ignore case of enumeration with holes where the flag is set not to
       --  worry about holes, since no special validity check is needed
 
