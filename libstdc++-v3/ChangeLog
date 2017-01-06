@@ -1,3 +1,18 @@
+2017-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR go/78978
+	* acinclude.m4 (GLIBCXX_CHECK_ASSEMBLER_HWCAP): Remove.
+	* configure.ac: Call GCC_CHECK_ASSEMBLER_HWCAP instead of
+	GLIBCXX_CHECK_ASSEMBLER_HWCAP.
+	* fragment.am (CONFIG_CXXFLAGS): Use HWCAP_CFLAGS instead of
+	HWCAP_FLAGS.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in, doc/Makefile.in, include/Makefile.in,
+	libsupc++/Makefile.in, po/Makefile.in, python/Makefile.in,
+	src/Makefile.in, src/c++11/Makefile.in, src/c++98/Makefile.in,
+	src/filesystem/Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_ASSERTIONS): Avoid redefinition.
