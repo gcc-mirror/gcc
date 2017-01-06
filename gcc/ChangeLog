@@ -1,3 +1,28 @@
+2017-01-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline
+	2016-07-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	comments to explain why certain error messages make mention of
+	undocumented options.
+	(rs6000_invalid_builtin): Change error messages to replace mention
+	of undocumented options with mention of the -mcpu=power9 option
+	that enables those undocumented options.
+	* config/rs6000/rs6000.h: Add macro definition of MASK_FLOAT128
+	and change the macro definition of RS6000_BTM_FLOAT128 to correct
+	an error that was discovered during the development of this patch.
+	* config/rs6000/rs6000.opt: Add the Undocumented qualifier to the
+	mpower9-fusion, mpower9-vector, mpower9-dform, and mmodulo entries.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Modify
+	descriptions of built-in functions so that they depend on
+	-mcpu=power9 instead of on the corresponding undocumented flags.
+	* doc/invoke.texi (Option Summary):  Remove all mention of newly
+	undocumented flags.
+	(IBM RS/6000 and PowerPC Options): Likewise.
+	* doc/md.texi (Constraints for Particuliar Machines): Remove all
+	mention of newly undocumented flags.
+
 2017-01-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
