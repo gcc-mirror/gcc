@@ -964,3 +964,15 @@
 		      (VUNSPEC_STCL "stcl") (VUNSPEC_STC2L "stc2l")])
 (define_int_attr STC [(VUNSPEC_STC "STC") (VUNSPEC_STC2 "STC2")
 		      (VUNSPEC_STCL "STCL") (VUNSPEC_STC2L "STC2L")])
+
+;; An iterator for the MCR coprocessor instructions
+(define_int_iterator MCRI [VUNSPEC_MCR VUNSPEC_MCR2])
+
+(define_int_attr mcr [(VUNSPEC_MCR "mcr") (VUNSPEC_MCR2 "mcr2")])
+(define_int_attr MCR [(VUNSPEC_MCR "MCR") (VUNSPEC_MCR2 "MCR2")])
+
+;; An iterator for the MRC coprocessor instructions
+(define_int_iterator MRCI [VUNSPEC_MRC VUNSPEC_MRC2])
+
+(define_int_attr mrc [(VUNSPEC_MRC "mrc") (VUNSPEC_MRC2 "mrc2")])
+(define_int_attr MRC [(VUNSPEC_MRC "MRC") (VUNSPEC_MRC2 "MRC2")])

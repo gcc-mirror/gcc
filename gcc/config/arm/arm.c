@@ -30908,6 +30908,8 @@ arm_coproc_builtin_available (enum unspecv builtin)
       case VUNSPEC_LDCL:
       case VUNSPEC_STC:
       case VUNSPEC_STCL:
+      case VUNSPEC_MCR:
+      case VUNSPEC_MRC:
 	if (arm_arch4)
 	  return true;
 	break;
@@ -30916,6 +30918,8 @@ arm_coproc_builtin_available (enum unspecv builtin)
       case VUNSPEC_LDC2L:
       case VUNSPEC_STC2:
       case VUNSPEC_STC2L:
+      case VUNSPEC_MCR2:
+      case VUNSPEC_MRC2:
 	/* Only present in ARMv5*, ARMv6 (but not ARMv6-M), ARMv7* and
 	   ARMv8-{A,M}.  */
 	if (arm_arch5)

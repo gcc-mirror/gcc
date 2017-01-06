@@ -68,6 +68,22 @@ __arm_stcl (const unsigned int __coproc, const unsigned int __CRd,
 {
   return __builtin_arm_stcl (__coproc, __CRd, __p);
 }
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_mcr (const unsigned int __coproc, const unsigned int __opc1,
+	   uint32_t __value, const unsigned int __CRn, const unsigned int __CRm,
+	   const unsigned int __opc2)
+{
+  return __builtin_arm_mcr (__coproc, __opc1, __value, __CRn, __CRm, __opc2);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+__arm_mrc (const unsigned int __coproc, const unsigned int __opc1,
+	   const unsigned int __CRn, const unsigned int __CRm,
+	   const unsigned int __opc2)
+{
+  return __builtin_arm_mrc (__coproc, __opc1, __CRn, __CRm, __opc2);
+}
 #if __ARM_ARCH >= 5
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_cdp2 (const unsigned int __coproc, const unsigned int __opc1,
@@ -103,6 +119,22 @@ __arm_stc2l (const unsigned int __coproc, const unsigned int __CRd,
 	     void * __p)
 {
   return __builtin_arm_stc2l (__coproc, __CRd, __p);
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_mcr2 (const unsigned int __coproc, const unsigned int __opc1,
+	    uint32_t __value, const unsigned int __CRn,
+	    const unsigned int __CRm, const unsigned int __opc2)
+{
+  return __builtin_arm_mcr2 (__coproc, __opc1, __value, __CRn, __CRm, __opc2);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+__arm_mrc2 (const unsigned int __coproc, const unsigned int __opc1,
+	    const unsigned int __CRn, const unsigned int __CRm,
+	    const unsigned int __opc2)
+{
+  return __builtin_arm_mrc2 (__coproc, __opc1, __CRn, __CRm, __opc2);
 }
 #endif /*  __ARM_ARCH >= 5.  */
 #endif /* (!__thumb__ || __thumb2__) &&  __ARM_ARCH >= 4.  */

@@ -197,6 +197,26 @@ arm_stc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define STC_QUALIFIERS \
   (arm_stc_qualifiers)
 
+/* void (unsigned immediate, unsigned immediate,  T, unsigned immediate,
+	 unsigned immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_mcr_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_none,
+      qualifier_unsigned_immediate, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate };
+#define MCR_QUALIFIERS \
+  (arm_mcr_qualifiers)
+
+/* T (unsigned immediate, unsigned immediate, unsigned immediate,
+      unsigned immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_mrc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_unsigned_immediate };
+#define MRC_QUALIFIERS \
+  (arm_mrc_qualifiers)
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
    a DImode pointer to the location to store to, so we must use

@@ -1,5 +1,24 @@
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm.md (<mcr>): New.
+	(<mrc>): New.
+	* config/arm/arm.c (arm_coproc_builtin_available): Add
+	support for mcr, mrc, mcr2 and mrc2.
+	* config/arm/arm-builtins.c (MCR_QUALIFIERS): Define to...
+	(arm_mcr_qualifiers): ... this. New.
+	(MRC_QUALIFIERS): Define to ...
+	(arm_mrc_qualifiers): ... this. New.
+	(MCR_QUALIFIERS): Define to ...
+	(arm_mcr_qualifiers): ... this. New.
+	* config/arm/arm_acle.h (__arm_mcr, __arm_mrc, __arm_mcr2,
+	__arm_mrc2): New.
+	* config/arm/arm_acle_builtins.def (mcr, mcr2, mrc, mrc2): New.
+	* config/arm/iterators.md (MCRI, mcr, MCR, MRCI, mrc, MRC): New.
+	* config/arm/unspecs.md (VUNSPEC_MCR, VUNSPEC_MCR2, VUNSPEC_MRC,
+	VUNSPEC_MRC2): New.
+
+2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm.md (*ldc): New.
 	(*stc): New.
 	(<ldc>): New.
