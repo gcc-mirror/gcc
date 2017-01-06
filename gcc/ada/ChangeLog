@@ -1,3 +1,13 @@
+2017-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Protected_Subprogram_Call): Add guard to
+	better detect call within an entry_wrapper.
+	* sem_res.adb (Resolve_Call): A protected call within an
+	entity_wrapper is analyzed in the context of the protected
+	object but corresponds to a pre-analysis and is not an access
+	before elaboration.
+	* sem_attr.adb: Minor reformatting.
+
 2017-01-06  Justin Squirek  <squirek@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Modify semantic checks for
