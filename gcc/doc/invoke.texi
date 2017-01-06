@@ -837,7 +837,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-short  -mhard-float  -m68881  -msoft-float  -mpcrel @gol
 -malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
 -mshared-library-id=n  -mid-shared-library  -mno-id-shared-library @gol
--mxgot -mno-xgot}
+-mxgot -mno-xgot -mlong-jump-table-offsets}
 
 @emph{MCore Options}
 @gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates @gol
@@ -18475,6 +18475,11 @@ object file that accesses more than 8192 GOT entries.  Very few do.
 
 These options have no effect unless GCC is generating
 position-independent code.
+
+@item -mlong-jump-table-offsets
+@opindex mlong-jump-table-offsets
+Use 32-bit offsets in @code{switch} tables.  The default is to use
+16-bit offsets.
 
 @end table
 
