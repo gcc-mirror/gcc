@@ -1,3 +1,9 @@
+2017-01-06  Alexandre Oliva <aoliva@redhat.com>
+
+	* c-pretty-print.c (pp_c_tree_decl_identifier): Convert 16-bit
+	value to unsigned short to fit in 4 hex digits without
+	warnings.
+
 2017-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c.opt (fsso-struct): Add 'native' value.
