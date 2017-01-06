@@ -1,7 +1,7 @@
 2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/77484
-	* predict.def (PRED_POLYMORPHIC_CALL): Set to 58
+	* predict.def (PRED_POLYMORPHIC_CALL): Set to 59.
 	* predict.c (tree_estimate_probability_bb): Reverse direction of
 	polymorphic call predictor.
 
