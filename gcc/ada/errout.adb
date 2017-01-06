@@ -2992,7 +2992,7 @@ package body Errout is
             when '\' =>
                Continuation := True;
 
-               if Text (P) = '\' then
+               if P <= Text'Last and then Text (P) = '\' then
                   Continuation_New_Line := True;
                   P := P + 1;
                end if;

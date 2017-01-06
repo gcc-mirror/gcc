@@ -3273,6 +3273,19 @@ package body Sem_Ch5 is
          Set_Has_Created_Identifier (N);
       end if;
 
+      --  If the iterator specification has a syntactic error, transform
+      --  construct into an infinite loop to prevent a crash and perform
+      --  some analysis.
+
+      if Present (Iter)
+        and then Present (Iterator_Specification (Iter))
+        and then Error_Posted (Iterator_Specification (Iter))
+      then
+         Set_Iteration_Scheme (N, Empty);
+         Analyze (N);
+         return;
+      end if;
+
       --  Iteration over a container in Ada 2012 involves the creation of a
       --  controlled iterator object. Wrap the loop in a block to ensure the
       --  timely finalization of the iterator and release of container locks.

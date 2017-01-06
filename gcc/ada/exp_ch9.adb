@@ -9767,7 +9767,10 @@ package body Exp_Ch9 is
       --  type. This object is later passed to the appropriate protected object
       --  initialization routine.
 
-      if Has_Entries (Prot_Typ) then
+      if Has_Entries (Prot_Typ)
+        and then Corresponding_Runtime_Package (Prot_Typ) =
+                    System_Tasking_Protected_Objects_Entries
+      then
          declare
             Count      : Int;
             Item       : Entity_Id;

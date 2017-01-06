@@ -1,5 +1,38 @@
 2017-01-06  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch5.adb (Analyze_Loop_Statement): If the loop includes an
+	iterator specification with a serious syntactic error, transform
+	construct into an infinite loop in order to continue analysis
+	and prevent a compiler abort.
+
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Do not generate
+	max_queue_lengths_array if unused.
+
+2017-01-06  Bob Duff  <duff@adacore.com>
+
+	* errout.adb (Set_Msg_Text): Protect against out-of-bounds
+	array access, in case "\" is at the end of Text.
+	* stylesw.adb (Set_Style_Check_Options): Don't include input
+	characters in the error message template, because they could
+	be control characters such as "\", which Errout will try to
+	interpret.
+
+2017-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Indexing_Operations, Inspect_Declarations):
+	For a private type examine the visible declarations that follow
+	the partial view, not just the private declarations that follow
+	the full view.
+
+2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb, sem_ch3.adb, checks.adb: Minor reformatting and
+	code cleanup.
+
+2017-01-06  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch5.adb (Get_Default_Iterator): For a derived type, the
 	alias of the inherited op is the parent iterator, no need to
 	examine dispatch table positions which might not be established

@@ -3777,9 +3777,10 @@ package body Exp_Ch5 is
                      Op := Node (Prim);
 
                      if Alias (Op) = Iter
-                       or else (Chars (Op) = Chars (Iter)
-                         and then Present (DTC_Entity (Op))
-                         and then DT_Position (Op) = DT_Position (Iter))
+                       or else
+                         (Chars (Op) = Chars (Iter)
+                           and then Present (DTC_Entity (Op))
+                           and then DT_Position (Op) = DT_Position (Iter))
                      then
                         return Op;
                      end if;
