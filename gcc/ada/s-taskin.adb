@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -272,17 +272,4 @@ package body System.Tasking is
 
       T.Entry_Calls (1).Self := T;
    end Initialize;
-
-   ---------------------
-   -- Set_Entry_Names --
-   ---------------------
-
-   procedure Set_Entry_Names
-     (Self_Id : Task_Id;
-      Names   : Task_Entry_Names_Access)
-   is
-   begin
-      Self_Id.Entry_Names := Names;
-   end Set_Entry_Names;
-
 end System.Tasking;
