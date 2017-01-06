@@ -1,3 +1,18 @@
+2017-01-06  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Map_Pragma_Name): Preparation work,
+	dummy implementation of Map_Pragma_Name.
+
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Make the
+	entry_body variable constant.
+	* s-taprob.ads (Entry_Body_Access): Move to s-tposen.
+	* s-tpoben.ads (Protected_Entry_Body_Access): Now access
+	to constant.
+	* s-tposen.ads (Entry_Body_Access): Moved from s-taprob,
+	now access to constant.
+
 2017-01-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* einfo.ads, sem_res.adb, sem_attr.adb, sem_ch6.adb: Minor

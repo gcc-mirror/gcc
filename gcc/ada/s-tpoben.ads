@@ -50,18 +50,22 @@ package System.Tasking.Protected_Objects.Entries is
 
    subtype Positive_Protected_Entry_Index is
      Protected_Entry_Index range  1 .. Protected_Entry_Index'Last;
+   --  Index of the entry (and in some cases of the queue)
 
    type Find_Body_Index_Access is access
      function
        (O : System.Address;
         E : Protected_Entry_Index)
         return Protected_Entry_Index;
+   --  Convert a queue index to an entry index (an entries family has one entry
+   --  index for several queue index).
 
    type Protected_Entry_Body_Array is
      array (Positive_Protected_Entry_Index range <>) of Entry_Body;
    --  Contains executable code for all entry bodies of a protected type
 
-   type Protected_Entry_Body_Access is access all Protected_Entry_Body_Array;
+   type Protected_Entry_Body_Access is
+     access constant Protected_Entry_Body_Array;
 
    type Protected_Entry_Queue_Array is
      array (Protected_Entry_Index range <>) of Entry_Queue;
