@@ -135,6 +135,7 @@ package Aspects is
       Aspect_Refined_State,                 -- GNAT
       Aspect_Relative_Deadline,
       Aspect_Scalar_Storage_Order,          -- GNAT
+      Aspect_Secondary_Stack_Size,          -- GNAT
       Aspect_Simple_Storage_Pool,           -- GNAT
       Aspect_Size,
       Aspect_Small,
@@ -255,6 +256,7 @@ package Aspects is
       Aspect_Pure_Function              => True,
       Aspect_Remote_Access_Type         => True,
       Aspect_Scalar_Storage_Order       => True,
+      Aspect_Secondary_Stack_Size       => True,
       Aspect_Shared                     => True,
       Aspect_Simple_Storage_Pool        => True,
       Aspect_Simple_Storage_Pool_Type   => True,
@@ -374,6 +376,7 @@ package Aspects is
       Aspect_Refined_State              => Expression,
       Aspect_Relative_Deadline          => Expression,
       Aspect_Scalar_Storage_Order       => Expression,
+      Aspect_Secondary_Stack_Size       => Expression,
       Aspect_Simple_Storage_Pool        => Name,
       Aspect_Size                       => Expression,
       Aspect_Small                      => Expression,
@@ -494,6 +497,7 @@ package Aspects is
       Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,
       Aspect_Remote_Types                 => Name_Remote_Types,
       Aspect_Scalar_Storage_Order         => Name_Scalar_Storage_Order,
+      Aspect_Secondary_Stack_Size         => Name_Secondary_Stack_Size,
       Aspect_Shared                       => Name_Shared,
       Aspect_Shared_Passive               => Name_Shared_Passive,
       Aspect_Simple_Storage_Pool          => Name_Simple_Storage_Pool,
@@ -692,6 +696,7 @@ package Aspects is
       Aspect_Remote_Access_Type           => Always_Delay,
       Aspect_Remote_Call_Interface        => Always_Delay,
       Aspect_Remote_Types                 => Always_Delay,
+      Aspect_Secondary_Stack_Size         => Always_Delay,
       Aspect_Shared                       => Always_Delay,
       Aspect_Shared_Passive               => Always_Delay,
       Aspect_Simple_Storage_Pool          => Always_Delay,

@@ -2708,15 +2708,17 @@ package body Exp_Ch3 is
                      Actions := Build_Assignment (Id, Expression (Decl));
                   end if;
 
-               --  CPU, Dispatching_Domain, Priority and Size components are
-               --  filled with the corresponding rep item expression of the
-               --  concurrent type (if any).
+               --  CPU, Dispatching_Domain, Priority and
+               --  Secondary_Stack_Size components are filled with the
+               --  corresponding rep item expression of the concurrent
+               --  type (if any).
 
                elsif Ekind (Scope (Id)) = E_Record_Type
                  and then Present (Corresponding_Concurrent_Type (Scope (Id)))
                  and then Nam_In (Chars (Id), Name_uCPU,
                                               Name_uDispatching_Domain,
-                                              Name_uPriority)
+                                              Name_uPriority,
+                                              Name_uSecondary_Stack_Size)
                then
                   declare
                      Exp   : Node_Id;
@@ -2732,6 +2734,9 @@ package body Exp_Ch3 is
 
                      elsif Chars (Id) = Name_uPriority then
                         Nam := Name_Priority;
+
+                     elsif Chars (Id) = Name_uSecondary_Stack_Size then
+                        Nam := Name_Secondary_Stack_Size;
                      end if;
 
                      --  Get the Rep Item (aspect specification, attribute

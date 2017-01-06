@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,10 @@ package System.Secondary_Stack is
    --  Default size of a secondary stack. May be modified by binder -D switch
    --  which causes the binder to generate an appropriate assignment in the
    --  binder generated file.
+
+   function Minimum_Secondary_Stack_Size return Natural;
+   --  The minimum size of the secondary stack so that the internal
+   --  requirements of the stack are met.
 
    procedure SS_Init
      (Stk  : in out Address;
