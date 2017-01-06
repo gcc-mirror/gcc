@@ -498,9 +498,10 @@ package body Sem_Ch9 is
 
                      elsif Kind = N_Pragma then
                         declare
-                           Prag_Name : constant Name_Id   := Pragma_Name (N);
+                           Prag_Name : constant Name_Id   :=
+                             Pragma_Name_Mapped (N);
                            Prag_Id   : constant Pragma_Id :=
-                                         Get_Pragma_Id (Prag_Name);
+                             Get_Pragma_Id (Prag_Name);
 
                         begin
                            if Prag_Id = Pragma_Export
@@ -2148,7 +2149,7 @@ package body Sem_Ch9 is
                --  Pragma case
 
                else
-                  Error_Msg_Name_1 := Pragma_Name (Prio_Item);
+                  Error_Msg_Name_1 := Pragma_Name_Mapped (Prio_Item);
                   Error_Msg_NE
                     ("pragma% for & has no effect when Lock_Free given??",
                      Prio_Item, Id);
@@ -2188,7 +2189,7 @@ package body Sem_Ch9 is
                --  Pragma case
 
                elsif Nkind (Prio_Item) = N_Pragma
-                 and then Pragma_Name (Prio_Item) = Name_Priority
+                 and then Pragma_Name_Mapped (Prio_Item) = Name_Priority
                then
                   Error_Msg_N
                     ("pragma Interrupt_Priority is preferred in presence of "

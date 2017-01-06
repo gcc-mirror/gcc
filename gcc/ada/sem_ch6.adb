@@ -2692,7 +2692,7 @@ package body Sem_Ch6 is
                   Analyze (Prag);
                   Set_Has_Pragma_Inline (Subp);
 
-                  if Pragma_Name (Prag) = Name_Inline_Always then
+                  if Pragma_Name_Mapped (Prag) = Name_Inline_Always then
                      Set_Is_Inlined (Subp);
                      Set_Has_Pragma_Inline_Always (Subp);
                   end if;
@@ -6064,7 +6064,7 @@ package body Sem_Ch6 is
 
          begin
             if Nkind (Orig) = N_Pragma
-              and then Pragma_Name (Orig) = Name_Assert
+              and then Pragma_Name_Mapped (Orig) = Name_Assert
               and then not Error_Posted (Orig)
             then
                declare
@@ -9301,7 +9301,7 @@ package body Sem_Ch6 is
                      if Class_Present (Prag)
                        and then not Split_PPC (Prag)
                      then
-                        if Pragma_Name (Prag) = Name_Precondition then
+                        if Pragma_Name_Mapped (Prag) = Name_Precondition then
                            Error_Msg_N
                              ("info: & inherits `Pre''Class` aspect from "
                               & "#?L?", E);

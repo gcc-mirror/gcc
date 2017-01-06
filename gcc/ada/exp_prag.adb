@@ -162,7 +162,7 @@ package body Exp_Prag is
    ---------------------
 
    procedure Expand_N_Pragma (N : Node_Id) is
-      Pname : constant Name_Id := Pragma_Name (N);
+      Pname : constant Name_Id := Pragma_Name_Mapped (N);
 
    begin
       --  Rewrite pragma ignored by Ignore_Pragma to null statement, so that
@@ -174,52 +174,48 @@ package body Exp_Prag is
          return;
       end if;
 
-      --  Note: we may have a pragma whose Pragma_Identifier field is not a
-      --  recognized pragma, and we must ignore it at this stage.
+      case Get_Pragma_Id (Pname) is
 
-      if Is_Pragma_Name (Pname) then
-         case Get_Pragma_Id (Pname) is
+         --  Pragmas requiring special expander action
 
-            --  Pragmas requiring special expander action
+         when Pragma_Abort_Defer =>
+            Expand_Pragma_Abort_Defer (N);
 
-            when Pragma_Abort_Defer =>
-               Expand_Pragma_Abort_Defer (N);
+         when Pragma_Check =>
+            Expand_Pragma_Check (N);
 
-            when Pragma_Check =>
-               Expand_Pragma_Check (N);
+         when Pragma_Common_Object =>
+            Expand_Pragma_Common_Object (N);
 
-            when Pragma_Common_Object =>
-               Expand_Pragma_Common_Object (N);
+         when Pragma_Import =>
+            Expand_Pragma_Import_Or_Interface (N);
 
-            when Pragma_Import =>
-               Expand_Pragma_Import_Or_Interface (N);
+         when Pragma_Inspection_Point =>
+            Expand_Pragma_Inspection_Point (N);
 
-            when Pragma_Inspection_Point =>
-               Expand_Pragma_Inspection_Point (N);
+         when Pragma_Interface =>
+            Expand_Pragma_Import_Or_Interface (N);
 
-            when Pragma_Interface =>
-               Expand_Pragma_Import_Or_Interface (N);
+         when Pragma_Interrupt_Priority =>
+            Expand_Pragma_Interrupt_Priority (N);
 
-            when Pragma_Interrupt_Priority =>
-               Expand_Pragma_Interrupt_Priority (N);
+         when Pragma_Loop_Variant =>
+            Expand_Pragma_Loop_Variant (N);
 
-            when Pragma_Loop_Variant =>
-               Expand_Pragma_Loop_Variant (N);
+         when Pragma_Psect_Object =>
+            Expand_Pragma_Psect_Object (N);
 
-            when Pragma_Psect_Object =>
-               Expand_Pragma_Psect_Object (N);
+         when Pragma_Relative_Deadline =>
+            Expand_Pragma_Relative_Deadline (N);
 
-            when Pragma_Relative_Deadline =>
-               Expand_Pragma_Relative_Deadline (N);
+         when Pragma_Suppress_Initialization =>
+            Expand_Pragma_Suppress_Initialization (N);
 
-            when Pragma_Suppress_Initialization =>
-               Expand_Pragma_Suppress_Initialization (N);
+         --  All other pragmas need no expander action (includes
+         --  Unknown_Pragma).
 
-            --  All other pragmas need no expander action
-
-            when others => null;
-         end case;
-      end if;
+         when others => null;
+      end case;
 
    end Expand_N_Pragma;
 
@@ -1292,7 +1288,7 @@ package body Exp_Prag is
 
       if Relaxed_RM_Semantics
         and then List_Length (Pragma_Argument_Associations (N)) = 2
-        and then Chars (Pragma_Identifier (N)) = Name_Import
+        and then Pragma_Name_Mapped (N) = Name_Import
         and then Nkind (Arg2 (N)) = N_String_Literal
       then
          Def_Id := Entity (Arg1 (N));

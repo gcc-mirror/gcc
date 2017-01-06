@@ -1,3 +1,21 @@
+2017-01-06  Bob Duff  <duff@adacore.com>
+
+	* snames.ads-tmpl (Renamed): New name for the pragma argument.
+	* par-ch2.adb: Allow the new pragma (with analysis deferred
+	to Sem_Prag).
+	* sinfo.ads, sinfo.adb (Map_Pragma_Name, Pragma_Name_Mapped):
+	Keep a mapping from new pragma names to old names.
+	* sem_prag.adb: Check legality of pragma Rename_Pragma, and
+	implement it by calling Map_Pragma_Name.
+	* checks.adb, contracts.adb, einfo.adb, errout.adb,
+	* exp_attr.adb, exp_ch3.adb, exp_ch6.adb, exp_ch7.adb, exp_ch9.adb,
+	* exp_prag.adb, exp_util.adb, freeze.adb, frontend.adb, ghost.adb,
+	* inline.adb, lib-writ.adb, scans.adb, scans.ads, sem_attr.adb,
+	* sem_aux.adb, sem_ch10.adb, sem_ch13.adb, sem_ch6.adb, sem_ch9.adb,
+	* sem_elab.adb, sem_res.adb, sem_util.adb, sem_util.ads,
+	* sem_warn.adb: Call Pragma_Name_Mapped instead of Pragma_Name
+	as appropriate.
+
 2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb: Minor reformatting.

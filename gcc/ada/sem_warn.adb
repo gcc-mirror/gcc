@@ -1887,7 +1887,8 @@ package body Sem_Warn is
                               P := Parent (Nod);
 
                               if Nkind (P) = N_Pragma
-                                and then Pragma_Name (P) = Name_Test_Case
+                                and then Pragma_Name_Mapped (P) =
+                                  Name_Test_Case
                                 and then Nod = Test_Case_Arg (P, Name_Ensures)
                               then
                                  return True;

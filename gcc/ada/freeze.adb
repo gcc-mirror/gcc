@@ -8464,7 +8464,7 @@ package body Freeze is
 
             if Present (Decl)
               and then Nkind (Decl) = N_Pragma
-              and then Pragma_Name (Decl) = Name_Import
+              and then Pragma_Name_Mapped (Decl) = Name_Import
             then
                return;
             end if;

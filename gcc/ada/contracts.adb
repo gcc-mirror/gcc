@@ -115,16 +115,14 @@ package body Contracts is
 
       --  Local variables
 
-      Prag_Nam : Name_Id;
+      --  A contract must contain only pragmas
+
+      pragma Assert (Nkind (Prag) = N_Pragma);
+      Prag_Nam : constant Name_Id := Pragma_Name_Mapped (Prag);
 
    --  Start of processing for Add_Contract_Item
 
    begin
-      --  A contract must contain only pragmas
-
-      pragma Assert (Nkind (Prag) = N_Pragma);
-      Prag_Nam := Pragma_Name (Prag);
-
       --  Create a new contract when adding the first item
 
       if No (Items) then
@@ -577,7 +575,7 @@ package body Contracts is
 
          Prag := Contract_Test_Cases (Items);
          while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
+            Prag_Nam := Pragma_Name_Mapped (Prag);
 
             if Prag_Nam = Name_Contract_Cases then
 
@@ -606,7 +604,7 @@ package body Contracts is
 
          Prag := Classifications (Items);
          while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
+            Prag_Nam := Pragma_Name_Mapped (Prag);
 
             if Prag_Nam = Name_Depends then
                Depends := Prag;
@@ -1021,7 +1019,7 @@ package body Contracts is
 
          Prag := Classifications (Items);
          while Present (Prag) loop
-            Prag_Nam := Pragma_Name (Prag);
+            Prag_Nam := Pragma_Name_Mapped (Prag);
 
             if Prag_Nam = Name_Initial_Condition then
                Init_Cond := Prag;
@@ -1787,7 +1785,7 @@ package body Contracts is
             if Present (Items) then
                Prag := Contract_Test_Cases (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Contract_Cases then
+                  if Pragma_Name_Mapped (Prag) = Name_Contract_Cases then
                      Expand_Pragma_Contract_Cases
                        (CCs     => Prag,
                         Subp_Id => Subp_Id,
@@ -1840,7 +1838,7 @@ package body Contracts is
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Post_Nam then
+                  if Pragma_Name_Mapped (Prag) = Post_Nam then
                      Append_Enabled_Item
                        (Item => Build_Pragma_Check_Equivalent (Prag),
                         List => Stmts);
@@ -1862,7 +1860,7 @@ package body Contracts is
                   --  Note that non-matching pragmas are skipped
 
                   if Nkind (Decl) = N_Pragma then
-                     if Pragma_Name (Decl) = Post_Nam then
+                     if Pragma_Name_Mapped (Decl) = Post_Nam then
                         Append_Enabled_Item
                           (Item => Build_Pragma_Check_Equivalent (Decl),
                            List => Stmts);
@@ -1904,7 +1902,7 @@ package body Contracts is
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Postcondition then
+                  if Pragma_Name_Mapped (Prag) = Name_Postcondition then
                      Append_Enabled_Item
                        (Item => Build_Pragma_Check_Equivalent (Prag),
                         List => Stmts);
@@ -1924,7 +1922,7 @@ package body Contracts is
                if Present (Items) then
                   Prag := Pre_Post_Conditions (Items);
                   while Present (Prag) loop
-                     if Pragma_Name (Prag) = Name_Postcondition
+                     if Pragma_Name_Mapped (Prag) = Name_Postcondition
                        and then Class_Present (Prag)
                      then
                         Append_Enabled_Item
@@ -2191,7 +2189,7 @@ package body Contracts is
                if Present (Items) then
                   Prag := Pre_Post_Conditions (Items);
                   while Present (Prag) loop
-                     if Pragma_Name (Prag) = Name_Precondition
+                     if Pragma_Name_Mapped (Prag) = Name_Precondition
                        and then Class_Present (Prag)
                      then
                         Check_Prag :=
@@ -2240,7 +2238,7 @@ package body Contracts is
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Precondition then
+                  if Pragma_Name_Mapped (Prag) = Name_Precondition then
                      Prepend_To_Decls_Or_Save (Prag);
                   end if;
 
@@ -2265,7 +2263,7 @@ package body Contracts is
                   --  Note that non-matching pragmas are skipped
 
                   if Nkind (Decl) = N_Pragma then
-                     if Pragma_Name (Decl) = Name_Precondition then
+                     if Pragma_Name_Mapped (Decl) = Name_Precondition then
                         Prepend_To_Decls_Or_Save (Decl);
                      end if;
 

@@ -992,7 +992,7 @@ package body Ghost is
 
       while Present (Decl) loop
          if Nkind (Decl) = N_Pragma
-           and then Pragma_Name (Decl) = Name_Ghost
+           and then Pragma_Name_Mapped (Decl) = Name_Ghost
          then
             return
               Enables_Ghostness (First (Pragma_Argument_Associations (Decl)));

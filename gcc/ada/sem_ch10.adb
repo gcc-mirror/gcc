@@ -1332,7 +1332,7 @@ package body Sem_Ch10 is
       Item := First (Context_Items (N));
       while Present (Item)
         and then Nkind (Item) = N_Pragma
-        and then Pragma_Name (Item) in Configuration_Pragma_Names
+        and then Pragma_Name_Mapped (Item) in Configuration_Pragma_Names
       loop
          Analyze (Item);
          Next (Item);
@@ -3384,7 +3384,7 @@ package body Sem_Ch10 is
       Item := First (Context_Items (N));
       while Present (Item)
         and then Nkind (Item) = N_Pragma
-        and then Pragma_Name (Item) in Configuration_Pragma_Names
+        and then Pragma_Name_Mapped (Item) in Configuration_Pragma_Names
       loop
          Next (Item);
       end loop;
@@ -4526,7 +4526,7 @@ package body Sem_Ch10 is
                   Check_Declarations (Specification (Decl));
 
                elsif Nkind (Decl) = N_Pragma
-                 and then Pragma_Name (Decl) = Name_Import
+                 and then Pragma_Name_Mapped (Decl) = Name_Import
                then
                   Check_Pragma_Import (Decl);
                end if;
@@ -4558,7 +4558,7 @@ package body Sem_Ch10 is
                   Append_Elmt (Decl, Incomplete_Decls);
 
                elsif Nkind (Decl) = N_Pragma
-                 and then Pragma_Name (Decl) = Name_Import
+                 and then Pragma_Name_Mapped (Decl) = Name_Import
                then
                   Check_Pragma_Import (Decl);
                end if;
@@ -5826,7 +5826,7 @@ package body Sem_Ch10 is
 
             Decl := First (Decls);
             while Present (Decl) and then Nkind (Decl) = N_Pragma loop
-               if Pragma_Name (Decl) = Name_Abstract_State then
+               if Pragma_Name_Mapped (Decl) = Name_Abstract_State then
                   Process_State
                     (Get_Pragma_Arg
                        (First (Pragma_Argument_Associations (Decl))));

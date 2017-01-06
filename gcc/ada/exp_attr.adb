@@ -8100,7 +8100,7 @@ package body Exp_Attr is
       N := First_Rep_Item (Implementation_Base_Type (T));
       while Present (N) loop
          if Nkind (N) = N_Pragma
-           and then Pragma_Name (N) = Name_Stream_Convert
+           and then Pragma_Name_Mapped (N) = Name_Stream_Convert
          then
             --  For tagged types this pragma is not inherited, so we
             --  must verify that it is defined for the given type and
