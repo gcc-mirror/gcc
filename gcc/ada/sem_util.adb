@@ -8375,13 +8375,14 @@ package body Sem_Util is
    --------------------------
 
    function Get_Max_Queue_Length (Id : Entity_Id) return Uint is
+      pragma Assert (Is_Entry (Id));
       Prag : constant Entity_Id := Get_Pragma (Id, Pragma_Max_Queue_Length);
 
    begin
       --  A value of 0 represents no maximum specified, and entries and entry
       --  families with no Max_Queue_Length aspect or pragma default to it.
 
-      if not Has_Max_Queue_Length (Id) or else not Present (Prag) then
+      if not Present (Prag) then
          return Uint_0;
       end if;
 
@@ -15677,7 +15678,7 @@ package body Sem_Util is
          when N_Assignment_Statement =>
             return N = Name (P);
 
-            --  Function call arguments are never lvalues
+         --  Function call arguments are never lvalues
 
          when N_Function_Call =>
             return False;

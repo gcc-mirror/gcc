@@ -2020,6 +2020,45 @@ package body Exp_Util is
    -----------------------------------
 
    function Corresponding_Runtime_Package (Typ : Entity_Id) return RTU_Id is
+
+      function Has_One_Entry_And_No_Queue (T : Entity_Id) return Boolean;
+      --  Return True if protected type T has one entry and the maximum queue
+      --  length is one.
+
+      --------------------------------
+      -- Has_One_Entry_And_No_Queue --
+      --------------------------------
+
+      function Has_One_Entry_And_No_Queue (T : Entity_Id) return Boolean is
+         Is_First : Boolean := True;
+         Ent      : Entity_Id;
+      begin
+         Ent := First_Entity (T);
+         while Present (Ent) loop
+            if Is_Entry (Ent) then
+               if not Is_First then
+                  --  More than one entry
+
+                  return False;
+               end if;
+
+               if not Restriction_Active (No_Entry_Queue)
+                 and then Get_Max_Queue_Length (Ent) /= Uint_1
+               then
+                  --  Max queue length is not 1
+
+                  return False;
+               end if;
+
+               Is_First := False;
+            end if;
+
+            Ent := Next_Entity (Ent);
+         end loop;
+
+         return True;
+      end Has_One_Entry_And_No_Queue;
+
       Pkg_Id : RTU_Id := RTU_Null;
 
    begin
@@ -2047,9 +2086,8 @@ package body Exp_Util is
            or else Has_Interrupt_Handler (Typ)
          then
             if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
               or else Restriction_Active (No_Select_Statements) = False
-              or else Number_Entries (Typ) > 1
+              or else not Has_One_Entry_And_No_Queue (Typ)
               or else (Has_Attach_Handler (Typ)
                         and then not Restricted_Profile)
             then

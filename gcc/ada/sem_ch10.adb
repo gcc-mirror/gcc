@@ -1590,6 +1590,7 @@ package body Sem_Ch10 is
 
          Set_Has_Completion (Nam);
          Set_Scope (Defining_Entity (N), Current_Scope);
+         Set_Ekind (Defining_Entity (N), E_Package_Body);
          Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Nam);
@@ -1931,6 +1932,7 @@ package body Sem_Ch10 is
 
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
+         Set_Ekind (Defining_Entity (N), E_Protected_Body);
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
@@ -2384,6 +2386,7 @@ package body Sem_Ch10 is
 
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
+         Set_Ekind (Defining_Entity (N), E_Task_Body);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);
 

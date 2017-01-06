@@ -148,10 +148,10 @@ package body Ghost is
    -------------------------
 
    procedure Check_Ghost_Context (Ghost_Id : Entity_Id; Ghost_Ref : Node_Id) is
-      procedure Check_Ghost_Policy (Id : Entity_Id; Err_N : Node_Id);
+      procedure Check_Ghost_Policy (Id : Entity_Id; Ref : Node_Id);
       --  Verify that the Ghost policy at the point of declaration of entity Id
-      --  matches the policy at the point of reference. If this is not the case
-      --  emit an error at Err_N.
+      --  matches the policy at the point of reference Ref. If this is not the
+      --  case emit an error at Ref.
 
       function Is_OK_Ghost_Context (Context : Node_Id) return Boolean;
       --  Determine whether node Context denotes a Ghost-friendly context where
@@ -539,26 +539,29 @@ package body Ghost is
       -- Check_Ghost_Policy --
       ------------------------
 
-      procedure Check_Ghost_Policy (Id : Entity_Id; Err_N : Node_Id) is
+      procedure Check_Ghost_Policy (Id : Entity_Id; Ref : Node_Id) is
          Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
 
       begin
          --  The Ghost policy in effect a the point of declaration and at the
          --  point of use must match (SPARK RM 6.9(13)).
 
-         if Is_Checked_Ghost_Entity (Id) and then Policy = Name_Ignore then
-            Error_Msg_Sloc := Sloc (Err_N);
+         if Is_Checked_Ghost_Entity (Id)
+           and then Policy = Name_Ignore
+           and then May_Be_Lvalue (Ref)
+         then
+            Error_Msg_Sloc := Sloc (Ref);
 
-            Error_Msg_N  ("incompatible ghost policies in effect", Err_N);
-            Error_Msg_NE ("\& declared with ghost policy `Check`", Err_N, Id);
-            Error_Msg_NE ("\& used # with ghost policy `Ignore`",  Err_N, Id);
+            Error_Msg_N  ("incompatible ghost policies in effect", Ref);
+            Error_Msg_NE ("\& declared with ghost policy `Check`", Ref, Id);
+            Error_Msg_NE ("\& used # with ghost policy `Ignore`",  Ref, Id);
 
          elsif Is_Ignored_Ghost_Entity (Id) and then Policy = Name_Check then
-            Error_Msg_Sloc := Sloc (Err_N);
+            Error_Msg_Sloc := Sloc (Ref);
 
-            Error_Msg_N  ("incompatible ghost policies in effect",  Err_N);
-            Error_Msg_NE ("\& declared with ghost policy `Ignore`", Err_N, Id);
-            Error_Msg_NE ("\& used # with ghost policy `Check`",    Err_N, Id);
+            Error_Msg_N  ("incompatible ghost policies in effect",  Ref);
+            Error_Msg_NE ("\& declared with ghost policy `Ignore`", Ref, Id);
+            Error_Msg_NE ("\& used # with ghost policy `Check`",    Ref, Id);
          end if;
       end Check_Ghost_Policy;
 
@@ -573,7 +576,7 @@ package body Ghost is
          Check_Ghost_Policy (Ghost_Id, Ghost_Ref);
 
       --  Otherwise the Ghost entity appears in a non-Ghost context and affects
-      --  its behavior or value (SPARK RM 6.9(11,12)).
+      --  its behavior or value (SPARK RM 6.9(10,11)).
 
       else
          Error_Msg_N ("ghost entity cannot appear in this context", Ghost_Ref);

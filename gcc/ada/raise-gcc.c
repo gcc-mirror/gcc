@@ -86,12 +86,9 @@ extern struct Exception_Occurrence *__gnat_setup_current_excep
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
 #ifdef CERT
+/* Called in case of error during propagation.  */
+extern void __gnat_raise_abort (void) __attribute__ ((noreturn));
 #define abort() __gnat_raise_abort()
-static void __gnat_raise_abort(void)
-{
-  while (1)
-    ;
-}
 #endif
 
 #include "unwind-pe.h"
