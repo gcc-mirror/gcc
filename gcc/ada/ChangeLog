@@ -1,3 +1,8 @@
+2017-01-06  Pascal Obry  <obry@adacore.com>
+
+	* a-direio.adb, a-direio.ads, a-sequio.adb, a-sequio.ads: Add Flush to
+	Sequential_IO and Direct_IO.
+
 2017-01-06  Bob Duff  <duff@adacore.com>
 
 	* snames.ads-tmpl (Renamed): New name for the pragma argument.
