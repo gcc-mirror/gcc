@@ -39,7 +39,7 @@
 #include "case-cfn-macros.h"
 #include "sbitmap.h"
 
-#define SIMD_MAX_BUILTIN_ARGS 5
+#define SIMD_MAX_BUILTIN_ARGS 7
 
 enum arm_type_qualifiers
 {
@@ -54,6 +54,7 @@ enum arm_type_qualifiers
   /* Used when expanding arguments if an operand could
      be an immediate.  */
   qualifier_immediate = 0x8, /* 1 << 3  */
+  qualifier_unsigned_immediate = 0x9,
   qualifier_maybe_immediate = 0x10, /* 1 << 4  */
   /* void foo (...).  */
   qualifier_void = 0x20, /* 1 << 5  */
@@ -165,6 +166,18 @@ arm_unsigned_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned };
 #define UBINOP_QUALIFIERS (arm_unsigned_binop_qualifiers)
 
+/* void (unsigned immediate, unsigned immediate, unsigned immediate,
+	 unsigned immediate, unsigned immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_cdp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate };
+#define CDP_QUALIFIERS \
+  (arm_cdp_qualifiers)
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
    a DImode pointer to the location to store to, so we must use
@@ -201,6 +214,7 @@ arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define oi_UP	 OImode
 #define hf_UP	 HFmode
 #define si_UP	 SImode
+#define void_UP	 VOIDmode
 
 #define UP(X) X##_UP
 
@@ -2226,6 +2240,10 @@ constant_arg:
 	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4]);
 	break;
 
+      case 6:
+	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4], op[5]);
+	break;
+
       default:
 	gcc_unreachable ();
       }
@@ -2250,6 +2268,10 @@ constant_arg:
 
       case 5:
 	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4]);
+	break;
+
+      case 6:
+	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4], op[5]);
 	break;
 
       default:

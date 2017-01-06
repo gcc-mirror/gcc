@@ -943,3 +943,8 @@
 ;; Attributes for VFMA_LANE/ VFMS_LANE
 (define_int_attr neon_vfm_lane_as
  [(UNSPEC_VFMA_LANE "a") (UNSPEC_VFMS_LANE "s")])
+
+;; An iterator for the CDP coprocessor instructions
+(define_int_iterator CDPI [VUNSPEC_CDP VUNSPEC_CDP2])
+(define_int_attr cdp [(VUNSPEC_CDP "cdp") (VUNSPEC_CDP2 "cdp2")])
+(define_int_attr CDP [(VUNSPEC_CDP "CDP") (VUNSPEC_CDP2 "CDP2")])

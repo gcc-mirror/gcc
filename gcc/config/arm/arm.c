@@ -12206,7 +12206,7 @@ neon_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
 /* Bounds-check constants.  */
 
 void
-neon_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
+arm_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 {
   bounds_check (operand, low, high, NULL_TREE, "constant");
 }
@@ -30888,4 +30888,34 @@ arm_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   *rem_p = remainder;
 }
 
+/*  This function checks for the availability of the coprocessor builtin passed
+    in BUILTIN for the current target.  Returns true if it is available and
+    false otherwise.  If a BUILTIN is passed for which this function has not
+    been implemented it will cause an exception.  */
+
+bool
+arm_coproc_builtin_available (enum unspecv builtin)
+{
+  /* None of these builtins are available in Thumb mode if the target only
+     supports Thumb-1.  */
+  if (TARGET_THUMB1)
+    return false;
+
+  switch (builtin)
+    {
+      case VUNSPEC_CDP:
+	if (arm_arch4)
+	  return true;
+	break;
+      case VUNSPEC_CDP2:
+	/* Only present in ARMv5*, ARMv6 (but not ARMv6-M), ARMv7* and
+	   ARMv8-{A,M}.  */
+	if (arm_arch5)
+	  return true;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+  return false;
+}
 #include "gt-arm.h"
