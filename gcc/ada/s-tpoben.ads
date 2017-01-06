@@ -150,9 +150,9 @@ package System.Tasking.Protected_Objects.Entries is
 
       Entry_Queues : Protected_Entry_Queue_Array (1 .. Num_Entries);
 
-      Entry_Queue_Maxs : Protected_Entry_Queue_Max_Access;
-      --  Access to an array of naturals representing the max value for
-      --  each entry's queue length. A value of 0 signifies no max.
+      Entry_Queue_Maxes : Protected_Entry_Queue_Max_Access;
+      --  Access to an array of naturals representing the max value for each
+      --  entry's queue length. A value of 0 signifies no max.
 
       Entry_Names : Protected_Entry_Names_Access := null;
       --  An array of string names which denotes entry [family member] names.
@@ -185,12 +185,12 @@ package System.Tasking.Protected_Objects.Entries is
    --  System.Tasking.Protected_Objects.Initialize_Protection.
 
    procedure Initialize_Protection_Entries
-     (Object           : Protection_Entries_Access;
-      Ceiling_Priority : Integer;
-      Compiler_Info    : System.Address;
-      Entry_Queue_Maxs : Protected_Entry_Queue_Max_Access;
-      Entry_Bodies     : Protected_Entry_Body_Access;
-      Find_Body_Index  : Find_Body_Index_Access);
+     (Object            : Protection_Entries_Access;
+      Ceiling_Priority  : Integer;
+      Compiler_Info     : System.Address;
+      Entry_Queue_Maxes : Protected_Entry_Queue_Max_Access;
+      Entry_Bodies      : Protected_Entry_Body_Access;
+      Find_Body_Index   : Find_Body_Index_Access);
    --  Initialize the Object parameter so that it can be used by the runtime
    --  to keep track of the runtime state of a protected object.
 

@@ -554,7 +554,6 @@ package System.Rident is
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
                            No_Dynamic_Priorities           => True,
-                           No_Entry_Queue                  => True,
                            No_Local_Protected_Objects      => True,
                            No_Protected_Type_Allocators    => True,
                            No_Requeue_Statements           => True,

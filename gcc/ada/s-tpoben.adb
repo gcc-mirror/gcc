@@ -171,12 +171,12 @@ package body System.Tasking.Protected_Objects.Entries is
    -----------------------------------
 
    procedure Initialize_Protection_Entries
-     (Object           : Protection_Entries_Access;
-      Ceiling_Priority : Integer;
-      Compiler_Info    : System.Address;
-      Entry_Queue_Maxs : Protected_Entry_Queue_Max_Access;
-      Entry_Bodies     : Protected_Entry_Body_Access;
-      Find_Body_Index  : Find_Body_Index_Access)
+     (Object            : Protection_Entries_Access;
+      Ceiling_Priority  : Integer;
+      Compiler_Info     : System.Address;
+      Entry_Queue_Maxes : Protected_Entry_Queue_Max_Access;
+      Entry_Bodies      : Protected_Entry_Body_Access;
+      Find_Body_Index   : Find_Body_Index_Access)
    is
       Init_Priority : Integer := Ceiling_Priority;
       Self_ID       : constant Task_Id := STPO.Self;
@@ -206,15 +206,15 @@ package body System.Tasking.Protected_Objects.Entries is
       Initialize_Lock (Init_Priority, Object.L'Access);
       Initialization.Undefer_Abort_Nestable (Self_ID);
 
-      Object.Ceiling          := System.Any_Priority (Init_Priority);
-      Object.New_Ceiling      := System.Any_Priority (Init_Priority);
-      Object.Owner            := Null_Task;
-      Object.Compiler_Info    := Compiler_Info;
-      Object.Pending_Action   := False;
-      Object.Call_In_Progress := null;
-      Object.Entry_Queue_Maxs := Entry_Queue_Maxs;
-      Object.Entry_Bodies     := Entry_Bodies;
-      Object.Find_Body_Index  := Find_Body_Index;
+      Object.Ceiling           := System.Any_Priority (Init_Priority);
+      Object.New_Ceiling       := System.Any_Priority (Init_Priority);
+      Object.Owner             := Null_Task;
+      Object.Compiler_Info     := Compiler_Info;
+      Object.Pending_Action    := False;
+      Object.Call_In_Progress  := null;
+      Object.Entry_Queue_Maxes := Entry_Queue_Maxes;
+      Object.Entry_Bodies      := Entry_Bodies;
+      Object.Find_Body_Index   := Find_Body_Index;
 
       for E in Object.Entry_Queues'Range loop
          Object.Entry_Queues (E).Head := null;

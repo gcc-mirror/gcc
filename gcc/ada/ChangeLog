@@ -1,3 +1,13 @@
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* s-rident.ads (Profile_Info): Remove No_Entry_Queue from
+	Gnat_Extended_Ravenscar.
+	* exp_ch9.adb, s-tpoben.adb, s-tpoben.ads: Fix spelling.
+
+2017-01-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.ads: Minor typo fix and reformatting.
+
 2017-01-06  Yannick Moy  <moy@adacore.com>
 
 	* ghost.adb Minor fixing of references to SPARK RM.
