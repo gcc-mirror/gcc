@@ -1,5 +1,8 @@
 2017-01-06  Nathan Sidwell  <nathan@acm.org>
 
+	* lto-partition.c (promote_symbol): Write to dump file sooner,
+	include alias promoting too.
+
 	* lto-partition.c (lto_balanced_map): Reformat/respell comment.
 	(may_need_named_section_p): Likewise.
 	(rename_statics): Likewise.
