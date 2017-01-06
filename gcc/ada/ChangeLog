@@ -1,3 +1,14 @@
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.ads, exp_ch9.adb (Build_Entry_Names): Remove (unused).
+	* rtsfind.ads (RE_Task_Entry_Names_Array, RO_ST_Set_Entry_Names)
+	(RE_Protected_Entry_Names_Array, RO_PE_Set_Entry_Names): Remove
+	(unused).
+	* s-taskin.ads, s-taskin.adb (Set_Entry_Names,
+	Task_Entry_Names_Array, Task_Entry_Names_Access): Remove.
+	* s-tpoben.ads, s-tpoben.adb (Set_Entry_Names,
+	Protected_Entry_Names_Array, Protected_Entry_Names_Access): Remove.
+
 2017-01-06  Bob Duff  <duff@adacore.com>
 
 	* sinfo.ads, sinfo.adb (Map_Pragma_Name): Preparation work,

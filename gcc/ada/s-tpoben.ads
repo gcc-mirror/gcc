@@ -57,8 +57,8 @@ package System.Tasking.Protected_Objects.Entries is
        (O : System.Address;
         E : Protected_Entry_Index)
         return Protected_Entry_Index;
-   --  Convert a queue index to an entry index (an entries family has one entry
-   --  index for several queue index).
+   --  Convert a queue index to an entry index (an entry family has one entry
+   --  index for several queue indexes).
 
    type Protected_Entry_Body_Array is
      array (Positive_Protected_Entry_Index range <>) of Entry_Body;
@@ -75,15 +75,6 @@ package System.Tasking.Protected_Objects.Entries is
 
    type Protected_Entry_Queue_Max_Access is
      access constant Protected_Entry_Queue_Max_Array;
-
-   --  The following declarations define an array that contains the string
-   --  names of entries and entry family members, together with an associated
-   --  access type.
-
-   type Protected_Entry_Names_Array is
-     array (Entry_Index range <>) of String_Access;
-
-   type Protected_Entry_Names_Access is access all Protected_Entry_Names_Array;
 
    --  The following type contains the GNARL state of a protected object.
    --  The application-defined portion of the state (i.e. private objects)
@@ -156,11 +147,6 @@ package System.Tasking.Protected_Objects.Entries is
       --  Access to an array of naturals representing the max value for each
       --  entry's queue length. A value of 0 signifies no max.
 
-      Entry_Names : Protected_Entry_Names_Access := null;
-      --  An array of string names which denotes entry [family member] names.
-      --  The structure is indexed by protected entry index and contains Num_
-      --  Entries components.
-
       Entry_Queues : Protected_Entry_Queue_Array (1 .. Num_Entries);
       --  Action and barrier subprograms for the protected type.
    end record;
@@ -232,12 +218,6 @@ package System.Tasking.Protected_Objects.Entries is
      (Object : Protection_Entries_Access;
       Prio   : System.Any_Priority);
    --  Sets the new ceiling priority of the protected object
-
-   procedure Set_Entry_Names
-     (Object : Protection_Entries_Access;
-      Names  : Protected_Entry_Names_Access);
-   --  Associate an array of string that denote entry [family] names with a
-   --  protected object.
 
    procedure Unlock_Entries (Object : Protection_Entries_Access);
    --  Relinquish ownership of the lock for the object represented by the

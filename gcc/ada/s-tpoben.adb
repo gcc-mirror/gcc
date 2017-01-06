@@ -378,18 +378,6 @@ package body System.Tasking.Protected_Objects.Entries is
       Object.New_Ceiling := Prio;
    end Set_Ceiling;
 
-   ---------------------
-   -- Set_Entry_Names --
-   ---------------------
-
-   procedure Set_Entry_Names
-     (Object : Protection_Entries_Access;
-      Names  : Protected_Entry_Names_Access)
-   is
-   begin
-      Object.Entry_Names := Names;
-   end Set_Entry_Names;
-
    --------------------
    -- Unlock_Entries --
    --------------------
