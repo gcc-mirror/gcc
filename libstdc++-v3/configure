@@ -642,7 +642,7 @@ ENABLE_FILESYSTEM_TS_FALSE
 ENABLE_FILESYSTEM_TS_TRUE
 baseline_subdir_switch
 baseline_dir
-HWCAP_FLAGS
+HWCAP_CFLAGS
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 LONG_DOUBLE_COMPAT_FLAGS
@@ -79519,7 +79519,7 @@ esac
 
 # Check if assembler supports disabling hardware capability support.
 
-  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
+  test -z "$HWCAP_CFLAGS" && HWCAP_CFLAGS=''
 
   # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
   # with a different meaning.
@@ -79548,7 +79548,7 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
       if test "$ac_hwcap_flags" = "yes"; then
-	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
+	HWCAP_CFLAGS="-Wa,-nH $HWCAP_CFLAGS"
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_flags" >&5
 $as_echo "$ac_hwcap_flags" >&6; }
