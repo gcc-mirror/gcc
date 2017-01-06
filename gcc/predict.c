@@ -795,7 +795,7 @@ set_even_probabilities (basic_block bb,
 			hash_set<edge> *unlikely_edges = NULL)
 {
   unsigned nedges = 0;
-  edge e;
+  edge e = NULL;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)

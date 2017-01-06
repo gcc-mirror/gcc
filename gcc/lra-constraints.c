@@ -4749,7 +4749,7 @@ lra_constraints_finish (void)
 
 
 /* Structure describes invariants for ineheritance.  */
-struct invariant
+struct lra_invariant
 {
   /* The order number of the invariant.  */
   int num;
@@ -4759,7 +4759,7 @@ struct invariant
   rtx_insn *insn;
 };
 
-typedef struct invariant invariant_t;
+typedef lra_invariant invariant_t;
 typedef invariant_t *invariant_ptr_t;
 typedef const invariant_t *const_invariant_ptr_t;
 
@@ -4767,7 +4767,7 @@ typedef const invariant_t *const_invariant_ptr_t;
 static vec<invariant_ptr_t> invariants;
 
 /* Allocation pool for the invariants.  */
-static object_allocator<struct invariant> *invariants_pool;
+static object_allocator<lra_invariant> *invariants_pool;
 
 /* Hash table for the invariants.  */
 static htab_t invariant_table;
@@ -4817,7 +4817,8 @@ static void
 initiate_invariants (void)
 {
   invariants.create (100);
-  invariants_pool = new object_allocator<struct invariant> ("Inheritance invariants");
+  invariants_pool
+    = new object_allocator<lra_invariant> ("Inheritance invariants");
   invariant_table = htab_create (100, invariant_hash, invariant_eq_p, NULL);
 }
 
