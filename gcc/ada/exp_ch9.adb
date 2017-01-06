@@ -9045,7 +9045,7 @@ package body Exp_Ch9 is
    --  the specs refer to this type.
 
    procedure Expand_N_Protected_Type_Declaration (N : Node_Id) is
-      Discr_Map : constant Elist_Id := New_Elmt_List;
+      Discr_Map : constant Elist_Id   := New_Elmt_List;
       Loc       : constant Source_Ptr := Sloc (N);
       Prot_Typ  : constant Entity_Id  := Defining_Identifier (N);
 
@@ -9055,17 +9055,9 @@ package body Exp_Ch9 is
       Pdef : constant Node_Id := Protected_Definition (N);
       --  This contains two lists; one for visible and one for private decls
 
-      Body_Arr     : Node_Id;
-      Body_Id      : Entity_Id;
-      Cdecls       : List_Id;
-      Comp         : Node_Id;
       Current_Node : Node_Id := N;
       E_Count      : Int;
       Entries_Aggr : Node_Id;
-      New_Priv     : Node_Id;
-      Object_Comp  : Node_Id;
-      Priv         : Node_Id;
-      Rec_Decl     : Node_Id;
 
       procedure Check_Inlining (Subp : Entity_Id);
       --  If the original operation has a pragma Inline, propagate the flag
@@ -9295,7 +9287,17 @@ package body Exp_Ch9 is
 
       --  Local variables
 
-      Sub : Node_Id;
+      Body_Arr     : Node_Id;
+      Body_Id      : Entity_Id;
+      Cdecls       : List_Id;
+      Comp         : Node_Id;
+      Expr         : Node_Id;
+      New_Priv     : Node_Id;
+      Obj_Def      : Node_Id;
+      Object_Comp  : Node_Id;
+      Priv         : Node_Id;
+      Rec_Decl     : Node_Id;
+      Sub          : Node_Id;
 
    --  Start of processing for Expand_N_Protected_Type_Declaration
 
@@ -9760,6 +9762,96 @@ package body Exp_Ch9 is
          end loop;
       end if;
 
+      --  Create the declaration of an array object which contains the values
+      --  of aspect/pragma Max_Queue_Length for all entries of the protected
+      --  type. This object is later passed to the appropriate protected object
+      --  initialization routine.
+
+      declare
+         Maxs     : constant List_Id := New_List;
+         Count    : Int;
+         Item     : Entity_Id;
+         Maxs_Id  : Entity_Id;
+         Max_Vals : Node_Id;
+
+      begin
+         if Has_Entries (Prot_Typ) then
+
+            --  Gather the Max_Queue_Length values of all entries in a list. A
+            --  value of zero indicates that the entry has no limitation on its
+            --  queue length.
+
+            Count := 0;
+            Item  := First_Entity (Prot_Typ);
+            while Present (Item) loop
+               if Is_Entry (Item) then
+                  Count := Count + 1;
+
+                  Append_To (Maxs,
+                    Make_Integer_Literal (Loc,
+                      Intval => Get_Max_Queue_Length (Item)));
+               end if;
+
+               Next_Entity (Item);
+            end loop;
+
+            --  Create the declaration of the array object. Generate:
+
+            --    Maxs_Id : aliased Protected_Entry_Queue_Max_Array
+            --                        (1 .. Count) := (..., ...);
+            --      or
+            --    Maxs_Id : aliased Protected_Entry_Queue_Max := <value>;
+
+            Maxs_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Prot_Typ), 'B'));
+
+            case Corresponding_Runtime_Package (Prot_Typ) is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Expr := Make_Aggregate (Loc, Maxs);
+
+                  Obj_Def :=
+                    Make_Subtype_Indication (Loc,
+                      Subtype_Mark =>
+                        New_Occurrence_Of
+                          (RTE (RE_Protected_Entry_Queue_Max_Array), Loc),
+                      Constraint   =>
+                        Make_Index_Or_Discriminant_Constraint (Loc,
+                          Constraints => New_List (
+                            Make_Range (Loc,
+                              Make_Integer_Literal (Loc, 1),
+                              Make_Integer_Literal (Loc, Count)))));
+
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Expr := Make_Integer_Literal (Loc, Intval (First (Maxs)));
+
+                  Obj_Def :=
+                    New_Occurrence_Of
+                      (RTE (RE_Protected_Entry_Queue_Max), Loc);
+
+               when others =>
+                  raise Program_Error;
+            end case;
+
+            Max_Vals :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Maxs_Id,
+                Aliased_Present     => True,
+                Object_Definition   => Obj_Def,
+                Expression          => Expr);
+
+            --  A pointer to this array will be placed in the corresponding
+            --  record by its initialization procedure so this needs to be
+            --  analyzed here.
+
+            Insert_After (Current_Node, Max_Vals);
+            Current_Node := Max_Vals;
+            Analyze (Max_Vals);
+
+            Set_Entry_Max_Queue_Lengths_Array (Prot_Typ, Maxs_Id);
+         end if;
+      end;
+
       --  Emit declaration for Entry_Bodies_Array, now that the addresses of
       --  all protected subprograms have been collected.
 
@@ -9770,36 +9862,33 @@ package body Exp_Ch9 is
 
          case Corresponding_Runtime_Package (Prot_Typ) is
             when System_Tasking_Protected_Objects_Entries =>
-               Body_Arr :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Body_Id,
-                   Aliased_Present     => True,
-                   Object_Definition   =>
-                     Make_Subtype_Indication (Loc,
-                       Subtype_Mark =>
-                         New_Occurrence_Of
-                           (RTE (RE_Protected_Entry_Body_Array), Loc),
-                       Constraint   =>
-                         Make_Index_Or_Discriminant_Constraint (Loc,
-                           Constraints => New_List (
-                              Make_Range (Loc,
-                                Make_Integer_Literal (Loc, 1),
-                                Make_Integer_Literal (Loc, E_Count))))),
-                   Expression          => Entries_Aggr);
+               Expr    := Entries_Aggr;
+               Obj_Def :=
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of
+                        (RTE (RE_Protected_Entry_Body_Array), Loc),
+                    Constraint   =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints => New_List (
+                          Make_Range (Loc,
+                            Make_Integer_Literal (Loc, 1),
+                            Make_Integer_Literal (Loc, E_Count)))));
 
             when System_Tasking_Protected_Objects_Single_Entry =>
-               Body_Arr :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Body_Id,
-                   Aliased_Present     => True,
-                   Object_Definition   =>
-                     New_Occurrence_Of (RTE (RE_Entry_Body), Loc),
-                   Expression          =>
-                     Remove_Head (Expressions (Entries_Aggr)));
+               Expr    := Remove_Head (Expressions (Entries_Aggr));
+               Obj_Def := New_Occurrence_Of (RTE (RE_Entry_Body), Loc);
 
             when others =>
                raise Program_Error;
          end case;
+
+         Body_Arr :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Body_Id,
+             Aliased_Present     => True,
+             Object_Definition   => Obj_Def,
+             Expression          => Expr);
 
          --  A pointer to this array will be placed in the corresponding record
          --  by its initialization procedure so this needs to be analyzed here.
@@ -9821,6 +9910,7 @@ package body Exp_Ch9 is
             Sub :=
               Make_Subprogram_Declaration (Loc,
                 Specification => Build_Find_Body_Index_Spec (Prot_Typ));
+
             Insert_After (Current_Node, Sub);
             Analyze (Sub);
          end if;
@@ -14106,6 +14196,27 @@ package body Exp_Ch9 is
                when others =>
                      raise Program_Error;
             end case;
+
+            --  Entry_Queue_Maxs parameter. This is a pointer to an array of
+            --  naturals representing the entry queue maximums for each entry
+            --  in the protected type. Zero represents no max.
+
+            if Has_Entry then
+               Append_To (Args,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     New_Occurrence_Of
+                       (Entry_Max_Queue_Lengths_Array (Ptyp), Loc),
+                   Attribute_Name => Name_Unrestricted_Access));
+
+            --  Edge cases exist where entry initialization functions are
+            --  called, but no entries exist, so null is appended.
+
+            elsif Pkg_Id = System_Tasking_Protected_Objects_Single_Entry
+              or else Pkg_Id = System_Tasking_Protected_Objects_Entries
+            then
+               Append_To (Args, Make_Null (Loc));
+            end if;
 
             --  Entry_Bodies parameter. This is a pointer to an array of
             --  pointers to the entry body procedures and barrier functions of

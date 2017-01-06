@@ -6,7 +6,7 @@
 --                                                                          --
 --                               B o d y                                    --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,6 +174,7 @@ package body System.Tasking.Protected_Objects.Entries is
      (Object           : Protection_Entries_Access;
       Ceiling_Priority : Integer;
       Compiler_Info    : System.Address;
+      Entry_Queue_Maxs : Protected_Entry_Queue_Max_Access;
       Entry_Bodies     : Protected_Entry_Body_Access;
       Find_Body_Index  : Find_Body_Index_Access)
    is
@@ -211,6 +212,7 @@ package body System.Tasking.Protected_Objects.Entries is
       Object.Compiler_Info    := Compiler_Info;
       Object.Pending_Action   := False;
       Object.Call_In_Progress := null;
+      Object.Entry_Queue_Maxs := Entry_Queue_Maxs;
       Object.Entry_Bodies     := Entry_Bodies;
       Object.Find_Body_Index  := Find_Body_Index;
 

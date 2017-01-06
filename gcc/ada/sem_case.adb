@@ -1369,9 +1369,9 @@ package body Sem_Case is
             Lo  : Node_Id;
             Hi  : Node_Id);
          --  If the type of the alternative has predicates, we must examine
-         --  each subset of the predicate rather than the bounds of the
-         --  type itself. This is relevant when the choice is a subtype mark
-         --  or a subtype indication.
+         --  each subset of the predicate rather than the bounds of the type
+         --  itself. This is relevant when the choice is a subtype mark or a
+         --  subtype indication.
 
          -----------
          -- Check --
@@ -1509,8 +1509,8 @@ package body Sem_Case is
             P := First (Static_Discrete_Predicate (Typ));
             while Present (P) loop
 
-               --  Check that part of the predicate choice is included in
-               --  the given bounds.
+               --  Check that part of the predicate choice is included in the
+               --  given bounds.
 
                if Expr_Value (High_Bound (P)) >= Expr_Value (Lo)
                  and then Expr_Value (Low_Bound (P)) <= Expr_Value (Hi)
@@ -1643,8 +1643,8 @@ package body Sem_Case is
                                  & "predicate as case alternative",
                                  Choice, E, Suggest_Static => True);
 
-                           --  Static predicate case. The bounds are
-                           --  those of the given subtype.
+                           --  Static predicate case. The bounds are those of
+                           --  the given subtype.
 
                            else
                               Handle_Static_Predicate (E,
@@ -1702,11 +1702,10 @@ package body Sem_Case is
                                  end if;
                               end if;
 
-                              if Has_Static_Predicate (E) then
-
                               --  Check applicable predicate values within the
                               --  bounds of the given range.
 
+                              if Has_Static_Predicate (E) then
                                  Handle_Static_Predicate (E, L, H);
 
                               else

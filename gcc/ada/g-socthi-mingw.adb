@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2014, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@ with System.Storage_Elements; use System.Storage_Elements;
 package body GNAT.Sockets.Thin is
 
    use type C.unsigned;
-   use type C.int;
 
    WSAData_Dummy : array (1 .. 512) of C.int;
 

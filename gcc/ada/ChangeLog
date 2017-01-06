@@ -1,3 +1,58 @@
+2017-01-06  Tristan Gingold  <gingold@adacore.com>
+
+	* ada.ads, a-unccon.ads: Add pragma No_Elaboration_Code_All.
+
+2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_case.adb: Minor reformatting.
+
+2017-01-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-mingw.adb: Remove now extraneous USE TYPE clause
+
+2017-01-06  Justin Squirek  <squirek@adacore.com>
+
+	* aspects.adb: Register aspect in Canonical_Aspect.
+	* aspects.ads: Associate qualities of Aspect_Max_Queue_Length
+	into respective tables.
+	* einfo.ads, einfo.adb: Add a new attribute for
+	handling the parameters for Pragma_Max_Entry_Queue
+	(Entry_Max_Queue_Lengths_Array) in E_Protected_Type. Subprograms
+	for accessing and setting were added as well.
+	* par-prag.adb (Prag): Register Pramga_Max_Entry_Queue.
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Emit
+	declaration for pramga arguments and store them in the protected
+	type node.
+	(Make_Initialize_Protection): Pass a reference to
+	the Entry_Max_Queue_Lengths_Array in the protected type node to
+	the runtime.
+	* rtsfind.adb: Minor grammar fix.
+	* rtsfind.ads: Register new types taken from the
+	runtime libraries RE_Protected_Entry_Queue_Max and
+	RE_Protected_Entry_Queue_Max_Array
+	* s-tposen.adb, s-tpoben.adb
+	(Initialize_Protection_Entry/Initialize_Protection_Entries):
+	Add extra parameter and add assignment to local object.
+	* s-tposen.ads, s-tpoben.ads: Add new types to
+	store entry queue maximums and a field to the entry object record.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add case statement
+	for Aspect_Max_Queue_Length.
+	(Check_Aspect_At_Freeze_Point):
+	Add aspect to list of aspects that don't require delayed analysis.
+	* sem_prag.adb (Analyze_Pragma): Add case statement for
+	Pragma_Max_Queue_Length, check semantics, and register arugments
+	in the respective entry nodes.
+	* sem_util.adb, sem_util.ads Add functions Get_Max_Queue_Length
+	and Has_Max_Queue_Length
+	* snames.ads-tmpl: Add constant for the new aspect-name
+	Name_Max_Queue_Length and corrasponding pragma.
+
+2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Controlled_Function_Call):
+	Reimplemented. Consider any node which has an entity as the
+	function call may appear in various ways.
+
 2017-01-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_attr.adb (Rewrite_Stream_Proc_Call): Use

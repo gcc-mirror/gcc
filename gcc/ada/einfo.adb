@@ -267,6 +267,7 @@ package body Einfo is
    --    Contract                        Node34
 
    --    Anonymous_Designated_Type       Node35
+   --    Entry_Max_Queue_Lengths_Array   Node35
    --    Import_Pragma                   Node35
 
    --    Class_Wide_Preconds             List38
@@ -1220,6 +1221,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Entry_Index_Parameter);
       return Node18 (Id);
    end Entry_Index_Constant;
+
+   function Entry_Max_Queue_Lengths_Array (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Protected_Type);
+      return Node35 (Id);
+   end Entry_Max_Queue_Lengths_Array;
 
    function Contains_Ignored_Ghost_Code (Id : E) return B is
    begin
@@ -4285,6 +4292,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Entry_Index_Parameter);
       Set_Node18 (Id, V);
    end Set_Entry_Index_Constant;
+
+   procedure Set_Entry_Max_Queue_Lengths_Array (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Protected_Type);
+      Set_Node35 (Id, V);
+   end Set_Entry_Max_Queue_Lengths_Array;
 
    procedure Set_Entry_Parameters_Type (Id : E; V : E) is
    begin
@@ -10737,6 +10750,10 @@ package body Einfo is
       case Ekind (Id) is
          when E_Variable                                   =>
             Write_Str ("Anonymous_Designated_Type");
+
+         when E_Entry                                      |
+              E_Entry_Family                               =>
+            Write_Str ("Entry_Max_Queue_Lenghts_Array");
 
          when Subprogram_Kind                              =>
             Write_Str ("Import_Pragma");
