@@ -2020,7 +2020,6 @@ package body Exp_Util is
    -----------------------------------
 
    function Corresponding_Runtime_Package (Typ : Entity_Id) return RTU_Id is
-
       function Has_One_Entry_And_No_Queue (T : Entity_Id) return Boolean;
       --  Return True if protected type T has one entry and the maximum queue
       --  length is one.
@@ -2030,36 +2029,42 @@ package body Exp_Util is
       --------------------------------
 
       function Has_One_Entry_And_No_Queue (T : Entity_Id) return Boolean is
+         Item     : Entity_Id;
          Is_First : Boolean := True;
-         Ent      : Entity_Id;
-      begin
-         Ent := First_Entity (T);
-         while Present (Ent) loop
-            if Is_Entry (Ent) then
-               if not Is_First then
-                  --  More than one entry
 
+      begin
+         Item := First_Entity (T);
+         while Present (Item) loop
+            if Is_Entry (Item) then
+
+               --  The protected type has more than one entry
+
+               if not Is_First then
                   return False;
                end if;
 
-               if not Restriction_Active (No_Entry_Queue)
-                 and then Get_Max_Queue_Length (Ent) /= Uint_1
-               then
-                  --  Max queue length is not 1
+               --  The queue length is not one
 
+               if not Restriction_Active (No_Entry_Queue)
+                 and then Get_Max_Queue_Length (Item) /= Uint_1
+               then
                   return False;
                end if;
 
                Is_First := False;
             end if;
 
-            Ent := Next_Entity (Ent);
+            Next_Entity (Item);
          end loop;
 
          return True;
       end Has_One_Entry_And_No_Queue;
 
+      --  Local variables
+
       Pkg_Id : RTU_Id := RTU_Null;
+
+   --  Start of processing for Corresponding_Runtime_Package
 
    begin
       pragma Assert (Is_Concurrent_Type (Typ));
