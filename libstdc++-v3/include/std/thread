@@ -124,6 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // 2097.  packaged_task constructors should be constrained
     thread(thread&) = delete;
     thread(const thread&) = delete;
+    thread(const thread&&) = delete;
 
     thread(thread&& __t) noexcept
     { swap(__t); }
