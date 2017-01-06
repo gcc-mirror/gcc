@@ -42,6 +42,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <performance/io/xml_formatter.hpp>
 #include <common_type/priority_queue/string_form.hpp>
+#include <cassert>
 
 namespace __gnu_pbds
 {

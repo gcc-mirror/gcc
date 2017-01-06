@@ -1,5 +1,8 @@
 2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/performance/priority_queue/mem_usage/pop_test.hpp:
+	Include <cassert> header.
+
 	PR libstdc++/78968
 	* crossconfig.m4: Check for __cxa_thread_atexit on *-*-freebsd*.
 	* configure: Regenerate.
