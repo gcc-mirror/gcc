@@ -3136,6 +3136,117 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Standard_String);
       end External_Tag;
 
+      -----------------------
+      -- Finalization_Size --
+      -----------------------
+
+      when Attribute_Finalization_Size => Finalization_Size : declare
+
+         function Calculate_Header_Size return Node_Id;
+         --  Generate a runtime call to calculate the size of the hidden
+         --  header along with any added padding which would precede a
+         --  heap-allocated object of the prefix type.
+
+         ---------------------------
+         -- Calculate_Header_Size --
+         ---------------------------
+
+         function Calculate_Header_Size return Node_Id is
+         begin
+            --  Generate:
+            --    Universal_Integer
+            --      (Header_Size_With_Padding (N'Alignment))
+
+            return
+              Convert_To (Universal_Integer,
+                Make_Function_Call (Loc,
+                  Name                   =>
+                    New_Occurrence_Of
+                      (RTE (RE_Header_Size_With_Padding), Loc),
+                  Parameter_Associations => New_List (
+                    Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        New_Copy_Tree (Pref),
+                      Attribute_Name => Name_Alignment))));
+         end Calculate_Header_Size;
+
+      --  Local variables
+
+         Size : constant Entity_Id := Make_Temporary (Loc, 'S');
+
+      --  Start of Finalization_Size
+
+      begin
+         --  An object of a class-wide type requires a runtime check to
+         --  determine whether it is actually controlled or not. Depending on
+         --  the outcome of this check, the Finalization_Size of the object
+         --  may be zero or some positive value.
+         --
+         --  In this scenario, Obj'Finalization_Size is expanded into
+         --
+         --   Size : Integer := 0;
+         --
+         --   if Needs_Finalization (Pref'Tag) then
+         --      Size :=
+         --        Universal_Integer
+         --          (Header_Size_With_Padding (Pref'Alignment));
+         --  end if;
+         --
+         --  and the attribute reference is replaced with a reference to Size.
+
+         if Is_Class_Wide_Type (Ptyp) then
+            Insert_Actions (N, New_List (
+
+              --  Generate:
+              --    Size : Integer := 0;
+
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Size,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Integer, Loc),
+                Expression          => Make_Integer_Literal (Loc, 0)),
+
+              --  Generate:
+              --    if Needs_Finalization (Pref'Tag) then
+              --       Size := Universal_Integer
+              --                 (Header_Size_With_Padding (Pref'Alignment));
+              --    end if;
+
+              Make_If_Statement (Loc,
+                Condition              =>
+                  Make_Function_Call (Loc,
+                    Name                   =>
+                      New_Occurrence_Of
+                        (RTE (RE_Needs_Finalization), Loc),
+                    Parameter_Associations => New_List (
+                      Make_Attribute_Reference (Loc,
+                        Attribute_Name => Name_Tag,
+                        Prefix         =>
+                          New_Copy_Tree (Pref)))),
+                Then_Statements        => New_List (
+                   Make_Assignment_Statement (Loc,
+                     Name       => New_Occurrence_Of (Size, Loc),
+                     Expression => Calculate_Header_Size)))));
+
+            Rewrite (N, New_Occurrence_Of (Size, Loc));
+
+         --  The the prefix is known to be controlled at compile time.
+         --  Calculate its Finalization_Size by calling runtime routine
+         --  Header_Size_With_Padding.
+
+         elsif Needs_Finalization (Ptyp) then
+            Rewrite (N, Calculate_Header_Size);
+
+         --  The prefix is not a controlled object, its Finalization_Size
+         --  is zero.
+
+         else
+            Rewrite (N, Make_Integer_Literal (Loc, 0));
+         end if;
+
+         Analyze (N);
+      end Finalization_Size;
+
       -----------
       -- First --
       -----------
