@@ -1485,8 +1485,18 @@ package body Exp_Ch3 is
                   --  The constraints come from the discriminant default exps,
                   --  they must be reevaluated, so we use New_Copy_Tree but we
                   --  ensure the proper Sloc (for any embedded calls).
+                  --  In addtion, if a predicate check is needed on the value
+                  --  of the discriminant, insert it ahead of the call.
 
                   Arg := New_Copy_Tree (Arg, New_Sloc => Loc);
+
+                  if Has_Predicates (Etype (Discr))
+                    and then not Predicate_Checks_Suppressed (Empty)
+                    and then not Predicates_Ignored (Etype (Discr))
+                  then
+                     Prepend_To (Res,
+                        Make_Predicate_Check (Etype (Discr), Arg));
+                  end if;
                end if;
             end if;
 
@@ -1728,6 +1738,18 @@ package body Exp_Ch3 is
               Make_Adjust_Call
                 (Obj_Ref => New_Copy_Tree (Lhs),
                  Typ     => Etype (Id)));
+         end if;
+
+         --  If a component type has a predicate, add check to the component
+         --  assignment. Discriminants are hnndled at the point of the call,
+         --  which provides for a better error message.
+
+         if Comes_From_Source (Exp)
+           and then Has_Predicates (Typ)
+           and then not Predicate_Checks_Suppressed (Empty)
+           and then not Predicates_Ignored (Typ)
+         then
+            Append (Make_Predicate_Check (Typ, Exp), Res);
          end if;
 
          return Res;

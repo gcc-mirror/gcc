@@ -1,3 +1,10 @@
+2017-01-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Apply predicate
+	check to default discriminant value if checks are enabled.
+	(Build_Assignment): If type of component has static predicate,
+	apply check to its default value, if any.
+
 2017-01-06  Patrick Bernardi  <bernardi@adacore.com>
 
 	* aspect.adb, aspect.ads: Added new aspect Secondary_Stack_Size.
