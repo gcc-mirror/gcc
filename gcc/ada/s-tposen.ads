@@ -182,6 +182,9 @@ package System.Tasking.Protected_Objects.Single_Entry is
 
    type Protection_Entry_Access is access all Protection_Entry;
 
+   type Entry_Body_Access is access constant Entry_Body;
+   --  Access to barrier and action function of an entry
+
    procedure Initialize_Protection_Entry
      (Object           : Protection_Entry_Access;
       Ceiling_Priority : Integer;

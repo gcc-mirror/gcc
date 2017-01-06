@@ -6818,6 +6818,15 @@ package body Sinfo is
       return Chars (Pragma_Identifier (N));
    end Pragma_Name;
 
+   ---------------------
+   -- Map_Pragma_Name --
+   ---------------------
+
+   procedure Map_Pragma_Name (From, To : Name_Id) is
+   begin
+      null; -- not yet implemented
+   end Map_Pragma_Name;
+
    ------------------------
    -- Pragma_Name_Mapped --
    ------------------------

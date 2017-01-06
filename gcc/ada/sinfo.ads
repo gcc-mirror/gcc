@@ -11010,6 +11010,10 @@ package Sinfo is
    pragma Inline (Pragma_Name);
    --  Convenient function to obtain Chars field of Pragma_Identifier
 
+   procedure Map_Pragma_Name (From, To : Name_Id);
+   --  Used in the implementation of pragma Rename_Pragma. Maps pragma name
+   --  From to pragma name To, we From can be used as a synonym for To.
+
    function Pragma_Name_Mapped (N : Node_Id) return Name_Id;
    --  ????Work in progress.
 

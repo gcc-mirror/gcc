@@ -9888,7 +9888,8 @@ package body Exp_Ch9 is
              Defining_Identifier => Body_Id,
              Aliased_Present     => True,
              Object_Definition   => Obj_Def,
-             Expression          => Expr);
+             Expression          => Expr,
+             Constant_Present    => True);
 
          --  A pointer to this array will be placed in the corresponding record
          --  by its initialization procedure so this needs to be analyzed here.
@@ -14203,7 +14204,7 @@ package body Exp_Ch9 is
             --  null if there is no limit for all entries (usual case).
 
             if Has_Entry
-              and then Pkg_Id /= System_Tasking_Protected_Objects_Single_Entry
+              and then Pkg_Id = System_Tasking_Protected_Objects_Entries
             then
                if Present (Entry_Max_Queue_Lengths_Array (Ptyp)) then
                   Append_To (Args,
