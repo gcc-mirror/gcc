@@ -53265,6 +53265,17 @@ $as_echo "$ac_ld_relro" >&6; }
       $as_echo "#define HAVE_ISNANL 1" >>confdefs.h
 
     fi
+    for ac_func in __cxa_thread_atexit
+do :
+  ac_fn_c_check_func "$LINENO" "__cxa_thread_atexit" "ac_cv_func___cxa_thread_atexit"
+if test "x$ac_cv_func___cxa_thread_atexit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE___CXA_THREAD_ATEXIT 1
+_ACEOF
+
+fi
+done
+
     ;;
   *-hpux*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
