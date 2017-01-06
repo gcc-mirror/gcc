@@ -2483,6 +2483,10 @@ package Einfo is
 --       be in, in-out or out parameters). This flag is used to speed up the
 --       test for the need to replace references in Exp_Ch2.
 
+--    Is_Entry_Wrapper (Flag297)
+--       Defined on wrappers that are created for entries that have pre-
+--       condition aspects.
+
 --    Is_Enumeration_Type (synthesized)
 --       Defined in all entities, true for enumeration types and subtypes
 
@@ -5893,6 +5897,7 @@ package Einfo is
    --    Sec_Stack_Needed_For_Return         (Flag167)
    --    Has_Expanded_Contract               (Flag240)
    --    SPARK_Pragma_Inherited              (Flag265)  (protected kind)
+   --    Is_Entry_Wrapper                    (Flag297)
    --    Address_Clause                      (synth)
    --    Entry_Index_Type                    (synth)
    --    First_Formal                        (synth)
@@ -7102,6 +7107,7 @@ package Einfo is
    function Is_Dispatching_Operation            (Id : E) return B;
    function Is_Eliminated                       (Id : E) return B;
    function Is_Entry_Formal                     (Id : E) return B;
+   function Is_Entry_Wrapper                    (Id : E) return B;
    function Is_Exception_Handler                (Id : E) return B;
    function Is_Exported                         (Id : E) return B;
    function Is_Finalized_Transient              (Id : E) return B;
@@ -7781,6 +7787,7 @@ package Einfo is
    procedure Set_Is_Dispatching_Operation        (Id : E; V : B := True);
    procedure Set_Is_Eliminated                   (Id : E; V : B := True);
    procedure Set_Is_Entry_Formal                 (Id : E; V : B := True);
+   procedure Set_Is_Entry_Wrapper                (Id : E; V : B := True);
    procedure Set_Is_Exception_Handler            (Id : E; V : B := True);
    procedure Set_Is_Exported                     (Id : E; V : B := True);
    procedure Set_Is_Finalized_Transient          (Id : E; V : B := True);
@@ -8591,6 +8598,7 @@ package Einfo is
    pragma Inline (Is_Eliminated);
    pragma Inline (Is_Entry);
    pragma Inline (Is_Entry_Formal);
+   pragma Inline (Is_Entry_Wrapper);
    pragma Inline (Is_Enumeration_Type);
    pragma Inline (Is_Exception_Handler);
    pragma Inline (Is_Exported);
@@ -9091,6 +9099,7 @@ package Einfo is
    pragma Inline (Set_Is_Dispatching_Operation);
    pragma Inline (Set_Is_Eliminated);
    pragma Inline (Set_Is_Entry_Formal);
+   pragma Inline (Set_Is_Entry_Wrapper);
    pragma Inline (Set_Is_Exception_Handler);
    pragma Inline (Set_Is_Exported);
    pragma Inline (Set_Is_Finalized_Transient);

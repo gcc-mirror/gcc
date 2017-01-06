@@ -62,6 +62,7 @@ with Sem_Ch3;   use Sem_Ch3;
 with Sem_Ch4;   use Sem_Ch4;
 with Sem_Ch5;   use Sem_Ch5;
 with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch9;   use Sem_Ch9;
 with Sem_Ch10;  use Sem_Ch10;
 with Sem_Ch12;  use Sem_Ch12;
 with Sem_Ch13;  use Sem_Ch13;
@@ -3640,6 +3641,21 @@ package body Sem_Ch6 is
             Generate_Definition (Body_Id);
             Generate_Reference
               (Body_Id, Body_Id, 'b', Set_Ref => False, Force => True);
+
+            --  If the body is an entry wrapper created for an entry with
+            --  preconditions, it must compiled in the context of the
+            --  enclosing synchronized object, because it may mention other
+            --  operations of the type.
+
+            if Is_Entry_Wrapper (Body_Id) then
+               declare
+                  Prot : constant Entity_Id := Etype (First_Entity (Body_Id));
+               begin
+                  Push_Scope (Prot);
+                  Install_Declarations (Prot);
+               end;
+            end if;
+
             Install_Formals (Body_Id);
 
             Push_Scope (Body_Id);
@@ -4000,6 +4016,14 @@ package body Sem_Ch6 is
 
       Process_End_Label (HSS, 't', Current_Scope);
       End_Scope;
+
+      --  If we are compiling an entry wrapper, remove the enclosing
+      --  syncrhonized object from the stack.
+
+      if Is_Entry_Wrapper (Body_Id) then
+         End_Scope;
+      end if;
+
       Check_Subprogram_Order (N);
       Set_Analyzed (Body_Id);
 
