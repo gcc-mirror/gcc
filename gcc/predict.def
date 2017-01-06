@@ -122,7 +122,7 @@ DEF_PREDICTOR (PRED_CALL, "call", HITRATE (55), 0)
    less reliable for indirect calls and polymorphic calls.  For spec2k6
    the predictio nis slightly in the direction of taking the call.  */
 DEF_PREDICTOR (PRED_INDIR_CALL, "indirect call", HITRATE (51), 0)
-DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", HITRATE (58), 0)
+DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", HITRATE (59), 0)
 
 /* Recursive calls are usually not taken or the function will recurse
    indefinitely.  */

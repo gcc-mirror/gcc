@@ -2789,7 +2789,7 @@ tree_estimate_probability_bb (basic_block bb)
 		  if (gimple_call_fndecl (stmt))
 		    predict_edge_def (e, PRED_CALL, NOT_TAKEN);
 		  else if (virtual_method_call_p (gimple_call_fn (stmt)))
-		    predict_edge_def (e, PRED_POLYMORPHIC_CALL, TAKEN);
+		    predict_edge_def (e, PRED_POLYMORPHIC_CALL, NOT_TAKEN);
 		  else
 		    predict_edge_def (e, PRED_INDIR_CALL, TAKEN);
 		  break;
