@@ -6818,4 +6818,13 @@ package body Sinfo is
       return Chars (Pragma_Identifier (N));
    end Pragma_Name;
 
+   ------------------------
+   -- Pragma_Name_Mapped --
+   ------------------------
+
+   function Pragma_Name_Mapped (N : Node_Id) return Name_Id is
+   begin
+      return Pragma_Name (N);
+   end Pragma_Name_Mapped;
+
 end Sinfo;

@@ -3843,22 +3843,24 @@ package body Sem_Attr is
          --  The prefix denotes an object
 
          if Is_Object_Reference (P) then
-            Analyze_And_Resolve (P);
             Check_Object_Reference (P);
 
-         --  Check the prefix is a type to avoid an error message stating the
-         --  prefix must exclusively denote one
+         --  The prefix denotes a type
 
          elsif Is_Entity_Name (P) and then Is_Type (Entity (P)) then
-
             Check_Type;
             Check_Not_Incomplete_Type;
+
+            --  Attribute 'Finalization_Size is not defined for class-wide
+            --  types because it is not possible to know statically whether
+            --  a definite type will have controlled components or not.
+
             if Is_Class_Wide_Type (Etype (P)) then
                Error_Attr_P
                  ("prefix of % attribute cannot denote a class-wide type");
             end if;
 
-         --  The prefix does not denote an object or a type
+         --  The prefix denotes an illegal construct
 
          else
             Error_Attr_P

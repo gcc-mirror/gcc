@@ -11010,6 +11010,9 @@ package Sinfo is
    pragma Inline (Pragma_Name);
    --  Convenient function to obtain Chars field of Pragma_Identifier
 
+   function Pragma_Name_Mapped (N : Node_Id) return Name_Id;
+   --  ????Work in progress.
+
    -----------------------------
    -- Syntactic Parent Tables --
    -----------------------------

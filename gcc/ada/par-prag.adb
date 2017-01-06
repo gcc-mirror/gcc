@@ -1450,6 +1450,7 @@ begin
            Pragma_Restricted_Run_Time            |
            Pragma_Rational                       |
            Pragma_Ravenscar                      |
+           Pragma_Rename_Pragma                  |
            Pragma_Reviewable                     |
            Pragma_Share_Generic                  |
            Pragma_Shared                         |

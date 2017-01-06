@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -450,6 +450,7 @@ package Snames is
    Name_Queuing_Policy                 : constant Name_Id := N + $;
    Name_Rational                       : constant Name_Id := N + $; -- GNAT
    Name_Ravenscar                      : constant Name_Id := N + $; -- GNAT
+   Name_Rename_Pragma                  : constant Name_Id := N + $; -- GNAT
    Name_Restricted_Run_Time            : constant Name_Id := N + $; -- GNAT
    Name_Restrictions                   : constant Name_Id := N + $;
    Name_Restriction_Warnings           : constant Name_Id := N + $; -- GNAT
@@ -765,6 +766,7 @@ package Snames is
    Name_Modified_GPL                   : constant Name_Id := N + $;
    Name_Name                           : constant Name_Id := N + $;
    Name_NCA                            : constant Name_Id := N + $;
+   Name_New_Name                       : constant Name_Id := N + $;
    Name_No                             : constant Name_Id := N + $;
    Name_No_Access_Parameter_Allocators : constant Name_Id := N + $;
    Name_No_Coextensions                : constant Name_Id := N + $;
@@ -1808,6 +1810,7 @@ package Snames is
       Pragma_Queuing_Policy,
       Pragma_Rational,
       Pragma_Ravenscar,
+      Pragma_Rename_Pragma,
       Pragma_Restricted_Run_Time,
       Pragma_Restrictions,
       Pragma_Restriction_Warnings,
