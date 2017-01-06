@@ -62,9 +62,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@USING_SPLIT_STACK_TRUE@am__append_1 = -XCClinker $(SPLIT_STACK)
-@GOC_IS_LLGO_TRUE@am__append_2 = libgo-llgo.la libgobegin-llgo.a
-@GOC_IS_LLGO_FALSE@am__append_3 = libgo.la libgobegin.a
+@GOC_IS_LLGO_TRUE@am__append_1 = libgo-llgo.la libgobegin-llgo.a
+@GOC_IS_LLGO_FALSE@am__append_2 = libgo.la libgobegin.a
 subdir = .
 DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -321,7 +320,7 @@ GO_SPLIT_STACK = @GO_SPLIT_STACK@
 GO_SYSCALL_OS_ARCH_FILE = @GO_SYSCALL_OS_ARCH_FILE@
 GO_SYSCALL_OS_FILE = @GO_SYSCALL_OS_FILE@
 GREP = @GREP@
-HWCAP_LDFLAGS = @HWCAP_LDFLAGS@
+HWCAP_CFLAGS = @HWCAP_CFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -459,11 +458,11 @@ AM_CPPFLAGS = -I $(srcdir)/runtime $(LIBFFIINCS) $(PTHREAD_CFLAGS)
 ACLOCAL_AMFLAGS = -I ./config -I ../config
 AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
 	$(SPLIT_STACK) $(WARN_CFLAGS) \
-	$(STRINGOPS_FLAG) $(OSCFLAGS) \
+	$(STRINGOPS_FLAG) $(HWCAP_CFLAGS) $(OSCFLAGS) \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
 	-I $(MULTIBUILDTOP)../../gcc/include
 
-AM_LDFLAGS = $(HWCAP_LDFLAGS) $(am__append_1)
+@USING_SPLIT_STACK_TRUE@AM_LDFLAGS = -XCClinker $(SPLIT_STACK)
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -1120,7 +1119,7 @@ CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgorpc_DATA) $(toolexeclibgoruntime_DATA) \
 	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotext_DATA) $(toolexeclibgotexttemplate_DATA) \
-	$(toolexeclibgounicode_DATA) $(am__append_2) $(am__append_3)
+	$(toolexeclibgounicode_DATA) $(am__append_1) $(am__append_2)
 
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.
