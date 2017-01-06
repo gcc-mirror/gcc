@@ -8239,3 +8239,78 @@ proc check_effective_target_store_merge { } {
 
     return 0
 }
+
+# Return 1 if the target supports coprocessor instructions: cdp, ldc, stc, mcr and
+# mrc.
+proc check_effective_target_arm_coproc1_ok_nocache { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc1_ok assembly {
+	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 4
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc1_ok { } {
+    return [check_cached_effective_target arm_coproc1_ok \
+		check_effective_target_arm_coproc1_ok_nocache]
+}
+
+# Return 1 if the target supports all coprocessor instructions checked by
+# check_effective_target_arm_coproc1_ok in addition to the following: cdp2,
+# ldc2, ldc2l, stc2, stc2l, mcr2 and mrc2.
+proc check_effective_target_arm_coproc2_ok_nocache { } {
+    if { ![check_effective_target_arm_coproc1_ok] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc2_ok assembly {
+	#if __ARM_ARCH < 5
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc2_ok { } {
+    return [check_cached_effective_target arm_coproc2_ok \
+		check_effective_target_arm_coproc2_ok_nocache]
+}
+
+# Return 1 if the target supports all coprocessor instructions checked by
+# check_effective_target_arm_coproc2_ok in addition the following: mcrr and
+mrrc.
+proc check_effective_target_arm_coproc3_ok_nocache { } {
+    if { ![check_effective_target_arm_coproc2_ok] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc3_ok assembly {
+	#if __ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__)
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc3_ok { } {
+    return [check_cached_effective_target arm_coproc3_ok \
+		check_effective_target_arm_coproc3_ok_nocache]
+}
+
+# Return 1 if the target supports all coprocessor instructions checked by
+# check_effective_target_arm_coproc3_ok in addition the following: mcrr2 and
+# mrcc2.
+proc check_effective_target_arm_coproc4_ok_nocache { } {
+    if { ![check_effective_target_arm_coproc3_ok] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc4_ok assembly {
+	#if __ARM_ARCH < 6
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc4_ok { } {
+    return [check_cached_effective_target arm_coproc4_ok \
+		check_effective_target_arm_coproc4_ok_nocache]
+}

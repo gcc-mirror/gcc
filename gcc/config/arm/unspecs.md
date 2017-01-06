@@ -150,6 +150,8 @@
   VUNSPEC_GET_FPSCR	; Represent fetch of FPSCR content.
   VUNSPEC_SET_FPSCR	; Represent assign of FPSCR content.
   VUNSPEC_PROBE_STACK_RANGE ; Represent stack range probing.
+  VUNSPEC_CDP		; Represent the coprocessor cdp instruction.
+  VUNSPEC_CDP2		; Represent the coprocessor cdp2 instruction.
 ])
 
 ;; Enumerators for NEON unspecs.

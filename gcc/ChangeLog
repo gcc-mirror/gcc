@@ -1,5 +1,33 @@
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/arm/arm.md (<cdp>): New.
+	* config/arm/arm.c (neon_const_bounds): Rename this ...
+	(arm_const_bounds): ... this.
+	(arm_coproc_builtin_available): New.
+	* config/arm/arm-builtins.c (SIMD_MAX_BUILTIN_ARGS): Increase.
+	(arm_type_qualifiers): Add 'qualifier_unsigned_immediate'.
+	(CDP_QUALIFIERS): Define to...
+	(arm_cdp_qualifiers): ... this. New.
+	(void_UP): Define.
+	(arm_expand_builtin_args): Add case for 6 arguments.
+	* config/arm/arm-protos.h (neon_const_bounds): Rename this ...
+	(arm_const_bounds): ... this.
+	(arm_coproc_builtin_available): New.
+	* config/arm/arm_acle.h (__arm_cdp): New.
+	(__arm_cdp2): New.
+	* config/arm/arm_acle_builtins.def (cdp): New.
+	(cdp2): New.
+	* config/arm/iterators.md (CDPI,CDP,cdp): New.
+	* config/arm/neon.md: Rename all 'neon_const_bounds' to
+	'arm_const_bounds'.
+	* config/arm/types.md (coproc): New.
+	* config/arm/unspecs.md (VUNSPEC_CDP, VUNSPEC_CDP2): New.
+	* gcc/doc/extend.texi (ACLE): Add a mention of Coprocessor intrinsics.
+	* gcc/doc/sourcebuild.texi (arm_coproc1_ok, arm_coproc2_ok,
+	arm_coproc3_ok, arm_coproc4_ok): Document new effective targets.
+
+2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/arm/arm-builtins.c (arm_unsigned_binop_qualifiers): New.
 	(UBINOP_QUALIFIERS): New.
 	(si_UP): Define.

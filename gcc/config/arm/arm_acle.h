@@ -32,6 +32,26 @@
 extern "C" {
 #endif
 
+#if (!__thumb__ || __thumb2__) &&  __ARM_ARCH >= 4
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_cdp (const unsigned int __coproc, const unsigned int __opc1,
+	   const unsigned int __CRd, const unsigned int __CRn,
+	   const unsigned int __CRm, const unsigned int __opc2)
+{
+  return __builtin_arm_cdp (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
+}
+
+#if __ARM_ARCH >= 5
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__arm_cdp2 (const unsigned int __coproc, const unsigned int __opc1,
+	    const unsigned int __CRd, const unsigned int __CRn,
+	    const unsigned int __CRm, const unsigned int __opc2)
+{
+  return __builtin_arm_cdp2 (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
+}
+#endif /*  __ARM_ARCH >= 5.  */
+#endif /* (!__thumb__ || __thumb2__) &&  __ARM_ARCH >= 4.  */
+
 #ifdef __ARM_FEATURE_CRC32
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 __crc32b (uint32_t __a, uint8_t __b)
