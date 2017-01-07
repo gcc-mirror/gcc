@@ -16,7 +16,7 @@ Predefine @var{name} as a macro, with definition @code{1}.
 @item -D @var{name}=@var{definition}
 The contents of @var{definition} are tokenized and processed as if
 they appeared during translation phase three in a @samp{#define}
-directive.  In particular, the definition will be truncated by
+directive.  In particular, the definition is truncated by
 embedded newline characters.
 
 If you are invoking the preprocessor from a shell or shell-like
@@ -25,8 +25,8 @@ characters such as spaces that have a meaning in the shell syntax.
 
 If you wish to define a function-like macro on the command line, write
 its argument list with surrounding parentheses before the equals sign
-(if any).  Parentheses are meaningful to most shells, so you will need
-to quote the option.  With @command{sh} and @command{csh},
+(if any).  Parentheses are meaningful to most shells, so you should
+quote the option.  With @command{sh} and @command{csh},
 @option{-D'@var{name}(@var{args@dots{}})=@var{definition}'} works.
 
 @option{-D} and @option{-U} options are processed in the order they
@@ -92,7 +92,7 @@ This option does not suppress the preprocessor's debug output, such as
 rules you should explicitly specify the dependency output file with
 @option{-MF}, or use an environment variable like
 @env{DEPENDENCIES_OUTPUT} (@pxref{Environment Variables}).  Debug output
-will still be sent to the regular output stream as normal.
+is still sent to the regular output stream as normal.
 
 Passing @option{-M} to the driver implies @option{-E}, and suppresses
 warnings with an implicit @option{-w}.
@@ -105,15 +105,14 @@ directly or indirectly, from such a header.
 
 This implies that the choice of angle brackets or double quotes in an
 @samp{#include} directive does not in itself determine whether that
-header will appear in @option{-MM} dependency output.  This is a
-slight change in semantics from GCC versions 3.0 and earlier.
+header appears in @option{-MM} dependency output.
 
 @anchor{dashMF}
 @item -MF @var{file}
 @opindex MF
 When used with @option{-M} or @option{-MM}, specifies a
 file to write the dependencies to.  If no @option{-MF} switch is given
-the preprocessor sends the rules to the same place it would have sent
+the preprocessor sends the rules to the same place it would send
 preprocessed output.
 
 When used with the driver options @option{-MD} or @option{-MMD},
@@ -154,7 +153,7 @@ default CPP takes the name of the main input file, deletes any
 directory components and any file suffix such as @samp{.c}, and
 appends the platform's usual object suffix.  The result is the target.
 
-An @option{-MT} option will set the target to be exactly the string you
+An @option{-MT} option sets the target to be exactly the string you
 specify.  If you want multiple targets, you can specify them as a single
 argument to @option{-MT}, or use multiple @option{-MT} options.
 
@@ -269,8 +268,7 @@ option makes the preprocessor and the compiler consume more
 memory. The @var{level} parameter can be used to choose the level of
 precision of token location tracking thus decreasing the memory
 consumption if necessary. Value @samp{0} of @var{level} de-activates
-this option just as if no @option{-ftrack-macro-expansion} was present
-on the command line. Value @samp{1} tracks tokens locations in a
+this option. Value @samp{1} tracks tokens locations in a
 degraded mode for the sake of minimal memory overhead. In this mode
 all tokens resulting from the expansion of an argument of a
 function-like macro have the same location. Value @samp{2} tracks
@@ -312,10 +310,10 @@ supported by the system's @code{iconv} library routine.
 @item -fpch-deps
 @opindex fpch-deps
 When using precompiled headers (@pxref{Precompiled Headers}), this flag
-will cause the dependency-output flags to also list the files from the
-precompiled header's dependencies.  If not specified only the
-precompiled header would be listed and not the files that were used to
-create it because those files are not consulted when a precompiled
+causes the dependency-output flags to also list the files from the
+precompiled header's dependencies.  If not specified, only the
+precompiled header are listed and not the files that were used to
+create it, because those files are not consulted when a precompiled
 header is used.
 
 @item -fpch-preprocess
@@ -340,11 +338,11 @@ current directory.
 @item -fworking-directory
 @opindex fworking-directory
 @opindex fno-working-directory
-Enable generation of linemarkers in the preprocessor output that will
+Enable generation of linemarkers in the preprocessor output that
 let the compiler know the current working directory at the time of
-preprocessing.  When this option is enabled, the preprocessor will
-emit, after the initial linemarker, a second linemarker with the
-current working directory followed by two slashes.  GCC will use this
+preprocessing.  When this option is enabled, the preprocessor
+emits, after the initial linemarker, a second linemarker with the
+current working directory followed by two slashes.  GCC uses this
 directory, when it's present in the preprocessed input, as the
 directory emitted as the current working directory in some debugging
 information formats.  This option is implicitly enabled if debugging
@@ -380,6 +378,7 @@ directive line have the effect of turning that line into an ordinary
 source line, since the first token on the line is no longer a @samp{#}.
 
 @item -CC
+@opindex CC
 Do not discard comments, including during macro expansion.  This is
 like @option{-C}, except that comments contained within macros are
 also passed through to the output file where the macro is expanded.
@@ -480,7 +479,7 @@ touch foo.h; cpp -dM foo.h
 @end smallexample
 
 @noindent
-will show all the predefined macros.
+shows all the predefined macros.
 
 @ifclear cppmanual
 If you use @option{-dM} without the @option{-E} option, @option{-dM} is
@@ -515,14 +514,10 @@ undefined at the time.
 
 @item -fdebug-cpp
 @opindex fdebug-cpp
-This option is only useful for debugging GCC.  When used with
-@option{-E}, dumps debugging information about location maps.  Every
+This option is only useful for debugging GCC.  When used from CPP or with
+@option{-E}, it dumps debugging information about location maps.  Every
 token in the output is preceded by the dump of the map its location
-belongs to.  The dump of the map holding the location of a token would
-be:
-@smallexample
-@{@samp{P}:@file{/file/path};@samp{F}:@file{/includer/path};@samp{L}:@var{line_num};@samp{C}:@var{col_num};@samp{S}:@var{system_header_p};@samp{M}:@var{map_address};@samp{E}:@var{macro_expansion_p},@samp{loc}:@var{location}@}
-@end smallexample
+belongs to.
 
-When used without @option{-E}, this option has no effect.
+When used from GCC without @option{-E}, this option has no effect.
 
