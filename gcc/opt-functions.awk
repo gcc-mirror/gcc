@@ -105,7 +105,7 @@ function switch_flags (flags)
 	  test_flag("Undocumented", flags,  " | CL_UNDOCUMENTED") \
 	  test_flag("NoDWARFRecord", flags,  " | CL_NO_DWARF_RECORD") \
 	  test_flag("Warning", flags,  " | CL_WARNING") \
-	  test_flag("Optimization", flags,  " | CL_OPTIMIZATION")
+	  test_flag("(Optimization|PerFunction)", flags,  " | CL_OPTIMIZATION")
 	sub( "^0 \\| ", "", result )
 	return result
 }
