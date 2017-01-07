@@ -837,74 +837,49 @@ final newline.
 @node Search Path
 @section Search Path
 
-GCC looks in several different places for headers.  On a normal Unix
-system, if you do not instruct it otherwise, it will look for headers
-requested with @code{@w{#include <@var{file}>}} in:
-
-@smallexample
-/usr/local/include
-@var{libdir}/gcc/@var{target}/@var{version}/include
-/usr/@var{target}/include
-/usr/include
-@end smallexample
-
-For C++ programs, it will also look in
-@file{@var{libdir}/../include/c++/@var{version}},
-first.  In the above, @var{target} is the canonical name of the system
-GCC was configured to compile code for; often but not always the same as
-the canonical name of the system it runs on.  @var{version} is the
-version of GCC in use.
-
-You can add to this list with the @option{-I@var{dir}} command-line
-option.  All the directories named by @option{-I} are searched, in
-left-to-right order, @emph{before} the default directories.  The only
-exception is when @file{dir} is already searched by default.  In
-this case, the option is ignored and the search order for system
-directories remains unchanged.
-
-Duplicate directories are removed from the quote and bracket search
-chains before the two chains are merged to make the final search chain.
-Thus, it is possible for a directory to occur twice in the final search
-chain if it was specified in both the quote and bracket chains.
-
-You can prevent GCC from searching any of the default directories with
-the @option{-nostdinc} option.  This is useful when you are compiling an
-operating system kernel or some other program that does not use the
-standard C library facilities, or the standard C library itself.
-@option{-I} options are not ignored as described above when
-@option{-nostdinc} is in effect.
-
-GCC looks for headers requested with @code{@w{#include "@var{file}"}}
-first in the directory containing the current file, then in the
-directories as specified by @option{-iquote} options, then in the same
-places it would have looked for a header requested with angle
-brackets.  For example, if @file{/usr/include/sys/stat.h} contains
+By default, the preprocessor looks for header files included by the quote
+form of the directive @code{@w{#include "@var{file}"}} first relative to
+the directory of the current file, and then in a preconfigured list 
+of standard system directories.  
+For example, if @file{/usr/include/sys/stat.h} contains
 @code{@w{#include "types.h"}}, GCC looks for @file{types.h} first in
 @file{/usr/include/sys}, then in its usual search path.
 
-@samp{#line} (@pxref{Line Control}) does not change GCC's idea of the
-directory containing the current file.
+For the angle-bracket form @code{@w{#include <@var{file}>}}, the
+preprocessor's default behavior is to look only in the standard system
+directories.  The exact search directory list depends on the target
+system, how GCC is configured, and where it is installed.  You can
+find the default search directory list for your version of CPP by
+invoking it with the @option{-v} option.  For example,
 
-You may put @option{-I-} at any point in your list of @option{-I} options.
-This has two effects.  First, directories appearing before the
-@option{-I-} in the list are searched only for headers requested with
-quote marks.  Directories after @option{-I-} are searched for all
-headers.  Second, the directory containing the current file is not
-searched for anything, unless it happens to be one of the directories
-named by an @option{-I} switch.  @option{-I-} is deprecated, @option{-iquote}
-should be used instead.
+@smallexample
+cpp -v /dev/null -o /dev/null
+@end smallexample
 
-@option{-I. -I-} is not the same as no @option{-I} options at all, and does
-not cause the same behavior for @samp{<>} includes that @samp{""}
-includes get with no special options.  @option{-I.} searches the
-compiler's current working directory for header files.  That may or may
-not be the same as the directory containing the current file.
+There are a number of command-line options you can use to add
+additional directories to the search path.  
+The most commonly-used option is @option{-I@var{dir}}, which causes 
+@var{dir} to be searched after the current directory (for the quote 
+form of the directive) and ahead of the standard system directories.
+You can specify multiple @option{-I} options on the command line, 
+in which case the directories are searched in left-to-right order.
 
-If you need to look for headers in a directory named @file{-}, write
-@option{-I./-}.
+If you need separate control over the search paths for the quote and 
+angle-bracket forms of the @samp{#include} directive, you can use the
+@option{-iquote} and/or @option{-isystem} options instead of @option{-I}.
+@xref{Invocation}, for a detailed description of these options, as 
+well as others that are less generally useful.
 
-There are several more ways to adjust the header search path.  They are
-generally less useful.  @xref{Invocation}.
+If you specify other options on the command line, such as @option{-I},
+that affect where the preprocessor searches for header files, the
+directory list printed by the @option{-v} option reflects the actual
+search path used by the preprocessor.
+
+Note that you can also prevent the preprocessor from searching any of
+the default system header directories with the @option{-nostdinc}
+option.  This is useful when you are compiling an operating system
+kernel or some other program that does not use the standard C library
+facilities, or the standard C library itself.
 
 @node Once-Only Headers
 @section Once-Only Headers
@@ -1142,30 +1117,22 @@ because of code in macros defined in system headers.
 
 Normally, only the headers found in specific directories are considered
 system headers.  These directories are determined when GCC is compiled.
-There are, however, two ways to make normal headers into system headers.
+There are, however, two ways to make normal headers into system headers:
 
-The @option{-isystem} command-line option adds its argument to the list of
-directories to search for headers, just like @option{-I}.  Any headers
-found in that directory will be considered system headers.
+@itemize @bullet
+@item
+Header files found in directories added to the search path with the 
+@option{-isystem} and @option{-idirafter} command-line options are 
+treated as system headers for the purposes of diagnostics.
 
-All directories named by @option{-isystem} are searched @emph{after} all
-directories named by @option{-I}, no matter what their order was on the
-command line.  If the same directory is named by both @option{-I} and
-@option{-isystem}, the @option{-I} option is ignored.  GCC provides an
-informative message when this occurs if @option{-v} is used.
-
+@item
 @findex #pragma GCC system_header
 There is also a directive, @code{@w{#pragma GCC system_header}}, which
 tells GCC to consider the rest of the current include file a system
 header, no matter where it was found.  Code that comes before the
-@samp{#pragma} in the file will not be affected.  @code{@w{#pragma GCC
+@samp{#pragma} in the file is not affected.  @code{@w{#pragma GCC
 system_header}} has no effect in the primary source file.
-
-On very old systems, some of the pre-defined system header directories
-get even more special treatment.  GNU C++ considers code in headers
-found in those directories to be surrounded by an @code{@w{extern "C"}}
-block.  There is no way to request this behavior with a @samp{#pragma},
-or from the command line.
+@end itemize
 
 @node Macros
 @chapter Macros
