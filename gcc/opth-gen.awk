@@ -142,7 +142,7 @@ var_opt_char[1] = "unsigned char x_optimize_size";
 var_opt_char[2] = "unsigned char x_optimize_debug";
 
 for (i = 0; i < n_opts; i++) {
-	if (flag_set_p("Optimization", flags[i])) {
+	if (flag_set_p("(Optimization|PerFunction)", flags[i])) {
 		name = var_name(flags[i])
 		if(name == "")
 			continue;

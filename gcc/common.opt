@@ -2644,7 +2644,7 @@ Common Undocumented Var(flag_use_linker_plugin)
 ; will be set according to optimize, debug_info_level and debug_hooks
 ; in process_options ().
 fvar-tracking
-Common Report Var(flag_var_tracking) Init(2) Optimization
+Common Report Var(flag_var_tracking) Init(2) PerFunction
 Perform variable tracking.
 
 ; Positive if we should track variables at assignments, negative if
@@ -2652,13 +2652,13 @@ Perform variable tracking.
 ; annotations.  When flag_var_tracking_assignments ==
 ; AUTODETECT_VALUE it will be set according to flag_var_tracking.
 fvar-tracking-assignments
-Common Report Var(flag_var_tracking_assignments) Init(2) Optimization
+Common Report Var(flag_var_tracking_assignments) Init(2) PerFunction
 Perform variable tracking by annotating assignments.
 
 ; Nonzero if we should toggle flag_var_tracking_assignments after
 ; processing options and computing its default.  */
 fvar-tracking-assignments-toggle
-Common Report Var(flag_var_tracking_assignments_toggle) Optimization
+Common Report Var(flag_var_tracking_assignments_toggle) PerFunction
 Toggle -fvar-tracking-assignments.
 
 ; Positive if we should track uninitialized variables, negative if
@@ -2666,7 +2666,7 @@ Toggle -fvar-tracking-assignments.
 ; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
 ; will be set according to flag_var_tracking.
 fvar-tracking-uninit
-Common Report Var(flag_var_tracking_uninit) Optimization
+Common Report Var(flag_var_tracking_uninit) PerFunction
 Perform variable tracking and also tag variables that are uninitialized.
 
 ftree-vectorize

@@ -1,3 +1,19 @@
+2017-01-07  Alexandre Oliva <aoliva@redhat.com>
+
+	* doc/options.texi (PerFunction): New.
+	* opt-functions.awk (switch_flags): Map both Optimization and
+	PerFunction to CL_OPTIMIZATION.
+	* opth-gen.awk: Test for PerFunction flag along with
+	Optimization.
+	* optc-save-gen.awk: Likewise.  Introduce var_opt_hash and set
+	it only when the latter is present.  Skip those that don't in
+	the hash function generator.
+	* common.opt (fvar-tracking): Mark as PerFunction instead of
+	Optimization.
+	(fvar-tracking-assignments): Likewise.
+	(fvar-tracking-assignments-toggle): Likewise.
+	(fvar-tracking-uninit): Likewise.
+
 2017-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/79018
