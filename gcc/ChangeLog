@@ -1,5 +1,13 @@
 2017-01-07  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR preprocessor/13498
+
+	* doc/cpp.texi (Search Path): Rewrite to remove obsolete and
+	redudant material, and reflect new command-line options.
+	(System Headers): Likewise.
+
+2017-01-07  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/cppdiropts.texi: Merge documentation of -I, -iquote,
 	-isystem, and -idirafter.  Copy-edit.
 	* doc/cppopts.texi: Copy-edit.  Remove contradiction about 
