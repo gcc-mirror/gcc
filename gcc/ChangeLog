@@ -1,3 +1,9 @@
+2017-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/79018
+	* params.def (PARAM_MAX_STORES_TO_MERGE): Add missing space between
+	the and store.
+
 2017-01-06  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR target/57583
