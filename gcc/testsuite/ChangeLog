@@ -1,3 +1,8 @@
+2017-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72803
+	* g++.dg/diagnostic/pr72803.C: New test case.
+
 2017-01-07  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/attr-alloc_size-3.c: Remove regex made redundant by r243461.

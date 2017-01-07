@@ -1,3 +1,10 @@
+2017-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72803
+	* input.c (selftest::test_accessing_ordinary_linemaps): Verify
+	that the transition from a max line width >= 1<<10 to narrower
+	lines works correctly.
+
 2017-01-07  Alexandre Oliva <aoliva@redhat.com>
 
 	* doc/options.texi (PerFunction): New.
