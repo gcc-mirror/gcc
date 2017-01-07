@@ -1,3 +1,13 @@
+2017-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/ptr_comp_1.f08: New test.
+	* gfortran.dg/coarray/ptr_comp_2.f08: New test.
+	* gfortran.dg/coarray/ptr_comp_3.f08: New test.
+	* gfortran.dg/coarray/ptr_comp_4.f08: New test.
+	* gfortran.dg/coarray_ptr_comp_1.f08: New test.
+	* gfortran.dg/coarray_ptr_comp_2.f08: New test.
+	* gfortran.dg/coarray_ptr_comp_3.f08: New test.
+
 2017-01-06  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 	* gcc.dg/memcmp-1.c: New.
 	* gcc.dg/strncmp-1.c: New.

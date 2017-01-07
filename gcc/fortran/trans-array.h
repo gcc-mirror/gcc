@@ -49,7 +49,7 @@ tree gfc_duplicate_allocatable_nocopy (tree, tree, tree, int);
 
 bool gfc_caf_is_dealloc_only (int);
 
-tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int);
+tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
 
 tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
 tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int);
