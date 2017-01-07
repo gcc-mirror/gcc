@@ -1688,6 +1688,17 @@ test_accessing_ordinary_linemaps (const line_table_case &case_)
   linemap_line_start (line_table, 3, 2000);
   location_t loc_e = linemap_position_for_column (line_table, 700);
 
+  /* Transitioning back to a short line.  */
+  linemap_line_start (line_table, 4, 0);
+  location_t loc_back_to_short = linemap_position_for_column (line_table, 100);
+
+  if (should_have_column_data_p (loc_back_to_short))
+    {
+      /* Verify that we switched to short lines in the linemap.  */
+      line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+      ASSERT_EQ (7, map->m_column_and_range_bits - map->m_range_bits);
+    }
+
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 
   /* Multiple files.  */
@@ -1702,6 +1713,7 @@ test_accessing_ordinary_linemaps (const line_table_case &case_)
   assert_loceq ("foo.c", 2, 1, loc_c);
   assert_loceq ("foo.c", 2, 17, loc_d);
   assert_loceq ("foo.c", 3, 700, loc_e);
+  assert_loceq ("foo.c", 4, 100, loc_back_to_short);
   assert_loceq ("bar.c", 1, 150, loc_f);
 
   ASSERT_FALSE (is_location_from_builtin_token (loc_a));

@@ -1,3 +1,11 @@
+2017-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72803
+	* line-map.c (linemap_line_start): When determining if the highest
+	column given out so far will fit into a proposed change to the
+	current map, use the effective number of column bits, rather than
+	the total number of column + range bits.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
