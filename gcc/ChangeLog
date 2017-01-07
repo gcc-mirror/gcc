@@ -1,3 +1,12 @@
+2017-01-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/cppdiropts.texi: Merge documentation of -I, -iquote,
+	-isystem, and -idirafter.  Copy-edit.
+	* doc/cppopts.texi: Copy-edit.  Remove contradiction about 
+	default for -ftrack-macro-expansion.  Delete obsolete and 
+	badly-formatted implementation details about -fdebug-cpp output.
+	* doc/cppwarnopts.texi: Copy-edit.
+
 2017-01-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/72803

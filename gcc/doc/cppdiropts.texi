@@ -10,60 +10,84 @@
 @c formatted for inclusion in the CPP manual; otherwise the main GCC manual.
 
 @item -I @var{dir}
+@itemx -iquote @var{dir}
+@itemx -isystem @var{dir}
+@itemx -idirafter @var{dir}
 @opindex I
+@opindex iquote
+@opindex isystem
+@opindex idirafter
 Add the directory @var{dir} to the list of directories to be searched
-for header files.
+for header files during preprocessing.
 @ifset cppmanual
 @xref{Search Path}.
 @end ifset
-If you use more than
-one @option{-I} option, the directories are scanned in left-to-right
-order; the standard system directories come after.
+If @var{dir} begins with @samp{=}, then the @samp{=} is replaced
+by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
-This can be used to override a system header
+Directories specified with @option{-iquote} apply only to the quote 
+form of the directive, @code{@w{#include "@var{file}"}}.
+Directories specified with @option{-I}, @option{-isystem}, 
+or @option{-idirafter} apply to lookup for both the
+@code{@w{#include "@var{file}"}} and
+@code{@w{#include <@var{file}>}} directives.
+
+You can specify any number or combination of these options on the 
+command line to search for header files in several directories.  
+The lookup order is as follows:
+
+@enumerate
+@item
+For the quote form of the include directive, the directory of the current
+file is searched first.
+
+@item
+For the quote form of the include directive, the directories specified
+by @option{-iquote} options are searched in left-to-right order,
+as they appear on the command line.
+
+@item
+Directories specified with @option{-I} options are scanned in
+left-to-right order.
+
+@item
+Directories specified with @option{-isystem} options are scanned in
+left-to-right order.
+
+@item
+Standard system directories are scanned.
+
+@item
+Directories specified with @option{-idirafter} options are scanned in
+left-to-right order.
+@end enumerate
+
+You can use @option{-I} to override a system header
 file, substituting your own version, since these directories are
-searched before the system header file directories.  However, you should
+searched before the standard system header file directories.  
+However, you should
 not use this option to add directories that contain vendor-supplied
-system header files (use @option{-isystem} for that).
+system header files; use @option{-isystem} for that.
+
+The @option{-isystem} and @option{-idirafter} options also mark the directory
+as a system directory, so that it gets the same special treatment that
+is applied to the standard system directories.
+@ifset cppmanual
+@xref{System Headers}.
+@end ifset
 
 If a standard system include directory, or a directory specified with
 @option{-isystem}, is also specified with @option{-I}, the @option{-I}
 option is ignored.  The directory is still searched but as a
 system directory at its normal position in the system include chain.
 This is to ensure that GCC's procedure to fix buggy system headers and
-the ordering for the @code{include_next} directive are not inadvertently changed.
+the ordering for the @code{#include_next} directive are not inadvertently
+changed.
 If you really need to change the search order for system directories,
 use the @option{-nostdinc} and/or @option{-isystem} options.
 @ifset cppmanual
 @xref{System Headers}.
 @end ifset
-
-If @var{dir} begins with @code{=}, then the @code{=} is replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
-
-@item -iquote @var{dir}
-@opindex iquote
-Search @var{dir} only for header files requested with
-@code{@w{#include "@var{file}"}}; they are not searched for
-@code{@w{#include <@var{file}>}}, before all directories specified by
-@option{-I} and before the standard system directories.
-@ifset cppmanual
-@xref{Search Path}.
-@end ifset
-If @var{dir} begins with @code{=}, then the @code{=} is replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
-
-@item -isystem @var{dir}
-@opindex isystem
-Search @var{dir} for header files, after all directories specified by
-@option{-I} but before the standard system directories.  Mark it
-as a system directory, so that it gets the same special treatment as
-is applied to the standard system directories.
-@ifset cppmanual
-@xref{System Headers}.
-@end ifset
-If @var{dir} begins with @code{=}, then the @code{=} is replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
 @item -I-
 @opindex I-
@@ -85,14 +109,6 @@ file directory as the first search directory for @code{@w{#include
 @ifset cppmanual
 @xref{Search Path}.
 @end ifset
-
-@item -idirafter @var{dir}
-@opindex idirafter
-Search @var{dir} for header files, but do it @emph{after} all
-directories specified with @option{-I} and the standard system directories
-have been exhausted.  @var{dir} is treated as a system include directory.
-If @var{dir} begins with @code{=}, then the @code{=} will be replaced
-by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
 @item -iprefix @var{prefix}
 @opindex iprefix
@@ -124,8 +140,10 @@ target-specific C++ headers.
 @item -nostdinc
 @opindex nostdinc
 Do not search the standard system directories for header files.
-Only the directories you have specified with @option{-I} options
-(and the directory of the current file, if appropriate) are searched.
+Only the directories explicitly specified with @option{-I},
+@option{-iquote}, @option{-isystem}, and/or @option{-idirafter}
+options (and the directory of the current file, if appropriate) 
+are searched.
 
 @item -nostdinc++
 @opindex nostdinc++

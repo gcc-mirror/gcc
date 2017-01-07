@@ -46,14 +46,14 @@ This warning is also enabled by @option{-Wpedantic} and @option{-Wextra}.
 @opindex Wunused-macros
 Warn about macros defined in the main file that are unused.  A macro
 is @dfn{used} if it is expanded or tested for existence at least once.
-The preprocessor will also warn if the macro has not been used at the
+The preprocessor also warns if the macro has not been used at the
 time it is redefined or undefined.
 
 Built-in macros, macros defined on the command line, and macros
 defined in include files are not warned about.
 
 @emph{Note:} If a macro is actually used, but only used in skipped
-conditional blocks, then CPP will report it as unused.  To avoid the
+conditional blocks, then the preprocessor reports it as unused.  To avoid the
 warning in such a case, you might improve the scope of the macro's
 definition by, for example, moving it into the first skipped block.
 Alternatively, you could provide a dummy use with something like:
@@ -67,7 +67,7 @@ Alternatively, you could provide a dummy use with something like:
 @opindex Wno-endif-labels
 @opindex Wendif-labels
 Do not warn whenever an @code{#else} or an @code{#endif} are followed by text.
-This usually happens in code of the form
+This sometimes happens in older programs with code of the form
 
 @smallexample
 #if FOO
@@ -78,6 +78,5 @@ This usually happens in code of the form
 @end smallexample
 
 @noindent
-The second and third @code{FOO} should be in comments, but often are not
-in older programs.  This warning is on by default.
-
+The second and third @code{FOO} should be in comments.
+This warning is on by default.
