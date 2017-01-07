@@ -3708,9 +3708,20 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
   if (rvalue->expr_type == EXPR_FUNCTION && !attr.pointer)
     {
-      gfc_error ("Target expression in pointer assignment "
-		 "at %L must deliver a pointer result",
-		 &rvalue->where);
+      /* F2008, C725.  For PURE also C1283.  Sometimes rvalue is a function call
+	 to caf_get.  Map this to the same error message as below when it is
+	 still a variable expression.  */
+      if (rvalue->value.function.isym
+	  && rvalue->value.function.isym->id == GFC_ISYM_CAF_GET)
+	/* The test above might need to be extend when F08, Note 5.4 has to be
+	   interpreted in the way that target and pointer with the same coindex
+	   are allowed.  */
+	gfc_error ("Data target at %L shall not have a coindex",
+		   &rvalue->where);
+      else
+	gfc_error ("Target expression in pointer assignment "
+		   "at %L must deliver a pointer result",
+		   &rvalue->where);
       return false;
     }
 

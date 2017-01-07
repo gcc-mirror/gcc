@@ -2436,8 +2436,7 @@ gfc_expr_attr (gfc_expr *e)
 static symbol_attribute
 caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
 {
-  int dimension, codimension, pointer, allocatable, target, coarray_comp,
-      alloc_comp;
+  int dimension, codimension, pointer, allocatable, target, coarray_comp;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
@@ -2458,7 +2457,8 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
       codimension = CLASS_DATA (sym)->attr.codimension;
       pointer = CLASS_DATA (sym)->attr.class_pointer;
       allocatable = CLASS_DATA (sym)->attr.allocatable;
-      alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+      attr.alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+      attr.pointer_comp = CLASS_DATA (sym)->ts.u.derived->attr.pointer_comp;
     }
   else
     {
@@ -2466,8 +2466,10 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
       codimension = sym->attr.codimension;
       pointer = sym->attr.pointer;
       allocatable = sym->attr.allocatable;
-      alloc_comp = sym->ts.type == BT_DERIVED
+      attr.alloc_comp = sym->ts.type == BT_DERIVED
 	  ? sym->ts.u.derived->attr.alloc_comp : 0;
+      attr.pointer_comp = sym->ts.type == BT_DERIVED
+	  ? sym->ts.u.derived->attr.pointer_comp : 0;
     }
 
   target = coarray_comp = 0;
@@ -2545,7 +2547,6 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
   attr.target = target;
   attr.save = sym->attr.save;
   attr.coarray_comp = coarray_comp;
-  attr.alloc_comp = alloc_comp;
 
   return attr;
 }
@@ -2575,6 +2576,8 @@ gfc_caf_attr (gfc_expr *e, bool in_allocate, bool *refs_comp)
 	      attr.pointer = CLASS_DATA (sym)->attr.class_pointer;
 	      attr.allocatable = CLASS_DATA (sym)->attr.allocatable;
 	      attr.alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+	      attr.pointer_comp = CLASS_DATA (sym)->ts.u.derived
+		  ->attr.pointer_comp;
 	    }
 	}
       else if (e->symtree)

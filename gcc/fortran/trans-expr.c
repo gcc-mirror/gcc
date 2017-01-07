@@ -7506,7 +7506,8 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 	 Register only allocatable components, that are not coarray'ed
 	 components (%comp[*]).  Only register when the constructor is not the
 	 null-expression.  */
-      if (coarray && !cm->attr.codimension && cm->attr.allocatable
+      if (coarray && !cm->attr.codimension
+	  && (cm->attr.allocatable || cm->attr.pointer)
 	  && (!c->expr || c->expr->expr_type == EXPR_NULL))
 	{
 	  tree token, desc, size;
@@ -8121,6 +8122,52 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
   return lhs_vptr;
 }
 
+
+/* Assign tokens for pointer components.  */
+
+static void
+trans_caf_token_assign (gfc_se *lse, gfc_se *rse, gfc_expr *expr1,
+			gfc_expr *expr2)
+{
+  symbol_attribute lhs_attr, rhs_attr;
+  tree tmp, lhs_tok, rhs_tok;
+  /* Flag to indicated component refs on the rhs.  */
+  bool rhs_cr;
+
+  lhs_attr = gfc_caf_attr (expr1);
+  if (expr2->expr_type != EXPR_NULL)
+    {
+      rhs_attr = gfc_caf_attr (expr2, false, &rhs_cr);
+      if (lhs_attr.codimension && rhs_attr.codimension)
+	{
+	  lhs_tok = gfc_get_ultimate_alloc_ptr_comps_caf_token (lse, expr1);
+	  lhs_tok = build_fold_indirect_ref (lhs_tok);
+
+	  if (rhs_cr)
+	    rhs_tok = gfc_get_ultimate_alloc_ptr_comps_caf_token (rse, expr2);
+	  else
+	    {
+	      tree caf_decl;
+	      caf_decl = gfc_get_tree_for_caf_expr (expr2);
+	      gfc_get_caf_token_offset (rse, &rhs_tok, NULL, caf_decl,
+					NULL_TREE, NULL);
+	    }
+	  tmp = build2_loc (input_location, MODIFY_EXPR, void_type_node,
+			    lhs_tok,
+			    fold_convert (TREE_TYPE (lhs_tok), rhs_tok));
+	  gfc_prepend_expr_to_block (&lse->post, tmp);
+	}
+    }
+  else if (lhs_attr.codimension)
+    {
+      lhs_tok = gfc_get_ultimate_alloc_ptr_comps_caf_token (lse, expr1);
+      lhs_tok = build_fold_indirect_ref (lhs_tok);
+      tmp = build2_loc (input_location, MODIFY_EXPR, void_type_node,
+			lhs_tok, null_pointer_node);
+      gfc_prepend_expr_to_block (&lse->post, tmp);
+    }
+}
+
 /* Indentify class valued proc_pointer assignments.  */
 
 static bool
@@ -8240,6 +8287,11 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 
       gfc_add_modify (&block, lse.expr,
 		      fold_convert (TREE_TYPE (lse.expr), rse.expr));
+
+      /* Also set the tokens for pointer components in derived typed
+	 coarrays.  */
+      if (flag_coarray == GFC_FCOARRAY_LIB)
+	trans_caf_token_assign (&lse, &rse, expr1, expr2);
 
       gfc_add_block_to_block (&block, &rse.post);
       gfc_add_block_to_block (&block, &lse.post);

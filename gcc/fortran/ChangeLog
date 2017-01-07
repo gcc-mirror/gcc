@@ -1,3 +1,47 @@
+2017-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78781
+	PR fortran/78935
+	* expr.c (gfc_check_pointer_assign): Return the same error message for
+	rewritten coarray pointer assignments like for plain ones.
+	* gfortran.h: Change prototype.
+	* primary.c (caf_variable_attr): Set attributes used ones only only
+	ones.  Add setting of pointer_comp attribute.
+	(gfc_caf_attr): Add setting of pointer_comp attribute.
+	* trans-array.c (gfc_array_allocate): Add flag that the component to
+	allocate is not an ultimate coarray component.  Add allocation of
+	pointer arrays.
+	(structure_alloc_comps): Extend nullify to treat pointer components in
+	coarrays correctly.  Restructure nullify to remove redundant code.
+	(gfc_nullify_alloc_comp): Allow setting caf_mode flags.
+	* trans-array.h: Change prototype of gfc_nullify_alloc_comp ().
+	* trans-decl.c (generate_coarray_sym_init): Call nullify_alloc_comp for
+	derived type coarrays with pointer components.
+	* trans-expr.c (gfc_trans_structure_assign): Also treat pointer
+	components.
+	(trans_caf_token_assign): Handle assignment of token of scalar pointer
+	components.
+	(gfc_trans_pointer_assignment): Call above routine.
+	* trans-intrinsic.c (conv_expr_ref_to_caf_ref): Add treating pointer
+	components.
+	(gfc_conv_intrinsic_caf_get): Likewise.
+	(conv_caf_send): Likewise.
+	* trans-stmt.c (gfc_trans_allocate): After allocating a derived type in
+	a coarray pre-register the tokens.
+	(gfc_trans_deallocate): Simply determining the coarray type (scalar or
+	array) and deregistering it correctly.
+	* trans-types.c (gfc_typenode_for_spec): Replace in_coarray flag by the
+	actual codim to allow lookup of array types in the cache.
+	(gfc_build_array_type): Likewise.
+	(gfc_get_array_descriptor_base): Likewise.
+	(gfc_get_array_type_bounds): Likewise.
+	(gfc_get_derived_type): Likewise.
+	* trans-types.h: Likewise.
+	* trans.c (gfc_deallocate_with_status): Enable deregistering of all kind
+	of coarray components.
+	(gfc_deallocate_scalar_with_status): Use free() in fcoarray_single mode
+	instead of caf_deregister.
+
 2017-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify.c (simplify_transformation_to_array): Use

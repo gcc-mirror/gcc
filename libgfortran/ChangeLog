@@ -1,3 +1,10 @@
+2017-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78781
+	PR fortran/78935
+	* caf/single.c (send_by_ref): Fix addressing of non-allocatable scalar
+	destination components.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

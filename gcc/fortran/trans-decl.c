@@ -5147,6 +5147,13 @@ generate_coarray_sym_init (gfc_symbol *sym)
       sym->attr.pointer = 0;
       gfc_add_expr_to_block (&caf_init_block, tmp);
     }
+  else if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pointer_comp)
+    {
+      tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, decl, sym->as
+				    ? sym->as->rank : 0,
+				    GFC_STRUCTURE_CAF_MODE_IN_COARRAY);
+      gfc_add_expr_to_block (&caf_init_block, tmp);
+    }
 }
 
 

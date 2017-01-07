@@ -1302,8 +1302,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	      pointer = gfc_conv_descriptor_data_get (caf_decl);
 	      caf_type = TREE_TYPE (caf_decl);
 	      STRIP_NOPS (pointer);
-	      if (GFC_DESCRIPTOR_TYPE_P (caf_type)
-		  && GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_ALLOCATABLE)
+	      if (GFC_DESCRIPTOR_TYPE_P (caf_type))
 		token = gfc_conv_descriptor_token (caf_decl);
 	      else if (DECL_LANG_SPECIFIC (caf_decl)
 		       && GFC_DECL_TOKEN (caf_decl) != NULL_TREE)
@@ -1552,7 +1551,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
       gfc_add_expr_to_block (&non_null, tmp);
     }
 
-  if (!coarray)
+  if (!coarray || flag_coarray == GFC_FCOARRAY_SINGLE)
     {
       tmp = build_call_expr_loc (input_location,
 				 builtin_decl_explicit (BUILT_IN_FREE), 1,

@@ -1953,11 +1953,24 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 		}
 	      else
 		{
-		  ds = GFC_DESCRIPTOR_DATA (dst);
-		  dst_type = GFC_DESCRIPTOR_TYPE (dst);
+		  single_token = *(caf_single_token_t *)
+					       (ds + ref->u.c.caf_token_offset);
+		  dst = single_token->desc;
+		  if (dst)
+		    {
+		      ds = GFC_DESCRIPTOR_DATA (dst);
+		      dst_type = GFC_DESCRIPTOR_TYPE (dst);
+		    }
+		  else
+		    {
+		      /* When no destination descriptor is present, assume that
+			 source and dest type are identical.  */
+		      dst_type = GFC_DESCRIPTOR_TYPE (src);
+		      ds = *(void **)(ds + ref->u.c.offset);
+		    }
 		}
 	      copy_data (ds, sr, dst_type, GFC_DESCRIPTOR_TYPE (src),
-		  dst_kind, src_kind, ref->item_size, src_size, 1, stat);
+			 dst_kind, src_kind, ref->item_size, src_size, 1, stat);
 	    }
 	  else
 	    copy_data (ds + ref->u.c.offset, sr,
@@ -2055,7 +2068,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	  return;
 	}
       /* Only when on the left most index switch the data pointer to
-	     the array's data pointer.  And only for non-static arrays.  */
+	 the array's data pointer.  And only for non-static arrays.  */
       if (dst_dim == 0 && ref->type != CAF_REF_STATIC_ARRAY)
 	ds = GFC_DESCRIPTOR_DATA (dst);
       switch (ref->u.a.mode[dst_dim])

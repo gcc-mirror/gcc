@@ -6299,6 +6299,40 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
+      /* Nullify all pointers in derived type coarrays.  This registers a
+	 token for them which allows their allocation.  */
+      if (is_coarray)
+	{
+	  gfc_symbol *type = NULL;
+	  symbol_attribute caf_attr;
+	  int rank = 0;
+	  if (code->ext.alloc.ts.type == BT_DERIVED
+	      && code->ext.alloc.ts.u.derived->attr.pointer_comp)
+	    {
+	      type = code->ext.alloc.ts.u.derived;
+	      rank = type->attr.dimension ? type->as->rank : 0;
+	      gfc_clear_attr (&caf_attr);
+	    }
+	  else if (expr->ts.type == BT_DERIVED
+		   && expr->ts.u.derived->attr.pointer_comp)
+	    {
+	      type = expr->ts.u.derived;
+	      rank = expr->rank;
+	      caf_attr = gfc_caf_attr (expr, true);
+	    }
+
+	  /* Initialize the tokens of pointer components in derived type
+	     coarrays.  */
+	  if (type)
+	    {
+	      tmp = (caf_attr.codimension && !caf_attr.dimension)
+		  ? gfc_conv_descriptor_data_get (se.expr) : se.expr;
+	      tmp = gfc_nullify_alloc_comp (type, tmp, rank,
+					    GFC_STRUCTURE_CAF_MODE_IN_COARRAY);
+	      gfc_add_expr_to_block (&block, tmp);
+	    }
+	}
+
       gfc_free_expr (expr);
     } // for-loop
 
@@ -6443,7 +6477,8 @@ gfc_trans_deallocate (gfc_code *code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      if (flag_coarray == GFC_FCOARRAY_LIB)
+      if (flag_coarray == GFC_FCOARRAY_LIB
+	  || flag_coarray == GFC_FCOARRAY_SINGLE)
 	{
 	  bool comp_ref;
 	  symbol_attribute caf_attr = gfc_caf_attr (expr, false, &comp_ref);
@@ -6453,15 +6488,15 @@ gfc_trans_deallocate (gfc_code *code)
 	      is_coarray_array = caf_attr.dimension || !comp_ref
 		  || caf_attr.coarray_comp;
 
-	      /* When the expression to deallocate is referencing a
-		 component, then only deallocate it, but do not deregister.  */
-	      caf_mode = GFC_STRUCTURE_CAF_MODE_IN_COARRAY
-		  | (comp_ref && !caf_attr.coarray_comp
-		     ? GFC_STRUCTURE_CAF_MODE_DEALLOC_ONLY : 0);
+	      if (flag_coarray == GFC_FCOARRAY_LIB)
+		/* When the expression to deallocate is referencing a
+		   component, then only deallocate it, but do not
+		   deregister.  */
+		caf_mode = GFC_STRUCTURE_CAF_MODE_IN_COARRAY
+		    | (comp_ref && !caf_attr.coarray_comp
+		       ? GFC_STRUCTURE_CAF_MODE_DEALLOC_ONLY : 0);
 	    }
 	}
-      else if (flag_coarray == GFC_FCOARRAY_SINGLE)
-	is_coarray = is_coarray_array = gfc_caf_attr (expr).codimension;
 
       if (expr->rank || is_coarray_array)
 	{
