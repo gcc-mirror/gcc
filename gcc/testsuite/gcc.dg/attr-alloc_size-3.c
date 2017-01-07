@@ -410,21 +410,21 @@ test_size_cst (void)
 
   sink (f_size_1 (0));
   sink (f_size_1 (1));
-  sink (f_size_1 (max - 1));  /* { dg-warning "argument 1 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_1 (max));      /* { dg-warning "argument 1 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_1 (max - 1));  /* { dg-warning "argument 1 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_1 (max));      /* { dg-warning "argument 1 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
 
-  sink (f_size_2 (0, max - 1));  /* { dg-warning "argument 2 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_2 (max - 1, 0));  /* { dg-warning "argument 1 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_2 (1, max - 1));  /* { dg-warning "argument 2 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_2 (max - 1, 1));  /* { dg-warning "argument 1 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_2 (max - 1, max - 1));  /* { dg-warning "argument 1 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
-  /* { dg-warning "argument 2 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" "argument 2" { target *-*-* } .-1 } */
+  sink (f_size_2 (0, max - 1));  /* { dg-warning "argument 2 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_2 (max - 1, 0));  /* { dg-warning "argument 1 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_2 (1, max - 1));  /* { dg-warning "argument 2 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_2 (max - 1, 1));  /* { dg-warning "argument 1 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_2 (max - 1, max - 1));  /* { dg-warning "argument 1 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
+  /* { dg-warning "argument 2 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" "argument 2" { target *-*-* } .-1 } */
 
-  sink (f_size_2 (0, max));      /* { dg-warning "argument 2 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_2 (max, 0));      /* { dg-warning "argument 1 value .\[0-9\]+\[lu\]*. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_2 (0, max));      /* { dg-warning "argument 2 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_2 (max, 0));      /* { dg-warning "argument 1 value .\[0-9\]+. exceeds maximum object size \[0-9\]+" } */
 
-  sink (f_size_2 (max / 2, 2));      /* { dg-warning "product .\[0-9\]+\[lu\]* \\* \[0-9\]+\[lu\]*. of arguments 1 and 2 exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_2 (max / 2, 3));      /* { dg-warning "product .\[0-9\]+\[lu\]* \\* \[0-9\]+\[lu\]*. of arguments 1 and 2 exceeds .SIZE_MAX." } */
+  sink (f_size_2 (max / 2, 2));      /* { dg-warning "product .\[0-9\]+ \\* \[0-9\]+. of arguments 1 and 2 exceeds maximum object size \[0-9\]+" } */
+  sink (f_size_2 (max / 2, 3));      /* { dg-warning "product .\[0-9\]+ \\* \[0-9\]+. of arguments 1 and 2 exceeds .SIZE_MAX." } */
 }
 
 void
@@ -445,7 +445,7 @@ test_size_range (size_t ui, ptrdiff_t si)
   sink (f_size_1 (UAR (1, 1)));
   /* Since the only valid argument in the anti-range below is zero
      a warning is expected even though -Walloc-zero is not specified.  */
-  sink (f_size_1 (UAR (1, umax / 2)));   /* { dg-warning "argument 1 range \\\[\[0-9\]+\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size " } */
+  sink (f_size_1 (UAR (1, umax / 2)));   /* { dg-warning "argument 1 range \\\[\[0-9\]+, \[0-9\]+\\\] exceeds maximum object size " } */
   /* The only valid argument in this range is 1.  */
   sink (f_size_1 (UAR (2, umax / 2)));
 
@@ -456,14 +456,14 @@ test_size_range (size_t ui, ptrdiff_t si)
   sink (f_size_2 (umax / 2, ui));
   sink (f_size_2 (umax / 2, si));
 
-  sink (f_size_2 (UR (0, 1), umax));   /* { dg-warning "argument 2 value .\[0-9\]+\[lu\]*. exceeds maximum object size " } */
+  sink (f_size_2 (UR (0, 1), umax));   /* { dg-warning "argument 2 value .\[0-9\]+. exceeds maximum object size " } */
   sink (f_size_2 (UR (0, 1), umax / 2));
   sink (f_size_2 (UR (0, umax / 2), umax / 2));
 
-  sink (f_size_2 (UR (umax / 2 + 1, umax / 2 + 2), ui));  /* { dg-warning "argument 1 range \\\[\[0-9\]+\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size " } */
-  sink (f_size_2 (ui, UR (umax / 2 + 1, umax / 2 + 2)));  /* { dg-warning "argument 2 range \\\[\[0-9\]+\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size " } */
-  sink (f_size_2 (UR (umax / 2 + 1, umax), UR (umax / 2 + 1, umax)));  /* { dg-warning "argument 1 range \\\[\[0-9\]+\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size " } */
-/* { dg-warning "argument 2 range \\\[\[0-9\]+\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size " "argument 2" { target *-*-* } .-1 } */
+  sink (f_size_2 (UR (umax / 2 + 1, umax / 2 + 2), ui));  /* { dg-warning "argument 1 range \\\[\[0-9\]+, \[0-9\]+\\\] exceeds maximum object size " } */
+  sink (f_size_2 (ui, UR (umax / 2 + 1, umax / 2 + 2)));  /* { dg-warning "argument 2 range \\\[\[0-9\]+, \[0-9\]+\\\] exceeds maximum object size " } */
+  sink (f_size_2 (UR (umax / 2 + 1, umax), UR (umax / 2 + 1, umax)));  /* { dg-warning "argument 1 range \\\[\[0-9\]+, \[0-9\]+\\\] exceeds maximum object size " } */
+/* { dg-warning "argument 2 range \\\[\[0-9\]+, \[0-9\]+\\\] exceeds maximum object size " "argument 2" { target *-*-* } .-1 } */
 
   sink (f_size_2 (SR (smin, 1), 1));
   sink (f_size_2 (SR (smin, 1), umax / 2));
