@@ -43,6 +43,8 @@ ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
 			  -Wmissing-format-attribute -Wcast-qual])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([-Wno-long-long])
 
+ACX_PROG_CC_WARNING_OPTS([-fno-lto], [nolto_flags])
+
 # Only enable with --enable-werror-always until existing warnings are
 # corrected.
 ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
