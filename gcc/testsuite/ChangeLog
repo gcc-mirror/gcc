@@ -1,3 +1,12 @@
+2017-01-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77708
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-2.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-6.c: XFAIL test cases failing
+	due to bug 78969.
+	* gcc.dg/format/pr78569.c: Adjust.
+
 2017-01-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/72803

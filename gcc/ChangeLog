@@ -1,3 +1,17 @@
+2017-01-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77708
+	* doc/invoke.texi (Warning Options): Document -Wformat-truncation.
+	* gimple-ssa-sprintf.c (call_info::reval_used, call_info::warnopt):
+	New member functions.
+	(format_directive): Used them.
+	(add_bytes): Same.
+	(pass_sprintf_length::handle_gimple_call): Same.
+	* graphite-sese-to-poly.c (tree_int_to_gmp): Increase buffer size
+	to avoid truncation for any argument.
+	(extract_affine_mul): Same.
+	* tree.c (get_file_function_name): Same.
+
 2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/77484

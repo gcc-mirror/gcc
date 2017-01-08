@@ -537,6 +537,11 @@ Wformat-signedness
 C ObjC C++ ObjC++ Var(warn_format_signedness) Warning
 Warn about sign differences with format functions.
 
+Wformat-truncation
+C ObjC C++ ObjC++ Warning Alias(Wformat-truncation=, 1, 0)
+Warn about calls to snprintf and similar functions that truncate output.
+Same as -Wformat-truncation=1.
+
 Wformat-y2k
 C ObjC C++ ObjC++ Var(warn_format_y2k) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 2, 0)
 Warn about strftime formats yielding 2-digit years.
@@ -553,6 +558,10 @@ Wformat-length=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format_length) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn about function calls with format strings that write past the end
 of the destination region.
+
+Wformat-truncation=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+Warn about calls to snprintf and similar functions that truncate output.
 
 Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)

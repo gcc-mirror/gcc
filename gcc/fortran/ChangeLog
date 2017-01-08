@@ -1,3 +1,11 @@
+2017-01-08  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78913
+	PR middle-end/77708
+	* trans-common.c (build_equiv_decl): Increase buffer size to avoid
+	truncation for any argument.
+	* trans-types.c (gfc_build_logical_type): Same.
+
 2017-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78781
