@@ -12541,8 +12541,11 @@ passes that are otherwise registered after all the other passes are
 numbered higher than a pass named "final", even if they are executed
 earlier.  @var{dumpname} is generated from the name of the output
 file if explicitly specified and not an executable, otherwise it is
-the basename of the source file.  These switches may have different
-effects when @option{-E} is used for preprocessing.
+the basename of the source file.  
+
+Some @option{-d@var{letters}} switches have different meaning when
+@option{-E} is used for preprocessing.  @xref{Preprocessor Options},
+for information about preprocessor-specific dump options.
 
 Debug dumps can be enabled with a @option{-fdump-rtl} switch or some
 @option{-d} option @var{letters}.  Here are the possible

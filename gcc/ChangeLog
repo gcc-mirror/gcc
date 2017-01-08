@@ -1,5 +1,15 @@
 2017-01-07  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR preprocessor/54124
+
+	* doc/cppopts.texi: Reformat -d subtable to list the full name
+	of the options.  Add cross-reference to the docs for the general
+	compiler -d options.
+	* doc/invoke.texi (Developer Options): Add cross-reference to the
+	preprocessor-specific -d option documentation.
+
+2017-01-07  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR preprocessor/13498
 
 	* doc/cpp.texi (Search Path): Rewrite to remove obsolete and

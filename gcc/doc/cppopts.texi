@@ -458,15 +458,20 @@ activities.  Each name is indented to show how deep in the
 printed, even if they are found to be invalid; an invalid precompiled
 header file is printed with @samp{...x} and a valid one with @samp{...!} .
 
-@item -dCHARS
-@var{CHARS} is a sequence of one or more of the following characters,
-and must not be preceded by a space.  Other characters are interpreted
+@item -d@var{letters}
+@opindex d
+Says to make debugging dumps during compilation as specified by
+@var{letters}.  The flags documented here are those relevant to the
+preprocessor.  Other @var{letters} are interpreted
 by the compiler proper, or reserved for future versions of GCC, and so
-are silently ignored.  If you specify characters whose behavior
+are silently ignored.  If you specify @var{letters} whose behavior
 conflicts, the result is undefined.
+@ifclear cppmanual
+@xref{Developer Options}, for more information.
+@end ifclear
 
-@table @samp
-@item M
+@table @gcctabopt
+@item -dM
 @opindex dM
 Instead of the normal output, generate a list of @samp{#define}
 directives for all the macros defined during the execution of the
@@ -487,25 +492,25 @@ interpreted as a synonym for @option{-fdump-rtl-mach}.
 @xref{Developer Options, , ,gcc}.
 @end ifclear
 
-@item D
+@item -dD
 @opindex dD
-Like @samp{M} except in two respects: it does @emph{not} include the
+Like @option{-dM} except in two respects: it does @emph{not} include the
 predefined macros, and it outputs @emph{both} the @samp{#define}
 directives and the result of preprocessing.  Both kinds of output go to
 the standard output file.
 
-@item N
+@item -dN
 @opindex dN
-Like @samp{D}, but emit only the macro names, not their expansions.
+Like @option{-dD}, but emit only the macro names, not their expansions.
 
-@item I
+@item -dI
 @opindex dI
 Output @samp{#include} directives in addition to the result of
 preprocessing.
 
-@item U
+@item -dU
 @opindex dU
-Like @samp{D} except that only macros that are expanded, or whose
+Like @option{-dD} except that only macros that are expanded, or whose
 definedness is tested in preprocessor directives, are output; the
 output is delayed until the use or test of the macro; and
 @samp{#undef} directives are also output for macros tested but
