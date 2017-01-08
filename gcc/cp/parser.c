@@ -11147,12 +11147,12 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 
 	    /* Outside a template, the non-selected branch of a constexpr
 	       if is a 'discarded statement', i.e. unevaluated.  */
-	    bool was_discarded = parser->in_discarded_stmt;
+	    bool was_discarded = in_discarded_stmt;
 	    bool discard_then = (cx && !processing_template_decl
 				 && integer_zerop (condition));
 	    if (discard_then)
 	      {
-		parser->in_discarded_stmt = true;
+		in_discarded_stmt = true;
 		++c_inhibit_evaluation_warnings;
 	      }
 
@@ -11166,7 +11166,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	    if (discard_then)
 	      {
 		THEN_CLAUSE (statement) = NULL_TREE;
-		parser->in_discarded_stmt = was_discarded;
+		in_discarded_stmt = was_discarded;
 		--c_inhibit_evaluation_warnings;
 	      }
 
@@ -11178,7 +11178,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 				     && integer_nonzerop (condition));
 		if (discard_else)
 		  {
-		    parser->in_discarded_stmt = true;
+		    in_discarded_stmt = true;
 		    ++c_inhibit_evaluation_warnings;
 		  }
 
@@ -11235,7 +11235,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 		if (discard_else)
 		  {
 		    ELSE_CLAUSE (statement) = NULL_TREE;
-		    parser->in_discarded_stmt = was_discarded;
+		    in_discarded_stmt = was_discarded;
 		    --c_inhibit_evaluation_warnings;
 		  }
 	      }
@@ -12143,7 +12143,7 @@ cp_parser_jump_statement (cp_parser* parser)
 	     expression.  */
 	  expr = NULL_TREE;
 	/* Build the return-statement.  */
-	if (current_function_auto_return_pattern && parser->in_discarded_stmt)
+	if (current_function_auto_return_pattern && in_discarded_stmt)
 	  /* Don't deduce from a discarded return statement.  */;
 	else
 	  statement = finish_return_stmt (expr);

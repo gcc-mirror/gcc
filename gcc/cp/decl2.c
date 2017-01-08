@@ -5112,7 +5112,7 @@ mark_used (tree decl, tsubst_flags_t complain)
     }
 
   /* If we don't need a value, then we don't need to synthesize DECL.  */
-  if (cp_unevaluated_operand != 0)
+  if (cp_unevaluated_operand || in_discarded_stmt)
     return true;
 
   DECL_ODR_USED (decl) = 1;
