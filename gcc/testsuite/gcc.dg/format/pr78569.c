@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wformat-length" } */
+/* { dg-options "-Wformat-truncation" } */
 
 /* A run of blank lines, so that we would fail the assertion in input.c:1388:
    gcc_assert (line_width >= (start.column - 1 + literal_length));  */

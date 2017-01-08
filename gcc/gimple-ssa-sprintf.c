@@ -718,6 +718,18 @@ struct pass_sprintf_length::call_info
      writing any.  NOWRITE is cleared in response to the %n directive
      which has side-effects similar to writing output.  */
   bool nowrite;
+
+  /* Return true if the called function's return value is used.  */
+  bool retval_used () const
+  {
+    return gimple_get_lhs (callstmt);
+  }
+
+  /* Return the warning option corresponding to the called function.  */
+  int warnopt () const
+  {
+    return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_length_;
+  }
 };
 
 /* Return the result of formatting the '%%' directive.  */
@@ -1950,8 +1962,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 
   if (fmtres.nullp)
     {
-      fmtwarn (dirloc, pargrange, NULL,
-	       OPT_Wformat_length_,
+      fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
 	       "%<%.*s%> directive argument is null",
 	       (int)cvtlen, cvtbeg);
 
@@ -1986,8 +1997,8 @@ format_directive (const pass_sprintf_length::call_info &info,
 			    "%wu bytes into a region of size %wu")
 		       : G_("%<%.*s%> directive writing %wu bytes "
 			    "into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
+		  warned = fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
+				    fmtstr,
 				    (int)cvtlen, cvtbeg, fmtres.range.min,
 				    navail);
 		}
@@ -2001,7 +2012,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 		       : G_("%<%.*s%> directive writing between %wu and "
 			    "%wu bytes into a region of size %wu"));
 		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
+				    info.warnopt (), fmtstr,
 				    (int)cvtlen, cvtbeg,
 				    fmtres.range.min, fmtres.range.max, navail);
 		}
@@ -2014,16 +2025,20 @@ format_directive (const pass_sprintf_length::call_info &info,
 		       : G_("%<%.*s%> directive writing %wu or more bytes "
 			    "into a region of size %wu"));
 		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
+				    info.warnopt (), fmtstr,
 				    (int)cvtlen, cvtbeg,
 				    fmtres.range.min, navail);
 		}
 	    }
 	  else if (navail < fmtres.range.max
-		   && (((spec.specifier == 's'
-			 && fmtres.range.max < HOST_WIDE_INT_MAX)
-			/* && (spec.precision || spec.star_precision) */)
-		       || 1 < warn_format_length))
+		   && (spec.specifier != 's'
+		       || fmtres.range.max < HOST_WIDE_INT_MAX)
+		   && ((info.bounded
+			&& (!info.retval_used ()
+			    || warn_format_trunc > 1))
+		       || (!info.bounded
+			   && (spec.specifier == 's'
+			       || 1 < warn_format_length))))
 	    {
 	      /* The maximum directive output is longer than there is
 		 room in the destination and the output length is either
@@ -2038,7 +2053,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 		       : G_("%<%.*s%> directive writing %wu or more bytes "
 			    "into a region of size %wu"));
 		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
+				    info.warnopt (), fmtstr,
 				    (int)cvtlen, cvtbeg,
 				    fmtres.range.min, navail);
 		}
@@ -2052,7 +2067,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 		       : G_("%<%.*s%> directive writing between %wu and %wu "
 			    "bytes into a region of size %wu"));
 		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
+				    info.warnopt (), fmtstr,
 				    (int)cvtlen, cvtbeg,
 				    fmtres.range.min, fmtres.range.max,
 				    navail);
@@ -2086,7 +2101,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 		       "into a region of size %wu")));
 
 	  warned = fmtwarn (dirloc, pargrange, NULL,
-			    OPT_Wformat_length_, fmtstr,
+			    info.warnopt (), fmtstr,
 			    (int)cvtlen, cvtbeg, fmtres.range.min,
 			    navail);
 	}
@@ -2111,7 +2126,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 
       if (fmtres.range.min == fmtres.range.max)
 	warned = fmtwarn (dirloc, pargrange, NULL,
-			  OPT_Wformat_length_,
+			  info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes exceeds "
 			  "minimum required size of 4095",
 			  (int)cvtlen, cvtbeg, fmtres.range.min);
@@ -2125,7 +2140,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 		    "bytes exceeds minimum required size of 4095"));
 
 	  warned = fmtwarn (dirloc, pargrange, NULL,
-			    OPT_Wformat_length_, fmtstr,
+			    info.warnopt (), fmtstr,
 			    (int)cvtlen, cvtbeg,
 			    fmtres.range.min, fmtres.range.max);
 	}
@@ -2143,8 +2158,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 	 to exceed INT_MAX bytes.  */
 
       if (fmtres.range.min == fmtres.range.max)
-	warned = fmtwarn (dirloc, pargrange, NULL,
-			  OPT_Wformat_length_,
+	warned = fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes causes "
 			  "result to exceed %<INT_MAX%>",
 			  (int)cvtlen, cvtbeg, fmtres.range.min);
@@ -2157,7 +2171,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 	       : G_ ("%<%.*s%> directive output between %wu and %wu "
 		     "bytes may cause result to exceed %<INT_MAX%>"));
 	  warned = fmtwarn (dirloc, pargrange, NULL,
-			    OPT_Wformat_length_, fmtstr,
+			    info.warnopt (), fmtstr,
 			    (int)cvtlen, cvtbeg,
 			    fmtres.range.min, fmtres.range.max);
 	}
@@ -2265,7 +2279,11 @@ add_bytes (const pass_sprintf_length::call_info &info,
 		  : G_("writing a terminating nul past the end "
 		       "of the destination")));
 
-	  res->warned = fmtwarn (loc, NULL, NULL, OPT_Wformat_length_, text);
+	  if (!info.bounded
+	      || !boundrange
+	      || !info.retval_used ()
+	      || warn_format_trunc > 1)
+	    res->warned = fmtwarn (loc, NULL, NULL, info.warnopt (), text);
 	}
       else
 	{
@@ -2283,8 +2301,12 @@ add_bytes (const pass_sprintf_length::call_info &info,
 		  : G_("writing format character %#qc at offset %wu past "
 		       "the end of the destination")));
 
-	  res->warned = fmtwarn (loc, NULL, NULL, OPT_Wformat_length_,
-				 text, info.fmtstr[off], off);
+	  if (!info.bounded
+	      || !boundrange
+	      || !info.retval_used ()
+	      || warn_format_trunc > 1)
+	    res->warned = fmtwarn (loc, NULL, NULL, info.warnopt (),
+				   text, info.fmtstr[off], off);
 	}
     }
 
@@ -2351,8 +2373,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 	 off + len - !!len);
 
       if (res->number_chars_min == res->number_chars_max)
-	res->warned = fmtwarn (loc, NULL, NULL,
-			       OPT_Wformat_length_,
+	res->warned = fmtwarn (loc, NULL, NULL, info.warnopt (),
 			       "output of %wu bytes causes "
 			       "result to exceed %<INT_MAX%>",
 			       res->number_chars_min - !end);
@@ -2364,8 +2385,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 		     "result to exceed %<INT_MAX%>")
 	       : G_ ("output between %wu and %wu bytes may cause "
 		     "result to exceed %<INT_MAX%>"));
-	  res->warned = fmtwarn (loc, NULL, NULL, OPT_Wformat_length_,
-				 text,
+	  res->warned = fmtwarn (loc, NULL, NULL, info.warnopt (), text,
 				 res->number_chars_min - !end,
 				 res->number_chars_max - !end);
 	}
@@ -2970,14 +2990,13 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 		 checking built-ins.  */
 	      if ((idx_objsize == HOST_WIDE_INT_M1U
 		   || !warn_stringop_overflow))
-		warning_at (gimple_location (info.callstmt),
-			    OPT_Wformat_length_,
+		warning_at (gimple_location (info.callstmt), info.warnopt (),
 			    "specified bound %wu exceeds maximum object size "
 			    "%wu",
 			    dstsize, target_size_max () / 2);
 	    }
 	  else if (dstsize > target_int_max ())
-	    warning_at (gimple_location (info.callstmt), OPT_Wformat_length_,
+	    warning_at (gimple_location (info.callstmt), info.warnopt (),
 			"specified bound %wu exceeds %<INT_MAX %>",
 			dstsize);
 	}
@@ -3028,7 +3047,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	     is not constant.  */
 	  location_t loc = gimple_location (info.callstmt);
 	  warning_at (EXPR_LOC_OR_LOC (dstptr, loc),
-		      OPT_Wformat_length_, "null destination pointer");
+		      info.warnopt (), "null destination pointer");
 	  return;
 	}
 
@@ -3044,7 +3063,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	  && (idx_objsize == HOST_WIDE_INT_M1U
 	      || !warn_stringop_overflow))
 	{
-	  warning_at (gimple_location (info.callstmt), OPT_Wformat_length_,
+	  warning_at (gimple_location (info.callstmt), info.warnopt (),
 		      "specified bound %wu exceeds the size %wu "
 		      "of the destination object", dstsize, objsize);
 	}
@@ -3057,7 +3076,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	 is not constant.  */
       location_t loc = gimple_location (info.callstmt);
       warning_at (EXPR_LOC_OR_LOC (info.format, loc),
-		  OPT_Wformat_length_, "null format string");
+		  info.warnopt (), "null format string");
       return;
     }
 

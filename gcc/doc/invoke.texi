@@ -276,7 +276,8 @@ Objective-C and Objective-C++ Dialects}.
 -Werror  -Werror=* -Wfatal-errors -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-length=@var{n} @gol
 -Wformat-nonliteral @gol
--Wformat-security  -Wformat-signedness  -Wformat-y2k -Wframe-address @gol
+-Wformat-security  -Wformat-signedness -Wformat-truncation=@var{n} @gol
+-Wformat-y2k -Wframe-address @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
@@ -3959,10 +3960,9 @@ Unix Specification says that such unused arguments are allowed.
 @opindex Wformat-length
 @opindex Wno-format-length
 Warn about calls to formatted input/output functions such as @code{sprintf}
-that might overflow the destination buffer, or about bounded functions such
-as @code{snprintf} that might result in output truncation.  When the exact
-number of bytes written by a format directive cannot be determined at
-compile-time it is estimated based on heuristics that depend on the
+and @code{vsprintf} that might overflow the destination buffer.  When the
+exact number of bytes written by a format directive cannot be determined
+at compile-time it is estimated based on heuristics that depend on the
 @var{level} argument and on optimization.  While enabling optimization
 will in most cases improve the accuracy of the warning, it may also
 result in false positives.
@@ -3974,15 +3974,14 @@ result in false positives.
 @opindex Wno-format-length
 Level @var{1} of @option{-Wformat-length} enabled by @option{-Wformat}
 employs a conservative approach that warns only about calls that most
-likely overflow the buffer or result in output truncation.  At this
-level, numeric arguments to format directives with unknown values are
-assumed to have the value of one, and strings of unknown length to be
-empty.  Numeric arguments that are known to be bounded to a subrange
-of their type, or string arguments whose output is bounded either by
-their directive's precision or by a finite set of string literals, are
-assumed to take on the value within the range that results in the most
-bytes on output.  For example, the call to @code{sprintf} below is
-diagnosed because even with both @var{a} and @var{b} equal to zero,
+likely overflow the buffer.  At this level, numeric arguments to format
+directives with unknown values are assumed to have the value of one, and
+strings of unknown length to be empty.  Numeric arguments that are known
+to be bounded to a subrange of their type, or string arguments whose output
+is bounded either by their directive's precision or by a finite set of
+string literals, are assumed to take on the value within the range that
+results in the most bytes on output.  For example, the call to @code{sprintf}
+below is diagnosed because even with both @var{a} and @var{b} equal to zero,
 the terminating NUL character (@code{'\0'}) appended by the function
 to the destination buffer will be written past its end.  Increasing
 the size of the buffer by a single byte is sufficient to avoid the
@@ -3998,14 +3997,13 @@ void f (int a, int b)
 
 @item -Wformat-length=2
 Level @var{2} warns also about calls that might overflow the destination
-buffer or result in truncation given an argument of sufficient length
-or magnitude.  At level @var{2}, unknown numeric arguments are assumed
-to have the minimum representable value for signed types with a precision
-greater than 1, and the maximum representable value otherwise.  Unknown
-string arguments whose length cannot be assumed to be bounded either by
-the directive's precision, or by a finite set of string literals they
-may evaluate to, or the character array they may point to, are assumed
-to be 1 character long.
+buffer given an argument of sufficient length or magnitude.  At level
+@var{2}, unknown numeric arguments are assumed to have the minimum
+representable value for signed types with a precision greater than 1, and
+the maximum representable value otherwise.  Unknown string arguments whose
+length cannot be assumed to be bounded either by the directive's precision,
+or by a finite set of string literals they may evaluate to, or the character
+array they may point to, are assumed to be 1 character long.
 
 At level @var{2}, the call in the example above is again diagnosed, but
 this time because with @var{a} equal to a 32-bit @code{INT_MIN} the first
@@ -4074,6 +4072,35 @@ included in @option{-Wformat-nonliteral}.)
 @opindex Wno-format-signedness
 If @option{-Wformat} is specified, also warn if the format string
 requires an unsigned argument and the argument is signed and vice versa.
+
+@item -Wformat-truncation
+@itemx -Wformat-truncation=@var{level}
+@opindex Wformat-truncation
+@opindex Wno-format-truncation
+Warn about calls to formatted input/output functions such as @code{snprintf}
+and @code{vsnprintf} that might result in output truncation.  When the exact
+number of bytes written by a format directive cannot be determined at
+compile-time it is estimated based on heuristics that depend on
+the @var{level} argument and on optimization.  While enabling optimization
+will in most cases improve the accuracy of the warning, it may also result
+in false positives.  Except as noted otherwise, the option uses the same
+logic @option{-Wformat-length}.
+
+@table @gcctabopt
+@item -Wformat-truncation
+@item -Wformat-truncation=1
+@opindex Wformat-truncation
+@opindex Wno-format-length
+Level @var{1} of @option{-Wformat-truncation} enabled by @option{-Wformat}
+employs a conservative approach that warns only about calls to bounded
+functions whose return value is unused and that will most likely result
+in output truncatation.
+
+@item -Wformat-truncation=2
+Level @var{2} warns also about calls to bounded functions whose return
+value is used and that might result in truncation given an argument of
+sufficient length or magnitude.
+@end table
 
 @item -Wformat-y2k
 @opindex Wformat-y2k
@@ -8429,8 +8456,8 @@ if (snprintf (buf, "%08x", i) >= sizeof buf)
 
 The @option{-fprintf-return-value} option relies on other optimizations
 and yields best results with @option{-O2}.  It works in tandem with the
-@option{-Wformat-length} option.  The @option{-fprintf-return-value}
-option is enabled by default.
+@option{-Wformat-length} and @option{-Wformat-truncation} options.
+The @option{-fprintf-return-value} option is enabled by default.
 
 @item -fno-peephole
 @itemx -fno-peephole2

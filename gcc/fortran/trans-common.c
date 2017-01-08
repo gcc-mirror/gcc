@@ -342,7 +342,7 @@ static tree
 build_equiv_decl (tree union_type, bool is_init, bool is_saved)
 {
   tree decl;
-  char name[15];
+  char name[18];
   static int serial = 0;
 
   if (is_init)

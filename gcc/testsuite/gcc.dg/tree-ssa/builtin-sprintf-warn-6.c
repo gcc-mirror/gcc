@@ -51,7 +51,8 @@ void fuint (unsigned j, char *p)
 {
   if (j > 999)
     return;
-  snprintf (p, 4, "%3u", j);
+
+  snprintf (p, 4, "%3u", j);   /* { dg-bogus "may be truncated" "unsigned int" { xfail *-*-* } } */
 }
 
 void fint (int j, char *p)
@@ -61,8 +62,7 @@ void fint (int j, char *p)
   if (k > 999)
     return;
 
-  /* Range info isn't available here.  */
-  snprintf (p, 4, "%3u", k);
+  snprintf (p, 4, "%3u", k);   /* { dg-bogus "may be truncated" "signed int" { xfail *-*-* } } */
 }
 
 void fulong (unsigned long j, char *p)
@@ -70,8 +70,7 @@ void fulong (unsigned long j, char *p)
   if (j > 999)
     return;
 
-  /* Range info isn't available here.  */
-  snprintf (p, 4, "%3lu", j);
+  snprintf (p, 4, "%3lu", j);   /* { dg-bogus "may be truncated" "unsigned long" { xfail *-*-* } } */
 }
 
 void flong (long j, char *p)
@@ -81,8 +80,7 @@ void flong (long j, char *p)
   if (k > 999)
     return;
 
-  /* Range info isn't available here.  */
-  snprintf (p, 4, "%3lu", k);
+  snprintf (p, 4, "%3lu", k);   /* { dg-bogus "may be truncated" "signed long" { xfail *-*-* } } */
 }
 
 void fullong (unsigned long long j, char *p)
@@ -90,18 +88,17 @@ void fullong (unsigned long long j, char *p)
   if (j > 999)
     return;
 
-  /* Range info isn't available here.  */
-  snprintf (p, 4, "%3llu", j);
+  snprintf (p, 4, "%3llu", j);   /* { dg-bogus "may be truncated" "signed long" { xfail *-*-* } } */
 }
 
-void fllong (long j, char *p)
+void fllong (long long j, char *p)
 {
   const unsigned long long k = (unsigned long long) j;
 
   if (k > 999)
     return;
 
-  snprintf (p, 4, "%3llu", k);
+  snprintf (p, 4, "%3llu", k);   /* { dg-bogus "may be truncated" "unsigned long long" { xfail *-*-* } } */
 }
 
 /* { dg-final { scan-tree-dump-not "abort" "optimized" } } */
