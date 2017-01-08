@@ -31,19 +31,20 @@ ACLOCAL = @ACLOCAL@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 CC = @CC@
-CFLAGS = @CFLAGS@ -fno-lto
+CFLAGS = @CFLAGS@
 WARN_CFLAGS = @WARN_CFLAGS@ @WARN_PEDANTIC@ @WERROR@
 CPP = @CPP@
-CPPFLAGS = @CPPFLAGS@ -fno-lto
+CPPFLAGS = @CPPFLAGS@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
-LDFLAGS = @LDFLAGS@ -fno-lto
+LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
 PACKAGE = @PACKAGE@
 PICFLAG = @PICFLAG@
 RANLIB = @RANLIB@
 SHELL = @SHELL@
 objext = @OBJEXT@
+NOLTO_FLAGS = @nolto_flags@
 
 datarootdir = @datarootdir@
 datadir = @datadir@
@@ -58,7 +59,8 @@ enable_decimal_float= @enable_decimal_float@
 
 INCLUDES = -I$(srcdir) -I.
 
-ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS) $(PICFLAG)
+ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(NOLTO_FLAGS) $(INCLUDES) $(CPPFLAGS) \
+	     $(PICFLAG)
 
 bid_OBJS = bid2dpd_dpd2bid.$(objext) host-ieee32.$(objext) \
 	host-ieee64.$(objext) host-ieee128.$(objext)
