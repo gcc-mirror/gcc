@@ -1,3 +1,14 @@
+2017-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78948 - instantiation from discarded statement
+	* parser.h (struct cp_parser): Remove in_discarded_stmt field.
+	* cp-tree.h (in_discarded_stmt): Declare it.
+	(struct saved_scope): Add discarded_stmt bitfield.
+	(in_discarded_stmt): New macro.
+	* decl2.c (mark_used): Check it.
+	* parser.c (cp_parser_selection_statement): Adjust.
+	(cp_parser_jump_statement): Adjust.
+
 2017-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78931
