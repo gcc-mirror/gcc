@@ -1,3 +1,8 @@
+2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/77484
+	* predict.def (PRED_INDIR_CALL): Set to 86.
+
 2017-01-07  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR preprocessor/54124
