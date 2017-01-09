@@ -1,3 +1,14 @@
+2017-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/call2.C: New test.
+	* g++.dg/opt/call3.C: Likewise.
+	* gnat.dg/array26.adb: New test.
+	* gnat.dg/array26_pkg.ad[sb]: New helper.
+	* gnat.dg/array27.adb: New test.
+	* gnat.dg/array27_pkg.ad[sb]: New helper.
+	* gnat.dg/array28.adb: New test.
+	* gnat.dg/array28_pkg.ad[sb]: New helper.
+
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/79019

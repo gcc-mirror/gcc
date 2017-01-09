@@ -1,3 +1,10 @@
+2017-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): In the bitfield case, if the value comes from
+	a function call and is of an aggregate type returned in registers, do
+	not modify the field mode; extract the value in all cases if the mode
+	is BLKmode and the size is not larger than a word.
+
 2017-01-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR target/71017
