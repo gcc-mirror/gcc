@@ -1,3 +1,128 @@
+2017-01-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.ads, einfo.adb: Remove uses of flags Has_Default_Init_Cond,
+	Is_Default_Init_Cond_Procedure, and
+	Has_Inherited_Default_Init_Cond.  Add uses of flags
+	Has_Own_DIC, Is_DIC_Procedure, and Has_Inherited_DIC.
+	(Default_Init_Cond_Procedure): Removed.
+	(DIC_Procedure): New routine.
+	(Has_Default_Init_Cond): Removed.
+	(Has_DIC): New routine.
+	(Has_Inheritable_Invariants): The attribute applies to the base type.
+	(Has_Inherited_Default_Init_Cond): Removed.
+	(Has_Inherited_DIC): New routine.
+	(Has_Inherited_Invariants): The attribute applies to the base type.
+	(Has_Own_DIC): New routine.
+	(Has_Own_Invariants): The attribute applies to the base type.
+	(Is_Default_Init_Cond_Procedure): Removed.
+	(Is_DIC_Procedure): New routine.
+	(Set_Default_Init_Cond_Procedure): Removed.
+	(Set_DIC_Procedure): New routine.
+	(Set_Has_Default_Init_Cond): Removed.
+	(Set_Has_Inheritable_Invariants): The attribute applies
+	to the base type.
+	(Set_Has_Inherited_Default_Init_Cond): Removed.
+	(Set_Has_Inherited_DIC): New routine.
+	(Set_Has_Inherited_Invariants): The attribute applies to the base type.
+	(Set_Has_Own_DIC): New routine.
+	(Set_Has_Own_Invariants): The attribute applies to the base type.
+	(Set_Is_Default_Init_Cond_Procedure): Removed.
+	(Set_Is_DIC_Procedure): New routine.
+	(Write_Entity_Flags): Update the output of all flags related to
+	default initial condition.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Update the generation
+	of the call to the DIC procedure.
+	(Freeze_Type): Generate the body of the DIC procedure.
+	* exp_ch7.adb (Build_Invariant_Procedure_Body): Replace
+	all occurrences of Create_Append with Append_New_To. Do
+	not generate an invariant procedure for a class-wide type.
+	The generated body acts as a freeze action of the working type.
+	(Build_Invariant_Procedure_Declaration): Do not generate an
+	invariant procedure for a class-wide type.
+	(Create_Append): Removed.
+	* exp_util.adb: Add with and use clauses for Sem_Ch3, sem_ch6,
+	sem_Ch12, Sem_Disp, and GNAT.HTable. Move the handling of
+	class-wide pre/postcondition description and data structures from
+	Sem_Prag.
+	(Build_Class_Wide_Expression): Moved from Sem_Prag.
+	(Build_DIC_Call): New routine.
+	(Build_DIC_Procedure_Body): New routine.
+	(Build_DIC_Procedure_Declaration): New routine.
+	(Entity_Hash): Moved from Sem_Prag.
+	(Find_DIC_Type): New routine.
+	(Update_Primitives_Mapping): Reimplemented.
+	(Update_Primitives_Mapping_Of_Types): New routine.
+	* exp_util.ads (Build_Class_Wide_Expression): Moved from Sem_Prag.
+	(Build_DIC_Call): New routine.
+	(Build_DIC_Procedure_Body): New routine.
+	(Build_DIC_Procedure_Declaration): New routine.
+	(Update_Primitives_Mapping): Moved from Sem_Prag.
+	(Update_Primitives_Mapping_Of_Types): New routine.
+	* nlists.adb (Append_New): New routine.
+	(Append_New_To): New routine.
+	* nlists.ads (Append_New): New routine.
+	(Append_New_To): New routine.
+	* sem_ch3.adb (Analyze_Declarations): Do not generate the bodies
+	of DIC procedures here. This is now done at the end of the
+	visible declarations, private declarations, and at the freeze
+	point of a type.
+	(Analyze_Private_Extension_Declaration):
+	A private extension inherits the DIC pragma of a parent type.
+	(Analyze_Subtype_Declaration): No need to propagate invariant
+	attributes to a subtype as those apply to the base type.
+	(Build_Derived_Record_Type): No need to inherit invariants here
+	as this is now done in Build_Derived_Type.
+	(Build_Derived_Type): Inherit both the DIC pragma and invariants from
+	a parent type.
+	(Process_Full_View): Update the propagation of DIC attributes.
+	(Propagate_Default_Init_Cond_Attributes): Removed.
+	* sem_ch7.adb Add with and use clauses for Exp_Util.
+	(Analyze_Package_Specification): Create the body of the DIC
+	procedure at the end of the visible and private declarations.
+	(Preserve_Full_Attributes): Propagate DIC attributes.
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Propagate
+	DIC attributes.
+	(Analyze_Task_Type_Declaration): Propagate DIC attributes.
+	* sem_elab.adb (Check_A_Call): Update the call to
+	Is_Nontrivial_Default_Init_Cond_Procedure.
+	* sem_prag.adb Remove the with and use clauses for
+	GNAT.HTable. Move the handling of class- wide pre/postcondition
+	description and data structures to Exp_Util.
+	(Analyze_Pragma): Create the declaration of the DIC procedure. There
+	is no need to propagate invariant-related attributes at this point
+	as this is done in Build_Invariant_Procedure_Declaration.
+	(Build_Class_Wide_Expression): Moved to Exp_Util.
+	(Entity_Hash): Moved to Exp_Util.
+	(Update_Primitives_Mapping): Moved to Exp_Util.
+	* sem_prag.ads (Build_Class_Wide_Expression): Moved to Exp_Util.
+	(Update_Primitives_Mapping): Moved to Exp_Util.
+	* sem_util.adb: Remove with and use clauses for Ghost
+	and Sem_Ch13.
+	(Build_Default_Init_Cond_Call): Removed.
+	(Build_Default_Init_Cond_Procedure_Bodies): Removed.
+	(Build_Default_Init_Cond_Procedure_Declaration): Removed.
+	(Get_Views): Reimplemented.
+	(Has_Full_Default_Initialization): Reimplement the section on DIC.
+	(Inherit_Default_Init_Cond_Procedure): Removed.
+	(Is_Nontrivial_Default_Init_Cond_Procedure): Removed.
+	(Is_Nontrivial_DIC_Procedure): New routine.
+	(Is_Verifiable_DIC_Pragma): New routine.
+	(Propagate_DIC_Attributes): New routine.
+	* sem_util.ads (Build_Default_Init_Cond_Call): Removed.
+	(Build_Default_Init_Cond_Procedure_Bodies): Removed.
+	(Build_Default_Init_Cond_Procedure_Declaration): Removed.
+	(Inherit_Default_Init_Cond_Procedure): Removed.
+	(Is_Nontrivial_Default_Init_Cond_Procedure): Removed.
+	(Is_Nontrivial_DIC_Procedure): New routine.
+	(Is_Verifiable_DIC_Pragma): New routine.
+	(Propagate_DIC_Attributes): New routine.
+	* sem_warn.adb (Is_OK_Fully_Initialized): Reimplement the section
+	on DIC.
+	* sinfo.ads, sinfo.adb: Add new attribute Expression_Copy along with
+	usage in nodes.
+	(Expression_Copy): New routine along with pragma Inline.
+	(Set_Expression_Copy): New routine along with pragma Inline.
+
 2017-01-06  Bob Duff  <duff@adacore.com>
 
 	* bindgen.adb (Gen_Adainit, Gen_Adafinal): Change

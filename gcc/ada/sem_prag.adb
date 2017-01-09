@@ -89,8 +89,6 @@ with Urealp;    use Urealp;
 with Validsw;   use Validsw;
 with Warnsw;    use Warnsw;
 
-with GNAT.HTable; use GNAT.HTable;
-
 package body Sem_Prag is
 
    ----------------------------------------------
@@ -165,40 +163,6 @@ package body Sem_Prag is
      Table_Initial        => 100,
      Table_Increment      => 100,
      Table_Name           => "Name_Externals");
-
-   ---------------------------------------------------------
-   -- Handling of inherited class-wide pre/postconditions --
-   ---------------------------------------------------------
-
-   --  Following AI12-0113, the expression for a class-wide condition is
-   --  transformed for a subprogram that inherits it, by replacing calls
-   --  to primitive operations of the original controlling type into the
-   --  corresponding overriding operations of the derived type. The following
-   --  hash table manages this mapping, and is expanded on demand whenever
-   --  such inherited expression needs to be constructed.
-
-   --  The mapping is also used to check whether an inherited operation has
-   --  a condition that depends on overridden operations. For such an
-   --  operation we must create a wrapper that is then treated as a normal
-   --  overriding. In SPARK mode such operations are illegal.
-
-   --  For a given root type there may be several type extensions with their
-   --  own overriding operations, so at various times a given operation of
-   --  the root will be mapped into different overridings. The root type is
-   --  also mapped into the current type extension to indicate that its
-   --  operations are mapped into the overriding operations of that current
-   --  type extension.
-
-   subtype Num_Primitives is Integer range 0 .. 510;
-   function Entity_Hash (E : Entity_Id) return Num_Primitives;
-
-   package Primitives_Mapping is new Gnat.HTable.Simple_Htable
-     (Header_Num => Num_Primitives,
-      Key        => Entity_Id,
-      Element    => Entity_Id,
-      No_element => Empty,
-      Hash       => Entity_Hash,
-      Equal      => "=");
 
    -------------------------------------
    -- Local Subprograms and Variables --
@@ -13784,7 +13748,7 @@ package body Sem_Prag is
 
          --  pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
 
-         when Pragma_Default_Initial_Condition => Default_Init_Cond : declare
+         when Pragma_Default_Initial_Condition => DIC : declare
             Discard : Boolean;
             Stmt    : Node_Id;
             Typ     : Entity_Id;
@@ -13835,13 +13799,21 @@ package body Sem_Prag is
             --  purposes of legality checks and removal of ignored Ghost code.
 
             Mark_Pragma_As_Ghost (N, Typ);
-            Set_Has_Default_Init_Cond (Typ);
-            Set_Has_Inherited_Default_Init_Cond (Typ, False);
+
+            --  The pragma signals that the type defines its own DIC assertion
+            --  expression.
+
+            Set_Has_Own_DIC (Typ);
 
             --  Chain the pragma on the rep item chain for further processing
 
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
-         end Default_Init_Cond;
+
+            --  Create the declaration of the procedure which verifies the
+            --  assertion expression of pragma DIC at runtime.
+
+            Build_DIC_Procedure_Declaration (Typ);
+         end DIC;
 
          ----------------------------------
          -- Default_Scalar_Storage_Order --
@@ -16819,18 +16791,6 @@ package body Sem_Prag is
             Typ     : Entity_Id;
             Typ_Arg : Node_Id;
 
-            CRec_Typ : Entity_Id;
-            --  The corresponding record type of Full_Typ
-
-            Full_Base : Entity_Id;
-            --  The base type of Full_Typ
-
-            Full_Typ : Entity_Id;
-            --  The full view of Typ
-
-            Priv_Typ : Entity_Id;
-            --  The partial view of Typ
-
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
@@ -16923,16 +16883,6 @@ package body Sem_Prag is
             if Class_Present (N) then
                Set_Has_Inheritable_Invariants (Typ);
             end if;
-
-            Get_Views (Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
-
-            --  Propagate invariant-related attributes to all views of the type
-            --  and any additional types that may have been created.
-
-            Propagate_Invariant_Attributes (Priv_Typ,  From_Typ => Typ);
-            Propagate_Invariant_Attributes (Full_Typ,  From_Typ => Typ);
-            Propagate_Invariant_Attributes (Full_Base, From_Typ => Typ);
-            Propagate_Invariant_Attributes (CRec_Typ,  From_Typ => Typ);
 
             --  Chain the pragma on to the rep item chain, for processing when
             --  the type is frozen.
@@ -26766,140 +26716,6 @@ package body Sem_Prag is
       return False;
    end Appears_In;
 
-   ---------------------------------
-   -- Build_Class_Wide_Expression --
-   ---------------------------------
-
-   procedure Build_Class_Wide_Expression
-     (Prag        : Node_Id;
-      Subp        : Entity_Id;
-      Par_Subp    : Entity_Id;
-      Adjust_Sloc : Boolean)
-   is
-      function Replace_Entity (N : Node_Id) return Traverse_Result;
-      --  Replace reference to formal of inherited operation or to primitive
-      --  operation of root type, with corresponding entity for derived type,
-      --  when constructing the class-wide condition of an overriding
-      --  subprogram.
-
-      --------------------
-      -- Replace_Entity --
-      --------------------
-
-      function Replace_Entity (N : Node_Id) return Traverse_Result is
-         New_E : Entity_Id;
-
-      begin
-         if Adjust_Sloc then
-            Adjust_Inherited_Pragma_Sloc (N);
-         end if;
-
-         if Nkind (N) = N_Identifier
-           and then Present (Entity (N))
-           and then
-             (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
-           and then
-             (Nkind (Parent (N)) /= N_Attribute_Reference
-               or else Attribute_Name (Parent (N)) /= Name_Class)
-         then
-            --  The replacement does not apply to dispatching calls within the
-            --  condition, but only to calls whose static tag is that of the
-            --  parent type.
-
-            if Is_Subprogram (Entity (N))
-              and then Nkind (Parent (N)) = N_Function_Call
-              and then Present (Controlling_Argument (Parent (N)))
-            then
-               return OK;
-            end if;
-
-            --  Determine whether entity has a renaming
-
-            New_E := Primitives_Mapping.Get (Entity (N));
-
-            if Present (New_E) then
-               Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
-            end if;
-
-            --  Check that there are no calls left to abstract operations if
-            --  the current subprogram is not abstract.
-
-            if Nkind (Parent (N)) = N_Function_Call
-              and then N = Name (Parent (N))
-            then
-               if not Is_Abstract_Subprogram (Subp)
-                 and then Is_Abstract_Subprogram (Entity (N))
-               then
-                  Error_Msg_Sloc := Sloc (Current_Scope);
-                  Error_Msg_NE
-                    ("cannot call abstract subprogram in inherited condition "
-                      & "for&#", N, Current_Scope);
-
-               --  In SPARK mode, reject an inherited condition for an
-               --  inherited operation if it contains a call to an overriding
-               --  operation, because this implies that the pre/postcondition
-               --  of the inherited operation have changed silently.
-
-               elsif SPARK_Mode = On
-                 and then Warn_On_Suspicious_Contract
-                 and then Present (Alias (Subp))
-                 and then Present (New_E)
-                 and then Comes_From_Source (New_E)
-               then
-                  Error_Msg_N
-                    ("cannot modify inherited condition (SPARK RM 6.1.1(1))",
-                     Parent (Subp));
-                  Error_Msg_Sloc   := Sloc (New_E);
-                  Error_Msg_Node_2 := Subp;
-                  Error_Msg_NE
-                    ("\overriding of&# forces overriding of&",
-                     Parent (Subp), New_E);
-               end if;
-            end if;
-
-            --  Update type of function call node, which should be the same as
-            --  the function's return type.
-
-            if Is_Subprogram (Entity (N))
-              and then Nkind (Parent (N)) = N_Function_Call
-            then
-               Set_Etype (Parent (N), Etype (Entity (N)));
-            end if;
-
-         --  The whole expression will be reanalyzed
-
-         elsif Nkind (N) in N_Has_Etype then
-            Set_Analyzed (N, False);
-         end if;
-
-         return OK;
-      end Replace_Entity;
-
-      procedure Replace_Condition_Entities is
-        new Traverse_Proc (Replace_Entity);
-
-      --  Local variables
-
-      Par_Formal  : Entity_Id;
-      Subp_Formal : Entity_Id;
-
-   --  Start of processing for Build_Class_Wide_Expression
-
-   begin
-      --  Add mapping from old formals to new formals
-
-      Par_Formal := First_Formal (Par_Subp);
-      Subp_Formal  := First_Formal (Subp);
-
-      while Present (Par_Formal) and then Present (Subp_Formal) loop
-         Primitives_Mapping.Set (Par_Formal, Subp_Formal);
-         Next_Formal (Par_Formal);
-         Next_Formal (Subp_Formal);
-      end loop;
-
-      Replace_Condition_Entities (Prag);
-   end Build_Class_Wide_Expression;
-
    -----------------------------------
    -- Build_Pragma_Check_Equivalent --
    -----------------------------------
@@ -27929,15 +27745,6 @@ package body Sem_Prag is
          Error_Msg_N ("pragma % duplicates pragma declared #", Prag);
       end if;
    end Duplication_Error;
-
-   -----------------
-   -- Entity_Hash --
-   -----------------
-
-   function Entity_Hash (E : Entity_Id) return Num_Primitives is
-   begin
-      return Num_Primitives (E mod 511);
-   end Entity_Hash;
 
    ------------------------------
    -- Find_Encapsulating_State --
@@ -29779,146 +29586,5 @@ package body Sem_Prag is
 
       return Empty;
    end Test_Case_Arg;
-
-   -------------------------------
-   -- Update_Primitives_Mapping --
-   -------------------------------
-
-   procedure Update_Primitives_Mapping
-     (Inher_Id : Entity_Id;
-      Subp_Id  : Entity_Id)
-   is
-      function Overridden_Ancestor (S : Entity_Id) return Entity_Id;
-      --  Locate the primitive operation with the name of S whose controlling
-      --  type is the dispatching type of Inher_Id.
-
-      -------------------------
-      -- Overridden_Ancestor --
-      -------------------------
-
-      function Overridden_Ancestor (S : Entity_Id) return Entity_Id is
-         Par : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
-         Anc : Entity_Id;
-
-      begin
-         Anc := S;
-
-         --  Locate the ancestor subprogram with the proper controlling type
-
-         while Present (Overridden_Operation (Anc)) loop
-            Anc := Overridden_Operation (Anc);
-            exit when Find_Dispatching_Type (Anc) = Par;
-         end loop;
-
-         return Anc;
-      end Overridden_Ancestor;
-
-      --  Local variables
-
-      Old_Typ  : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
-      Typ      : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
-      Decl     : Node_Id;
-      Old_Elmt : Elmt_Id;
-      Old_Prim : Entity_Id;
-      Prim     : Entity_Id;
-
-   --  Start of processing for Update_Primitives_Mapping
-
-   begin
-      --  If the types are already in the map, it has been previously built for
-      --  some other overriding primitive.
-
-      if Primitives_Mapping.Get (Old_Typ) = Typ then
-         return;
-
-      else
-         --  Initialize new mapping with the primitive operations
-
-         Decl := First (List_Containing (Unit_Declaration_Node (Subp_Id)));
-
-         --  Look for primitive operations of the current type that have
-         --  overridden an operation of the type related to the original
-         --  class-wide precondition. There may be several intermediate
-         --  overridings between them.
-
-         while Present (Decl) loop
-            if Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
-                               N_Subprogram_Declaration)
-            then
-               Prim := Defining_Entity (Decl);
-
-               if Is_Subprogram (Prim)
-                 and then Present (Overridden_Operation (Prim))
-                 and then Find_Dispatching_Type (Prim) = Typ
-               then
-                  Old_Prim := Overridden_Ancestor (Prim);
-
-                  Primitives_Mapping.Set (Old_Prim, Prim);
-               end if;
-            end if;
-
-            Next (Decl);
-         end loop;
-
-         --  Now examine inherited operations. these do not override, but have
-         --  an alias, which is the entity used in a call. That alias may be
-         --  inherited or come from source, in which case it may override an
-         --  earlier operation. We only need to examine inherited functions,
-         --  that can appear within the inherited expression.
-
-         Prim := First_Entity (Scope (Subp_Id));
-         while Present (Prim) loop
-            if not Comes_From_Source (Prim)
-              and then Ekind (Prim) = E_Function
-              and then Present (Alias (Prim))
-            then
-               Old_Prim := Alias (Prim);
-
-               if Comes_From_Source (Old_Prim) then
-                  Old_Prim := Overridden_Ancestor (Old_Prim);
-
-               else
-                  while Present (Alias (Old_Prim))
-                    and then Scope (Old_Prim) /= Scope (Inher_Id)
-                  loop
-                     Old_Prim := Alias (Old_Prim);
-
-                     if Comes_From_Source (Old_Prim) then
-                        Old_Prim := Overridden_Ancestor (Old_Prim);
-                        exit;
-                     end if;
-                  end loop;
-               end if;
-
-               Primitives_Mapping.Set (Old_Prim, Prim);
-            end if;
-
-            Next_Entity (Prim);
-         end loop;
-
-         --  If the parent operation is an interface operation, the overriding
-         --  indicator is not present. Instead, we get from the interface
-         --  operation the primitive of the current type that implements it.
-
-         if Is_Interface (Old_Typ) then
-            Old_Elmt := First_Elmt (Collect_Primitive_Operations (Old_Typ));
-            while Present (Old_Elmt) loop
-               Old_Prim := Node (Old_Elmt);
-               Prim := Find_Primitive_Covering_Interface (Typ, Old_Prim);
-
-               if Present (Prim) then
-                  Primitives_Mapping.Set (Old_Prim, Prim);
-               end if;
-
-               Next_Elmt (Old_Elmt);
-            end loop;
-         end if;
-      end if;
-
-      --  Map the types themselves, so that the process is not repeated for
-      --  other overriding primitives.
-
-      Primitives_Mapping.Set (Old_Typ, Typ);
-   end Update_Primitives_Mapping;
 
 end Sem_Prag;

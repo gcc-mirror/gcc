@@ -6528,19 +6528,18 @@ package body Exp_Ch3 is
       --  pragma Default_Initial_Condition, add a runtime check to verify
       --  the assumption of the pragma (SPARK RM 7.3.3). Generate:
 
-      --    <Base_Typ>Default_Init_Cond (<Base_Typ> (Def_Id));
+      --    <Base_Typ>DIC (<Base_Typ> (Def_Id));
 
       --  Note that the check is generated for source objects only
 
       if Comes_From_Source (Def_Id)
-        and then (Has_Default_Init_Cond (Typ)
-                   or else Has_Inherited_Default_Init_Cond (Typ))
+        and then Has_DIC (Typ)
+        and then Present (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
-        and then Present (Default_Init_Cond_Procedure (Typ))
       then
          declare
-            DIC_Call : constant Node_Id :=
-                         Build_Default_Init_Cond_Call (Loc, Def_Id, Typ);
+            DIC_Call : constant Node_Id := Build_DIC_Call (Loc, Def_Id, Typ);
+
          begin
             if Present (Next_N) then
                Insert_Before_And_Analyze (Next_N, DIC_Call);
@@ -7319,6 +7318,13 @@ package body Exp_Ch3 is
 
       Process_Pending_Access_Types (Def_Id);
       Freeze_Stream_Operations (N, Def_Id);
+
+      --  Generate the [spec and] body of the procedure tasked with the runtime
+      --  verification of pragma Default_Initial_Condition's expression.
+
+      if Has_DIC (Def_Id) then
+         Build_DIC_Procedure_Body (Def_Id);
+      end if;
 
       --  Generate the [spec and] body of the invariant procedure tasked with
       --  the runtime verification of all invariants that pertain to the type.

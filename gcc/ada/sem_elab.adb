@@ -1016,7 +1016,7 @@ package body Sem_Elab is
          return;
       end if;
 
-      Is_DIC_Proc := Is_Nontrivial_Default_Init_Cond_Procedure (Ent);
+      Is_DIC_Proc := Is_Nontrivial_DIC_Procedure (Ent);
 
       --  Elaboration issues in SPARK are reported only for source constructs
       --  and for nontrivial Default_Initial_Condition procedures. The latter

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,6 +228,16 @@ package Nlists is
    --  that is not already a member of a node list, and To must be a node list.
    --  An attempt to append an error node is ignored without complaint and the
    --  list is unchanged.
+
+   procedure Append_New (Node : Node_Or_Entity_Id; To : in out List_Id);
+   pragma Inline (Append_New);
+   --  Appends Node at the end of node list To. If To is non-existent list, a
+   --  list is created. Node must be a non-empty node that is not already a
+   --  member of a node list, and To must be a node list.
+
+   procedure Append_New_To (To : in out List_Id; Node : Node_Or_Entity_Id);
+   pragma Inline (Append_New_To);
+   --  Like Append_New, but the arguments are in reverse order
 
    procedure Append_To (To : List_Id; Node : Node_Or_Entity_Id);
    pragma Inline (Append_To);

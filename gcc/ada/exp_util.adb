@@ -46,8 +46,12 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -61,7 +65,45 @@ with Ttypes;   use Ttypes;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
+with GNAT.HTable; use GNAT.HTable;
+
 package body Exp_Util is
+
+   ---------------------------------------------------------
+   -- Handling of inherited class-wide pre/postconditions --
+   ---------------------------------------------------------
+
+   --  Following AI12-0113, the expression for a class-wide condition is
+   --  transformed for a subprogram that inherits it, by replacing calls
+   --  to primitive operations of the original controlling type into the
+   --  corresponding overriding operations of the derived type. The following
+   --  hash table manages this mapping, and is expanded on demand whenever
+   --  such inherited expression needs to be constructed.
+
+   --  The mapping is also used to check whether an inherited operation has
+   --  a condition that depends on overridden operations. For such an
+   --  operation we must create a wrapper that is then treated as a normal
+   --  overriding. In SPARK mode such operations are illegal.
+
+   --  For a given root type there may be several type extensions with their
+   --  own overriding operations, so at various times a given operation of
+   --  the root will be mapped into different overridings. The root type is
+   --  also mapped into the current type extension to indicate that its
+   --  operations are mapped into the overriding operations of that current
+   --  type extension.
+
+   Primitives_Mapping_Size : constant := 511;
+
+   subtype Num_Primitives is Integer range 0 .. Primitives_Mapping_Size - 1;
+   function Entity_Hash (E : Entity_Id) return Num_Primitives;
+
+   package Primitives_Mapping is new GNAT.HTable.Simple_HTable
+     (Header_Num => Num_Primitives,
+      Key        => Entity_Id,
+      Element    => Entity_Id,
+      No_element => Empty,
+      Hash       => Entity_Hash,
+      Equal      => "=");
 
    -----------------------
    -- Local Subprograms --
@@ -112,6 +154,11 @@ package body Exp_Util is
    procedure Evaluate_Slice_Bounds (Slice : Node_Id);
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
+
+   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id;
+   --  Subsidiary to all Build_DIC_Procedure_xxx routines. Find the type which
+   --  defines the Default_Initial_Condition pragma of type Typ. This is either
+   --  Typ itself or a parent type when the pragma is inherited.
 
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
@@ -983,6 +1030,1074 @@ package body Exp_Util is
 
       return Blk;
    end Build_Abort_Undefer_Block;
+
+   ---------------------------------
+   -- Build_Class_Wide_Expression --
+   ---------------------------------
+
+   procedure Build_Class_Wide_Expression
+     (Prag        : Node_Id;
+      Subp        : Entity_Id;
+      Par_Subp    : Entity_Id;
+      Adjust_Sloc : Boolean)
+   is
+      function Replace_Entity (N : Node_Id) return Traverse_Result;
+      --  Replace reference to formal of inherited operation or to primitive
+      --  operation of root type, with corresponding entity for derived type,
+      --  when constructing the class-wide condition of an overriding
+      --  subprogram.
+
+      --------------------
+      -- Replace_Entity --
+      --------------------
+
+      function Replace_Entity (N : Node_Id) return Traverse_Result is
+         New_E : Entity_Id;
+
+      begin
+         if Adjust_Sloc then
+            Adjust_Inherited_Pragma_Sloc (N);
+         end if;
+
+         if Nkind (N) = N_Identifier
+           and then Present (Entity (N))
+           and then
+             (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
+           and then
+             (Nkind (Parent (N)) /= N_Attribute_Reference
+               or else Attribute_Name (Parent (N)) /= Name_Class)
+         then
+            --  The replacement does not apply to dispatching calls within the
+            --  condition, but only to calls whose static tag is that of the
+            --  parent type.
+
+            if Is_Subprogram (Entity (N))
+              and then Nkind (Parent (N)) = N_Function_Call
+              and then Present (Controlling_Argument (Parent (N)))
+            then
+               return OK;
+            end if;
+
+            --  Determine whether entity has a renaming
+
+            New_E := Primitives_Mapping.Get (Entity (N));
+
+            if Present (New_E) then
+               Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+            end if;
+
+            --  Check that there are no calls left to abstract operations if
+            --  the current subprogram is not abstract.
+
+            if Nkind (Parent (N)) = N_Function_Call
+              and then N = Name (Parent (N))
+            then
+               if not Is_Abstract_Subprogram (Subp)
+                 and then Is_Abstract_Subprogram (Entity (N))
+               then
+                  Error_Msg_Sloc := Sloc (Current_Scope);
+                  Error_Msg_NE
+                    ("cannot call abstract subprogram in inherited condition "
+                      & "for&#", N, Current_Scope);
+
+               --  In SPARK mode, reject an inherited condition for an
+               --  inherited operation if it contains a call to an overriding
+               --  operation, because this implies that the pre/postcondition
+               --  of the inherited operation have changed silently.
+
+               elsif SPARK_Mode = On
+                 and then Warn_On_Suspicious_Contract
+                 and then Present (Alias (Subp))
+                 and then Present (New_E)
+                 and then Comes_From_Source (New_E)
+               then
+                  Error_Msg_N
+                    ("cannot modify inherited condition (SPARK RM 6.1.1(1))",
+                     Parent (Subp));
+                  Error_Msg_Sloc   := Sloc (New_E);
+                  Error_Msg_Node_2 := Subp;
+                  Error_Msg_NE
+                    ("\overriding of&# forces overriding of&",
+                     Parent (Subp), New_E);
+               end if;
+            end if;
+
+            --  Update type of function call node, which should be the same as
+            --  the function's return type.
+
+            if Is_Subprogram (Entity (N))
+              and then Nkind (Parent (N)) = N_Function_Call
+            then
+               Set_Etype (Parent (N), Etype (Entity (N)));
+            end if;
+
+         --  The whole expression will be reanalyzed
+
+         elsif Nkind (N) in N_Has_Etype then
+            Set_Analyzed (N, False);
+         end if;
+
+         return OK;
+      end Replace_Entity;
+
+      procedure Replace_Condition_Entities is
+        new Traverse_Proc (Replace_Entity);
+
+      --  Local variables
+
+      Par_Formal  : Entity_Id;
+      Subp_Formal : Entity_Id;
+
+   --  Start of processing for Build_Class_Wide_Expression
+
+   begin
+      --  Add mapping from old formals to new formals
+
+      Par_Formal  := First_Formal (Par_Subp);
+      Subp_Formal := First_Formal (Subp);
+
+      while Present (Par_Formal) and then Present (Subp_Formal) loop
+         Primitives_Mapping.Set (Par_Formal, Subp_Formal);
+         Next_Formal (Par_Formal);
+         Next_Formal (Subp_Formal);
+      end loop;
+
+      Replace_Condition_Entities (Prag);
+   end Build_Class_Wide_Expression;
+
+   --------------------
+   -- Build_DIC_Call --
+   --------------------
+
+   function Build_DIC_Call
+     (Loc    : Source_Ptr;
+      Obj_Id : Entity_Id;
+      Typ    : Entity_Id) return Node_Id
+   is
+      Proc_Id    : constant Entity_Id := DIC_Procedure (Typ);
+      Formal_Typ : constant Entity_Id := Etype (First_Formal (Proc_Id));
+
+   begin
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => New_Occurrence_Of (Proc_Id, Loc),
+          Parameter_Associations => New_List (
+            Make_Unchecked_Type_Conversion (Loc,
+              Subtype_Mark => New_Occurrence_Of (Formal_Typ, Loc),
+              Expression   => New_Occurrence_Of (Obj_Id, Loc))));
+   end Build_DIC_Call;
+
+   ------------------------------
+   -- Build_DIC_Procedure_Body --
+   ------------------------------
+
+   procedure Build_DIC_Procedure_Body (Typ : Entity_Id) is
+      procedure Add_DIC_Check
+        (DIC_Prag : Node_Id;
+         DIC_Expr : Node_Id;
+         Stmts    : in out List_Id);
+      --  Subsidiary to all Add_xxx_DIC routines. Add a runtime check to verify
+      --  assertion expression DIC_Expr of pragma DIC_Prag. All generated code
+      --  is added to list Stmts.
+
+      procedure Add_Inherited_DIC
+        (DIC_Prag  : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id;
+         Stmts     : in out List_Id);
+      --  Add a runtime check to verify the assertion expression of inherited
+      --  pragma DIC_Prag. Par_Typ is parent type which is also the owner of
+      --  the DIC pragma. Deriv_Typ is the derived type inheriting the DIC
+      --  pragma. All generated code is added to list Stmts.
+
+      procedure Add_Inherited_Tagged_DIC
+        (DIC_Prag  : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id;
+         Stmts     : in out List_Id);
+      --  Add a runtime check to verify assertion expression DIC_Expr of
+      --  inherited pragma DIC_Prag. This routine applies class-wide pre- and
+      --  postcondition-like runtime semantics to the check. Par_Typ is the
+      --  parent type whose DIC pragma is being inherited. Deriv_Typ is the
+      --  derived type inheriting the DIC pragma. All generated code is added
+      --  to list Stmts.
+
+      procedure Add_Own_DIC
+        (DIC_Prag : Node_Id;
+         DIC_Typ  : Entity_Id;
+         Stmts    : in out List_Id);
+      --  Add a runtime check to verify the assertion expression of pragma
+      --  DIC_Prag. DIC_Typ is the owner of the DIC pragma. All generated code
+      --  is added to list Stmts.
+
+      procedure Replace_Object_And_Primitive_References
+        (Expr      : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id);
+      --  Expr denotes an arbitrary expression. Par_Typ is a parent type in a
+      --  type hierarchy. Deriv_Typ is a type derived from Par_Typ. Perform the
+      --  following substitutions:
+      --
+      --    * Replace a reference to the _object parameter of the parent type's
+      --      DIC procedure with a reference to the _object parameter of the
+      --      derived type's DIC procedure.
+      --
+      --    * Replace a call to an overridden parent primitive with a call to
+      --      the overriding derived type primitive.
+      --
+      --    * Replace a call to an inherited parent primitive with a call to
+      --      the internally-generated inherited derived type primitive.
+
+      procedure Replace_Type_References
+        (Expr   : Node_Id;
+         Typ    : Entity_Id;
+         Obj_Id : Entity_Id);
+      --  Substitute all references of the current instance of type Typ with
+      --  references to formal parameter Obj_Id within expression Expr.
+
+      -------------------
+      -- Add_DIC_Check --
+      -------------------
+
+      procedure Add_DIC_Check
+        (DIC_Prag : Node_Id;
+         DIC_Expr : Node_Id;
+         Stmts    : in out List_Id)
+      is
+         Loc : constant Source_Ptr := Sloc (DIC_Prag);
+         Nam : constant Name_Id    := Original_Aspect_Pragma_Name (DIC_Prag);
+
+      begin
+         --  The DIC pragma is ignored, nothing left to do
+
+         if Is_Ignored (DIC_Prag) then
+            null;
+
+         --  Otherwise the DIC expression must be checked at runtime. Generate:
+
+         --    pragma Check (<Nam>, <DIC_Expr>);
+
+         else
+            Append_New_To (Stmts,
+              Make_Pragma (Loc,
+                Pragma_Identifier            =>
+                  Make_Identifier (Loc, Name_Check),
+
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Nam)),
+
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => DIC_Expr))));
+         end if;
+      end Add_DIC_Check;
+
+      -----------------------
+      -- Add_Inherited_DIC --
+      -----------------------
+
+      procedure Add_Inherited_DIC
+        (DIC_Prag  : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id;
+         Stmts     : in out List_Id)
+      is
+         Deriv_Proc : constant Entity_Id  := DIC_Procedure (Deriv_Typ);
+         Deriv_Obj  : constant Entity_Id  := First_Entity  (Deriv_Proc);
+         Par_Proc   : constant Entity_Id  := DIC_Procedure (Par_Typ);
+         Par_Obj    : constant Entity_Id  := First_Entity  (Par_Proc);
+         Loc        : constant Source_Ptr := Sloc (DIC_Prag);
+
+      begin
+         pragma Assert (Present (Deriv_Proc) and then Present (Par_Proc));
+
+         --  Verify the inherited DIC assertion expression by calling the DIC
+         --  procedure of the parent type.
+
+         --  Generate:
+         --    <Par_Typ>DIC (Par_Typ (_object));
+
+         Append_New_To (Stmts,
+           Make_Procedure_Call_Statement (Loc,
+             Name                   => New_Occurrence_Of (Par_Proc, Loc),
+             Parameter_Associations => New_List (
+               Convert_To
+                 (Typ  => Etype (Par_Obj),
+                  Expr => New_Occurrence_Of (Deriv_Obj, Loc)))));
+      end Add_Inherited_DIC;
+
+      ------------------------------
+      -- Add_Inherited_Tagged_DIC --
+      ------------------------------
+
+      procedure Add_Inherited_Tagged_DIC
+        (DIC_Prag  : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id;
+         Stmts     : in out List_Id)
+      is
+         DIC_Args : constant List_Id :=
+                      Pragma_Argument_Associations (DIC_Prag);
+         DIC_Arg  : constant Node_Id := First (DIC_Args);
+         DIC_Expr : constant Node_Id := Expression_Copy (DIC_Arg);
+         Typ_Decl : constant Node_Id := Declaration_Node (Deriv_Typ);
+
+         Expr : Node_Id;
+
+      begin
+         --  The processing of an inherited DIC assertion expression starts off
+         --  with a copy of the original parent expression where all references
+         --  to the parent type have already been replaced with references to
+         --  the _object formal parameter of the parent type's DIC procedure.
+
+         pragma Assert (Present (DIC_Expr));
+         Expr := New_Copy_Tree (DIC_Expr);
+
+         --  Perform the following substitutions:
+
+         --    * Replace a reference to the _object parameter of the parent
+         --      type's DIC procedure with a reference to the _object parameter
+         --      of the derived types' DIC procedure.
+
+         --    * Replace a call to an overridden parent primitive with a call
+         --      to the overriding derived type primitive.
+
+         --    * Replace a call to an inherited parent primitive with a call to
+         --      the internally-generated inherited derived type primitive.
+
+         --  Note that primitives defined in the private part are automatically
+         --  handled by the overriding/inheritance mechanism and do not require
+         --  an extra replacement pass.
+
+         Replace_Object_And_Primitive_References
+           (Expr      => Expr,
+            Par_Typ   => Par_Typ,
+            Deriv_Typ => Deriv_Typ);
+
+         --  Preanalyze the DIC expression to detect errors and at the same
+         --  time capture the visibility of the proper package part.
+
+         Set_Parent (Expr, Typ_Decl);
+         Preanalyze_Assert_Expression (Expr, Any_Boolean);
+
+         --  Once the DIC assertion expression is fully processed, add a check
+         --  to the statements of the DIC procedure.
+
+         Add_DIC_Check
+           (DIC_Prag => DIC_Prag,
+            DIC_Expr => Expr,
+            Stmts    => Stmts);
+      end Add_Inherited_Tagged_DIC;
+
+      -----------------
+      -- Add_Own_DIC --
+      -----------------
+
+      procedure Add_Own_DIC
+        (DIC_Prag : Node_Id;
+         DIC_Typ  : Entity_Id;
+         Stmts    : in out List_Id)
+      is
+         DIC_Args : constant List_Id   :=
+                      Pragma_Argument_Associations (DIC_Prag);
+         DIC_Arg  : constant Node_Id   := First (DIC_Args);
+         DIC_Asp  : constant Node_Id   := Corresponding_Aspect (DIC_Prag);
+         DIC_Expr : constant Node_Id   := Get_Pragma_Arg (DIC_Arg);
+         DIC_Proc : constant Entity_Id := DIC_Procedure (DIC_Typ);
+         Obj_Id   : constant Entity_Id := First_Formal (DIC_Proc);
+
+         procedure Preanalyze_Own_DIC_For_ASIS;
+         --  Preanalyze the original DIC expression of an aspect or a source
+         --  pragma for ASIS.
+
+         ---------------------------------
+         -- Preanalyze_Own_DIC_For_ASIS --
+         ---------------------------------
+
+         procedure Preanalyze_Own_DIC_For_ASIS is
+            Expr : Node_Id := Empty;
+
+         begin
+            --  The DIC pragma is a source construct, preanalyze the original
+            --  expression of the pragma.
+
+            if Comes_From_Source (DIC_Prag) then
+               Expr := DIC_Expr;
+
+            --  Otherwise preanalyze the expression of the corresponding aspect
+
+            elsif Present (DIC_Asp) then
+               Expr := Expression (DIC_Asp);
+            end if;
+
+            --  The expression must be subjected to the same substitutions as
+            --  the copy used in the generation of the runtime check.
+
+            if Present (Expr) then
+               Replace_Type_References
+                 (Expr   => Expr,
+                  Typ    => DIC_Typ,
+                  Obj_Id => Obj_Id);
+
+               Preanalyze_Assert_Expression (Expr, Any_Boolean);
+            end if;
+         end Preanalyze_Own_DIC_For_ASIS;
+
+         --  Local variables
+
+         Typ_Decl : constant Node_Id := Declaration_Node (DIC_Typ);
+
+         Expr : Node_Id;
+
+      --  Start of processing for Add_Own_DIC
+
+      begin
+         Expr := New_Copy_Tree (DIC_Expr);
+
+         --  Perform the following substituion:
+
+         --    * Replace the current instance of DIC_Typ with a reference to
+         --    the _object formal parameter of the DIC procedure.
+
+         Replace_Type_References
+           (Expr   => Expr,
+            Typ    => DIC_Typ,
+            Obj_Id => Obj_Id);
+
+         --  Preanalyze the DIC expression to detect errors and at the same
+         --  time capture the visibility of the proper package part.
+
+         Set_Parent (Expr, Typ_Decl);
+         Preanalyze_Assert_Expression (Expr, Any_Boolean);
+
+         --  Save a copy of the expression with all replacements and analysis
+         --  already taken place in case a derived type inherits the pragma.
+         --  The copy will be used as the foundation of the derived type's own
+         --  version of the DIC assertion expression.
+
+         if Is_Tagged_Type (DIC_Typ) then
+            Set_Expression_Copy (DIC_Arg, New_Copy_Tree (Expr));
+         end if;
+
+         --  If the pragma comes from an aspect specification, replace the
+         --  saved expression because all type references must be substituted
+         --  for the call to Preanalyze_Spec_Expression in Check_Aspect_At_xxx
+         --  routines.
+
+         if Present (DIC_Asp) then
+            Set_Entity (Identifier (DIC_Asp), New_Copy_Tree (Expr));
+         end if;
+
+         --  Preanalyze the original DIC expression for ASIS
+
+         if ASIS_Mode then
+            Preanalyze_Own_DIC_For_ASIS;
+         end if;
+
+         --  Once the DIC assertion expression is fully processed, add a check
+         --  to the statements of the DIC procedure.
+
+         Add_DIC_Check
+           (DIC_Prag => DIC_Prag,
+            DIC_Expr => Expr,
+            Stmts    => Stmts);
+      end Add_Own_DIC;
+
+      ---------------------------------------------
+      -- Replace_Object_And_Primitive_References --
+      ---------------------------------------------
+
+      procedure Replace_Object_And_Primitive_References
+        (Expr      : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id)
+      is
+         Deriv_Obj : Entity_Id;
+         --  The _object parameter of the derived type's DIC procedure
+
+         Par_Obj : Entity_Id;
+         --  The _object parameter of the parent type's DIC procedure
+
+         function Replace_Ref (Ref : Node_Id) return Traverse_Result;
+         --  Substitute a reference to an entity with a reference to the
+         --  corresponding entity stored in in table Primitives_Mapping.
+
+         -----------------
+         -- Replace_Ref --
+         -----------------
+
+         function Replace_Ref (Ref : Node_Id) return Traverse_Result is
+            Context : constant Node_Id    := Parent (Ref);
+            Loc     : constant Source_Ptr := Sloc (Ref);
+            New_Id  : Entity_Id;
+            New_Ref : Node_Id;
+            Ref_Id  : Entity_Id;
+            Result  : Traverse_Result;
+
+         begin
+            Result := OK;
+
+            --  The current node denotes a reference
+
+            if Nkind (Ref) in N_Has_Entity and then Present (Entity (Ref)) then
+               Ref_Id := Entity (Ref);
+               New_Id := Primitives_Mapping.Get (Ref_Id);
+
+               --  The reference mentions a parent type primitive which has a
+               --  corresponding derived type primitive.
+
+               if Present (New_Id) then
+                  New_Ref := New_Occurrence_Of (New_Id, Loc);
+
+               --  The reference mentions the _object parameter of the parent
+               --  type's DIC procedure.
+
+               elsif Ref_Id = Par_Obj then
+                  New_Ref := New_Occurrence_Of (Deriv_Obj, Loc);
+
+                  --  The reference to _object acts as an actual parameter in a
+                  --  subprogram call which may be invoking a primitive of the
+                  --  parent type:
+
+                  --    Primitive (... _object ...);
+
+                  --  The parent type primitive may not be overridden nor
+                  --  inherited when it is declared after the derived type
+                  --  definition:
+
+                  --    type Parent is tagged private;
+                  --    type Child is new Parent with private;
+                  --    procedure Primitive (Obj : Parent);
+
+                  --  In this scenario the _object parameter is converted to
+                  --  the parent type.
+
+                  if Nkind_In (Context, N_Function_Call,
+                                        N_Procedure_Call_Statement)
+                    and then
+                      No (Primitives_Mapping.Get (Entity (Name (Context))))
+                  then
+                     New_Ref := Convert_To (Par_Typ, New_Ref);
+
+                     --  Do not process the generated type conversion because
+                     --  both the parent type and the derived type are in the
+                     --  Primitives_Mapping table. This will clobber the type
+                     --  conversion by resetting its subtype mark.
+
+                     Result := Skip;
+                  end if;
+
+               --  Otherwise there is nothing to replace
+
+               else
+                  New_Ref := Empty;
+               end if;
+
+               if Present (New_Ref) then
+                  Rewrite (Ref, New_Ref);
+
+                  --  Update the return type when the context of the reference
+                  --  acts as the name of a function call. Note that the update
+                  --  should not be performed when the reference appears as an
+                  --  actual in the call.
+
+                  if Nkind (Context) = N_Function_Call
+                    and then Name (Context) = Ref
+                  then
+                     Set_Etype (Context, Etype (New_Id));
+                  end if;
+               end if;
+            end if;
+
+            --  Reanalyze the reference due to potential replacements
+
+            if Nkind (Ref) in N_Has_Etype then
+               Set_Analyzed (Ref, False);
+            end if;
+
+            return Result;
+         end Replace_Ref;
+
+         procedure Replace_Refs is new Traverse_Proc (Replace_Ref);
+
+         --  Local variables
+
+         Deriv_Proc : constant Entity_Id := DIC_Procedure (Deriv_Typ);
+         Par_Proc   : constant Entity_Id := DIC_Procedure (Par_Typ);
+
+      --  Start of processing for Replace_Object_And_Primitive_References
+
+      begin
+         pragma Assert (Present (Deriv_Proc) and then Present (Par_Proc));
+
+         Deriv_Obj := First_Entity (Deriv_Proc);
+         Par_Obj   := First_Entity (Par_Proc);
+
+         --  Map each primitive operation of the parent type to the proper
+         --  primitive of the derived type.
+
+         Update_Primitives_Mapping_Of_Types
+           (Par_Typ   => Par_Typ,
+            Deriv_Typ => Deriv_Typ);
+
+         --  Inspect the input expression and perform substitutions where
+         --  necessary.
+
+         Replace_Refs (Expr);
+      end Replace_Object_And_Primitive_References;
+
+      -----------------------------
+      -- Replace_Type_References --
+      -----------------------------
+
+      procedure Replace_Type_References
+        (Expr   : Node_Id;
+         Typ    : Entity_Id;
+         Obj_Id : Entity_Id)
+      is
+         procedure Replace_Type_Ref (N : Node_Id);
+         --  Substitute a single reference of the current instance of type Typ
+         --  with a reference to Obj_Id.
+
+         ----------------------
+         -- Replace_Type_Ref --
+         ----------------------
+
+         procedure Replace_Type_Ref (N : Node_Id) is
+            Ref : Node_Id;
+
+         begin
+            --  Decorate the reference to Typ even though it may be rewritten
+            --  further down. This is done for two reasons:
+
+            --    1) ASIS has all necessary semantic information in the
+            --    original tree.
+
+            --    2) Routines which examine properties of the Original_Node
+            --    have some semantic information.
+
+            if Nkind (N) = N_Identifier then
+               Set_Entity (N, Typ);
+               Set_Etype  (N, Typ);
+
+            elsif Nkind (N) = N_Selected_Component then
+               Analyze (Prefix (N));
+               Set_Entity (Selector_Name (N), Typ);
+               Set_Etype  (Selector_Name (N), Typ);
+            end if;
+
+            --  Perform the following substitution:
+
+            --    Typ  -->  _object
+
+            Ref := Make_Identifier (Sloc (N), Chars (Obj_Id));
+            Set_Entity (Ref, Obj_Id);
+            Set_Etype  (Ref, Typ);
+
+            Rewrite (N, Ref);
+
+            Set_Comes_From_Source (N, True);
+         end Replace_Type_Ref;
+
+         procedure Replace_Type_Refs is
+           new Replace_Type_References_Generic (Replace_Type_Ref);
+
+      --  Start of processing for Replace_Type_References
+
+      begin
+         Replace_Type_Refs (Expr, Typ);
+      end Replace_Type_References;
+
+      --  Local variables
+
+      Loc : constant Source_Ptr := Sloc (Typ);
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
+      DIC_Prag     : Node_Id;
+      DIC_Typ      : Entity_Id;
+      Dummy_1      : Entity_Id;
+      Dummy_2      : Entity_Id;
+      Proc_Body    : Node_Id;
+      Proc_Body_Id : Entity_Id;
+      Proc_Decl    : Node_Id;
+      Proc_Id      : Entity_Id;
+      Stmts        : List_Id := No_List;
+
+      Work_Typ : Entity_Id;
+      --  The working type
+
+   --  Start of processing for Build_DIC_Procedure_Body
+
+   begin
+      Work_Typ := Typ;
+
+      --  The input type denotes the implementation base type of a constrained
+      --  array type. Work with the first subtype as the DIC pragma is on its
+      --  rep item chain.
+
+      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+         Work_Typ := First_Subtype (Work_Typ);
+
+      --  The input denotes the corresponding record type of a protected or a
+      --  task type. Work with the concurrent type because the corresponding
+      --  record type may not be visible to clients of the type.
+
+      elsif Ekind (Work_Typ) = E_Record_Type
+        and then Is_Concurrent_Record_Type (Work_Typ)
+      then
+         Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
+      end if;
+
+      --  The working type must be either define a DIC pragma of its own or
+      --  inherit one from a parent type.
+
+      pragma Assert (Has_DIC (Work_Typ));
+
+      --  Recover the type which defines the DIC pragma. This is either the
+      --  working type itself or a parent type when the pragma is inherited.
+
+      DIC_Typ := Find_DIC_Type (Work_Typ);
+      pragma Assert (Present (DIC_Typ));
+
+      DIC_Prag := Get_Pragma (DIC_Typ, Pragma_Default_Initial_Condition);
+      pragma Assert (Present (DIC_Prag));
+
+      --  Nothing to do if pragma DIC appears without an argument or its sole
+      --  argument is "null".
+
+      if not Is_Verifiable_DIC_Pragma (DIC_Prag) then
+         return;
+      end if;
+
+      --  The working type may lack a DIC procedure declaration. This may be
+      --  due to several reasons:
+
+      --    * The working type's own DIC pragma does not contain a verifiable
+      --      assertion expression. In this case there is no need to build a
+      --      DIC procedure because there is nothing to check.
+
+      --    * The working type derives from a parent type. In this case a DIC
+      --      procedure should be built only when the inherited DIC pragma has
+      --      a verifiable assertion expression.
+
+      Proc_Id := DIC_Procedure (Work_Typ);
+
+      --  Build a DIC procedure declaration when the working type derives from
+      --  a parent type.
+
+      if No (Proc_Id) then
+         Build_DIC_Procedure_Declaration (Work_Typ);
+         Proc_Id := DIC_Procedure (Work_Typ);
+      end if;
+
+      --  At this point there should be a DIC procedure declaration
+
+      pragma Assert (Present (Proc_Id));
+      Proc_Decl := Unit_Declaration_Node (Proc_Id);
+
+      --  Nothing to do if the DIC procedure already has a body
+
+      if Present (Corresponding_Body (Proc_Decl)) then
+         return;
+      end if;
+
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the DIC procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode_From_Entity (Work_Typ);
+
+      --  Emulate the environment of the DIC procedure by installing its scope
+      --  and formal parameters.
+
+      Push_Scope (Proc_Id);
+      Install_Formals (Proc_Id);
+
+      --  The working type defines its own DIC pragma. Replace the current
+      --  instance of the working type with the formal of the DIC procedure.
+      --  Note that there is no need to consider inherited DIC pragmas from
+      --  parent types because the working type's DIC pragma "hides" all
+      --  inherited DIC pragmas.
+
+      if Has_Own_DIC (Work_Typ) then
+         pragma Assert (DIC_Typ = Work_Typ);
+
+         Add_Own_DIC
+           (DIC_Prag => DIC_Prag,
+            DIC_Typ  => DIC_Typ,
+            Stmts    => Stmts);
+
+      --  Otherwise the working type inherits a DIC pragma from a parent type
+
+      else
+         pragma Assert (Has_Inherited_DIC (Work_Typ));
+         pragma Assert (DIC_Typ /= Work_Typ);
+
+         --  The working type is tagged. The verification of the assertion
+         --  expression is subject to the same semantics as class-wide pre-
+         --  and postconditions.
+
+         if Is_Tagged_Type (Work_Typ) then
+            Add_Inherited_Tagged_DIC
+              (DIC_Prag  => DIC_Prag,
+               Par_Typ   => DIC_Typ,
+               Deriv_Typ => Work_Typ,
+               Stmts     => Stmts);
+
+         --  Otherwise the working type is not tagged. Verify the assertion
+         --  expression of the inherited DIC pragma by directly calling the
+         --  DIC procedure of the parent type.
+
+         else
+            Add_Inherited_DIC
+              (DIC_Prag  => DIC_Prag,
+               Par_Typ   => DIC_Typ,
+               Deriv_Typ => Work_Typ,
+               Stmts     => Stmts);
+         end if;
+      end if;
+
+      End_Scope;
+
+      --  Produce an empty completing body in the following cases:
+      --    * Assertions are disabled
+      --    * The DIC Assertion_Policy is Ignore
+      --    * Pragma DIC appears without an argument
+      --    * Pragma DIC appears with argument "null"
+
+      if No (Stmts) then
+         Stmts := New_List (Make_Null_Statement (Loc));
+      end if;
+
+      --  Generate:
+      --    procedure <Work_Typ>DIC (_object : <Work_Typ>) is
+      --    begin
+      --       <Stmts>
+      --    end <Work_Typ>DIC;
+
+      Proc_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification                =>
+            Copy_Subprogram_Spec (Parent (Proc_Id)),
+          Declarations                 => Empty_List,
+            Handled_Statement_Sequence =>
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => Stmts));
+      Proc_Body_Id := Defining_Entity (Proc_Body);
+
+      --  Perform minor decoration in case the body is not analyzed
+
+      Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
+      Set_Etype (Proc_Body_Id, Standard_Void_Type);
+      Set_Scope (Proc_Body_Id, Current_Scope);
+
+      --  Link both spec and body to avoid generating duplicates
+
+      Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);
+      Set_Corresponding_Spec (Proc_Body, Proc_Id);
+
+      --  The body should not be inserted into the tree when the context is
+      --  ASIS, GNATprove or a generic unit because it is not part of the
+      --  template. Note that the body must still be generated in order to
+      --  resolve the DIC assertion expression.
+
+      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+         null;
+
+      --  Otherwise the body is part of the freezing actions of the working
+      --  type.
+
+      else
+         Append_Freeze_Action (Work_Typ, Proc_Body);
+      end if;
+
+      Ghost_Mode := Save_Ghost_Mode;
+   end Build_DIC_Procedure_Body;
+
+   -------------------------------------
+   -- Build_DIC_Procedure_Declaration --
+   -------------------------------------
+
+   procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id) is
+      Loc : constant Source_Ptr := Sloc (Typ);
+
+      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+
+      DIC_Prag  : Node_Id;
+      DIC_Typ   : Entity_Id;
+      Proc_Decl : Node_Id;
+      Proc_Id   : Entity_Id;
+      Typ_Decl  : Node_Id;
+
+      CRec_Typ : Entity_Id;
+      --  The corresponding record type of Full_Typ
+
+      Full_Base : Entity_Id;
+      --  The base type of Full_Typ
+
+      Full_Typ : Entity_Id;
+      --  The full view of working type
+
+      Obj_Id : Entity_Id;
+      --  The _object formal parameter of the DIC procedure
+
+      Priv_Typ : Entity_Id;
+      --  The partial view of working type
+
+      Work_Typ : Entity_Id;
+      --  The working type
+
+   begin
+      Work_Typ := Typ;
+
+      --  The input type denotes the implementation base type of a constrained
+      --  array type. Work with the first subtype as the DIC pragma is on its
+      --  rep item chain.
+
+      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+         Work_Typ := First_Subtype (Work_Typ);
+
+      --  The input denotes the corresponding record type of a protected or a
+      --  task type. Work with the concurrent type because the corresponding
+      --  record type may not be visible to clients of the type.
+
+      elsif Ekind (Work_Typ) = E_Record_Type
+        and then Is_Concurrent_Record_Type (Work_Typ)
+      then
+         Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
+      end if;
+
+      --  The type must be either subject to a DIC pragma or inherit one from a
+      --  parent type.
+
+      pragma Assert (Has_DIC (Work_Typ));
+
+      --  Recover the type which defines the DIC pragma. This is either the
+      --  working type itself or a parent type when the pragma is inherited.
+
+      DIC_Typ := Find_DIC_Type (Work_Typ);
+      pragma Assert (Present (DIC_Typ));
+
+      DIC_Prag := Get_Pragma (DIC_Typ, Pragma_Default_Initial_Condition);
+      pragma Assert (Present (DIC_Prag));
+
+      --  Nothing to do if pragma DIC appears without an argument or its sole
+      --  argument is "null".
+
+      if not Is_Verifiable_DIC_Pragma (DIC_Prag) then
+         return;
+
+      --  Nothing to do if the type already has a DIC procedure
+
+      elsif Present (DIC_Procedure (Work_Typ)) then
+         return;
+      end if;
+
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the DIC procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode_From_Entity (Work_Typ);
+
+      Proc_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars =>
+            New_External_Name (Chars (Work_Typ), "Default_Initial_Condition"));
+
+      --  Perform minor decoration in case the declaration is not analyzed
+
+      Set_Ekind (Proc_Id, E_Procedure);
+      Set_Etype (Proc_Id, Standard_Void_Type);
+      Set_Scope (Proc_Id, Current_Scope);
+
+      Set_Is_DIC_Procedure (Proc_Id);
+      Set_DIC_Procedure (Work_Typ, Proc_Id);
+
+      --  The DIC procedure requires debug info when the assertion expression
+      --  is subject to Source Coverage Obligations.
+
+      if Opt.Generate_SCO then
+         Set_Needs_Debug_Info (Proc_Id);
+      end if;
+
+      --  Mark the DIC procedure explicitly as Ghost because it does not come
+      --  from source.
+
+      if Ghost_Mode > None then
+         Set_Is_Ghost_Entity (Proc_Id);
+      end if;
+
+      --  Obtain all views of the input type
+
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
+
+      --  Associate the DIC procedure and various relevant flags with all views
+
+      Propagate_DIC_Attributes (Priv_Typ,  From_Typ => Work_Typ);
+      Propagate_DIC_Attributes (Full_Typ,  From_Typ => Work_Typ);
+      Propagate_DIC_Attributes (Full_Base, From_Typ => Work_Typ);
+      Propagate_DIC_Attributes (CRec_Typ,  From_Typ => Work_Typ);
+
+      --  The declaration of the DIC procedure must be inserted after the
+      --  declaration of the partial view as this allows for proper external
+      --  visibility.
+
+      if Present (Priv_Typ) then
+         Typ_Decl := Declaration_Node (Priv_Typ);
+
+      --  Derived types with the full view as parent do not have a partial
+      --  view. Insert the DIC procedure after the derived type.
+
+      else
+         Typ_Decl := Declaration_Node (Full_Typ);
+      end if;
+
+      --  The type should have a declarative node
+
+      pragma Assert (Present (Typ_Decl));
+
+      --  Create the formal parameter which emulates the variable-like behavior
+      --  of the current type instance.
+
+      Obj_Id := Make_Defining_Identifier (Loc, Chars => Name_uObject);
+
+      --  Perform minor decoration in case the declaration is not analyzed
+
+      Set_Ekind (Obj_Id, E_In_Parameter);
+      Set_Etype (Obj_Id, Work_Typ);
+      Set_Scope (Obj_Id, Proc_Id);
+
+      Set_First_Entity (Proc_Id, Obj_Id);
+
+      --  Generate:
+      --    procedure <Work_Typ>DIC (_object : <Work_Typ>);
+
+      Proc_Decl :=
+        Make_Subprogram_Declaration (Loc,
+          Specification =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name       => Proc_Id,
+              Parameter_Specifications => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier => Obj_Id,
+                  Parameter_Type      =>
+                    New_Occurrence_Of (Work_Typ, Loc)))));
+
+      --  The declaration should not be inserted into the tree when the context
+      --  is ASIS, GNATprove or a generic unit because it is not part of the
+      --  template.
+
+      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+         null;
+
+      --  Otherwise insert the declaration
+
+      else
+         pragma Assert (Present (Typ_Decl));
+         Insert_After_And_Analyze (Typ_Decl, Proc_Decl);
+      end if;
+
+      Ghost_Mode := Save_Ghost_Mode;
+   end Build_DIC_Procedure_Declaration;
 
    --------------------------
    -- Build_Procedure_Form --
@@ -2224,6 +3339,15 @@ package body Exp_Util is
       end if;
    end Ensure_Defined;
 
+   -----------------
+   -- Entity_Hash --
+   -----------------
+
+   function Entity_Hash (E : Entity_Id) return Num_Primitives is
+   begin
+      return Num_Primitives (E mod Primitives_Mapping_Size);
+   end Entity_Hash;
+
    --------------------
    -- Entry_Names_OK --
    --------------------
@@ -2763,6 +3887,56 @@ package body Exp_Util is
 
       return TSS (Utyp, TSS_Finalize_Address);
    end Finalize_Address;
+
+   -------------------
+   -- Find_DIC_Type --
+   -------------------
+
+   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id is
+      Curr_Typ : Entity_Id;
+      DIC_Typ  : Entity_Id;
+
+   begin
+      --  The input type defines its own DIC pragma, therefore it is the owner
+
+      if Has_Own_DIC (Typ) then
+         DIC_Typ := Typ;
+
+      --  Otherwise the DIC pragma is inherited from a parent type
+
+      else
+         pragma Assert (Has_Inherited_DIC (Typ));
+
+         --  Climb the parent chain
+
+         Curr_Typ := Typ;
+         loop
+            --  Inspect the parent type. Do not consider subtypes as they
+            --  inherit the DIC attributes from their base types.
+
+            DIC_Typ := Base_Type (Etype (Curr_Typ));
+
+            --  Look at the full view of a private type because the type may
+            --  have a hidden parent introduced in the full view.
+
+            if Is_Private_Type (DIC_Typ)
+              and then Present (Full_View (DIC_Typ))
+            then
+               DIC_Typ := Full_View (DIC_Typ);
+            end if;
+
+            --  Stop the climb once the nearest parent type which defines a DIC
+            --  pragma of its own is encountered or when the root of the parent
+            --  chain is reached.
+
+            exit when Has_Own_DIC (DIC_Typ) or else Curr_Typ = DIC_Typ;
+
+            Curr_Typ := DIC_Typ;
+         end loop;
+      end if;
+
+      return DIC_Typ;
+   end Find_DIC_Type;
 
    ------------------------
    -- Find_Interface_ADT --
@@ -9829,6 +11003,172 @@ package body Exp_Util is
          return False;
       end if;
    end Type_May_Have_Bit_Aligned_Components;
+
+   -------------------------------
+   -- Update_Primitives_Mapping --
+   -------------------------------
+
+   procedure Update_Primitives_Mapping
+     (Inher_Id : Entity_Id;
+      Subp_Id  : Entity_Id)
+   is
+   begin
+      Update_Primitives_Mapping_Of_Types
+        (Par_Typ   => Find_Dispatching_Type (Inher_Id),
+         Deriv_Typ => Find_Dispatching_Type (Subp_Id));
+   end Update_Primitives_Mapping;
+
+   ----------------------------------------
+   -- Update_Primitives_Mapping_Of_Types --
+   ----------------------------------------
+
+   procedure Update_Primitives_Mapping_Of_Types
+     (Par_Typ   : Entity_Id;
+      Deriv_Typ : Entity_Id)
+   is
+      procedure Add_Primitive (Prim : Entity_Id);
+      --  Find a primitive in the inheritance/overriding chain starting from
+      --  Prim whose dispatching type is parent type Par_Typ and add a mapping
+      --  between the result and primitive Prim.
+
+      -------------------
+      -- Add_Primitive --
+      -------------------
+
+      procedure Add_Primitive (Prim : Entity_Id) is
+         function Ancestor_Primitive (Subp : Entity_Id) return Entity_Id;
+         --  Return the next ancestor primitive in the inheritance/overriding
+         --  chain of subprogram Subp. Return Empty if no such primitive is
+         --  available.
+
+         ------------------------
+         -- Ancestor_Primitive --
+         ------------------------
+
+         function Ancestor_Primitive (Subp : Entity_Id) return Entity_Id is
+            Inher_Prim : constant Entity_Id := Alias (Subp);
+            Over_Prim  : constant Entity_Id := Overridden_Operation (Subp);
+
+         begin
+            --  The current subprogram overrides an ancestor primitive
+
+            if Present (Over_Prim) then
+               return Over_Prim;
+
+            --  The current subprogram is an internally generated alias of an
+            --  inherited ancestor primitive.
+
+            elsif Present (Inher_Prim) then
+               return Inher_Prim;
+
+            --  Otherwise the current subprogram is the root of the inheritance
+            --  or overriding chain.
+
+            else
+               return Empty;
+            end if;
+         end Ancestor_Primitive;
+
+         --  Local variables
+
+         Par_Prim : Entity_Id;
+
+      --  Start of processing for Add_Primitive
+
+      begin
+         --  Inspect both the inheritance chain through the Alias attribute and
+         --  the overriding chain through the Overridden_Operation looking for
+         --  an ancestor primitive with the appropriate dispatching type.
+
+         Par_Prim := Prim;
+         while Present (Par_Prim) loop
+            exit when Find_Dispatching_Type (Par_Prim) = Par_Typ;
+            Par_Prim := Ancestor_Primitive (Par_Prim);
+         end loop;
+
+         --  Create a mapping of the form:
+
+         --    Parent type primitive -> derived type primitive
+
+         if Present (Par_Prim) then
+            Primitives_Mapping.Set (Par_Prim, Prim);
+         end if;
+      end Add_Primitive;
+
+      --  Local variables
+
+      Deriv_Prim : Entity_Id;
+      Par_Prim   : Entity_Id;
+      Par_Prims  : Elist_Id;
+      Prim_Elmt  : Elmt_Id;
+
+   --  Start of processing for Update_Primitives_Mapping_Of_Types
+
+   begin
+      --  Nothing to do if there are no types to work with
+
+      if No (Par_Typ) or else No (Deriv_Typ) then
+         return;
+
+      --  Nothing to do if the mapping already exists
+
+      elsif Primitives_Mapping.Get (Par_Typ) = Deriv_Typ then
+         return;
+      end if;
+
+      --  Create a mapping of the form:
+
+      --    Parent type -> Derived type
+
+      --  to prevent any subsequent attempts to produce the same relations.
+
+      Primitives_Mapping.Set (Par_Typ, Deriv_Typ);
+
+      --  Inspect the primitives of the derived type and determine whether they
+      --  relate to the primitives of the parent type. If there is a meaningful
+      --  relation, create a mapping of the form:
+
+      --    Parent type primitive -> Derived type primitive
+
+      if Present (Direct_Primitive_Operations (Deriv_Typ)) then
+         Prim_Elmt := First_Elmt (Direct_Primitive_Operations (Deriv_Typ));
+         while Present (Prim_Elmt) loop
+            Deriv_Prim := Node (Prim_Elmt);
+
+            if Is_Subprogram (Deriv_Prim)
+              and then Find_Dispatching_Type (Deriv_Prim) = Deriv_Typ
+            then
+               Add_Primitive (Deriv_Prim);
+            end if;
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+      end if;
+
+      --  If the parent operation is an interface operation, the overriding
+      --  indicator is not present. Instead, we get from the interface
+      --  operation the primitive of the current type that implements it.
+
+      if Is_Interface (Par_Typ) then
+         Par_Prims := Collect_Primitive_Operations (Par_Typ);
+
+         if Present (Par_Prims) then
+            Prim_Elmt := First_Elmt (Par_Prims);
+
+            while Present (Prim_Elmt) loop
+               Par_Prim   := Node (Prim_Elmt);
+               Deriv_Prim :=
+                 Find_Primitive_Covering_Interface (Deriv_Typ, Par_Prim);
+
+               if Present (Deriv_Prim) then
+                  Primitives_Mapping.Set (Par_Prim, Deriv_Prim);
+               end if;
+
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end if;
+      end if;
+   end Update_Primitives_Mapping_Of_Types;
 
    ----------------------------------
    -- Within_Case_Or_If_Expression --

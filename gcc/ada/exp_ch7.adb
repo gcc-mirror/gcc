@@ -3525,9 +3525,6 @@ package body Exp_Ch7 is
       --  inherited class-wide invariants. Priv_Item denotes the first rep
       --  item of the private type.
 
-      procedure Create_Append (L : in out List_Id; N : Node_Id);
-      --  Append arbitrary node N to list L. If there is no list, create one.
-
       function Is_Untagged_Private_Derivation
         (Priv_Typ : Entity_Id;
          Full_Typ : Entity_Id) return Boolean;
@@ -3589,7 +3586,7 @@ package body Exp_Ch7 is
                --  effect.
 
                if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
+                  Append_New_To (Comp_Checks,
                     Make_Procedure_Call_Statement (Loc,
                       Name                   =>
                         New_Occurrence_Of (Proc_Id, Loc),
@@ -3628,7 +3625,7 @@ package body Exp_Ch7 is
                --  effect.
 
                if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
+                  Append_New_To (Comp_Checks,
                     Make_If_Statement (Loc,
                       Condition       =>
                         Make_Op_Ne (Loc,
@@ -3703,7 +3700,7 @@ package body Exp_Ch7 is
                --  effect.
 
                if Present (Comp_Checks) then
-                  Create_Append (Dim_Checks,
+                  Append_New_To (Dim_Checks,
                     Make_Implicit_Loop_Statement (T,
                       Identifier       => Empty,
                       Iteration_Scheme =>
@@ -3906,7 +3903,7 @@ package body Exp_Ch7 is
                      Var_Stmts := New_List (Make_Null_Statement (Loc));
                   end if;
 
-                  Create_Append (Var_Alts,
+                  Append_New_To (Var_Alts,
                     Make_Case_Statement_Alternative (Loc,
                       Discrete_Choices =>
                         New_Copy_List (Discrete_Choices (Var)),
@@ -3920,7 +3917,7 @@ package body Exp_Ch7 is
                --  values only when there is at least one real invariant check.
 
                if Produced_Variant_Check then
-                  Create_Append (CL_Checks,
+                  Append_New_To (CL_Checks,
                     Make_Case_Statement (Loc,
                       Expression   =>
                         Make_Selected_Component (Loc,
@@ -3980,7 +3977,7 @@ package body Exp_Ch7 is
                --  effect.
 
                if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
+                  Append_New_To (Comp_Checks,
                     Make_Procedure_Call_Statement (Loc,
                       Name                   =>
                         New_Occurrence_Of (Proc_Id, Loc),
@@ -4023,7 +4020,7 @@ package body Exp_Ch7 is
                --  effect.
 
                if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
+                  Append_New_To (Comp_Checks,
                     Make_If_Statement (Loc,
                       Condition       =>
                         Make_Op_Ne (Loc,
@@ -4356,7 +4353,7 @@ package body Exp_Ch7 is
                --  Generate:
                --    pragma Check (<Nam>, <Expr>, <Str>);
 
-               Create_Append (Checks,
+               Append_New_To (Checks,
                  Make_Pragma (Ploc,
                    Chars                        => Name_Check,
                    Pragma_Argument_Associations => Assoc));
@@ -4443,19 +4440,6 @@ package body Exp_Ch7 is
          end if;
       end Add_Type_Invariants;
 
-      -------------------
-      -- Create_Append --
-      -------------------
-
-      procedure Create_Append (L : in out List_Id; N : Node_Id) is
-      begin
-         if No (L) then
-            L := New_List;
-         end if;
-
-         Append_To (L, N);
-      end Create_Append;
-
       ------------------------------------
       -- Is_Untagged_Private_Derivation --
       ------------------------------------
@@ -4493,11 +4477,6 @@ package body Exp_Ch7 is
 
       Full_Typ : Entity_Id;
       --  The full view of the working type
-
-      Freeze_Typ : Entity_Id;
-      --  The freeze type whose freeze node carries the invariant procedure
-      --  body. This is either the partial or the full view of the working
-      --  type.
 
       Obj_Id : Entity_Id;
       --  The _object formal parameter of the invariant procedure
@@ -4539,10 +4518,15 @@ package body Exp_Ch7 is
 
       pragma Assert (Has_Invariants (Work_Typ));
 
+      --  ??? invariants of class-wide types are not properly implemented
+
+      if Is_Class_Wide_Type (Work_Typ) then
+         return;
+
       --  Nothing to do for interface types as their class-wide invariants are
       --  inherited by implementing types.
 
-      if Is_Interface (Work_Typ) then
+      elsif Is_Interface (Work_Typ) then
          return;
       end if;
 
@@ -4633,7 +4617,6 @@ package body Exp_Ch7 is
 
       if Partial_Invariant then
          pragma Assert (Present (Priv_Typ));
-         Freeze_Typ := Priv_Typ;
 
          Add_Type_Invariants
            (Priv_Typ => Priv_Typ,
@@ -4650,7 +4633,6 @@ package body Exp_Ch7 is
 
       else
          pragma Assert (Present (Full_Typ));
-         Freeze_Typ := Full_Typ;
 
          --  Check the invariants of the partial view by calling the "partial"
          --  invariant procedure. Generate:
@@ -4658,7 +4640,7 @@ package body Exp_Ch7 is
          --    <Work_Typ>Partial_Invariant (_object);
 
          if Present (Part_Proc) then
-            Create_Append (Stmts,
+            Append_New_To (Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name                   => New_Occurrence_Of (Part_Proc, Loc),
                 Parameter_Associations => New_List (
@@ -4793,7 +4775,7 @@ package body Exp_Ch7 is
       --  Otherwise the body is part of the freezing actions of the type
 
       else
-         Append_Freeze_Action (Freeze_Typ, Proc_Body);
+         Append_Freeze_Action (Work_Typ, Proc_Body);
       end if;
 
       Ghost_Mode := Save_Ghost_Mode;
@@ -4860,10 +4842,15 @@ package body Exp_Ch7 is
 
       pragma Assert (Has_Invariants (Work_Typ));
 
+      --  ??? invariants of class-wide types are not properly implemented
+
+      if Is_Class_Wide_Type (Work_Typ) then
+         return;
+
       --  Nothing to do for interface types as their class-wide invariants are
       --  inherited by implementing types.
 
-      if Is_Interface (Work_Typ) then
+      elsif Is_Interface (Work_Typ) then
          return;
 
       --  Nothing to do if the type already has a "partial" invariant procedure

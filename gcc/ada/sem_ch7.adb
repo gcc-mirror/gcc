@@ -39,6 +39,7 @@ with Exp_Ch7;   use Exp_Ch7;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
+with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Lib;       use Lib;
@@ -1453,19 +1454,12 @@ package body Sem_Ch7 is
 
          if Is_Type (E) then
 
-            --  Each private type subject to pragma Default_Initial_Condition
-            --  declares a specialized procedure which verifies the assumption
-            --  of the pragma. The declaration appears in the visible part of
-            --  the package to allow for being called from the outside.
+            --  Preanalyze and resolve the Default_Initial_Condition assertion
+            --  expression at the end of the visible declarations to catch any
+            --  errors.
 
-            if Has_Default_Init_Cond (E) then
-               Build_Default_Init_Cond_Procedure_Declaration (E);
-
-            --  A private extension inherits the default initial condition
-            --  procedure from its parent type.
-
-            elsif Has_Inherited_Default_Init_Cond (E) then
-               Inherit_Default_Init_Cond_Procedure (E);
+            if Has_DIC (E) then
+               Build_DIC_Procedure_Body (E);
             end if;
 
             --  Preanalyze and resolve the invariants of a private type at the
@@ -1661,18 +1655,28 @@ package body Sem_Ch7 is
               ("full view of & does not have preelaborable initialization", E);
          end if;
 
-         --  Preanalyze and resolve the invariants of a private type's full
-         --  view at the end of the private declarations in case freezing did
-         --  not take place either due to errors or because the context is a
-         --  generic unit.
+         if Is_Type (E) and then Serious_Errors_Detected > 0 then
 
-         if Is_Type (E)
-           and then not Is_Private_Type (E)
-           and then Has_Private_Declaration (E)
-           and then Has_Invariants (E)
-           and then Serious_Errors_Detected > 0
-         then
-            Build_Invariant_Procedure_Body (E);
+            --  Preanalyze and resolve the Default_Initial_Condition assertion
+            --  expression at the end of the private declarations when freezing
+            --  did not take place due to errors or because the context is a
+            --  generic unit.
+
+            if Has_DIC (E) then
+               Build_DIC_Procedure_Body (E);
+            end if;
+
+            --  Preanalyze and resolve the invariants of a private type's full
+            --  view at the end of the private declarations in case freezing
+            --  did not take place either due to errors or because the context
+            --  is a generic unit.
+
+            if not Is_Private_Type (E)
+              and then Has_Private_Declaration (E)
+              and then Has_Invariants (E)
+            then
+               Build_Invariant_Procedure_Body (E);
+            end if;
          end if;
 
          Next_Entity (E);
@@ -2629,6 +2633,16 @@ package body Sem_Ch7 is
          end if;
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
+
+         --  Propagate Default_Initial_Condition-related attributes from the
+         --  base type of the full view to the full view and vice versa. This
+         --  may seem strange, but is necessary depending on which type
+         --  triggered the generation of the DIC procedure body. As a result,
+         --  both the full view and its base type carry the same DIC-related
+         --  information.
+
+         Propagate_DIC_Attributes (Full, From_Typ => Full_Base);
+         Propagate_DIC_Attributes (Full_Base, From_Typ => Full);
 
          --  Propagate invariant-related attributes from the base type of the
          --  full view to the full view and vice versa. This may seem strange,

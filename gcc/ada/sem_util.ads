@@ -209,24 +209,6 @@ package Sem_Util is
    --  Determine whether a selected component has a type that depends on
    --  discriminants, and build actual subtype for it if so.
 
-   function Build_Default_Init_Cond_Call
-     (Loc    : Source_Ptr;
-      Obj_Id : Entity_Id;
-      Typ    : Entity_Id) return Node_Id;
-   --  Build a call to the default initial condition procedure of type Typ with
-   --  Obj_Id as the actual parameter.
-
-   procedure Build_Default_Init_Cond_Procedure_Bodies (Priv_Decls : List_Id);
-   --  Inspect the contents of private declarations Priv_Decls and build the
-   --  bodies the default initial condition procedures for all types subject
-   --  to pragma Default_Initial_Condition.
-
-   procedure Build_Default_Init_Cond_Procedure_Declaration (Typ : Entity_Id);
-   --  If private type Typ is subject to pragma Default_Initial_Condition,
-   --  build the declaration of the procedure which verifies the assumption
-   --  of the pragma at runtime. The declaration is inserted after the related
-   --  pragma.
-
    function Build_Default_Subtype
      (T : Entity_Id;
       N : Node_Id) return Entity_Id;
@@ -1266,10 +1248,6 @@ package Sem_Util is
    --  either the value is not yet known before back-end processing or it is
    --  not known at compile time after back-end processing.
 
-   procedure Inherit_Default_Init_Cond_Procedure (Typ : Entity_Id);
-   --  Inherit the default initial condition procedure from the parent type of
-   --  derived type Typ.
-
    procedure Inherit_Rep_Item_Chain (Typ : Entity_Id; From_Typ : Entity_Id);
    --  Inherit the rep item chain of type From_Typ without clobbering any
    --  existing rep items on Typ's chain. Typ is the destination type.
@@ -1528,8 +1506,7 @@ package Sem_Util is
    --  parameter of the current enclosing subprogram.
    --  Why are OUT parameters not considered here ???
 
-   function Is_Nontrivial_Default_Init_Cond_Procedure
-     (Id : Entity_Id) return Boolean;
+   function Is_Nontrivial_DIC_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes the procedure that verifies the
    --  assertion expression of pragma Default_Initial_Condition and if it does,
    --  the encapsulated expression is nontrivial.
@@ -1750,6 +1727,10 @@ package Sem_Util is
    --  Use_Original_Node is used to perform the test on Original_Node (N). By
    --  default is True since this routine is commonly invoked as part of the
    --  semantic analysis and it must not be disturbed by the rewriten nodes.
+
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
+   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
+   --  an assertion expression which should be verified at runtime.
 
    function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
    --  Check whether T is derived from a visibly controlled type. This is true
@@ -2050,12 +2031,6 @@ package Sem_Util is
    --  parameter Ent gives the entity to which the End_Label refers,
    --  and to which cross-references are to be generated.
 
-   procedure Propagate_Invariant_Attributes
-     (Typ      : Entity_Id;
-      From_Typ : Entity_Id);
-   --  Inherit all invariant-related attributes form type From_Typ. Typ is the
-   --  destination type.
-
    procedure Propagate_Concurrent_Flags
      (Typ      : Entity_Id;
       Comp_Typ : Entity_Id);
@@ -2064,6 +2039,18 @@ package Sem_Util is
    --  are set (recursively) on any composite type which has a component marked
    --  by one of these flags. This procedure can only set flags for Typ, and
    --  never clear them. Comp_Typ is the type of a component or a parent.
+
+   procedure Propagate_DIC_Attributes
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id);
+   --  Inherit all Default_Initial_Condition-related attributes from type
+   --  From_Typ. Typ is the destination type.
+
+   procedure Propagate_Invariant_Attributes
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id);
+   --  Inherit all invariant-related attributes form type From_Typ. Typ is the
+   --  destination type.
 
    procedure Record_Possible_Part_Of_Reference
      (Var_Id : Entity_Id;
