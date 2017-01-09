@@ -3356,6 +3356,7 @@ static int get_AT_flag (dw_die_ref, enum dwarf_attribute);
 static unsigned get_AT_unsigned (dw_die_ref, enum dwarf_attribute);
 static inline dw_die_ref get_AT_ref (dw_die_ref, enum dwarf_attribute);
 static bool is_cxx (void);
+static bool is_cxx (const_tree);
 static bool is_fortran (void);
 static bool is_ada (void);
 static bool remove_AT (dw_die_ref, enum dwarf_attribute);
@@ -4988,6 +4989,27 @@ is_cxx (void)
 
   return (lang == DW_LANG_C_plus_plus || lang == DW_LANG_ObjC_plus_plus
 	  || lang == DW_LANG_C_plus_plus_11 || lang == DW_LANG_C_plus_plus_14);
+}
+
+/* Return TRUE if DECL was created by the C++ frontend.  */
+
+static bool
+is_cxx (const_tree decl)
+{
+  if (in_lto_p)
+    {
+      const_tree context = decl;
+      while (context && TREE_CODE (context) != TRANSLATION_UNIT_DECL)
+	{
+	  if (TREE_CODE (context) == BLOCK)
+	    context = BLOCK_SUPERCONTEXT (context);
+	  else
+	    context = get_containing_scope (context);
+	}
+      if (context && TRANSLATION_UNIT_LANGUAGE (context))
+	return strncmp (TRANSLATION_UNIT_LANGUAGE (context), "GNU C++", 7) == 0;
+    }
+  return is_cxx ();
 }
 
 /* Return TRUE if the language is Java.  */
@@ -24762,7 +24784,7 @@ is_naming_typedef_decl (const_tree decl)
       /* It looks like Ada produces TYPE_DECLs that are very similar
          to C++ naming typedefs but that have different
          semantics. Let's be specific to c++ for now.  */
-      || !is_cxx ())
+      || !is_cxx (decl))
     return FALSE;
 
   return (DECL_ORIGINAL_TYPE (decl) == NULL_TREE
