@@ -1,5 +1,14 @@
 2017-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79017
+	* acinclude.m4 (GLIBCXX_CHECK_C99_TR1): Check for llrint and llround
+	functions separately on darwin and if they're missing define
+	_GLIBCXX_NO_C99_ROUNDING_FUNCS.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/cmath [_GLIBCXX_NO_C99_ROUNDING_FUNCS] (llrint)
+	(llrintf, llrintl, llround, llroundf, llroundl): Do not define.
+
 	* testsuite/30_threads/condition_variable/members/3.cc: Use new macro
 	to detect correct thread_local destructors.
 	* testsuite/util/testsuite_hooks.h (CORRECT_THREAD_LOCAL_DTORS):
