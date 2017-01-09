@@ -7,7 +7,7 @@
 // GC is:
 // - mark&sweep
 // - mostly precise (with the exception of some C-allocated objects, assembly frames/arguments, etc)
-// - parallel (up to MaxGcproc threads)
+// - parallel (up to _MaxGcproc threads)
 // - partially concurrent (mark is stop-the-world, while sweep is concurrent)
 // - non-moving/non-compacting
 // - full (non-partial)
@@ -389,7 +389,7 @@ struct BufferList
 	uint32 busy;
 	byte pad[CacheLineSize];
 };
-static BufferList bufferList[MaxGcproc];
+static BufferList bufferList[_MaxGcproc];
 
 static void enqueue(Obj obj, Workbuf **_wbuf, Obj **_wp, uintptr *_nobj);
 
@@ -2228,7 +2228,7 @@ gc(struct gc_args *args)
 
 	m->locks++;	// disable gc during mallocs in parforalloc
 	if(work.markfor == nil)
-		work.markfor = runtime_parforalloc(MaxGcproc);
+		work.markfor = runtime_parforalloc(_MaxGcproc);
 	m->locks--;
 
 	tm1 = 0;
@@ -2355,7 +2355,7 @@ gc(struct gc_args *args)
 			sweep.g = __go_go(bgsweep, nil);
 		else if(sweep.parked) {
 			sweep.parked = false;
-			runtime_ready(sweep.g);
+			runtime_ready(sweep.g, 0, true);
 		}
 		runtime_unlock(&gclock);
 	} else {
@@ -2429,7 +2429,7 @@ gchelperstart(void)
 	M *m;
 
 	m = runtime_m();
-	if(m->helpgc < 0 || m->helpgc >= MaxGcproc)
+	if(m->helpgc < 0 || m->helpgc >= _MaxGcproc)
 		runtime_throw("gchelperstart: bad m->helpgc");
 	if(runtime_xchg(&bufferList[m->helpgc].busy, 1))
 		runtime_throw("gchelperstart: already busy");
@@ -2539,6 +2539,20 @@ runtime_createfing(void)
 	if(fing == nil)
 		fing = __go_go(runfinq, nil);
 	runtime_unlock(&gclock);
+}
+
+bool getfingwait() __asm__(GOSYM_PREFIX "runtime.getfingwait");
+bool
+getfingwait()
+{
+	return runtime_fingwait;
+}
+
+bool getfingwake() __asm__(GOSYM_PREFIX "runtime.getfingwake");
+bool
+getfingwake()
+{
+	return runtime_fingwake;
 }
 
 G*

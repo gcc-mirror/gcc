@@ -304,6 +304,7 @@ const (
 	_64bit              = 1 << (^uintptr(0) >> 63) / 2
 	_MHeapMap_TotalBits = (_64bit*sys.GoosWindows)*35 + (_64bit*(1-sys.GoosWindows)*(1-sys.GoosDarwin*sys.GoarchArm64))*39 + sys.GoosDarwin*sys.GoarchArm64*31 + (1-_64bit)*32
 	_MaxMem             = uintptr(1<<_MHeapMap_TotalBits - 1)
+	_MaxGcproc          = 32
 )
 
 // Here for gccgo until we port malloc.go.
@@ -350,7 +351,6 @@ func entersyscallblock(int32)
 func exitsyscall(int32)
 func gopark(func(*g, unsafe.Pointer) bool, unsafe.Pointer, string, byte, int)
 func goparkunlock(*mutex, string, byte, int)
-func goready(*g, int)
 
 // Temporary hack for gccgo until we port proc.go.
 //go:nosplit
@@ -411,12 +411,6 @@ func roundupsize(uintptr) uintptr
 // Here for gccgo until we port mgc.go.
 func GC()
 
-// Here for gccgo until we port proc.go.
-var worldsema uint32 = 1
-
-func stopTheWorldWithSema()
-func startTheWorldWithSema()
-
 // For gccgo to call from C code.
 //go:linkname acquireWorldsema runtime.acquireWorldsema
 func acquireWorldsema() {
@@ -427,26 +421,6 @@ func acquireWorldsema() {
 //go:linkname releaseWorldsema runtime.releaseWorldsema
 func releaseWorldsema() {
 	semrelease(&worldsema)
-}
-
-// Here for gccgo until we port proc.go.
-func stopTheWorld(reason string) {
-	semacquire(&worldsema, false)
-	getg().m.preemptoff = reason
-	getg().m.gcing = 1
-	systemstack(stopTheWorldWithSema)
-}
-
-// Here for gccgo until we port proc.go.
-func startTheWorld() {
-	getg().m.gcing = 0
-	getg().m.locks++
-	systemstack(startTheWorldWithSema)
-	// worldsema must be held over startTheWorldWithSema to ensure
-	// gomaxprocs cannot change while worldsema is held.
-	semrelease(&worldsema)
-	getg().m.preemptoff = ""
-	getg().m.locks--
 }
 
 // For gccgo to call from C code, so that the C code and the Go code
@@ -461,6 +435,7 @@ func setcpuprofilerate_m(hz int32)
 
 // Temporary for gccgo until we port mem_GOOS.go.
 func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer
+func sysFree(v unsafe.Pointer, n uintptr, sysStat *uint64)
 
 // Temporary for gccgo until we port proc.go, so that the C signal
 // handler can call into cpuprof.
@@ -522,7 +497,6 @@ func getZerobase() *uintptr {
 func sigprof()
 func mcount() int32
 func goexit1()
-func freezetheworld()
 
 // Get signal trampoline, written in C.
 func getSigtramp() uintptr
@@ -592,6 +566,7 @@ func getPanicking() uint32 {
 
 // Temporary for gccgo until we port mcache.go.
 func allocmcache() *mcache
+func freemcache(*mcache)
 
 // Temporary for gccgo until we port mgc.go.
 // This is just so that allgadd will compile.
@@ -615,4 +590,61 @@ func gcount() int32 {
 	}
 	unlock(&allglock)
 	return n
+}
+
+// Temporary for gccgo until we port mgc.go.
+var gcBlackenEnabled uint32
+
+// Temporary for gccgo until we port mgc.go.
+func gcMarkWorkAvailable(p *p) bool {
+	return false
+}
+
+// Temporary for gccgo until we port mgc.go.
+var gcController gcControllerState
+
+// Temporary for gccgo until we port mgc.go.
+type gcControllerState struct {
+}
+
+// Temporary for gccgo until we port mgc.go.
+func (c *gcControllerState) findRunnableGCWorker(_p_ *p) *g {
+	return nil
+}
+
+// Temporary for gccgo until we port mgc.go.
+var gcphase uint32
+
+// Temporary for gccgo until we port mgc.go.
+const (
+	_GCoff = iota
+	_GCmark
+	_GCmarktermination
+)
+
+// Temporary for gccgo until we port mgc.go.
+type gcMarkWorkerMode int
+
+// Temporary for gccgo until we port mgc.go.
+const (
+	gcMarkWorkerDedicatedMode gcMarkWorkerMode = iota
+	gcMarkWorkerFractionalMode
+	gcMarkWorkerIdleMode
+)
+
+// Temporary for gccgo until we port mheap.go.
+type mheap struct {
+}
+
+// Temporary for gccgo until we port mheap.go.
+var mheap_ mheap
+
+// Temporary for gccgo until we port mheap.go.
+func (h *mheap) scavenge(k int32, now, limit uint64) {
+}
+
+// Temporary for gccgo until we initialize ncpu in Go.
+//go:linkname setncpu runtime.setncpu
+func setncpu(n int32) {
+	ncpu = n
 }
