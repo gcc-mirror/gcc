@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
