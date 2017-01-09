@@ -1268,10 +1268,21 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case USING_DECL:
-      pp_cxx_ws_string (pp, "using");
-      dump_type (pp, USING_DECL_SCOPE (t), flags);
-      pp_cxx_colon_colon (pp);
-      dump_decl (pp, DECL_NAME (t), flags);
+      {
+	pp_cxx_ws_string (pp, "using");
+	tree scope = USING_DECL_SCOPE (t);
+	bool variadic = false;
+	if (PACK_EXPANSION_P (scope))
+	  {
+	    scope = PACK_EXPANSION_PATTERN (scope);
+	    variadic = true;
+	  }
+	dump_type (pp, scope, flags);
+	pp_cxx_colon_colon (pp);
+	dump_decl (pp, DECL_NAME (t), flags);
+	if (variadic)
+	  pp_cxx_ws_string (pp, "...");
+      }
       break;
 
     case STATIC_ASSERT:

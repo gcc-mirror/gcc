@@ -1,3 +1,10 @@
+2017-01-09  Jason Merrill  <jason@redhat.com>
+
+	Implement P0195R2, C++17 variadic using.
+	* parser.c (cp_parser_using_declaration): Handle ellipsis and comma.
+	* pt.c (tsubst_decl): Handle pack expansion in USING_DECL_SCOPE.
+	* error.c (dump_decl): Likewise.
+
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/79019
