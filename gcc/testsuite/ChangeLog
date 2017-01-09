@@ -1,3 +1,11 @@
+2017-01-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/79026
+	* gcc.target/i386/pr78904-2.c: Require nonpic targets.
+	* gcc.target/i386/pr78904-4.c: Likewise.
+	* gcc.target/i386/pr78904-6.c: Likewise.
+	* gcc.target/i386/pr78967-2.c: Likewise.
+
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78899
