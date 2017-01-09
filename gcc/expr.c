@@ -6888,33 +6888,30 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       if (GET_CODE (temp) == PARALLEL)
 	{
 	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-	  rtx temp_target;
-	  if (mode == BLKmode || mode == VOIDmode)
-	    mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
-	  temp_target = gen_reg_rtx (mode);
+	  machine_mode temp_mode
+	    = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	  rtx temp_target = gen_reg_rtx (temp_mode);
 	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
 	  temp = temp_target;
 	}
-      else if (mode == BLKmode)
+
+      /* Handle calls that return BLKmode values in registers.  */
+      else if (mode == BLKmode && REG_P (temp) && TREE_CODE (exp) == CALL_EXPR)
 	{
-	  /* Handle calls that return BLKmode values in registers.  */
-	  if (REG_P (temp) && TREE_CODE (exp) == CALL_EXPR)
-	    {
-	      rtx temp_target = gen_reg_rtx (GET_MODE (temp));
-	      copy_blkmode_from_reg (temp_target, temp, TREE_TYPE (exp));
-	      temp = temp_target;
-	    }
-	  else
-	    {
-	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-	      rtx temp_target;
-	      mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
-	      temp_target = gen_reg_rtx (mode);
-	      temp_target
-	        = extract_bit_field (temp, size * BITS_PER_UNIT, 0, 1,
-				     temp_target, mode, mode, false);
-	      temp = temp_target;
-	    }
+	  rtx temp_target = gen_reg_rtx (GET_MODE (temp));
+	  copy_blkmode_from_reg (temp_target, temp, TREE_TYPE (exp));
+	  temp = temp_target;
+	}
+
+      /* The behavior of store_bit_field is awkward when mode is BLKmode:
+	 it always takes its value from the lsb up to the word size but
+	 expects it left justified beyond it.  At this point TEMP is left
+	 justified so extract the value in the former case.  */
+      if (mode == BLKmode && bitsize <= BITS_PER_WORD)
+	{
+	  machine_mode temp_mode = smallest_mode_for_size (bitsize, MODE_INT);
+	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
+				    temp_mode, false);
 	}
 
       /* Store the value in the bitfield.  */
