@@ -1,5 +1,11 @@
 2017-01-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78997
+	* tree-vect-slp.c (vect_mask_constant_operand_p): Handle SSA
+	name condition properly.
+
+2017-01-09  Richard Biener  <rguenther@suse.de>
+
 	PR debug/79000
 	* dwarf2out.c (is_cxx): New overload with context.
 	(is_naming_typedef_decl): Use it.
