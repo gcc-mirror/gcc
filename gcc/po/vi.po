@@ -3,21 +3,21 @@
 # Copyright © 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Clytie Siddall <clytie@riverland.net.au>, 2010.
-# Trần Ngọc Quân <vnwildman@gmail.com>, 2012-2014, 2015, 2016.
+# Trần Ngọc Quân <vnwildman@gmail.com>, 2012-2014, 2015, 2016, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 6.1.0\n"
+"Project-Id-Version: gcc 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:52+0000\n"
-"PO-Revision-Date: 2016-04-28 14:29+0700\n"
+"PO-Revision-Date: 2017-01-08 08:33+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
 "Language: vi\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Gtranslator 2.91.7\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -669,10 +669,9 @@ msgid "    -s, --scale <float or simple-frac>  Scale the profile counters\n"
 msgstr "    -s, --scale <float or simple-frac>  Tỷ lệ con đếm hồ sơ\n"
 
 #: gcov-tool.c:264
-#, fuzzy, c-format
-#| msgid "    -n, --normalize <long long>         Normalize the profile\n"
+#, c-format
 msgid "    -n, --normalize <int64_t>           Normalize the profile\n"
-msgstr "    -n, --normalize <long long>         Tiêu chuẩn hóa hồ sơ\n"
+msgstr "    -n, --normalize <int64_t>           Tiêu chuẩn hóa hồ sơ\n"
 
 #: gcov-tool.c:281
 #, c-format
@@ -893,10 +892,9 @@ msgid "  -v, --version                   Print version number, then exit\n"
 msgstr "  -v, --version                   Hiển thị số thứ tự phiên bản, sau đó thoát.\n"
 
 #: gcov.c:676
-#, fuzzy, c-format
-#| msgid "  -m, --demangled-names           Output demangled function names\n"
+#, c-format
 msgid "  -x, --hash-filenames            Hash long pathnames\n"
-msgstr "  -m, --demangled-names           Xuất các tên hàm không được quản lý\n"
+msgstr "  -x, --hash-filenames            Băm các đường dẫn dài\n"
 
 # Literal: don't translate; Nghĩa chữ : dừng dịch
 #: gcov.c:687
@@ -1422,8 +1420,6 @@ msgid "<anonymous>"
 msgstr "<nặc-danh>"
 
 #: tree-ssa-loop-niter.c:2368
-#, fuzzy
-#| msgid "cannot optimize loop, the loop counter may overflow"
 msgid "missed loop optimization, the loop counter may overflow"
 msgstr "không thể tối ưu hóa vòng lặp vì bộ đếm vòng lặp có thể bị tràn"
 
@@ -1492,10 +1488,8 @@ msgid "mismatched arguments"
 msgstr "các đối số không tương ứng với nhau"
 
 #: cif-code.def:96
-#, fuzzy
-#| msgid "expected iteration declaration or initialization"
 msgid "mismatched declarations during linktime optimization"
-msgstr "cần khai báo nhắc lại hay sự khởi tạo"
+msgstr "khai báo không khớp khi đang tối ưu hóa lúc liên kết"
 
 #: cif-code.def:100
 msgid "originally indirect function call not considered for inlining"
@@ -1598,7 +1592,7 @@ msgstr "Kết quả ước lượng tối đa của nhánh được thấy là d
 #: params.def:54
 #, no-c-format
 msgid "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-isnsns-auto."
-msgstr ""
+msgstr "Tốc độ tăng lên ước tính tối thiểu cho phép chung dòng bỏ qua inline-insns-single và inline-isnsns-auto."
 
 #: params.def:71
 #, no-c-format
@@ -1822,7 +1816,6 @@ msgstr "Số tối đa các lần hủy chuyển đổi nhánh trong một vòng
 
 #: params.def:351
 #, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a peeled loop."
 msgid "The maximum number of insns in loop header duplicated by he copy loop headers pass."
 msgstr "Số tối đa các lệnh insns của một vòng lặp được lột."
 
@@ -1878,7 +1871,6 @@ msgstr "Chọn phân số của tần số tối đa lần thực hiện khối 
 
 #: params.def:408
 #, fuzzy, no-c-format
-#| msgid "Loops iterating at least selected number of iterations will get loop alignement.."
 msgid "Loops iterating at least selected number of iterations will get loop alignment.."
 msgstr "Vòng lặp nào lặp lại ít nhất số lần lặp lại được chọn thì được xếp hàng các vòng lặp.."
 
@@ -1974,7 +1966,6 @@ msgstr "Nếu số lượng ứng cử trong một tập hợp nhỏ hơn, chún
 
 #: params.def:532
 #, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop."
 msgid "Average number of iterations of a loop."
 msgstr "Số tối đa các lần lột một vòng lặp riêng lẻ."
 
@@ -2409,10 +2400,9 @@ msgid "Allow the store merging pass to introduce unaligned stores if it is legal
 msgstr ""
 
 #: params.def:1105
-#, fuzzy, no-c-format
-#| msgid "Maximum number of conditional store pairs that can be sunk."
+#, no-c-format
 msgid "Maximum number of constant stores to merge in thestore merging pass"
-msgstr "Số tối đa các cặp lưu điều kiện cái mà có thể hạ xuống."
+msgstr ""
 
 #: params.def:1111
 #, no-c-format
@@ -2442,7 +2432,7 @@ msgstr "Bật chức năng bảo vệ ngăn xếp asan."
 #: params.def:1142
 #, no-c-format
 msgid "Enable asan globals protection."
-msgstr "Bật chức năng bảo vệ toàn cục asan."
+msgstr "Bật chức năng bảo vệ asan toàn cục."
 
 #: params.def:1147
 #, no-c-format
@@ -3384,10 +3374,9 @@ msgid "invalid UNSPEC as operand"
 msgstr "đặt sai UNSPEC như là toán hạng"
 
 #: config/i386/i386.c:17576
-#, fuzzy, c-format
-#| msgid "invalid use of type"
+#, c-format
 msgid "invalid use of asm flag output"
-msgstr "sử dụng kiểu sai"
+msgstr "sử dụng kết xuất cờ asm sai"
 
 #: config/i386/i386.c:17794
 #, c-format
@@ -4363,7 +4352,6 @@ msgstr "(nặc danh)"
 
 #: c/gimple-parser.c:1309 c/gimple-parser.c:1336 c/gimple-parser.c:1364
 #, fuzzy
-#| msgid "expected channel"
 msgid "expected label"
 msgstr "cần kênh"
 
@@ -4405,10 +4393,9 @@ msgid "<unnamed>"
 msgstr "<không tên>"
 
 #: cp/error.c:686
-#, fuzzy, c-format
-#| msgid "<unnamed>"
+#, c-format
 msgid "<unnamed %s>"
-msgstr "<không tên>"
+msgstr "<%s không tên>"
 
 # Literal: don't translate; Nghĩa chữ: dừng dịch
 #. A lambda's "type" is essentially its signature.
@@ -4587,15 +4574,15 @@ msgstr "%r%s:%d:%R   [ bỏ qua %d ngữ cảnh minh dụ, dùng -ftemplate-back
 
 #: cp/error.c:3537
 msgid "%r%s:%d:%d:%R   in constexpr expansion of %qs"
-msgstr ""
+msgstr "%r%s:%d:%d:%R   trong khai triển constexpr của %qs"
 
 #: cp/error.c:3541
 msgid "%r%s:%d:%R   in constexpr expansion of %qs"
-msgstr ""
+msgstr "%r%s:%d:%R   trong khai triển constexpr của %qs"
 
 #: cp/pt.c:1945 cp/semantics.c:5228
 msgid "candidates are:"
-msgstr "ứng cử là:"
+msgstr "các ứng cử là:"
 
 #: cp/pt.c:21745
 msgid "candidate is:"
@@ -4820,10 +4807,9 @@ msgid "P descriptor requires leading scale factor"
 msgstr "Bộ mô tả P yêu cầu hệ số tỷ lệ đi trước"
 
 #: fortran/io.c:726
-#, fuzzy, c-format
-#| msgid "%s statement expected at %L"
+#, c-format
 msgid "Right parenthesis expected at %C"
-msgstr "cần lệnh %s tại %L"
+msgstr "Cần dấu ngoặc đơn phải tại %C"
 
 #: fortran/io.c:819 fortran/io.c:833
 msgid "Comma required after P descriptor"
@@ -5028,7 +5014,7 @@ msgstr "đối số coarray"
 
 #: fortran/resolve.c:2307
 msgid "parametrized derived type argument"
-msgstr ""
+msgstr "đối số kiểu được dẫn suất tham số hóa"
 
 #: fortran/resolve.c:2312
 msgid "polymorphic argument"
@@ -5359,16 +5345,12 @@ msgid "cannot specify -static with -fsanitize=thread"
 msgstr "không thể chỉ định -static với -fsanitize=thread"
 
 #: gcc.c:1000
-#, fuzzy
-#| msgid "-fvtable-verify is not supported in this configuration"
 msgid "-fvtable-verify=std is not supported in this configuration"
-msgstr "-fvtable-verify không được hỗ trợ trong cấu hình này"
+msgstr "-fvtable-verify=std không được hỗ trợ trong cấu hình này"
 
 #: gcc.c:1002
-#, fuzzy
-#| msgid "-fvtable-verify is not supported in this configuration"
 msgid "-fvtable-verify=preinit is not supported in this configuration"
-msgstr "-fvtable-verify không được hỗ trợ trong cấu hình này"
+msgstr "-fvtable-verify=preinit không được hỗ trợ trong cấu hình này"
 
 #: gcc.c:1131 ada/gcc-interface/lang-specs.h:33
 msgid "-pg and -fomit-frame-pointer are incompatible"
@@ -5383,10 +5365,8 @@ msgid "-E or -x required when input is from standard input"
 msgstr "Nhập từ đầu vào tiêu chuẩn thì cũng yêu cầu tùy chọn -E hoặc -x"
 
 #: config/darwin.h:171
-#, fuzzy
-#| msgid "-fpic is not supported"
 msgid "rdynamic is not supported"
-msgstr "-fpic không được hỗ trợ"
+msgstr "rdynamic không được hỗ trợ"
 
 #: config/darwin.h:260
 msgid "-current_version only allowed with -dynamiclib"
@@ -5501,7 +5481,7 @@ msgstr "Bạn cần một tập-tin khởi chạy C cho -msys-crt0="
 
 #: config/nvptx/nvptx.c:1132
 msgid "tid.y;"
-msgstr ""
+msgstr "tid.y;"
 
 #: config/pa/pa-hpux10.h:102 config/pa/pa-hpux10.h:105
 #: config/pa/pa-hpux10.h:113 config/pa/pa-hpux10.h:116
@@ -5591,7 +5571,7 @@ msgstr "objc++-cpp-output đã lạc hậu; vui lòng dùng objective-c++-cpp-ou
 
 #: fortran/lang.opt:146
 msgid "-J<directory>\tPut MODULE files in 'directory'."
-msgstr "-J<thư_mục>\tĐể vào 'thư mục' này các tập tin MÔ-ĐUN."
+msgstr "-J<thư_mục>\tĐể vào “thư mục” này các tập tin MÔ-ĐUN."
 
 #: fortran/lang.opt:198
 msgid "Warn about possible aliasing of dummy arguments."
@@ -5659,7 +5639,7 @@ msgstr "Cảnh báo về chuỗi định dạng không phải có nghĩa chữ"
 
 #: fortran/lang.opt:290
 msgid "Warn about real-literal-constants with 'q' exponent-letter."
-msgstr "Cảnh báo về hằng-chữ-số-thực với chữ-số-mũ 'q'."
+msgstr "Cảnh báo về hằng-chữ-số-thực với chữ-số-mũ “q”."
 
 #: fortran/lang.opt:294
 msgid "Warn when a left-hand-side array variable is reallocated."
@@ -5682,10 +5662,8 @@ msgid "Permit nonconforming uses of the tab character."
 msgstr "Cho phép sử dụng ký tự tab một cách không phù hợp."
 
 #: fortran/lang.opt:318
-#, fuzzy
-#| msgid "Warn about zero-trip DO loops."
 msgid "Warn about an invalid DO loop."
-msgstr "Cảnh báo về định dạng có chiều dài số không"
+msgstr "Cảnh báo về vòng lặp DO không hợp lệ."
 
 #: fortran/lang.opt:322
 msgid "Warn about underflow of numerical constant expressions."
@@ -5765,10 +5743,8 @@ msgid "Treat lines with 'D' in column one as comments."
 msgstr "Coi dòng có chữ “D” trong cột đầu tiên là ghi chú."
 
 #: fortran/lang.opt:429
-#, fuzzy
-#| msgid "Enable linker relaxations."
 msgid "Enable all DEC language extensions."
-msgstr "Bật hàm yếu về bộ liên kết."
+msgstr "Bật mọi phần mở rộng ngôn ngữ DEC."
 
 #: fortran/lang.opt:433
 msgid "Enable kind-specific variants of integer intrinsic functions."
@@ -5779,10 +5755,8 @@ msgid "Enable legacy math intrinsics for compatibility."
 msgstr ""
 
 #: fortran/lang.opt:441
-#, fuzzy
-#| msgid "Enable support for C++ concepts."
 msgid "Enable support for DEC STRUCTURE/RECORD."
-msgstr "Bật sự hỗ trợ cho khái niệm C++."
+msgstr "Bật hỗ trợ cho DEC STRUCTURE/RECORD."
 
 #: fortran/lang.opt:445
 msgid "Enable DEC-style STATIC and AUTOMATIC attributes."
@@ -6103,10 +6077,8 @@ msgid "-F <dir>\tAdd <dir> to the end of the main framework include path."
 msgstr "-F <thư_mục>\tPhụ thêm thư mục này vào cuối đường dẫn bao gồm khung chính."
 
 #: c-family/c.opt:205
-#, fuzzy
-#| msgid "Enable preprocessing."
 msgid "Enable parsing GIMPLE."
-msgstr "Bật khả năng tiền xử lý."
+msgstr "Bật phân tích cú pháp GIMPLE."
 
 #: c-family/c.opt:209
 msgid "Print the name of header files as they are used."
@@ -6182,42 +6154,36 @@ msgid "Warn about suspicious uses of memory addresses."
 msgstr "Cảnh báo về sử dụng địa chỉ vùng nhớ một cách đáng ngờ."
 
 #: c-family/c.opt:279
-#, fuzzy
-#| msgid "argument %qs to %<-Wnormalized%> not recognized"
 msgid "argument %qs to %<-Waligned-new%> not recognized"
-msgstr "không nhận ra tham số %qs cho %<-Wnormalized%>"
+msgstr "không nhận ra tham số %qs cho %<-Waligned-new%>"
 
 #: c-family/c.opt:292
 msgid "Warn about 'new' of type with extended alignment without -faligned-new."
-msgstr ""
+msgstr "Cảnh báo về “new” của kiểu với căn chỉnh được mở rộng mà không có -faligned-new."
 
 #: c-family/c.opt:296
 msgid "-Waligned-new=all Warn even if 'new' uses a class member allocation function."
-msgstr ""
+msgstr "-Waligned-new=all Cảnh báo ngay cả khi “new” dùng một hàm phân bỏ thành viên lớp."
 
 #: c-family/c.opt:300 ada/gcc-interface/lang.opt:57
 msgid "Enable most warning messages."
 msgstr "Bật phần lớn các thông điệp cảnh báo."
 
 #: c-family/c.opt:304
-#, fuzzy
-#| msgid "Warn about misuses of pragmas."
 msgid "Warn on any use of alloca."
-msgstr "Cảnh báo lạm dụng pragmas."
+msgstr "Cảnh báo mọi sử dụng alloca."
 
 #: c-family/c.opt:308
 msgid "-Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that attempt to allocate objects larger than the specified number of bytes."
-msgstr ""
+msgstr "-Walloc-size-larger-than=<bytes> Cảnh báo với cú gọi một hàm phân bổ hàm mà có phân bổ các đối tượng lớn hơn số lượng byte đã chỉ định."
 
 #: c-family/c.opt:313
 msgid "-Walloc-zero Warn for calls to allocation functions that specify zero bytes."
 msgstr ""
 
 #: c-family/c.opt:317
-#, fuzzy
-#| msgid "-Wlarger-than=<number>\tWarn if an object is larger than <number> bytes."
 msgid "-Walloca-larger-than=<number> Warn on unbounded uses of alloca, and on bounded uses of alloca whose bound can be larger than <number> bytes."
-msgstr "-Wlarger-than=<số>\tCảnh báo nếu một đối tượng lớn hơn <số> byte."
+msgstr ""
 
 #: c-family/c.opt:331
 msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector."
@@ -6232,20 +6198,16 @@ msgid "Warn about boolean expression compared with an integer value different fr
 msgstr "Cảnh báo về so sánh biểu thứ lôgíc với một giá trị nguyên khác đúng/sai."
 
 #: c-family/c.opt:343
-#, fuzzy
-#| msgid "Warn about switches with boolean controlling expression."
 msgid "Warn about certain operations on boolean expressions."
-msgstr "Cảnh báo về switches với biểu thức điều khiển trả về lô-gíc."
+msgstr "Cảnh báo về thao tác chắc chắn trên biểu thức lô-gíc."
 
 #: c-family/c.opt:347
 msgid "Warn when __builtin_frame_address or __builtin_return_address is used unsafely."
 msgstr "Cảnh báo khi __builtin_frame_address hay __builtin_return_address được dùng không an toàn."
 
 #: c-family/c.opt:351
-#, fuzzy
-#| msgid "Warn when an inlined function cannot be inlined."
 msgid "Warn when a built-in function is declared with the wrong signature."
-msgstr "Cảnh báo khi không không thể dùng hàm chung dòng."
+msgstr "Cảnh báo một hàm dựng sẵn được khai báo với chữ ký sai."
 
 #: c-family/c.opt:355
 msgid "Warn when a built-in preprocessor macro is undefined or redefined."
@@ -6272,10 +6234,8 @@ msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and 
 msgstr "Cảnh báo về cấu trúc C++ mà nó có nghĩa khác nhau giữa ISO C++ 2001 và ISO C++ 2014."
 
 #: c-family/c.opt:382
-#, fuzzy
-#| msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014."
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2014 and (forthcoming) ISO C++ 201z(7?)."
-msgstr "Cảnh báo về cấu trúc C++ mà nó có nghĩa khác nhau giữa ISO C++ 2001 và ISO C++ 2014."
+msgstr "Cảnh báo về cấu trúc C++ mà nó có nghĩa khác nhau giữa ISO C++ 2014 và (sắp tới là) ISO C++ 201z(7?)."
 
 #: c-family/c.opt:389
 msgid "Warn about casts which discard qualifiers."
@@ -6318,10 +6278,8 @@ msgid "Warn when all constructors and destructors are private."
 msgstr "Cảnh báo khi mọi bộ cấu trúc và bộ hủy cấu trúc đều là riêng."
 
 #: c-family/c.opt:433
-#, fuzzy
-#| msgid "Warn about implicit declarations."
 msgid "Warn about dangling else."
-msgstr "Cảnh báo khai báo ngầm."
+msgstr "Cảnh báo về else thừa."
 
 #: c-family/c.opt:437
 msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage."
@@ -6381,7 +6339,7 @@ msgstr "Cảnh báo về sự so sánh các loại đếm (enum) khác nhau."
 
 #: c-family/c.opt:497
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead."
-msgstr "Cái chuyển này đã lạc hậu: hãy thay thế bằng -Werror=implicit-function-declaration."
+msgstr "Tùy chọn này đã lạc hậu: hãy thay thế bằng -Werror=implicit-function-declaration."
 
 #: c-family/c.opt:505
 msgid "Warn for implicit type conversions that cause loss of floating point precision."
@@ -6457,7 +6415,7 @@ msgstr "Cảnh báo về sự chuyển đổi ngầm \"float\" thành \"double\"
 
 #: c-family/c.opt:587
 msgid "Warn if \"defined\" is used outside #if."
-msgstr ""
+msgstr "Cảnh báo nếu như \"defined\" được sử dụng ngoài #if."
 
 #: c-family/c.opt:591
 msgid "Warn about implicit function declarations."
@@ -6733,7 +6691,6 @@ msgstr "Cảnh báo về nhiều khai báo trên cùng đối tượng."
 
 #: c-family/c.opt:903
 #, fuzzy
-#| msgid "Warn about misuses of pragmas."
 msgid "Warn about uses of register storage specifier."
 msgstr "Cảnh báo lạm dụng pragmas."
 
@@ -6907,7 +6864,6 @@ msgstr ""
 
 #: c-family/c.opt:1117
 #, fuzzy
-#| msgid "Warn when a declaration does not specify a type."
 msgid "Warn when a declaration has duplicate const, volatile, restrict or _Atomic specifier."
 msgstr "Cảnh báo khi một lời khai báo không ghi rõ loại."
 
@@ -7062,10 +7018,8 @@ msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth."
 msgstr "-fconstexpr-depth=<number>\tChỉ định mức đệ quy constexpr (bt hằng) tối đa."
 
 #: c-family/c.opt:1302
-#, fuzzy
-#| msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth."
 msgid "-fconstexpr-loop-limit=<number>\tSpecify maximum constexpr loop iteration count."
-msgstr "-fconstexpr-depth=<number>\tChỉ định mức đệ quy constexpr (bt hằng) tối đa."
+msgstr "-fconstexpr-loop-limit=<number>\tChỉ định số lượng bước lặp constexpr (bt hằng) tối đa."
 
 #: c-family/c.opt:1306
 msgid "Emit debug annotations during preprocessing."
@@ -7085,7 +7039,7 @@ msgstr "Chỉ các chỉ thị tiền xử lý."
 
 #: c-family/c.opt:1326
 msgid "Permit '$' as an identifier character."
-msgstr ""
+msgstr "Cho phép “$” là ký tự dùng để định danh."
 
 #: c-family/c.opt:1330
 msgid "Write all declarations as Ada code transitively."
@@ -7515,7 +7469,6 @@ msgstr "Đã lạc hậu và được thay thế bằng -std=c99."
 
 #: c-family/c.opt:1896 c-family/c.opt:1901
 #, fuzzy
-#| msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum."
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum with GNU extensions."
 msgstr "Làm cho hợp với chuẩn ISO 1998 C++ xem xét lại đính chính kỹ thuật năm 2003."
 
@@ -7858,7 +7811,6 @@ msgstr "Chương trình nằm hoàn toàn trong 64k thấp của vùng nhớ."
 
 #: config/bfin/bfin.opt:56
 #, fuzzy
-#| msgid "Work around a hardware anomaly by adding a number of NOPs before a"
 msgid "Work around a hardware anomaly by adding a number of NOPs before a CSYNC or SSYNC instruction."
 msgstr "Khắc phục một sự dị thường phần cứng bằng cách thêm một số NOP vào trước nó"
 
@@ -7872,7 +7824,6 @@ msgstr "Bật thư viện dùng chung dựa vào mã số (ID)."
 
 #: config/bfin/bfin.opt:69
 #, fuzzy
-#| msgid "Generate code that won't be linked against any other ID shared libraries,"
 msgid "Generate code that won't be linked against any other ID shared libraries, but may be used as a shared library."
 msgstr "Tạo ra mã sẽ không được liên kết đối với thư viện dùng chung mã số khác nào,"
 
@@ -8856,7 +8807,7 @@ msgstr "Dùng xếp hàng dữ liệu đã cho."
 
 #: config/i386/i386.opt:240
 msgid "Known data alignment choices (for use with the -malign-data= option):"
-msgstr "Không hiểu lựa chọn cân chỉnh dữ liệu(cho việc dùng với tùy chọn -malign-data=):"
+msgstr "Không hiểu lựa chọn cân chỉnh dữ liệu (để dùng với tùy chọn -malign-data=):"
 
 #: config/i386/i386.opt:257
 msgid "Use given assembler dialect."
@@ -9005,7 +8956,7 @@ msgstr "Sử dụng phương ngôn lưu theo nhánh cục bộ."
 
 #: config/i386/i386.opt:496
 msgid "Known TLS dialects (for use with the -mtls-dialect= option):"
-msgstr "Không hiểu TLS dialects (để dùng với tùy chọn -mtls-dialect=):"
+msgstr "Chưa biết TLS dialects (để dùng với tùy chọn -mtls-dialect=):"
 
 #: config/i386/i386.opt:506
 #, c-format
@@ -9030,7 +8981,7 @@ msgstr "Tạo ra mã thích hợp với ABI đưa ra."
 
 #: config/i386/i386.opt:533
 msgid "Known ABIs (for use with the -mabi= option):"
-msgstr "Không hiểu ABIs (để dùng với tùy chọn -mabi=):"
+msgstr "Chưa biết ABIs (để dùng với tùy chọn -mabi=):"
 
 #: config/i386/i386.opt:543 config/rs6000/rs6000.opt:189
 msgid "Vector library ABI to use."
@@ -9038,7 +8989,7 @@ msgstr "ABI thư viện véc-tơ cần sử dụng."
 
 #: config/i386/i386.opt:547
 msgid "Known vectorization library ABIs (for use with the -mveclibabi= option):"
-msgstr ""
+msgstr "Chưa biết thư viện véc-tơ-hóa ABIs (để dùng với tùy chọn -mveclibabi=):"
 
 #: config/i386/i386.opt:557
 msgid "Return 8-byte vectors in memory."
@@ -9177,16 +9128,12 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512
 msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 và AVX512F và AVX512VBMI."
 
 #: config/i386/i386.opt:702
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation."
-msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 và AVX512F và AVX512IFMA."
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F và AVX5124FMAPS."
 
 #: config/i386/i386.opt:706
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation."
-msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 và AVX512F và AVX512VBMI."
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F và AVX5124VNNIW."
 
 #: config/i386/i386.opt:710
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation."
@@ -9230,7 +9177,7 @@ msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại L
 
 #: config/i386/i386.opt:750
 msgid "Support Hardware Lock Elision prefixes."
-msgstr ""
+msgstr "Hỗ trợ tiền tố Hardware Lock Elision."
 
 #: config/i386/i386.opt:754
 msgid "Support RDSEED instruction."
@@ -9253,10 +9200,8 @@ msgid "Support CLWB instruction."
 msgstr "Hỗ trợ chỉ lệnh CLWB."
 
 #: config/i386/i386.opt:773
-#, fuzzy
-#| msgid "protocol %qE is deprecated"
 msgid "%<-mpcommit%> was deprecated"
-msgstr "giao thức %qE đã lạc hậu"
+msgstr "%<-mpcommit%> đã lạc hậu"
 
 #: config/i386/i386.opt:778
 msgid "Support FXSAVE and FXRSTOR instructions."
@@ -9384,7 +9329,7 @@ msgstr ""
 
 #: config/i386/i386.opt:903
 msgid "Known stack protector guard (for use with the -mstack-protector-guard= option):"
-msgstr ""
+msgstr "Chưa biết bảo vệ bộ bảo vệ ngăn xếp (để dùng với tùy chọn -mstack-protector-guard=):"
 
 #: config/i386/i386.opt:913
 msgid "Attempt to avoid generating instruction sequences containing ret bytes."
@@ -9617,7 +9562,7 @@ msgstr "Tạo ra mã cho một ABI 64 bít."
 
 #: config/nvptx/nvptx.opt:30
 msgid "Link in code for a __main kernel."
-msgstr ""
+msgstr "Lien kết mã cho __main của nhân."
 
 #: config/nvptx/nvptx.opt:34
 msgid "Optimize partition neutering."
@@ -9629,7 +9574,6 @@ msgstr ""
 
 #: config/nvptx/nvptx.opt:42
 #, fuzzy
-#| msgid "Generate code that can be used in SVR4-style dynamic objects."
 msgid "Generate code that can keep local state uniform across all lanes."
 msgstr "Tạo ra mã có thể sử dụng được trong đối tượng năng động có kiểu SVR4."
 
@@ -9960,7 +9904,6 @@ msgstr ""
 
 #: config/rl78/rl78.opt:97
 #, fuzzy
-#| msgid "Use all registers, reserving none for interrupt handlers."
 msgid "Stores the MDUC registers in interrupt handlers for G13 target."
 msgstr "Ghi rõ số các thanh ghi cần dành riêng cho bộ quản lý tín hiệu ngắt."
 
@@ -10126,7 +10069,6 @@ msgstr ""
 
 #: config/arm/arm.opt:258
 #, fuzzy
-#| msgid "Avoid overlapping destination and address registers on LDRD instructions"
 msgid "Avoid overlapping destination and address registers on LDRD instructions that may trigger Cortex-M3 errata."
 msgstr "Tránh các thanh ghi đích và địa chỉ chồng chéo lên nhau đối với câu lệnh LDRD"
 
@@ -10147,10 +10089,8 @@ msgid "Assume unified syntax for inline assembly code."
 msgstr ""
 
 #: config/arm/arm.opt:279
-#, fuzzy
-#| msgid "Allow branches to be packed with other instructions."
 msgid "Do not allow constant data to be placed in code sections."
-msgstr "Cho phép đóng gói nhánh với câu lệnh khác."
+msgstr "Không cho phép đặt dữ liệu hằng trong phần mã."
 
 #: config/sparc/sparc.opt:30 config/sparc/sparc.opt:34
 #: config/visium/visium.opt:37
@@ -10182,10 +10122,8 @@ msgid "Do not use hardware quad fp instructions."
 msgstr "Đừng sử dụng câu lệnh loại bốn dấu chấm động phần cứng."
 
 #: config/sparc/sparc.opt:62 config/rs6000/rs6000.opt:482
-#, fuzzy
-#| msgid "Enable clip instructions."
 msgid "Enable Local Register Allocation."
-msgstr "Bật các câu lệnh trích đoạn."
+msgstr "Bật Local Register Allocation."
 
 #: config/sparc/sparc.opt:66
 msgid "Compile for V8+ ABI."
@@ -10657,9 +10595,8 @@ msgstr ""
 
 #: config/rs6000/rs6000.opt:570
 #, fuzzy
-#| msgid "Use vector/scalar (VSX) instructions."
 msgid "Use vector and scalar instructions added in ISA 2.07."
-msgstr "Sử dụng câu lệnh véc-tơ/vô_hướng (VSX)."
+msgstr "Đừng sử dụng chỉ lệnh callt (mặc định)."
 
 #: config/rs6000/rs6000.opt:574
 msgid "Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions."
@@ -10711,33 +10648,33 @@ msgstr ""
 
 #: config/rs6000/rs6000.opt:622
 #, fuzzy
-#| msgid "Use pattern compare instructions."
 msgid "Use certain scalar instructions added in ISA 3.0."
-msgstr "Sử dụng câu lệnh so sánh mẫu."
+msgstr "Đừng sử dụng chỉ lệnh callt (mặc định)."
 
 #: config/rs6000/rs6000.opt:626
 #, fuzzy
-#| msgid "Use vector/scalar (VSX) instructions."
 msgid "Use vector instructions added in ISA 3.0."
-msgstr "Sử dụng câu lệnh véc-tơ/vô_hướng (VSX)."
+msgstr "Đừng sử dụng chỉ lệnh callt (mặc định)."
 
 #: config/rs6000/rs6000.opt:630
+#, fuzzy
 msgid "Use scalar register+offset memory instructions added in ISA 3.0."
-msgstr ""
+msgstr "Đừng sử dụng chỉ lệnh callt (mặc định)."
 
 #: config/rs6000/rs6000.opt:634
+#, fuzzy
 msgid "Use vector register+offset memory instructions added in ISA 3.0."
-msgstr ""
+msgstr "Đừng sử dụng chỉ lệnh callt (mặc định)."
 
 #: config/rs6000/rs6000.opt:638
+#, fuzzy
 msgid "Use register+offset memory instructions added in ISA 3.0."
-msgstr ""
+msgstr "Đừng sử dụng chỉ lệnh callt (mặc định)."
 
 #: config/rs6000/rs6000.opt:642
 #, fuzzy
-#| msgid "Enable min/max instructions."
 msgid "Use the new min/max instructions defined in ISA 3.0."
-msgstr "Bật câu lệnh tính số tối đa/thiểu."
+msgstr "Đừng sử dụng chỉ lệnh callt (mặc định)."
 
 #: config/rs6000/rs6000.opt:646
 msgid "Fuse medium/large code model toc references with the memory instruction."
@@ -10752,16 +10689,12 @@ msgid "Allow the IEEE 128-bit types without requiring the __float128 keyword."
 msgstr ""
 
 #: config/rs6000/rs6000.opt:662
-#, fuzzy
-#| msgid "Enable/disable using IEEE 128-bit floating point instructions."
 msgid "Enable IEEE 128-bit floating point via the __float128 keyword."
-msgstr "Bật/tắt sử dụng câu lệnh dấu chấm động thập phân 128-bit IEEE."
+msgstr "Bậ sử dụng câu lệnh só thực dấu chấm động thập phân 128-bit IEEE thông qua từ khóa __float128."
 
 #: config/rs6000/rs6000.opt:666
-#, fuzzy
-#| msgid "Enable/disable using IEEE 128-bit floating point instructions."
 msgid "Enable using IEEE 128-bit floating point instructions."
-msgstr "Bật/tắt sử dụng câu lệnh dấu chấm động thập phân 128-bit IEEE."
+msgstr "Bật sử dụng câu lệnh dấu số thực chấm động 128-bit IEEE."
 
 #: config/rs6000/rs6000.opt:670
 msgid "Enable default conversions between __float128 & long double."
@@ -10855,7 +10788,7 @@ msgstr "Tạo ra mã cho BSS PLT thực hiện cũ."
 
 #: config/rs6000/sysv4.opt:161
 msgid "Emit .gnu_attribute tags."
-msgstr ""
+msgstr "Phát cờ .gnu_attribute."
 
 #: config/alpha/alpha.opt:27
 msgid "Use fp registers."
@@ -11517,7 +11450,7 @@ msgstr "Id (N) nguyên của chỉ lệnh tùy chỉnh round."
 
 #: config/nios2/nios2.opt:574
 msgid "Valid Nios II ISA levels (for -march):"
-msgstr ""
+msgstr "Mức Nios II ISA hợp lệ (cho -march):"
 
 #: config/nios2/nios2.opt:584
 msgid "Enable generation of R2 BMX instructions."
@@ -12602,10 +12535,8 @@ msgid "Use microMIPS instructions."
 msgstr "Sử dụng các chỉ lệnh microMIPS."
 
 #: config/mips/mips.opt:304
-#, fuzzy
-#| msgid "Use MIPS-DSP instructions."
 msgid "Use MIPS MSA Extension instructions."
-msgstr "Sử dụng câu lệnh MIPS-DSP."
+msgstr "Sử dụng câu lệnh mở rộng MIPS MSA."
 
 #: config/mips/mips.opt:308
 msgid "Allow the use of MT instructions."
@@ -12733,21 +12664,19 @@ msgstr "Hiểu TILE-Gx CPUs (để dùng với tùy chọn -mcpu=):"
 
 #: config/tilegx/tilegx.opt:37
 msgid "Compile with 32 bit longs and pointers."
-msgstr ""
+msgstr "Biên dịch với long và con trỏ 32 bít."
 
 #: config/tilegx/tilegx.opt:41
 msgid "Compile with 64 bit longs and pointers."
-msgstr ""
+msgstr "Biên dịch với long và con trỏ 64 bít."
 
 #: config/tilegx/tilegx.opt:53
 msgid "Use given TILE-Gx code model."
 msgstr "Sử dụng mẫu mã TILE-Gx đưa ra."
 
 #: config/arc/arc-tables.opt:25
-#, fuzzy
-#| msgid "Known FR-V CPUs (for use with the -mcpu= option):"
 msgid "Known ARC CPUs (for use with the -mcpu= option):"
-msgstr "Không hiểu FR-V CPUs (để dùng với tùy chọn -mcpu=):"
+msgstr "Không hiểu ARC CPUs (để dùng với tùy chọn -mcpu=):"
 
 #: config/arc/arc.opt:26
 msgid "Compile code for big endian mode."
@@ -12824,10 +12753,9 @@ msgstr "Tạo ra câu lệnh mul64 và mulu64."
 #: config/arc/arc.opt:169 config/arc/arc.opt:338 config/arc/arc.opt:342
 #: config/arc/arc.opt:346 config/arc/arc.opt:350 config/arc/arc.opt:353
 #: config/arc/arc.opt:356 config/arc/arc.opt:373
-#, fuzzy, c-format
-#| msgid "%qD is deprecated"
+#, c-format
 msgid "%qs is deprecated"
-msgstr "%qD đã lạc hậu"
+msgstr "%qs đã lạc hậu"
 
 #: config/arc/arc.opt:170
 msgid "Do not generate mpy instructions for ARC700."
@@ -12899,11 +12827,11 @@ msgstr ""
 
 #: config/arc/arc.opt:250
 msgid "Tune for ARC600 cpu."
-msgstr ""
+msgstr "Chỉnh cho vi xử lý ARC600."
 
 #: config/arc/arc.opt:254
 msgid "Tune for ARC601 cpu."
-msgstr ""
+msgstr "Chỉnh cho vi xử lý ARC601."
 
 #: config/arc/arc.opt:258
 msgid "Tune for ARC700 R4.2 Cpu with standard multiplier block."
@@ -13051,13 +12979,11 @@ msgstr "Chỉ ra tên của cấu hình dấu chấm động đích."
 
 #: config/arc/arc.opt:473
 #, fuzzy
-#| msgid "Specify thread local storage scheme."
 msgid "Specify thread pointer register number."
 msgstr "Chỉ định lược đồ lưu tuyến cục bộ."
 
 #: config/arc/arc.opt:480
 #, fuzzy
-#| msgid "Enable the use of the fsca instruction."
 msgid "Enable use of NPS400 bit operations."
 msgstr "Bật sử dụng câu lệnh fsca."
 
@@ -13184,7 +13110,7 @@ msgstr "Thoát khi gặp lỗi lần đầu."
 
 #: common.opt:590
 msgid "-Wframe-larger-than=<number>\tWarn if a function's stack frame requires more than <number> bytes."
-msgstr "-Wframe-larger-than=<số>\tCảnh báo nếu một khung con trỏ của hàm lớn hơn <số> byte."
+msgstr "-Wframe-larger-than=<số>\t  Cảnh báo nếu một khung con trỏ của hàm lớn hơn <số> byte."
 
 #: common.opt:594
 msgid "Warn when attempting to free a non-heap object."
@@ -13208,7 +13134,7 @@ msgstr ""
 
 #: common.opt:620
 msgid "-Wlarger-than=<number>\tWarn if an object is larger than <number> bytes."
-msgstr "-Wlarger-than=<số>\tCảnh báo nếu một đối tượng lớn hơn <số> byte."
+msgstr "-Wlarger-than=<số>\t  Cảnh báo nếu một đối tượng lớn hơn <số> byte."
 
 #: common.opt:624
 msgid "Warn if comparing pointer parameter with nonnull attribute with NULL."
@@ -13256,7 +13182,6 @@ msgstr ""
 
 #: common.opt:671
 #, fuzzy
-#| msgid "Warn when a const variable is unused."
 msgid "Warn when one variable shadows another (globally)."
 msgstr "Cảnh báo khi biến hằng không được dùng."
 
@@ -13306,7 +13231,6 @@ msgstr ""
 
 #: common.opt:733
 #, fuzzy
-#| msgid "Warn about switches with boolean controlling expression."
 msgid "Warn about statements between switch's controlling expression and the first case."
 msgstr "Cảnh báo về switches với biểu thức điều khiển trả về lô-gíc."
 
@@ -13500,7 +13424,6 @@ msgstr ""
 
 #: common.opt:1074
 #, fuzzy
-#| msgid "Enable preprocessing."
 msgid "Enable code hoisting."
 msgstr "Bật khả năng tiền xử lý."
 
@@ -13702,16 +13625,16 @@ msgstr ""
 
 #: common.opt:1321
 msgid "-fexcess-precision=[fast|standard]\tSpecify handling of excess floating-point precision."
-msgstr ""
+msgstr "-fexcess-precision=[fast|standard]\tChỉ định cách xử lý khi độ chính xác của dấu chấm động bị vượt quá."
 
 #: common.opt:1324
 #, c-format
 msgid "unknown excess precision style %qs"
-msgstr ""
+msgstr "không hiểu kiểu chính xác bị vượt quá %qs"
 
 #: common.opt:1336
 msgid "-fpermitted-flt-eval-methods=[c11|ts-18661]\tSpecify which values of FLT_EVAL_METHOD are permitted."
-msgstr ""
+msgstr "-fpermitted-flt-eval-methods=[c11|ts-18661]\tChỉ định xem giá trị của FLT_EVAL_METHOD sẽ cho phép."
 
 #: common.opt:1339
 #, c-format
@@ -14228,7 +14151,6 @@ msgstr ""
 
 #: common.opt:1983
 #, fuzzy, c-format
-#| msgid "unknown pointer size model %qs"
 msgid "unknown profile update method %qs"
 msgstr "không hiểu mô hình kích thước con trỏ %qs"
 
@@ -15188,7 +15110,7 @@ msgstr ""
 
 #: go/gofrontend/expressions.cc:9542
 msgid "invalid use of %<...%> with non-slice"
-msgstr "dùng %<...%> mà không có non-slice là không hợp lệ"
+msgstr "dùng %<…%> mà không có non-slice là không hợp lệ"
 
 #: go/gofrontend/expressions.cc:9943
 msgid "function result count mismatch"
@@ -15285,11 +15207,11 @@ msgstr "không có đủ đối số để trả về"
 
 #: go/gofrontend/statements.cc:2712
 msgid "return with value in function with no return type"
-msgstr ""
+msgstr "trả về giá trị trong một hàm mà có kiểu không trả về"
 
 #: go/gofrontend/statements.cc:2740
 msgid "too many values in return statement"
-msgstr ""
+msgstr "quá nhiều giá trị trong lệnh trả về"
 
 #: go/gofrontend/statements.cc:3147
 msgid "expected boolean expression"
@@ -15342,7 +15264,6 @@ msgstr ""
 
 #: go/gofrontend/types.cc:575
 #, fuzzy
-#| msgid "invalid use of %<restrict%>"
 msgid "invalid comparison of generated struct"
 msgstr "dùng %<restrict%> không hợp lệ"
 
@@ -15352,7 +15273,6 @@ msgstr ""
 
 #: go/gofrontend/types.cc:596
 #, fuzzy
-#| msgid "invalid use of non-lvalue array"
 msgid "invalid comparison of generated array"
 msgstr "sai sử dụng mảng không phải lvalue"
 
@@ -15782,13 +15702,11 @@ msgstr ""
 
 #: calls.c:1319
 #, fuzzy, gcc-internal-format
-#| msgid "Argument of %s function at %L is negative"
 msgid "argument %i value %qE is negative"
 msgstr "Đối số của hàm %s tại %L là âm"
 
 #: calls.c:1337
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "DO step value is zero"
 msgid "argument %i value is zero"
 msgstr "Giá trị bước DO (làm) là số không"
 
@@ -15809,7 +15727,6 @@ msgstr ""
 
 #: calls.c:1418
 #, fuzzy, gcc-internal-format
-#| msgid "Argument of %s function at %L is negative"
 msgid "argument %i range [%E, %E] is negative"
 msgstr "Đối số của hàm %s tại %L là âm"
 
@@ -15825,25 +15742,21 @@ msgstr ""
 
 #: calls.c:1470 calls.c:1473
 #, fuzzy, gcc-internal-format
-#| msgid "argument 3 must be in the range 0..15"
 msgid "argument %i in the range [%E, %E]"
 msgstr "đối số 3 phải nằm trong vùng 0…15"
 
 #: calls.c:1484
 #, fuzzy, gcc-internal-format
-#| msgid "call to internal function"
 msgid "in a call to built-in allocation function %qD"
 msgstr "gọi hàm nội bộ"
 
 #: calls.c:1487
 #, fuzzy, gcc-internal-format
-#| msgid "inline function %q+D declared weak"
 msgid "in a call to allocation function %qD declared here"
 msgstr "hàm chung dòng %q+D được khai báo yếu"
 
 #: calls.c:1501
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "[cannot find %s]"
 msgid "cannot tail-call: %s"
 msgstr "[không tìm thấy %s]"
 
@@ -16112,7 +16025,7 @@ msgstr ""
 #: cfgloop.c:1342
 #, gcc-internal-format
 msgid "corrupt loop tree root"
-msgstr ""
+msgstr "gốc cây loop bị hỏng"
 
 #: cfgloop.c:1352
 #, gcc-internal-format, gfc-internal-format
@@ -17901,7 +17814,6 @@ msgstr ""
 
 #: gimple-ssa-sprintf.c:2144
 #, fuzzy, gcc-internal-format
-#| msgid "Negative argument N at %L"
 msgid "directive argument %qE"
 msgstr "Đối số âm N tại %L"
 
@@ -17987,7 +17899,6 @@ msgstr ""
 
 #: gimple-ssa-sprintf.c:2991
 #, fuzzy, gcc-internal-format
-#| msgid "null pointer"
 msgid "null destination pointer"
 msgstr "con trỏ rỗng"
 
@@ -17998,25 +17909,21 @@ msgstr ""
 
 #: gimple-ssa-sprintf.c:3020
 #, fuzzy, gcc-internal-format
-#| msgid "%s in format string at %L"
 msgid "null format string"
 msgstr "%s trong chuỗi định dạng tại %L"
 
 #: gimple-ssa-warn-alloca.c:439
 #, fuzzy, gcc-internal-format
-#| msgid "invalid use of %<auto%>"
 msgid "use of %<alloca%>"
 msgstr "dùng %<auto%> không hợp lệ"
 
 #: gimple-ssa-warn-alloca.c:461
 #, fuzzy, gcc-internal-format
-#| msgid "Warn if a variable length array is used."
 msgid "argument to variable-length array may be too large"
 msgstr "Cảnh báo nếu mảng có độ dài biến đổi được dùng."
 
 #: gimple-ssa-warn-alloca.c:463
 #, fuzzy, gcc-internal-format
-#| msgid "argument to %qs is too large (max. %d)"
 msgid "argument to %<alloca%> may be too large"
 msgstr "đối số cho %qs quá lớn (tối đa là %d)"
 
@@ -18027,13 +17934,11 @@ msgstr ""
 
 #: gimple-ssa-warn-alloca.c:474
 #, fuzzy, gcc-internal-format
-#| msgid "Warn if a variable length array is used."
 msgid "argument to variable-length array is too large"
 msgstr "Cảnh báo nếu mảng có độ dài biến đổi được dùng."
 
 #: gimple-ssa-warn-alloca.c:476
 #, fuzzy, gcc-internal-format
-#| msgid "argument to %qs is too large (max. %d)"
 msgid "argument to %<alloca%> is too large"
 msgstr "đối số cho %qs quá lớn (tối đa là %d)"
 
@@ -18044,25 +17949,21 @@ msgstr ""
 
 #: gimple-ssa-warn-alloca.c:486
 #, fuzzy, gcc-internal-format
-#| msgid "variable length array is used"
 msgid "variable-length array bound is unknown"
 msgstr "mảng có độ dài biến đổi được dùng"
 
 #: gimple-ssa-warn-alloca.c:487
 #, fuzzy, gcc-internal-format
-#| msgid "%<%s%> is unknown"
 msgid "%<alloca%> bound is unknown"
 msgstr "%<%s%> là không hiểu"
 
 #: gimple-ssa-warn-alloca.c:491
 #, fuzzy, gcc-internal-format
-#| msgid "ISO C90 forbids variable length array"
 msgid "unbounded use of variable-length array"
 msgstr "ISO C90 cấm mảng có kích thước biến đổi"
 
 #: gimple-ssa-warn-alloca.c:492
 #, fuzzy, gcc-internal-format
-#| msgid "invalid use of %<auto%>"
 msgid "unbounded use of %<alloca%>"
 msgstr "dùng %<auto%> không hợp lệ"
 
@@ -18083,7 +17984,6 @@ msgstr ""
 
 #: gimple-ssa-warn-alloca.c:510
 #, fuzzy, gcc-internal-format
-#| msgid "Warn if a variable length array is used."
 msgid "argument to variable-length array is zero"
 msgstr "Cảnh báo nếu mảng có độ dài biến đổi được dùng."
 
@@ -18104,7 +18004,6 @@ msgstr ""
 
 #: gimplify.c:1787
 #, fuzzy, gcc-internal-format
-#| msgid "statement with no effect"
 msgid "statement will never be executed"
 msgstr "câu lệnh không có tác dụng"
 
@@ -18171,7 +18070,7 @@ msgstr ""
 #: gimplify.c:6808
 #, gcc-internal-format, gfc-internal-format
 msgid "enclosing %s"
-msgstr ""
+msgstr "bao quanh %s"
 
 #: gimplify.c:6918
 #, gcc-internal-format
@@ -18425,7 +18324,6 @@ msgstr "thẻ bài %u có y-location == %u"
 
 #: internal-fn.c:398
 #, fuzzy, gcc-internal-format
-#| msgid "invalid use of %<auto%>"
 msgid "invalid use of attribute %<fallthrough%>"
 msgstr "dùng %<auto%> không hợp lệ"
 
@@ -19316,7 +19214,6 @@ msgstr "không nhận ra đối số tới tùy chọn %qs"
 
 #: opts-common.c:1159 config/i386/i386.c:4684
 #, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
 msgid "valid arguments to %qs are: %s; did you mean %qs?"
 msgstr "đối số hợp lệ cho cho %qs là: %s"
 
@@ -19443,13 +19340,11 @@ msgstr "-fsanitize=address và -fsanitize=kernel-address xung khắc với -fsan
 
 #: opts.c:969
 #, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=address is incompatible with -fsanitize=kernel-address"
 msgid "-fsanitize=leak is incompatible with -fsanitize=thread"
 msgstr "-fsanitize=address xung khắc với -fsanitize=kernel-address"
 
 #: opts.c:975
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-fsanitize-recover=leak is not supported"
 msgid "-fsanitize-recover=%s is not supported"
 msgstr "-fsanitize-recover=leak không được hỗ trợ"
 
@@ -19520,7 +19415,6 @@ msgstr ""
 
 #: opts.c:2292
 #, fuzzy, gcc-internal-format
-#| msgid "invalid --param name %qs"
 msgid "invalid --param name %qs; did you mean %qs?"
 msgstr "sai tên cho tùy chọn --param %qs"
 
@@ -19643,12 +19537,12 @@ msgstr "Vùng %s không hợp lệ trong tùy chọn %s"
 #: passes.c:1141
 #, gcc-internal-format, gfc-internal-format
 msgid "enable pass %s for function %s"
-msgstr ""
+msgstr "bật chuyển %s cho hàm %s"
 
 #: passes.c:1152
 #, gcc-internal-format, gfc-internal-format
 msgid "disable pass %s for function %s"
-msgstr ""
+msgstr "tắt chuyển %s cho hàm %s"
 
 #: passes.c:1381
 #, gcc-internal-format
@@ -20085,7 +19979,6 @@ msgstr ""
 
 #: substring-locations.c:162
 #, fuzzy, gcc-internal-format
-#| msgid "originally defined here"
 msgid "format string is defined here"
 msgstr "định nghĩa lần đầu ở đây"
 
@@ -20355,10 +20248,9 @@ msgid "-fcheck-pointer-bounds is not supported with Address Sanitizer"
 msgstr "-fcheck-pointer-bounds không hỗ trợ với Address Sanitizer"
 
 #: toplev.c:1287
-#, fuzzy, gcc-internal-format
-#| msgid "-fcheck-pointer-bounds is not supported with Address Sanitizer"
+#, gcc-internal-format
 msgid "-fcheck-pointer-bounds is not supported with -fsanitize=bounds"
-msgstr "-fcheck-pointer-bounds không hỗ trợ với Address Sanitizer"
+msgstr "-fcheck-pointer-bounds không hỗ trợ với -fsanitize=bounds"
 
 #: toplev.c:1303
 #, gcc-internal-format
@@ -20413,7 +20305,7 @@ msgstr ""
 #: toplev.c:1518
 #, gcc-internal-format
 msgid "-fdata-sections not supported for this target"
-msgstr ""
+msgstr "-fdata-sections không được hỗ trợ cho đích này"
 
 #: toplev.c:1526
 #, gcc-internal-format
@@ -20423,7 +20315,7 @@ msgstr "-fprefetch-loop-arrays không được hỗ trợ bởi đích này"
 #: toplev.c:1532
 #, gcc-internal-format
 msgid "-fprefetch-loop-arrays not supported for this target (try -march switches)"
-msgstr ""
+msgstr "-fprefetch-loop-arrays không được hỗ trợ bởi đích này (thử -march switches)"
 
 #: toplev.c:1542
 #, gcc-internal-format
@@ -20433,7 +20325,7 @@ msgstr "-fprefetch-loop-arrays không được hỗ trợ bởi -Os"
 #: toplev.c:1554
 #, gcc-internal-format
 msgid "-fassociative-math disabled; other options take precedence"
-msgstr ""
+msgstr "-fassociative-math bị tắt; các tùy chọn khác nhận quyền ưu tiên"
 
 #: toplev.c:1572
 #, gcc-internal-format
@@ -20461,15 +20353,14 @@ msgid "error closing %s: %m"
 msgstr "lỗi đóng %s: %m"
 
 #: toplev.c:2037
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is incompatible with %qs"
+#, gcc-internal-format
 msgid "self-tests incompatible with -E"
-msgstr "%qs không tương thích với %qs"
+msgstr "self-tests không tương thích với -E"
 
 #: toplev.c:2052
 #, gcc-internal-format
 msgid "self-tests are not enabled in this build"
-msgstr ""
+msgstr "self-tests không được bật trong lần biên dịch này"
 
 #: trans-mem.c:620
 #, gcc-internal-format
@@ -20583,7 +20474,6 @@ msgstr ""
 
 #: tree-cfg.c:2893
 #, fuzzy, gcc-internal-format
-#| msgid "declaration of %qD as non-function"
 msgid "Local declaration from a different function"
 msgstr "sự khai báo của %qD như là non-function"
 
@@ -20805,7 +20695,6 @@ msgstr ""
 #. we must make sure arguments are stripped off.
 #: tree-cfg.c:3502
 #, fuzzy, gcc-internal-format
-#| msgid "%<__builtin_next_arg%> called without an argument"
 msgid "__builtin_unreachable or __builtin_trap call with arguments"
 msgstr "%<__builtin_next_arg%> được gọi mà không có đối số"
 
@@ -21527,13 +21416,11 @@ msgstr ""
 
 #: tree-ssa-ccp.c:3390
 #, fuzzy, gcc-internal-format
-#| msgid "cannot disable built-in function %qs"
 msgid "in a call to built-in function %qD"
 msgstr "không thể tắt hàm dựng sẵn %qs"
 
 #: tree-ssa-ccp.c:3394
 #, fuzzy, gcc-internal-format
-#| msgid "inline function %q+D declared weak"
 msgid "in a call to function %qD declared here"
 msgstr "hàm chung dòng %q+D được khai báo yếu"
 
@@ -22352,7 +22239,6 @@ msgstr ""
 
 #: varasm.c:1160
 #, fuzzy, gcc-internal-format
-#| msgid "can%'t initialize friend function %qs"
 msgid "only zero initializers are allowed in section %qs"
 msgstr "không thể khởi tạo hàm bạn %qs"
 
@@ -23275,7 +23161,6 @@ msgstr ""
 
 #: c-family/c-common.c:5506 c-family/c-common.c:5554
 #, fuzzy, gcc-internal-format
-#| msgid "invalid operator for %<#pragma omp atomic%>"
 msgid "bad option %qs to pragma %<optimize%>"
 msgstr "thao tác không hợp lệ cho %<#pragma omp atomic%>"
 
@@ -23332,13 +23217,11 @@ msgstr ""
 
 #: c-family/c-common.c:5878
 #, fuzzy, gcc-internal-format
-#| msgid "%qE does not have pointer or array type"
 msgid "argument 3 in call to function %qE does not have pointer to integral type"
 msgstr "%qE không có con trỏ hay kiểu mảng"
 
 #: c-family/c-common.c:5884
 #, fuzzy, gcc-internal-format
-#| msgid "Warn when deleting a pointer to incomplete type."
 msgid "argument 3 in call to function %qE has pointer to enumerated type"
 msgstr "Cảnh báo khi xóa một con trỏ tới kiểu không hoàn toàn."
 
@@ -23419,13 +23302,11 @@ msgstr ""
 
 #: c-family/c-common.c:6753
 #, fuzzy, gcc-internal-format
-#| msgid "argument %d of %qE must be an address"
 msgid "argument %d of %qE must be a pointer to a constant size type"
 msgstr "đối số %d của %qE phải là một địa chỉ"
 
 #: c-family/c-common.c:6759
 #, fuzzy, gcc-internal-format
-#| msgid "argument %d of %qE must be a multiple of %d"
 msgid "argument %d of %qE must not be a pointer to a function"
 msgstr "đối số %d của %qE phải là bội số của %d"
 
@@ -23539,7 +23420,6 @@ msgstr ""
 
 #: c-family/c-format.c:1106
 #, fuzzy, gcc-internal-format
-#| msgid "function might be candidate for attribute %<%s%>"
 msgid "function %qD might be a candidate for %qs format attribute"
 msgstr "hàm nên ứng cử cho thuộc tính %<%s%>"
 
@@ -23926,7 +23806,6 @@ msgstr ""
 
 #: c-family/c-omp.c:204
 #, fuzzy, gcc-internal-format
-#| msgid "invalid operator for %<#pragma omp atomic%>"
 msgid "%<_Atomic%> expression in %<#pragma omp atomic%>"
 msgstr "thao tác không hợp lệ cho %<#pragma omp atomic%>"
 
@@ -23947,7 +23826,6 @@ msgstr ""
 
 #: c-family/c-omp.c:490
 #, fuzzy, gcc-internal-format
-#| msgid "iterator variable"
 msgid "%<_Atomic%> iteration variable %qE"
 msgstr "biến iterator"
 
@@ -25241,7 +25119,6 @@ msgstr "chỉ ra nhiều tùy chọn -mcpu=."
 
 #: common/config/arc/arc-common.c:87
 #, fuzzy, gcc-internal-format
-#| msgid "bad value %qs for -mmpy-option switch"
 msgid "Unsupported value for mmpy-option"
 msgstr "giá trị sai %qs cho tùy-chọn -mmpy-option"
 
@@ -25686,13 +25563,12 @@ msgstr ""
 #: config/aarch64/aarch64.c:8431
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown tuning option (%s)"
-msgstr ""
+msgstr "không hiểu tùy chọn chỉnh (%s)"
 
 #: config/aarch64/aarch64.c:8645
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
+#, gcc-internal-format
 msgid "valid arguments are: %s; did you mean %qs?"
-msgstr "đối số hợp lệ cho cho %qs là: %s"
+msgstr "đối số hợp lệ là: %s; có phải ý bạn là là: %qs?"
 
 #: config/aarch64/aarch64.c:8686
 #, gcc-internal-format
@@ -25930,7 +25806,6 @@ msgstr ""
 #. option is not allowed.
 #: config/arc/arc.c:849 config/arc/arc.c:857
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qD is not a variable in %qs clause"
 msgid "%s is not available for %s architecture"
 msgstr "%qD không phải một biến trong mệnh đề %qs"
 
@@ -26279,7 +26154,6 @@ msgstr "-mslow-flash-data chỉ hỗ trợ mã không-pic trên đích armv7-m"
 
 #: config/arm/arm.c:2868
 #, fuzzy, gcc-internal-format
-#| msgid "-mslow-flash-data only supports non-pic code on armv7-m targets"
 msgid "-mpure-code only supports non-pic code on armv7-m targets"
 msgstr "-mslow-flash-data chỉ hỗ trợ mã không-pic trên đích armv7-m"
 
@@ -26297,7 +26171,6 @@ msgstr "CPU đích không hỗ trợ truy cập chưa cân chỉnh"
 #. from the architecture string.
 #: config/arm/arm.c:3270
 #, fuzzy, gcc-internal-format
-#| msgid "-mpcrel -fPIC is not currently supported on selected cpu"
 msgid "-mfpu=auto not currently supported without an explicit CPU."
 msgstr "-mpcrel -fPIC hiện tại chưa được hỗ trợ trên cpu đã chọn"
 
@@ -26323,7 +26196,6 @@ msgstr ""
 
 #: config/arm/arm.c:3399
 #, fuzzy, gcc-internal-format
-#| msgid "-mrelocatable and -msdata=%s are incompatible"
 msgid "selected fp16 options are incompatible."
 msgstr "-mrelocatable và -msdata=%s là không tương thích"
 
@@ -26354,7 +26226,6 @@ msgstr "__fp16 và không ldrh"
 
 #: config/arm/arm.c:3463
 #, fuzzy, gcc-internal-format
-#| msgid "-mfloat-abi=hard and VFP"
 msgid "-mfloat-abi=hard: selected processor lacks an FPU"
 msgstr "-mfloat-abi=hard và VFP"
 
@@ -26395,7 +26266,6 @@ msgstr "-freorder-blocks-and-partition không được hỗ trợ trên kiến t
 
 #: config/arm/arm.c:3665
 #, fuzzy, gcc-internal-format
-#| msgid "target CPU does not support THUMB instructions"
 msgid "target CPU does not support ARMv8-M Security Extensions"
 msgstr "CPU đích không hỗ trợ chỉ lệnh THUMB"
 
@@ -26452,31 +26322,28 @@ msgstr ""
 
 #: config/arm/arm.c:6883 config/arm/arm.c:6935
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored on types"
 msgid "%qE attribute ignored without -mcmse option."
 msgstr "Thuộc tính %qE bị lờ đi với các kiểu"
 
 #: config/arm/arm.c:6902
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute is only applicable on functions"
 msgid "%qE attribute has no effect on functions with static linkage"
 msgstr "thuộc tính %qE chỉ áp dụng cho các hàm"
 
 #: config/arm/arm.c:6951
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to functions"
 msgid "%qE attribute only applies to base type of a function pointer"
 msgstr "thuộc tính %qE chỉ áp dụng cho các hàm"
 
 #: config/arm/arm.c:12190
 #, gcc-internal-format
 msgid "%K%s %wd out of range %wd - %wd"
-msgstr ""
+msgstr "%K%s %wd nằm ngoài vùng %wd - %wd"
 
 #: config/arm/arm.c:12193
 #, gcc-internal-format
 msgid "%s %wd out of range %wd - %wd"
-msgstr ""
+msgstr "%s %wd nằm ngoài vùng %wd - %wd"
 
 #: config/arm/arm.c:23434
 #, gcc-internal-format
@@ -26501,7 +26368,7 @@ msgstr ""
 #: config/arm/arm.c:24829
 #, gcc-internal-format
 msgid "-fstack-check=specific for Thumb-1"
-msgstr ""
+msgstr "-fstack-check=specific cho Thumb-1"
 
 #: config/arm/arm.c:30304 config/i386/i386.c:6722 config/s390/s390.c:14809
 #, gcc-internal-format
@@ -26663,13 +26530,11 @@ msgstr ""
 
 #: config/avr/avr.c:9511
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to variables"
 msgid "%qE attribute only applies to variables in static storage"
 msgstr "Thuộc tính %qE chỉ được áp dụng cho các biến"
 
 #: config/avr/avr.c:9518
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to functions"
 msgid "%qE attribute only supported for reduced Tiny cores"
 msgstr "thuộc tính %qE chỉ áp dụng cho các hàm"
 
@@ -26746,7 +26611,6 @@ msgstr ""
 
 #: config/avr/avr.c:10215
 #, fuzzy, gcc-internal-format
-#| msgid "%qs is incompatible with %s %s"
 msgid "%q+D has incompatible attributes %qs and %qs"
 msgstr "%qs không tương thích với %s %s"
 
@@ -27101,7 +26965,7 @@ msgstr "hàm dựng sẵn chỉ sẵn có trên fr405"
 #: config/ft32/ft32.c:177
 #, gcc-internal-format
 msgid "'h' applied to non-register operand"
-msgstr "'h' áp dụng cho toán không nguyên"
+msgstr "“h” áp dụng cho toán không nguyên"
 
 #: config/ft32/ft32.c:202
 #, gcc-internal-format, gfc-internal-format
@@ -27165,7 +27029,6 @@ msgstr "Không thể đặt vị trí trong tập tin PCH: %m"
 
 #: config/i386/i386.c:4655
 #, fuzzy, gcc-internal-format
-#| msgid "wrong arg %s to option %s"
 msgid "wrong argument %qs to option %qs"
 msgstr "sai đối số %s cho tùy chọn %s"
 
@@ -27176,20 +27039,17 @@ msgstr ""
 
 #: config/i386/i386.c:4671
 #, fuzzy, gcc-internal-format
-#| msgid "wrong arg %s to option %s"
 msgid "wrong strategy name %qs specified for option %qs"
 msgstr "sai đối số %s cho tùy chọn %s"
 
 #. rep; movq isn't available in 32-bit code.
 #: config/i386/i386.c:4697
 #, fuzzy, gcc-internal-format
-#| msgid "-mstringop-strategy=rep_8byte not supported for 32-bit code"
 msgid "strategy name %qs specified for option %qs not supported for 32-bit code"
 msgstr "-mstringop-strategy=rep_8byte không hỗ trợ mã 32-bit"
 
 #: config/i386/i386.c:4710
 #, fuzzy, gcc-internal-format
-#| msgid "unknown spec function %qs"
 msgid "unknown alignment %qs specified for option %qs"
 msgstr "không hiểu hàm đặc tả %qs"
 
@@ -27200,7 +27060,6 @@ msgstr ""
 
 #: config/i386/i386.c:4727
 #, fuzzy, gcc-internal-format
-#| msgid "no class name specified with %qs"
 msgid "too many size ranges specified in option %qs"
 msgstr "không chỉ định tên lớp với %qs"
 
@@ -27216,7 +27075,6 @@ msgstr ""
 
 #: config/i386/i386.c:5231
 #, fuzzy, gcc-internal-format
-#| msgid "%stune=x86-64%s is deprecated; use %stune=k8%s or %stune=generic%s instead as appropriate"
 msgid "%<-mtune=x86-64%> is deprecated; use %<-mtune=k8%> or %<-mtune=generic%> instead as appropriate"
 msgstr "%stune=x86-64%s đã lỗi thời, dùng %stune=k8%s hay %stune=generic%s để thay thế là thích hợp"
 
@@ -27278,38 +27136,32 @@ msgid "Intel MPX does not support x32"
 msgstr "Intel MPX không hỗ trợ x32"
 
 #: config/i386/i386.c:5616
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%s) for -march= switch"
+#, gcc-internal-format
 msgid "bad value (%qs) for %<-march=%> switch"
-msgstr "sai giá trị (%s) cho chuyển -march="
+msgstr "sai giá trị (%qs) cho tùy chọn %<-march=%>"
 
 #: config/i386/i386.c:5634
 #, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
 msgid "valid arguments to %<-march=%> switch are: %s; did you mean %qs?"
 msgstr "đối số hợp lệ cho cho %qs là: %s"
 
 #: config/i386/i386.c:5641
 #, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
 msgid "valid arguments to %<-march=%> switch are: %s"
 msgstr "đối số hợp lệ cho cho %qs là: %s"
 
 #: config/i386/i386.c:5689
 #, fuzzy, gcc-internal-format
-#| msgid "bad value (%s) for -mtune= switch"
 msgid "bad value (%qs) for %<-mtune=%> switch"
 msgstr "sai giá trị (%s) cho chuyển -mtune"
 
 #: config/i386/i386.c:5705
 #, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
 msgid "valid arguments to %<-mtune=%> switch are: %s; did you mean %qs?"
 msgstr "đối số hợp lệ cho cho %qs là: %s"
 
 #: config/i386/i386.c:5712
 #, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
 msgid "valid arguments to %<-mtune=%> switch are: %s"
 msgstr "đối số hợp lệ cho cho %qs là: %s"
 
@@ -27329,10 +27181,9 @@ msgid "-mregparm=%d is not between 0 and %d"
 msgstr "-mregparm=%d không nằm giữa 0 và %d"
 
 #: config/i386/i386.c:5816
-#, fuzzy, gcc-internal-format
-#| msgid "%srtd%s is ignored in 64bit mode"
+#, gcc-internal-format
 msgid "%<-mrtd%> is ignored in 64bit mode"
-msgstr "%srtd%s bị bỏ qua trong chế độ 64bit"
+msgstr "%<-mrtd%> bị bỏ qua trong chế độ 64bit"
 
 #: config/i386/i386.c:5891
 #, gcc-internal-format
@@ -27357,17 +27208,17 @@ msgstr "-mnop-mcount không tương thích với đích này"
 #: config/i386/i386.c:5933
 #, gcc-internal-format
 msgid "-mnop-mcount is not implemented for -fPIC"
-msgstr ""
+msgstr "-mnop-mcount không được thực hiện cho -fPIC"
 
 #: config/i386/i386.c:5939
 #, gcc-internal-format
 msgid "%<-msseregparm%> used without SSE enabled"
-msgstr ""
+msgstr "%<-msseregparm%> được dùng mà không bật SSE"
 
 #: config/i386/i386.c:5950
 #, gcc-internal-format
 msgid "SSE instruction set disabled, using 387 arithmetics"
-msgstr ""
+msgstr "Chỉ lệnh SSE đặt là tắt, sử dụng số học 387"
 
 #: config/i386/i386.c:5957
 #, gcc-internal-format
@@ -28224,7 +28075,6 @@ msgstr ""
 
 #: config/mips/mips.c:16812
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument %d of %qE must be in the range %d...%d"
 msgid "argument %d to the built-in must be a constant in range %d to %d"
 msgstr "đối số %d của %qE phải nằm trong vùng %d…%d"
 
@@ -28237,7 +28087,6 @@ msgstr ""
 
 #: config/mips/mips.c:16932
 #, fuzzy, gcc-internal-format
-#| msgid "Recognize built-in functions."
 msgid "failed to expand built-in function"
 msgstr "Chấp nhận các hàm dựng sẵn."
 
@@ -28268,7 +28117,6 @@ msgstr ""
 
 #: config/mips/mips.c:19417
 #, fuzzy, gcc-internal-format
-#| msgid "Generate MIPS16 code."
 msgid "MSA MIPS16 code"
 msgstr "Tạo ra mã MIPS16."
 
@@ -28890,7 +28738,6 @@ msgstr "Thuộc tính %qE cần kiểu trả về là void"
 
 #: config/nvptx/nvptx.c:4174
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to variables"
 msgid "%qE attribute not allowed with auto storage class"
 msgstr "Thuộc tính %qE chỉ được áp dụng cho các biến"
 
@@ -29050,28 +28897,24 @@ msgid "vec_lvsr is deprecated for little endian; use assignment for unaligned lo
 msgstr ""
 
 #: config/rs6000/rs6000-c.c:5215
-#, fuzzy, gcc-internal-format
-#| msgid "vec_extract only accepts 2 arguments"
+#, gcc-internal-format
 msgid "vec_mul only accepts 2 arguments"
-msgstr "vec_extract chỉ chấp nhận hai tham số"
+msgstr "vec_mul chỉ chấp nhận hai tham số"
 
 #: config/rs6000/rs6000-c.c:5266
-#, fuzzy, gcc-internal-format
-#| msgid "vec_insert only accepts 3 arguments"
+#, gcc-internal-format
 msgid "vec_cmpne only accepts 2 arguments"
-msgstr "vec_insert chỉ chấp nhận ba tham số"
+msgstr "vec_cmpne chỉ chấp nhận hai tham số"
 
 #: config/rs6000/rs6000-c.c:5334
-#, fuzzy, gcc-internal-format
-#| msgid "vec_insert only accepts 3 arguments"
+#, gcc-internal-format
 msgid "vec_adde only accepts 3 arguments"
-msgstr "vec_insert chỉ chấp nhận ba tham số"
+msgstr "vec_adde chỉ chấp nhận ba tham số"
 
 #: config/rs6000/rs6000-c.c:5397
-#, fuzzy, gcc-internal-format
-#| msgid "vec_insert only accepts 3 arguments"
+#, gcc-internal-format
 msgid "vec_addec only accepts 3 arguments"
-msgstr "vec_insert chỉ chấp nhận ba tham số"
+msgstr "vec_addec chỉ chấp nhận ba tham số"
 
 #: config/rs6000/rs6000-c.c:5484
 #, gcc-internal-format, gfc-internal-format
@@ -29105,7 +28948,6 @@ msgstr ""
 
 #: config/rs6000/rs6000-c.c:6057
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-pie is not supported in this configuration"
 msgid "Builtin function %s not supported in this compiler configuration"
 msgstr "-pie không được hỗ trợ trong cấu hình này"
 
@@ -29211,7 +29053,6 @@ msgstr "-mupper-regs-df cần -mvsx"
 
 #: config/rs6000/rs6000.c:4258
 #, fuzzy, gcc-internal-format
-#| msgid "-mupper-regs-df requires -mvsx"
 msgid "-mupper-regs-di requires -mvsx"
 msgstr "-mupper-regs-df cần -mvsx"
 
@@ -29261,7 +29102,6 @@ msgstr "-mpower9-dform cần -mupper-regs-sf"
 
 #: config/rs6000/rs6000.c:4456
 #, fuzzy, gcc-internal-format
-#| msgid "-mvsx-timode requires -mvsx"
 msgid "-mvsx-timode might need -mlra"
 msgstr "-mvsx-timode cần -mvsx"
 
@@ -29297,19 +29137,16 @@ msgstr "-mfloat128 cần hỗ trợ VSX"
 
 #: config/rs6000/rs6000.c:4566
 #, fuzzy, gcc-internal-format
-#| msgid "-mfloat128 requires VSX support"
 msgid "-mfloat128-type requires VSX support"
 msgstr "-mfloat128 cần hỗ trợ VSX"
 
 #: config/rs6000/rs6000.c:4582
 #, fuzzy, gcc-internal-format
-#| msgid "-mfloat128 requires VSX support"
 msgid "-mfloat128 requires -mfloat128-type"
 msgstr "-mfloat128 cần hỗ trợ VSX"
 
 #: config/rs6000/rs6000.c:4595
 #, fuzzy, gcc-internal-format
-#| msgid "-mfloat128-hardware requires full ISA 3.0 support"
 msgid "-mfloat128-hardware requires -mfloat128-type"
 msgstr "-mfloat128-hardware cần được ISA 3.0 hỗ trợ"
 
@@ -29400,13 +29237,11 @@ msgstr "đối số 2 phải là kiểu văn không dấu 5-bit"
 
 #: config/rs6000/rs6000.c:14273
 #, fuzzy, gcc-internal-format
-#| msgid "argument 1 must be a 1-bit unsigned literal"
 msgid "argument 1 must be a 6-bit unsigned literal"
 msgstr "đối số 1 phải là kiểu văn không dấu 1-bit"
 
 #: config/rs6000/rs6000.c:14287
 #, fuzzy, gcc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
 msgid "argument 2 must be a 7-bit unsigned literal"
 msgstr "đối số 2 phải là kiểu văn không dấu 5-bit"
 
@@ -29583,14 +29418,14 @@ msgid "Builtin function %s requires the -mpower8-vector option"
 msgstr ""
 
 #: config/rs6000/rs6000.c:16483 config/rs6000/rs6000.c:16489
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mcpu=power9 and -m64 options"
-msgstr ""
+msgstr "-mtoc-fusion cần -mpower8-fusion"
 
 #: config/rs6000/rs6000.c:16486 config/rs6000/rs6000.c:16492
-#, gcc-internal-format, gfc-internal-format
+#, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mcpu=power9 option"
-msgstr ""
+msgstr "-mtoc-fusion cần -mpower8-fusion"
 
 #: config/rs6000/rs6000.c:16495
 #, gcc-internal-format, gfc-internal-format
@@ -30933,7 +30768,6 @@ msgstr ""
 
 #: c/c-decl.c:2779
 #, fuzzy, gcc-internal-format
-#| msgid "declaration of %qD as parameter"
 msgid "declaration of %qD shadows a parameter"
 msgstr "khai báo của %qD như là đối số"
 
@@ -30960,7 +30794,6 @@ msgstr ""
 
 #: c/c-decl.c:3134
 #, fuzzy, gcc-internal-format
-#| msgid "implicit declaration of function %qE"
 msgid "implicit declaration of function %qE; did you mean %qs?"
 msgstr "khai báo ngầm của hàm %qE"
 
@@ -30971,7 +30804,6 @@ msgstr "khai báo ngầm của hàm %qE"
 
 #: c/c-decl.c:3147
 #, fuzzy, gcc-internal-format
-#| msgid "implicit declaration of function %qE"
 msgid "implicit declaration of function %qE;did you mean %qs?"
 msgstr "khai báo ngầm của hàm %qE"
 
@@ -31501,13 +31333,11 @@ msgstr ""
 
 #: c/c-decl.c:6001
 #, fuzzy, gcc-internal-format
-#| msgid "parameter %qD has incomplete type"
 msgid "size of array %qE has incomplete type"
 msgstr "đối số %qD có kiểu chưa đầy đủ"
 
 #: c/c-decl.c:6004
 #, fuzzy, gcc-internal-format
-#| msgid "size of unnamed array is negative"
 msgid "size of unnamed array has incomplete type"
 msgstr "cỡ của mảng không tên là âm"
 
@@ -31951,7 +31781,6 @@ msgstr ""
 
 #: c/c-decl.c:7961
 #, fuzzy, gcc-internal-format
-#| msgid "struct has no named members"
 msgid "flexible array member in a struct with no named members"
 msgstr "cấu có không thành viên đã đặt tên"
 
@@ -32211,7 +32040,6 @@ msgstr ""
 
 #: c/c-decl.c:9790 c/c-decl.c:9797
 #, fuzzy, gcc-internal-format
-#| msgid "expected declaration specifiers"
 msgid "duplicate %qE declaration specifier"
 msgstr "cần các định danh khai báo"
 
@@ -32262,13 +32090,11 @@ msgstr "ISO C90 không hỗ trợ kiểu lô-gíc"
 
 #: c/c-decl.c:10435
 #, fuzzy, gcc-internal-format
-#| msgid "ISO C does not support %<__int%d%> types"
 msgid "ISO C does not support the %<_Float%d%s%> type"
 msgstr "ISO C không hỗ trợ kiểu %<__int%d%>"
 
 #: c/c-decl.c:10485
 #, fuzzy, gcc-internal-format
-#| msgid "%<__int%d%> is not supported on this target"
 msgid "%<_Float%d%s%> is not supported on this target"
 msgstr "%<__int%d%> không được hỗ trợ cho đích này"
 
@@ -32404,13 +32230,11 @@ msgstr "số lượng dịch phải  >= độ rộng của kiểu"
 
 #: c/c-fold.c:346 c/c-typeck.c:11166
 #, fuzzy, gcc-internal-format
-#| msgid "left shift count >= width of type"
 msgid "left shift count >= width of vector element"
 msgstr "số lượng dịch trái  >= độ rộng của kiểu"
 
 #: c/c-fold.c:347 c/c-typeck.c:11098
 #, fuzzy, gcc-internal-format
-#| msgid "right shift count >= width of type"
 msgid "right shift count >= width of vector element"
 msgstr "số lượng dịch phải  >= độ rộng của kiểu"
 
@@ -32455,10 +32279,9 @@ msgid "unknown type name %qE; use %<enum%> keyword to refer to the type"
 msgstr ""
 
 #: c/c-parser.c:1622 c/c-parser.c:3810
-#, fuzzy, gcc-internal-format
-#| msgid "%qT has no member named %qE; did you mean %qE?"
+#, gcc-internal-format
 msgid "unknown type name %qE; did you mean %qs?"
-msgstr "%qT không có thành viên nào mang tên %qE; ý bạn là %qE?"
+msgstr "không hiểu kiểu tên %qE; ý bạn là %qs?"
 
 #: c/c-parser.c:1626 c/c-parser.c:2397 c/c-parser.c:3814
 #, gcc-internal-format
@@ -33122,19 +32945,16 @@ msgstr ""
 
 #: c/c-parser.c:10152 c/c-parser.c:10327 cp/parser.c:38096
 #, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc update%> may only be used in compound statements"
 msgid "%<#pragma acc enter data%> may only be used in compound statements"
 msgstr "%<#pragma omp cancel%> chỉ có thể sử dụng trong các biểu thức phức hợp"
 
 #: c/c-parser.c:10163 cp/parser.c:38108
 #, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc update%> may only be used in compound statements"
 msgid "%<#pragma acc exit data%> may only be used in compound statements"
 msgstr "%<#pragma omp cancel%> chỉ có thể sử dụng trong các biểu thức phức hợp"
 
 #: c/c-parser.c:10174 cp/parser.c:38121
 #, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc routine%> must be applied before %s"
 msgid "%<#pragma acc routine%> must be at file scope"
 msgstr "%<#pragma acc routine%> phải được áp dụng trước %s"
 
@@ -33364,7 +33184,6 @@ msgstr ""
 
 #: c/c-parser.c:12275 cp/semantics.c:6373
 #, fuzzy, gcc-internal-format
-#| msgid "%qs value must be positive"
 msgid "chunk size value must be positive"
 msgstr "%qs giá trị phải dương"
 
@@ -33490,7 +33309,6 @@ msgstr ""
 
 #: c/c-parser.c:13912 cp/parser.c:36200
 #, fuzzy, gcc-internal-format
-#| msgid "expected %<class%> or %<typename%>"
 msgid "expected %<data%> after %<#pragma acc enter%>"
 msgstr "cần %<class%>, hoặc %<typename%>"
 
@@ -33511,7 +33329,6 @@ msgstr "cần tên hàm"
 
 #: c/c-parser.c:14171 cp/parser.c:37358
 #, fuzzy, gcc-internal-format
-#| msgid "%qD is not a member template function"
 msgid "%qD does not refer to a function"
 msgstr "%qD không phải là hàm thành viên mẫu"
 
@@ -33527,7 +33344,6 @@ msgstr ""
 
 #: c/c-parser.c:14248 cp/parser.c:37468
 #, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc routine%> already applied to %D"
 msgid "%<#pragma acc routine%> already applied to %qD"
 msgstr "%<#pragma acc routine%> đã được áp dụng với %D"
 
@@ -33753,7 +33569,6 @@ msgstr ""
 
 #: c/c-parser.c:16964
 #, fuzzy, gcc-internal-format
-#| msgid "previous %<#pragma omp declare reduction%>"
 msgid "%<_Atomic%> qualified type in %<#pragma omp declare reduction%>"
 msgstr "%<#pragma omp declare reduction%> trước"
 
@@ -34192,15 +34007,14 @@ msgid "arithmetic on pointer to an empty aggregate"
 msgstr ""
 
 #: c/c-typeck.c:4213
-#, fuzzy, gcc-internal-format
-#| msgid "expected boolean expression"
+#, gcc-internal-format
 msgid "%<~%> on a boolean expression"
-msgstr "cần một biểu thức lôgíc"
+msgstr "%<~%> trên một biểu thức lôgíc"
 
 #: c/c-typeck.c:4217
 #, gcc-internal-format
 msgid "did you mean to use logical not?"
-msgstr ""
+msgstr "ý bạn là dùng not lôgíc?"
 
 #: c/c-typeck.c:4227
 #, gcc-internal-format
@@ -34215,22 +34029,20 @@ msgstr ""
 #: c/c-typeck.c:4324
 #, gcc-internal-format
 msgid "increment of enumeration value is invalid in C++"
-msgstr ""
+msgstr "phép gia tăng giá trị kiểu liệt kê là không hợp lệ trong C++"
 
 #: c/c-typeck.c:4327
 #, gcc-internal-format
 msgid "decrement of enumeration value is invalid in C++"
-msgstr ""
+msgstr "phép giảm giá trị kiểu liệt kê là không hợp lệ trong C++"
 
 #: c/c-typeck.c:4334
 #, fuzzy, gcc-internal-format
-#| msgid "expected boolean expression"
 msgid "increment of a boolean expression"
 msgstr "cần một biểu thức lôgíc"
 
 #: c/c-typeck.c:4337
 #, fuzzy, gcc-internal-format
-#| msgid "expected boolean expression"
 msgid "decrement of a boolean expression"
 msgstr "cần một biểu thức lôgíc"
 
@@ -35101,7 +34913,6 @@ msgstr ""
 
 #: c/c-typeck.c:12029 cp/semantics.c:8599
 #, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc update%> must contain at least one %<device%> or %<host%> or %<self%> clause"
 msgid "%<#pragma omp cancel%> must specify one of %<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses"
 msgstr "%<#pragma acc update%> phải chứa ít nhất là một mệnh đề %<device%> hay %<host%> hay %<self%>"
 
@@ -35111,10 +34922,9 @@ msgid "%<#pragma omp cancellation point%> must specify one of %<parallel%>, %<fo
 msgstr ""
 
 #: c/c-typeck.c:12112 c/c-typeck.c:13287 c/c-typeck.c:13348 c/c-typeck.c:13410
-#, fuzzy, gcc-internal-format
-#| msgid "%<_Atomic%> in Objective-C"
+#, gcc-internal-format
 msgid "%<_Atomic%> %qE in %qs clause"
-msgstr "%<_Atomic%> trong Objective-C"
+msgstr "%<_Atomic%> %qE trong mệnh đề %qs"
 
 #: c/c-typeck.c:12125 c/c-typeck.c:13334 cp/semantics.c:4513
 #: cp/semantics.c:6702
@@ -35140,10 +34950,9 @@ msgid "%qE is not a variable in %qs clause"
 msgstr "%qE không phải một biến trong mệnh đề %qs"
 
 #: c/c-typeck.c:12155
-#, fuzzy, gcc-internal-format
-#| msgid "%<_Atomic%> in Objective-C"
+#, gcc-internal-format
 msgid "%<_Atomic%> %qD in %qs clause"
-msgstr "%<_Atomic%> trong Objective-C"
+msgstr "%<_Atomic%> %qD trong mệnh đề %qs"
 
 #: c/c-typeck.c:12164 c/c-typeck.c:13382 c/c-typeck.c:13484
 #: cp/semantics.c:4558 cp/semantics.c:6754 cp/semantics.c:6916
@@ -35217,18 +35026,17 @@ msgstr "%qE không có con trỏ hay kiểu mảng"
 #: c/c-typeck.c:12792 c/c-typeck.c:12802
 #, gcc-internal-format
 msgid "%qD in %<reduction%> clause is a zero size array"
-msgstr ""
+msgstr "%qD trong mệnh đề %<reduction%> là một mạng cỡ không"
 
 #: c/c-typeck.c:12819
-#, fuzzy, gcc-internal-format
-#| msgid "%<_Atomic%> in Objective-C"
+#, gcc-internal-format
 msgid "%<_Atomic%> %qE in %<reduction%> clause"
-msgstr "%<_Atomic%> trong Objective-C"
+msgstr "%<_Atomic%> %qE trong mệnh đề %<reduction%>"
 
 #: c/c-typeck.c:12867
 #, gcc-internal-format
 msgid "%qE has invalid type for %<reduction(%s)%>"
-msgstr ""
+msgstr "%qE có kiểu không hợp lệ cho %<reduction(%s)%>"
 
 #: c/c-typeck.c:12876 cp/semantics.c:5712
 #, gcc-internal-format
@@ -35248,7 +35056,7 @@ msgstr ""
 #: c/c-typeck.c:12994 cp/semantics.c:7272
 #, gcc-internal-format
 msgid "%qE must be %<threadprivate%> for %<copyin%>"
-msgstr ""
+msgstr "%qE phải là %<threadprivate%> với %<copyin%>"
 
 #: c/c-typeck.c:13008 cp/semantics.c:5886
 #, gcc-internal-format
@@ -35330,7 +35138,6 @@ msgstr ""
 
 #: c/c-typeck.c:13195
 #, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable in %<aligned%> clause"
 msgid "%<_Atomic%> %qD in %<aligned%> clause"
 msgstr "%qD không phải một biến trong mệnh đề  %<aligned%>"
 
@@ -35445,65 +35252,57 @@ msgstr ""
 #: c/gimple-parser.c:505
 #, gcc-internal-format
 msgid "%<&&%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<&&%> không hợp lệ trong GIMPLE"
 
 #: c/gimple-parser.c:508
 #, gcc-internal-format
 msgid "%<||%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<||%> không hợp lệ trong GIMPLE"
 
 #: c/gimple-parser.c:576
 #, gcc-internal-format
 msgid "%<!%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<!%> không hợp lệ trong GIMPLE"
 
 #: c/gimple-parser.c:636
-#, fuzzy, gcc-internal-format
-#| msgid "%qD not declared"
+#, gcc-internal-format
 msgid "SSA name not declared"
-msgstr "%qD chưa được khai báo"
+msgstr "tên SSA chưa được khai báo"
 
 #: c/gimple-parser.c:658
 #, fuzzy, gcc-internal-format
-#| msgid "variable or field declared void"
 msgid "base variable or SSA name not declared"
 msgstr "biến hay trường được khai báo là void"
 
 #: c/gimple-parser.c:1038
-#, fuzzy, gcc-internal-format
-#| msgid "expected class name"
+#, gcc-internal-format
 msgid "expected pass name"
-msgstr "cần tên lớp"
+msgstr "cần tên chuyển qua"
 
 #: c/gimple-parser.c:1050
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand"
+#, gcc-internal-format
 msgid "invalid operation"
 msgstr "toán hạng không hợp lệ"
 
 #: c/gimple-parser.c:1210 c/gimple-parser.c:1234
-#, fuzzy, gcc-internal-format
-#| msgid "expected expression"
+#, gcc-internal-format
 msgid "expected goto expression"
-msgstr "cần biểu thức"
+msgstr "cần điều lệnh goto"
 
 #: c/gimple-parser.c:1218
-#, fuzzy, gcc-internal-format
-#| msgid "expected statement"
+#, gcc-internal-format
 msgid "expected else statement"
-msgstr "cần biểu thức"
+msgstr "cần điều lệnh else"
 
 #: c/gimple-parser.c:1359
-#, fuzzy, gcc-internal-format
-#| msgid "extra semicolon"
+#, gcc-internal-format
 msgid "expected semicolon"
-msgstr "dấu chấm phẩy mở rộng"
+msgstr "dấu chấm phẩy"
 
 #: c/gimple-parser.c:1369
-#, fuzzy, gcc-internal-format
-#| msgid "expected selection-statement"
+#, gcc-internal-format
 msgid "expected case label or goto statement"
-msgstr "cần selection-statement"
+msgstr "cần nhãn case hoặc điều lệnh goto"
 
 #. A bad conversion for 'this' must be discarding cv-quals.
 #: cp/call.c:3394
@@ -35574,10 +35373,9 @@ msgid "%s%#D"
 msgstr "%s%#D"
 
 #: cp/call.c:3477
-#, fuzzy, gcc-internal-format
-#| msgid "  when initialized here"
+#, gcc-internal-format
 msgid "  inherited here"
-msgstr "  khi khởi tạo ở đây"
+msgstr "  được kế thừa ở đây"
 
 #: cp/call.c:3497
 #, gcc-internal-format
@@ -35613,7 +35411,7 @@ msgstr ""
 #: cp/call.c:3922
 #, gcc-internal-format
 msgid "conversion from %qT to %qT is ambiguous"
-msgstr ""
+msgstr "chuyển đổi từ %qT sang %qT là chưa rõ ràng"
 
 #: cp/call.c:4049
 #, gcc-internal-format
@@ -35640,7 +35438,7 @@ msgstr ""
 #: cp/call.c:4494
 #, gcc-internal-format
 msgid "no match for call to %<(%T) (%A)%>"
-msgstr ""
+msgstr "cú gọi không khớp tới %<(%T) (%A)%>"
 
 #: cp/call.c:4507
 #, gcc-internal-format
@@ -35780,7 +35578,7 @@ msgstr ""
 #: cp/call.c:5872
 #, gcc-internal-format
 msgid "comparison between %q#T and %q#T"
-msgstr "so sánh giữ %q#T và %q#T"
+msgstr "so sánh giữa %q#T và %q#T"
 
 #: cp/call.c:6216
 #, gcc-internal-format
@@ -35815,7 +35613,7 @@ msgstr ""
 #: cp/call.c:6429 cp/decl.c:7218
 #, gcc-internal-format
 msgid "declared private here"
-msgstr "được khai báo  ở đây"
+msgstr "đã được khai báo ở đây"
 
 #: cp/call.c:6433
 #, gcc-internal-format
@@ -35889,16 +35687,14 @@ msgid "in C++11 and above a default constructor can be explicit"
 msgstr ""
 
 #: cp/call.c:6913
-#, fuzzy, gcc-internal-format
-#| msgid "cannot convert type %qT to type %qT"
+#, gcc-internal-format
 msgid "cannot bind rvalue reference of type %qT to lvalue of type %qT"
-msgstr "không thể chuyển đổi kiểu %qT thành %qT"
+msgstr ""
 
 #: cp/call.c:6917
-#, fuzzy, gcc-internal-format
-#| msgid "cannot convert type %qT to type %qT"
+#, gcc-internal-format
 msgid "cannot bind non-const lvalue reference of type %qT to an rvalue of type %qT"
-msgstr "không thể chuyển đổi kiểu %qT thành %qT"
+msgstr ""
 
 #: cp/call.c:6920
 #, gcc-internal-format
@@ -35986,10 +35782,9 @@ msgid "  (you can disable this with -fno-deduce-init-list)"
 msgstr ""
 
 #: cp/call.c:7906
-#, fuzzy, gcc-internal-format
-#| msgid "too many arguments to constructor %q#D"
+#, gcc-internal-format
 msgid "passing arguments to ellipsis of inherited constructor %qD"
-msgstr "quá nhiều đối số cho cấu tử %q#D"
+msgstr ""
 
 #: cp/call.c:8241
 #, gcc-internal-format
@@ -36067,16 +35862,14 @@ msgid "default argument mismatch in overload resolution"
 msgstr ""
 
 #: cp/call.c:9803
-#, fuzzy, gcc-internal-format
-#| msgid " candidate 1: %q+#F"
+#, gcc-internal-format
 msgid " candidate 1: %q#F"
-msgstr " ứng cử 1: %q+#F"
+msgstr " ứng cử 1: %q#F"
 
 #: cp/call.c:9805
-#, fuzzy, gcc-internal-format
-#| msgid " candidate 2: %q+#F"
+#, gcc-internal-format
 msgid " candidate 2: %q#F"
-msgstr " ứng cử 2: %q+#F"
+msgstr " ứng cử 2: %q#F"
 
 #: cp/call.c:9850
 #, gcc-internal-format
@@ -36124,10 +35917,9 @@ msgid "cannot convert from base class %qT to derived class %qT via virtual base 
 msgstr ""
 
 #: cp/class.c:1211
-#, fuzzy, gcc-internal-format
-#| msgid "  %q#D"
+#, gcc-internal-format
 msgid "%q#D"
-msgstr "  %q#D"
+msgstr "%q#D"
 
 #: cp/class.c:1213
 #, gcc-internal-format
@@ -36498,22 +36290,19 @@ msgid "size of type %qT is too large (%qE bytes)"
 msgstr ""
 
 #: cp/class.c:6985
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of %<...%> with non-slice"
+#, gcc-internal-format
 msgid "invalid use of %q#T with a zero-size array in %q#D"
-msgstr "dùng %<...%> mà không có non-slice là không hợp lệ"
+msgstr ""
 
 #: cp/class.c:6987
-#, fuzzy, gcc-internal-format
-#| msgid "initialization of a flexible array member"
+#, gcc-internal-format
 msgid "invalid use of %q#T with a flexible array member in %q#T"
-msgstr "đã khởi tạo một bộ phận mảng dẻo"
+msgstr ""
 
 #: cp/class.c:6992
-#, fuzzy, gcc-internal-format
-#| msgid "next member %q#D declared here"
+#, gcc-internal-format
 msgid "array member %q#D declared here"
-msgstr "thành viên kế %q#D đã khai báo ở đây"
+msgstr "thành viên mảng %q#D đã khai báo ở đây"
 
 #: cp/class.c:7019
 #, gcc-internal-format
@@ -36707,7 +36496,6 @@ msgstr "%q+E không phải biểu thức hằng"
 
 #: cp/constexpr.c:1340 cp/constexpr.c:5052
 #, fuzzy, gcc-internal-format
-#| msgid "call to internal function"
 msgid "call to internal function %qE"
 msgstr "gọi hàm nội bộ"
 
@@ -36818,7 +36606,6 @@ msgstr ""
 
 #: cp/constexpr.c:3091 cp/constexpr.c:4338
 #, fuzzy, gcc-internal-format
-#| msgid "null pointer"
 msgid "dereferencing a null pointer"
 msgstr "con trỏ rỗng"
 
@@ -36864,7 +36651,6 @@ msgstr ""
 
 #: cp/constexpr.c:3375
 #, fuzzy, gcc-internal-format
-#| msgid "modification of %qE is not a constant-expression"
 msgid "modification of %qE is not a constant expression"
 msgstr "bổ từ %qE không phải là biểu thức hằng"
 
@@ -36875,7 +36661,6 @@ msgstr ""
 
 #: cp/constexpr.c:3847
 #, fuzzy, gcc-internal-format
-#| msgid "%qE is not a constant expression"
 msgid "value %qE of type %qT is not a constant expression"
 msgstr "%qE không phải là biểu thức hằng"
 
@@ -36886,31 +36671,26 @@ msgstr ""
 
 #: cp/constexpr.c:4324
 #, fuzzy, gcc-internal-format
-#| msgid "statement is not a constant-expression"
 msgid "a reinterpret_cast is not a constant expression"
 msgstr "lệnh không phải biểu thức hằng"
 
 #: cp/constexpr.c:4350
 #, fuzzy, gcc-internal-format
-#| msgid "expression %qE is not a constant-expression"
 msgid "conversion of %qT null pointer to %qT is not a constant expression"
 msgstr "biểu thức %qE không phải là biểu thức hằng"
 
 #: cp/constexpr.c:4365
 #, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
 msgid "%<reinterpret_cast<%T>(%E)%> is not a constant expression"
 msgstr "%<delete[]%> không phải biểu thức hằng"
 
 #: cp/constexpr.c:4428 cp/constexpr.c:5331 cp/constexpr.c:5646
 #, fuzzy, gcc-internal-format
-#| msgid "expression %qE is not a constant-expression"
 msgid "expression %qE is not a constant expression"
 msgstr "biểu thức %qE không phải là biểu thức hằng"
 
 #: cp/constexpr.c:4509
 #, fuzzy, gcc-internal-format
-#| msgid "statement is not a constant-expression"
 msgid "statement is not a constant expression"
 msgstr "lệnh không phải biểu thức hằng"
 
@@ -36981,13 +36761,11 @@ msgstr ""
 
 #: cp/constexpr.c:5518
 #, fuzzy, gcc-internal-format
-#| msgid "modification of %qE is not a constant-expression"
 msgid "division by zero is not a constant expression"
 msgstr "bổ từ %qE không phải là biểu thức hằng"
 
 #: cp/constexpr.c:5623
 #, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
 msgid "%<delete[]%> is not a constant expression"
 msgstr "%<delete[]%> không phải biểu thức hằng"
 
@@ -36998,9 +36776,8 @@ msgstr ""
 
 #: cp/constexpr.c:5674
 #, fuzzy, gcc-internal-format
-#| msgid "%qE is not a constant expression"
 msgid "%<goto%> is not a constant expression"
-msgstr "%qE không phải là biểu thức hằng"
+msgstr "%<delete[]%> không phải biểu thức hằng"
 
 #: cp/constexpr.c:5682
 #, gcc-internal-format, gfc-internal-format
@@ -37165,7 +36942,6 @@ msgstr ""
 
 #: cp/cvt.c:982
 #, fuzzy, gcc-internal-format
-#| msgid "function %qD redeclared with attribute noinline"
 msgid "ignoring return value of %qD, declared with attribute nodiscard"
 msgstr "hàm %qD được khai báo lại là không chung dòng (inline) thuộc "
 
@@ -37176,7 +36952,6 @@ msgstr ""
 
 #: cp/cvt.c:995
 #, fuzzy, gcc-internal-format
-#| msgid "routine %qD declared here"
 msgid "in call to %qD, declared here"
 msgstr "%qD được khai báo ở đây"
 
@@ -37452,13 +37227,11 @@ msgstr "biến chưa được dùng %qD"
 
 #: cp/decl.c:934
 #, fuzzy, gcc-internal-format
-#| msgid "%q+F used but never defined"
 msgid "%qF declared %<static%> but never defined"
 msgstr "%q+F được dùng mà chưa từng được định nghĩa"
 
 #: cp/decl.c:959
 #, fuzzy, gcc-internal-format
-#| msgid "environment variable %qs not defined"
 msgid "odr-used inline variable %qD is not defined"
 msgstr "chưa định nghĩa biến môi trường%qs"
 
@@ -37474,19 +37247,16 @@ msgstr "khai báo trước đây của %qD"
 
 #: cp/decl.c:1286
 #, fuzzy, gcc-internal-format
-#| msgid "from previous declaration %q+F"
 msgid "from previous declaration %qF"
 msgstr "từ khai báo trước đây %q+F"
 
 #: cp/decl.c:1321
 #, fuzzy, gcc-internal-format
-#| msgid "redeclaration %q+D differs in %<constexpr%>"
 msgid "redeclaration %qD differs in %<constexpr%> from previous declaration"
 msgstr "sự khai báo lại %q+D khác trong %<constexpr%>"
 
 #: cp/decl.c:1324 cp/decl.c:13630
 #, fuzzy, gcc-internal-format
-#| msgid "previous declaration %q#D"
 msgid "previous declaration %qD"
 msgstr "khai báo trước đây %q#D"
 
@@ -37512,13 +37282,11 @@ msgstr ""
 
 #: cp/decl.c:1438
 #, fuzzy, gcc-internal-format
-#| msgid "previous definition of %q+D was here"
 msgid "previous definition of %qD was here"
 msgstr "định nghĩa trước đây của %q+D là đây"
 
 #: cp/decl.c:1441
 #, fuzzy, gcc-internal-format
-#| msgid "previous declaration of %q+D was here"
 msgid "previous declaration of %qD was here"
 msgstr "khai báo trước đây của %q+D ở đây"
 
@@ -37739,7 +37507,6 @@ msgstr "khai báo lại của %q#D"
 
 #: cp/decl.c:2960
 #, fuzzy, gcc-internal-format
-#| msgid "redundant redeclaration of %q+D"
 msgid "redundant redeclaration of %<constexpr%> static data member %qD"
 msgstr "tái khai báo không hợp lệ cho %q+D"
 
@@ -37795,7 +37562,6 @@ msgstr ""
 
 #: cp/decl.c:3241 cp/decl.c:3362
 #, fuzzy, gcc-internal-format
-#| msgid "expected statement"
 msgid "  enters constexpr if statement"
 msgstr "cần biểu thức"
 
@@ -37861,7 +37627,6 @@ msgstr ""
 
 #: cp/decl.c:4173
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-falign-labels=%d is not supported"
 msgid "-faligned-new=%d is not a power of two"
 msgstr "-falign-labels=%d không được hỗ trợ"
 
@@ -38239,7 +38004,6 @@ msgstr ""
 
 #: cp/decl.c:6404
 #, fuzzy, gcc-internal-format
-#| msgid "non-static initialization of a flexible array member"
 msgid "non-constant in-class initialization invalid for non-inline static member %qD"
 msgstr "một bộ phận mảng dẻo bị khởi tạo một cách không phải tĩnh"
 
@@ -38260,7 +38024,6 @@ msgstr ""
 
 #: cp/decl.c:6775 cp/decl.c:12325
 #, fuzzy, gcc-internal-format
-#| msgid "ISO C++ does not allow %<alignof%> with a non-type"
 msgid "ISO C++1z does not allow %<register%> storage class specifier"
 msgstr "ISO C++ không cho phép %<alignof%> với một non-type"
 
@@ -38301,7 +38064,6 @@ msgstr ""
 
 #: cp/decl.c:7215
 #, fuzzy, gcc-internal-format
-#| msgid "cannot convert %qT to %qT"
 msgid "cannot decompose non-public member %qD of %qT"
 msgstr "không thể chuyển đổi %qT thành %qT"
 
@@ -38317,7 +38079,6 @@ msgstr ""
 
 #: cp/decl.c:7444
 #, fuzzy, gcc-internal-format
-#| msgid "ISO C90 forbids variable length array %qE"
 msgid "cannot decompose variable length array %qT"
 msgstr "ISO C90 cấm mảng có kích thước biến đổi %qE"
 
@@ -38333,25 +38094,21 @@ msgstr ""
 
 #: cp/decl.c:7515
 #, fuzzy, gcc-internal-format
-#| msgid "size of array is not an integral constant-expression"
 msgid "%<std::tuple_size<%T>::value%> is not an integral constant expression"
 msgstr "kích cỡ mảng không phải là biểu thức hằng số nguyên"
 
 #: cp/decl.c:7535
 #, fuzzy, gcc-internal-format
-#| msgid "(near initialization for %qs)"
 msgid "in initialization of decomposition variable %qD"
 msgstr "(gần chỗ khởi tạo cho %qs)"
 
 #: cp/decl.c:7556
 #, fuzzy, gcc-internal-format
-#| msgid "cannot convert type %qT to type %qT"
 msgid "cannot decompose union type %qT"
 msgstr "không thể chuyển đổi kiểu %qT thành %qT"
 
 #: cp/decl.c:7561
 #, fuzzy, gcc-internal-format
-#| msgid "cannot decompose address"
 msgid "cannot decompose non-array non-class type %qT"
 msgstr "không thể giải mã địa chỉ"
 
@@ -38567,16 +38324,14 @@ msgid "deduction guide %qD must be declared in the same scope as %qT"
 msgstr ""
 
 #: cp/decl.c:8732
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid "  declared here"
-msgstr "được khai báo ở đây"
+msgstr "  đã được khai báo ở đây"
 
 #: cp/decl.c:8737
-#, fuzzy, gcc-internal-format
-#| msgid "declaration of %qD as non-function"
+#, gcc-internal-format
 msgid "deduction guide %qD must not have a function body"
-msgstr "sự khai báo của %qD như là non-function"
+msgstr ""
 
 #: cp/decl.c:8750
 #, gcc-internal-format
@@ -38619,10 +38374,9 @@ msgid "definition of explicitly-defaulted %q+D"
 msgstr ""
 
 #: cp/decl.c:8905
-#, fuzzy, gcc-internal-format
-#| msgid "%q#D previously defined here"
+#, gcc-internal-format
 msgid "%q#D explicitly defaulted here"
-msgstr "%q#D trước được định nghĩa ở đây"
+msgstr "%q#D đã là mặc định rõ ràng ở đây"
 
 #: cp/decl.c:8922 cp/decl2.c:713
 #, gcc-internal-format
@@ -38836,13 +38590,11 @@ msgstr "biến hay trường được khai báo là void"
 
 #: cp/decl.c:9795
 #, fuzzy, gcc-internal-format
-#| msgid "%<inline%> specified for friend class declaration"
 msgid "%<inline%> specifier invalid for variable %qD declared at block scope"
 msgstr "%<inline%> được chỉ định cho khai báo lớp bạn"
 
 #: cp/decl.c:9801
 #, fuzzy, gcc-internal-format
-#| msgid "inline namespaces only available with -std=c++11 or -std=gnu++11"
 msgid "inline variables are only available with -std=c++1z or -std=gnu++1z"
 msgstr "inline namespaces chỉ sẵn sàng với -std=c++11 hay -std=gnu++11"
 
@@ -39048,55 +38800,46 @@ msgstr ""
 
 #: cp/decl.c:10579
 #, fuzzy, gcc-internal-format
-#| msgid "function definition declared %<typedef%>"
 msgid "decomposition declaration cannot be declared %<typedef%>"
 msgstr "định nghĩa hàm được khai báo là %<typedef%>"
 
 #: cp/decl.c:10581
 #, fuzzy, gcc-internal-format
-#| msgid "a destructor cannot be %<constexpr%>"
 msgid "decomposition declaration cannot be declared %<constexpr%>"
 msgstr "hủy tử không thể là %<constexpr%>"
 
 #: cp/decl.c:10585
 #, fuzzy, gcc-internal-format
-#| msgid "function definition declared %qs"
 msgid "decomposition declaration cannot be declared %qs"
 msgstr "định nghĩa hàm được khai báo là %qs"
 
 #: cp/decl.c:10590
 #, fuzzy, gcc-internal-format
-#| msgid "a destructor cannot be %<concept%>"
 msgid "decomposition declaration cannot be declared %<concept%>"
 msgstr "hủy tử không thể là %<concept%>"
 
 #: cp/decl.c:10596
 #, fuzzy, gcc-internal-format
-#| msgid "function definition declared %<register%>"
 msgid "decomposition declaration cannot be declared %<register%>"
 msgstr "định nghĩa hàm được khai báo là %<register%>"
 
 #: cp/decl.c:10600
 #, fuzzy, gcc-internal-format
-#| msgid "function definition declared %<auto%>"
 msgid "decomposition declaration cannot be declared %<static%>"
 msgstr "định nghĩa hàm được khai báo là %<auto%>"
 
 #: cp/decl.c:10604
 #, fuzzy, gcc-internal-format
-#| msgid "function definition declared %<register%>"
 msgid "decomposition declaration cannot be declared %<extern%>"
 msgstr "định nghĩa hàm được khai báo là %<register%>"
 
 #: cp/decl.c:10608
 #, fuzzy, gcc-internal-format
-#| msgid "function definition declared %<auto%>"
 msgid "decomposition declaration cannot be declared %<mutable%>"
 msgstr "định nghĩa hàm được khai báo là %<auto%>"
 
 #: cp/decl.c:10612
 #, fuzzy, gcc-internal-format
-#| msgid "function definition declared %<auto%>"
 msgid "decomposition declaration cannot be declared C++98 %<auto%>"
 msgstr "định nghĩa hàm được khai báo là %<auto%>"
 
@@ -39187,7 +38930,6 @@ msgstr ""
 
 #: cp/decl.c:10907
 #, fuzzy, gcc-internal-format
-#| msgid "class type %qT is incomplete"
 msgid "deduced class type %qT in function return type"
 msgstr "kiểu lớp %qT chưa hoàn thiện"
 
@@ -39470,10 +39212,9 @@ msgid "invalid use of template-name %qE without an argument list"
 msgstr ""
 
 #: cp/decl.c:11784
-#, fuzzy, gcc-internal-format
-#| msgid "  non-static data member %qD has volatile type"
+#, gcc-internal-format
 msgid "non-static data member declared with placeholder %qT"
-msgstr "  thành viên dữ liệu không-tĩnh %qD có kiểu hay thay đổi"
+msgstr "thành viên dữ liệu không-tĩnh được khai báo giữ chỗ %qT"
 
 #. Something like struct S { int N::j; };
 #: cp/decl.c:11816
@@ -39660,7 +39401,6 @@ msgstr ""
 
 #: cp/decl.c:12290
 #, fuzzy, gcc-internal-format
-#| msgid "excess elements in union initializer"
 msgid "class template argument deduction requires an initializer"
 msgstr "gặp yếu tố thừa trong bộ khởi tạo hợp"
 
@@ -39887,7 +39627,6 @@ msgstr "%qT được coi là %qs"
 
 #: cp/decl.c:13356 cp/decl.c:13363
 #, fuzzy, gcc-internal-format
-#| msgid "%q+T has a previous declaration here"
 msgid "%qT has a previous declaration here"
 msgstr "%q+T có một khai báo trước ở đây"
 
@@ -40303,7 +40042,6 @@ msgstr ""
 
 #: cp/decl2.c:4175
 #, fuzzy, gcc-internal-format
-#| msgid "inline function %qD used but never defined"
 msgid "%q#D, declared using unnamed type, is used but never defined"
 msgstr "hàm chung dòng %qD được dùng nhưng chưa bao giờ được định nghĩa"
 
@@ -40685,13 +40423,11 @@ msgstr ""
 
 #: cp/init.c:808
 #, fuzzy, gcc-internal-format
-#| msgid "initialization of a flexible array member"
 msgid "member initializer for flexible array member"
 msgstr "đã khởi tạo một bộ phận mảng dẻo"
 
 #: cp/init.c:809
 #, fuzzy, gcc-internal-format
-#| msgid "%q#D should be initialized"
 msgid "%q#D initialized"
 msgstr "%q#D nên được khởi tạo"
 
@@ -41513,8 +41249,6 @@ msgstr ""
 
 #: cp/name-lookup.c:4482
 #, fuzzy, gcc-internal-format
-#| msgid "suggested alternative:"
-#| msgid_plural "suggested alternatives:"
 msgid "suggested alternative: %qs"
 msgstr "các khả năng được gợi ý:"
 
@@ -41661,7 +41395,6 @@ msgstr "template-id không hợp lệ"
 
 #: cp/parser.c:3033
 #, fuzzy, gcc-internal-format
-#| msgid "a function call cannot appear in a constant-expression"
 msgid "ISO C++ forbids using a floating-point literal in a constant-expression"
 msgstr "cú gọi hàm không được xuất hiện trong biểu thức hằng"
 
@@ -41737,7 +41470,6 @@ msgstr "%qs không thể xuất hiện trong biểu thức hằng"
 
 #: cp/parser.c:3167
 #, fuzzy, gcc-internal-format
-#| msgid "lambda templates are only available with -std=c++14 or -std=gnu++14"
 msgid "class template argument deduction is only available with -std=c++1z or -std=gnu++1z"
 msgstr "mẫu lambda chỉ sẵn sàng với -std=c++14 hay -std=gnu++14"
 
@@ -41754,7 +41486,6 @@ msgstr ""
 
 #: cp/parser.c:3187
 #, fuzzy, gcc-internal-format
-#| msgid "%qE does not name a type"
 msgid "%qE does not name a type; did you mean %qs?"
 msgstr "%qE không phải tên một kiểu"
 
@@ -41887,7 +41618,7 @@ msgstr "cần toán tử hai ngôi"
 #: cp/parser.c:4676
 #, gcc-internal-format
 msgid "expected ..."
-msgstr "cần ..."
+msgstr "cần …"
 
 #: cp/parser.c:4688
 #, gcc-internal-format
@@ -42025,16 +41756,14 @@ msgid "%<_Cilk_spawn%> must be followed by an expression"
 msgstr "%<_Cilk_spawn%> phải được theo sau bởi một biểu thức"
 
 #: cp/parser.c:6648
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments to %<__builtin_shuffle%>"
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_addressof%>"
-msgstr "sai số tham số cho %<__builtin_shuffle%>"
+msgstr "sai số tham số cho %<__builtin_addressof%>"
 
 #: cp/parser.c:6660 cp/pt.c:17186
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments to %<__builtin_complex%>"
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_launder%>"
-msgstr "đối số sai số lượng cho %<__builtin_complex%>"
+msgstr "đối số sai số lượng cho %<__builtin_launder%>"
 
 #: cp/parser.c:6752
 #, gcc-internal-format
@@ -42152,10 +41881,9 @@ msgid "explicit by-copy capture of %<this%> redundant with by-copy capture defau
 msgstr ""
 
 #: cp/parser.c:9998
-#, fuzzy, gcc-internal-format
-#| msgid "%<~auto%> only available with -std=c++14 or -std=gnu++14"
+#, gcc-internal-format
 msgid "%<*this%> capture only available with -std=c++1z or -std=gnu++1z"
-msgstr "%<~auto%> chỉ sẵn sàng trên -std=c++14 hay -std=gnu++14"
+msgstr "chụp %<*this%> chỉ sẵn sàng với -std=c++1z hay -std=gnu++1z"
 
 #: cp/parser.c:10043
 #, gcc-internal-format
@@ -42204,13 +41932,11 @@ msgstr ""
 
 #: cp/parser.c:10223
 #, fuzzy, gcc-internal-format
-#| msgid "duplicate %<volatile%>"
 msgid "duplicate %<mutable%>"
 msgstr "lặp lại %<volatile%>"
 
 #: cp/parser.c:10271
 #, fuzzy, gcc-internal-format
-#| msgid "C++11 %<constexpr%> only available with -std=c++11 or -std=gnu++11"
 msgid "%<constexpr%> lambda only available with -std=c++1z or -std=gnu++1z"
 msgstr "C++11 %<constexpr%> chỉ sẵn sàng với -std=c++11 hay -std=gnu++11"
 
@@ -42246,13 +41972,11 @@ msgstr ""
 
 #: cp/parser.c:11094
 #, fuzzy, gcc-internal-format
-#| msgid "C++11 %<constexpr%> only available with -std=c++11 or -std=gnu++11"
 msgid "%<if constexpr%> only available with -std=c++1z or -std=gnu++1z"
 msgstr "C++11 %<constexpr%> chỉ sẵn sàng với -std=c++11 hay -std=gnu++11"
 
 #: cp/parser.c:11120
 #, fuzzy, gcc-internal-format
-#| msgid "nested namespace definitions only available with -std=c++1z or -std=gnu++1z"
 msgid "init-statement in selection statements only available with -std=c++1z or -std=gnu++1z"
 msgstr "định nghĩa namespaces lồng nhau chỉ sẵn sàng với -std=c++1z hay -std=gnu++1z"
 
@@ -42339,7 +42063,6 @@ msgstr ""
 
 #: cp/parser.c:12828
 #, fuzzy, gcc-internal-format
-#| msgid "types may not be defined in casts"
 msgid "types may not be defined in a for-range-declaration"
 msgstr "các kiểu có lẽ không nên được định nghĩa trong áp kiểu"
 
@@ -42355,13 +42078,11 @@ msgstr ""
 
 #: cp/parser.c:12937
 #, fuzzy, gcc-internal-format
-#| msgid "fold-expressions only available with -std=c++1z or -std=gnu++1z"
 msgid "decomposition declaration only available with -std=c++1z or -std=gnu++1z"
 msgstr "fold-expressions chỉ sẵn sàng với -std=c++1z hay -std=gnu++1z"
 
 #: cp/parser.c:12986
 #, fuzzy, gcc-internal-format
-#| msgid "empty declaration"
 msgid "empty decomposition declaration"
 msgstr "khai báo trống rỗng"
 
@@ -42383,10 +42104,9 @@ msgid "decl-specifier invalid in condition"
 msgstr ""
 
 #: cp/parser.c:13277
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D invalid in %q#T"
+#, gcc-internal-format
 msgid "%qD invalid in lambda"
-msgstr "%q+D không hợp lệ trong %q#T"
+msgstr "%qD không hợp lệ trong lambda"
 
 #: cp/parser.c:13370
 #, gcc-internal-format
@@ -42662,10 +42382,9 @@ msgid "%qD does not name an enumeration in %qT"
 msgstr "%qD không phải tên một kiểu enumeration trong %qT"
 
 #: cp/parser.c:17708
-#, fuzzy, gcc-internal-format
-#| msgid "%<namespace%> definition is not allowed here"
+#, gcc-internal-format
 msgid "unnamed scoped enum is not allowed"
-msgstr "%<namespace%> không cho phép định nghĩa ở đây"
+msgstr ""
 
 #: cp/parser.c:17763
 #, gcc-internal-format
@@ -42703,10 +42422,9 @@ msgid "multiple definition of %q#T"
 msgstr "nhiều định nghĩa cho %q#T"
 
 #: cp/parser.c:17891
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C++ forbids empty anonymous enum"
+#, gcc-internal-format
 msgid "ISO C++ forbids empty unnamed enum"
-msgstr "ISO C++ cấm kiểu liệt kê nặc danh trống rỗng"
+msgstr "ISO C++ cấm kiểu liệt kê nặc danh không tên trống rỗng"
 
 #: cp/parser.c:17911
 #, gcc-internal-format
@@ -42779,10 +42497,9 @@ msgid "%<asm%> in %<constexpr%> function"
 msgstr ""
 
 #: cp/parser.c:19000
-#, fuzzy, gcc-internal-format
-#| msgid "implicit declaration of function %qE"
+#, gcc-internal-format
 msgid "decl-specifier in declaration of deduction guide"
-msgstr "khai báo ngầm của hàm %qE"
+msgstr ""
 
 #: cp/parser.c:19081
 #, gcc-internal-format
@@ -42907,10 +42624,9 @@ msgid "duplicate virt-specifier"
 msgstr "trùng virt-specifier"
 
 #: cp/parser.c:20603
-#, fuzzy, gcc-internal-format
-#| msgid "missing makefile target after %qs"
+#, gcc-internal-format
 msgid "missing template arguments after %qT"
-msgstr "thiếu đích makefile sau %qs"
+msgstr "thiếu đối số mẫu sau %qT"
 
 #: cp/parser.c:20609 cp/typeck2.c:493 cp/typeck2.c:1965
 #, gcc-internal-format
@@ -42935,7 +42651,7 @@ msgstr "cần type-specifier"
 #: cp/parser.c:21029
 #, gcc-internal-format
 msgid "expected %<,%> or %<...%>"
-msgstr "cần %<,%> hoặc %<...%>"
+msgstr "cần %<,%> hoặc %<…%>"
 
 #: cp/parser.c:21104
 #, gcc-internal-format
@@ -43034,7 +42750,6 @@ msgstr ""
 
 #: cp/parser.c:22693
 #, fuzzy, gcc-internal-format
-#| msgid "previous definition of %q+#T"
 msgid "previous definition of %q#T"
 msgstr "khai báo trước đây của %q+#T"
 
@@ -43175,13 +42890,11 @@ msgstr ""
 
 #: cp/parser.c:24777
 #, fuzzy, gcc-internal-format
-#| msgid "expected %<:%> or %<...%>"
 msgid "expected attribute before %<...%>"
 msgstr "cần %<:%> hoặc %<…%>"
 
 #: cp/parser.c:24834
 #, fuzzy, gcc-internal-format
-#| msgid "variable templates only available with -std=c++14 or -std=gnu++14"
 msgid "attribute using prefix only available with -std=c++1z or -std=gnu++1z"
 msgstr "mẫu biến chỉ sẵn sàng với -std=c++14 hay -std=gnu++14"
 
@@ -43591,7 +43304,6 @@ msgstr ""
 
 #: cp/parser.c:36217
 #, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc update%> may only be used in compound statements"
 msgid "%<#pragma acc %s data%> has no data movement clause"
 msgstr "%<#pragma omp cancel%> chỉ có thể sử dụng trong các biểu thức phức hợp"
 
@@ -43652,7 +43364,6 @@ msgstr ""
 
 #: cp/parser.c:37351
 #, fuzzy, gcc-internal-format
-#| msgid "%qD is not a member template function"
 msgid "%qD does not refer to a namespace scope function"
 msgstr "%qD không phải là hàm thành viên mẫu"
 
@@ -43684,7 +43395,6 @@ msgstr ""
 
 #: cp/parser.c:38142
 #, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc update%> may only be used in compound statements"
 msgid "%<#pragma acc wait%> may only be used in compound statements"
 msgstr "%<#pragma omp cancel%> chỉ có thể sử dụng trong các biểu thức phức hợp"
 
@@ -43953,7 +43663,6 @@ msgstr ""
 
 #: cp/pt.c:2991
 #, fuzzy, gcc-internal-format
-#| msgid "previous declaration here"
 msgid "friend declaration here"
 msgstr "khai báo trước ở đây"
 
@@ -44044,7 +43753,6 @@ msgstr ""
 
 #: cp/pt.c:4622
 #, fuzzy, gcc-internal-format
-#| msgid "primary template here"
 msgid "primary template %qD"
 msgstr "mẫu nguyên gốc ở đây"
 
@@ -44351,7 +44059,6 @@ msgstr ""
 
 #: cp/pt.c:6277
 #, fuzzy, gcc-internal-format
-#| msgid "too many arguments to method %qE"
 msgid "  template argument %qE does not match %qE"
 msgstr "quá nhiều đối số cho cho phương thức %qE"
 
@@ -44447,7 +44154,6 @@ msgstr ""
 
 #: cp/pt.c:7324
 #, fuzzy, gcc-internal-format
-#| msgid "invalid use of %<auto%> in template argument"
 msgid "ignoring attributes in template argument %qE"
 msgstr "dùng %<auto%> không hợp lệ trong đối số mẫu"
 
@@ -44520,7 +44226,6 @@ msgstr ""
 
 #: cp/pt.c:7644
 #, fuzzy, gcc-internal-format
-#| msgid "could not convert %qE from %qT to %qT"
 msgid "could not convert template argument %qE from %qT to %qT"
 msgstr "không thể chuyển đổi %qE từ %qT thành %qT"
 
@@ -44586,7 +44291,6 @@ msgstr "ràng buộc mẫu gặp lỗi nghiêm trọng"
 
 #: cp/pt.c:9013
 #, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable template"
 msgid "use of invalid variable template %qE"
 msgstr "%qD không phải là một biến"
 
@@ -44794,8 +44498,7 @@ msgid "%qD is not a class or namespace"
 msgstr "%qD không phải là một lớp hay namespace"
 
 #: cp/pt.c:17841
-#, fuzzy, gcc-internal-format
-#| msgid "%qT is/uses anonymous type"
+#, gcc-internal-format
 msgid "%qT is/uses unnamed type"
 msgstr "%qT là/dùng kiểu nặc danh"
 
@@ -44931,10 +44634,9 @@ msgid "deducing from brace-enclosed initializer list requires #include <initiali
 msgstr ""
 
 #: cp/pt.c:24952
-#, fuzzy, gcc-internal-format
-#| msgid "  member function type %qT is not a valid template argument"
+#, gcc-internal-format
 msgid "non-class template %qT used without template arguments"
-msgstr "  kiểu hàm thành viên %qT không phải là một đối số mẫu hợp lệ"
+msgstr "mẫu không phải lớp %qT được dùng mà không có đỗi số mẫu"
 
 #: cp/pt.c:25006
 #, gcc-internal-format
@@ -44982,10 +44684,9 @@ msgid "deduced return type does not satisfy placeholder constraints"
 msgstr ""
 
 #: cp/pt.c:25190
-#, fuzzy, gcc-internal-format
-#| msgid "insn does not satisfy its constraints:"
+#, gcc-internal-format
 msgid "deduced expression type does not satisfy placeholder constraints"
-msgstr "lệnh không thỏa những ràng buộc của nó:"
+msgstr ""
 
 #: cp/repo.c:113
 #, gcc-internal-format
@@ -45590,7 +45291,6 @@ msgstr ""
 
 #: cp/semantics.c:9481
 #, fuzzy, gcc-internal-format
-#| msgid "unsupported argument to %<__builtin_return_address%>"
 msgid "non-pointer argument to %<__builtin_launder%>"
 msgstr "đối số không được hỗ trợ cho %<__builtin_return_address%>"
 
@@ -45606,13 +45306,11 @@ msgstr "Gặp biểu thức lambda trong biểu thức bất biến"
 
 #: cp/tree.c:3824
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute requires a void return type"
 msgid "%qE attribute applied to %qD with void return type"
 msgstr "Thuộc tính %qE cần kiểu trả về là void"
 
 #: cp/tree.c:3831
 #, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to functions"
 msgid "%qE attribute can only be applied to functions or to class or enumeration types"
 msgstr "thuộc tính %qE chỉ áp dụng cho các hàm"
 
@@ -46150,7 +45848,6 @@ msgstr ""
 
 #: cp/typeck.c:5761
 #, fuzzy, gcc-internal-format
-#| msgid "cannot take address of %qs"
 msgid "attempt to take address of bit-field"
 msgstr "không thể lấy địa chỉ của %qs"
 
@@ -46521,7 +46218,7 @@ msgstr ""
 #: cp/typeck.c:8831
 #, gcc-internal-format
 msgid "return-statement with a value, in function returning 'void'"
-msgstr "biểu thức trả về với một giá trị, trong hàm trả lại `void'"
+msgstr "biểu thức trả về với một giá trị, trong hàm trả lại “void”"
 
 #: cp/typeck.c:8861
 #, gcc-internal-format
@@ -46673,7 +46370,7 @@ msgstr ""
 #: cp/typeck2.c:387
 #, gcc-internal-format
 msgid "\t%#D"
-msgstr ""
+msgstr "\t%#D"
 
 #: cp/typeck2.c:440
 #, gcc-internal-format
@@ -46798,7 +46495,7 @@ msgstr ""
 #: cp/typeck2.c:1435 cp/typeck2.c:1462
 #, gcc-internal-format
 msgid "missing initializer for member %qD"
-msgstr ""
+msgstr "thiếu bộ khởi tạo cho thành viên %qD"
 
 #: cp/typeck2.c:1443
 #, gcc-internal-format
@@ -46871,10 +46568,9 @@ msgid "functional cast to array type %qT"
 msgstr ""
 
 #: cp/typeck2.c:1971
-#, fuzzy, gcc-internal-format
-#| msgid "got %d template parameters for %q#T"
+#, gcc-internal-format
 msgid "cannot deduce template arguments for %qT from ()"
-msgstr "nhận được %d đối số mẫu cho %q#T"
+msgstr ""
 
 #: cp/typeck2.c:1989
 #, gcc-internal-format
@@ -47346,7 +47042,6 @@ msgstr "đối số %qs của %qs intrinsict tại %L phải là %s"
 
 #: fortran/check.c:96
 #, fuzzy, gcc-internal-format
-#| msgid "%qs argument of %qs intrinsic at %L must be a numeric type"
 msgid "%qs argument of %qs intrinsic at %L must have a numeric type"
 msgstr "đối số %qs của %qs intrinsict tại %L phải là kiểu số"
 
@@ -48376,25 +48071,21 @@ msgstr ""
 
 #: fortran/decl.c:639
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Old-style initialization at %C"
 msgid "Empty old style initializer list at %C"
 msgstr "Sự khởi tạo kiểu cũ tại %C"
 
 #: fortran/decl.c:659
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "extra elements in scalar initializer"
 msgid "Repeat spec invalid in scalar initializer at %C"
 msgstr "gặp yếu tố thừa trong bộ khởi tạo vô hướng"
 
 #: fortran/decl.c:664
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "vectorlength must be an integer constant"
 msgid "Repeat spec must be an integer at %C"
 msgstr "chiều dài véc-tơ phải là một hằng nguyên"
 
 #: fortran/decl.c:673
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected component reference at %C"
 msgid "Expected data constant after repeat spec at %C"
 msgstr "Cần tham chiếu thành phần tại %C"
 
@@ -48405,19 +48096,16 @@ msgstr ""
 
 #: fortran/decl.c:731
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "excess elements in array initializer"
 msgid "Not enough elements in array initializer at %C"
 msgstr "gặp yếu tố thừa trong bộ khởi tạo mảng"
 
 #: fortran/decl.c:733
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "excess elements in array initializer"
 msgid "Too many elements in array initializer at %C"
 msgstr "gặp yếu tố thừa trong bộ khởi tạo mảng"
 
 #: fortran/decl.c:752
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Error in pointer initialization at %C"
 msgid "Syntax error in old style initializer list at %C"
 msgstr "Lỗi trong khởi tạo con trỏ tại %C"
 
@@ -48533,7 +48221,6 @@ msgstr ""
 
 #: fortran/decl.c:1505
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "vectorlength must be an integer constant"
 msgid "CHARACTER length must be a constant at %L"
 msgstr "chiều dài véc-tơ phải là một hằng nguyên"
 
@@ -48584,7 +48271,6 @@ msgstr ""
 
 #: fortran/decl.c:1878
 #, fuzzy, gcc-internal-format
-#| msgid "Argument %qs of %qs with PASS(%s) at %L must be scalar"
 msgid "Component %qs with CLASS at %C must be allocatable or pointer"
 msgstr "Đối số %qs của %qs với PASS(%s) tại %L phải là vô hướng"
 
@@ -48595,7 +48281,6 @@ msgstr ""
 
 #: fortran/decl.c:1911
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Component %qs at %C already declared at %L"
 msgid "Component '%s' at %C already declared at %L"
 msgstr "Thành phần “%qs” tại %C đã sẵn được khai báo tại %L"
 
@@ -48681,7 +48366,6 @@ msgstr ""
 
 #: fortran/decl.c:2356
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Error in pointer initialization at %C"
 msgid "Syntax error in old style initialization of %s at %C"
 msgstr "Lỗi trong khởi tạo con trỏ tại %C"
 
@@ -48803,7 +48487,6 @@ msgstr ""
 
 #: fortran/decl.c:3146
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Symbol %qs at %L is ambiguous"
 msgid "Type name '%s' at %C is ambiguous"
 msgstr "Ký hiệu “%qs” tại %L chưa rõ ràng"
 
@@ -49047,7 +48730,6 @@ msgstr ""
 
 #: fortran/decl.c:4916
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in expression at %C"
 msgid "Syntax error in anonymous structure declaration at %C"
 msgstr "Gặp lỗi cú pháp trong biểu thức tại %C"
 
@@ -49235,7 +48917,6 @@ msgstr ""
 
 #: fortran/decl.c:6187
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Statement function at %L cannot appear within an INTERFACE"
 msgid "ENTRY statement at %C cannot appear within a STRUCTURE block"
 msgstr "Hàm khai báo tại %L không phải xuất hiện trong một GIAO DIỆN"
 
@@ -49518,13 +49199,11 @@ msgstr ""
 
 #: fortran/decl.c:7920
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected %s statement at %C"
 msgid "Expected entity-list in AUTOMATIC statement at %C"
 msgstr "Không cần câu lệnh %s tại %C"
 
 #: fortran/decl.c:7927
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in expression at %C"
 msgid "Syntax error in AUTOMATIC statement at %C"
 msgstr "Gặp lỗi cú pháp trong biểu thức tại %C"
 
@@ -49535,13 +49214,11 @@ msgstr ""
 
 #: fortran/decl.c:7974
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected %s statement at %C"
 msgid "Expected entity-list in STATIC statement at %C"
 msgstr "Không cần câu lệnh %s tại %C"
 
 #: fortran/decl.c:7981
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in expression at %C"
 msgid "Syntax error in STATIC statement at %C"
 msgstr "Gặp lỗi cú pháp trong biểu thức tại %C"
 
@@ -49657,25 +49334,21 @@ msgstr "Kiểu TRỪU TƯỢNG tại %C"
 
 #: fortran/decl.c:8579
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to close state file %s [%s]"
 msgid "Failed to create structure type '%s' at %C"
 msgstr "gặp lỗi khi đóng tập tin thống kê %s [%s]"
 
 #: fortran/decl.c:8585
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Procedure %qs at %C is already defined at %L"
 msgid "Type definition of '%s' at %C was already defined at %L"
 msgstr "Thủ tục “%qs” tại %C đã được định nghĩa trước tại %L"
 
 #: fortran/decl.c:8632
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "IMPORT statement at %C"
 msgid "Junk after MAP statement at %C"
 msgstr "câu lệnh IMPORT tại %C"
 
 #: fortran/decl.c:8665
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected END statement at %C"
 msgid "Junk after UNION statement at %C"
 msgstr "Không cần câu lệnh END tại %C"
 
@@ -49691,13 +49364,11 @@ msgstr ""
 
 #: fortran/decl.c:8731
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected CASE statement at %C"
 msgid "Junk after non-nested STRUCTURE statement at %C"
 msgstr "Không cần câu lệnh CASE tại %C"
 
 #: fortran/decl.c:8738
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Function %qs at %L cannot have an initializer"
 msgid "Structure name '%s' at %C cannot be the same as an intrinsic type"
 msgstr "Hàm %qs tại %L không thể có bộ khởi tạo"
 
@@ -50573,13 +50244,11 @@ msgstr "không thể mở tập tin đầu vào: %s"
 
 #: fortran/frontend-passes.c:167
 #, fuzzy, gcc-internal-format
-#| msgid "in statement"
 msgid "No location in statement"
 msgstr "tại câu lệnh"
 
 #: fortran/frontend-passes.c:182
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in expression at %C"
 msgid "No location in expression near %L"
 msgstr "Gặp lỗi cú pháp trong biểu thức tại %C"
 
@@ -50707,7 +50376,6 @@ msgstr "Cần %<END INTERFACE %s%> tại %C"
 
 #: fortran/interface.c:619
 #, fuzzy, gcc-internal-format
-#| msgid "gfc_compare_expr(): Bad basic type"
 msgid "gfc_compare_derived_types: invalid derived type"
 msgstr "gfc_compare_expr(): Kiểu cơ bản sai"
 
@@ -50808,7 +50476,6 @@ msgstr ""
 
 #: fortran/interface.c:1880 fortran/interface.c:1885
 #, fuzzy, gcc-internal-format
-#| msgid "Conversion from %qs to %qs at %L"
 msgid "Ambiguous interfaces in %s for %qs at %L and %qs at %L"
 msgstr "Chuyển đổi từ %qs sang %qs tại %L"
 
@@ -51299,19 +50966,16 @@ msgstr ""
 
 #: fortran/interface.c:4604
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s tag at %L must be of type %s"
 msgid "DTIO dummy argument at %L must be of type %s"
 msgstr "thẻ %s tại %L phải là kiểu %s"
 
 #: fortran/interface.c:4611
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs argument of %qs intrinsic at %L must be of kind %d"
 msgid "DTIO dummy argument at %L must be of KIND = %d"
 msgstr "đối số %qs của %qs intrinsict tại %L phải là các loại %d"
 
 #: fortran/interface.c:4618
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unused dummy argument %qs at %L"
 msgid "DTIO dummy argument at %L be a scalar"
 msgstr "Đối số giả chưa dùng %qs tại %L"
 
@@ -51322,7 +50986,6 @@ msgstr ""
 
 #: fortran/interface.c:4626
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Too many arguments to %s at %L"
 msgid "DTIO dummy argument at %L must have intent %s"
 msgstr "Quá nhiều đối số cho %s tại %L"
 
@@ -51338,13 +51001,11 @@ msgstr ""
 
 #: fortran/interface.c:4706
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Too many arguments in call to %qs at %L"
 msgid "Too few dummy arguments in DTIO procedure '%s' at %L"
 msgstr "Quá nhiều đối số trong cuộc gọi đến %qs tại %L"
 
 #: fortran/interface.c:4713
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Too many arguments in call to %qs at %L"
 msgid "Too many dummy arguments in DTIO procedure '%s' at %L"
 msgstr "Quá nhiều đối số trong cuộc gọi đến %qs tại %L"
 
@@ -51515,7 +51176,6 @@ msgstr ""
 
 #: fortran/io.c:210
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Nonconforming tab character at %C"
 msgid "Nonconforming tab character in format at %C"
 msgstr "Có ký tự tab không phù hợp tại %C"
 
@@ -51551,13 +51211,11 @@ msgstr ""
 
 #: fortran/io.c:865 fortran/io.c:869
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Zero width in format descriptor"
 msgid "Extension: Zero width after L descriptor at %L"
 msgstr "Bộ mô tả định dạng chứa chiều rộng số không"
 
 #: fortran/io.c:881
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Positive width required with T descriptor"
 msgid "Missing positive width after L descriptor at %L"
 msgstr "Dùng bộ mô tả T thì yêu cầu chiều rộng dương"
 
@@ -51853,7 +51511,6 @@ msgstr "câu lệnh FLUSH tại %C"
 
 #: fortran/io.c:2861
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing format label at %C"
 msgid "Missing format with default unit at %C"
 msgstr "Thiếu nhãn định dạng tại %C"
 
@@ -52025,7 +51682,6 @@ msgstr ""
 
 #: fortran/io.c:4435
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unit number in I/O statement too large"
 msgid "UNIT number in INQUIRE statement at %L can not be %d"
 msgstr "Câu lệnh V/R chứa con số đơn vị quá lớn"
 
@@ -52051,7 +51707,6 @@ msgstr ""
 
 #: fortran/match.c:192
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected component reference at %C"
 msgid "Expected structure component or operator name after '.' at %C"
 msgstr "Cần tham chiếu thành phần tại %C"
 
@@ -52343,13 +51998,11 @@ msgstr ""
 
 #: fortran/match.c:2897
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected %s statement at %C"
 msgid "Blank required in %s statement near %C"
 msgstr "Không cần câu lệnh %s tại %C"
 
 #: fortran/match.c:2915
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs at %L must be nonnegative"
 msgid "STOP code at %C cannot be negative"
 msgstr "%s tại %L phải là số nguyên"
 
@@ -53066,7 +52719,6 @@ msgstr ""
 
 #: fortran/module.c:6177
 #, fuzzy, gcc-internal-format
-#| msgid "Symbol %qs already declared"
 msgid "Symbol %qs at %C already declared"
 msgstr "Ký hiệu %qs đã sẵn được khai báo"
 
@@ -53188,7 +52840,6 @@ msgstr ""
 
 #: fortran/openmp.c:499
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in expression at %C"
 msgid "Syntax error in OpenMP DEPEND SINK list at %C"
 msgstr "Gặp lỗi cú pháp trong biểu thức tại %C"
 
@@ -53199,7 +52850,6 @@ msgstr ""
 
 #: fortran/openmp.c:628
 #, fuzzy, gcc-internal-format
-#| msgid "expected end of capture-list"
 msgid "Unexpected OpenACC parallelism."
 msgstr "cần kết thúc của capture-list"
 
@@ -53450,7 +53100,6 @@ msgstr ""
 
 #: fortran/openmp.c:3729
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs at %L must be nonnegative"
 msgid "INTEGER expression of %s clause at %L must be non-negative"
 msgstr "%s tại %L phải là số nguyên"
 
@@ -53659,7 +53308,6 @@ msgstr ""
 
 #: fortran/openmp.c:4319
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "accumulator is not a constant integer"
 msgid "SINK addend not a constant integerat %L"
 msgstr "thanh ghi tổng không phải là số nguyên hằng"
 
@@ -53796,7 +53444,6 @@ msgstr ""
 
 #: fortran/openmp.c:4876
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected expression"
 msgid "unexpected !$OMP ATOMIC expression at %L"
 msgstr "cần biểu thức"
 
@@ -54422,13 +54069,11 @@ msgstr ""
 
 #: fortran/parse.c:3074
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to find class '%s'"
 msgid "failed to create union component '%s'"
 msgstr "không tìm thấy lớp “%s”"
 
 #: fortran/parse.c:3129
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in expression at %C"
 msgid "Syntax error in nested structure declaration at %C"
 msgstr "Gặp lỗi cú pháp trong biểu thức tại %C"
 
@@ -54893,7 +54538,7 @@ msgstr ""
 #: fortran/primary.c:1570
 #, gcc-internal-format, gfc-internal-format
 msgid "Namelist '%s' can not be an argument at %L"
-msgstr "Danh sách tên `%s' không thể là đối số tại %L"
+msgstr "Danh sách tên “%s” không thể là đối số tại %L"
 
 #: fortran/primary.c:1656
 #, gcc-internal-format
@@ -54942,7 +54587,6 @@ msgstr ""
 
 #: fortran/primary.c:2031
 #, fuzzy, gcc-internal-format
-#| msgid "Unexpected %<*%> for codimension %d of %d at %C"
 msgid "Unexpected %<%c%> for nonderived-type variable %qs at %C"
 msgstr "Không cần %<*%> cho đối chiếu %d của %d tại %C"
 
@@ -54983,13 +54627,11 @@ msgstr "gfc_variable_attr(): Tham chiếu mảng sai"
 
 #: fortran/primary.c:2447
 #, fuzzy, gcc-internal-format
-#| msgid "gfc_variable_attr(): Expression isn't a variable"
 msgid "gfc_caf_attr(): Expression isn't a variable"
 msgstr "gfc_variable_attr(): Biểu thức không phải là một biến"
 
 #: fortran/primary.c:2501
 #, fuzzy, gcc-internal-format
-#| msgid "gfc_variable_attr(): Bad array reference"
 msgid "gfc_caf_attr(): Bad array reference"
 msgstr "gfc_variable_attr(): Tham chiếu mảng sai"
 
@@ -55090,9 +54732,8 @@ msgstr ""
 
 #: fortran/primary.c:3581
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Namelist '%s' can not be an argument at %L"
 msgid "Derived type '%s' cannot be used as a variable at %C"
-msgstr "Danh sách tên `%s' không thể là đối số tại %L"
+msgstr "Danh sách tên “%s” không thể là đối số tại %L"
 
 #: fortran/primary.c:3622
 #, gcc-internal-format, gfc-internal-format
@@ -55662,7 +55303,6 @@ msgstr ""
 
 #: fortran/resolve.c:3570
 #, fuzzy, gcc-internal-format
-#| msgid "resolve_operator(): Bad intrinsic"
 msgid "logical_to_bitwise(): Bad intrinsic"
 msgstr "resolve_operator(): intrinsic sai"
 
@@ -56271,7 +55911,6 @@ msgstr "Ngữ cảnh sai cho hạn chế NULL() tại %L"
 
 #: fortran/resolve.c:8976
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Argument %qs of elemental procedure at %L must be scalar"
 msgid "DTIO %s procedure at %L must be recursive"
 msgstr "Tham số %qs của thủ tục cơ bản tại %L phải là vô hướng"
 
@@ -57676,25 +57315,21 @@ msgstr "gfc_simplify_dcmplx(): Kiểu sai (y)"
 
 #: fortran/simplify.c:1736
 #, fuzzy, gcc-internal-format
-#| msgid "in gfc_simplify_atan(): Bad type"
 msgid "in simplify_trig_call(): Bad intrinsic"
 msgstr "in gfc_simplify_atan(): Kiểu sai"
 
 #: fortran/simplify.c:1796
 #, fuzzy, gcc-internal-format
-#| msgid "in gfc_simplify_sin(): Bad type"
 msgid "in gfc_simplify_trigd(): Bad type"
 msgstr "in gfc_simplify_sin(): Kiểu sai"
 
 #: fortran/simplify.c:1814
 #, fuzzy, gcc-internal-format
-#| msgid "in gfc_simplify_atan(): Bad type"
 msgid "in gfc_simplify_atrigd(): Bad type"
 msgstr "in gfc_simplify_atan(): Kiểu sai"
 
 #: fortran/simplify.c:1838
 #, fuzzy, gcc-internal-format
-#| msgid "in gfc_simplify_atan(): Bad type"
 msgid "in gfc_simplify_atan2d(): Bad type"
 msgstr "in gfc_simplify_atan(): Kiểu sai"
 
@@ -58039,7 +57674,6 @@ msgstr ""
 
 #: fortran/symbol.c:970
 #, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Duplicate %s attribute at %L"
 msgid "Duplicate AUTOMATIC attribute specified at %L"
 msgstr "Trùng thuộc tính %s tại %L"
 
@@ -60062,6 +59696,9 @@ msgstr ""
 #~ "near\t\tgần\n"
 #~ "far\t\txa."
 
+#~ msgid "Enable clip instructions."
+#~ msgstr "Bật các câu lệnh trích đoạn."
+
 #~ msgid "Configuration name."
 #~ msgstr "Tên cấu hình."
 
@@ -60094,6 +59731,9 @@ msgstr ""
 
 #~ msgid "All variables default to the near section."
 #~ msgstr "Tất cả các giá trị có thể đặt được thì có phần mặc định là near (gần)."
+
+#~ msgid "Enable min/max instructions."
+#~ msgstr "Bật câu lệnh tính số tối đa/thiểu."
 
 #~ msgid "Enable 32-bit multiply instructions."
 #~ msgstr "Bật câu lệnh nhân lên loại 32-bit."
@@ -60206,9 +59846,6 @@ msgstr ""
 #~ msgid "argument 2 has invalid type"
 #~ msgstr "đối số 2 có kiểu không hợp lệ"
 
-#~ msgid "Clause not supported yet"
-#~ msgstr "Mệnh đề vẫn chưa được hỗ trợ"
-
 #~ msgid "-fsanitize-recover=thread is not supported"
 #~ msgstr "-fsanitize-recover=thread không được hỗ trợ"
 
@@ -60284,9 +59921,6 @@ msgstr ""
 #~ msgid "%<_Atomic%> with OpenMP"
 #~ msgstr "%<_Atomic%> với OpenMP"
 
-#~ msgid "%qD is not a constant"
-#~ msgstr "%q#D không là const"
-
 #~ msgid "invalid pragma"
 #~ msgstr "pragma không hợp lệ"
 
@@ -60349,6 +59983,9 @@ msgstr ""
 
 #~ msgid "method '%s' not found in class"
 #~ msgstr "không tìm thấy phương thức “%s” trong lớp"
+
+#~ msgid "failed to find class '%s'"
+#~ msgstr "không tìm thấy lớp “%s”"
 
 #~ msgid "missing field '%s' in '%s'"
 #~ msgstr "thiếu trường “%s” trong “%s”"
@@ -60430,6 +60067,12 @@ msgstr ""
 
 #~ msgid "verification failed at PC=%d: %s"
 #~ msgstr "thẩm tra gặp lỗi tại PC=%d: %s"
+
+#~ msgid "Clause not supported yet"
+#~ msgstr "Mệnh đề vẫn chưa được hỗ trợ"
+
+#~ msgid "%qD is not a constant"
+#~ msgstr "%q#D không là const"
 
 #~ msgid "array subscript out of bound"
 #~ msgstr "chỉ số mảng nằm ngoài phạm vi"
