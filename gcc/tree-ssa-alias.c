@@ -2373,9 +2373,9 @@ same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
       || !pt_solution_singleton_or_null_p (&pi->pt, &pt_uid))
     return false;
 
-  /* If the solution has a singleton and NULL, then we can not
-     be sure that the two stores hit the same address.  */
-  if (pi->pt.null)
+  /* Be conservative with non-call exceptions when the address might
+     be NULL.  */
+  if (flag_non_call_exceptions && pi->pt.null)
     return false;
 
   /* Check that ptr points relative to obj.  */
