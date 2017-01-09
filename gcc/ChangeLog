@@ -1,3 +1,13 @@
+2017-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2016-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: Add aarch64-*-freebsd* support.
+	* config.host: Likewise.
+	* config/aarch64/aarch64-freebsd.h: New file.
+	* config/aarch64/t-aarch64-freebsd: Ditto.
+
 2017-01-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
