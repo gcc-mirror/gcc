@@ -290,7 +290,7 @@ package body Einfo is
 
    --    Is_Inlined_Always               Flag1
    --    Is_Hidden_Non_Overridden_Subpgm Flag2
-   --    Has_Default_Init_Cond           Flag3
+   --    Has_Own_DIC                     Flag3
    --    Is_Frozen                       Flag4
    --    Has_Discriminants               Flag5
    --    Is_Dispatching_Operation        Flag6
@@ -432,8 +432,8 @@ package body Einfo is
    --    Is_Generic_Instance             Flag130
 
    --    No_Pool_Assigned                Flag131
-   --    Is_Default_Init_Cond_Procedure  Flag132
-   --    Has_Inherited_Default_Init_Cond Flag133
+   --    Is_DIC_Procedure                Flag132
+   --    Has_Inherited_DIC               Flag133
    --    Has_Aliased_Components          Flag135
    --    No_Strict_Aliasing              Flag136
    --    Is_Machine_Code_Subprogram      Flag137
@@ -1527,12 +1527,6 @@ package body Einfo is
       return Flag39 (Base_Type (Id));
    end Has_Default_Aspect;
 
-   function Has_Default_Init_Cond (Id : E) return B is
-   begin
-      pragma Assert (Is_Type (Id));
-      return Flag3 (Base_Type (Id));
-   end Has_Default_Init_Cond;
-
    function Has_Delayed_Aspects (Id : E) return B is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -1619,19 +1613,19 @@ package body Einfo is
    function Has_Inheritable_Invariants (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag248 (Id);
+      return Flag248 (Base_Type (Id));
    end Has_Inheritable_Invariants;
 
-   function Has_Inherited_Default_Init_Cond (Id : E) return B is
+   function Has_Inherited_DIC (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
       return Flag133 (Base_Type (Id));
-   end Has_Inherited_Default_Init_Cond;
+   end Has_Inherited_DIC;
 
    function Has_Inherited_Invariants (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag291 (Id);
+      return Flag291 (Base_Type (Id));
    end Has_Inherited_Invariants;
 
    function Has_Initial_Value (Id : E) return B is
@@ -1693,10 +1687,16 @@ package body Einfo is
       return Flag110 (Id);
    end Has_Out_Or_In_Out_Parameter;
 
+   function Has_Own_DIC (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag3 (Base_Type (Id));
+   end Has_Own_DIC;
+
    function Has_Own_Invariants (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag232 (Id);
+      return Flag232 (Base_Type (Id));
    end Has_Own_Invariants;
 
    function Has_Partial_Visible_Refinement (Id : E) return B is
@@ -2155,11 +2155,11 @@ package body Einfo is
       return Flag74 (Id);
    end Is_CPP_Class;
 
-   function Is_Default_Init_Cond_Procedure (Id : E) return B is
+   function Is_DIC_Procedure (Id : E) return B is
    begin
       pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       return Flag132 (Id);
-   end Is_Default_Init_Cond_Procedure;
+   end Is_DIC_Procedure;
 
    function Is_Descendant_Of_Address (Id : E) return B is
    begin
@@ -4563,12 +4563,6 @@ package body Einfo is
       Set_Flag39 (Id, V);
    end Set_Has_Default_Aspect;
 
-   procedure Set_Has_Default_Init_Cond (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Type (Id));
-      Set_Flag3 (Base_Type (Id), V);
-   end Set_Has_Default_Init_Cond;
-
    procedure Set_Has_Delayed_Aspects (Id : E; V : B := True) is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -4660,19 +4654,19 @@ package body Einfo is
    procedure Set_Has_Inheritable_Invariants (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
-      Set_Flag248 (Id, V);
+      Set_Flag248 (Base_Type (Id), V);
    end Set_Has_Inheritable_Invariants;
 
-   procedure Set_Has_Inherited_Default_Init_Cond (Id : E; V : B := True) is
+   procedure Set_Has_Inherited_DIC (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
       Set_Flag133 (Base_Type (Id), V);
-   end Set_Has_Inherited_Default_Init_Cond;
+   end Set_Has_Inherited_DIC;
 
    procedure Set_Has_Inherited_Invariants (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
-      Set_Flag291 (Id, V);
+      Set_Flag291 (Base_Type (Id), V);
    end Set_Has_Inherited_Invariants;
 
    procedure Set_Has_Initial_Value (Id : E; V : B := True) is
@@ -4735,10 +4729,16 @@ package body Einfo is
       Set_Flag110 (Id, V);
    end Set_Has_Out_Or_In_Out_Parameter;
 
+   procedure Set_Has_Own_DIC (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag3 (Base_Type (Id), V);
+   end Set_Has_Own_DIC;
+
    procedure Set_Has_Own_Invariants (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
-      Set_Flag232 (Id, V);
+      Set_Flag232 (Base_Type (Id), V);
    end Set_Has_Own_Invariants;
 
    procedure Set_Has_Partial_Visible_Refinement (Id : E; V : B := True) is
@@ -5243,11 +5243,11 @@ package body Einfo is
       Set_Flag74 (Id, V);
    end Set_Is_CPP_Class;
 
-   procedure Set_Is_Default_Init_Cond_Procedure (Id : E; V : B := True) is
+   procedure Set_Is_DIC_Procedure (Id : E; V : B := True) is
    begin
       pragma Assert (Ekind (Id) = E_Procedure);
       Set_Flag132 (Id, V);
-   end Set_Is_Default_Init_Cond_Procedure;
+   end Set_Is_DIC_Procedure;
 
    procedure Set_Is_Descendant_Of_Address (Id : E; V : B := True) is
    begin
@@ -7053,39 +7053,6 @@ package body Einfo is
       end loop;
    end Declaration_Node;
 
-   ---------------------------------
-   -- Default_Init_Cond_Procedure --
-   ---------------------------------
-
-   function Default_Init_Cond_Procedure (Id : E) return E is
-      Subp_Elmt : Elmt_Id;
-      Subp_Id   : Entity_Id;
-      Subps     : Elist_Id;
-
-   begin
-      pragma Assert
-        (Is_Type (Id)
-          and then (Has_Default_Init_Cond (Id)
-                     or else Has_Inherited_Default_Init_Cond (Id)));
-
-      Subps := Subprograms_For_Type (Base_Type (Id));
-
-      if Present (Subps) then
-         Subp_Elmt := First_Elmt (Subps);
-         while Present (Subp_Elmt) loop
-            Subp_Id := Node (Subp_Elmt);
-
-            if Is_Default_Init_Cond_Procedure (Subp_Id) then
-               return Subp_Id;
-            end if;
-
-            Next_Elmt (Subp_Elmt);
-         end loop;
-      end if;
-
-      return Empty;
-   end Default_Init_Cond_Procedure;
-
    ---------------------
    -- Designated_Type --
    ---------------------
@@ -7112,6 +7079,36 @@ package body Einfo is
          return Desig_Type;
       end if;
    end Designated_Type;
+
+   -------------------
+   -- DIC_Procedure --
+   -------------------
+
+   function DIC_Procedure (Id : E) return E is
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
+
+   begin
+      pragma Assert (Is_Type (Id));
+
+      Subps := Subprograms_For_Type (Base_Type (Id));
+
+      if Present (Subps) then
+         Subp_Elmt := First_Elmt (Subps);
+         while Present (Subp_Elmt) loop
+            Subp_Id := Node (Subp_Elmt);
+
+            if Is_DIC_Procedure (Subp_Id) then
+               return Subp_Id;
+            end if;
+
+            Next_Elmt (Subp_Elmt);
+         end loop;
+      end if;
+
+      return Empty;
+   end DIC_Procedure;
 
    ----------------------
    -- Entry_Index_Type --
@@ -7430,6 +7427,15 @@ package body Einfo is
       return False;
    end Has_Attach_Handler;
 
+   -------------
+   -- Has_DIC --
+   -------------
+
+   function Has_DIC (Id : E) return B is
+   begin
+      return Has_Own_DIC (Id) or else Has_Inherited_DIC (Id);
+   end Has_DIC;
+
    -----------------
    -- Has_Entries --
    -----------------
@@ -7671,7 +7677,7 @@ package body Einfo is
    begin
       pragma Assert (Is_Type (Id));
 
-      Subps := Subprograms_For_Type (Id);
+      Subps := Subprograms_For_Type (Base_Type (Id));
 
       if Present (Subps) then
          Subp_Elmt := First_Elmt (Subps);
@@ -8407,7 +8413,7 @@ package body Einfo is
    begin
       pragma Assert (Is_Type (Id));
 
-      Subps := Subprograms_For_Type (Id);
+      Subps := Subprograms_For_Type (Base_Type (Id));
 
       if Present (Subps) then
          Subp_Elmt := First_Elmt (Subps);
@@ -8820,28 +8826,18 @@ package body Einfo is
       end case;
    end Set_Component_Alignment;
 
-   -------------------------------------
-   -- Set_Default_Init_Cond_Procedure --
-   -------------------------------------
+   -----------------------
+   -- Set_DIC_Procedure --
+   -----------------------
 
-   procedure Set_Default_Init_Cond_Procedure (Id : E; V : E) is
+   procedure Set_DIC_Procedure (Id : E; V : E) is
       Base_Typ  : Entity_Id;
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
 
    begin
-      --  Once set, this attribute cannot be reset
-
-      if No (V) then
-         pragma Assert (No (Default_Init_Cond_Procedure (Id)));
-         return;
-      end if;
-
-      pragma Assert
-        (Is_Type (Id)
-          and then (Has_Default_Init_Cond (Id)
-                     or else Has_Inherited_Default_Init_Cond (Id)));
+      pragma Assert (Is_Type (Id));
 
       Base_Typ := Base_Type (Id);
       Subps    := Subprograms_For_Type (Base_Typ);
@@ -8859,19 +8855,20 @@ package body Einfo is
       while Present (Subp_Elmt) loop
          Subp_Id := Node (Subp_Elmt);
 
-         if Is_Default_Init_Cond_Procedure (Subp_Id) then
+         if Is_DIC_Procedure (Subp_Id) then
             raise Program_Error;
          end if;
 
          Next_Elmt (Subp_Elmt);
       end loop;
-   end Set_Default_Init_Cond_Procedure;
+   end Set_DIC_Procedure;
 
    -----------------------------
    -- Set_Invariant_Procedure --
    -----------------------------
 
    procedure Set_Invariant_Procedure (Id : E; V : E) is
+      Base_Typ  : Entity_Id;
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
@@ -8879,11 +8876,12 @@ package body Einfo is
    begin
       pragma Assert (Is_Type (Id));
 
-      Subps := Subprograms_For_Type (Id);
+      Base_Typ := Base_Type (Id);
+      Subps    := Subprograms_For_Type (Base_Typ);
 
       if No (Subps) then
          Subps := New_Elmt_List;
-         Set_Subprograms_For_Type (Id, Subps);
+         Set_Subprograms_For_Type (Base_Typ, Subps);
       end if;
 
       Subp_Elmt := First_Elmt (Subps);
@@ -8907,6 +8905,7 @@ package body Einfo is
    -------------------------------------
 
    procedure Set_Partial_Invariant_Procedure (Id : E; V : E) is
+      Base_Typ  : Entity_Id;
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
@@ -8914,11 +8913,12 @@ package body Einfo is
    begin
       pragma Assert (Is_Type (Id));
 
-      Subps := Subprograms_For_Type (Id);
+      Base_Typ := Base_Type (Id);
+      Subps    := Subprograms_For_Type (Base_Typ);
 
       if No (Subps) then
          Subps := New_Elmt_List;
-         Set_Subprograms_For_Type (Id, Subps);
+         Set_Subprograms_For_Type (Base_Typ, Subps);
       end if;
 
       Subp_Elmt := First_Elmt (Subps);
@@ -9277,7 +9277,6 @@ package body Einfo is
       W ("Has_Controlling_Result",          Flag98  (Id));
       W ("Has_Convention_Pragma",           Flag119 (Id));
       W ("Has_Default_Aspect",              Flag39  (Id));
-      W ("Has_Default_Init_Cond",           Flag3   (Id));
       W ("Has_Delayed_Aspects",             Flag200 (Id));
       W ("Has_Delayed_Freeze",              Flag18  (Id));
       W ("Has_Delayed_Rep_Aspects",         Flag261 (Id));
@@ -9294,7 +9293,7 @@ package body Einfo is
       W ("Has_Implicit_Dereference",        Flag251 (Id));
       W ("Has_Independent_Components",      Flag34  (Id));
       W ("Has_Inheritable_Invariants",      Flag248 (Id));
-      W ("Has_Inherited_Default_Init_Cond", Flag133 (Id));
+      W ("Has_Inherited_DIC",               Flag133 (Id));
       W ("Has_Inherited_Invariants",        Flag291 (Id));
       W ("Has_Initial_Value",               Flag219 (Id));
       W ("Has_Loop_Entry_Attributes",       Flag260 (Id));
@@ -9306,6 +9305,7 @@ package body Einfo is
       W ("Has_Non_Standard_Rep",            Flag75  (Id));
       W ("Has_Out_Or_In_Out_Parameter",     Flag110 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
+      W ("Has_Own_DIC",                     Flag3   (Id));
       W ("Has_Own_Invariants",              Flag232 (Id));
       W ("Has_Per_Object_Constraint",       Flag154 (Id));
       W ("Has_Pragma_Controlled",           Flag27  (Id));
@@ -9381,8 +9381,8 @@ package body Einfo is
       W ("Is_Constructor",                  Flag76  (Id));
       W ("Is_Controlled",                   Flag42  (Id));
       W ("Is_Controlling_Formal",           Flag97  (Id));
-      W ("Is_Default_Init_Cond_Procedure",  Flag132 (Id));
       W ("Is_Descendant_Of_Address",        Flag223 (Id));
+      W ("Is_DIC_Procedure",                Flag132 (Id));
       W ("Is_Discrim_SO_Function",          Flag176 (Id));
       W ("Is_Discriminant_Check_Function",  Flag264 (Id));
       W ("Is_Dispatch_Table_Entity",        Flag234 (Id));

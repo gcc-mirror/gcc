@@ -2212,6 +2212,11 @@ package body Sem_Ch9 is
             Set_Must_Have_Preelab_Init (T);
          end if;
 
+         --  Propagate Default_Initial_Condition-related attributes from the
+         --  private type to the protected type.
+
+         Propagate_DIC_Attributes (T, From_Typ => Def_Id);
+
          --  Propagate invariant-related attributes from the private type to
          --  the protected type.
 
@@ -3145,6 +3150,11 @@ package body Sem_Ch9 is
          if Known_To_Have_Preelab_Init (Def_Id) then
             Set_Must_Have_Preelab_Init (T);
          end if;
+
+         --  Propagate Default_Initial_Condition-related attributes from the
+         --  private type to the task type.
+
+         Propagate_DIC_Attributes (T, From_Typ => Def_Id);
 
          --  Propagate invariant-related attributes from the private type to
          --  task type.

@@ -1702,20 +1702,21 @@ package body Sem_Warn is
       -----------------------------
 
       function Is_OK_Fully_Initialized return Boolean is
+         Prag : Node_Id;
+
       begin
          if Is_Access_Type (Typ) and then Is_Dereferenced (N) then
             return False;
 
-         --  If a type has Default_Initial_Condition set, or it inherits it,
-         --  DIC might be specified with a boolean value, meaning that the type
-         --  is considered to be fully default initialized (SPARK RM 3.1 and
-         --  SPARK RM 7.3.3). To avoid generating spurious warnings in this
-         --  case, consider all types with DIC as fully initialized.
+         --  A type subject to pragma Default_Initial_Condition is fully
+         --  default initialized when the pragma appears with a non-null
+         --  argument (SPARK RM 3.1 and SPARK RM 7.3.3).
 
-         elsif Has_Default_Init_Cond (Typ)
-           or else Has_Inherited_Default_Init_Cond (Typ)
-         then
-            return True;
+         elsif Has_DIC (Typ) then
+            Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+            pragma Assert (Present (Prag));
+
+            return Is_Verifiable_DIC_Pragma (Prag);
 
          else
             return Is_Fully_Initialized_Type (Typ);

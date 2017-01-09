@@ -646,17 +646,6 @@ package body Sem_Ch3 is
    --  present. If errors are found, error messages are posted, and the
    --  Real_Range_Specification of Def is reset to Empty.
 
-   procedure Propagate_Default_Init_Cond_Attributes
-     (From_Typ             : Entity_Id;
-      To_Typ               : Entity_Id;
-      Parent_To_Derivation : Boolean := False;
-      Private_To_Full_View : Boolean := False);
-   --  Subsidiary to routines Build_Derived_Type and Process_Full_View. Inherit
-   --  all attributes related to pragma Default_Initial_Condition from From_Typ
-   --  to To_Typ. Flag Parent_To_Derivation should be set when the context is
-   --  the creation of a derived type. Flag Private_To_Full_View should be set
-   --  when processing both views of a private type.
-
    procedure Record_Type_Declaration
      (T    : Entity_Id;
       N    : Node_Id;
@@ -2566,15 +2555,6 @@ package body Sem_Ch3 is
 
             if L = Private_Declarations (Context) then
                Analyze_Package_Contract (Defining_Entity (Context));
-
-               --  Build the bodies of the default initial condition procedures
-               --  for all types subject to pragma Default_Initial_Condition.
-               --  From a purely Ada stand point, this is a freezing activity,
-               --  however freezing is not available under GNATprove_Mode. To
-               --  accomodate both scenarios, the bodies are build at the end
-               --  of private declaration analysis.
-
-               Build_Default_Init_Cond_Procedure_Bodies (L);
 
             --  Otherwise the contract is analyzed at the end of the visible
             --  declarations.
@@ -4639,12 +4619,21 @@ package body Sem_Ch3 is
 
       Build_Derived_Record_Type (N, Parent_Type, T);
 
+      --  A private extension inherits the Default_Initial_Condition pragma
+      --  coming from any parent type within the derivation chain.
+
+      if Has_DIC (Parent_Type) then
+         Set_Has_Inherited_DIC (T);
+      end if;
+
       --  A private extension inherits any class-wide invariants coming from a
       --  parent type or an interface. Note that the invariant procedure of the
       --  parent type should not be inherited because the private extension may
       --  define invariants of its own.
 
-      if Has_Inheritable_Invariants (Parent_Type) then
+      if Has_Inherited_Invariants (Parent_Type)
+        or else Has_Inheritable_Invariants (Parent_Type)
+      then
          Set_Has_Inherited_Invariants (T);
 
       elsif Present (Interfaces (T)) then
@@ -5242,11 +5231,6 @@ package body Sem_Ch3 is
             Set_Static_Discrete_Predicate (Id, Static_Discrete_Predicate (T));
          end if;
       end if;
-
-      --  Propagate invariant-related attributes from the base type to the
-      --  subtype.
-
-      Propagate_Invariant_Attributes (Id, From_Typ => Base_Type (T));
 
       --  Remaining processing depends on characteristics of base type
 
@@ -8863,40 +8847,6 @@ package body Sem_Ch3 is
                   end;
                end if;
 
-               --  A derived type inherits any class-wide invariants coming
-               --  from a parent type or an interface. Note that the invariant
-               --  procedure of the parent type should not be inherited because
-               --  the derived type may define invariants of its own.
-
-               if Ada_Version >= Ada_2012
-                 and then not Is_Interface (Derived_Type)
-               then
-                  if Has_Inherited_Invariants (Parent_Type)
-                    or else Has_Inheritable_Invariants (Parent_Type)
-                  then
-                     Set_Has_Inherited_Invariants (Derived_Type);
-
-                  elsif not Is_Empty_Elmt_List (Ifaces_List) then
-                     declare
-                        Iface      : Entity_Id;
-                        Iface_Elmt : Elmt_Id;
-
-                     begin
-                        Iface_Elmt := First_Elmt (Ifaces_List);
-                        while Present (Iface_Elmt) loop
-                           Iface := Node (Iface_Elmt);
-
-                           if Has_Inheritable_Invariants (Iface) then
-                              Set_Has_Inherited_Invariants (Derived_Type);
-                              exit;
-                           end if;
-
-                           Next_Elmt (Iface_Elmt);
-                        end loop;
-                     end;
-                  end if;
-               end if;
-
                --  A type extension is automatically Ghost when one of its
                --  progenitors is Ghost (SPARK RM 6.9(9)). This property is
                --  also inherited when the parent type is Ghost, but this is
@@ -9128,9 +9078,54 @@ package body Sem_Ch3 is
          Set_Default_SSO (Derived_Type);
       end if;
 
-      --  Propagate invariant information. The new type has invariants if
-      --  they are inherited from the parent type, and these invariants can
-      --  be further inherited, so both flags are set.
+      --  A derived type inherits the Default_Initial_Condition pragma coming
+      --  from any parent type within the derivation chain.
+
+      if Has_DIC (Parent_Type) then
+         Set_Has_Inherited_DIC (Derived_Type);
+      end if;
+
+      --  A derived type inherits any class-wide invariants coming from a
+      --  parent type or an interface. Note that the invariant procedure of
+      --  the parent type should not be inherited because the derived type may
+      --  define invariants of its own.
+
+      if not Is_Interface (Derived_Type) then
+         if Has_Inherited_Invariants (Parent_Type)
+           or else Has_Inheritable_Invariants (Parent_Type)
+         then
+            Set_Has_Inherited_Invariants (Derived_Type);
+
+         elsif Is_Concurrent_Type (Derived_Type)
+           or else Is_Tagged_Type (Derived_Type)
+         then
+            declare
+               Iface      : Entity_Id;
+               Ifaces     : Elist_Id;
+               Iface_Elmt : Elmt_Id;
+
+            begin
+               Collect_Interfaces
+                 (T               => Derived_Type,
+                  Ifaces_List     => Ifaces,
+                  Exclude_Parents => True);
+
+               if Present (Ifaces) then
+                  Iface_Elmt := First_Elmt (Ifaces);
+                  while Present (Iface_Elmt) loop
+                     Iface := Node (Iface_Elmt);
+
+                     if Has_Inheritable_Invariants (Iface) then
+                        Set_Has_Inherited_Invariants (Derived_Type);
+                        exit;
+                     end if;
+
+                     Next_Elmt (Iface_Elmt);
+                  end loop;
+               end if;
+            end;
+         end if;
+      end if;
 
       --  We similarly inherit predicates
 
@@ -9141,18 +9136,6 @@ package body Sem_Ch3 is
       --  The derived type inherits the representation clauses of the parent
 
       Inherit_Rep_Item_Chain (Derived_Type, Parent_Type);
-
-      --  Propagate the attributes related to pragma Default_Initial_Condition
-      --  from the parent type to the private extension. A derived type always
-      --  inherits the default initial condition flag from the parent type. If
-      --  the derived type carries its own Default_Initial_Condition pragma,
-      --  the flag is later reset in Analyze_Pragma. Note that both flags are
-      --  mutually exclusive.
-
-      Propagate_Default_Init_Cond_Attributes
-        (From_Typ             => Parent_Type,
-         To_Typ               => Derived_Type,
-         Parent_To_Derivation => True);
 
       --  If the parent type has delayed rep aspects, then mark the derived
       --  type as possibly inheriting a delayed rep aspect.
@@ -15161,6 +15144,10 @@ package body Sem_Ch3 is
       --  Actual_Subp is the actual subprogram corresponding with the generic
       --  subprogram Subp.
 
+      ------------------------
+      -- Check_Derived_Type --
+      ------------------------
+
       function Check_Derived_Type return Boolean is
          E        : Entity_Id;
          Elmt     : Elmt_Id;
@@ -15171,7 +15158,7 @@ package body Sem_Ch3 is
 
       begin
          --  Traverse list of entities in the current scope searching for
-         --  an incomplete type whose full-view is derived type
+         --  an incomplete type whose full-view is derived type.
 
          E := First_Entity (Scope (Derived_Type));
          while Present (E) and then E /= Derived_Type loop
@@ -20195,46 +20182,6 @@ package body Sem_Ch3 is
          Set_Has_Specified_Stream_Output (Full_T);
       end if;
 
-      --  Propagate the attributes related to pragma Default_Initial_Condition
-      --  from the private to the full view. Note that both flags are mutually
-      --  exclusive.
-
-      if Has_Default_Init_Cond (Priv_T)
-        or else Has_Inherited_Default_Init_Cond (Priv_T)
-      then
-         Propagate_Default_Init_Cond_Attributes
-           (From_Typ             => Priv_T,
-            To_Typ               => Full_T,
-            Private_To_Full_View => True);
-
-      --  In the case where the full view is derived from another private type,
-      --  the attributes related to pragma Default_Initial_Condition must be
-      --  propagated from the full to the private view to maintain consistency
-      --  of views.
-
-      --    package Pack is
-      --       type Parent_Typ is private
-      --         with Default_Initial_Condition ...;
-      --    private
-      --       type Parent_Typ is ...;
-      --    end Pack;
-
-      --    with Pack; use Pack;
-      --    package Pack_2 is
-      --       type Deriv_Typ is private;         --  must inherit
-      --    private
-      --       type Deriv_Typ is new Parent_Typ;  --  must inherit
-      --    end Pack_2;
-
-      elsif Has_Default_Init_Cond (Full_T)
-        or else Has_Inherited_Default_Init_Cond (Full_T)
-      then
-         Propagate_Default_Init_Cond_Attributes
-           (From_Typ             => Full_T,
-            To_Typ               => Priv_T,
-            Private_To_Full_View => True);
-      end if;
-
       if Is_Ghost_Entity (Priv_T) then
 
          --  The Ghost policy in effect at the point of declaration and at the
@@ -20248,7 +20195,13 @@ package body Sem_Ch3 is
          Mark_Full_View_As_Ghost (Priv_T, Full_T);
       end if;
 
-      --  Propagate invariant-related attributes from the private view to the
+      --  Propagate Default_Initial_Condition-related attributes from the
+      --  partial view to the full view and its base type.
+
+      Propagate_DIC_Attributes (Full_T, From_Typ => Priv_T);
+      Propagate_DIC_Attributes (Base_Type (Full_T), From_Typ => Priv_T);
+
+      --  Propagate invariant-related attributes from the partial view to the
       --  full view and its base type.
 
       Propagate_Invariant_Attributes (Full_T, From_Typ => Priv_T);
@@ -21084,121 +21037,6 @@ package body Sem_Ch3 is
          return Def_Id;
       end if;
    end Process_Subtype;
-
-   --------------------------------------------
-   -- Propagate_Default_Init_Cond_Attributes --
-   --------------------------------------------
-
-   procedure Propagate_Default_Init_Cond_Attributes
-     (From_Typ             : Entity_Id;
-      To_Typ               : Entity_Id;
-      Parent_To_Derivation : Boolean := False;
-      Private_To_Full_View : Boolean := False)
-   is
-      procedure Remove_Default_Init_Cond_Procedure (Typ : Entity_Id);
-      --  Remove the default initial condition procedure (if any) from the
-      --  Subprograms_For_Type chain of type Typ.
-
-      ----------------------------------------
-      -- Remove_Default_Init_Cond_Procedure --
-      ----------------------------------------
-
-      procedure Remove_Default_Init_Cond_Procedure (Typ : Entity_Id) is
-         Subps     : constant Elist_Id := Subprograms_For_Type (Typ);
-         Subp_Elmt : Elmt_Id;
-         Subp_Id   : Entity_Id;
-
-      begin
-         if Present (Subps) then
-            Subp_Elmt := First_Elmt (Subps);
-            while Present (Subp_Elmt) loop
-               Subp_Id := Node (Subp_Elmt);
-
-               if Is_Default_Init_Cond_Procedure (Subp_Id) then
-                  Remove_Elmt (Subps, Subp_Elmt);
-                  exit;
-               end if;
-
-               Next_Elmt (Subp_Elmt);
-            end loop;
-         end if;
-      end Remove_Default_Init_Cond_Procedure;
-
-      --  Local variables
-
-      Inherit_Procedure : Boolean := False;
-
-   --  Start of processing for Propagate_Default_Init_Cond_Attributes
-
-   begin
-      if Has_Default_Init_Cond (From_Typ) then
-
-         --  A derived type inherits the attributes from its parent type
-
-         if Parent_To_Derivation then
-            Set_Has_Inherited_Default_Init_Cond (To_Typ);
-
-         --  A full view shares the attributes with its private view
-
-         else
-            Set_Has_Default_Init_Cond (To_Typ);
-         end if;
-
-         Inherit_Procedure := True;
-
-         --  Due to the order of expansion, a derived private type is processed
-         --  by two routines which both attempt to set the attributes related
-         --  to pragma Default_Initial_Condition - Build_Derived_Type and then
-         --  Process_Full_View.
-
-         --    package Pack is
-         --       type Parent_Typ is private
-         --         with Default_Initial_Condition ...;
-         --    private
-         --       type Parent_Typ is ...;
-         --    end Pack;
-
-         --    with Pack; use Pack;
-         --    package Pack_2 is
-         --       type Deriv_Typ is private
-         --         with Default_Initial_Condition ...;
-         --    private
-         --       type Deriv_Typ is new Parent_Typ;
-         --    end Pack_2;
-
-         --  When Build_Derived_Type operates, it sets the attributes on the
-         --  full view without taking into account that the private view may
-         --  define its own default initial condition procedure. This becomes
-         --  apparent in Process_Full_View which must undo some of the work by
-         --  Build_Derived_Type and propagate the attributes from the private
-         --  to the full view.
-
-         if Private_To_Full_View then
-            Set_Has_Inherited_Default_Init_Cond (To_Typ, False);
-            Remove_Default_Init_Cond_Procedure (To_Typ);
-         end if;
-
-      --  A type must inherit the default initial condition procedure from a
-      --  parent type when the parent itself is inheriting the procedure or
-      --  when it is defining one. This circuitry is also used when dealing
-      --  with the private / full view of a type.
-
-      elsif Has_Inherited_Default_Init_Cond (From_Typ)
-        or (Parent_To_Derivation
-              and Present (Get_Pragma
-                    (From_Typ, Pragma_Default_Initial_Condition)))
-      then
-         Set_Has_Inherited_Default_Init_Cond (To_Typ);
-         Inherit_Procedure := True;
-      end if;
-
-      if Inherit_Procedure
-        and then No (Default_Init_Cond_Procedure (To_Typ))
-      then
-         Set_Default_Init_Cond_Procedure
-           (To_Typ, Default_Init_Cond_Procedure (From_Typ));
-      end if;
-   end Propagate_Default_Init_Cond_Attributes;
 
    -----------------------------
    -- Record_Type_Declaration --

@@ -1284,6 +1284,14 @@ package body Sinfo is
       return Node3 (N);
    end Expression;
 
+   function Expression_Copy
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma_Argument_Association);
+      return Node2 (N);
+   end Expression_Copy;
+
    function Expressions
       (N : Node_Id) return List_Id is
    begin
@@ -4554,6 +4562,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Unchecked_Type_Conversion);
       Set_Node3_With_Parent (N, Val);
    end Set_Expression;
+
+   procedure Set_Expression_Copy
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma_Argument_Association);
+      Set_Node2 (N, Val);  -- semantic field, no parent set
+   end Set_Expression_Copy;
 
    procedure Set_Expressions
       (N : Node_Id; Val : List_Id) is

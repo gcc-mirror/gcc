@@ -203,7 +203,6 @@ package body Nlists is
    -----------------
 
    procedure Append_List (List : List_Id; To : List_Id) is
-
       procedure Append_List_Debug;
       pragma Inline (Append_List_Debug);
       --  Output debug information if Debug_Flag_N set
@@ -268,6 +267,28 @@ package body Nlists is
    begin
       Append_List (List, To);
    end Append_List_To;
+
+   ----------------
+   -- Append_New --
+   ----------------
+
+   procedure Append_New (Node : Node_Or_Entity_Id; To : in out List_Id) is
+   begin
+      if No (To) then
+         To := New_List;
+      end if;
+
+      Append (Node, To);
+   end Append_New;
+
+   -------------------
+   -- Append_New_To --
+   -------------------
+
+   procedure Append_New_To (To : in out List_Id; Node : Node_Or_Entity_Id) is
+   begin
+      Append_New (Node, To);
+   end Append_New_To;
 
    ---------------
    -- Append_To --
