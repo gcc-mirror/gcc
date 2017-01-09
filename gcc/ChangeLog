@@ -1,3 +1,10 @@
+2017-01-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/79007
+	PR tree-optimization/67955
+	* tree-ssa-alias.c (same_addr_size_stores_p): Only need to be
+	conservative for pt.null when flag_non_call_exceptions is on.
+
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/79019
