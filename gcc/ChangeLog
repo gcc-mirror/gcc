@@ -1,3 +1,22 @@
+2017-01-09  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def: Add thunderx2t99.  Change vulcan
+	to reference thunderx2t99 for the tuning structure
+	* config/aarch64/aarch64-cost-tables.h (vulcan_extra_costs): Rename to ...
+	(thunderx2t99_extra_costs): This.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.c (vulcan_addrcost_table): Rename to ...
+	(vulcan_addrcost_table): This.
+	(vulcan_regmove_cost): Rename to ...
+	(thunderx2t99_regmove_cost): This.
+	(vulcan_vector_cost): Rename to ...
+	(thunderx2t99_vector_cost): this.
+	(vulcan_branch_cost): Rename to ...
+	(thunderx2t99_branch_cost): This.
+	(vulcan_tunings): Rename to ...
+	(thunderx2t99_tunings): This and s/vulcan/thunderx2t99 .
+	* doc/invoke.texi (AARCH64/mtune): Add thunderx2t99.
+
 2017-01-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/78365

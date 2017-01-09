@@ -127,7 +127,7 @@ const struct cpu_cost_table thunderx_extra_costs =
   }
 };
 
-const struct cpu_cost_table vulcan_extra_costs =
+const struct cpu_cost_table thunderx2t99_extra_costs =
 {
   /* ALU */
   {
