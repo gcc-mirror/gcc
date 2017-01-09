@@ -1,3 +1,8 @@
+2017-01-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* tree-ssa-address.c (gen_addr_rtx): Don't handle index if it
+	is const0_rtx.
+
 2017-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78997

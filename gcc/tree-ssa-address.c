@@ -115,7 +115,7 @@ gen_addr_rtx (machine_mode address_mode,
   if (offset_p)
     *offset_p = NULL;
 
-  if (index)
+  if (index && index != const0_rtx)
     {
       act_elem = index;
       if (step)
