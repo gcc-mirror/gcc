@@ -1,5 +1,10 @@
 2017-01-08  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* invoke.texi (Option Summary): Correct spacing in option lists
+	and add line breaks to fix over-long lines.
+
+2017-01-08  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR middle-end/17660
 
 	* extend.texi (Common Variable Attributes): Add xref to GCC
