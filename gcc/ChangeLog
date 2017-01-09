@@ -1,3 +1,14 @@
+2017-01-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16519
+
+	* doc/invoke.texi (Option Summary): Move -pthread to Linker Options
+	and Preprocessor Options.
+	(Options for Linking): Document -pthread here....
+	(RS/6000 and PowerPC Options): ...not here.
+	(Solaris 2 Options): ...or here.
+	* doc/cppopts.texi: Document -pthread.
+
 2017-01-08  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/77708

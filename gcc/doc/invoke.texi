@@ -475,7 +475,7 @@ Objective-C and Objective-C++ Dialects}.
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
 -H  -imacros @var{file}  -include @var{file} @gol
 -M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT @gol
--no-integrated-cpp  -P  -remap @gol
+-no-integrated-cpp  -P  -pthread  -remap @gol
 -traditional  -traditional-cpp  -trigraphs @gol
 -U@var{macro}  -undef  @gol
 -Wp,@var{option}  -Xpreprocessor @var{option}}
@@ -487,7 +487,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker} -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
+-nostartfiles  -nodefaultlibs  -nostdlib -pie -pthread -rdynamic @gol
 -s  -static -static-libgcc -static-libstdc++ @gol
 -static-libasan -static-libtsan -static-liblsan -static-libubsan @gol
 -static-libmpx -static-libmpxwrappers @gol
@@ -1023,7 +1023,7 @@ See RS/6000 and PowerPC Options.
 -mfloat-gprs=yes  -mfloat-gprs=no -mfloat-gprs=single -mfloat-gprs=double @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
--msdata=@var{opt}  -mvxworks  -G @var{num}  -pthread @gol
+-msdata=@var{opt}  -mvxworks  -G @var{num} @gol
 -mrecip -mrecip=@var{opt} -mno-recip -mrecip-precision @gol
 -mno-recip-precision @gol
 -mveclibabi=@var{type} -mfriz -mno-friz @gol
@@ -1096,7 +1096,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mclear-hwcap -mno-clear-hwcap -mimpure-text  -mno-impure-text @gol
--pthreads -pthread}
+-pthreads}
 
 @emph{SPARC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -11565,6 +11565,14 @@ or model suboptions) when you specify this linker option.
 @item -no-pie
 @opindex no-pie
 Don't produce a position independent executable.
+
+@item -pthread
+@opindex pthread
+Link with the POSIX threads library.  This option is supported on 
+GNU/Linux targets, most other Unix derivatives, and also on 
+x86 Cygwin and MinGW targets.  On some targets this option also sets 
+flags for the preprocessor, so it should be used consistently for both
+compilation and linking.
 
 @item -rdynamic
 @opindex rdynamic
@@ -22040,11 +22048,6 @@ reliably associate function call with argument setup instructions for
 TLS optimization, which in turn allows GCC to better schedule the
 sequence.
 
-@item -pthread
-@opindex pthread
-Adds support for multithreading with the @dfn{pthreads} library.
-This option sets flags for both the preprocessor and linker.
-
 @item -mrecip
 @itemx -mno-recip
 @opindex mrecip
@@ -23186,14 +23189,7 @@ These switches are supported in addition to the above on Solaris 2:
 @table @gcctabopt
 @item -pthreads
 @opindex pthreads
-Add support for multithreading using the POSIX threads library.  This
-option sets flags for both the preprocessor and linker.  This option does
-not affect the thread safety of object code produced  by the compiler or
-that of libraries supplied with it.
-
-@item -pthread
-@opindex pthread
-This is a synonym for @option{-pthreads}.
+This is a synonym for @option{-pthread}.
 @end table
 
 @node SPARC Options
