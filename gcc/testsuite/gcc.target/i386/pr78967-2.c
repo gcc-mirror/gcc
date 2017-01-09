@@ -1,6 +1,7 @@
 /* PR target/78967 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -masm=att" } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-final { scan-assembler-not "movzbl" } } */
 
 typedef __SIZE_TYPE__ size_t;
