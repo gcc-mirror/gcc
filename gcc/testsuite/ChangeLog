@@ -1,3 +1,8 @@
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78938
+	* gcc.dg/vect/pr78938.c: New test.
+
 2017-01-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/20161219.c: New test.
