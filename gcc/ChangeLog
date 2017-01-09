@@ -1,3 +1,9 @@
+2017-01-09  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/79033
+	* asan.c (asan_emit_stack_protection): Increase local buffer size
+	to avoid snprintf truncation warning.
+
 2017-01-09  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-cores.def: Add thunderx2t99.  Change vulcan

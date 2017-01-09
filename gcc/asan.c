@@ -1068,7 +1068,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   rtx shadow_base, shadow_mem, ret, mem, orig_base;
   rtx_code_label *lab;
   rtx_insn *insns;
-  char buf[30];
+  char buf[32];
   unsigned char shadow_bytes[4];
   HOST_WIDE_INT base_offset = offsets[length - 1];
   HOST_WIDE_INT base_align_bias = 0, offset, prev_offset;
