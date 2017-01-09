@@ -1,3 +1,10 @@
+2017-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2016-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.host: Add support for aarch64-*-freebsd*.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
