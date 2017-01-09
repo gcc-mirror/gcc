@@ -714,7 +714,16 @@ test_g_long_double (void)
   EQL ( 10,  11, "%Lg", 1.0L / 512);
 
   /* Numbers that are not exactly representable.  */
+#if __LDBL_DIG__ < 31
+  /* x86_64, for example, represents 0.1 as 1.000000...1...e-1
+     and formats it as either "0.1" (when rounded down) or "0.100001"
+     (rounded up).  */
   RNG ( 3,  8,  9, "%Lg", 0.1L);
+#else
+  /* powerpc64 represents 0.1 as 9.999999...6e-2 and formats it
+   as "0.0999999" (rounded down) or "0.1" (rounded up).  */
+  RNG ( 3,  9, 10, "%Lg", 0.1L);
+#endif
   RNG ( 4,  8,  9, "%Lg", 0.12L);
   RNG ( 5,  8,  9, "%Lg", 0.123L);
   RNG ( 6,  8,  9, "%Lg", 0.1234L);
