@@ -1,3 +1,9 @@
+2017-01-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libgomp/60670
+	* Makefile.am: Make fincludedir multilib-aware.
+	* Makefile.in: Regenerate.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
