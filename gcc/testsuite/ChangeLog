@@ -1,3 +1,9 @@
+2017-01-09  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/79036
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Handle extended formats
+	with different precisions.
+
 2017-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/opt/call2.C: New test.
