@@ -1,3 +1,9 @@
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/79019
+	PR translation/79020
+	* lto-symtab.c (lto_symtab_merge_symbols): Fix comment typo.
+
 2017-01-06  Nathan Sidwell  <nathan@acm.org>
 
 	* lto-partition.c (promote_symbol): Write to dump file sooner,

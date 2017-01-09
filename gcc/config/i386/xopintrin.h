@@ -36,7 +36,7 @@
 #define __DISABLE_XOP__
 #endif /* __XOP__ */
 
-/* Integer multiply/add intructions. */
+/* Integer multiply/add instructions. */
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maccs_epi16(__m128i __A, __m128i __B, __m128i __C)
 {

@@ -809,11 +809,16 @@ msp430_option_override (void)
 		{
 		  if (target_cpu == NULL)
 		    warning (0,
-			     "Unrecognised MCU name '%s', assuming that it is just a MSP430 with no hardware multiply.\nUse the -mcpu and -mhwmult options to set these explicitly.",
+			     "Unrecognized MCU name '%s', assuming that it is "
+			     "just a MSP430 with no hardware multiply.\n"
+			     "Use the -mcpu and -mhwmult options to set "
+			     "these explicitly.",
 			     target_mcu);
 		  else
 		    warning (0,
-			     "Unrecognised MCU name '%s', assuming that it has no hardware multiply.\nUse the -mhwmult option to set this explicitly.",
+			     "Unrecognized MCU name '%s', assuming that it "
+			     "has no hardware multiply.\nUse the -mhwmult "
+			     "option to set this explicitly.",
 			     target_mcu);
 		}
 
@@ -823,14 +828,15 @@ msp430_option_override (void)
 	    {
 	      if (msp430_warn_mcu)
 		warning (0,
-			 "Unrecognised MCU name '%s', assuming that it just supports the MSP430 ISA.\nUse the -mcpu option to set the ISA explicitly.",
+			 "Unrecognized MCU name '%s', assuming that it just "
+			 "supports the MSP430 ISA.\nUse the -mcpu option to "
+			 "set the ISA explicitly.",
 			 target_mcu);
 
 	      msp430x = false;
 	    }
 	  else if (msp430_warn_mcu)
-	    warning (0,
-		     "Unrecognised MCU name '%s'.", target_mcu);
+	    warning (0, "Unrecognized MCU name '%s'.", target_mcu);
 	}
     }
 
@@ -1851,7 +1857,7 @@ msp430_attr (tree * node,
 	    /* Allow the attribute to be added - the linker script
 	       being used may still recognise this name.  */
 	    warning (OPT_Wattributes,
-		     "unrecognised interrupt vector argument of %qE attribute",
+		     "unrecognized interrupt vector argument of %qE attribute",
 		     name);
 	  break;
 

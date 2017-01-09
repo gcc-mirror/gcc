@@ -1,3 +1,11 @@
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/79019
+	PR translation/79020
+	* c-c++-common/goacc/host_data-2.c (f): Adjust expected spelling of
+	diagnostics.
+	* gfortran.dg/initialization_17.f90: Likewise.
+
 2017-01-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR testsuite/79026

@@ -1262,7 +1262,7 @@ Suppress output of addresses in debugging dumps.
 freport-bug
 Common Driver Var(flag_report_bug)
 Collect and dump debug information into temporary file if ICE in C/C++
-compiler occured.
+compiler occurred.
 
 fdump-internal-locations
 Common Var(flag_dump_locations) Init(0)

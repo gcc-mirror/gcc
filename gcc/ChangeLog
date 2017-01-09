@@ -1,5 +1,46 @@
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR translation/79019
+	PR translation/79020
+	* params.def (PARAM_INLINE_MIN_SPEEDUP,
+	PARAM_IPA_CP_SINGLE_CALL_PENALTY,
+	PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD): Fix typos
+	in descriptions.
+	* config/avr/avr.opt (maccumulate-args): Likewise.
+	* config/msp430/msp430.opt (mwarn-mcu): Likewise.
+	* common.opt (freport-bug): Likewise.
+	* cif-code.def (CIF_FINAL_ERROR): Likewise.
+	* doc/invoke.texi (ipa-cp-single-call-penalty): Likewise.
+	* config/s390/s390.c (s390_invalid_binary_op): Fix spelling in
+	translatable string.
+	* config/i386/i386.c (function_value_32): Likewise.
+	* config/nios2/nios2.c (nios2_valid_target_attribute_rec): Likewise.
+	* config/msp430/msp430.c (msp430_option_override, msp430_attr):
+	Likewise.
+	* config/msp430/driver-msp430.c (msp430_select_hwmult_lib): Likewise.
+	* common/config/msp430/msp430-common.c (msp430_handle_option):
+	Likewise.
+	* symtab.c (symtab_node::verify_base): Likewise.
+	* opts.c (set_debug_level): Likewise.
+	* tree.c (verify_type_variant): Likewise.  Fix typo in comment.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Add
+	missing whitespace to translatable strings.
+	* config/avr/avr.md (bswapsi2): Fix typo in comment.
+	* config/sh/superh.h: Likewise.
+	* config/i386/xopintrin.h: Likewise.
+	* config/i386/znver1.md: Likewise.
+	* config/rs6000/rs6000.c (struct rs6000_opt_mask): Likewise.
+	* ipa-inline-analysis.c (compute_inline_parameters): Likewise.
+	* double-int.h (struct double_int): Likewise.
+	* double-int.c (div_and_round_double): Likewise.
+	* wide-int.cc: Likewise.
+	* tree-ssa.c (non_rewritable_mem_ref_base): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Likewise.
+	* cfgcleanup.c (crossjumps_occured): Renamed to ...
+	(crossjumps_occurred): ... this.
+	(try_crossjump_bb, try_head_merge_bb, try_optimize_cfg, cleanup_cfg):
+	Adjust all uses.
+
 	PR tree-optimization/78899
 	* tree-if-conv.c (version_loop_for_if_conversion): Instead of
 	returning bool return struct loop *, NULL for failure and the new

@@ -138,4 +138,4 @@ DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,
 
 /* We can't inline because of instrumentation thunk.  */
 DEFCIFCODE(CHKP, CIF_FINAL_ERROR,
-	   N_("caller is instrumetnation thunk"))
+	   N_("caller is instrumentation thunk"))

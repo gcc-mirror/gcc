@@ -137,7 +137,7 @@ cilk_cp_detect_spawn_and_unwrap (tree *exp0)
    This function is passed in as a function pointer to walk_tree.  *TP is
    the current tree pointer, *WALK_SUBTREES is set to 0 by this function if
    recursing into TP's subtrees is unnecessary. *DATA is a bool variable that
-   is set to false if an error has occured.  */
+   is set to false if an error has occurred.  */
 
 static tree
 cpp_validate_cilk_plus_loop_aux (tree *tp, int *walk_subtrees, void *data)

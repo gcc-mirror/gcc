@@ -2967,7 +2967,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       inline_update_overall_summary (node);
       info->self_size = info->size;
       info->self_time = info->time;
-      /* We can not inline instrumetnation clones.  */
+      /* We can not inline instrumentation clones.  */
       if (node->thunk.add_pointer_bounds_args)
 	{
           info->inlinable = false;

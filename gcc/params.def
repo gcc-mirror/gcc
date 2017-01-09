@@ -51,7 +51,7 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 
 DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 	  "inline-min-speedup",
-	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-isnsns-auto.",
+	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-insns-auto.",
 	  10, 0, 0)
 
 /* The single function inlining limit. This is the maximum size
@@ -1007,7 +1007,7 @@ DEFPARAM (PARAM_IPA_CP_RECURSION_PENALTY,
 
 DEFPARAM (PARAM_IPA_CP_SINGLE_CALL_PENALTY,
 	  "ipa-cp-single-call-penalty",
-	  "Percentage penalty functions containg a single call to another "
+	  "Percentage penalty functions containing a single call to another "
 	  "function will receive when they are evaluated for cloning..",
 	  15, 0, 100)
 
@@ -1170,7 +1170,7 @@ DEFPARAM (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD,
 
 DEFPARAM (PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD,
 	 "use-after-scope-direct-emission-threshold",
-	 "Use direct poisoning/unpoisoning intructions for variables "
+	 "Use direct poisoning/unpoisoning instructions for variables "
 	 "smaller or equal to this number.",
 	 256, 0, INT_MAX)
 

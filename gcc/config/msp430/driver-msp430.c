@@ -684,7 +684,7 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED, const char ** argv ATTRIBUT
 		case 4: return "-lmul_32";
 		case 8: return "-lmul_f5";
 		default:
-		  error ("unrecognised hwpy field in msp430_mcu_data[%d]: %d",
+		  error ("unrecognized hwpy field in msp430_mcu_data[%d]: %d",
 			 i, msp430_mcu_data[i].hwmpy);
 		  break;
 		}
