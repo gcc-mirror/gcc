@@ -81,6 +81,12 @@
 # define THROW(X) noexcept(false)
 #endif
 
+#if _GLIBCXX_HAVE___CXA_THREAD_ATEXIT || _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL
+// Correct order of thread_local destruction needs __cxa_thread_atexit_impl
+// or similar support from libc.
+# define CORRECT_THREAD_LOCAL_DTORS 1
+#endif
+
 namespace __gnu_test
 {
   // All macros are defined in GLIBCXX_CONFIGURE_TESTSUITE and imported
