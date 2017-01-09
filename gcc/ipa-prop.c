@@ -4775,7 +4775,7 @@ ipa_write_jump_function (struct output_block *ob,
     {
       streamer_write_widest_int (ob, jump_func->bits.value);
       streamer_write_widest_int (ob, jump_func->bits.mask);
-    }   
+    }
   bp_pack_value (&bp, jump_func->vr_known, 1);
   streamer_write_bitpack (&bp);
   if (jump_func->vr_known)
@@ -4973,7 +4973,10 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     bp_pack_value (&bp, ipa_is_param_used (info, j), 1);
   streamer_write_bitpack (&bp);
   for (j = 0; j < ipa_get_param_count (info); j++)
-    streamer_write_hwi (ob, ipa_get_controlled_uses (info, j));
+    {
+      streamer_write_hwi (ob, ipa_get_controlled_uses (info, j));
+      stream_write_tree (ob, ipa_get_type (info, j), true);
+    }
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
@@ -5020,7 +5023,7 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
 
   for (k = 0; k < ipa_get_param_count (info); k++)
     info->descriptors[k].move_cost = streamer_read_uhwi (ib);
-    
+
   bp = streamer_read_bitpack (ib);
   if (ipa_get_param_count (info) != 0)
     info->analysis_done = true;
@@ -5028,7 +5031,10 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   for (k = 0; k < ipa_get_param_count (info); k++)
     ipa_set_param_used (info, k, bp_unpack_value (&bp, 1));
   for (k = 0; k < ipa_get_param_count (info); k++)
-    ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
+    {
+      ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
+      info->descriptors[k].decl_or_type = stream_read_tree (ib, data_in);
+    }
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
