@@ -1,5 +1,9 @@
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78948
+	* g++.dg/cpp1z/constexpr-if10.C: Fix PR number in comment.
+	(main): Use int* instead of long long.
+
 	PR tree-optimization/78938
 	* gcc.dg/vect/pr78938.c: New test.
 

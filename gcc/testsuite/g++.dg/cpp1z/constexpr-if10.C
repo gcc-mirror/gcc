@@ -1,4 +1,4 @@
-// PR c++/79848
+// PR c++/78948
 // { dg-options -std=c++1z }
 
 template <int T>
@@ -9,8 +9,8 @@ void sizeof_mismatch()
 
 int main()
 {
-  if constexpr(sizeof(long long) == sizeof(char*))
+  if constexpr(sizeof(int*) == sizeof(char*))
     ;
   else
-    sizeof_mismatch<sizeof(long long)>();
+    sizeof_mismatch<sizeof(int*)>();
 }
