@@ -3,21 +3,21 @@
 # Copyright © 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2010.
-# Trần Ngọc Quân <vnwildman@gmail.com>, 2012-2014, 2015, 2016.
+# Trần Ngọc Quân <vnwildman@gmail.com>, 2012-2014, 2015, 2016, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1.0\n"
+"Project-Id-Version: cpplib 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2016-04-28 07:51+0700\n"
+"PO-Revision-Date: 2017-01-08 08:43+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
 "Language: vi\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Language-Team-Website: <http://translationproject.org/team/vi.html>\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Gtranslator 2.91.7\n"
@@ -141,7 +141,7 @@ msgstr "đang chuyển đổi dãy thoát sang bộ ký tự thi hành"
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr ""
+msgstr "thiếu dấu trích dẫn mở"
 
 #: charset.c:1827 charset.c:1891
 msgid "character constant too long for its type"
@@ -536,10 +536,9 @@ msgid "imaginary number in preprocessor expression"
 msgstr "gặp số ảo nằm trong biểu thức tiền xử lý"
 
 #: expr.c:1162
-#, fuzzy, c-format
-#| msgid "\"%s\" is not defined"
+#, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
-msgstr "chưa định nghĩa “%s”"
+msgstr "chưa định nghĩa “%s”, định giá thành 0"
 
 #: expr.c:1175
 msgid "assertions are a GCC extension"
@@ -603,7 +602,7 @@ msgstr "toán tử “__has_include__” (đã bao gồm) cần một chuỗi đ
 
 #: expr.c:2232
 msgid "missing ')' after \"__has_include__\""
-msgstr "thiếu “)” nằm sau “__has_include__” (đã bao gồm)"
+msgstr "thiếu “)” sau “__has_include__” (đã bao gồm)"
 
 #: files.c:573
 msgid "one or more PCH files were found, but they were invalid"
@@ -611,7 +610,7 @@ msgstr "tìm thấy một hay nhiều tập tin PCH, nhưng chúng không hợp 
 
 #: files.c:576
 msgid "use -Winvalid-pch for more information"
-msgstr "dùng “-Winvalid-pch” để tìm thấy thêm thông tin cần thiết"
+msgstr "dùng “-Winvalid-pch” để biết thêm thông tin cần thiết"
 
 #: files.c:981
 #, c-format
