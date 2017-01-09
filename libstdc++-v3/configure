@@ -20079,12 +20079,14 @@ typedef double_t  my_double_t;
 		  lgamma(0.0);
 		  lgammaf(0.0f);
 		  lgammal(0.0l);
+		  #ifndef __APPLE__ /* see below */
 		  llrint(0.0);
 		  llrintf(0.0f);
 		  llrintl(0.0l);
 		  llround(0.0);
 		  llroundf(0.0f);
 		  llroundl(0.0l);
+		  #endif
 		  log1p(0.0);
 		  log1pf(0.0f);
 		  log1pl(0.0l);
@@ -20156,6 +20158,50 @@ $as_echo "$glibcxx_cv_c99_math_tr1" >&6; }
 
 $as_echo "#define _GLIBCXX_USE_C99_MATH_TR1 1" >>confdefs.h
 
+
+    case "${target_os}" in
+      darwin*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 rounding functions in <math.h>" >&5
+$as_echo_n "checking for ISO C99 rounding functions in <math.h>... " >&6; }
+        if test "${glibcxx_cv_c99_math_llround+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+int
+main ()
+{
+llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_math_llround=yes
+else
+  glibcxx_cv_c99_math_llround=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_llround" >&5
+$as_echo "$glibcxx_cv_c99_math_llround" >&6; }
+        ;;
+    esac
+    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+
+$as_echo "#define _GLIBCXX_NO_C99_ROUNDING_FUNCS 1" >>confdefs.h
+
+    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make

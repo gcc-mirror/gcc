@@ -1890,12 +1890,14 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		  lgamma(0.0);
 		  lgammaf(0.0f);
 		  lgammal(0.0l);
+		  #ifndef __APPLE__ /* see below */
 		  llrint(0.0);
 		  llrintf(0.0f);
 		  llrintl(0.0l);
 		  llround(0.0);
 		  llroundf(0.0f);
 		  llroundl(0.0l);
+		  #endif
 		  log1p(0.0);
 		  log1pf(0.0f);
 		  log1pl(0.0l);
@@ -1954,6 +1956,29 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
     AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
 	      [Define if C99 functions or macros in <math.h> should be imported
 	      in <tr1/cmath> in namespace std::tr1.])
+
+    case "${target_os}" in
+      darwin*)
+        AC_MSG_CHECKING([for ISO C99 rounding functions in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_c99_math_llround, [
+          AC_TRY_COMPILE([#include <math.h>],
+		 [llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+		 ],
+		 [glibcxx_cv_c99_math_llround=yes],
+		 [glibcxx_cv_c99_math_llround=no])
+          ])
+	AC_MSG_RESULT($glibcxx_cv_c99_math_llround)
+        ;;
+    esac
+    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+      AC_DEFINE(_GLIBCXX_NO_C99_ROUNDING_FUNCS, 1,
+		[Define if C99 llrint and llround functions are missing from <math.h>.])
+    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
