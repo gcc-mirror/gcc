@@ -1,3 +1,12 @@
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78938
+	* tree-vect-stmts.c (vectorizable_condition): For non-masked COND_EXPR
+	where comp_vectype is VECTOR_BOOLEAN_TYPE_P, use
+	BIT_{NOT,XOR,AND,IOR}_EXPR on the comparison operands instead of
+	{EQ,NE,GE,GT,LE,LT}_EXPR directly inside of VEC_COND_EXPR.  Formatting
+	fixes.
+
 2017-01-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* tree-ssa-address.c (gen_addr_rtx): Don't handle index if it
