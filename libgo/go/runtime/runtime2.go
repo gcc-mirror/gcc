@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -203,12 +204,10 @@ func (gp guintptr) ptr() *g { return (*g)(unsafe.Pointer(gp)) }
 //go:nosplit
 func (gp *guintptr) set(g *g) { *gp = guintptr(unsafe.Pointer(g)) }
 
-/*
 //go:nosplit
 func (gp *guintptr) cas(old, new guintptr) bool {
 	return atomic.Casuintptr((*uintptr)(unsafe.Pointer(gp)), uintptr(old), uintptr(new))
 }
-*/
 
 type puintptr uintptr
 
@@ -358,8 +357,8 @@ type g struct {
 	sigpc          uintptr
 	gopc           uintptr // pc of go statement that created this goroutine
 	startpc        uintptr // pc of goroutine function
-	racectx        uintptr
-	waiting        *sudog // sudog structures this g is waiting on (that have a valid elem ptr); in lock order
+	// Not for gccgo: racectx        uintptr
+	waiting *sudog // sudog structures this g is waiting on (that have a valid elem ptr); in lock order
 	// Not for gccgo: cgoCtxt        []uintptr // cgo traceback context
 
 	// Per-G GC state
@@ -521,16 +520,16 @@ type p struct {
 	gfreecnt int32
 
 	sudogcache []*sudog
-	// Not for gccgo for now: sudogbuf   [128]*sudog
+	sudogbuf   [128]*sudog
 
-	// Not for gccgo for now: tracebuf traceBufPtr
+	tracebuf traceBufPtr
 
 	// Not for gccgo for now: palloc persistentAlloc // per-P to avoid mutex
 
 	// Per-P GC state
-	// Not for gccgo for now: gcAssistTime     int64 // Nanoseconds in assistAlloc
-	// Not for gccgo for now: gcBgMarkWorker   guintptr
-	// Not for gccgo for now: gcMarkWorkerMode gcMarkWorkerMode
+	gcAssistTime     int64 // Nanoseconds in assistAlloc
+	gcBgMarkWorker   guintptr
+	gcMarkWorkerMode gcMarkWorkerMode
 
 	// gcw is this P's GC work buffer cache. The work buffer is
 	// filled by write barriers, drained by mutator assists, and
@@ -760,18 +759,13 @@ var (
 
 	//	allm        *m
 
-	allp [_MaxGomaxprocs + 1]*p
-
-	//	gomaxprocs  int32
-
-	panicking uint32
-	ncpu      int32
-
-	//	forcegc     forcegcstate
-
-	sched schedt
-
-	//	newprocs    int32
+	allp       [_MaxGomaxprocs + 1]*p
+	gomaxprocs int32
+	panicking  uint32
+	ncpu       int32
+	forcegc    forcegcstate
+	sched      schedt
+	newprocs   int32
 
 	// Information about what cpu features are available.
 	// Set on startup.

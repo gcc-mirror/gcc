@@ -618,8 +618,7 @@ runtime_debug_WriteHeapDump(uintptr fd)
 	// Stop the world.
 	runtime_acquireWorldsema();
 	m = runtime_m();
-	m->gcing = 1;
-	m->locks++;
+	m->preemptoff = runtime_gostringnocopy((const byte*)"write heap dump");
 	runtime_stopTheWorldWithSema();
 
 	// Update stats so we can dump them.
@@ -640,10 +639,9 @@ runtime_debug_WriteHeapDump(uintptr fd)
 	dumpfd = 0;
 
 	// Start up the world again.
-	m->gcing = 0;
-	runtime_releaseWorldsema();
 	runtime_startTheWorldWithSema();
-	m->locks--;
+	runtime_releaseWorldsema();
+	m->preemptoff = runtime_gostringnocopy(nil);
 }
 
 // Runs the specified gc program.  Calls the callback for every

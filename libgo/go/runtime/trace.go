@@ -127,10 +127,10 @@ var trace struct {
 
 // traceBufHeader is per-P tracing buffer.
 type traceBufHeader struct {
-	link      traceBufPtr             // in trace.empty/full
-	lastTicks uint64                  // when we wrote the last event
-	pos       int                     // next write offset in arr
-	stk       [traceStackSize]uintptr // scratch buffer for traceback
+	link      traceBufPtr              // in trace.empty/full
+	lastTicks uint64                   // when we wrote the last event
+	pos       int                      // next write offset in arr
+	stk       [traceStackSize]location // scratch buffer for traceback
 }
 
 // traceBuf is per-P tracing buffer.
@@ -151,9 +151,6 @@ func (tp *traceBufPtr) set(b *traceBuf) { *tp = traceBufPtr(unsafe.Pointer(b)) }
 func traceBufPtrOf(b *traceBuf) traceBufPtr {
 	return traceBufPtr(unsafe.Pointer(b))
 }
-
-/*
-Commented out for gccgo for now.
 
 // StartTrace enables tracing for the current process.
 // While tracing, the data will be buffered and available via ReadTrace.
@@ -522,13 +519,7 @@ func traceEvent(ev byte, skip int, args ...uint64) {
 		if gp == _g_ {
 			nstk = callers(skip, buf.stk[:])
 		} else if gp != nil {
-			gp = mp.curg
-			// This may happen when tracing a system call,
-			// so we must lock the stack.
-			if gcTryLockStackBarriers(gp) {
-				nstk = gcallers(gp, skip, buf.stk[:])
-				gcUnlockStackBarriers(gp)
-			}
+			// FIXME: get stack trace of different goroutine.
 		}
 		if nstk > 0 {
 			nstk-- // skip runtime.goexit
@@ -647,8 +638,6 @@ func (buf *traceBuf) byte(v byte) {
 	buf.pos++
 }
 
-*/
-
 // traceStackTable maps stack traces (arrays of PC's) to unique uint32 ids.
 // It is lock-free for reading.
 type traceStackTable struct {
@@ -664,28 +653,30 @@ type traceStack struct {
 	hash uintptr
 	id   uint32
 	n    int
-	stk  [0]uintptr // real type [n]uintptr
+	stk  [0]location // real type [n]location
 }
 
 type traceStackPtr uintptr
 
-/*
-Commented out for gccgo for now.
-
 func (tp traceStackPtr) ptr() *traceStack { return (*traceStack)(unsafe.Pointer(tp)) }
 
 // stack returns slice of PCs.
-func (ts *traceStack) stack() []uintptr {
-	return (*[traceStackSize]uintptr)(unsafe.Pointer(&ts.stk))[:ts.n]
+func (ts *traceStack) stack() []location {
+	return (*[traceStackSize]location)(unsafe.Pointer(&ts.stk))[:ts.n]
 }
 
 // put returns a unique id for the stack trace pcs and caches it in the table,
 // if it sees the trace for the first time.
-func (tab *traceStackTable) put(pcs []uintptr) uint32 {
+func (tab *traceStackTable) put(pcs []location) uint32 {
 	if len(pcs) == 0 {
 		return 0
 	}
-	hash := memhash(unsafe.Pointer(&pcs[0]), 0, uintptr(len(pcs))*unsafe.Sizeof(pcs[0]))
+	var hash uintptr
+	for _, loc := range pcs {
+		hash += loc.pc
+		hash += hash << 10
+		hash ^= hash >> 6
+	}
 	// First, search the hashtable w/o the mutex.
 	if id := tab.find(pcs, hash); id != 0 {
 		return id
@@ -714,7 +705,7 @@ func (tab *traceStackTable) put(pcs []uintptr) uint32 {
 }
 
 // find checks if the stack trace pcs is already present in the table.
-func (tab *traceStackTable) find(pcs []uintptr, hash uintptr) uint32 {
+func (tab *traceStackTable) find(pcs []location, hash uintptr) uint32 {
 	part := int(hash % uintptr(len(tab.tab)))
 Search:
 	for stk := tab.tab[part].ptr(); stk != nil; stk = stk.link.ptr() {
@@ -732,13 +723,12 @@ Search:
 
 // newStack allocates a new stack of size n.
 func (tab *traceStackTable) newStack(n int) *traceStack {
-	return (*traceStack)(tab.mem.alloc(unsafe.Sizeof(traceStack{}) + uintptr(n)*sys.PtrSize))
+	return (*traceStack)(tab.mem.alloc(unsafe.Sizeof(traceStack{}) + uintptr(n)*unsafe.Sizeof(location{})))
 }
 
 // dump writes all previously cached stacks to trace buffers,
 // releases all memory and resets state.
 func (tab *traceStackTable) dump() {
-	frames := make(map[uintptr]traceFrame)
 	var tmp [(2 + 4*traceStackSize) * traceBytesPerNumber]byte
 	buf := traceFlush(0).ptr()
 	for _, stk := range tab.tab {
@@ -749,8 +739,8 @@ func (tab *traceStackTable) dump() {
 			tmpbuf = traceAppend(tmpbuf, uint64(stk.n))
 			for _, pc := range stk.stack() {
 				var frame traceFrame
-				frame, buf = traceFrameForPC(buf, frames, pc)
-				tmpbuf = traceAppend(tmpbuf, uint64(pc))
+				frame, buf = traceFrameForPC(buf, pc)
+				tmpbuf = traceAppend(tmpbuf, uint64(pc.pc))
 				tmpbuf = traceAppend(tmpbuf, uint64(frame.funcID))
 				tmpbuf = traceAppend(tmpbuf, uint64(frame.fileID))
 				tmpbuf = traceAppend(tmpbuf, uint64(frame.line))
@@ -780,25 +770,15 @@ type traceFrame struct {
 	line   uint64
 }
 
-func traceFrameForPC(buf *traceBuf, frames map[uintptr]traceFrame, pc uintptr) (traceFrame, *traceBuf) {
-	if frame, ok := frames[pc]; ok {
-		return frame, buf
-	}
-
+func traceFrameForPC(buf *traceBuf, loc location) (traceFrame, *traceBuf) {
 	var frame traceFrame
-	f := findfunc(pc)
-	if f == nil {
-		frames[pc] = frame
-		return frame, buf
-	}
-
-	fn := funcname(f)
+	fn := loc.function
 	const maxLen = 1 << 10
 	if len(fn) > maxLen {
 		fn = fn[len(fn)-maxLen:]
 	}
 	frame.funcID, buf = traceString(buf, fn)
-	file, line := funcline(f, pc-sys.PCQuantum)
+	file, line := loc.filename, loc.lineno
 	frame.line = uint64(line)
 	if len(file) > maxLen {
 		file = file[len(file)-maxLen:]
@@ -806,8 +786,6 @@ func traceFrameForPC(buf *traceBuf, frames map[uintptr]traceFrame, pc uintptr) (
 	frame.fileID, buf = traceString(buf, file)
 	return frame, buf
 }
-
-*/
 
 // traceAlloc is a non-thread-safe region allocator.
 // It holds a linked list of traceAllocBlock.
@@ -831,9 +809,6 @@ type traceAllocBlockPtr uintptr
 func (p traceAllocBlockPtr) ptr() *traceAllocBlock   { return (*traceAllocBlock)(unsafe.Pointer(p)) }
 func (p *traceAllocBlockPtr) set(x *traceAllocBlock) { *p = traceAllocBlockPtr(unsafe.Pointer(x)) }
 
-/*
-Commented out for gccgo for now.
-
 // alloc allocates n-byte block.
 func (a *traceAlloc) alloc(n uintptr) unsafe.Pointer {
 	n = round(n, sys.PtrSize)
@@ -841,6 +816,8 @@ func (a *traceAlloc) alloc(n uintptr) unsafe.Pointer {
 		if n > uintptr(len(a.head.ptr().data)) {
 			throw("trace: alloc too large")
 		}
+		// This is only safe because the strings returned by callers
+		// are stored in a location that is not in the Go heap.
 		block := (*traceAllocBlock)(sysAlloc(unsafe.Sizeof(traceAllocBlock{}), &memstats.other_sys))
 		if block == nil {
 			throw("trace: out of memory")
@@ -913,7 +890,7 @@ func traceGoCreate(newg *g, pc uintptr) {
 	newg.traceseq = 0
 	newg.tracelastp = getg().m.p
 	// +PCQuantum because traceFrameForPC expects return PCs and subtracts PCQuantum.
-	id := trace.stackTab.put([]uintptr{pc + sys.PCQuantum})
+	id := trace.stackTab.put([]location{location{pc: pc + sys.PCQuantum}})
 	traceEvent(traceEvGoCreate, 2, uint64(newg.goid), uint64(id))
 }
 
@@ -1004,5 +981,3 @@ func traceHeapAlloc() {
 func traceNextGC() {
 	traceEvent(traceEvNextGC, -1, memstats.next_gc)
 }
-
-*/

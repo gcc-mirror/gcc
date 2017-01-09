@@ -240,7 +240,6 @@ extern	G*	runtime_lastg;
 extern	M*	runtime_allm;
 extern	P**	runtime_allp;
 extern	Sched*  runtime_sched;
-extern	int32	runtime_gomaxprocs;
 extern	uint32	runtime_panicking(void)
   __asm__ (GOSYM_PREFIX "runtime.getPanicking");
 extern	int8*	runtime_goos;
@@ -260,7 +259,8 @@ extern	bool	runtime_isarchive;
 intgo	runtime_findnull(const byte*)
   __asm__ (GOSYM_PREFIX "runtime.findnull");
 
-void	runtime_gogo(G*);
+void	runtime_gogo(G*)
+  __asm__ (GOSYM_PREFIX "runtime.gogo");
 struct __go_func_type;
 void	runtime_args(int32, byte**)
   __asm__ (GOSYM_PREFIX "runtime.args");
@@ -294,7 +294,8 @@ void	runtime_printtrace(Slice, G*)
 #define runtime_read(d, v, n) read((d), (v), (n))
 #define runtime_write(d, v, n) write((d), (v), (n))
 #define runtime_close(d) close(d)
-void	runtime_ready(G*);
+void	runtime_ready(G*, intgo, bool)
+  __asm__ (GOSYM_PREFIX "runtime.ready");
 String	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*, intgo);
 void*	runtime_mstart(void*);
@@ -307,7 +308,8 @@ void	runtime_signalstack(byte*, uintptr)
   __asm__ (GOSYM_PREFIX "runtime.signalstack");
 MCache*	runtime_allocmcache(void)
   __asm__ (GOSYM_PREFIX "runtime.allocmcache");
-void	runtime_freemcache(MCache*);
+void	runtime_freemcache(MCache*)
+  __asm__ (GOSYM_PREFIX "runtime.freemcache");
 void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
 #define runtime_getcallersp(p) __builtin_frame_address(0)
@@ -368,8 +370,6 @@ int64	runtime_unixnanotime(void) // real time, can skip
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void)
   __asm__ (GOSYM_PREFIX "runtime.startpanic");
-void	runtime_freezetheworld(void)
-  __asm__ (GOSYM_PREFIX "runtime.freezetheworld");
 void	runtime_unwindstack(G*, byte*);
 void	runtime_sigprof()
   __asm__ (GOSYM_PREFIX "runtime.sigprof");

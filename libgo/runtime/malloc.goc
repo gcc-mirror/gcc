@@ -99,7 +99,8 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		flag |= FlagNoInvokeGC;
 	}
 
-	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC) && m->preemptoff.len == 0) {
+	if((g->preempt || runtime_gcwaiting()) && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC) && m->preemptoff.len == 0) {
+		g->preempt = false;
 		runtime_gosched();
 		m = runtime_m();
 	}

@@ -149,13 +149,9 @@ func notewakeup(n *note) {
 
 func notesleep(n *note) {
 	gp := getg()
-
-	// Currently OK to sleep in non-g0 for gccgo.  It happens in
-	// stoptheworld because we have not implemented preemption.
-	// if gp != gp.m.g0 {
-	// 	throw("notesleep not on g0")
-	// }
-
+	if gp != gp.m.g0 {
+		throw("notesleep not on g0")
+	}
 	for atomic.Load(key32(&n.key)) == 0 {
 		gp.m.blocked = true
 		futexsleep(key32(&n.key), 0, -1)
@@ -202,10 +198,13 @@ func notetsleep_internal(n *note, ns int64) bool {
 }
 
 func notetsleep(n *note, ns int64) bool {
-	gp := getg()
-	if gp != gp.m.g0 && gp.m.preemptoff != "" {
-		throw("notetsleep not on g0")
-	}
+	// Currently OK to sleep in non-g0 for gccgo.  It happens in
+	// stoptheworld because our version of systemstack does not
+	// change to g0.
+	// gp := getg()
+	// if gp != gp.m.g0 && gp.m.preemptoff != "" {
+	//	throw("notetsleep not on g0")
+	// }
 
 	return notetsleep_internal(n, ns)
 }
