@@ -1,5 +1,12 @@
 2017-01-08  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR middle-end/17660
+
+	* extend.texi (Common Variable Attributes): Add xref to GCC
+	Internals manual to explain mode attribute keywords.
+
+2017-01-08  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR other/16519
 
 	* doc/invoke.texi (Option Summary): Move -pthread to Linker Options
