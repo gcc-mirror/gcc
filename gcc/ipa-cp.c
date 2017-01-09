@@ -1837,6 +1837,23 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
     return dest_lattice->set_to_bottom ();
 }
 
+/* Emulate effects of unary OPERATION and/or conversion from SRC_TYPE to
+   DST_TYPE on value range in SRC_VR and store it to DST_VR.  Return true if
+   the result is a range or an anti-range.  */
+
+static bool
+ipa_vr_operation_and_type_effects (value_range *dst_vr, value_range *src_vr,
+				   enum tree_code operation,
+				   tree dst_type, tree src_type)
+{
+  memset (dst_vr, 0, sizeof (*dst_vr));
+  extract_range_from_unary_expr (dst_vr, operation, dst_type, src_vr, src_type);
+  if (dst_vr->type == VR_RANGE || dst_vr->type == VR_ANTI_RANGE)
+    return true;
+  else
+    return false;
+}
+
 /* Propagate value range across jump function JFUNC that is associated with
    edge CS with param of callee of PARAM_TYPE and update DEST_PLATS
    accordingly.  */
@@ -1846,7 +1863,6 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 				   struct ipcp_param_lattices *dest_plats,
 				   tree param_type)
 {
-  struct ipcp_param_lattices *src_lats;
   ipcp_vr_lattice *dest_lat = &dest_plats->m_value_range;
 
   if (dest_lat->bottom_p ())
@@ -1859,31 +1875,23 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 
   if (jfunc->type == IPA_JF_PASS_THROUGH)
     {
-      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-      int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
-      src_lats = ipa_get_parm_lattices (caller_info, src_idx);
+      enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
 
-      if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
-	return dest_lat->meet_with (src_lats->m_value_range);
-      else if (param_type
-	       && (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
-		   == tcc_unary))
+      if (TREE_CODE_CLASS (operation) == tcc_unary)
 	{
-	  value_range vr;
-	  memset (&vr, 0, sizeof (vr));
+	  struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+	  int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
 	  tree operand_type = ipa_get_type (caller_info, src_idx);
-	  enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
+	  struct ipcp_param_lattices *src_lats
+	    = ipa_get_parm_lattices (caller_info, src_idx);
 
 	  if (src_lats->m_value_range.bottom_p ())
 	    return dest_lat->set_to_bottom ();
-
-	  extract_range_from_unary_expr (&vr,
-					 operation,
-					 param_type,
-					 &src_lats->m_value_range.m_vr,
-					 operand_type);
-	  if (vr.type == VR_RANGE
-	      || vr.type == VR_ANTI_RANGE)
+	  value_range vr;
+	  if (ipa_vr_operation_and_type_effects (&vr,
+						 &src_lats->m_value_range.m_vr,
+						 operation, param_type,
+						 operand_type))
 	    return dest_lat->meet_with (&vr);
 	}
     }
@@ -1903,8 +1911,12 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	}
     }
 
-  if (jfunc->vr_known)
-    return dest_lat->meet_with (&jfunc->m_vr);
+  value_range vr;
+  if (jfunc->vr_known
+      && ipa_vr_operation_and_type_effects (&vr, &jfunc->m_vr, NOP_EXPR,
+					    param_type,
+					    TREE_TYPE (jfunc->m_vr.min)))
+    return dest_lat->meet_with (&vr);
   else
     return dest_lat->set_to_bottom ();
 }
@@ -2244,7 +2256,7 @@ propagate_constants_across_call (struct cgraph_edge *cs)
     {
       struct ipa_jump_func *jump_func = ipa_get_ith_jump_func (args, i);
       struct ipcp_param_lattices *dest_plats;
-      tree param_type = ipa_get_callee_param_type (cs, i);
+      tree param_type = ipa_get_type (callee_info, i);
 
       dest_plats = ipa_get_parm_lattices (callee_info, i);
       if (availability == AVAIL_INTERPOSABLE)
@@ -3229,19 +3241,6 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
   FOR_EACH_DEFINED_FUNCTION (node)
   {
     struct ipa_node_params *info = IPA_NODE_REF (node);
-
-    /* In LTO we do not have PARM_DECLs but we would still like to be able to
-       look at types of parameters.  */
-    if (in_lto_p)
-      {
-	tree t = TYPE_ARG_TYPES (TREE_TYPE (node->decl));
-	for (int k = 0; k < ipa_get_param_count (info) && t; k++)
-	  {
-	    gcc_assert (t != void_list_node);
-	    info->descriptors[k].decl_or_type = TREE_VALUE (t);
-	    t = t ? TREE_CHAIN (t) : NULL;
-	  }
-      }
 
     determine_versionability (node, info);
     if (node->has_gimple_body_p ())

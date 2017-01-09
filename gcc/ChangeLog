@@ -1,3 +1,18 @@
+2017-01-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/78365
+	PR ipa/78599
+	* ipa-prop.h (ipa_jump_func): Swap positions of vr_known and m_vr.
+	* ipa-cp.c (ipa_vr_operation_and_type_effects): New function.
+	(propagate_vr_accross_jump_function): Use the above function for all
+	value range computations for pass-through jump functions and type
+	converasion from explicit value range values.
+        (ipcp_propagate_stage): Do not attempt to deduce types of formal
+        parameters from TYPE_ARG_TYPES.
+	* ipa-prop.c (ipa_write_jump_function): Remove trailing whitespace.
+	(ipa_write_node_info): Stream type of the actual argument.
+	(ipa_read_node_info): Likewise. Also remove trailing whitespace.
+
 2017-01-09  Martin Liska  <mliska@suse.cz>
 
 	PR pch/78970
