@@ -23752,7 +23752,16 @@ dwarf2out_late_global_decl (tree decl)
     {
       dw_die_ref die = lookup_decl_die (decl);
       if (die)
-	add_location_or_const_value_attribute (die, decl, false);
+        {
+          /* We get called via the symtab code invoking late_global_decl
+             for symbols that are optimized out.  Do not add locations
+             for those.  */
+          varpool_node *node = varpool_node::get (decl);
+          if (! node || ! node->definition)
+            tree_add_const_value_attribute_for_decl (die, decl);
+          else
+            add_location_or_const_value_attribute (die, decl, false);
+        }
     }
 }
 

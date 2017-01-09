@@ -1,3 +1,18 @@
+2017-01-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2016-09-19  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (dwarf2out_late_global_decl): When being during the
+	early debug phase do not add locations but only const value
+	attributes.
+
+	Backport from mainline
+	2016-10-20  Richard Biener  <rguenther@suse.de>
+
+	* cgraphunit.c (analyze_functions): Set node->definition to
+	false to signal symbol removal to debug_hooks->late_global_decl.
+
 2017-01-09  Andre Vieira <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
