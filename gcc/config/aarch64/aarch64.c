@@ -270,7 +270,7 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
   0 /* imm_offset  */
 };
 
-static const struct cpu_addrcost_table vulcan_addrcost_table =
+static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
 {
     {
       0, /* hi  */
@@ -353,7 +353,7 @@ static const struct cpu_regmove_cost qdf24xx_regmove_cost =
   4 /* FP2FP  */
 };
 
-static const struct cpu_regmove_cost vulcan_regmove_cost =
+static const struct cpu_regmove_cost thunderx2t99_regmove_cost =
 {
   1, /* GP2GP  */
   /* Avoid the use of int<->fp moves for spilling.  */
@@ -452,7 +452,7 @@ static const struct cpu_vector_cost xgene1_vector_cost =
 };
 
 /* Costs for vector insn classes for Vulcan.  */
-static const struct cpu_vector_cost vulcan_vector_cost =
+static const struct cpu_vector_cost thunderx2t99_vector_cost =
 {
   6, /* scalar_stmt_cost  */
   4, /* scalar_load_cost  */
@@ -484,7 +484,7 @@ static const struct cpu_branch_cost cortexa57_branch_cost =
 };
 
 /* Branch costs for Vulcan.  */
-static const struct cpu_branch_cost vulcan_branch_cost =
+static const struct cpu_branch_cost thunderx2t99_branch_cost =
 {
   1,  /* Predictable.  */
   3   /* Unpredictable.  */
@@ -770,13 +770,13 @@ static const struct tune_params qdf24xx_tunings =
   (AARCH64_EXTRA_TUNE_NONE)		/* tune_flags.  */
 };
 
-static const struct tune_params vulcan_tunings =
+static const struct tune_params thunderx2t99_tunings =
 {
-  &vulcan_extra_costs,
-  &vulcan_addrcost_table,
-  &vulcan_regmove_cost,
-  &vulcan_vector_cost,
-  &vulcan_branch_cost,
+  &thunderx2t99_extra_costs,
+  &thunderx2t99_addrcost_table,
+  &thunderx2t99_regmove_cost,
+  &thunderx2t99_vector_cost,
+  &thunderx2t99_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
