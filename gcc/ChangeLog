@@ -1,3 +1,10 @@
+2017-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR pch/78970
+	* gcc.c (driver_handle_option): Handle OPT_E and set
+	have_E.
+	(lookup_compiler): Do not show error message with have_E.
+
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78938
