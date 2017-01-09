@@ -1,3 +1,9 @@
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78899
+	* gcc.target/i386/pr78899.c: New test.
+	* gcc.dg/pr71077.c: New test.
+
 2017-01-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/78365

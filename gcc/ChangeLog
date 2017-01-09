@@ -1,3 +1,26 @@
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78899
+	* tree-if-conv.c (version_loop_for_if_conversion): Instead of
+	returning bool return struct loop *, NULL for failure and the new
+	loop on success.
+	(versionable_outer_loop_p): Don't version outer loop if it has
+	dont_vectorized bit set.
+	(tree_if_conversion): When versioning outer loop, ensure
+	tree_if_conversion is performed also on the inner loop of the
+	non-vectorizable outer loop copy.
+	* tree-vectorizer.c (set_uid_loop_bbs): Formatting fix.  Fold
+	LOOP_VECTORIZED in inner loop of the scalar outer loop and
+	prevent vectorization of it.
+	(vectorize_loops): For outer + inner LOOP_VECTORIZED, ensure
+	the outer loop vectorization of the non-scalar version is attempted
+	before vectorization of the inner loop in scalar version.  If
+	outer LOOP_VECTORIZED guarded loop is not vectorized, prevent
+	vectorization of its inner loop.
+	* tree-vect-loop-manip.c (rename_variables_in_bb): If outer_loop
+	has 2 inner loops, rename also on edges from bb whose single pred
+	is outer_loop->header.  Fix typo in function comment.
+
 2017-01-09  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/79033
