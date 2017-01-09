@@ -1,4 +1,11 @@
 2017-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/condition_variable/members/3.cc: Use new macro
+	to detect correct thread_local destructors.
+	* testsuite/util/testsuite_hooks.h (CORRECT_THREAD_LOCAL_DTORS):
+	Define.
+
+2017-01-09  Jonathan Wakely  <jwakely@redhat.com>
 	    Aditya Kumar  <hiraditya@msn.com>
 
 	PR libstdc++/66414
