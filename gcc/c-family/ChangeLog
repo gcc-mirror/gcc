@@ -1,3 +1,9 @@
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/79019
+	PR translation/79020
+	* c.opt (Wnormalized=): Fix typo in description.
+
 2017-01-08  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/77708

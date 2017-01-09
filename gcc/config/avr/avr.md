@@ -6284,7 +6284,7 @@
   [(set_attr "length" "2")
    (set_attr "cc" "none")])
 
-;; Swap Bytes (change byte-endianess)
+;; Swap Bytes (change byte-endianness)
 
 (define_expand "bswapsi2"
   [(set (reg:SI 22)

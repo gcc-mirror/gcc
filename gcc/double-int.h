@@ -60,7 +60,7 @@ struct double_int
   static double_int from_pair (HOST_WIDE_INT high, unsigned HOST_WIDE_INT low);
 
   /* Construct from a fuffer of length LEN.  BUFFER will be read according
-     to byte endianess and word endianess.  */
+     to byte endianness and word endianness.  */
   static double_int from_buffer (const unsigned char *buffer, int len);
 
   /* No copy assignment operator or destructor to keep the type a POD.  */

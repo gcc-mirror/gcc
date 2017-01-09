@@ -10324,7 +10324,7 @@ Percentage penalty the recursive functions will receive when they
 are evaluated for cloning.
 
 @item ipa-cp-single-call-penalty
-Percentage penalty functions containg a single call to another
+Percentage penalty functions containing a single call to another
 function will receive when they are evaluated for cloning.
 
 

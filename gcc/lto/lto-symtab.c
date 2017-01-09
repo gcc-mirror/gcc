@@ -968,7 +968,7 @@ lto_symtab_merge_symbols (void)
 
 	      /* The user defined assembler variables are also not unified by their
 		 symbol name (since it is irrelevant), but we need to unify symbol
-		 nodes if tree merging occured.  */
+		 nodes if tree merging occurred.  */
 	      if ((vnode = dyn_cast <varpool_node *> (node))
 		  && DECL_HARD_REGISTER (vnode->decl)
 		  && (node2 = symtab_node::get (vnode->decl))

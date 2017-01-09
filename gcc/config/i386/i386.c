@@ -10390,7 +10390,7 @@ function_value_32 (machine_mode orig_mode, machine_mode mode,
       int sse_level = ix86_function_sseregparm (fntype, fn, false);
       if (sse_level == -1)
 	{
-	  error ("calling %qD with SSE caling convention without "
+	  error ("calling %qD with SSE calling convention without "
 		 "SSE/SSE2 enabled", fn);
 	  sorry ("this is a GCC bug that can be worked around by adding "
 		 "attribute used to function called");

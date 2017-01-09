@@ -1411,7 +1411,7 @@ non_rewritable_mem_ref_base (tree ref)
 	  /* ???  We can't handle bitfield precision extracts without
 	     either using an alternate type for the BIT_FIELD_REF and
 	     then doing a conversion or possibly adjusting the offset
-	     according to endianess.  */
+	     according to endianness.  */
 	  && (! INTEGRAL_TYPE_P (TREE_TYPE (base))
 	      || (wi::to_offset (TYPE_SIZE (TREE_TYPE (base)))
 		  == TYPE_PRECISION (TREE_TYPE (base))))

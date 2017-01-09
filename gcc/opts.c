@@ -2449,7 +2449,7 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg,
     {
       int argval = integral_argument (arg);
       if (argval == -1)
-	error_at (loc, "unrecognised debug output level %qs", arg);
+	error_at (loc, "unrecognized debug output level %qs", arg);
       else if (argval > 3)
 	error_at (loc, "debug output level %qs is too high", arg);
       else

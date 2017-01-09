@@ -3818,7 +3818,7 @@ nios2_valid_target_attribute_rec (tree args)
 		}
 	      else
 		{
-		  error ("%<custom-%s=%> is not recognised as FPU instruction",
+		  error ("%<custom-%s=%> is not recognized as FPU instruction",
 			 argstr + 7);
 		  return false;
 		}		

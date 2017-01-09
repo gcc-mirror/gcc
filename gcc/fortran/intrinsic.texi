@@ -1850,8 +1850,8 @@ Inverse function: @ref{TANH}
 @table @asis
 @item @emph{Description}:
 @code{ATOMIC_ADD(ATOM, VALUE)} atomically adds the value of @var{VAR} to the
-variable @var{ATOM}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation
+variable @var{ATOM}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -1901,8 +1901,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
-and the invokation was successful, it is assigned the value 0. If it is present
-and the invokation has failed, it is assigned a positive value; in particular,
+and the invocation was successful, it is assigned the value 0. If it is present
+and the invocation has failed, it is assigned a positive value; in particular,
 for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -1951,8 +1951,8 @@ end program atomic
 @code{ATOMIC_CAS} compares the variable @var{ATOM} with the value of
 @var{COMPARE}; if the value is the same, @var{ATOM} is set to the value
 of @var{NEW}. Additionally, @var{OLD} is set to the value of @var{ATOM}
-that was used for the comparison.  When @var{STAT} is present and the invokation
-was successful, it is assigned the value 0. If it is present and the invokation
+that was used for the comparison.  When @var{STAT} is present and the invocation
+was successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2003,8 +2003,8 @@ end program atomic
 @table @asis
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} defines the variable @var{ATOM} with the value
-@var{VALUE} atomically. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation
+@var{VALUE} atomically. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2055,8 +2055,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_FETCH_ADD(ATOM, VALUE, OLD)} atomically stores the value of
 @var{ATOM} in @var{OLD} and adds the value of @var{VAR} to the
-variable @var{ATOM}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation
+variable @var{ATOM}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2108,8 +2108,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise AND between the values of
-@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation has
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation has
 failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2159,8 +2159,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_OR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise OR between the values of
-@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation has
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation has
 failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2210,8 +2210,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_XOR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise XOR between the values of
-@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation has
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation has
 failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2261,8 +2261,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_OR(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
-and the invokation was successful, it is assigned the value 0. If it is present
-and the invokation has failed, it is assigned a positive value; in particular,
+and the invocation was successful, it is assigned the value 0. If it is present
+and the invocation has failed, it is assigned a positive value; in particular,
 for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -2310,8 +2310,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} atomically assigns the value of the
 variable @var{ATOM} to @var{VALUE}. When @var{STAT} is present and the
-invokation was successful, it is assigned the value 0. If it is present and the
-invokation has failed, it is assigned a positive value; in particular, for a
+invocation was successful, it is assigned the value 0. If it is present and the
+invocation has failed, it is assigned a positive value; in particular, for a
 coindexed @var{ATOM}, if the remote image has stopped, it is assigned the value
 of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image
 has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -2367,8 +2367,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 XOR between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
-and the invokation was successful, it is assigned the value 0. If it is present
-and the invokation has failed, it is assigned a positive value; in particular,
+and the invocation was successful, it is assigned the value 0. If it is present
+and the invocation has failed, it is assigned a positive value; in particular,
 for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -5535,8 +5535,8 @@ end program test_etime
 @item @emph{Description}:
 @code{EVENT_QUERY} assignes the number of events to @var{COUNT} which have been
 posted to the @var{EVENT} variable and not yet been removed by calling
-@code{EVENT WAIT}. When @var{STAT} is present and the invokation was successful,
-it is assigned the value 0. If it is present and the invokation has failed,
+@code{EVENT WAIT}. When @var{STAT} is present and the invocation was successful,
+it is assigned the value 0. If it is present and the invocation has failed,
 it is assigned a positive value and @var{COUNT} is assigned the value @math{-1}.
 
 @item @emph{Standard}:

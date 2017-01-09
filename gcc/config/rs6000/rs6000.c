@@ -38525,7 +38525,7 @@ rs6000_asan_shadow_offset (void)
 
 /* Mask options that we want to support inside of attribute((target)) and
    #pragma GCC target operations.  Note, we do not include things like
-   64/32-bit, endianess, hard/soft floating point, etc. that would have
+   64/32-bit, endianness, hard/soft floating point, etc. that would have
    different calling sequences.  */
 
 struct rs6000_opt_mask {

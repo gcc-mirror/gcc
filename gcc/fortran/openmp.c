@@ -3967,7 +3967,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		     &expr->where);
 	else if (if_without_mod)
 	  {
-	    gfc_error ("IF clause without modifier at %L used together with"
+	    gfc_error ("IF clause without modifier at %L used together with "
 		       "IF clauses with modifiers",
 		       &omp_clauses->if_expr->where);
 	    if_without_mod = false;
@@ -4316,7 +4316,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			    if (!gfc_resolve_expr (n->expr)
 				|| n->expr->ts.type != BT_INTEGER
 				|| n->expr->rank != 0)
-			      gfc_error ("SINK addend not a constant integer"
+			      gfc_error ("SINK addend not a constant integer "
 					 "at %L", &n->where);
 			  }
 			continue;
@@ -4627,7 +4627,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			linear_op = n->u.linear_op;
 		      }
 		    else if (omp_clauses->orderedc)
-		      gfc_error ("LINEAR clause specified together with"
+		      gfc_error ("LINEAR clause specified together with "
 				 "ORDERED clause with argument at %L",
 				 &n->where);
 		    else if (n->u.linear_op != OMP_LINEAR_REF

@@ -6221,7 +6221,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  && t != integer_minus_one_node)
 			{
 			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "%<gang%> static value must be"
+				      "%<gang%> static value must be "
 				      "positive");
 			  t = integer_one_node;
 			}
@@ -6288,12 +6288,12 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  break;
 			case OMP_CLAUSE_VECTOR:
 			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "%<vector%> length value must be"
+				      "%<vector%> length value must be "
 				      "positive");
 			  break;
 			case OMP_CLAUSE_WORKER:
 			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "%<worker%> num value must be"
+				      "%<worker%> num value must be "
 				      "positive");
 			  break;
 			default:
@@ -7048,7 +7048,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  && TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%qs variable is neither a pointer, nor an array"
+			    "%qs variable is neither a pointer, nor an array "
 			    "nor reference to pointer or array",
 			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		  remove = true;

@@ -614,7 +614,7 @@ div_and_round_double (unsigned code, int uns,
 
 
 /* Construct from a buffer of length LEN.  BUFFER will be read according
-   to byte endianess and word endianess.  Only the lower LEN bytes
+   to byte endianness and word endianness.  Only the lower LEN bytes
    of the result are set; the remaining high bytes are cleared.  */
 
 double_int

@@ -359,7 +359,7 @@ Fortran Joined
 
 faggressive-function-elimination
 Fortran Var(flag_aggressive_function_elimination)
-Eliminate multiple function invokations also for impure functions.
+Eliminate multiple function invocations also for impure functions.
 
 falign-commons
 Fortran Var(flag_align_commons) Init(1)
@@ -398,7 +398,7 @@ Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_
 -fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files.
 
 Enum
-Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianess value: %qs)
+Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianness value: %qs)
 
 EnumValue
 Enum(gfc_convert) String(big-endian) Value(GFC_FLAG_CONVERT_BIG)
