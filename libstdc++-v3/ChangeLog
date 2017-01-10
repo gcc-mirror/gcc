@@ -1,5 +1,8 @@
 2017-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc: Adjust
+	effective target selector to prevent running in C++17 mode.
+
 	PR libstdc++/77528
 	* include/bits/stl_queue.h (queue::c): Add default member initializer.
 	(queue::queue()): Add constructor and define as defaulted.
