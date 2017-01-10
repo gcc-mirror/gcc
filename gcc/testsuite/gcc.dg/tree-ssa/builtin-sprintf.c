@@ -3,8 +3,10 @@
    constant folding.  With optimization enabled the test will fail to
    link if any of the assertions fails.  Without optimization the test
    aborts at runtime if any of the assertions fails.  */
-/* { dg-do run } */
-/* { dg-additional-options "-O2 -Wall -Wno-pedantic -fprintf-return-value" } */
+/* { dg-do run }
+   The h and hh length modifiers are a C99 feature (see PR 78959).
+   { dg-require-effective-target c99_runtime }
+   { dg-additional-options "-O2 -Wall -Wno-pedantic -fprintf-return-value" } */
 
 #ifndef LINE
 #  define LINE   0
