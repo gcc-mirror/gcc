@@ -12923,7 +12923,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 
 /* Helper of cp_parser_simple_declaration, parse a decomposition declaration.
      decl-specifier-seq ref-qualifier [opt] [ identifier-list ]
-       brace-or-equal-initializer ;  */
+       initializer ;  */
 
 static tree
 cp_parser_decomposition_declaration (cp_parser *parser,
@@ -13022,21 +13022,12 @@ cp_parser_decomposition_declaration (cp_parser *parser,
       || cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
     {
       bool non_constant_p = false, is_direct_init = false;
-      tree initializer;
       *init_loc = cp_lexer_peek_token (parser->lexer)->location;
-      /* Parse the initializer.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
-	{
-	  initializer = cp_parser_braced_list (parser, &non_constant_p);
-	  CONSTRUCTOR_IS_DIRECT_INIT (initializer) = 1;
-	  is_direct_init = true;
-	}
-      else
-	{
-	  /* Consume the `='.  */
-	  cp_parser_require (parser, CPP_EQ, RT_EQ);
-	  initializer = cp_parser_initializer_clause (parser, &non_constant_p);
-	}
+      tree initializer = cp_parser_initializer (parser, &is_direct_init,
+						&non_constant_p);
+      if (TREE_CODE (initializer) == TREE_LIST)
+	initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
+						       tf_warning_or_error);
 
       if (decl != error_mark_node)
 	{
