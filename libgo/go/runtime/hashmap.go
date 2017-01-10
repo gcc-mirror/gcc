@@ -300,7 +300,7 @@ func mapaccess1(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
 	}
 	hashfn := t.key.hashfn
 	equalfn := t.key.equalfn
-	hash := hashfn(key, uintptr(h.hash0), uintptr(t.keysize))
+	hash := hashfn(key, uintptr(h.hash0))
 	m := uintptr(1)<<h.B - 1
 	b := (*bmap)(add(h.buckets, (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -322,7 +322,7 @@ func mapaccess1(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
 			if t.indirectkey {
 				k = *((*unsafe.Pointer)(k))
 			}
-			if equalfn(key, k, uintptr(t.keysize)) {
+			if equalfn(key, k) {
 				v := add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.valuesize))
 				if t.indirectvalue {
 					v = *((*unsafe.Pointer)(v))
@@ -355,7 +355,7 @@ func mapaccess2(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, bool) 
 	}
 	hashfn := t.key.hashfn
 	equalfn := t.key.equalfn
-	hash := hashfn(key, uintptr(h.hash0), uintptr(t.keysize))
+	hash := hashfn(key, uintptr(h.hash0))
 	m := uintptr(1)<<h.B - 1
 	b := (*bmap)(unsafe.Pointer(uintptr(h.buckets) + (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -377,7 +377,7 @@ func mapaccess2(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, bool) 
 			if t.indirectkey {
 				k = *((*unsafe.Pointer)(k))
 			}
-			if equalfn(key, k, uintptr(t.keysize)) {
+			if equalfn(key, k) {
 				v := add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.valuesize))
 				if t.indirectvalue {
 					v = *((*unsafe.Pointer)(v))
@@ -402,7 +402,7 @@ func mapaccessK(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, unsafe
 	}
 	hashfn := t.key.hashfn
 	equalfn := t.key.equalfn
-	hash := hashfn(key, uintptr(h.hash0), uintptr(t.keysize))
+	hash := hashfn(key, uintptr(h.hash0))
 	m := uintptr(1)<<h.B - 1
 	b := (*bmap)(unsafe.Pointer(uintptr(h.buckets) + (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -424,7 +424,7 @@ func mapaccessK(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, unsafe
 			if t.indirectkey {
 				k = *((*unsafe.Pointer)(k))
 			}
-			if equalfn(key, k, uintptr(t.keysize)) {
+			if equalfn(key, k) {
 				v := add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.valuesize))
 				if t.indirectvalue {
 					v = *((*unsafe.Pointer)(v))
@@ -477,7 +477,7 @@ func mapassign1(t *maptype, h *hmap, key unsafe.Pointer, val unsafe.Pointer) {
 
 	hashfn := t.key.hashfn
 	equalfn := t.key.equalfn
-	hash := hashfn(key, uintptr(h.hash0), uintptr(t.keysize))
+	hash := hashfn(key, uintptr(h.hash0))
 
 	if h.buckets == nil {
 		h.buckets = newarray(t.bucket, 1)
@@ -512,7 +512,7 @@ again:
 			if t.indirectkey {
 				k2 = *((*unsafe.Pointer)(k2))
 			}
-			if !equalfn(key, k2, uintptr(t.keysize)) {
+			if !equalfn(key, k2) {
 				continue
 			}
 			// already have a mapping for key. Update it.
@@ -592,7 +592,7 @@ func mapdelete(t *maptype, h *hmap, key unsafe.Pointer) {
 
 	hashfn := t.key.hashfn
 	equalfn := t.key.equalfn
-	hash := hashfn(key, uintptr(h.hash0), uintptr(t.keysize))
+	hash := hashfn(key, uintptr(h.hash0))
 	bucket := hash & (uintptr(1)<<h.B - 1)
 	if h.oldbuckets != nil {
 		growWork(t, h, bucket)
@@ -612,7 +612,7 @@ func mapdelete(t *maptype, h *hmap, key unsafe.Pointer) {
 			if t.indirectkey {
 				k2 = *((*unsafe.Pointer)(k2))
 			}
-			if !equalfn(key, k2, uintptr(t.keysize)) {
+			if !equalfn(key, k2) {
 				continue
 			}
 			memclr(k, uintptr(t.keysize))
@@ -760,10 +760,10 @@ next:
 				if t.indirectkey {
 					k2 = *((*unsafe.Pointer)(k2))
 				}
-				if t.reflexivekey || equalfn(k2, k2, uintptr(t.keysize)) {
+				if t.reflexivekey || equalfn(k2, k2) {
 					// If the item in the oldbucket is not destined for
 					// the current new bucket in the iteration, skip it.
-					hash := hashfn(k2, uintptr(h.hash0), uintptr(t.keysize))
+					hash := hashfn(k2, uintptr(h.hash0))
 					if hash&(uintptr(1)<<it.B-1) != checkBucket {
 						continue
 					}
@@ -797,7 +797,7 @@ next:
 				if t.indirectkey {
 					k2 = *((*unsafe.Pointer)(k2))
 				}
-				if t.reflexivekey || equalfn(k2, k2, uintptr(t.keysize)) {
+				if t.reflexivekey || equalfn(k2, k2) {
 					// Check the current hash table for the data.
 					// This code handles the case where the key
 					// has been deleted, updated, or deleted and reinserted.
@@ -913,9 +913,9 @@ func evacuate(t *maptype, h *hmap, oldbucket uintptr) {
 				}
 				// Compute hash to make our evacuation decision (whether we need
 				// to send this key/value to bucket x or bucket y).
-				hash := hashfn(k2, uintptr(h.hash0), uintptr(t.keysize))
+				hash := hashfn(k2, uintptr(h.hash0))
 				if h.flags&iterator != 0 {
-					if !t.reflexivekey && !equalfn(k2, k2, uintptr(t.keysize)) {
+					if !t.reflexivekey && !equalfn(k2, k2) {
 						// If key != key (NaNs), then the hash could be (and probably
 						// will be) entirely different from the old hash. Moreover,
 						// it isn't reproducible. Reproducibility is required in the

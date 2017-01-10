@@ -254,8 +254,8 @@ type rtype struct {
 	size       uintptr
 	hash       uint32 // hash of type; avoids computation in hash tables
 
-	hashfn  func(unsafe.Pointer, uintptr, uintptr) uintptr     // hash function
-	equalfn func(unsafe.Pointer, unsafe.Pointer, uintptr) bool // equality function
+	hashfn  func(unsafe.Pointer, uintptr) uintptr     // hash function
+	equalfn func(unsafe.Pointer, unsafe.Pointer) bool // equality function
 
 	gc            unsafe.Pointer // garbage collection data
 	string        *string        // string form; unnecessary  but undeniably useful
@@ -2203,23 +2203,20 @@ func StructOf(fields []StructField) Type {
 		typ.gc = unsafe.Pointer(&gc[0])
 	}
 
-	typ.hashfn = func(p unsafe.Pointer, seed, size uintptr) uintptr {
+	typ.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
 		ret := seed
-		for i, ft := range typ.fields {
-			if i > 0 {
-				ret *= 33
-			}
+		for _, ft := range typ.fields {
 			o := unsafe.Pointer(uintptr(p) + ft.offset)
-			ret = ft.typ.hashfn(o, ret, ft.typ.size)
+			ret = ft.typ.hashfn(o, ret)
 		}
 		return ret
 	}
 
-	typ.equalfn = func(p, q unsafe.Pointer, size uintptr) bool {
+	typ.equalfn = func(p, q unsafe.Pointer) bool {
 		for _, ft := range typ.fields {
 			pi := unsafe.Pointer(uintptr(p) + ft.offset)
 			qi := unsafe.Pointer(uintptr(q) + ft.offset)
-			if !ft.typ.equalfn(pi, qi, ft.typ.size) {
+			if !ft.typ.equalfn(pi, qi) {
 				return false
 			}
 		}
@@ -2348,19 +2345,18 @@ func ArrayOf(count int, elem Type) Type {
 
 	array.kind &^= kindDirectIface
 
-	array.hashfn = func(p unsafe.Pointer, seed, size uintptr) uintptr {
+	array.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
 		ret := seed
 		for i := 0; i < count; i++ {
-			ret *= 33
-			ret = typ.hashfn(p, ret, typ.size)
+			ret = typ.hashfn(p, ret)
 			p = unsafe.Pointer(uintptr(p) + typ.size)
 		}
 		return ret
 	}
 
-	array.equalfn = func(p1, p2 unsafe.Pointer, size uintptr) bool {
+	array.equalfn = func(p1, p2 unsafe.Pointer) bool {
 		for i := 0; i < count; i++ {
-			if !typ.equalfn(p1, p2, typ.size) {
+			if !typ.equalfn(p1, p2) {
 				return false
 			}
 			p1 = unsafe.Pointer(uintptr(p1) + typ.size)

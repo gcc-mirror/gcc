@@ -446,10 +446,6 @@ runtime_files = \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strslice.c \
-	runtime/go-type-complex.c \
-	runtime/go-type-float.c \
-	runtime/go-type-identity.c \
-	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
 	runtime/go-unsafe-new.c \
 	runtime/go-unsafe-newarray.c \

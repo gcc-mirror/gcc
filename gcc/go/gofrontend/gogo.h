@@ -563,7 +563,7 @@ class Gogo
   // used when a type-specific function is needed when not at the top
   // level.
   void
-  queue_specific_type_function(Type* type, Named_type* name,
+  queue_specific_type_function(Type* type, Named_type* name, int64_t size,
 			       const std::string& hash_name,
 			       Function_type* hash_fntype,
 			       const std::string& equal_name,
@@ -824,17 +824,18 @@ class Gogo
   {
     Type* type;
     Named_type* name;
+    int64_t size;
     std::string hash_name;
     Function_type* hash_fntype;
     std::string equal_name;
     Function_type* equal_fntype;
 
-    Specific_type_function(Type* atype, Named_type* aname,
+    Specific_type_function(Type* atype, Named_type* aname, int64_t asize,
 			   const std::string& ahash_name,
 			   Function_type* ahash_fntype,
 			   const std::string& aequal_name,
 			   Function_type* aequal_fntype)
-      : type(atype), name(aname), hash_name(ahash_name),
+      : type(atype), name(aname), size(asize), hash_name(ahash_name),
 	hash_fntype(ahash_fntype), equal_name(aequal_name),
 	equal_fntype(aequal_fntype)
     { }

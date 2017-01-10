@@ -1425,7 +1425,9 @@ Type::make_builtin_struct_type(int nfields, ...)
 
   va_end(ap);
 
-  return Type::make_struct_type(sfl, bloc);
+  Struct_type* ret = Type::make_struct_type(sfl, bloc);
+  ret->set_is_struct_incomparable();
+  return ret;
 }
 
 // A list of builtin named types.
@@ -1488,7 +1490,6 @@ Type::make_type_descriptor_type()
       Typed_identifier_list *params = new Typed_identifier_list();
       params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
       params->push_back(Typed_identifier("seed", uintptr_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
       Typed_identifier_list* results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", uintptr_type, bloc));
@@ -1499,7 +1500,6 @@ Type::make_type_descriptor_type()
       params = new Typed_identifier_list();
       params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
       params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
       results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
@@ -1578,6 +1578,51 @@ Type::make_type_descriptor_ptr_type()
   return ret;
 }
 
+// Return whether this type needs specially built type functions.
+// This returns true for types that are comparable and either can not
+// use an identity comparison, or are a non-standard size.
+
+bool
+Type::needs_specific_type_functions(Gogo* gogo)
+{
+  if (!this->is_comparable())
+    return false;
+  if (!this->compare_is_identity(gogo))
+    return true;
+
+  // We create a few predeclared types for type descriptors; they are
+  // really just for the backend and don't need hash or equality
+  // functions.
+  Named_type* nt = this->named_type();
+  if (nt != NULL && Linemap::is_predeclared_location(nt->location()))
+    return false;
+
+  int64_t size, align;
+  if (!this->backend_type_size(gogo, &size)
+      || !this->backend_type_align(gogo, &align))
+    {
+      go_assert(saw_errors());
+      return false;
+    }
+  // This switch matches the one in Type::type_functions.
+  switch (size)
+    {
+    case 0:
+    case 1:
+    case 2:
+      return align < 2;
+    case 4:
+      return align < 4;
+    case 8:
+      return align < 8;
+    case 16:
+      // 8, not 16, because of how runtime.memequal128 is written.
+      return align < 8;
+    default:
+      return true;
+    }
+}
+
 // Set *HASH_FN and *EQUAL_FN to the runtime functions which compute a
 // hash code for this type and which compare whether two values of
 // this type are equal.  If NAME is not NULL it is the name of this
@@ -1610,7 +1655,6 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	  params->push_back(Typed_identifier("key", unsafe_pointer_type,
 					     bloc));
 	  params->push_back(Typed_identifier("seed", uintptr_type, bloc));
-	  params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
 	  Typed_identifier_list* results = new Typed_identifier_list();
 	  results->push_back(Typed_identifier("", uintptr_type, bloc));
@@ -1624,7 +1668,6 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 					     bloc));
 	  params->push_back(Typed_identifier("key2", unsafe_pointer_type,
 					     bloc));
-	  params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
 	  Typed_identifier_list* results = new Typed_identifier_list();
 	  results->push_back(Typed_identifier("", Type::lookup_bool_type(),
@@ -1638,8 +1681,78 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
   const char* equal_fnname;
   if (this->compare_is_identity(gogo))
     {
-      hash_fnname = "runtime.memhash";
-      equal_fnname = "__go_type_equal_identity";
+      int64_t size, align;
+      if (!this->backend_type_size(gogo, &size)
+	  || !this->backend_type_align(gogo, &align))
+	{
+	  go_assert(saw_errors());
+	  return;
+	}
+      bool build_functions = false;
+      // This switch matches the one in Type::needs_specific_type_functions.
+      // The alignment tests are because of the memequal functions,
+      // which assume that the values are aligned as required for an
+      // integer of that size.
+      switch (size)
+	{
+	case 0:
+	  hash_fnname = "runtime.memhash0";
+	  equal_fnname = "runtime.memequal0";
+	  break;
+	case 1:
+	  hash_fnname = "runtime.memhash8";
+	  equal_fnname = "runtime.memequal8";
+	  break;
+	case 2:
+	  if (align < 2)
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash16";
+	      equal_fnname = "runtime.memequal16";
+	    }
+	  break;
+	case 4:
+	  if (align < 4)
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash32";
+	      equal_fnname = "runtime.memequal32";
+	    }
+	  break;
+	case 8:
+	  if (align < 8)
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash64";
+	      equal_fnname = "runtime.memequal64";
+	    }
+	  break;
+	case 16:
+	  // 8, not 16, because of how runtime.memequal128 is written.
+	  if (align < 8)
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash128";
+	      equal_fnname = "runtime.memequal128";
+	    }
+	  break;
+	default:
+	  build_functions = true;
+	  break;
+	}
+      if (build_functions)
+	{
+	  // We don't have a built-in function for a type of this size
+	  // and alignment.  Build a function to use that calls the
+	  // generic hash/equality functions for identity, passing the size.
+	  this->specific_type_functions(gogo, name, size, hash_fntype,
+					equal_fntype, hash_fn, equal_fn);
+	  return;
+	}
     }
   else
     {
@@ -1661,18 +1774,40 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	  go_unreachable();
 
 	case Type::TYPE_FLOAT:
-	  hash_fnname = "__go_type_hash_float";
-	  equal_fnname = "__go_type_equal_float";
+	  switch (this->float_type()->bits())
+	    {
+	    case 32:
+	      hash_fnname = "runtime.f32hash";
+	      equal_fnname = "runtime.f32equal";
+	      break;
+	    case 64:
+	      hash_fnname = "runtime.f64hash";
+	      equal_fnname = "runtime.f64equal";
+	      break;
+	    default:
+	      go_unreachable();
+	    }
 	  break;
 
 	case Type::TYPE_COMPLEX:
-	  hash_fnname = "__go_type_hash_complex";
-	  equal_fnname = "__go_type_equal_complex";
+	  switch (this->complex_type()->bits())
+	    {
+	    case 64:
+	      hash_fnname = "runtime.c64hash";
+	      equal_fnname = "runtime.c64equal";
+	      break;
+	    case 128:
+	      hash_fnname = "runtime.c128hash";
+	      equal_fnname = "runtime.c128equal";
+	      break;
+	    default:
+	      go_unreachable();
+	    }
 	  break;
 
 	case Type::TYPE_STRING:
-	  hash_fnname = "__go_type_hash_string";
-	  equal_fnname = "__go_type_equal_string";
+	  hash_fnname = "runtime.strhash";
+	  equal_fnname = "runtime.strequal";
 	  break;
 
 	case Type::TYPE_STRUCT:
@@ -1680,7 +1815,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	    // This is a struct which can not be compared using a
 	    // simple identity function.  We need to build a function
 	    // for comparison.
-	    this->specific_type_functions(gogo, name, hash_fntype,
+	    this->specific_type_functions(gogo, name, -1, hash_fntype,
 					  equal_fntype, hash_fn, equal_fn);
 	    return;
 	  }
@@ -1697,7 +1832,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	      // This is an array which can not be compared using a
 	      // simple identity function.  We need to build a
 	      // function for comparison.
-	      this->specific_type_functions(gogo, name, hash_fntype,
+	      this->specific_type_functions(gogo, name, -1, hash_fntype,
 					    equal_fntype, hash_fn, equal_fn);
 	      return;
 	    }
@@ -1739,11 +1874,13 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 
 Type::Type_functions Type::type_functions_table;
 
-// Handle a type function which is specific to a type: a struct or
-// array which can not use an identity comparison.
+// Handle a type function which is specific to a type: if SIZE == -1,
+// this is a struct or array that can not use an identity comparison.
+// Otherwise, it is a type that uses an identity comparison but is not
+// one of the standard supported sizes.
 
 void
-Type::specific_type_functions(Gogo* gogo, Named_type* name,
+Type::specific_type_functions(Gogo* gogo, Named_type* name, int64_t size,
 			      Function_type* hash_fntype,
 			      Function_type* equal_fntype,
 			      Named_object** hash_fn,
@@ -1829,11 +1966,13 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
   if (!is_defined_elsewhere)
     {
       if (gogo->in_global_scope())
-	this->write_specific_type_functions(gogo, name, hash_name, hash_fntype,
-					    equal_name, equal_fntype);
+	this->write_specific_type_functions(gogo, name, size, hash_name,
+					    hash_fntype, equal_name,
+					    equal_fntype);
       else
-	gogo->queue_specific_type_function(this, name, hash_name, hash_fntype,
-					   equal_name, equal_fntype);
+	gogo->queue_specific_type_function(this, name, size, hash_name,
+					   hash_fntype, equal_name,
+					   equal_fntype);
     }
 }
 
@@ -1841,7 +1980,7 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
 // written specially.
 
 void
-Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
+Type::write_specific_type_functions(Gogo* gogo, Named_type* name, int64_t size,
 				    const std::string& hash_name,
 				    Function_type* hash_fntype,
 				    const std::string& equal_name,
@@ -1862,7 +2001,9 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   hash_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
-  if (name != NULL && name->real_type()->named_type() != NULL)
+  if (size != -1)
+    this->write_identity_hash(gogo, size);
+  else if (name != NULL && name->real_type()->named_type() != NULL)
     this->write_named_hash(gogo, name, hash_fntype, equal_fntype);
   else if (this->struct_type() != NULL)
     this->struct_type()->write_hash_function(gogo, name, hash_fntype,
@@ -1883,7 +2024,9 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   equal_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
-  if (name != NULL && name->real_type()->named_type() != NULL)
+  if (size != -1)
+    this->write_identity_equal(gogo, size);
+  else if (name != NULL && name->real_type()->named_type() != NULL)
     this->write_named_equal(gogo, name);
   else if (this->struct_type() != NULL)
     this->struct_type()->write_equal_function(gogo, name);
@@ -1900,6 +2043,112 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   // Build the function descriptors for the type descriptor to refer to.
   hash_fn->func_value()->descriptor(gogo, hash_fn);
   equal_fn->func_value()->descriptor(gogo, equal_fn);
+}
+
+// Write a hash function for a type that can use an identity hash but
+// is not one of the standard supported sizes.  For example, this
+// would be used for the type [3]byte.  This builds a return statement
+// that returns a call to the memhash function, passing the key and
+// seed from the function arguments (already constructed before this
+// is called), and the constant size.
+
+void
+Type::write_identity_hash(Gogo* gogo, int64_t size)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  Type* unsafe_pointer_type = Type::make_pointer_type(Type::make_void_type());
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  Typed_identifier_list* params = new Typed_identifier_list();
+  params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
+  params->push_back(Typed_identifier("seed", uintptr_type, bloc));
+  params->push_back(Typed_identifier("size", uintptr_type, bloc));
+
+  Typed_identifier_list* results = new Typed_identifier_list();
+  results->push_back(Typed_identifier("", uintptr_type, bloc));
+
+  Function_type* memhash_fntype = Type::make_function_type(NULL, params,
+							   results, bloc);
+
+  Named_object* memhash =
+    Named_object::make_function_declaration("runtime.memhash", NULL,
+					    memhash_fntype, bloc);
+  memhash->func_declaration_value()->set_asm_name("runtime.memhash");
+
+  Named_object* key_arg = gogo->lookup("key", NULL);
+  go_assert(key_arg != NULL);
+  Named_object* seed_arg = gogo->lookup("seed", NULL);
+  go_assert(seed_arg != NULL);
+
+  Expression* key_ref = Expression::make_var_reference(key_arg, bloc);
+  Expression* seed_ref = Expression::make_var_reference(seed_arg, bloc);
+  Expression* size_arg = Expression::make_integer_int64(size, uintptr_type,
+							bloc);
+  Expression_list* args = new Expression_list();
+  args->push_back(key_ref);
+  args->push_back(seed_ref);
+  args->push_back(size_arg);
+  Expression* func = Expression::make_func_reference(memhash, NULL, bloc);
+  Expression* call = Expression::make_call(func, args, false, bloc);
+
+  Expression_list* vals = new Expression_list();
+  vals->push_back(call);
+  Statement* s = Statement::make_return_statement(vals, bloc);
+  gogo->add_statement(s);
+}
+
+// Write an equality function for a type that can use an identity
+// equality comparison but is not one of the standard supported sizes.
+// For example, this would be used for the type [3]byte.  This builds
+// a return statement that returns a call to the memequal function,
+// passing the two keys from the function arguments (already
+// constructed before this is called), and the constant size.
+
+void
+Type::write_identity_equal(Gogo* gogo, int64_t size)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  Type* unsafe_pointer_type = Type::make_pointer_type(Type::make_void_type());
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  Typed_identifier_list* params = new Typed_identifier_list();
+  params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
+  params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
+  params->push_back(Typed_identifier("size", uintptr_type, bloc));
+
+  Typed_identifier_list* results = new Typed_identifier_list();
+  results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
+
+  Function_type* memequal_fntype = Type::make_function_type(NULL, params,
+							    results, bloc);
+
+  Named_object* memequal =
+    Named_object::make_function_declaration("runtime.memequal", NULL,
+					    memequal_fntype, bloc);
+  memequal->func_declaration_value()->set_asm_name("runtime.memequal");
+
+  Named_object* key1_arg = gogo->lookup("key1", NULL);
+  go_assert(key1_arg != NULL);
+  Named_object* key2_arg = gogo->lookup("key2", NULL);
+  go_assert(key2_arg != NULL);
+
+  Expression* key1_ref = Expression::make_var_reference(key1_arg, bloc);
+  Expression* key2_ref = Expression::make_var_reference(key2_arg, bloc);
+  Expression* size_arg = Expression::make_integer_int64(size, uintptr_type,
+							bloc);
+  Expression_list* args = new Expression_list();
+  args->push_back(key1_ref);
+  args->push_back(key2_ref);
+  args->push_back(size_arg);
+  Expression* func = Expression::make_func_reference(memequal, NULL, bloc);
+  Expression* call = Expression::make_call(func, args, false, bloc);
+
+  Expression_list* vals = new Expression_list();
+  vals->push_back(call);
+  Statement* s = Statement::make_return_statement(vals, bloc);
+  gogo->add_statement(s);
 }
 
 // Write a hash function that simply calls the hash function for a
@@ -1926,10 +2175,6 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
   Named_object* seed_arg = gogo->lookup("seed", NULL);
   go_assert(seed_arg != NULL);
 
-  // The size of the type we are going to hash.
-  Named_object* keysz_arg = gogo->lookup("key_size", NULL);
-  go_assert(keysz_arg != NULL);
-
   Named_object* hash_fn;
   Named_object* equal_fn;
   name->real_type()->type_functions(gogo, base_type, hash_fntype, equal_fntype,
@@ -1938,11 +2183,9 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
   // Call the hash function for the base type.
   Expression* key_ref = Expression::make_var_reference(key_arg, bloc);
   Expression* seed_ref = Expression::make_var_reference(seed_arg, bloc);
-  Expression* keysz_ref = Expression::make_var_reference(keysz_arg, bloc);
   Expression_list* args = new Expression_list();
   args->push_back(key_ref);
   args->push_back(seed_ref);
-  args->push_back(keysz_ref);
   Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
   Expression* call = Expression::make_call(func, args, false, bloc);
 
@@ -5410,7 +5653,6 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
   gogo->add_statement(key);
 
   // Loop over the struct fields.
-  bool first = true;
   const Struct_field_list* fields = this->fields_;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
@@ -5419,29 +5661,12 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
       if (Gogo::is_sink_name(pf->field_name()))
 	continue;
 
-      if (first)
-	first = false;
-      else
-	{
-	  // Multiply retval by 33.
-	  Expression* i33 = Expression::make_integer_ul(33, uintptr_type,
-							bloc);
-	  ref = Expression::make_temporary_reference(retval, bloc);
-	  Statement* s = Statement::make_assignment_operation(OPERATOR_MULTEQ,
-							      ref, i33, bloc);
-	  gogo->add_statement(s);
-	}
-
       // Get a pointer to the value of this field.
       Expression* offset = Expression::make_struct_field_offset(this, &*pf);
       ref = Expression::make_temporary_reference(key, bloc);
       Expression* subkey = Expression::make_binary(OPERATOR_PLUS, ref, offset,
 						   bloc);
       subkey = Expression::make_cast(key_arg_type, subkey, bloc);
-
-      // Get the size of this field.
-      Expression* size = Expression::make_type_info(pf->type(),
-						    Expression::TYPE_INFO_SIZE);
 
       // Get the hash function to use for the type of this field.
       Named_object* hash_fn;
@@ -5454,7 +5679,6 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
       Expression_list* args = new Expression_list();
       args->push_back(subkey);
       args->push_back(ref);
-      args->push_back(size);
       Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
       Expression* call = Expression::make_call(func, args, false, bloc);
 
@@ -6295,14 +6519,6 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
 
   gogo->start_block(bloc);
 
-  // Multiply retval by 33.
-  Expression* i33 = Expression::make_integer_ul(33, uintptr_type, bloc);
-
-  ref = Expression::make_temporary_reference(retval, bloc);
-  Statement* s = Statement::make_assignment_operation(OPERATOR_MULTEQ, ref,
-						      i33, bloc);
-  gogo->add_statement(s);
-
   // Get the hash function for the element type.
   Named_object* hash_fn;
   Named_object* equal_fn;
@@ -6323,7 +6539,6 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   Expression_list* args = new Expression_list();
   args->push_back(subkey);
   args->push_back(ref);
-  args->push_back(ele_size);
   Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
   Expression* call = Expression::make_call(func, args, false, bloc);
 
@@ -6331,7 +6546,7 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   Temporary_reference_expression* tref =
     Expression::make_temporary_reference(retval, bloc);
   tref->set_is_lvalue();
-  s = Statement::make_assignment(tref, call, bloc);
+  Statement* s = Statement::make_assignment(tref, call, bloc);
   gogo->add_statement(s);
 
   // Increase the element pointer.
