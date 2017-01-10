@@ -1,3 +1,24 @@
+2017-01-10  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET,
+	OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET): New.
+	* config.gcc: Add avx512vpopcntdqintrin.h.
+	* config/i386/avx512vpopcntdqintrin.h: New.
+	* config/i386/cpuid.h (bit_AVX512VPOPCNTDQ): New.
+	* config/i386/i386-builtin-types.def: Add new types.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpopcountd_v16si,
+	__builtin_ia32_vpopcountd_v16si_mask, __builtin_ia32_vpopcountq_v8di,
+	__builtin_ia32_vpopcountq_v8di_mask): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVX512VPOPCNTDQ__.
+	* config/i386/i386.c (ix86_target_string): Add -mavx512vpopcntdq.
+	(PTA_AVX512VPOPCNTDQ): Define.
+	* config/i386/i386.h (TARGET_AVX512VPOPCNTDQ,
+	TARGET_AVX512VPOPCNTDQ_P): Define.
+	* config/i386/i386.opt: Add mavx512vpopcntdq.
+	* config/i386/immintrin.h: Include avx512vpopcntdqintrin.h.
+	* config/i386/sse.md (define_insn "vpopcount<mode><mask_name>"): New.
+
 2017-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/77484

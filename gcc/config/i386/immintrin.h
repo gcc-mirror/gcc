@@ -72,6 +72,8 @@
 
 #include <avx5124vnniwintrin.h>
 
+#include <avx512vpopcntdqintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>

@@ -54,6 +54,7 @@
 #define bit_SSE4a	(1 << 6)
 #define bit_PRFCHW	(1 << 8)
 #define bit_XOP         (1 << 11)
+#define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_LWP 	(1 << 15)
 #define bit_FMA4        (1 << 16)
 #define bit_TBM         (1 << 21)

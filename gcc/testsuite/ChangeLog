@@ -1,3 +1,16 @@
+2017-01-10  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mavx512vpopcntdq.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/builtin_target.c: Handle new option.
+	* gcc.target/i386/funcspec-56.inc: Test new attributes.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd.c: New test.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq.c: Ditto.
+
 2017-01-09  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/79036
