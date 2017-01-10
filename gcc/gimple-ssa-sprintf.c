@@ -2723,6 +2723,9 @@ get_destination_size (tree dest)
      a member array as opposed to the whole enclosing object), otherwise
      use type-zero object size to determine the size of the enclosing
      object (the function fails without optimization in this type).  */
+
+  init_object_sizes ();
+
   int ost = optimize > 0;
   unsigned HOST_WIDE_INT size;
   if (compute_builtin_object_size (dest, ost, &size))
@@ -3119,6 +3122,8 @@ pass_sprintf_length::execute (function *fun)
 	    handle_gimple_call (&si);
 	}
     }
+
+  fini_object_sizes ();
 
   return 0;
 }

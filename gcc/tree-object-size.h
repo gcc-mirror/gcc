@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_OBJECT_SIZE_H
 
 extern void init_object_sizes (void);
+extern void fini_object_sizes (void);
 extern bool compute_builtin_object_size (tree, int, unsigned HOST_WIDE_INT *);
 
 #endif  // GCC_TREE_OBJECT_SIZE_H
