@@ -129,7 +129,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       //  See queue::c for notes on this name.
+#if __cplusplus >= 201103L
+      _Sequence c{};
+#else
       _Sequence c;
+#endif
 
     public:
       // XXX removed old def ctor, added def arg to this one to match 14882
@@ -141,12 +145,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       stack(const _Sequence& __c = _Sequence())
       : c(__c) { }
 #else
+      stack() = default;
+
       explicit
       stack(const _Sequence& __c)
       : c(__c) { }
 
       explicit
-      stack(_Sequence&& __c = _Sequence())
+      stack(_Sequence&& __c)
       : c(std::move(__c)) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>

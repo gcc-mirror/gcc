@@ -1,3 +1,37 @@
+2017-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77528
+	* include/bits/stl_queue.h (queue::c): Add default member initializer.
+	(queue::queue()): Add constructor and define as defaulted.
+	(queue::queue(_Sequence&&)): Remove default argument.
+	(priority_queue::c, priority_queue::comp): Add default member
+	initializers.
+	(priority_queue::priority_queue()): Add constructor and define as
+	defaulted.
+	(priority_queue::priority_queue(const _Compare&, _Sequence&&)):
+	Remove default argument for first parameter.
+	* include/bits/stl_stack.h (stack::c): Add default member initializer.
+	(stack::stack()): Add constructor and define as defaulted.
+	(stack::stack(const _Sequence&)): Remove default argument.
+	* testsuite/23_containers/priority_queue/requirements/
+	explicit_instantiation/1.cc: Test explicit instantiation with
+	non-DefaultConstructible sequence.
+	* testsuite/23_containers/priority_queue/77528.cc: New test.
+	* testsuite/23_containers/priority_queue/requirements/
+	explicit_instantiation/1_c++0x.cc: Replace with 1_c++98.cc.
+	* testsuite/23_containers/queue/77528.cc: New test.
+	* testsuite/23_containers/queue/requirements/explicit_instantiation/
+	1.cc: Test explicit instantiation with non-DefaultConstructible
+	sequence.
+	* testsuite/23_containers/queue/requirements/explicit_instantiation/
+	1_c++0x.cc: Replace with 1_c++98.cc.
+	* testsuite/23_containers/stack/77528.cc: New test.
+	* testsuite/23_containers/stack/requirements/explicit_instantiation/
+	1.cc: Test explicit instantiation with non-DefaultConstructible
+	sequence.
+	* testsuite/23_containers/stack/requirements/explicit_instantiation/
+	1_c++0x.cc: Replace with 1_c++98.cc.
+
 2017-01-10  Felipe Magno de Almeida <felipe@expertisesolutions.com.br>
 
 	* include/bits/locale_facets_nonio.tcc
