@@ -1,3 +1,20 @@
+2017-01-10  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (_versioned_namespace): Define.
+	(is_specialization, strip_versioned_namespace): New helpers functions
+	to work with symbols in the versioned namespace.
+	(Printer.add_version): Add second name using versioned namespace.
+	(add_one_template_type_printer, add_one_type_printer): Add second
+	type printers using versioned namespace.
+	(register_type_printers): Add template type printer for basic_string.
+	(build_libstdcxx_dictionary): Remove dead code.
+	* python/libstdcxx/v6/xmethods.py: Make all matchers look for
+	versioned namespace.
+	* testsuite/libstdc++-prettyprinters/48362.cc: Adjust expected
+	results.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+
 2017-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79017
