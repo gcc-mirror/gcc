@@ -1,3 +1,12 @@
+2017-01-10  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-01-05  Martin Liska  <mliska@suse.cz>
+
+	PR pch/78970
+	* c-opts.c (c_common_post_options): Reject '-' filename for a precompiled
+	header.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
