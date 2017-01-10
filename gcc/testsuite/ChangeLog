@@ -1,3 +1,9 @@
+2017-01-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/77766
+	PR tree-optimization/78856
+	* gcc.c-torture/execute/pr77766.c: New test.
+
 2016-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79034
