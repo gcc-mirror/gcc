@@ -1,3 +1,9 @@
+2017-01-10  Joe Seymour  <joe.s@somniumtech.com>
+
+	* config/msp430/driver-msp430.c (msp430_mcu_data): Sync with data
+	from TI's devices.csv file as of September 2016.
+	* config/msp430/msp430.c (msp430_mcu_data): Likewise.
+
 2017-01-10  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi: Tweak formatting to fix overfull hbox warnings.
