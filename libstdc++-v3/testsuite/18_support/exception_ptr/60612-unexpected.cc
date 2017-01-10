@@ -1,4 +1,4 @@
-// { dg-do run { target c++11 } }
+// { dg-do run { target { c++11_only || c++14_only } } }
 
 // Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
