@@ -237,7 +237,8 @@ extern G* runtime_getallg(intgo)
 extern uintptr runtime_getallglen(void)
   __asm__(GOSYM_PREFIX "runtime.getallglen");
 extern	G*	runtime_lastg;
-extern	M*	runtime_allm;
+extern	M*	runtime_getallm(void)
+  __asm__(GOSYM_PREFIX "runtime.getallm");
 extern	P**	runtime_allp;
 extern	Sched*  runtime_sched;
 extern	uint32	runtime_panicking(void)
@@ -301,7 +302,6 @@ int32	runtime_atoi(const byte*, intgo);
 void*	runtime_mstart(void*);
 G*	runtime_malg(bool, bool, byte**, uintptr*)
 	__asm__(GOSYM_PREFIX "runtime.malg");
-void	runtime_mpreinit(M*);
 void	runtime_minit(void)
   __asm__ (GOSYM_PREFIX "runtime.minit");
 void	runtime_signalstack(byte*, uintptr)
@@ -313,8 +313,6 @@ void	runtime_freemcache(MCache*)
 void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
 #define runtime_getcallersp(p) __builtin_frame_address(0)
-int32	runtime_mcount(void)
-  __asm__ (GOSYM_PREFIX "runtime.mcount");
 void	runtime_mcall(void(*)(G*));
 uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
 int32	runtime_timediv(int64, int32, int32*)
@@ -394,8 +392,6 @@ void	runtime_crash(void)
 void	runtime_parsedebugvars(void)
   __asm__(GOSYM_PREFIX "runtime.parsedebugvars");
 void	_rt0_go(void);
-intgo	runtime_setmaxthreads(intgo)
-  __asm__ (GOSYM_PREFIX "runtime.setmaxthreads");
 G*	runtime_timejump(void);
 void	runtime_iterate_finq(void (*callback)(FuncVal*, void*, const FuncType*, const PtrType*));
 
@@ -522,8 +518,6 @@ void	runtime_lockOSThread(void)
   __asm__(GOSYM_PREFIX "runtime.lockOSThread");
 void	runtime_unlockOSThread(void)
   __asm__(GOSYM_PREFIX "runtime.unlockOSThread");
-bool	runtime_lockedOSThread(void)
-  __asm__(GOSYM_PREFIX "runtime.lockedOSThread");
 
 void	runtime_printcreatedby(G*)
   __asm__(GOSYM_PREFIX "runtime.printcreatedby");

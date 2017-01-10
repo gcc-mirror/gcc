@@ -1279,7 +1279,6 @@ markroot(ParFor *desc, uint32 i)
 		// For gccgo we use this for all the other global roots.
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_m0, sizeof runtime_m0, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_g0, sizeof runtime_g0, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_allm, sizeof runtime_allm, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allp, sizeof runtime_allp, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&work, sizeof work, 0});
 		break;
@@ -2002,7 +2001,7 @@ runtime_updatememstats(GCStats *stats)
 	if(stats)
 		runtime_memclr((byte*)stats, sizeof(*stats));
 	stacks_inuse = 0;
-	for(mp=runtime_allm; mp; mp=mp->alllink) {
+	for(mp=runtime_getallm(); mp; mp=mp->alllink) {
 		//stacks_inuse += mp->stackinuse*FixedStack;
 		if(stats) {
 			src = (uint64*)&mp->gcstats;

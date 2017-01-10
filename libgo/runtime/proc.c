@@ -376,7 +376,6 @@ Sched*	runtime_sched;
 M	runtime_m0;
 G	runtime_g0;	// idle goroutine for m0
 G*	runtime_lastg;
-M*	runtime_allm;
 P**	runtime_allp;
 int8*	runtime_goos;
 int32	runtime_ncpu;
@@ -385,18 +384,17 @@ bool	runtime_precisestack;
 bool	runtime_isarchive;
 
 void* runtime_mstart(void*);
-static void mcommoninit(M*);
 static void exitsyscall0(G*);
 static void park0(G*);
 static void goexit0(G*);
-static void gfput(P*, G*);
-static G* gfget(P*);
 static bool exitsyscallfast(void);
 
 extern void setncpu(int32)
   __asm__(GOSYM_PREFIX "runtime.setncpu");
 extern void allgadd(G*)
   __asm__(GOSYM_PREFIX "runtime.allgadd");
+extern void mcommoninit(M*)
+  __asm__(GOSYM_PREFIX "runtime.mcommoninit");
 extern void stopm(void)
   __asm__(GOSYM_PREFIX "runtime.stopm");
 extern void handoffp(P*)
@@ -409,6 +407,10 @@ extern void schedule(void)
   __asm__(GOSYM_PREFIX "runtime.schedule");
 extern void execute(G*, bool)
   __asm__(GOSYM_PREFIX "runtime.execute");
+extern void gfput(P*, G*)
+  __asm__(GOSYM_PREFIX "runtime.gfput");
+extern G* gfget(P*)
+  __asm__(GOSYM_PREFIX "runtime.gfget");
 extern void procresize(int32)
   __asm__(GOSYM_PREFIX "runtime.procresize");
 extern void acquirep(P*)
@@ -620,16 +622,6 @@ void getTraceback(G* me, G* gp)
 	}
 }
 
-static void
-checkmcount(void)
-{
-	// sched lock is held
-	if(runtime_sched->mcount > runtime_sched->maxmcount) {
-		runtime_printf("runtime: program exceeds %d-thread limit\n", runtime_sched->maxmcount);
-		runtime_throw("thread exhaustion");
-	}
-}
-
 // Do a stack trace of gp, and then restore the context to
 // gp->dotraceback.
 
@@ -647,30 +639,6 @@ gtraceback(G* gp)
 		sizeof traceback->locbuf / sizeof traceback->locbuf[0], false);
 	gp->m = nil;
 	runtime_gogo(traceback->gp);
-}
-
-static void
-mcommoninit(M *mp)
-{
-	// If there is no mcache runtime_callers() will crash,
-	// and we are most likely in sysmon thread so the stack is senseless anyway.
-	if(g->m->mcache)
-		runtime_callers(1, mp->createstack, nelem(mp->createstack), false);
-
-	mp->fastrand = 0x49f6428aUL + mp->id + runtime_cputicks();
-
-	runtime_lock(&runtime_sched->lock);
-	mp->id = runtime_sched->mcount++;
-	checkmcount();
-	runtime_mpreinit(mp);
-
-	// Add to runtime_allm so garbage collector doesn't free m
-	// when it is just in a register or thread-local storage.
-	mp->alllink = runtime_allm;
-	// runtime_NumCgoCall() iterates over allm w/o schedlock,
-	// so we need to publish it safely.
-	runtime_atomicstorep(&runtime_allm, mp);
-	runtime_unlock(&runtime_sched->lock);
 }
 
 // Called to start an M.
@@ -1332,33 +1300,6 @@ syscall_exitsyscall()
   runtime_exitsyscall(0);
 }
 
-// Called from syscall package before fork.
-void syscall_runtime_BeforeFork(void)
-  __asm__(GOSYM_PREFIX "syscall.runtime_BeforeFork");
-void
-syscall_runtime_BeforeFork(void)
-{
-	// Fork can hang if preempted with signals frequently enough (see issue 5517).
-	// Ensure that we stay on the same M where we disable profiling.
-	runtime_m()->locks++;
-	if(runtime_m()->profilehz != 0)
-		runtime_resetcpuprofiler(0);
-}
-
-// Called from syscall package after fork in parent.
-void syscall_runtime_AfterFork(void)
-  __asm__(GOSYM_PREFIX "syscall.runtime_AfterFork");
-void
-syscall_runtime_AfterFork(void)
-{
-	int32 hz;
-
-	hz = runtime_sched->profilehz;
-	if(hz != 0)
-		runtime_resetcpuprofiler(hz);
-	runtime_m()->locks--;
-}
-
 // Allocate a new g, with a stack big enough for stacksize bytes.
 G*
 runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* ret_stacksize)
@@ -1480,55 +1421,6 @@ __go_go(void (*fn)(void*), void* arg)
 	return newg;
 }
 
-// Put on gfree list.
-// If local list is too long, transfer a batch to the global list.
-static void
-gfput(P *p, G *gp)
-{
-	gp->schedlink = (uintptr)p->gfree;
-	p->gfree = gp;
-	p->gfreecnt++;
-	if(p->gfreecnt >= 64) {
-		runtime_lock(&runtime_sched->gflock);
-		while(p->gfreecnt >= 32) {
-			p->gfreecnt--;
-			gp = p->gfree;
-			p->gfree = (G*)gp->schedlink;
-			gp->schedlink = (uintptr)runtime_sched->gfree;
-			runtime_sched->gfree = gp;
-		}
-		runtime_unlock(&runtime_sched->gflock);
-	}
-}
-
-// Get from gfree list.
-// If local list is empty, grab a batch from global list.
-static G*
-gfget(P *p)
-{
-	G *gp;
-
-retry:
-	gp = p->gfree;
-	if(gp == nil && runtime_sched->gfree) {
-		runtime_lock(&runtime_sched->gflock);
-		while(p->gfreecnt < 32 && runtime_sched->gfree) {
-			p->gfreecnt++;
-			gp = runtime_sched->gfree;
-			runtime_sched->gfree = (G*)gp->schedlink;
-			gp->schedlink = (uintptr)p->gfree;
-			p->gfree = gp;
-		}
-		runtime_unlock(&runtime_sched->gflock);
-		goto retry;
-	}
-	if(gp) {
-		p->gfree = (G*)gp->schedlink;
-		p->gfreecnt--;
-	}
-	return gp;
-}
-
 void
 runtime_Breakpoint(void)
 {
@@ -1541,74 +1433,6 @@ void
 runtime_Gosched(void)
 {
 	runtime_gosched();
-}
-
-// lockOSThread is called by runtime.LockOSThread and runtime.lockOSThread below
-// after they modify m->locked. Do not allow preemption during this call,
-// or else the m might be different in this function than in the caller.
-static void
-lockOSThread(void)
-{
-	g->m->lockedg = g;
-	g->lockedm = g->m;
-}
-
-void	runtime_LockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.LockOSThread");
-void
-runtime_LockOSThread(void)
-{
-	g->m->locked |= _LockExternal;
-	lockOSThread();
-}
-
-void
-runtime_lockOSThread(void)
-{
-	g->m->locked += _LockInternal;
-	lockOSThread();
-}
-
-
-// unlockOSThread is called by runtime.UnlockOSThread and runtime.unlockOSThread below
-// after they update m->locked. Do not allow preemption during this call,
-// or else the m might be in different in this function than in the caller.
-static void
-unlockOSThread(void)
-{
-	if(g->m->locked != 0)
-		return;
-	g->m->lockedg = nil;
-	g->lockedm = nil;
-}
-
-void	runtime_UnlockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.UnlockOSThread");
-
-void
-runtime_UnlockOSThread(void)
-{
-	g->m->locked &= ~_LockExternal;
-	unlockOSThread();
-}
-
-void
-runtime_unlockOSThread(void)
-{
-	if(g->m->locked < _LockInternal)
-		runtime_throw("runtime: internal error: misuse of lockOSThread/unlockOSThread");
-	g->m->locked -= _LockInternal;
-	unlockOSThread();
-}
-
-bool
-runtime_lockedOSThread(void)
-{
-	return g->lockedm != nil && g->m->lockedg != nil;
-}
-
-int32
-runtime_mcount(void)
-{
-	return runtime_sched->mcount;
 }
 
 static struct {
@@ -1719,71 +1543,6 @@ runtime_setcpuprofilerate_m(int32 hz)
 	g->m->locks--;
 }
 
-intgo
-runtime_setmaxthreads(intgo in)
-{
-	intgo out;
-
-	runtime_lock(&runtime_sched->lock);
-	out = (intgo)runtime_sched->maxmcount;
-	runtime_sched->maxmcount = (int32)in;
-	checkmcount();
-	runtime_unlock(&runtime_sched->lock);
-	return out;
-}
-
-static intgo
-procPin()
-{
-	M *mp;
-
-	mp = runtime_m();
-	mp->locks++;
-	return (intgo)(((P*)mp->p)->id);
-}
-
-static void
-procUnpin()
-{
-	runtime_m()->locks--;
-}
-
-intgo sync_runtime_procPin(void)
-  __asm__ (GOSYM_PREFIX "sync.runtime_procPin");
-
-intgo
-sync_runtime_procPin()
-{
-	return procPin();
-}
-
-void sync_runtime_procUnpin(void)
-  __asm__ (GOSYM_PREFIX  "sync.runtime_procUnpin");
-
-void
-sync_runtime_procUnpin()
-{
-	procUnpin();
-}
-
-intgo sync_atomic_runtime_procPin(void)
-  __asm__ (GOSYM_PREFIX "sync_atomic.runtime_procPin");
-
-intgo
-sync_atomic_runtime_procPin()
-{
-	return procPin();
-}
-
-void sync_atomic_runtime_procUnpin(void)
-  __asm__ (GOSYM_PREFIX  "sync_atomic.runtime_procUnpin");
-
-void
-sync_atomic_runtime_procUnpin()
-{
-	procUnpin();
-}
-
 // Return whether we are waiting for a GC.  This gc toolchain uses
 // preemption instead.
 bool
@@ -1800,17 +1559,6 @@ extern void os_beforeExit() __asm__ (GOSYM_PREFIX "os.runtime_beforeExit");
 void
 os_beforeExit()
 {
-}
-
-// For Go code to look at variables, until we port proc.go.
-
-extern M* runtime_go_allm(void)
-  __asm__ (GOSYM_PREFIX "runtime.allm");
-
-M*
-runtime_go_allm()
-{
-	return runtime_allm;
 }
 
 intgo NumCPU(void) __asm__ (GOSYM_PREFIX "runtime.NumCPU");
