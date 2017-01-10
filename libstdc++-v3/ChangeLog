@@ -1,3 +1,9 @@
+2017-01-10  Felipe Magno de Almeida <felipe@expertisesolutions.com.br>
+
+	* include/bits/locale_facets_nonio.tcc
+	(time_get::_M_extract_via_format): Avoid compilation errors with
+	non-standard struct tm.
+
 2017-01-10  François Dumont  <fdumont@gcc.gnu.org>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
