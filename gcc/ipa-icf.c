@@ -3380,6 +3380,66 @@ sem_item_optimizer::dump_cong_classes (void)
   free (histogram);
 }
 
+/* Sort pair of sem_items A and B by DECL_UID.  */
+
+static int
+sort_sem_items_by_decl_uid (const void *a, const void *b)
+{
+  const sem_item *i1 = *(const sem_item * const *)a;
+  const sem_item *i2 = *(const sem_item * const *)b;
+
+  int uid1 = DECL_UID (i1->decl);
+  int uid2 = DECL_UID (i2->decl);
+
+  if (uid1 < uid2)
+    return -1;
+  else if (uid1 > uid2)
+    return 1;
+  else
+    return 0;
+}
+
+/* Sort pair of congruence_classes A and B by DECL_UID of the first member.  */
+
+static int
+sort_congruence_classes_by_decl_uid (const void *a, const void *b)
+{
+  const congruence_class *c1 = *(const congruence_class * const *)a;
+  const congruence_class *c2 = *(const congruence_class * const *)b;
+
+  int uid1 = DECL_UID (c1->members[0]->decl);
+  int uid2 = DECL_UID (c2->members[0]->decl);
+
+  if (uid1 < uid2)
+    return -1;
+  else if (uid1 > uid2)
+    return 1;
+  else
+    return 0;
+}
+
+/* Sort pair of congruence_class_groups A and B by
+   DECL_UID of the first member of a first group.  */
+
+static int
+sort_congruence_class_groups_by_decl_uid (const void *a, const void *b)
+{
+  const congruence_class_group *g1
+    = *(const congruence_class_group * const *)a;
+  const congruence_class_group *g2
+    = *(const congruence_class_group * const *)b;
+
+  int uid1 = DECL_UID (g1->classes[0]->members[0]->decl);
+  int uid2 = DECL_UID (g2->classes[0]->members[0]->decl);
+
+  if (uid1 < uid2)
+    return -1;
+  else if (uid1 > uid2)
+    return 1;
+  else
+    return 0;
+}
+
 /* After reduction is done, we can declare all items in a group
    to be equal. PREV_CLASS_COUNT is start number of classes
    before reduction. True is returned if there's a merge operation
@@ -3397,6 +3457,22 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 
   bool merged_p = false;
 
+  /* PR lto/78211
+     Sort functions in congruence classes by DECL_UID and do the same
+     for the classes to not to break -fcompare-debug.  */
+
+  for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
+       it != m_classes.end (); ++it)
+    {
+      for (unsigned int i = 0; i < (*it)->classes.length (); i++)
+	{
+	  congruence_class *c = (*it)->classes[i];
+	  c->members.qsort (sort_sem_items_by_decl_uid);
+	}
+
+      (*it)->classes.qsort (sort_congruence_classes_by_decl_uid);
+    }
+
   for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
        it != m_classes.end (); ++it)
     for (unsigned int i = 0; i < (*it)->classes.length (); i++)
@@ -3408,6 +3484,13 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	    non_singular_classes_sum += c->members.length ();
 	  }
       }
+
+  auto_vec <congruence_class_group *> classes (m_classes.elements ());
+  for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
+       it != m_classes.end (); ++it)
+    classes.quick_push (*it);
+
+  classes.qsort (sort_congruence_class_groups_by_decl_uid);
 
   if (dump_file)
     {
@@ -3426,11 +3509,12 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	       item_count ? 100.0f * equal_items / item_count : 0.0f);
     }
 
-  for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
-       it != m_classes.end (); ++it)
-    for (unsigned int i = 0; i < (*it)->classes.length (); i++)
+  unsigned int l;
+  congruence_class_group *it;
+  FOR_EACH_VEC_ELT (classes, l, it)
+    for (unsigned int i = 0; i < it->classes.length (); i++)
       {
-	congruence_class *c = (*it)->classes[i];
+	congruence_class *c = it->classes[i];
 
 	if (c->members.length () == 1)
 	  continue;

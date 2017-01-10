@@ -1,5 +1,14 @@
 2017-01-10  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sort_sem_items_by_decl_uid): New function.
+	(sort_congruence_classes_by_decl_uid): Likewise.
+	(sort_congruence_class_groups_by_decl_uid): Likewise.
+	(sem_item_optimizer::merge_classes): Sort class, groups in these
+	classes and members in the groups by DECL_UID of declarations.
+	This would make merge operations stable.
+
+2017-01-10  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.c (sem_item_optimizer::sem_item_optimizer): Remove
 	usage of m_classes_vec.
 	(sem_item_optimizer::~sem_item_optimizer):  Likewise.
