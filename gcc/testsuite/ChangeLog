@@ -1,3 +1,8 @@
+2017-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78138
+	* gcc.dg/pr78138.c: New test. 
+
 2017-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/77949
