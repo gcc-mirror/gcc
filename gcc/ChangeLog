@@ -1,3 +1,9 @@
+2016-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79034
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds):
+	Propagate out degenerate PHIs in the joiner.
+
 2017-01-10  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sort_sem_items_by_decl_uid): New function.
