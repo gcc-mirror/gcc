@@ -7,6 +7,16 @@
 
 2017-01-10  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/78245
+	* gimple-ssa-sprintf.c (get_destination_size): Call
+	{init,fini}object_sizes.
+	* tree-object-size.c (addr_object_size): Adjust.
+	(pass_through_call): Adjust.
+	(pass_object_sizes::execute): Adjust.
+	* tree-object-size.h (fini_object_sizes): Declare.
+
+2017-01-10  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/78775
 	* builtins.c (get_size_range): Move...
 	* calls.c: ...to here.

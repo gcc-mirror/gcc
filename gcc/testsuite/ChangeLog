@@ -5,6 +5,11 @@
 
 2017-01-10  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/78245
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Add tests.
+
+2017-01-10  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/78775
 	* gcc.dg/attr-alloc_size-4.c: Add test cases.
 	* gcc.dg/attr-alloc_size-10.c: New test.
