@@ -2997,7 +2997,7 @@ Floating point register (containing 32-bit value)
 Altivec vector register
 
 @item wa
-Any VSX register if the -mvsx option was used or NO_REGS.
+Any VSX register if the @option{-mvsx} option was used or NO_REGS.
 
 When using any of the register constraints (@code{wa}, @code{wd},
 @code{wf}, @code{wg}, @code{wh}, @code{wi}, @code{wj}, @code{wk},
@@ -3010,31 +3010,43 @@ is an operand of a VSX instruction that expects VSX register
 numbering.
 
 @smallexample
-asm ("xvadddp %x0,%x1,%x2" : "=wa" (v1) : "wa" (v2), "wa" (v3));
+asm ("xvadddp %x0,%x1,%x2"
+     : "=wa" (v1)
+     : "wa" (v2), "wa" (v3));
 @end smallexample
 
+@noindent
 is correct, but:
 
 @smallexample
-asm ("xvadddp %0,%1,%2" : "=wa" (v1) : "wa" (v2), "wa" (v3));
+asm ("xvadddp %0,%1,%2" 
+     : "=wa" (v1) 
+     : "wa" (v2), "wa" (v3));
 @end smallexample
 
+@noindent
 is not correct.
 
 If an instruction only takes Altivec registers, you do not want to use
 @code{%x<n>}.
 
 @smallexample
-asm ("xsaddqp %0,%1,%2" : "=v" (v1) : "v" (v2), "v" (v3));
+asm ("xsaddqp %0,%1,%2"
+     : "=v" (v1)
+     : "v" (v2), "v" (v3));
 @end smallexample
 
+@noindent
 is correct because the @code{xsaddqp} instruction only takes Altivec
 registers, while:
 
 @smallexample
-asm ("xsaddqp %x0,%x1,%x2" : "=v" (v1) : "v" (v2), "v" (v3));
+asm ("xsaddqp %x0,%x1,%x2" 
+     : "=v" (v1) 
+     : "v" (v2), "v" (v3));
 @end smallexample
 
+@noindent
 is incorrect.
 
 @item wb

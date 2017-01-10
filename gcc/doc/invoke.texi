@@ -3420,8 +3420,8 @@ for 88-color and 256-color modes background colors.
 
 The default @env{GCC_COLORS} is
 @smallexample
-error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:quote=01:\
-fixit-insert=32:fixit-delete=31:\
+error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:\
+quote=01:fixit-insert=32:fixit-delete=31:\
 diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32
 @end smallexample
 @noindent
@@ -3740,7 +3740,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Winit-self @r{(only for C++)} @gol
--Wlogical-not-parentheses
+-Wlogical-not-parentheses @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
 -Wmemset-elt-size @gol
@@ -10917,14 +10917,11 @@ ThreadSanitizer and UndefinedBehaviorSanitizer, while default value for
 AddressSanitizer is @code{halt_on_error=1}. This can be overridden through
 setting the @code{halt_on_error} flag in the corresponding environment variable.
 
-Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
+Syntax without an explicit @var{opts} parameter is deprecated.  It is
+equivalent to specifying an @var{opts} list of:
+
 @smallexample
--fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
-@end smallexample
-@noindent
-Similarly @option{-fno-sanitize-recover} is equivalent to
-@smallexample
--fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
+undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
 @end smallexample
 
 @item -fsanitize-address-use-after-scope

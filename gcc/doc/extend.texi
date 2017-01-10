@@ -5943,10 +5943,10 @@ at all.  Just use an appropriate linker description file like outlined below.
   @{ ...
   @} > text
   /* Leave .rodata in flash and add an offset of 0x4000 to all
-     addresses so that respective objects can be accessed by LD
-     instructions and open coded C/C++.  This means there is no
-     need for progmem in the source and no overhead by read-only
-     data in RAM.  */
+     addresses so that respective objects can be accessed by
+     LD instructions and open coded C/C++.  This means there
+     is no need for progmem in the source and no overhead by
+     read-only data in RAM.  */
   .rodata ADDR(.text) + SIZEOF (.text) + 0x4000 :
   @{
     *(.rodata)
@@ -8687,8 +8687,8 @@ top:
 With no modifiers, this is what the output from the operands would be for the 
 @samp{att} and @samp{intel} dialects of assembler:
 
-@multitable {Operand} {masm=att} {OFFSET FLAT:.L2}
-@headitem Operand @tab masm=att @tab masm=intel
+@multitable {Operand} {$.L2} {OFFSET FLAT:.L2}
+@headitem Operand @tab @samp{att} @tab @samp{intel}
 @item @code{%0}
 @tab @code{%eax}
 @tab @code{eax}
@@ -8702,8 +8702,8 @@ With no modifiers, this is what the output from the operands would be for the
 
 The table below shows the list of supported modifiers and their effects.
 
-@multitable {Modifier} {Print the opcode suffix for the size of th} {Operand} {masm=att} {masm=intel}
-@headitem Modifier @tab Description @tab Operand @tab @option{masm=att} @tab @option{masm=intel}
+@multitable {Modifier} {Print the opcode suffix for the size of th} {Operand} {@samp{att}} {@samp{intel}}
+@headitem Modifier @tab Description @tab Operand @tab @samp{att} @tab @samp{intel}
 @item @code{z}
 @tab Print the opcode suffix for the size of the current integer operand (one of @code{b}/@code{w}/@code{l}/@code{q}).
 @tab @code{%z0}
@@ -12727,7 +12727,9 @@ points to.  Counting starts at @code{0}.
 If the address does not point to flash memory, return @code{-1}.
 
 @smallexample
-unsigned char __builtin_avr_insert_bits (unsigned long map, unsigned char bits, unsigned char val)
+unsigned char __builtin_avr_insert_bits (unsigned long map,
+                                         unsigned char bits,
+                                         unsigned char val)
 @end smallexample
 
 @noindent
@@ -18128,13 +18130,16 @@ __vector long long int
 vec_extract_sig (__vector double source);
 
 __vector float
-vec_insert_exp (__vector unsigned int significands,  __vector unsigned int exponents);
+vec_insert_exp (__vector unsigned int significands,
+                __vector unsigned int exponents);
 __vector double
 vec_insert_exp (__vector unsigned long long int significands,
                 __vector unsigned long long int exponents);
 
-__vector int vec_test_data_class (__vector float source, unsigned int condition);
-__vector long long int vec_test_data_class (__vector double source, unsigned int condition);
+__vector int vec_test_data_class (__vector float source,
+                                  unsigned int condition);
+__vector long long int vec_test_data_class (__vector double source,
+                                            unsigned int condition);
 @end smallexample
 
 The @code{vec_extract_sig} and @code{vec_extract_exp} built-in
@@ -18229,9 +18234,9 @@ vector unsigned int __builtin_crypto_vshasigmaw (vector unsigned int,
                                                  int, int);
 @end smallexample
 
-The second argument to the @var{__builtin_crypto_vshasigmad} and
-@var{__builtin_crypto_vshasigmaw} builtin functions must be a constant
-integer that is 0 or 1.  The third argument to these builtin functions
+The second argument to @var{__builtin_crypto_vshasigmad} and
+@var{__builtin_crypto_vshasigmaw} must be a constant
+integer that is 0 or 1.  The third argument to these built-in functions
 must be a constant integer in the range of 0 to 15.
 
 If the ISA 3.0 instruction set additions 
@@ -20454,8 +20459,10 @@ void __builtin_ia32_xsaveopt64 (void *, long long)
 The following built-in functions are available when @option{-mtbm} is used.
 Both of them generate the immediate form of the bextr machine instruction.
 @smallexample
-unsigned int __builtin_ia32_bextri_u32 (unsigned int, const unsigned int);
-unsigned long long __builtin_ia32_bextri_u64 (unsigned long long, const unsigned long long);
+unsigned int __builtin_ia32_bextri_u32 (unsigned int,
+                                        const unsigned int);
+unsigned long long __builtin_ia32_bextri_u64 (unsigned long long,
+                                              const unsigned long long);
 @end smallexample
 
 
