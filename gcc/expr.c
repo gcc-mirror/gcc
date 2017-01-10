@@ -6832,57 +6832,6 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 
       temp = expand_normal (exp);
 
-      /* If the value has a record type and an integral mode then, if BITSIZE
-	 is narrower than this mode and this is for big-endian data, we must
-	 first put the value into the low-order bits.  Moreover, the field may
-	 be not aligned on a byte boundary; in this case, if it has reverse
-	 storage order, it needs to be accessed as a scalar field with reverse
-	 storage order and we must first put the value into target order.  */
-      if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	  && GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT)
-	{
-	  HOST_WIDE_INT size = GET_MODE_BITSIZE (GET_MODE (temp));
-
-	  reverse = TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (exp));
-
-	  if (reverse)
-	    temp = flip_storage_order (GET_MODE (temp), temp);
-
-	  if (bitsize < size
-	      && reverse ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
-	    temp = expand_shift (RSHIFT_EXPR, GET_MODE (temp), temp,
-				 size - bitsize, NULL_RTX, 1);
-	}
-
-      /* Unless MODE is VOIDmode or BLKmode, convert TEMP to MODE.  */
-      if (mode != VOIDmode && mode != BLKmode
-	  && mode != TYPE_MODE (TREE_TYPE (exp)))
-	temp = convert_modes (mode, TYPE_MODE (TREE_TYPE (exp)), temp, 1);
-
-      /* If TEMP is not a PARALLEL (see below) and its mode and that of TARGET
-	 are both BLKmode, both must be in memory and BITPOS must be aligned
-	 on a byte boundary.  If so, we simply do a block copy.  Likewise for
-	 a BLKmode-like TARGET.  */
-      if (GET_CODE (temp) != PARALLEL
-	  && GET_MODE (temp) == BLKmode
-	  && (GET_MODE (target) == BLKmode
-	      || (MEM_P (target)
-		  && GET_MODE_CLASS (GET_MODE (target)) == MODE_INT
-		  && (bitpos % BITS_PER_UNIT) == 0
-		  && (bitsize % BITS_PER_UNIT) == 0)))
-	{
-	  gcc_assert (MEM_P (target) && MEM_P (temp)
-		      && (bitpos % BITS_PER_UNIT) == 0);
-
-	  target = adjust_address (target, VOIDmode, bitpos / BITS_PER_UNIT);
-	  emit_block_move (target, temp,
-			   GEN_INT ((bitsize + BITS_PER_UNIT - 1)
-				    / BITS_PER_UNIT),
-			   BLOCK_OP_NORMAL);
-
-	  return const0_rtx;
-	}
-
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (temp) == PARALLEL)
@@ -6903,11 +6852,62 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	  temp = temp_target;
 	}
 
-      /* The behavior of store_bit_field is awkward when mode is BLKmode:
-	 it always takes its value from the lsb up to the word size but
-	 expects it left justified beyond it.  At this point TEMP is left
-	 justified so extract the value in the former case.  */
-      if (mode == BLKmode && bitsize <= BITS_PER_WORD)
+      /* If the value has aggregate type and an integral mode then, if BITSIZE
+	 is narrower than this mode and this is for big-endian data, we first
+	 need to put the value into the low-order bits for store_bit_field,
+	 except when MODE is BLKmode and BITSIZE larger than the word size
+	 (see the handling of fields larger than a word in store_bit_field).
+	 Moreover, the field may be not aligned on a byte boundary; in this
+	 case, if it has reverse storage order, it needs to be accessed as a
+	 scalar field with reverse storage order and we must first put the
+	 value into target order.  */
+      if (AGGREGATE_TYPE_P (TREE_TYPE (exp))
+	  && GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT)
+	{
+	  HOST_WIDE_INT size = GET_MODE_BITSIZE (GET_MODE (temp));
+
+	  reverse = TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (exp));
+
+	  if (reverse)
+	    temp = flip_storage_order (GET_MODE (temp), temp);
+
+	  if (bitsize < size
+	      && reverse ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN
+	      && !(mode == BLKmode && bitsize > BITS_PER_WORD))
+	    temp = expand_shift (RSHIFT_EXPR, GET_MODE (temp), temp,
+				 size - bitsize, NULL_RTX, 1);
+	}
+
+      /* Unless MODE is VOIDmode or BLKmode, convert TEMP to MODE.  */
+      if (mode != VOIDmode && mode != BLKmode
+	  && mode != TYPE_MODE (TREE_TYPE (exp)))
+	temp = convert_modes (mode, TYPE_MODE (TREE_TYPE (exp)), temp, 1);
+
+      /* If the mode of TEMP and TARGET is BLKmode, both must be in memory
+	 and BITPOS must be aligned on a byte boundary.  If so, we simply do
+	 a block copy.  Likewise for a BLKmode-like TARGET.  */
+      if (GET_MODE (temp) == BLKmode
+	  && (GET_MODE (target) == BLKmode
+	      || (MEM_P (target)
+		  && GET_MODE_CLASS (GET_MODE (target)) == MODE_INT
+		  && (bitpos % BITS_PER_UNIT) == 0
+		  && (bitsize % BITS_PER_UNIT) == 0)))
+	{
+	  gcc_assert (MEM_P (target) && MEM_P (temp)
+		      && (bitpos % BITS_PER_UNIT) == 0);
+
+	  target = adjust_address (target, VOIDmode, bitpos / BITS_PER_UNIT);
+	  emit_block_move (target, temp,
+			   GEN_INT ((bitsize + BITS_PER_UNIT - 1)
+				    / BITS_PER_UNIT),
+			   BLOCK_OP_NORMAL);
+
+	  return const0_rtx;
+	}
+
+      /* If the mode of TEMP is still BLKmode and BITSIZE not larger than the
+	 word size, we need to load the value (see again store_bit_field).  */
+      if (GET_MODE (temp) == BLKmode && bitsize <= BITS_PER_WORD)
 	{
 	  machine_mode temp_mode = smallest_mode_for_size (bitsize, MODE_INT);
 	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
