@@ -1,3 +1,13 @@
+2017-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78775
+	* builtins.c (get_size_range): Move...
+	* calls.c: ...to here.
+	(alloc_max_size): Accept zero argument.
+	(operand_signed_p): Remove.
+	(maybe_warn_alloc_args_overflow): Call get_size_range.
+	* calls.h (get_size_range): Declare.
+
 2017-01-10  Joe Seymour  <joe.s@somniumtech.com>
 
 	* config/msp430/driver-msp430.c (msp430_mcu_data): Sync with data
