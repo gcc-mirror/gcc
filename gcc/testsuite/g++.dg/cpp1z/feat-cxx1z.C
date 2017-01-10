@@ -404,6 +404,12 @@
 #  error "__cpp_template_template_args != 201611"
 #endif
 
+#ifndef __cpp_variadic_using
+#  error "__cpp_variadic_using"
+#elif __cpp_variadic_using != 201611
+#  error "__cpp_variadic_using != 201611"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)
