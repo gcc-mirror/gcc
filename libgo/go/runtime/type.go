@@ -16,8 +16,8 @@ type _type struct {
 	size       uintptr
 	hash       uint32
 
-	hashfn  func(unsafe.Pointer, uintptr, uintptr) uintptr
-	equalfn func(unsafe.Pointer, unsafe.Pointer, uintptr) bool
+	hashfn  func(unsafe.Pointer, uintptr) uintptr
+	equalfn func(unsafe.Pointer, unsafe.Pointer) bool
 
 	gc     unsafe.Pointer
 	string *string

@@ -975,6 +975,10 @@ class Type
   bool
   is_backend_type_size_known(Gogo*);
 
+  // Return whether the type needs specially built type functions.
+  bool
+  needs_specific_type_functions(Gogo*);
+
   // Get the hash and equality functions for a type.
   void
   type_functions(Gogo*, Named_type* name, Function_type* hash_fntype,
@@ -983,7 +987,7 @@ class Type
 
   // Write the hash and equality type functions.
   void
-  write_specific_type_functions(Gogo*, Named_type*,
+  write_specific_type_functions(Gogo*, Named_type*, int64_t size,
 				const std::string& hash_name,
 				Function_type* hash_fntype,
 				const std::string& equal_name,
@@ -1206,9 +1210,16 @@ class Type
   // Build the hash and equality type functions for a type which needs
   // specific functions.
   void
-  specific_type_functions(Gogo*, Named_type*, Function_type* hash_fntype,
+  specific_type_functions(Gogo*, Named_type*, int64_t size,
+			  Function_type* hash_fntype,
 			  Function_type* equal_fntype, Named_object** hash_fn,
 			  Named_object** equal_fn);
+
+  void
+  write_identity_hash(Gogo*, int64_t size);
+
+  void
+  write_identity_equal(Gogo*, int64_t size);
 
   void
   write_named_hash(Gogo*, Named_type*, Function_type* hash_fntype,
