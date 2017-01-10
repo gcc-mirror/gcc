@@ -166,11 +166,11 @@ holder<std::knuth_b> knuth_b_holder;
 
 ustring *ustring_ptr;
 holder<ustring> ustring_holder;
-// { dg-final { whatis-test ustring_holder "holder<std::basic_string<unsigned char, std::char_traits<unsigned char>, std::allocator<unsigned char> > >" } }
+// { dg-final { whatis-test ustring_holder "holder<std::basic_string<unsigned char> >" } }
 
 std::basic_string<signed char> *sstring_ptr;
 holder< std::basic_string<signed char> > sstring_holder;
-// { dg-final { whatis-test sstring_holder "holder<std::basic_string<signed char, std::char_traits<signed char>, std::allocator<signed char> > >" } }
+// { dg-final { whatis-test sstring_holder "holder<std::basic_string<signed char> >" } }
 
 std::vector<std::deque<std::unique_ptr<char>>> *seq1_ptr;
 holder< std::vector<std::deque<std::unique_ptr<char>>> > seq1_holder;

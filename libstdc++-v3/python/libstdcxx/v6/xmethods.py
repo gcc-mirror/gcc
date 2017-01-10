@@ -148,7 +148,7 @@ class ArrayMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::array<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?array<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -265,7 +265,7 @@ class DequeMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::deque<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?deque<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -309,7 +309,7 @@ class ForwardListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::forward_list<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?forward_list<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -390,7 +390,7 @@ class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::(__cxx11::)?list<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?(__cxx11::)?list<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -505,7 +505,7 @@ class VectorMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::vector<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?vector<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -554,7 +554,7 @@ class AssociativeContainerMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::%s<.*>$' % self._name, class_type.tag):
+        if not re.match('^std::(__\d+::)?%s<.*>$' % self._name, class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -586,9 +586,9 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
 
     def __call__(self, obj):
         impl_type = obj.dereference().type.fields()[0].type.tag
-        if impl_type.startswith('std::__uniq_ptr_impl<'): # New implementation
+        if re.match('^std::(__\d+::)?__uniq_ptr_impl<.*>$', impl_type): # New implementation
             return obj['_M_t']['_M_t']['_M_head_impl']
-        elif impl_type.startswith('std::tuple<'):
+        elif re.match('^std::(__\d+::)?tuple<.*>$', impl_type):
             return obj['_M_t']['_M_head_impl']
         return None
 
@@ -640,7 +640,7 @@ class UniquePtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::unique_ptr<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?unique_ptr<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -758,7 +758,7 @@ class SharedPtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::shared_ptr<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?shared_ptr<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:

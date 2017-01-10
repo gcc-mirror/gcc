@@ -100,11 +100,26 @@ def find_type(orig, name):
             raise ValueError("Cannot find type %s::%s" % (str(orig), name))
         typ = field.type
 
+_versioned_namespace = '__7::'
+
+# Test if a type is a given template instantiation.
+def is_specialization_of(type, template_name):
+    global _versioned_namespace
+    if _versioned_namespace:
+        return re.match('^std::(%s)?%s<.*>$' % (_versioned_namespace, template_name), type) is not None
+    return re.match('^std::%s<.*>$' % template_name, type) is not None
+
+def strip_versioned_namespace(typename):
+    global _versioned_namespace
+    if _versioned_namespace:
+        return typename.replace(_versioned_namespace, '')
+    return typename
+
 class SharedPointerPrinter:
     "Print a shared_ptr or weak_ptr"
 
     def __init__ (self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
 
     def to_string (self):
@@ -127,9 +142,9 @@ class UniquePointerPrinter:
 
     def to_string (self):
         impl_type = self.val.type.fields()[0].type.tag
-        if impl_type.startswith('std::__uniq_ptr_impl<'): # New implementation
+        if is_specialization_of(impl_type, '__uniq_ptr_impl'): # New implementation
             v = self.val['_M_t']['_M_t']['_M_head_impl']
-        elif impl_type.startswith('std::tuple<'):
+        elif is_specialization_of(impl_type, 'tuple'):
             v = self.val['_M_t']['_M_head_impl']
         else:
             raise ValueError("Unsupported implementation for unique_ptr: %s" % self.val.type.fields()[0].type.tag)
@@ -179,7 +194,7 @@ class StdListPrinter:
             return ('[%d]' % count, val)
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
 
     def children(self):
@@ -299,7 +314,7 @@ class StdVectorPrinter:
                 return ('[%d]' % count, elt)
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
         self.is_bool = val.type.template_argument(0).code  == gdb.TYPE_CODE_BOOL
 
@@ -403,7 +418,7 @@ class StdTuplePrinter:
                 return ('[%d]' % self.count, impl['_M_head_impl'])
 
     def __init__ (self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val;
 
     def children (self):
@@ -418,7 +433,7 @@ class StdStackOrQueuePrinter:
     "Print a std::stack or std::queue"
 
     def __init__ (self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.visualizer = gdb.default_visualizer(val['c'])
 
     def children (self):
@@ -496,7 +511,10 @@ class StdRbtreeIteratorPrinter:
     def __init__ (self, typename, val):
         self.val = val
         valtype = self.val.type.template_argument(0).strip_typedefs()
-        nodetype = gdb.lookup_type('std::_Rb_tree_node<' + str(valtype) + '>')
+        nodetype = '_Rb_tree_node<' + str(valtype) + '>'
+        if _versioned_namespace and typename.startswith('std::' + _versioned_namespace):
+            nodetype = _versioned_namespace + nodetype
+        nodetype = gdb.lookup_type('std::' + nodetype)
         self.link_type = nodetype.strip_typedefs().pointer()
 
     def to_string (self):
@@ -552,7 +570,7 @@ class StdMapPrinter:
             return result
 
     def __init__ (self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
 
     def to_string (self):
@@ -592,7 +610,7 @@ class StdSetPrinter:
             return result
 
     def __init__ (self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
 
     def to_string (self):
@@ -609,7 +627,7 @@ class StdBitsetPrinter:
     "Print a std::bitset"
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
 
     def to_string (self):
@@ -679,7 +697,7 @@ class StdDequePrinter:
             return result
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
         self.elttype = val.type.template_argument(0)
         size = self.elttype.sizeof
@@ -805,7 +823,7 @@ class Tr1UnorderedSetPrinter:
     "Print a tr1::unordered_set"
 
     def __init__ (self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
 
     def hashtable (self):
@@ -831,7 +849,7 @@ class Tr1UnorderedMapPrinter:
     "Print a tr1::unordered_map"
 
     def __init__ (self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
 
     def hashtable (self):
@@ -897,7 +915,7 @@ class StdForwardListPrinter:
 
     def __init__(self, typename, val):
         self.val = val
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
 
     def children(self):
         nodetype = find_type(self.val.type, '_Node')
@@ -952,12 +970,12 @@ class SingleObjContainerPrinter(object):
             return self.visualizer.display_hint ()
         return self.hint
 
-
 class StdExpAnyPrinter(SingleObjContainerPrinter):
     "Print a std::any or std::experimental::any"
 
     def __init__ (self, typename, val):
         self.typename = re.sub('^std::experimental::fundamentals_v\d::', 'std::experimental::', typename, 1)
+        self.typename = strip_versioned_namespace(self.typename)
         self.val = val
         self.contained_type = None
         contained_value = None
@@ -972,8 +990,11 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             if not m:
                 raise ValueError("Unknown manager function in %s" % self.typename)
 
+            mgrname = m.group(1)
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
-            mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
+            if 'std::string' in mgrname:
+                mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
+
             mgrtype = gdb.lookup_type(mgrname)
             self.contained_type = mgrtype.template_argument(0)
             valptr = None
@@ -994,7 +1015,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
         if hasattr (self.visualizer, 'children'):
             return desc + self.visualizer.to_string ()
         valtype = self._recognize (self.contained_type)
-        return desc + valtype
+        return desc + strip_versioned_namespace(str(valtype))
 
 class StdExpOptionalPrinter(SingleObjContainerPrinter):
     "Print a std::optional or std::experimental::optional"
@@ -1002,6 +1023,7 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
     def __init__ (self, typename, val):
         valtype = self._recognize (val.type.template_argument(0))
         self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, 1)
+        self.typename = strip_versioned_namespace(self.typename)
         self.val = val
         contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
         visualizer = gdb.default_visualizer (val['_M_payload'])
@@ -1021,6 +1043,7 @@ class StdVariantPrinter(SingleObjContainerPrinter):
     def __init__(self, typename, val):
         alternatives = self._template_args(val)
         self.typename = "%s<%s>" % (typename, ', '.join([self._recognize(alt) for alt in alternatives]))
+        self.typename = strip_versioned_namespace(self.typename)
         self.index = val['_M_index']
         if self.index >= len(alternatives):
             self.contained_type = None
@@ -1058,7 +1081,7 @@ class StdNodeHandlePrinter(SingleObjContainerPrinter):
     def __init__(self, typename, val):
         self.value_type = val.type.template_argument(1)
         nodetype = val.type.template_argument(2).template_argument(0)
-        self.is_rb_tree_node = nodetype.name.startswith('std::_Rb_tree_node')
+        self.is_rb_tree_node = is_specialization_of(nodetype.name, '_Rb_tree_node')
         self.is_map_node = val.type.template_argument(0) != self.value_type
         nodeptr = val['_M_ptr']
         if nodeptr:
@@ -1202,7 +1225,8 @@ class Printer(object):
     # Add a name using _GLIBCXX_BEGIN_NAMESPACE_VERSION.
     def add_version(self, base, name, function):
         self.add(base + name, function)
-        self.add(base + '__7::' + name, function)
+        if _versioned_namespace:
+            self.add(base + _versioned_namespace + name, function)
 
     # Add a name using _GLIBCXX_BEGIN_NAMESPACE_CONTAINER.
     def add_container(self, base, name, function):
@@ -1294,8 +1318,14 @@ class TemplateTypePrinter(object):
         return self._recognizer(self.pattern, self.subst)
 
 def add_one_template_type_printer(obj, name, match, subst):
-    printer = TemplateTypePrinter(name, '^std::' + match + '$', 'std::' + subst)
+    match = '^std::' + match + '$'
+    printer = TemplateTypePrinter(name, match, 'std::' + subst)
     gdb.types.register_type_printer(obj, printer)
+    if _versioned_namespace:
+        # Add second type printer for same type in versioned namespace:
+        match = match.replace('std::', 'std::' + _versioned_namespace)
+        printer = TemplateTypePrinter(name, match, 'std::' + subst)
+        gdb.types.register_type_printer(obj, printer)
 
 class FilteringTypePrinter(object):
     def __init__(self, match, name):
@@ -1322,7 +1352,7 @@ class FilteringTypePrinter(object):
                 except:
                     pass
             if self.type_obj == type_obj:
-                return self.name
+                return strip_versioned_namespace(self.name)
             return None
 
     def instantiate(self):
@@ -1331,6 +1361,9 @@ class FilteringTypePrinter(object):
 def add_one_type_printer(obj, match, name):
     printer = FilteringTypePrinter(match, 'std::' + name)
     gdb.types.register_type_printer(obj, printer)
+    if _versioned_namespace:
+        printer = FilteringTypePrinter(match, 'std::' + _versioned_namespace + name)
+        gdb.types.register_type_printer(obj, printer)
 
 def register_type_printers(obj):
     global _use_type_printing
@@ -1372,9 +1405,9 @@ def register_type_printers(obj):
     # Note that we can't have a printer for std::wstreampos, because
     # it shares the same underlying type as std::streampos.
     add_one_type_printer(obj, 'fpos', 'streampos')
+
     add_one_type_printer(obj, 'basic_string', 'u16string')
     add_one_type_printer(obj, 'basic_string', 'u32string')
-
     add_one_type_printer(obj, 'basic_string_view', 'u16string_view')
     add_one_type_printer(obj, 'basic_string_view', 'u32string_view')
 
@@ -1396,6 +1429,10 @@ def register_type_printers(obj):
     add_one_template_type_printer(obj, 'unique_ptr<T>',
             'unique_ptr<(.*), std::default_delete<\\1 ?> >',
             'unique_ptr<{1}>')
+
+    add_one_template_type_printer(obj, 'basic_string<T>',
+            'basic_string<((un)?signed char), std::char_traits<\\1 ?>, std::allocator<\\1 ?> >',
+            'basic_string<{1}>')
 
     add_one_template_type_printer(obj, 'deque<T>',
             'deque<(.*), std::allocator<\\1 ?> >',
@@ -1464,11 +1501,6 @@ def build_libstdcxx_dictionary ():
     global libstdcxx_printer
 
     libstdcxx_printer = Printer("libstdc++-v6")
-
-    # For _GLIBCXX_BEGIN_NAMESPACE_VERSION.
-    vers = '(__7::)?'
-    # For _GLIBCXX_BEGIN_NAMESPACE_CONTAINER.
-    container = '(__cxx1998::' + vers + ')?'
 
     # libstdc++ objects requiring pretty-printing.
     # In order from:
