@@ -1,3 +1,12 @@
+2017-01-10  Joshua Conner  <joshconner@google.com>
+
+	* config/arm/fuchsia-elf.h: New file.
+	* config/fuchsia.h: New file.
+	* config.gcc (*-*-fuchsia*): Set native_system_header_dir.
+	(aarch64*-*-fuchsia*, arm*-*-fuchsia*, x86_64-*-fuchsia*): Add to
+	targets.
+	* config.host: (aarch64*-*-fuchsia*, arm*-*-fuchsia*): Add to hosts. 
+
 2016-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79034
