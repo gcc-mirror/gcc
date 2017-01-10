@@ -1,3 +1,10 @@
+2017-01-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Tweak formatting to fix overfull hbox warnings.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/objc.texi: Likewise.
+
 2017-01-10  Joshua Conner  <joshconner@google.com>
 
 	* config/arm/fuchsia-elf.h: New file.
