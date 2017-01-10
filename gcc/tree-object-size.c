@@ -1235,7 +1235,7 @@ init_object_sizes (void)
 
 /* Destroy data structures after the object size computation.  */
 
-static void
+void
 fini_object_sizes (void)
 {
   int object_size_type;

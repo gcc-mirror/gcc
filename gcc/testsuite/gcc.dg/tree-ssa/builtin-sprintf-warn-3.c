@@ -1,5 +1,10 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -Wformat -Wformat-length=1 -ftrack-macro-expansion=0" } */
+/* Verify that all sprintf built-ins detect overflow involving directives
+   with non-constant arguments known to be constrained by some range of
+   values, and even when writing into dynamically allocated buffers.
+   -O2 (-ftree-vrp) is necessary for the tests involving ranges to pass,
+   otherwise -O1 is sufficient.
+   { dg-do compile }
+   { dg-options "-O2 -Wformat -Wformat-length=1 -ftrack-macro-expansion=0" } */
 
 typedef __SIZE_TYPE__ size_t;
 
@@ -9,18 +14,26 @@ typedef __SIZE_TYPE__ size_t;
 
 #define bos(x) __builtin_object_size (x, 0)
 
-#define T(bufsize, fmt, ...)						\
-    do {								\
-      if (!LINE || __LINE__ == LINE)					\
-	{								\
-	  char *d = (char *)__builtin_malloc (bufsize);			\
-	  __builtin___sprintf_chk (d, 0, bos (d), fmt, __VA_ARGS__);	\
-	  sink (d);							\
-	}								\
-    } while (0)
+/* Defined (and redefined) to the allocation function to use, either
+   malloc, or alloca, or a VLA.  */
+#define ALLOC(p, n)   (p) = __builtin_malloc (n)
 
-void
-sink (void*);
+/* Defined (and redefined) to the sprintf function to exercise.  */
+#define TEST_SPRINTF(d, maxsize, objsize, fmt, ...)		\
+  __builtin___sprintf_chk (d, 0, objsize, fmt, __VA_ARGS__)
+
+#define T(bufsize, fmt, ...)				\
+  do {							\
+    if (!LINE || __LINE__ == LINE)			\
+      {							\
+	char *d;					\
+	ALLOC (d, bufsize);				\
+	TEST_SPRINTF (d, 0, bos (d), fmt, __VA_ARGS__);	\
+	sink (d);					\
+      }							\
+  } while (0)
+
+void sink (void*);
 
 /* Identity function to verify that the checker figures out the value
    of the operand even when it's not constant (i.e., makes use of
@@ -361,4 +374,89 @@ void test_too_large (char *d, int x, __builtin_va_list va)
 
   __builtin___vsnprintf_chk (d, ptrmax_m1, 0, ptrmax_m1, "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX - 1" { target lp64 } } */
   __builtin___vsnprintf_chk (d, ptrmax,    0, ptrmax,    "%c", va);   /* { dg-warning "specified bound \[0-9\]+ exceeds .INT_MAX." "PTRDIFF_MAX" { target lp64 } } */
+}
+
+/* Exercise ordinary sprintf with malloc.  */
+#undef TEST_SPRINTF
+#define TEST_SPRINTF(d, maxsize, objsize, fmt, ...)	\
+  __builtin_sprintf (d, fmt, __VA_ARGS__)
+
+void test_sprintf_malloc (const char *s, const char *t)
+{
+#define x x ()
+
+  T (1, "%-s", x ? "" : "1");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : "");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? s : "1");        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : s);        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? s : t);
+
+  T (2, "%-s", x ? "" : "1");
+  T (2, "%-s", x ? "" : s);
+  T (2, "%-s", x ? "1" : "");
+  T (2, "%-s", x ? s : "");
+  T (2, "%-s", x ? "1" : "2");
+  T (2, "%-s", x ? "" : "12");      /* { dg-warning "nul past the end" } */
+  T (2, "%-s", x ? "12" : "");      /* { dg-warning "nul past the end" } */
+
+  T (2, "%-s", x ? "" : "123");     /* { dg-warning "into a region" } */
+  T (2, "%-s", x ? "123" : "");     /* { dg-warning "into a region" } */
+
+#undef x
+}
+
+/* Exercise ordinary sprintf with alloca.  */
+#undef ALLOC
+#define ALLOC(p, n) (p) = __builtin_alloca (n)
+
+void test_sprintf_alloca (const char *s, const char *t)
+{
+#define x x ()
+
+  T (1, "%-s", x ? "" : "1");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : "");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? s : "1");        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : s);        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? s : t);
+
+  T (2, "%-s", x ? "" : "1");
+  T (2, "%-s", x ? "" : s);
+  T (2, "%-s", x ? "1" : "");
+  T (2, "%-s", x ? s : "");
+  T (2, "%-s", x ? "1" : "2");
+  T (2, "%-s", x ? "" : "12");      /* { dg-warning "nul past the end" } */
+  T (2, "%-s", x ? "12" : "");      /* { dg-warning "nul past the end" } */
+
+  T (2, "%-s", x ? "" : "123");     /* { dg-warning "into a region" } */
+  T (2, "%-s", x ? "123" : "");     /* { dg-warning "into a region" } */
+
+#undef x
+}
+
+/* Exercise ordinary sprintf with a VLA.  */
+#undef ALLOC
+#define ALLOC(p, n) char vla [i (n)]; (p) = vla
+
+void test_sprintf_vla (const char *s, const char *t)
+{
+#define x x ()
+
+  T (1, "%-s", x ? "" : "1");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : "");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? s : "1");        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : s);        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? s : t);
+
+  T (2, "%-s", x ? "" : "1");
+  T (2, "%-s", x ? "" : s);
+  T (2, "%-s", x ? "1" : "");
+  T (2, "%-s", x ? s : "");
+  T (2, "%-s", x ? "1" : "2");
+  T (2, "%-s", x ? "" : "12");      /* { dg-warning "nul past the end" } */
+  T (2, "%-s", x ? "12" : "");      /* { dg-warning "nul past the end" } */
+
+  T (2, "%-s", x ? "" : "123");     /* { dg-warning "into a region" } */
+  T (2, "%-s", x ? "123" : "");     /* { dg-warning "into a region" } */
+
+#undef x
 }
