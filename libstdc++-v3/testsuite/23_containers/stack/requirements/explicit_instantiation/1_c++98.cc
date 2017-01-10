@@ -1,4 +1,5 @@
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++98" }
+// { dg-do compile }
 
 // Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
@@ -19,6 +20,11 @@
 
 // This file tests explicit instantiation of library containers.
 
-#include <queue>
+#include <stack>
 
-template class std::priority_queue<int>;
+template class std::stack<int>;
+
+struct NonDefaultConstructible : std::deque<int> {
+  NonDefaultConstructible(int) { }
+};
+template class std::stack<int, NonDefaultConstructible>;

@@ -124,15 +124,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef          _Sequence                            container_type;
 
     protected:
-      /**
-       *  'c' is the underlying container.  Maintainers wondering why
-       *  this isn't uglified as per style guidelines should note that
-       *  this name is specified in the standard, [23.2.3.1].  (Why?
-       *  Presumably for the same reason that it's protected instead
+      /*  Maintainers wondering why this isn't uglified as per style
+       *  guidelines should note that this name is specified in the standard,
+       *  C++98 [23.2.3.1].
+       *  (Why? Presumably for the same reason that it's protected instead
        *  of private: to allow derivation.  But none of the other
        *  containers allow for derivation.  Odd.)
        */
+      /// @c c is the underlying container.
+#if __cplusplus >= 201103L
+      _Sequence c{};
+#else
       _Sequence c;
+#endif
 
     public:
       /**
@@ -143,12 +147,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       queue(const _Sequence& __c = _Sequence())
       : c(__c) { }
 #else
+      queue() = default;
+
       explicit
       queue(const _Sequence& __c)
       : c(__c) { }
 
       explicit
-      queue(_Sequence&& __c = _Sequence())
+      queue(_Sequence&& __c)
       : c(std::move(__c)) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
@@ -440,8 +446,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       //  See queue::c for notes on these names.
-      _Sequence  c;
+#if __cplusplus >= 201103L
+      _Sequence c{};
+      _Compare   comp{};
+#else
+      _Sequence c;
       _Compare   comp;
+#endif
 
     public:
       /**
@@ -454,6 +465,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 #else
+      priority_queue() = default;
+
       explicit
       priority_queue(const _Compare& __x,
 		     const _Sequence& __s)
@@ -461,7 +474,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { std::make_heap(c.begin(), c.end(), comp); }
 
       explicit
-      priority_queue(const _Compare& __x = _Compare(),
+      priority_queue(const _Compare& __x,
 		     _Sequence&& __s = _Sequence())
       : c(std::move(__s)), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }

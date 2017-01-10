@@ -23,3 +23,8 @@
 #include <stack>
 
 template class std::stack<int>;
+
+struct NonDefaultConstructible : std::deque<int> {
+  NonDefaultConstructible(int) { }
+};
+template class std::stack<int, NonDefaultConstructible>;
