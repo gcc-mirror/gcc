@@ -970,6 +970,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_noexcept_function_type=201510");
 	  cpp_define (pfile, "__cpp_template_auto=201606");
 	  cpp_define (pfile, "__cpp_structured_bindings=201606");
+	  cpp_define (pfile, "__cpp_variadic_using=201611");
 	}
       if (flag_concepts)
 	cpp_define (pfile, "__cpp_concepts=201507");

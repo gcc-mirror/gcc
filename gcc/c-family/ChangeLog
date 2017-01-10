@@ -1,3 +1,8 @@
+2017-01-10  Jason Merrill  <jason@redhat.com>
+
+	Implement P0195R2, C++17 variadic using.
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_variadic_using.
+
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/79019
