@@ -442,7 +442,7 @@ struct congruence_class_group
 };
 
 /* Congruence class set structure.  */
-struct congruence_class_group_hash : nofree_ptr_hash <congruence_class_group>
+struct congruence_class_hash : nofree_ptr_hash <congruence_class_group>
 {
   static inline hashval_t hash (const congruence_class_group *item)
   {
@@ -610,10 +610,7 @@ private:
   hash_set <symtab_node *> m_removed_items_set;
 
   /* Hashtable of congruence classes.  */
-  hash_table <congruence_class_group_hash> m_classes;
-
-  /* Vector of congruence classes.  */
-  vec <congruence_class_group *> m_classes_vec;
+  hash_table <congruence_class_hash> m_classes;
 
   /* Count of congruence classes.  */
   unsigned int m_classes_count;

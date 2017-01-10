@@ -1,3 +1,19 @@
+2017-01-10  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item_optimizer::sem_item_optimizer): Remove
+	usage of m_classes_vec.
+	(sem_item_optimizer::~sem_item_optimizer):  Likewise.
+	(sem_item_optimizer::get_group_by_hash): Likewise.
+	(sem_item_optimizer::subdivide_classes_by_equality): Likewise.
+	(sem_item_optimizer::subdivide_classes_by_sensitive_refs): Likewise.
+	(sem_item_optimizer::verify_classes): Likewise.
+	(sem_item_optimizer::process_cong_reduction): Likewise.
+	(sem_item_optimizer::dump_cong_classes): Likewise.
+	(sem_item_optimizer::merge_classes): Likewise.
+	* ipa-icf.h (congruence_class_hash): Rename from
+	congruence_class_group_hash.  Remove declaration of
+	m_classes_vec.
+
 2017-01-10  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET,
