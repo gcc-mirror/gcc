@@ -1,3 +1,9 @@
+2017-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): In the bitfield case, fetch the return value
+	from the registers before applying a single big-endian adjustment.
+	Always do a final load for a BLKmode value not larger than a word.
+
 2017-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/77949
