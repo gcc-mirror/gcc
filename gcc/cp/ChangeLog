@@ -1,3 +1,9 @@
+2017-01-10  Jason Merrill  <jason@redhat.com>
+
+	FI 20, decomposition declaration with parenthesized initializer.
+	* parser.c (cp_parser_decomposition_declaration): Use
+	cp_parser_initializer.
+
 2017-01-09  Jason Merrill  <jason@redhat.com>
 
 	Implement P0195R2, C++17 variadic using.
