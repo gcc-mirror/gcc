@@ -1,3 +1,10 @@
+2017-01-10  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* config/i386/cpuinfo.h (processor_features): Add
+	FEATURE_AVX512VPOPCNTDQ.
+	* config/i386/cpuinfo.c (get_available_features): Habdle new
+	feature.
+
 2017-01-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/sfp-machine.h (_FP_CHOOSENAN): Always preserve NaN

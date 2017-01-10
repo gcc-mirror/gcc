@@ -4320,6 +4320,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
   {
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
+    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
   };
   /* Flag options.  */
   static struct ix86_target_opts flag_opts[] =
@@ -4919,6 +4920,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_PKU		(HOST_WIDE_INT_1 << 59)
 #define PTA_AVX5124VNNIW	(HOST_WIDE_INT_1 << 60)
 #define PTA_AVX5124FMAPS	(HOST_WIDE_INT_1 << 61)
+#define PTA_AVX512VPOPCNTDQ	(HOST_WIDE_INT_1 << 62)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -5581,6 +5583,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_AVX5124FMAPS
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX5124FMAPS))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124FMAPS;
+	if (processor_alias_table[i].flags & PTA_AVX512VPOPCNTDQ
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
 
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
@@ -6625,6 +6630,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512vl",	OPT_mavx512vl),
     IX86_ATTR_ISA ("avx5124fmaps",	OPT_mavx5124fmaps),
     IX86_ATTR_ISA ("avx5124vnniw",	OPT_mavx5124vnniw),
+    IX86_ATTR_ISA ("avx512vpopcntdq",	OPT_mavx512vpopcntdq),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
     IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
@@ -33300,6 +33306,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_AVX512IFMA,
     F_AVX5124VNNIW,
     F_AVX5124FMAPS,
+    F_AVX512VPOPCNTDQ,
     F_MAX
   };
 
@@ -33414,6 +33421,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"avx512ifma",F_AVX512IFMA},
       {"avx5124vnniw",F_AVX5124VNNIW},
       {"avx5124fmaps",F_AVX5124FMAPS},
+      {"avx512vpopcntdq",F_AVX512VPOPCNTDQ},
     };
 
   tree __processor_model_type = build_processor_model_struct ();
@@ -34891,8 +34899,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V4SF:
     case V16SI_FTYPE_V4SI:
     case V16SI_FTYPE_V16SF:
+    case V16SI_FTYPE_V16SI:
     case V16SF_FTYPE_V16SF:
     case V8DI_FTYPE_UQI:
+    case V8DI_FTYPE_V8DI:
     case V8DF_FTYPE_V4DF:
     case V8DF_FTYPE_V2DF:
     case V8DF_FTYPE_V8DF:

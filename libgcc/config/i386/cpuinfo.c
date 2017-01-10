@@ -277,6 +277,8 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	features |= (1 << FEATURE_AVX5124VNNIW);
       if (edx & bit_AVX5124FMAPS)
 	features |= (1 << FEATURE_AVX5124FMAPS);
+      if (ecx & bit_AVX512VPOPCNTDQ)
+	features |= (1 << FEATURE_AVX512VPOPCNTDQ);
     }
 
   unsigned int ext_level;
