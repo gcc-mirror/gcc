@@ -1,3 +1,11 @@
+2017-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from trunk r241334:
+	2016-10-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/78024
+	* gcc.dg/goacc/loop-processing-1.c: New file.
+
 2017-01-09  Andre Vieira <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline

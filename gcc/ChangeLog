@@ -1,5 +1,8 @@
 2017-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR tree-optimization/78024
+	* omp-low.c (oacc_loop_discovery): Call clear_bb_flags.
+
 	Backport trunk r239086:
 	2016-08-03  Nathan Sidwell  <nathan@codesourcery.com>
 
