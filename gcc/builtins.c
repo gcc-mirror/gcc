@@ -3031,42 +3031,6 @@ expand_builtin_memcpy_args (tree dest, tree src, tree len, rtx target, tree exp)
   return dest_addr;
 }
 
-/* Fill the 2-element RANGE array with the minimum and maximum values
-   EXP is known to have and return true, otherwise null and return
-   false.  */
-
-static bool
-get_size_range (tree exp, tree range[2])
-{
-  if (tree_fits_uhwi_p (exp))
-    {
-      range[0] = range[1] = exp;
-      return true;
-    }
-
-  if (TREE_CODE (exp) == SSA_NAME)
-    {
-      wide_int min, max;
-      enum value_range_type range_type = get_range_info (exp, &min, &max);
-
-      if (range_type == VR_RANGE)
-	{
-	  /* Interpret the bound in the variable's type.  */
-	  range[0] = wide_int_to_tree (TREE_TYPE (exp), min);
-	  range[1] = wide_int_to_tree (TREE_TYPE (exp), max);
-	  return true;
-	}
-      else if (range_type == VR_ANTI_RANGE)
-	{
-	  /* FIXME: Handle anti-ranges.  */
-	}
-    }
-
-  range[0] = NULL_TREE;
-  range[1] = NULL_TREE;
-  return false;
-}
-
 /* Try to verify that the sizes and lengths of the arguments to a string
    manipulation function given by EXP are within valid bounds and that
    the operation does not lead to buffer overflow.  Arguments other than
