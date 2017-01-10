@@ -1725,6 +1725,9 @@ static int have_c = 0;
 /* Was the option -o passed.  */
 static int have_o = 0;
 
+/* Was the option -E passed.  */
+static int have_E = 0;
+
 /* Pointer to output file name passed in with -o. */
 static const char *output_file = 0;
 
@@ -3820,6 +3823,10 @@ driver_handle_option (struct gcc_options *opts,
 		    PREFIX_PRIORITY_B_OPT, 0, 0);
       }
       validated = true;
+      break;
+
+    case OPT_E:
+      have_E = true;
       break;
 
     case OPT_x:
@@ -7914,7 +7921,8 @@ lookup_compiler (const char *name, size_t length, const char *language)
 	  {
 	    if (name != NULL && strcmp (name, "-") == 0
 		&& (strcmp (cp->suffix, "@c-header") == 0
-		    || strcmp (cp->suffix, "@c++-header") == 0))
+		    || strcmp (cp->suffix, "@c++-header") == 0)
+		&& !have_E)
 	      fatal_error (input_location,
 			   "cannot use %<-%> as input filename for a "
 			   "precompiled header");
