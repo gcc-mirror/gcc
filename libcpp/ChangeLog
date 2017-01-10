@@ -1,3 +1,13 @@
+2017-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77949
+	* line-map.c (linemap_position_for_column): When calling
+	linemap_start_line, detect if a new linemap was created with
+	0 column bits, and bail out early if this is the case.
+	(linemap_position_for_loc_and_offset): Replace overzealous
+	linemap_assert_fails with a simple conditional; use correct
+	bit count.
+
 2017-01-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/72803
