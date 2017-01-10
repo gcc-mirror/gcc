@@ -116,7 +116,7 @@ DEF_PREDICTOR (PRED_TREE_OPCODE_NONEQUAL, "opcode values nonequal (on trees)",
 DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 
 /* Branch guarding call is probably taken.  */
-DEF_PREDICTOR (PRED_CALL, "call", HITRATE (55), 0)
+DEF_PREDICTOR (PRED_CALL, "call", HITRATE (67), 0)
 
 /* PRED_CALL is not very reliable predictor and it turns out to be even
    less reliable for indirect calls and polymorphic calls.  For spec2k6
