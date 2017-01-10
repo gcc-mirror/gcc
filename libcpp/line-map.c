@@ -816,8 +816,22 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
 	}
       else
 	{
+	  /* Otherwise, attempt to start a new line that can hold TO_COLUMN,
+	     with some space to spare.  This may or may not lead to a new
+	     linemap being created.  */
 	  line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
 	  r = linemap_line_start (set, SOURCE_LINE (map, r), to_column + 50);
+	  map = LINEMAPS_LAST_ORDINARY_MAP (set);
+	  if (map->m_column_and_range_bits == 0)
+	    {
+	      /* ...then the linemap has column-tracking disabled,
+		 presumably due to exceeding either
+		 LINE_MAP_MAX_LOCATION_WITH_COLS (overall) or
+		 LINE_MAP_MAX_COLUMN_NUMBER (within this line).
+		 Return the start of the linemap, which encodes column 0, for
+		 the whole line.  */
+	      return r;
+	    }
 	}
     }
   line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
@@ -905,7 +919,10 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
     }
 
   column += column_offset;
-  if (linemap_assert_fails (column < (1u << map->m_column_and_range_bits)))
+
+  /* Bail out if the column is not representable within the existing
+     linemap.  */
+  if (column >= (1u << (map->m_column_and_range_bits - map->m_range_bits)))
     return loc;
 
   source_location r = 

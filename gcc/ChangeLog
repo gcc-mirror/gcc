@@ -1,3 +1,10 @@
+2017-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77949
+	* input.c (selftest::test_accessing_ordinary_linemaps): Verify
+	that we correctly handle column numbers greater than
+	LINE_MAP_MAX_COLUMN_NUMBER.
+
 2017-01-10  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78775

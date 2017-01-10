@@ -1,3 +1,8 @@
+2017-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77949
+	* g++.dg/diagnostic/pr77949.C: New test case.
+
 2017-01-10  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78775

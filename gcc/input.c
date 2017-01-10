@@ -1699,6 +1699,22 @@ test_accessing_ordinary_linemaps (const line_table_case &case_)
       ASSERT_EQ (7, map->m_column_and_range_bits - map->m_range_bits);
     }
 
+  /* Example of a line that will eventually be seen to be longer
+     than LINE_MAP_MAX_COLUMN_NUMBER; the initially seen width is
+     below that.  */
+  linemap_line_start (line_table, 5, 2000);
+
+  location_t loc_start_of_very_long_line
+    = linemap_position_for_column (line_table, 2000);
+  location_t loc_too_wide
+    = linemap_position_for_column (line_table, 4097);
+  location_t loc_too_wide_2
+    = linemap_position_for_column (line_table, 4098);
+
+  /* ...and back to a sane line length.  */
+  linemap_line_start (line_table, 6, 100);
+  location_t loc_sane_again = linemap_position_for_column (line_table, 10);
+
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 
   /* Multiple files.  */
@@ -1714,6 +1730,16 @@ test_accessing_ordinary_linemaps (const line_table_case &case_)
   assert_loceq ("foo.c", 2, 17, loc_d);
   assert_loceq ("foo.c", 3, 700, loc_e);
   assert_loceq ("foo.c", 4, 100, loc_back_to_short);
+
+  /* In the very wide line, the initial location should be fully tracked.  */
+  assert_loceq ("foo.c", 5, 2000, loc_start_of_very_long_line);
+  /* ...but once we exceed LINE_MAP_MAX_COLUMN_NUMBER column-tracking should
+     be disabled.  */
+  assert_loceq ("foo.c", 5, 0, loc_too_wide);
+  assert_loceq ("foo.c", 5, 0, loc_too_wide_2);
+  /*...and column-tracking should be re-enabled for subsequent lines.  */
+  assert_loceq ("foo.c", 6, 10, loc_sane_again);
+
   assert_loceq ("bar.c", 1, 150, loc_f);
 
   ASSERT_FALSE (is_location_from_builtin_token (loc_a));

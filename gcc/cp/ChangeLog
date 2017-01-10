@@ -1,3 +1,10 @@
+2017-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77949
+	* parser.c (cp_parser_class_specifier_1): Only suggest inserting
+	a missing semicolon if we have a valid insertion location for
+	the fix-it hint.
+
 2017-01-10  Jason Merrill  <jason@redhat.com>
 
 	FI 20, decomposition declaration with parenthesized initializer.
