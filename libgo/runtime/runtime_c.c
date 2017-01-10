@@ -95,15 +95,6 @@ runtime_cputicks(void)
 #endif
 }
 
-// Called to initialize a new m (including the bootstrap m).
-// Called on the parent thread (main thread in case of bootstrap), can allocate memory.
-void
-runtime_mpreinit(M *mp)
-{
-	mp->gsignal = runtime_malg(true, true, (byte**)&mp->gsignalstack, &mp->gsignalstacksize);
-	mp->gsignal->m = mp;
-}
-
 void
 runtime_signalstack(byte *p, uintptr n)
 {

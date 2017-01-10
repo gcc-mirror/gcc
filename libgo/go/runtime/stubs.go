@@ -234,20 +234,6 @@ func newobject(*_type) unsafe.Pointer
 // For gccgo unless and until we port malloc.go.
 func newarray(*_type, int) unsafe.Pointer
 
-// funcPC returns the entry PC of the function f.
-// It assumes that f is a func value. Otherwise the behavior is undefined.
-// For gccgo here unless and until we port proc.go.
-// Note that this differs from the gc implementation; the gc implementation
-// adds sys.PtrSize to the address of the interface value, but GCC's
-// alias analysis decides that that can not be a reference to the second
-// field of the interface, and in some cases it drops the initialization
-// of the second field as a dead store.
-//go:nosplit
-func funcPC(f interface{}) uintptr {
-	i := (*iface)(unsafe.Pointer(&f))
-	return **(**uintptr)(i.data)
-}
-
 // For gccgo, to communicate from the C code to the Go code.
 //go:linkname setIsCgo runtime.setIsCgo
 func setIsCgo() {
@@ -352,56 +338,6 @@ func exitsyscall(int32)
 func gopark(func(*g, unsafe.Pointer) bool, unsafe.Pointer, string, byte, int)
 func goparkunlock(*mutex, string, byte, int)
 
-// Temporary hack for gccgo until we port proc.go.
-//go:nosplit
-func acquireSudog() *sudog {
-	mp := acquirem()
-	pp := mp.p.ptr()
-	if len(pp.sudogcache) == 0 {
-		pp.sudogcache = append(pp.sudogcache, new(sudog))
-	}
-	n := len(pp.sudogcache)
-	s := pp.sudogcache[n-1]
-	pp.sudogcache[n-1] = nil
-	pp.sudogcache = pp.sudogcache[:n-1]
-	if s.elem != nil {
-		throw("acquireSudog: found s.elem != nil in cache")
-	}
-	releasem(mp)
-	return s
-}
-
-// Temporary hack for gccgo until we port proc.go.
-//go:nosplit
-func releaseSudog(s *sudog) {
-	if s.elem != nil {
-		throw("runtime: sudog with non-nil elem")
-	}
-	if s.selectdone != nil {
-		throw("runtime: sudog with non-nil selectdone")
-	}
-	if s.next != nil {
-		throw("runtime: sudog with non-nil next")
-	}
-	if s.prev != nil {
-		throw("runtime: sudog with non-nil prev")
-	}
-	if s.waitlink != nil {
-		throw("runtime: sudog with non-nil waitlink")
-	}
-	if s.c != nil {
-		throw("runtime: sudog with non-nil c")
-	}
-	gp := getg()
-	if gp.param != nil {
-		throw("runtime: releaseSudog with non-nil gp.param")
-	}
-	mp := acquirem() // avoid rescheduling to another P
-	pp := mp.p.ptr()
-	pp.sudogcache = append(pp.sudogcache, s)
-	releasem(mp)
-}
-
 // Temporary hack for gccgo until we port the garbage collector.
 func typeBitsBulkBarrier(typ *_type, p, size uintptr) {}
 
@@ -450,7 +386,6 @@ func LockOSThread()
 func UnlockOSThread()
 func lockOSThread()
 func unlockOSThread()
-func allm() *m
 
 // Temporary for gccgo until we port malloc.go
 func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
@@ -464,14 +399,6 @@ func setgcpercent(int32) int32
 //go:linkname setGCPercent runtime_debug.setGCPercent
 func setGCPercent(in int32) (out int32) {
 	return setgcpercent(in)
-}
-
-// Temporary for gccgo until we port proc.go.
-func setmaxthreads(int) int
-
-//go:linkname setMaxThreads runtime_debug.setMaxThreads
-func setMaxThreads(in int) (out int) {
-	return setmaxthreads(in)
 }
 
 // Temporary for gccgo until we port atomic_pointer.go.
@@ -495,7 +422,6 @@ func getZerobase() *uintptr {
 
 // Temporary for gccgo until we port proc.go.
 func sigprof()
-func mcount() int32
 func goexit1()
 
 // Get signal trampoline, written in C.
@@ -549,6 +475,12 @@ func getallg(i int) *g {
 	return allgs[i]
 }
 
+// Temporary for gccgo until we port the garbage collector.
+//go:linkname getallm runtime.getallm
+func getallm() *m {
+	return allm
+}
+
 // Throw and rethrow an exception.
 func throwException()
 func rethrowException()
@@ -575,21 +507,6 @@ var work struct {
 		lock mutex
 		list []guintptr
 	}
-}
-
-// gcount is temporary for gccgo until more of proc.go is ported.
-// This is a copy of the C function we used to use.
-func gcount() int32 {
-	n := int32(0)
-	lock(&allglock)
-	for _, gp := range allgs {
-		s := readgstatus(gp)
-		if s == _Grunnable || s == _Grunning || s == _Gsyscall || s == _Gwaiting {
-			n++
-		}
-	}
-	unlock(&allglock)
-	return n
 }
 
 // Temporary for gccgo until we port mgc.go.

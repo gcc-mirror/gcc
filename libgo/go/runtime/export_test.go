@@ -24,8 +24,7 @@ import (
 
 var Entersyscall = entersyscall
 var Exitsyscall = exitsyscall
-
-// var LockedOSThread = lockedOSThread
+var LockedOSThread = lockedOSThread
 
 // var Xadduintptr = xadduintptr
 

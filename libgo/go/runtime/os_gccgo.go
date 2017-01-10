@@ -11,6 +11,13 @@ import (
 // Temporary for C code to call:
 //go:linkname minit runtime.minit
 
+// Called to initialize a new m (including the bootstrap m).
+// Called on the parent thread (main thread in case of bootstrap), can allocate memory.
+func mpreinit(mp *m) {
+	mp.gsignal = malg(true, true, &mp.gsignalstack, &mp.gsignalstacksize)
+	mp.gsignal.m = mp
+}
+
 // minit is called to initialize a new m (including the bootstrap m).
 // Called on the new thread, cannot allocate memory.
 func minit() {

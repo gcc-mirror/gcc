@@ -755,10 +755,8 @@ const _TracebackMaxFrames = 100
 var (
 	//	emptystring string
 
-	allglen uintptr
-
-	//	allm        *m
-
+	allglen    uintptr
+	allm       *m
 	allp       [_MaxGomaxprocs + 1]*p
 	gomaxprocs int32
 	panicking  uint32

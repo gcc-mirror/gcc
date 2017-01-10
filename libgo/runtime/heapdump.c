@@ -474,7 +474,7 @@ dumpms(void)
 {
 	M *mp;
 
-	for(mp = runtime_allm; mp != nil; mp = mp->alllink) {
+	for(mp = runtime_getallm(); mp != nil; mp = mp->alllink) {
 		dumpint(TagOSThread);
 		dumpint((uintptr)mp);
 		dumpint(mp->id);
