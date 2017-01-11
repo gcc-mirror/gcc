@@ -4306,14 +4306,14 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
     { "-mxsave",	OPTION_MASK_ISA_XSAVE },
     { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
     { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
-    { "-mclflushopt",   OPTION_MASK_ISA_CLFLUSHOPT },
+    { "-mclflushopt",	OPTION_MASK_ISA_CLFLUSHOPT },
     { "-mxsavec",	OPTION_MASK_ISA_XSAVEC },
     { "-mxsaves",	OPTION_MASK_ISA_XSAVES },
-    { "-mmpx",          OPTION_MASK_ISA_MPX },
+    { "-mmpx",		OPTION_MASK_ISA_MPX },
     { "-mclwb",		OPTION_MASK_ISA_CLWB },
-    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX  },
-    { "-mclzero",	OPTION_MASK_ISA_CLZERO  },
-    { "-mpku",		OPTION_MASK_ISA_PKU  },
+    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
+    { "-mclzero",	OPTION_MASK_ISA_CLZERO },
+    { "-mpku",		OPTION_MASK_ISA_PKU }
   };
   /* Additional structure for isa flags.  */
   static struct ix86_target_opts isa_opts2[] =
@@ -4321,6 +4321,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
     { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
+    { "-msgx",		OPTION_MASK_ISA_SGX }
   };
   /* Flag options.  */
   static struct ix86_target_opts flag_opts[] =
@@ -4350,10 +4351,10 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
     { "-mvect8-ret-in-mem",		MASK_VECT8_RETURNS },
     { "-m8bit-idiv",			MASK_USE_8BIT_IDIV },
     { "-mvzeroupper",			MASK_VZEROUPPER },
-    { "-mstv",				MASK_STV},
-    { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD},
-    { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE},
-    { "-mprefer-avx128",		MASK_PREFER_AVX128},
+    { "-mstv",				MASK_STV },
+    { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD },
+    { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE },
+    { "-mprefer-avx128",		MASK_PREFER_AVX128 }
   };
 
   /* Additional flag options.  */
@@ -4921,6 +4922,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX5124VNNIW	(HOST_WIDE_INT_1 << 60)
 #define PTA_AVX5124FMAPS	(HOST_WIDE_INT_1 << 61)
 #define PTA_AVX512VPOPCNTDQ	(HOST_WIDE_INT_1 << 62)
+#define PTA_SGX			(HOST_WIDE_INT_1 << 62)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -5586,6 +5588,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_AVX512VPOPCNTDQ
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
+	if (processor_alias_table[i].flags & PTA_SGX
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_SGX))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX;
 
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
@@ -6613,6 +6618,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     /* isa options */
     IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
     IX86_ATTR_ISA ("abm",	OPT_mabm),
+    IX86_ATTR_ISA ("sgx",	OPT_msgx),
     IX86_ATTR_ISA ("bmi",	OPT_mbmi),
     IX86_ATTR_ISA ("bmi2",	OPT_mbmi2),
     IX86_ATTR_ISA ("lzcnt",	OPT_mlzcnt),
@@ -33421,7 +33427,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"avx512ifma",F_AVX512IFMA},
       {"avx5124vnniw",F_AVX5124VNNIW},
       {"avx5124fmaps",F_AVX5124FMAPS},
-      {"avx512vpopcntdq",F_AVX512VPOPCNTDQ},
+      {"avx512vpopcntdq",F_AVX512VPOPCNTDQ}
     };
 
   tree __processor_model_type = build_processor_model_struct ();

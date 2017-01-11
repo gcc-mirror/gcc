@@ -1,3 +1,15 @@
+2017-01-11  Julia Koval  <julia.koval@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sgx.c New test.
+	* gcc.target/i386/sse-12.c: Add -msgx.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2017-01-11  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/24511

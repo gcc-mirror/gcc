@@ -700,7 +700,7 @@ test_2 (_mm_clmulepi64_si128, __m128i, __m128i, __m128i, 1)
 
 /* x86intrin.h (FMA4/XOP/LWP/BMI/BMI2/TBM/LZCNT/FMA). */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt,fma,rdseed,prfchw,adx,fxsr,xsaveopt,xsavec,xsaves,clflushopt,clwb,pku")
+#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt,fma,rdseed,prfchw,adx,fxsr,xsaveopt,xsavec,xsaves,clflushopt,clwb,pku,sgx")
 #endif
 #include <x86intrin.h>
 /* xopintrin.h */
