@@ -1,3 +1,10 @@
+2017-01-11  Martin Jambor  <mjambor@suse.cz>
+
+	* hsa.c (hsa_callable_function_p): Revert addition of DECL_ARTIFICIAL
+	test.
+	* ipa-hsa.c (process_hsa_functions): Only duplicate non-artificial
+	decorated functions.
+
 2017-01-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (evrp_dom_walker::before_dom_children): Also
