@@ -1,3 +1,23 @@
+2017-01-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Reduce the size of variant, it doesn't need an index of
+	type size_t internally.
+	* include/std/variant (parse_numbers.h): New include.
+	(__select_index): New.
+	(_Variant_storage<false, _Types...>::_M_reset_impl): Use
+	_index_type for comparison with variant_npos.
+	(_Variant_storage<false, _Types...>::__index_type): New.
+	(_Variant_storage<false, _Types...>::_M_index): Change the
+	type from size_t to __index_type.
+	(_Variant_storage<true, _Types...>::__index_type): New.
+	(_Variant_storage<true, _Types...>::_M_index): Change the
+	type from size_t to __index_type.
+	(_Variant_base::_M_valid): Use _Storage::__index_type
+	for comparison with variant_npos.
+	(variant::index): Use _Base::_Storage::__index_type
+	for comparison with variant_npos.
+	* testsuite/20_util/variant/index_type.cc: New.
+
 2017-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/exception_ptr/60612-unexpected.cc: Adjust

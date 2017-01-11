@@ -43,6 +43,7 @@
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
 #include <ext/aligned_buffer.h>
+#include <bits/parse_numbers.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -314,6 +315,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool __trivially_destructible, typename... _Types>
     struct _Variant_storage;
 
+  template <typename... _Types>
+  using __select_index =
+    typename __select_int::_Select_int_base<sizeof...(_Types)+1,
+					    unsigned char,
+					    unsigned short>
+    ::type::value_type;
+
   template<typename... _Types>
     struct _Variant_storage<false, _Types...>
     {
@@ -332,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<size_t... __indices>
 	constexpr void _M_reset_impl(std::index_sequence<__indices...>)
 	{
-	  if (_M_index != variant_npos)
+	  if (_M_index != __index_type(variant_npos))
 	    _S_vtable<__indices...>[_M_index](*this);
 	}
 
@@ -346,7 +354,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_reset(); }
 
       _Variadic_union<_Types...> _M_u;
-      size_t _M_index;
+      using __index_type = __select_index<_Types...>;
+      __index_type _M_index;
     };
 
   template<typename... _Types>
@@ -364,7 +373,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_index = variant_npos; }
 
       _Variadic_union<_Types...> _M_u;
-      size_t _M_index;
+      using __index_type = __select_index<_Types...>;
+      __index_type _M_index;
     };
 
   // Helps SFINAE on special member functions. Otherwise it can live in variant
@@ -487,7 +497,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr bool
       _M_valid() const noexcept
-      { return this->_M_index != variant_npos; }
+      {
+	return this->_M_index !=
+	  typename _Storage::__index_type(variant_npos);
+      }
     };
 
   // For how many times does _Tp appear in _Tuple?
@@ -1086,7 +1099,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return !this->_M_valid(); }
 
       constexpr size_t index() const noexcept
-      { return this->_M_index; }
+      {
+	if (this->_M_index ==
+	    typename _Base::_Storage::__index_type(variant_npos))
+	  return variant_npos;
+	return this->_M_index;
+      }
 
       void
       swap(variant& __rhs)
