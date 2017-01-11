@@ -1,5 +1,11 @@
 2017-01-11  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/77812
+	* name-lookup.c (set_namespace_binding_1): An overload of 1 decl
+	is a new overload.
+
+2017-01-11  Nathan Sidwell  <nathan@acm.org>
+
 	* name-lookup.c (push_overloaded_decl_1): Refactor OVERLOAD creation.
 
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>

@@ -1,3 +1,8 @@
+2017-01-11  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/77812
+	* g++.dg/pr77812.C: New.
+
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71537
