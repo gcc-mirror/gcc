@@ -190,27 +190,47 @@ runtime_function_type(Runtime_function_type bft)
 	  break;
 
 	case RFT_ARRAY2STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(2, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 
 	case RFT_ARRAY3STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(3, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 
 	case RFT_ARRAY4STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(4, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 
 	case RFT_ARRAY5STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(5, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 	}
 

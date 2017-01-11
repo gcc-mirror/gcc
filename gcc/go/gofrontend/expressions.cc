@@ -6741,8 +6741,9 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
   sfl->push_back(Struct_field(Typed_identifier("val.1",
 					       orig_fntype->receiver()->type(),
 					       loc)));
-  Type* closure_type = Type::make_struct_type(sfl, loc);
-  closure_type = Type::make_pointer_type(closure_type);
+  Struct_type* st = Type::make_struct_type(sfl, loc);
+  st->set_is_struct_incomparable();
+  Type* closure_type = Type::make_pointer_type(st);
 
   Function_type* new_fntype = orig_fntype->copy_with_names();
 
@@ -6896,6 +6897,7 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
 						  loc)));
   fields->push_back(Struct_field(Typed_identifier("val.1", val->type(), loc)));
   Struct_type* st = Type::make_struct_type(fields, loc);
+  st->set_is_struct_incomparable();
 
   Expression_list* vals = new Expression_list();
   vals->push_back(Expression::make_func_code_reference(thunk, loc));
@@ -9683,6 +9685,7 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
         }
 
       Struct_type* st = Type::make_struct_type(sfl, loc);
+      st->set_is_struct_incomparable();
       this->call_temp_ = Statement::make_temporary(st, NULL, loc);
       inserter->insert(this->call_temp_);
     }
@@ -11565,7 +11568,8 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   Expression* length_expr = Expression::make_integer_ul(s.length(), NULL, loc);
 
   Type* byte_type = gogo->lookup_global("byte")->type_value();
-  Type* array_type = Type::make_array_type(byte_type, length_expr);
+  Array_type* array_type = Type::make_array_type(byte_type, length_expr);
+  array_type->set_is_array_incomparable();
 
   Expression_list* bytes = new Expression_list();
   for (std::string::const_iterator p = s.begin(); p != s.end(); p++)
@@ -11843,8 +11847,9 @@ Interface_field_reference_expression::create_thunk(Gogo* gogo,
   Type* vt = Type::make_pointer_type(Type::make_void_type());
   sfl->push_back(Struct_field(Typed_identifier("fn.0", vt, loc)));
   sfl->push_back(Struct_field(Typed_identifier("val.1", type, loc)));
-  Type* closure_type = Type::make_struct_type(sfl, loc);
-  closure_type = Type::make_pointer_type(closure_type);
+  Struct_type* st = Type::make_struct_type(sfl, loc);
+  st->set_is_struct_incomparable();
+  Type* closure_type = Type::make_pointer_type(st);
 
   Function_type* new_fntype = orig_fntype->copy_with_names();
 
@@ -11943,6 +11948,7 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
 						  this->expr_->type(),
 						  loc)));
   Struct_type* st = Type::make_struct_type(fields, loc);
+  st->set_is_struct_incomparable();
 
   Expression_list* vals = new Expression_list();
   vals->push_back(Expression::make_func_code_reference(thunk, loc));
@@ -12930,7 +12936,9 @@ Slice_construction_expression::Slice_construction_expression(
   Type* int_type = Type::lookup_integer_type("int");
   length = Expression::make_integer_ul(lenval, int_type, location);
   Type* element_type = type->array_type()->element_type();
-  this->valtype_ = Type::make_array_type(element_type, length);
+  Array_type* array_type = Type::make_array_type(element_type, length);
+  array_type->set_is_array_incomparable();
+  this->valtype_ = array_type;
 }
 
 // Traversal.
@@ -13161,8 +13169,9 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
         }
 
       Expression* element_count = Expression::make_integer_ul(i, NULL, loc);
-      Type* ctor_type =
+      Array_type* ctor_type =
           Type::make_array_type(this->element_type_, element_count);
+      ctor_type->set_is_array_incomparable();
       Expression* constructor =
           new Fixed_array_construction_expression(ctor_type, NULL,
                                                   value_pairs, loc);
@@ -14863,7 +14872,9 @@ Interface_info_expression::do_type()
             sfl->push_back(Struct_field(Typed_identifier(fname, mft, loc)));
           }
 
-        Pointer_type *pt = Type::make_pointer_type(Type::make_struct_type(sfl, loc));
+	Struct_type* st = Type::make_struct_type(sfl, loc);
+	st->set_is_struct_incomparable();
+	Pointer_type *pt = Type::make_pointer_type(st);
         result_types[itype] = pt;
         return pt;
       }
@@ -15097,7 +15108,9 @@ Interface_mtable_expression::do_type()
        p != interface_methods->end();
        ++p)
     sfl->push_back(Struct_field(*p));
-  this->method_table_type_ = Type::make_struct_type(sfl, this->location());
+  Struct_type* st = Type::make_struct_type(sfl, this->location());
+  st->set_is_struct_incomparable();
+  this->method_table_type_ = st;
   return this->method_table_type_;
 }
 

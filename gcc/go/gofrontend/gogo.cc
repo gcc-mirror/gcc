@@ -744,6 +744,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
   Expression* length = Expression::make_integer_ul(roots_len, NULL,
                                                    builtin_loc);
   Array_type* root_array_type = Type::make_array_type(root_type, length);
+  root_array_type->set_is_array_incomparable();
   Type* ptdt = Type::make_type_descriptor_ptr_type();
   Struct_type* root_list_type =
       Type::make_builtin_struct_type(2,
@@ -4833,7 +4834,8 @@ Function::closure_var()
       // we find them.
       Location loc = this->type_->location();
       Struct_field_list* sfl = new Struct_field_list;
-      Type* struct_type = Type::make_struct_type(sfl, loc);
+      Struct_type* struct_type = Type::make_struct_type(sfl, loc);
+      struct_type->set_is_struct_incomparable();
       Variable* var = new Variable(Type::make_pointer_type(struct_type),
 				   NULL, false, false, false, loc);
       var->set_is_used();
