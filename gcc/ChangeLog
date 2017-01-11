@@ -1,3 +1,12 @@
+2017-01-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/cortex-a53.md: Add bypasses for
+	cortex_a53_r2f_cvt.
+	(cortex_a53_r2f): Only use for transfers.
+	(cortex_a53_f2r): Likewise.
+	(cortex_a53_r2f_cvt): Add reservation for conversions.
+	(cortex_a53_f2r_cvt): Likewise.
+
 2017-01-11  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm_neon.h: Add __artificial__ and gnu_inline
