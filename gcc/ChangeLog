@@ -1,3 +1,13 @@
+2017-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/78877
+	* opts.c: Include "spellcheck.h"
+	(struct string_fragment): New struct.
+	(struct edit_distance_traits<const string_fragment &>): New
+	struct.
+	(get_closest_sanitizer_option): New function.
+	(parse_sanitizer_options): Offer suggestions for unrecognized arguments.
+
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (DWARF_COMPILE_UNIT_HEADER_SIZE): For DWARF5 decrease
