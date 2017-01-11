@@ -508,7 +508,7 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
       /* FIXME: Two last conditions below are workarounds for bugs.  */
       else if (INTEGRAL_MODE_P (mode) && mode != CQImode && mode != CHImode)
 	{
-	  if (POINTER_TYPE_P(type))
+	  if (!type || POINTER_TYPE_P(type))
 	    regbegin = 8; /* Ax */
 	  else
 	    regbegin = 0; /* Dx */
