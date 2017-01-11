@@ -1,3 +1,9 @@
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/72813
+	* gcc.c (default_compilers): Don't add -o %g.s for -S -save-temps
+	of c-header.
+
 2017-01-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/78877

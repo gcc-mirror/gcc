@@ -1,3 +1,9 @@
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/72813
+	* decl2.c (c_parse_final_cleanups): Set flag_syntax_only to 1 after
+	writing PCH file.
+
 2017-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/77949
