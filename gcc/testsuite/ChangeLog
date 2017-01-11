@@ -1,3 +1,11 @@
+2017-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/78877
+	* gcc.dg/spellcheck-options-14.c: New test case.
+	* gcc.dg/spellcheck-options-15.c: New test case.
+	* gcc.dg/spellcheck-options-16.c: New test case.
+	* gcc.dg/spellcheck-options-17.c: New test case.
+
 2017-01-11  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/flatten-3.c: Add -fno-ipa-icf to dg-options.

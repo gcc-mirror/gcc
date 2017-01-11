@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts-diagnostic.h"
 #include "insn-attr-common.h"
 #include "common/common-target.h"
+#include "spellcheck.h"
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -1511,6 +1512,65 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   { NULL, 0U, 0UL, false }
 };
 
+/* A struct for describing a run of chars within a string.  */
+
+struct string_fragment
+{
+  string_fragment (const char *start, size_t len)
+  : m_start (start), m_len (len) {}
+
+  const char *m_start;
+  size_t m_len;
+};
+
+/* Specialization of edit_distance_traits for string_fragment,
+   for use by get_closest_sanitizer_option.  */
+
+template <>
+struct edit_distance_traits<const string_fragment &>
+{
+  static size_t get_length (const string_fragment &fragment)
+  {
+    return fragment.m_len;
+  }
+
+  static const char *get_string (const string_fragment &fragment)
+  {
+    return fragment.m_start;
+  }
+};
+
+/* Given ARG, an unrecognized sanitizer option, return the best
+   matching sanitizer option, or NULL if there isn't one.
+   CODE is OPT_fsanitize_ or OPT_fsanitize_recover_.
+   VALUE is non-zero for the regular form of the option, zero
+   for the "no-" form (e.g. "-fno-sanitize-recover=").  */
+
+static const char *
+get_closest_sanitizer_option (const string_fragment &arg,
+			      enum opt_code code, int value)
+{
+  best_match <const string_fragment &, const char*> bm (arg);
+  for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
+    {
+      /* -fsanitize=all is not valid, so don't offer it.  */
+      if (sanitizer_opts[i].flag == ~0U
+	  && code == OPT_fsanitize_
+	  && value)
+	continue;
+
+      /* For -fsanitize-recover= (and not -fno-sanitize-recover=),
+	 don't offer the non-recoverable options.  */
+      if (!sanitizer_opts[i].can_recover
+	  && code == OPT_fsanitize_recover_
+	  && value)
+	continue;
+
+      bm.consider (sanitizer_opts[i].name);
+    }
+  return bm.get_best_meaningful_candidate ();
+}
+
 /* Parse comma separated sanitizer suboptions from P for option SCODE,
    adjust previous FLAGS and return new ones.  If COMPLAIN is false,
    don't issue diagnostics.  */
@@ -1572,8 +1632,25 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 	  }
 
       if (! found && complain)
-	error_at (loc, "unrecognized argument to -fsanitize%s= option: %q.*s",
-		  code == OPT_fsanitize_ ? "" : "-recover", (int) len, p);
+	{
+	  const char *hint
+	    = get_closest_sanitizer_option (string_fragment (p, len),
+					    code, value);
+
+	  if (hint)
+	    error_at (loc,
+		      "unrecognized argument to -f%ssanitize%s= option: %q.*s;"
+		      " did you mean %qs",
+		      value ? "" : "no-",
+		      code == OPT_fsanitize_ ? "" : "-recover",
+		      (int) len, p, hint);
+	  else
+	    error_at (loc,
+		      "unrecognized argument to -f%ssanitize%s= option: %q.*s",
+		      value ? "" : "no-",
+		      code == OPT_fsanitize_ ? "" : "-recover",
+		      (int) len, p);
+	}
 
       if (comma == NULL)
 	break;
