@@ -324,12 +324,12 @@ class Backend
   compound_expression(Bstatement* bstat, Bexpression* bexpr, Location) = 0;
 
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
-  // ELSE_EXPR otherwise and returns the result as type BTYPE.  ELSE_EXPR
-  // may be NULL.  BTYPE may be NULL.
+  // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
+  // specified function FUNCTION.  ELSE_EXPR may be NULL.  BTYPE may be NULL.
   virtual Bexpression*
-  conditional_expression(Btype* btype, Bexpression* condition,
-                         Bexpression* then_expr, Bexpression* else_expr,
-                         Location) = 0;
+  conditional_expression(Bfunction* function, Btype* btype,
+                         Bexpression* condition, Bexpression* then_expr,
+                         Bexpression* else_expr, Location) = 0;
 
   // Return an expression for the unary operation OP EXPR.
   // Supported values of OP are (from operators.h):

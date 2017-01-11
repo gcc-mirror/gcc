@@ -4390,7 +4390,9 @@ Unary_expression::do_get_backend(Translate_context* context)
                 Bexpression* crash =
 		  gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
 				      loc)->get_backend(context);
-                bexpr = gogo->backend()->conditional_expression(btype, compare,
+                Bfunction* bfn = context->function()->func_value()->get_decl();
+                bexpr = gogo->backend()->conditional_expression(bfn, btype,
+                                                                compare,
                                                                 crash, bexpr,
                                                                 loc);
 
@@ -5992,6 +5994,7 @@ Binary_expression::do_get_backend(Translate_context* context)
       Bexpression* zero_expr =
           gogo->backend()->integer_constant_expression(left_btype, zero);
       overflow = zero_expr;
+      Bfunction* bfn = context->function()->func_value()->get_decl();
       if (this->op_ == OPERATOR_RSHIFT
 	  && !left_type->integer_type()->is_unsigned())
 	{
@@ -6000,11 +6003,12 @@ Binary_expression::do_get_backend(Translate_context* context)
                                                  zero_expr, loc);
           Bexpression* neg_one_expr =
               gogo->backend()->integer_constant_expression(left_btype, neg_one);
-          overflow = gogo->backend()->conditional_expression(btype, neg_expr,
+          overflow = gogo->backend()->conditional_expression(bfn,
+                                                             btype, neg_expr,
                                                              neg_one_expr,
                                                              zero_expr, loc);
 	}
-      ret = gogo->backend()->conditional_expression(btype, compare, ret,
+      ret = gogo->backend()->conditional_expression(bfn, btype, compare, ret,
                                                     overflow, loc);
       mpz_clear(bitsval);
     }
@@ -6027,7 +6031,9 @@ Binary_expression::do_get_backend(Translate_context* context)
 						   loc)->get_backend(context);
 
 	  // right == 0 ? (__go_runtime_error(...), 0) : ret
-          ret = gogo->backend()->conditional_expression(btype, check, crash,
+          Bfunction* bfn = context->function()->func_value()->get_decl();
+          ret = gogo->backend()->conditional_expression(bfn, btype,
+                                                        check, crash,
 							ret, loc);
 	}
 
@@ -6047,6 +6053,7 @@ Binary_expression::do_get_backend(Translate_context* context)
               gogo->backend()->integer_constant_expression(btype, zero);
           Bexpression* one_expr =
               gogo->backend()->integer_constant_expression(btype, one);
+          Bfunction* bfn = context->function()->func_value()->get_decl();
 
 	  if (type->integer_type()->is_unsigned())
 	    {
@@ -6058,12 +6065,12 @@ Binary_expression::do_get_backend(Translate_context* context)
                                                      left, right, loc);
 	      if (this->op_ == OPERATOR_DIV)
                 overflow =
-                    gogo->backend()->conditional_expression(btype, cmp,
+                    gogo->backend()->conditional_expression(bfn, btype, cmp,
                                                             one_expr, zero_expr,
                                                             loc);
 	      else
                 overflow =
-                    gogo->backend()->conditional_expression(btype, cmp,
+                    gogo->backend()->conditional_expression(bfn, btype, cmp,
                                                             zero_expr, left,
                                                             loc);
 	    }
@@ -6083,7 +6090,8 @@ Binary_expression::do_get_backend(Translate_context* context)
           overflow = gogo->backend()->convert_expression(btype, overflow, loc);
 
 	  // right == -1 ? - left : ret
-          ret = gogo->backend()->conditional_expression(btype, check, overflow,
+          ret = gogo->backend()->conditional_expression(bfn, btype,
+                                                        check, overflow,
                                                         ret, loc);
 	}
     }
@@ -10923,12 +10931,13 @@ Array_index_expression::do_get_backend(Translate_context* context)
   bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, start_too_large,
 						 bad_index, loc);
 
+  Bfunction* bfn = context->function()->func_value()->get_decl();
   if (this->end_ == NULL)
     {
       // Simple array indexing.  This has to return an l-value, so
       // wrap the index check into START.
       start =
-	gogo->backend()->conditional_expression(int_btype, bad_index,
+        gogo->backend()->conditional_expression(bfn, int_btype, bad_index,
 						crash, start, loc);
 
       Bexpression* ret;
@@ -11017,7 +11026,7 @@ Array_index_expression::do_get_backend(Translate_context* context)
 
   Bexpression* ctor =
     gogo->backend()->constructor_expression(struct_btype, init, loc);
-  return gogo->backend()->conditional_expression(struct_btype, bad_index,
+  return gogo->backend()->conditional_expression(bfn, struct_btype, bad_index,
 						 crash, ctor, loc);
 }
 
@@ -11231,6 +11240,7 @@ String_index_expression::do_get_backend(Translate_context* context)
     }
 
   Expression* start = Expression::make_cast(int_type, this->start_, loc);
+  Bfunction* bfn = context->function()->func_value()->get_decl();
 
   if (this->end_ == NULL)
     {
@@ -11253,8 +11263,9 @@ String_index_expression::do_get_backend(Translate_context* context)
 
       Btype* byte_btype = bytes->type()->points_to()->get_backend(gogo);
       Bexpression* index_error = bad_index->get_backend(context);
-      return gogo->backend()->conditional_expression(byte_btype, index_error,
-						     crash, index, loc);
+      return gogo->backend()->conditional_expression(bfn, byte_btype,
+                                                     index_error, crash,
+                                                     index, loc);
     }
 
   Expression* end = NULL;
@@ -11274,7 +11285,7 @@ String_index_expression::do_get_backend(Translate_context* context)
 
   Btype* str_btype = strslice->type()->get_backend(gogo);
   Bexpression* index_error = bad_index->get_backend(context);
-  return gogo->backend()->conditional_expression(str_btype, index_error,
+  return gogo->backend()->conditional_expression(bfn, str_btype, index_error,
 						 crash, bstrslice, loc);
 }
 
@@ -11967,8 +11978,10 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
   Bexpression* bcrash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
 					    loc)->get_backend(context);
 
+  Bfunction* bfn = context->function()->func_value()->get_decl();
   Bexpression* bcond =
-      gogo->backend()->conditional_expression(NULL, bnil_check, bcrash, NULL, loc);
+      gogo->backend()->conditional_expression(bfn, NULL,
+                                              bnil_check, bcrash, NULL, loc);
   Bfunction* bfunction = context->function()->func_value()->get_decl();
   Bstatement* cond_statement =
       gogo->backend()->expression_statement(bfunction, bcond);
@@ -15414,7 +15427,8 @@ Conditional_expression::do_get_backend(Translate_context* context)
   Bexpression* cond = this->cond_->get_backend(context);
   Bexpression* then = this->then_->get_backend(context);
   Bexpression* belse = this->else_->get_backend(context);
-  return gogo->backend()->conditional_expression(result_btype, cond, then,
+  Bfunction* bfn = context->function()->func_value()->get_decl();
+  return gogo->backend()->conditional_expression(bfn, result_btype, cond, then,
 						 belse, this->location());
 }
 
