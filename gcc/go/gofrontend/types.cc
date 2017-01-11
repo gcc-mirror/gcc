@@ -2500,6 +2500,7 @@ Type::gc_symbol_constructor(Gogo* gogo)
   Expression* len = Expression::make_integer_ul(vals->size(), NULL,
 						bloc);
   Array_type* gc_symbol_type = Type::make_array_type(uintptr_t, len);
+  gc_symbol_type->set_is_array_incomparable();
   return Expression::make_array_composite_literal(gc_symbol_type, vals, bloc);
 }
 
@@ -4037,6 +4038,7 @@ Function_type::get_backend_fntype(Gogo* gogo)
 		    }
 		  Struct_type* st = Type::make_struct_type(sfl,
 							   this->location());
+		  st->set_is_struct_incomparable();
 		  ins.first->second = st->get_backend(gogo);
 		}
 	      bresult_struct = ins.first->second;
@@ -7209,7 +7211,8 @@ Map_type::fat_zero_value(Gogo* gogo)
       // The final type will be set in backend_zero_value.
       Type* uint8_type = Type::lookup_integer_type("uint8");
       Expression* size = Expression::make_integer_ul(0, NULL, bloc);
-      Type* array_type = Type::make_array_type(uint8_type, size);
+      Array_type* array_type = Type::make_array_type(uint8_type, size);
+      array_type->set_is_array_incomparable();
       Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
       Map_type::zero_value = Named_object::make_variable("go$zerovalue", NULL,
 							 var);
@@ -7619,7 +7622,8 @@ Map_type::bucket_type(Gogo* gogo, int64_t keysize, int64_t valsize)
 
       Expression* pad_expr = Expression::make_integer_ul(pad, NULL,
 							 this->location_);
-      Type* pad_type = Type::make_array_type(uint8_type, pad_expr);
+      Array_type* pad_type = Type::make_array_type(uint8_type, pad_expr);
+      pad_type->set_is_array_incomparable();
 
       ret = make_builtin_struct_type(5,
 				     "topbits", topbits_type,
