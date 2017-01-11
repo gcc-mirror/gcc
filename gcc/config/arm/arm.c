@@ -7269,10 +7269,14 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	 same segment as the GOT.  Unfortunately, the flexibility of linker
 	 scripts means that we can't be sure of that in general, so assume
 	 that GOTOFF is never valid on VxWorks.  */
+      /* References to weak symbols cannot be resolved locally: they
+	 may be overridden by a non-weak definition at link time.  */
       rtx_insn *insn;
       if ((GET_CODE (orig) == LABEL_REF
-	   || (GET_CODE (orig) == SYMBOL_REF &&
-	       SYMBOL_REF_LOCAL_P (orig)))
+	   || (GET_CODE (orig) == SYMBOL_REF
+	       && SYMBOL_REF_LOCAL_P (orig)
+	       && (SYMBOL_REF_DECL (orig)
+		   ? !DECL_WEAK (SYMBOL_REF_DECL (orig)) : 1)))
 	  && NEED_GOT_RELOC
 	  && arm_pic_data_is_text_relative)
 	insn = arm_pic_static_addr (orig, reg);
@@ -22475,8 +22479,14 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	{
 	  /* See legitimize_pic_address for an explanation of the
 	     TARGET_VXWORKS_RTP check.  */
+	  /* References to weak symbols cannot be resolved locally:
+	     they may be overridden by a non-weak definition at link
+	     time.  */
 	  if (!arm_pic_data_is_text_relative
-	      || (GET_CODE (x) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (x)))
+	      || (GET_CODE (x) == SYMBOL_REF
+		  && (!SYMBOL_REF_LOCAL_P (x)
+		      || (SYMBOL_REF_DECL (x)
+			  ? DECL_WEAK (SYMBOL_REF_DECL (x)) : 0))))
 	    fputs ("(GOT)", asm_out_file);
 	  else
 	    fputs ("(GOTOFF)", asm_out_file);

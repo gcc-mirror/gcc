@@ -1,3 +1,10 @@
+2017-01-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/78253
+	* config/arm/arm.c (legitimize_pic_address): Handle reference to
+	weak symbol.
+	(arm_assemble_integer): Likewise.
+
 2017-01-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.gcc: Use new awk script to check CPU, FPU and architecture
