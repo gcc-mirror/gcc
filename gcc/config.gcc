@@ -3675,40 +3675,23 @@ case "${target}" in
 
 	arm*-*-*)
 		supported_defaults="arch cpu float tune fpu abi mode tls"
-		for which in cpu tune; do
-			# See if it matches any of the entries in arm-cores.def
+		for which in cpu tune arch; do
+			# See if it matches a supported value
 			eval "val=\$with_$which"
-			if [ x"$val" = x ] \
-			    || grep "^ARM_CORE(\"$val\"," \
-				    ${srcdir}/config/arm/arm-cores.def \
-				    > /dev/null; then
-			  # Ok
-			  new_val=`grep "^ARM_CORE(\"$val\"," \
-				${srcdir}/config/arm/arm-cores.def | \
-				sed -e 's/^[^,]*,[ 	]*//' | \
-				sed -e 's/,.*$//'`
-			  if [ x"$val" != x ] ; then
-				eval "target_${which}_cname=$new_val"
-				echo "For $val real value is $new_val"
+			if [ x"$val" != x ]; then
+			  cpu=`awk -f ${srcdir}/config/arm/parsecpu.awk \
+				-v cmd="chk$which $val" \
+				${srcdir}/config/arm/arm-cpus.in`
+			  if [ "$cpu" = "error" ]; then
+			    echo "Unknown target in --with-$which=$val" 1>&2
+			    exit 1
+			  else
+			    new_val=$cpu
+			    eval "target_${which}_cname=$new_val"
+			    echo "For $val real value is $new_val"
 			  fi
-			  true
-			else
-			  echo "Unknown CPU used in --with-$which=$val" 1>&2
-			  exit 1
 			fi
 		done
-
-		# See if it matches any of the entries in arm-arches.def
-		if [ x"$with_arch" = x ] \
-		    || grep "^ARM_ARCH(\"$with_arch\"," \
-			    ${srcdir}/config/arm/arm-arches.def \
-			    > /dev/null; then
-		  # OK
-		  true
-		else
-		  echo "Unknown arch used in --with-arch=$with_arch" 1>&2
-		  exit 1
-		fi
 
 		case "$with_float" in
 		"" \
@@ -3721,16 +3704,16 @@ case "${target}" in
 			;;
 		esac
 
-		# see if it matches any of the entries in arm-fpus.def
-		if [ x"$with_fpu" = x ] \
-		    || grep "^ARM_FPU(\"$with_fpu\"," \
-			    ${srcdir}/config/arm/arm-fpus.def \
-			    > /dev/null; then
-		  # OK
-		  true
-		else
-		  echo "Unknown fpu used in --with-fpu=$with_fpu" 1>&2
-		  exit 1
+		# see if --with-fpu matches any of the supported FPUs
+		if [ x"$with_fpu" != x ] ; then
+		  fpu=`awk -f ${srcdir}/config/arm/parsecpu.awk \
+			-v cmd="chkfpu $with_fpu" \
+			${srcdir}/config/arm/arm-cpus.in`
+		  if [ "$fpu" = "error"]
+		  then
+		    echo "Unknown target in --with-$which=$val" 1>&2
+		    exit 1
+		  fi
 		fi
 
 		case "$with_abi" in

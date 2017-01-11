@@ -2293,50 +2293,14 @@ const struct tune_params arm_fa726te_tune =
   tune_params::SCHED_AUTOPREF_OFF
 };
 
-
-/* Not all of these give usefully different compilation alternatives,
-   but there is no simple way of generalizing them.  */
-static const struct processors all_cores[] =
-{
-  /* ARM Cores */
-#define ARM_CORE(NAME, X, IDENT, TUNE_FLAGS, ARCH, ISA, COSTS)	\
-  {NAME, TARGET_CPU_##IDENT, TUNE_FLAGS, #ARCH, BASE_ARCH_##ARCH, \
-   {ISA isa_nobit}, &arm_##COSTS##_tune},
-#include "arm-cores.def"
-#undef ARM_CORE
-  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, NULL}
-};
-
-static const struct processors all_architectures[] =
-{
-  /* ARM Architectures */
-  /* We don't specify tuning costs here as it will be figured out
-     from the core.  */
-
-#define ARM_ARCH(NAME, CORE, TUNE_FLAGS, ARCH, ISA)			\
-  {NAME, TARGET_CPU_##CORE, TUNE_FLAGS, #ARCH, BASE_ARCH_##ARCH,	\
-  {ISA isa_nobit}, NULL},
-#include "arm-arches.def"
-#undef ARM_ARCH
-  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, NULL}
-};
+/* Auto-generated CPU, FPU and architecture tables.  */
+#include "arm-cpu-data.h"
 
 /* The name of the preprocessor macro to define for this architecture.  PROFILE
    is replaced by the architecture name (eg. 8A) in arm_option_override () and
    is thus chosen to be big enough to hold the longest architecture name.  */
 
 char arm_arch_name[] = "__ARM_ARCH_PROFILE__";
-
-/* Available values for -mfpu=.  */
-
-const struct arm_fpu_desc all_fpus[] =
-{
-#undef ARM_FPU
-#define ARM_FPU(NAME, CNAME, ISA)	\
-  { NAME, {ISA isa_nobit} },
-#include "arm-fpus.def"
-#undef ARM_FPU
-};
 
 /* Supported TLS relocations.  */
 

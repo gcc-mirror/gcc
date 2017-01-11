@@ -1,3 +1,7 @@
+2017-01-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc_update: Adjust touch list for ARM.
+
 2017-01-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* download_ecj: Remove.
