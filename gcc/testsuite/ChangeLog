@@ -1,3 +1,8 @@
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/decomp4.C (test): Use 2 identifier decomposition
+	instead of just 1 for the decomposition from struct C.
+
 2017-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20170111-1.c: New test.
