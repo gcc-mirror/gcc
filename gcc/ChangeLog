@@ -1,3 +1,10 @@
+2017-01-11  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79042
+	* lto-cgraph.c (lto_output_varpool_node): Pack dynamically_initialized
+	bit.
+	(input_varpool_node): Unpack dynamically_initialized bit.
+
 2017-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/79032
