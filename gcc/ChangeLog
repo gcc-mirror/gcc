@@ -1,3 +1,27 @@
+2017-01-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc: Use new awk script to check CPU, FPU and architecture
+	parameters for --with-... options.
+	* config/arm/parsecpu.awk: New file
+	* config/arm/arm-cpus.in: New file.
+	* config/arm/arm-opts.h: Include arm-cpu.h instead of processing .def
+	files.
+	* config/arm/arm.c: Include arm-cpu-data.h instead of processing .def
+	files.
+	* config/arm/t-arm: Update dependency rules.
+	* common/config/arm/arm-common.c: Include arm-cpu-cdata.h instead
+	of processing .def files.
+	* config/arm/genopt.sh: Deleted.
+	* config/arm/gentune.sh: Deleted.
+	* config/arm/arm-cores.def: Deleted.
+	* config/arm/arm-arches.def: Deleted.
+	* config/arm/arm-fpus.def: Deleted.
+	* config/arm/arm-tune.md: Regenerated.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm-cpu.h: New generated file.
+	* config/arm/arm-cpu-data.h: New generated file.
+	* config/arm/arm-cpu-cdata.h: New generated file.
+
 2017-01-11  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79042

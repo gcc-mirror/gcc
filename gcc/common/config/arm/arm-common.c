@@ -104,19 +104,7 @@ struct arm_arch_core_flag
   const enum isa_feature isa_bits[isa_num_bits];
 };
 
-static const struct arm_arch_core_flag arm_arch_core_flags[] =
-{
-#undef ARM_CORE
-#define ARM_CORE(NAME, X, IDENT, TUNE_FLAGS, ARCH, ISA, COSTS)	\
-  {NAME, {ISA isa_nobit}},
-#include "config/arm/arm-cores.def"
-#undef ARM_CORE
-#undef ARM_ARCH
-#define ARM_ARCH(NAME, CORE, TUNE_FLAGS, ARCH, ISA)	\
-  {NAME, {ISA isa_nobit}},
-#include "config/arm/arm-arches.def"
-#undef ARM_ARCH
-};
+#include "config/arm/arm-cpu-cdata.h"
 
 /* Scan over a raw feature array BITS checking for BIT being present.
    This is slower than the normal bitmask checks, but we would spend longer
