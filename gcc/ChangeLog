@@ -1,5 +1,11 @@
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71537
+	* fold-const.c (maybe_nonzero_address): Return 1 for function
+	local objects.
+	(tree_single_nonzero_warnv_p): Don't handle function local objects
+	here.
+
 	PR c++/72813
 	* gcc.c (default_compilers): Don't add -o %g.s for -S -save-temps
 	of c-header.

@@ -1,5 +1,8 @@
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71537
+	* g++.dg/cpp1y/constexpr-71537.C: New test.
+
 	* gcc.dg/tree-ssa/flatten-3.c: Add quotation marks around dg-options
 	argument.
 
