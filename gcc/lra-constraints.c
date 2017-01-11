@@ -1505,15 +1505,15 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 				  MEM_ADDR_SPACE (subst))))
 	{
 	  /* If we change the address for a paradoxical subreg of memory, the
-	     address might violate the necessary alignment or the access might
-	     be slow.  So take this into consideration.  We need not worry
+	     new address might violate the necessary alignment or the access
+	     might be slow; take this into consideration.  We need not worry
 	     about accesses beyond allocated memory for paradoxical memory
 	     subregs as we don't substitute such equiv memory (see processing
 	     equivalences in function lra_constraints) and because for spilled
 	     pseudos we allocate stack memory enough for the biggest
 	     corresponding paradoxical subreg.  */
-	  if (!(MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (mode)
-		&& SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg)))
+	  if (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
+		&& SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (subst)))
 	      || (MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (innermode)
 		  && SLOW_UNALIGNED_ACCESS (innermode, MEM_ALIGN (reg))))
 	    return true;
