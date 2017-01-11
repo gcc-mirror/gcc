@@ -1,3 +1,12 @@
+2017-01-11  Andre Vieira <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
+	2016-12-09  Andre Vieira <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/78255
+	* gcc/postreload.c (reload_cse_simplify): Do not CSE a function if
+	NO_FUNCTION_CSE is true.
+
 2017-01-10  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	Backport from mainline
