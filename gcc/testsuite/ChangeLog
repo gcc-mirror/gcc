@@ -1,3 +1,8 @@
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/flatten-3.c: Add quotation marks around dg-options
+	argument.
+
 2017-01-11  Martin Sebor  <msebor@redhat.com>
 
 	PR c/47931
