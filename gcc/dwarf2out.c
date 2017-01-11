@@ -2996,14 +2996,16 @@ skeleton_chain_node;
 /* Fixed size portion of the DWARF compilation unit header.  */
 #define DWARF_COMPILE_UNIT_HEADER_SIZE \
   (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE			\
-   + (dwarf_version >= 5						\
-      ? 4 + DWARF_TYPE_SIGNATURE_SIZE + DWARF_OFFSET_SIZE : 3))
+   + (dwarf_version >= 5 ? 4 : 3))
 
 /* Fixed size portion of the DWARF comdat type unit header.  */
 #define DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE \
   (DWARF_COMPILE_UNIT_HEADER_SIZE					\
-   + (dwarf_version >= 5						\
-      ? 0 : DWARF_TYPE_SIGNATURE_SIZE + DWARF_OFFSET_SIZE))
+   + DWARF_TYPE_SIGNATURE_SIZE + DWARF_OFFSET_SIZE)
+
+/* Fixed size portion of the DWARF skeleton compilation unit header.  */
+#define DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE \
+  (DWARF_COMPILE_UNIT_HEADER_SIZE + (dwarf_version >= 5 ? 8 : 0))
 
 /* Fixed size portion of public names info.  */
 #define DWARF_PUBNAMES_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2)
@@ -9066,7 +9068,9 @@ calc_die_sizes (dw_die_ref die)
 static void
 calc_base_type_die_sizes (void)
 {
-  unsigned long die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
+  unsigned long die_offset = (dwarf_split_debug_info
+			      ? DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE
+			      : DWARF_COMPILE_UNIT_HEADER_SIZE);
   unsigned int i;
   dw_die_ref base_type;
 #if ENABLE_ASSERT_CHECKING
@@ -10327,7 +10331,9 @@ output_comp_unit (dw_die_ref die, int output_if_empty,
   delete extern_map;
 
   /* Initialize the beginning DIE offset - and calculate sizes/offsets.  */
-  next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
+  next_die_offset = (dwo_id
+		     ? DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE
+		     : DWARF_COMPILE_UNIT_HEADER_SIZE);
   calc_die_sizes (die);
 
   oldsym = die->die_id.die_symbol;
@@ -10355,12 +10361,6 @@ output_comp_unit (dw_die_ref die, int output_if_empty,
       if (dwo_id != NULL)
 	for (int i = 0; i < 8; i++)
 	  dw2_asm_output_data (1, dwo_id[i], i == 0 ? "DWO id" : NULL);
-      else
-	/* Hope all the padding will be removed for DWARF 5 final for
-	   DW_AT_compile and DW_AT_partial.  */
-	dw2_asm_output_data (8, 0, "Padding 1");
-
-      dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Padding 2");
     }
   output_die (die);
 
@@ -10455,10 +10455,11 @@ output_skeleton_debug_sections (dw_die_ref comp_unit,
      header.  */
   if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
     dw2_asm_output_data (4, 0xffffffff,
-      "Initial length escape value indicating 64-bit DWARF extension");
+			 "Initial length escape value indicating 64-bit "
+			 "DWARF extension");
 
   dw2_asm_output_data (DWARF_OFFSET_SIZE,
-                       DWARF_COMPILE_UNIT_HEADER_SIZE
+		       DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE
                        - DWARF_INITIAL_LENGTH_SIZE
                        + size_of_die (comp_unit),
                       "Length of Compilation Unit Info");
@@ -10474,12 +10475,8 @@ output_skeleton_debug_sections (dw_die_ref comp_unit,
   if (dwarf_version < 5)
     dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
   else
-    {
-      for (int i = 0; i < 8; i++)
-	dw2_asm_output_data (1, dwo_id[i], i == 0 ? "DWO id" : NULL);
-
-      dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Padding 2");
-    }
+    for (int i = 0; i < 8; i++)
+      dw2_asm_output_data (1, dwo_id[i], i == 0 ? "DWO id" : NULL);
 
   comp_unit->die_abbrev = SKELETON_COMP_DIE_ABBREV;
   output_die (comp_unit);

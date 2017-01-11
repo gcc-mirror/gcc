@@ -1,3 +1,19 @@
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (DWARF_COMPILE_UNIT_HEADER_SIZE): For DWARF5 decrease
+	by 12.
+	(DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE): Always
+	DWARF_COMPILE_UNIT_HEADER_SIZE plus 12.
+	(DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE): Define.
+	(calc_base_type_die_sizes): Use DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE
+	for initial die_offset if dwarf_split_debug_info.
+	(output_comp_unit): Use DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE for
+	initial next_die_offset if dwo_id is non-NULL.  Don't emit padding
+	fields.
+	(output_skeleton_debug_sections): Formatting fix.  Use
+	DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE instead of
+	DWARF_COMPILE_UNIT_HEADER_SIZE.  Don't emit padding.
+
 2017-01-11  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/cortex-a53.md: Add bypasses for
