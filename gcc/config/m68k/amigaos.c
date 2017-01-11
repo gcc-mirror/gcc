@@ -771,3 +771,11 @@ amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 }
 
 
+/* Output assembly to switch to section NAME with attribute FLAGS.  */
+
+extern void
+amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_UNUSED)
+{
+  fprintf (asm_out_file, "\t.section\t%s\n", name);
+}
+

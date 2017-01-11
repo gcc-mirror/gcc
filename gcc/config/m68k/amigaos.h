@@ -113,7 +113,15 @@ Boston, MA 02111-1307, USA.  */
       N_("Restore a4 in all functions") },				\
     { "no-always-restore-a4", - MASK_ALWAYS_RESTORE_A4,			\
       N_("Do not restore a4 in all functions") }
-      
+
+
+/* Support sections in chip memory, currently '.datachip' only.  */
+extern void
+amiga_named_section (const char *name, unsigned int flags, tree decl);
+
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION amiga_named_section
+
 #if 0
 /* Various ABI issues.  */
 
@@ -139,9 +147,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PIC_OFFSET_TABLE_REGNUM
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 12 : INVALID_REGNUM)
  
-#undef PIC_REG
-#define PIC_REG 12
-
 /* Use A5 as framepointer instead of A6, since the AmigaOS ABI requires A6
    to be used as a shared library base pointer in direct library calls.  */
 
@@ -182,9 +187,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* XXX: section support */
 #if 0 
-/* Support sections in chip memory, currently '.datachip' only.  */
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION amiga_named_section
+
 
 /* We define TARGET_ASM_NAMED_SECTION, but we don't support arbitrary sections,
    including '.gcc_except_table', so we emulate the standard behaviour.  */
