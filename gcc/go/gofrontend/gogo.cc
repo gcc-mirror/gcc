@@ -5718,7 +5718,8 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
       Expression* ref =
 	Expression::make_temporary_reference(this->defer_stack_, end_loc);
       Bexpression* bref = ref->get_backend(&context);
-      ret = gogo->backend()->conditional_expression(NULL, bref, ret, NULL,
+      ret = gogo->backend()->conditional_expression(this->fndecl_,
+                                                    NULL, bref, ret, NULL,
                                                     end_loc);
       stmts.push_back(gogo->backend()->expression_statement(this->fndecl_, ret));
     }

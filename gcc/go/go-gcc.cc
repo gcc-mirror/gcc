@@ -325,8 +325,8 @@ class Gcc_backend : public Backend
   compound_expression(Bstatement*, Bexpression*, Location);
 
   Bexpression*
-  conditional_expression(Btype*, Bexpression*, Bexpression*, Bexpression*,
-                         Location);
+  conditional_expression(Bfunction*, Btype*, Bexpression*, Bexpression*,
+                         Bexpression*, Location);
 
   Bexpression*
   unary_expression(Operator, Bexpression*, Location);
@@ -1546,7 +1546,8 @@ Gcc_backend::compound_expression(Bstatement* bstat, Bexpression* bexpr,
 // ELSE_EXPR otherwise.
 
 Bexpression*
-Gcc_backend::conditional_expression(Btype* btype, Bexpression* condition,
+Gcc_backend::conditional_expression(Bfunction*, Btype* btype,
+                                    Bexpression* condition,
                                     Bexpression* then_expr,
                                     Bexpression* else_expr, Location location)
 {
