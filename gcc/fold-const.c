@@ -8171,13 +8171,21 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
 /* Return a positive integer when the symbol DECL is known to have
    a nonzero address, zero when it's known not to (e.g., it's a weak
    symbol), and a negative integer when the symbol is not yet in the
-   symbol table and so whether or not its address is zero is unknown.  */
+   symbol table and so whether or not its address is zero is unknown.
+   For function local objects always return positive integer.  */
 static int
 maybe_nonzero_address (tree decl)
 {
   if (DECL_P (decl) && decl_in_symtab_p (decl))
     if (struct symtab_node *symbol = symtab_node::get_create (decl))
       return symbol->nonzero_address ();
+
+  /* Function local objects are never NULL.  */
+  if (DECL_P (decl)
+      && (DECL_CONTEXT (decl)
+      && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL
+      && auto_var_in_fn_p (decl, DECL_CONTEXT (decl))))
+    return 1;
 
   return -1;
 }
@@ -13275,13 +13283,6 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	int nonzero_addr = maybe_nonzero_address (base);
 	if (nonzero_addr >= 0)
 	  return nonzero_addr;
-
-	/* Function local objects are never NULL.  */
-	if (DECL_P (base)
-	    && (DECL_CONTEXT (base)
-		&& TREE_CODE (DECL_CONTEXT (base)) == FUNCTION_DECL
-		&& auto_var_in_fn_p (base, DECL_CONTEXT (base))))
-	  return true;
 
 	/* Constants are never weak.  */
 	if (CONSTANT_CLASS_P (base))
