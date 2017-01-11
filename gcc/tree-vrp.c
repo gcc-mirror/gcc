@@ -10862,7 +10862,29 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       /* Mark PHIs whose lhs we fully propagate for removal.  */
       tree val = op_with_constant_singleton_value_range (lhs);
       if (val && may_propagate_copy (lhs, val))
-	stmts_to_remove.safe_push (phi);
+	{
+	  stmts_to_remove.safe_push (phi);
+	  continue;
+	}
+
+      /* Set the SSA with the value range.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+	{
+	  if ((vr_result.type == VR_RANGE
+	       || vr_result.type == VR_ANTI_RANGE)
+	      && (TREE_CODE (vr_result.min) == INTEGER_CST)
+	      && (TREE_CODE (vr_result.max) == INTEGER_CST))
+	    set_range_info (lhs,
+			    vr_result.type, vr_result.min, vr_result.max);
+	}
+      else if (POINTER_TYPE_P (TREE_TYPE (lhs))
+	       && ((vr_result.type == VR_RANGE
+		    && range_includes_zero_p (vr_result.min,
+					      vr_result.max) == 0)
+		   || (vr_result.type == VR_ANTI_RANGE
+		       && range_includes_zero_p (vr_result.min,
+						 vr_result.max) == 1)))
+	set_ptr_nonnull (lhs);
     }
 
   edge taken_edge = NULL;
@@ -10908,6 +10930,17 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	      update_value_range (output, &vr);
 	      vr = *get_value_range (output);
 
+	      /* Mark stmts whose output we fully propagate for removal.  */
+	      tree val;
+	      if ((val = op_with_constant_singleton_value_range (output))
+		  && may_propagate_copy (output, val)
+		  && !stmt_could_throw_p (stmt)
+		  && !gimple_has_side_effects (stmt))
+		{
+		  stmts_to_remove.safe_push (stmt);
+		  continue;
+		}
+
 	      /* Set the SSA with the value range.  */
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
 		{
@@ -10925,17 +10958,6 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 			       && range_includes_zero_p (vr.min,
 							 vr.max) == 1)))
 		set_ptr_nonnull (output);
-
-	      /* Mark stmts whose output we fully propagate for removal.  */
-	      tree val;
-	      if ((val = op_with_constant_singleton_value_range (output))
-		  && may_propagate_copy (output, val)
-		  && !stmt_could_throw_p (stmt)
-		  && !gimple_has_side_effects (stmt))
-		{
-		  stmts_to_remove.safe_push (stmt);
-		  continue;
-		}
 	    }
 	  else
 	    set_defs_to_varying (stmt);

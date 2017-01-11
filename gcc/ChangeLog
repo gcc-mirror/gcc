@@ -1,3 +1,9 @@
+2017-01-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (evrp_dom_walker::before_dom_children): Also
+	set range/nonnull info for PHI results.  Do not set it on
+	stmts marked for removal.
+
 2017-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (store_field): In the bitfield case, fetch the return value

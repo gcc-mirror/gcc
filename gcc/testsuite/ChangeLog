@@ -1,3 +1,7 @@
+2017-01-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr61743-1.c: Adjust.
+
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/50199
