@@ -1,3 +1,8 @@
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78341
+	* g++.dg/cpp0x/pr78341.C: New test.
+
 2017-01-11  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78768

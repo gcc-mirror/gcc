@@ -1,5 +1,9 @@
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78341
+	* parser.c (cp_parser_std_attribute_spec): Remove over-eager
+	assertion.  Formatting fix.
+
 	PR c++/72813
 	* decl2.c (c_parse_final_cleanups): Set flag_syntax_only to 1 after
 	writing PCH file.
