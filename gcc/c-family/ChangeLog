@@ -1,3 +1,9 @@
+2017-01-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c/78768
+	* c.opt (-Walloca-larger-than, -Wformat-length, -Wformat-truncation):
+	Also enable for LTO.
+
 2017-01-10  Jason Merrill  <jason@redhat.com>
 
 	Implement P0195R2, C++17 variadic using.

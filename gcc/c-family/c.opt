@@ -313,7 +313,7 @@ C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 -Walloc-zero Warn for calls to allocation functions that specify zero bytes.
 
 Walloca-larger-than=
-C ObjC C++ ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative UInteger
+C ObjC C++ LTO ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative UInteger
 -Walloca-larger-than=<number> Warn on unbounded uses of
 alloca, and on bounded uses of alloca whose bound can be larger than
 <number> bytes.
@@ -521,7 +521,7 @@ C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning LangEnabledBy(C ObjC C++ O
 Warn if passing too many arguments to a function for its format string.
 
 Wformat-length
-C ObjC C++ ObjC++ Warning Alias(Wformat-length=, 1, 0)
+C ObjC C++ LTO ObjC++ Warning Alias(Wformat-length=, 1, 0)
 Warn about function calls with format strings that write past the end
 of the destination region.  Same as -Wformat-length=1.
 
@@ -538,7 +538,7 @@ C ObjC C++ ObjC++ Var(warn_format_signedness) Warning
 Warn about sign differences with format functions.
 
 Wformat-truncation
-C ObjC C++ ObjC++ Warning Alias(Wformat-truncation=, 1, 0)
+C ObjC C++ LTO ObjC++ Warning Alias(Wformat-truncation=, 1, 0)
 Warn about calls to snprintf and similar functions that truncate output.
 Same as -Wformat-truncation=1.
 
