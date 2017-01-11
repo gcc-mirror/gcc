@@ -11,3 +11,10 @@ msmall-code
 Target RejectNegative
 small code model
 
+fbaserel
+Target Common Report Var(flag_pic,3) Negative(fpie) Init(-1)
+Backward compatibility, use -fpic now
+
+fbaserel32
+Target Common Report Var(flag_pic,4) Negative(fPIE) Init(-1)
+Backward compatibility, use -fPIC now

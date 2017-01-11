@@ -557,7 +557,7 @@ m68k_option_override (void)
 	      : (m68k_cpu_flags & FL_COLDFIRE) != 0 ? FPUTYPE_COLDFIRE
 	      : FPUTYPE_68881);
 
-  /* Sanity check to ensure that msep-data and mid-sahred-library are not
+  /* Sanity check to ensure that msep-data and mid-shared-library are not
    * both specified together.  Doing so simply doesn't make sense.
    */
   if (TARGET_SEP_DATA && TARGET_ID_SHARED_LIBRARY)
@@ -568,7 +568,7 @@ m68k_option_override (void)
    * -fpic but it hasn't been tested properly.
    */
   if (TARGET_SEP_DATA || TARGET_ID_SHARED_LIBRARY)
-    flag_pic = 2;
+    flag_pic = TARGET_68020 ? 2 : 1;
 
   /* -mpcrel -fPIC uses 32-bit pc-relative displacements.  Raise an
      error if the target does not support them.  */
@@ -1139,9 +1139,9 @@ m68k_expand_prologue (void)
 			    current_frame.reg_mask, true, true));
     }
 
-  if (!TARGET_SEP_DATA
-      && crtl->uses_pic_offset_table)
-    emit_insn (gen_load_got (pic_offset_table_rtx));
+//  if (!TARGET_SEP_DATA
+//      && crtl->uses_pic_offset_table)
+//    emit_insn (gen_load_got (pic_offset_table_rtx));
 }
 
 /* Return true if a simple (return) instruction is sufficient for this
@@ -4693,8 +4693,10 @@ print_operand_address (FILE *file, rtx addr)
 {
   struct m68k_address address;
 
-  if (!m68k_decompose_address (QImode, addr, true, &address))
+  if (!m68k_decompose_address (QImode, addr, true, &address)) {
+	debug_rtx(addr);
     gcc_unreachable ();
+  }
 
   if (address.code == PRE_DEC)
     fprintf (file, MOTOROLA ? "-(%s)" : "%s@-",
@@ -4719,7 +4721,7 @@ print_operand_address (FILE *file, rtx addr)
 	  /* (d16,PC) or (bd,PC,Xn) (with suppressed index register).  */
 	  fputc ('(', file);
 	  output_addr_const (file, addr);
-	  asm_fprintf (file, flag_pic == 1 ? ":w,%Rpc)" : ":l,%Rpc)");
+	  asm_fprintf (file, flag_pic == 1 || flag_pic == 3 ? ":w,%Rpc)" : ":l,%Rpc)");
 	}
       else
 	{
@@ -5124,8 +5126,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  /* Use the static chain register as a temporary (call-clobbered)
 	     GOT pointer for this function.  We can use the static chain
 	     register because it isn't live on entry to the thunk.  */
-	  SET_REGNO (pic_offset_table_rtx, STATIC_CHAIN_REGNUM);
-	  emit_insn (gen_load_got (pic_offset_table_rtx));
+//	  SET_REGNO (pic_offset_table_rtx, STATIC_CHAIN_REGNUM);
+//	  emit_insn (gen_load_got (pic_offset_table_rtx));
 	}
       legitimize_pic_address (XEXP (mem, 0), Pmode, tmp);
       mem = replace_equiv_address (mem, tmp);
