@@ -1,3 +1,8 @@
+2017-01-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c/47931
+	* c-c++-common/Waddress-2.c: New test.
+
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78341
