@@ -1,3 +1,9 @@
+2017-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/79052
+	* gimple-parser.c (c_parser_gimple_switch_stmt): Add missing
+	returns on parse errors.
+
 2017-01-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/64767
