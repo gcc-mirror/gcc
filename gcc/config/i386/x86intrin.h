@@ -75,6 +75,8 @@
 
 #include <xsaveoptintrin.h>
 
+#include <sgxintrin.h>
+
 #endif /* __iamcu__ */
 
 #include <adxintrin.h>

@@ -74,6 +74,7 @@
 /* Extended Features (%eax == 7) */
 /* %ebx */
 #define bit_FSGSBASE	(1 << 0)
+#define bit_SGX (1 << 2)
 #define bit_BMI	(1 << 3)
 #define bit_HLE	(1 << 4)
 #define bit_AVX2	(1 << 5)
