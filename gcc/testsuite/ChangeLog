@@ -1,3 +1,7 @@
+2017-01-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/flatten-3.c: Add -fno-ipa-icf to dg-options.
+
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/decomp4.C (test): Use 2 identifier decomposition
