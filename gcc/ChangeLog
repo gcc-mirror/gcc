@@ -1,3 +1,10 @@
+2017-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/79032
+	* lra-constraints.c (simplify_operand_subreg): In the MEM case, test
+	the alignment of the adjusted memory reference against that of MODE,
+	instead of the alignment of the original memory reference.
+
 2017-01-11  Martin Jambor  <mjambor@suse.cz>
 
 	* hsa.c (hsa_callable_function_p): Revert addition of DECL_ARTIFICIAL
