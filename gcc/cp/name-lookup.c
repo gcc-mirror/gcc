@@ -2454,9 +2454,11 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
       || (flags & PUSH_USING))
     {
       if (old && TREE_CODE (old) != OVERLOAD)
-	new_binding = ovl_cons (decl, ovl_cons (old, NULL_TREE));
+	/* Wrap the existing single decl in an overload.  */
+	new_binding = ovl_cons (old, NULL_TREE);
       else
-	new_binding = ovl_cons (decl, old);
+	new_binding = old;
+      new_binding = ovl_cons (decl, new_binding);
       if (flags & PUSH_USING)
 	OVL_USED (new_binding) = 1;
     }
