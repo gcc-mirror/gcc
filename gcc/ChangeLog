@@ -1,3 +1,8 @@
+2017-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h: Add __artificial__ and gnu_inline
+	to all inlined functions, change static to extern.
+
 2017-01-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/78253
