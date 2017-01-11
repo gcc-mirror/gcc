@@ -100,7 +100,10 @@ process_hsa_functions (void)
 		     clone->name (),
 		     s->m_kind == HSA_KERNEL ? "kernel" : "function");
 	}
-      else if (hsa_callable_function_p (node->decl))
+      else if (hsa_callable_function_p (node->decl)
+	       /* At this point, this is enough to identify clones for
+		  parallel, which for HSA would need to be kernels anyway.  */
+	       && !DECL_ARTIFICIAL (node->decl))
 	{
 	  if (!check_warn_node_versionable (node))
 	    continue;
