@@ -8,7 +8,7 @@ foo ()
   constexpr int o = n ? 1 : 0;
   constexpr int p = n + 1 ? 1 : 0;
   constexpr int q = "abc" + 1 ? 1 : 0;
-  return p + p + q == 3;
+  return o + p + q == 3;
 }
 
 static_assert (foo (), "");
