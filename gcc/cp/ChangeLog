@@ -1,3 +1,9 @@
+2017-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78337 - ICE on invalid with generic lambda
+	* semantics.c (process_outer_var_ref): Check if containing_function
+	is null.  Move inform call under complain test.
+
 2017-01-11  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/77812

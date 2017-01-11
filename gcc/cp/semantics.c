@@ -3278,6 +3278,8 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
        2. a non-lambda function, or
        3. a non-default capturing lambda function.  */
     while (context != containing_function
+	   /* containing_function can be null with invalid generic lambdas.  */
+	   && containing_function
 	   && LAMBDA_FUNCTION_P (containing_function))
       {
 	tree closure = DECL_CONTEXT (containing_function);
@@ -3365,10 +3367,13 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   else
     {
       if (complain & tf_error)
-	error (VAR_P (decl)
-	       ? G_("use of local variable with automatic storage from containing function")
-	       : G_("use of parameter from containing function"));
-      inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);
+	{
+	  error (VAR_P (decl)
+		 ? G_("use of local variable with automatic storage from "
+		      "containing function")
+		 : G_("use of parameter from containing function"));
+	  inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);
+	}
       return error_mark_node;
     }
   return decl;
