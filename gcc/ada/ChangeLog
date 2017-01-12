@@ -1,3 +1,13 @@
+2017-01-12  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Check_View_Conversion): Created this function
+	to properly chain calls to check type invariants that may be
+	present in a subprogram call after the subprogram.
+	(Expand_Call): Add a conditional to identify when a view conversion
+	needs to be checked.
+	* nlists.adb, nlists.ads (Prepend_New): New routine.
+	(Prepend_New_To): New routine.
+
 2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sinfo.ads: Minor reformatting.

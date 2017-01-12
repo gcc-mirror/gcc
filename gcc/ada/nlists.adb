@@ -1158,6 +1158,28 @@ package body Nlists is
       Prepend_List (List, To);
    end Prepend_List_To;
 
+   -----------------
+   -- Prepend_New --
+   -----------------
+
+   procedure Prepend_New (Node : Node_Or_Entity_Id; To : in out List_Id) is
+   begin
+      if No (To) then
+         To := New_List;
+      end if;
+
+      Prepend (Node, To);
+   end Prepend_New;
+
+   --------------------
+   -- Prepend_New_To --
+   --------------------
+
+   procedure Prepend_New_To (To : in out List_Id; Node : Node_Or_Entity_Id) is
+   begin
+      Prepend_New (Node, To);
+   end Prepend_New_To;
+
    ----------------
    -- Prepend_To --
    ----------------

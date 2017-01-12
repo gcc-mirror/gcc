@@ -289,12 +289,6 @@ package Nlists is
    --  node list. An attempt to prepend an error node is ignored without
    --  complaint and the list is unchanged.
 
-   procedure Prepend_To
-     (To   : List_Id;
-      Node : Node_Or_Entity_Id);
-   pragma Inline (Prepend_To);
-   --  Like Prepend, but arguments are the other way round
-
    procedure Prepend_List
      (List : List_Id;
       To   : List_Id);
@@ -306,6 +300,22 @@ package Nlists is
       List : List_Id);
    pragma Inline (Prepend_List_To);
    --  Like Prepend_List, but arguments are the other way round
+
+   procedure Prepend_New (Node : Node_Or_Entity_Id; To : in out List_Id);
+   pragma Inline (Append_New);
+   --  Prepends Node at the end of node list To. If To is non-existent list, a
+   --  list is created. Node must be a non-empty node that is not already a
+   --  member of a node list, and To must be a node list.
+
+   procedure Prepend_New_To (To : in out List_Id; Node : Node_Or_Entity_Id);
+   pragma Inline (Append_New_To);
+   --  Like Prepend_New, but the arguments are in reverse order
+
+   procedure Prepend_To
+     (To   : List_Id;
+      Node : Node_Or_Entity_Id);
+   pragma Inline (Prepend_To);
+   --  Like Prepend, but arguments are the other way round
 
    procedure Remove (Node : Node_Or_Entity_Id);
    --  Removes Node, which must be a node that is a member of a node list,
