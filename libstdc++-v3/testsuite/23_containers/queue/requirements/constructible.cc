@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,14 +22,16 @@
 
 #include <queue>
 
-template class std::priority_queue<int>;
+using std::queue;
 
-struct NonDefaultConstructible : std::vector<int> {
+template<typename A>
+constexpr bool default_constructible()
+{ return std::is_default_constructible<A>::value; }
+
+static_assert(default_constructible<queue<int>>(), "queue<int>");
+
+struct NonDefaultConstructible : std::deque<int> {
   NonDefaultConstructible(int) { }
 };
-struct Cmp : std::less<int> {
-  Cmp(int) { }
-};
-template class std::priority_queue<int, NonDefaultConstructible>;
-template class std::priority_queue<int, NonDefaultConstructible, Cmp>;
-template class std::priority_queue<int, std::vector<int>, Cmp>;
+static_assert(!default_constructible<queue<int, NonDefaultConstructible>>(),
+	      "queue<int, NonDefaultConstructible>");
