@@ -3477,7 +3477,12 @@ set_namespace_binding_1 (tree name, tree scope, tree val)
   if (scope == NULL_TREE)
     scope = global_namespace;
   b = binding_for_name (NAMESPACE_LEVEL (scope), name);
-  if (!b->value || TREE_CODE (val) == OVERLOAD || val == error_mark_node)
+  if (!b->value
+      /* For templates and using we create a single element OVERLOAD.
+	 Look for the chain to know whether this is really augmenting
+	 an existing overload.  */
+      || (TREE_CODE (val) == OVERLOAD && OVL_CHAIN (val))
+      || val == error_mark_node)
     b->value = val;
   else
     supplement_binding (b, val);
