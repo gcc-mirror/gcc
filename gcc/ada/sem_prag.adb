@@ -11828,33 +11828,30 @@ package body Sem_Prag is
          --  processing is required here.
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
-
             procedure Resolve_Suppressible (Policy : Node_Id);
             --  Converts the assertion policy 'Suppressible' to either Check or
-            --  Ignore based on whether checks are suppressed via -gnatp or ???
+            --  Ignore based on whether checks are suppressed via -gnatp.
 
             --------------------------
             -- Resolve_Suppressible --
             --------------------------
 
             procedure Resolve_Suppressible (Policy : Node_Id) is
+               Arg : constant Node_Id := Get_Pragma_Arg (Policy);
                Nam : Name_Id;
-               ARG : constant Node_Id := Get_Pragma_Arg (Policy);
 
             begin
-               if Chars (Expression (Policy)) = Name_Suppressible then
+               --  Transform policy argument Suppressible into either Ignore or
+               --  Check depending on whether checks are enabled or suppressed.
 
-                  --  Rewrite the policy argument node to either Ignore or
-                  --  Check. This is done because the argument is referenced
-                  --  directly later during analysis.
-
+               if Chars (Arg) = Name_Suppressible then
                   if Suppress_Checks then
                      Nam := Name_Ignore;
                   else
                      Nam := Name_Check;
                   end if;
 
-                  Rewrite (ARG, Make_Identifier (Sloc (ARG), Nam));
+                  Rewrite (Arg, Make_Identifier (Sloc (Arg), Nam));
                end if;
             end Resolve_Suppressible;
 
@@ -20608,9 +20605,8 @@ package body Sem_Prag is
                Arg := Get_Pragma_Arg (Arg1);
                Ent := Defining_Identifier (Parent (P));
 
-               --  The expression must be analyzed in the special
-               --  manner described in "Handling of Default Expressions"
-               --  in sem.ads.
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default Expressions" in sem.ads.
 
                Preanalyze_Spec_Expression (Arg, Any_Integer);
 

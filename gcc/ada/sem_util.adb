@@ -20658,14 +20658,17 @@ package body Sem_Util is
          when Entry_Kind =>
             if Nkind (Parent (E)) = N_Entry_Body then
                declare
-                  Prot_Type : Entity_Id;
                   Prot_Item : Entity_Id;
+                  Prot_Type : Entity_Id;
+
                begin
                   if Ekind (E) = E_Entry then
                      Prot_Type := Scope (E);
+
+                  --  Bodies of entry families are nested within an extra scope
+                  --  that contains an entry index declaration
+
                   else
-                     --  Bodies of entry families are nested within an extra
-                     --  scope that contains an entry index declaration.
                      Prot_Type := Scope (Scope (E));
                   end if;
 

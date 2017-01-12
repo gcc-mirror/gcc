@@ -11934,12 +11934,12 @@ package body Exp_Ch9 is
       --  Add the _Secondary_Stack_Size component if a Secondary_Stack_Size
       --  rep item is present.
 
-      if Has_Rep_Item (TaskId, Name_Secondary_Stack_Size,
-                       Check_Parents => False)
+      if Has_Rep_Item
+           (TaskId, Name_Secondary_Stack_Size, Check_Parents => False)
       then
          Append_To (Cdecls,
            Make_Component_Declaration (Loc,
-             Defining_Identifier =>
+             Defining_Identifier  =>
                Make_Defining_Identifier (Loc, Name_uSecondary_Stack_Size),
 
              Component_Definition =>
@@ -14149,8 +14149,8 @@ package body Exp_Ch9 is
       if Restriction_Active (No_Secondary_Stack) then
          Append_To (Args, Make_Integer_Literal (Loc, 0));
 
-      elsif Has_Rep_Item (Ttyp, Name_Secondary_Stack_Size,
-                       Check_Parents => False)
+      elsif Has_Rep_Item
+              (Ttyp, Name_Secondary_Stack_Size, Check_Parents => False)
       then
          Append_To (Args,
              Make_Selected_Component (Loc,

@@ -1036,9 +1036,16 @@ package body Sem_Attr is
                      Set_Never_Set_In_Source (Ent, False);
                   end if;
 
-                  --  Mark entity as address taken, and kill current values
+                  --  Mark entity as address taken in the case of
+                  --  'Unrestricted_Access or subprograms, and kill current
+                  --  values.
 
-                  Set_Address_Taken (Ent);
+                  if Aname = Name_Unrestricted_Access
+                    or else Is_Subprogram (Ent)
+                  then
+                     Set_Address_Taken (Ent);
+                  end if;
+
                   Kill_Current_Values (Ent);
                   exit;
 
@@ -1053,7 +1060,7 @@ package body Sem_Attr is
             end loop;
          end;
 
-         --  Check for aliased view.. We allow a nonaliased prefix when within
+         --  Check for aliased view. We allow a nonaliased prefix when within
          --  an instance because the prefix may have been a tagged formal
          --  object, which is defined to be aliased even when the actual
          --  might not be (other instance cases will have been caught in the
@@ -11027,9 +11034,13 @@ package body Sem_Attr is
                end;
             end if;
 
-            --  Mark that address of entity is taken
+            --  Mark that address of entity is taken in case of
+            --  'Unrestricted_Access or in case of a subprogram.
 
-            if Is_Entity_Name (P) then
+            if Is_Entity_Name (P)
+             and then (Attr_Id = Attribute_Unrestricted_Access
+                       or else Is_Subprogram (Entity (P)))
+            then
                Set_Address_Taken (Entity (P));
             end if;
 

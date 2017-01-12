@@ -2532,21 +2532,7 @@ package body Sem_Ch10 is
          Set_Analyzed (N);
       end if;
 
-      --  If the library unit is a predefined unit, and we are in high
-      --  integrity mode, then temporarily reset Configurable_Run_Time_Mode
-      --  for the analysis of the with'ed unit. This mode does not prevent
-      --  explicit with'ing of run-time units.
-
-      if Configurable_Run_Time_Mode
-        and then Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (U)))
-      then
-         Configurable_Run_Time_Mode := False;
-         Semantics (Library_Unit (N));
-         Configurable_Run_Time_Mode := True;
-
-      else
-         Semantics (Library_Unit (N));
-      end if;
+      Semantics (Library_Unit (N));
 
       Intunit := Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit));
 

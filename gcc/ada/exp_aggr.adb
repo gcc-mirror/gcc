@@ -1128,6 +1128,7 @@ package body Exp_Aggr is
                                   and then Needs_Finalization (Comp_Typ);
 
             Full_Typ  : constant Entity_Id := Underlying_Type (Comp_Typ);
+            Adj_Call  : Node_Id;
             Blk_Stmts : List_Id;
             Init_Stmt : Node_Id;
 
@@ -1222,10 +1223,17 @@ package body Exp_Aggr is
                   and then Is_Controlled (Component_Type (Comp_Typ))
                   and then Nkind (Expr) = N_Aggregate)
             then
-               Append_To (Blk_Stmts,
+               Adj_Call :=
                  Make_Adjust_Call
                    (Obj_Ref => New_Copy_Tree (Arr_Comp),
-                    Typ     => Comp_Typ));
+                    Typ     => Comp_Typ);
+
+               --  Guard against a missing [Deep_]Adjust when the component
+               --  type was not frozen properly.
+
+               if Present (Adj_Call) then
+                  Append_To (Blk_Stmts, Adj_Call);
+               end if;
             end if;
 
             --  Complete the protection of the initialization statements
@@ -1390,6 +1398,7 @@ package body Exp_Aggr is
          Comp_Typ     : Entity_Id := Empty;
          Expr_Q       : Node_Id;
          Indexed_Comp : Node_Id;
+         Init_Call    : Node_Id;
          New_Indexes  : List_Id;
 
       --  Start of processing for Gen_Assign
@@ -1613,10 +1622,17 @@ package body Exp_Aggr is
             end if;
 
             if Needs_Finalization (Ctype) then
-               Append_To (Stmts,
+               Init_Call :=
                  Make_Init_Call
                    (Obj_Ref => New_Copy_Tree (Indexed_Comp),
-                    Typ     => Ctype));
+                    Typ     => Ctype);
+
+               --  Guard against a missing [Deep_]Initialize when the component
+               --  type was not properly frozen.
+
+               if Present (Init_Call) then
+                  Append_To (Stmts, Init_Call);
+               end if;
             end if;
          end if;
 
@@ -2847,6 +2863,7 @@ package body Exp_Aggr is
          Finalization_OK : constant Boolean := Needs_Finalization (Comp_Typ);
 
          Full_Typ  : constant Entity_Id := Underlying_Type (Comp_Typ);
+         Adj_Call  : Node_Id;
          Blk_Stmts : List_Id;
          Init_Stmt : Node_Id;
 
@@ -2912,10 +2929,17 @@ package body Exp_Aggr is
          --    [Deep_]Adjust (Rec_Comp);
 
          if Finalization_OK and then not Is_Limited_Type (Comp_Typ) then
-            Append_To (Blk_Stmts,
+            Adj_Call :=
               Make_Adjust_Call
                 (Obj_Ref => New_Copy_Tree (Rec_Comp),
-                 Typ     => Comp_Typ));
+                 Typ     => Comp_Typ);
+
+            --  Guard against a missing [Deep_]Adjust when the component type
+            --  was not properly frozen.
+
+            if Present (Adj_Call) then
+               Append_To (Blk_Stmts, Adj_Call);
+            end if;
          end if;
 
          --  Complete the protection of the initialization statements
@@ -3062,6 +3086,7 @@ package body Exp_Aggr is
       if Nkind (N) = N_Extension_Aggregate then
          declare
             Ancestor : constant Node_Id := Ancestor_Part (N);
+            Adj_Call : Node_Id;
             Assign   : List_Id;
 
          begin
@@ -3274,10 +3299,17 @@ package body Exp_Aggr is
                if Needs_Finalization (Etype (Ancestor))
                  and then not Is_Limited_Type (Etype (Ancestor))
                then
-                  Append_To (Assign,
+                  Adj_Call :=
                     Make_Adjust_Call
                       (Obj_Ref => New_Copy_Tree (Ref),
-                       Typ     => Etype (Ancestor)));
+                       Typ     => Etype (Ancestor));
+
+                  --  Guard against a missing [Deep_]Adjust when the ancestor
+                  --  type was not properly frozen.
+
+                  if Present (Adj_Call) then
+                     Append_To (Assign, Adj_Call);
+                  end if;
                end if;
 
                Append_To (L,
@@ -7832,7 +7864,6 @@ package body Exp_Aggr is
                         not Restriction_Active (No_Exception_Propagation);
 
    begin
-      pragma Assert (Present (Fin_Call));
       pragma Assert (Present (Hook_Clear));
 
       --  Generate the following code if exception propagation is allowed:
@@ -7872,6 +7903,7 @@ package body Exp_Aggr is
          Abort_And_Exception : declare
             Blk_Decls : constant List_Id := New_List;
             Blk_Stmts : constant List_Id := New_List;
+            Fin_Stmts : constant List_Id := New_List;
 
             Fin_Data : Finalization_Exception_Data;
 
@@ -7892,13 +7924,17 @@ package body Exp_Aggr is
             --  Wrap the hook clear and the finalization call in order to trap
             --  a potential exception.
 
+            Append_To (Fin_Stmts, Hook_Clear);
+
+            if Present (Fin_Call) then
+               Append_To (Fin_Stmts, Fin_Call);
+            end if;
+
             Append_To (Blk_Stmts,
               Make_Block_Statement (Loc,
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements         => New_List (
-                      Hook_Clear,
-                      Fin_Call),
+                    Statements         => Fin_Stmts,
                     Exception_Handlers => New_List (
                       Build_Exception_Handler (Fin_Data)))));
 
@@ -7943,7 +7979,10 @@ package body Exp_Aggr is
          begin
             Append_To (Blk_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
             Append_To (Blk_Stmts, Hook_Clear);
-            Append_To (Blk_Stmts, Fin_Call);
+
+            if Present (Fin_Call) then
+               Append_To (Blk_Stmts, Fin_Call);
+            end if;
 
             Append_To (Stmts,
               Build_Abort_Undefer_Block (Loc,
@@ -7958,7 +7997,10 @@ package body Exp_Aggr is
 
       else
          Append_To (Stmts, Hook_Clear);
-         Append_To (Stmts, Fin_Call);
+
+         if Present (Fin_Call) then
+            Append_To (Stmts, Fin_Call);
+         end if;
       end if;
    end Process_Transient_Component_Completion;
 
