@@ -940,7 +940,7 @@ package Sem_Util is
 
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
-   --  Obtains the Pragma_Id from Pragma_Name (N)
+   --  Obtains the Pragma_Id from Pragma_Name_Unmapped (N)
 
    function Get_Qualified_Name
      (Id     : Entity_Id;

@@ -10018,7 +10018,7 @@ package body Sem_Res is
             --  Special handling of Asssert pragma
 
             if Nkind (Orig) = N_Pragma
-              and then Pragma_Name_Mapped (Orig) = Name_Assert
+              and then Pragma_Name (Orig) = Name_Assert
             then
                declare
                   Expr : constant Node_Id :=
@@ -10059,7 +10059,7 @@ package body Sem_Res is
             --  Similar processing for Check pragma
 
             elsif Nkind (Orig) = N_Pragma
-              and then Pragma_Name_Mapped (Orig) = Name_Check
+              and then Pragma_Name (Orig) = Name_Check
             then
                --  Don't want to warn if original condition is explicit False
 

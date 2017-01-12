@@ -1306,7 +1306,7 @@ package body Sem_Attr is
             if Nkind (Prag) = N_Aspect_Specification then
                Prag_Nam := Chars (Identifier (Prag));
             else
-               Prag_Nam := Pragma_Name_Mapped (Prag);
+               Prag_Nam := Pragma_Name (Prag);
             end if;
 
             if Prag_Nam = Name_Check then
@@ -4413,7 +4413,7 @@ package body Sem_Attr is
             --  that the pragma appears in an appropriate loop location.
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
-              and then Nam_In (Pragma_Name (Original_Node (Stmt)),
+              and then Nam_In (Pragma_Name_Unmapped (Original_Node (Stmt)),
                                Name_Loop_Invariant,
                                Name_Loop_Variant,
                                Name_Assert,

@@ -2824,7 +2824,7 @@ package body Sprint is
 
          when N_Pragma =>
             Write_Indent_Str_Sloc ("pragma ");
-            Write_Name_With_Col_Check (Pragma_Name (Node));
+            Write_Name_With_Col_Check (Pragma_Name_Unmapped (Node));
 
             if Present (Pragma_Argument_Associations (Node)) then
                Sprint_Opt_Paren_Comma_List

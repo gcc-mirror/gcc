@@ -1733,7 +1733,7 @@ package body Sem_Util is
       Par := Parent (Ref);
       while Present (Par) loop
          if Nkind (Par) = N_Pragma then
-            Prag_Nam := Pragma_Name_Mapped (Par);
+            Prag_Nam := Pragma_Name (Par);
 
             --  A concurrent constituent is allowed to appear in pragmas
             --  Initial_Condition and Initializes as this is part of the
@@ -3125,12 +3125,12 @@ package body Sem_Util is
                Check_Function_Result (Expr);
 
                if not Mentions_Post_State (Expr) then
-                  if Pragma_Name_Mapped (Prag) = Name_Contract_Cases then
+                  if Pragma_Name (Prag) = Name_Contract_Cases then
                      Error_Msg_NE
                        ("contract case does not check the outcome of calling "
                         & "&?T?", Expr, Subp_Id);
 
-                  elsif Pragma_Name_Mapped (Prag) = Name_Refined_Post then
+                  elsif Pragma_Name (Prag) = Name_Refined_Post then
                      Error_Msg_NE
                        ("refined postcondition does not check the outcome of "
                         & "calling &?T?", Prag, Subp_Id);
@@ -3242,7 +3242,7 @@ package body Sem_Util is
          Expr  : constant Node_Id :=
                    Get_Pragma_Arg
                      (First (Pragma_Argument_Associations (Prag)));
-         Nam   : constant Name_Id := Pragma_Name_Mapped (Prag);
+         Nam   : constant Name_Id := Pragma_Name (Prag);
          CCase : Node_Id;
 
       --  Start of processing for Check_Result_And_Post_State_In_Pragma
@@ -3335,8 +3335,8 @@ package body Sem_Util is
 
       Prag := Pre_Post_Conditions (Items);
       while Present (Prag) loop
-         if Nam_In (Pragma_Name (Prag), Name_Postcondition,
-                                        Name_Refined_Post)
+         if Nam_In (Pragma_Name_Unmapped (Prag),
+                    Name_Postcondition, Name_Refined_Post)
            and then not Error_Posted (Prag)
          then
             Post_Prag := Prag;
@@ -3351,7 +3351,7 @@ package body Sem_Util is
 
       Prag := Contract_Test_Cases (Items);
       while Present (Prag) loop
-         if Pragma_Name_Mapped (Prag) = Name_Contract_Cases
+         if Pragma_Name (Prag) = Name_Contract_Cases
            and then not Error_Posted (Prag)
          then
             Case_Prag := Prag;
@@ -4880,7 +4880,7 @@ package body Sem_Util is
 
       Arg : constant Node_Id :=
               Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
-      Nam : constant Name_Id := Pragma_Name_Mapped (Prag);
+      Nam : constant Name_Id := Pragma_Name (Prag);
 
    --  Start of processing for Contains_Refined_State
 
@@ -6692,7 +6692,7 @@ package body Sem_Util is
          Decl := Next (Unit_Declaration_Node (Subp));
          while Present (Decl) loop
             if Nkind (Decl) = N_Pragma
-              and then Pragma_Name_Mapped (Decl) = Name_Extensions_Visible
+              and then Pragma_Name (Decl) = Name_Extensions_Visible
             then
                Prag := Decl;
                exit;
@@ -8141,7 +8141,7 @@ package body Sem_Util is
 
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id is
    begin
-      return Get_Pragma_Id (Pragma_Name (N));
+      return Get_Pragma_Id (Pragma_Name_Unmapped (N));
    end Get_Pragma_Id;
 
    ------------------------
@@ -10677,7 +10677,7 @@ package body Sem_Util is
       loop
          if No (P) then
             return False;
-         elsif Nkind (P) = N_Pragma and then Pragma_Name_Mapped (P) = Nam then
+         elsif Nkind (P) = N_Pragma and then Pragma_Name (P) = Nam then
             return True;
          else
             P := Parent (P);
@@ -13715,7 +13715,7 @@ package body Sem_Util is
          Nam := Chars (Identifier (Item));
 
       else pragma Assert (Nkind (Item) = N_Pragma);
-         Nam := Pragma_Name_Mapped (Item);
+         Nam := Pragma_Name (Item);
       end if;
 
       return    Nam = Name_Abstract_State
@@ -14534,7 +14534,7 @@ package body Sem_Util is
          Nam := Chars (Identifier (Item));
 
       else pragma Assert (Nkind (Item) = N_Pragma);
-         Nam := Pragma_Name_Mapped (Item);
+         Nam := Pragma_Name (Item);
       end if;
 
       return    Nam = Name_Contract_Cases

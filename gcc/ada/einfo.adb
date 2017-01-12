@@ -7364,7 +7364,7 @@ package body Einfo is
 
       while Present (Item) loop
          if Nkind (Item) = N_Pragma
-           and then Get_Pragma_Id (Pragma_Name (Item)) = Id
+           and then Get_Pragma_Id (Pragma_Name_Unmapped (Item)) = Id
          then
             return Item;
 
@@ -7416,7 +7416,7 @@ package body Einfo is
       Ritem := First_Rep_Item (Id);
       while Present (Ritem) loop
          if Nkind (Ritem) = N_Pragma
-           and then Pragma_Name_Mapped (Ritem) = Name_Attach_Handler
+           and then Pragma_Name (Ritem) = Name_Attach_Handler
          then
             return True;
          else
@@ -7486,7 +7486,7 @@ package body Einfo is
       Ritem := First_Rep_Item (Id);
       while Present (Ritem) loop
          if Nkind (Ritem) = N_Pragma
-           and then Pragma_Name_Mapped (Ritem) = Name_Interrupt_Handler
+           and then Pragma_Name (Ritem) = Name_Interrupt_Handler
          then
             return True;
          else

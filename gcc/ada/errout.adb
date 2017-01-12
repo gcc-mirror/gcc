@@ -2800,7 +2800,7 @@ package body Errout is
       --  identifiers, pragmas, and pragma argument associations.
 
       if Nkind (Node) = N_Pragma then
-         Nam := Pragma_Name_Mapped (Node);
+         Nam := Pragma_Name (Node);
          Loc := Sloc (Node);
 
       --  The other cases have Chars fields

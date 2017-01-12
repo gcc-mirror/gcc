@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1584,11 +1584,11 @@ package body Par_SCO is
                   Pragma_Sloc := SCE.From;
                   SCO_Raw_Hash_Table.Set
                     (Pragma_Sloc, SCO_Raw_Table.Last + 1);
-                  Pragma_Aspect_Name := Pragma_Name (SCE.N);
+                  Pragma_Aspect_Name := Pragma_Name_Unmapped (SCE.N);
                   pragma Assert (Pragma_Aspect_Name /= No_Name);
 
                elsif SCE.Typ = 'P' then
-                  Pragma_Aspect_Name := Pragma_Name (SCE.N);
+                  Pragma_Aspect_Name := Pragma_Name_Unmapped (SCE.N);
                   pragma Assert (Pragma_Aspect_Name /= No_Name);
                end if;
 
@@ -2132,7 +2132,7 @@ package body Par_SCO is
                --  Processing depends on the kind of pragma
 
                declare
-                  Nam : constant Name_Id := Pragma_Name (N);
+                  Nam : constant Name_Id := Pragma_Name_Unmapped (N);
                   Arg : Node_Id          :=
                           First (Pragma_Argument_Associations (N));
                   Typ : Character;

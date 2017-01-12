@@ -1400,8 +1400,8 @@ package body Exp_Ch9 is
 
          Prag := Pre_Post_Conditions (Items);
          while Present (Prag) loop
-            if Nam_In (Pragma_Name (Prag), Name_Postcondition,
-                                           Name_Precondition)
+            if Nam_In (Pragma_Name_Unmapped (Prag),
+                       Name_Postcondition, Name_Precondition)
               and then Is_Checked (Prag)
             then
                Has_Pragma := True;
@@ -1416,7 +1416,7 @@ package body Exp_Ch9 is
 
          Prag := Contract_Test_Cases (Items);
          while Present (Prag) loop
-            if Pragma_Name_Mapped (Prag) = Name_Contract_Cases
+            if Pragma_Name (Prag) = Name_Contract_Cases
               and then Is_Checked (Prag)
             then
                Has_Pragma := True;
@@ -9142,7 +9142,7 @@ package body Exp_Ch9 is
                Ritem := First_Rep_Item (Prot_Typ);
                while Present (Ritem) loop
                   if Nkind (Ritem) = N_Pragma
-                    and then Pragma_Name_Mapped (Ritem) = Name_Attach_Handler
+                    and then Pragma_Name (Ritem) = Name_Attach_Handler
                   then
                      Num_Attach_Handler := Num_Attach_Handler + 1;
                   end if;
@@ -11682,7 +11682,7 @@ package body Exp_Ch9 is
          N := First (Visible_Declarations (T));
          while Present (N) loop
             if Nkind (N) = N_Pragma
-              and then Pragma_Name_Mapped (N) = Name_Relative_Deadline
+              and then Pragma_Name (N) = Name_Relative_Deadline
             then
                return N;
             end if;
@@ -11693,7 +11693,7 @@ package body Exp_Ch9 is
          N := First (Private_Declarations (T));
          while Present (N) loop
             if Nkind (N) = N_Pragma
-              and then Pragma_Name_Mapped (N) = Name_Relative_Deadline
+              and then Pragma_Name (N) = Name_Relative_Deadline
             then
                return N;
             end if;
@@ -13706,7 +13706,7 @@ package body Exp_Ch9 is
 
                   --  Get_Rep_Item returns either priority pragma.
 
-                  if Pragma_Name_Mapped (Prio_Clause) = Name_Priority then
+                  if Pragma_Name (Prio_Clause) = Name_Priority then
                      Prio_Type := RTE (RE_Any_Priority);
                   else
                      Prio_Type := RTE (RE_Interrupt_Priority);
@@ -13940,7 +13940,7 @@ package body Exp_Ch9 is
 
             while Present (Ritem) loop
                if Nkind (Ritem) = N_Pragma
-                 and then Pragma_Name_Mapped (Ritem) = Name_Attach_Handler
+                 and then Pragma_Name (Ritem) = Name_Attach_Handler
                then
                   declare
                      Handler : constant Node_Id :=
@@ -14367,9 +14367,10 @@ package body Exp_Ch9 is
                    or else
                      (Nkind (Stmt) = N_Pragma
                        and then
-                         Nam_In (Pragma_Name (Stmt), Name_Unreferenced,
-                                                     Name_Unmodified,
-                                                     Name_Warnings)))
+                         Nam_In (Pragma_Name_Unmapped (Stmt),
+                                 Name_Unreferenced,
+                                 Name_Unmodified,
+                                 Name_Warnings)))
       loop
          Next (Stmt);
       end loop;
