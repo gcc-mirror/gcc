@@ -1,3 +1,16 @@
+2017-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66284
+	* doc/xml/manual/intro.xml: Document LWG 2781 change.
+	* doc/html/*: Regenerate.
+	* include/std/functional (_Function_base::_Ref_manager): Remove.
+	(_Function_handler): Remove partial specializations for
+	reference_wrapper.
+	(function::target): Remove special case for const qualification.
+	* testsuite/20_util/function/6.cc: Adjust tests for target type.
+	* testsuite/20_util/function/7.cc: Likewise.
+	* testsuite/20_util/function/8.cc: Likewise.
+
 2017-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78134
