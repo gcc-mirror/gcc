@@ -134,7 +134,7 @@ along with GCC; see the file COPYING3.  If not see
      form followed by the data for the string.  */
 
 #define LTO_major_version 4
-#define LTO_minor_version 1
+#define LTO_minor_version 2
 
 typedef unsigned char	lto_decl_flags_t;
 

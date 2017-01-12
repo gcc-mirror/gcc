@@ -663,6 +663,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
     }
   bp_pack_value (&bp, node->tls_model, 3);
   bp_pack_value (&bp, node->used_by_single_function, 1);
+  bp_pack_value (&bp, node->dynamically_initialized, 1);
   bp_pack_value (&bp, node->need_bounds_init, 1);
   streamer_write_bitpack (&bp);
 
@@ -1425,6 +1426,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     node->alias_target = get_alias_symbol (node->decl);
   node->tls_model = (enum tls_model)bp_unpack_value (&bp, 3);
   node->used_by_single_function = (enum tls_model)bp_unpack_value (&bp, 1);
+  node->dynamically_initialized = bp_unpack_value (&bp, 1);
   node->need_bounds_init = bp_unpack_value (&bp, 1);
   group = read_identifier (ib);
   if (group)

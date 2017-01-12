@@ -1,3 +1,14 @@
+2017-01-12  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	Backport from mainline
+	2017-01-12  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79042
+	* lto-cgraph.c (lto_output_varpool_node): Pack dynamically_initialized
+	bit.
+	(input_varpool_node): Unpack dynamically_initialized bit.
+	* lto-streamer.h (LTO_minor_version): Bump version.
+
 2017-01-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (memory_address_length): Increase len
