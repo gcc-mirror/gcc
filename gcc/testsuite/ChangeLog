@@ -1,3 +1,8 @@
+2017-01-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/builtin_target.c (check_features): Check all
+	supported __builtin_cpu_supports options.
+
 2017-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR tree-optimization/78319

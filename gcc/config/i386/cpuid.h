@@ -47,28 +47,25 @@
 #define bit_SSE		(1 << 25)
 #define bit_SSE2	(1 << 26)
 
-/* Extended Features */
+/* Extended Features (%eax == 0x80000001) */
 /* %ecx */
 #define bit_LAHF_LM	(1 << 0)
 #define bit_ABM		(1 << 5)
 #define bit_SSE4a	(1 << 6)
 #define bit_PRFCHW	(1 << 8)
 #define bit_XOP         (1 << 11)
-#define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_LWP 	(1 << 15)
 #define bit_FMA4        (1 << 16)
 #define bit_TBM         (1 << 21)
 #define bit_MWAITX      (1 << 29)
 
 /* %edx */
-#define bit_AVX5124VNNIW (1 << 2)
-#define bit_AVX5124FMAPS (1 << 3)
 #define bit_MMXEXT	(1 << 22)
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)
 #define bit_3DNOW	(1 << 31)
 
-/* %ebx.  */
+/* %ebx  */
 #define bit_CLZERO	(1 << 0)
 
 /* Extended Features (%eax == 7) */
@@ -100,6 +97,11 @@
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
+#define bit_AVX512VPOPCNTDQ	(1 << 14)
+
+/* %edx */
+#define bit_AVX5124VNNIW (1 << 2)
+#define bit_AVX5124FMAPS (1 << 3)
 
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)
