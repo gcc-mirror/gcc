@@ -2939,7 +2939,7 @@ package body Exp_Ch5 is
       --  For an element iterator, the Element aspect must be present,
       --  (this is checked during analysis) and the expansion takes the form:
 
-      --    Cursor : Cursor_type := First (Container);
+      --    Cursor : Cursor_Type := First (Container);
       --    Elmt : Element_Type;
       --    while Has_Element (Cursor, Container) loop
       --       Elmt := Element (Container, Cursor);
@@ -2951,10 +2951,10 @@ package body Exp_Ch5 is
       --   In that case we create a block to hold a variable declaration
       --   initialized with a call to Element, and generate:
 
-      --    Cursor : Cursor_type := First (Container);
+      --    Cursor : Cursor_Type := First (Container);
       --    while Has_Element (Cursor, Container) loop
       --       declare
-      --          Elmt : Element-Type := Element (Container, Cursor);
+      --          Elmt : Element_Type := Element (Container, Cursor);
       --       begin
       --          <original loop statements>
       --          Cursor := Next (Container, Cursor);
@@ -2968,7 +2968,7 @@ package body Exp_Ch5 is
       Set_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
 
-      --  Declaration for Element.
+      --  Declaration for Element
 
       Elmt_Decl :=
         Make_Object_Declaration (Loc,

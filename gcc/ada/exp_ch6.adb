@@ -2264,7 +2264,9 @@ package body Exp_Ch6 is
       --  expression for the value of the actual, EF is the entity for the
       --  extra formal.
 
-      procedure Check_View_Conversion (Formal : Entity_Id; Actual : Node_Id);
+      procedure Add_View_Conversion_Invariants
+        (Formal : Entity_Id;
+         Actual : Node_Id);
       --  Adds invariant checks for every intermediate type between the range
       --  of a view converted argument to its ancestor (from parent to child).
 
@@ -2354,11 +2356,14 @@ package body Exp_Ch6 is
          end if;
       end Add_Extra_Actual;
 
-      ---------------------------
-      -- Check_View_Conversion --
-      ---------------------------
+      ------------------------------------
+      -- Add_View_Conversion_Invariants --
+      ------------------------------------
 
-      procedure Check_View_Conversion (Formal : Entity_Id; Actual : Node_Id) is
+      procedure Add_View_Conversion_Invariants
+        (Formal : Entity_Id;
+         Actual : Node_Id)
+      is
          Arg        : Entity_Id;
          Curr_Typ   : Entity_Id;
          Inv_Checks : List_Id;
@@ -2407,7 +2412,7 @@ package body Exp_Ch6 is
          if not Is_Empty_List (Inv_Checks) then
             Insert_Actions_After (N, Inv_Checks);
          end if;
-      end Check_View_Conversion;
+      end Add_View_Conversion_Invariants;
 
       ---------------------------
       -- Inherited_From_Formal --
@@ -3292,15 +3297,18 @@ package body Exp_Ch6 is
                 Duplicate_Subexpr_Move_Checks (Actual)));
          end if;
 
-         --  Invariant checks are performed for every intermediate type between
-         --  the range of a view converted argument to its ancestor (from
-         --  parent to child) if it is passed as an "out" or "in out" parameter
-         --  after executing the call (RM 7.3.2 (12/3, 13/3, 14/3)).
+         --  Perform invariant checks for all intermediate types in a view
+         --  conversion after successful return from a call that passes the
+         --  view conversion as an IN OUT or OUT parameter (RM 7.3.2 (12/3,
+         --  13/3, 14/3)). Consider only source conversion in order to avoid
+         --  generating spurious checks on complex expansion such as object
+         --  initialization through an extension aggregate.
 
-         if Ekind (Formal) /= E_In_Parameter
+         if Comes_From_Source (N)
+           and then Ekind (Formal) /= E_In_Parameter
            and then Nkind (Actual) = N_Type_Conversion
          then
-            Check_View_Conversion (Formal, Actual);
+            Add_View_Conversion_Invariants (Formal, Actual);
          end if;
 
          --  This label is required when skipping extra actual generation for

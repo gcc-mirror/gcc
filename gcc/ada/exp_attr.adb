@@ -3244,7 +3244,11 @@ package body Exp_Attr is
             Rewrite (N, Make_Integer_Literal (Loc, 0));
          end if;
 
-         Analyze (N);
+         --  Due to cases where the entity type of the attribute is already
+         --  resolved the rewritten N must get re-resolved to its appropriate
+         --  type.
+
+         Analyze_And_Resolve (N, Typ);
       end Finalization_Size;
 
       -----------

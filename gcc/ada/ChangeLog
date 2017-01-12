@@ -1,3 +1,49 @@
+2017-01-12  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Potential_Renaming): Fix sloc of copied
+	subtree.
+
+2017-01-12  Justin Squirek  <squirek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference):
+	Fix Finalization_Size case by properly resolving the type after
+	rewritting the node.
+
+2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Build_DIC_Procedure_Body): Semi-insert the body into
+	the tree.
+	(Build_DIC_Procedure_Declaration): Semi-insert the body into the tree.
+	* binde.adb, exp_ch5.adb, sem_type.adb, sem.ads, sem_res.adb,
+	exp_sel.ads: Minor reformatting.
+
+2017-01-12  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Add guard to prevent
+	invariant checks from being created for internally generated
+	subprograms.
+
+2017-01-12  Bob Duff  <duff@adacore.com>
+
+	* lib-writ.ads: Remove incorrect comment.
+
+2017-01-12  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb (-gnatd.K): Enable generation of contract-only
+	procedures in CodePeer mode.
+	* contracts.adb (Build_And_Analyze_Contract_Only_Subprograms):
+	New subprogram.
+	(Analyze_Contracts): Generate contract-only procedures if -gnatdK is
+	set.
+	* scil_ll.ads, scil_ll.adb (Get_Contract_Only_Body_Name): New
+	subprogram.
+	(Get_Contract_Only_Missing_Body_Name): New subprogram.
+	(Get_Contract_Only_Body): New subprogram.
+	(Set_Contract_Only_Body): New subprogram.
+	(Is_Contract_Only_Body): New subprogram.
+	(Set_Is_Contract_Only_Body): New subprogram.
+	(SCIL_Nodes): Replace table by hash-table.
+
 2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb: Minor reformatting.
