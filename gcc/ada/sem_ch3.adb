@@ -18307,7 +18307,8 @@ package body Sem_Ch3 is
       Set_Freeze_Node (CW_Type, Empty);
 
       --  Customize the class-wide type: It has no prim. op., it cannot be
-      --  abstract and its Etype points back to the specific root type.
+      --  abstract, its Etype points back to the specific root type, and it
+      --  cannot have any invariants.
 
       Set_Ekind                       (CW_Type, E_Class_Wide_Type);
       Set_Is_Tagged_Type              (CW_Type, True);
@@ -18316,6 +18317,9 @@ package body Sem_Ch3 is
       Set_Is_Constrained              (CW_Type, False);
       Set_Is_First_Subtype            (CW_Type, Is_First_Subtype (T));
       Set_Default_SSO                 (CW_Type);
+      Set_Has_Inheritable_Invariants  (CW_Type, False);
+      Set_Has_Inherited_Invariants    (CW_Type, False);
+      Set_Has_Own_Invariants          (CW_Type, False);
 
       if Ekind (T) = E_Class_Wide_Subtype then
          Set_Etype (CW_Type, Etype (Base_Type (T)));

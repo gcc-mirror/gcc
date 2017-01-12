@@ -3605,60 +3605,6 @@ package body Exp_Ch7 is
 
                Produced_Check := True;
             end if;
-
-            --  In a rare case the designated type of an access component may
-            --  have an invariant. In this case verify the dereference of the
-            --  component.
-
-            if Is_Access_Type (Comp_Typ)
-              and then Has_Invariants (Designated_Type (Comp_Typ))
-            then
-               Proc_Id :=
-                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
-
-               --  The designated type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    if _object (<Indexes>) /= null then
-               --       <Desig_Comp_Typ>Invariant (_object (<Indices>).all);
-               --    end if;
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Append_New_To (Comp_Checks,
-                    Make_If_Statement (Loc,
-                      Condition       =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            Make_Indexed_Component (Loc,
-                              Prefix      => New_Occurrence_Of (Obj_Id, Loc),
-                              Expressions => New_Copy_List (Indices)),
-                          Right_Opnd => Make_Null (Loc)),
-
-                      Then_Statements => New_List (
-                        Make_Procedure_Call_Statement (Loc,
-                          Name                   =>
-                            New_Occurrence_Of (Proc_Id, Loc),
-
-                          Parameter_Associations => New_List (
-                            Make_Explicit_Dereference (Loc,
-                              Prefix =>
-                                Make_Indexed_Component (Loc,
-                                  Prefix      =>
-                                    New_Occurrence_Of (Obj_Id, Loc),
-                                  Expressions =>
-                                    New_Copy_List (Indices))))))));
-               end if;
-
-               Produced_Check := True;
-            end if;
          end Process_Array_Component;
 
          ---------------------------
@@ -3995,65 +3941,6 @@ package body Exp_Ch7 is
                               (T, New_Occurrence_Of (Obj_Id, Loc)),
                           Selector_Name =>
                             New_Occurrence_Of (Comp_Id, Loc)))));
-               end if;
-
-               Produced_Check           := True;
-               Produced_Component_Check := True;
-            end if;
-
-            --  In a rare case the designated type of an access component may
-            --  have a invariant. In this case verify the dereference of the
-            --  component.
-
-            if Is_Access_Type (Comp_Typ)
-              and then Has_Invariants (Designated_Type (Comp_Typ))
-            then
-               Proc_Id :=
-                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
-
-               --  The designated type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    if T (_object).<Comp_Id> /= null then
-               --       <Desig_Comp_Typ>Invariant (T (_object).<Comp_Id>.all);
-               --    end if;
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Append_New_To (Comp_Checks,
-                    Make_If_Statement (Loc,
-                      Condition       =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            Make_Selected_Component (Loc,
-                              Prefix        =>
-                                Unchecked_Convert_To
-                                  (T, New_Occurrence_Of (Obj_Id, Loc)),
-                              Selector_Name =>
-                                New_Occurrence_Of (Comp_Id, Loc)),
-                          Right_Opnd => Make_Null (Loc)),
-
-                      Then_Statements => New_List (
-                        Make_Procedure_Call_Statement (Loc,
-                          Name                   =>
-                            New_Occurrence_Of (Proc_Id, Loc),
-
-                          Parameter_Associations => New_List (
-                            Make_Explicit_Dereference (Loc,
-                              Prefix =>
-                                Make_Selected_Component (Loc,
-                                  Prefix        =>
-                                    Unchecked_Convert_To
-                                      (T, New_Occurrence_Of (Obj_Id, Loc)),
-                                  Selector_Name =>
-                                    New_Occurrence_Of (Comp_Id, Loc))))))));
                end if;
 
                Produced_Check           := True;
@@ -4525,15 +4412,10 @@ package body Exp_Ch7 is
 
       pragma Assert (Has_Invariants (Work_Typ));
 
-      --  ??? invariants of class-wide types are not properly implemented
-
-      if Is_Class_Wide_Type (Work_Typ) then
-         return;
-
       --  Nothing to do for interface types as their class-wide invariants are
       --  inherited by implementing types.
 
-      elsif Is_Interface (Work_Typ) then
+      if Is_Interface (Work_Typ) then
          return;
       end if;
 
@@ -4849,15 +4731,10 @@ package body Exp_Ch7 is
 
       pragma Assert (Has_Invariants (Work_Typ));
 
-      --  ??? invariants of class-wide types are not properly implemented
-
-      if Is_Class_Wide_Type (Work_Typ) then
-         return;
-
       --  Nothing to do for interface types as their class-wide invariants are
       --  inherited by implementing types.
 
-      elsif Is_Interface (Work_Typ) then
+      if Is_Interface (Work_Typ) then
          return;
 
       --  Nothing to do if the type already has a "partial" invariant procedure

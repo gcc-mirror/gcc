@@ -7572,7 +7572,14 @@ package body Sem_Util is
          end loop Find_Discrete_Value;
       end Search_For_Discriminant_Value;
 
-      if No (Variant) then
+      --  The case statement must include a variant that corresponds to the
+      --  value of the discriminant, unless the discriminant type has a
+      --  static predicate. In that case the absence of an others_choice that
+      --  would cover this value becomes a run-time error (3.8,1 (21.1/2)).
+
+      if No (Variant)
+        and then not Has_Static_Predicate (Etype (Discrim_Name))
+      then
          Error_Msg_NE
            ("value of discriminant & is out of range", Discrim_Value, Discrim);
          Report_Errors := True;
@@ -7583,8 +7590,10 @@ package body Sem_Util is
       --  components to the Into list. The nested components are part of
       --  the same record type.
 
-      Gather_Components
-        (Typ, Component_List (Variant), Governed_By, Into, Report_Errors);
+      if Present (Variant) then
+         Gather_Components
+           (Typ, Component_List (Variant), Governed_By, Into, Report_Errors);
+      end if;
    end Gather_Components;
 
    ------------------------
