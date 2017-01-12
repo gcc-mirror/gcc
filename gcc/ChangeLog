@@ -1,3 +1,14 @@
+2017-01-12  Martin Sebor  <msebor@redhat.com>
+
+	to -Wformat-overflow.
+	* gimple-ssa-sprintf.c (pass_sprintf_length::gate): Adjust.
+	(min_bytes_remaining): Same.
+	(get_string_length): Same.
+	(format_string): Same.
+	(format_directive): Same.
+	(add_bytes): Same.
+	(pass_sprintf_length::handle_gimple_call): Same.
+
 2017-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-sprintf.c (try_substitute_return_value): Remove

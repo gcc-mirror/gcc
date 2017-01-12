@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wformat -Wformat-length=1 -ftrack-macro-expansion=0" } */
+/* { dg-options "-Wformat -Wformat-overflow=1 -ftrack-macro-expansion=0" } */
 /* { dg-require-effective-target int32plus } */
 
 /* When debugging, define LINE to the line number of the test case to exercise
@@ -1028,7 +1028,7 @@ void test_sprintf_chk_e_const (void)
   T (12, "%Le", 9.9999999e+99L);/* { dg-warning "terminating nul" } */
 }
 
-/* At -Wformat-length level 1 unknown numbers are assumed to have
+/* At -Wformat-overflow level 1 unknown numbers are assumed to have
    the value one, and unknown strings are assumed to have a zero
    length.  */
 

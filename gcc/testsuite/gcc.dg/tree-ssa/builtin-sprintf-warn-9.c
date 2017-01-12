@@ -2,7 +2,7 @@
    Test to verify the correctness of ranges of output computed for floating
    point directives.
    { dg-do compile }
-   { dg-options "-O2 -Wformat -Wformat-length -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wformat -Wformat-overflow -ftrack-macro-expansion=0" } */
 
 typedef __builtin_va_list va_list;
 

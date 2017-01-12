@@ -1,6 +1,6 @@
-/* PR middle-end/78605 - bogus -Wformat-length=1 with %f
+/* PR middle-end/78605 - bogus -Wformat-overflow=1 with %f
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wextra -Wformat-length=1" } */
+   { dg-options "-O2 -Wall -Wextra -Wformat-overflow=1" } */
 
 char d[10];
 

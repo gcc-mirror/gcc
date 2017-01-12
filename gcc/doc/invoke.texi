@@ -274,8 +274,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-div-by-zero  -Wdouble-promotion  -Wduplicated-cond @gol
 -Wempty-body  -Wenum-compare  -Wno-endif-labels  -Wexpansion-to-defined @gol
 -Werror  -Werror=*  -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
--Wno-format-contains-nul  -Wno-format-extra-args  -Wformat-length=@var{n} @gol
--Wformat-nonliteral @gol
+-Wno-format-contains-nul  -Wno-format-extra-args  @gol
+-Wformat-nonliteral -Wformat-overflow=@var{n} @gol
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{len}  -Wno-free-nonheap-object  -Wjump-misses-init @gol
@@ -3957,10 +3957,10 @@ in the case of @code{scanf} formats, this option suppresses the
 warning if the unused arguments are all pointers, since the Single
 Unix Specification says that such unused arguments are allowed.
 
-@item -Wformat-length
-@itemx -Wformat-length=@var{level}
-@opindex Wformat-length
-@opindex Wno-format-length
+@item -Wformat-overflow
+@itemx -Wformat-overflow=@var{level}
+@opindex Wformat-overflow
+@opindex Wno-format-overflow
 Warn about calls to formatted input/output functions such as @code{sprintf}
 and @code{vsprintf} that might overflow the destination buffer.  When the
 exact number of bytes written by a format directive cannot be determined
@@ -3970,11 +3970,11 @@ will in most cases improve the accuracy of the warning, it may also
 result in false positives.
 
 @table @gcctabopt
-@item -Wformat-length
-@item -Wformat-length=1
-@opindex Wformat-length
-@opindex Wno-format-length
-Level @var{1} of @option{-Wformat-length} enabled by @option{-Wformat}
+@item -Wformat-overflow
+@item -Wformat-overflow=1
+@opindex Wformat-overflow
+@opindex Wno-format-overflow
+Level @var{1} of @option{-Wformat-overflow} enabled by @option{-Wformat}
 employs a conservative approach that warns only about calls that most
 likely overflow the buffer.  At this level, numeric arguments to format
 directives with unknown values are assumed to have the value of one, and
@@ -3997,7 +3997,7 @@ void f (int a, int b)
 @}
 @end smallexample
 
-@item -Wformat-length=2
+@item -Wformat-overflow=2
 Level @var{2} warns also about calls that might overflow the destination
 buffer given an argument of sufficient length or magnitude.  At level
 @var{2}, unknown numeric arguments are assumed to have the minimum
@@ -4086,13 +4086,13 @@ compile-time it is estimated based on heuristics that depend on
 the @var{level} argument and on optimization.  While enabling optimization
 will in most cases improve the accuracy of the warning, it may also result
 in false positives.  Except as noted otherwise, the option uses the same
-logic @option{-Wformat-length}.
+logic @option{-Wformat-overflow}.
 
 @table @gcctabopt
 @item -Wformat-truncation
 @item -Wformat-truncation=1
 @opindex Wformat-truncation
-@opindex Wno-format-length
+@opindex Wno-format-overflow
 Level @var{1} of @option{-Wformat-truncation} enabled by @option{-Wformat}
 employs a conservative approach that warns only about calls to bounded
 functions whose return value is unused and that will most likely result
@@ -8458,7 +8458,7 @@ if (snprintf (buf, "%08x", i) >= sizeof buf)
 
 The @option{-fprintf-return-value} option relies on other optimizations
 and yields best results with @option{-O2}.  It works in tandem with the
-@option{-Wformat-length} and @option{-Wformat-truncation} options.
+@option{-Wformat-overflow} and @option{-Wformat-truncation} options.
 The @option{-fprintf-return-value} option is enabled by default.
 
 @item -fno-peephole

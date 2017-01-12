@@ -1,7 +1,7 @@
 /* PR middle-end/78138 - missing warnings on buffer overflow with non-constant
    source length
    { dg-do compile }
-   { dg-options "-O2 -Wformat-length" } */
+   { dg-options "-O2 -Wformat-overflow" } */
 
 char d [5];
 

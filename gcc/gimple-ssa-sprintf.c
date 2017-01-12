@@ -141,7 +141,7 @@ pass_sprintf_length::gate (function *)
      not optimizing and the pass is being invoked early, or when
      optimizing and the pass is being invoked during optimization
      (i.e., "late").  */
-  return ((warn_format_length > 0 || flag_printf_return_value)
+  return ((warn_format_overflow > 0 || flag_printf_return_value)
 	  && (optimize > 0) == fold_return_value);
 }
 
@@ -651,7 +651,7 @@ min_bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
   if (HOST_WIDE_INT_MAX <= navail)
     return navail;
 
-  if (1 < warn_format_length || res.knownrange)
+  if (warn_format_overflow > 1 || res.knownrange)
     {
       /* At level 2, or when all directives output an exact number
 	 of bytes or when their arguments were bounded by known
@@ -728,7 +728,7 @@ struct pass_sprintf_length::call_info
   /* Return the warning option corresponding to the called function.  */
   int warnopt () const
   {
-    return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_length_;
+    return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_overflow_;
   }
 };
 
@@ -1653,7 +1653,7 @@ get_string_length (tree str)
       fmtresult res;
 
       res.range.min = (tree_fits_uhwi_p (lenrange[0])
-		       ? tree_to_uhwi (lenrange[0]) : 1 < warn_format_length);
+		       ? tree_to_uhwi (lenrange[0]) : warn_format_overflow > 1);
       res.range.max = (tree_fits_uhwi_p (lenrange[1])
 		       ? tree_to_uhwi (lenrange[1]) : HOST_WIDE_INT_M1U);
 
@@ -1693,12 +1693,12 @@ format_string (const conversion_spec &spec, tree arg)
      to a "%lc" directive adjusted for precision but not field width.
      6 is the longest UTF-8 sequence for a single wide character.  */
   const unsigned HOST_WIDE_INT max_bytes_for_unknown_wc
-    = (0 <= prec ? prec : 1 < warn_format_length ? 6 : 1);
+    = (0 <= prec ? prec : warn_format_overflow > 1 ? 6 : 1);
 
   /* The maximum number of bytes for an unknown string argument to either
      a "%s" or "%ls" directive adjusted for precision but not field width.  */
   const unsigned HOST_WIDE_INT max_bytes_for_unknown_str
-    = (0 <= prec ? prec : 1 < warn_format_length);
+    = (0 <= prec ? prec : warn_format_overflow > 1);
 
   /* The result is bounded unless overriddden for a non-constant string
      of an unknown length.  */
@@ -1718,7 +1718,7 @@ format_string (const conversion_spec &spec, tree arg)
 	     is the smaller of either 0 (at level 1) or 1 (at level 2)
 	     and WIDTH, and the maximum is MB_CUR_MAX in the selected
 	     locale, which is unfortunately, unknown.  */
-	  res.range.min = 1 == warn_format_length ? !nul : nul < 1;
+	  res.range.min = warn_format_overflow == 1 ? !nul : nul < 1;
 	  res.range.max = max_bytes_for_unknown_wc;
 	  /* The range above is good enough to issue warnings but not
 	     for value range propagation, so clear BOUNDED.  */
@@ -1756,7 +1756,7 @@ format_string (const conversion_spec &spec, tree arg)
 	    {
 	      bounded = false;
 
-	      if (warn_format_length > 1)
+	      if (warn_format_overflow > 1)
 		{
 		  /* Leave the minimum number of bytes the wide string
 		     converts to equal to its length and set the maximum
@@ -2038,7 +2038,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 			    || warn_format_trunc > 1))
 		       || (!info.bounded
 			   && (spec.specifier == 's'
-			       || 1 < warn_format_length))))
+			       || warn_format_overflow > 1))))
 	    {
 	      /* The maximum directive output is longer than there is
 		 room in the destination and the output length is either
@@ -2114,7 +2114,7 @@ format_directive (const pass_sprintf_length::call_info &info,
   if (!minunder4k || fmtres.range.max > 4095)
     res->under4k = false;
 
-  if (!warned && 1 < warn_format_length
+  if (!warned && warn_format_overflow > 1
       && (!minunder4k || fmtres.range.max > 4095))
     {
       /* The directive output may be longer than the maximum required
@@ -2151,7 +2151,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 
   if (!warned
       && (exceedmin
-	  || (1 < warn_format_length
+	  || (warn_format_overflow > 1
 	      && res->number_chars_max > target_int_max ())))
     {
       /* The directive output causes the total length of output
@@ -2229,7 +2229,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
      are bounded by the arrays they are known to refer to.  */
   if (!res->warned
       && (avail_range.max < nbytes
-	  || ((res->knownrange || 1 < warn_format_length)
+	  || ((res->knownrange || warn_format_overflow > 1)
 	      && avail_range.min < nbytes)))
     {
       /* Set NAVAIL to the number of available bytes used to decide
@@ -2237,7 +2237,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 	 warning will depend on AVAIL_RANGE.  */
       unsigned HOST_WIDE_INT navail = avail_range.max;
       if (nbytes <= navail && avail_range.min < HOST_WIDE_INT_MAX
-	  && (res->knownrange || 1 < warn_format_length))
+	  && (res->knownrange || warn_format_overflow > 1))
 	navail = avail_range.min;
 
       /* Compute the offset of the first format character that is beyond
@@ -2346,7 +2346,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 
   if (!res->warned
       && (exceedmin
-	  || (1 < warn_format_length
+	  || (warn_format_overflow > 1
 	      && (res->number_chars_max - !end) > target_int_max ())))
     {
       /* The function's output exceeds INT_MAX bytes.  */
@@ -2356,7 +2356,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 	 warning will depend on AVAIL_RANGE.  */
       unsigned HOST_WIDE_INT navail = avail_range.max;
       if (nbytes <= navail && avail_range.min < HOST_WIDE_INT_MAX
-	  && (res->bounded || 1 < warn_format_length))
+	  && (res->bounded || warn_format_overflow > 1))
 	navail = avail_range.min;
 
       /* Compute the offset of the first format character that is beyond
@@ -3037,7 +3037,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	  if (range_type == VR_RANGE)
 	    {
 	      dstsize
-		= (warn_format_length < 2
+		= (warn_format_overflow < 2
 		   ? wi::fits_uhwi_p (max) ? max.to_uhwi () : max.to_shwi ()
 		   : wi::fits_uhwi_p (min) ? min.to_uhwi () : min.to_shwi ());
 	    }

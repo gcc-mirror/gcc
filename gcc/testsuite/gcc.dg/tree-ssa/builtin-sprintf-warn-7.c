@@ -2,7 +2,7 @@
    precision
    { dg-do compile }
    { dg-require-effective-target int32plus }
-   { dg-options "-Wformat-length -ftrack-macro-expansion=0" } */
+   { dg-options "-Wformat-overflow -ftrack-macro-expansion=0" } */
 
 #define INT_MAX __INT_MAX__
 #define INT_MIN (-INT_MAX - 1)

@@ -1,7 +1,7 @@
-/* PR middle-end/78622 - [7 Regression] -Wformat-length/-fprintf-return-value
+/* PR middle-end/78622 - [7 Regression] -Wformat-overflow/-fprintf-return-value
    incorrect with overflow/wrapping
    { dg-do compile }
-   { dg-options "-Wformat-length=2" }
+   { dg-options "-Wformat-overflow=2" }
    The h and hh length modifiers are a C99 feature (see PR 78959).
    { dg-require-effective-target c99_runtime }  */
 
