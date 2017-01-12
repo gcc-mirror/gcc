@@ -4465,7 +4465,17 @@ package body Sem_Attr is
          --  purpose if they appear in an appropriate location in a loop,
          --  which was already checked by the top level pragma circuit).
 
-         if No (Enclosing_Pragma) then
+         --  Loop_Entry also denotes a value and as such can appear within an
+         --  expression that is an argument for another loop aspect. In that
+         --  case it will have been expanded into the corresponding assignment.
+
+         if Expander_Active
+           and then Nkind (Parent (N)) = N_Assignment_Statement
+           and then not Comes_From_Source (Parent (N))
+         then
+            null;
+
+         elsif No (Enclosing_Pragma) then
             Error_Attr ("attribute% must appear within appropriate pragma", N);
          end if;
 
@@ -4519,7 +4529,9 @@ package body Sem_Attr is
          --  early transformation also avoids the generation of a useless loop
          --  entry constant.
 
-         if Is_Ignored (Enclosing_Pragma) then
+         if Present (Enclosing_Pragma)
+           and then Is_Ignored (Enclosing_Pragma)
+         then
             Rewrite (N, Relocate_Node (P));
             Preanalyze_And_Resolve (N);
 
@@ -11039,7 +11051,7 @@ package body Sem_Attr is
 
             if Is_Entity_Name (P)
              and then (Attr_Id = Attribute_Unrestricted_Access
-                       or else Is_Subprogram (Entity (P)))
+                        or else Is_Subprogram (Entity (P)))
             then
                Set_Address_Taken (Entity (P));
             end if;

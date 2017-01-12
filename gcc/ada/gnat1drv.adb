@@ -521,28 +521,35 @@ procedure Gnat1drv is
          Targparm.Frontend_Layout_On_Target := True;
       end if;
 
-      --  Set and check exception mechanism
+      --  Set and check exception mechanism. This is only meaningful when
+      --  compiling, and in particular not meaningful for special modes used
+      --  for program analysis rather than compilation: ASIS mode, CodePeer
+      --  mode and GNATprove mode.
 
-      case Targparm.Frontend_Exceptions_On_Target is
-         when True =>
-            case Targparm.ZCX_By_Default_On_Target is
-               when True =>
-                  Write_Line
-                    ("Run-time library configured incorrectly");
-                  Write_Line
-                    ("(requesting support for Frontend ZCX exceptions)");
-                  raise Unrecoverable_Error;
-               when False =>
-                  Exception_Mechanism := Front_End_SJLJ;
-            end case;
-         when False =>
-            case Targparm.ZCX_By_Default_On_Target is
-               when True =>
-                  Exception_Mechanism := Back_End_ZCX;
-               when False =>
-                  Exception_Mechanism := Back_End_SJLJ;
-            end case;
-      end case;
+      if Operating_Mode = Generate_Code
+        and then not (ASIS_Mode or CodePeer_Mode or GNATprove_Mode)
+      then
+         case Targparm.Frontend_Exceptions_On_Target is
+            when True =>
+               case Targparm.ZCX_By_Default_On_Target is
+                  when True =>
+                     Write_Line
+                       ("Run-time library configured incorrectly");
+                     Write_Line
+                       ("(requesting support for Frontend ZCX exceptions)");
+                     raise Unrecoverable_Error;
+                  when False =>
+                     Exception_Mechanism := Front_End_SJLJ;
+               end case;
+            when False =>
+               case Targparm.ZCX_By_Default_On_Target is
+                  when True =>
+                     Exception_Mechanism := Back_End_ZCX;
+                  when False =>
+                     Exception_Mechanism := Back_End_SJLJ;
+               end case;
+         end case;
+      end if;
 
       --  Set proper status for overflow check mechanism
 

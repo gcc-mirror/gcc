@@ -2377,12 +2377,7 @@ package body Freeze is
             --  The array type requires its own invariant procedure in order to
             --  verify the component invariant over all elements.
 
-            if Has_Invariants (Component_Type (Arr))
-              or else
-                (Is_Access_Type (Component_Type (Arr))
-                  and then Has_Invariants
-                             (Designated_Type (Component_Type (Arr))))
-            then
+            if Has_Invariants (Component_Type (Arr)) then
                Set_Has_Own_Invariants (Arr);
 
                --  The array type is an implementation base type. Propagate the
@@ -4305,12 +4300,7 @@ package body Freeze is
                --  parent class-wide invariants are always inherited.
 
                if Comes_From_Source (Comp)
-                 and then
-                   (Has_Invariants (Etype (Comp))
-                     or else
-                       (Is_Access_Type (Etype (Comp))
-                         and then Has_Invariants
-                                    (Designated_Type (Etype (Comp)))))
+                 and then Has_Invariants (Etype (Comp))
                then
                   Set_Has_Own_Invariants (Rec);
                end if;

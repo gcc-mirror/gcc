@@ -1286,7 +1286,118 @@ package body Exp_Ch3 is
       With_Default_Init : Boolean := False;
       Constructor_Ref   : Node_Id := Empty) return List_Id
    is
-      Res            : constant List_Id := New_List;
+      Res : constant List_Id := New_List;
+
+      Full_Type : Entity_Id;
+
+      procedure Check_Predicated_Discriminant
+        (Val   : Node_Id;
+         Discr : Entity_Id);
+      --  Discriminants whose subtypes have predicates are checked in two
+      --  cases:
+      --    a) When an object is default-initialized and assertions are enabled
+      --       we check that the value of the discriminant obeys the predicate.
+
+      --    b) In all cases, if the discriminant controls a variant and the
+      --       variant has no others_choice, Constraint_Error must be raised if
+      --       the predicate is violated, because there is no variant covered
+      --       by the illegal discriminant value.
+
+      -----------------------------------
+      -- Check_Predicated_Discriminant --
+      -----------------------------------
+
+      procedure Check_Predicated_Discriminant
+        (Val   : Node_Id;
+         Discr : Entity_Id)
+      is
+         Typ : constant Entity_Id := Etype (Discr);
+
+         procedure Check_Missing_Others (V : Node_Id);
+         --  ???
+
+         --------------------------
+         -- Check_Missing_Others --
+         --------------------------
+
+         procedure Check_Missing_Others (V : Node_Id) is
+            Alt      : Node_Id;
+            Choice   : Node_Id;
+            Last_Var : Node_Id;
+
+         begin
+            Last_Var := Last_Non_Pragma (Variants (V));
+            Choice   := First (Discrete_Choices (Last_Var));
+
+            --  An others_choice is added during expansion for gcc use, but
+            --  does not cover the illegality.
+
+            if Entity (Name (V)) = Discr then
+               if Present (Choice)
+                 and then (Nkind (Choice) /= N_Others_Choice
+                            or else not Comes_From_Source (Choice))
+               then
+                  Check_Expression_Against_Static_Predicate (Val, Typ);
+
+                  if not Is_Static_Expression (Val) then
+                     Prepend_To (Res,
+                        Make_Raise_Constraint_Error (Loc,
+                          Condition =>
+                            Make_Op_Not (Loc,
+                              Right_Opnd => Make_Predicate_Call (Typ, Val)),
+                          Reason    => CE_Invalid_Data));
+                  end if;
+               end if;
+            end if;
+
+            --  Check whether some nested variant is ruled by the predicated
+            --  discriminant.
+
+            Alt := First (Variants (V));
+            while Present (Alt) loop
+               if Nkind (Alt) = N_Variant
+                 and then Present (Variant_Part (Component_List (Alt)))
+               then
+                  Check_Missing_Others
+                    (Variant_Part (Component_List (Alt)));
+               end if;
+
+               Next (Alt);
+            end loop;
+         end Check_Missing_Others;
+
+         --  Local variables
+
+         Def : Node_Id;
+
+      --  Start of processing for Check_Predicated_Discriminant
+
+      begin
+         if Ekind (Base_Type (Full_Type)) = E_Record_Type then
+            Def := Type_Definition (Parent (Base_Type (Full_Type)));
+         else
+            return;
+         end if;
+
+         if Policy_In_Effect (Name_Assert) = Name_Check
+           and then not Predicates_Ignored (Etype (Discr))
+         then
+            Prepend_To (Res, Make_Predicate_Check (Typ, Val));
+         end if;
+
+         --  If discriminant controls a variant, verify that predicate is
+         --  obeyed or else an Others_Choice is present.
+
+         if Nkind (Def) = N_Record_Definition
+           and then Present (Variant_Part (Component_List (Def)))
+           and then Policy_In_Effect (Name_Assert) = Name_Ignore
+         then
+            Check_Missing_Others (Variant_Part (Component_List (Def)));
+         end if;
+      end Check_Predicated_Discriminant;
+
+      --  Local variables
+
       Arg            : Node_Id;
       Args           : List_Id;
       Decls          : List_Id;
@@ -1294,10 +1405,11 @@ package body Exp_Ch3 is
       Discr          : Entity_Id;
       First_Arg      : Node_Id;
       Full_Init_Type : Entity_Id;
-      Full_Type      : Entity_Id;
       Init_Call      : Node_Id;
       Init_Type      : Entity_Id;
       Proc           : Entity_Id;
+
+   --  Start of processing for Build_Initialization_Call
 
    begin
       pragma Assert (Constructor_Ref = Empty
@@ -1490,14 +1602,10 @@ package body Exp_Ch3 is
                   --  of the discriminant, insert it ahead of the call.
 
                   Arg := New_Copy_Tree (Arg, New_Sloc => Loc);
+               end if;
 
-                  if Has_Predicates (Etype (Discr))
-                    and then not Predicate_Checks_Suppressed (Empty)
-                    and then not Predicates_Ignored (Etype (Discr))
-                  then
-                     Prepend_To (Res,
-                       Make_Predicate_Check (Etype (Discr), Arg));
-                  end if;
+               if Has_Predicates (Etype (Discr)) then
+                  Check_Predicated_Discriminant (Arg, Discr);
                end if;
             end if;
 

@@ -1,3 +1,39 @@
+2017-01-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute_Reference, case Loop_Entry):
+	Hnadle properly the attribute reference when it appears as part
+	of an expression in another loop aspect.
+
+2017-01-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Check_Predicated_Discriminant): New procedure,
+	subsidiary of Build_Initialization_Call, to complete generation
+	of predicate checks on discriminants whose (sub)types have
+	predicates, and to add checks on variants that do not have an
+	others clause.
+	* sem_util.adb (Gather_Components): A missing Others alternative is
+	not an error when the type of the discriminant is a static predicate
+	(and coverage has been checked when analyzing the case statement). A
+	runtime check is generated to verify that a given discriminant
+	satisfies the predicate (RM 3.8.1. (21.1/2)).
+
+2017-01-12  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Only
+	perform checking of exception mechanism when generating code.
+
+2017-01-12  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch7.adb (Add_Type_Invariants, Process_Array_Component):
+	Remove handling of access component with invariant.
+	(Build_Invariant_Procedure_Declaration): Remove return on class
+	wide type.
+	* freeze.adb (Freeze_Array_Type, Freeze_Record_Type): Remove
+	conditional exception for component or array so Has_Own_Invariants
+	flag is not falsly set.
+	* sem_ch3.adb (Make_Class_Wide_Type): Initialize copy of class
+	wide type to have no invariant flags.
+
 2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb, sem_prag.adb, s-tassta.adb, sem_util.adb, s-tarest.adb,
