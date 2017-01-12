@@ -128,7 +128,7 @@ public:
       fold_return_value = param;
     }
 
-  void handle_gimple_call (gimple_stmt_iterator*);
+  bool handle_gimple_call (gimple_stmt_iterator *);
 
   struct call_info;
   bool compute_format_length (call_info &, format_result *);
@@ -2738,9 +2738,11 @@ get_destination_size (tree dest)
    described by INFO, substitute the result for the return value of
    the call.  The result is suitable if the number of bytes it represents
    is known and exact.  A result that isn't suitable for substitution may
-   have its range set to the range of return values, if that is known.  */
+   have its range set to the range of return values, if that is known.
+   Return true if the call is removed and gsi_next should not be performed
+   in the caller.  */
 
-static void
+static bool
 try_substitute_return_value (gimple_stmt_iterator *gsi,
 			     const pass_sprintf_length::call_info &info,
 			     const format_result &res)
@@ -2800,6 +2802,24 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 		   res.constant ? "constant" : "variable");
 	}
     }
+  else if (lhs == NULL_TREE
+	   && info.nowrite
+	   && !stmt_ends_bb_p (info.callstmt))
+    {
+      /* Remove the call to the bounded function with a zero size
+	 (e.g., snprintf(0, 0, "%i", 123)) if there is no lhs.  */
+      unlink_stmt_vdef (info.callstmt);
+      gsi_remove (gsi, true);
+      if (dump_file)
+	{
+	  location_t callloc = gimple_location (info.callstmt);
+	  fprintf (dump_file, "On line %i removing ",
+		   LOCATION_LINE (callloc));
+	  print_generic_expr (dump_file, info.func, dump_flags);
+	  fprintf (dump_file, " call.\n");
+	}
+      return true;
+    }
   else
     {
       unsigned HOST_WIDE_INT maxbytes;
@@ -2855,19 +2875,22 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 		     inbounds, (unsigned long)res.number_chars - 1, ign);
 	}
     }
+
+  return false;
 }
 
 /* Determine if a GIMPLE CALL is to one of the sprintf-like built-in
-   functions and if so, handle it.  */
+   functions and if so, handle it.  Return true if the call is removed
+   and gsi_next should not be performed in the caller.  */
 
-void
+bool
 pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 {
   call_info info = call_info ();
 
   info.callstmt = gsi_stmt (*gsi);
   if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
-    return;
+    return false;
 
   info.func = gimple_call_fndecl (info.callstmt);
   info.fncode = DECL_FUNCTION_CODE (info.func);
@@ -2958,7 +2981,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       break;
 
     default:
-      return;
+      return false;
     }
 
   /* The first argument is a pointer to the destination.  */
@@ -3022,11 +3045,9 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
     }
 
   if (idx_objsize != HOST_WIDE_INT_M1U)
-    {
-      if (tree size = gimple_call_arg (info.callstmt, idx_objsize))
-	  if (tree_fits_uhwi_p (size))
-	    objsize = tree_to_uhwi (size);
-    }
+    if (tree size = gimple_call_arg (info.callstmt, idx_objsize))
+      if (tree_fits_uhwi_p (size))
+	objsize = tree_to_uhwi (size);
 
   if (info.bounded && !dstsize)
     {
@@ -3051,7 +3072,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	  location_t loc = gimple_location (info.callstmt);
 	  warning_at (EXPR_LOC_OR_LOC (dstptr, loc),
 		      info.warnopt (), "null destination pointer");
-	  return;
+	  return false;
 	}
 
       /* Set the object size to the smaller of the two arguments
@@ -3080,12 +3101,12 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       location_t loc = gimple_location (info.callstmt);
       warning_at (EXPR_LOC_OR_LOC (info.format, loc),
 		  info.warnopt (), "null format string");
-      return;
+      return false;
     }
 
   info.fmtstr = get_format_string (info.format, &info.fmtloc);
   if (!info.fmtstr)
-    return;
+    return false;
 
   /* The result is the number of bytes output by the formatted function,
      including the terminating NUL.  */
@@ -3101,7 +3122,8 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       && optimize > 0
       && flag_printf_return_value
       && (!flag_rounding_math || !res.floating))
-    try_substitute_return_value (gsi, info, res);
+    return try_substitute_return_value (gsi, info, res);
+  return false;
 }
 
 /* Execute the pass for function FUN.  */
@@ -3112,14 +3134,17 @@ pass_sprintf_length::execute (function *fun)
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
-      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
-	   gsi_next (&si))
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si); )
 	{
 	  /* Iterate over statements, looking for function calls.  */
 	  gimple *stmt = gsi_stmt (si);
 
-	  if (is_gimple_call (stmt))
-	    handle_gimple_call (&si);
+	  if (is_gimple_call (stmt) && handle_gimple_call (&si))
+	    /* If handle_gimple_call returns true, the iterator is
+	       already pointing to the next statement.  */
+	    continue;
+
+	  gsi_next (&si);
 	}
     }
 
