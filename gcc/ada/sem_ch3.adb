@@ -9127,9 +9127,13 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  We similarly inherit predicates
+      --  We similarly inherit predicates. Note that for scalar derived types
+      --  the predicate is inherited from the first subtype, and not from its
+      --  (anonymous) base type.
 
-      if Has_Predicates (Parent_Type) then
+      if Has_Predicates (Parent_Type)
+        or else  Has_Predicates (First_Subtype (Parent_Type))
+      then
          Set_Has_Predicates (Derived_Type);
       end if;
 

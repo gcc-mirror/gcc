@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2015, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2016, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -193,7 +193,7 @@ __gnat_set_mode (int handle, int mode)
 
  switch (mode) {
     case 0 : WIN_SETMODE (handle, _O_BINARY);          break;
-    case 1 : WIN_SETMODE (handle, CurrentCCSEncoding); break;
+    case 1 : WIN_SETMODE (handle, __gnat_current_ccs_encoding); break;
     case 2 : WIN_SETMODE (handle, _O_TEXT);            break;
     case 3 : WIN_SETMODE (handle, _O_U8TEXT);          break;
     case 4 : WIN_SETMODE (handle, _O_WTEXT);           break;

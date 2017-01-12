@@ -59,10 +59,10 @@ with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
+with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Sinfo;    use Sinfo;
 with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
@@ -1888,7 +1888,7 @@ package body Sem_Ch13 is
                Set_From_Aspect_Specification (Aitem);
             end Make_Aitem_Pragma;
 
-         --  Start of processing for Analyze_Aspect_Specifications
+         --  Start of processing for Analyze_One_Aspect
 
          begin
             --  Skip aspect if already analyzed, to avoid looping in some cases
@@ -1934,7 +1934,24 @@ package body Sem_Ch13 is
 
             Set_Analyzed (Aspect);
             Set_Entity (Aspect, E);
+
+            --  Build the reference to E that will be used in the built pragmas
+
             Ent := New_Occurrence_Of (E, Sloc (Id));
+
+            if A_Id = Aspect_Attach_Handler
+              or else A_Id = Aspect_Interrupt_Handler
+            then
+               --  Decorate the reference as comming from the sources and force
+               --  its reanalysis to generate the reference to E; required to
+               --  avoid reporting spurious warning on E as unreferenced entity
+               --  (because aspects are not fully analyzed).
+
+               Set_Comes_From_Source (Ent, Comes_From_Source (Id));
+               Set_Entity (Ent, Empty);
+
+               Analyze (Ent);
+            end if;
 
             --  Check for duplicate aspect. Note that the Comes_From_Source
             --  test allows duplicate Pre/Post's that we generate internally

@@ -8476,9 +8476,21 @@ package body Sem_Ch6 is
       elsif Is_Entity_Name (E1) and then Is_Entity_Name (E2) then
          if Present (Entity (E1)) then
             return Entity (E1) = Entity (E2)
+
+              --  One may be a discriminant that has been replaced by
+              --  the correspondding discriminal
+
               or else (Chars (Entity (E1)) = Chars (Entity (E2))
                         and then Ekind (Entity (E1)) = E_Discriminant
-                        and then Ekind (Entity (E2)) = E_In_Parameter);
+                        and then Ekind (Entity (E2)) = E_In_Parameter)
+
+             --  AI12-050 : the loop variables of quantified expressions
+             --  match if the have the same identifier, even though they
+             --  are different entities.
+
+              or else (Chars (Entity (E1)) = Chars (Entity (E2))
+                       and then Ekind (Entity (E1)) = E_Loop_Parameter
+                       and then Ekind (Entity (E2)) = E_Loop_Parameter);
 
          elsif Nkind (E1) = N_Expanded_Name
            and then Nkind (E2) = N_Expanded_Name

@@ -2035,6 +2035,13 @@ package body Freeze is
       --  which is the current instance type can only be applied when the type
       --  is limited.
 
+      procedure Check_Suspicious_Convention (Rec_Type : Entity_Id);
+      --  Give a warning for pragma Convention with language C or C++ applied
+      --  to a discriminated record type. This is suppressed for the unchecked
+      --  union case, since the whole point in this case is interface C. We
+      --  also do not generate this within instantiations, since we will have
+      --  generated a message on the template.
+
       procedure Check_Suspicious_Modulus (Utype : Entity_Id);
       --  Give warning for modulus of 8, 16, 32, or 64 given as an explicit
       --  integer literal without an explicit corresponding size clause. The
@@ -2248,6 +2255,51 @@ package body Freeze is
             Traverse (Comp_Decl);
          end if;
       end Check_Current_Instance;
+
+      ---------------------------------
+      -- Check_Suspicious_Convention --
+      ---------------------------------
+
+      procedure Check_Suspicious_Convention (Rec_Type : Entity_Id) is
+      begin
+         if Has_Discriminants (Rec_Type)
+           and then Is_Base_Type (Rec_Type)
+           and then not Is_Unchecked_Union (Rec_Type)
+           and then (Convention (Rec_Type) = Convention_C
+                       or else
+                     Convention (Rec_Type) = Convention_CPP)
+           and then Comes_From_Source (Rec_Type)
+           and then not In_Instance
+           and then not Has_Warnings_Off (Rec_Type)
+         then
+            declare
+               Cprag : constant Node_Id :=
+                         Get_Rep_Pragma (Rec_Type, Name_Convention);
+               A2    : Node_Id;
+
+            begin
+               if Present (Cprag) then
+                  A2 := Next (First (Pragma_Argument_Associations (Cprag)));
+
+                  if Convention (Rec_Type) = Convention_C then
+                     Error_Msg_N
+                       ("?x?discriminated record has no direct " &
+                        "equivalent in C",
+                        A2);
+                  else
+                     Error_Msg_N
+                       ("?x?discriminated record has no direct " &
+                        "equivalent in C++",
+                        A2);
+                  end if;
+
+                  Error_Msg_NE
+                    ("\?x?use of convention for type& is dubious",
+                     A2, Rec_Type);
+               end if;
+            end;
+         end if;
+      end Check_Suspicious_Convention;
 
       ------------------------------
       -- Check_Suspicious_Modulus --
@@ -4348,46 +4400,6 @@ package body Freeze is
             end loop;
          end if;
 
-         --  Generate warning for applying C or C++ convention to a record
-         --  with discriminants. This is suppressed for the unchecked union
-         --  case, since the whole point in this case is interface C. We also
-         --  do not generate this within instantiations, since we will have
-         --  generated a message on the template.
-
-         if Has_Discriminants (E)
-           and then not Is_Unchecked_Union (E)
-           and then (Convention (E) = Convention_C
-                       or else
-                     Convention (E) = Convention_CPP)
-           and then Comes_From_Source (E)
-           and then not In_Instance
-           and then not Has_Warnings_Off (E)
-           and then not Has_Warnings_Off (Base_Type (E))
-         then
-            declare
-               Cprag : constant Node_Id := Get_Rep_Pragma (E, Name_Convention);
-               A2    : Node_Id;
-
-            begin
-               if Present (Cprag) then
-                  A2 := Next (First (Pragma_Argument_Associations (Cprag)));
-
-                  if Convention (E) = Convention_C then
-                     Error_Msg_N
-                       ("?x?variant record has no direct equivalent in C",
-                        A2);
-                  else
-                     Error_Msg_N
-                       ("?x?variant record has no direct equivalent in C++",
-                        A2);
-                  end if;
-
-                  Error_Msg_NE
-                    ("\?x?use of convention for type& is dubious", A2, E);
-               end if;
-            end;
-         end if;
-
          --  See if Size is too small as is (and implicit packing might help)
 
          if not Is_Packed (Rec)
@@ -5643,11 +5655,17 @@ package body Freeze is
          --  for the case of a private type with record extension (we will do
          --  that later when the full type is frozen).
 
-         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype)
-           and then not (Present (Scope (E))
-                          and then Is_Generic_Unit (Scope (E)))
-         then
-            Freeze_Record_Type (E);
+         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype) then
+            if not In_Generic_Scope (E) then
+               Freeze_Record_Type (E);
+            end if;
+
+            --  Report a warning if a discriminated record base type has a
+            --  convention with language C or C++ applied to it. This check is
+            --  done even within generic scopes (but not in instantiations),
+            --  which is why we don't do it as part of Freeze_Record_Type.
+
+            Check_Suspicious_Convention (E);
 
          --  For a concurrent type, freeze corresponding record type. This does
          --  not correspond to any specific rule in the RM, but the record type

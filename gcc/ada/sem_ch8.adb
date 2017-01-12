@@ -760,9 +760,6 @@ package body Sem_Ch8 is
       --  has already established its actual subtype. This is only relevant
       --  if the renamed object is an explicit dereference.
 
-      function In_Generic_Scope (E : Entity_Id) return Boolean;
-      --  Determine whether entity E is inside a generic cope
-
       ------------------------------
       -- Check_Constrained_Object --
       ------------------------------
@@ -823,26 +820,6 @@ package body Sem_Ch8 is
             end if;
          end if;
       end Check_Constrained_Object;
-
-      ----------------------
-      -- In_Generic_Scope --
-      ----------------------
-
-      function In_Generic_Scope (E : Entity_Id) return Boolean is
-         S : Entity_Id;
-
-      begin
-         S := Scope (E);
-         while Present (S) and then S /= Standard_Standard loop
-            if Is_Generic_Unit (S) then
-               return True;
-            end if;
-
-            S := Scope (S);
-         end loop;
-
-         return False;
-      end In_Generic_Scope;
 
    --  Start of processing for Analyze_Object_Renaming
 

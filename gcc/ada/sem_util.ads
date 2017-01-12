@@ -556,13 +556,11 @@ package Sem_Util is
    --  Returns the declaration node enclosing N (including possibly N itself),
    --  if any, or Empty otherwise.
 
-   function Enclosing_Generic_Body
-     (N : Node_Id) return Node_Id;
+   function Enclosing_Generic_Body (N : Node_Id) return Node_Id;
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  body, if any. If none, then returns Empty.
 
-   function Enclosing_Generic_Unit
-     (N : Node_Id) return Node_Id;
+   function Enclosing_Generic_Unit (N : Node_Id) return Node_Id;
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  unit, if any. If none, then returns Empty.
 
@@ -1192,6 +1190,9 @@ package Sem_Util is
    function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
    --  Returns True if node N appears within a pragma that acts as an assertion
    --  expression. See Sem_Prag for the list of qualifying pragmas.
+
+   function In_Generic_Scope (E : Entity_Id) return Boolean;
+   --  Returns True if entity E is inside a generic scope
 
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance
