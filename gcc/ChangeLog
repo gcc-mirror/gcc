@@ -1,3 +1,10 @@
+2017-01-12  Richard Biener  <rguenther@suse.de>
+
+	* tree.c (initialize_tree_contains_struct): Make TS_OPTIMIZATION
+	and TS_TARGET_OPTION directly derive from TS_BASE.
+	* tree-core.h (tree_optimization_option): Derive from tree_base.
+	(tree_target_option): Likewise.
+
 2017-01-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (memory_address_length): Increase len

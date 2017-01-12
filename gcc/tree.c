@@ -508,6 +508,8 @@ initialize_tree_contains_struct (void)
 	{
 	case TS_TYPED:
 	case TS_BLOCK:
+	case TS_OPTIMIZATION:
+	case TS_TARGET_OPTION:
 	  MARK_TS_BASE (code);
 	  break;
 
@@ -532,8 +534,6 @@ initialize_tree_contains_struct (void)
 	case TS_VEC:
 	case TS_BINFO:
 	case TS_OMP_CLAUSE:
-	case TS_OPTIMIZATION:
-	case TS_TARGET_OPTION:
 	  MARK_TS_COMMON (code);
 	  break;
 
