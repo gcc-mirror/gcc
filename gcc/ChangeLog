@@ -1,5 +1,13 @@
 2017-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimple-ssa-sprintf.c (try_substitute_return_value): Remove
+	info.nowrite calls with no lhs that can't throw.  Return bool
+	whether gsi_remove has been called or not.
+	(pass_sprintf_length::handle_gimple_call): Return bool whether
+	try_substitute_return_value called gsi_remove.  Formatting fix.
+	(pass_sprintf_length::execute): Don't use gsi_remove if
+	handle_gimple_call returned true.
+
 	PR bootstrap/79069
 	* cfgrtl.c (rtl_tidy_fallthru_edge): For any_uncondjump_p that can't
 	be removed due to side-effects, don't remove following barrier nor

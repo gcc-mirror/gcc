@@ -1,3 +1,7 @@
+2017-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-snprintf-1.c: New test.
+
 2017-01-12  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/79051
