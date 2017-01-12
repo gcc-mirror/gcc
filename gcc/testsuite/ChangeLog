@@ -1,3 +1,9 @@
+2017-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/78319
+	* gcc.dg/uninit-pred-8_a.c: Add -mtune=cortex-a15 for arm.
+	Remove xfail.
+
 2017-01-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/79044

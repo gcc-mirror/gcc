@@ -1,6 +1,8 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Wuninitialized -O2" } */
+/* Pick a particular tuning to pin down BRANCH_COST.  */
+/* { dg-additional-options "-mtune=cortex-a15" { target arm*-*-* } } */
 
 int g;
 void bar();
@@ -16,9 +18,8 @@ int foo (int n, int l, int m, int r)
   if (m) g++;
   else   bar();
 
-  /* marking this test as xfail on arm-none-eabi, see PR78319.  */
   if ( n ||  m || r || l)
-      blah(v); /* { dg-bogus "uninitialized" "bogus warning" { xfail arm-none-eabi } } */
+      blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
 
   if ( n )
       blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
