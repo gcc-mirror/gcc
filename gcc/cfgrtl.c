@@ -1794,6 +1794,10 @@ rtl_tidy_fallthru_edge (edge e)
 
       q = PREV_INSN (q);
     }
+  /* Unconditional jumps with side-effects (i.e. which we can't just delete
+     together with the barrier) should never have a fallthru edge.  */
+  else if (JUMP_P (q) && any_uncondjump_p (q))
+    return;
 
   /* Selectively unlink the sequence.  */
   if (q != PREV_INSN (BB_HEAD (c)))
