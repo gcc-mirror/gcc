@@ -6829,10 +6829,10 @@ package body Sinfo is
    -- Pragma_Name --
    -----------------
 
-   function Pragma_Name (N : Node_Id) return Name_Id is
+   function Pragma_Name_Unmapped (N : Node_Id) return Name_Id is
    begin
       return Chars (Pragma_Identifier (N));
-   end Pragma_Name;
+   end Pragma_Name_Unmapped;
 
    ---------------------
    -- Map_Pragma_Name --
@@ -6862,12 +6862,12 @@ package body Sinfo is
       Pragma_Map (Last_Pair) := (Key => From, Value => To);
    end Map_Pragma_Name;
 
-   ------------------------
-   -- Pragma_Name_Mapped --
-   ------------------------
+   -----------------
+   -- Pragma_Name --
+   -----------------
 
-   function Pragma_Name_Mapped (N : Node_Id) return Name_Id is
-      Result : constant Name_Id := Pragma_Name (N);
+   function Pragma_Name (N : Node_Id) return Name_Id is
+      Result : constant Name_Id := Pragma_Name_Unmapped (N);
    begin
       for J in Pragma_Map'Range loop
          if Result = Pragma_Map (J).Key then
@@ -6876,6 +6876,6 @@ package body Sinfo is
       end loop;
 
       return Result;
-   end Pragma_Name_Mapped;
+   end Pragma_Name;
 
 end Sinfo;

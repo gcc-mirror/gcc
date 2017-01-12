@@ -2099,7 +2099,7 @@ package body Sem_Elab is
          Par := Call;
          while Present (Par) loop
             if Nkind (Par) = N_Pragma then
-               Nam := Pragma_Name_Mapped (Par);
+               Nam := Pragma_Name (Par);
 
                --  Pragma Initial_Condition appears in its alternative from as
                --  Check (Initial_Condition, ...).
@@ -2485,7 +2485,7 @@ package body Sem_Elab is
                --  Or, in the case of an initial condition, specifically by a
                --  Check pragma specifying an Initial_Condition check.
 
-               elsif Pragma_Name_Mapped (O) = Name_Check
+               elsif Pragma_Name (O) = Name_Check
                  and then
                    Chars
                      (Expression (First (Pragma_Argument_Associations (O)))) =
@@ -3716,7 +3716,7 @@ package body Sem_Elab is
          Item := First (Context_Items (CU));
          while Present (Item) loop
             if Nkind (Item) = N_Pragma
-              and then Pragma_Name_Mapped (Item) = Name_Elaborate_All
+              and then Pragma_Name (Item) = Name_Elaborate_All
             then
                --  Return if some previous error on the pragma itself. The
                --  pragma may be unanalyzed, because of a previous error, or

@@ -492,7 +492,7 @@ begin
       Item := First (Context_Items (Cunit (Main_Unit)));
       while Present (Item) loop
          if Nkind (Item) = N_Pragma
-           and then Pragma_Name_Mapped (Item) = Name_Initialize_Scalars
+           and then Pragma_Name (Item) = Name_Initialize_Scalars
          then
             Initialize_Scalars := True;
          end if;

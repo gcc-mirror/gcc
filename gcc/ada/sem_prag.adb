@@ -1970,7 +1970,7 @@ package body Sem_Prag is
          return;
       end if;
 
-      Error_Msg_Name_1 := Pragma_Name_Mapped (N);
+      Error_Msg_Name_1 := Pragma_Name (N);
 
       --  An external property pragma must apply to an effectively volatile
       --  object other than a formal subprogram parameter (SPARK RM 7.1.3(2)).
@@ -5253,7 +5253,7 @@ package body Sem_Prag is
          --  previously given aspect specification or attribute definition
          --  clause for the same pragma.
 
-         P := Get_Rep_Item (E, Pragma_Name_Mapped (N), Check_Parents => False);
+         P := Get_Rep_Item (E, Pragma_Name (N), Check_Parents => False);
 
          if Present (P) then
 
@@ -5286,7 +5286,7 @@ package body Sem_Prag is
 
             --  Here we have a definite duplicate
 
-            Error_Msg_Name_1 := Pragma_Name_Mapped (N);
+            Error_Msg_Name_1 := Pragma_Name (N);
             Error_Msg_Sloc := Sloc (P);
 
             --  For a single protected or a single task object, the error is
@@ -5712,7 +5712,7 @@ package body Sem_Prag is
 
             if Nkind (Original_Node (Stmt)) = N_Pragma then
                return
-                 Nam_In (Pragma_Name (Original_Node (Stmt)),
+                 Nam_In (Pragma_Name_Unmapped (Original_Node (Stmt)),
                          Name_Loop_Invariant,
                          Name_Loop_Variant);
             else
@@ -6460,7 +6460,7 @@ package body Sem_Prag is
          if Is_Rewrite_Substitution (N)
            and then Nkind (Original_Node (N)) = N_Pragma
          then
-            Error_Msg_Name_1 := Pragma_Name_Mapped (Original_Node (N));
+            Error_Msg_Name_1 := Pragma_Name (Original_Node (N));
          end if;
 
          --  Case where pragma comes from an aspect specification
@@ -7174,16 +7174,17 @@ package body Sem_Prag is
                   then
                      --  Give error if same as our pragma or Export/Convention
 
-                     if Nam_In (Pragma_Name (Decl), Name_Export,
-                                                    Name_Convention,
-                                                    Pragma_Name_Mapped (N))
+                     if Nam_In (Pragma_Name_Unmapped (Decl),
+                                Name_Export,
+                                Name_Convention,
+                                Pragma_Name_Unmapped (N))
                      then
                         exit;
 
                      --  Case of Import/Interface or the other way round
 
-                     elsif Nam_In (Pragma_Name (Decl), Name_Interface,
-                                                       Name_Import)
+                     elsif Nam_In (Pragma_Name_Unmapped (Decl),
+                                   Name_Interface, Name_Import)
                      then
                         --  Here we know that we have Import and Interface. It
                         --  doesn't matter which way round they are. See if
@@ -10345,7 +10346,7 @@ package body Sem_Prag is
 
       --  Deal with unrecognized pragma
 
-      Pname := Pragma_Name_Mapped (N);
+      Pname := Pragma_Name (N);
 
       if not Is_Pragma_Name (Pname) then
          if Warn_On_Unrecognized_Pragma then
@@ -13764,7 +13765,7 @@ package body Sem_Prag is
                --  Skip prior pragmas, but check for duplicates
 
                if Nkind (Stmt) = N_Pragma then
-                  if Pragma_Name_Mapped (Stmt) = Pname then
+                  if Pragma_Name (Stmt) = Pname then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_Sloc   := Sloc (Stmt);
                      Error_Msg_N ("pragma % duplicates pragma declared#", N);
@@ -15262,7 +15263,7 @@ package body Sem_Prag is
                --  Skip prior pragmas, but check for duplicates
 
                if Nkind (Stmt) = N_Pragma then
-                  if Pragma_Name_Mapped (Stmt) = Pname then
+                  if Pragma_Name (Stmt) = Pname then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_Sloc   := Sloc (Stmt);
                      Error_Msg_N ("pragma % duplicates pragma declared#", N);
@@ -16536,7 +16537,7 @@ package body Sem_Prag is
                   if Is_Imported (Def_Id)
                     and then Present (First_Rep_Item (Def_Id))
                     and then Nkind (First_Rep_Item (Def_Id)) = N_Pragma
-                    and then Pragma_Name_Mapped (First_Rep_Item (Def_Id)) =
+                    and then Pragma_Name (First_Rep_Item (Def_Id)) =
                       Name_Interface
                   then
                      null;
@@ -17554,7 +17555,7 @@ package body Sem_Prag is
             Nod := Next (N);
             while Present (Nod) loop
                if Nkind (Nod) = N_Pragma
-                 and then Pragma_Name_Mapped (Nod) = Name_Main
+                 and then Pragma_Name (Nod) = Name_Main
                then
                   Error_Msg_Name_1 := Pname;
                   Error_Msg_N ("duplicate pragma% not permitted", Nod);
@@ -17598,7 +17599,7 @@ package body Sem_Prag is
             Nod := Next (N);
             while Present (Nod) loop
                if Nkind (Nod) = N_Pragma
-                 and then Pragma_Name_Mapped (Nod) = Name_Main_Storage
+                 and then Pragma_Name (Nod) = Name_Main_Storage
                then
                   Error_Msg_Name_1 := Pname;
                   Error_Msg_N ("duplicate pragma% not permitted", Nod);
@@ -21326,7 +21327,7 @@ package body Sem_Prag is
                   --  this also takes care of pragmas generated for aspects.
 
                   if Nkind (Stmt) = N_Pragma then
-                     if Pragma_Name_Mapped (Stmt) = Pname then
+                     if Pragma_Name (Stmt) = Pname then
                         Error_Msg_Name_1 := Pname;
                         Error_Msg_Sloc   := Sloc (Stmt);
                         Error_Msg_N ("pragma% duplicates pragma declared#", N);
@@ -22176,7 +22177,7 @@ package body Sem_Prag is
                if Present (Items) then
                   Prag := Contract_Test_Cases (Items);
                   while Present (Prag) loop
-                     if Pragma_Name_Mapped (Prag) = Name_Test_Case
+                     if Pragma_Name (Prag) = Name_Test_Case
                        and then Prag /= N
                        and then String_Equal
                                   (Name, Get_Name_From_CTC_Pragma (Prag))
@@ -22406,7 +22407,7 @@ package body Sem_Prag is
                Nod := Next (N);
                while Present (Nod) loop
                   if Nkind (Nod) = N_Pragma
-                    and then Pragma_Name_Mapped (Nod) = Name_Time_Slice
+                    and then Pragma_Name (Nod) = Name_Time_Slice
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N ("duplicate pragma% not permitted", Nod);
@@ -26763,7 +26764,7 @@ package body Sem_Prag is
       --  Local variables
 
       Loc          : constant Source_Ptr := Sloc (Prag);
-      Prag_Nam     : constant Name_Id    := Pragma_Name_Mapped (Prag);
+      Prag_Nam     : constant Name_Id    := Pragma_Name (Prag);
       Check_Prag   : Node_Id;
       Msg_Arg      : Node_Id;
       Nam          : Name_Id;
@@ -27315,8 +27316,8 @@ package body Sem_Prag is
          Prag := Pre_Post_Conditions (Prags);
 
          while Present (Prag) loop
-            if Nam_In (Pragma_Name (Prag), Name_Precondition,
-                                           Name_Postcondition)
+            if Nam_In (Pragma_Name_Unmapped (Prag),
+                       Name_Precondition, Name_Postcondition)
               and then Class_Present (Prag)
             then
                --  The generated pragma must be analyzed in the context of
@@ -27709,8 +27710,8 @@ package body Sem_Prag is
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean is
    begin
-      return Nam_In (Pragma_Name (N), Name_Interrupt_State,
-                                      Name_Priority_Specific_Dispatching);
+      return Nam_In (Pragma_Name_Unmapped (N),
+                     Name_Interrupt_State, Name_Priority_Specific_Dispatching);
    end Delay_Config_Pragma_Analyze;
 
    -----------------------
@@ -27791,7 +27792,7 @@ package body Sem_Prag is
 
          if Nkind (Stmt) = N_Pragma then
             if Do_Checks
-              and then Pragma_Name_Mapped (Stmt) = Pragma_Name_Mapped (Prag)
+              and then Pragma_Name (Stmt) = Pragma_Name (Prag)
             then
                Duplication_Error
                  (Prag => Prag,
@@ -27999,7 +28000,7 @@ package body Sem_Prag is
       Do_Checks : Boolean := False) return Node_Id
    is
       Context  : constant Node_Id := Parent (Prag);
-      Prag_Nam : constant Name_Id := Pragma_Name_Mapped (Prag);
+      Prag_Nam : constant Name_Id := Pragma_Name (Prag);
       Stmt     : Node_Id;
 
    begin
@@ -28009,7 +28010,7 @@ package body Sem_Prag is
          --  Skip prior pragmas, but check for duplicates
 
          if Nkind (Stmt) = N_Pragma then
-            if Do_Checks and then Pragma_Name_Mapped (Stmt) = Prag_Nam then
+            if Do_Checks and then Pragma_Name (Stmt) = Prag_Nam then
                Duplication_Error
                  (Prag => Prag,
                   Prev => Stmt);
@@ -28386,7 +28387,7 @@ package body Sem_Prag is
    begin
       pragma Assert
         (Nkind (N) = N_Pragma
-          and then Pragma_Name_Mapped (N) = Name_SPARK_Mode
+          and then Pragma_Name (N) = Name_SPARK_Mode
           and then Is_List_Member (N));
 
       --  Pragma SPARK_Mode affects the elaboration of a package body when it
@@ -28758,7 +28759,7 @@ package body Sem_Prag is
    function Is_Pragma_String_Literal (Par : Node_Id) return Boolean is
       Pragn : constant Node_Id := Parent (Par);
       Assoc : constant List_Id := Pragma_Argument_Associations (Pragn);
-      Pname : constant Name_Id := Pragma_Name_Mapped (Pragn);
+      Pname : constant Name_Id := Pragma_Name (Pragn);
       Argn  : Natural;
       N     : Node_Id;
 
@@ -28820,7 +28821,7 @@ package body Sem_Prag is
    begin
       pragma Assert
         (Nkind (N) = N_Pragma
-          and then Pragma_Name_Mapped (N) = Name_SPARK_Mode
+          and then Pragma_Name (N) = Name_SPARK_Mode
           and then Is_List_Member (N));
 
       --  For pragma SPARK_Mode to be private, it has to appear in the private
@@ -28981,7 +28982,7 @@ package body Sem_Prag is
          if Is_True (Expr_Value (Arg1x)) then
             declare
                Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
-               Pname   : constant Name_Id   := Pragma_Name (N);
+               Pname   : constant Name_Id   := Pragma_Name_Unmapped (N);
                Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
                Str     : constant String_Id := Strval (Get_Pragma_Arg (Arg2));
                Str_Len : constant Nat       := String_Length (Str);

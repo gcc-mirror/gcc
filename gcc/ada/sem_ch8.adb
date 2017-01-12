@@ -5683,12 +5683,13 @@ package body Sem_Ch8 is
          Par := Nod;
          while Present (Par) loop
             if Nkind (Par) = N_Pragma then
-               if Nam_In (Pragma_Name (Par), Name_Abstract_State,
-                                             Name_Depends,
-                                             Name_Global,
-                                             Name_Initializes,
-                                             Name_Refined_Depends,
-                                             Name_Refined_Global)
+               if Nam_In (Pragma_Name_Unmapped (Par),
+                          Name_Abstract_State,
+                          Name_Depends,
+                          Name_Global,
+                          Name_Initializes,
+                          Name_Refined_Depends,
+                          Name_Refined_Global)
                then
                   return True;
 

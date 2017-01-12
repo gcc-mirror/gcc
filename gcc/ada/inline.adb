@@ -2541,7 +2541,7 @@ package body Inline is
          --  not be posting warnings on the inlined body so it is unneeded.
 
          elsif Nkind (N) = N_Pragma
-           and then Pragma_Name_Mapped (N) = Name_Unreferenced
+           and then Pragma_Name (N) = Name_Unreferenced
          then
             Rewrite (N, Make_Null_Statement (Sloc (N)));
             return OK;

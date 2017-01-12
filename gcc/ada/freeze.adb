@@ -5187,9 +5187,10 @@ package body Freeze is
 
                begin
                   while Present (Prag) loop
-                     if Nam_In (Pragma_Name (Prag), Name_Post,
-                                                    Name_Postcondition,
-                                                    Name_Refined_Post)
+                     if Nam_In (Pragma_Name_Unmapped (Prag),
+                                Name_Post,
+                                Name_Postcondition,
+                                Name_Refined_Post)
                      then
                         Exp :=
                           Expression
@@ -8464,7 +8465,7 @@ package body Freeze is
 
             if Present (Decl)
               and then Nkind (Decl) = N_Pragma
-              and then Pragma_Name_Mapped (Decl) = Name_Import
+              and then Pragma_Name (Decl) = Name_Import
             then
                return;
             end if;

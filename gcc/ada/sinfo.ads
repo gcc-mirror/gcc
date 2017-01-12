@@ -2534,8 +2534,8 @@ package Sinfo is
       --  Psect_Object is always converted to Common_Object, but there are
       --  undoubtedly many other similar notes required ???
 
-      --  Note: a utility function Pragma_Name may be applied to pragma nodes
-      --  to conveniently obtain the Chars field of the Pragma_Identifier.
+      --  Note: utility functions Pragma_Name_Unmapped and Pragma_Name may be
+      --  applied to pragma nodes to obtain the Chars or its mapped version.
 
       --  Note: if From_Aspect_Specification is set, then Sloc points to the
       --  aspect name, as does the Pragma_Identifier. In this case if the
@@ -11019,9 +11019,9 @@ package Sinfo is
    -- Utility Functions --
    -----------------------
 
-   function Pragma_Name (N : Node_Id) return Name_Id;
-   pragma Inline (Pragma_Name);
-   --  Convenient function to obtain Chars field of Pragma_Identifier
+   function Pragma_Name_Unmapped (N : Node_Id) return Name_Id;
+   --  Function to obtain Chars field of Pragma_Identifier. In most cases, you
+   --  want to call Pragma_Name instead.
 
    procedure Map_Pragma_Name (From, To : Name_Id);
    --  Used in the implementation of pragma Rename_Pragma. Maps pragma name
@@ -11032,9 +11032,10 @@ package Sinfo is
    --  programs will use it at all, and those that do will use it approximately
    --  once or twice.
 
-   function Pragma_Name_Mapped (N : Node_Id) return Name_Id;
-   --  Same as Pragma_Name, except that if From has been mapped to To, and
-   --  Pragma_Name (N) = From, then this returns To.
+   function Pragma_Name (N : Node_Id) return Name_Id;
+   --  Same as Pragma_Name_Unmapped, except that if From has been mapped to To,
+   --  and Pragma_Name_Unmapped (N) = From, then this returns To. In other
+   --  words, this takes into account pragmas Rename_Pragma.
 
    -----------------------------
    -- Syntactic Parent Tables --

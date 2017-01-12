@@ -7740,7 +7740,7 @@ package body Sem_Ch12 is
          --  Do not copy Comment or Ident pragmas their content is relevant to
          --  the generic unit, not to the instantiating unit.
 
-         if Nam_In (Pragma_Name (N), Name_Comment, Name_Ident) then
+         if Nam_In (Pragma_Name_Unmapped (N), Name_Comment, Name_Ident) then
             New_N := Make_Null_Statement (Sloc (N));
 
          --  Do not copy pragmas generated from aspects because the pragmas do

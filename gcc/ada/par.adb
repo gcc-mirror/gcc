@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1481,10 +1481,12 @@ begin
 
                   --  Give error if bad pragma
 
-                  if not Is_Configuration_Pragma_Name (Pragma_Name (P_Node))
-                    and then Pragma_Name (P_Node) /= Name_Source_Reference
+                  if not Is_Configuration_Pragma_Name
+                           (Pragma_Name_Unmapped (P_Node))
+                    and then
+                      Pragma_Name_Unmapped (P_Node) /= Name_Source_Reference
                   then
-                     if Is_Pragma_Name (Pragma_Name (P_Node)) then
+                     if Is_Pragma_Name (Pragma_Name_Unmapped (P_Node)) then
                         Error_Msg_N
                           ("only configuration pragmas allowed " &
                            "in configuration file", P_Node);

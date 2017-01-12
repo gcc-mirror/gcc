@@ -510,12 +510,12 @@ package body Sem_Aux is
 
          if Nkind (N) = N_Pragma
            and then
-             (Pragma_Name (N) = Nam
+             (Pragma_Name_Unmapped (N) = Nam
                or else (Nam = Name_Priority
-                         and then Pragma_Name_Mapped (N) =
+                         and then Pragma_Name (N) =
                            Name_Interrupt_Priority)
                or else (Nam = Name_Interrupt_Priority
-                         and then Pragma_Name_Mapped (N) = Name_Priority))
+                         and then Pragma_Name (N) = Name_Priority))
          then
             if Check_Parents then
                return N;

@@ -162,7 +162,7 @@ package body Exp_Prag is
    ---------------------
 
    procedure Expand_N_Pragma (N : Node_Id) is
-      Pname : constant Name_Id := Pragma_Name_Mapped (N);
+      Pname : constant Name_Id := Pragma_Name (N);
 
    begin
       --  Rewrite pragma ignored by Ignore_Pragma to null statement, so that
@@ -1288,7 +1288,7 @@ package body Exp_Prag is
 
       if Relaxed_RM_Semantics
         and then List_Length (Pragma_Argument_Associations (N)) = 2
-        and then Pragma_Name_Mapped (N) = Name_Import
+        and then Pragma_Name (N) = Name_Import
         and then Nkind (Arg2 (N)) = N_String_Literal
       then
          Def_Id := Entity (Arg1 (N));

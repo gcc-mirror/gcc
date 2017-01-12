@@ -1,3 +1,17 @@
+2017-01-12  Bob Duff  <duff@adacore.com>
+
+	* contracts.adb, einfo.adb, errout.adb, exp_attr.adb,
+	exp_ch3.adb, exp_ch7.adb, exp_ch9.adb, exp_prag.adb, freeze.adb,
+	frontend.adb, ghost.adb, inline.adb, lib-writ.adb, lib-xref.adb,
+	par.adb, par-ch10.adb, par-ch2.adb, par-prag.adb, par_sco.adb,
+	sem_attr.adb, sem_aux.adb, sem_ch10.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch6.adb, sem_ch8.adb, sem_ch9.adb, sem_elab.adb,
+	sem_prag.adb, sem_res.adb, sem_util.adb, sem_util.ads,
+	sem_warn.adb, sinfo.adb, sinfo.ads, sprint.adb (Pragma_Name):
+	Change name to Pragma_Name_Unmapped.
+	(Pragma_Name_Mapped): Change name to Pragma_Name.
+	This is because the "mapped" version should be the usual case.
+
 2017-01-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.ads, einfo.adb: Remove uses of flags Has_Default_Init_Cond,

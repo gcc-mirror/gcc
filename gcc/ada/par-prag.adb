@@ -43,7 +43,7 @@ with System.WCh_Con; use System.WCh_Con;
 separate (Par)
 
 function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
-   Prag_Name   : constant Name_Id    := Pragma_Name (Pragma_Node);
+   Prag_Name   : constant Name_Id    := Pragma_Name_Unmapped (Pragma_Node);
    Prag_Id     : constant Pragma_Id  := Get_Pragma_Id (Prag_Name);
    Pragma_Sloc : constant Source_Ptr := Sloc (Pragma_Node);
    Arg_Count   : Nat;

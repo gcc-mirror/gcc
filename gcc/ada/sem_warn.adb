@@ -1877,7 +1877,7 @@ package body Sem_Warn is
                         Nod := Parent (N);
                         while Present (Nod) loop
                            if Nkind (Nod) = N_Pragma
-                             and then Nam_In (Pragma_Name (Nod),
+                             and then Nam_In (Pragma_Name_Unmapped (Nod),
                                               Name_Postcondition,
                                               Name_Refined_Post,
                                               Name_Contract_Cases)
@@ -1888,7 +1888,7 @@ package body Sem_Warn is
                               P := Parent (Nod);
 
                               if Nkind (P) = N_Pragma
-                                and then Pragma_Name_Mapped (P) =
+                                and then Pragma_Name (P) =
                                   Name_Test_Case
                                 and then Nod = Test_Case_Arg (P, Name_Ensures)
                               then
@@ -3399,8 +3399,8 @@ package body Sem_Warn is
             --  node, since assert pragmas get rewritten at analysis time.
 
             elsif Nkind (Original_Node (P)) = N_Pragma
-              and then Nam_In (Pragma_Name (Original_Node (P)), Name_Assert,
-                                                                Name_Check)
+              and then Nam_In (Pragma_Name_Unmapped (Original_Node (P)),
+                               Name_Assert, Name_Check)
             then
                return;
             end if;
