@@ -131,12 +131,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  of private: to allow derivation.  But none of the other
        *  containers allow for derivation.  Odd.)
        */
-      /// @c c is the underlying container.
-#if __cplusplus >= 201103L
-      _Sequence c{};
-#else
+       ///  @c c is the underlying container.
       _Sequence c;
-#endif
 
     public:
       /**
@@ -147,7 +143,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       queue(const _Sequence& __c = _Sequence())
       : c(__c) { }
 #else
-      queue() = default;
+      template<typename _Seq = _Sequence, typename _Requires = typename
+	       enable_if<is_default_constructible<_Seq>::value>::type>
+	queue()
+	: c() { }
 
       explicit
       queue(const _Sequence& __c)
@@ -446,13 +445,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       //  See queue::c for notes on these names.
-#if __cplusplus >= 201103L
-      _Sequence c{};
-      _Compare   comp{};
-#else
-      _Sequence c;
+      _Sequence  c;
       _Compare   comp;
-#endif
 
     public:
       /**
@@ -465,17 +459,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 #else
-      priority_queue() = default;
+      template<typename _Seq = _Sequence, typename _Requires = typename
+	       enable_if<__and_<is_default_constructible<_Compare>,
+                                is_default_constructible<_Seq>>::value>::type>
+	priority_queue()
+	: c(), comp() { }
 
       explicit
-      priority_queue(const _Compare& __x,
-		     const _Sequence& __s)
+      priority_queue(const _Compare& __x, const _Sequence& __s)
       : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 
       explicit
-      priority_queue(const _Compare& __x,
-		     _Sequence&& __s = _Sequence())
+      priority_queue(const _Compare& __x, _Sequence&& __s = _Sequence())
       : c(std::move(__s)), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 

@@ -1,5 +1,19 @@
 2017-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77528
+	* include/bits/stl_queue.h (queue, priority_queue): Remove default
+	member-initializers and define default constructors as templates with
+	constraints.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* testsuite/23_containers/priority_queue/requirements/constructible.cc:
+	New.
+	* testsuite/23_containers/priority_queue/requirements/
+	explicit_instantiation/1.cc: Test more instantiations.
+	* testsuite/23_containers/priority_queue/requirements/
+	explicit_instantiation/1_c++98.cc: Likewise.
+	* testsuite/23_containers/queue/requirements/constructible.cc: New.
+	* testsuite/23_containers/stack/requirements/constructible.cc: New.
+
 	PR libstdc++/66284
 	* doc/xml/manual/intro.xml: Document LWG 2781 change.
 	* doc/html/*: Regenerate.
