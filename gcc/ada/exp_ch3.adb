@@ -1295,6 +1295,7 @@ package body Exp_Ch3 is
       First_Arg      : Node_Id;
       Full_Init_Type : Entity_Id;
       Full_Type      : Entity_Id;
+      Init_Call      : Node_Id;
       Init_Type      : Entity_Id;
       Proc           : Entity_Id;
 
@@ -1515,7 +1516,7 @@ package body Exp_Ch3 is
             then
                Append_To (Args,
                  Make_Selected_Component (Loc,
-                   Prefix => New_Copy_Tree (Prefix (Id_Ref)),
+                   Prefix        => New_Copy_Tree (Prefix (Id_Ref)),
                    Selector_Name => Arg));
             else
                Append_To (Args, Arg);
@@ -1542,17 +1543,24 @@ package body Exp_Ch3 is
 
       Append_To (Res,
         Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (Proc, Loc),
+          Name                   => New_Occurrence_Of (Proc, Loc),
           Parameter_Associations => Args));
 
       if Needs_Finalization (Typ)
         and then Nkind (Id_Ref) = N_Selected_Component
       then
          if Chars (Selector_Name (Id_Ref)) /= Name_uParent then
-            Append_To (Res,
+            Init_Call :=
               Make_Init_Call
                 (Obj_Ref => New_Copy_Tree (First_Arg),
-                 Typ     => Typ));
+                 Typ     => Typ);
+
+            --  Guard against a missing [Deep_]Initialize when the type was not
+            --  properly frozen.
+
+            if Present (Init_Call) then
+               Append_To (Res, Init_Call);
+            end if;
          end if;
       end if;
 
@@ -1651,10 +1659,12 @@ package body Exp_Ch3 is
       function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id is
          N_Loc : constant Source_Ptr := Sloc (N);
          Typ   : constant Entity_Id := Underlying_Type (Etype (Id));
-         Exp   : Node_Id := N;
-         Kind  : Node_Kind := Nkind (N);
-         Lhs   : Node_Id;
-         Res   : List_Id;
+
+         Adj_Call : Node_Id;
+         Exp      : Node_Id   := N;
+         Kind     : Node_Kind := Nkind (N);
+         Lhs      : Node_Id;
+         Res      : List_Id;
 
       begin
          Lhs :=
@@ -1734,10 +1744,17 @@ package body Exp_Ch3 is
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
            and then not Is_Limited_View (Typ)
          then
-            Append_To (Res,
+            Adj_Call :=
               Make_Adjust_Call
                 (Obj_Ref => New_Copy_Tree (Lhs),
-                 Typ     => Etype (Id)));
+                 Typ     => Etype (Id));
+
+            --  Guard against a missing [Deep_]Adjust when the component type
+            --  was not properly frozen.
+
+            if Present (Adj_Call) then
+               Append_To (Res, Adj_Call);
+            end if;
          end if;
 
          --  If a component type has a predicate, add check to the component
@@ -5830,7 +5847,9 @@ package body Exp_Ch3 is
 
       --  Local variables
 
-      Next_N     : constant Node_Id := Next (N);
+      Next_N : constant Node_Id := Next (N);
+
+      Adj_Call   : Node_Id;
       Id_Ref     : Node_Id;
       Tag_Assign : Node_Id;
 
@@ -6332,10 +6351,17 @@ package body Exp_Ch3 is
               and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then
-               Insert_Action_After (Init_After,
+               Adj_Call :=
                  Make_Adjust_Call (
                    Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                   Typ     => Base_Typ));
+                   Typ     => Base_Typ);
+
+               --  Guard against a missing [Deep_]Adjust when the base type
+               --  was not properly frozen.
+
+               if Present (Adj_Call) then
+                  Insert_Action_After (Init_After, Adj_Call);
+               end if;
             end if;
 
             --  For tagged types, when an init value is given, the tag has to
@@ -9530,7 +9556,9 @@ package body Exp_Ch3 is
    is
       Loc       : constant Source_Ptr := Sloc (Tag_Typ);
       Res       : constant List_Id    := New_List;
+      Adj_Call  : Node_Id;
       Decl      : Node_Id;
+      Fin_Call  : Node_Id;
       Prim      : Elmt_Id;
       Eq_Needed : Boolean;
       Eq_Name   : Name_Id;
@@ -9756,41 +9784,44 @@ package body Exp_Ch3 is
 
       elsif not Has_Controlled_Component (Tag_Typ) then
          if not Is_Limited_Type (Tag_Typ) then
-            Decl := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust, True);
+            Adj_Call := Empty;
+            Decl     := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust, True);
 
             if Is_Controlled (Tag_Typ) then
-               Set_Handled_Statement_Sequence (Decl,
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => New_List (
-                     Make_Adjust_Call (
-                       Obj_Ref => Make_Identifier (Loc, Name_V),
-                       Typ     => Tag_Typ))));
-
-            else
-               Set_Handled_Statement_Sequence (Decl,
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => New_List (
-                     Make_Null_Statement (Loc))));
+               Adj_Call :=
+                 Make_Adjust_Call (
+                   Obj_Ref => Make_Identifier (Loc, Name_V),
+                   Typ     => Tag_Typ);
             end if;
+
+            if No (Adj_Call) then
+               Adj_Call := Make_Null_Statement (Loc);
+            end if;
+
+            Set_Handled_Statement_Sequence (Decl,
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => New_List (Adj_Call)));
 
             Append_To (Res, Decl);
          end if;
 
-         Decl := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize, True);
+         Fin_Call := Empty;
+         Decl     := Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize, True);
 
          if Is_Controlled (Tag_Typ) then
-            Set_Handled_Statement_Sequence (Decl,
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (
-                  Make_Final_Call
-                    (Obj_Ref => Make_Identifier (Loc, Name_V),
-                     Typ     => Tag_Typ))));
-
-         else
-            Set_Handled_Statement_Sequence (Decl,
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (Make_Null_Statement (Loc))));
+            Fin_Call :=
+              Make_Final_Call
+                (Obj_Ref => Make_Identifier (Loc, Name_V),
+                 Typ     => Tag_Typ);
          end if;
+
+         if No (Fin_Call) then
+            Fin_Call := Make_Null_Statement (Loc);
+         end if;
+
+         Set_Handled_Statement_Sequence (Decl,
+           Make_Handled_Sequence_Of_Statements (Loc,
+             Statements => New_List (Fin_Call)));
 
          Append_To (Res, Decl);
       end if;

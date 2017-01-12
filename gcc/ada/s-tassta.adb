@@ -1050,6 +1050,10 @@ package body System.Tasking.Stages is
       --  Create_TSD and thus the function returns 0 to suppress the
       --  creation of the fixed secondary stack in the primary stack.
 
+      --------------------------
+      -- Secondary_Stack_Size --
+      --------------------------
+
       function Secondary_Stack_Size return Storage_Elements.Storage_Offset is
          use System.Storage_Elements;
          use System.Secondary_Stack;

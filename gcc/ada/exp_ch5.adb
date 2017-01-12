@@ -4676,7 +4676,9 @@ package body Exp_Ch5 is
                                        and then not Comp_Asn
                                        and then not No_Ctrl_Actions (N)
                                        and then Tagged_Type_Expansion;
-      Tag_Id  : Entity_Id;
+      Adj_Call : Node_Id;
+      Fin_Call : Node_Id;
+      Tag_Id   : Entity_Id;
 
    begin
       --  Finalize the target of the assignment when controlled
@@ -4709,10 +4711,14 @@ package body Exp_Ch5 is
          null;
 
       else
-         Append_To (Res,
+         Fin_Call :=
            Make_Final_Call
              (Obj_Ref => Duplicate_Subexpr_No_Checks (L),
-              Typ     => Etype (L)));
+              Typ     => Etype (L));
+
+         if Present (Fin_Call) then
+            Append_To (Res, Fin_Call);
+         end if;
       end if;
 
       --  Save the Tag in a local variable Tag_Id
@@ -4765,10 +4771,14 @@ package body Exp_Ch5 is
       --  init proc since it is an initialization more than an assignment).
 
       if Ctrl_Act then
-         Append_To (Res,
+         Adj_Call :=
            Make_Adjust_Call
              (Obj_Ref => Duplicate_Subexpr_Move_Checks (L),
-              Typ     => Etype (L)));
+              Typ     => Etype (L));
+
+         if Present (Adj_Call) then
+            Append_To (Res, Adj_Call);
+         end if;
       end if;
 
       return Res;

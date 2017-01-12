@@ -184,10 +184,11 @@ package Exp_Ch7 is
       Typ       : Entity_Id;
       Skip_Self : Boolean := False) return Node_Id;
    --  Create a call to either Adjust or Deep_Adjust depending on the structure
-   --  of type Typ. Obj_Ref is an expression with no-side effect (not required
+   --  of type Typ. Obj_Ref is an expression with no side effects (not required
    --  to have been previously analyzed) that references the object to be
    --  adjusted. Typ is the expected type of Obj_Ref. When Skip_Self is set,
-   --  only the components (if any) are adjusted.
+   --  only the components (if any) are adjusted. Return Empty if Adjust or
+   --  Deep_Adjust is not available, possibly due to previous errors.
 
    function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id;
    --  Create a call to unhook an object from an arbitrary list. Obj_Ref is the
@@ -200,11 +201,13 @@ package Exp_Ch7 is
      (Obj_Ref   : Node_Id;
       Typ       : Entity_Id;
       Skip_Self : Boolean := False) return Node_Id;
-   --  Create a call to either Finalize or Deep_Finalize depending on the
-   --  structure of type Typ. Obj_Ref is an expression (with no-side effect
+   --  Create a call to either Finalize or Deep_Finalize, depending on the
+   --  structure of type Typ. Obj_Ref is an expression (with no side effects
    --  and is not required to have been previously analyzed) that references
    --  the object to be finalized. Typ is the expected type of Obj_Ref. When
-   --  Skip_Self is set, only the components (if any) are finalized.
+   --  Skip_Self is set, only the components (if any) are finalized. Return
+   --  Empty if Finalize or Deep_Finalize is not available, possibly due to
+   --  previous errors.
 
    procedure Make_Finalize_Address_Body (Typ : Entity_Id);
    --  Create the body of TSS routine Finalize_Address if Typ is controlled and
@@ -215,11 +218,12 @@ package Exp_Ch7 is
    function Make_Init_Call
      (Obj_Ref : Node_Id;
       Typ     : Entity_Id) return Node_Id;
-   --  Obj_Ref is an expression with no-side effect (not required to have been
-   --  previously analyzed) that references the object to be initialized. Typ
-   --  is the expected type of Obj_Ref, which is either a controlled type
-   --  (Is_Controlled) or a type with controlled components (Has_Controlled_
-   --  Components).
+   --  Create a call to either Initialize or Deep_Initialize, depending on the
+   --  structure of type Typ. Obj_Ref is an expression with no side effects
+   --  (not required to have been previously analyzed) that references the
+   --  object to be initialized. Typ is the expected type of Obj_Ref. Return
+   --  Empty if Initialize or Deep_Initialize is not available, possibly due to
+   --  previous errors.
 
    function Make_Handler_For_Ctrl_Operation (Loc : Source_Ptr) return Node_Id;
    --  Generate an implicit exception handler with an 'others' choice,

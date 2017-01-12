@@ -2943,7 +2943,10 @@ package body Exp_Util is
             Set_Etype (Obj_Ref, Desig_Typ);
          end if;
 
-         Fin_Call := Make_Final_Call (Obj_Ref, Desig_Typ);
+         Fin_Call :=
+           Make_Final_Call
+             (Obj_Ref => Obj_Ref,
+              Typ     => Desig_Typ);
 
       --  Otherwise finalize the hook. Generate:
 

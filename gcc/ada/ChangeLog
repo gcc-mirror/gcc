@@ -1,3 +1,76 @@
+2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb, sem_prag.adb, s-tassta.adb, sem_util.adb, s-tarest.adb,
+	sem_ch13.adb: Minor reformatting.
+
+2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Guard against a missing
+	adjustment primitive when the ancestor type was not properly frozen.
+	(Gen_Assign): Guard against a missing initialization
+	primitive when the component type was not properly frozen.
+	(Initialize_Array_Component): Guard against a missing adjustment
+	primitive when the component type was not properly frozen.
+	(Initialize_Record_Component): Guard against a missing adjustment
+	primitive when the component type was not properly frozen.
+	(Process_Transient_Component_Completion): The transient object may
+	not be finalized when its associated type was not properly frozen.
+	* exp_ch3.adb (Build_Assignment): Guard against a missing
+	adjustment primitive when the component type was not properly frozen.
+	(Build_Initialization_Call): Guard against a missing
+	initialization primitive when the associated type was not properly
+	frozen.
+	(Expand_N_Object_Declaration): Guard against a missing
+	adjustment primitive when the base type was not properly frozen.
+	(Predefined_Primitive_Bodies): Create an empty Deep_Adjust
+	body when there is no adjustment primitive available. Create an
+	empty Deep_Finalize body when there is no finalization primitive
+	available.
+	* exp_ch4.adb (Apply_Accessibility_Check): Guard against a
+	missing finalization primitive when the designated type was
+	not properly frozen.
+	(Expand_N_Allocator): Guard against a missing initialization primitive
+	when the designated type was not properly frozen.
+	* exp_ch5.adb (Make_Tag_Ctrl_Assignment): Add the adjustment call
+	only when the corresponding adjustment primitive is available.
+	* exp_ch7.adb (Build_Adjust_Or_Finalize_Statements): Generate the
+	adjustment/finalization statements only when there is an available
+	primitive to carry out the action.
+	(Build_Initialize_Statements): Generate the initialization/finalization
+	statements only when there is an available primitive to carry out the
+	action.
+	(Make_Adjust_Call): Do not generate a call when the underlying
+	type is not present due to a possible missing full view.
+	(Make_Final_Call): Do not generate a call when the underlying
+	type is not present due to a possible missing full view.
+	(Make_Finalize_Address_Stmts): Generate an empty body when the
+	designated type lacks a finalization primitive.
+	(Make_Init_Call): Do not generate a call when the underlying type is
+	not present due to a possible missing full view.
+	(Process_Component_For_Adjust): Add the adjustment call only when the
+	corresponding adjustment primitive is available.
+	(Process_Component_For_Finalize): Add the finalization call only when
+	the corresponding finalization primitive is available.
+	(Process_Object_Declaration): Use a null statement to emulate a
+	missing call to the finalization primitive of the object type.
+	* exp_ch7.ads (Make_Adjust_Call): Update the comment on usage.
+	(Make_Final_Call): Update the comment on usage.
+	(Make_Init_Call): Update the comment on usage.
+	* exp_util.adb (Build_Transient_Object_Statements): Code reformatting.
+
+2017-01-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads: Update documentation of Address_Taken.
+	* sem_attr.adb (Analyze_Access_Attribute, Resolve_Attribute
+	[Access_Attribute]): Only consider 'Access/'Unchecked_Access
+	for subprograms when setting Address_Taken flag.
+
+2017-01-12  Patrick Bernardi  <bernardi@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): Removed code that turned
+	Configurable_Run_Time_Mode off when analysing with'ed predefined
+	libraries.
+
 2017-01-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_prag.adb: Minor reformatting.

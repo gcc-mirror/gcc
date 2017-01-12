@@ -632,6 +632,13 @@ package body Exp_Ch4 is
                       Make_Explicit_Dereference (Loc, New_Copy (Obj_Ref)),
                     Typ     => DesigT);
 
+               --  Guard against a missing [Deep_]Finalize when the designated
+               --  type was not properly frozen.
+
+               if No (Fin_Call) then
+                  Fin_Call := Make_Null_Statement (Loc);
+               end if;
+
                --  When the target or profile supports deallocation, wrap the
                --  finalization call in a block to ensure proper deallocation
                --  even if finalization fails. Generate:
@@ -722,6 +729,7 @@ package body Exp_Ch4 is
       Aggr_In_Place : constant Boolean   := Is_Delayed_Aggregate (Exp);
       Indic         : constant Node_Id   := Subtype_Mark (Expression (N));
       T             : constant Entity_Id := Entity (Indic);
+      Adj_Call      : Node_Id;
       Node          : Node_Id;
       Tag_Assign    : Node_Id;
       Temp          : Entity_Id;
@@ -1060,13 +1068,17 @@ package body Exp_Ch4 is
             --  the designated type can be an ancestor of the subtype mark of
             --  the allocator.
 
-            Insert_Action (N,
+            Adj_Call :=
               Make_Adjust_Call
                 (Obj_Ref =>
                    Unchecked_Convert_To (T,
                      Make_Explicit_Dereference (Loc,
                        Prefix => New_Occurrence_Of (Temp, Loc))),
-                 Typ     => T));
+                 Typ     => T);
+
+            if Present (Adj_Call) then
+               Insert_Action (N, Adj_Call);
+            end if;
          end if;
 
          --  Note: the accessibility check must be inserted after the call to
@@ -4315,6 +4327,7 @@ package body Exp_Ch4 is
          Discr     : Elmt_Id;
          Init      : Entity_Id;
          Init_Arg1 : Node_Id;
+         Init_Call : Node_Id;
          Temp_Decl : Node_Id;
          Temp_Type : Entity_Id;
 
@@ -4635,10 +4648,17 @@ package body Exp_Ch4 is
                   --  Generate:
                   --    [Deep_]Initialize (Init_Arg1);
 
-                  Insert_Action (N,
+                  Init_Call :=
                     Make_Init_Call
                       (Obj_Ref => New_Copy_Tree (Init_Arg1),
-                       Typ     => T));
+                       Typ     => T);
+
+                  --  Guard against a missing [Deep_]Initialize when the
+                  --  designated type was not properly frozen.
+
+                  if Present (Init_Call) then
+                     Insert_Action (N, Init_Call);
+                  end if;
                end if;
 
                Rewrite (N, New_Occurrence_Of (Temp, Loc));

@@ -217,6 +217,10 @@ package body System.Tasking.Restricted.Stages is
       --  Create_TSD and thus the function returns 0 to suppress the
       --  creation of the fixed secondary stack in the primary stack.
 
+      --------------------------
+      -- Secondary_Stack_Size --
+      --------------------------
+
       function Secondary_Stack_Size return Storage_Elements.Storage_Offset is
          use System.Storage_Elements;
          use System.Secondary_Stack;
@@ -263,6 +267,8 @@ package body System.Tasking.Restricted.Stages is
       --  execution of its task body, then EO will contain the associated
       --  exception occurrence. Otherwise, it will contain Null_Occurrence.
 
+   --  Start of processing for Task_Wrapper
+
    begin
       if not Parameters.Sec_Stack_Dynamic then
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
@@ -270,8 +276,8 @@ package body System.Tasking.Restricted.Stages is
          SST.SS_Init (Secondary_Stack_Address, Integer (Secondary_Stack'Last));
       end if;
 
-      --  Initialize low-level TCB components, that
-      --  cannot be initialized by the creator.
+      --  Initialize low-level TCB components, that cannot be initialized by
+      --  the creator.
 
       Enter_Task (Self_ID);
 

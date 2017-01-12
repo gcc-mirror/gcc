@@ -393,9 +393,11 @@ package Einfo is
 --       attribute is applied directly to the entity, i.e. the entity is the
 --       entity of the prefix of the attribute reference. Also set if the
 --       entity is the second argument of an Asm_Input or Asm_Output attribute,
---       as the construct may entail taking its address. Used by the backend to
---       make sure that the address can be meaningfully taken, and also in the
---       case of subprograms to control output of certain warnings.
+--       as the construct may entail taking its address. And also set if the
+--       entity is a subprogram and the Access or Unchecked_Access attribute is
+--       applied. Used by the backend to make sure that the address can be
+--       meaningfully taken, and also in the case of subprograms to control
+--       output of certain warnings.
 
 --    Aft_Value (synthesized)
 --       Applies to fixed and decimal types. Computes a universal integer that

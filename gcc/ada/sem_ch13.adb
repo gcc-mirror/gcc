@@ -2063,10 +2063,10 @@ package body Sem_Ch13 is
                     Aspect_Output               |
                     Aspect_Read                 |
                     Aspect_Scalar_Storage_Order |
-                    Aspect_Size                 |
-                    Aspect_Small                |
                     Aspect_Secondary_Stack_Size |
                     Aspect_Simple_Storage_Pool  |
+                    Aspect_Size                 |
+                    Aspect_Small                |
                     Aspect_Storage_Pool         |
                     Aspect_Stream_Size          |
                     Aspect_Value_Size           |
@@ -5708,8 +5708,8 @@ package body Sem_Ch13 is
 
             if From_Aspect_Specification (N) then
                if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N ("Secondary Stack Size can only be " &
-                               "defined for task", Nam);
+                  Error_Msg_N
+                    ("Secondary Stack Size can only be defined for task", Nam);
 
                elsif Duplicate_Clause then
                   null;
