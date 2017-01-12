@@ -3296,7 +3296,7 @@ package body Sem_Prag is
          elsif Ekind (Item_Id) = E_Constant then
             Error_Msg_Name_1 := Chars (Encap_Id);
             SPARK_Msg_NE
-              (Fix_Msg (Encap_Typ, "consant & cannot act as constituent of "
+              (Fix_Msg (Encap_Typ, "constant & cannot act as constituent of "
                & "single protected type %"), Indic, Item_Id);
 
          --  The constituent is a package instantiation
@@ -11831,7 +11831,7 @@ package body Sem_Prag is
 
             procedure Resolve_Suppressible (Policy : Node_Id);
             --  Converts the assertion policy 'Suppressible' to either Check or
-            --  ignore based on whether checks are suppressed via -gnatp or ???
+            --  Ignore based on whether checks are suppressed via -gnatp or ???
 
             --------------------------
             -- Resolve_Suppressible --

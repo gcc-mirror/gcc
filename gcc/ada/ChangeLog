@@ -1,3 +1,9 @@
+2017-01-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+	* sem_util.adb (Unique_Entity): fix result for
+	bodies of entry families.
+
 2017-01-12  Justin Squirek  <squirek@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Add appropriate calls to

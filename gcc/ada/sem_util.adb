@@ -20658,14 +20658,25 @@ package body Sem_Util is
          when Entry_Kind =>
             if Nkind (Parent (E)) = N_Entry_Body then
                declare
+                  Prot_Type : Entity_Id;
                   Prot_Item : Entity_Id;
                begin
+                  if Ekind (E) = E_Entry then
+                     Prot_Type := Scope (E);
+                  else
+                     --  Bodies of entry families are nested within an extra
+                     --  scope that contains an entry index declaration.
+                     Prot_Type := Scope (Scope (E));
+                  end if;
+
+                  pragma Assert (Ekind (Prot_Type) = E_Protected_Type);
+
                   --  Traverse the entity list of the protected type and locate
                   --  an entry declaration which matches the entry body.
 
-                  Prot_Item := First_Entity (Scope (E));
+                  Prot_Item := First_Entity (Prot_Type);
                   while Present (Prot_Item) loop
-                     if Ekind (Prot_Item) = E_Entry
+                     if Ekind (Prot_Item) in Entry_Kind
                        and then Corresponding_Body (Parent (Prot_Item)) = E
                      then
                         U := Prot_Item;
