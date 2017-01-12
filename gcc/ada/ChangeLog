@@ -1,3 +1,65 @@
+2017-01-12  Tristan Gingold  <gingold@adacore.com>
+
+	* s-mmap.ads, s-mmap.adb, s-mmosin-unix.ads, s-mmosin-unix.adb,
+	s-mmauni-long.ads, s-mmosin-mingw.ads, s-mmosin-mingw.adb: New files.
+
+2017-01-12  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb, errout.ads (Initialize): Factor common treatment
+	in Reset_Warnings.
+	(Reset_Warnings): New procedure to reset counts related to warnings.
+	(Record_Compilation_Errors): New variable to store the presence of an
+	error, used in gnat2why to allow changing the Warning_Mode.
+	(Compilation_Errors): Use new variable Record_Compilation_Errors to
+	store the presence of an error.
+
+2017-01-12  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	For Interrupt_Handler and Attach_ Handler aspects, decorate the
+	internally built reference to the protected procedure as coming
+	from sources and force its analysis.
+
+2017-01-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Type): For a scalar derived type,
+	inherit predicates if any from the first_subtype of the parent,
+	not from the anonymous parent type.
+	* sem_eval.adb (Is_Static_Subtype): A type that inherits a dynamic
+	predicate is not a static subtype.
+
+2017-01-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* freeze.adb (Check_Suspicious_Convention): New procedure
+	performing a warning check on discriminated record types with
+	convention C or C++. Factored out of procedure Freeze_Record_Type,
+	and changed to only apply to base types (to avoid spurious
+	warnings on subtypes). Minor improvement of warning messages
+	to refer to discriminated rather than variant record types.
+	(Freeze_Record_Type): Remove code for performing a suspicious
+	convention check.
+	(Freeze_Entity): Only call Freeze_Record_Type
+	on types that aren't declared within any enclosing generic units
+	(rather than just excluding the type when the innermost scope
+	is generic). Call Check_Suspicious_Convention whether or not
+	the type is declared within a generic unit.
+	* sem_ch8.adb (In_Generic_Scope): Move this function to Sem_Util.
+	* sem_util.ads, sem_util.adb (In_Generic_Scope): New function (moved
+	from Sem_Ch8).
+
+2017-01-12  Tristan Gingold  <gingold@adacore.com>
+
+	* sysdep.c, adaint.c, rtinit.c, ming32.h:
+	(__gnat_current_codepage): Renamed from CurrentCodePage
+	(__gnat_current_ccs_encoding): Renamed from CurrentCCSEncoding
+
+2017-01-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Fully_Conformant_Expressions): Handle properly
+	quantified expressions, following AI12-050: the loop parameters
+	of two quantified expressions are conformant if they have the
+	same identifier.
+
 2017-01-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Clean up VxWorks targets.

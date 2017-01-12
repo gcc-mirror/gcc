@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -4989,7 +4990,13 @@ package body Sem_Eval is
       then
          return False;
 
-      elsif Has_Dynamic_Predicate_Aspect (Typ) then
+      --  If there is a dynamic predicate for the type (declared or inherited)
+      --  the expression is not static.
+
+      elsif Has_Dynamic_Predicate_Aspect (Typ)
+        or else (Is_Derived_Type (Typ)
+                  and then Has_Aspect (Typ, Aspect_Dynamic_Predicate))
+      then
          return False;
 
       --  String types

@@ -10518,6 +10518,26 @@ package body Sem_Util is
           and then Assertion_Expression_Pragma (Get_Pragma_Id (Prag));
    end In_Assertion_Expression_Pragma;
 
+   ----------------------
+   -- In_Generic_Scope --
+   ----------------------
+
+   function In_Generic_Scope (E : Entity_Id) return Boolean is
+      S : Entity_Id;
+
+   begin
+      S := Scope (E);
+      while Present (S) and then S /= Standard_Standard loop
+         if Is_Generic_Unit (S) then
+            return True;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      return False;
+   end In_Generic_Scope;
+
    -----------------
    -- In_Instance --
    -----------------

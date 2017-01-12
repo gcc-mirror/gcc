@@ -60,6 +60,13 @@ package body Errout is
    Finalize_Called : Boolean := False;
    --  Set True if the Finalize routine has been called
 
+   Record_Compilation_Errors : Boolean := False;
+   --  Record that a compilation error was witnessed during a given phase of
+   --  analysis for gnat2why. This is needed as Warning_Mode is modified twice
+   --  in gnat2why, hence Erroutc.Compilation_Errors can only return a suitable
+   --  value for each phase of analysis separately. This is updated at each
+   --  call to Compilation_Errors.
+
    Warn_On_Instance : Boolean;
    --  Flag set true for warning message to be posted on instance
 
@@ -236,8 +243,17 @@ package body Errout is
    begin
       if not Finalize_Called then
          raise Program_Error;
+
+      --  Record that a compilation error was witnessed during a given phase of
+      --  analysis for gnat2why. This is needed as Warning_Mode is modified
+      --  twice in gnat2why, hence Erroutc.Compilation_Errors can only return a
+      --  suitable value for each phase of analysis separately.
+
       else
-         return Erroutc.Compilation_Errors;
+         Record_Compilation_Errors := Record_Compilation_Errors or else
+           Erroutc.Compilation_Errors;
+
+         return Record_Compilation_Errors;
       end if;
    end Compilation_Errors;
 
@@ -1615,12 +1631,12 @@ package body Errout is
       Last_Error_Msg := No_Error_Msg;
       Serious_Errors_Detected := 0;
       Total_Errors_Detected := 0;
-      Warnings_Treated_As_Errors := 0;
-      Warnings_Detected := 0;
-      Info_Messages := 0;
-      Warnings_As_Errors_Count := 0;
       Cur_Msg := No_Error_Msg;
       List_Pragmas.Init;
+
+      --  Reset counts for warnings
+
+      Reset_Warnings;
 
       --  Initialize warnings tables
 
@@ -2356,6 +2372,18 @@ package body Errout is
          end loop;
       end if;
    end Remove_Warning_Messages;
+
+   --------------------
+   -- Reset_Warnings --
+   --------------------
+
+   procedure Reset_Warnings is
+   begin
+      Warnings_Treated_As_Errors := 0;
+      Warnings_Detected := 0;
+      Info_Messages := 0;
+      Warnings_As_Errors_Count := 0;
+   end Reset_Warnings;
 
    ----------------------
    -- Adjust_Name_Case --
