@@ -1,3 +1,9 @@
+2017-01-12  Nathan Sidwell  <nathan@acm.org>
+	    Nicolai Stange  <nicstange@gmail.com>
+
+	* combine.c (try_combine): Don't ignore result of overlap checking
+	loop.  Combine overlap & asm check into single loop.
+
 2017-01-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Provide -gimple
