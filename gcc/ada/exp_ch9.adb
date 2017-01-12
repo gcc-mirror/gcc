@@ -11931,8 +11931,8 @@ package body Exp_Ch9 is
                        Get_Rep_Pragma (TaskId, Name_Storage_Size))))))));
       end if;
 
-      --  Add the _Secondary_Stack_Size component if a
-      --  Secondary_Stack_Size rep item is present.
+      --  Add the _Secondary_Stack_Size component if a Secondary_Stack_Size
+      --  rep item is present.
 
       if Has_Rep_Item (TaskId, Name_Secondary_Stack_Size,
                        Check_Parents => False)

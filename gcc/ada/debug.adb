@@ -376,8 +376,7 @@ package body Debug is
    --       general Elaborate_All is still required because of nested calls.
 
    --  dE   Apply compile time elaboration checking for with relations between
-   --       predefined units. Normally no checks are made (it seems that at
-   --       least on the SGI, such checks run into trouble).
+   --       predefined units. Normally no checks are made.
 
    --  dF   Front end data layout enabled. Normally front end data layout
    --       is only enabled if the target parameter Backend_Layout is False.
@@ -407,7 +406,7 @@ package body Debug is
    --  dL   Output trace information on elaboration checking. This debug
    --       switch causes output to be generated showing each call or
    --       instantiation as it is checked, and the progress of the recursive
-   --       trace through calls at elaboration time.
+   --       trace through elaboration calls at compile time.
 
    --  dM   Assume all variables have been modified, and ignore current value
    --       indications. This debug flag disconnects the tracking of constant

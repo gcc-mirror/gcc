@@ -1054,7 +1054,7 @@ package Snames is
    --  names used internally by GNAT in order to deal with delayed aspects
    --  (Aspect_CPU, Aspect_Dispatching_Domain, Aspect_Interrupt_Priority,
    --  Aspect_Secondary_Stack_Size) that don't have corresponding pragmas or
-   --  user-referencable attributes.
+   --  user-referenceable attributes.
 
    --  It is convenient to have these internal attributes available for
    --  processing the aspects, since the normal approach is to convert an
