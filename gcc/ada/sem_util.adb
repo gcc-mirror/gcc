@@ -20712,6 +20712,10 @@ package body Sem_Util is
               and then Present (Corresponding_Spec_Of_Stub (P))
             then
                U := Corresponding_Spec_Of_Stub (P);
+
+               if Is_Single_Protected_Object (U) then
+                  U := Etype (U);
+               end if;
             end if;
 
          when E_Subprogram_Body =>
@@ -20749,6 +20753,10 @@ package body Sem_Util is
               and then Present (Corresponding_Spec_Of_Stub (P))
             then
                U := Corresponding_Spec_Of_Stub (P);
+
+               if Is_Single_Task_Object (U) then
+                  U := Etype (U);
+               end if;
             end if;
 
          when Type_Kind =>

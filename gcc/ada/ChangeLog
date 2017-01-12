@@ -1,3 +1,56 @@
+2017-01-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb (Unique_Entity): For concurrent
+	bodies that are defined with stubs and complete a declaration
+	of a single concurrent object return the entity of an implicit
+	concurrent type, not the entity of the anonymous concurrent
+	object.
+	* debug.adb: -gnatd.J is no longer used.
+	* make.adb (Globalize): Removed, no longer used.
+	* sem_ch9.adb: minor typo in comment for entry index
+
+2017-01-12  Patrick Bernardi  <bernardi@adacore.com>
+
+	* aspect.adb, aspect.ads: Added new aspect Secondary_Stack_Size.
+	* exp_ch3.adb (Build_Init_Statements): As part of initialising
+	the value record of a task, set its _Secondary_Stack_Size field
+	if present.
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Create
+	a _Secondary_Stack_Size field in the value record of
+	the task if a Secondary_Stack_Size rep item is present.
+	(Make_Task_Create_Call): Include secondary stack size
+	parameter. If No_Secondary_Stack restriction is in place, passes
+	stack size of 0.
+	* par-prag.adb, sem_prag.adb, sem_prag.ads: Added new pragma
+	Secondary_Stack_Size.
+	* s-secsta.adb, s-secsta.ads (Minimum_Secondary_Stack_Size): New
+	function to define the overhead of the secondary stack.
+	* s-tarest.adb (Create_Restricted_Task,
+	Create_Restricted_Task_Sequential): Functions now include
+	Secondary_Stack_Size parameter to pass to Initialize_ATCB.
+	* s-tarest.adb (Create_Restricted_Task,
+	Create_Restricted_Task_Sequential): Calls to Initialize_ATCB now
+	include Secondary_Stack_Size parameter.
+	(Task_Wrapper): Secondary stack now allocated to the size specified by
+	the Secondary_Stack_Size parameter in the task's ATCB.
+	* s-taskin.adb, s-taskin.adb (Common_ATCB, Initialize_ATCB): New
+	Secondary_Stack_Size component.
+	* s-tassta.adb, s-tassta.ads (Create_Restricted_Task,
+	Create_Restricted_Task_Sequential): Function now include
+	Secondary_Stack_Size parameter.
+	(Task_Wrapper): Secondary stack now allocated to the size
+	specified by the Secondary_Stack_Size parameter in the task's
+	ATCB.
+	* s-tproft.adb (Register_Foreign_Thread): Amended Initialize_ATCB call
+	to include Secondary_Stack_Size parameter.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Add support for
+	Secondary_Stack_Size aspect, turning the aspect into its corresponding
+	internal attribute.
+	(Analyze_Attribute_Definition): Process Secondary_Stack_Size attribute.
+	* snames.adb-tmpl, snames.ads-tmpl: Added names
+	Name_Secondary_Stack_Size, Name_uSecondary_Stack_Size,
+	Attribute_Secondary_Stack_Size and Pragma_Secondary_Stack_Size.
+
 2017-01-12  Yannick Moy  <moy@adacore.com>
 
 	* exp_spark.adb (Expand_SPARK_Potential_Renaming): Fix sloc of copied

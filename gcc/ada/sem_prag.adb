@@ -20553,6 +20553,50 @@ package body Sem_Prag is
             rv;
 
          --------------------------
+         -- Secondary_Stack_Size --
+         --------------------------
+
+         --  pragma Secondary_Stack_Size (EXPRESSION);
+
+         when Pragma_Secondary_Stack_Size => Secondary_Stack_Size : declare
+            P   : constant Node_Id := Parent (N);
+            Arg : Node_Id;
+            Ent : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            if Nkind (P) = N_Task_Definition then
+               Arg := Get_Pragma_Arg (Arg1);
+               Ent := Defining_Identifier (Parent (P));
+
+               --  The expression must be analyzed in the special
+               --  manner described in "Handling of Default Expressions"
+               --  in sem.ads.
+
+               Preanalyze_Spec_Expression (Arg, Any_Integer);
+
+               --  The pragma cannot appear if the No_Secondary_Stack
+               --  restriction is in effect.
+
+               Check_Restriction (No_Secondary_Stack, Arg);
+
+            --  Anything else is incorrect
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            --  Check duplicate pragma before we chain the pragma in the Rep
+            --  Item chain of Ent.
+
+            Check_Duplicate_Pragma (Ent);
+            Record_Rep_Item (Ent, N);
+         end Secondary_Stack_Size;
+
+         --------------------------
          -- Short_Circuit_And_Or --
          --------------------------
 
@@ -28625,6 +28669,7 @@ package body Sem_Prag is
       Pragma_Restriction_Warnings           =>  0,
       Pragma_Restrictions                   =>  0,
       Pragma_Reviewable                     => -1,
+      Pragma_Secondary_Stack_Size           => -1,
       Pragma_Short_Circuit_And_Or           =>  0,
       Pragma_Share_Generic                  =>  0,
       Pragma_Shared                         =>  0,
