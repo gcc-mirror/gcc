@@ -2264,6 +2264,11 @@ package body Exp_Ch6 is
       --  expression for the value of the actual, EF is the entity for the
       --  extra formal.
 
+      procedure Check_View_Conversion (Formal : Entity_Id; Actual : Node_Id);
+      --  Adds Invariant checks for every intermediate type between
+      --  the range of a view converted argument to its ancestor (from
+      --  parent to child).
+
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived
       --  type inherits from the original parent, not from the actual. The
@@ -2349,6 +2354,57 @@ package body Exp_Ch6 is
             Set_Is_Accessibility_Actual (Parent (Expr));
          end if;
       end Add_Extra_Actual;
+
+      ---------------------------
+      -- Check_View_Conversion --
+      ---------------------------
+
+      procedure Check_View_Conversion (Formal : Entity_Id; Actual : Node_Id) is
+         Arg        : Entity_Id;
+         Curr_Typ   : Entity_Id := Empty;
+         Inv_Checks : List_Id;
+         Par_Typ    : Entity_Id;
+
+      begin
+         Inv_Checks := No_List;
+
+         --  Extract actual object for type conversions
+
+         Arg := Actual;
+         while Nkind (Arg) = N_Type_Conversion loop
+            Arg := Expression (Arg);
+         end loop;
+
+         --  Move up the derivation chain starting with the type of the
+         --  the formal parameter down to the type of the actual object.
+
+         Par_Typ := Etype (Arg);
+         while Par_Typ /= Etype (Formal) and Par_Typ /= Curr_Typ loop
+            Curr_Typ := Par_Typ;
+            if Has_Invariants (Curr_Typ)
+              and then Present (Invariant_Procedure (Curr_Typ))
+            then
+               --  Verify the invariate of the current type. Generate:
+               --    Invariant_Check_Curr_Typ (Curr_Typ (Arg));
+
+               Prepend_New_To (Inv_Checks,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   =>
+                     New_Occurrence_Of
+                       (Invariant_Procedure (Curr_Typ), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Type_Conversion (Loc,
+                       Subtype_Mark => New_Occurrence_Of (Curr_Typ, Loc),
+                       Expression   => New_Copy_Tree (Arg)))));
+            end if;
+
+            Par_Typ := Base_Type (Etype (Curr_Typ));
+         end loop;
+
+         if not Is_Empty_List (Inv_Checks) then
+            Insert_Actions_After (N, Inv_Checks);
+         end if;
+      end Check_View_Conversion;
 
       ---------------------------
       -- Inherited_From_Formal --
@@ -3231,6 +3287,17 @@ package body Exp_Ch6 is
             Insert_Action (Actual,
               Make_Transportable_Check (Loc,
                 Duplicate_Subexpr_Move_Checks (Actual)));
+         end if;
+
+         --  Invariant checks are performed for every intermediate type between
+         --  the range of a view converted argument to its ancestor (from
+         --  parent to child) if it is passed as an "out" or "in out" parameter
+         --  after executing the call (RM 7.3.2 (11-14)).
+
+         if Ekind (Formal) /= E_In_Parameter
+           and then Nkind (Actual) = N_Type_Conversion
+         then
+            Check_View_Conversion (Formal, Actual);
          end if;
 
          --  This label is required when skipping extra actual generation for
