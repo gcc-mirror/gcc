@@ -122,8 +122,10 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 
   /* If NO_FUNCTION_CSE has been set by the target, then we should not try
      to cse function calls.  */
-  if (NO_FUNCTION_CSE && CALL_P (insn))
+#ifdef NO_FUNCTION_CSE
+  if (CALL_P (insn))
     return false;
+#endif
 
   if (GET_CODE (body) == SET)
     {

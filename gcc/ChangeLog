@@ -1,3 +1,8 @@
+2016-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* postreload.c (reload_cse_simplify): Check for NO_FUNCTION_CSE
+	definition instead of using it directly.
+
 2017-01-12  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	Backport from mainline
