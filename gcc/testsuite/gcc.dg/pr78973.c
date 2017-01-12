@@ -4,12 +4,12 @@
    deeper investigation turned out to be a true positive.
 
    { dg-do compile }
-   { dg-options "-O2 -Wall" }  */
+   { dg-options "-O2 -Wall" } */
 
 void f (void *p, int n)
 {
   if (n <= 4)
-    __builtin_memset (p, 0, n);   /* { dg-warning "exceeds maximum object size" } */
+    __builtin_memset (p, 0, n);   /* { dg-warning "exceeds maximum object size" "pr79073" { xfail ilp32 } } */
 }
 
 void g (void *d, unsigned n)
