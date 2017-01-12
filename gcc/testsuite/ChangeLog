@@ -1,3 +1,8 @@
+2017-01-12  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/79073
+	* gcc.dg/pr78973.c: Xfail on ILP32 targets.
+
 2017-01-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/builtin_target.c (check_features): Check all
