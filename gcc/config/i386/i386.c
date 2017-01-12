@@ -4922,7 +4922,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX5124VNNIW	(HOST_WIDE_INT_1 << 60)
 #define PTA_AVX5124FMAPS	(HOST_WIDE_INT_1 << 61)
 #define PTA_AVX512VPOPCNTDQ	(HOST_WIDE_INT_1 << 62)
-#define PTA_SGX			(HOST_WIDE_INT_1 << 62)
+#define PTA_SGX			(HOST_WIDE_INT_1 << 63)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
