@@ -11812,7 +11812,7 @@ package body Sem_Prag is
          --  identically named aspects and pragmas, depending on the specified
          --  policy identifier:
 
-         --  POLICY_IDENTIFIER ::= Check | Disable | Ignore
+         --  POLICY_IDENTIFIER ::= Check | Disable | Ignore | Suppressible
 
          --  Note: Check and Ignore are language-defined. Disable is a GNAT
          --  implementation-defined addition that results in totally ignoring
@@ -11828,6 +11828,38 @@ package body Sem_Prag is
          --  processing is required here.
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
+
+            procedure Resolve_Suppressible (Policy : Node_Id);
+            --  Converts the assertion policy 'Suppressible' to either Check or
+            --  ignore based on whether checks are suppressed via -gnatp or ???
+
+            --------------------------
+            -- Resolve_Suppressible --
+            --------------------------
+
+            procedure Resolve_Suppressible (Policy : Node_Id) is
+               Nam : Name_Id;
+               ARG : constant Node_Id := Get_Pragma_Arg (Policy);
+
+            begin
+               if Chars (Expression (Policy)) = Name_Suppressible then
+
+                  --  Rewrite the policy argument node to either Ignore or
+                  --  Check. This is done because the argument is referenced
+                  --  directly later during analysis.
+
+                  if Suppress_Checks then
+                     Nam := Name_Ignore;
+                  else
+                     Nam := Name_Check;
+                  end if;
+
+                  Rewrite (ARG, Make_Identifier (Sloc (ARG), Nam));
+               end if;
+            end Resolve_Suppressible;
+
+            --  Local variables
+
             Arg    : Node_Id;
             Kind   : Name_Id;
             LocP   : Source_Ptr;
@@ -11856,8 +11888,10 @@ package body Sem_Prag is
               and then (Nkind (Arg1) /= N_Pragma_Argument_Association
                          or else Chars (Arg1) = No_Name)
             then
-               Check_Arg_Is_One_Of
-                 (Arg1, Name_Check, Name_Disable, Name_Ignore);
+               Check_Arg_Is_One_Of (Arg1,
+                 Name_Check, Name_Disable, Name_Ignore, Name_Suppressible);
+
+               Resolve_Suppressible (Arg1);
 
                --  Treat one argument Assertion_Policy as equivalent to:
 
@@ -11911,8 +11945,10 @@ package body Sem_Prag is
                        ("invalid assertion kind for pragma%", Arg);
                   end if;
 
-                  Check_Arg_Is_One_Of
-                    (Arg, Name_Check, Name_Disable, Name_Ignore);
+                  Check_Arg_Is_One_Of (Arg,
+                    Name_Check, Name_Disable, Name_Ignore, Name_Suppressible);
+
+                  Resolve_Suppressible (Arg);
 
                   if Kind = Name_Ghost then
 
