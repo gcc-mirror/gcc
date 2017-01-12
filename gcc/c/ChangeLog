@@ -1,3 +1,8 @@
+2017-01-12  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Parse
+	__MEM.
+
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72813
