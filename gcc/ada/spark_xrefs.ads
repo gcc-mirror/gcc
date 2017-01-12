@@ -25,9 +25,9 @@
 
 --  This package defines tables used to store information needed for the SPARK
 --  mode. It is used by procedures in Lib.Xref.SPARK_Specific to build the
---  SPARK specific cross-references information before writing it out to the
---  ALI file, and by Get_SPARK_Xrefs/Put_SPARK_Xrefs to read and write the text
---  form that is used in the ALI file.
+--  SPARK-specific cross-reference information before writing it to the ALI
+--  file, and by Get_SPARK_Xrefs/Put_SPARK_Xrefs to read/write the textual
+--  representation that is stored in the ALI file.
 
 with Types;      use Types;
 with GNAT.Table;
@@ -128,8 +128,9 @@ package SPARK_Xrefs is
    --  -- Xref Section --
    --  ------------------
 
-   --  A second section defines cross-references useful for computing the set
-   --  of global variables read/written in each subprogram/package.
+   --  A second section defines cross-references useful for computing global
+   --  variables read/written in each subprogram/package/protected_type/
+   --  task_type.
 
    --    FX dependency-number filename . entity-number entity
 
@@ -197,14 +198,13 @@ package SPARK_Xrefs is
 
    --  The Generated Globals section is located at the end of the ALI file
 
-   --  All lines introducing information related to the Generated Globals
-   --  have the string "GG" appearing in the beginning. This string ("GG")
-   --  should therefore not be used in the beginning of any line that does
-   --  not relate to Generated Globals.
+   --  All lines with information related to the Generated Globals begin with
+   --  string "GG". This string should therefore not be used in the beginning
+   --  of any line not related to Generated Globals.
 
-   --  The processing (reading and writing) of this section happens in
-   --  package Flow_Generated_Globals (from the SPARK 2014 sources), for
-   --  further information please refer there.
+   --  The processing (reading and writing) of this section happens in package
+   --  Flow_Generated_Globals (from the SPARK 2014 sources), for further
+   --  information please refer there.
 
    ----------------
    -- Xref Table --
@@ -235,20 +235,20 @@ package SPARK_Xrefs is
       --  Column number for the entity referenced
 
       File_Num : Nat;
-      --  Set to the file dependency number for the cross-reference. Note
-      --  that if no file entry is present explicitly, this is just a copy
-      --  of the reference for the current cross-reference section.
+      --  File dependency number for the cross-reference. Note that if no file
+      --  entry is present explicitly, this is just a copy of the reference for
+      --  the current cross-reference section.
 
       Scope_Num : Nat;
-      --  Set to the scope number for the cross-reference. Note that if no
-      --  scope entry is present explicitly, this is just a copy of the
-      --  reference for the current cross-reference section.
+      --  Scope number for the cross-reference. Note that if no scope entry is
+      --  present explicitly, this is just a copy of the reference for the
+      --  current cross-reference section.
 
       Line : Nat;
       --  Line number for the reference
 
       Rtype : Character;
-      --  Indicates type of reference, using code used in ALI file:
+      --  Indicates type of the reference, using code used in ALI file:
       --    r = reference
       --    c = reference to constant object
       --    m = modification
@@ -348,7 +348,7 @@ package SPARK_Xrefs is
 
       Unit_File_Name : String_Ptr;
       --  Pointer to file name for unit in ALI file, when File_Name refers to a
-      --  subunit. Otherwise null.
+      --  subunit; otherwise null.
 
       File_Num : Nat;
       --  Dependency number in ALI file

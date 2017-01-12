@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Osint;
 with Output;   use Output;
 
 with System.Case_Util; use System.Case_Util;
+with System.OS_Lib;
 
 package body Binde is
 
@@ -62,9 +63,13 @@ package body Binde is
       --  After directly with's Before, so the spec of Before must be
       --  elaborated before After is elaborated.
 
+      Forced,
+      --  Before and After come from a pair of lines in the forced elaboration
+      --  order file.
+
       Elab,
       --  After directly mentions Before in a pragma Elaborate, so the
-      --  body of Before must be elaborate before After is elaborated.
+      --  body of Before must be elaborated before After is elaborated.
 
       Elab_All,
       --  After either mentions Before directly in a pragma Elaborate_All,
@@ -73,12 +78,12 @@ package body Binde is
       --  traces the dependencies in the latter case.
 
       Elab_All_Desirable,
-      --  This is just like Elab_All, except that the elaborate all was not
+      --  This is just like Elab_All, except that the Elaborate_All was not
       --  explicitly present in the source, but rather was created by the
       --  front end, which decided that it was "desirable".
 
       Elab_Desirable,
-      --  This is just like Elab, except that the elaborate was not
+      --  This is just like Elab, except that the Elaborate was not
       --  explicitly present in the source, but rather was created by the
       --  front end, which decided that it was "desirable".
 
@@ -111,19 +116,19 @@ package body Binde is
       Elab_All_Link : Elab_All_Id;
       --  If Reason = Elab_All or Elab_Desirable, then this points to the
       --  first elment in a list of Elab_All entries that record the with
-      --  chain leading resulting in this particular dependency.
+      --  chain resulting in this particular dependency.
 
    end record;
 
    --  Note on handling of Elaborate_Body. Basically, if we have a pragma
-   --  Elaborate_Body in a unit, it means that the spec and body have to
-   --  be handled as a single entity from the point of view of determining
-   --  an elaboration order. What we do is to essentially remove the body
-   --  from consideration completely, and transfer all its links (other
-   --  than the spec link) to the spec. Then when then the spec gets chosen,
-   --  we choose the body right afterwards. We mark the links that get moved
-   --  from the body to the spec by setting their Elab_Body flag True, so
-   --  that we can understand what is going on.
+   --  Elaborate_Body in a unit, it means that the spec and body have to be
+   --  handled as a single entity from the point of view of determining an
+   --  elaboration order. What we do is to essentially remove the body from
+   --  consideration completely, and transfer all its links (other than the
+   --  spec link) to the spec. Then when the spec gets chosen, we choose the
+   --  body right afterwards. We mark the links that get moved from the body to
+   --  the spec by setting their Elab_Body flag True, so that we can understand
+   --  what is going on.
 
    Succ_First : constant := 1;
 
@@ -175,7 +180,7 @@ package body Binde is
       --  Position in elaboration order (zero = not placed yet)
 
       Visited : Boolean;
-      --  Used in computing transitive closure for elaborate all and
+      --  Used in computing transitive closure for Elaborate_All and
       --  also in locating cycles and paths in the diagnose routines.
 
       Elab_Position : Natural;
@@ -233,15 +238,15 @@ package body Binde is
 
    function Corresponding_Body (U : Unit_Id) return Unit_Id;
    pragma Inline (Corresponding_Body);
-   --  Given a unit which is a spec for which there is a separate body, return
+   --  Given a unit that is a spec for which there is a separate body, return
    --  the unit id of the body. It is an error to call this routine with a unit
-   --  that is not a spec, or which does not have a separate body.
+   --  that is not a spec, or that does not have a separate body.
 
    function Corresponding_Spec (U : Unit_Id) return Unit_Id;
    pragma Inline (Corresponding_Spec);
-   --  Given a unit which is a body for which there is a separate spec, return
+   --  Given a unit that is a body for which there is a separate spec, return
    --  the unit id of the spec. It is an error to call this routine with a unit
-   --  that is not a body, or which does not have a separate spec.
+   --  that is not a body, or that does not have a separate spec.
 
    procedure Diagnose_Elaboration_Problem;
    --  Called when no elaboration order can be found. Outputs an appropriate
@@ -254,19 +259,22 @@ package body Binde is
       Link   : Elab_All_Id);
    --  Used to compute the transitive closure of elaboration links for an
    --  Elaborate_All pragma (Reason = Elab_All) or for an indication of
-   --  Elaborate_All_Desirable (Reason = Elab_All_Desirable). Unit After has
-   --  a pragma Elaborate_All or the front end has determined that a reference
-   --  probably requires Elaborate_All is required, and unit Before must be
-   --  previously elaborated. First a link is built making sure that unit
-   --  Before is elaborated before After, then a recursive call ensures that
-   --  we also build links for any units needed by Before (i.e. these units
-   --  must/should also be elaborated before After). Link is used to build
-   --  a chain of Elab_All_Entries to explain the reason for a link. The
-   --  value passed is the chain so far.
+   --  Elaborate_All_Desirable (Reason = Elab_All_Desirable). Unit After has a
+   --  pragma Elaborate_All or the front end has determined that a reference
+   --  probably requires Elaborate_All, and unit Before must be previously
+   --  elaborated. First a link is built making sure that unit Before is
+   --  elaborated before After, then a recursive call ensures that we also
+   --  build links for any units needed by Before (i.e. these units must/should
+   --  also be elaborated before After). Link is used to build a chain of
+   --  Elab_All_Entries to explain the reason for a link. The value passed is
+   --  the chain so far.
 
    procedure Elab_Error_Msg (S : Successor_Id);
    --  Given a successor link, outputs an error message of the form
    --  "$ must be elaborated before $ ..." where ... is the reason.
+
+   procedure Force_Elab_Order;
+   --  Gather dependencies from the forced elaboration order file (-f switch)
 
    procedure Gather_Dependencies;
    --  Compute dependencies, building the Succ and UNR tables
@@ -281,10 +289,10 @@ package body Binde is
 
    function Is_Waiting_Body (U : Unit_Id) return Boolean;
    pragma Inline (Is_Waiting_Body);
-   --  Determines if U is a waiting body, defined as a body which has
+   --  Determines if U is a waiting body, defined as a body that has
    --  not been elaborated, but whose spec has been elaborated.
 
-   function Make_Elab_Entry
+   function Make_Elab_All_Entry
      (Unam : Unit_Name_Type;
       Link : Elab_All_Id) return Elab_All_Id;
    --  Make an Elab_All_Entries table entry with the given Unam and Link
@@ -419,7 +427,7 @@ package body Binde is
       --     body of A or B?
 
       --  The normal waiting body preference would have placed the body of
-      --  A before the spec of B if it could. Since it could not, there it
+      --  A before the spec of B if it could. Since it could not, then it
       --  must be the case that A depends on B. It is therefore a good idea
       --  to put the body of B first.
 
@@ -445,7 +453,7 @@ package body Binde is
 
       if not Debug_Flag_O then
 
-         --  The following deal with the case of specs which have been marked
+         --  The following deal with the case of specs that have been marked
          --  as Elaborate_Body_Desirable. We generally want to delay these
          --  specs as long as possible, so that the bodies have a better chance
          --  of being elaborated closer to the specs.
@@ -521,13 +529,15 @@ package body Binde is
       Cspec : Unit_Id;
 
    begin
-      Succ.Increment_Last;
-      Succ.Table (Succ.Last).Before          := Before;
-      Succ.Table (Succ.Last).Next            := UNR.Table (Before).Successors;
-      UNR.Table (Before).Successors          := Succ.Last;
-      Succ.Table (Succ.Last).Reason          := R;
-      Succ.Table (Succ.Last).Reason_Unit     := Cur_Unit;
-      Succ.Table (Succ.Last).Elab_All_Link   := Ea_Id;
+      Succ.Append
+        ((Before        => Before,
+          After         => No_Unit_Id, -- filled in below
+          Next          => UNR.Table (Before).Successors,
+          Reason        => R,
+          Elab_Body     => False, -- set correctly below
+          Reason_Unit   => Cur_Unit,
+          Elab_All_Link => Ea_Id));
+      UNR.Table (Before).Successors := Succ.Last;
 
       --  Deal with special Elab_Body case. If the After of this link is
       --  a body whose spec has Elaborate_All set, and this is not the link
@@ -721,7 +731,7 @@ package body Binde is
                Choose (U);
                return True;
 
-            --  All done if already visited, otherwise mark as visited
+            --  All done if already visited
 
             elsif UNR.Table (U).Visited then
                return False;
@@ -751,7 +761,7 @@ package body Binde is
       --  Start of processing for Find_Path
 
       begin
-         --  Initialize all non-chosen nodes to not visisted yet
+         --  Initialize all non-chosen nodes to not visited yet
 
          for U in Units.First .. Units.Last loop
             UNR.Table (U).Visited := UNR.Table (U).Elab_Position /= 0;
@@ -762,7 +772,7 @@ package body Binde is
          return Find_Link (Ufrom, 0);
       end Find_Path;
 
-   --  Start of processing for Diagnose_Elaboration_Error
+   --  Start of processing for Diagnose_Elaboration_Problem
 
    begin
       Set_Standard_Error;
@@ -951,7 +961,7 @@ package body Binde is
                  (Unit_Id_Of (Withs.Table (W).Uname),
                   After,
                   Reason,
-                  Make_Elab_Entry (Withs.Table (W).Uname, Link));
+                  Make_Elab_All_Entry (Withs.Table (W).Uname, Link));
             end;
          end if;
       end loop;
@@ -962,7 +972,7 @@ package body Binde is
          Elab_All_Links
            (Corresponding_Body (Before),
             After, Reason,
-            Make_Elab_Entry
+            Make_Elab_All_Entry
               (Units.Table (Corresponding_Body (Before)).Uname, Link));
       end if;
    end Elab_All_Links;
@@ -1004,6 +1014,11 @@ package body Binde is
          when Withed =>
             Error_Msg_Output
               ("     reason: with clause",
+               Info => True);
+
+         when Forced =>
+            Error_Msg_Output
+              ("     reason: forced by -f switch",
                Info => True);
 
          when Elab =>
@@ -1075,12 +1090,13 @@ package body Binde is
       --  Initialize unit table for elaboration control
 
       for U in Units.First .. Units.Last loop
-         UNR.Increment_Last;
-         UNR.Table (UNR.Last).Successors    := No_Successor;
-         UNR.Table (UNR.Last).Num_Pred      := 0;
-         UNR.Table (UNR.Last).Nextnp        := No_Unit_Id;
-         UNR.Table (UNR.Last).Elab_Order    := 0;
-         UNR.Table (UNR.Last).Elab_Position := 0;
+         UNR.Append
+           ((Successors    => No_Successor,
+             Num_Pred      => 0,
+             Nextnp        => No_Unit_Id,
+             Elab_Order    => 0,
+             Visited       => False,
+             Elab_Position => 0));
       end loop;
 
       --  Output warning if -p used with no -gnatE units
@@ -1186,6 +1202,193 @@ package body Binde is
       end loop Outer;
    end Find_Elab_Order;
 
+   ----------------------
+   -- Force_Elab_Order --
+   ----------------------
+
+   procedure Force_Elab_Order is
+      use System.OS_Lib;
+      --  There is a lot of fiddly string manipulation below, because we don't
+      --  want to depend on misc utility packages like Ada.Characters.Handling.
+
+      function Read_File (Name : String) return String_Ptr;
+      --  Read the entire contents of the named file
+
+      function Get_Line return String;
+      --  Read the next line from the file content read by Read_File. Strip
+      --  leading and trailing blanks. Convert "(spec)" or "(body)" to
+      --  "%s"/"%b". Remove comments (Ada style; "--" to end of line).
+
+      function Read_File (Name : String) return String_Ptr is
+         --  All of the following calls should succeed, because we checked the
+         --  file in Switch.B, but we double check and raise Program_Error on
+         --  failure, just in case.
+
+         F : constant File_Descriptor := Open_Read (Name, Binary);
+
+      begin
+         if F = Invalid_FD then
+            raise Program_Error;
+         end if;
+
+         declare
+            Len : constant Natural := Natural (File_Length (F));
+            Result : constant String_Ptr := new String (1 .. Len);
+            Len_Read : constant Natural := Read (F, Result (1)'Address, Len);
+            Status : Boolean;
+
+         begin
+            if Len_Read /= Len then
+               raise Program_Error;
+            end if;
+
+            Close (F, Status);
+
+            if not Status then
+               raise Program_Error;
+            end if;
+
+            return Result;
+         end;
+      end Read_File;
+
+      S : String_Ptr := Read_File (Force_Elab_Order_File.all);
+      Cur : Positive := 1;
+
+      function Get_Line return String is
+         First : Positive := Cur;
+         Last : Natural;
+      begin
+         --  Skip to end of line
+
+         while Cur <= S'Last
+           and then S (Cur) /= ASCII.LF
+           and then S (Cur) /= ASCII.CR
+         loop
+            Cur := Cur + 1;
+         end loop;
+
+         --  Strip leading blanks
+
+         while First <= S'Last and then S (First) = ' ' loop
+            First := First + 1;
+         end loop;
+
+         --  Strip trailing blanks and comment
+
+         Last := Cur - 1;
+
+         for J in First .. Last - 1 loop
+            if S (J .. J + 1) = "--" then
+               Last := J - 1;
+               exit;
+            end if;
+         end loop;
+
+         while Last >= First and then S (Last) = ' ' loop
+            Last := Last - 1;
+         end loop;
+
+         --  Convert "(spec)" or "(body)" to "%s"/"%b", strip trailing blanks
+         --  again.
+
+         declare
+            Line : String renames S (First .. Last);
+            Spec_String : constant String := "(spec)";
+            SL : constant Positive := Spec_String'Length;
+            Body_String : constant String := "(body)";
+            BL : constant Positive := Body_String'Length;
+            Is_Spec, Is_Body : Boolean := False;
+         begin
+            if Line'Length >= SL
+              and then Line (Last - SL + 1 .. Last) = Spec_String
+            then
+               Is_Spec := True;
+               Last := Last - SL;
+            elsif Line'Length >= BL
+              and then Line (Last - BL + 1 .. Last) = Body_String
+            then
+               Is_Body := True;
+               Last := Last - BL;
+            end if;
+
+            while Last >= First and then S (Last) = ' ' loop
+               Last := Last - 1;
+            end loop;
+
+            --  Skip past LF or CR/LF
+
+            if Cur <= S'Last and then S (Cur) = ASCII.CR then
+               Cur := Cur + 1;
+            end if;
+
+            if Cur <= S'Last and then S (Cur) = ASCII.LF then
+               Cur := Cur + 1;
+            end if;
+
+            if Is_Spec then
+               return Line (First .. Last) & "%s";
+            elsif Is_Body then
+               return Line (First .. Last) & "%b";
+            else
+               return Line;
+            end if;
+         end;
+      end Get_Line;
+
+      Empty_Name : constant Unit_Name_Type := Name_Find ("");
+      Prev_Unit : Unit_Id := No_Unit_Id;
+
+   begin
+      --  Loop through the file content, and build a dependency link for each
+      --  pair of lines. Ignore lines that should be ignored.
+
+      while Cur <= S'Last loop
+         declare
+            Uname : constant Unit_Name_Type := Name_Find (Get_Line);
+         begin
+            if Uname = Empty_Name then
+               null; -- silently skip blank lines
+
+            elsif Get_Name_Table_Int (Uname) = 0
+              or else Unit_Id (Get_Name_Table_Int (Uname)) = No_Unit_Id
+            then
+               Write_Line
+                 ("""" & Get_Name_String (Uname) &
+                  """: not present; ignored");
+
+            else
+               declare
+                  Cur_Unit : constant Unit_Id := Unit_Id_Of (Uname);
+               begin
+                  if Is_Internal_File_Name (Units.Table (Cur_Unit).Sfile) then
+                     Write_Line
+                       ("""" & Get_Name_String (Uname) &
+                          """: predefined unit ignored");
+
+                  else
+                     if Prev_Unit /= No_Unit_Id then
+                        Write_Unit_Name (Units.Table (Prev_Unit).Uname);
+                        Write_Str (" <-- ");
+                        Write_Unit_Name (Units.Table (Cur_Unit).Uname);
+                        Write_Eol;
+
+                        Build_Link
+                          (Before => Prev_Unit,
+                           After => Cur_Unit,
+                           R => Forced);
+                     end if;
+
+                     Prev_Unit := Cur_Unit;
+                  end if;
+               end;
+            end if;
+         end;
+      end loop;
+
+      Free (S);
+   end Force_Elab_Order;
+
    -------------------------
    -- Gather_Dependencies --
    -------------------------
@@ -1250,7 +1453,7 @@ package body Binde is
 
                      Elab_All_Links
                        (Withed_Unit, U, Elab_All,
-                        Make_Elab_Entry
+                        Make_Elab_All_Entry
                           (Withs.Table (W).Uname, No_Elab_All_Link));
 
                   --  Elaborate_All_Desirable case, for this we establish the
@@ -1269,7 +1472,7 @@ package body Binde is
 
                      Elab_All_Links
                        (Withed_Unit, U, Elab_All_Desirable,
-                        Make_Elab_Entry
+                        Make_Elab_All_Entry
                           (Withs.Table (W).Uname, No_Elab_All_Link));
 
                   --  Pragma Elaborate case. We must build a link for the
@@ -1305,7 +1508,7 @@ package body Binde is
                      end if;
 
                   --  A limited_with does not establish an elaboration
-                  --  dependence (that's the whole point)..
+                  --  dependence (that's the whole point).
 
                   elsif Withs.Table (W).Limited_With then
                      null;
@@ -1323,6 +1526,13 @@ package body Binde is
             end loop;
          end if;
       end loop;
+
+      --  If -f<elab_order> switch was given, take into account dependences
+      --  specified in the file <elab_order>.
+
+      if Force_Elab_Order_File /= null then
+         Force_Elab_Order;
+      end if;
    end Gather_Dependencies;
 
    ------------------
@@ -1344,9 +1554,9 @@ package body Binde is
       --  If we have a body with separate spec, test flags on the spec
 
       if Units.Table (U).Utype = Is_Body then
-         return Units.Table (U + 1).Preelab
+         return Units.Table (Corresponding_Spec (U)).Preelab
                   or else
-                Units.Table (U + 1).Pure;
+                Units.Table (Corresponding_Spec (U)).Pure;
 
       --  Otherwise we have a spec or body acting as spec, test flags on unit
 
@@ -1367,11 +1577,11 @@ package body Binde is
         and then UNR.Table (Corresponding_Spec (U)).Elab_Position /= 0;
    end Is_Waiting_Body;
 
-   ---------------------
-   -- Make_Elab_Entry --
-   ---------------------
+   -------------------------
+   -- Make_Elab_All_Entry --
+   -------------------------
 
-   function Make_Elab_Entry
+   function Make_Elab_All_Entry
      (Unam : Unit_Name_Type;
       Link : Elab_All_Id) return Elab_All_Id
    is
@@ -1380,7 +1590,7 @@ package body Binde is
       Elab_All_Entries.Table (Elab_All_Entries.Last).Needed_By := Unam;
       Elab_All_Entries.Table (Elab_All_Entries.Last).Next_Elab := Link;
       return Elab_All_Entries.Last;
-   end Make_Elab_Entry;
+   end Make_Elab_All_Entry;
 
    -------------------------------
    -- Pessimistic_Better_Choice --
@@ -1501,7 +1711,7 @@ package body Binde is
       --     body of A or B?
 
       --  The normal waiting body preference would have placed the body of
-      --  A before the spec of B if it could. Since it could not, there it
+      --  A before the spec of B if it could. Since it could not, then it
       --  must be the case that A depends on B. It is therefore a good idea
       --  to put the body of B last so that if there is an elaboration order
       --  problem, we will find it (that's what pessimistic order is about)
@@ -1528,7 +1738,7 @@ package body Binde is
 
       if not Debug_Flag_O then
 
-         --  The following deal with the case of specs which have been marked
+         --  The following deal with the case of specs that have been marked
          --  as Elaborate_Body_Desirable. In the normal case, we generally want
          --  to delay the elaboration of these specs as long as possible, so
          --  that bodies have better chance of being elaborated closer to the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,10 @@ with Types; use Types;
 package Binde is
 
    --  The following table records the chosen elaboration order. It is used
-   --  by Gen_Elab_Call to generate the sequence of elaboration calls. Note
+   --  by Gen_Elab_Calls to generate the sequence of elaboration calls. Note
    --  that units are included in this table even if they have no elaboration
    --  routine, since the table is also used to drive the generation of object
-   --  files in the binder output. Gen_Elab_Call skips any units that have no
+   --  files in the binder output. Gen_Elab_Calls skips any units that have no
    --  elaboration routine.
 
    package Elab_Order is new Table.Table (

@@ -702,6 +702,10 @@ package Opt is
    --  GNATMAKE, GPRBUILD
    --  Set to force recompilations even when the objects are up-to-date.
 
+   Force_Elab_Order_File : String_Ptr := null;
+   --  GNATBIND
+   --  File name specified for -f switch (the forced elaboration order file)
+
    Front_End_Inlining : Boolean := False;
    --  GNAT
    --  Set True to activate inlining by front-end expansion (even on GCC

@@ -1,3 +1,19 @@
+2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting.
+	* spark_xrefs.ads: minor cleanup of comments for SPARK xrefs
+
+2017-01-12  Bob Duff  <duff@adacore.com>
+
+	* binde.adb (Forced): New reason for a dependence.
+	(Force_Elab_Order): Implementation of the new switch.
+	* binde.ads: Minor comment fixes.
+	* bindusg.adb: Add -f switch. Apparently, there was an -f switch
+	long ago that is no longer supported; removed comment about that.
+	* opt.ads (Force_Elab_Order_File): Name of file specified for
+	-f switch.
+	* switch-b.adb: Parse -f switch.
+
 2017-01-12  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch6.adb (Check_View_Conversion): Created this function
