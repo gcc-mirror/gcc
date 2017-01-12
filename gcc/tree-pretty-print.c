@@ -1459,7 +1459,38 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 
     case MEM_REF:
       {
-	if (integer_zerop (TREE_OPERAND (node, 1))
+	if (flags & TDF_GIMPLE)
+	  {
+	    pp_string (pp, "__MEM <");
+	    dump_generic_node (pp, TREE_TYPE (node),
+			       spc, flags | TDF_SLIM, false);
+	    if (TYPE_ALIGN (TREE_TYPE (node))
+		!= TYPE_ALIGN (TYPE_MAIN_VARIANT (TREE_TYPE (node))))
+	      {
+		pp_string (pp, ", ");
+		pp_decimal_int (pp, TYPE_ALIGN (TREE_TYPE (node)));
+	      }
+	    pp_greater (pp);
+	    pp_string (pp, " (");
+	    if (TREE_TYPE (TREE_OPERAND (node, 0))
+		!= TREE_TYPE (TREE_OPERAND (node, 1)))
+	      {
+		pp_left_paren (pp);
+		dump_generic_node (pp, TREE_TYPE (TREE_OPERAND (node, 1)),
+				   spc, flags | TDF_SLIM, false);
+		pp_right_paren (pp);
+	      }
+	    dump_generic_node (pp, TREE_OPERAND (node, 0),
+			       spc, flags | TDF_SLIM, false);
+	    if (! integer_zerop (TREE_OPERAND (node, 1)))
+	      {
+		pp_string (pp, " + ");
+		dump_generic_node (pp, TREE_OPERAND (node, 1),
+				   spc, flags | TDF_SLIM, false);
+	      }
+	    pp_right_paren (pp);
+	  }
+	else if (integer_zerop (TREE_OPERAND (node, 1))
 	    /* Dump the types of INTEGER_CSTs explicitly, for we can't
 	       infer them and MEM_ATTR caching will share MEM_REFs
 	       with differently-typed op0s.  */
@@ -1633,7 +1664,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
       break;
 
     case INTEGER_CST:
-      if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE)
+      if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE
+	  && ! (flags & TDF_GIMPLE))
 	{
 	  /* In the case of a pointer, one may want to divide by the
 	     size of the pointed-to type.  Unfortunately, this not
@@ -1661,7 +1693,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
       else if (tree_fits_shwi_p (node))
 	pp_wide_integer (pp, tree_to_shwi (node));
       else if (tree_fits_uhwi_p (node))
-	pp_unsigned_wide_integer (pp, tree_to_uhwi (node));
+	{
+	  pp_unsigned_wide_integer (pp, tree_to_uhwi (node));
+	  if (flags & TDF_GIMPLE)
+	    pp_character (pp, 'U');
+	}
       else
 	{
 	  wide_int val = node;

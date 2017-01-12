@@ -1,5 +1,10 @@
 2017-01-12  Richard Biener  <rguenther@suse.de>
 
+	* tree-pretty-print.c (dump_generic_node): Provide -gimple
+	variant for MEM_REF.  Sanitize INTEGER_CST for -gimple.
+
+2017-01-12  Richard Biener  <rguenther@suse.de>
+
 	* tree.c (initialize_tree_contains_struct): Make TS_OPTIMIZATION
 	and TS_TARGET_OPTION directly derive from TS_BASE.
 	* tree-core.h (tree_optimization_option): Derive from tree_base.
