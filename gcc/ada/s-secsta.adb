@@ -171,7 +171,7 @@ package body System.Secondary_Stack is
    --  Convert from address stored in task data structures
 
    ----------------------------------
-   -- Minumum_Secondary_Stack_Size --
+   -- Minimum_Secondary_Stack_Size --
    ----------------------------------
 
    function Minimum_Secondary_Stack_Size return Natural is
