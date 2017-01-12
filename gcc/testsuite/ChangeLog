@@ -1,3 +1,8 @@
+2017-01-12  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/791051
+	* gcc.dg/attr-alloc_size-4.c: Avoid false negatives due to bug 79054.
+
 2017-01-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/pr78768.c: Require LTO.
