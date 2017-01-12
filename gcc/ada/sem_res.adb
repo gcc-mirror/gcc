@@ -11810,8 +11810,7 @@ package body Sem_Res is
       -- Valid_Array_Conversion --
       ----------------------------
 
-      function Valid_Array_Conversion return Boolean
-      is
+      function Valid_Array_Conversion return Boolean is
          Opnd_Comp_Type : constant Entity_Id := Component_Type (Opnd_Type);
          Opnd_Comp_Base : constant Entity_Id := Base_Type (Opnd_Comp_Type);
 

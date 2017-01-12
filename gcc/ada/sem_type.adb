@@ -307,7 +307,6 @@ package body Sem_Type is
             else
                Get_Next_Interp (I, It);
             end if;
-
          end loop;
 
          All_Interp.Table (All_Interp.Last) := (Name, Typ, Abstr_Op);

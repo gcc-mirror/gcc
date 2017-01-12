@@ -1897,12 +1897,18 @@ package body Exp_Util is
       Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
       --  The body should not be inserted into the tree when the context is
-      --  ASIS, GNATprove or a generic unit because it is not part of the
-      --  template. Note that the body must still be generated in order to
-      --  resolve the DIC assertion expression.
+      --  ASIS or a generic unit because it is not part of the template. Note
+      --  that the body must still be generated in order to resolve the DIC
+      --  assertion expression.
 
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+      if ASIS_Mode or Inside_A_Generic then
          null;
+
+      --  Semi-insert the body into the tree for GNATprove by setting its
+      --  Parent field. This allows for proper upstream tree traversals.
+
+      elsif GNATprove_Mode then
+         Set_Parent (Proc_Body, Parent (Declaration_Node (Work_Typ)));
 
       --  Otherwise the body is part of the freezing actions of the working
       --  type.
@@ -2083,16 +2089,20 @@ package body Exp_Util is
                     New_Occurrence_Of (Work_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS, GNATprove, or a generic unit because it is not part of the
-      --  template.
+      --  is ASIS or a generic unit because it is not part of the template.
 
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+      if ASIS_Mode or Inside_A_Generic then
          null;
+
+      --  Semi-insert the declaration into the tree for GNATprove by setting
+      --  its Parent field. This allows for proper upstream tree traversals.
+
+      elsif GNATprove_Mode then
+         Set_Parent (Proc_Decl, Parent (Typ_Decl));
 
       --  Otherwise insert the declaration
 
       else
-         pragma Assert (Present (Typ_Decl));
          Insert_After_And_Analyze (Typ_Decl, Proc_Decl);
       end if;
 

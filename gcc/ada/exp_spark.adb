@@ -140,7 +140,7 @@ package body Exp_SPARK is
             --  Otherwise the renamed object denotes a name
 
             else
-               Rewrite (N, New_Copy_Tree (Obj_Id));
+               Rewrite (N, New_Copy_Tree (Obj_Id, New_Sloc => Loc));
                Reset_Analyzed_Flags (N);
             end if;
 

@@ -523,8 +523,8 @@ package Sem is
       --  See Sem_Ch10 (Install_Parents, Remove_Parents).
 
       Node_To_Be_Wrapped : Node_Id;
-      --  Only used in transient scopes. Records the node which will
-      --  be wrapped by the transient block.
+      --  Only used in transient scopes. Records the node which will be wrapped
+      --  by the transient block.
 
       Actions_To_Be_Wrapped : Scope_Actions;
       --  Actions that have to be inserted at the start, at the end, or as

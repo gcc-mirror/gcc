@@ -649,10 +649,8 @@ package Lib.Writ is
    --        AD  Elaborate_All_Desirable set for this unit, which means that
    --            there is no Elaborate_All, but the analysis suggests that
    --            Program_Error may be raised if the Elaborate_All conditions
-   --            cannot be satisfied. In dynamic elaboration mode, the binder
-   --            will attempt to treat AD as EA if it can. In static
-   --            elaboration mode, the binder will treat AD as EA, even if it
-   --            introduces cycles.
+   --            cannot be satisfied. The binder will attempt to treat AD as
+   --            EA if it can.
 
    --      The parameter source-name and lib-name are omitted for the case of a
    --      generic unit compiled with earlier versions of GNAT which did not

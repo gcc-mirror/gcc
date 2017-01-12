@@ -1211,13 +1211,17 @@ package body Binde is
       --  There is a lot of fiddly string manipulation below, because we don't
       --  want to depend on misc utility packages like Ada.Characters.Handling.
 
-      function Read_File (Name : String) return String_Ptr;
-      --  Read the entire contents of the named file
-
       function Get_Line return String;
       --  Read the next line from the file content read by Read_File. Strip
       --  leading and trailing blanks. Convert "(spec)" or "(body)" to
       --  "%s"/"%b". Remove comments (Ada style; "--" to end of line).
+
+      function Read_File (Name : String) return String_Ptr;
+      --  Read the entire contents of the named file
+
+      ---------------
+      -- Read_File --
+      ---------------
 
       function Read_File (Name : String) return String_Ptr is
          --  All of the following calls should succeed, because we checked the
@@ -1232,9 +1236,11 @@ package body Binde is
          end if;
 
          declare
-            Len : constant Natural := Natural (File_Length (F));
-            Result : constant String_Ptr := new String (1 .. Len);
-            Len_Read : constant Natural := Read (F, Result (1)'Address, Len);
+            Len      : constant Natural    := Natural (File_Length (F));
+            Result   : constant String_Ptr := new String (1 .. Len);
+            Len_Read : constant Natural    :=
+                         Read (F, Result (1)'Address, Len);
+
             Status : Boolean;
 
          begin
@@ -1252,12 +1258,17 @@ package body Binde is
          end;
       end Read_File;
 
-      S : String_Ptr := Read_File (Force_Elab_Order_File.all);
-      Cur : Positive := 1;
+      Cur : Positive   := 1;
+      S   : String_Ptr := Read_File (Force_Elab_Order_File.all);
+
+      --------------
+      -- Get_Line --
+      --------------
 
       function Get_Line return String is
          First : Positive := Cur;
-         Last : Natural;
+         Last  : Natural;
+
       begin
          --  Skip to end of line
 
@@ -1293,12 +1304,16 @@ package body Binde is
          --  again.
 
          declare
+            Body_String : constant String   := "(body)";
+            BL          : constant Positive := Body_String'Length;
+            Spec_String : constant String   := "(spec)";
+            SL          : constant Positive := Spec_String'Length;
+
             Line : String renames S (First .. Last);
-            Spec_String : constant String := "(spec)";
-            SL : constant Positive := Spec_String'Length;
-            Body_String : constant String := "(body)";
-            BL : constant Positive := Body_String'Length;
-            Is_Spec, Is_Body : Boolean := False;
+
+            Is_Body : Boolean := False;
+            Is_Spec : Boolean := False;
+
          begin
             if Line'Length >= SL
               and then Line (Last - SL + 1 .. Last) = Spec_String
@@ -1336,8 +1351,12 @@ package body Binde is
          end;
       end Get_Line;
 
+      --  Local variables
+
       Empty_Name : constant Unit_Name_Type := Name_Find ("");
-      Prev_Unit : Unit_Id := No_Unit_Id;
+      Prev_Unit  : Unit_Id := No_Unit_Id;
+
+   --  Start of processing for Force_Elab_Order
 
    begin
       --  Loop through the file content, and build a dependency link for each

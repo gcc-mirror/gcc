@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ package Exp_Sel is
    function Build_Abort_Block_Handler (Loc : Source_Ptr) return Node_Id;
    --  Generate if front-end exception:
    --    when others =>
-   --      Abort_Under;
+   --      Abort_Undefer;
    --  or if back-end exception:
    --    when others =>
    --      null;
