@@ -1,3 +1,19 @@
+2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sinfo.ads: Minor reformatting.
+
+2017-01-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb, exp_util.ads, einfo.ads: Minor typo fixes and
+	reformatting.
+
+2017-01-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Anonymous_Context): Add new
+	variable Definite. Create a local object and pass its 'Access to the
+	BIP function when the result type is either definite or it does not
+	require any finalization or secondary stack management.
+
 2017-01-12  Bob Duff  <duff@adacore.com>
 
 	* contracts.adb, einfo.adb, errout.adb, exp_attr.adb,

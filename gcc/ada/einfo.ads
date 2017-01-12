@@ -927,7 +927,7 @@ package Einfo is
 --       when the type is subject to pragma Default_Initial_Condition (DIC), or
 --       when the type inherits a DIC pragma from a parent type. Points to the
 --       entity of a procedure which takes a single argument of the given type
---       and verifies the assertion expression of the DIC pragma at runtime.
+--       and verifies the assertion expression of the DIC pragma at run time.
 
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
@@ -1760,7 +1760,7 @@ package Einfo is
 --       Defined in functions and generic functions. Set if there is one or
 --       more missing return statements in the function. This is used to
 --       control wrapping of the body in Exp_Ch6 to ensure that the program
---       error exception is correctly raised in this case at runtime.
+--       error exception is correctly raised in this case at run time.
 
 --    Has_Nested_Block_With_Handler (Flag101)
 --       Defined in scope entities. Set if there is a nested block within the
@@ -2370,7 +2370,7 @@ package Einfo is
 --       Defined in record types and subtypes. Set if the type was created
 --       by the expander to represent a task or protected type. For every
 --       concurrent type, such as record type is constructed, and task and
---       protected objects are instances of this record type at runtime
+--       protected objects are instances of this record type at run time
 --       (The backend will replace declarations of the concurrent type using
 --       the declarations of the corresponding record type). See Exp_Ch9 for
 --       further details.
@@ -2432,7 +2432,7 @@ package Einfo is
 --    Is_DIC_Procedure (Flag132)
 --       Defined in functions and procedures. Set for a generated procedure
 --       which verifies the assumption of pragma Default_Initial_Condition at
---       runtime.
+--       run time.
 
 --    Is_Discrete_Or_Fixed_Point_Type (synthesized)
 --       Applies to all entities, true for all discrete types and subtypes
@@ -3956,7 +3956,7 @@ package Einfo is
 --       the expanded N_Procedure_Call_Statement node for this call. It
 --       is used for Import/Export_Exception processing to modify the
 --       register call to make appropriate entries in the special tables
---       used for handling these pragmas at runtime.
+--       used for handling these pragmas at run time.
 
 --    Related_Array_Object (Node25)
 --       Defined in array types and subtypes. Used only for the base type

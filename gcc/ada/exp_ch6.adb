@@ -7529,6 +7529,14 @@ package body Exp_Ch6 is
       Return_Obj_Id   : Entity_Id;
       Return_Obj_Decl : Entity_Id;
 
+      Definite : Boolean;
+      --  True if result subtype is definite, or has a size that does not
+      --  require secondary stack usage (i.e. no variant part or components
+      --  whose type depends on discriminants). In particular, untagged types
+      --  with only access discriminants do not require secondary stack use.
+      --  Note that if the return type is tagged we must always use the sec.
+      --  stack because the call may dispatch on result.
+
    begin
       --  Step past qualification, type conversion (which can occur in actual
       --  parameter contexts), and unchecked conversion (which can occur in
@@ -7568,6 +7576,10 @@ package body Exp_Ch6 is
       end if;
 
       Result_Subt := Etype (Function_Id);
+      Definite :=
+        (Is_Definite_Subtype (Underlying_Type (Result_Subt))
+             and then not Is_Tagged_Type (Result_Subt))
+          or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
 
       --  If the build-in-place function returns a controlled object, then the
       --  object needs to be finalized immediately after the context. Since
@@ -7606,10 +7618,10 @@ package body Exp_Ch6 is
             Analyze (Function_Call);
          end;
 
-      --  When the result subtype is constrained, an object of the subtype is
+      --  When the result subtype is definite, an object of the subtype is
       --  declared and an access value designating it is passed as an actual.
 
-      elsif Is_Constrained (Underlying_Type (Result_Subt)) then
+      elsif Definite then
 
          --  Create a temporary object to hold the function result
 

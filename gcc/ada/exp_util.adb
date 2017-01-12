@@ -1102,7 +1102,7 @@ package body Exp_Util is
 
                --  In SPARK mode, reject an inherited condition for an
                --  inherited operation if it contains a call to an overriding
-               --  operation, because this implies that the pre/postcondition
+               --  operation, because this implies that the pre/postconditions
                --  of the inherited operation have changed silently.
 
                elsif SPARK_Mode = On
@@ -1206,7 +1206,7 @@ package body Exp_Util is
          Deriv_Typ : Entity_Id;
          Stmts     : in out List_Id);
       --  Add a runtime check to verify the assertion expression of inherited
-      --  pragma DIC_Prag. Par_Typ is parent type which is also the owner of
+      --  pragma DIC_Prag. Par_Typ is parent type, which is also the owner of
       --  the DIC pragma. Deriv_Typ is the derived type inheriting the DIC
       --  pragma. All generated code is added to list Stmts.
 
@@ -1454,7 +1454,7 @@ package body Exp_Util is
       begin
          Expr := New_Copy_Tree (DIC_Expr);
 
-         --  Perform the following substituion:
+         --  Perform the following substitution:
 
          --    * Replace the current instance of DIC_Typ with a reference to
          --    the _object formal parameter of the DIC procedure.
@@ -2056,7 +2056,7 @@ package body Exp_Util is
       pragma Assert (Present (Typ_Decl));
 
       --  Create the formal parameter which emulates the variable-like behavior
-      --  of the current type instance.
+      --  of the type's current instance.
 
       Obj_Id := Make_Defining_Identifier (Loc, Chars => Name_uObject);
 
@@ -2083,7 +2083,7 @@ package body Exp_Util is
                     New_Occurrence_Of (Work_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS, GNATprove or a generic unit because it is not part of the
+      --  is ASIS, GNATprove, or a generic unit because it is not part of the
       --  template.
 
       if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then

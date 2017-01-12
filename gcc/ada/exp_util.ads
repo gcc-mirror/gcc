@@ -254,11 +254,11 @@ package Exp_Util is
       Adjust_Sloc : Boolean);
    --  Build the expression for an inherited class-wide condition. Prag is
    --  the pragma constructed from the corresponding aspect of the parent
-   --  subprogram, and Subp is the overriding operation and Par_Subp is
+   --  subprogram, and Subp is the overriding operation, and Par_Subp is
    --  the overridden operation that has the condition. Adjust_Sloc is True
    --  when the sloc of nodes traversed should be adjusted for the inherited
    --  pragma. The routine is also called to check whether an inherited
-   --  operation that is not overridden but has inherited conditions need
+   --  operation that is not overridden but has inherited conditions needs
    --  a wrapper, because the inherited condition includes calls to other
    --  primitives that have been overridden. In that case the first argument
    --  is the expression of the original class-wide aspect. In SPARK_Mode, such
@@ -274,11 +274,11 @@ package Exp_Util is
 
    procedure Build_DIC_Procedure_Body (Typ : Entity_Id);
    --  Create the body of the procedure which verifies the assertion expression
-   --  of pragma Default_Initial_Condition at runtime.
+   --  of pragma Default_Initial_Condition at run time.
 
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id);
    --  Create the declaration of the procedure which verifies the assertion
-   --  expression of pragma Default_Initial_Condition at runtime.
+   --  expression of pragma Default_Initial_Condition at run time.
 
    procedure Build_Procedure_Form (N : Node_Id);
    --  Create a procedure declaration which emulates the behavior of a function

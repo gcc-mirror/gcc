@@ -11019,10 +11019,6 @@ package Sinfo is
    -- Utility Functions --
    -----------------------
 
-   function Pragma_Name_Unmapped (N : Node_Id) return Name_Id;
-   --  Function to obtain Chars field of Pragma_Identifier. In most cases, you
-   --  want to call Pragma_Name instead.
-
    procedure Map_Pragma_Name (From, To : Name_Id);
    --  Used in the implementation of pragma Rename_Pragma. Maps pragma name
    --  From to pragma name To, so From can be used as a synonym for To.
@@ -11033,9 +11029,14 @@ package Sinfo is
    --  once or twice.
 
    function Pragma_Name (N : Node_Id) return Name_Id;
-   --  Same as Pragma_Name_Unmapped, except that if From has been mapped to To,
-   --  and Pragma_Name_Unmapped (N) = From, then this returns To. In other
-   --  words, this takes into account pragmas Rename_Pragma.
+   --  Obtain the name of pragma N from the Chars field of its identifier. If
+   --  the pragma has been renamed using Rename_Pragma, this routine returns
+   --  the name of the renaming.
+
+   function Pragma_Name_Unmapped (N : Node_Id) return Name_Id;
+   --  Obtain the name of pragma N from the Chars field of its identifier. This
+   --  form of name extraction does not take into account renamings performed
+   --  by Rename_Pragma.
 
    -----------------------------
    -- Syntactic Parent Tables --
