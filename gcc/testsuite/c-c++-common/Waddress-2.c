@@ -20,11 +20,3 @@ int f2 (void)
 {
   return &i != NULL;   /* { dg-warning "the address of .i. will never be NULL" } */
 }
-
-int f3 (void)
-{
-  return &i != (int *) 0;
-}
-
-
-
