@@ -1,3 +1,9 @@
+2017-01-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79044
+	* config/rs6000/rs6000.c (insn_is_swappable_p): Mark
+	element-reversing loads and stores as not swappable.
+
 2017-01-12  Nathan Sidwell  <nathan@acm.org>
 	    Nicolai Stange  <nicstange@gmail.com>
 

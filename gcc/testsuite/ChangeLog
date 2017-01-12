@@ -1,3 +1,8 @@
+2017-01-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79044
+	* gcc.target/powerpc/swaps-p8-26.c: New.
+
 2017-01-12  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/gimplefe-21.c: New testcase.
