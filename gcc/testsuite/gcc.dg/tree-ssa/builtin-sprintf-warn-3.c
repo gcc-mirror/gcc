@@ -4,7 +4,7 @@
    -O2 (-ftree-vrp) is necessary for the tests involving ranges to pass,
    otherwise -O1 is sufficient.
    { dg-do compile }
-   { dg-options "-O2 -Wformat -Wformat-length=1 -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wformat -Wformat-overflow=1 -ftrack-macro-expansion=0" } */
 
 typedef __SIZE_TYPE__ size_t;
 

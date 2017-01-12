@@ -1,7 +1,7 @@
 /* PR middle-end/78519 - missing warning for sprintf %s with null pointer
    Also exercises null destination pointer and null format string.
    { dg-do compile }
-   { dg-options "-O2 -Wformat -Wformat-length -Wno-nonnull -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wformat -Wformat-overflow -Wno-nonnull -ftrack-macro-expansion=0" } */
 
 typedef __builtin_va_list va_list;
 

@@ -1,8 +1,8 @@
-/* PR middle-end/77721 - -Wformat-length not uses arg range for converted vars
+/* PR middle-end/77721 - -Wformat-overflow not uses arg range for converted vars
    Test to verify that the correct range information is made available to the
    -Wformat-lenght check to prevent warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wformat -Wformat-length -fdump-tree-optimized" } */
+/* { dg-options "-O2 -Wformat -Wformat-overflow -fdump-tree-optimized" } */
 
 void abort (void);
 int snprintf (char*, __SIZE_TYPE__, const char*, ...);

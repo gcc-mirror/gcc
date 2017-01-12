@@ -1,6 +1,6 @@
-/* PR middle-end/78622 - [7 Regression] -Wformat-length/-fprintf-return-value
+/* PR middle-end/78622 - [7 Regression] -Wformat-overflow/-fprintf-return-value
    incorrect with overflow/wrapping
-   { dg-additional-options "-Wformat-length=2" } */
+   { dg-additional-options "-Wformat-overflow=2" } */
 
 __attribute__((noinline, noclone)) int
 foo (int x)

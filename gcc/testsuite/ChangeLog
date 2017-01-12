@@ -1,3 +1,19 @@
+2017-01-12  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/pr78138.c: Adjust.
+	* gcc.dg/pr78768.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-4.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-4.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-6.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-7.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-8.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-9.c: Adjust.
+	* gcc.dg/tree-ssa/pr78605.c: Adjust.
+	* gcc.dg/tree-ssa/pr78622.c: Adjust.
+
 2017-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-snprintf-1.c: New test.

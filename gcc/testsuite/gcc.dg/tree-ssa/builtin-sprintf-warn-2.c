@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -Wformat -Wformat-length=2 -ftrack-macro-expansion=0" } */
+/* { dg-options "-std=c99 -Wformat -Wformat-overflow=2 -ftrack-macro-expansion=0" } */
 
 /* When debugging, define LINE to the line number of the test case to exercise
    and avoid exercising any of the others.  The buffer and objsize macros
