@@ -2147,6 +2147,7 @@ void
 gfc_resolve_repeat (gfc_expr *f, gfc_expr *string,
 		    gfc_expr *ncopies)
 {
+  int len;
   gfc_expr *tmp;
   f->ts.type = BT_CHARACTER;
   f->ts.kind = string->ts.kind;
@@ -2159,8 +2160,8 @@ gfc_resolve_repeat (gfc_expr *f, gfc_expr *string,
   tmp = NULL;
   if (string->expr_type == EXPR_CONSTANT)
     {
-      tmp = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
-			      string->value.character.length);
+      len = string->value.character.length;
+      tmp = gfc_get_int_expr (gfc_default_integer_kind, NULL , len);
     }
   else if (string->ts.u.cl && string->ts.u.cl->length)
     {
