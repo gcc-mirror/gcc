@@ -1656,19 +1656,18 @@ package body Sem_Aggr is
 
          while Present (Choice) loop
             if Nkind (Choice) = N_Others_Choice then
-               Error_Msg_N ("others choice not allowed in this context", N);
                Others_Present := True;
 
             else
                Analyze_And_Resolve (Choice, Index_Typ);
             end if;
 
-            Nb_Choices := Nb_Choices + 1;
             Next (Choice);
          end loop;
 
          --  Create a scope in which to introduce an index, which is usually
-         --  visible in the expression for the component.
+         --  visible in the expression for the component, and needed for its
+         --  analysis.
 
          Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
          Set_Etype  (Ent, Standard_Void_Type);
@@ -1730,16 +1729,15 @@ package body Sem_Aggr is
          while Present (Assoc) loop
             if Nkind (Assoc) = N_Iterated_Component_Association then
                Resolve_Iterated_Component_Association (Assoc, Index_Typ);
-               goto Next_Assoc;
             end if;
 
-            Choice := First (Choices (Assoc));
+            Choice := First (Choice_List (Assoc));
             Delete_Choice := False;
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
                   Others_Present := True;
 
-                  if Choice /= First (Choices (Assoc))
+                  if Choice /= First (Choice_List (Assoc))
                     or else Present (Next (Choice))
                   then
                      Error_Msg_N
@@ -1829,7 +1827,6 @@ package body Sem_Aggr is
                end;
             end loop;
 
-            <<Next_Assoc>>
             Next (Assoc);
          end loop;
       end if;

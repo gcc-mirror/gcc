@@ -4272,7 +4272,7 @@ package body Exp_Aggr is
       --  values, and can be passed as is to the back-end without further
       --  expansion.
       --  An Iterated_component_Association is treated as non-static, but there
-      --  are posibilities for optimization here.
+      --  are possibilities for optimization here.
 
       function Flatten
         (N   : Node_Id;
@@ -4944,6 +4944,13 @@ package body Exp_Aggr is
                return False;
             end if;
          end loop;
+
+         --  An Iterated_Component_Association involves a loop (in most cases)
+         --  and is never static.
+
+         if Nkind (Parent (Expr)) = N_Iterated_Component_Association then
+            return False;
+         end if;
 
          if not Is_Discrete_Type (Ctyp) then
             return False;

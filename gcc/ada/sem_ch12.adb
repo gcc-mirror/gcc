@@ -3668,7 +3668,8 @@ package body Sem_Ch12 is
 
       --  Local declarations
 
-      Mode : Ghost_Mode_Type;
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
 
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
@@ -3746,6 +3747,7 @@ package body Sem_Ch12 is
       --  Ghost.
 
       Mark_And_Set_Ghost_Instantiation (N, Gen_Unit, Mode);
+      Mode_Set := True;
 
       --  Verify that it is the name of a generic package
 
@@ -4438,7 +4440,9 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
-      Restore_Ghost_Mode (Mode);
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
 
    exception
       when Instantiation_Error =>
@@ -4455,7 +4459,9 @@ package body Sem_Ch12 is
          SPARK_Mode_Pragma        := Save_SMP;
          Style_Check              := Save_Style_Check;
 
-         Restore_Ghost_Mode (Mode);
+         if Mode_Set then
+            Restore_Ghost_Mode (Mode);
+         end if;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -5093,14 +5099,15 @@ package body Sem_Ch12 is
 
       --  Local variables
 
-      Mode : Ghost_Mode_Type;
-
       Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
       --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
 
       Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK_Mode-related data for restore on exit
+
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
 
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
@@ -5143,6 +5150,7 @@ package body Sem_Ch12 is
       --  Ghost.
 
       Mark_And_Set_Ghost_Instantiation (N, Gen_Unit, Mode);
+      Mode_Set := True;
 
       Generate_Reference (Gen_Unit, Gen_Id);
 
@@ -5404,7 +5412,9 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
-      Restore_Ghost_Mode (Mode);
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
 
    exception
       when Instantiation_Error =>
@@ -5420,7 +5430,9 @@ package body Sem_Ch12 is
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
 
-         Restore_Ghost_Mode (Mode);
+         if Mode_Set then
+            Restore_Ghost_Mode (Mode);
+         end if;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
