@@ -460,6 +460,19 @@ begin
       end if;
    end if;
 
+   --  In GNATprove mode, force loading of a few RTE units.
+
+   if GNATprove_Mode then
+      declare
+         Unused_E : Entity_Id;
+      begin
+         --  Ensure that System.Interrupt_Priority is available to
+         --  GNATprove for the generation of VCs related to ceiling
+         --  priority.
+         Unused_E := RTE (RE_Interrupt_Priority);
+      end;
+   end if;
+
    --  Qualify all entity names in inner packages, package bodies, etc.
 
    Exp_Dbug.Qualify_All_Entity_Names;

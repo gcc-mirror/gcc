@@ -1,5 +1,50 @@
 2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_util.adb (Add_Inherited_Tagged_DIC):
+	Pass the object parameters of both the parent and the derived
+	type DIC procedure to the reference replacement circuitry.
+	(Find_DIC_Type): Modify the circuitry to present the partial
+	view of a private type in case the private type defines its own
+	DIC pragma.
+	(Replace_Object_And_Primitive_References): Add two
+	optional formal parameters.  Update the comment on usage. Update
+	the replacement of references to object parameters.
+
+2017-01-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.adb, sem_ch6.adb, atree.adb: Minor reformatting and typo fix.
+
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Apply Scalar_Range_Check to
+	an out parameter that is a type conversion, independently of th
+	range check that may apply to the expression of the conversion,
+	for use in GNATProve.
+
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Move the implicit with for System in
+	GNATprove_Mode here to Frontend.
+	* frontend.adb (Frontend): Move the implicit with for System
+	in GNATprove_Mode here as it ismore correct this way; the old
+	place only worked by chance, since there were no overloaded names.
+	* rtsfind.ads (RE_Id, RE_Unit_Table): Add RE_Tasking_State.
+	* sem_attr.adb (Analyze_Attribute): In GNATprove_Mode, for the
+	four attributes identified in SRM 9(18), add an implicit with
+	to Ada.Task_Identification.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming.Build_Class_Wide_Wrapper):
+	Deal specially with the wrapper introduced for AI05-0071 in GNATprove
+	mode.
+	* checks.adb (Apply_Discriminant_Check,
+	Apply_Selected_Length_Checks, Apply_Selected_Range_Checks):
+	In GNATprove mode, we do not apply the checks, but we still
+	analyze the expression to possibly issue errors on SPARK
+	code when a run-time error can be detected at compile time.
+	(Selected_Length_Checks, Selected_Range_Checks): Perform analysis
+	in GNATprove mode.
+
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* expander.adb (Expand): Add a warning about using return
 	statements in Ghost management code.
 	* exp_ch3.adb (Freeze_Type): Add a warning about using return

@@ -1934,6 +1934,14 @@ package body Sem_Ch8 is
       is
          Loc : constant Source_Ptr := Sloc (N);
 
+         function Build_Expr_Fun_Call
+           (Subp_Id : Entity_Id;
+            Params  : List_Id) return Node_Id;
+         --  Create a dispatching call to invoke function Subp_Id with actuals
+         --  built from the parameter specifications of list Params. Return
+         --  directly the call, so that it can be used inside an expression
+         --  function. This is a specificity of the GNATprove mode.
+
          function Build_Call
            (Subp_Id : Entity_Id;
             Params  : List_Id) return Node_Id;
@@ -2003,6 +2011,38 @@ package body Sem_Ch8 is
                    Parameter_Associations => Actuals);
             end if;
          end Build_Call;
+
+         -------------------------
+         -- Build_Expr_Fun_Call --
+         -------------------------
+
+         function Build_Expr_Fun_Call
+           (Subp_Id : Entity_Id;
+            Params  : List_Id) return Node_Id
+         is
+            Actuals  : constant List_Id := New_List;
+            Call_Ref : constant Node_Id := New_Occurrence_Of (Subp_Id, Loc);
+            Formal   : Node_Id;
+
+         begin
+            --  Build the actual parameters of the call
+
+            Formal := First (Params);
+            while Present (Formal) loop
+               Append_To (Actuals,
+                 Make_Identifier (Loc, Chars (Defining_Identifier (Formal))));
+               Next (Formal);
+            end loop;
+
+            --  Generate:
+            --    Subp_Id (Actuals);
+
+            pragma Assert (Ekind_In (Subp_Id, E_Function, E_Operator));
+
+            return Make_Function_Call (Loc,
+              Name                   => Call_Ref,
+              Parameter_Associations => Actuals);
+         end Build_Expr_Fun_Call;
 
          ----------------
          -- Build_Spec --
@@ -2199,6 +2239,7 @@ package body Sem_Ch8 is
          Formal    : Node_Id;
          Prim_Op   : Entity_Id;
          Spec_Decl : Node_Id;
+         New_Spec  : Node_Id;
 
       --  Start of processing for Build_Class_Wide_Wrapper
 
@@ -2334,31 +2375,62 @@ package body Sem_Ch8 is
          --  Step 3: Create the declaration and the body of the wrapper, insert
          --  all the pieces into the tree.
 
-         Spec_Decl :=
-           Make_Subprogram_Declaration (Loc,
-             Specification => Build_Spec (Ren_Id));
-         Insert_Before_And_Analyze (N, Spec_Decl);
+         --  In GNATprove mode, create a function wrapper in the form of an
+         --  expression function, so that an implicit postcondition relating
+         --  the result of calling the wrapper function and the result of the
+         --  dispatching call to the wrapped function is known during proof.
+
+         if GNATprove_Mode
+           and then Ekind_In (Ren_Id, E_Function, E_Operator)
+         then
+            New_Spec := Build_Spec (Ren_Id);
+            Body_Decl :=
+              Make_Expression_Function (Loc,
+                Specification => New_Spec,
+                Expression    => Build_Expr_Fun_Call
+                  (Subp_Id => Prim_Op,
+                   Params  => Parameter_Specifications (New_Spec)));
+
+            Wrap_Id := Defining_Entity (Body_Decl);
+
+         --  Otherwise, create separate spec and body for the subprogram
+
+         else
+            Spec_Decl :=
+              Make_Subprogram_Declaration (Loc,
+                Specification => Build_Spec (Ren_Id));
+            Insert_Before_And_Analyze (N, Spec_Decl);
+
+            Wrap_Id := Defining_Entity (Spec_Decl);
+
+            Body_Decl :=
+              Make_Subprogram_Body (Loc,
+                Specification              => Build_Spec (Ren_Id),
+                Declarations               => New_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Build_Call
+                        (Subp_Id => Prim_Op,
+                         Params  =>
+                           Parameter_Specifications
+                             (Specification (Spec_Decl))))));
+
+            Set_Corresponding_Body (Spec_Decl, Defining_Entity (Body_Decl));
+         end if;
 
          --  If the operator carries an Eliminated pragma, indicate that the
          --  wrapper is also to be eliminated, to prevent spurious error when
          --  using gnatelim on programs that include box-initialization of
          --  equality operators.
 
-         Wrap_Id := Defining_Entity (Spec_Decl);
          Set_Is_Eliminated (Wrap_Id, Is_Eliminated (Prim_Op));
 
-         Body_Decl :=
-           Make_Subprogram_Body (Loc,
-             Specification              => Build_Spec (Ren_Id),
-             Declarations               => New_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Build_Call
-                     (Subp_Id => Prim_Op,
-                      Params  =>
-                        Parameter_Specifications
-                          (Specification (Spec_Decl))))));
+         --  In GNATprove mode, insert the body in the tree for analysis
+
+         if GNATprove_Mode then
+            Insert_Before_And_Analyze (N, Body_Decl);
+         end if;
 
          --  The generated body does not freeze and must be analyzed when the
          --  class-wide wrapper is frozen. The body is only needed if expansion

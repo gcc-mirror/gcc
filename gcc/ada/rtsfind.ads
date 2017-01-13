@@ -704,6 +704,7 @@ package Rtsfind is
      RE_Abort_Task,                      -- Ada.Task_Identification
      RE_Current_Task,                    -- Ada.Task_Identification
      RO_AT_Task_Id,                      -- Ada.Task_Identification
+     RE_Tasking_State,                   -- Ada.Task_Identification
 
      RE_Decimal_IO,                      -- Ada.Text_IO
      RE_Fixed_IO,                        -- Ada.Text_IO
@@ -1936,6 +1937,7 @@ package Rtsfind is
      RE_Abort_Task                       => Ada_Task_Identification,
      RE_Current_Task                     => Ada_Task_Identification,
      RO_AT_Task_Id                       => Ada_Task_Identification,
+     RE_Tasking_State                    => Ada_Task_Identification,
 
      RE_Decimal_IO                       => Ada_Text_IO,
      RE_Fixed_IO                         => Ada_Text_IO,
