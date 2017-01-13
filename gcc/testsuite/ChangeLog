@@ -1,3 +1,8 @@
+2017-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78411
+	* gcc.target/i386/pr45685.c: Add -ftree-loop-if-convert.
+
 2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70697
