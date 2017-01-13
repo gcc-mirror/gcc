@@ -799,6 +799,32 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 				       type, ptr.value, alias_off);
 	      break;
 	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "_Literal") == 0)
+	    {
+	      /* _Literal '(' type-name ')' number  */
+	      c_parser_consume_token (parser);
+	      tree type = NULL_TREE;
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  struct c_type_name *type_name = c_parser_type_name (parser);
+		  tree tem;
+		  if (type_name)
+		    type = groktypename (type_name, &tem, NULL);
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		}
+	      tree val = c_parser_gimple_postfix_expression (parser).value;
+	      if (! type
+		  || ! val
+		  || val == error_mark_node
+		  || TREE_CODE (val) != INTEGER_CST)
+		{
+		  c_parser_error (parser, "invalid _Literal");
+		  return expr;
+		}
+	      expr.value = fold_convert (type, val);
+	      return expr;
+	    }
 	  /* SSA name.  */
 	  unsigned version, ver_offset;
 	  if (! lookup_name (id)
