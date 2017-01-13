@@ -6061,8 +6061,9 @@ package body Exp_Ch7 is
             --  context of a Timed_Entry_Call. In this case we wrap the entire
             --  timed entry call.
 
-            when N_Entry_Call_Statement     |
-                 N_Procedure_Call_Statement =>
+            when N_Entry_Call_Statement
+               | N_Procedure_Call_Statement
+            =>
                if Nkind (Parent (The_Parent)) = N_Entry_Call_Alternative
                  and then Nkind_In (Parent (Parent (The_Parent)),
                                     N_Timed_Entry_Call,
@@ -6077,34 +6078,35 @@ package body Exp_Ch7 is
             --  even if they are not really wrapped. For further details, see
             --  Wrap_Transient_Declaration.
 
-            when N_Object_Declaration          |
-                 N_Object_Renaming_Declaration |
-                 N_Subtype_Declaration         =>
+            when N_Object_Declaration
+               | N_Object_Renaming_Declaration
+               | N_Subtype_Declaration
+            =>
                return The_Parent;
 
             --  The expression itself is to be wrapped if its parent is a
             --  compound statement or any other statement where the expression
             --  is known to be scalar.
 
-            when N_Accept_Alternative               |
-                 N_Attribute_Definition_Clause      |
-                 N_Case_Statement                   |
-                 N_Code_Statement                   |
-                 N_Delay_Alternative                |
-                 N_Delay_Until_Statement            |
-                 N_Delay_Relative_Statement         |
-                 N_Discriminant_Association         |
-                 N_Elsif_Part                       |
-                 N_Entry_Body_Formal_Part           |
-                 N_Exit_Statement                   |
-                 N_If_Statement                     |
-                 N_Iteration_Scheme                 |
-                 N_Terminate_Alternative            =>
+            when N_Accept_Alternative
+               | N_Attribute_Definition_Clause
+               | N_Case_Statement
+               | N_Code_Statement
+               | N_Delay_Alternative
+               | N_Delay_Until_Statement
+               | N_Delay_Relative_Statement
+               | N_Discriminant_Association
+               | N_Elsif_Part
+               | N_Entry_Body_Formal_Part
+               | N_Exit_Statement
+               | N_If_Statement
+               | N_Iteration_Scheme
+               | N_Terminate_Alternative
+            =>
                pragma Assert (Present (P));
                return P;
 
             when N_Attribute_Reference =>
-
                if Is_Procedure_Attribute_Name
                     (Attribute_Name (The_Parent))
                then
@@ -6128,9 +6130,10 @@ package body Exp_Ch7 is
             --  The following nodes contains "dummy calls" which don't need to
             --  be wrapped.
 
-            when N_Parameter_Specification     |
-                 N_Discriminant_Specification  |
-                 N_Component_Declaration       =>
+            when N_Component_Declaration
+               | N_Discriminant_Specification
+               | N_Parameter_Specification
+            =>
                return Empty;
 
             --  The return statement is not to be wrapped when the function
@@ -6155,10 +6158,11 @@ package body Exp_Ch7 is
             --  situation that are not detected yet (such as a dynamic string
             --  in a pragma export)
 
-            when N_Subprogram_Body     |
-                 N_Package_Declaration |
-                 N_Package_Body        |
-                 N_Block_Statement     =>
+            when N_Block_Statement
+               | N_Package_Body
+               | N_Package_Declaration
+               | N_Subprogram_Body
+            =>
                return Empty;
 
             --  Otherwise continue the search
@@ -7655,8 +7659,9 @@ package body Exp_Ch7 is
          when Address_Case =>
             return Make_Finalize_Address_Stmts (Typ);
 
-         when Adjust_Case   |
-              Finalize_Case =>
+         when Adjust_Case
+            | Finalize_Case
+         =>
             return Build_Adjust_Or_Finalize_Statements (Typ);
 
          when Initialize_Case =>

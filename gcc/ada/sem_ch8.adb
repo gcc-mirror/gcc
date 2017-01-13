@@ -2694,19 +2694,23 @@ package body Sem_Ch8 is
                --  operation).
 
                case Attribute_Name (Nam) is
-                  when Name_Input  =>
+                  when Name_Input =>
                      Stream_Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Input);
+
                   when Name_Output =>
                      Stream_Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Output);
-                  when Name_Read   =>
+
+                  when Name_Read =>
                      Stream_Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Read);
-                  when Name_Write  =>
+
+                  when Name_Write =>
                      Stream_Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Write);
-                  when others      =>
+
+                  when others =>
                      Error_Msg_N
                        ("attribute must be a primitive dispatching operation",
                         Nam);
@@ -5710,8 +5714,8 @@ package body Sem_Ch8 is
 
                         --  If we don't know now, generate reference later
 
-                     when Unknown =>
-                        Deferred_References.Append ((E, N));
+                        when Unknown =>
+                           Deferred_References.Append ((E, N));
                      end case;
                   end if;
                end if;
@@ -6254,8 +6258,10 @@ package body Sem_Ch8 is
          case Is_LHS (N) is
             when Yes =>
                Generate_Reference (Id, N, 'm');
+
             when No =>
                Generate_Reference (Id, N, 'r');
+
             when Unknown =>
                Deferred_References.Append ((Id, N));
          end case;
@@ -7655,7 +7661,11 @@ package body Sem_Ch8 is
          --  contains a declaration for a derived Boolean type, or for an
          --  array of Boolean type.
 
-         when Name_Op_And | Name_Op_Not | Name_Op_Or  | Name_Op_Xor =>
+         when Name_Op_And
+            | Name_Op_Not
+            | Name_Op_Or
+            | Name_Op_Xor
+         =>
             while Id /= Priv_Id loop
                if Valid_Boolean_Arg (Id) and then Is_Base_Type (Id) then
                   Add_Implicit_Operator (Id);
@@ -7667,7 +7677,9 @@ package body Sem_Ch8 is
 
          --  Equality: look for any non-limited type (result is Boolean)
 
-         when Name_Op_Eq | Name_Op_Ne =>
+         when Name_Op_Eq
+            | Name_Op_Ne
+         =>
             while Id /= Priv_Id loop
                if Is_Type (Id)
                  and then not Is_Limited_Type (Id)
@@ -7682,7 +7694,11 @@ package body Sem_Ch8 is
 
          --  Comparison operators: scalar type, or array of scalar
 
-         when Name_Op_Lt | Name_Op_Le | Name_Op_Gt | Name_Op_Ge =>
+         when Name_Op_Ge
+            | Name_Op_Gt
+            | Name_Op_Le
+            | Name_Op_Lt
+         =>
             while Id /= Priv_Id loop
                if (Is_Scalar_Type (Id)
                     or else (Is_Array_Type (Id)
@@ -7698,14 +7714,15 @@ package body Sem_Ch8 is
 
          --  Arithmetic operators: any numeric type
 
-         when Name_Op_Abs      |
-              Name_Op_Add      |
-              Name_Op_Mod      |
-              Name_Op_Rem      |
-              Name_Op_Subtract |
-              Name_Op_Multiply |
-              Name_Op_Divide   |
-              Name_Op_Expon    =>
+         when Name_Op_Abs
+            | Name_Op_Add
+            | Name_Op_Divide
+            | Name_Op_Expon
+            | Name_Op_Mod
+            | Name_Op_Multiply
+            | Name_Op_Rem
+            | Name_Op_Subtract
+         =>
             while Id /= Priv_Id loop
                if Is_Numeric_Type (Id) and then Is_Base_Type (Id) then
                   Add_Implicit_Operator (Id);
@@ -7733,13 +7750,13 @@ package body Sem_Ch8 is
          --  What is the others condition here? Should we be using a
          --  subtype of Name_Id that would restrict to operators ???
 
-         when others => null;
+         when others =>
+            null;
       end case;
 
       --  If we fall through, then we do not have an implicit operator
 
       return False;
-
    end Has_Implicit_Operator;
 
    -----------------------------------

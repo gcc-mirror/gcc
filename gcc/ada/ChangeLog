@@ -1,3 +1,36 @@
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aggr.adb, par_sco.adb, s-osprim-mingw.adb, exp_ch5.adb,
+	exp_prag.adb, sem_ch3.adb, xr_tabls.adb, lib-xref-spark_specific.adb,
+	layout.adb, sem_dist.adb, exp_spark.adb, exp_ch7.adb, gnatcmd.adb,
+	exp_util.adb, prj-proc.adb, sem_aux.adb, comperr.adb, g-memdum.adb,
+	exp_attr.adb, s-intman-solaris.adb, exp_ch9.adb, make.adb, live.adb,
+	g-sercom-linux.adb, sem_dim.adb, mlib-prj.adb, s-intman-posix.adb,
+	sem_ch9.adb, sem_ch10.adb, prep.adb, einfo.adb, scng.adb, checks.adb,
+	prj-strt.adb, sem_prag.adb, eval_fat.adb, sem_ch12.adb, sem.adb,
+	a-numaux-x86.adb, a-stwifi.adb, i-cobol.adb, prj.adb,
+	get_spark_xrefs.adb, s-tasini.adb, rtsfind.adb, freeze.adb,
+	g-arrspl.adb, par-ch4.adb, sem_util.adb, sem_res.adb, expander.adb,
+	sem_attr.adb, exp_dbug.adb, prj-pp.adb, a-stzfix.adb, s-interr.adb,
+	s-wchcnv.adb, switch-m.adb, gnat1drv.adb, sinput-l.adb, stylesw.adb,
+	contracts.adb, s-intman-android.adb, g-expect.adb, exp_ch4.adb,
+	g-comlin.adb, errout.adb, sinput.adb, s-exctra.adb, repinfo.adb,
+	g-spipat.adb, g-debpoo.adb, exp_ch6.adb, sem_ch4.adb, exp_ch13.adb,
+	a-wtedit.adb, validsw.adb, pprint.adb, widechar.adb, makeutl.adb,
+	ali.adb, set_targ.adb, sem_mech.adb, sem_ch6.adb, gnatdll.adb,
+	get_scos.adb, g-pehage.adb, s-tratas-default.adb, gnatbind.adb,
+	prj-dect.adb, g-socthi-mingw.adb, par-prag.adb, prj-nmsc.adb,
+	exp_disp.adb, par-ch12.adb, binde.adb, sem_ch8.adb,
+	s-tfsetr-default.adb, s-regexp.adb, gprep.adb, s-tpobop.adb,
+	a-teioed.adb, sem_warn.adb, sem_eval.adb, g-awk.adb, s-io.adb,
+	a-ztedit.adb, xoscons.adb, exp_intr.adb, sem_cat.adb, sprint.adb,
+	g-socket.adb, exp_dist.adb, sem_ch13.adb, s-tfsetr-vxworks.adb,
+	par-ch3.adb, treepr.adb, g-forstr.adb, g-catiio.adb, par-ch5.adb,
+	uname.adb, osint.adb, exp_ch3.adb, prj-env.adb, a-strfix.adb,
+	a-stzsup.adb, prj-tree.adb, s-fileio.adb: Update all eligible case
+	statements to reflect the new style for case alternatives. Various
+	code clean up and reformatting.
+
 2017-01-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.adb: Minor reformatting.

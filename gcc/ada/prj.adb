@@ -306,7 +306,9 @@ package body Prj is
          when Makefile =>
             return Extend_Name (Source_File_Name, Makefile_Dependency_Suffix);
 
-         when ALI_File | ALI_Closure =>
+         when ALI_Closure
+            | ALI_File
+         =>
             return Extend_Name (Source_File_Name, ALI_Dependency_Suffix);
       end case;
    end Dependency_Name;
@@ -1250,7 +1252,9 @@ package body Prj is
          Free_List (Project.Languages);
 
          case Project.Qualifier is
-            when Aggregate | Aggregate_Library =>
+            when Aggregate
+               | Aggregate_Library
+            =>
                Free (Project.Aggregated_Projects);
 
             when others =>
@@ -1899,12 +1903,9 @@ package body Prj is
    begin
       if Source.Unit /= No_Unit_Index then
          case Source.Kind is
-            when Impl =>
-               return Source.Unit.File_Names (Spec);
-            when Spec =>
-               return Source.Unit.File_Names (Impl);
-            when Sep =>
-               return No_Source;
+            when Impl => return Source.Unit.File_Names (Spec);
+            when Spec => return Source.Unit.File_Names (Impl);
+            when Sep  => return No_Source;
          end case;
       else
          return No_Source;

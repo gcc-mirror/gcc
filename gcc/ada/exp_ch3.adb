@@ -3305,7 +3305,6 @@ package body Exp_Ch3 is
             --  Remaining processing depends on type
 
             case Ekind (Subtype_Mark_Id) is
-
                when Array_Kind =>
                   Constrain_Array (S, Check_List);
 
@@ -3327,7 +3326,7 @@ package body Exp_Ch3 is
            Needs_Simple_Initialization (T)
              and then not Is_RTE (T, RE_Tag)
 
-               --  Ada 2005 (AI-251): Check also the tag of abstract interfaces
+             --  Ada 2005 (AI-251): Check also the tag of abstract interfaces
 
              and then not Is_RTE (T, RE_Interface_Tag);
       end Component_Needs_Simple_Initialization;

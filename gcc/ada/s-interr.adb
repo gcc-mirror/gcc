@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2016, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -761,8 +761,8 @@ package body System.Interrupts is
             Server := Server_ID (Interrupt);
 
             case Server.Common.State is
-               when Interrupt_Server_Idle_Sleep |
-                    Interrupt_Server_Blocked_Interrupt_Sleep
+               when Interrupt_Server_Blocked_Interrupt_Sleep
+                  | Interrupt_Server_Idle_Sleep
                =>
                   POP.Wakeup (Server, Server.Common.State);
 
@@ -1119,8 +1119,8 @@ package body System.Interrupts is
                   if User_Handler (Interrupt).H /= null
                     or else User_Entry (Interrupt).T /= Null_Task
                   then
-                     --  This is the case where the Server_Task is
-                     --  waiting on "sigwait." Wake it up by sending an
+                     --  This is the case where the Server_Task
+                     --  is waiting on"sigwait." Wake it up by sending an
                      --  Abort_Task_Interrupt so that the Server_Task waits
                      --  on Cond.
 

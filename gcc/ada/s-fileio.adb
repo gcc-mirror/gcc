@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -500,7 +500,9 @@ package body System.File_IO is
                Fptr := 2;
             end if;
 
-         when Inout_File | Append_File =>
+         when Append_File
+            | Inout_File
+         =>
             Fopstr (1) := (if Creat then 'w' else 'r');
             Fopstr (2) := '+';
             Fptr := 3;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -234,85 +234,89 @@ package body Uname is
 
          else
             case Kind is
-
-               when N_Identifier                      |
-                    N_Defining_Identifier             |
-                    N_Defining_Operator_Symbol        =>
-
+               when N_Defining_Identifier
+                  | N_Defining_Operator_Symbol
+                  | N_Identifier
+               =>
                   --  Note: it is of course an error to have a defining
                   --  operator symbol at this point, but this is not where
                   --  the error is signalled, so we handle it nicely here.
 
                   Add_Name (Chars (Node));
 
-               when N_Defining_Program_Unit_Name      =>
+               when N_Defining_Program_Unit_Name =>
                   Add_Node_Name (Name (Node));
                   Add_Char ('.');
                   Add_Node_Name (Defining_Identifier (Node));
 
-               when N_Selected_Component              |
-                    N_Expanded_Name                   =>
+               when N_Expanded_Name
+                  | N_Selected_Component
+               =>
                   Add_Node_Name (Prefix (Node));
                   Add_Char ('.');
                   Add_Node_Name (Selector_Name (Node));
 
-               when N_Subprogram_Specification        |
-                    N_Package_Specification           =>
+               when N_Package_Specification
+                  | N_Subprogram_Specification
+               =>
                   Add_Node_Name (Defining_Unit_Name (Node));
 
-               when N_Subprogram_Body                 |
-                    N_Subprogram_Declaration          |
-                    N_Package_Declaration             |
-                    N_Generic_Declaration             =>
+               when N_Generic_Declaration
+                  | N_Package_Declaration
+                  | N_Subprogram_Body
+                  | N_Subprogram_Declaration
+               =>
                   Add_Node_Name (Specification (Node));
 
-               when N_Generic_Instantiation           =>
+               when N_Generic_Instantiation =>
                   Add_Node_Name (Defining_Unit_Name (Node));
 
-               when N_Package_Body                    =>
+               when N_Package_Body =>
                   Add_Node_Name (Defining_Unit_Name (Node));
 
-               when N_Task_Body                       |
-                    N_Protected_Body                  =>
+               when N_Protected_Body
+                  | N_Task_Body
+               =>
                   Add_Node_Name (Defining_Identifier (Node));
 
-               when N_Package_Renaming_Declaration    =>
+               when N_Package_Renaming_Declaration =>
                   Add_Node_Name (Defining_Unit_Name (Node));
 
                when N_Subprogram_Renaming_Declaration =>
                   Add_Node_Name (Specification (Node));
 
-               when N_Generic_Renaming_Declaration   =>
+               when N_Generic_Renaming_Declaration =>
                   Add_Node_Name (Defining_Unit_Name (Node));
 
-               when N_Subprogram_Body_Stub            =>
+               when N_Subprogram_Body_Stub =>
                   Add_Node_Name (Get_Parent (Node));
                   Add_Char ('.');
                   Add_Node_Name (Specification (Node));
 
-               when N_Compilation_Unit                =>
+               when N_Compilation_Unit =>
                   Add_Node_Name (Unit (Node));
 
-               when N_Package_Body_Stub               =>
+               when N_Package_Body_Stub =>
                   Add_Node_Name (Get_Parent (Node));
                   Add_Char ('.');
                   Add_Node_Name (Defining_Identifier (Node));
 
-               when N_Task_Body_Stub                  |
-                    N_Protected_Body_Stub             =>
+               when N_Protected_Body_Stub
+                  | N_Task_Body_Stub
+               =>
                   Add_Node_Name (Get_Parent (Node));
                   Add_Char ('.');
                   Add_Node_Name (Defining_Identifier (Node));
 
-               when N_Subunit                         =>
+               when N_Subunit =>
                   Add_Node_Name (Name (Node));
                   Add_Char ('.');
                   Add_Node_Name (Proper_Body (Node));
 
-               when N_With_Clause                     =>
+               when N_With_Clause =>
                   Add_Node_Name (Name (Node));
 
-               when N_Pragma                          =>
+               when N_Pragma =>
                   Add_Node_Name (Expression (First
                     (Pragma_Argument_Associations (Node))));
 
@@ -321,15 +325,15 @@ package body Uname is
                --  with these error situations here, and produce a reasonable
                --  unit name using the defining identifier.
 
-               when N_Task_Type_Declaration           |
-                    N_Single_Task_Declaration         |
-                    N_Protected_Type_Declaration      |
-                    N_Single_Protected_Declaration    =>
+               when N_Protected_Type_Declaration
+                  | N_Single_Protected_Declaration
+                  | N_Single_Task_Declaration
+                  | N_Task_Type_Declaration
+               =>
                   Add_Node_Name (Defining_Identifier (Node));
 
                when others =>
                   raise Program_Error;
-
             end case;
          end if;
       end Add_Node_Name;
@@ -378,31 +382,31 @@ package body Uname is
       Add_Char ('%');
 
       case Nkind (Node) is
-         when N_Generic_Declaration             |
-              N_Subprogram_Declaration          |
-              N_Package_Declaration             |
-              N_With_Clause                     |
-              N_Pragma                          |
-              N_Generic_Instantiation           |
-              N_Package_Renaming_Declaration    |
-              N_Subprogram_Renaming_Declaration |
-              N_Generic_Renaming_Declaration    |
-              N_Single_Task_Declaration         |
-              N_Single_Protected_Declaration    |
-              N_Task_Type_Declaration           |
-              N_Protected_Type_Declaration      =>
-
+         when N_Generic_Declaration
+            | N_Generic_Instantiation
+            | N_Generic_Renaming_Declaration
+            | N_Package_Declaration
+            | N_Package_Renaming_Declaration
+            | N_Pragma
+            | N_Protected_Type_Declaration
+            | N_Single_Protected_Declaration
+            | N_Single_Task_Declaration
+            | N_Subprogram_Declaration
+            | N_Subprogram_Renaming_Declaration
+            | N_Task_Type_Declaration
+            | N_With_Clause
+         =>
             Add_Char ('s');
 
-         when N_Subprogram_Body                 |
-              N_Package_Body                    |
-              N_Subunit                         |
-              N_Body_Stub                       |
-              N_Task_Body                       |
-              N_Protected_Body                  |
-              N_Identifier                      |
-              N_Selected_Component              =>
-
+         when N_Body_Stub
+            | N_Identifier
+            | N_Package_Body
+            | N_Protected_Body
+            | N_Selected_Component
+            | N_Subprogram_Body
+            | N_Subunit
+            | N_Task_Body
+         =>
             Add_Char ('b');
 
          when others =>

@@ -1410,7 +1410,7 @@ package body Sem_Res is
                Opnd_Type := Base_Type (Typ);
 
             elsif (Scope (Opnd_Type) = Standard_Standard
-                     and then Is_Binary)
+                    and then Is_Binary)
               or else (Nkind (Right_Opnd (Op_Node)) = N_Attribute_Reference
                         and then Is_Binary
                         and then not Comes_From_Source (Opnd_Type))
@@ -1424,7 +1424,6 @@ package body Sem_Res is
                --  the given literal. Optimize the case where Pack is Standard.
 
                if Pack /= Standard_Standard then
-
                   if Opnd_Type = Universal_Integer then
                      Orig_Type := Type_In_P (Is_Integer_Type'Access);
 
@@ -1576,11 +1575,20 @@ package body Sem_Res is
 
       if Is_Private_Type (Typ) then
          case Nkind (N) is
-            when N_Op_Add   | N_Op_Subtract | N_Op_Multiply | N_Op_Divide |
-                 N_Op_Expon | N_Op_Mod      | N_Op_Rem      =>
+            when N_Op_Add
+               | N_Op_Divide
+               | N_Op_Expon
+               | N_Op_Mod
+               | N_Op_Multiply
+               | N_Op_Rem
+               | N_Op_Subtract
+            =>
                Resolve_Intrinsic_Operator (N, Typ);
 
-            when N_Op_Plus  | N_Op_Minus    | N_Op_Abs      =>
+            when N_Op_Abs
+               | N_Op_Minus
+               | N_Op_Plus
+            =>
                Resolve_Intrinsic_Unary_Operator (N, Typ);
 
             when others =>
@@ -2840,122 +2848,148 @@ package body Sem_Res is
          end if;
 
          case N_Subexpr'(Nkind (N)) is
-            when N_Aggregate => Resolve_Aggregate                (N, Ctx_Type);
+            when N_Aggregate =>
+               Resolve_Aggregate                 (N, Ctx_Type);
 
-            when N_Allocator => Resolve_Allocator                (N, Ctx_Type);
+            when N_Allocator =>
+               Resolve_Allocator                 (N, Ctx_Type);
 
-            when N_Short_Circuit
-                             => Resolve_Short_Circuit            (N, Ctx_Type);
+            when N_Short_Circuit =>
+               Resolve_Short_Circuit             (N, Ctx_Type);
 
-            when N_Attribute_Reference
-                             => Resolve_Attribute                (N, Ctx_Type);
+            when N_Attribute_Reference =>
+               Resolve_Attribute                 (N, Ctx_Type);
 
-            when N_Case_Expression
-                             => Resolve_Case_Expression          (N, Ctx_Type);
+            when N_Case_Expression =>
+               Resolve_Case_Expression           (N, Ctx_Type);
 
-            when N_Character_Literal
-                             => Resolve_Character_Literal        (N, Ctx_Type);
+            when N_Character_Literal =>
+               Resolve_Character_Literal         (N, Ctx_Type);
 
-            when N_Expanded_Name
-                             => Resolve_Entity_Name              (N, Ctx_Type);
+            when N_Expanded_Name =>
+               Resolve_Entity_Name               (N, Ctx_Type);
 
-            when N_Explicit_Dereference
-                             => Resolve_Explicit_Dereference     (N, Ctx_Type);
+            when N_Explicit_Dereference =>
+               Resolve_Explicit_Dereference      (N, Ctx_Type);
 
-            when N_Expression_With_Actions
-                             => Resolve_Expression_With_Actions  (N, Ctx_Type);
+            when N_Expression_With_Actions =>
+               Resolve_Expression_With_Actions   (N, Ctx_Type);
 
-            when N_Extension_Aggregate
-                             => Resolve_Extension_Aggregate      (N, Ctx_Type);
+            when N_Extension_Aggregate =>
+               Resolve_Extension_Aggregate       (N, Ctx_Type);
 
-            when N_Function_Call
-                             => Resolve_Call                     (N, Ctx_Type);
+            when N_Function_Call =>
+               Resolve_Call                      (N, Ctx_Type);
 
-            when N_Identifier
-                             => Resolve_Entity_Name              (N, Ctx_Type);
+            when N_Identifier =>
+               Resolve_Entity_Name               (N, Ctx_Type);
 
-            when N_If_Expression
-                             => Resolve_If_Expression            (N, Ctx_Type);
+            when N_If_Expression =>
+               Resolve_If_Expression             (N, Ctx_Type);
 
-            when N_Indexed_Component
-                             => Resolve_Indexed_Component        (N, Ctx_Type);
+            when N_Indexed_Component =>
+               Resolve_Indexed_Component         (N, Ctx_Type);
 
-            when N_Integer_Literal
-                             => Resolve_Integer_Literal          (N, Ctx_Type);
+            when N_Integer_Literal =>
+               Resolve_Integer_Literal           (N, Ctx_Type);
 
-            when N_Membership_Test
-                             => Resolve_Membership_Op            (N, Ctx_Type);
+            when N_Membership_Test =>
+               Resolve_Membership_Op             (N, Ctx_Type);
 
-            when N_Null      => Resolve_Null                     (N, Ctx_Type);
+            when N_Null =>
+               Resolve_Null                      (N, Ctx_Type);
 
-            when N_Op_And | N_Op_Or | N_Op_Xor
-                             => Resolve_Logical_Op               (N, Ctx_Type);
+            when N_Op_And
+               | N_Op_Or
+               | N_Op_Xor
+            =>
+               Resolve_Logical_Op                (N, Ctx_Type);
 
-            when N_Op_Eq | N_Op_Ne
-                             => Resolve_Equality_Op              (N, Ctx_Type);
+            when N_Op_Eq
+               | N_Op_Ne
+            =>
+               Resolve_Equality_Op               (N, Ctx_Type);
 
-            when N_Op_Lt | N_Op_Le | N_Op_Gt | N_Op_Ge
-                             => Resolve_Comparison_Op            (N, Ctx_Type);
+            when N_Op_Ge
+               | N_Op_Gt
+               | N_Op_Le
+               | N_Op_Lt
+            =>
+               Resolve_Comparison_Op             (N, Ctx_Type);
 
-            when N_Op_Not    => Resolve_Op_Not                   (N, Ctx_Type);
+            when N_Op_Not =>
+               Resolve_Op_Not                    (N, Ctx_Type);
 
-            when N_Op_Add    | N_Op_Subtract | N_Op_Multiply |
-                 N_Op_Divide | N_Op_Mod      | N_Op_Rem
+            when N_Op_Add
+               | N_Op_Divide
+               | N_Op_Mod
+               | N_Op_Multiply
+               | N_Op_Rem
+               | N_Op_Subtract
+            =>
+               Resolve_Arithmetic_Op             (N, Ctx_Type);
 
-                             => Resolve_Arithmetic_Op            (N, Ctx_Type);
+            when N_Op_Concat =>
+               Resolve_Op_Concat                 (N, Ctx_Type);
 
-            when N_Op_Concat => Resolve_Op_Concat                (N, Ctx_Type);
+            when N_Op_Expon =>
+               Resolve_Op_Expon                  (N, Ctx_Type);
 
-            when N_Op_Expon  => Resolve_Op_Expon                 (N, Ctx_Type);
+            when N_Op_Abs
+               | N_Op_Minus
+               | N_Op_Plus
+            =>
+               Resolve_Unary_Op                  (N, Ctx_Type);
 
-            when N_Op_Plus | N_Op_Minus  | N_Op_Abs
-                             => Resolve_Unary_Op                 (N, Ctx_Type);
+            when N_Op_Shift =>
+               Resolve_Shift                     (N, Ctx_Type);
 
-            when N_Op_Shift  => Resolve_Shift                    (N, Ctx_Type);
+            when N_Procedure_Call_Statement =>
+               Resolve_Call                      (N, Ctx_Type);
 
-            when N_Procedure_Call_Statement
-                             => Resolve_Call                     (N, Ctx_Type);
+            when N_Operator_Symbol =>
+               Resolve_Operator_Symbol           (N, Ctx_Type);
 
-            when N_Operator_Symbol
-                             => Resolve_Operator_Symbol          (N, Ctx_Type);
-
-            when N_Qualified_Expression
-                             => Resolve_Qualified_Expression     (N, Ctx_Type);
+            when N_Qualified_Expression =>
+               Resolve_Qualified_Expression      (N, Ctx_Type);
 
             --  Why is the following null, needs a comment ???
 
-            when N_Quantified_Expression
-                             => null;
+            when N_Quantified_Expression =>
+               null;
 
-            when N_Raise_Expression
-                             => Resolve_Raise_Expression         (N, Ctx_Type);
+            when N_Raise_Expression =>
+               Resolve_Raise_Expression          (N, Ctx_Type);
 
-            when N_Raise_xxx_Error
-                             => Set_Etype (N, Ctx_Type);
+            when N_Raise_xxx_Error =>
+               Set_Etype (N, Ctx_Type);
 
-            when N_Range     => Resolve_Range                    (N, Ctx_Type);
+            when N_Range =>
+               Resolve_Range                     (N, Ctx_Type);
 
-            when N_Real_Literal
-                             => Resolve_Real_Literal             (N, Ctx_Type);
+            when N_Real_Literal =>
+               Resolve_Real_Literal              (N, Ctx_Type);
 
-            when N_Reference => Resolve_Reference                (N, Ctx_Type);
+            when N_Reference =>
+               Resolve_Reference                 (N, Ctx_Type);
 
-            when N_Selected_Component
-                             => Resolve_Selected_Component       (N, Ctx_Type);
+            when N_Selected_Component =>
+               Resolve_Selected_Component        (N, Ctx_Type);
 
-            when N_Slice     => Resolve_Slice                    (N, Ctx_Type);
+            when N_Slice =>
+               Resolve_Slice                     (N, Ctx_Type);
 
-            when N_String_Literal
-                             => Resolve_String_Literal           (N, Ctx_Type);
+            when N_String_Literal =>
+               Resolve_String_Literal            (N, Ctx_Type);
 
-            when N_Type_Conversion
-                             => Resolve_Type_Conversion          (N, Ctx_Type);
+            when N_Type_Conversion =>
+               Resolve_Type_Conversion           (N, Ctx_Type);
 
             when N_Unchecked_Expression =>
-               Resolve_Unchecked_Expression                      (N, Ctx_Type);
+               Resolve_Unchecked_Expression      (N, Ctx_Type);
 
             when N_Unchecked_Type_Conversion =>
-               Resolve_Unchecked_Type_Conversion                 (N, Ctx_Type);
+               Resolve_Unchecked_Type_Conversion (N, Ctx_Type);
          end case;
 
          --  Ada 2012 (AI05-0149): Apply an (implicit) conversion to an
@@ -9303,20 +9337,20 @@ package body Sem_Res is
 
          else
             case Nkind (Parent (N)) is
-               when N_Op_And   |
-                    N_Op_Eq    |
-                    N_Op_Ge    |
-                    N_Op_Gt    |
-                    N_Op_Le    |
-                    N_Op_Lt    |
-                    N_Op_Ne    |
-                    N_Op_Or    |
-                    N_Op_Xor   |
-                    N_In       |
-                    N_Not_In   |
-                    N_And_Then |
-                    N_Or_Else  =>
-
+               when N_And_Then
+                  | N_In
+                  | N_Not_In
+                  | N_Op_And
+                  | N_Op_Eq
+                  | N_Op_Ge
+                  | N_Op_Gt
+                  | N_Op_Le
+                  | N_Op_Lt
+                  | N_Op_Ne
+                  | N_Op_Or
+                  | N_Op_Xor
+                  | N_Or_Else
+               =>
                   return Left_Opnd (Parent (N)) = N;
 
                when others =>
@@ -11312,11 +11346,20 @@ package body Sem_Res is
 
          if Is_Intrinsic_Subprogram (Op) and then Is_Private_Type (Typ) then
             case Nkind (N) is
-               when N_Op_Add   | N_Op_Subtract | N_Op_Multiply | N_Op_Divide |
-                    N_Op_Expon | N_Op_Mod      | N_Op_Rem      =>
+               when N_Op_Add
+                  | N_Op_Divide
+                  | N_Op_Expon
+                  | N_Op_Mod
+                  | N_Op_Multiply
+                  | N_Op_Rem
+                  | N_Op_Subtract
+               =>
                   Resolve_Intrinsic_Operator (N, Typ);
 
-               when N_Op_Plus  | N_Op_Minus    | N_Op_Abs      =>
+               when N_Op_Abs
+                  | N_Op_Minus
+                  | N_Op_Plus
+               =>
                   Resolve_Intrinsic_Unary_Operator (N, Typ);
 
                when others =>

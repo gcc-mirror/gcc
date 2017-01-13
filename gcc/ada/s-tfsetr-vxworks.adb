@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2001-2009, Free Software Foundation, Inc.        --
+--           Copyright (C) 2001-2016, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,7 +98,6 @@ begin
       --  Unrecognized events are given the special Id_Event value 29999
 
       when others            => Id_Event := 29999;
-
    end case;
 
    Wv_Event (Id_Event, Info_Trace'Address, Max_Size);

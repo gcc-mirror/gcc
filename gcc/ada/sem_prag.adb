@@ -9003,8 +9003,10 @@ package body Sem_Prag is
             case Status is
                when Suppressed =>
                   Set_Is_Inlined (Subp, False);
+
                when Disabled =>
                   null;
+
                when Enabled =>
                   if not Has_Pragma_No_Inline (Subp) then
                      Set_Is_Inlined (Subp, True);
@@ -10390,10 +10392,13 @@ package body Sem_Prag is
       case Opt.Uneval_Old is
          when 'A' =>
             Set_Uneval_Old_Accept (N);
+
          when 'E' =>
             null;
+
          when 'W' =>
             Set_Uneval_Old_Warn (N);
+
          when others =>
             raise Program_Error;
       end case;
@@ -11371,7 +11376,10 @@ package body Sem_Prag is
          --  otherwise legal pre-Ada_2005 programs. The one argument form is
          --  intended for exclusive use in the GNAT run-time library.
 
-         when Pragma_Ada_05 | Pragma_Ada_2005 => declare
+         when Pragma_Ada_05
+            | Pragma_Ada_2005
+         =>
+         declare
             E_Id : Node_Id;
 
          begin
@@ -11432,7 +11440,10 @@ package body Sem_Prag is
          --  otherwise legal pre-Ada_2012 programs. The one argument form is
          --  intended for exclusive use in the GNAT run-time library.
 
-         when Pragma_Ada_12 | Pragma_Ada_2012 => declare
+         when Pragma_Ada_12
+            | Pragma_Ada_2012
+         =>
+         declare
             E_Id : Node_Id;
 
          begin
@@ -11648,10 +11659,11 @@ package body Sem_Prag is
          --    (   [Check => ]  Boolean_EXPRESSION
          --     [, [Message =>] Static_String_EXPRESSION]);
 
-         when Pragma_Assert         |
-              Pragma_Assert_And_Cut |
-              Pragma_Assume         |
-              Pragma_Loop_Invariant =>
+         when Pragma_Assert
+            | Pragma_Assert_And_Cut
+            | Pragma_Assume
+            | Pragma_Loop_Invariant
+         =>
          Assert : declare
             function Contains_Loop_Entry (Expr : Node_Id) return Boolean;
             --  Determine whether expression Expr contains a Loop_Entry
@@ -12083,10 +12095,11 @@ package body Sem_Prag is
          --  pragma Effective_Reads  [ (boolean_EXPRESSION) ];
          --  pragma Effective_Writes [ (boolean_EXPRESSION) ];
 
-         when Pragma_Async_Readers    |
-              Pragma_Async_Writers    |
-              Pragma_Effective_Reads  |
-              Pragma_Effective_Writes =>
+         when Pragma_Async_Readers
+            | Pragma_Async_Writers
+            | Pragma_Effective_Reads
+            | Pragma_Effective_Writes
+         =>
          Async_Effective : declare
             Obj_Decl : Node_Id;
             Obj_Id   : Entity_Id;
@@ -12305,8 +12318,9 @@ package body Sem_Prag is
 
          --  This processing is shared by Volatile_Components
 
-         when Pragma_Atomic_Components   |
-              Pragma_Volatile_Components =>
+         when Pragma_Atomic_Components
+            | Pragma_Volatile_Components
+         =>
          Atomic_Components : declare
             D    : Node_Id;
             E    : Entity_Id;
@@ -12947,7 +12961,9 @@ package body Sem_Prag is
          --  older run-times that use this pragma. That's an unusual case, but
          --  it's easy enough to handle, so why not?
 
-         when Pragma_Compiler_Unit | Pragma_Compiler_Unit_Warning =>
+         when Pragma_Compiler_Unit
+            | Pragma_Compiler_Unit_Warning
+         =>
             GNAT_Pragma;
             Check_Arg_Count (0);
 
@@ -13362,6 +13378,7 @@ package body Sem_Prag is
             E : Entity_Id;
             pragma Warnings (Off, C);
             pragma Warnings (Off, E);
+
          begin
             Check_Arg_Order ((Name_Convention, Name_Entity));
             Check_Ada_83_Warning;
@@ -13411,8 +13428,7 @@ package body Sem_Prag is
 
          --  pragma CPP_Class ([Entity =>] LOCAL_NAME)
 
-         when Pragma_CPP_Class => CPP_Class : declare
-         begin
+         when Pragma_CPP_Class =>
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
@@ -13431,7 +13447,6 @@ package body Sem_Prag is
                     Expression => Make_Identifier (Loc, Name_CPP)),
                   New_Copy (First (Pragma_Argument_Associations (N))))));
             Analyze (N);
-         end CPP_Class;
 
          ---------------------
          -- CPP_Constructor --
@@ -13536,8 +13551,7 @@ package body Sem_Prag is
          -- CPP_Virtual --
          -----------------
 
-         when Pragma_CPP_Virtual => CPP_Virtual : declare
-         begin
+         when Pragma_CPP_Virtual =>
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
@@ -13545,14 +13559,12 @@ package body Sem_Prag is
                  ("'G'N'A'T pragma Cpp'_Virtual is now obsolete and has no "
                   & "effect?j?", N);
             end if;
-         end CPP_Virtual;
 
          ----------------
          -- CPP_Vtable --
          ----------------
 
-         when Pragma_CPP_Vtable => CPP_Vtable : declare
-         begin
+         when Pragma_CPP_Vtable =>
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
@@ -13560,7 +13572,6 @@ package body Sem_Prag is
                  ("'G'N'A'T pragma Cpp'_Vtable is now obsolete and has no "
                   & "effect?j?", N);
             end if;
-         end CPP_Vtable;
 
          ---------
          -- CPU --
@@ -14903,8 +14914,7 @@ package body Sem_Prag is
 
          --  pragma Extend_System ([Name =>] Identifier);
 
-         when Pragma_Extend_System => Extend_System : declare
-         begin
+         when Pragma_Extend_System =>
             GNAT_Pragma;
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (1);
@@ -14936,7 +14946,6 @@ package body Sem_Prag is
             else
                Error_Pragma ("incorrect name for pragma%, must be Aux_xxx");
             end if;
-         end Extend_System;
 
          ------------------------
          -- Extensions_Allowed --
@@ -15149,8 +15158,7 @@ package body Sem_Prag is
          --    UPPERCASE | LOWERCASE
          --    [, AS_IS | UPPERCASE | LOWERCASE]);
 
-         when Pragma_External_Name_Casing => External_Name_Casing : declare
-         begin
+         when Pragma_External_Name_Casing =>
             GNAT_Pragma;
             Check_No_Identifiers;
 
@@ -15188,7 +15196,6 @@ package body Sem_Prag is
                when others =>
                   null;
             end case;
-         end External_Name_Casing;
 
          ---------------
          -- Fast_Math --
@@ -15625,7 +15632,10 @@ package body Sem_Prag is
          --  Note: pragma Comment shares this processing. Pragma Ident is
          --  identical in effect to pragma Commment.
 
-         when Pragma_Ident | Pragma_Comment => Ident : declare
+         when Pragma_Comment
+            | Pragma_Ident
+         =>
+         Ident : declare
             Str : Node_Id;
 
          begin
@@ -17141,8 +17151,9 @@ package body Sem_Prag is
 
          --  pragma Linker_Destructor (procedure_LOCAL_NAME);
 
-         when Pragma_Linker_Constructor |
-              Pragma_Linker_Destructor =>
+         when Pragma_Linker_Constructor
+            | Pragma_Linker_Destructor
+         =>
          Linker_Constructor : declare
             Arg1_X : Node_Id;
             Proc   : Entity_Id;
@@ -17247,7 +17258,10 @@ package body Sem_Prag is
                --  all we need to do is to set the Linker_Section_pragma field,
                --  checking that we do not have a duplicate.
 
-               when E_Constant | E_Variable | Type_Kind =>
+               when Type_Kind
+                  | E_Constant
+                  | E_Variable
+               =>
                   LPE := Linker_Section_Pragma (Ent);
 
                   if Present (LPE) then
@@ -17416,12 +17430,9 @@ package body Sem_Prag is
             LP_Val := Chars (Get_Pragma_Arg (Arg1));
 
             case LP_Val is
-               when Name_Ceiling_Locking            =>
-                  LP := 'C';
-               when Name_Inheritance_Locking        =>
-                  LP := 'I';
-               when Name_Concurrent_Readers_Locking =>
-                  LP := 'R';
+               when Name_Ceiling_Locking            => LP := 'C';
+               when Name_Concurrent_Readers_Locking => LP := 'R';
+               when Name_Inheritance_Locking        => LP := 'I';
             end case;
 
             if Locking_Policy /= ' '
@@ -18338,12 +18349,10 @@ package body Sem_Prag is
                Nam : constant Name_Id := Chars (Get_Pragma_Arg (Arg1));
             begin
                case Nam is
-                  when Name_Time =>
-                     Opt.Optimize_Alignment := 'T';
-                  when Name_Space =>
-                     Opt.Optimize_Alignment := 'S';
-                  when Name_Off =>
-                     Opt.Optimize_Alignment := 'O';
+                  when Name_Off   => Opt.Optimize_Alignment := 'O';
+                  when Name_Space => Opt.Optimize_Alignment := 'S';
+                  when Name_Time  => Opt.Optimize_Alignment := 'T';
+
                   when others =>
                      Error_Pragma_Arg ("invalid argument for pragma%", Arg1);
                end case;
@@ -18816,7 +18825,7 @@ package body Sem_Prag is
 
          --  pragma Partition_Elaboration_Policy (policy_IDENTIFIER);
 
-         when Pragma_Partition_Elaboration_Policy => declare
+         when Pragma_Partition_Elaboration_Policy => PEP : declare
             subtype PEP_Range is Name_Id
               range First_Partition_Elaboration_Policy_Name
                  .. Last_Partition_Elaboration_Policy_Name;
@@ -18832,10 +18841,8 @@ package body Sem_Prag is
             PEP_Val := Chars (Get_Pragma_Arg (Arg1));
 
             case PEP_Val is
-               when Name_Concurrent =>
-                  PEP := 'C';
-               when Name_Sequential =>
-                  PEP := 'S';
+               when Name_Concurrent => PEP := 'C';
+               when Name_Sequential => PEP := 'S';
             end case;
 
             if Partition_Elaboration_Policy /= ' '
@@ -18855,7 +18862,7 @@ package body Sem_Prag is
                   Partition_Elaboration_Policy_Sloc := Loc;
                end if;
             end if;
-         end;
+         end PEP;
 
          -------------
          -- Passive --
@@ -19125,9 +19132,10 @@ package body Sem_Prag is
          --    the "pragma on subprogram declaration" case. In that scenario
          --    the annotation must instantiate itself.
 
-         when Pragma_Post          |
-              Pragma_Post_Class    |
-              Pragma_Postcondition =>
+         when Pragma_Post
+            | Pragma_Post_Class
+            | Pragma_Postcondition
+         =>
             Analyze_Pre_Post_Condition;
 
          --------------------------------
@@ -19171,9 +19179,10 @@ package body Sem_Prag is
          --    the "pragma on subprogram declaration" case. In that scenario
          --    the annotation must instantiate itself.
 
-         when Pragma_Pre          |
-              Pragma_Pre_Class    |
-              Pragma_Precondition =>
+         when Pragma_Pre
+            | Pragma_Pre_Class
+            | Pragma_Precondition
+         =>
             Analyze_Pre_Post_Condition;
 
          ---------------
@@ -19788,7 +19797,9 @@ package body Sem_Prag is
          --     [, [External =>] EXTERNAL_SYMBOL]
          --     [, [Size     =>] EXTERNAL_SYMBOL]);
 
-         when Pragma_Psect_Object | Pragma_Common_Object =>
+         when Pragma_Common_Object
+            | Pragma_Psect_Object
+         =>
          Psect_Object : declare
             Args  : Args_List (1 .. 3);
             Names : constant Name_List (1 .. 3) := (
@@ -21659,7 +21670,6 @@ package body Sem_Prag is
          --    [Write  =>] function NAME);
 
          when Pragma_Stream_Convert => Stream_Convert : declare
-
             procedure Check_OK_Stream_Convert_Function (Arg : Node_Id);
             --  Check that the given argument is the name of a local function
             --  of one argument that is not overloaded earlier in the current
@@ -22560,8 +22570,9 @@ package body Sem_Prag is
          --    ([Entity =>] type_LOCAL_NAME,
          --     [Check  =>] EXPRESSION);
 
-         when Pragma_Type_Invariant       |
-              Pragma_Type_Invariant_Class =>
+         when Pragma_Type_Invariant
+            | Pragma_Type_Invariant_Class
+         =>
          Type_Invariant : declare
             I_Pragma : Node_Id;
 
@@ -26996,11 +27007,15 @@ package body Sem_Prag is
                Policy := Chars (Get_Pragma_Arg (Last (PPA)));
 
                case Policy is
-                  when Name_Off | Name_Ignore =>
+                  when Name_Ignore
+                     | Name_Off
+                  =>
                      Set_Is_Ignored (N, True);
                      Set_Is_Checked (N, False);
 
-                  when Name_On | Name_Check =>
+                  when Name_Check
+                     | Name_On
+                  =>
                      Set_Is_Checked (N, True);
                      Set_Is_Ignored (N, False);
 
@@ -27116,12 +27131,19 @@ package body Sem_Prag is
                                               Name_Loop_Variant))
             then
                case (Chars (Get_Pragma_Arg (Last (PPA)))) is
-                  when Name_On | Name_Check =>
+                  when Name_Check
+                     | Name_On
+                  =>
                      return Name_Check;
-                  when Name_Off | Name_Ignore =>
+
+                  when Name_Ignore
+                     | Name_Off
+                  =>
                      return Name_Ignore;
+
                   when Name_Disable =>
                      return Name_Disable;
+
                   when others =>
                      raise Program_Error;
                end case;
@@ -28993,37 +29015,40 @@ package body Sem_Prag is
          when
             --  RM defined
 
-            Name_Assert                    |
-            Name_Assertion_Policy          |
-            Name_Static_Predicate          |
-            Name_Dynamic_Predicate         |
-            Name_Pre                       |
-            Name_uPre                      |
-            Name_Post                      |
-            Name_uPost                     |
-            Name_Type_Invariant            |
-            Name_uType_Invariant           |
+              Name_Assert
+            | Name_Assertion_Policy
+            | Name_Static_Predicate
+            | Name_Dynamic_Predicate
+            | Name_Pre
+            | Name_uPre
+            | Name_Post
+            | Name_uPost
+            | Name_Type_Invariant
+            | Name_uType_Invariant
 
             --  Impl defined
 
-            Name_Assert_And_Cut            |
-            Name_Assume                    |
-            Name_Contract_Cases            |
-            Name_Debug                     |
-            Name_Default_Initial_Condition |
-            Name_Ghost                     |
-            Name_Initial_Condition         |
-            Name_Invariant                 |
-            Name_uInvariant                |
-            Name_Loop_Invariant            |
-            Name_Loop_Variant              |
-            Name_Postcondition             |
-            Name_Precondition              |
-            Name_Predicate                 |
-            Name_Refined_Post              |
-            Name_Statement_Assertions      => return True;
+            | Name_Assert_And_Cut
+            | Name_Assume
+            | Name_Contract_Cases
+            | Name_Debug
+            | Name_Default_Initial_Condition
+            | Name_Ghost
+            | Name_Initial_Condition
+            | Name_Invariant
+            | Name_uInvariant
+            | Name_Loop_Invariant
+            | Name_Loop_Variant
+            | Name_Postcondition
+            | Name_Precondition
+            | Name_Predicate
+            | Name_Refined_Post
+            | Name_Statement_Assertions
+         =>
+            return True;
 
-         when others                       => return False;
+         when others =>
+            return False;
       end case;
    end Is_Valid_Assertion_Kind;
 
@@ -29425,12 +29450,16 @@ package body Sem_Prag is
          case Chars (Prefix (N)) is
             when Name_Pre =>
                Nam := Name_uPre;
+
             when Name_Post =>
                Nam := Name_uPost;
+
             when Name_Type_Invariant =>
                Nam := Name_uType_Invariant;
+
             when Name_Invariant =>
                Nam := Name_uInvariant;
+
             when others =>
                return;
          end case;

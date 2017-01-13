@@ -111,21 +111,15 @@ package body System.Interrupt_Management is
       pragma Unreferenced (ucontext);
 
    begin
-
       --  Check that treatment of exception propagation here is consistent with
       --  treatment of the abort signal in System.Task_Primitives.Operations.
 
       case signo is
-         when SIGFPE =>
-            raise Constraint_Error;
-         when SIGILL =>
-            raise Program_Error;
-         when SIGSEGV =>
-            raise Storage_Error;
-         when SIGBUS =>
-            raise Storage_Error;
-         when others =>
-            null;
+         when SIGFPE  => raise Constraint_Error;
+         when SIGILL  => raise Program_Error;
+         when SIGSEGV => raise Storage_Error;
+         when SIGBUS  => raise Storage_Error;
+         when others  => null;
       end case;
    end Map_Signal;
 

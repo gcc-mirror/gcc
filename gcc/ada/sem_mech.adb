@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,12 +146,12 @@ package body Sem_Mech is
                --  the point of view of parameter passing mechanism. Convention
                --  Ghost has the same dynamic semantics as convention Ada.
 
-               when Convention_Ada       |
-                    Convention_Intrinsic |
-                    Convention_Entry     |
-                    Convention_Protected |
-                    Convention_Stubbed   =>
-
+               when Convention_Ada
+                  | Convention_Entry
+                  | Convention_Intrinsic
+                  | Convention_Protected
+                  | Convention_Stubbed
+               =>
                   --  By reference types are passed by reference (RM 6.2(4))
 
                   if Is_By_Reference_Type (Typ) then
@@ -183,11 +183,11 @@ package body Sem_Mech is
 
                --  Note: Assembler, C++, Stdcall also use C conventions
 
-               when Convention_Assembler |
-                    Convention_C         |
-                    Convention_CPP       |
-                    Convention_Stdcall   =>
-
+               when Convention_Assembler
+                  | Convention_C
+                  | Convention_CPP
+                  | Convention_Stdcall
+               =>
                   --  The following values are passed by copy
 
                   --    IN Scalar parameters (RM B.3(66))

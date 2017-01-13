@@ -2946,12 +2946,13 @@ package body Sem_Attr is
       --  Attributes related to Ada 2012 iterators. Attribute specifications
       --  exist for these, but they cannot be queried.
 
-      when Attribute_Constant_Indexing    |
-           Attribute_Default_Iterator     |
-           Attribute_Implicit_Dereference |
-           Attribute_Iterator_Element     |
-           Attribute_Iterable             |
-           Attribute_Variable_Indexing    =>
+      when Attribute_Constant_Indexing
+         | Attribute_Default_Iterator
+         | Attribute_Implicit_Dereference
+         | Attribute_Iterator_Element
+         | Attribute_Iterable
+         | Attribute_Variable_Indexing
+      =>
          Error_Msg_N ("illegal attribute", N);
 
       --  Internal attributes used to deal with Ada 2012 delayed aspects. These
@@ -3122,8 +3123,7 @@ package body Sem_Attr is
       -- Bit --
       ---------
 
-      when Attribute_Bit => Bit :
-      begin
+      when Attribute_Bit =>
          Check_E0;
 
          if not Is_Object_Reference (P) then
@@ -3136,14 +3136,12 @@ package body Sem_Attr is
          end if;
 
          Set_Etype (N, Universal_Integer);
-      end Bit;
 
       ---------------
       -- Bit_Order --
       ---------------
 
-      when Attribute_Bit_Order => Bit_Order :
-      begin
+      when Attribute_Bit_Order =>
          Check_E0;
          Check_Type;
 
@@ -3165,7 +3163,6 @@ package body Sem_Attr is
          --  Reset incorrect indication of staticness
 
          Set_Is_Static_Expression (N, False);
-      end Bit_Order;
 
       ------------------
       -- Bit_Position --
@@ -3357,8 +3354,8 @@ package body Sem_Attr is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("constrained for private type is an " &
-                  "obsolescent feature (RM J.4)?j?", N);
+                 ("constrained for private type is an obsolescent feature "
+                  & "(RM J.4)?j?", N);
             end if;
 
             --  If we are within an instance, the attribute must be legal
@@ -3450,8 +3447,7 @@ package body Sem_Attr is
       -- Count --
       -----------
 
-      when Attribute_Count => Count :
-      declare
+      when Attribute_Count => Count : declare
          Ent : Entity_Id;
          S   : Entity_Id;
          Tsk : Entity_Id;
@@ -3525,8 +3521,10 @@ package body Sem_Attr is
                exit;
 
             elsif Ekind (Scope (Ent)) in Task_Kind
-              and then
-                not Ekind_In (S, E_Loop, E_Block, E_Entry, E_Entry_Family)
+              and then not Ekind_In (S, E_Block,
+                                        E_Entry,
+                                        E_Entry_Family,
+                                        E_Loop)
             then
                Error_Attr ("Attribute % cannot appear in inner unit", N);
 
@@ -3692,10 +3690,10 @@ package body Sem_Attr is
 
       --  Also handles processing for Elab_Spec and Elab_Subp_Body
 
-      when Attribute_Elab_Body      |
-           Attribute_Elab_Spec      |
-           Attribute_Elab_Subp_Body =>
-
+      when Attribute_Elab_Body
+         | Attribute_Elab_Spec
+         | Attribute_Elab_Subp_Body
+      =>
          Check_E0;
          Check_Unit_Name (P);
          Set_Etype (N, Standard_Void_Type);
@@ -3755,8 +3753,7 @@ package body Sem_Attr is
       -- Enum_Rep --
       --------------
 
-      when Attribute_Enum_Rep => Enum_Rep : declare
-      begin
+      when Attribute_Enum_Rep =>
          if Present (E1) then
             Check_E1;
             Check_Discrete_Type;
@@ -3767,13 +3764,12 @@ package body Sem_Attr is
          end if;
 
          Set_Etype (N, Universal_Integer);
-      end Enum_Rep;
 
       --------------
       -- Enum_Val --
       --------------
 
-      when Attribute_Enum_Val => Enum_Val : begin
+      when Attribute_Enum_Val =>
          Check_E1;
          Check_Type;
 
@@ -3799,7 +3795,6 @@ package body Sem_Attr is
             Resolve (E1, Any_Integer);
             Set_Etype (N, P_Base_Type);
          end if;
-      end Enum_Val;
 
       -------------
       -- Epsilon --
@@ -4013,8 +4008,8 @@ package body Sem_Attr is
          else
             if Ada_Version >= Ada_2005 then
                Error_Attr_P
-                 ("prefix of % attribute must be an exception, a " &
-                  "task or a task interface class-wide object");
+                 ("prefix of % attribute must be an exception, a task or a "
+                  & "task interface class-wide object");
             else
                Error_Attr_P
                  ("prefix of % attribute must be a task or an exception");
@@ -4025,7 +4020,7 @@ package body Sem_Attr is
       -- Image --
       -----------
 
-      when Attribute_Image => Image : begin
+      when Attribute_Image =>
          Check_SPARK_05_Restriction_On_Attribute;
 
          --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img
@@ -4077,14 +4072,12 @@ package body Sem_Attr is
          then
             Check_Restriction (No_Fixed_IO, P);
          end if;
-      end Image;
 
       ---------
       -- Img --
       ---------
 
-      when Attribute_Img => Img :
-      begin
+      when Attribute_Img =>
          Check_E0;
          Set_Etype (N, Standard_String);
 
@@ -4104,7 +4097,6 @@ package body Sem_Attr is
          then
             Check_Restriction (No_Fixed_IO, P);
          end if;
-      end Img;
 
       -----------
       -- Input --
@@ -5100,8 +5092,7 @@ package body Sem_Attr is
       -- Partition_ID --
       ------------------
 
-      when Attribute_Partition_ID => Partition_Id :
-      begin
+      when Attribute_Partition_ID =>
          Check_E0;
 
          if P_Type /= Any_Type then
@@ -5120,7 +5111,6 @@ package body Sem_Attr is
          end if;
 
          Set_Etype (N, Universal_Integer);
-      end Partition_Id;
 
       -------------------------
       -- Passed_By_Reference --
@@ -5680,8 +5670,7 @@ package body Sem_Attr is
       -- Scalar_Storage_Order --
       --------------------------
 
-      when Attribute_Scalar_Storage_Order => Scalar_Storage_Order :
-      declare
+      when Attribute_Scalar_Storage_Order => Scalar_Storage_Order : declare
          Ent : Entity_Id := Empty;
 
       begin
@@ -5757,8 +5746,9 @@ package body Sem_Attr is
       -- Size --
       ----------
 
-      when Attribute_Size | Attribute_VADS_Size => Size :
-      begin
+      when Attribute_Size
+         | Attribute_VADS_Size
+      =>
          Check_E0;
 
          --  If prefix is parameterless function call, rewrite and resolve
@@ -5821,7 +5811,6 @@ package body Sem_Attr is
             Rewrite (N, Make_Integer_Literal (Sloc (N), Esize (Entity (P))));
             Analyze (N);
          end if;
-      end Size;
 
       -----------
       -- Small --
@@ -5836,9 +5825,9 @@ package body Sem_Attr is
       -- Storage_Pool --
       ------------------
 
-      when Attribute_Storage_Pool        |
-           Attribute_Simple_Storage_Pool => Storage_Pool :
-      begin
+      when Attribute_Storage_Pool
+         | Attribute_Simple_Storage_Pool
+      =>
          Check_E0;
 
          if Is_Access_Type (P_Type) then
@@ -5861,8 +5850,9 @@ package body Sem_Attr is
                then
                   Error_Msg_Name_1 := Aname;
                      Error_Msg_Warn := SPARK_Mode /= On;
-                  Error_Msg_N ("cannot use % attribute for type with simple "
-                               & "storage pool<<", N);
+                  Error_Msg_N
+                    ("cannot use % attribute for type with simple storage "
+                     & "pool<<", N);
                   Error_Msg_N ("\Program_Error [<<", N);
 
                   Rewrite
@@ -5897,14 +5887,12 @@ package body Sem_Attr is
          else
             Error_Attr_P ("prefix of % attribute must be access type");
          end if;
-      end Storage_Pool;
 
       ------------------
       -- Storage_Size --
       ------------------
 
-      when Attribute_Storage_Size => Storage_Size :
-      begin
+      when Attribute_Storage_Size =>
          Check_E0;
 
          if Is_Task_Type (P_Type) then
@@ -5943,7 +5931,6 @@ package body Sem_Attr is
          else
             Error_Attr_P ("prefix of % attribute must be access or task type");
          end if;
-      end Storage_Size;
 
       ------------------
       -- Storage_Unit --
@@ -6052,8 +6039,7 @@ package body Sem_Attr is
       -- Tag --
       ---------
 
-      when Attribute_Tag => Tag :
-      begin
+      when Attribute_Tag =>
          Check_E0;
          Check_Dereference;
 
@@ -6083,7 +6069,6 @@ package body Sem_Attr is
          --  Set appropriate type
 
          Set_Etype (N, RTE (RE_Tag));
-      end Tag;
 
       -----------------
       -- Target_Name --
@@ -6401,8 +6386,7 @@ package body Sem_Attr is
       --  the literal as it appeared in the source program with a possible
       --  leading minus sign.
 
-      when Attribute_Universal_Literal_String => Universal_Literal_String :
-      begin
+      when Attribute_Universal_Literal_String =>
          Check_E0;
 
          if not Is_Entity_Name (P)
@@ -6456,7 +6440,6 @@ package body Sem_Attr is
                Set_Is_Static_Expression (N, True);
             end;
          end if;
-      end Universal_Literal_String;
 
       -------------------------
       -- Unrestricted_Access --
@@ -6809,8 +6792,7 @@ package body Sem_Attr is
       -- Val --
       ---------
 
-      when Attribute_Val => Val : declare
-      begin
+      when Attribute_Val =>
          Check_E1;
          Check_Discrete_Type;
 
@@ -6821,13 +6803,12 @@ package body Sem_Attr is
               ("attribute% is not allowed for type%", P);
          end if;
 
-         Resolve (E1, Any_Integer);
-         Set_Etype (N, P_Base_Type);
-
          --  Note, we need a range check in general, but we wait for the
          --  Resolve call to do this, since we want to let Eval_Attribute
          --  have a chance to find an static illegality first.
-      end Val;
+
+         Resolve (E1, Any_Integer);
+         Set_Etype (N, P_Base_Type);
 
       -----------
       -- Valid --
@@ -6894,8 +6875,7 @@ package body Sem_Attr is
       -- Value --
       -----------
 
-      when Attribute_Value => Value :
-      begin
+      when Attribute_Value =>
          Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
@@ -6941,7 +6921,6 @@ package body Sem_Attr is
          then
             Check_Restriction (No_Fixed_IO, P);
          end if;
-      end Value;
 
       ----------------
       -- Value_Size --
@@ -6973,8 +6952,7 @@ package body Sem_Attr is
       -- Wide_Image --
       ----------------
 
-      when Attribute_Wide_Image => Wide_Image :
-      begin
+      when Attribute_Wide_Image =>
          Check_SPARK_05_Restriction_On_Attribute;
          Check_Scalar_Type;
          Set_Etype (N, Standard_Wide_String);
@@ -6989,14 +6967,12 @@ package body Sem_Attr is
          then
             Check_Restriction (No_Fixed_IO, P);
          end if;
-      end Wide_Image;
 
       ---------------------
       -- Wide_Wide_Image --
       ---------------------
 
-      when Attribute_Wide_Wide_Image => Wide_Wide_Image :
-      begin
+      when Attribute_Wide_Wide_Image =>
          Check_Scalar_Type;
          Set_Etype (N, Standard_Wide_Wide_String);
          Check_E1;
@@ -7010,14 +6986,12 @@ package body Sem_Attr is
          then
             Check_Restriction (No_Fixed_IO, P);
          end if;
-      end Wide_Wide_Image;
 
       ----------------
       -- Wide_Value --
       ----------------
 
-      when Attribute_Wide_Value => Wide_Value :
-      begin
+      when Attribute_Wide_Value =>
          Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
@@ -7035,14 +7009,12 @@ package body Sem_Attr is
          then
             Check_Restriction (No_Fixed_IO, P);
          end if;
-      end Wide_Value;
 
       ---------------------
       -- Wide_Wide_Value --
       ---------------------
 
-      when Attribute_Wide_Wide_Value => Wide_Wide_Value :
-      begin
+      when Attribute_Wide_Wide_Value =>
          Check_E1;
          Check_Scalar_Type;
 
@@ -7059,7 +7031,6 @@ package body Sem_Attr is
          then
             Check_Restriction (No_Fixed_IO, P);
          end if;
-      end Wide_Wide_Value;
 
       ---------------------
       -- Wide_Wide_Width --
@@ -7119,10 +7090,11 @@ package body Sem_Attr is
 
          begin
             case Attr_Id is
-               when Attribute_Callable   |
-                    Attribute_Caller     |
-                    Attribute_Count      |
-                    Attribute_Terminated =>
+               when Attribute_Callable
+                  | Attribute_Caller
+                  | Attribute_Count
+                  | Attribute_Terminated
+               =>
                   Unused := RTE (RE_Tasking_State);
 
                when others =>
@@ -8187,12 +8159,14 @@ package body Sem_Attr is
 
       --  Attributes related to Ada 2012 iterators (placeholder ???)
 
-      when Attribute_Constant_Indexing    |
-           Attribute_Default_Iterator     |
-           Attribute_Implicit_Dereference |
-           Attribute_Iterator_Element     |
-           Attribute_Iterable             |
-           Attribute_Variable_Indexing    => null;
+      when Attribute_Constant_Indexing
+         | Attribute_Default_Iterator
+         | Attribute_Implicit_Dereference
+         | Attribute_Iterator_Element
+         | Attribute_Iterable
+         | Attribute_Variable_Indexing
+      =>
+         null;
 
       --  Internal attributes used to deal with Ada 2012 delayed aspects.
       --  These were already rejected by the parser. Thus they shouldn't
@@ -8488,8 +8462,7 @@ package body Sem_Attr is
       -- First --
       -----------
 
-      when Attribute_First => First_Attr :
-      begin
+      when Attribute_First =>
          Set_Bounds;
 
          if Compile_Time_Known_Value (Lo_Bound) then
@@ -8502,14 +8475,12 @@ package body Sem_Attr is
          else
             Check_Concurrent_Discriminant (Lo_Bound);
          end if;
-      end First_Attr;
 
       -----------------
       -- First_Valid --
       -----------------
 
-      when Attribute_First_Valid => First_Valid :
-      begin
+      when Attribute_First_Valid =>
          if Has_Predicates (P_Type)
            and then Has_Static_Predicate (P_Type)
          then
@@ -8528,7 +8499,6 @@ package body Sem_Attr is
             Set_Bounds;
             Fold_Uint (N, Expr_Value (Lo_Bound), Static);
          end if;
-      end First_Valid;
 
       -----------------
       -- Fixed_Value --
@@ -8721,8 +8691,7 @@ package body Sem_Attr is
       -- Last --
       ----------
 
-      when Attribute_Last => Last_Attr :
-      begin
+      when Attribute_Last =>
          Set_Bounds;
 
          if Compile_Time_Known_Value (Hi_Bound) then
@@ -8735,14 +8704,12 @@ package body Sem_Attr is
          else
             Check_Concurrent_Discriminant (Hi_Bound);
          end if;
-      end Last_Attr;
 
       ----------------
       -- Last_Valid --
       ----------------
 
-      when Attribute_Last_Valid => Last_Valid :
-      begin
+      when Attribute_Last_Valid =>
          if Has_Predicates (P_Type)
            and then Has_Static_Predicate (P_Type)
          then
@@ -8761,7 +8728,6 @@ package body Sem_Attr is
             Set_Bounds;
             Fold_Uint (N, Expr_Value (Hi_Bound), Static);
          end if;
-      end Last_Valid;
 
       ------------------
       -- Leading_Part --
@@ -9055,15 +9021,13 @@ package body Sem_Attr is
       -- Max --
       ---------
 
-      when Attribute_Max => Max :
-      begin
+      when Attribute_Max =>
          if Is_Real_Type (P_Type) then
             Fold_Ureal
               (N, UR_Max (Expr_Value_R (E1), Expr_Value_R (E2)), Static);
          else
             Fold_Uint (N, UI_Max (Expr_Value (E1), Expr_Value (E2)), Static);
          end if;
-      end Max;
 
       ----------------------------------
       -- Max_Alignment_For_Allocation --
@@ -9075,18 +9039,17 @@ package body Sem_Attr is
       --  and the alignment of the dope. Also, if the alignment is unknown, we
       --  use the max (it's OK to be pessimistic).
 
-      when Attribute_Max_Alignment_For_Allocation =>
-         declare
-            A : Uint := UI_From_Int (Ttypes.Maximum_Alignment);
-         begin
-            if Known_Alignment (P_Type) and then
-              (not Is_Array_Type (P_Type) or else Alignment (P_Type) > A)
-            then
-               A := Alignment (P_Type);
-            end if;
+      when Attribute_Max_Alignment_For_Allocation => Max_Align : declare
+         A : Uint := UI_From_Int (Ttypes.Maximum_Alignment);
+      begin
+         if Known_Alignment (P_Type)
+           and then (not Is_Array_Type (P_Type) or else Alignment (P_Type) > A)
+         then
+            A := Alignment (P_Type);
+         end if;
 
             Fold_Uint (N, A, Static);
-         end;
+      end Max_Align;
 
       ----------------------------------
       -- Max_Size_In_Storage_Elements --
@@ -9108,37 +9071,36 @@ package body Sem_Attr is
       -- Mechanism_Code --
       --------------------
 
-      when Attribute_Mechanism_Code =>
-         declare
-            Val    : Int;
-            Formal : Entity_Id;
-            Mech   : Mechanism_Type;
+      when Attribute_Mechanism_Code => Mechanism_Code : declare
+         Formal : Entity_Id;
+         Mech   : Mechanism_Type;
+         Val    : Int;
 
-         begin
-            if No (E1) then
-               Mech := Mechanism (P_Entity);
+      begin
+         if No (E1) then
+            Mech := Mechanism (P_Entity);
 
-            else
-               Val := UI_To_Int (Expr_Value (E1));
+         else
+            Val := UI_To_Int (Expr_Value (E1));
 
-               Formal := First_Formal (P_Entity);
-               for J in 1 .. Val - 1 loop
-                  Next_Formal (Formal);
-               end loop;
-               Mech := Mechanism (Formal);
-            end if;
+            Formal := First_Formal (P_Entity);
+            for J in 1 .. Val - 1 loop
+               Next_Formal (Formal);
+            end loop;
 
-            if Mech < 0 then
-               Fold_Uint (N, UI_From_Int (Int (-Mech)), Static);
-            end if;
-         end;
+            Mech := Mechanism (Formal);
+         end if;
+
+         if Mech < 0 then
+            Fold_Uint (N, UI_From_Int (Int (-Mech)), Static);
+         end if;
+      end Mechanism_Code;
 
       ---------
       -- Min --
       ---------
 
-      when Attribute_Min => Min :
-      begin
+      when Attribute_Min =>
          if Is_Real_Type (P_Type) then
             Fold_Ureal
               (N, UR_Min (Expr_Value_R (E1), Expr_Value_R (E2)), Static);
@@ -9146,7 +9108,6 @@ package body Sem_Attr is
             Fold_Uint
               (N, UI_Min (Expr_Value (E1), Expr_Value (E2)), Static);
          end if;
-      end Min;
 
       ---------
       -- Mod --
@@ -9253,8 +9214,8 @@ package body Sem_Attr is
       -- Pred --
       ----------
 
-      when Attribute_Pred => Pred :
-      begin
+      when Attribute_Pred =>
+
          --  Floating-point case
 
          if Is_Floating_Point_Type (P_Type) then
@@ -9293,7 +9254,6 @@ package body Sem_Attr is
 
             Fold_Uint (N, Expr_Value (E1) - 1, Static);
          end if;
-      end Pred;
 
       -----------
       -- Range --
@@ -9309,7 +9269,10 @@ package body Sem_Attr is
       -- Range_Length --
       ------------------
 
-      when Attribute_Range_Length =>
+      when Attribute_Range_Length => Range_Length : declare
+         Diff : aliased Uint;
+
+      begin
          Set_Bounds;
 
          --  Can fold if both bounds are compile time known
@@ -9326,29 +9289,24 @@ package body Sem_Attr is
          --  One more case is where Hi_Bound and Lo_Bound are compile-time
          --  comparable, and we can figure out the difference between them.
 
-         declare
-            Diff : aliased Uint;
-
-         begin
-            case
-              Compile_Time_Compare
+         case Compile_Time_Compare
                 (Lo_Bound, Hi_Bound, Diff'Access, Assume_Valid => False)
-            is
-               when EQ =>
-                  Fold_Uint (N, Uint_1, Static);
+         is
+            when EQ =>
+               Fold_Uint (N, Uint_1, Static);
 
-               when GT =>
-                  Fold_Uint (N, Uint_0, Static);
+            when GT =>
+               Fold_Uint (N, Uint_0, Static);
 
-               when LT =>
-                  if Diff /= No_Uint then
-                     Fold_Uint (N, Diff + 1, Static);
-                  end if;
+            when LT =>
+               if Diff /= No_Uint then
+                  Fold_Uint (N, Diff + 1, Static);
+               end if;
 
-               when others =>
-                  null;
-            end case;
-         end;
+            when others =>
+               null;
+         end case;
+      end Range_Length;
 
       ---------
       -- Ref --
@@ -9383,18 +9341,15 @@ package body Sem_Attr is
       -- Restriction --
       -----------------
 
-      when Attribute_Restriction_Set => Restriction_Set : declare
-      begin
+      when Attribute_Restriction_Set =>
          Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
          Set_Is_Static_Expression (N);
-      end Restriction_Set;
 
       -----------
       -- Round --
       -----------
 
-      when Attribute_Round => Round :
-      declare
+      when Attribute_Round => Round : declare
          Sr : Ureal;
          Si : Uint;
 
@@ -9508,53 +9463,57 @@ package body Sem_Attr is
       --  one of the places where it is annoying that a size of zero means two
       --  things (zero size for scalars, unspecified size for non-scalars).
 
-      when Attribute_Size | Attribute_VADS_Size => Size : declare
-         P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
+      when Attribute_Size
+         | Attribute_VADS_Size
+      =>
+         Size : declare
+            P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
 
-      begin
-         if Is_Scalar_Type (P_TypeA) or else RM_Size (P_TypeA) /= Uint_0 then
+         begin
+            if Is_Scalar_Type (P_TypeA)
+              or else RM_Size (P_TypeA) /= Uint_0
+            then
+               --  VADS_Size case
 
-            --  VADS_Size case
+               if Id = Attribute_VADS_Size or else Use_VADS_Size then
+                  declare
+                     S : constant Node_Id := Size_Clause (P_TypeA);
 
-            if Id = Attribute_VADS_Size or else Use_VADS_Size then
-               declare
-                  S : constant Node_Id := Size_Clause (P_TypeA);
+                  begin
+                     --  If a size clause applies, then use the size from it.
+                     --  This is one of the rare cases where we can use the
+                     --  Size_Clause field for a subtype when Has_Size_Clause
+                     --  is False. Consider:
 
-               begin
-                  --  If a size clause applies, then use the size from it.
-                  --  This is one of the rare cases where we can use the
-                  --  Size_Clause field for a subtype when Has_Size_Clause
-                  --  is False. Consider:
+                     --    type x is range 1 .. 64;
+                     --    for x'size use 12;
+                     --    subtype y is x range 0 .. 3;
 
-                  --    type x is range 1 .. 64;
-                  --    for x'size use 12;
-                  --    subtype y is x range 0 .. 3;
+                     --  Here y has a size clause inherited from x, but
+                     --  normally it does not apply, and y'size is 2. However,
+                     --  y'VADS_Size is indeed 12 and not 2.
 
-                  --  Here y has a size clause inherited from x, but normally
-                  --  it does not apply, and y'size is 2. However, y'VADS_Size
-                  --  is indeed 12 and not 2.
+                     if Present (S)
+                       and then Is_OK_Static_Expression (Expression (S))
+                     then
+                        Fold_Uint (N, Expr_Value (Expression (S)), Static);
 
-                  if Present (S)
-                    and then Is_OK_Static_Expression (Expression (S))
-                  then
-                     Fold_Uint (N, Expr_Value (Expression (S)), Static);
+                     --  If no size is specified, then we simply use the object
+                     --  size in the VADS_Size case (e.g. Natural'Size is equal
+                     --  to Integer'Size, not one less).
 
-                  --  If no size is specified, then we simply use the object
-                  --  size in the VADS_Size case (e.g. Natural'Size is equal
-                  --  to Integer'Size, not one less).
+                     else
+                        Fold_Uint (N, Esize (P_TypeA), Static);
+                     end if;
+                  end;
 
-                  else
-                     Fold_Uint (N, Esize (P_TypeA), Static);
-                  end if;
-               end;
+               --  Normal case (Size) in which case we want the RM_Size
 
-            --  Normal case (Size) in which case we want the RM_Size
-
-            else
-               Fold_Uint (N, RM_Size (P_TypeA), Static);
+               else
+                  Fold_Uint (N, RM_Size (P_TypeA), Static);
+               end if;
             end if;
-         end if;
-      end Size;
+         end Size;
 
       -----------
       -- Small --
@@ -9596,8 +9555,7 @@ package body Sem_Attr is
       -- Succ --
       ----------
 
-      when Attribute_Succ => Succ :
-      begin
+      when Attribute_Succ =>
          --  Floating-point case
 
          if Is_Floating_Point_Type (P_Type) then
@@ -9635,7 +9593,6 @@ package body Sem_Attr is
                Fold_Uint (N, Expr_Value (E1) + 1, Static);
             end if;
          end if;
-      end Succ;
 
       ----------------
       -- Truncation --
@@ -9750,8 +9707,7 @@ package body Sem_Attr is
       -- Val --
       ---------
 
-      when Attribute_Val => Val :
-      begin
+      when Attribute_Val =>
          if  Expr_Value (E1) < Expr_Value (Type_Low_Bound (P_Base_Type))
            or else
              Expr_Value (E1) > Expr_Value (Type_High_Bound (P_Base_Type))
@@ -9767,7 +9723,6 @@ package body Sem_Attr is
          else
             Fold_Uint (N, Expr_Value (E1), Static);
          end if;
-      end Val;
 
       ----------------
       -- Value_Size --
@@ -9780,6 +9735,7 @@ package body Sem_Attr is
 
       when Attribute_Value_Size => Value_Size : declare
          P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
+
       begin
          if Is_Scalar_Type (P_TypeA) or else RM_Size (P_TypeA) /= Uint_0 then
             Fold_Uint (N, RM_Size (P_TypeA), Static);
@@ -9833,10 +9789,10 @@ package body Sem_Attr is
 
       --  This processing also handles the case of Wide_[Wide_]Width
 
-      when Attribute_Width |
-           Attribute_Wide_Width |
-           Attribute_Wide_Wide_Width => Width :
-      begin
+      when Attribute_Width
+         | Attribute_Wide_Width
+         | Attribute_Wide_Wide_Width
+      =>
          if Compile_Time_Known_Bounds (P_Type) then
 
             --  Floating-point types
@@ -9944,29 +9900,83 @@ package body Sem_Attr is
                            --  names (length = 12).
 
                            case C is
-                              when Reserved_128 | Reserved_129 |
-                                   Reserved_132 | Reserved_153
-                                => Wt := 12;
+                              when Reserved_128
+                                 | Reserved_129
+                                 | Reserved_132
+                                 | Reserved_153
+                              =>
+                                 Wt := 12;
 
-                              when BS | HT | LF | VT | FF | CR |
-                                   SO | SI | EM | FS | GS | RS |
-                                   US | RI | MW | ST | PM
-                                => Wt := 2;
+                              when BS
+                                 | CR
+                                 | EM
+                                 | FF
+                                 | FS
+                                 | GS
+                                 | HT
+                                 | LF
+                                 | MW
+                                 | PM
+                                 | RI
+                                 | RS
+                                 | SI
+                                 | SO
+                                 | ST
+                                 | US
+                                 | VT
+                              =>
+                                 Wt := 2;
 
-                              when NUL | SOH | STX | ETX | EOT |
-                                   ENQ | ACK | BEL | DLE | DC1 |
-                                   DC2 | DC3 | DC4 | NAK | SYN |
-                                   ETB | CAN | SUB | ESC | DEL |
-                                   BPH | NBH | NEL | SSA | ESA |
-                                   HTS | HTJ | VTS | PLD | PLU |
-                                   SS2 | SS3 | DCS | PU1 | PU2 |
-                                   STS | CCH | SPA | EPA | SOS |
-                                   SCI | CSI | OSC | APC
-                                => Wt := 3;
+                              when ACK
+                                 | APC
+                                 | BEL
+                                 | BPH
+                                 | CAN
+                                 | CCH
+                                 | CSI
+                                 | DC1
+                                 | DC2
+                                 | DC3
+                                 | DC4
+                                 | DCS
+                                 | DEL
+                                 | DLE
+                                 | ENQ
+                                 | EOT
+                                 | EPA
+                                 | ESA
+                                 | ESC
+                                 | ETB
+                                 | ETX
+                                 | HTJ
+                                 | HTS
+                                 | NAK
+                                 | NBH
+                                 | NEL
+                                 | NUL
+                                 | OSC
+                                 | PLD
+                                 | PLU
+                                 | PU1
+                                 | PU2
+                                 | SCI
+                                 | SOH
+                                 | SOS
+                                 | SPA
+                                 | SS2
+                                 | SS3
+                                 | SSA
+                                 | STS
+                                 | STX
+                                 | SUB
+                                 | SYN
+                                 | VTS
+                              =>
+                                 Wt := 3;
 
-                              when Space .. Tilde |
-                                   No_Break_Space .. LC_Y_Diaeresis
-                                =>
+                              when Space .. Tilde
+                                 | No_Break_Space .. LC_Y_Diaeresis
+                              =>
                                  --  Special case of soft hyphen in Ada 2005
 
                                  if C = Character'Val (16#AD#)
@@ -10076,13 +10086,13 @@ package body Sem_Attr is
                end;
             end if;
          end if;
-      end Width;
 
       --  The following attributes denote functions that cannot be folded
 
-      when Attribute_From_Any |
-           Attribute_To_Any   |
-           Attribute_TypeCode =>
+      when Attribute_From_Any
+         | Attribute_To_Any
+         | Attribute_TypeCode
+      =>
          null;
 
       --  The following attributes can never be folded, and furthermore we
@@ -10091,69 +10101,69 @@ package body Sem_Attr is
       --  a result of the processing in Analyze_Attribute or earlier in
       --  this procedure.
 
-      when Attribute_Abort_Signal                 |
-           Attribute_Access                       |
-           Attribute_Address                      |
-           Attribute_Address_Size                 |
-           Attribute_Asm_Input                    |
-           Attribute_Asm_Output                   |
-           Attribute_Base                         |
-           Attribute_Bit_Order                    |
-           Attribute_Bit_Position                 |
-           Attribute_Callable                     |
-           Attribute_Caller                       |
-           Attribute_Class                        |
-           Attribute_Code_Address                 |
-           Attribute_Compiler_Version             |
-           Attribute_Count                        |
-           Attribute_Default_Bit_Order            |
-           Attribute_Default_Scalar_Storage_Order |
-           Attribute_Deref                        |
-           Attribute_Elaborated                   |
-           Attribute_Elab_Body                    |
-           Attribute_Elab_Spec                    |
-           Attribute_Elab_Subp_Body               |
-           Attribute_Enabled                      |
-           Attribute_External_Tag                 |
-           Attribute_Fast_Math                    |
-           Attribute_First_Bit                    |
-           Attribute_Img                          |
-           Attribute_Input                        |
-           Attribute_Last_Bit                     |
-           Attribute_Library_Level                |
-           Attribute_Maximum_Alignment            |
-           Attribute_Old                          |
-           Attribute_Output                       |
-           Attribute_Partition_ID                 |
-           Attribute_Pool_Address                 |
-           Attribute_Position                     |
-           Attribute_Priority                     |
-           Attribute_Read                         |
-           Attribute_Result                       |
-           Attribute_Scalar_Storage_Order         |
-           Attribute_Simple_Storage_Pool          |
-           Attribute_Storage_Pool                 |
-           Attribute_Storage_Size                 |
-           Attribute_Storage_Unit                 |
-           Attribute_Stub_Type                    |
-           Attribute_System_Allocator_Alignment   |
-           Attribute_Tag                          |
-           Attribute_Target_Name                  |
-           Attribute_Terminated                   |
-           Attribute_To_Address                   |
-           Attribute_Type_Key                     |
-           Attribute_Unchecked_Access             |
-           Attribute_Universal_Literal_String     |
-           Attribute_Unrestricted_Access          |
-           Attribute_Valid                        |
-           Attribute_Valid_Scalars                |
-           Attribute_Value                        |
-           Attribute_Wchar_T_Size                 |
-           Attribute_Wide_Value                   |
-           Attribute_Wide_Wide_Value              |
-           Attribute_Word_Size                    |
-           Attribute_Write                        =>
-
+      when Attribute_Abort_Signal
+         | Attribute_Access
+         | Attribute_Address
+         | Attribute_Address_Size
+         | Attribute_Asm_Input
+         | Attribute_Asm_Output
+         | Attribute_Base
+         | Attribute_Bit_Order
+         | Attribute_Bit_Position
+         | Attribute_Callable
+         | Attribute_Caller
+         | Attribute_Class
+         | Attribute_Code_Address
+         | Attribute_Compiler_Version
+         | Attribute_Count
+         | Attribute_Default_Bit_Order
+         | Attribute_Default_Scalar_Storage_Order
+         | Attribute_Deref
+         | Attribute_Elaborated
+         | Attribute_Elab_Body
+         | Attribute_Elab_Spec
+         | Attribute_Elab_Subp_Body
+         | Attribute_Enabled
+         | Attribute_External_Tag
+         | Attribute_Fast_Math
+         | Attribute_First_Bit
+         | Attribute_Img
+         | Attribute_Input
+         | Attribute_Last_Bit
+         | Attribute_Library_Level
+         | Attribute_Maximum_Alignment
+         | Attribute_Old
+         | Attribute_Output
+         | Attribute_Partition_ID
+         | Attribute_Pool_Address
+         | Attribute_Position
+         | Attribute_Priority
+         | Attribute_Read
+         | Attribute_Result
+         | Attribute_Scalar_Storage_Order
+         | Attribute_Simple_Storage_Pool
+         | Attribute_Storage_Pool
+         | Attribute_Storage_Size
+         | Attribute_Storage_Unit
+         | Attribute_Stub_Type
+         | Attribute_System_Allocator_Alignment
+         | Attribute_Tag
+         | Attribute_Target_Name
+         | Attribute_Terminated
+         | Attribute_To_Address
+         | Attribute_Type_Key
+         | Attribute_Unchecked_Access
+         | Attribute_Universal_Literal_String
+         | Attribute_Unrestricted_Access
+         | Attribute_Valid
+         | Attribute_Valid_Scalars
+         | Attribute_Value
+         | Attribute_Wchar_T_Size
+         | Attribute_Wide_Value
+         | Attribute_Wide_Wide_Value
+         | Attribute_Word_Size
+         | Attribute_Write
+      =>
          raise Program_Error;
       end case;
 
@@ -10354,10 +10364,8 @@ package body Sem_Attr is
 
          when Attribute_Access
             | Attribute_Unchecked_Access
-            | Attribute_Unrestricted_Access =>
-
-         Access_Attribute :
-         begin
+            | Attribute_Unrestricted_Access
+         =>
             --  Note possible modification if we have a variable
 
             if Is_Variable (P) then
@@ -11181,7 +11189,6 @@ package body Sem_Attr is
                   end if;
                end;
             end if;
-         end Access_Attribute;
 
          -------------
          -- Address --
@@ -11190,9 +11197,9 @@ package body Sem_Attr is
          --  Deal with resolving the type for Address attribute, overloading
          --  is not permitted here, since there is no context to resolve it.
 
-         when Attribute_Address | Attribute_Code_Address =>
-         Address_Attribute : begin
-
+         when Attribute_Address
+            | Attribute_Code_Address
+         =>
             --  To be safe, assume that if the address of a variable is taken,
             --  it may be modified via this address, so note modification.
 
@@ -11301,7 +11308,6 @@ package body Sem_Attr is
                   end if;
                end;
             end if;
-         end Address_Attribute;
 
          ------------------
          -- Body_Version --
@@ -11425,81 +11431,77 @@ package body Sem_Attr is
          --  specifically mentions this equivalence, we take care that the
          --  prefix is only evaluated once).
 
-         when Attribute_Range => Range_Attribute :
-            declare
-               LB   : Node_Id;
-               HB   : Node_Id;
-               Dims : List_Id;
+         when Attribute_Range => Range_Attribute : declare
+            Dims : List_Id;
+            HB   : Node_Id;
+            LB   : Node_Id;
 
-            begin
-               if not Is_Entity_Name (P)
-                 or else not Is_Type (Entity (P))
-               then
-                  Resolve (P);
-               end if;
+         begin
+            if not Is_Entity_Name (P) or else not Is_Type (Entity (P)) then
+               Resolve (P);
+            end if;
 
-               Dims := Expressions (N);
+            Dims := Expressions (N);
 
-               HB :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => Duplicate_Subexpr (P, Name_Req => True),
-                   Attribute_Name => Name_Last,
-                   Expressions    => Dims);
+            HB :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => Duplicate_Subexpr (P, Name_Req => True),
+                Attribute_Name => Name_Last,
+                Expressions    => Dims);
 
-               LB :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix          => P,
-                   Attribute_Name  => Name_First,
-                   Expressions     => (Dims));
+            LB :=
+              Make_Attribute_Reference (Loc,
+                Prefix          => P,
+                Attribute_Name  => Name_First,
+                Expressions     => (Dims));
 
-               --  Do not share the dimension indicator, if present. Even
-               --  though it is a static constant, its source location
-               --  may be modified when printing expanded code and node
-               --  sharing will lead to chaos in Sprint.
+            --  Do not share the dimension indicator, if present. Even though
+            --  it is a static constant, its source location may be modified
+            --  when printing expanded code and node sharing will lead to chaos
+            --  in Sprint.
 
-               if Present (Dims) then
-                  Set_Expressions (LB,
-                    New_List (New_Copy_Tree (First (Dims))));
-               end if;
+            if Present (Dims) then
+               Set_Expressions (LB, New_List (New_Copy_Tree (First (Dims))));
+            end if;
 
-               --  If the original was marked as Must_Not_Freeze (see code
-               --  in Sem_Ch3.Make_Index), then make sure the rewriting
-               --  does not freeze either.
+            --  If the original was marked as Must_Not_Freeze (see code in
+            --  Sem_Ch3.Make_Index), then make sure the rewriting does not
+            --  freeze either.
 
-               if Must_Not_Freeze (N) then
-                  Set_Must_Not_Freeze (HB);
-                  Set_Must_Not_Freeze (LB);
-                  Set_Must_Not_Freeze (Prefix (HB));
-                  Set_Must_Not_Freeze (Prefix (LB));
-               end if;
+            if Must_Not_Freeze (N) then
+               Set_Must_Not_Freeze (HB);
+               Set_Must_Not_Freeze (LB);
+               Set_Must_Not_Freeze (Prefix (HB));
+               Set_Must_Not_Freeze (Prefix (LB));
+            end if;
 
-               if Raises_Constraint_Error (Prefix (N)) then
+            if Raises_Constraint_Error (Prefix (N)) then
 
-                  --  Preserve Sloc of prefix in the new bounds, so that
-                  --  the posted warning can be removed if we are within
-                  --  unreachable code.
+               --  Preserve Sloc of prefix in the new bounds, so that the
+               --  posted warning can be removed if we are within unreachable
+               --  code.
 
-                  Set_Sloc (LB, Sloc (Prefix (N)));
-                  Set_Sloc (HB, Sloc (Prefix (N)));
-               end if;
+               Set_Sloc (LB, Sloc (Prefix (N)));
+               Set_Sloc (HB, Sloc (Prefix (N)));
+            end if;
 
-               Rewrite (N, Make_Range (Loc, LB, HB));
-               Analyze_And_Resolve (N, Typ);
+            Rewrite (N, Make_Range (Loc, LB, HB));
+            Analyze_And_Resolve (N, Typ);
 
-               --  Ensure that the expanded range does not have side effects
+            --  Ensure that the expanded range does not have side effects
 
-               Force_Evaluation (LB);
-               Force_Evaluation (HB);
+            Force_Evaluation (LB);
+            Force_Evaluation (HB);
 
-               --  Normally after resolving attribute nodes, Eval_Attribute
-               --  is called to do any possible static evaluation of the node.
-               --  However, here since the Range attribute has just been
-               --  transformed into a range expression it is no longer an
-               --  attribute node and therefore the call needs to be avoided
-               --  and is accomplished by simply returning from the procedure.
+            --  Normally after resolving attribute nodes, Eval_Attribute
+            --  is called to do any possible static evaluation of the node.
+            --  However, here since the Range attribute has just been
+            --  transformed into a range expression it is no longer an
+            --  attribute node and therefore the call needs to be avoided
+            --  and is accomplished by simply returning from the procedure.
 
-               return;
-            end Range_Attribute;
+            return;
+         end Range_Attribute;
 
          ------------
          -- Result --
@@ -11530,121 +11532,120 @@ package body Sem_Attr is
 
          --  Resolve aggregate components in component associations
 
-         when Attribute_Update =>
-            declare
-               Aggr  : constant Node_Id   := First (Expressions (N));
-               Typ   : constant Entity_Id := Etype (Prefix (N));
-               Assoc : Node_Id;
-               Comp  : Node_Id;
-               Expr  : Node_Id;
+         when Attribute_Update => Update : declare
+            Aggr  : constant Node_Id   := First (Expressions (N));
+            Typ   : constant Entity_Id := Etype (Prefix (N));
+            Assoc : Node_Id;
+            Comp  : Node_Id;
+            Expr  : Node_Id;
 
-            begin
-               --  Set the Etype of the aggregate to that of the prefix, even
-               --  though the aggregate may not be a proper representation of a
-               --  value of the type (missing or duplicated associations, etc.)
-               --  Complete resolution of the prefix. Note that in Ada 2012 it
-               --  can be a qualified expression that is e.g. an aggregate.
+         begin
+            --  Set the Etype of the aggregate to that of the prefix, even
+            --  though the aggregate may not be a proper representation of a
+            --  value of the type (missing or duplicated associations, etc.)
+            --  Complete resolution of the prefix. Note that in Ada 2012 it
+            --  can be a qualified expression that is e.g. an aggregate.
 
-               Set_Etype (Aggr, Typ);
-               Resolve (Prefix (N), Typ);
+            Set_Etype (Aggr, Typ);
+            Resolve (Prefix (N), Typ);
 
-               --  For an array type, resolve expressions with the component
-               --  type of the array, and apply constraint checks when needed.
+            --  For an array type, resolve expressions with the component type
+            --  of the array, and apply constraint checks when needed.
 
-               if Is_Array_Type (Typ) then
-                  Assoc := First (Component_Associations (Aggr));
-                  while Present (Assoc) loop
-                     Expr := Expression (Assoc);
-                     Resolve (Expr, Component_Type (Typ));
+            if Is_Array_Type (Typ) then
+               Assoc := First (Component_Associations (Aggr));
+               while Present (Assoc) loop
+                  Expr := Expression (Assoc);
+                  Resolve (Expr, Component_Type (Typ));
 
-                     --  For scalar array components set Do_Range_Check when
-                     --  needed. Constraint checking on non-scalar components
-                     --  is done in Aggregate_Constraint_Checks, but only if
-                     --  full analysis is enabled. These flags are not set in
-                     --  the front-end in GnatProve mode.
+                  --  For scalar array components set Do_Range_Check when
+                  --  needed. Constraint checking on non-scalar components
+                  --  is done in Aggregate_Constraint_Checks, but only if
+                  --  full analysis is enabled. These flags are not set in
+                  --  the front-end in GnatProve mode.
 
-                     if Is_Scalar_Type (Component_Type (Typ))
-                       and then not Is_OK_Static_Expression (Expr)
+                  if Is_Scalar_Type (Component_Type (Typ))
+                    and then not Is_OK_Static_Expression (Expr)
+                  then
+                     if Is_Entity_Name (Expr)
+                       and then Etype (Expr) = Component_Type (Typ)
                      then
-                        if Is_Entity_Name (Expr)
-                          and then Etype (Expr) = Component_Type (Typ)
-                        then
-                           null;
+                        null;
+
+                     else
+                        Set_Do_Range_Check (Expr);
+                     end if;
+                  end if;
+
+                  --  The choices in the association are static constants,
+                  --  or static aggregates each of whose components belongs
+                  --  to the proper index type. However, they must also
+                  --  belong to the index subtype (s) of the prefix, which
+                  --  may be a subtype (e.g. given by a slice).
+
+                  --  Choices may also be identifiers with no staticness
+                  --  requirements, in which case they must resolve to the
+                  --  index type.
+
+                  declare
+                     C    : Node_Id;
+                     C_E  : Node_Id;
+                     Indx : Node_Id;
+
+                  begin
+                     C := First (Choices (Assoc));
+                     while Present (C) loop
+                        Indx := First_Index (Etype (Prefix (N)));
+
+                        if Nkind (C) /= N_Aggregate then
+                           Analyze_And_Resolve (C, Etype (Indx));
+                           Apply_Constraint_Check (C, Etype (Indx));
+                           Check_Non_Static_Context (C);
 
                         else
-                           Set_Do_Range_Check (Expr);
+                           C_E := First (Expressions (C));
+                           while Present (C_E) loop
+                              Analyze_And_Resolve (C_E, Etype (Indx));
+                              Apply_Constraint_Check (C_E, Etype (Indx));
+                              Check_Non_Static_Context (C_E);
+
+                              Next (C_E);
+                              Next_Index (Indx);
+                           end loop;
                         end if;
-                     end if;
 
-                     --  The choices in the association are static constants,
-                     --  or static aggregates each of whose components belongs
-                     --  to the proper index type. However, they must also
-                     --  belong to the index subtype (s) of the prefix, which
-                     --  may be a subtype (e.g. given by a slice).
+                        Next (C);
+                     end loop;
+                  end;
 
-                     --  Choices may also be identifiers with no staticness
-                     --  requirements, in which case they must resolve to the
-                     --  index type.
+                  Next (Assoc);
+               end loop;
 
-                     declare
-                        C    : Node_Id;
-                        C_E  : Node_Id;
-                        Indx : Node_Id;
+            --  For a record type, use type of each component, which is
+            --  recorded during analysis.
 
-                     begin
-                        C := First (Choices (Assoc));
-                        while Present (C) loop
-                           Indx := First_Index (Etype (Prefix (N)));
+            else
+               Assoc := First (Component_Associations (Aggr));
+               while Present (Assoc) loop
+                  Comp := First (Choices (Assoc));
+                  Expr := Expression (Assoc);
 
-                           if Nkind (C) /= N_Aggregate then
-                              Analyze_And_Resolve (C, Etype (Indx));
-                              Apply_Constraint_Check (C, Etype (Indx));
-                              Check_Non_Static_Context (C);
+                  if Nkind (Comp) /= N_Others_Choice
+                    and then not Error_Posted (Comp)
+                  then
+                     Resolve (Expr, Etype (Entity (Comp)));
 
-                           else
-                              C_E := First (Expressions (C));
-                              while Present (C_E) loop
-                                 Analyze_And_Resolve (C_E, Etype (Indx));
-                                 Apply_Constraint_Check (C_E, Etype (Indx));
-                                 Check_Non_Static_Context (C_E);
-
-                                 Next (C_E);
-                                 Next_Index (Indx);
-                              end loop;
-                           end if;
-
-                           Next (C);
-                        end loop;
-                     end;
-
-                     Next (Assoc);
-                  end loop;
-
-               --  For a record type, use type of each component, which is
-               --  recorded during analysis.
-
-               else
-                  Assoc := First (Component_Associations (Aggr));
-                  while Present (Assoc) loop
-                     Comp := First (Choices (Assoc));
-                     Expr := Expression (Assoc);
-
-                     if Nkind (Comp) /= N_Others_Choice
-                       and then not Error_Posted (Comp)
+                     if Is_Scalar_Type (Etype (Entity (Comp)))
+                       and then not Is_OK_Static_Expression (Expr)
                      then
-                        Resolve (Expr, Etype (Entity (Comp)));
-
-                        if Is_Scalar_Type (Etype (Entity (Comp)))
-                          and then not Is_OK_Static_Expression (Expr)
-                        then
-                           Set_Do_Range_Check (Expr);
-                        end if;
+                        Set_Do_Range_Check (Expr);
                      end if;
+                  end if;
 
-                     Next (Assoc);
-                  end loop;
-               end if;
-            end;
+                  Next (Assoc);
+               end loop;
+            end if;
+         end Update;
 
          ---------
          -- Val --

@@ -2250,7 +2250,8 @@ package body Freeze is
                      return OK;
                   end if;
 
-               when others => return OK;
+               when others =>
+                  return OK;
             end case;
          end Process;
 
@@ -3451,12 +3452,11 @@ package body Freeze is
 
             R_Type := Etype (E);
 
-            --  AI05-0151: the return type may have been incomplete
-            --  at the point of declaration. Replace it with the full
-            --  view, unless the current type is a limited view. In
-            --  that case the full view is in a different unit, and
-            --  gigi finds the non-limited view after the other unit
-            --  is elaborated.
+            --  AI05-0151: the return type may have been incomplete at the
+            --  point of declaration. Replace it with the full view, unless the
+            --  current type is a limited view. In that case the full view is
+            --  in a different unit, and gigi finds the non-limited view after
+            --  the other unit is elaborated.
 
             if Ekind (R_Type) = E_Incomplete_Type
               and then Present (Full_View (R_Type))
@@ -3483,8 +3483,9 @@ package body Freeze is
                  and then not Has_Warnings_Off (E)
                  and then not Has_Warnings_Off (R_Type)
                then
-                  Error_Msg_N ("?x?return type of& does not "
-                     & "correspond to C pointer!", E);
+                  Error_Msg_N
+                    ("?x?return type of& does not correspond to C pointer!",
+                     E);
 
                --  Check suspicious return of boolean
 
@@ -6787,10 +6788,10 @@ package body Freeze is
                Desig_Typ := Find_Aggregate_Component_Desig_Type;
             end if;
 
-         when N_Selected_Component |
-            N_Indexed_Component    |
-            N_Slice                =>
-
+         when N_Indexed_Component
+            | N_Selected_Component
+            | N_Slice
+         =>
             if Is_Access_Type (Etype (Prefix (N))) then
                Desig_Typ := Designated_Type (Etype (Prefix (N)));
             end if;
@@ -7002,35 +7003,37 @@ package body Freeze is
             --  is a statement or declaration and we can insert the freeze node
             --  before it.
 
-            when N_Block_Statement       |
-                 N_Entry_Body            |
-                 N_Package_Body          |
-                 N_Package_Specification |
-                 N_Protected_Body        |
-                 N_Subprogram_Body       |
-                 N_Task_Body             => exit;
+            when N_Block_Statement
+               | N_Entry_Body
+               | N_Package_Body
+               | N_Package_Specification
+               | N_Protected_Body
+               | N_Subprogram_Body
+               | N_Task_Body
+            =>
+               exit;
 
             --  The expander is allowed to define types in any statements list,
             --  so any of the following parent nodes also mark a freezing point
             --  if the actual node is in a list of statements or declarations.
 
-            when N_Abortable_Part             |
-                 N_Accept_Alternative         |
-                 N_And_Then                   |
-                 N_Case_Statement_Alternative |
-                 N_Compilation_Unit_Aux       |
-                 N_Conditional_Entry_Call     |
-                 N_Delay_Alternative          |
-                 N_Elsif_Part                 |
-                 N_Entry_Call_Alternative     |
-                 N_Exception_Handler          |
-                 N_Extended_Return_Statement  |
-                 N_Freeze_Entity              |
-                 N_If_Statement               |
-                 N_Or_Else                    |
-                 N_Selective_Accept           |
-                 N_Triggering_Alternative     =>
-
+            when N_Abortable_Part
+               | N_Accept_Alternative
+               | N_And_Then
+               | N_Case_Statement_Alternative
+               | N_Compilation_Unit_Aux
+               | N_Conditional_Entry_Call
+               | N_Delay_Alternative
+               | N_Elsif_Part
+               | N_Entry_Call_Alternative
+               | N_Exception_Handler
+               | N_Extended_Return_Statement
+               | N_Freeze_Entity
+               | N_If_Statement
+               | N_Or_Else
+               | N_Selective_Accept
+               | N_Triggering_Alternative
+            =>
                exit when Is_List_Member (P);
 
             --  Freeze nodes produced by an expression coming from the Actions

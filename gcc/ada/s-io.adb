@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,10 +59,8 @@ package body System.IO is
 
    begin
       case Current_Out is
-         when Stdout =>
-            Put_Int (X);
-         when Stderr =>
-            Put_Int_Err (X);
+         when Stdout => Put_Int (X);
+         when Stderr => Put_Int_Err (X);
       end case;
    end Put;
 
@@ -75,10 +73,8 @@ package body System.IO is
 
    begin
       case Current_Out is
-         when Stdout =>
-            Put_Char (C);
-         when Stderr =>
-            Put_Char_Stderr (C);
+         when Stdout => Put_Char (C);
+         when Stderr => Put_Char_Stderr (C);
       end case;
    end Put;
 

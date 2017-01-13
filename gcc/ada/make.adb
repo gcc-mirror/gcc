@@ -2163,15 +2163,15 @@ package body Make is
 
          for Ptr in Template'Range loop
             case Template (Ptr) is
-               when '*'    =>
+               when '*' =>
                   Add_Str_To_Name_Buffer (Name);
 
-               when ';'    =>
+               when ';' =>
                   File := Full_Lib_File_Name (Name_Find);
                   exit when File /= No_File;
                   Name_Len := 0;
 
-               when NUL    =>
+               when NUL =>
                   exit;
 
                when others =>

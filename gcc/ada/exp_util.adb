@@ -224,34 +224,35 @@ package body Exp_Util is
    begin
       case Nkind (Parent (N)) is
 
-         --  Check for cases of appearing in the prefix of a construct where
-         --  we don't need atomic synchronization for this kind of usage.
+         --  Check for cases of appearing in the prefix of a construct where we
+         --  don't need atomic synchronization for this kind of usage.
 
          when
-              --  Nothing to do if we are the prefix of an attribute, since we
-              --  do not want an atomic sync operation for things like 'Size.
+            --  Nothing to do if we are the prefix of an attribute, since we
+            --  do not want an atomic sync operation for things like 'Size.
 
-              N_Attribute_Reference |
+              N_Attribute_Reference
 
-              --  The N_Reference node is like an attribute
+            --  The N_Reference node is like an attribute
 
-              N_Reference           |
+            | N_Reference
 
-              --  Nothing to do for a reference to a component (or components)
-              --  of a composite object. Only reads and updates of the object
-              --  as a whole require atomic synchronization (RM C.6 (15)).
+            --  Nothing to do for a reference to a component (or components)
+            --  of a composite object. Only reads and updates of the object
+            --  as a whole require atomic synchronization (RM C.6 (15)).
 
-              N_Indexed_Component   |
-              N_Selected_Component  |
-              N_Slice               =>
-
+            | N_Indexed_Component
+            | N_Selected_Component
+            | N_Slice
+         =>
             --  For all the above cases, nothing to do if we are the prefix
 
             if Prefix (Parent (N)) = N then
                return;
             end if;
 
-         when others => null;
+         when others =>
+            null;
       end case;
 
       --  Nothing to do for the identifier in an object renaming declaration,
@@ -272,10 +273,14 @@ package body Exp_Util is
             when N_Identifier =>
                Msg_Node := N;
 
-            when N_Selected_Component | N_Expanded_Name =>
+            when N_Expanded_Name
+               | N_Selected_Component
+            =>
                Msg_Node := Selector_Name (N);
 
-            when N_Explicit_Dereference | N_Indexed_Component =>
+            when N_Explicit_Dereference
+               | N_Indexed_Component
+            =>
                Msg_Node := Empty;
 
             when others =>
@@ -5224,20 +5229,11 @@ package body Exp_Util is
       P := Node;
       while Present (P) loop
          case Nkind (P) is
-            when N_Subprogram_Body =>
-               return True;
-
-            when N_If_Statement =>
-               return False;
-
-            when N_Loop_Statement =>
-               return False;
-
-            when N_Case_Statement =>
-               return False;
-
-            when others =>
-               P := Parent (P);
+            when N_Subprogram_Body => return True;
+            when N_If_Statement    => return False;
+            when N_Loop_Statement  => return False;
+            when N_Case_Statement  => return False;
+            when others            => P := Parent (P);
          end case;
       end loop;
 
@@ -5533,8 +5529,8 @@ package body Exp_Util is
             --  They will be moved further out when the while loop or elsif
             --  is analyzed.
 
-            when N_Iteration_Scheme |
-                 N_Elsif_Part
+            when N_Elsif_Part
+               | N_Iteration_Scheme
             =>
                if N = Condition (P) then
                   if Present (Condition_Actions (P)) then
@@ -5561,73 +5557,73 @@ package body Exp_Util is
             when
                --  Statements
 
-               N_Procedure_Call_Statement               |
-               N_Statement_Other_Than_Procedure_Call    |
+                 N_Procedure_Call_Statement
+               | N_Statement_Other_Than_Procedure_Call
 
                --  Pragmas
 
-               N_Pragma                                 |
+               | N_Pragma
 
                --  Representation_Clause
 
-               N_At_Clause                              |
-               N_Attribute_Definition_Clause            |
-               N_Enumeration_Representation_Clause      |
-               N_Record_Representation_Clause           |
+               | N_At_Clause
+               | N_Attribute_Definition_Clause
+               | N_Enumeration_Representation_Clause
+               | N_Record_Representation_Clause
 
                --  Declarations
 
-               N_Abstract_Subprogram_Declaration        |
-               N_Entry_Body                             |
-               N_Exception_Declaration                  |
-               N_Exception_Renaming_Declaration         |
-               N_Expression_Function                    |
-               N_Formal_Abstract_Subprogram_Declaration |
-               N_Formal_Concrete_Subprogram_Declaration |
-               N_Formal_Object_Declaration              |
-               N_Formal_Type_Declaration                |
-               N_Full_Type_Declaration                  |
-               N_Function_Instantiation                 |
-               N_Generic_Function_Renaming_Declaration  |
-               N_Generic_Package_Declaration            |
-               N_Generic_Package_Renaming_Declaration   |
-               N_Generic_Procedure_Renaming_Declaration |
-               N_Generic_Subprogram_Declaration         |
-               N_Implicit_Label_Declaration             |
-               N_Incomplete_Type_Declaration            |
-               N_Number_Declaration                     |
-               N_Object_Declaration                     |
-               N_Object_Renaming_Declaration            |
-               N_Package_Body                           |
-               N_Package_Body_Stub                      |
-               N_Package_Declaration                    |
-               N_Package_Instantiation                  |
-               N_Package_Renaming_Declaration           |
-               N_Private_Extension_Declaration          |
-               N_Private_Type_Declaration               |
-               N_Procedure_Instantiation                |
-               N_Protected_Body                         |
-               N_Protected_Body_Stub                    |
-               N_Protected_Type_Declaration             |
-               N_Single_Task_Declaration                |
-               N_Subprogram_Body                        |
-               N_Subprogram_Body_Stub                   |
-               N_Subprogram_Declaration                 |
-               N_Subprogram_Renaming_Declaration        |
-               N_Subtype_Declaration                    |
-               N_Task_Body                              |
-               N_Task_Body_Stub                         |
-               N_Task_Type_Declaration                  |
+               | N_Abstract_Subprogram_Declaration
+               | N_Entry_Body
+               | N_Exception_Declaration
+               | N_Exception_Renaming_Declaration
+               | N_Expression_Function
+               | N_Formal_Abstract_Subprogram_Declaration
+               | N_Formal_Concrete_Subprogram_Declaration
+               | N_Formal_Object_Declaration
+               | N_Formal_Type_Declaration
+               | N_Full_Type_Declaration
+               | N_Function_Instantiation
+               | N_Generic_Function_Renaming_Declaration
+               | N_Generic_Package_Declaration
+               | N_Generic_Package_Renaming_Declaration
+               | N_Generic_Procedure_Renaming_Declaration
+               | N_Generic_Subprogram_Declaration
+               | N_Implicit_Label_Declaration
+               | N_Incomplete_Type_Declaration
+               | N_Number_Declaration
+               | N_Object_Declaration
+               | N_Object_Renaming_Declaration
+               | N_Package_Body
+               | N_Package_Body_Stub
+               | N_Package_Declaration
+               | N_Package_Instantiation
+               | N_Package_Renaming_Declaration
+               | N_Private_Extension_Declaration
+               | N_Private_Type_Declaration
+               | N_Procedure_Instantiation
+               | N_Protected_Body
+               | N_Protected_Body_Stub
+               | N_Protected_Type_Declaration
+               | N_Single_Task_Declaration
+               | N_Subprogram_Body
+               | N_Subprogram_Body_Stub
+               | N_Subprogram_Declaration
+               | N_Subprogram_Renaming_Declaration
+               | N_Subtype_Declaration
+               | N_Task_Body
+               | N_Task_Body_Stub
+               | N_Task_Type_Declaration
 
                --  Use clauses can appear in lists of declarations
 
-               N_Use_Package_Clause                     |
-               N_Use_Type_Clause                        |
+               | N_Use_Package_Clause
+               | N_Use_Type_Clause
 
                --  Freeze entity behaves like a declaration or statement
 
-               N_Freeze_Entity                          |
-               N_Freeze_Generic_Entity
+               | N_Freeze_Entity
+               | N_Freeze_Generic_Entity
             =>
                --  Do not insert here if the item is not a list member (this
                --  happens for example with a triggering statement, and the
@@ -5685,22 +5681,21 @@ package body Exp_Util is
             --  or a subexpression. We tell the difference by looking at the
             --  Etype. It is set to Standard_Void_Type in the statement case.
 
-            when
-               N_Raise_xxx_Error =>
-                  if Etype (P) = Standard_Void_Type then
-                     if P = Wrapped_Node then
-                        Store_Before_Actions_In_Scope (Ins_Actions);
-                     else
-                        Insert_List_Before_And_Analyze (P, Ins_Actions);
-                     end if;
-
-                     return;
-
-                  --  In the subexpression case, keep climbing
-
+            when N_Raise_xxx_Error =>
+               if Etype (P) = Standard_Void_Type then
+                  if P = Wrapped_Node then
+                     Store_Before_Actions_In_Scope (Ins_Actions);
                   else
-                     null;
+                     Insert_List_Before_And_Analyze (P, Ins_Actions);
                   end if;
+
+                  return;
+
+               --  In the subexpression case, keep climbing
+
+               else
+                  null;
+               end if;
 
             --  If a component association appears within a loop created for
             --  an array aggregate, attach the actions to the association so
@@ -5724,7 +5719,6 @@ package body Exp_Util is
                   if Is_Empty_List (Loop_Actions (P)) then
                      Set_Loop_Actions (P, Ins_Actions);
                      Analyze_List (Ins_Actions);
-
                   else
                      declare
                         Decl : Node_Id;
@@ -5761,22 +5755,21 @@ package body Exp_Util is
 
             --  Another special case, an attribute denoting a procedure call
 
-            when
-               N_Attribute_Reference =>
-                  if Is_Procedure_Attribute_Name (Attribute_Name (P)) then
-                     if P = Wrapped_Node then
-                        Store_Before_Actions_In_Scope (Ins_Actions);
-                     else
-                        Insert_List_Before_And_Analyze (P, Ins_Actions);
-                     end if;
-
-                     return;
-
-                  --  In the subexpression case, keep climbing
-
+            when N_Attribute_Reference =>
+               if Is_Procedure_Attribute_Name (Attribute_Name (P)) then
+                  if P = Wrapped_Node then
+                     Store_Before_Actions_In_Scope (Ins_Actions);
                   else
-                     null;
+                     Insert_List_Before_And_Analyze (P, Ins_Actions);
                   end if;
+
+                  return;
+
+               --  In the subexpression case, keep climbing
+
+               else
+                  null;
+               end if;
 
             --  A contract node should not belong to the tree
 
@@ -5785,153 +5778,151 @@ package body Exp_Util is
 
             --  For all other node types, keep climbing tree
 
-            when
-               N_Abortable_Part                         |
-               N_Accept_Alternative                     |
-               N_Access_Definition                      |
-               N_Access_Function_Definition             |
-               N_Access_Procedure_Definition            |
-               N_Access_To_Object_Definition            |
-               N_Aggregate                              |
-               N_Allocator                              |
-               N_Aspect_Specification                   |
-               N_Case_Expression                        |
-               N_Case_Statement_Alternative             |
-               N_Character_Literal                      |
-               N_Compilation_Unit                       |
-               N_Compilation_Unit_Aux                   |
-               N_Component_Clause                       |
-               N_Component_Declaration                  |
-               N_Component_Definition                   |
-               N_Component_List                         |
-               N_Constrained_Array_Definition           |
-               N_Decimal_Fixed_Point_Definition         |
-               N_Defining_Character_Literal             |
-               N_Defining_Identifier                    |
-               N_Defining_Operator_Symbol               |
-               N_Defining_Program_Unit_Name             |
-               N_Delay_Alternative                      |
-               N_Delta_Constraint                       |
-               N_Derived_Type_Definition                |
-               N_Designator                             |
-               N_Digits_Constraint                      |
-               N_Discriminant_Association               |
-               N_Discriminant_Specification             |
-               N_Empty                                  |
-               N_Entry_Body_Formal_Part                 |
-               N_Entry_Call_Alternative                 |
-               N_Entry_Declaration                      |
-               N_Entry_Index_Specification              |
-               N_Enumeration_Type_Definition            |
-               N_Error                                  |
-               N_Exception_Handler                      |
-               N_Expanded_Name                          |
-               N_Explicit_Dereference                   |
-               N_Extension_Aggregate                    |
-               N_Floating_Point_Definition              |
-               N_Formal_Decimal_Fixed_Point_Definition  |
-               N_Formal_Derived_Type_Definition         |
-               N_Formal_Discrete_Type_Definition        |
-               N_Formal_Floating_Point_Definition       |
-               N_Formal_Modular_Type_Definition         |
-               N_Formal_Ordinary_Fixed_Point_Definition |
-               N_Formal_Package_Declaration             |
-               N_Formal_Private_Type_Definition         |
-               N_Formal_Incomplete_Type_Definition      |
-               N_Formal_Signed_Integer_Type_Definition  |
-               N_Function_Call                          |
-               N_Function_Specification                 |
-               N_Generic_Association                    |
-               N_Handled_Sequence_Of_Statements         |
-               N_Identifier                             |
-               N_In                                     |
-               N_Index_Or_Discriminant_Constraint       |
-               N_Indexed_Component                      |
-               N_Integer_Literal                        |
-               N_Iterator_Specification                 |
-               N_Itype_Reference                        |
-               N_Label                                  |
-               N_Loop_Parameter_Specification           |
-               N_Mod_Clause                             |
-               N_Modular_Type_Definition                |
-               N_Not_In                                 |
-               N_Null                                   |
-               N_Op_Abs                                 |
-               N_Op_Add                                 |
-               N_Op_And                                 |
-               N_Op_Concat                              |
-               N_Op_Divide                              |
-               N_Op_Eq                                  |
-               N_Op_Expon                               |
-               N_Op_Ge                                  |
-               N_Op_Gt                                  |
-               N_Op_Le                                  |
-               N_Op_Lt                                  |
-               N_Op_Minus                               |
-               N_Op_Mod                                 |
-               N_Op_Multiply                            |
-               N_Op_Ne                                  |
-               N_Op_Not                                 |
-               N_Op_Or                                  |
-               N_Op_Plus                                |
-               N_Op_Rem                                 |
-               N_Op_Rotate_Left                         |
-               N_Op_Rotate_Right                        |
-               N_Op_Shift_Left                          |
-               N_Op_Shift_Right                         |
-               N_Op_Shift_Right_Arithmetic              |
-               N_Op_Subtract                            |
-               N_Op_Xor                                 |
-               N_Operator_Symbol                        |
-               N_Ordinary_Fixed_Point_Definition        |
-               N_Others_Choice                          |
-               N_Package_Specification                  |
-               N_Parameter_Association                  |
-               N_Parameter_Specification                |
-               N_Pop_Constraint_Error_Label             |
-               N_Pop_Program_Error_Label                |
-               N_Pop_Storage_Error_Label                |
-               N_Pragma_Argument_Association            |
-               N_Procedure_Specification                |
-               N_Protected_Definition                   |
-               N_Push_Constraint_Error_Label            |
-               N_Push_Program_Error_Label               |
-               N_Push_Storage_Error_Label               |
-               N_Qualified_Expression                   |
-               N_Quantified_Expression                  |
-               N_Raise_Expression                       |
-               N_Range                                  |
-               N_Range_Constraint                       |
-               N_Real_Literal                           |
-               N_Real_Range_Specification               |
-               N_Record_Definition                      |
-               N_Reference                              |
-               N_SCIL_Dispatch_Table_Tag_Init           |
-               N_SCIL_Dispatching_Call                  |
-               N_SCIL_Membership_Test                   |
-               N_Selected_Component                     |
-               N_Signed_Integer_Type_Definition         |
-               N_Single_Protected_Declaration           |
-               N_Slice                                  |
-               N_String_Literal                         |
-               N_Subtype_Indication                     |
-               N_Subunit                                |
-               N_Task_Definition                        |
-               N_Terminate_Alternative                  |
-               N_Triggering_Alternative                 |
-               N_Type_Conversion                        |
-               N_Unchecked_Expression                   |
-               N_Unchecked_Type_Conversion              |
-               N_Unconstrained_Array_Definition         |
-               N_Unused_At_End                          |
-               N_Unused_At_Start                        |
-               N_Variant                                |
-               N_Variant_Part                           |
-               N_Validate_Unchecked_Conversion          |
-               N_With_Clause
+            when N_Abortable_Part
+               | N_Accept_Alternative
+               | N_Access_Definition
+               | N_Access_Function_Definition
+               | N_Access_Procedure_Definition
+               | N_Access_To_Object_Definition
+               | N_Aggregate
+               | N_Allocator
+               | N_Aspect_Specification
+               | N_Case_Expression
+               | N_Case_Statement_Alternative
+               | N_Character_Literal
+               | N_Compilation_Unit
+               | N_Compilation_Unit_Aux
+               | N_Component_Clause
+               | N_Component_Declaration
+               | N_Component_Definition
+               | N_Component_List
+               | N_Constrained_Array_Definition
+               | N_Decimal_Fixed_Point_Definition
+               | N_Defining_Character_Literal
+               | N_Defining_Identifier
+               | N_Defining_Operator_Symbol
+               | N_Defining_Program_Unit_Name
+               | N_Delay_Alternative
+               | N_Delta_Constraint
+               | N_Derived_Type_Definition
+               | N_Designator
+               | N_Digits_Constraint
+               | N_Discriminant_Association
+               | N_Discriminant_Specification
+               | N_Empty
+               | N_Entry_Body_Formal_Part
+               | N_Entry_Call_Alternative
+               | N_Entry_Declaration
+               | N_Entry_Index_Specification
+               | N_Enumeration_Type_Definition
+               | N_Error
+               | N_Exception_Handler
+               | N_Expanded_Name
+               | N_Explicit_Dereference
+               | N_Extension_Aggregate
+               | N_Floating_Point_Definition
+               | N_Formal_Decimal_Fixed_Point_Definition
+               | N_Formal_Derived_Type_Definition
+               | N_Formal_Discrete_Type_Definition
+               | N_Formal_Floating_Point_Definition
+               | N_Formal_Modular_Type_Definition
+               | N_Formal_Ordinary_Fixed_Point_Definition
+               | N_Formal_Package_Declaration
+               | N_Formal_Private_Type_Definition
+               | N_Formal_Incomplete_Type_Definition
+               | N_Formal_Signed_Integer_Type_Definition
+               | N_Function_Call
+               | N_Function_Specification
+               | N_Generic_Association
+               | N_Handled_Sequence_Of_Statements
+               | N_Identifier
+               | N_In
+               | N_Index_Or_Discriminant_Constraint
+               | N_Indexed_Component
+               | N_Integer_Literal
+               | N_Iterator_Specification
+               | N_Itype_Reference
+               | N_Label
+               | N_Loop_Parameter_Specification
+               | N_Mod_Clause
+               | N_Modular_Type_Definition
+               | N_Not_In
+               | N_Null
+               | N_Op_Abs
+               | N_Op_Add
+               | N_Op_And
+               | N_Op_Concat
+               | N_Op_Divide
+               | N_Op_Eq
+               | N_Op_Expon
+               | N_Op_Ge
+               | N_Op_Gt
+               | N_Op_Le
+               | N_Op_Lt
+               | N_Op_Minus
+               | N_Op_Mod
+               | N_Op_Multiply
+               | N_Op_Ne
+               | N_Op_Not
+               | N_Op_Or
+               | N_Op_Plus
+               | N_Op_Rem
+               | N_Op_Rotate_Left
+               | N_Op_Rotate_Right
+               | N_Op_Shift_Left
+               | N_Op_Shift_Right
+               | N_Op_Shift_Right_Arithmetic
+               | N_Op_Subtract
+               | N_Op_Xor
+               | N_Operator_Symbol
+               | N_Ordinary_Fixed_Point_Definition
+               | N_Others_Choice
+               | N_Package_Specification
+               | N_Parameter_Association
+               | N_Parameter_Specification
+               | N_Pop_Constraint_Error_Label
+               | N_Pop_Program_Error_Label
+               | N_Pop_Storage_Error_Label
+               | N_Pragma_Argument_Association
+               | N_Procedure_Specification
+               | N_Protected_Definition
+               | N_Push_Constraint_Error_Label
+               | N_Push_Program_Error_Label
+               | N_Push_Storage_Error_Label
+               | N_Qualified_Expression
+               | N_Quantified_Expression
+               | N_Raise_Expression
+               | N_Range
+               | N_Range_Constraint
+               | N_Real_Literal
+               | N_Real_Range_Specification
+               | N_Record_Definition
+               | N_Reference
+               | N_SCIL_Dispatch_Table_Tag_Init
+               | N_SCIL_Dispatching_Call
+               | N_SCIL_Membership_Test
+               | N_Selected_Component
+               | N_Signed_Integer_Type_Definition
+               | N_Single_Protected_Declaration
+               | N_Slice
+               | N_String_Literal
+               | N_Subtype_Indication
+               | N_Subunit
+               | N_Task_Definition
+               | N_Terminate_Alternative
+               | N_Triggering_Alternative
+               | N_Type_Conversion
+               | N_Unchecked_Expression
+               | N_Unchecked_Type_Conversion
+               | N_Unconstrained_Array_Definition
+               | N_Unused_At_End
+               | N_Unused_At_Start
+               | N_Variant
+               | N_Variant_Part
+               | N_Validate_Unchecked_Conversion
+               | N_With_Clause
             =>
                null;
-
          end case;
 
          --  If we fall through above tests, keep climbing tree
@@ -8686,7 +8677,6 @@ package body Exp_Util is
             else
                return False;
             end if;
-
       end case;
    end Possible_Bit_Aligned_Component;
 
@@ -8777,11 +8767,11 @@ package body Exp_Util is
       --  list and ensure that a finalizer is properly built.
 
       case Nkind (N) is
-         when N_Elsif_Part             |
-              N_If_Statement           |
-              N_Conditional_Entry_Call |
-              N_Selective_Accept       =>
-
+         when N_Conditional_Entry_Call
+            | N_Elsif_Part
+            | N_If_Statement
+            | N_Selective_Accept
+         =>
             --  Check the "then statements" for elsif parts and if statements
 
             if Nkind_In (N, N_Elsif_Part, N_If_Statement)
@@ -8813,15 +8803,15 @@ package body Exp_Util is
                Analyze (Block);
             end if;
 
-         when N_Abortable_Part             |
-              N_Accept_Alternative         |
-              N_Case_Statement_Alternative |
-              N_Delay_Alternative          |
-              N_Entry_Call_Alternative     |
-              N_Exception_Handler          |
-              N_Loop_Statement             |
-              N_Triggering_Alternative     =>
-
+         when N_Abortable_Part
+            | N_Accept_Alternative
+            | N_Case_Statement_Alternative
+            | N_Delay_Alternative
+            | N_Entry_Call_Alternative
+            | N_Exception_Handler
+            | N_Loop_Statement
+            | N_Triggering_Alternative
+         =>
             if not Is_Empty_List (Statements (N))
               and then not Are_Wrapped (Statements (N))
               and then Requires_Cleanup_Actions (Statements (N), False, False)
@@ -9042,7 +9032,9 @@ package body Exp_Util is
          end if;
 
          case Nkind (N) is
-            when N_Indexed_Component | N_Slice =>
+            when N_Indexed_Component
+               | N_Slice
+            =>
                return
                  Is_Name_Reference (Prefix (N))
                    or else Is_Access_Type (Etype (Prefix (N)));
@@ -9067,9 +9059,10 @@ package body Exp_Util is
             --  A view conversion of a tagged name is a name reference
 
             when N_Type_Conversion =>
-               return Is_Tagged_Type (Etype (Subtype_Mark (N)))
-                 and then Is_Tagged_Type (Etype (Expression (N)))
-                 and then Is_Name_Reference (Expression (N));
+               return
+                 Is_Tagged_Type (Etype (Subtype_Mark (N)))
+                   and then Is_Tagged_Type (Etype (Expression (N)))
+                   and then Is_Name_Reference (Expression (N));
 
             --  An unchecked type conversion is considered to be a name if
             --  the operand is a name (this construction arises only as a
@@ -9578,13 +9571,14 @@ package body Exp_Util is
 
    begin
       case Nkind (N) is
-         when N_Accept_Statement      |
-              N_Block_Statement       |
-              N_Entry_Body            |
-              N_Package_Body          |
-              N_Protected_Body        |
-              N_Subprogram_Body       |
-              N_Task_Body             =>
+         when N_Accept_Statement
+            | N_Block_Statement
+            | N_Entry_Body
+            | N_Package_Body
+            | N_Protected_Body
+            | N_Subprogram_Body
+            | N_Task_Body
+         =>
             return
               Requires_Cleanup_Actions (Declarations (N), At_Lib_Level, True)
                 or else
@@ -9602,7 +9596,7 @@ package body Exp_Util is
               Requires_Cleanup_Actions
                 (Private_Declarations (N), At_Lib_Level, True);
 
-         when others                  =>
+         when others =>
             return False;
       end case;
    end Requires_Cleanup_Actions;
@@ -10629,17 +10623,21 @@ package body Exp_Util is
          --  Is this right? what about x'first where x is a variable???
 
          when N_Attribute_Reference =>
-            return Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
-              and then Attribute_Name (N) /= Name_Input
-              and then (Is_Entity_Name (Prefix (N))
-                         or else Side_Effect_Free
-                                   (Prefix (N), Name_Req, Variable_Ref));
+            return
+              Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
+                and then Attribute_Name (N) /= Name_Input
+                and then (Is_Entity_Name (Prefix (N))
+                           or else Side_Effect_Free
+                                     (Prefix (N), Name_Req, Variable_Ref));
 
          --  A binary operator is side effect free if and both operands are
          --  side effect free. For this purpose binary operators include
          --  membership tests and short circuit forms.
 
-         when N_Binary_Op | N_Membership_Test | N_Short_Circuit =>
+         when N_Binary_Op
+            | N_Membership_Test
+            | N_Short_Circuit
+         =>
             return Side_Effect_Free (Left_Opnd  (N), Name_Req, Variable_Ref)
                      and then
                    Side_Effect_Free (Right_Opnd (N), Name_Req, Variable_Ref);
@@ -10654,9 +10652,10 @@ package body Exp_Util is
          --  is side effect free and it has no actions.
 
          when N_Expression_With_Actions =>
-            return Is_Empty_List (Actions (N))
-              and then
-                Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
+            return
+              Is_Empty_List (Actions (N))
+                and then Side_Effect_Free
+                           (Expression (N), Name_Req, Variable_Ref);
 
          --  A call to _rep_to_pos is side effect free, since we generate
          --  this pure function call ourselves. Moreover it is critically
@@ -10668,11 +10667,12 @@ package body Exp_Util is
          --  All other function calls are not side effect free
 
          when N_Function_Call =>
-            return Nkind (Name (N)) = N_Identifier
-              and then Is_TSS (Name (N), TSS_Rep_To_Pos)
-              and then
-                Side_Effect_Free
-                  (First (Parameter_Associations (N)), Name_Req, Variable_Ref);
+            return
+              Nkind (Name (N)) = N_Identifier
+                and then Is_TSS (Name (N), TSS_Rep_To_Pos)
+                and then Side_Effect_Free
+                           (First (Parameter_Associations (N)),
+                            Name_Req, Variable_Ref);
 
          --  An IF expression is side effect free if it's of a scalar type, and
          --  all its components are all side effect free (conditions and then
@@ -10681,17 +10681,19 @@ package body Exp_Util is
          --  where the type involved is a string type.
 
          when N_If_Expression =>
-            return Is_Scalar_Type (Typ)
-              and then
-                Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref);
+            return
+              Is_Scalar_Type (Typ)
+                and then Side_Effect_Free
+                           (Expressions (N), Name_Req, Variable_Ref);
 
          --  An indexed component is side effect free if it is a side
          --  effect free prefixed reference and all the indexing
          --  expressions are side effect free.
 
          when N_Indexed_Component =>
-            return Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
-              and then Safe_Prefixed_Reference (N);
+            return
+              Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
+                and then Safe_Prefixed_Reference (N);
 
          --  A type qualification is side effect free if the expression
          --  is side effect free.
@@ -10716,9 +10718,9 @@ package body Exp_Util is
          --  prefixed reference and the bounds are side effect free.
 
          when N_Slice =>
-            return Side_Effect_Free
-                     (Discrete_Range (N), Name_Req, Variable_Ref)
-              and then Safe_Prefixed_Reference (N);
+            return
+               Side_Effect_Free (Discrete_Range (N), Name_Req, Variable_Ref)
+                 and then Safe_Prefixed_Reference (N);
 
          --  A type conversion is side effect free if the expression to be
          --  converted is side effect free.
@@ -10736,9 +10738,10 @@ package body Exp_Util is
          --  is safe and its argument is side effect free.
 
          when N_Unchecked_Type_Conversion =>
-            return Safe_Unchecked_Type_Conversion (N)
-              and then
-                Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
+            return
+              Safe_Unchecked_Type_Conversion (N)
+                and then Side_Effect_Free
+                           (Expression (N), Name_Req, Variable_Ref);
 
          --  An unchecked expression is side effect free if its expression
          --  is side effect free.
@@ -10748,10 +10751,11 @@ package body Exp_Util is
 
          --  A literal is side effect free
 
-         when N_Character_Literal    |
-              N_Integer_Literal      |
-              N_Real_Literal         |
-              N_String_Literal       =>
+         when N_Character_Literal
+            | N_Integer_Literal
+            | N_Real_Literal
+            | N_String_Literal
+         =>
             return True;
 
          --  We consider that anything else has side effects. This is a bit

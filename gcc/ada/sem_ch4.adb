@@ -3656,36 +3656,40 @@ package body Sem_Ch4 is
          --  Otherwise action depends on operator
 
          case Op_Name is
-            when Name_Op_Add      |
-                 Name_Op_Subtract |
-                 Name_Op_Multiply |
-                 Name_Op_Divide   |
-                 Name_Op_Mod      |
-                 Name_Op_Rem      |
-                 Name_Op_Expon    =>
+            when Name_Op_Add
+               | Name_Op_Divide
+               | Name_Op_Expon
+               | Name_Op_Mod
+               | Name_Op_Multiply
+               | Name_Op_Rem
+               | Name_Op_Subtract
+            =>
                Find_Arithmetic_Types (Act1, Act2, Op_Id, N);
 
-            when Name_Op_And      |
-                 Name_Op_Or       |
-                 Name_Op_Xor      =>
+            when Name_Op_And
+               | Name_Op_Or
+               | Name_Op_Xor
+            =>
                Find_Boolean_Types (Act1, Act2, Op_Id, N);
 
-            when Name_Op_Lt       |
-                 Name_Op_Le       |
-                 Name_Op_Gt       |
-                 Name_Op_Ge       =>
+            when Name_Op_Ge
+               | Name_Op_Gt
+               | Name_Op_Le
+               | Name_Op_Lt
+            =>
                Find_Comparison_Types (Act1, Act2, Op_Id,  N);
 
-            when Name_Op_Eq       |
-                 Name_Op_Ne       =>
+            when Name_Op_Eq
+               | Name_Op_Ne
+            =>
                Find_Equality_Types (Act1, Act2, Op_Id,  N);
 
-            when Name_Op_Concat   =>
+            when Name_Op_Concat =>
                Find_Concatenation_Types (Act1, Act2, Op_Id, N);
 
             --  Is this when others, or should it be an abort???
 
-            when others           =>
+            when others =>
                null;
          end case;
 
@@ -3693,17 +3697,18 @@ package body Sem_Ch4 is
 
       else
          case Op_Name is
-            when Name_Op_Subtract |
-                 Name_Op_Add      |
-                 Name_Op_Abs      =>
+            when Name_Op_Abs
+               | Name_Op_Add
+               | Name_Op_Subtract
+            =>
                Find_Unary_Types (Act1, Op_Id, N);
 
-            when Name_Op_Not      =>
+            when Name_Op_Not =>
                Find_Negation_Types (Act1, Op_Id, N);
 
             --  Is this when others correct, or should it be an abort???
 
-            when others           =>
+            when others =>
                null;
          end case;
       end if;
@@ -6688,7 +6693,6 @@ package body Sem_Ch4 is
       --  Now test the entity we got to see if it is a bad case
 
       case Ekind (Entity (Enode)) is
-
          when E_Package =>
             Error_Msg_N
               ("package name cannot be used as operand", Enode);
@@ -6713,13 +6717,15 @@ package body Sem_Ch4 is
             Error_Msg_N
               ("exception name cannot be used as operand", Enode);
 
-         when E_Block | E_Label | E_Loop =>
+         when E_Block
+            | E_Label
+            | E_Loop
+         =>
             Error_Msg_N
               ("label name cannot be used as operand", Enode);
 
          when others =>
             return False;
-
       end case;
 
       return True;

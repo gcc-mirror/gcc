@@ -589,17 +589,22 @@ package body Exp_Ch6 is
    function BIP_Formal_Suffix (Kind : BIP_Formal_Kind) return String is
    begin
       case Kind is
-         when BIP_Alloc_Form          =>
+         when BIP_Alloc_Form =>
             return "BIPalloc";
-         when BIP_Storage_Pool        =>
+
+         when BIP_Storage_Pool =>
             return "BIPstoragepool";
+
          when BIP_Finalization_Master =>
             return "BIPfinalizationmaster";
-         when BIP_Task_Master         =>
+
+         when BIP_Task_Master =>
             return "BIPtaskmaster";
-         when BIP_Activation_Chain    =>
+
+         when BIP_Activation_Chain =>
             return "BIPactivationchain";
-         when BIP_Object_Access       =>
+
+         when BIP_Object_Access =>
             return "BIPaccess";
       end case;
    end BIP_Formal_Suffix;
@@ -3036,7 +3041,6 @@ package body Exp_Ch6 is
 
             else
                case Nkind (Prev_Orig) is
-
                   when N_Attribute_Reference =>
                      case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
 
@@ -3080,8 +3084,9 @@ package body Exp_Ch6 is
 
                         --  Treat the unchecked attributes as library-level
 
-                        when Attribute_Unchecked_Access |
-                           Attribute_Unrestricted_Access =>
+                        when Attribute_Unchecked_Access
+                           | Attribute_Unrestricted_Access
+                        =>
                            Add_Extra_Actual
                              (Make_Integer_Literal (Loc,
                                 Intval => Scope_Depth (Standard_Standard)),
@@ -3367,7 +3372,9 @@ package body Exp_Ch6 is
 
                   Defer := True;
 
-               when N_Object_Declaration | N_Object_Renaming_Declaration =>
+               when N_Object_Declaration
+                  | N_Object_Renaming_Declaration
+               =>
                   declare
                      Def_Id : constant Entity_Id :=
                                 Defining_Identifier (Ancestor);
@@ -3404,8 +3411,8 @@ package body Exp_Ch6 is
                      Level :=
                        New_Occurrence_Of
                          (Extra_Accessibility_Of_Result
-                            (Return_Applies_To
-                               (Return_Statement_Entity (Ancestor))), Loc);
+                           (Return_Applies_To
+                             (Return_Statement_Entity (Ancestor))), Loc);
                   end if;
 
                when others =>
@@ -3422,8 +3429,9 @@ package body Exp_Ch6 is
                   --  calls to subps whose enclosing scope is unknown (e.g.,
                   --  Anon_Access_To_Subp_Param.all)?
 
-                  Level := Make_Integer_Literal (Loc,
-                             Scope_Depth (Current_Scope) + 1);
+                  Level :=
+                    Make_Integer_Literal (Loc,
+                      Intval => Scope_Depth (Current_Scope) + 1);
                end if;
 
                Add_Extra_Actual
@@ -5210,16 +5218,17 @@ package body Exp_Ch6 is
       --  Distinguish the function and non-function cases:
 
       case Ekind (Return_Applies_To (Return_Statement_Entity (N))) is
-
-         when E_Function          |
-              E_Generic_Function  =>
+         when E_Function
+            | E_Generic_Function
+         =>
             Expand_Simple_Function_Return (N);
 
-         when E_Procedure         |
-              E_Generic_Procedure |
-              E_Entry             |
-              E_Entry_Family      |
-              E_Return_Statement =>
+         when E_Entry
+            | E_Entry_Family
+            | E_Generic_Procedure
+            | E_Procedure
+            | E_Return_Statement
+         =>
             Expand_Non_Function_Return (N);
 
          when others =>
@@ -6735,7 +6744,6 @@ package body Exp_Ch6 is
 
             case Nkind (Discrim_Source) is
                when N_Defining_Identifier =>
-
                   pragma Assert (Is_Composite_Type (Discrim_Source)
                                   and then Has_Discriminants (Discrim_Source)
                                   and then Is_Constrained (Discrim_Source));
@@ -6761,8 +6769,9 @@ package body Exp_Ch6 is
                      end loop;
                   end;
 
-               when N_Aggregate | N_Extension_Aggregate =>
-
+               when N_Aggregate
+                  | N_Extension_Aggregate
+               =>
                   --  Unimplemented: extension aggregate case where discrims
                   --  come from ancestor part, not extension part.
 
@@ -6857,7 +6866,6 @@ package body Exp_Ch6 is
                   null;
 
                when others =>
-
                   declare
                      Level : constant Node_Id :=
                                Make_Integer_Literal (Loc,
@@ -6875,7 +6883,6 @@ package body Exp_Ch6 is
                      Set_Etype (Level, Standard_Natural);
                      Check_Against_Result_Level (Level);
                   end;
-
             end case;
          end;
       end if;

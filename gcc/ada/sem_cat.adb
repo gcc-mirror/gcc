@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -486,7 +486,6 @@ package body Sem_Cat is
 
                when others =>
                   null;
-
             end case;
          end if;
 
@@ -746,13 +745,17 @@ package body Sem_Cat is
 
             if Nkind (PN) = N_Pragma then
                case Get_Pragma_Id (PN) is
-                  when Pragma_All_Calls_Remote   |
-                    Pragma_Preelaborate          |
-                    Pragma_Pure                  |
-                    Pragma_Remote_Call_Interface |
-                    Pragma_Remote_Types          |
-                    Pragma_Shared_Passive        => Analyze (PN);
-                  when others                    => null;
+                  when Pragma_All_Calls_Remote
+                     | Pragma_Preelaborate
+                     | Pragma_Pure
+                     | Pragma_Remote_Call_Interface
+                     | Pragma_Remote_Types
+                     | Pragma_Shared_Passive
+                  =>
+                     Analyze (PN);
+
+                  when others =>
+                     null;
                end case;
             end if;
 
@@ -2089,30 +2092,37 @@ package body Sem_Cat is
 
       begin
          case K is
-            when N_Op | N_Membership_Test =>
-               return True;
-
             when N_Aggregate
                | N_Component_Association
-               | N_Index_Or_Discriminant_Constraint =>
+               | N_Index_Or_Discriminant_Constraint
+               | N_Membership_Test
+               | N_Op
+            =>
                return True;
 
             when N_Attribute_Reference =>
-               return Attribute_Name (Parent (N)) /= Name_Address
-                 and then Attribute_Name (Parent (N)) /= Name_Access
-                 and then Attribute_Name (Parent (N)) /= Name_Unchecked_Access
-                 and then
-                   Attribute_Name (Parent (N)) /= Name_Unrestricted_Access;
+               declare
+                  Attr : constant Name_Id := Attribute_Name (Parent (N));
+
+               begin
+                  return     Attr /= Name_Address
+                    and then Attr /= Name_Access
+                    and then Attr /= Name_Unchecked_Access
+                    and then Attr /= Name_Unrestricted_Access;
+               end;
 
             when N_Indexed_Component =>
-               return (N /= Prefix (Parent (N))
-                 or else Is_Primary (Parent (N)));
+               return N /= Prefix (Parent (N)) or else Is_Primary (Parent (N));
 
-            when N_Qualified_Expression | N_Type_Conversion =>
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
                return Is_Primary (Parent (N));
 
-            when N_Assignment_Statement | N_Object_Declaration =>
-               return (N = Expression (Parent (N)));
+            when N_Assignment_Statement
+               | N_Object_Declaration
+            =>
+               return N = Expression (Parent (N));
 
             when N_Selected_Component =>
                return Is_Primary (Parent (N));

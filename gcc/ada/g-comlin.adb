@@ -483,18 +483,22 @@ package body GNAT.Command_Line is
       end if;
 
       case Switch (Switch'Last) is
-         when ':'    =>
+         when ':' =>
             Parameter_Type := Parameter_With_Optional_Space;
             Switch_Last    := Switch'Last - 1;
-         when '='    =>
+
+         when '=' =>
             Parameter_Type := Parameter_With_Space_Or_Equal;
             Switch_Last    := Switch'Last - 1;
-         when '!'    =>
+
+         when '!' =>
             Parameter_Type := Parameter_No_Space;
             Switch_Last    := Switch'Last - 1;
-         when '?'    =>
+
+         when '?' =>
             Parameter_Type := Parameter_Optional;
             Switch_Last    := Switch'Last - 1;
+
          when others =>
             Parameter_Type := Parameter_None;
             Switch_Last    := Switch'Last;
@@ -2068,7 +2072,9 @@ package body GNAT.Command_Line is
                   Found_In_Config := True;
                   return False;
 
-               when Parameter_No_Space | Parameter_Optional =>
+               when Parameter_No_Space
+                  | Parameter_Optional
+               =>
                   Callback (Switch (Switch'First .. Last),
                             "", Switch (Param .. Switch'Last), Index);
                   Found_In_Config := True;
@@ -3407,7 +3413,6 @@ package body GNAT.Command_Line is
                   Config.Switches (Index).String_Output.all :=
                     new String'(Parameter);
                   return;
-
             end case;
          end if;
 

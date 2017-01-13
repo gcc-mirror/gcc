@@ -4620,12 +4620,12 @@ package body Exp_Ch9 is
 
                   --  Some additional statements for protected entry calls
 
-                  --     Protected_Entry_Call (
-                  --       Object => po._object'Access,
-                  --       E => <entry index>;
-                  --       Uninterpreted_Data => P'Address;
-                  --       Mode => Simple_Call;
-                  --       Block => Bnn);
+                  --     Protected_Entry_Call
+                  --       (Object             => po._object'Access,
+                  --        E                  => <entry index>;
+                  --        Uninterpreted_Data => P'Address;
+                  --        Mode               => Simple_Call;
+                  --        Block              => Bnn);
 
                   Call :=
                     Make_Procedure_Call_Statement (Loc,
@@ -4642,9 +4642,10 @@ package body Exp_Ch9 is
                         New_Occurrence_Of (Comm_Name, Loc)));
 
                when System_Tasking_Protected_Objects_Single_Entry =>
-                  --     Protected_Single_Entry_Call (
-                  --       Object => po._object'Access,
-                  --       Uninterpreted_Data => P'Address);
+
+                  --     Protected_Single_Entry_Call
+                  --       (Object             => po._object'Access,
+                  --        Uninterpreted_Data => P'Address);
 
                   Call :=
                     Make_Procedure_Call_Statement (Loc,
@@ -6020,23 +6021,25 @@ package body Exp_Ch9 is
       function Is_Pure_Barrier (N : Node_Id) return Traverse_Result is
       begin
          case Nkind (N) is
-            when N_Expanded_Name |
-                 N_Identifier    =>
+            when N_Expanded_Name
+               | N_Identifier
+            =>
                if No (Entity (N)) then
                   return Abandon;
                end if;
 
                case Ekind (Entity (N)) is
-                  when E_Constant            |
-                       E_Discriminant        |
-                       E_Named_Integer       |
-                       E_Named_Real          |
-                       E_Enumeration_Literal =>
+                  when E_Constant
+                     | E_Discriminant
+                     | E_Enumeration_Literal
+                     | E_Named_Integer
+                     | E_Named_Real
+                  =>
                      return OK;
 
-                  when E_Component |
-                       E_Variable  =>
-
+                  when E_Component
+                     | E_Variable
+                  =>
                      --  A variable in the protected type is expanded as a
                      --  component.
 
@@ -6048,13 +6051,15 @@ package body Exp_Ch9 is
                      null;
                end case;
 
-            when N_Integer_Literal   |
-                 N_Real_Literal      |
-                 N_Character_Literal =>
+            when N_Character_Literal
+               | N_Integer_Literal
+               | N_Real_Literal
+            =>
                return OK;
 
-            when N_Op_Boolean |
-                 N_Op_Not     =>
+            when N_Op_Boolean
+               | N_Op_Not
+            =>
                if Ekind (Entity (N)) = E_Operator then
                   return OK;
                end if;
@@ -8551,7 +8556,6 @@ package body Exp_Ch9 is
 
             when others =>
                raise Program_Error;
-
          end case;
 
          Next (Op_Body);
@@ -12771,7 +12775,6 @@ package body Exp_Ch9 is
 
             when others =>
                raise Program_Error;
-
          end case;
       end loop;
 
@@ -13406,8 +13409,8 @@ package body Exp_Ch9 is
             High := Type_High_Bound (Etype (Index));
             Low  := Type_Low_Bound  (Etype (Index));
 
-            --  In the simple case the entry family is given by a subtype
-            --  mark and the index constant has the same type.
+            --  In the simple case the entry family is given by a subtype mark
+            --  and the index constant has the same type.
 
             if Is_Entity_Name (Original_Node (
                  Discrete_Subtype_Definition (Parent (Index))))
@@ -13832,7 +13835,7 @@ package body Exp_Ch9 is
                   Called_Subp := RE_Initialize_Protection;
 
                when others =>
-                     raise Program_Error;
+                  raise Program_Error;
             end case;
 
             --  Entry_Queue_Maxes parameter. This is an access to an array of
@@ -14645,7 +14648,6 @@ package body Exp_Ch9 is
 
          when others =>
             return False;
-
       end case;
    end Trivial_Accept_OK;
 

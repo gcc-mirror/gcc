@@ -1685,8 +1685,8 @@ package body Sem_Ch6 is
 
       elsif Nkind (P) = N_Selected_Component
         and then Ekind_In (Entity (Selector_Name (P)), E_Entry,
-                                                       E_Procedure,
-                                                       E_Function)
+                                                       E_Function,
+                                                       E_Procedure)
       then
          Analyze_Call_And_Resolve;
 
@@ -1702,7 +1702,7 @@ package body Sem_Ch6 is
 
          New_N :=
            Make_Indexed_Component (Loc,
-             Prefix => New_Copy (P),
+             Prefix      => New_Copy (P),
              Expressions => Actuals);
          Set_Name (N, New_N);
          Set_Etype (New_N, Standard_Void_Type);
@@ -7690,8 +7690,9 @@ package body Sem_Ch6 is
                --  All but "&" and "**" have same-types parameters
 
                case Op is
-                  when Name_Op_Concat |
-                       Name_Op_Expon  =>
+                  when Name_Op_Concat
+                     | Name_Op_Expon
+                  =>
                      null;
 
                   when others =>
@@ -7703,37 +7704,42 @@ package body Sem_Ch6 is
                --  Check parameter and result types
 
                case Op is
-                  when Name_Op_And |
-                       Name_Op_Or  |
-                       Name_Op_Xor =>
+                  when Name_Op_And
+                     | Name_Op_Or
+                     | Name_Op_Xor
+                  =>
                      return
                        Is_Boolean_Type (Result_Type)
                          and then Result_Type = Type_1;
 
-                  when Name_Op_Mod |
-                       Name_Op_Rem =>
+                  when Name_Op_Mod
+                     | Name_Op_Rem
+                  =>
                      return
                        Is_Integer_Type (Result_Type)
                          and then Result_Type = Type_1;
 
-                  when Name_Op_Add      |
-                       Name_Op_Divide   |
-                       Name_Op_Multiply |
-                       Name_Op_Subtract =>
+                  when Name_Op_Add
+                     | Name_Op_Divide
+                     | Name_Op_Multiply
+                     | Name_Op_Subtract
+                  =>
                      return
                        Is_Numeric_Type (Result_Type)
                          and then Result_Type = Type_1;
 
-                  when Name_Op_Eq |
-                       Name_Op_Ne =>
+                  when Name_Op_Eq
+                     | Name_Op_Ne
+                  =>
                      return
                        Is_Boolean_Type (Result_Type)
                          and then not Is_Limited_Type (Type_1);
 
-                  when Name_Op_Ge |
-                       Name_Op_Gt |
-                       Name_Op_Le |
-                       Name_Op_Lt =>
+                  when Name_Op_Ge
+                     | Name_Op_Gt
+                     | Name_Op_Le
+                     | Name_Op_Lt
+                  =>
                      return
                        Is_Boolean_Type (Result_Type)
                          and then (Is_Array_Type (Type_1)
@@ -7758,9 +7764,10 @@ package body Sem_Ch6 is
 
          else
             case Op is
-               when Name_Op_Abs      |
-                    Name_Op_Add      |
-                    Name_Op_Subtract =>
+               when Name_Op_Abs
+                  | Name_Op_Add
+                  | Name_Op_Subtract
+               =>
                   return
                     Is_Numeric_Type (Result_Type)
                       and then Result_Type = Type_1;
@@ -8480,7 +8487,6 @@ package body Sem_Ch6 is
 
       else
          case Nkind (E1) is
-
             when N_Aggregate =>
                return
                  FCL (Expressions (E1), Expressions (E2))
@@ -8550,7 +8556,9 @@ package body Sem_Ch6 is
                    and then FCE (Left_Opnd  (E1), Left_Opnd  (E2))
                    and then FCE (Right_Opnd (E1), Right_Opnd (E2));
 
-            when N_Short_Circuit | N_Membership_Test =>
+            when N_Membership_Test
+               | N_Short_Circuit
+            =>
                return
                  FCE (Left_Opnd  (E1), Left_Opnd  (E2))
                    and then
@@ -8777,7 +8785,6 @@ package body Sem_Ch6 is
 
             when others =>
                return True;
-
          end case;
       end if;
    end Fully_Conformant_Expressions;

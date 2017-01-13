@@ -277,7 +277,6 @@ procedure Gnatbind is
 
             when others =>
                raise Program_Error;
-
          end case;
       end Restriction_Could_Be_Set;
 

@@ -3430,9 +3430,7 @@ package body Sem_Eval is
                   when N_Op_Le => Result := (Left_Real <= Right_Real);
                   when N_Op_Gt => Result := (Left_Real >  Right_Real);
                   when N_Op_Ge => Result := (Left_Real >= Right_Real);
-
-                  when others =>
-                     raise Program_Error;
+                  when others  => raise Program_Error;
                end case;
 
                Fold_Uint (N, Test (Result), True);
@@ -6522,7 +6520,10 @@ package body Sem_Eval is
 
          --  Entity name
 
-         when N_Expanded_Name | N_Identifier | N_Operator_Symbol =>
+         when N_Expanded_Name
+            | N_Identifier
+            | N_Operator_Symbol
+         =>
             E := Entity (N);
 
             if Is_Named_Number (E) then
@@ -6596,10 +6597,13 @@ package body Sem_Eval is
 
          --  Binary operator
 
-         when N_Binary_Op | N_Short_Circuit | N_Membership_Test =>
+         when N_Binary_Op
+            | N_Membership_Test
+            | N_Short_Circuit
+         =>
             if Nkind (N) in N_Op_Shift then
                Error_Msg_N
-                ("!shift functions are never static (RM 4.9(6,18))", N);
+                 ("!shift functions are never static (RM 4.9(6,18))", N);
             else
                Why_Not_Static (Left_Opnd (N));
                Why_Not_Static (Right_Opnd (N));
@@ -6718,7 +6722,9 @@ package body Sem_Eval is
 
          --  Aggregate
 
-         when N_Aggregate | N_Extension_Aggregate =>
+         when N_Aggregate
+            | N_Extension_Aggregate
+         =>
             Error_Msg_N ("!an aggregate is never static (RM 4.9)", N);
 
          --  Range
@@ -6768,7 +6774,6 @@ package body Sem_Eval is
 
          when others =>
             null;
-
       end case;
    end Why_Not_Static;
 

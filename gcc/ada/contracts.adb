@@ -2940,7 +2940,6 @@ package body Contracts is
             end if;
 
             case Nkind (Spec) is
-
                when N_Function_Specification =>
                   return
                     Make_Function_Specification (Loc,

@@ -963,7 +963,9 @@ package body Sem_Ch13 is
 
                      --  Object_Size (also Size which also sets Object_Size)
 
-                     when Aspect_Object_Size | Aspect_Size =>
+                     when Aspect_Object_Size
+                        | Aspect_Size
+                     =>
                         if not Has_Size_Clause (E)
                           and then
                             No (Get_Attribute_Definition_Clause
@@ -1057,7 +1059,6 @@ package body Sem_Ch13 is
                      when others =>
                         pragma Assert (Aspect_Delay (A_Id) /= Rep_Aspect);
                         null;
-
                   end case;
                end if;
             end if;
@@ -1100,7 +1101,9 @@ package body Sem_Ch13 is
             Par := Nearest_Ancestor (E);
 
             case A_Id is
-               when Aspect_Atomic | Aspect_Shared =>
+               when Aspect_Atomic
+                  | Aspect_Shared
+               =>
                   if not Is_Atomic (Par) then
                      return;
                   end if;
@@ -1212,9 +1215,9 @@ package body Sem_Ch13 is
                   --  For aspects whose expression is an optional Boolean, make
                   --  the corresponding pragma at the freeze point.
 
-                  when Boolean_Aspects      |
-                       Library_Unit_Aspects =>
-
+                  when Boolean_Aspects
+                     | Library_Unit_Aspects
+                  =>
                      --  Aspects Export and Import require special handling.
                      --  Both are by definition Boolean and may benefit from
                      --  forward references, however their expressions are
@@ -1237,9 +1240,9 @@ package body Sem_Ch13 is
                   --  Special handling for aspects that don't correspond to
                   --  pragmas/attributes.
 
-                  when Aspect_Default_Value           |
-                       Aspect_Default_Component_Value =>
-
+                  when Aspect_Default_Value
+                     | Aspect_Default_Component_Value
+                  =>
                      --  Do not inherit aspect for anonymous base type of a
                      --  scalar or array type, because they apply to the first
                      --  subtype of the type, and will be processed when that
@@ -1257,10 +1260,11 @@ package body Sem_Ch13 is
                   --  Ditto for iterator aspects, because the corresponding
                   --  attributes may not have been analyzed yet.
 
-                  when Aspect_Constant_Indexing |
-                       Aspect_Variable_Indexing |
-                       Aspect_Default_Iterator  |
-                       Aspect_Iterator_Element  =>
+                  when Aspect_Constant_Indexing
+                     | Aspect_Default_Iterator
+                     | Aspect_Iterator_Element
+                     | Aspect_Variable_Indexing
+                  =>
                      Analyze (Expression (ASN));
 
                      if Etype (Expression (ASN)) = Any_Type then
@@ -2064,32 +2068,32 @@ package body Sem_Ch13 is
                --  Case 1: Aspects corresponding to attribute definition
                --  clauses.
 
-               when Aspect_Address              |
-                    Aspect_Alignment            |
-                    Aspect_Bit_Order            |
-                    Aspect_Component_Size       |
-                    Aspect_Constant_Indexing    |
-                    Aspect_Default_Iterator     |
-                    Aspect_Dispatching_Domain   |
-                    Aspect_External_Tag         |
-                    Aspect_Input                |
-                    Aspect_Iterable             |
-                    Aspect_Iterator_Element     |
-                    Aspect_Machine_Radix        |
-                    Aspect_Object_Size          |
-                    Aspect_Output               |
-                    Aspect_Read                 |
-                    Aspect_Scalar_Storage_Order |
-                    Aspect_Secondary_Stack_Size |
-                    Aspect_Simple_Storage_Pool  |
-                    Aspect_Size                 |
-                    Aspect_Small                |
-                    Aspect_Storage_Pool         |
-                    Aspect_Stream_Size          |
-                    Aspect_Value_Size           |
-                    Aspect_Variable_Indexing    |
-                    Aspect_Write                =>
-
+               when Aspect_Address
+                  | Aspect_Alignment
+                  | Aspect_Bit_Order
+                  | Aspect_Component_Size
+                  | Aspect_Constant_Indexing
+                  | Aspect_Default_Iterator
+                  | Aspect_Dispatching_Domain
+                  | Aspect_External_Tag
+                  | Aspect_Input
+                  | Aspect_Iterable
+                  | Aspect_Iterator_Element
+                  | Aspect_Machine_Radix
+                  | Aspect_Object_Size
+                  | Aspect_Output
+                  | Aspect_Read
+                  | Aspect_Scalar_Storage_Order
+                  | Aspect_Secondary_Stack_Size
+                  | Aspect_Simple_Storage_Pool
+                  | Aspect_Size
+                  | Aspect_Small
+                  | Aspect_Storage_Pool
+                  | Aspect_Stream_Size
+                  | Aspect_Value_Size
+                  | Aspect_Variable_Indexing
+                  | Aspect_Write
+               =>
                   --  Indexing aspects apply only to tagged type
 
                   if (A_Id = Aspect_Constant_Indexing
@@ -2170,10 +2174,10 @@ package body Sem_Ch13 is
 
                --  Linker_Section/Suppress/Unsuppress
 
-               when Aspect_Linker_Section |
-                    Aspect_Suppress       |
-                    Aspect_Unsuppress     =>
-
+               when Aspect_Linker_Section
+                  | Aspect_Suppress
+                  | Aspect_Unsuppress
+               =>
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
@@ -2214,10 +2218,10 @@ package body Sem_Ch13 is
 
                --  Dynamic_Predicate, Predicate, Static_Predicate
 
-               when Aspect_Dynamic_Predicate |
-                    Aspect_Predicate         |
-                    Aspect_Static_Predicate  =>
-
+               when Aspect_Dynamic_Predicate
+                  | Aspect_Predicate
+                  | Aspect_Static_Predicate
+               =>
                   --  These aspects apply only to subtypes
 
                   if not Is_Type (E) then
@@ -2326,8 +2330,9 @@ package body Sem_Ch13 is
 
                --  External_Name, Link_Name
 
-               when Aspect_External_Name |
-                    Aspect_Link_Name     =>
+               when Aspect_External_Name
+                  | Aspect_Link_Name
+               =>
                   Analyze_Aspect_External_Link_Name;
                   goto Continue;
 
@@ -2346,10 +2351,10 @@ package body Sem_Ch13 is
                --  to duplicate than to translate the aspect in the spec into
                --  a pragma in the declarative part of the body.
 
-               when Aspect_CPU                |
-                    Aspect_Interrupt_Priority |
-                    Aspect_Priority           =>
-
+               when Aspect_CPU
+                  | Aspect_Interrupt_Priority
+                  | Aspect_Priority
+               =>
                   if Nkind_In (N, N_Subprogram_Body,
                                   N_Subprogram_Declaration)
                   then
@@ -2484,9 +2489,9 @@ package body Sem_Ch13 is
 
                --  Invariant, Type_Invariant
 
-               when Aspect_Invariant      |
-                    Aspect_Type_Invariant =>
-
+               when Aspect_Invariant
+                  | Aspect_Type_Invariant
+               =>
                   --  Analysis of the pragma will verify placement legality:
                   --  an invariant must apply to a private type, or appear in
                   --  the private part of a spec and apply to a completion.
@@ -3376,9 +3381,9 @@ package body Sem_Ch13 is
                --  generated yet because the evaluation of the boolean needs
                --  to be delayed till the freeze point.
 
-               when Boolean_Aspects      |
-                    Library_Unit_Aspects =>
-
+               when Boolean_Aspects
+                  | Library_Unit_Aspects
+               =>
                   Set_Is_Boolean_Aspect (Aspect);
 
                   --  Lock_Free aspect only apply to protected objects
@@ -4624,15 +4629,16 @@ package body Sem_Ch13 is
             --  affect legality (except possibly to be rejected because they
             --  are incompatible with the compilation target).
 
-            when Attribute_Alignment      |
-                 Attribute_Bit_Order      |
-                 Attribute_Component_Size |
-                 Attribute_Machine_Radix  |
-                 Attribute_Object_Size    |
-                 Attribute_Size           |
-                 Attribute_Small          |
-                 Attribute_Stream_Size    |
-                 Attribute_Value_Size     =>
+            when Attribute_Alignment
+               | Attribute_Bit_Order
+               | Attribute_Component_Size
+               | Attribute_Machine_Radix
+               | Attribute_Object_Size
+               | Attribute_Size
+               | Attribute_Small
+               | Attribute_Stream_Size
+               | Attribute_Value_Size
+            =>
                Kill_Rep_Clause (N);
                return;
 
@@ -4642,14 +4648,15 @@ package body Sem_Ch13 is
             --  legality, e.g. failing to provide a stream attribute for a type
             --  may make a program illegal.
 
-            when Attribute_External_Tag        |
-                 Attribute_Input               |
-                 Attribute_Output              |
-                 Attribute_Read                |
-                 Attribute_Simple_Storage_Pool |
-                 Attribute_Storage_Pool        |
-                 Attribute_Storage_Size        |
-                 Attribute_Write               =>
+            when Attribute_External_Tag
+               | Attribute_Input
+               | Attribute_Output
+               | Attribute_Read
+               | Attribute_Simple_Storage_Pool
+               | Attribute_Storage_Pool
+               | Attribute_Storage_Size
+               | Attribute_Write
+            =>
                null;
 
             --  We do not do anything here with address clauses, they will be
@@ -5142,8 +5149,7 @@ package body Sem_Ch13 is
 
          --  Bit_Order attribute definition clause
 
-         when Attribute_Bit_Order => Bit_Order : declare
-         begin
+         when Attribute_Bit_Order =>
             if not Is_Record_Type (U_Ent) then
                Error_Msg_N
                  ("Bit_Order can only be defined for record type", Nam);
@@ -5167,7 +5173,6 @@ package body Sem_Ch13 is
                   end if;
                end if;
             end if;
-         end Bit_Order;
 
          --------------------
          -- Component_Size --
@@ -5261,8 +5266,8 @@ package body Sem_Ch13 is
          -- CPU --
          ---------
 
-         when Attribute_CPU => CPU :
-         begin
+         when Attribute_CPU =>
+
             --  CPU attribute definition clause not allowed except from aspect
             --  specification.
 
@@ -5293,7 +5298,6 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end CPU;
 
          ----------------------
          -- Default_Iterator --
@@ -5355,8 +5359,8 @@ package body Sem_Ch13 is
          -- Dispatching_Domain --
          ------------------------
 
-         when Attribute_Dispatching_Domain => Dispatching_Domain :
-         begin
+         when Attribute_Dispatching_Domain =>
+
             --  Dispatching_Domain attribute definition clause not allowed
             --  except from aspect specification.
 
@@ -5387,14 +5391,12 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end Dispatching_Domain;
 
          ------------------
          -- External_Tag --
          ------------------
 
-         when Attribute_External_Tag => External_Tag :
-         begin
+         when Attribute_External_Tag =>
             if not Is_Tagged_Type (U_Ent) then
                Error_Msg_N ("should be a tagged type", Nam);
             end if;
@@ -5420,7 +5422,6 @@ package body Sem_Ch13 is
                     ("\??corresponding internal tag cannot be obtained", N);
                end if;
             end if;
-         end External_Tag;
 
          --------------------------
          -- Implicit_Dereference --
@@ -5445,8 +5446,8 @@ package body Sem_Ch13 is
          -- Interrupt_Priority --
          ------------------------
 
-         when Attribute_Interrupt_Priority => Interrupt_Priority :
-         begin
+         when Attribute_Interrupt_Priority =>
+
             --  Interrupt_Priority attribute definition clause not allowed
             --  except from aspect specification.
 
@@ -5484,7 +5485,6 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end Interrupt_Priority;
 
          --------------
          -- Iterable --
@@ -5620,8 +5620,8 @@ package body Sem_Ch13 is
          -- Priority --
          --------------
 
-         when Attribute_Priority => Priority :
-         begin
+         when Attribute_Priority =>
+
             --  Priority attribute definition clause not allowed except from
             --  aspect specification.
 
@@ -5656,7 +5656,6 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end Priority;
 
          ----------
          -- Read --
@@ -5672,8 +5671,7 @@ package body Sem_Ch13 is
 
          --  Scalar_Storage_Order attribute definition clause
 
-         when Attribute_Scalar_Storage_Order => Scalar_Storage_Order : declare
-         begin
+         when Attribute_Scalar_Storage_Order =>
             if not (Is_Record_Type (U_Ent) or else Is_Array_Type (U_Ent)) then
                Error_Msg_N
                  ("Scalar_Storage_Order can only be defined for record or "
@@ -5712,14 +5710,13 @@ package body Sem_Ch13 is
                Set_SSO_Set_Low_By_Default  (Base_Type (U_Ent), False);
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
-         end Scalar_Storage_Order;
 
          --------------------------
          -- Secondary_Stack_Size --
          --------------------------
 
-         when Attribute_Secondary_Stack_Size => Secondary_Stack_Size :
-         begin
+         when Attribute_Secondary_Stack_Size =>
+
             --  Secondary_Stack_Size attribute definition clause not allowed
             --  except from aspect specification.
 
@@ -5753,7 +5750,6 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end Secondary_Stack_Size;
 
          ----------
          -- Size --
@@ -5922,7 +5918,10 @@ package body Sem_Ch13 is
 
          --  Storage_Pool attribute definition clause
 
-         when Attribute_Storage_Pool | Attribute_Simple_Storage_Pool => declare
+         when Attribute_Simple_Storage_Pool
+            | Attribute_Storage_Pool
+         =>
+         Storage_Pool : declare
             Pool : Entity_Id;
             T    : Entity_Id;
 
@@ -5933,8 +5932,7 @@ package body Sem_Ch13 is
                   Nam);
                return;
 
-            elsif not
-              Ekind_In (U_Ent, E_Access_Type, E_General_Access_Type)
+            elsif not Ekind_In (U_Ent, E_Access_Type, E_General_Access_Type)
             then
                Error_Msg_N
                  ("storage pool can only be given for access types", Nam);
@@ -6079,7 +6077,7 @@ package body Sem_Ch13 is
                Error_Msg_N ("incorrect reference to a Storage Pool", Expr);
                return;
             end if;
-         end;
+         end Storage_Pool;
 
          ------------------
          -- Storage_Size --
@@ -7601,14 +7599,18 @@ package body Sem_Ch13 is
 
             --  And
 
-            when N_Op_And | N_And_Then =>
+            when N_And_Then
+               | N_Op_And
+            =>
                return Get_RList (Left_Opnd (Exp))
                         and
                       Get_RList (Right_Opnd (Exp));
 
             --  Or
 
-            when N_Op_Or | N_Or_Else =>
+            when N_Op_Or
+               | N_Or_Else
+            =>
                return Get_RList (Left_Opnd (Exp))
                         or
                       Get_RList (Right_Opnd (Exp));
@@ -9148,9 +9150,9 @@ package body Sem_Ch13 is
 
          --  Aspects taking an optional boolean argument
 
-         when Boolean_Aspects      |
-              Library_Unit_Aspects =>
-
+         when Boolean_Aspects
+            | Library_Unit_Aspects
+         =>
             T := Standard_Boolean;
 
          --  Aspects corresponding to attribute definition clauses
@@ -9161,7 +9163,9 @@ package body Sem_Ch13 is
          when Aspect_Attach_Handler =>
             T := RTE (RE_Interrupt_ID);
 
-         when Aspect_Bit_Order | Aspect_Scalar_Storage_Order =>
+         when Aspect_Bit_Order
+            | Aspect_Scalar_Storage_Order
+         =>
             T := RTE (RE_Bit_Order);
 
          when Aspect_Convention =>
@@ -9195,7 +9199,9 @@ package body Sem_Ch13 is
          when Aspect_Link_Name =>
             T := Standard_String;
 
-         when Aspect_Priority | Aspect_Interrupt_Priority =>
+         when Aspect_Interrupt_Priority
+            | Aspect_Priority
+         =>
             T := Standard_Integer;
 
          when Aspect_Relative_Deadline =>
@@ -9217,14 +9223,15 @@ package body Sem_Ch13 is
          when Aspect_Storage_Pool =>
             T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
 
-         when Aspect_Alignment      |
-              Aspect_Component_Size |
-              Aspect_Machine_Radix  |
-              Aspect_Object_Size    |
-              Aspect_Size           |
-              Aspect_Storage_Size   |
-              Aspect_Stream_Size    |
-              Aspect_Value_Size     =>
+         when Aspect_Alignment
+            | Aspect_Component_Size
+            | Aspect_Machine_Radix
+            | Aspect_Object_Size
+            | Aspect_Size
+            | Aspect_Storage_Size
+            | Aspect_Stream_Size
+            | Aspect_Value_Size
+         =>
             T := Any_Integer;
 
          when Aspect_Linker_Section =>
@@ -9236,23 +9243,25 @@ package body Sem_Ch13 is
          --  Special case, the expression of these aspects is just an entity
          --  that does not need any resolution, so just analyze.
 
-         when Aspect_Input      |
-              Aspect_Output     |
-              Aspect_Read       |
-              Aspect_Suppress   |
-              Aspect_Unsuppress |
-              Aspect_Warnings   |
-              Aspect_Write      =>
+         when Aspect_Input
+            | Aspect_Output
+            | Aspect_Read
+            | Aspect_Suppress
+            | Aspect_Unsuppress
+            | Aspect_Warnings
+            | Aspect_Write
+         =>
             Analyze (Expression (ASN));
             return;
 
          --  Same for Iterator aspects, where the expression is a function
          --  name. Legality rules are checked separately.
 
-         when Aspect_Constant_Indexing |
-              Aspect_Default_Iterator  |
-              Aspect_Iterator_Element  |
-              Aspect_Variable_Indexing =>
+         when Aspect_Constant_Indexing
+            | Aspect_Default_Iterator
+            | Aspect_Iterator_Element
+            | Aspect_Variable_Indexing
+         =>
             Analyze (Expression (ASN));
             return;
 
@@ -9289,11 +9298,12 @@ package body Sem_Ch13 is
 
          --  Invariant/Predicate take boolean expressions
 
-         when Aspect_Dynamic_Predicate |
-              Aspect_Invariant         |
-              Aspect_Predicate         |
-              Aspect_Static_Predicate  |
-              Aspect_Type_Invariant    =>
+         when Aspect_Dynamic_Predicate
+            | Aspect_Invariant
+            | Aspect_Predicate
+            | Aspect_Static_Predicate
+            | Aspect_Type_Invariant
+         =>
             T := Standard_Boolean;
 
          when Aspect_Predicate_Failure =>
@@ -9301,39 +9311,40 @@ package body Sem_Ch13 is
 
          --  Here is the list of aspects that don't require delay analysis
 
-         when Aspect_Abstract_State             |
-              Aspect_Annotate                   |
-              Aspect_Async_Readers              |
-              Aspect_Async_Writers              |
-              Aspect_Constant_After_Elaboration |
-              Aspect_Contract_Cases             |
-              Aspect_Default_Initial_Condition  |
-              Aspect_Depends                    |
-              Aspect_Dimension                  |
-              Aspect_Dimension_System           |
-              Aspect_Effective_Reads            |
-              Aspect_Effective_Writes           |
-              Aspect_Extensions_Visible         |
-              Aspect_Ghost                      |
-              Aspect_Global                     |
-              Aspect_Implicit_Dereference       |
-              Aspect_Initial_Condition          |
-              Aspect_Initializes                |
-              Aspect_Max_Queue_Length           |
-              Aspect_Obsolescent                |
-              Aspect_Part_Of                    |
-              Aspect_Post                       |
-              Aspect_Postcondition              |
-              Aspect_Pre                        |
-              Aspect_Precondition               |
-              Aspect_Refined_Depends            |
-              Aspect_Refined_Global             |
-              Aspect_Refined_Post               |
-              Aspect_Refined_State              |
-              Aspect_SPARK_Mode                 |
-              Aspect_Test_Case                  |
-              Aspect_Unimplemented              |
-              Aspect_Volatile_Function          =>
+         when Aspect_Abstract_State
+            | Aspect_Annotate
+            | Aspect_Async_Readers
+            | Aspect_Async_Writers
+            | Aspect_Constant_After_Elaboration
+            | Aspect_Contract_Cases
+            | Aspect_Default_Initial_Condition
+            | Aspect_Depends
+            | Aspect_Dimension
+            | Aspect_Dimension_System
+            | Aspect_Effective_Reads
+            | Aspect_Effective_Writes
+            | Aspect_Extensions_Visible
+            | Aspect_Ghost
+            | Aspect_Global
+            | Aspect_Implicit_Dereference
+            | Aspect_Initial_Condition
+            | Aspect_Initializes
+            | Aspect_Max_Queue_Length
+            | Aspect_Obsolescent
+            | Aspect_Part_Of
+            | Aspect_Post
+            | Aspect_Postcondition
+            | Aspect_Pre
+            | Aspect_Precondition
+            | Aspect_Refined_Depends
+            | Aspect_Refined_Global
+            | Aspect_Refined_Post
+            | Aspect_Refined_State
+            | Aspect_SPARK_Mode
+            | Aspect_Test_Case
+            | Aspect_Unimplemented
+            | Aspect_Volatile_Function
+         =>
             raise Program_Error;
 
       end case;
@@ -9375,11 +9386,10 @@ package body Sem_Ch13 is
             if Present (Address_Clause (Entity ((Nod)))) then
                Error_Msg_NE
                  ("invalid address clause for initialized object &!",
-                           Nod, U_Ent);
-               Error_Msg_NE
-                 ("address for& cannot" &
-                    " depend on another address clause! (RM 13.1(22))!",
                   Nod, U_Ent);
+               Error_Msg_NE
+                 ("address for& cannot depend on another address clause! "
+                  & "(RM 13.1(22))!", Nod, U_Ent);
 
             elsif In_Same_Source_Unit (Entity (Nod), U_Ent)
               and then Sloc (U_Ent) < Sloc (Entity (Nod))
@@ -9409,9 +9419,8 @@ package body Sem_Ch13 is
                     ("invalid address clause for initialized object &!",
                      Nod, U_Ent);
                   Error_Msg_N
-                    ("\address cannot depend on component" &
-                     " of discriminated record (RM 13.1(22))!",
-                     Nod);
+                    ("\address cannot depend on component of discriminated "
+                     & "record (RM 13.1(22))!", Nod);
                else
                   Check_At_Constant_Address (Prefix (Nod));
                end if;
@@ -9442,10 +9451,14 @@ package body Sem_Ch13 is
          end if;
 
          case Nkind (Nod) is
-            when N_Empty | N_Error =>
+            when N_Empty
+               | N_Error
+            =>
                return;
 
-            when N_Identifier | N_Expanded_Name =>
+            when N_Expanded_Name
+               | N_Identifier
+            =>
                Ent := Entity (Nod);
 
                --  We need to look at the original node if it is different
@@ -9551,9 +9564,10 @@ package body Sem_Ch13 is
                   Set_Etype (Nod, Base_Type (Etype (Nod)));
                end if;
 
-            when N_Real_Literal      |
-                 N_String_Literal    |
-                 N_Character_Literal =>
+            when N_Character_Literal
+               | N_Real_Literal
+               | N_String_Literal
+            =>
                return;
 
             when N_Range =>
@@ -9602,17 +9616,21 @@ package body Sem_Ch13 is
             when N_Null =>
                return;
 
-            when N_Binary_Op | N_Short_Circuit | N_Membership_Test =>
+            when N_Binary_Op
+               | N_Membership_Test
+               | N_Short_Circuit
+            =>
                Check_Expr_Constants (Left_Opnd (Nod));
                Check_Expr_Constants (Right_Opnd (Nod));
 
             when N_Unary_Op =>
                Check_Expr_Constants (Right_Opnd (Nod));
 
-            when N_Type_Conversion           |
-                 N_Qualified_Expression      |
-                 N_Allocator                 |
-                 N_Unchecked_Type_Conversion =>
+            when N_Allocator
+               | N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
                Check_Expr_Constants (Expression (Nod));
 
             when N_Function_Call =>
@@ -12706,14 +12724,15 @@ package body Sem_Ch13 is
                --  subprograms, or that may mention current instances of
                --  types. These will require special handling (???TBD).
 
-               when Aspect_Predicate         |
-                    Aspect_Predicate_Failure |
-                    Aspect_Invariant         =>
+               when Aspect_Invariant
+                  | Aspect_Predicate
+                  | Aspect_Predicate_Failure
+               =>
                   null;
 
-               when Aspect_Dynamic_Predicate |
-                    Aspect_Static_Predicate  =>
-
+               when Aspect_Dynamic_Predicate
+                  | Aspect_Static_Predicate
+               =>
                   --  Build predicate function specification and preanalyze
                   --  expression after type replacement.
 
@@ -12747,18 +12766,19 @@ package body Sem_Ch13 is
                when others =>
                   if Present (Expr) then
                      case Aspect_Argument (A_Id) is
-                        when Expression | Optional_Expression  =>
+                        when Expression
+                           | Optional_Expression
+                        =>
                            Analyze_And_Resolve (Expression (ASN));
 
-                        when Name | Optional_Name =>
+                        when Name
+                           | Optional_Name
+                        =>
                            if Nkind (Expr) = N_Identifier then
                               Find_Direct_Name (Expr);
 
                            elsif Nkind (Expr) = N_Selected_Component then
                               Find_Selected_Component (Expr);
-
-                           else
-                              null;
                            end if;
                      end case;
                   end if;

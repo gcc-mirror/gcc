@@ -4041,26 +4041,30 @@ package body Checks is
 
          if Present (Expr) and then Known_Null (Expr) then
             case K is
-               when N_Component_Declaration      |
-                    N_Discriminant_Specification =>
+               when N_Component_Declaration
+                  | N_Discriminant_Specification
+               =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding components??",
+                     Msg    =>
+                       "(Ada 2005) null not allowed in null-excluding "
+                       & "components??",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Object_Declaration =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding objects??",
+                     Msg    =>
+                       "(Ada 2005) null not allowed in null-excluding "
+                       & "objects??",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Parameter_Specification =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding formals??",
+                     Msg    =>
+                       "(Ada 2005) null not allowed in null-excluding "
+                       & "formals??",
                      Reason => CE_Null_Not_Allowed);
 
                when others =>
@@ -4499,9 +4503,7 @@ package body Checks is
 
          when N_Op_Rem =>
             if OK_Operands then
-               if Lo_Right = Hi_Right
-                 and then Lo_Right /= 0
-               then
+               if Lo_Right = Hi_Right and then Lo_Right /= 0 then
                   declare
                      Dval : constant Uint := (abs Lo_Right) - 1;
 
@@ -4536,7 +4538,9 @@ package body Checks is
                --  For Pos/Val attributes, we can refine the range using the
                --  possible range of values of the attribute expression.
 
-               when Name_Pos | Name_Val =>
+               when Name_Pos
+                  | Name_Val
+               =>
                   Determine_Range
                     (First (Expressions (N)), OK1, Lor, Hir, Assume_Valid);
 
@@ -7246,12 +7250,22 @@ package body Checks is
    function Is_Signed_Integer_Arithmetic_Op (N : Node_Id) return Boolean is
    begin
       case Nkind (N) is
-         when N_Op_Abs   | N_Op_Add      | N_Op_Divide   | N_Op_Expon |
-              N_Op_Minus | N_Op_Mod      | N_Op_Multiply | N_Op_Plus  |
-              N_Op_Rem   | N_Op_Subtract =>
+         when N_Op_Abs
+            | N_Op_Add
+            | N_Op_Divide
+            | N_Op_Expon
+            | N_Op_Minus
+            | N_Op_Mod
+            | N_Op_Multiply
+            | N_Op_Plus
+            | N_Op_Rem
+            | N_Op_Subtract
+         =>
             return Is_Signed_Integer_Type (Etype (N));
 
-         when N_If_Expression | N_Case_Expression =>
+         when N_Case_Expression
+            | N_If_Expression
+         =>
             return Is_Signed_Integer_Type (Etype (N));
 
          when others =>
@@ -8468,28 +8482,28 @@ package body Checks is
 
             begin
                case Nkind (N) is
-                  when N_Op_Abs      =>
+                  when N_Op_Abs =>
                      Fent := RTE (RE_Big_Abs);
 
-                  when N_Op_Add      =>
+                  when N_Op_Add =>
                      Fent := RTE (RE_Big_Add);
 
-                  when N_Op_Divide   =>
+                  when N_Op_Divide =>
                      Fent := RTE (RE_Big_Div);
 
-                  when N_Op_Expon    =>
+                  when N_Op_Expon =>
                      Fent := RTE (RE_Big_Exp);
 
-                  when N_Op_Minus    =>
+                  when N_Op_Minus =>
                      Fent := RTE (RE_Big_Neg);
 
-                  when N_Op_Mod      =>
+                  when N_Op_Mod =>
                      Fent := RTE (RE_Big_Mod);
 
                   when N_Op_Multiply =>
                      Fent := RTE (RE_Big_Mul);
 
-                  when N_Op_Rem      =>
+                  when N_Op_Rem =>
                      Fent := RTE (RE_Big_Rem);
 
                   when N_Op_Subtract =>

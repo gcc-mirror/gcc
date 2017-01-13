@@ -2583,7 +2583,10 @@ package body Ch4 is
             --  that string literal is included in name (as operator symbol)
             --  and type conversion is included in name (as indexed component).
 
-            when Tok_Char_Literal | Tok_Operator_Symbol | Tok_Identifier =>
+            when Tok_Char_Literal
+               | Tok_Identifier
+               | Tok_Operator_Symbol
+            =>
                Node1 := P_Name;
 
                --  All done unless apostrophe follows
@@ -2624,10 +2627,10 @@ package body Ch4 is
 
             --  Numeric or string literal
 
-            when Tok_Integer_Literal |
-                 Tok_Real_Literal    |
-                 Tok_String_Literal  =>
-
+            when Tok_Integer_Literal
+               | Tok_Real_Literal
+               | Tok_String_Literal
+            =>
                Node1 := Token_Node;
                Scan; -- past number
                return Node1;
@@ -2797,7 +2800,6 @@ package body Ch4 is
                   Error_Msg_AP ("missing operand");
                   raise Error_Resync;
                end if;
-
          end case;
       end loop;
    end P_Primary;

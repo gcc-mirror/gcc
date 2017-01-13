@@ -671,7 +671,9 @@ package body System.Tasking.Protected_Objects.Operations is
 
       else
          case Mode is
-            when Simple_Call | Conditional_Call =>
+            when Conditional_Call
+               | Simple_Call
+            =>
                if Single_Lock then
                   STPO.Lock_RTS;
                   Entry_Calls.Wait_For_Completion (Entry_Call);
@@ -685,7 +687,9 @@ package body System.Tasking.Protected_Objects.Operations is
 
                Block.Cancelled := Entry_Call.State = Cancelled;
 
-            when Asynchronous_Call | Timed_Call =>
+            when Asynchronous_Call
+               | Timed_Call
+            =>
                pragma Assert (False);
                null;
          end case;

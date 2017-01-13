@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -319,14 +319,10 @@ package body Exp_Intr is
       Set_Etype (Res, T3);
 
       case Nkind (N) is
-         when N_Op_And =>
-            Set_Entity (Res, Standard_Op_And);
-         when N_Op_Or =>
-            Set_Entity (Res, Standard_Op_Or);
-         when N_Op_Xor =>
-            Set_Entity (Res, Standard_Op_Xor);
-         when others =>
-            raise Program_Error;
+         when N_Op_And => Set_Entity (Res, Standard_Op_And);
+         when N_Op_Or  => Set_Entity (Res, Standard_Op_Or);
+         when N_Op_Xor => Set_Entity (Res, Standard_Op_Xor);
+         when others   => raise Program_Error;
       end case;
 
       --  Convert operands to large enough intermediate type

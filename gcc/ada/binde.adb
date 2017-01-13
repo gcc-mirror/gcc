@@ -694,7 +694,6 @@ package body Binde is
    ----------------------------------
 
    procedure Diagnose_Elaboration_Problem is
-
       function Find_Path (Ufrom, Uto : Unit_Id; ML : Nat) return Boolean;
       --  Recursive routine used to find a path from node Ufrom to node Uto.
       --  If a path exists, returns True and outputs an appropriate set of
@@ -710,7 +709,6 @@ package body Binde is
       ---------------
 
       function Find_Path (Ufrom, Uto : Unit_Id; ML : Nat) return Boolean is
-
          function Find_Link (U : Unit_Id; PL : Nat) return Boolean;
          --  This is the inner recursive routine, it determines if a path
          --  exists from U to Uto, and if so returns True and outputs the

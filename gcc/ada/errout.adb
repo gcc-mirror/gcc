@@ -2814,7 +2814,9 @@ package body Errout is
             Set_Msg_Node (Defining_Identifier (Node));
             return;
 
-         when N_Selected_Component | N_Expanded_Name =>
+         when N_Expanded_Name
+            | N_Selected_Component
+         =>
             Set_Msg_Node (Prefix (Node));
             Set_Msg_Char ('.');
             Set_Msg_Node (Selector_Name (Node));
@@ -3426,10 +3428,13 @@ package body Errout is
       case Warning_Msg_Char is
          when '?' =>
             return "??";
+
          when 'a' .. 'z' | 'A' .. 'Z' | '*' | '$' =>
             return '?' & Warning_Msg_Char & '?';
+
          when ' ' =>
             return "?";
+
          when others =>
             raise Program_Error;
       end case;

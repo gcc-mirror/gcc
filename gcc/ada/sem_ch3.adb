@@ -1847,7 +1847,6 @@ package body Sem_Ch3 is
 
             when others =>
                return False;
-
          end case;
       end Contains_POC;
 
@@ -2892,7 +2891,6 @@ package body Sem_Ch3 is
 
             when others =>
                raise Program_Error;
-
          end case;
       end if;
 
@@ -4869,8 +4867,8 @@ package body Sem_Ch3 is
 
          case Ekind (T) is
             when Array_Kind =>
-               Set_Ekind                       (Id, E_Array_Subtype);
-               Copy_Array_Subtype_Attributes   (Id, T);
+               Set_Ekind                     (Id, E_Array_Subtype);
+               Copy_Array_Subtype_Attributes (Id, T);
 
             when Decimal_Fixed_Point_Kind =>
                Set_Ekind                (Id, E_Decimal_Fixed_Point_Subtype);
@@ -4942,7 +4940,9 @@ package body Sem_Ch3 is
                   Set_Equivalent_Type   (Id, Equivalent_Type    (T));
                end if;
 
-            when E_Record_Type | E_Record_Subtype =>
+            when E_Record_Subtype
+               | E_Record_Type
+            =>
                Set_Ekind                (Id, E_Record_Subtype);
 
                if Ekind (T) = E_Record_Subtype
@@ -5097,7 +5097,7 @@ package body Sem_Ch3 is
                   Set_Stored_Constraint_From_Discriminant_Constraint (Id);
                end if;
 
-            when Incomplete_Kind  =>
+            when Incomplete_Kind =>
                if Ada_Version >= Ada_2005 then
 
                   --  In Ada 2005 an incomplete type can be explicitly tagged:
@@ -5808,9 +5808,10 @@ package body Sem_Ch3 is
       Set_Is_Internal (Anon);
 
       case Nkind (N) is
-         when N_Component_Declaration       |
-           N_Unconstrained_Array_Definition |
-           N_Constrained_Array_Definition   =>
+         when N_Constrained_Array_Definition
+            | N_Component_Declaration
+            | N_Unconstrained_Array_Definition
+         =>
             Comp := Component_Definition (N);
             Acc  := Access_Definition (Comp);
 
@@ -9103,9 +9104,10 @@ package body Sem_Ch3 is
          when Array_Kind =>
             Build_Derived_Array_Type (N, Parent_Type,  Derived_Type);
 
-         when E_Record_Type
+         when Class_Wide_Kind
             | E_Record_Subtype
-            | Class_Wide_Kind  =>
+            | E_Record_Type
+         =>
             Build_Derived_Record_Type
               (N, Parent_Type, Derived_Type, Derive_Subps);
             return;
@@ -11660,12 +11662,13 @@ package body Sem_Ch3 is
       Save_Homonym     := Homonym (Priv);
 
       case Ekind (Full_Base) is
-         when E_Record_Type    |
-              E_Record_Subtype |
-              Class_Wide_Kind  |
-              Private_Kind     |
-              Task_Kind        |
-              Protected_Kind   =>
+         when Class_Wide_Kind
+            | Private_Kind
+            | Protected_Kind
+            | Task_Kind
+            | E_Record_Subtype
+            | E_Record_Type
+         =>
             Copy_Node (Priv, Full);
 
             Set_Has_Discriminants
@@ -17958,8 +17961,9 @@ package body Sem_Ch3 is
    is
    begin
       case T_Kind is
-         when Enumeration_Kind |
-              Integer_Kind =>
+         when Enumeration_Kind
+            | Integer_Kind
+         =>
             return Constraint_Kind = N_Range_Constraint;
 
          when Decimal_Fixed_Point_Kind =>
@@ -17974,14 +17978,15 @@ package body Sem_Ch3 is
             return Nkind_In (Constraint_Kind, N_Digits_Constraint,
                                               N_Range_Constraint);
 
-         when Access_Kind       |
-              Array_Kind        |
-              E_Record_Type     |
-              E_Record_Subtype  |
-              Class_Wide_Kind   |
-              E_Incomplete_Type |
-              Private_Kind      |
-              Concurrent_Kind  =>
+         when Access_Kind
+            | Array_Kind
+            | Class_Wide_Kind
+            | Concurrent_Kind
+            | Private_Kind
+            | E_Incomplete_Type
+            | E_Record_Subtype
+            | E_Record_Type
+         =>
             return Constraint_Kind = N_Index_Or_Discriminant_Constraint;
 
          when others =>
@@ -18817,7 +18822,11 @@ package body Sem_Ch3 is
       end if;
 
       case Nkind (Original_Node (Exp)) is
-         when N_Aggregate | N_Extension_Aggregate | N_Function_Call | N_Op =>
+         when N_Aggregate
+            | N_Extension_Aggregate
+            | N_Function_Call
+            | N_Op
+         =>
             return True;
 
          when N_Identifier =>
@@ -18837,16 +18846,18 @@ package body Sem_Ch3 is
          --  A return statement for a build-in-place function returning a
          --  synchronized type also introduces an unchecked conversion.
 
-         when N_Type_Conversion           |
-              N_Unchecked_Type_Conversion =>
+         when N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
             return not Comes_From_Source (Exp)
               and then
                 OK_For_Limited_Init_In_05
                   (Typ, Expression (Original_Node (Exp)));
 
-         when N_Indexed_Component     |
-              N_Selected_Component    |
-              N_Explicit_Dereference  =>
+         when N_Explicit_Dereference
+            | N_Indexed_Component
+            | N_Selected_Component
+         =>
             return Nkind (Exp) = N_Function_Call;
 
          --  A use of 'Input is a function call, hence allowed. Normally the
@@ -20891,10 +20902,11 @@ package body Sem_Ch3 is
                Constrain_Integer (Def_Id, S);
                Inherit_Predicate_Flags (Def_Id, Subtype_Mark_Id);
 
-            when E_Record_Type     |
-                 E_Record_Subtype  |
-                 Class_Wide_Kind   |
-                 E_Incomplete_Type =>
+            when Class_Wide_Kind
+               | E_Incomplete_Type
+               | E_Record_Subtype
+               | E_Record_Type
+            =>
                Constrain_Discriminated_Type (Def_Id, S, Related_Nod);
 
                if Ekind (Def_Id) = E_Incomplete_Type then
