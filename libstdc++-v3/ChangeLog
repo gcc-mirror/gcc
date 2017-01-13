@@ -1,3 +1,15 @@
+2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78361
+	* testsuite/20_util/add_pointer/value.cc: Test forming function
+	pointers.
+
+2017-01-13  Michael Brune  <lucdanton@free.fr>
+
+	PR libstdc++/78361
+	* include/std/type_traits (__is_referenceable): Handle noexcept
+	function types.
+
 2017-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77528
