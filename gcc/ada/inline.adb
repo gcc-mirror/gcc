@@ -3201,6 +3201,7 @@ package body Inline is
                then
                   pragma Assert (not (Is_By_Reference_Type (Etype (A))));
                   pragma Assert (not (Is_Limited_Type (Etype (A))));
+
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Make_Temporary (Loc, 'C'),

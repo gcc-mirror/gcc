@@ -4151,8 +4151,8 @@ package body Sem_Ch3 is
            and then Present (Component_Associations (E))
            and then Present (Choice_List (First (Component_Associations (E))))
            and then
-             Nkind (First (Choice_List (First (Component_Associations (E)))))
-               = N_Others_Choice
+             Nkind (First (Choice_List (First (Component_Associations (E))))) =
+               N_Others_Choice
          then
             null;
 
