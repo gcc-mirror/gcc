@@ -118,6 +118,8 @@ format_warning_va (const substring_loc &fmt_loc,
   else
     {
       if (fmt_substring_range.m_start >= fmt_loc_range.m_start
+	  && fmt_substring_range.m_start <= fmt_loc_range.m_finish
+	  && fmt_substring_range.m_finish >= fmt_loc_range.m_start
 	  && fmt_substring_range.m_finish <= fmt_loc_range.m_finish)
 	/* Case 1.  */
 	{
