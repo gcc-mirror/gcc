@@ -8378,9 +8378,20 @@ package body Exp_Ch6 is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
    begin
+      --  A formal giving the finalization master is needed for build-in-place
+      --  functions whose result type needs finalization or is a tagged type.
+      --  Tagged primitive build-in-place functions need such a formal because
+      --  they can be called by a dispatching call, and extensions may require
+      --  finalization even if the root type doesn't. This means they're also
+      --  needed for tagged nonprimitive build-in-place functions with tagged
+      --  results, since such functions can be called via access-to-function
+      --  types, and those can be used to call primitives, so masters have to
+      --  be passed to all such build-in-place functions, primitive or not.
+
       return
         not Restriction_Active (No_Finalization)
-          and then Needs_Finalization (Func_Typ);
+          and then (Needs_Finalization (Func_Typ)
+                     or else Is_Tagged_Type (Func_Typ));
    end Needs_BIP_Finalization_Master;
 
    --------------------------

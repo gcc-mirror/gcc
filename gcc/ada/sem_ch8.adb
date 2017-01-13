@@ -1888,8 +1888,10 @@ package body Sem_Ch8 is
       --
       --  This transformation applies only if there is no explicit visible
       --  class-wide operation at the point of the instantiation. Ren_Id is
-      --  the entity of the renaming declaration. Wrap_Id is the entity of
-      --  the generated class-wide wrapper (or Any_Id).
+      --  the entity of the renaming declaration. When the transformation
+      --  applies, Wrap_Id is the entity of the generated class-wide wrapper
+      --  (or Any_Id). Otherwise, Wrap_Id is the entity of the class-wide
+      --  operation.
 
       procedure Check_Null_Exclusion
         (Ren : Entity_Id;
@@ -2371,6 +2373,16 @@ package body Sem_Ch8 is
 
          Set_Is_Overloaded (Name (N), False);
          Set_Referenced    (Prim_Op);
+
+         --  Do not generate a wrapper when the only candidate is a class-wide
+         --  subprogram. Instead modify the renaming to directly map the actual
+         --  to the generic formal.
+
+         if CW_Prim_OK and then Prim_Op = CW_Prim_Op then
+            Wrap_Id := Prim_Op;
+            Rewrite (Nam, New_Occurrence_Of (Prim_Op, Loc));
+            return;
+         end if;
 
          --  Step 3: Create the declaration and the body of the wrapper, insert
          --  all the pieces into the tree.
@@ -3391,7 +3403,12 @@ package body Sem_Ch8 is
             Set_Alias (New_S, Empty);
          end if;
 
-         if Is_Actual then
+         --  Do not freeze the renaming nor the renamed entity when the context
+         --  is an enclosing generic. Freezing is an expansion activity, and in
+         --  addition the renamed entity may depend on the generic formals of
+         --  the enclosing generic.
+
+         if Is_Actual and not Inside_A_Generic then
             Freeze_Before (N, Old_S);
             Freeze_Actual_Profile;
             Set_Has_Delayed_Freeze (New_S, False);

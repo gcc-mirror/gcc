@@ -191,8 +191,8 @@ package System.Mmap.OS_Interface is
    function Open_Read
      (Filename              : String;
       Use_Mmap_If_Available : Boolean := True) return System_File;
-   --  Open a file for reading and return the corresponding System_File. Raise
-   --  a Ada.IO_Exceptions.Name_Error if unsuccessful.
+   --  Open a file for reading and return the corresponding System_File. Return
+   --  Invalid_System_File if unsuccessful.
 
    function Open_Write
      (Filename              : String;

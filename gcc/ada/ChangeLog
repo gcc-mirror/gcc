@@ -1,3 +1,48 @@
+2017-01-13  Tristan Gingold  <gingold@adacore.com>
+
+	* s-mmap.adb, s-mmap.ads (Open_Read_No_Exception): New function.
+	(Open_Read): Re-implement using Open_Read_No_Exception.
+	(Open_Write): Raise exception in case of error.
+	* s-mmosin-mingw.adb (Open_Common): Do not raise exception.
+	* s-mmosin-unix.adb (Open_Read, Open_Write): Do not
+	reaise exception.
+	* s-mmosin-mingw.ads, s-mmosin-unix.ads (Open_Read): Adjust comment.
+
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb: Code cleanup.
+
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* freeze.adb (Check_Inherited_Conditions): Use analyzed pragma
+	expression instead of unanalyzed aspect expression for checking
+	the validity of inheriting an operation. Also copy the expression
+	being passing it to Build_Class_Wide_Expression, as this call
+	modifies its argument.
+	* sem_util.ads Fix comment to reference correct function name
+	New_Copy_Tree.
+
+2017-01-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Generalized_Indexing): Compiling in ASIS mode,
+	when we propagate information about the indexes back to the original
+	indexing mode and the prefix of the index is a function call, do not
+	remove any parameter from such call.
+
+2017-01-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.ads (Needs_BIP_Finalization_Master): Update comment.
+	* exp_ch6.adb (Needs_BIP_Finalization_Master): Return True for
+	a build-in-place function whose result type is tagged.
+
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming.Build_Class_Wide_Wrapper):
+	Do not generate a wrapper when the only candidate is a class-wide
+	subprogram.
+	(Analyze_Subprogram_Renaming): Do not freeze the renaming or renamed
+	inside a generic context.
+
 2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (Add_Inherited_Tagged_DIC):

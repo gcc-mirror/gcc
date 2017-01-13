@@ -32,6 +32,11 @@
 with Ada.IO_Exceptions;
 with System.Strings; use System.Strings;
 
+with System.OS_Lib;
+pragma Unreferenced (System.OS_Lib);
+--  Only used to generate same runtime dependencies and same binder file on
+--  GNU/Linux and Windows.
+
 package body System.Mmap.OS_Interface is
 
    use Win;
@@ -126,8 +131,7 @@ package body System.Mmap.OS_Interface is
          null, OPEN_EXISTING, Win.FILE_ATTRIBUTE_NORMAL, 0);
 
       if File_Handle = Win.INVALID_HANDLE_VALUE then
-         raise Ada.IO_Exceptions.Name_Error
-           with "Cannot open " & Filename;
+         return Invalid_System_File;
       end if;
 
       --  Compute its size
@@ -135,7 +139,7 @@ package body System.Mmap.OS_Interface is
       Size := File_Size (Win.GetFileSize (File_Handle, SizeH'Access));
 
       if Size = Win.INVALID_FILE_SIZE then
-         raise Ada.IO_Exceptions.Use_Error;
+         return Invalid_System_File;
       end if;
 
       if SizeH /= 0 and then File_Size'Size > 32 then

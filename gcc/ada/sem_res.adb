@@ -8112,7 +8112,7 @@ package body Sem_Res is
          end loop;
 
          if Nkind (Call) = N_Function_Call then
-            Indexes := Parameter_Associations (Call);
+            Indexes := New_Copy_List (Parameter_Associations (Call));
             Pref := Remove_Head (Indexes);
             Set_Expressions (N, Indexes);
 
