@@ -1737,8 +1737,9 @@ package body Exp_Aggr is
          --  Otherwise construct the loop, starting with the loop index L_J
 
          if Is_Iterated_Component then
-            L_J := Make_Defining_Identifier (Loc,
-                    Chars => (Chars (Defining_Identifier (Parent (Expr)))));
+            L_J :=
+              Make_Defining_Identifier (Loc,
+                Chars => (Chars (Defining_Identifier (Parent (Expr)))));
 
          else
             L_J := Make_Temporary (Loc, 'J', L);

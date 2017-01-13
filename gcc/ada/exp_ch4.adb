@@ -7776,6 +7776,7 @@ package body Exp_Ch4 is
             else
                pragma Assert
                  (Expv = -1 or Expv = -2 or Expv = -3 or Expv = -4);
+
                Xnode :=
                  Make_Op_Divide (Loc,
                    Left_Opnd  =>

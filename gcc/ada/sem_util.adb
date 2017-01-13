@@ -13705,8 +13705,8 @@ package body Sem_Util is
                       N_Slice)
         and then Prefix (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
-          (Context => Parent (Context),
-           Obj_Ref => Context)
+                   (Context => Parent (Context),
+                    Obj_Ref => Context)
       then
          return True;
 
@@ -13731,11 +13731,11 @@ package body Sem_Util is
       --  occurring in a non-interfering context.
 
       elsif Nkind_In (Context, N_Type_Conversion,
-                      N_Unchecked_Type_Conversion)
+                               N_Unchecked_Type_Conversion)
         and then Expression (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
-          (Context => Parent (Context),
-           Obj_Ref => Context)
+                   (Context => Parent (Context),
+                    Obj_Ref => Context)
       then
          return True;
 

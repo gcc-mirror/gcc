@@ -1,3 +1,8 @@
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aggr.adb, sem_ch3.adb, inline.adb, sem_util.adb, exp_ch4.adb,
+	exp_aggr.adb: Minor reformatting.
+
 2017-01-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* inline.adb: Minor reformatting and typo fix.

@@ -809,8 +809,8 @@ package body Sem_Aggr is
    begin
       return No (Expressions (Aggr))
         and then
-          Nkind (First (Choice_List (First (Component_Associations (Aggr)))))
-             = N_Others_Choice;
+          Nkind (First (Choice_List (First (Component_Associations (Aggr))))) =
+            N_Others_Choice;
    end Is_Others_Aggregate;
 
    ----------------------------
@@ -1691,8 +1691,6 @@ package body Sem_Aggr is
       Expr    : Node_Id;
       Discard : Node_Id;
 
-      --  Iterated_Component_Present : Boolean := False;
-
       Aggr_Low  : Node_Id := Empty;
       Aggr_High : Node_Id := Empty;
       --  The actual low and high bounds of this sub-aggregate
@@ -1732,7 +1730,6 @@ package body Sem_Aggr is
          while Present (Assoc) loop
             if Nkind (Assoc) = N_Iterated_Component_Association then
                Resolve_Iterated_Component_Association (Assoc, Index_Typ);
-               --  Iterated_Component_Present := True;
                goto Next_Assoc;
             end if;
 
@@ -1791,9 +1788,9 @@ package body Sem_Aggr is
 
                         --  If the subtype has a static predicate, replace the
                         --  original choice with the list of individual values
-                        --  covered by the predicate.
-                        --  Do not perform this transformation if we need to
-                        --  preserve the source for ASIS use.
+                        --  covered by the predicate. Do not perform this
+                        --  transformation if we need to preserve the source
+                        --  for ASIS use.
                         --  This should be deferred to expansion time ???
 
                         if Present (Static_Discrete_Predicate (E))
