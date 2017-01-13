@@ -9,8 +9,8 @@ foo(unsigned int size, unsigned int *state)
 
   for(i = 0; i < size; i++)
     {
-      if(*state & 1)
-	*state ^= 1;
+      if(state[i] & 1)
+	state[i] ^= 1;
     }
 }
 
