@@ -1,3 +1,27 @@
+2017-01-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting and typo fix.
+
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (P_Aggregate_Or_Parent_Expr): An
+	Iterated_Component_Association is a named association in an
+	array aggregate.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): New
+	procedure, subsidiary of Resolve_Array_Aggregate, to analyze
+	and resolve the discrete choices and the expression of the
+	new construct.
+	* sinfo.adb, sinfo.ads: In analogy with N_Component_Association,
+	Loop_Actions and Box_Present are attributes of
+	N_Iterated_Component_Association nodes. Box_Present is always
+	False in this case.
+	* sprint.adb (Sprint_Node): An Iterated_Component_Association
+	has a Discrete_Choices list, as specified in the RM. A
+	Component_Association for aggregate uses instead a Choices list.
+	We have to live with this small inconsistency because the new
+	construct also has a defining identifier, and there is no way
+	to merge the two node structures.
+
 2017-01-13  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Remove_Aspects_And_Pragmas): Add Unused to the

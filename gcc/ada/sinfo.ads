@@ -4114,8 +4114,13 @@ package Sinfo is
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
       --  Defining_Identifier (Node1)
+      --  Loop_Actions (List2-Sem)
       --  Expression (Node3)
       --  Discrete_Choices (List4)
+      --  Box_Present (Flag15)
+
+      --  Note that Box_Present is always False, but it is intentionally added
+      --  for completeness.
 
       --------------------------------------------------
       -- 4.4  Expression/Relation/Term/Factor/Primary --
