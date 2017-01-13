@@ -632,7 +632,7 @@ package body Sem_Ch6 is
       --  Function result subtype
 
       procedure Check_Aggregate_Accessibility (Aggr : Node_Id);
-      --  Apply legality rule of 6.5 (8.2) to the access discriminants of an
+      --  Apply legality rule of 6.5 (5.8) to the access discriminants of an
       --  aggregate in a return statement.
 
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
@@ -2225,6 +2225,11 @@ package body Sem_Ch6 is
       --  limited views with the non-limited ones. Return the list of changes
       --  to be used to undo the transformation.
 
+      procedure Freeze_Expr_Types (Spec_Id : Entity_Id);
+      --  (AI12-0103) N is the body associated with an expression function that
+      --  is a completion, and Spec_Id its defining entity. Freeze before N all
+      --  the types referenced by the expression of the function.
+
       function Is_Private_Concurrent_Primitive
         (Subp_Id : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp_Id is a primitive of a concurrent
@@ -2945,6 +2950,81 @@ package body Sem_Ch6 is
          return Result;
       end Exchange_Limited_Views;
 
+      -----------------------
+      -- Freeze_Expr_Types --
+      -----------------------
+
+      procedure Freeze_Expr_Types (Spec_Id : Entity_Id) is
+         function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result;
+         --  Freeze all types referenced in the subtree rooted at Node
+
+         ----------------------
+         -- Freeze_Type_Refs --
+         ----------------------
+
+         function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (Node) = N_Identifier
+              and then Present (Entity (Node))
+            then
+               if Is_Type (Entity (Node)) then
+                  Freeze_Before (N, Entity (Node));
+
+               elsif Ekind_In (Entity (Node), E_Component,
+                                              E_Discriminant)
+               then
+                  Freeze_Before (N, Scope (Entity (Node)));
+               end if;
+            end if;
+
+            return OK;
+         end Freeze_Type_Refs;
+
+         procedure Freeze_References is new Traverse_Proc (Freeze_Type_Refs);
+
+         --  Local variables
+
+         Return_Stmt : constant Node_Id :=
+                         First (Statements (Handled_Statement_Sequence (N)));
+         Dup_Expr    : constant Node_Id :=
+                         New_Copy_Tree (Expression (Return_Stmt));
+
+         Saved_First_Entity : constant Entity_Id := First_Entity (Spec_Id);
+         Saved_Last_Entity  : constant Entity_Id := Last_Entity  (Spec_Id);
+
+      --  Start of processing for Freeze_Expr_Types
+
+      begin
+         pragma Assert (Nkind (Return_Stmt) = N_Simple_Return_Statement);
+
+         --  Preanalyze a duplicate of the expression to have available the
+         --  minimum decoration needed to locate referenced unfrozen types
+         --  without adding any decoration to the function expression. This
+         --  preanalysis is performed with errors disabled to avoid reporting
+         --  spurious errors on Ghost entities (since the expression is not
+         --  fully analyzed).
+
+         Push_Scope (Spec_Id);
+         Install_Formals (Spec_Id);
+         Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
+
+         Preanalyze_Spec_Expression (Dup_Expr, Etype (Spec_Id));
+
+         Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
+         End_Scope;
+
+         --  Restore certain attributes of Spec_Id since the preanalysis may
+         --  have introduced itypes to this scope, thus modifying attributes
+         --  First_Entity and Last_Entity.
+
+         Set_First_Entity (Spec_Id, Saved_First_Entity);
+         Set_Last_Entity  (Spec_Id, Saved_Last_Entity);
+
+         --  Freeze all types referenced in the expression
+
+         Freeze_References (Dup_Expr);
+      end Freeze_Expr_Types;
+
       -------------------------------------
       -- Is_Private_Concurrent_Primitive --
       -------------------------------------
@@ -3398,6 +3478,15 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Spec_Id);
             Freeze_Before (N, Spec_Id);
+
+            --  At the occurrence of an expression function declaration that is
+            --  a completion, its expression causes freezing (AI12-0103).
+
+            if Has_Completion (Spec_Id)
+              and then Was_Expression_Function (N)
+            then
+               Freeze_Expr_Types (Spec_Id);
+            end if;
          end if;
       end if;
 

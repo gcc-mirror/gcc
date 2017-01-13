@@ -1,3 +1,29 @@
+2017-01-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Freeze_Expr_Types): New subprogram.
+	(Analyze_Subprogram_Body_Helper): At the occurrence of an
+	expression function declaration that is a completion, its
+	expression causes freezing (AI12-0103).
+
+2017-01-13  Vadim Godunko  <godunko@adacore.com>
+
+	* a-coinho-shared.adb: Fix memory leaks in Constant_Reference and
+	Reference functions of Ada.Containers.Indefinite_Holders.
+
+2017-01-13  Bob Duff  <duff@adacore.com>
+
+	* s-os_lib.ads: Minor comment fixes.
+
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Do not default
+	initialize an object when it is of a task type and restriction
+	No_Tasking is in effect because the initialization is obsolete.
+	* exp_ch9.adb (Build_Master_Entity): Do not generate a master when
+	restriction No_Tasking is in effect.
+	(Build_Master_Renaming): Do not rename a master when restriction
+	No_Tasking is in effect.
+
 2017-01-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): The code that verifies

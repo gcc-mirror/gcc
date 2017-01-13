@@ -3349,10 +3349,14 @@ package body Exp_Ch9 is
          Find_Enclosing_Context (Par, Context, Context_Id, Decls);
       end if;
 
-      --  Do not create a master if one already exists or there is no task
-      --  hierarchy.
+      --  Nothing to do if the context already has a master
 
-      if Has_Master_Entity (Context_Id)
+      if Has_Master_Entity (Context_Id) then
+         return;
+
+      --  Nothing to do if tasks or tasking hierarchies are prohibited
+
+      elsif Restriction_Active (No_Tasking)
         or else Restriction_Active (No_Task_Hierarchy)
       then
          return;
@@ -3425,9 +3429,11 @@ package body Exp_Ch9 is
       Master_Id   : Entity_Id;
 
    begin
-      --  Nothing to do if there is no task hierarchy
+      --  Nothing to do if tasks or tasking hierarchies are prohibited
 
-      if Restriction_Active (No_Task_Hierarchy) then
+      if Restriction_Active (No_Tasking)
+        or else Restriction_Active (No_Task_Hierarchy)
+      then
          return;
       end if;
 

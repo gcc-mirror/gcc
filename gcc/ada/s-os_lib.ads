@@ -375,7 +375,7 @@ package System.OS_Lib is
    function File_Time_Stamp (Name : String) return OS_Time;
    --  Given the name of a file or directory, Name, obtains and returns the
    --  time stamp. This function can be used for an unopened file. Returns
-   --  Invalid_Time is Name doesn't correspond to an existing file.
+   --  Invalid_Time if Name doesn't correspond to an existing file.
 
    function File_Time_Stamp (FD : File_Descriptor) return OS_Time;
    --  Get time stamp of file from file descriptor FD Returns Invalid_Time is
@@ -662,8 +662,6 @@ package System.OS_Lib is
    --  This subtype is used to document that a parameter is the address of a
    --  null-terminated string containing the name of a file.
 
-   --  All the following functions need comments ???
-
    procedure Copy_File
      (Name     : C_File_Name;
       Pathname : C_File_Name;
@@ -687,7 +685,6 @@ package System.OS_Lib is
    procedure Delete_File (Name : C_File_Name; Success : out Boolean);
 
    function File_Time_Stamp (Name : C_File_Name) return OS_Time;
-   --  Returns Invalid_Time is Name doesn't correspond to an existing file
 
    function Is_Directory (Name : C_File_Name) return Boolean;
    function Is_Executable_File (Name : C_File_Name) return Boolean;
