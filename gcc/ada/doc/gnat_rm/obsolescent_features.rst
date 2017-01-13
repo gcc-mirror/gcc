@@ -56,7 +56,7 @@ Syntax
 .. code-block:: ada
 
   pragma Task_Info (EXPRESSION);
-  
+
 This pragma appears within a task definition (like pragma
 `Priority`) and applies to the task in which it appears.  The
 argument must be of type `System.Task_Info.Task_Info_Type`.

@@ -1996,6 +1996,21 @@ This package provides a limited binding to the VxWorks API.
 In particular, it interfaces with the
 VxWorks hardware interrupt facilities.
 
+.. _`Interfaces.VxWorks.Int_Connection_(i-vxinco.ads)`:
+
+`Interfaces.VxWorks.Int_Connection` (:file:`i-vxinco.ads`)
+==========================================================
+
+.. index:: Interfaces.VxWorks.Int_Connection (i-vxinco.ads)
+
+.. index:: Interfacing to VxWorks
+
+.. index:: VxWorks, interfacing
+
+This package provides a way for users to replace the use of
+intConnect() with a custom routine for installing interrupt
+handlers.
+
 .. _`Interfaces.VxWorks.IO_(i-vxwoio.ads)`:
 
 `Interfaces.VxWorks.IO` (:file:`i-vxwoio.ads`)

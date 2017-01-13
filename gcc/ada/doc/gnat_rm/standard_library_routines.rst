@@ -317,7 +317,7 @@ the unit is not implemented.
   The following predefined instantiations of this package are provided:
 
   * ``Short_Float``
-  
+
     `Ada.Numerics.Short_Complex_Elementary_Functions`
 
   * ``Float``
@@ -706,4 +706,3 @@ the unit is not implemented.
 
 For packages in Interfaces and System, all the RM defined packages are
 available in GNAT, see the Ada 2012 RM for full details.
-

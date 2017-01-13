@@ -39,37 +39,37 @@ Standard I/O Packages
 
 The Standard I/O packages described in Annex A for
 
-* 
+*
   Ada.Text_IO
-* 
+*
   Ada.Text_IO.Complex_IO
-* 
+*
   Ada.Text_IO.Text_Streams
-* 
+*
   Ada.Wide_Text_IO
-* 
+*
   Ada.Wide_Text_IO.Complex_IO
-* 
+*
   Ada.Wide_Text_IO.Text_Streams
-* 
+*
   Ada.Wide_Wide_Text_IO
-* 
+*
   Ada.Wide_Wide_Text_IO.Complex_IO
-* 
+*
   Ada.Wide_Wide_Text_IO.Text_Streams
-* 
+*
   Ada.Stream_IO
-* 
+*
   Ada.Sequential_IO
-* 
+*
   Ada.Direct_IO
 
 are implemented using the C
 library streams facility; where
 
-* 
+*
   All files are opened using `fopen`.
-* 
+*
   All input/output operations use `fread`/`fwrite`.
 
 There is no internal buffering of any kind at the Ada library level. The only
@@ -94,7 +94,7 @@ The format of a FORM string in GNAT is:
 ::
 
   "keyword=value,keyword=value,...,keyword=value"
-  
+
 
 where letters may be in upper or lower case, and there are no spaces
 between values.  The order of the entries is not important.  Currently
@@ -107,7 +107,7 @@ the following keywords defined.
   SHARED=[YES|NO]
   WCEM=[n|h|u|s|e|8|b]
   ENCODING=[UTF8|8BITS]
-  
+
 
 The use of these parameters is described later in this section. If an
 unrecognized keyword appears in a form string, it is silently ignored
@@ -173,7 +173,7 @@ arrays.  For example, the following will raise `Data_Error`:
    IO.Read (F, S);
    Put_Line (S);
 
-  
+
 
 On some Ada implementations, this will print `hell`, but the program is
 clearly incorrect, since there is only one element in the file, and that
@@ -196,21 +196,21 @@ special control characters:
 
   LF (line feed, 16#0A#) Line Mark
   FF (form feed, 16#0C#) Page Mark
-  
+
 
 A canonical Text_IO file is defined as one in which the following
 conditions are met:
 
-* 
+*
   The character `LF` is used only as a line mark, i.e., to mark the end
   of the line.
 
-* 
+*
   The character `FF` is used only as a page mark, i.e., to mark the
   end of a page and consequently can appear only immediately following a
   `LF` (line mark) character.
 
-* 
+*
   The file ends with either `LF` (line mark) or `LF`-`FF`
   (line mark, page mark).  In the former case, the page mark is implicitly
   assumed to be present.
@@ -229,16 +229,16 @@ Manual, and all the routines in Text_IO are fully implemented.
 A text file that does not meet the requirements for a canonical Text_IO
 file has one of the following:
 
-* 
+*
   The file contains `FF` characters not immediately following a
   `LF` character.
 
-* 
+*
   The file contains `LF` or `FF` characters written by
   `Put` or `Put_Line`, which are not logically considered to be
   line marks or page marks.
 
-* 
+*
   The file ends in a character other than `LF` or `FF`,
   i.e., there is no explicit line mark or page mark at the end of the file.
 
@@ -260,14 +260,14 @@ is being read.  No internal buffering occurs in Text_IO, and usually the
 physical position in the stream used to implement the file corresponds
 to this logical position defined by Text_IO.  There are two exceptions:
 
-* 
+*
   After a call to `End_Of_Page` that returns `True`, the stream
   is positioned past the `LF` (line mark) that precedes the page
   mark.  Text_IO maintains an internal flag so that subsequent read
   operations properly handle the logical position which is unchanged by
   the `End_Of_Page` call.
 
-* 
+*
   After a call to `End_Of_File` that returns `True`, if the
   Text_IO file was positioned before the line mark at the end of file
   before the call, then the logical position is unchanged, but the stream
@@ -298,19 +298,19 @@ marks.  Any `Ascii.FF` characters (the character normally used for a
 page mark) appearing in the file are considered to be data
 characters.  In particular:
 
-* 
+*
   `Get_Line` and `Skip_Line` do not test for a page mark
   following a line mark.  If a page mark appears, it will be treated as a
   data character.
 
-* 
+*
   This avoids the need to wait for an extra character to be typed or
   entered from the pipe to complete one of these operations.
 
-* 
+*
   `End_Of_Page` always returns `False`
 
-* 
+*
   `End_Of_File` will return `False` if there is a page mark at
   the end of the file.
 
@@ -440,7 +440,7 @@ specified using a FORM parameter:
 ::
 
   WCEM=`x`
-  
+
 
 as part of the FORM string (WCEM = wide character encoding method),
 where `x` is one of the following characters
@@ -477,7 +477,7 @@ being brackets encoding if no coding method was specified with -gnatW).
 ::
 
     ESC a b c d
-    
+
 ..
 
   where `a`, `b`, `c`, `d` are the four hexadecimal
@@ -524,7 +524,7 @@ being brackets encoding if no coding method was specified with -gnatW).
     16#0000#-16#007f#: 2#0xxxxxxx#
     16#0080#-16#07ff#: 2#110xxxxx# 2#10xxxxxx#
     16#0800#-16#ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
-    
+
 ..
 
   where the `xxx` bits correspond to the left-padded bits of the
@@ -545,7 +545,7 @@ being brackets encoding if no coding method was specified with -gnatW).
 ::
 
     [ " a b c d " ]
-    
+
 ..
 
   where `a`, `b`, `c`, `d` are the four hexadecimal
@@ -590,7 +590,7 @@ being brackets encoding if no coding method was specified with -gnatW).
 ::
 
        Start of output ["5B"]first run]
-    
+
 ..
 
   In practice brackets encoding is reasonably useful for normal Put_Line use
@@ -623,7 +623,7 @@ normal lower ASCII set (i.e., a character in the range:
 .. code-block:: ada
 
   Wide_Character'Val (16#0080#) .. Wide_Character'Val (16#FFFF#)
-  
+
 
 then although the logical position of the file pointer is unchanged by
 the `Look_Ahead` call, the stream is physically positioned past the
@@ -658,7 +658,7 @@ specified using a FORM parameter:
 ::
 
   WCEM=`x`
-  
+
 
 as part of the FORM string (WCEM = wide character encoding method),
 where `x` is one of the following characters
@@ -701,7 +701,7 @@ being brackets encoding if no coding method was specified with -gnatW).
     16#000080#-16#0007ff#: 2#110xxxxx# 2#10xxxxxx#
     16#000800#-16#00ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
     16#010000#-16#10ffff#: 2#11110xxx# 2#10xxxxxx# 2#10xxxxxx# 2#10xxxxxx#
-    
+
 ..
 
   where the `xxx` bits correspond to the left-padded bits of the
@@ -719,7 +719,7 @@ being brackets encoding if no coding method was specified with -gnatW).
 ::
 
     [ " a b c d " ]
-    
+
 ..
 
   and by the following ten character sequence if not
@@ -728,7 +728,7 @@ being brackets encoding if no coding method was specified with -gnatW).
 ::
 
     [ " a b c d e f " ]
-    
+
 ..
 
   where `a`, `b`, `c`, `d`, `e`, and `f`
@@ -767,7 +767,7 @@ normal lower ASCII set (i.e., a character in the range:
 .. code-block:: ada
 
   Wide_Wide_Character'Val (16#0080#) .. Wide_Wide_Character'Val (16#10FFFF#)
-  
+
 
 then although the logical position of the file pointer is unchanged by
 the `Look_Ahead` call, the stream is physically positioned past the
@@ -798,11 +798,11 @@ written to the file as described in the Ada Reference Manual.  The type
 `Stream_Element` is simply a byte.  There are two ways to read or
 write a stream file.
 
-* 
+*
   The operations `Read` and `Write` directly read or write a
   sequence of stream elements with no control information.
 
-* 
+*
   The stream attributes applied to a stream file transfer data in the
   manner described for stream attributes.
 
@@ -816,7 +816,7 @@ passed to Text_IO.Create and Text_IO.Open. ``Text_Translation=xxx``
 has no effect on Unix systems. Possible values are:
 
 
-* 
+*
   ``Yes`` or ``Text`` is the default, which means to
   translate LF to/from CR/LF on Windows systems.
 
@@ -825,15 +825,15 @@ has no effect on Unix systems. Possible values are:
   may be used to create Unix-style files on
   Windows.
 
-* 
+*
   ``wtext`` translation enabled in Unicode mode.
   (corresponds to _O_WTEXT).
 
-* 
+*
   ``u8text`` translation enabled in Unicode UTF-8 mode.
   (corresponds to O_U8TEXT).
 
-* 
+*
   ``u16text`` translation enabled in Unicode UTF-16
   mode. (corresponds to_O_U16TEXT).
 
@@ -851,21 +851,21 @@ To provide a full range of functionality, while at the same time
 minimizing the problems of portability caused by this implementation
 dependence, GNAT handles file sharing as follows:
 
-* 
+*
   In the absence of a ``shared=xxx`` form parameter, an attempt
   to open two or more files with the same full name is considered an error
   and is not supported.  The exception `Use_Error` will be
   raised.  Note that a file that is not explicitly closed by the program
   remains open until the program terminates.
 
-* 
+*
   If the form parameter ``shared=no`` appears in the form string, the
   file can be opened or created with its own separate stream identifier,
   regardless of whether other files sharing the same external file are
   opened.  The exact effect depends on how the C stream routines handle
   multiple accesses to the same external files using separate streams.
 
-* 
+*
   If the form parameter ``shared=yes`` appears in the form string for
   each of two or more files opened using the same full name, the same
   stream is shared between these files, and the semantics are as described
@@ -905,11 +905,11 @@ Filenames encoding
 An encoding form parameter can be used to specify the filename
 encoding ``encoding=xxx``.
 
-* 
+*
   If the form parameter ``encoding=utf8`` appears in the form string, the
   filename must be encoded in UTF-8.
 
-* 
+*
   If the form parameter ``encoding=8bits`` appears in the form
   string, the filename must be a standard 8bits string.
 
@@ -979,7 +979,7 @@ using the mode shown in the following table:
 +----------------------------+---------------+------------------+
 | Inout_File                 |   "r+"        |    "w+"          |
 +----------------------------+---------------+------------------+
-  
+
 
 If text file translation is required, then either ``b`` or ``t``
 is added to the mode, depending on the setting of Text.  Text file
@@ -1153,7 +1153,7 @@ access to the C library functions for operations on C streams:
     -- Maximum length of an allowable full path name on the
     -- system, including a terminating NUL character.
   end Interfaces.C_Streams;
-  
+
 
 .. _Interfacing_to_C_Streams:
 
@@ -1231,7 +1231,7 @@ operations.
          C_Stream : in Interfaces.C_Streams.FILEs;
          Form : in String := "");
    end Ada.Stream_IO.C_Streams;
-  
+
 
 In each of these six packages, the `C_Stream` function obtains the
 `FILE` pointer from a currently opened Ada file.  It is then
@@ -1249,4 +1249,3 @@ The `Open` procedures in these packages open a file giving an
 existing C Stream instead of a file name.  Typically this stream is
 imported from a C program, allowing an Ada file to operate on an
 existing C file.
-
