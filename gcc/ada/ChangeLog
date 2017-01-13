@@ -1,3 +1,8 @@
+2017-01-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb, sem_ch6.adb, binde.adb, exp_ch3.adb: Minor reformatting
+	and typo fixes.
+
 2017-01-13  Javier Miranda  <miranda@adacore.com>
 
 	* einfo.ads (Component_Bit_Offset): Fix documentation.

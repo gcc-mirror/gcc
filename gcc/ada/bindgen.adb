@@ -404,7 +404,7 @@ package body Bindgen is
 
    procedure Write_Statement_Buffer (S : String);
    --  First writes its argument (using Set_String (S)), then writes out the
-   --  contents of statement buffer up to Stm_Last, and reset Stm_Last to 0
+   --  contents of statement buffer up to Stm_Last, and resets Stm_Last to 0.
 
    procedure Write_Bind_Line (S : String);
    --  Write S (an LF-terminated string) to the binder file (for use with

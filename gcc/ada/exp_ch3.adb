@@ -5655,8 +5655,8 @@ package body Exp_Ch3 is
          if Is_Imported (Def_Id) or else Suppress_Initialization (Def_Id) then
             return;
 
-         --  Nothing to do if the object being initializes is of a task type
-         --  and restriction No_Tasking is in effect because this is a direct
+         --  Nothing to do if the object being initialized is of a task type
+         --  and restriction No_Tasking is in effect, because this is a direct
          --  violation of the restriction.
 
          elsif Is_Task_Type (Base_Typ)
