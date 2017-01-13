@@ -250,8 +250,8 @@ package body Errout is
       --  suitable value for each phase of analysis separately.
 
       else
-         Record_Compilation_Errors := Record_Compilation_Errors or else
-           Erroutc.Compilation_Errors;
+         Record_Compilation_Errors :=
+           Record_Compilation_Errors or else Erroutc.Compilation_Errors;
 
          return Record_Compilation_Errors;
       end if;
