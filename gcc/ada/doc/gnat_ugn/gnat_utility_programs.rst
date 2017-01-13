@@ -632,11 +632,7 @@ The following switches are available for *gnatxref*:
 .. index:: -pFILE (gnatxref)
 
 :samp:`p{FILE}`
-  Specify a project file to use (see the *GNAT_Project_Manager*
-  chapter in the *GPRbuild User's Guide*).
-  If you need to use the :file:`.gpr`
-  project files, you should use gnatxref through the GNAT driver
-  (*gnat xref -Pproject*).
+  Specify a project file to use.
 
   By default, `gnatxref` and `gnatfind` will try to locate a
   project file in the current directory.
@@ -836,8 +832,7 @@ The following switches are available:
 .. index:: -pFILE (gnatfind)
 
 :samp:`p{FILE}`
-  Specify a project file (see the *GNAT_Project_Manager* chapter in the
-  *GPRbuild User's Guide*).
+  Specify a project file.
   By default, `gnatxref` and `gnatfind` will try to locate a
   project file in the current directory.
 
@@ -3060,7 +3055,7 @@ Alternatively, you may run the script using the following command line:
    .. index:: -nt (gnatpp)
 
 
-   :samp:`-neD`
+   :samp:`-ntD`
      Names introduced by type and subtype declarations are always
      cased as they appear in the declaration in the source file.
      Overrides -n casing setting.
@@ -4206,6 +4201,14 @@ Alternatively, you may run the script using the following command line:
   a skeleton for each visible subprogram in the packages under consideration when
   they do not exist already.
 
+  *gnattest* is a project-aware tool.
+  (See :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
+  the project-related switches but note that *gnattest* does not support
+  the :samp:`-U`, :samp:`-eL`, :samp:`--subdirs={dir}`, or
+  :samp:`--no_objects_dir` switches.)
+  The project file package that can specify
+  *gnattest* switches is named ``gnattest``.
+
   The user can choose to generate a single test driver
   that will run all individual tests, or separate test drivers for each test. The
   second option allows much greater flexibility in test execution environment,
@@ -4352,12 +4355,6 @@ Alternatively, you may run the script using the following command line:
 
   :samp:`-r`
     Recursively considers all sources from all projects.
-
-
-    .. index:: -X (gnattest)
-
-  :samp:`-X{name}={value}`
-    Indicate that external variable `name` has the value `value`.
 
 
     .. index:: --RTS (gnattest)
@@ -5050,7 +5047,7 @@ Alternatively, you may run the script using the following command line:
    with a number of GNAT tools.
    For a comprehensive description of project files and the overall
    GNAT Project Manager facility, please refer to the
-   *GNAT Project Manager* chapter in the 
+   *GNAT Project Manager* chapter in the
    *GPRbuild and GPR Companion Tools User's Guide*.
 
    .. index:: Project-aware tool
@@ -5072,7 +5069,7 @@ Alternatively, you may run the script using the following command line:
 
    :samp:`-U`
       If a project file is supplied, say for project ``proj``,
-      but no sources are specified for ``proj`` (either by a 
+      but no sources are specified for ``proj`` (either by a
       project attribute or through a tool option that provides a list
       of the files to be used), process all the source files
       from projects imported either directly or indirectly by ``proj``.
@@ -5108,7 +5105,7 @@ Alternatively, you may run the script using the following command line:
    defined by that project, either implicitly by residing in the project
    source directories, or explicitly through any of the source-related
    attributes).
-  
+
    .. _Tool-specific_packages_in_project files:
 
    Tool-specific packages in project files
@@ -5121,4 +5118,4 @@ Alternatively, you may run the script using the following command line:
    A tool-specific package in a project file may define the ``Default_Switches``
    attribute indexed by "ada" (as language name). The value of this attribute
    is a list of switches that will be supplied at tool invocation.
-   Project-specific switches cannot be specified through this attribute. 
+   Project-specific switches cannot be specified through this attribute.
