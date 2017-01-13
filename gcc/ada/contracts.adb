@@ -1085,8 +1085,10 @@ package body Contracts is
    --------------------------------
 
    procedure Analyze_Previous_Contracts (Body_Decl : Node_Id) is
-      Body_Id : constant Entity_Id := Defining_Entity (Body_Decl);
-      Par     : Node_Id;
+      Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
+      Orig_Decl : constant Node_Id   := Original_Node (Body_Decl);
+
+      Par : Node_Id;
 
    begin
       --  A body that is in the process of being inlined appears from source,
@@ -1108,6 +1110,29 @@ package body Contracts is
               (Body_Id   => Defining_Entity (Par),
                Freeze_Id => Defining_Entity (Body_Decl));
 
+            exit;
+
+         --  Do not look for an enclosing package body when the construct which
+         --  causes freezing is a body generated for an expression function and
+         --  it appears within a package spec. This ensures that the traversal
+         --  will not reach too far up the parent chain and attempt to freeze a
+         --  package body which should not be frozen.
+
+         --    package body Enclosing_Body
+         --      with Refined_State => (State => Var)
+         --    is
+         --       package Nested is
+         --          type Some_Type is ...;
+         --          function Cause_Freezing return ...;
+         --       private
+         --          function Cause_Freezing is (...);
+         --       end Nested;
+         --
+         --       Var : Nested.Some_Type;
+
+         elsif Nkind (Par) = N_Package_Declaration
+           and then Nkind (Orig_Decl) = N_Expression_Function
+         then
             exit;
          end if;
 
