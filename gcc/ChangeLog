@@ -1,3 +1,9 @@
+2017-01-13  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/78887
+	* asan.c (asan_needs_odr_indicator_p): Don't emit ODR indicators
+	if -fsanitize=kernel-address is present.
+
 2017-01-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Dump INTEGER_CSTs

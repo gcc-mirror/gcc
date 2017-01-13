@@ -2360,7 +2360,16 @@ create_odr_indicator (tree decl, tree type)
 static bool
 asan_needs_odr_indicator_p (tree decl)
 {
-  return !DECL_ARTIFICIAL (decl) && !DECL_WEAK (decl) && TREE_PUBLIC (decl);
+  /* Don't emit ODR indicators for kernel because:
+     a) Kernel is written in C thus doesn't need ODR indicators.
+     b) Some kernel code may have assumptions about symbols containing specific
+        patterns in their names.  Since ODR indicators contain original names
+        of symbols they are emitted for, these assumptions would be broken for
+        ODR indicator symbols.  */
+  return (!(flag_sanitize & SANITIZE_KERNEL_ADDRESS)
+	  && !DECL_ARTIFICIAL (decl)
+	  && !DECL_WEAK (decl)
+	  && TREE_PUBLIC (decl));
 }
 
 /* Append description of a single global DECL into vector V.
