@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef struct vtype
 {
   GFC_INTEGER_4 hash;
-  GFC_INTEGER_4 size;
+  size_t size;
   struct vtype *extends;
 }
 vtype;
