@@ -809,8 +809,8 @@ package body Sem_Aggr is
    begin
       return No (Expressions (Aggr))
         and then
-          Nkind (First (Choices (First (Component_Associations (Aggr))))) =
-                                                              N_Others_Choice;
+          Nkind (First (Choice_List (First (Component_Associations (Aggr)))))
+             = N_Others_Choice;
    end Is_Others_Aggregate;
 
    ----------------------------
@@ -1207,10 +1207,6 @@ package body Sem_Aggr is
       function Dynamic_Or_Null_Range (L, H : Node_Id) return Boolean;
       --  Returns True if range L .. H is dynamic or null
 
-      function Choice_List (N : Node_Id) return List_Id;
-      --  Utility to retrieve the choices of a Component_Association or the
-      --  Discrete_Choices of an Iterated_Component_Association.
-
       procedure Get (Value : out Uint; From : Node_Id; OK : out Boolean);
       --  Given expression node From, this routine sets OK to False if it
       --  cannot statically evaluate From. Otherwise it stores this static
@@ -1473,19 +1469,6 @@ package body Sem_Aggr is
            or else Val_L > Val_H;
       end Dynamic_Or_Null_Range;
 
-      -----------------
-      -- Choice_List --
-      -----------------
-
-      function Choice_List (N : Node_Id) return List_Id is
-      begin
-         if Nkind (N) = N_Iterated_Component_Association then
-            return Discrete_Choices (N);
-         else
-            return Choices (N);
-         end if;
-      end Choice_List;
-
       ---------
       -- Get --
       ---------
@@ -1708,7 +1691,7 @@ package body Sem_Aggr is
       Expr    : Node_Id;
       Discard : Node_Id;
 
-      Iterated_Component_Present : Boolean := False;
+      --  Iterated_Component_Present : Boolean := False;
 
       Aggr_Low  : Node_Id := Empty;
       Aggr_High : Node_Id := Empty;
@@ -1749,7 +1732,7 @@ package body Sem_Aggr is
          while Present (Assoc) loop
             if Nkind (Assoc) = N_Iterated_Component_Association then
                Resolve_Iterated_Component_Association (Assoc, Index_Typ);
-               Iterated_Component_Present := True;
+               --  Iterated_Component_Present := True;
                goto Next_Assoc;
             end if;
 
@@ -2725,10 +2708,6 @@ package body Sem_Aggr is
       --  Check the dimensions of each component in the array aggregate
 
       Analyze_Dimension_Array_Aggregate (N, Component_Typ);
-
-      if Iterated_Component_Present then
-         Error_Msg_N ("iterated association not implemented yet", N);
-      end if;
 
       return Success;
    end Resolve_Array_Aggregate;

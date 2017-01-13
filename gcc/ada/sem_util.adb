@@ -3853,6 +3853,19 @@ package body Sem_Util is
       end if;
    end Check_Unused_Body_States;
 
+   -----------------
+   -- Choice_List --
+   -----------------
+
+   function Choice_List (N : Node_Id) return List_Id is
+   begin
+      if Nkind (N) = N_Iterated_Component_Association then
+         return Discrete_Choices (N);
+      else
+         return Choices (N);
+      end if;
+   end Choice_List;
+
    -------------------------
    -- Collect_Body_States --
    -------------------------

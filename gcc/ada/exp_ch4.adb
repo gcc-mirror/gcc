@@ -7691,7 +7691,11 @@ package body Exp_Ch4 is
          --  the case of 0.0 ** (negative) even if Machine_Overflows = False.
          --  See ACVC test C4A012B, and it is not worth generating the test.
 
-         if Expv >= 0 and then Expv <= 4 then
+         --  For small negative exponents, we return the reciprocal of
+         --  the folding of the exponentiation for the opposite (positive)
+         --  exponent, as required by Ada RM 4.5.6(11/3).
+
+         if abs Expv <= 4 then
 
             --  X ** 0 = 1 (or 1.0)
 
@@ -7742,8 +7746,7 @@ package body Exp_Ch4 is
             --  in
             --    En * En
 
-            else
-               pragma Assert (Expv = 4);
+            elsif Expv = 4 then
                Temp := Make_Temporary (Loc, 'E', Base);
 
                Xnode :=
@@ -7766,6 +7769,26 @@ package body Exp_Ch4 is
                        Make_Op_Multiply (Loc,
                          Left_Opnd  => New_Occurrence_Of (Temp, Loc),
                          Right_Opnd => New_Occurrence_Of (Temp, Loc))));
+
+            --  X ** N = 1.0 / X ** (-N)
+            --  N in -4 .. -1
+
+            else
+               pragma Assert
+                 (Expv = -1 or Expv = -2 or Expv = -3 or Expv = -4);
+               Xnode :=
+                 Make_Op_Divide (Loc,
+                   Left_Opnd  =>
+                     Make_Float_Literal (Loc,
+                       Radix       => Uint_1,
+                       Significand => Uint_1,
+                       Exponent    => Uint_0),
+                   Right_Opnd =>
+                     Make_Op_Expon (Loc,
+                       Left_Opnd  => Duplicate_Subexpr (Base),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc,
+                           Intval => -Expv)));
             end if;
 
             Rewrite (N, Xnode);

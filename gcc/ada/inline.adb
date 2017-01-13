@@ -2458,6 +2458,7 @@ package body Inline is
 
          elsif Nkind (N) = N_Simple_Return_Statement then
             if No (Expression (N)) then
+               Num_Ret := Num_Ret + 1;
                Make_Exit_Label;
                Rewrite (N,
                  Make_Goto_Statement (Loc, Name => New_Copy (Lab_Id)));
@@ -3396,8 +3397,9 @@ package body Inline is
 
       elsif Present (Exit_Lab) then
 
-         --  If the body was a single expression, the single return statement
-         --  and the corresponding label are useless.
+         --  If there is a single return statement at the end of the
+         --  subprogram, the corresponding goto statement and the
+         --  corresponding label are useless.
 
          if Num_Ret = 1
            and then
