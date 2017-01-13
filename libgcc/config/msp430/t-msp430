@@ -59,16 +59,16 @@ lib2hw_mul_f5.o: $(srcdir)/config/msp430/lib2hw_mul.S
 	$(gcc_compile) $< -c -DMUL_F5
 
 libmul_none.a: lib2_mul_none.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 libmul_16.a: lib2hw_mul_16.o lib2_mul_16bit.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 libmul_32.a: lib2hw_mul_32.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 libmul_f5.a: lib2hw_mul_f5.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 # Local Variables:
 # mode: Makefile

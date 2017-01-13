@@ -1,3 +1,8 @@
+2017-01-13  Joe Seymour  <joe.s@somniumtech.com>
+
+	* config/msp430/t-msp430 (libmul_none.a, libmul_16.a, libmul_32.a,
+	libmul_f5.a): Filter archived prerequisites.
+
 2017-01-10  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* config/i386/cpuinfo.h (processor_features): Add
