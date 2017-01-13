@@ -340,6 +340,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (DECL_FUNCTION_PERSONALITY (callee->decl))
     DECL_FUNCTION_PERSONALITY (to->decl)
       = DECL_FUNCTION_PERSONALITY (callee->decl);
+
+  bool reload_optimization_node = false;
   if (!opt_for_fn (callee->decl, flag_strict_aliasing)
       && opt_for_fn (to->decl, flag_strict_aliasing))
     {
@@ -352,6 +354,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 		 to->name (), to->order);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
+      reload_optimization_node = true;
     }
 
   inline_summary *caller_info = inline_summaries->get (to);
@@ -412,8 +415,13 @@ inline_call (struct cgraph_edge *e, bool update_original,
 		     callee->name (), callee->order, to->name (), to->order);
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	     = build_optimization_node (&opts);
+	  reload_optimization_node = true;
 	}
     }
+
+  /* Reload global optimization flags.  */
+  if (reload_optimization_node && DECL_STRUCT_FUNCTION (to->decl) == cfun)
+    set_cfun (cfun, true);
 
   /* If aliases are involved, redirect edge to the actual destination and
      possibly remove the aliases.  */

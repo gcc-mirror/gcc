@@ -1,3 +1,11 @@
+2017-01-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/79043
+	* function.c (set_cfun): Add new argument force.
+	* function.h (set_cfun): Likewise.
+	* ipa-inline-transform.c (inline_call): Use the function when
+	strict alising from is dropped for function we inline to.
+
 2017-01-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Fix inverted condition
