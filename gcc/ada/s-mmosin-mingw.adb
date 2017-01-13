@@ -60,7 +60,7 @@ package body System.Mmap.OS_Interface is
          Mb       : Natural;
          Wcstr    : Address;
          Wc       : Natural) return Integer;
-      pragma Import (C, MultiByteToWideChar);
+      pragma Import (Stdcall, MultiByteToWideChar, "MultiByteToWideChar");
 
       Current_Codepage : Interfaces.C.unsigned;
       pragma Import (C, Current_Codepage, "__gnat_current_codepage");

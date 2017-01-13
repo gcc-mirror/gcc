@@ -1191,6 +1191,10 @@ package body Exp_Util is
    -- Build_DIC_Procedure_Body --
    ------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Build_DIC_Procedure_Body (Typ : Entity_Id) is
       procedure Add_DIC_Check
         (DIC_Prag : Node_Id;
@@ -1923,6 +1927,10 @@ package body Exp_Util is
    -------------------------------------
    -- Build_DIC_Procedure_Declaration --
    -------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
@@ -7898,6 +7906,10 @@ package body Exp_Util is
    -------------------------
    -- Make_Predicate_Call --
    -------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    function Make_Predicate_Call
      (Typ  : Entity_Id;

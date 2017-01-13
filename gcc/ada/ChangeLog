@@ -1,5 +1,53 @@
 2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* expander.adb (Expand): Add a warning about using return
+	statements in Ghost management code.
+	* exp_ch3.adb (Freeze_Type): Add a warning about using return
+	statements in Ghost management code.
+	* exp_ch7.adb (Build_Invariant_Procedure_Body,
+	Build_Invariant_Procedure_Declaration): Add a warning about
+	using return statements in Ghost management code.
+	* exp_disp.adb (Make_DT): Add a warning about using return
+	statements in Ghost management code.
+	* exp_util.adb (Build_DIC_Procedure_Body,
+	Build_DIC_Procedure_Declaration, Make_Predicated_Call): Add a
+	warning about using return statements in Ghost management code.
+	* freeze.adb (Freeze_Entity): Add a warning about using return
+	statements in Ghost management code.
+	* sem.adb (Analyze, Do_Analyze): Add a warning about using return
+	statements in Ghost management code.
+	* sem_ch3.adb (Analyze_Object_Declaration, Process_Full_View): Add
+	a warning about using return statements in Ghost management code.
+	* sem_ch5.adb (Analyze_Assignment): Add a warning about using
+	return statements in Ghost management code.
+	* sem_ch6.adb (Analyze_Procedure_Call,
+	Analyze_Subprogram_Body_Helper): Add a warning about using return
+	statements in Ghost management code.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Add a warning about
+	using return statements in Ghost management code.
+	* sem_ch12.adb (Analyze_Package_Instantiation,
+	Analyze_Subprogram_Instantiation, Instantiate_Package_Body,
+	Instantiate_Subprogram_Body): Add a warning about using return
+	statements in Ghost management code.
+	* sem_ch13.adb (Build_Predicate_Functions,
+	Build_Predicate_Function_Declarations): Add a warning about
+	using return statements in Ghost management code.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part,
+	Analyze_Initial_Condition_In_Decl_Part, Analyze_Pragma,
+	Analyze_Pre_Post_Condition_In_Decl_Part):  Add a warning about
+	using return statements in Ghost management code.
+
+2017-01-13  Tristan Gingold  <gingold@adacore.com>
+
+	* s-mmosin-mingw.adb: Fix pragma import.
+
+2017-01-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Ignore -gnateE in
+	codepeer mode.
+
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* atree.adb (Allocate_Initialize_Node): A newly created node is
 	no longer marked as Ghost at this level.
 	(Mark_New_Ghost_Node): New routine.

@@ -193,6 +193,10 @@ package body Sem_Ch7 is
    -- Analyze_Package_Body_Helper --
    ---------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Package_Body_Helper (N : Node_Id) is
       procedure Hide_Public_Entities (Decls : List_Id);
       --  Attempt to hide all public entities found in declarative list Decls

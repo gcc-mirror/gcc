@@ -97,6 +97,10 @@ package body Sem is
    -- Analyze --
    -------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze (N : Node_Id) is
       Mode     : Ghost_Mode_Type;
       Mode_Set : Boolean := False;
@@ -1336,6 +1340,10 @@ package body Sem is
       ----------------
       -- Do_Analyze --
       ----------------
+
+      --  WARNING: This routine manages Ghost regions. Return statements must
+      --  be replaced by gotos which jump to the end of the routine and restore
+      --  the Ghost mode.
 
       procedure Do_Analyze is
          Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;

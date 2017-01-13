@@ -361,6 +361,10 @@ package body Sem_Prag is
    -- Analyze_Contract_Cases_In_Decl_Part --
    -----------------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Contract_Cases_In_Decl_Part
      (N         : Node_Id;
       Freeze_Id : Entity_Id := Empty)
@@ -2649,6 +2653,10 @@ package body Sem_Prag is
    --------------------------------------------
    -- Analyze_Initial_Condition_In_Decl_Part --
    --------------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Analyze_Initial_Condition_In_Decl_Part (N : Node_Id) is
       Pack_Decl : constant Node_Id   := Find_Related_Package_Or_Body (N);
@@ -12465,6 +12473,10 @@ package body Sem_Prag is
 
          --  The identifiers Assertions and Statement_Assertions are not
          --  allowed, since they have special meaning for Check_Policy.
+
+         --  WARNING: The code below manages Ghost regions. Return statements
+         --  must be replaced by gotos which jump to the end of the code and
+         --  restore the Ghost mode.
 
          when Pragma_Check => Check : declare
             Cname : Name_Id;
@@ -23546,6 +23558,10 @@ package body Sem_Prag is
    ---------------------------------------------
    -- Analyze_Pre_Post_Condition_In_Decl_Part --
    ---------------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Analyze_Pre_Post_Condition_In_Decl_Part
      (N         : Node_Id;

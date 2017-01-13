@@ -3613,6 +3613,10 @@ package body Exp_Disp is
    --     ...
    --     end;
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id is
       Loc : constant Source_Ptr := Sloc (Typ);
 

@@ -3455,6 +3455,10 @@ package body Exp_Ch7 is
    -- Build_Invariant_Procedure_Body --
    ------------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Build_Invariant_Procedure_Body
      (Typ               : Entity_Id;
       Partial_Invariant : Boolean := False)
@@ -4673,6 +4677,10 @@ package body Exp_Ch7 is
    -------------------------------------------
    -- Build_Invariant_Procedure_Declaration --
    -------------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Build_Invariant_Procedure_Declaration
      (Typ               : Entity_Id;

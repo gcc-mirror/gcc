@@ -88,6 +88,10 @@ package body Sem_Ch5 is
    -- Analyze_Assignment --
    ------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Assignment (N : Node_Id) is
       Lhs  : constant Node_Id := Name (N);
       Rhs  : constant Node_Id := Expression (N);

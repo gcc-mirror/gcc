@@ -3303,6 +3303,10 @@ package body Sem_Ch3 is
    -- Analyze_Object_Declaration --
    --------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Object_Declaration (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Id    : constant Entity_Id  := Defining_Identifier (N);
@@ -19412,6 +19416,10 @@ package body Sem_Ch3 is
    -----------------------
    -- Process_Full_View --
    -----------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id) is
       procedure Collect_Implemented_Interfaces
