@@ -1664,6 +1664,16 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
       break;
 
     case INTEGER_CST:
+      if (flags & TDF_GIMPLE
+	  && (POINTER_TYPE_P (TREE_TYPE (node))
+	      || (TYPE_PRECISION (TREE_TYPE (node))
+		  < TYPE_PRECISION (integer_type_node))
+	      || exact_log2 (TYPE_PRECISION (TREE_TYPE (node))) == -1))
+	{
+	  pp_string (pp, "_Literal (");
+	  dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
+	  pp_string (pp, ") ");
+	}
       if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE
 	  && ! (flags & TDF_GIMPLE))
 	{
@@ -1693,11 +1703,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
       else if (tree_fits_shwi_p (node))
 	pp_wide_integer (pp, tree_to_shwi (node));
       else if (tree_fits_uhwi_p (node))
-	{
-	  pp_unsigned_wide_integer (pp, tree_to_uhwi (node));
-	  if (flags & TDF_GIMPLE)
-	    pp_character (pp, 'U');
-	}
+	pp_unsigned_wide_integer (pp, tree_to_uhwi (node));
       else
 	{
 	  wide_int val = node;
@@ -1709,6 +1715,24 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 	    }
 	  print_hex (val, pp_buffer (pp)->digit_buffer);
 	  pp_string (pp, pp_buffer (pp)->digit_buffer);
+	}
+      if ((flags & TDF_GIMPLE)
+	  && (POINTER_TYPE_P (TREE_TYPE (node))
+	      || (TYPE_PRECISION (TREE_TYPE (node))
+		  < TYPE_PRECISION (integer_type_node))
+	      || exact_log2 (TYPE_PRECISION (TREE_TYPE (node))) == -1))
+	{
+	  if (TYPE_UNSIGNED (TREE_TYPE (node)))
+	    pp_character (pp, 'u');
+	  if (TYPE_PRECISION (TREE_TYPE (node))
+	      == TYPE_PRECISION (unsigned_type_node))
+	    ;
+	  else if (TYPE_PRECISION (TREE_TYPE (node))
+		   == TYPE_PRECISION (long_unsigned_type_node))
+	    pp_character (pp, 'l');
+	  else if (TYPE_PRECISION (TREE_TYPE (node))
+		   == TYPE_PRECISION (long_long_unsigned_type_node))
+	    pp_string (pp, "ll");
 	}
       if (TREE_OVERFLOW (node))
 	pp_string (pp, "(OVF)");
