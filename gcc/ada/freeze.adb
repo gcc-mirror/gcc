@@ -1457,8 +1457,12 @@ package body Freeze is
             if Present (A_Pre) and then Class_Present (A_Pre) then
                A_Pre :=
                  Expression (First (Pragma_Argument_Associations (A_Pre)));
+
                Build_Class_Wide_Expression
-                 (New_Copy_Tree (A_Pre), Prim, Par_Prim, Adjust_Sloc => False);
+                 (Prag        => New_Copy_Tree (A_Pre),
+                  Subp        => Prim,
+                  Par_Subp    => Par_Prim,
+                  Adjust_Sloc => False);
             end if;
 
             A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
@@ -1466,9 +1470,12 @@ package body Freeze is
             if Present (A_Post) and then Class_Present (A_Post) then
                A_Post :=
                  Expression (First (Pragma_Argument_Associations (A_Post)));
+
                Build_Class_Wide_Expression
-                 (New_Copy_Tree (A_Post),
-                  Prim, Par_Prim, Adjust_Sloc => False);
+                 (Prag        => New_Copy_Tree (A_Post),
+                  Subp        => Prim,
+                  Par_Subp    => Par_Prim,
+                  Adjust_Sloc => False);
             end if;
          end if;
 

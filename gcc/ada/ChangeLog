@@ -1,3 +1,26 @@
+2017-01-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindusg.adb: Improve usage output for -f switch.
+
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* frontend.adb, freeze.adb, sem_res.adb, sem_attr.adb, sem_ch8.adb:
+	Minor reformatting.
+
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Is_Predicate_Static): Following the intent of the RM,
+	treat comparisons on strings as legal in a Static_Predicate.
+	(Is_Predicate_Static, Is_Type_Ref): Predicate also returns true on
+	a function call that is the expansion of a string comparison.The
+	function call is built when compiling the corresponding predicate
+	function, but the expression has been found legal as a static
+	predicate during earlier analysis.
+	* sem_eval.adb (Real_Or_String_Static_Predicate_Matches): Handle
+	properly a function call that is the expansion of a string
+	comparison operation, in order to recover the Static_Predicate
+	expression and apply it to a static argument when needed.
+
 2017-01-13  Tristan Gingold  <gingold@adacore.com>
 
 	* s-mmap.adb, s-mmap.ads (Open_Read_No_Exception): New function.

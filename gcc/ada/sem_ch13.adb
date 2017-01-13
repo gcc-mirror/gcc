@@ -11603,10 +11603,17 @@ package body Sem_Ch13 is
 
       function Is_Type_Ref (N : Node_Id) return Boolean;
       pragma Inline (Is_Type_Ref);
+
       --  Returns True if N is a reference to the type for the predicate in the
       --  expression (i.e. if it is an identifier whose Chars field matches the
       --  Nam given in the call). N must not be parenthesized, if the type name
       --  appears in parens, this routine will return False.
+
+      --  The routine also returns True for function calls generated during the
+      --  expansion of comparison operators on strings, which are intended to
+      --  be legal in static predicates, and are converted into calls to array
+      --  comparison routines in the body of the corresponding predicate
+      --  function.
 
       ----------------------------------
       -- All_Static_Case_Alternatives --
@@ -11671,9 +11678,10 @@ package body Sem_Ch13 is
 
       function Is_Type_Ref (N : Node_Id) return Boolean is
       begin
-         return Nkind (N) = N_Identifier
-           and then Chars (N) = Nam
-           and then Paren_Count (N) = 0;
+         return (Nkind (N) = N_Identifier
+                  and then Chars (N) = Nam
+                  and then Paren_Count (N) = 0)
+           or else Nkind (N) = N_Function_Call;
       end Is_Type_Ref;
 
    --  Start of processing for Is_Predicate_Static
@@ -11723,10 +11731,12 @@ package body Sem_Ch13 is
       --  and inequality operations to be valid on strings (this helps deal
       --  with cases where we transform A in "ABC" to A = "ABC).
 
+      --  In fact, it appears that the intent of the ARG is to extend static
+      --  predicates to strings, and that the extension should probably apply
+      --  to static expressions themselves. The code below accepts comparison
+      --  operators that apply to static strings.
+
       elsif Nkind (Expr) in N_Op_Compare
-        and then ((not Is_String_Type (Etype (Left_Opnd (Expr))))
-                    or else (Nkind_In (Expr, N_Op_Eq, N_Op_Ne)
-                              and then not Comes_From_Source (Expr)))
         and then ((Is_Type_Ref (Left_Opnd (Expr))
                     and then Is_OK_Static_Expression (Right_Opnd (Expr)))
                   or else
@@ -12323,7 +12333,7 @@ package body Sem_Ch13 is
            and then From_Aspect_Specification (N)
          then
             Error_Msg_NE
-              ("aspect specification causes premature freezing of&", T, N);
+              ("aspect specification causes premature freezing of&", N, T);
             Set_Has_Delayed_Freeze (T, False);
             return True;
          end if;

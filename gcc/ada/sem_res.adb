@@ -4336,9 +4336,9 @@ package body Sem_Res is
                      Apply_Scalar_Range_Check
                        (Expression (A), Etype (Expression (A)), A_Typ);
 
-                     --  In addition, the returned value of the parameter
-                     --  must satisfy the bounds of the object type (see
-                     --  comment below).
+                     --  In addition, the returned value of the parameter must
+                     --  satisfy the bounds of the object type (see comment
+                     --  below).
 
                      Apply_Scalar_Range_Check (A, A_Typ, F_Typ);
 
