@@ -1717,10 +1717,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 	  pp_string (pp, pp_buffer (pp)->digit_buffer);
 	}
       if ((flags & TDF_GIMPLE)
-	  && (POINTER_TYPE_P (TREE_TYPE (node))
-	      || (TYPE_PRECISION (TREE_TYPE (node))
-		  < TYPE_PRECISION (integer_type_node))
-	      || exact_log2 (TYPE_PRECISION (TREE_TYPE (node))) == -1))
+	  && ! (POINTER_TYPE_P (TREE_TYPE (node))
+		|| (TYPE_PRECISION (TREE_TYPE (node))
+		    < TYPE_PRECISION (integer_type_node))
+		|| exact_log2 (TYPE_PRECISION (TREE_TYPE (node))) == -1))
 	{
 	  if (TYPE_UNSIGNED (TREE_TYPE (node)))
 	    pp_character (pp, 'u');

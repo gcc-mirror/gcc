@@ -1,3 +1,8 @@
+2017-01-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Fix inverted condition
+	for dumping GIMPLE INTEGER_CSTs.
+
 2017-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.h (TARGET_OS_CPP_BUILTINS): Define __STDC_VERSION__
