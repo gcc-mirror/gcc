@@ -1,5 +1,10 @@
 2017-01-13  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-dse.c (decrement_count): New function.
+	(increment_start_addr, maybe_trim_memstar_call): Likewise.
+	(dse_dom_walker::optimize_stmt): Call maybe_trim_memstar_call directly
+	when we know the partially dead statement is a mem* function.
+
 	PR tree-optimization/61912
 	PR tree-optimization/77485
 	* tree-ssa-dse.c: Include expr.h.

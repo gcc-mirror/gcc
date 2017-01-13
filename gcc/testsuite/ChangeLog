@@ -1,5 +1,7 @@
 2017-01-13  Jeff Law  <law@redhat.com>
 
+	* gcc.dg/tree-ssa/ssa-dse-25.c: New test.
+
 	PR tree-optimization/61912
 	PR tree-optimization/77485
 	* g++.dg/tree-ssa/ssa-dse-1.C: New test.
