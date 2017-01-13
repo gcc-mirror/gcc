@@ -32,16 +32,9 @@
 --  This package extends the tree nodes with fields that are used to reference
 --  the SCIL node and the Contract_Only_Body of a subprogram with aspects.
 
-with Namet; use Namet;
 with Types; use Types;
 
 package SCIL_LL is
-
-   function Get_Contract_Only_Body_Name (E : Entity_Id) return Name_Id;
-   --  Return the name of the Contract_Only_Body subprogram of E
-
-   function Get_Contract_Only_Missing_Body_Name (E : Entity_Id) return Name_Id;
-   --  Return the name of the Contract_Only_Missing_Body subprogram of E
 
    function Get_Contract_Only_Body (N : Node_Id) return Node_Id;
    --  Read the value of attribute Contract_Only_Body

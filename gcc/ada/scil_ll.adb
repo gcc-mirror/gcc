@@ -35,13 +35,6 @@ with Sinfo;         use Sinfo;
 with System.HTable; use System.HTable;
 
 package body SCIL_LL is
-   Contract_Only_Body_Suffix : constant String := "__contract_only";
-   --  Suffix of Contract_Only_Body subprograms internally built only under
-   --  CodePeer mode
-
-   Contract_Only_Missing_Body_Suffix : constant String := "__missing_body";
-   --  Suffix of Contract_Only_Missing_Body subprograms internally built only
-   --  under CodePeer mode
 
    procedure Copy_SCIL_Node (Target : Node_Id; Source : Node_Id);
    --  Copy the SCIL field from Source to Target (it is used as the argument
@@ -107,27 +100,6 @@ package body SCIL_LL is
          return Empty;
       end if;
    end Get_Contract_Only_Body;
-
-   ---------------------------------
-   -- Get_Contract_Only_Body_Name --
-   ---------------------------------
-
-   function Get_Contract_Only_Body_Name (E : Entity_Id) return Name_Id is
-   begin
-      return Name_Find (Get_Name_String (Chars (E)) &
-                          Contract_Only_Body_Suffix);
-   end Get_Contract_Only_Body_Name;
-
-   -----------------------------------------
-   -- Get_Contract_Only_Missing_Body_Name --
-   -----------------------------------------
-
-   function Get_Contract_Only_Missing_Body_Name (E : Entity_Id)
-      return Name_Id is
-   begin
-      return Name_Find (Get_Name_String (Chars (E)) &
-                          Contract_Only_Missing_Body_Suffix);
-   end Get_Contract_Only_Missing_Body_Name;
 
    -------------------
    -- Get_SCIL_Node --

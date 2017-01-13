@@ -3390,10 +3390,10 @@ package body Checks is
                 In_Subrange_Of (Expr_Type, Target_Base, Fixed_Int => Conv_OK)
               and then not Float_To_Int
             then
-               --  A small optimization : the attribute 'Pos applied to an
+               --  A small optimization: the attribute 'Pos applied to an
                --  enumeration type has a known range, even though its type
-               --  is Universal_Integer. so in numeric conversions it is
-               --  usually within range of of the target integer type. Use the
+               --  is Universal_Integer. So in numeric conversions it is
+               --  usually within range of the target integer type. Use the
                --  static bounds of the base types to check.
 
                if Nkind (Expr) = N_Attribute_Reference
@@ -3402,15 +3402,15 @@ package body Checks is
                  and then Is_Integer_Type (Target_Type)
                then
                   declare
-                     Enum_T  : constant Entity_Id :=
-                               Root_Type (Etype (Prefix (Expr)));
-                     Int_T   : constant Entity_Id := Base_Type (Target_Type);
-                     Last_I  : constant Uint :=
-                        Intval (High_Bound (Scalar_Range (Int_T)));
-                     Last_E  : Uint;
+                     Enum_T : constant Entity_Id :=
+                                Root_Type (Etype (Prefix (Expr)));
+                     Int_T  : constant Entity_Id := Base_Type (Target_Type);
+                     Last_I : constant Uint      :=
+                                Intval (High_Bound (Scalar_Range (Int_T)));
+                     Last_E : Uint;
 
                   begin
-                     --  Character types have no explicit literals, we use
+                     --  Character types have no explicit literals, so we use
                      --  the known number of characters in the type.
 
                      if Root_Type (Enum_T) = Standard_Character then
@@ -3422,7 +3422,8 @@ package body Checks is
                         Last_E := UI_From_Int (65535);
 
                      else
-                        Last_E := Enumeration_Pos
+                        Last_E :=
+                          Enumeration_Pos
                             (Entity (High_Bound (Scalar_Range (Enum_T))));
                      end if;
 

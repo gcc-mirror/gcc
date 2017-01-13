@@ -1,3 +1,17 @@
+2017-01-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb: Minor typo fix and reformatting.
+
+2017-01-13  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb (Contract_Only_Subprograms): Remove formal.
+	(Copy_Original_Specification): Removed.
+	(Skip_Contract_Only_Subprogram): Move here checks previously
+	located in the caller of this routine (to leave the code more clean).
+	(Build_Contract_Only_Subprogram): Code cleanup.
+	* scil_ll.ads, scil_ll.adb (Get_Contract_Only_Body_Name): Removed.
+	(Get_Contract_Only_Missing_Body_Name): Removed.
+
 2017-01-13  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Cloned_Expression): New subprogram.
