@@ -270,7 +270,7 @@ package body Sem_Ch5 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode : Ghost_Mode_Type;
 
    --  Start of processing for Analyze_Assignment
 
@@ -287,7 +287,7 @@ package body Sem_Ch5 is
       --  Ghost entity. Set the mode now to ensure that any nodes generated
       --  during analysis and expansion are properly marked as Ghost.
 
-      Set_Ghost_Mode (N);
+      Mark_And_Set_Ghost_Assignment (N, Mode);
       Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as
@@ -356,8 +356,8 @@ package body Sem_Ch5 is
 
                                     if PIt = No_Interp then
                                        Error_Msg_N
-                                         ("ambiguous left-hand side"
-                                            & " in assignment", Lhs);
+                                         ("ambiguous left-hand side in "
+                                          & "assignment", Lhs);
                                        exit;
                                     else
                                        Resolve (Prefix (Lhs), PIt.Typ);
@@ -392,8 +392,7 @@ package body Sem_Ch5 is
             Error_Msg_N
               ("no valid types for left-hand side for assignment", Lhs);
             Kill_Lhs;
-            Ghost_Mode := Save_Ghost_Mode;
-            return;
+            goto Leave;
          end if;
       end if;
 
@@ -464,21 +463,20 @@ package body Sem_Ch5 is
                   --  effect (AARM D.5.2 (5/2)).
 
                   if Locking_Policy /= 'C' then
-                     Error_Msg_N ("assignment to the attribute PRIORITY has " &
-                                  "no effect??", Lhs);
-                     Error_Msg_N ("\since no Locking_Policy has been " &
-                                  "specified??", Lhs);
+                     Error_Msg_N
+                       ("assignment to the attribute PRIORITY has no effect??",
+                        Lhs);
+                     Error_Msg_N
+                       ("\since no Locking_Policy has been specified??", Lhs);
                   end if;
 
-                  Ghost_Mode := Save_Ghost_Mode;
-                  return;
+                  goto Leave;
                end if;
             end if;
          end;
 
          Diagnose_Non_Variable_Lhs (Lhs);
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
 
       --  Error of assigning to limited type. We do however allow this in
       --  certain cases where the front end generates the assignments.
@@ -497,17 +495,14 @@ package body Sem_Ch5 is
             Explain_Limited_Type (T1, Lhs);
          end if;
 
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
 
       --  A class-wide type may be a limited view. This illegal case is not
       --  caught by previous checks.
 
-      elsif Ekind (T1) = E_Class_Wide_Type
-        and then From_Limited_With (T1)
-      then
+      elsif Ekind (T1) = E_Class_Wide_Type and then From_Limited_With (T1) then
          Error_Msg_NE ("invalid use of limited view of&", Lhs, T1);
-         return;
+         goto Leave;
 
       --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
       --  abstract. This is only checked when the assignment Comes_From_Source,
@@ -545,8 +540,7 @@ package body Sem_Ch5 is
       then
          Error_Msg_N ("invalid use of incomplete type", Lhs);
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       --  Now we can complete the resolution of the right hand side
@@ -563,8 +557,7 @@ package body Sem_Ch5 is
 
       if Rhs = Error then
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       T2 := Etype (Rhs);
@@ -572,8 +565,7 @@ package body Sem_Ch5 is
       if not Covers (T1, T2) then
          Wrong_Type (Rhs, Etype (Lhs));
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       --  Ada 2005 (AI-326): In case of explicit dereference of incomplete
@@ -600,8 +592,7 @@ package body Sem_Ch5 is
 
       if T1 = Any_Type or else T2 = Any_Type then
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       --  If the rhs is class-wide or dynamically tagged, then require the lhs
@@ -693,8 +684,7 @@ package body Sem_Ch5 is
             --  to reset Is_True_Constant, and desirable for xref purposes.
 
             Note_Possible_Modification (Lhs, Sure => True);
-            Ghost_Mode := Save_Ghost_Mode;
-            return;
+            goto Leave;
 
          --  If we know the right hand side is non-null, then we convert to the
          --  target type, since we don't need a run time check in that case.
@@ -914,7 +904,9 @@ package body Sem_Ch5 is
       end;
 
       Analyze_Dimension (N);
-      Ghost_Mode := Save_Ghost_Mode;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Analyze_Assignment;
 
    -----------------------------

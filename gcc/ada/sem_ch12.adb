@@ -3331,13 +3331,6 @@ package body Sem_Ch12 is
       Set_Ekind  (Id, E_Generic_Package);
       Set_Etype  (Id, Standard_Void_Type);
 
-      --  A generic package declared within a Ghost region is rendered Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
-
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
@@ -3548,13 +3541,6 @@ package body Sem_Ch12 is
          Set_Etype (Id, Standard_Void_Type);
       end if;
 
-      --  A generic subprogram declared within a Ghost region is rendered Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
-
       --  For a library unit, we have reconstructed the entity for the unit,
       --  and must reset it in the library tables. We also make sure that
       --  Body_Required is set properly in the original compilation unit node.
@@ -3676,6 +3662,8 @@ package body Sem_Ch12 is
 
       --  Local declarations
 
+      Mode : Ghost_Mode_Type;
+
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
@@ -3745,6 +3733,13 @@ package body Sem_Ch12 is
 
       Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
       Gen_Unit := Entity (Gen_Id);
+
+      --  A package instantiation is Ghost when it is subject to pragma Ghost
+      --  or the generic template is Ghost. Set the mode now to ensure that
+      --  any nodes generated during analysis and expansion are marked as
+      --  Ghost.
+
+      Mark_And_Set_Ghost_Instantiation (N, Gen_Unit, Mode);
 
       --  Verify that it is the name of a generic package
 
@@ -4437,6 +4432,8 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
+      Restore_Ghost_Mode (Mode);
+
    exception
       when Instantiation_Error =>
          if Parent_Installed then
@@ -4451,6 +4448,8 @@ package body Sem_Ch12 is
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
          Style_Check              := Save_Style_Check;
+
+         Restore_Ghost_Mode (Mode);
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -5084,6 +5083,8 @@ package body Sem_Ch12 is
 
       --  Local variables
 
+      Mode : Ghost_Mode_Type;
+
       Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
       --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
 
@@ -5126,6 +5127,13 @@ package body Sem_Ch12 is
       Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
       Gen_Unit := Entity (Gen_Id);
 
+      --  A subprogram instantiation is Ghost when it is subject to pragma
+      --  Ghost or the generic template is Ghost. Set the mode now to ensure
+      --  that any nodes generated during analysis and expansion are marked as
+      --  Ghost.
+
+      Mark_And_Set_Ghost_Instantiation (N, Gen_Unit, Mode);
+
       Generate_Reference (Gen_Unit, Gen_Id);
 
       if Nkind (Gen_Id) = N_Identifier
@@ -5137,7 +5145,7 @@ package body Sem_Ch12 is
 
       if Etype (Gen_Unit) = Any_Type then
          Restore_Env;
-         return;
+         goto Leave;
       end if;
 
       --  Verify that it is a generic subprogram of the right kind, and that
@@ -5322,8 +5330,8 @@ package body Sem_Ch12 is
                      Error_Msg_NE
                        ("access parameter& is controlling,", N, Formal);
                      Error_Msg_NE
-                       ("\corresponding parameter of & must be "
-                       & "explicitly null-excluding", N, Gen_Id);
+                       ("\corresponding parameter of & must be explicitly "
+                        & "null-excluding", N, Gen_Id);
                   end if;
 
                   Next_Formal (Formal);
@@ -5386,6 +5394,8 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
+      Restore_Ghost_Mode (Mode);
+
    exception
       when Instantiation_Error =>
          if Parent_Installed then
@@ -5399,6 +5409,8 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
+
+         Restore_Ghost_Mode (Mode);
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -10780,31 +10792,16 @@ package body Sem_Ch12 is
       Body_Optional : Boolean := False)
    is
       Act_Decl    : constant Node_Id    := Body_Info.Act_Decl;
+      Act_Decl_Id : constant Entity_Id  := Defining_Entity (Act_Decl);
+      Act_Spec    : constant Node_Id    := Specification (Act_Decl);
       Inst_Node   : constant Node_Id    := Body_Info.Inst_Node;
-      Loc         : constant Source_Ptr := Sloc (Inst_Node);
-
       Gen_Id      : constant Node_Id    := Name (Inst_Node);
       Gen_Unit    : constant Entity_Id  := Get_Generic_Entity (Inst_Node);
       Gen_Decl    : constant Node_Id    := Unit_Declaration_Node (Gen_Unit);
-      Act_Spec    : constant Node_Id    := Specification (Act_Decl);
-      Act_Decl_Id : constant Entity_Id  := Defining_Entity (Act_Spec);
+      Loc         : constant Source_Ptr := Sloc (Inst_Node);
 
       Save_IPSM        : constant Boolean := Ignore_Pragma_SPARK_Mode;
       Save_Style_Check : constant Boolean := Style_Check;
-
-      Act_Body      : Node_Id;
-      Act_Body_Id   : Entity_Id;
-      Act_Body_Name : Node_Id;
-      Gen_Body      : Node_Id;
-      Gen_Body_Id   : Node_Id;
-      Par_Ent       : Entity_Id := Empty;
-      Par_Vis       : Boolean   := False;
-
-      Parent_Installed : Boolean := False;
-
-      Vis_Prims_List : Elist_Id := No_Elist;
-      --  List of primitives made temporarily visible in the instantiation
-      --  to match the visibility of the formal type
 
       procedure Check_Initialized_Types;
       --  In a generic package body, an entity of a generic private type may
@@ -10874,6 +10871,23 @@ package body Sem_Ch12 is
          end loop;
       end Check_Initialized_Types;
 
+      --  Local variables
+
+      Act_Body      : Node_Id;
+      Act_Body_Id   : Entity_Id;
+      Act_Body_Name : Node_Id;
+      Gen_Body      : Node_Id;
+      Gen_Body_Id   : Node_Id;
+      Mode          : Ghost_Mode_Type;
+      Par_Ent       : Entity_Id := Empty;
+      Par_Vis       : Boolean   := False;
+
+      Parent_Installed : Boolean := False;
+
+      Vis_Prims_List : Elist_Id := No_Elist;
+      --  List of primitives made temporarily visible in the instantiation
+      --  to match the visibility of the formal type.
+
    --  Start of processing for Instantiate_Package_Body
 
    begin
@@ -10885,6 +10899,12 @@ package body Sem_Ch12 is
       if Present (Corresponding_Body (Instance_Spec (Inst_Node))) then
          return;
       end if;
+
+      --  The package being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id, Mode);
 
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
@@ -10911,7 +10931,7 @@ package body Sem_Ch12 is
          if not Unit_Requires_Body (Defining_Entity (Gen_Decl))
            and then Body_Optional
          then
-            return;
+            goto Leave;
          else
             Load_Parent_Of_Generic
               (Inst_Node, Specification (Gen_Decl), Body_Optional);
@@ -11175,6 +11195,9 @@ package body Sem_Ch12 is
       end if;
 
       Expander_Mode_Restore;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Instantiate_Package_Body;
 
    ---------------------------------
@@ -11186,13 +11209,12 @@ package body Sem_Ch12 is
       Body_Optional : Boolean := False)
    is
       Act_Decl    : constant Node_Id    := Body_Info.Act_Decl;
+      Act_Decl_Id : constant Entity_Id  := Defining_Entity (Act_Decl);
       Inst_Node   : constant Node_Id    := Body_Info.Inst_Node;
-      Loc         : constant Source_Ptr := Sloc (Inst_Node);
       Gen_Id      : constant Node_Id    := Name (Inst_Node);
       Gen_Unit    : constant Entity_Id  := Get_Generic_Entity (Inst_Node);
       Gen_Decl    : constant Node_Id    := Unit_Declaration_Node (Gen_Unit);
-      Act_Decl_Id : constant Entity_Id  :=
-                      Defining_Unit_Name (Specification (Act_Decl));
+      Loc         : constant Source_Ptr := Sloc (Inst_Node);
       Pack_Id     : constant Entity_Id  :=
                       Defining_Unit_Name (Parent (Act_Decl));
 
@@ -11204,6 +11226,7 @@ package body Sem_Ch12 is
       Act_Body_Id : Entity_Id;
       Gen_Body    : Node_Id;
       Gen_Body_Id : Node_Id;
+      Mode        : Ghost_Mode_Type;
       Pack_Body   : Node_Id;
       Par_Ent     : Entity_Id := Empty;
       Par_Vis     : Boolean   := False;
@@ -11221,6 +11244,12 @@ package body Sem_Ch12 is
       if Present (Corresponding_Body (Act_Decl)) then
          return;
       end if;
+
+      --  The subprogram being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id, Mode);
 
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
@@ -11248,7 +11277,7 @@ package body Sem_Ch12 is
             Set_Interface_Name (Act_Decl_Id, Interface_Name (Gen_Unit));
             Set_Convention     (Act_Decl_Id, Convention     (Gen_Unit));
             Set_Has_Completion (Act_Decl_Id);
-            return;
+            goto Leave;
 
          --  For other cases, compile the body
 
@@ -11273,12 +11302,11 @@ package body Sem_Ch12 is
             if Expander_Active
               and then Operating_Mode = Generate_Code
             then
-               Error_Msg_N
-                 ("missing proper body for instantiation", Gen_Body);
+               Error_Msg_N ("missing proper body for instantiation", Gen_Body);
             end if;
 
             Set_Has_Completion (Act_Decl_Id);
-            return;
+            goto Leave;
          end if;
 
          Save_Env (Gen_Unit, Act_Decl_Id);
@@ -11410,27 +11438,25 @@ package body Sem_Ch12 is
         and then Nkind (Parent (Inst_Node)) /= N_Compilation_Unit
       then
          if Body_Optional then
-            return;
+            goto Leave;
 
          elsif Ekind (Act_Decl_Id) = E_Procedure then
             Act_Body :=
               Make_Subprogram_Body (Loc,
-                 Specification              =>
-                   Make_Procedure_Specification (Loc,
-                     Defining_Unit_Name         =>
-                       Make_Defining_Identifier (Loc, Chars (Act_Decl_Id)),
-                       Parameter_Specifications =>
-                       New_Copy_List
-                         (Parameter_Specifications (Parent (Act_Decl_Id)))),
+                Specification              =>
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name       =>
+                      Make_Defining_Identifier (Loc, Chars (Act_Decl_Id)),
+                    Parameter_Specifications =>
+                      New_Copy_List
+                        (Parameter_Specifications (Parent (Act_Decl_Id)))),
 
-                 Declarations               => Empty_List,
-                 Handled_Statement_Sequence =>
-                   Make_Handled_Sequence_Of_Statements (Loc,
-                     Statements =>
-                       New_List (
-                         Make_Raise_Program_Error (Loc,
-                           Reason =>
-                             PE_Access_Before_Elaboration))));
+                Declarations               => Empty_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Raise_Program_Error (Loc,
+                        Reason => PE_Access_Before_Elaboration))));
 
          else
             Ret_Expr :=
@@ -11444,9 +11470,9 @@ package body Sem_Ch12 is
               Make_Subprogram_Body (Loc,
                 Specification =>
                   Make_Function_Specification (Loc,
-                     Defining_Unit_Name         =>
+                     Defining_Unit_Name       =>
                        Make_Defining_Identifier (Loc, Chars (Act_Decl_Id)),
-                       Parameter_Specifications =>
+                     Parameter_Specifications =>
                        New_Copy_List
                          (Parameter_Specifications (Parent (Act_Decl_Id))),
                      Result_Definition =>
@@ -11455,9 +11481,8 @@ package body Sem_Ch12 is
                   Declarations               => Empty_List,
                   Handled_Statement_Sequence =>
                     Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements =>
-                        New_List
-                          (Make_Simple_Return_Statement (Loc, Ret_Expr))));
+                      Statements => New_List (
+                        Make_Simple_Return_Statement (Loc, Ret_Expr))));
          end if;
 
          Pack_Body :=
@@ -11471,6 +11496,9 @@ package body Sem_Ch12 is
       end if;
 
       Expander_Mode_Restore;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Instantiate_Subprogram_Body;
 
    ----------------------

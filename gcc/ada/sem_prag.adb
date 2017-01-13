@@ -459,9 +459,8 @@ package body Sem_Prag is
 
       CCases : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       CCase         : Node_Id;
+      Mode          : Ghost_Mode_Type;
       Restore_Scope : Boolean := False;
 
    --  Start of processing for Analyze_Contract_Cases_In_Decl_Part
@@ -478,7 +477,7 @@ package body Sem_Prag is
       --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
-      Set_Ghost_Mode (N);
+      Set_Ghost_Mode (N, Mode);
 
       --  Single and multiple contract cases must appear in aggregate form. If
       --  this is not the case, then either the parser of the analysis of the
@@ -524,8 +523,8 @@ package body Sem_Prag is
          Error_Msg_N ("wrong syntax for constract cases", N);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
       Set_Is_Analyzed_Pragma (N);
+      Restore_Ghost_Mode (Mode);
    end Analyze_Contract_Cases_In_Decl_Part;
 
    ----------------------------------
@@ -2656,7 +2655,7 @@ package body Sem_Prag is
       Pack_Id   : constant Entity_Id := Defining_Entity (Pack_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Pack_Id));
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode : Ghost_Mode_Type;
 
    begin
       --  Do not analyze the pragma multiple times
@@ -2670,16 +2669,16 @@ package body Sem_Prag is
       --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
-      Set_Ghost_Mode (N);
+      Set_Ghost_Mode (N, Mode);
 
       --  The expression is preanalyzed because it has not been moved to its
       --  final place yet. A direct analysis may generate side effects and this
       --  is not desired at this point.
 
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
-      Ghost_Mode := Save_Ghost_Mode;
-
       Set_Is_Analyzed_Pragma (N);
+
+      Restore_Ghost_Mode (Mode);
    end Analyze_Initial_Condition_In_Decl_Part;
 
    --------------------------------------
@@ -4133,7 +4132,7 @@ package body Sem_Prag is
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
 
-         Mark_Pragma_As_Ghost (N, Spec_Id);
+         Mark_Ghost_Pragma (N, Spec_Id);
          Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
       end Analyze_Depends_Global;
 
@@ -4316,15 +4315,15 @@ package body Sem_Prag is
 
          Subp_Id := Defining_Entity (Subp_Decl);
 
+         --  A pragma that applies to a Ghost entity becomes Ghost for the
+         --  purposes of legality checks and removal of ignored Ghost code.
+
+         Mark_Ghost_Pragma (N, Subp_Id);
+
          --  Chain the pragma on the contract for further processing by
          --  Analyze_Pre_Post_Condition_In_Decl_Part.
 
          Add_Contract_Item (N, Defining_Entity (Subp_Decl));
-
-         --  A pragma that applies to a Ghost entity becomes Ghost for the
-         --  purposes of legality checks and removal of ignored Ghost code.
-
-         Mark_Pragma_As_Ghost (N, Subp_Id);
 
          --  Fully analyze the pragma when it appears inside an entry or
          --  subprogram body because it cannot benefit from forward references.
@@ -4446,7 +4445,7 @@ package body Sem_Prag is
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
 
-         Mark_Pragma_As_Ghost (N, Spec_Id);
+         Mark_Ghost_Pragma (N, Spec_Id);
 
          if Nam_In (Pname, Name_Refined_Depends, Name_Refined_Global) then
             Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
@@ -4510,7 +4509,7 @@ package body Sem_Prag is
                   --  the purposes of legality checks and removal of ignored
                   --  Ghost code.
 
-                  Mark_Pragma_As_Ghost (N, Arg_Id);
+                  Mark_Ghost_Pragma (N, Arg_Id);
 
                   --  Capture the entity of the first Ghost variable being
                   --  processed for error detection purposes.
@@ -4684,7 +4683,7 @@ package body Sem_Prag is
                      --  for the purposes of legality checks and removal of
                      --  ignored Ghost code.
 
-                     Mark_Pragma_As_Ghost (N, Arg_Id);
+                     Mark_Ghost_Pragma (N, Arg_Id);
 
                      --  Capture the entity of the first Ghost name being
                      --  processed for error detection purposes.
@@ -6793,13 +6792,12 @@ package body Sem_Prag is
             return;
          end if;
 
-         E    := Entity (E_Arg);
-         Decl := Declaration_Node (E);
+         E := Entity (E_Arg);
 
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
 
-         Mark_Pragma_As_Ghost (N, E);
+         Mark_Ghost_Pragma (N, E);
 
          --  Check duplicate before we chain ourselves
 
@@ -6855,6 +6853,8 @@ package body Sem_Prag is
          end if;
 
          --  Now check appropriateness of the entity
+
+         Decl := Declaration_Node (E);
 
          if Is_Type (E) then
             if Rep_Item_Too_Early (E, N)
@@ -8358,7 +8358,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Def_Id);
+            Mark_Ghost_Pragma (N, Def_Id);
             Kill_Size_Check_Code (Def_Id);
             Note_Possible_Modification (Get_Pragma_Arg (Arg2), Sure => False);
          end if;
@@ -9006,7 +9006,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Subp);
+            Mark_Ghost_Pragma (N, Subp);
 
             --  Capture the entity of the first Ghost subprogram being
             --  processed for error detection purposes.
@@ -9266,7 +9266,7 @@ package body Sem_Prag is
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
 
-         Mark_Pragma_As_Ghost (N, Handler);
+         Mark_Ghost_Pragma (N, Handler);
          Set_Is_Interrupt_Handler (Handler);
 
          pragma Assert (Ekind (Prot_Typ) = E_Protected_Type);
@@ -9759,7 +9759,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
 
             --  Enforce RM 11.5(7) which requires that for a pragma that
             --  appears within a package spec, the named entity must be
@@ -11216,6 +11216,12 @@ package body Sem_Prag is
 
             Pack_Id := Defining_Entity (Pack_Decl);
 
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Pack_Id);
+            Ensure_Aggregate_Form (Get_Argument (N, Pack_Id));
+
             --  Chain the pragma on the contract for completeness
 
             Add_Contract_Item (N, Pack_Id);
@@ -11231,13 +11237,6 @@ package body Sem_Prag is
             --  Analyze all these pragmas in the order outlined above
 
             Analyze_If_Present (Pragma_SPARK_Mode);
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Pack_Id);
-            Ensure_Aggregate_Form (Get_Argument (N, Pack_Id));
-
             States := Expression (Get_Argument (N, Pack_Id));
 
             --  Multiple non-null abstract states appear as an aggregate
@@ -11484,7 +11483,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Lib_Entity);
+            Mark_Ghost_Pragma (N, Lib_Entity);
 
             --  This pragma should only apply to a RCI unit (RM E.2.3(23))
 
@@ -11560,7 +11559,7 @@ package body Sem_Prag is
                if Is_Entity_Name (Get_Pragma_Arg (Nam_Arg))
                  and then Present (Entity (Get_Pragma_Arg (Nam_Arg)))
                then
-                  Mark_Pragma_As_Ghost (N, Entity (Get_Pragma_Arg (Nam_Arg)));
+                  Mark_Ghost_Pragma (N, Entity (Get_Pragma_Arg (Nam_Arg)));
                end if;
 
                --  Not allowed in compiler units (bootstrap issues)
@@ -12111,16 +12110,16 @@ package body Sem_Prag is
 
             if Ekind (Obj_Id) = E_Variable then
 
-               --  Chain the pragma on the contract for further processing by
-               --  Analyze_External_Property_In_Decl_Part.
-
-               Add_Contract_Item (N, Obj_Id);
-
                --  A pragma that applies to a Ghost entity becomes Ghost for
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
 
-               Mark_Pragma_As_Ghost (N, Obj_Id);
+               Mark_Ghost_Pragma (N, Obj_Id);
+
+               --  Chain the pragma on the contract for further processing by
+               --  Analyze_External_Property_In_Decl_Part.
+
+               Add_Contract_Item (N, Obj_Id);
 
                --  Analyze the Boolean expression (if any)
 
@@ -12202,7 +12201,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Nm);
+            Mark_Ghost_Pragma (N, Nm);
 
             if not Is_Remote_Call_Interface (C_Ent)
               and then not Is_Remote_Types (C_Ent)
@@ -12322,7 +12321,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
             Check_Duplicate_Pragma (E);
 
             if Rep_Item_Too_Early (E, N)
@@ -12471,16 +12470,15 @@ package body Sem_Prag is
             Cname : Name_Id;
             Eloc  : Source_Ptr;
             Expr  : Node_Id;
+            Mode  : Ghost_Mode_Type;
             Str   : Node_Id;
-
-            Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
          begin
             --  Pragma Check is Ghost when it applies to a Ghost entity. Set
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are marked as Ghost.
 
-            Set_Ghost_Mode (N);
+            Set_Ghost_Mode (N, Mode);
 
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
@@ -12677,7 +12675,7 @@ package body Sem_Prag is
                In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
 
-            Ghost_Mode := Save_Ghost_Mode;
+            Restore_Ghost_Mode (Mode);
          end Check;
 
          --------------------------
@@ -13175,14 +13173,14 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  Chain the pragma on the contract for completeness
-
-            Add_Contract_Item (N, Obj_Id);
-
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Obj_Id);
+            Mark_Ghost_Pragma (N, Obj_Id);
+
+            --  Chain the pragma on the contract for completeness
+
+            Add_Contract_Item (N, Obj_Id);
 
             --  Analyze the Boolean expression (if any)
 
@@ -13287,16 +13285,16 @@ package body Sem_Prag is
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
 
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Spec_Id);
+            Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
+
             --  Chain the pragma on the contract for further processing by
             --  Analyze_Contract_Cases_In_Decl_Part.
 
             Add_Contract_Item (N, Defining_Entity (Subp_Decl));
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Spec_Id);
-            Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
 
             --  Fully analyze the pragma when it appears inside an entry
             --  or subprogram body because it cannot benefit from forward
@@ -13361,7 +13359,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
          end Convention;
 
          ---------------------------
@@ -13832,7 +13830,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             --  The pragma signals that the type defines its own DIC assertion
             --  expression.
@@ -13961,7 +13959,7 @@ package body Sem_Prag is
                      --  for the purposes of legality checks and removal of
                      --  ignored Ghost code.
 
-                     Mark_Pragma_As_Ghost (N, Entity (Pool));
+                     Mark_Ghost_Pragma (N, Entity (Pool));
 
                   else
                      Error_Pragma_Arg
@@ -14145,7 +14143,7 @@ package body Sem_Prag is
                   --  the purposes of legality checks and removal of ignored
                   --  Ghost code.
 
-                  Mark_Pragma_As_Ghost (N, E);
+                  Mark_Ghost_Pragma (N, E);
 
                   if (Is_First_Subtype (E)
                       and then
@@ -14194,7 +14192,7 @@ package body Sem_Prag is
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
 
-               Mark_Pragma_As_Ghost (N, Ent);
+               Mark_Ghost_Pragma (N, Ent);
 
                --  The expression must be analyzed in the special manner
                --  described in "Handling of Default and Per-Object
@@ -14420,7 +14418,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Cunit_Ent);
+            Mark_Ghost_Pragma (N, Cunit_Ent);
 
             if Nkind_In (Unit (Cunit_Node), N_Package_Body,
                                             N_Subprogram_Body)
@@ -14612,7 +14610,7 @@ package body Sem_Prag is
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
 
-               Mark_Pragma_As_Ghost (N, Def_Id);
+               Mark_Ghost_Pragma (N, Def_Id);
 
                if Ekind (Def_Id) /= E_Constant then
                   Note_Possible_Modification
@@ -15032,6 +15030,13 @@ package body Sem_Prag is
                return;
             end if;
 
+            --  Mark the pragma as Ghost if the related subprogram is also
+            --  Ghost. This also ensures that any expansion performed further
+            --  below will produce Ghost nodes.
+
+            Spec_Id := Unique_Defining_Entity (Subp_Decl);
+            Mark_Ghost_Pragma (N, Spec_Id);
+
             --  Chain the pragma on the contract for completeness
 
             Add_Contract_Item (N, Defining_Entity (Subp_Decl));
@@ -15041,13 +15046,6 @@ package body Sem_Prag is
             --  order.
 
             Analyze_If_Present (Pragma_SPARK_Mode);
-
-            --  Mark the pragma as Ghost if the related subprogram is also
-            --  Ghost. This also ensures that any expansion performed further
-            --  below will produce Ghost nodes.
-
-            Spec_Id := Unique_Defining_Entity (Subp_Decl);
-            Mark_Pragma_As_Ghost (N, Spec_Id);
 
             --  Examine the formals of the related subprogram
 
@@ -15123,7 +15121,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
 
             Note_Possible_Modification
               (Get_Pragma_Arg (Arg2), Sure => False);
@@ -15211,7 +15209,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             --  If it's an access-to-subprogram type (in particular, not a
             --  subtype), set the flag on that type.
@@ -16112,7 +16110,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
 
             --  Check duplicate before we chain ourselves
 
@@ -16218,6 +16216,11 @@ package body Sem_Prag is
 
             Pack_Id := Defining_Entity (Pack_Decl);
 
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Pack_Id);
+
             --  Chain the pragma on the contract for further processing by
             --  Analyze_Initial_Condition_In_Decl_Part.
 
@@ -16236,11 +16239,6 @@ package body Sem_Prag is
             Analyze_If_Present (Pragma_SPARK_Mode);
             Analyze_If_Present (Pragma_Abstract_State);
             Analyze_If_Present (Pragma_Initializes);
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Pack_Id);
          end Initial_Condition;
 
          ------------------------
@@ -16332,6 +16330,12 @@ package body Sem_Prag is
 
             Pack_Id := Defining_Entity (Pack_Decl);
 
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Pack_Id);
+            Ensure_Aggregate_Form (Get_Argument (N, Pack_Id));
+
             --  Chain the pragma on the contract for further processing by
             --  Analyze_Initializes_In_Decl_Part.
 
@@ -16349,13 +16353,6 @@ package body Sem_Prag is
 
             Analyze_If_Present (Pragma_SPARK_Mode);
             Analyze_If_Present (Pragma_Abstract_State);
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Pack_Id);
-            Ensure_Aggregate_Form (Get_Argument (N, Pack_Id));
-
             Analyze_If_Present (Pragma_Initial_Condition);
          end Initializes;
 
@@ -16903,7 +16900,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             --  The pragma defines a type-specific invariant, the type is said
             --  to have invariants of its "own".
@@ -17253,7 +17250,7 @@ package body Sem_Prag is
                   --  the purposes of legality checks and removal of ignored
                   --  Ghost code.
 
-                  Mark_Pragma_As_Ghost (N, Ent);
+                  Mark_Ghost_Pragma (N, Ent);
 
                --  Subprograms
 
@@ -17277,7 +17274,7 @@ package body Sem_Prag is
                            --  Ghost for the purposes of legality checks and
                            --  removal of ignored Ghost code.
 
-                           Mark_Pragma_As_Ghost (N, Ent);
+                           Mark_Ghost_Pragma (N, Ent);
 
                            --  Capture the entity of the first Ghost subprogram
                            --  being processed for error detection purposes.
@@ -17685,7 +17682,7 @@ package body Sem_Prag is
             --  Ghost. This also ensures that any expansion performed further
             --  below will produce Ghost nodes.
 
-            Mark_Pragma_As_Ghost (N, Entry_Id);
+            Mark_Ghost_Pragma (N, Entry_Id);
 
             --  Analyze the Integer expression
 
@@ -17866,7 +17863,7 @@ package body Sem_Prag is
                      --  for the purposes of legality checks and removal of
                      --  ignored Ghost code.
 
-                     Mark_Pragma_As_Ghost (N, E);
+                     Mark_Ghost_Pragma (N, E);
 
                      --  Capture the entity of the first Ghost procedure being
                      --  processed for error detection purposes.
@@ -18110,7 +18107,7 @@ package body Sem_Prag is
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
 
-               Mark_Pragma_As_Ghost (N, E);
+               Mark_Ghost_Pragma (N, E);
 
                --  Entity name was given
 
@@ -18514,7 +18511,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             if not Is_Array_Type (Typ) and then not Is_Record_Type (Typ) then
                Error_Pragma ("pragma% must specify array or record type");
@@ -18737,12 +18734,11 @@ package body Sem_Prag is
             end if;
 
             Item_Id := Defining_Entity (Stmt);
-            Encap   := Get_Pragma_Arg (Arg1);
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Item_Id);
+            Mark_Ghost_Pragma (N, Item_Id);
 
             --  Chain the pragma on the contract for further processing by
             --  Analyze_Part_Of_In_Decl_Part or for completeness.
@@ -18762,6 +18758,8 @@ package body Sem_Prag is
             --  instantiation.
 
             else
+               Encap := Get_Pragma_Arg (Arg1);
+
                --  Detect any discrepancies between the placement of the
                --  constant or package instantiation with respect to state
                --  space and the encapsulating state.
@@ -18888,7 +18886,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Ent);
+            Mark_Ghost_Pragma (N, Ent);
 
             --  The pragma may come from an aspect on a private declaration,
             --  even if the freeze point at which this is analyzed in the
@@ -18976,13 +18974,12 @@ package body Sem_Prag is
                end if;
 
                Ent := Entity (Get_Pragma_Arg (Arg1));
-               Decl := Parent (Ent);
 
                --  A pragma that applies to a Ghost entity becomes Ghost for
                --  the purposes of legality checks and removal of ignored Ghost
                --  code.
 
-               Mark_Pragma_As_Ghost (N, Ent);
+               Mark_Ghost_Pragma (N, Ent);
 
                --  Check for duplication before inserting in list of
                --  representation items.
@@ -18992,6 +18989,8 @@ package body Sem_Prag is
                if Rep_Item_Too_Late (Ent, N) then
                   return;
                end if;
+
+               Decl := Parent (Ent);
 
                if Present (Expression (Decl)) then
                   Error_Pragma_Arg
@@ -19197,7 +19196,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             --  The remaining processing is simply to link the pragma on to
             --  the rep item chain, for processing when the type is frozen.
@@ -19249,7 +19248,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             --  The remaining processing is simply to link the pragma on to
             --  the rep item chain, for processing when the type is frozen.
@@ -19284,7 +19283,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Ent);
+            Mark_Ghost_Pragma (N, Ent);
             Check_Duplicate_Pragma (Ent);
 
             --  This filters out pragmas inside generic parents that show up
@@ -19919,7 +19918,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Ent);
+            Mark_Ghost_Pragma (N, Ent);
 
             if not Debug_Flag_U then
                Set_Is_Pure (Ent);
@@ -19958,7 +19957,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
 
             if Present (E) then
                loop
@@ -20303,6 +20302,11 @@ package body Sem_Prag is
 
             Spec_Id := Corresponding_Spec (Pack_Decl);
 
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Spec_Id);
+
             --  Chain the pragma on the contract for further processing by
             --  Analyze_Refined_State_In_Decl_Part.
 
@@ -20312,11 +20316,6 @@ package body Sem_Prag is
             --  SPARK mode in effect. Analyze all pragmas in a specific order.
 
             Analyze_If_Present (Pragma_SPARK_Mode);
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Spec_Id);
 
             --  State refinement is allowed only when the corresponding package
             --  declaration has non-null pragma Abstract_State. Refinement not
@@ -20401,7 +20400,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
 
             if Nkind (Parent (E)) = N_Formal_Type_Declaration
               and then Ekind (E) = E_General_Access_Type
@@ -20446,7 +20445,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Cunit_Ent);
+            Mark_Ghost_Pragma (N, Cunit_Ent);
 
             if K = N_Package_Declaration
               or else K = N_Generic_Package_Declaration
@@ -20488,7 +20487,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Cunit_Ent);
+            Mark_Ghost_Pragma (N, Cunit_Ent);
 
             if not Nkind_In (Unit (Cunit_Node), N_Package_Declaration,
                                                 N_Generic_Package_Declaration)
@@ -20688,7 +20687,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Cunit_Ent);
+            Mark_Ghost_Pragma (N, Cunit_Ent);
 
             if not Nkind_In (Unit (Cunit_Node), N_Package_Declaration,
                                                 N_Generic_Package_Declaration)
@@ -20740,7 +20739,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             --  We require the pragma to apply to a type declared in a package
             --  declaration, but not (immediately) within a package body.
@@ -21922,7 +21921,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Nam_Id);
+            Mark_Ghost_Pragma (N, Nam_Id);
             Set_Debug_Info_Off (Nam_Id);
          end Suppress_Debug_Info;
 
@@ -21965,7 +21964,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
 
             if not Is_Type (E) and then Ekind (E) /= E_Variable then
                Error_Pragma_Arg
@@ -22366,15 +22365,15 @@ package body Sem_Prag is
 
             Subp_Id := Defining_Entity (Subp_Decl);
 
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Subp_Id);
+
             --  Chain the pragma on the contract for further processing by
             --  Analyze_Test_Case_In_Decl_Part.
 
             Add_Contract_Item (N, Subp_Id);
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Subp_Id);
 
             --  Preanalyze the original aspect argument "Name" for ASIS or for
             --  a generic subprogram to properly capture global references.
@@ -22449,7 +22448,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E);
+            Mark_Ghost_Pragma (N, E);
 
             if Rep_Item_Too_Early (E, N)
                  or else
@@ -22598,7 +22597,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, Typ);
+            Mark_Ghost_Pragma (N, Typ);
 
             if Typ = Any_Type
               or else Rep_Item_Too_Early (Typ, N)
@@ -22759,7 +22758,7 @@ package body Sem_Prag is
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Pragma_As_Ghost (N, E_Id);
+            Mark_Ghost_Pragma (N, E_Id);
             Set_Universal_Aliasing (Implementation_Base_Type (E_Id));
             Record_Rep_Item (E_Id, N);
          end Universal_Alias;
@@ -22835,7 +22834,7 @@ package body Sem_Prag is
                      --  for the purposes of legality checks and removal of
                      --  ignored Ghost code.
 
-                     Mark_Pragma_As_Ghost (N, Arg_Id);
+                     Mark_Ghost_Pragma (N, Arg_Id);
 
                      --  Capture the entity of the first Ghost type being
                      --  processed for error detection purposes.
@@ -23069,6 +23068,11 @@ package body Sem_Prag is
                return;
             end if;
 
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Spec_Id);
+
             --  Chain the pragma on the contract for completeness
 
             Add_Contract_Item (N, Spec_Id);
@@ -23078,11 +23082,6 @@ package body Sem_Prag is
             --  order.
 
             Analyze_If_Present (Pragma_SPARK_Mode);
-
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
-
-            Mark_Pragma_As_Ghost (N, Spec_Id);
 
             --  A volatile function cannot override a non-volatile function
             --  (SPARK RM 7.1.2(15)). Overriding checks are usually performed
@@ -23634,9 +23633,8 @@ package body Sem_Prag is
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       Errors        : Nat;
+      Mode          : Ghost_Mode_Type;
       Restore_Scope : Boolean := False;
 
    --  Start of processing for Analyze_Pre_Post_Condition_In_Decl_Part
@@ -23653,7 +23651,7 @@ package body Sem_Prag is
       --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
-      Set_Ghost_Mode (N);
+      Set_Ghost_Mode (N, Mode);
 
       --  Ensure that the subprogram and its formals are visible when analyzing
       --  the expression of the pragma.
@@ -23722,9 +23720,9 @@ package body Sem_Prag is
       --  subprogram subject to pragma Inline_Always.
 
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
-      Ghost_Mode := Save_Ghost_Mode;
-
       Set_Is_Analyzed_Pragma (N);
+
+      Restore_Ghost_Mode (Mode);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
 
    ------------------------------------------

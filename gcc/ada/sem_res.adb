@@ -1996,23 +1996,11 @@ package body Sem_Res is
          return;
       end Resolution_Failed;
 
-      --  Local variables
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    --  Start of processing for Resolve
 
    begin
       if N = Error then
          return;
-      end if;
-
-      --  A declaration may be subject to pragma Ghost. Set the mode now to
-      --  ensure that any nodes generated during analysis and expansion are
-      --  marked as Ghost.
-
-      if Is_Declaration (N) then
-         Set_Ghost_Mode (N);
       end if;
 
       --  Access attribute on remote subprogram cannot be used for a non-remote
@@ -2130,7 +2118,6 @@ package body Sem_Res is
       if Analyzed (N) then
          Debug_A_Exit ("resolving  ", N, "  (done, already analyzed)");
          Analyze_Dimension (N);
-         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Any case of Any_Type as the Etype value means that we had a
@@ -2138,7 +2125,6 @@ package body Sem_Res is
 
       elsif Etype (N) = Any_Type then
          Debug_A_Exit ("resolving  ", N, "  (done, Etype = Any_Type)");
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -2578,7 +2564,6 @@ package body Sem_Res is
             then
                Resolve (N, Full_View (Typ));
                Set_Etype (N, Typ);
-               Ghost_Mode := Save_Ghost_Mode;
                return;
 
             --  Check for an aggregate. Sometimes we can get bogus aggregates
@@ -2687,7 +2672,6 @@ package body Sem_Res is
             if Address_Integer_Convert_OK (Typ, Etype (N)) then
                Rewrite (N, Unchecked_Convert_To (Typ, Relocate_Node (N)));
                Analyze_And_Resolve (N, Typ);
-               Ghost_Mode := Save_Ghost_Mode;
                return;
 
             --  Under relaxed RM semantics silently replace occurrences of null
@@ -2725,8 +2709,8 @@ package body Sem_Res is
 
                      Error_Msg_Node_2 := Typ;
                      Error_Msg_NE
-                       ("no visible interpretation of& "
-                        & "matches expected type&", N, Subp_Name);
+                       ("no visible interpretation of& matches expected type&",
+                        N, Subp_Name);
                   end;
 
                   if All_Errors_Mode then
@@ -2758,14 +2742,12 @@ package body Sem_Res is
          end if;
 
          Resolution_Failed;
-         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Test if we have more than one interpretation for the context
 
       elsif Ambiguous then
          Resolution_Failed;
-         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Only one intepretation
@@ -2838,7 +2820,6 @@ package body Sem_Res is
            and then Present (Entity (N))
            and then Ekind (Entity (N)) /= E_Operator
          then
-
             if not Is_Predefined_Op (Entity (N)) then
                Rewrite_Operator_As_Call (N, Entity (N));
 
@@ -2853,14 +2834,12 @@ package body Sem_Res is
                --  Rewrite_Renamed_Operator.
 
                if Analyzed (N) then
-                  Ghost_Mode := Save_Ghost_Mode;
                   return;
                end if;
             end if;
          end if;
 
          case N_Subexpr'(Nkind (N)) is
-
             when N_Aggregate => Resolve_Aggregate                (N, Ctx_Type);
 
             when N_Allocator => Resolve_Allocator                (N, Ctx_Type);
@@ -3003,7 +2982,6 @@ package body Sem_Res is
          if Nkind (N) not in N_Subexpr then
             Debug_A_Exit ("resolving  ", N, "  (done)");
             Expand (N);
-            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
 
@@ -3038,8 +3016,6 @@ package body Sem_Res is
 
          Expand (N);
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Resolve;
 
    -------------

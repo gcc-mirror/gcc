@@ -1712,12 +1712,11 @@ package body Exp_Util is
 
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       DIC_Prag     : Node_Id;
       DIC_Typ      : Entity_Id;
       Dummy_1      : Entity_Id;
       Dummy_2      : Entity_Id;
+      Mode         : Ghost_Mode_Type;
       Proc_Body    : Node_Id;
       Proc_Body_Id : Entity_Id;
       Proc_Decl    : Node_Id;
@@ -1749,6 +1748,11 @@ package body Exp_Util is
          Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
       end if;
 
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the DIC procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode (Work_Typ, Mode);
+
       --  The working type must be either define a DIC pragma of its own or
       --  inherit one from a parent type.
 
@@ -1767,7 +1771,7 @@ package body Exp_Util is
       --  argument is "null".
 
       if not Is_Verifiable_DIC_Pragma (DIC_Prag) then
-         return;
+         goto Leave;
       end if;
 
       --  The working type may lack a DIC procedure declaration. This may be
@@ -1799,13 +1803,8 @@ package body Exp_Util is
       --  Nothing to do if the DIC procedure already has a body
 
       if Present (Corresponding_Body (Proc_Decl)) then
-         return;
+         goto Leave;
       end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the DIC procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
 
       --  Emulate the environment of the DIC procedure by installing its scope
       --  and formal parameters.
@@ -1917,7 +1916,8 @@ package body Exp_Util is
          Append_Freeze_Action (Work_Typ, Proc_Body);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Build_DIC_Procedure_Body;
 
    -------------------------------------
@@ -1927,10 +1927,9 @@ package body Exp_Util is
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       DIC_Prag  : Node_Id;
       DIC_Typ   : Entity_Id;
+      Mode      : Ghost_Mode_Type;
       Proc_Decl : Node_Id;
       Proc_Id   : Entity_Id;
       Typ_Decl  : Node_Id;
@@ -1973,6 +1972,11 @@ package body Exp_Util is
          Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
       end if;
 
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the DIC procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode (Work_Typ, Mode);
+
       --  The type must be either subject to a DIC pragma or inherit one from a
       --  parent type.
 
@@ -1991,18 +1995,13 @@ package body Exp_Util is
       --  argument is "null".
 
       if not Is_Verifiable_DIC_Pragma (DIC_Prag) then
-         return;
+         goto Leave;
 
       --  Nothing to do if the type already has a DIC procedure
 
       elsif Present (DIC_Procedure (Work_Typ)) then
-         return;
+         goto Leave;
       end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the DIC procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
 
       Proc_Id :=
         Make_Defining_Identifier (Loc,
@@ -2023,13 +2022,6 @@ package body Exp_Util is
 
       if Opt.Generate_SCO then
          Set_Needs_Debug_Info (Proc_Id);
-      end if;
-
-      --  Mark the DIC procedure explicitly as Ghost because it does not come
-      --  from source.
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -2106,7 +2098,8 @@ package body Exp_Util is
          Insert_After_And_Analyze (Typ_Decl, Proc_Decl);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Build_DIC_Procedure_Declaration;
 
    --------------------------
@@ -7816,8 +7809,9 @@ package body Exp_Util is
    -------------------------
 
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id is
-      Loc     : constant Source_Ptr := Sloc (Expr);
-      Typ     : constant Entity_Id  := Base_Type (Etype (Expr));
+      Loc : constant Source_Ptr := Sloc (Expr);
+      Typ : constant Entity_Id  := Base_Type (Etype (Expr));
+
       Proc_Id : Entity_Id;
 
    begin
@@ -7910,11 +7904,11 @@ package body Exp_Util is
       Expr : Node_Id;
       Mem  : Boolean := False) return Node_Id
    is
-      Loc  : constant Source_Ptr := Sloc (Expr);
-      Call : Node_Id;
-      PFM  : Entity_Id;
+      Loc : constant Source_Ptr := Sloc (Expr);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Call    : Node_Id;
+      Func_Id : Entity_Id;
+      Mode    : Ghost_Mode_Type;
 
    begin
       pragma Assert (Present (Predicate_Function (Typ)));
@@ -7922,33 +7916,24 @@ package body Exp_Util is
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the call is properly marked as Ghost.
 
-      Set_Ghost_Mode_From_Entity (Typ);
+      Set_Ghost_Mode (Typ, Mode);
 
       --  Call special membership version if requested and available
 
-      if Mem then
-         PFM := Predicate_Function_M (Typ);
-
-         if Present (PFM) then
-            Call :=
-              Make_Function_Call (Loc,
-                Name                   => New_Occurrence_Of (PFM, Loc),
-                Parameter_Associations => New_List (Relocate_Node (Expr)));
-
-            Ghost_Mode := Save_Ghost_Mode;
-            return Call;
-         end if;
+      if Mem and then Present (Predicate_Function_M (Typ)) then
+         Func_Id := Predicate_Function_M (Typ);
+      else
+         Func_Id := Predicate_Function (Typ);
       end if;
 
       --  Case of calling normal predicate function
 
       Call :=
         Make_Function_Call (Loc,
-          Name                   =>
-            New_Occurrence_Of (Predicate_Function (Typ), Loc),
+          Name                   => New_Occurrence_Of (Func_Id, Loc),
           Parameter_Associations => New_List (Relocate_Node (Expr)));
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Mode (Mode);
       return Call;
    end Make_Predicate_Call;
 

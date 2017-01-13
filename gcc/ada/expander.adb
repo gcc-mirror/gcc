@@ -41,6 +41,7 @@ with Exp_Ch11;  use Exp_Ch11;
 with Exp_Ch12;  use Exp_Ch12;
 with Exp_Ch13;  use Exp_Ch13;
 with Exp_Prag;  use Exp_Prag;
+with Ghost;     use Ghost;
 with Opt;       use Opt;
 with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
@@ -77,6 +78,8 @@ package body Expander is
    ------------
 
    procedure Expand (N : Node_Id) is
+      Mode : Ghost_Mode_Type;
+
    begin
       --  If we were analyzing a default expression (or other spec expression)
       --  the Full_Analysis flag must be off. If we are in expansion mode then
@@ -87,6 +90,11 @@ package body Expander is
         (not (Full_Analysis and then In_Spec_Expression)
           and then (Full_Analysis or else not Expander_Active)
           and then not (Inside_A_Generic and then Expander_Active));
+
+      --  Establish the Ghost mode of the context to ensure that any generated
+      --  nodes during expansion are marked as Ghost.
+
+      Set_Ghost_Mode (N, Mode);
 
       --  The GNATprove_Mode flag indicates that a light expansion for formal
       --  verification should be used. This expansion is never done inside
@@ -105,7 +113,7 @@ package body Expander is
          --  needed, and in general cannot be done correctly, in this mode, so
          --  we are all done.
 
-         return;
+         goto Leave;
 
       --  There are three reasons for the Expander_Active flag to be false
 
@@ -140,7 +148,7 @@ package body Expander is
             Pop_Scope;
          end if;
 
-         return;
+         goto Leave;
 
       else
          begin
@@ -482,7 +490,7 @@ package body Expander is
 
          exception
             when RE_Not_Available =>
-               return;
+               goto Leave;
          end;
 
          --  Set result as analyzed and then do a possible transient wrap. The
@@ -510,6 +518,9 @@ package body Expander is
 
          Debug_A_Exit ("expanding  ", N, "  (done)");
       end if;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Expand;
 
    ---------------------------

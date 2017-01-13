@@ -575,7 +575,7 @@ package body Sem_Ch8 is
          --  The exception renaming declaration may become Ghost if it renames
          --  a Ghost entity.
 
-         Mark_Renaming_As_Ghost (N, Entity (Nam));
+         Mark_Ghost_Renaming (N, Entity (Nam));
       else
          Error_Msg_N ("invalid exception name in renaming", Nam);
       end if;
@@ -658,10 +658,8 @@ package body Sem_Ch8 is
       K : Entity_Kind)
    is
       New_P : constant Entity_Id := Defining_Entity (N);
-      Old_P : Entity_Id;
-
       Inst  : Boolean := False;
-      --  Prevent junk warning
+      Old_P : Entity_Id;
 
    begin
       if Name (N) = Error then
@@ -705,16 +703,16 @@ package body Sem_Ch8 is
             Set_Renamed_Object (New_P, Old_P);
          end if;
 
+         --  The generic renaming declaration may become Ghost if it renames a
+         --  Ghost entity.
+
+         Mark_Ghost_Renaming (N, Old_P);
+
          Set_Is_Pure          (New_P, Is_Pure          (Old_P));
          Set_Is_Preelaborated (New_P, Is_Preelaborated (Old_P));
 
          Set_Etype (New_P, Etype (Old_P));
          Set_Has_Completion (New_P);
-
-         --  The generic renaming declaration may become Ghost if it renames a
-         --  Ghost entity.
-
-         Mark_Renaming_As_Ghost (N, Old_P);
 
          if In_Open_Scopes (Old_P) then
             Error_Msg_N ("within its scope, generic denotes its instance", N);
@@ -840,7 +838,15 @@ package body Sem_Ch8 is
       --  already-analyzed expression.
 
       if Nkind (Nam) = N_Selected_Component and then Analyzed (Nam) then
-         T := Etype (Nam);
+
+         --  The object renaming declaration may become Ghost if it renames a
+         --  Ghost entity.
+
+         if Is_Entity_Name (Nam) then
+            Mark_Ghost_Renaming (N, Entity (Nam));
+         end if;
+
+         T   := Etype (Nam);
          Dec := Build_Actual_Subtype_Of_Component (Etype (Nam), Nam);
 
          if Present (Dec) then
@@ -859,6 +865,13 @@ package body Sem_Ch8 is
          Find_Type (Subtype_Mark (N));
          T := Entity (Subtype_Mark (N));
          Analyze (Nam);
+
+         --  The object renaming declaration may become Ghost if it renames a
+         --  Ghost entity.
+
+         if Is_Entity_Name (Nam) then
+            Mark_Ghost_Renaming (N, Entity (Nam));
+         end if;
 
          --  Reject renamings of conversions unless the type is tagged, or
          --  the conversion is implicit (which can occur for cases of anonymous
@@ -928,11 +941,19 @@ package body Sem_Ch8 is
       --  Ada 2005 (AI-230/AI-254): Access renaming
 
       else pragma Assert (Present (Access_Definition (N)));
-         T := Access_Definition
-                (Related_Nod => N,
-                 N           => Access_Definition (N));
+         T :=
+           Access_Definition
+             (Related_Nod => N,
+              N           => Access_Definition (N));
 
          Analyze (Nam);
+
+         --  The object renaming declaration may become Ghost if it renames a
+         --  Ghost entity.
+
+         if Is_Entity_Name (Nam) then
+            Mark_Ghost_Renaming (N, Entity (Nam));
+         end if;
 
          --  Ada 2005 AI05-105: if the declaration has an anonymous access
          --  type, the renamed object must also have an anonymous type, and
@@ -1071,7 +1092,6 @@ package body Sem_Ch8 is
                     ("\suggest using an initialized constant "
                      & "object instead?R?", Nam);
                end if;
-
          end case;
       end if;
 
@@ -1296,13 +1316,6 @@ package body Sem_Ch8 is
          Set_Is_True_Constant    (Id, True);
       end if;
 
-      --  The object renaming declaration may become Ghost if it renames a
-      --  Ghost entity.
-
-      if Is_Entity_Name (Nam) then
-         Mark_Renaming_As_Ghost (N, Entity (Nam));
-      end if;
-
       --  The entity of the renaming declaration needs to reflect whether the
       --  renamed object is volatile. Is_Volatile is set if the renamed object
       --  is volatile in the RM legality sense.
@@ -1393,7 +1406,7 @@ package body Sem_Ch8 is
          else
             Error_Msg_Sloc := Sloc (Old_P);
             Error_Msg_NE
-             ("expect package name in renaming, found& declared#",
+              ("expect package name in renaming, found& declared#",
                Name (N), Old_P);
          end if;
 
@@ -1418,18 +1431,17 @@ package body Sem_Ch8 is
             Set_Renamed_Object (New_P, Old_P);
          end if;
 
-         Set_Has_Completion (New_P);
-
-         Set_First_Entity (New_P, First_Entity (Old_P));
-         Set_Last_Entity  (New_P, Last_Entity  (Old_P));
-         Set_First_Private_Entity (New_P, First_Private_Entity (Old_P));
-         Check_Library_Unit_Renaming (N, Old_P);
-         Generate_Reference (Old_P, Name (N));
-
          --  The package renaming declaration may become Ghost if it renames a
          --  Ghost entity.
 
-         Mark_Renaming_As_Ghost (N, Old_P);
+         Mark_Ghost_Renaming (N, Old_P);
+
+         Set_Has_Completion (New_P);
+         Set_First_Entity   (New_P, First_Entity (Old_P));
+         Set_Last_Entity    (New_P, Last_Entity  (Old_P));
+         Set_First_Private_Entity (New_P, First_Private_Entity (Old_P));
+         Check_Library_Unit_Renaming (N, Old_P);
+         Generate_Reference (Old_P, Name (N));
 
          --  If the renaming is in the visible part of a package, then we set
          --  Renamed_In_Spec for the renamed package, to prevent giving
@@ -2574,8 +2586,8 @@ package body Sem_Ch8 is
            and then Expander_Active
          then
             declare
-               Stream_Prim : Entity_Id;
                Prefix_Type : constant Entity_Id := Entity (Prefix (Nam));
+               Stream_Prim : Entity_Id;
 
             begin
                --  The class-wide forms of the stream attributes are not
@@ -2610,13 +2622,13 @@ package body Sem_Ch8 is
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Write);
                   when others      =>
                      Error_Msg_N
-                       ("attribute must be a primitive"
-                         & " dispatching operation", Nam);
+                       ("attribute must be a primitive dispatching operation",
+                        Nam);
                      return;
                end case;
 
-               --  If no operation was found, and the type is limited,
-               --  the user should have defined one.
+               --  If no operation was found, and the type is limited, the user
+               --  should have defined one.
 
                if No (Stream_Prim) then
                   if Is_Limited_Type (Prefix_Type) then
@@ -2655,8 +2667,8 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      --  Check whether this declaration corresponds to the instantiation
-      --  of a formal subprogram.
+      --  Check whether this declaration corresponds to the instantiation of a
+      --  formal subprogram.
 
       --  If this is an instantiation, the corresponding actual is frozen and
       --  error messages can be made more precise. If this is a default
@@ -2677,8 +2689,8 @@ package body Sem_Ch8 is
          --  is an external axiomatization on the package.
 
          if CW_Actual
-            and then Box_Present (Inst_Node)
-            and then not
+           and then Box_Present (Inst_Node)
+           and then not
              (GNATprove_Mode
                and then
                  Present (Containing_Package_With_Ext_Axioms (Formal_Spec)))
@@ -2691,11 +2703,17 @@ package body Sem_Ch8 is
            and then not Is_Overloaded (Nam)
          then
             Old_S := Entity (Nam);
+
+            --  The subprogram renaming declaration may become Ghost if it
+            --  renames a Ghost entity.
+
+            Mark_Ghost_Renaming (N, Old_S);
+
             New_S := Analyze_Subprogram_Specification (Spec);
 
             --  Operator case
 
-            if Ekind (Entity (Nam)) = E_Operator then
+            if Ekind (Old_S) = E_Operator then
 
                --  Box present
 
@@ -2729,9 +2747,9 @@ package body Sem_Ch8 is
                        and then Hidden /= Old_S
                      then
                         Error_Msg_Sloc := Sloc (Hidden);
-                        Error_Msg_N ("default subprogram is resolved " &
-                                     "in the generic declaration " &
-                                     "(RM 12.6(17))??", N);
+                        Error_Msg_N
+                          ("default subprogram is resolved in the generic "
+                           & "declaration (RM 12.6(17))??", N);
                         Error_Msg_NE ("\and will not use & #??", N, Hidden);
                      end if;
                   end;
@@ -2740,6 +2758,14 @@ package body Sem_Ch8 is
 
          else
             Analyze (Nam);
+
+            --  The subprogram renaming declaration may become Ghost if it
+            --  renames a Ghost entity.
+
+            if Is_Entity_Name (Nam) then
+               Mark_Ghost_Renaming (N, Entity (Nam));
+            end if;
+
             New_S := Analyze_Subprogram_Specification (Spec);
          end if;
 
@@ -2748,6 +2774,13 @@ package body Sem_Ch8 is
          --  new name (which might be the same in a generic instance).
 
          Analyze (Nam);
+
+         --  The subprogram renaming declaration may become Ghost if it renames
+         --  a Ghost entity.
+
+         if Is_Entity_Name (Nam) then
+            Mark_Ghost_Renaming (N, Entity (Nam));
+         end if;
 
          --  The renaming defines a new overloaded entity, which is analyzed
          --  like a subprogram declaration.
@@ -2845,8 +2878,9 @@ package body Sem_Ch8 is
                Error_Msg_NE
                  ("subprogram& overrides inherited operation",
                     N, Rename_Spec);
-            elsif
-              Style_Check and then not Must_Override (Specification (N))
+
+            elsif Style_Check
+              and then not Must_Override (Specification (N))
             then
                Style.Missing_Overriding (N, Rename_Spec);
             end if;
@@ -3025,11 +3059,6 @@ package body Sem_Ch8 is
          Set_Is_Pure          (New_S, Is_Pure          (Entity (Nam)));
          Set_Is_Preelaborated (New_S, Is_Preelaborated (Entity (Nam)));
 
-         --  The subprogram renaming declaration may become Ghost if it renames
-         --  a Ghost entity.
-
-         Mark_Renaming_As_Ghost (N, Entity (Nam));
-
          --  Ada 2005 (AI-423): Check the consistency of null exclusions
          --  between a subprogram and its correct renaming.
 
@@ -3068,8 +3097,8 @@ package body Sem_Ch8 is
                    not Is_Abstract_Type (Find_Dispatching_Type (Old_S)))
          then
             Error_Msg_N
-              ("renamed entity cannot be "
-               & "subprogram that requires overriding (RM 8.5.4 (5.1))", N);
+              ("renamed entity cannot be subprogram that requires overriding "
+               & "(RM 8.5.4 (5.1))", N);
          end if;
       end if;
 
@@ -3124,7 +3153,7 @@ package body Sem_Ch8 is
                then
                   Error_Msg_N
                     ("subprogram in renaming_as_body cannot be intrinsic",
-                       Name (N));
+                     Name (N));
                end if;
 
                Set_Has_Completion (Rename_Spec);
@@ -3364,8 +3393,7 @@ package body Sem_Ch8 is
                then
                   Error_Msg_Node_2 := T1;
                   Error_Msg_NE
-                    ("default & on & is not directly visible",
-                      Nam, Nam);
+                    ("default & on & is not directly visible", Nam, Nam);
                end if;
             end;
          end if;
@@ -3396,8 +3424,8 @@ package body Sem_Ch8 is
                then
                   Error_Msg_N ("access parameter is controlling,", New_F);
                   Error_Msg_NE
-                    ("\corresponding parameter of& "
-                     & "must be explicitly null excluding", New_F, Old_S);
+                    ("\corresponding parameter of& must be explicitly null "
+                     & "excluding", New_F, Old_S);
                end if;
 
                Next_Formal (Old_F);

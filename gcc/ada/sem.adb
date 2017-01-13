@@ -98,7 +98,8 @@ package body Sem is
    -------------
 
    procedure Analyze (N : Node_Id) is
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
 
    begin
       Debug_A_Entry ("analyzing  ", N);
@@ -115,7 +116,8 @@ package body Sem is
       --  marked as Ghost.
 
       if Is_Declaration (N) then
-         Set_Ghost_Mode (N);
+         Mark_And_Set_Ghost_Declaration (N, Mode);
+         Mode_Set := True;
       end if;
 
       --  Otherwise processing depends on the node kind
@@ -747,7 +749,9 @@ package body Sem is
          Expand_SPARK_Potential_Renaming (N);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1351,7 +1355,7 @@ package body Sem is
 
          --  Set up a clean environment before analyzing
 
-         Ghost_Mode          := None;
+         Install_Ghost_Mode (None);
          Outer_Generic_Scope := Empty;
          Scope_Suppress      := Suppress_Options;
          Scope_Stack.Table
@@ -1373,7 +1377,7 @@ package body Sem is
 
          Pop_Scope;
          Restore_Scope_Stack (List);
-         Ghost_Mode := Save_Ghost_Mode;
+         Restore_Ghost_Mode (Save_Ghost_Mode);
          Style_Max_Line_Length := Save_Max_Line;
       end Do_Analyze;
 

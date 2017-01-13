@@ -2093,7 +2093,10 @@ package body Einfo is
 
    function Is_Checked_Ghost_Entity (Id : E) return B is
    begin
-      pragma Assert (Nkind (Id) in N_Entity);
+      --  Allow this attribute to appear on non-analyzed entities
+
+      pragma Assert (Nkind (Id) in N_Entity
+        or else Ekind (Id) = E_Void);
       return Flag277 (Id);
    end Is_Checked_Ghost_Entity;
 
@@ -2280,7 +2283,10 @@ package body Einfo is
 
    function Is_Ignored_Ghost_Entity (Id : E) return B is
    begin
-      pragma Assert (Nkind (Id) in N_Entity);
+      --  Allow this attribute to appear on non-analyzed entities
+
+      pragma Assert (Nkind (Id) in N_Entity
+        or else Ekind (Id) = E_Void);
       return Flag278 (Id);
    end Is_Ignored_Ghost_Entity;
 
@@ -5161,20 +5167,9 @@ package body Einfo is
 
    procedure Set_Is_Checked_Ghost_Entity (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Formal (Id)
-        or else Is_Object (Id)
-        or else Is_Package_Or_Generic_Package (Id)
-        or else Is_Subprogram_Or_Generic_Subprogram (Id)
-        or else Is_Type (Id)
-        or else Ekind (Id) = E_Abstract_State
-        or else Ekind (Id) = E_Component
-        or else Ekind (Id) = E_Discriminant
-        or else Ekind (Id) = E_Exception
-        or else Ekind (Id) = E_Package_Body
-        or else Ekind (Id) = E_Subprogram_Body
+      --  Allow this attribute to appear on non-analyzed entities
 
-        --  Allow this attribute to appear on non-analyzed entities
-
+      pragma Assert (Nkind (Id) in N_Entity
         or else Ekind (Id) = E_Void);
       Set_Flag277 (Id, V);
    end Set_Is_Checked_Ghost_Entity;
@@ -5377,20 +5372,9 @@ package body Einfo is
 
    procedure Set_Is_Ignored_Ghost_Entity (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Formal (Id)
-        or else Is_Object (Id)
-        or else Is_Package_Or_Generic_Package (Id)
-        or else Is_Subprogram_Or_Generic_Subprogram (Id)
-        or else Is_Type (Id)
-        or else Ekind (Id) = E_Abstract_State
-        or else Ekind (Id) = E_Component
-        or else Ekind (Id) = E_Discriminant
-        or else Ekind (Id) = E_Exception
-        or else Ekind (Id) = E_Package_Body
-        or else Ekind (Id) = E_Subprogram_Body
+      --  Allow this attribute to appear on non-analyzed entities
 
-        --  Allow this attribute to appear on non-analyzed entities
-
+      pragma Assert (Nkind (Id) in N_Entity
         or else Ekind (Id) = E_Void);
       Set_Flag278 (Id, V);
    end Set_Is_Ignored_Ghost_Entity;

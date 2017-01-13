@@ -38,7 +38,6 @@ with Exp_Dbug; use Exp_Dbug;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -1613,15 +1612,7 @@ package body Exp_Ch5 is
       Typ  : constant Entity_Id  := Underlying_Type (Etype (Lhs));
       Exp  : Node_Id;
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    begin
-      --  The assignment statement is Ghost when the left hand side is Ghost.
-      --  Set the mode now to ensure that any nodes generated during expansion
-      --  are properly marked as Ghost.
-
-      Set_Ghost_Mode (N);
-
       --  Special case to check right away, if the Componentwise_Assignment
       --  flag is set, this is a reanalysis from the expansion of the primitive
       --  assignment procedure for a tagged type, and all we need to do is to
@@ -1631,7 +1622,6 @@ package body Exp_Ch5 is
 
       if Componentwise_Assignment (N) then
          Expand_Assign_Record (N);
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -1723,7 +1713,6 @@ package body Exp_Ch5 is
                Rewrite (N, Call);
                Analyze (N);
 
-               Ghost_Mode := Save_Ghost_Mode;
                return;
             end if;
          end;
@@ -1812,8 +1801,8 @@ package body Exp_Ch5 is
             loop
                Set_Analyzed (Exp, False);
 
-               if Nkind_In
-                   (Exp, N_Selected_Component, N_Indexed_Component)
+               if Nkind_In (Exp, N_Indexed_Component,
+                                 N_Selected_Component)
                then
                   Exp := Prefix (Exp);
                else
@@ -1874,7 +1863,6 @@ package body Exp_Ch5 is
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
 
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -2099,7 +2087,6 @@ package body Exp_Ch5 is
 
          if not Crep then
             Expand_Bit_Packed_Element_Set (N);
-            Ghost_Mode := Save_Ghost_Mode;
             return;
 
          --  Change of representation case
@@ -2198,7 +2185,6 @@ package body Exp_Ch5 is
                   --  expansion, since they would be missed in -gnatc mode ???
 
                   Error_Msg_N ("assignment not available on limited type", N);
-                  Ghost_Mode := Save_Ghost_Mode;
                   return;
                end if;
 
@@ -2401,7 +2387,6 @@ package body Exp_Ch5 is
             --  it with all checks suppressed.
 
             Analyze (N, Suppress => All_Checks);
-            Ghost_Mode := Save_Ghost_Mode;
             return;
          end Tagged_Case;
 
@@ -2419,7 +2404,6 @@ package body Exp_Ch5 is
             end loop;
 
             Expand_Assign_Array (N, Actual_Rhs);
-            Ghost_Mode := Save_Ghost_Mode;
             return;
          end;
 
@@ -2427,7 +2411,6 @@ package body Exp_Ch5 is
 
       elsif Is_Record_Type (Typ) then
          Expand_Assign_Record (N);
-         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Scalar types. This is where we perform the processing related to the
@@ -2540,11 +2523,8 @@ package body Exp_Ch5 is
          end if;
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
-
    exception
       when RE_Not_Available =>
-         Ghost_Mode := Save_Ghost_Mode;
          return;
    end Expand_N_Assignment_Statement;
 

@@ -233,13 +233,6 @@ package body Sem_Ch6 is
 
       Set_Categorization_From_Scope (Subp_Id, Scop);
 
-      --  An abstract subprogram declared within a Ghost region is rendered
-      --  Ghost (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Subp_Id);
-      end if;
-
       if Ekind (Scope (Subp_Id)) = E_Protected_Type then
          Error_Msg_N ("abstract subprogram not allowed in protected type", N);
 
@@ -501,15 +494,6 @@ package body Sem_Ch6 is
          end if;
 
          Set_Is_Inlined (Defining_Entity (N));
-
-         --  If the expression function is Ghost, mark its body entity as
-         --  Ghost too. This avoids spurious errors on unanalyzed body entities
-         --  of expression functions, which are not yet marked as ghost, yet
-         --  identified as the Corresponding_Body of the ghost declaration.
-
-         if Is_Ghost_Entity (Def_Id) then
-            Set_Is_Ghost_Entity (Defining_Entity (New_Body));
-         end if;
 
          --  Establish the linkages between the spec and the body. These are
          --  used when the expression function acts as the prefix of attribute
@@ -1264,19 +1248,6 @@ package body Sem_Ch6 is
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
          Set_Scope          (Body_Id, Scope (Gen_Id));
 
-         --  Inherit the "ghostness" of the generic spec. Note that this
-         --  property is not directly inherited as the body may be subject
-         --  to a different Ghost assertion policy.
-
-         if Ghost_Mode > None or else Is_Ghost_Entity (Gen_Id) then
-            Set_Is_Ghost_Entity (Body_Id);
-
-            --  The Ghost policy in effect at the point of declaration and at
-            --  the point of completion must match (SPARK RM 6.9(14)).
-
-            Check_Ghost_Completion (Gen_Id, Body_Id);
-         end if;
-
          Check_Fully_Conformant (Body_Id, Gen_Id, Body_Id);
 
          if Nkind (N) = N_Subprogram_Body_Stub then
@@ -1559,9 +1530,8 @@ package body Sem_Ch6 is
       Loc     : constant Source_Ptr := Sloc (N);
       P       : constant Node_Id    := Name (N);
       Actual  : Node_Id;
+      Mode    : Ghost_Mode_Type;
       New_N   : Node_Id;
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Analyze_Procedure_Call
 
@@ -1604,7 +1574,7 @@ package body Sem_Ch6 is
       --  Set the mode now to ensure that any nodes generated during analysis
       --  and expansion are properly marked as Ghost.
 
-      Set_Ghost_Mode (N);
+      Mark_And_Set_Ghost_Procedure_Call (N, Mode);
 
       --  Otherwise analyze the parameters
 
@@ -1628,7 +1598,7 @@ package body Sem_Ch6 is
          if Present (Actuals) then
             Error_Msg_N
               ("no parameters allowed for this call", First (Actuals));
-            return;
+            goto Leave;
          end if;
 
          Set_Etype (N, Standard_Void_Type);
@@ -1638,8 +1608,7 @@ package body Sem_Ch6 is
         and then Is_Record_Type (Etype (Entity (P)))
         and then Remote_AST_I_Dereference (P)
       then
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
 
       elsif Is_Entity_Name (P)
         and then Ekind (Entity (P)) /= E_Entry_Family
@@ -1775,7 +1744,8 @@ package body Sem_Ch6 is
          Error_Msg_N ("invalid procedure or entry call", N);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Analyze_Procedure_Call;
 
    ------------------------------
@@ -1783,9 +1753,8 @@ package body Sem_Ch6 is
    ------------------------------
 
    procedure Analyze_Return_Statement (N : Node_Id) is
-
-      pragma Assert (Nkind_In (N, N_Simple_Return_Statement,
-                                  N_Extended_Return_Statement));
+      pragma Assert (Nkind_In (N, N_Extended_Return_Statement,
+                                  N_Simple_Return_Statement));
 
       Returns_Object : constant Boolean :=
                          Nkind (N) = N_Extended_Return_Statement
@@ -2489,12 +2458,7 @@ package body Sem_Ch6 is
          Body_Id := Analyze_Subprogram_Specification (Body_Spec);
 
          --  Ensure that the generated corresponding spec and original body
-         --  share the same Ghost and SPARK_Mode attributes.
-
-         Set_Is_Checked_Ghost_Entity
-           (Body_Id, Is_Checked_Ghost_Entity (Spec_Id));
-         Set_Is_Ignored_Ghost_Entity
-           (Body_Id, Is_Ignored_Ghost_Entity (Spec_Id));
+         --  share the same SPARK_Mode attributes.
 
          Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Spec_Id));
          Set_SPARK_Pragma_Inherited
@@ -3131,7 +3095,8 @@ package body Sem_Ch6 is
 
       --  Local variables
 
-      Save_Ghost_Mode   : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
 
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
@@ -3183,7 +3148,9 @@ package body Sem_Ch6 is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.
 
-            Set_Ghost_Mode          (N, Spec_Id);
+            Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
+            Mode_Set := True;
+
             Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
             Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
 
@@ -3194,15 +3161,13 @@ package body Sem_Ch6 is
                Check_Missing_Return;
             end if;
 
-            Ghost_Mode := Save_Ghost_Mode;
-            return;
+            goto Leave;
+
+         --  Otherwise a previous entity conflicts with the subprogram name.
+         --  Attempting to enter name will post error.
 
          else
-            --  Previous entity conflicts with subprogram name. Attempting to
-            --  enter name will post error.
-
             Enter_Name (Body_Id);
-            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
 
@@ -3213,7 +3178,6 @@ package body Sem_Ch6 is
       --  analysis.
 
       elsif Prev_Id = Body_Id and then Has_Completion (Body_Id) then
-         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       else
@@ -3230,7 +3194,8 @@ package body Sem_Ch6 is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
 
-               Set_Ghost_Mode (N, Spec_Id);
+               Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
+               Mode_Set := True;
 
             else
                Spec_Id := Find_Corresponding_Spec (N);
@@ -3240,7 +3205,8 @@ package body Sem_Ch6 is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
 
-               Set_Ghost_Mode (N, Spec_Id);
+               Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
+               Mode_Set := True;
 
                --  In GNATprove mode, if the body has no previous spec, create
                --  one so that the inlining machinery can operate properly.
@@ -3304,8 +3270,7 @@ package body Sem_Ch6 is
             --  If this is a duplicate body, no point in analyzing it
 
             if Error_Posted (N) then
-               Ghost_Mode := Save_Ghost_Mode;
-               return;
+               goto Leave;
             end if;
 
             --  A subprogram body should cause freezing of its own declaration,
@@ -3342,7 +3307,8 @@ package body Sem_Ch6 is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.
 
-            Set_Ghost_Mode (N, Spec_Id);
+            Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
+            Mode_Set := True;
          end if;
       end if;
 
@@ -3394,7 +3360,7 @@ package body Sem_Ch6 is
          --  function.
 
          Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
-         return;
+         goto Leave;
       end if;
 
       --  If a separate spec is present, then deal with freezing issues
@@ -3445,25 +3411,11 @@ package body Sem_Ch6 is
 
          if Is_Abstract_Subprogram (Spec_Id) then
             Error_Msg_N ("an abstract subprogram cannot have a body", N);
-            Ghost_Mode := Save_Ghost_Mode;
-            return;
+            goto Leave;
 
          else
             Set_Convention (Body_Id, Convention (Spec_Id));
             Set_Has_Completion (Spec_Id);
-
-            --  Inherit the "ghostness" of the subprogram spec. Note that this
-            --  property is not directly inherited as the body may be subject
-            --  to a different Ghost assertion policy.
-
-            if Ghost_Mode > None or else Is_Ghost_Entity (Spec_Id) then
-               Set_Is_Ghost_Entity (Body_Id);
-
-               --  The Ghost policy in effect at the point of declaration and
-               --  at the point of completion must match (SPARK RM 6.9(14)).
-
-               Check_Ghost_Completion (Spec_Id, Body_Id);
-            end if;
 
             if Is_Protected_Type (Scope (Spec_Id)) then
                Prot_Typ := Scope (Spec_Id);
@@ -3518,8 +3470,7 @@ package body Sem_Ch6 is
             if not Conformant
               and then not Mode_Conformant (Body_Id, Spec_Id)
             then
-               Ghost_Mode := Save_Ghost_Mode;
-               return;
+               goto Leave;
             end if;
          end if;
 
@@ -3629,13 +3580,6 @@ package body Sem_Ch6 is
          end if;
 
          New_Overloaded_Entity (Body_Id);
-
-         --  A subprogram body declared within a Ghost region is automatically
-         --  Ghost (SPARK RM 6.9(2)).
-
-         if Ghost_Mode > None then
-            Set_Is_Ghost_Entity (Body_Id);
-         end if;
 
          if Nkind (N) /= N_Subprogram_Body_Stub then
             Set_Acts_As_Spec (N);
@@ -3759,8 +3703,7 @@ package body Sem_Ch6 is
             Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
          end if;
 
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       --  Handle inlining
@@ -4182,7 +4125,8 @@ package body Sem_Ch6 is
       --  Check for variables that are never modified
 
       declare
-         E1, E2 : Entity_Id;
+         E1 : Entity_Id;
+         E2 : Entity_Id;
 
       begin
          --  If there is a separate spec, then transfer Never_Set_In_Source
@@ -4247,7 +4191,10 @@ package body Sem_Ch6 is
          Set_Directly_Designated_Type (Etype (Spec_Id), Desig_View);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
    end Analyze_Subprogram_Body_Helper;
 
    ------------------------------------
@@ -4307,13 +4254,6 @@ package body Sem_Ch6 is
       else
          Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Designator);
-      end if;
-
-      --  A subprogram declared within a Ghost region is automatically Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Designator);
       end if;
 
       if Debug_Flag_C then
@@ -8197,10 +8137,6 @@ package body Sem_Ch6 is
 
                   Set_Convention (Designator, Convention (E));
 
-                  if Is_Ghost_Entity (E) then
-                     Set_Is_Ghost_Entity (Designator);
-                  end if;
-
                   --  Skip past subprogram bodies and subprogram renamings that
                   --  may appear to have a matching spec, but that aren't fully
                   --  conformant with it. That can occur in cases where an
@@ -9762,8 +9698,8 @@ package body Sem_Ch6 is
                   Set_Is_Primitive (S);
                   Check_Private_Overriding (B_Typ);
 
-                  --  The Ghost policy in effect at the point of declaration of
-                  --  a tagged type and a primitive operation must match
+                  --  The Ghost policy in effect at the point of declaration
+                  --  or a tagged type and a primitive operation must match
                   --  (SPARK RM 6.9(16)).
 
                   Check_Ghost_Primitive (S, B_Typ);
@@ -9795,8 +9731,8 @@ package body Sem_Ch6 is
                   Set_Has_Primitive_Operations (B_Typ);
                   Check_Private_Overriding (B_Typ);
 
-                  --  The Ghost policy in effect at the point of declaration of
-                  --  a tagged type and a primitive operation must match
+                  --  The Ghost policy in effect at the point of declaration
+                  --  of a tagged type and a primitive operation must match
                   --  (SPARK RM 6.9(16)).
 
                   Check_Ghost_Primitive (S, B_Typ);
@@ -11057,13 +10993,6 @@ package body Sem_Ch6 is
          end if;
 
          Set_Etype (Formal, Formal_Type);
-
-         --  A formal parameter declared within a Ghost region is automatically
-         --  Ghost (SPARK RM 6.9(2)).
-
-         if Ghost_Mode > None then
-            Set_Is_Ghost_Entity (Formal);
-         end if;
 
          --  Deal with default expression if present
 

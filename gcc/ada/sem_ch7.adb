@@ -537,10 +537,10 @@ package body Sem_Ch7 is
 
       --  Local variables
 
-      Save_Ghost_Mode  : constant Ghost_Mode_Type := Ghost_Mode;
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
+      Mode             : Ghost_Mode_Type;
       New_N            : Node_Id;
       Pack_Decl        : Node_Id;
       Spec_Id          : Entity_Id;
@@ -643,7 +643,7 @@ package body Sem_Ch7 is
       --  the mode now to ensure that any nodes generated during analysis and
       --  expansion are properly flagged as ignored Ghost.
 
-      Set_Ghost_Mode (N, Spec_Id);
+      Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
 
       Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
       Style.Check_Identifier (Body_Id, Spec_Id);
@@ -736,19 +736,6 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma           (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited     (Body_Id);
          Set_SPARK_Aux_Pragma_Inherited (Body_Id);
-      end if;
-
-      --  Inherit the "ghostness" of the package spec. Note that this property
-      --  is not directly inherited as the body may be subject to a different
-      --  Ghost assertion policy.
-
-      if Ghost_Mode > None or else Is_Ghost_Entity (Spec_Id) then
-         Set_Is_Ghost_Entity (Body_Id);
-
-         --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
-
-         Check_Ghost_Completion (Spec_Id, Body_Id);
       end if;
 
       Set_Categorization_From_Pragmas (N);
@@ -942,7 +929,7 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Mode (Mode);
    end Analyze_Package_Body_Helper;
 
    ---------------------------------
@@ -951,7 +938,6 @@ package body Sem_Ch7 is
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
       Id  : constant Node_Id := Defining_Entity (N);
-      Par : constant Node_Id := Parent_Spec (N);
 
       Is_Comp_Unit : constant Boolean :=
                        Nkind (Parent (N)) = N_Compilation_Unit;
@@ -981,16 +967,6 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited     (Id);
          Set_SPARK_Aux_Pragma_Inherited (Id);
-      end if;
-
-      --  A package declared within a Ghost refion is automatically Ghost. A
-      --  child package is Ghost when its parent is Ghost (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None
-        or else (Present (Par)
-                  and then Is_Ghost_Entity (Defining_Entity (Unit (Par))))
-      then
-         Set_Is_Ghost_Entity (Id);
       end if;
 
       --  Analyze aspect specifications immediately, since we need to recognize
@@ -1792,13 +1768,6 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
-
-      --  A type declared within a Ghost region is automatically Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);

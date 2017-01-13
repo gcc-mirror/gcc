@@ -2824,13 +2824,6 @@ package body Sem_Ch3 is
       if not Analyzed (T) then
          Set_Analyzed (T);
 
-         --  A type declared within a Ghost region is automatically Ghost
-         --  (SPARK RM 6.9(2)).
-
-         if Ghost_Mode > None then
-            Set_Is_Ghost_Entity (T);
-         end if;
-
          case Nkind (Def) is
             when N_Access_To_Subprogram_Definition =>
                Access_Subprogram_Declaration (T, Def);
@@ -3072,13 +3065,6 @@ package body Sem_Ch3 is
       Set_Is_First_Subtype (T, True);
       Set_Etype (T, T);
 
-      --  An incomplete type declared within a Ghost region is automatically
-      --  Ghost (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (T);
-      end if;
-
       --  Ada 2005 (AI-326): Minimum decoration to give support to tagged
       --  incomplete types.
 
@@ -3185,13 +3171,6 @@ package body Sem_Ch3 is
    begin
       Generate_Definition (Id);
       Enter_Name (Id);
-
-      --  A number declared within a Ghost region is automatically Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
 
       --  This is an optimization of a common case of an integer literal
 
@@ -3435,8 +3414,9 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-      Related_Id      : Entity_Id;
+      Mode       : Ghost_Mode_Type;
+      Mode_Set   : Boolean := False;
+      Related_Id : Entity_Id;
 
    --  Start of processing for Analyze_Object_Declaration
 
@@ -3501,14 +3481,14 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  The object declaration is Ghost when it is subject to pragma Ghost or
-      --  completes a deferred Ghost constant. Set the mode now to ensure that
-      --  any nodes generated during analysis and expansion are properly marked
-      --  as Ghost.
-
-      Set_Ghost_Mode (N, Prev_Entity);
-
       if Present (Prev_Entity) then
+
+         --  The object declaration is Ghost when it completes a deferred Ghost
+         --  constant.
+
+         Mark_And_Set_Ghost_Completion (N, Prev_Entity, Mode);
+         Mode_Set := True;
+
          Constant_Redeclaration (Id, N, T);
 
          Generate_Reference (Prev_Entity, Id, 'c');
@@ -3802,8 +3782,7 @@ package body Sem_Ch3 is
            and then Analyzed (N)
            and then No (Expression (N))
          then
-            Ghost_Mode := Save_Ghost_Mode;
-            return;
+            goto Leave;
          end if;
 
          --  If E is null and has been replaced by an N_Raise_Constraint_Error
@@ -4061,23 +4040,6 @@ package body Sem_Ch3 is
                   Set_Ekind (Id, E_Variable);
                end if;
 
-               --  An object declared within a Ghost region is automatically
-               --  Ghost (SPARK RM 6.9(2)).
-
-               if Ghost_Mode > None then
-                  Set_Is_Ghost_Entity (Id);
-
-                  --  The Ghost policy in effect at the point of declaration
-                  --  and at the point of completion must match
-                  --  (SPARK RM 6.9(14)).
-
-                  if Present (Prev_Entity)
-                    and then Is_Ghost_Entity (Prev_Entity)
-                  then
-                     Check_Ghost_Completion (Prev_Entity, Id);
-                  end if;
-               end if;
-
                Rewrite (N,
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
@@ -4087,9 +4049,7 @@ package body Sem_Ch3 is
                Set_Renamed_Object (Id, E);
                Freeze_Before (N, T);
                Set_Is_Frozen (Id);
-
-               Ghost_Mode := Save_Ghost_Mode;
-               return;
+               goto Leave;
 
             else
                --  Ensure that the generated subtype has a unique external name
@@ -4262,22 +4222,6 @@ package body Sem_Ch3 is
       Init_Alignment               (Id);
       Init_Esize                   (Id);
       Set_Optimize_Alignment_Flags (Id);
-
-      --  An object declared within a Ghost region is automatically Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None
-        or else (Present (Prev_Entity) and then Is_Ghost_Entity (Prev_Entity))
-      then
-         Set_Is_Ghost_Entity (Id);
-
-         --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
-
-         if Present (Prev_Entity) and then Is_Ghost_Entity (Prev_Entity) then
-            Check_Ghost_Completion (Prev_Entity, Id);
-         end if;
-      end if;
 
       --  Deal with aliased case
 
@@ -4481,7 +4425,9 @@ package body Sem_Ch3 is
          Check_No_Hidden_State (Id);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -5501,13 +5447,13 @@ package body Sem_Ch3 is
    procedure Array_Type_Declaration (T : in out Entity_Id; Def : Node_Id) is
       Component_Def : constant Node_Id := Component_Definition (Def);
       Component_Typ : constant Node_Id := Subtype_Indication (Component_Def);
+      P             : constant Node_Id := Parent (Def);
       Element_Type  : Entity_Id;
       Implicit_Base : Entity_Id;
       Index         : Node_Id;
-      Related_Id    : Entity_Id := Empty;
       Nb_Index      : Nat;
-      P             : constant Node_Id := Parent (Def);
       Priv          : Entity_Id;
+      Related_Id    : Entity_Id := Empty;
 
    begin
       if Nkind (Def) = N_Constrained_Array_Definition then
@@ -5563,8 +5509,8 @@ package body Sem_Ch3 is
          then
             declare
                Loc   : constant Source_Ptr := Sloc (Def);
-               New_E : Entity_Id;
                Decl  : Entity_Id;
+               New_E : Entity_Id;
 
             begin
                New_E := Make_Temporary (Loc, 'T');
@@ -5704,12 +5650,6 @@ package body Sem_Ch3 is
                             (Implicit_Base, Empty);
 
          Propagate_Concurrent_Flags (Implicit_Base, Element_Type);
-
-         --  Inherit the "ghostness" from the constrained array type
-
-         if Ghost_Mode > None or else Is_Ghost_Entity (T) then
-            Set_Is_Ghost_Entity (Implicit_Base);
-         end if;
 
       --  Unconstrained array case
 
@@ -6188,12 +6128,6 @@ package body Sem_Ch3 is
          Copy_Array_Base_Type_Attributes (Implicit_Base, Parent_Base);
 
          Set_Has_Delayed_Freeze (Implicit_Base, True);
-
-         --  Inherit the "ghostness" from the parent base type
-
-         if Ghost_Mode > None or else Is_Ghost_Entity (Parent_Base) then
-            Set_Is_Ghost_Entity (Implicit_Base);
-         end if;
       end Make_Implicit_Base;
 
    --  Start of processing for Build_Derived_Array_Type
@@ -9132,7 +9066,7 @@ package body Sem_Ch3 is
       --  (anonymous) base type.
 
       if Has_Predicates (Parent_Type)
-        or else  Has_Predicates (First_Subtype (Parent_Type))
+        or else Has_Predicates (First_Subtype (Parent_Type))
       then
          Set_Has_Predicates (Derived_Type);
       end if;
@@ -9148,8 +9082,9 @@ package body Sem_Ch3 is
          Set_May_Inherit_Delayed_Rep_Aspects (Derived_Type);
       end if;
 
-      --  Propagate the attributes related to pragma Ghost from the parent type
-      --  to the derived type or type extension (SPARK RM 6.9(9)).
+      --  A derived type becomes Ghost when its parent type is also Ghost
+      --  (SPARK RM 6.9(9)). Note that the Ghost-related attributes are not
+      --  directly inherited because the Ghost policy in effect may differ.
 
       if Is_Ghost_Entity (Parent_Type) then
          Set_Is_Ghost_Entity (Derived_Type);
@@ -14936,12 +14871,6 @@ package body Sem_Ch3 is
          Set_Alias (New_Subp, Actual_Subp);
       end if;
 
-      --  Inherit the "ghostness" from the parent subprogram
-
-      if Is_Ghost_Entity (Alias (New_Subp)) then
-         Set_Is_Ghost_Entity (New_Subp);
-      end if;
-
       --  Derived subprograms of a tagged type must inherit the convention
       --  of the parent subprogram (a requirement of AI-117). Derived
       --  subprograms of untagged types simply get convention Ada by default.
@@ -18346,12 +18275,6 @@ package body Sem_Ch3 is
       --  The class-wide type of a class-wide type is itself (RM 3.9(14))
 
       Set_Class_Wide_Type (CW_Type, CW_Type);
-
-      --  Inherit the "ghostness" from the root tagged type
-
-      if Ghost_Mode > None or else Is_Ghost_Entity (T) then
-         Set_Is_Ghost_Entity (CW_Type);
-      end if;
    end Make_Class_Wide_Type;
 
    ----------------
@@ -19584,11 +19507,14 @@ package body Sem_Ch3 is
 
       Full_Indic  : Node_Id;
       Full_Parent : Entity_Id;
+      Mode        : Ghost_Mode_Type;
       Priv_Parent : Entity_Id;
 
    --  Start of processing for Process_Full_View
 
    begin
+      Mark_And_Set_Ghost_Completion (N, Priv_T, Mode);
+
       --  First some sanity checks that must be done after semantic
       --  decoration of the full view and thus cannot be placed with other
       --  similar checks in Find_Type_Name
@@ -19701,7 +19627,7 @@ package body Sem_Ch3 is
          --  error situation [7.3(8)].
 
          if Priv_Parent = Any_Type or else Full_Parent = Any_Type then
-            return;
+            goto Leave;
 
          --  Ada 2005 (AI-251): Interfaces in the full type can be given in
          --  any order. Therefore we don't have to check that its parent must
@@ -20053,7 +19979,7 @@ package body Sem_Ch3 is
                         Next_Elmt (Prim_Elmt);
                      end loop;
 
-                     return;
+                     goto Leave;
                   end;
 
                --  For non-concurrent types, transfer explicit primitives, but
@@ -20190,19 +20116,6 @@ package body Sem_Ch3 is
          Set_Has_Specified_Stream_Output (Full_T);
       end if;
 
-      if Is_Ghost_Entity (Priv_T) then
-
-         --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
-
-         Check_Ghost_Completion (Priv_T, Full_T);
-
-         --  Propagate the attributes related to pragma Ghost from the private
-         --  to the full view.
-
-         Mark_Full_View_As_Ghost (Priv_T, Full_T);
-      end if;
-
       --  Propagate Default_Initial_Condition-related attributes from the
       --  partial view to the full view and its base type.
 
@@ -20251,6 +20164,9 @@ package body Sem_Ch3 is
             Set_Predicate_Function (Full_T, Predicate_Function (Priv_T));
          end if;
       end if;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Process_Full_View;
 
    -----------------------------------

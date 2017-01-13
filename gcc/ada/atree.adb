@@ -549,15 +549,19 @@ package body Atree is
    -- Local Subprograms --
    -----------------------
 
-   procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id);
-   --  Fixup parent pointers for the syntactic children of Fix_Node after
-   --  a copy, setting them to Fix_Node when they pointed to Ref_Node.
-
    function Allocate_Initialize_Node
      (Src            : Node_Id;
       With_Extension : Boolean) return Node_Id;
    --  Allocate a new node or node extension. If Src is not empty, the
    --  information for the newly-allocated node is copied from it.
+
+   procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id);
+   --  Fixup parent pointers for the syntactic children of Fix_Node after a
+   --  copy, setting them to Fix_Node when they pointed to Ref_Node.
+
+   procedure Mark_New_Ghost_Node (N : Node_Or_Entity_Id);
+   --  Mark arbitrary node or entity N as Ghost when it is created within a
+   --  Ghost region.
 
    ------------------------------
    -- Allocate_Initialize_Node --
@@ -592,13 +596,6 @@ package body Atree is
          New_Id := Nodes.Last;
          Orig_Nodes.Append (New_Id);
          Node_Count := Node_Count + 1;
-      end if;
-
-      --  Mark the node as ignored Ghost if it is created in an ignored Ghost
-      --  region.
-
-      if Ghost_Mode = Ignore then
-         Set_Is_Ignored_Ghost_Node (New_Id);
       end if;
 
       --  Clear Check_Actuals to False
@@ -1432,7 +1429,6 @@ package body Atree is
    -----------------
 
    procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id) is
-
       procedure Fix_Parent (Field : Union_Id);
       --  Fixup one parent pointer. Field is checked to see if it points to
       --  a node, list, or element list that has a parent that points to
@@ -1590,6 +1586,28 @@ package body Atree is
       Orig_Nodes.Release;
    end Lock;
 
+   -------------------------
+   -- Mark_New_Ghost_Node --
+   -------------------------
+
+   procedure Mark_New_Ghost_Node (N : Node_Or_Entity_Id) is
+   begin
+      --  The Ghost node is created within a Ghost region
+
+      if Ghost_Mode = Check then
+         if Nkind (N) in N_Entity then
+            Set_Is_Checked_Ghost_Entity (N);
+         end if;
+
+      elsif Ghost_Mode = Ignore then
+         if Nkind (N) in N_Entity then
+            Set_Is_Ignored_Ghost_Entity (N);
+         end if;
+
+         Set_Is_Ignored_Ghost_Node (N);
+      end if;
+   end Mark_New_Ghost_Node;
+
    ----------------------------
    -- Mark_Rewrite_Insertion --
    ----------------------------
@@ -1630,6 +1648,10 @@ package body Atree is
          --  aspects if this is required for the particular situation.
 
          Set_Has_Aspects (New_Id, False);
+
+         --  Mark the copy as Ghost depending on the current Ghost region
+
+         Mark_New_Ghost_Node (New_Id);
       end if;
 
       return New_Id;
@@ -1662,6 +1684,10 @@ package body Atree is
       Nodes.Table (Ent).Sloc   := New_Sloc;
       pragma Debug (New_Node_Debugging_Output (Ent));
 
+      --  Mark the new entity as Ghost depending on the current Ghost region
+
+      Mark_New_Ghost_Node (Ent);
+
       return Ent;
    end New_Entity;
 
@@ -1689,6 +1715,10 @@ package body Atree is
       if Default_Node.Comes_From_Source and then New_Sloc > No_Location then
          Current_Error_Node := Nod;
       end if;
+
+      --  Mark the new node as Ghost depending on the current Ghost region
+
+      Mark_New_Ghost_Node (Nod);
 
       return Nod;
    end New_Node;

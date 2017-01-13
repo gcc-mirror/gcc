@@ -12075,32 +12075,37 @@ package body Sem_Util is
 
    function Is_Declaration (N : Node_Id) return Boolean is
    begin
+      return
+        Is_Declaration_Other_Than_Renaming (N)
+          or else Is_Renaming_Declaration (N);
+   end Is_Declaration;
+
+   ----------------------------------------
+   -- Is_Declaration_Other_Than_Renaming --
+   ----------------------------------------
+
+   function Is_Declaration_Other_Than_Renaming (N : Node_Id) return Boolean is
+   begin
       case Nkind (N) is
          when N_Abstract_Subprogram_Declaration        |
               N_Exception_Declaration                  |
-              N_Exception_Renaming_Declaration         |
+              N_Expression_Function                    |
               N_Full_Type_Declaration                  |
-              N_Generic_Function_Renaming_Declaration  |
               N_Generic_Package_Declaration            |
-              N_Generic_Package_Renaming_Declaration   |
-              N_Generic_Procedure_Renaming_Declaration |
               N_Generic_Subprogram_Declaration         |
               N_Number_Declaration                     |
               N_Object_Declaration                     |
-              N_Object_Renaming_Declaration            |
               N_Package_Declaration                    |
-              N_Package_Renaming_Declaration           |
               N_Private_Extension_Declaration          |
               N_Private_Type_Declaration               |
               N_Subprogram_Declaration                 |
-              N_Subprogram_Renaming_Declaration        |
               N_Subtype_Declaration                    =>
             return True;
 
          when others                                   =>
             return False;
       end case;
-   end Is_Declaration;
+   end Is_Declaration_Other_Than_Renaming;
 
    --------------------------------
    -- Is_Declared_Within_Variant --

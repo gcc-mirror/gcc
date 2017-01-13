@@ -32,7 +32,6 @@ with Exp_Imgv; use Exp_Imgv;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
-with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -345,10 +344,8 @@ package body Exp_Ch13 is
             Insert_Action (N,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
-                Object_Definition =>
-                  New_Occurrence_Of (Expr_Typ, Loc),
-                Expression =>
-                  Relocate_Node (Expr)));
+                Object_Definition   => New_Occurrence_Of (Expr_Typ, Loc),
+                Expression          => Relocate_Node (Expr)));
 
             New_Expr := New_Occurrence_Of (Temp_Id, Loc);
             Set_Etype (New_Expr, Expr_Typ);
@@ -371,8 +368,6 @@ package body Exp_Ch13 is
    procedure Expand_N_Freeze_Entity (N : Node_Id) is
       E : constant Entity_Id := Entity (N);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       Decl           : Node_Id;
       Delete         : Boolean := False;
       E_Scope        : Entity_Id;
@@ -380,10 +375,6 @@ package body Exp_Ch13 is
       In_Outer_Scope : Boolean;
 
    begin
-      --  Ensure that all freezing activities are properly flagged as Ghost
-
-      Set_Ghost_Mode_From_Entity (E);
-
       --  If there are delayed aspect specifications, we insert them just
       --  before the freeze node. They are already analyzed so we don't need
       --  to reanalyze them (they were analyzed before the type was frozen),
@@ -451,14 +442,12 @@ package body Exp_Ch13 is
          --  statement, insert them back into the tree now.
 
          Explode_Initialization_Compound_Statement (E);
-         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Only other items requiring any front end action are types and
       --  subprograms.
 
       elsif not Is_Type (E) and then not Is_Subprogram (E) then
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -470,7 +459,6 @@ package body Exp_Ch13 is
 
       if No (E_Scope) then
          Check_Error_Detected;
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -688,7 +676,6 @@ package body Exp_Ch13 is
       --  whether we are inside a (possibly nested) call to this procedure.
 
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Freeze_Entity;
 
    -------------------------------------------
