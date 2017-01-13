@@ -11603,12 +11603,11 @@ package body Sem_Ch13 is
 
       function Is_Type_Ref (N : Node_Id) return Boolean;
       pragma Inline (Is_Type_Ref);
-
       --  Returns True if N is a reference to the type for the predicate in the
       --  expression (i.e. if it is an identifier whose Chars field matches the
       --  Nam given in the call). N must not be parenthesized, if the type name
       --  appears in parens, this routine will return False.
-
+      --
       --  The routine also returns True for function calls generated during the
       --  expansion of comparison operators on strings, which are intended to
       --  be legal in static predicates, and are converted into calls to array

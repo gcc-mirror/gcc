@@ -1,3 +1,21 @@
+2017-01-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Move disabiling
+	of the style check until after preanalysis of acutals.
+
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+	* par-ch11.adb: minor style fix in whitespace
+	* gnatbind.adb (Gnatbind): Scope of Std_Lib_File
+	reduced to Add_Artificial_ALI_File; style fix in declaration of
+	Text; grammar fix in comment.
+	* osint-c.adb (Read_Library_Info): strip trailing NUL from result.
+	* freeze.adb: Cleanup to pass pragma instead of
+	expression to call.
+	* exp_spark.adb (Expand_SPARK_Attribute_Reference): New procedure to
+	replace System'To_Address by equivalent call.
+
 2017-01-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* bindusg.adb: Improve usage output for -f switch.
