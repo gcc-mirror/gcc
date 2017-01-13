@@ -9880,6 +9880,10 @@ when adding a new one.
 @item avg-loop-niter
 Average number of iterations of a loop.
 
+@item dse-max-object-size
+Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
+Larger values may result in larger compilation times.
+
 @item scev-max-expr-size
 Bound on size of expressions used in the scalar evolutions analyzer.
 Large expressions slow the analyzer.

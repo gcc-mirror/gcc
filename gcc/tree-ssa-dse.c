@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
+#include "params.h"
 
 /* This file implements dead store elimination.
 
@@ -68,14 +69,241 @@ along with GCC; see the file COPYING3.  If not see
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
 
+/* Return value from dse_classify_store */
+enum dse_store_status
+{
+  DSE_STORE_LIVE,
+  DSE_STORE_MAYBE_PARTIAL_DEAD,
+  DSE_STORE_DEAD
+};
+
+/* STMT is a statement that may write into memory.  Analyze it and
+   initialize WRITE to describe how STMT affects memory.
+
+   Return TRUE if the the statement was analyzed, FALSE otherwise.
+
+   It is always safe to return FALSE.  But typically better optimziation
+   can be achieved by analyzing more statements.  */
+
+static bool
+initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
+{
+  /* It's advantageous to handle certain mem* functions.  */
+  if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
+	{
+	  case BUILT_IN_MEMCPY:
+	  case BUILT_IN_MEMMOVE:
+	  case BUILT_IN_MEMSET:
+	    {
+	      tree size = NULL_TREE;
+	      if (gimple_call_num_args (stmt) == 3)
+		size = gimple_call_arg (stmt, 2);
+	      tree ptr = gimple_call_arg (stmt, 0);
+	      ao_ref_init_from_ptr_and_size (write, ptr, size);
+	      return true;
+	    }
+	  default:
+	    break;
+	}
+    }
+  else if (is_gimple_assign (stmt))
+    {
+      ao_ref_init (write, gimple_assign_lhs (stmt));
+      return true;
+    }
+  return false;
+}
+
+/* Given REF from the the alias oracle, return TRUE if it is a valid
+   memory reference for dead store elimination, false otherwise.
+
+   In particular, the reference must have a known base, known maximum
+   size, start at a byte offset and have a size that is one or more
+   bytes.  */
+
+static bool
+valid_ao_ref_for_dse (ao_ref *ref)
+{
+  return (ao_ref_base (ref)
+	  && ref->max_size != -1
+	  && (ref->offset % BITS_PER_UNIT) == 0
+	  && (ref->size % BITS_PER_UNIT) == 0
+	  && (ref->size != -1));
+}
+
+/* Normalize COPY (an ao_ref) relative to REF.  Essentially when we are
+   done COPY will only refer bytes found within REF.
+
+   We have already verified that COPY intersects at least one
+   byte with REF.  */
+
+static void
+normalize_ref (ao_ref *copy, ao_ref *ref)
+{
+  /* If COPY starts before REF, then reset the beginning of
+     COPY to match REF and decrease the size of COPY by the
+     number of bytes removed from COPY.  */
+  if (copy->offset < ref->offset)
+    {
+      copy->size -= (ref->offset - copy->offset);
+      copy->offset = ref->offset;
+    }
+
+  /* If COPY extends beyond REF, chop off its size appropriately.  */
+  if (copy->offset + copy->size > ref->offset + ref->size)
+    copy->size -= (copy->offset + copy->size - (ref->offset + ref->size));
+}
+
+/* Clear any bytes written by STMT from the bitmap LIVE_BYTES.  The base
+   address written by STMT must match the one found in REF, which must
+   have its base address previously initialized.
+
+   This routine must be conservative.  If we don't know the offset or
+   actual size written, assume nothing was written.  */
+
+static void
+clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
+{
+  ao_ref write;
+  if (!initialize_ao_ref_for_dse (stmt, &write))
+    return;
+
+  /* Verify we have the same base memory address, the write
+     has a known size and overlaps with REF.  */
+  if (valid_ao_ref_for_dse (&write)
+      && write.base == ref->base
+      && write.size == write.max_size
+      && ((write.offset < ref->offset
+	   && write.offset + write.size > ref->offset)
+	  || (write.offset >= ref->offset
+	      && write.offset < ref->offset + ref->size)))
+    {
+      normalize_ref (&write, ref);
+      bitmap_clear_range (live_bytes,
+			  (write.offset - ref->offset) / BITS_PER_UNIT,
+			  write.size / BITS_PER_UNIT);
+    }
+}
+
+/* REF is a memory write.  Extract relevant information from it and
+   initialize the LIVE_BYTES bitmap.  If successful, return TRUE.
+   Otherwise return FALSE.  */
+
+static bool
+setup_live_bytes_from_ref (ao_ref *ref, sbitmap live_bytes)
+{
+  if (valid_ao_ref_for_dse (ref)
+      && (ref->size / BITS_PER_UNIT
+	  <= PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)))
+    {
+      bitmap_clear (live_bytes);
+      bitmap_set_range (live_bytes, 0, ref->size / BITS_PER_UNIT);
+      return true;
+    }
+  return false;
+}
+
+/* Compute the number of elements that we can trim from the head and
+   tail of ORIG resulting in a bitmap that is a superset of LIVE.
+
+   Store the number of elements trimmed from the head and tail in
+   TRIM_HEAD and TRIM_TAIL.  */
+
+static void
+compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail)
+{
+  /* We use sbitmaps biased such that ref->offset is bit zero and the bitmap
+     extends through ref->size.  So we know that in the original bitmap
+     bits 0..ref->size were true.  We don't actually need the bitmap, just
+     the REF to compute the trims.  */
+
+  /* Now identify how much, if any of the tail we can chop off.  */
+  *trim_tail = 0;
+  int last_orig = (ref->size / BITS_PER_UNIT) - 1;
+  int last_live = bitmap_last_set_bit (live);
+  *trim_tail = (last_orig - last_live) & ~0x1;
+
+  /* Identify how much, if any of the head we can chop off.  */
+  int first_orig = 0;
+  int first_live = bitmap_first_set_bit (live);
+  *trim_head = (first_live - first_orig) & ~0x1;
+}
+
+/* STMT initializes an object from COMPLEX_CST where one or more of the
+   bytes written may be dead stores.  REF is a representation of the
+   memory written.  LIVE is the bitmap of stores that are actually live.
+
+   Attempt to rewrite STMT so that only the real or imaginary part of
+   the object is actually stored.  */
+
+static void
+maybe_trim_complex_store (ao_ref *ref, sbitmap live, gimple *stmt)
+{
+  int trim_head, trim_tail;
+  compute_trims (ref, live, &trim_head, &trim_tail);
+
+  /* The amount of data trimmed from the head or tail must be at
+     least half the size of the object to ensure we're trimming
+     the entire real or imaginary half.  By writing things this
+     way we avoid more O(n) bitmap operations.  */
+  if (trim_tail * 2 >= ref->size / BITS_PER_UNIT)
+    {
+      /* TREE_REALPART is live */
+      tree x = TREE_REALPART (gimple_assign_rhs1 (stmt));
+      tree y = gimple_assign_lhs (stmt);
+      y = build1 (REALPART_EXPR, TREE_TYPE (x), y);
+      gimple_assign_set_lhs (stmt, y);
+      gimple_assign_set_rhs1 (stmt, x);
+    }
+  else if (trim_head * 2 >= ref->size / BITS_PER_UNIT)
+    {
+      /* TREE_IMAGPART is live */
+      tree x = TREE_IMAGPART (gimple_assign_rhs1 (stmt));
+      tree y = gimple_assign_lhs (stmt);
+      y = build1 (IMAGPART_EXPR, TREE_TYPE (x), y);
+      gimple_assign_set_lhs (stmt, y);
+      gimple_assign_set_rhs1 (stmt, x);
+    }
+
+  /* Other cases indicate parts of both the real and imag subobjects
+     are live.  We do not try to optimize those cases.  */
+}
+
+/* STMT is a memory write where one or more bytes written are dead
+   stores.  ORIG is the bitmap of bytes stored by STMT.  LIVE is the
+   bitmap of stores that are actually live.
+
+   Attempt to rewrite STMT so that it writes fewer memory locations.  Right
+   now we only support trimming at the start or end of the memory region.
+   It's not clear how much there is to be gained by trimming from the middle
+   of the region.  */
+
+static void
+maybe_trim_partially_dead_store (ao_ref *ref, sbitmap live, gimple *stmt)
+{
+  if (is_gimple_assign (stmt))
+    {
+      switch (gimple_assign_rhs_code (stmt))
+	{
+	case COMPLEX_CST:
+	  maybe_trim_complex_store (ref, live, stmt);
+	  break;
+	default:
+	  break;
+	}
+    }
+}
 
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT that writes to REF, find a candidate
    statement *USE_STMT that may prove STMT to be dead.
    Return TRUE if the above conditions are met, otherwise FALSE.  */
 
-static bool
-dse_possible_dead_store_p (ao_ref *ref, gimple *stmt, gimple **use_stmt)
+static dse_store_status
+dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
+		    bool byte_tracking_enabled, sbitmap live_bytes)
 {
   gimple *temp;
   unsigned cnt = 0;
@@ -97,7 +325,7 @@ dse_possible_dead_store_p (ao_ref *ref, gimple *stmt, gimple **use_stmt)
       /* Limit stmt walking to be linear in the number of possibly
          dead stores.  */
       if (++cnt > 256)
-	return false;
+	return DSE_STORE_LIVE;
 
       if (gimple_code (temp) == GIMPLE_PHI)
 	defvar = PHI_RESULT (temp);
@@ -135,7 +363,7 @@ dse_possible_dead_store_p (ao_ref *ref, gimple *stmt, gimple **use_stmt)
 		  fail = true;
 		  BREAK_FROM_IMM_USE_STMT (ui);
 		}
-	      /* Do not consider the PHI as use if it dominates the 
+	      /* Do not consider the PHI as use if it dominates the
 	         stmt defining the virtual operand we are processing,
 		 we have processed it already in this case.  */
 	      if (gimple_bb (defvar_def) != gimple_bb (use_stmt)
@@ -164,7 +392,13 @@ dse_possible_dead_store_p (ao_ref *ref, gimple *stmt, gimple **use_stmt)
 	}
 
       if (fail)
-	return false;
+	{
+	  /* STMT might be partially dead and we may be able to reduce
+	     how many memory locations it stores into.  */
+	  if (byte_tracking_enabled && !gimple_clobber_p (stmt))
+	    return DSE_STORE_MAYBE_PARTIAL_DEAD;
+	  return DSE_STORE_LIVE;
+	}
 
       /* If we didn't find any definition this means the store is dead
          if it isn't a store to global reachable memory.  In this case
@@ -172,20 +406,101 @@ dse_possible_dead_store_p (ao_ref *ref, gimple *stmt, gimple **use_stmt)
       if (!temp)
 	{
 	  if (ref_may_alias_global_p (ref))
-	    return false;
+	    return DSE_STORE_LIVE;
 
 	  temp = stmt;
 	  break;
 	}
+
+      if (byte_tracking_enabled && temp)
+	clear_bytes_written_by (live_bytes, temp, ref);
     }
-  /* Continue walking until we reach a kill.  */
-  while (!stmt_kills_ref_p (temp, ref));
+  /* Continue walking until we reach a full kill as a single statement
+     or there are no more live bytes.  */
+  while (!stmt_kills_ref_p (temp, ref)
+	 && !(byte_tracking_enabled && bitmap_empty_p (live_bytes)));
 
   *use_stmt = temp;
-
-  return true;
+  return DSE_STORE_DEAD;
 }
 
+
+class dse_dom_walker : public dom_walker
+{
+public:
+  dse_dom_walker (cdi_direction direction)
+    : dom_walker (direction), m_byte_tracking_enabled (false)
+
+  { m_live_bytes = sbitmap_alloc (PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)); }
+
+  ~dse_dom_walker () { sbitmap_free (m_live_bytes); }
+
+  virtual edge before_dom_children (basic_block);
+
+private:
+  sbitmap m_live_bytes;
+  bool m_byte_tracking_enabled;
+  void dse_optimize_stmt (gimple_stmt_iterator *);
+};
+
+/* Delete a dead call STMT, which is mem* call of some kind.  */
+static void
+delete_dead_call (gimple *stmt)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  Deleted dead call: ");
+      print_gimple_stmt (dump_file, stmt, dump_flags, 0);
+      fprintf (dump_file, "\n");
+    }
+
+  tree lhs = gimple_call_lhs (stmt);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  if (lhs)
+    {
+      tree ptr = gimple_call_arg (stmt, 0);
+      gimple *new_stmt = gimple_build_assign (lhs, ptr);
+      unlink_stmt_vdef (stmt);
+      if (gsi_replace (&gsi, new_stmt, true))
+        bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+    }
+  else
+    {
+      /* Then we need to fix the operand of the consuming stmt.  */
+      unlink_stmt_vdef (stmt);
+
+      /* Remove the dead store.  */
+      if (gsi_remove (&gsi, true))
+	bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+      release_defs (stmt);
+    }
+}
+
+/* Delete a dead store STMT, which is a gimple assignment. */
+
+static void
+delete_dead_assignment (gimple *stmt)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  Deleted dead store: ");
+      print_gimple_stmt (dump_file, stmt, dump_flags, 0);
+      fprintf (dump_file, "\n");
+    }
+
+  /* Then we need to fix the operand of the consuming stmt.  */
+  unlink_stmt_vdef (stmt);
+
+  /* Remove the dead store.  */
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  basic_block bb = gimple_bb (stmt);
+  if (gsi_remove (&gsi, true))
+    bitmap_set_bit (need_eh_cleanup, bb->index);
+
+  /* And release any SSA_NAMEs set in this statement back to the
+     SSA_NAME manager.  */
+  release_defs (stmt);
+}
 
 /* Attempt to eliminate dead stores in the statement referenced by BSI.
 
@@ -198,8 +513,8 @@ dse_possible_dead_store_p (ao_ref *ref, gimple *stmt, gimple **use_stmt)
    is used precisely once by a later store to the same location which
    post dominates the first store, then the first store is dead.  */
 
-static void
-dse_optimize_stmt (gimple_stmt_iterator *gsi)
+void
+dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
@@ -214,6 +529,10 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  || TREE_CODE (gimple_assign_lhs (stmt)) != MEM_REF))
     return;
 
+  ao_ref ref;
+  if (!initialize_ao_ref_for_dse (stmt, &ref))
+    return;
+
   /* We know we have virtual definitions.  We can handle assignments and
      some builtin calls.  */
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
@@ -225,42 +544,26 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  case BUILT_IN_MEMSET:
 	    {
 	      gimple *use_stmt;
-	      ao_ref ref;
-	      tree size = NULL_TREE;
-	      if (gimple_call_num_args (stmt) == 3)
-		size = gimple_call_arg (stmt, 2);
-	      tree ptr = gimple_call_arg (stmt, 0);
-	      ao_ref_init_from_ptr_and_size (&ref, ptr, size);
-	      if (!dse_possible_dead_store_p (&ref, stmt, &use_stmt))
+	      enum dse_store_status store_status;
+	      m_byte_tracking_enabled
+		= setup_live_bytes_from_ref (&ref, m_live_bytes);
+	      store_status = dse_classify_store (&ref, stmt, &use_stmt,
+						 m_byte_tracking_enabled,
+						 m_live_bytes);
+	      if (store_status == DSE_STORE_LIVE)
 		return;
 
-	      if (dump_file && (dump_flags & TDF_DETAILS))
+	      if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
 		{
-		  fprintf (dump_file, "  Deleted dead call: ");
-		  print_gimple_stmt (dump_file, gsi_stmt (*gsi), dump_flags, 0);
-		  fprintf (dump_file, "\n");
+		  maybe_trim_partially_dead_store (&ref, m_live_bytes, stmt);
+		  return;
 		}
 
-	      tree lhs = gimple_call_lhs (stmt);
-	      if (lhs)
-		{
-		  gimple *new_stmt = gimple_build_assign (lhs, ptr);
-		  unlink_stmt_vdef (stmt);
-		  if (gsi_replace (gsi, new_stmt, true))
-		    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
-		}
-	      else
-		{
-		  /* Then we need to fix the operand of the consuming stmt.  */
-		  unlink_stmt_vdef (stmt);
-
-		  /* Remove the dead store.  */
-		  if (gsi_remove (gsi, true))
-		    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
-		  release_defs (stmt);
-		}
-	      break;
+	      if (store_status == DSE_STORE_DEAD)
+		delete_dead_call (stmt);
+	      return;
 	    }
+
 	  default:
 	    return;
 	}
@@ -276,10 +579,20 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	use_stmt = stmt;
       else
 	{
-	  ao_ref ref;
-	  ao_ref_init (&ref, gimple_assign_lhs (stmt));
-  	  if (!dse_possible_dead_store_p (&ref, stmt, &use_stmt))
+	  m_byte_tracking_enabled
+	    = setup_live_bytes_from_ref (&ref, m_live_bytes);
+	  enum dse_store_status store_status;
+	  store_status = dse_classify_store (&ref, stmt, &use_stmt,
+					     m_byte_tracking_enabled,
+					     m_live_bytes);
+	  if (store_status == DSE_STORE_LIVE)
 	    return;
+
+	  if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
+	    {
+	      maybe_trim_partially_dead_store (&ref, m_live_bytes, stmt);
+	      return;
+	    }
 	}
 
       /* Now we know that use_stmt kills the LHS of stmt.  */
@@ -290,34 +603,9 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  && !gimple_clobber_p (use_stmt))
 	return;
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "  Deleted dead store: ");
-	  print_gimple_stmt (dump_file, gsi_stmt (*gsi), dump_flags, 0);
-	  fprintf (dump_file, "\n");
-	}
-
-      /* Then we need to fix the operand of the consuming stmt.  */
-      unlink_stmt_vdef (stmt);
-
-      /* Remove the dead store.  */
-      basic_block bb = gimple_bb (stmt);
-      if (gsi_remove (gsi, true))
-	bitmap_set_bit (need_eh_cleanup, bb->index);
-
-      /* And release any SSA_NAMEs set in this statement back to the
-	 SSA_NAME manager.  */
-      release_defs (stmt);
+      delete_dead_assignment (stmt);
     }
 }
-
-class dse_dom_walker : public dom_walker
-{
-public:
-  dse_dom_walker (cdi_direction direction) : dom_walker (direction) {}
-
-  virtual edge before_dom_children (basic_block);
-};
 
 edge
 dse_dom_walker::before_dom_children (basic_block bb)
@@ -391,7 +679,7 @@ pass_dse::execute (function *fun)
     }
 
   BITMAP_FREE (need_eh_cleanup);
-    
+
   /* For now, just wipe the post-dominator information.  */
   free_dominance_info (CDI_POST_DOMINATORS);
   return 0;
