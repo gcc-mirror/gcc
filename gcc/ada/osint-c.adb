@@ -351,6 +351,7 @@ package body Osint.C is
       --  Remove trailing NUL that comes from Set_File_Name above. This is
       --  needed for consistency with names that come from Scan_ALI and thus
       --  preventing repeated scanning of the same file.
+
       pragma Assert (Name_Len > 1 and then Name_Buffer (Name_Len) = ASCII.NUL);
       Name_Len := Name_Len - 1;
 
