@@ -1,3 +1,20 @@
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb: Code cleanup.
+	* sem_util.adb (Is_OK_Volatile_Context): Add
+	expression in delay statement as OK for volatile context.
+
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): In normal compilation
+	mode a choice that is a subtype with a static predicate is
+	replaced by the values it covers. This transformation must not
+	be performed in ASIS mode, to preserve the source for analysis.
+
+2017-01-13  Justin Squirek  <squirek@adacore.com>
+
+	* nlists.ads: Correct minor typo.
+
 2017-01-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch13.adb: Minor reformatting and typo fix.

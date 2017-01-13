@@ -13726,6 +13726,11 @@ package body Sem_Util is
       then
          return True;
 
+      --  The volatile object appears as the expression in a delay statement
+
+      elsif Nkind (Context) in N_Delay_Statement then
+         return True;
+
       --  Allow references to volatile objects in various checks. This is not a
       --  direct SPARK 2014 requirement.
 

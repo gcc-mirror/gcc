@@ -1809,8 +1809,13 @@ package body Sem_Aggr is
                         --  If the subtype has a static predicate, replace the
                         --  original choice with the list of individual values
                         --  covered by the predicate.
+                        --  Do not perform this transformation if we need to
+                        --  preserve the source for ASIS use.
+                        --  This should be deferred to expansion time ???
 
-                        if Present (Static_Discrete_Predicate (E)) then
+                        if Present (Static_Discrete_Predicate (E))
+                          and then not ASIS_Mode
+                        then
                            Delete_Choice := True;
 
                            New_Cs := New_List;
