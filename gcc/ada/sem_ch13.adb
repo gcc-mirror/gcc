@@ -8524,7 +8524,7 @@ package body Sem_Ch13 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode : Ghost_Mode_Type;
 
    --  Start of processing for Build_Predicate_Functions
 
@@ -8541,7 +8541,7 @@ package body Sem_Ch13 is
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the predicate functions are properly marked as Ghost.
 
-      Set_Ghost_Mode_From_Entity (Typ);
+      Set_Ghost_Mode (Typ, Mode);
 
       --  Prepare to construct predicate expression
 
@@ -8647,18 +8647,10 @@ package body Sem_Ch13 is
             FBody : Node_Id;
 
          begin
-
             --  The predicate function is shared between views of a type
 
             if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
                Set_Predicate_Function (Full_View (Typ), SId);
-            end if;
-
-            --  Mark the predicate function explicitly as Ghost because it does
-            --  not come from source.
-
-            if Ghost_Mode > None then
-               Set_Is_Ghost_Entity (SId);
             end if;
 
             --  Build function body
@@ -8741,13 +8733,6 @@ package body Sem_Ch13 is
 
                if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
                   Set_Predicate_Function_M (Full_View (Typ), SId);
-               end if;
-
-               --  Mark the predicate function explicitly as Ghost because it
-               --  does not come from source.
-
-               if Ghost_Mode > None then
-                  Set_Is_Ghost_Entity (SId);
                end if;
 
                Spec :=
@@ -8902,7 +8887,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Mode (Mode);
    end Build_Predicate_Functions;
 
    ------------------------------------------
@@ -8914,45 +8899,45 @@ package body Sem_Ch13 is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Object_Entity : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('I'));
-
-      --  The formal parameter of the function
-
-      SId : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_External_Name (Chars (Typ), "Predicate"));
-
-      --  The entity for the function spec
-
-      FDecl : Node_Id;
-      Spec  : Node_Id;
+      Func_Decl : Node_Id;
+      Func_Id   : Entity_Id;
+      Mode      : Ghost_Mode_Type;
+      Spec      : Node_Id;
 
    begin
+      --  The related type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the predicate functions are properly marked as Ghost.
+
+      Set_Ghost_Mode (Typ, Mode);
+
+      Func_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Typ), "Predicate"));
+
       Spec :=
         Make_Function_Specification (Loc,
-          Defining_Unit_Name       => SId,
+          Defining_Unit_Name       => Func_Id,
           Parameter_Specifications => New_List (
             Make_Parameter_Specification (Loc,
-              Defining_Identifier => Object_Entity,
+              Defining_Identifier => Make_Temporary (Loc, 'I'),
               Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
           Result_Definition        =>
             New_Occurrence_Of (Standard_Boolean, Loc));
 
-      FDecl := Make_Subprogram_Declaration (Loc, Specification => Spec);
+      Func_Decl := Make_Subprogram_Declaration (Loc, Specification => Spec);
 
-      Set_Ekind (SId, E_Function);
-      Set_Etype (SId, Standard_Boolean);
-      Set_Is_Internal (SId);
-      Set_Is_Predicate_Function (SId);
-      Set_Predicate_Function (Typ, SId);
+      Set_Ekind (Func_Id, E_Function);
+      Set_Etype (Func_Id, Standard_Boolean);
+      Set_Is_Internal (Func_Id);
+      Set_Is_Predicate_Function (Func_Id);
+      Set_Predicate_Function (Typ, Func_Id);
 
-      Insert_After (Parent (Typ), FDecl);
+      Insert_After (Parent (Typ), Func_Decl);
+      Analyze (Func_Decl);
 
-      Analyze (FDecl);
+      Restore_Ghost_Mode (Mode);
 
-      return FDecl;
+      return Func_Decl;
    end Build_Predicate_Function_Declaration;
 
    -----------------------------------------

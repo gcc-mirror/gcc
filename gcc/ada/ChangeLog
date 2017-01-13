@@ -1,3 +1,216 @@
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* atree.adb (Allocate_Initialize_Node): A newly created node is
+	no longer marked as Ghost at this level.
+	(Mark_New_Ghost_Node): New routine.
+	(New_Copy): Mark the copy as Ghost.
+	(New_Entity): Mark the entity as Ghost.
+	(New_Node): Mark the node as Ghost.
+	* einfo.adb (Is_Checked_Ghost_Entity): This attribute can now
+	apply to unanalyzed entities.
+	(Is_Ignored_Ghost_Entity): This attribute can now apply to unanalyzed
+	entities.
+	(Set_Is_Checked_Ghost_Entity): This attribute now
+	applies to all entities as well as unanalyzed entities.
+	(Set_Is_Ignored_Ghost_Entity): This attribute now applies to
+	all entities as well as unanalyzed entities.
+	* expander.adb Add with and use clauses for Ghost.
+	(Expand): Install and revert the Ghost region associated with the node
+	being expanded.
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Remove all Ghost-related code.
+	(Expand_Freeze_Class_Wide_Type): Remoe all Ghost-related code.
+	(Expand_Freeze_Enumeration_Type): Remove all Ghost-related code.
+	(Expand_Freeze_Record_Type): Remove all Ghost-related code.
+	(Freeze_Type): Install and revert the Ghost region associated
+	with the type being frozen.
+	* exp_ch5.adb Remove with and use clauses for Ghost.
+	(Expand_N_Assignment_Statement): Remove all Ghost-related code.
+	* exp_ch6.adb Remove with and use clauses for Ghost.
+	(Expand_N_Procedure_Call_Statement): Remove all Ghost-relatd code.
+	(Expand_N_Subprogram_Body): Remove all Ghost-related code.
+	* exp_ch7.adb (Build_Invariant_Procedure_Body): Install and revert the
+	Ghost region of the working type.
+	(Build_Invariant_Procedure_Declaration): Install and revert
+	the Ghost region of the working type.
+	(Expand_N_Package_Body): Remove all Ghost-related code.
+	* exp_ch8.adb Remove with and use clauses for Ghost.
+	(Expand_N_Exception_Renaming_Declaration): Remove all Ghost-related
+	code.
+	(Expand_N_Object_Renaming_Declaration): Remove all Ghost-related code.
+	(Expand_N_Package_Renaming_Declaration): Remove all Ghost-related code.
+	(Expand_N_Subprogram_Renaming_Declaration): Remove all Ghost-related
+	code.
+	* exp_ch13.adb Remove with and use clauses for Ghost.
+	(Expand_N_Freeze_Entity): Remove all Ghost-related code.
+	* exp_disp.adb (Make_DT): Install and revert the Ghost region of
+	the tagged type. Move the generation of various entities within
+	the Ghost region of the type.
+	* exp_prag.adb Remove with and use clauses for Ghost.
+	(Expand_Pragma_Check): Remove all Ghost-related code.
+	(Expand_Pragma_Contract_Cases): Remove all Ghost-related code.
+	(Expand_Pragma_Initial_Condition): Remove all Ghost-related code.
+	(Expand_Pragma_Loop_Variant): Remove all Ghost-related code.
+	* exp_util.adb (Build_DIC_Procedure_Body): Install
+	and revert the Ghost region of the working types.
+	(Build_DIC_Procedure_Declaration): Install and revert the
+	Ghost region of the working type.
+	(Make_Invariant_Call): Install and revert the Ghost region of the
+	associated type.
+	(Make_Predicate_Call): Reimplemented. Install and revert the
+	Ghost region of the associated type.
+	* freeze.adb (Freeze_Entity): Install and revert the Ghost region
+	of the entity being frozen.
+	(New_Freeze_Node): Removed.
+	* ghost.adb Remove with and use clauses for Opt.
+	(Check_Ghost_Completion): Update the parameter profile
+	and all references to formal parameters.
+	(Ghost_Entity): Update the comment on usage.
+	(Install_Ghost_Mode): New routines.
+	(Is_Ghost_Assignment): New routine.
+	(Is_Ghost_Declaration): New routine.
+	(Is_Ghost_Pragma): New routine.
+	(Is_Ghost_Procedure_Call): New routine.
+	(Is_Ghost_Renaming): Removed.
+	(Is_OK_Declaration): Reimplemented.
+	(Is_OK_Pragma): Reimplemented.
+	(Is_OK_Statement): Reimplemented.
+	(Is_Subject_To_Ghost): Update the comment on usage.
+	(Mark_And_Set_Ghost_Assignment): New routine.
+	(Mark_And_Set_Ghost_Body): New routine.
+	(Mark_And_Set_Ghost_Completion): New routine.
+	(Mark_And_Set_Ghost_Declaration): New routine.
+	(Mark_And_Set_Ghost_Instantiation): New routine.
+	(Mark_And_Set_Ghost_Procedure_Call): New routine.
+	(Mark_Full_View_As_Ghost): Removed.
+	(Mark_Ghost_Declaration_Or_Body): New routine.
+	(Mark_Ghost_Pragma): New routine.
+	(Mark_Ghost_Renaming): New routine.
+	(Mark_Pragma_As_Ghost): Removed.
+	(Mark_Renaming_As_Ghost): Removed.
+	(Propagate_Ignored_Ghost_Code): Update the comment on usage.
+	(Prune_Node): Freeze nodes no longer need special pruning, they
+	are processed by the general ignored Ghost code mechanism.
+	(Restore_Ghost_Mode): New routine.
+	(Set_Ghost_Mode): Reimplemented.
+	(Set_Ghost_Mode_From_Entity): Removed.
+	* ghost.ads Add with and use clauses for Ghost.
+	(Check_Ghost_Completion): Update the parameter profile
+	along with the comment on usage.
+	(Install_Ghost_Mode): New routine.
+	(Is_Ghost_Assignment): New routine.
+	(Is_Ghost_Declaration): New routine.
+	(Is_Ghost_Pragma): New routine.
+	(Is_Ghost_Procedure_Call): New routine.
+	(Mark_And_Set_Ghost_Assignment): New routine.
+	(Mark_And_Set_Ghost_Body): New routine.
+	(Mark_And_Set_Ghost_Completion): New routine.
+	(Mark_And_Set_Ghost_Declaration): New routine.
+	(Mark_And_Set_Ghost_Instantiation): New routine.
+	(Mark_And_Set_Ghost_Procedure_Call): New routine.
+	(Mark_Full_View_As_Ghost): Removed.
+	(Mark_Ghost_Pragma): New routine.
+	(Mark_Ghost_Renaming): New routine.
+	(Mark_Pragma_As_Ghost): Removed.
+	(Mark_Renaming_As_Ghost): Removed.
+	(Restore_Ghost_Mode): New routine.
+	(Set_Ghost_Mode): Redefined.
+	(Set_Ghost_Mode_From_Entity): Removed.
+	* sem.adb (Analyze): Install and revert the Ghost region of the
+	node being analyzed.
+	(Do_Analyze): Change the way a clean Ghost
+	region is installed and reverted.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Remove
+	all Ghost-related code.
+	(Analyze_Incomplete_Type_Decl): Remove all Ghost-related code.
+	(Analyze_Number_Declaration): Remove all Ghost-related code.
+	(Analyze_Object_Declaration): Install and revert the Ghost region of
+	a deferred object declaration's completion.
+	(Array_Type_Declaration): Remove all Ghost-related code.
+	(Build_Derived_Type): Update the comment on
+	the propagation of Ghost attributes from a parent to a derived type.
+	(Derive_Subprogram): Remove all Ghost-related code.
+	(Make_Class_Wide_Type): Remove all Ghost-related code.
+	(Make_Implicit_Base): Remove all Ghost-related code.
+	(Process_Full_View): Install and revert the Ghost region of
+	the partial view.  There is no longer need to check the Ghost
+	completion here.
+	* sem_ch5.adb (Analyze_Assignment): Install and revert the Ghost
+	region of the left hand side.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Remove
+	all Ghost-related code.
+	(Analyze_Expression_Function): Remove all Ghost-related code.
+	(Analyze_Generic_Subprogram_Body): Remove all Ghost-related code.
+	(Analyze_Procedure_Call): Install and revert the Ghost region of
+	the procedure being called.
+	(Analyze_Subprogram_Body_Helper): Install and revert the Ghost
+	region of the spec or body.
+	(Analyze_Subprogram_Declaration): Remove all Ghost-related code.
+	(Build_Subprogram_Declaration): Remove all Ghost-related code.
+	(Find_Corresponding_Spec): Remove all Ghost-related code.
+	(Process_Formals): Remove all Ghost-related code.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Install and revert
+	the Ghost region of the spec.
+	(Analyze_Package_Declaration): Remove all Ghost-related code.
+	* sem_ch8.adb (Analyze_Exception_Renaming): Mark a renaming as
+	Ghost when it aliases a Ghost entity.
+	(Analyze_Generic_Renaming): Mark a renaming as Ghost when it aliases
+	a Ghost entity.
+	(Analyze_Object_Renaming): Mark a renaming as Ghost when
+	it aliases a Ghost entity.
+	(Analyze_Package_Renaming): Mark a renaming as Ghost when it aliases
+	a Ghost entity.
+	(Analyze_Subprogram_Renaming): Mark a renaming as Ghost when it
+	aliases a Ghost entity.
+	* sem_ch11.adb Remove with and use clauses for Ghost.
+	(Analyze_Exception_Declaration): Remove all Ghost-related code.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Remove all
+	Ghost-related code.
+	(Analyze_Generic_Subprogram_Declaration): Remove all Ghost-related
+	code.
+	(Analyze_Package_Instantiation): Install and revert the Ghost region
+	of the package instantiation.
+	(Analyze_Subprogram_Instantiation): Install
+	and revert the Ghost region of the subprogram instantiation.
+	(Instantiate_Package_Body): Code clean up. Install and revert the
+	Ghost region of the package body.
+	(Instantiate_Subprogram_Body): Code clean up. Install and revert the
+	Ghost region of the subprogram body.
+	* sem_ch13.adb (Build_Predicate_Functions): Install
+	and revert the Ghost region of the related type.
+	(Build_Predicate_Function_Declaration): Code clean up. Install
+	and rever the Ghost region of the related type.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part):
+	Install and revert the Ghost region of the pragma.
+	(Analyze_Initial_Condition_In_Decl_Part): Install and revert the
+	Ghost region of the pragma.
+	(Analyze_Pragma): Install and revert the Ghost region of various
+	pragmas.  Mark a pragma as Ghost when it is related to a Ghost entity
+	or encloses a Ghost entity.
+	(Analyze_Pre_Post_Condition): Install and revert the Ghost
+	region of the pragma.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Install and revert the
+	Ghost region of the pragma.
+	* sem_res.adb (Resolve): Remove all Ghost-related code.
+	* sem_util.adb (Is_Declaration): Reimplemented.
+	(Is_Declaration_Other_Than_Renaming): New routine.
+	* sem_util.ads (Is_Declaration_Other_Than_Renaming): New routine.
+	* sinfo.adb (Is_Checked_Ghost_Pragma): New routine.
+	(Is_Ghost_Pragma): Removed.
+	(Is_Ignored_Ghost_Pragma): New routine.
+	(Set_Is_Checked_Ghost_Pragma): New routine.
+	(Set_Is_Ghost_Pragma): Removed.
+	(Set_Is_Ignored_Ghost_Pragma): New routine.
+	* sinfo.ads: Update the documentation on Ghost mode and
+	Ghost regions.	New attributes Is_Checked_Ghost_Pragma
+	and Is_Ignored_Ghost_Pragma along with usages in nodes.
+	Remove attribute Is_Ghost_Pragma along with usages in nodes.
+	(Is_Checked_Ghost_Pragma): New routine along with pragma Inline.
+	(Is_Ghost_Pragma): Removed along with pragma Inline.
+	(Is_Ignored_Ghost_Pragma): New routine along with pragma Inline.
+	(Set_Is_Checked_Ghost_Pragma): New routine along with pragma Inline.
+	(Set_Is_Ghost_Pragma): Removed along with pragma Inline.
+	(Set_Is_Ignored_Ghost_Pragma): New routine along with pragma Inline.
+
 2017-01-12  Tristan Gingold  <gingold@adacore.com>
 
 	* s-mmap.ads, s-mmap.adb, s-mmosin-unix.ads, s-mmosin-unix.adb,

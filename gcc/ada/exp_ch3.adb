@@ -4361,13 +4361,7 @@ package body Exp_Ch3 is
       Base     : constant Entity_Id := Base_Type (Typ);
       Comp_Typ : constant Entity_Id := Component_Type (Typ);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    begin
-      --  Ensure that all freezing activities are properly flagged as Ghost
-
-      Set_Ghost_Mode_From_Entity (Typ);
-
       if not Is_Bit_Packed_Array (Typ) then
 
          --  If the component contains tasks, so does the array type. This may
@@ -4435,8 +4429,6 @@ package body Exp_Ch3 is
       then
          Build_Array_Init_Proc (Base, N);
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Freeze_Array_Type;
 
    -----------------------------------
@@ -4477,8 +4469,6 @@ package body Exp_Ch3 is
       Typ  : constant Entity_Id := Entity (N);
       Root : constant Entity_Id := Root_Type (Typ);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    --  Start of processing for Expand_Freeze_Class_Wide_Type
 
    begin
@@ -4511,15 +4501,10 @@ package body Exp_Ch3 is
          return;
       end if;
 
-      --  Ensure that all freezing activities are properly flagged as Ghost
-
-      Set_Ghost_Mode_From_Entity (Typ);
-
       --  Create the body of TSS primitive Finalize_Address. This automatically
       --  sets the TSS entry for the class-wide type.
 
       Make_Finalize_Address_Body (Typ);
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Freeze_Class_Wide_Type;
 
    ------------------------------------
@@ -4529,8 +4514,6 @@ package body Exp_Ch3 is
    procedure Expand_Freeze_Enumeration_Type (N : Node_Id) is
       Typ : constant Entity_Id  := Entity (N);
       Loc : constant Source_Ptr := Sloc (Typ);
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       Arr           : Entity_Id;
       Ent           : Entity_Id;
@@ -4546,10 +4529,6 @@ package body Exp_Ch3 is
       pragma Warnings (Off, Func);
 
    begin
-      --  Ensure that all freezing activities are properly flagged as Ghost
-
-      Set_Ghost_Mode_From_Entity (Typ);
-
       --  Various optimizations possible if given representation is contiguous
 
       Is_Contiguous := True;
@@ -4832,11 +4811,8 @@ package body Exp_Ch3 is
          Set_Debug_Info_Off (Fent);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
-
    exception
       when RE_Not_Available =>
-         Ghost_Mode := Save_Ghost_Mode;
          return;
    end Expand_Freeze_Enumeration_Type;
 
@@ -4847,8 +4823,6 @@ package body Exp_Ch3 is
    procedure Expand_Freeze_Record_Type (N : Node_Id) is
       Typ      : constant Node_Id := Entity (N);
       Typ_Decl : constant Node_Id := Parent (Typ);
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       Comp        : Entity_Id;
       Comp_Typ    : Entity_Id;
@@ -4867,10 +4841,6 @@ package body Exp_Ch3 is
    --  Start of processing for Expand_Freeze_Record_Type
 
    begin
-      --  Ensure that all freezing activities are properly flagged as Ghost
-
-      Set_Ghost_Mode_From_Entity (Typ);
-
       --  Build discriminant checking functions if not a derived type (for
       --  derived types that are not tagged types, always use the discriminant
       --  checking functions of the parent type). However, for untagged types
@@ -5291,8 +5261,6 @@ package body Exp_Ch3 is
             end loop;
          end;
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Freeze_Record_Type;
 
    ------------------------------------
@@ -7135,9 +7103,8 @@ package body Exp_Ch3 is
       --  Local variables
 
       Def_Id : constant Entity_Id := Entity (N);
+      Mode   : Ghost_Mode_Type;
       Result : Boolean := False;
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Freeze_Type
 
@@ -7146,7 +7113,7 @@ package body Exp_Ch3 is
       --  now to ensure that any nodes generated during freezing are properly
       --  marked as Ghost.
 
-      Set_Ghost_Mode (N, Def_Id);
+      Set_Ghost_Mode (Def_Id, Mode);
 
       --  Process any remote access-to-class-wide types designating the type
       --  being frozen.
@@ -7474,12 +7441,12 @@ package body Exp_Ch3 is
          Build_Invariant_Procedure_Body (Def_Id);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Mode (Mode);
       return Result;
 
    exception
       when RE_Not_Available =>
-         Ghost_Mode := Save_Ghost_Mode;
+         Restore_Ghost_Mode (Mode);
          return False;
    end Freeze_Type;
 

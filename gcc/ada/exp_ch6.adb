@@ -44,7 +44,6 @@ with Exp_Pakd;  use Exp_Pakd;
 with Exp_Tss;   use Exp_Tss;
 with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;
-with Ghost;     use Ghost;
 with Inline;    use Inline;
 with Lib;       use Lib;
 with Namet;     use Namet;
@@ -5188,17 +5187,8 @@ package body Exp_Ch6 is
    ---------------------------------------
 
    procedure Expand_N_Procedure_Call_Statement (N : Node_Id) is
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    begin
-      --  The procedure call is Ghost when the name is Ghost. Set the mode now
-      --  to ensure that any nodes generated during expansion are properly set
-      --  as Ghost.
-
-      Set_Ghost_Mode (N);
-
       Expand_Call (N);
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Procedure_Call_Statement;
 
    --------------------------------------
@@ -5358,8 +5348,6 @@ package body Exp_Ch6 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       Except_H : Node_Id;
       L        : List_Id;
       Spec_Id  : Entity_Id;
@@ -5389,13 +5377,6 @@ package body Exp_Ch6 is
             Set_Is_Pure (Body_Id, Is_Pure (Spec_Id));
          end if;
       end if;
-
-      --  The subprogram body is Ghost when it is stand alone and subject to
-      --  pragma Ghost or the corresponding spec is Ghost. To accomodate both
-      --  cases, set the mode now to ensure that any nodes generated during
-      --  expansion are marked as Ghost.
-
-      Set_Ghost_Mode (N, Spec_Id);
 
       --  Set L to either the list of declarations if present, or to the list
       --  of statements if no declarations are present. This is used to insert
@@ -5518,7 +5499,6 @@ package body Exp_Ch6 is
               Make_Handled_Sequence_Of_Statements (Loc,
                 Statements => New_List (Make_Null_Statement (Loc))));
 
-            Ghost_Mode := Save_Ghost_Mode;
             return;
          end if;
       end if;
@@ -5543,7 +5523,7 @@ package body Exp_Ch6 is
       begin
          if not Acts_As_Spec (N)
            and then Nkind (Parent (Parent (Spec_Id))) /=
-             N_Subprogram_Body_Stub
+                      N_Subprogram_Body_Stub
          then
             null;
 
@@ -5631,8 +5611,6 @@ package body Exp_Ch6 is
       --  Set to encode entity names in package body before gigi is called
 
       Qualify_Entity_Names (N);
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Subprogram_Body;
 
    -----------------------------------

@@ -33,7 +33,6 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
-with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Disp; use Sem_Disp;
@@ -65,20 +64,30 @@ package body Ghost is
    -----------------------
 
    function Ghost_Entity (N : Node_Id) return Entity_Id;
-   --  Subsidiary to Check_Ghost_Context and Set_Ghost_Mode. Find the entity of
-   --  a reference to a Ghost entity. Return Empty if there is no such entity.
+   --  Find the entity of a reference to a Ghost entity. Return Empty if there
+   --  is no such entity.
+
+   procedure Install_Ghost_Mode (Mode : Name_Id);
+   --  Install a specific Ghost mode denoted by Mode by setting global variable
+   --  Ghost_Mode.
 
    function Is_Subject_To_Ghost (N : Node_Id) return Boolean;
-   --  Subsidiary to routines Is_OK_xxx and Set_Ghost_Mode. Determine whether
-   --  declaration or body N is subject to aspect or pragma Ghost. Use this
-   --  routine in cases where [source] pragma Ghost has not been analyzed yet,
-   --  but the context needs to establish the "ghostness" of N.
+   --  Determine whether declaration or body N is subject to aspect or pragma
+   --  Ghost. This routine must be used in cases where pragma Ghost has not
+   --  been analyzed yet, but the context needs to establish the "ghostness"
+   --  of N.
+
+   procedure Mark_Ghost_Declaration_Or_Body
+     (N    : Node_Id;
+      Mode : Name_Id);
+   --  Mark the defining entity of declaration or body N as Ghost depending on
+   --  mode Mode. Mark all formals parameters when N denotes a subprogram or a
+   --  body.
 
    procedure Propagate_Ignored_Ghost_Code (N : Node_Id);
-   --  Subsidiary to routines Mark_xxx_As_Ghost and Set_Ghost_Mode_From_xxx.
-   --  Signal all enclosing scopes that they now contain ignored Ghost code.
-   --  Add the compilation unit containing N to table Ignored_Ghost_Units for
-   --  post processing.
+   --  Signal all enclosing scopes that they now contain at least one ignored
+   --  Ghost node denoted by N. Add the compilation unit containing N to table
+   --  Ignored_Ghost_Units for post processing.
 
    ----------------------------
    -- Add_Ignored_Ghost_Unit --
@@ -112,34 +121,37 @@ package body Ghost is
    ----------------------------
 
    procedure Check_Ghost_Completion
-     (Partial_View : Entity_Id;
-      Full_View    : Entity_Id)
+     (Prev_Id  : Entity_Id;
+      Compl_Id : Entity_Id)
    is
       Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
 
    begin
+      --  Nothing to do if one of the views is missing
+
+      if No (Prev_Id) or else No (Compl_Id) then
+         null;
+
       --  The Ghost policy in effect at the point of declaration and at the
       --  point of completion must match (SPARK RM 6.9(14)).
 
-      if Is_Checked_Ghost_Entity (Partial_View)
+      elsif Is_Checked_Ghost_Entity (Prev_Id)
         and then Policy = Name_Ignore
       then
-         Error_Msg_Sloc := Sloc (Full_View);
+         Error_Msg_Sloc := Sloc (Compl_Id);
 
-         Error_Msg_N ("incompatible ghost policies in effect", Partial_View);
-         Error_Msg_N ("\& declared with ghost policy `Check`", Partial_View);
-         Error_Msg_N ("\& completed # with ghost policy `Ignore`",
-                                                               Partial_View);
+         Error_Msg_N ("incompatible ghost policies in effect", Prev_Id);
+         Error_Msg_N ("\& declared with ghost policy `Check`", Prev_Id);
+         Error_Msg_N ("\& completed # with ghost policy `Ignore`", Prev_Id);
 
-      elsif Is_Ignored_Ghost_Entity (Partial_View)
+      elsif Is_Ignored_Ghost_Entity (Prev_Id)
         and then Policy = Name_Check
       then
-         Error_Msg_Sloc := Sloc (Full_View);
+         Error_Msg_Sloc := Sloc (Compl_Id);
 
-         Error_Msg_N ("incompatible ghost policies in effect",  Partial_View);
-         Error_Msg_N ("\& declared with ghost policy `Ignore`", Partial_View);
-         Error_Msg_N ("\& completed # with ghost policy `Check`",
-                                                                Partial_View);
+         Error_Msg_N ("incompatible ghost policies in effect", Prev_Id);
+         Error_Msg_N ("\& declared with ghost policy `Ignore`", Prev_Id);
+         Error_Msg_N ("\& completed # with ghost policy `Check`", Prev_Id);
       end if;
    end Check_Ghost_Completion;
 
@@ -165,23 +177,31 @@ package body Ghost is
          function Is_OK_Declaration (Decl : Node_Id) return Boolean;
          --  Determine whether node Decl is a suitable context for a reference
          --  to a Ghost entity. To qualify as such, Decl must either
-         --    1) Be subject to pragma Ghost
-         --    2) Rename a Ghost entity
+         --
+         --    * Define a Ghost entity
+         --
+         --    * Be subject to pragma Ghost
 
          function Is_OK_Pragma (Prag : Node_Id) return Boolean;
          --  Determine whether node Prag is a suitable context for a reference
          --  to a Ghost entity. To qualify as such, Prag must either
-         --    1) Be an assertion expression pragma
-         --    2) Denote pragma Global, Depends, Initializes, Refined_Global,
-         --       Refined_Depends or Refined_State
-         --    3) Specify an aspect of a Ghost entity
-         --    4) Contain a reference to a Ghost entity
+         --
+         --    * Be an assertion expression pragma
+         --
+         --    * Denote pragma Global, Depends, Initializes, Refined_Global,
+         --      Refined_Depends or Refined_State.
+         --
+         --    * Specify an aspect of a Ghost entity
+         --
+         --    * Contain a reference to a Ghost entity
 
          function Is_OK_Statement (Stmt : Node_Id) return Boolean;
          --  Determine whether node Stmt is a suitable context for a reference
          --  to a Ghost entity. To qualify as such, Stmt must either
-         --    1) Denote a call to a Ghost procedure
-         --    2) Denote an assignment statement whose target is Ghost
+         --
+         --    * Denote a procedure call to a Ghost procedure
+         --
+         --    * Denote an assignment statement whose target is Ghost
 
          -----------------------
          -- Is_OK_Declaration --
@@ -191,10 +211,6 @@ package body Ghost is
             function In_Subprogram_Body_Profile (N : Node_Id) return Boolean;
             --  Determine whether node N appears in the profile of a subprogram
             --  body.
-
-            function Is_Ghost_Renaming (Ren_Decl : Node_Id) return Boolean;
-            --  Determine whether node Ren_Decl denotes a renaming declaration
-            --  with a Ghost name.
 
             --------------------------------
             -- In_Subprogram_Body_Profile --
@@ -216,23 +232,6 @@ package body Ghost is
                    and then Nkind (Parent (Spec)) = N_Subprogram_Body;
             end In_Subprogram_Body_Profile;
 
-            -----------------------
-            -- Is_Ghost_Renaming --
-            -----------------------
-
-            function Is_Ghost_Renaming (Ren_Decl : Node_Id) return Boolean is
-               Nam_Id : Entity_Id;
-
-            begin
-               if Is_Renaming_Declaration (Ren_Decl) then
-                  Nam_Id := Ghost_Entity (Name (Ren_Decl));
-
-                  return Present (Nam_Id) and then Is_Ghost_Entity (Nam_Id);
-               end if;
-
-               return False;
-            end Is_Ghost_Renaming;
-
             --  Local variables
 
             Subp_Decl : Node_Id;
@@ -241,20 +240,8 @@ package body Ghost is
          --  Start of processing for Is_OK_Declaration
 
          begin
-            if Is_Declaration (Decl) then
-
-               --  A renaming declaration is Ghost when it renames a Ghost
-               --  entity.
-
-               if Is_Ghost_Renaming (Decl) then
-                  return True;
-
-               --  The declaration may not have been analyzed yet, determine
-               --  whether it is subject to pragma Ghost.
-
-               elsif Is_Subject_To_Ghost (Decl) then
-                  return True;
-               end if;
+            if Is_Ghost_Declaration (Decl) then
+               return True;
 
             --  Special cases
 
@@ -303,7 +290,7 @@ package body Ghost is
                      --  OK as long as the initial declaration is Ghost.
 
                      if Nkind (Subp_Decl) = N_Expression_Function then
-                        return Is_Subject_To_Ghost (Subp_Decl);
+                        return Is_Ghost_Declaration (Subp_Decl);
                      end if;
                   end if;
 
@@ -358,8 +345,6 @@ package body Ghost is
 
             --  Local variables
 
-            Arg      : Node_Id;
-            Arg_Id   : Entity_Id;
             Prag_Id  : Pragma_Id;
             Prag_Nam : Name_Id;
 
@@ -399,21 +384,6 @@ package body Ghost is
                                        Name_Refined_State)
                then
                   return True;
-
-               --  Otherwise a normal pragma is Ghost when it encloses a Ghost
-               --  name (SPARK RM 6.9(3)).
-
-               else
-                  Arg := First (Pragma_Argument_Associations (Prag));
-                  while Present (Arg) loop
-                     Arg_Id := Ghost_Entity (Get_Pragma_Arg (Arg));
-
-                     if Present (Arg_Id) and then Is_Ghost_Entity (Arg_Id) then
-                        return True;
-                     end if;
-
-                     Next (Arg);
-                  end loop;
                end if;
             end if;
 
@@ -425,18 +395,17 @@ package body Ghost is
          ---------------------
 
          function Is_OK_Statement (Stmt : Node_Id) return Boolean is
-            Nam_Id : Entity_Id;
-
          begin
-            --  An assignment statement or a procedure call is Ghost when the
-            --  name denotes a Ghost entity.
+            --  An assignment statement is Ghost when the target is a Ghost
+            --  entity.
 
-            if Nkind_In (Stmt, N_Assignment_Statement,
-                               N_Procedure_Call_Statement)
-            then
-               Nam_Id := Ghost_Entity (Name (Stmt));
+            if Nkind (Stmt) = N_Assignment_Statement then
+               return Is_Ghost_Assignment (Stmt);
 
-               return Present (Nam_Id) and then Is_Ghost_Entity (Nam_Id);
+            --  A procedure call is Ghost when it calls a Ghost procedure
+
+            elsif Nkind (Stmt) = N_Procedure_Call_Statement then
+               return Is_Ghost_Procedure_Call (Stmt);
 
             --  Special cases
 
@@ -829,7 +798,7 @@ package body Ghost is
       Ref : Node_Id;
 
    begin
-      --  When the reference extracts a subcomponent, recover the related
+      --  When the reference denotes a subcomponent, recover the related
       --  object (SPARK RM 6.9(1)).
 
       Ref := N;
@@ -880,6 +849,96 @@ package body Ghost is
    begin
       Ignored_Ghost_Units.Init;
    end Initialize;
+
+   ------------------------
+   -- Install_Ghost_Mode --
+   ------------------------
+
+   procedure Install_Ghost_Mode (Mode : Ghost_Mode_Type) is
+   begin
+      Ghost_Mode := Mode;
+   end Install_Ghost_Mode;
+
+   procedure Install_Ghost_Mode (Mode : Name_Id) is
+   begin
+      if Mode = Name_Check then
+         Ghost_Mode := Check;
+
+      elsif Mode = Name_Ignore then
+         Ghost_Mode := Ignore;
+
+      elsif Mode = Name_None then
+         Ghost_Mode := None;
+      end if;
+   end Install_Ghost_Mode;
+
+   -------------------------
+   -- Is_Ghost_Assignment --
+   -------------------------
+
+   function Is_Ghost_Assignment (N : Node_Id) return Boolean is
+      Id : Entity_Id;
+
+   begin
+      --  An assignment statement is Ghost when its target denotes a Ghost
+      --  entity.
+
+      if Nkind (N) = N_Assignment_Statement then
+         Id := Ghost_Entity (Name (N));
+
+         return Present (Id) and then Is_Ghost_Entity (Id);
+      end if;
+
+      return False;
+   end Is_Ghost_Assignment;
+
+   --------------------------
+   -- Is_Ghost_Declaration --
+   --------------------------
+
+   function Is_Ghost_Declaration (N : Node_Id) return Boolean is
+      Id : Entity_Id;
+
+   begin
+      --  A declaration is Ghost when it elaborates a Ghost entity or is
+      --  subject to pragma Ghost.
+
+      if Is_Declaration (N) then
+         Id := Defining_Entity (N);
+
+         return Is_Ghost_Entity (Id) or else Is_Subject_To_Ghost (N);
+      end if;
+
+      return False;
+   end Is_Ghost_Declaration;
+
+   ---------------------
+   -- Is_Ghost_Pragma --
+   ---------------------
+
+   function Is_Ghost_Pragma (N : Node_Id) return Boolean is
+   begin
+      return Is_Checked_Ghost_Pragma (N) or else Is_Ignored_Ghost_Pragma (N);
+   end Is_Ghost_Pragma;
+
+   -----------------------------
+   -- Is_Ghost_Procedure_Call --
+   -----------------------------
+
+   function Is_Ghost_Procedure_Call (N : Node_Id) return Boolean is
+      Id : Entity_Id;
+
+   begin
+      --  A procedure call is Ghost when it invokes a Ghost procedure
+
+      if Nkind (N) = N_Procedure_Call_Statement then
+         Id := Ghost_Entity (Name (N));
+
+         return Present (Id) and then Is_Ghost_Entity (Id);
+      end if;
+
+      return False;
+   end Is_Ghost_Procedure_Call;
 
    -------------------------
    -- Is_Subject_To_Ghost --
@@ -1021,66 +1080,399 @@ package body Ghost is
       Ignored_Ghost_Units.Release;
    end Lock;
 
+   -----------------------------------
+   -- Mark_And_Set_Ghost_Assignment --
+   -----------------------------------
+
+   procedure Mark_And_Set_Ghost_Assignment
+     (N    : Node_Id;
+      Mode : out Ghost_Mode_Type)
+   is
+      Id : Entity_Id;
+
+   begin
+      --  Save the previous Ghost mode in effect
+
+      Mode := Ghost_Mode;
+
+      --  An assignment statement becomes Ghost when its target denotes a Ghost
+      --  object. Install the Ghost mode of the target.
+
+      Id := Ghost_Entity (Name (N));
+
+      if Present (Id) then
+         if Is_Checked_Ghost_Entity (Id) then
+            Install_Ghost_Mode (Check);
+
+         elsif Is_Ignored_Ghost_Entity (Id) then
+            Install_Ghost_Mode (Ignore);
+
+            Set_Is_Ignored_Ghost_Node (N);
+            Propagate_Ignored_Ghost_Code (N);
+         end if;
+      end if;
+   end Mark_And_Set_Ghost_Assignment;
+
    -----------------------------
-   -- Mark_Full_View_As_Ghost --
+   -- Mark_And_Set_Ghost_Body --
    -----------------------------
 
-   procedure Mark_Full_View_As_Ghost
-     (Priv_Typ : Entity_Id;
-      Full_Typ : Entity_Id)
+   procedure Mark_And_Set_Ghost_Body
+     (N       : Node_Id;
+      Spec_Id : Entity_Id;
+      Mode    : out Ghost_Mode_Type)
    is
-      Full_Decl : constant Node_Id := Declaration_Node (Full_Typ);
+      Body_Id : constant Entity_Id := Defining_Entity (N);
+      Policy  : Name_Id := No_Name;
 
    begin
-      if Is_Checked_Ghost_Entity (Priv_Typ) then
-         Set_Is_Checked_Ghost_Entity (Full_Typ);
+      --  Save the previous Ghost mode in effect
 
-      elsif Is_Ignored_Ghost_Entity (Priv_Typ) then
-         Set_Is_Ignored_Ghost_Entity (Full_Typ);
-         Set_Is_Ignored_Ghost_Node (Full_Decl);
-         Propagate_Ignored_Ghost_Code (Full_Decl);
+      Mode := Ghost_Mode;
+
+      --  A body becomes Ghost when it is subject to aspect or pragma Ghost
+
+      if Is_Subject_To_Ghost (N) then
+         Policy := Policy_In_Effect (Name_Ghost);
+
+      --  A body declared within a Ghost region is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      elsif Ghost_Mode = Check then
+         Policy := Name_Check;
+
+      elsif Ghost_Mode = Ignore then
+         Policy := Name_Ignore;
+
+      --  Inherit the "ghostness" of the previous declaration when the body
+      --  acts as a completion.
+
+      elsif Present (Spec_Id) then
+         if Is_Checked_Ghost_Entity (Spec_Id) then
+            Policy := Name_Check;
+
+         elsif Is_Ignored_Ghost_Entity (Spec_Id) then
+            Policy := Name_Ignore;
+         end if;
       end if;
-   end Mark_Full_View_As_Ghost;
 
-   --------------------------
-   -- Mark_Pragma_As_Ghost --
-   --------------------------
+      --  The Ghost policy in effect at the point of declaration and at the
+      --  point of completion must match (SPARK RM 6.9(14)).
 
-   procedure Mark_Pragma_As_Ghost
-     (Prag       : Node_Id;
-      Context_Id : Entity_Id)
+      Check_Ghost_Completion
+        (Prev_Id  => Spec_Id,
+         Compl_Id => Body_Id);
+
+      --  Mark the body as its formals as Ghost
+
+      Mark_Ghost_Declaration_Or_Body (N, Policy);
+
+      --  Install the appropriate Ghost mode
+
+      Install_Ghost_Mode (Policy);
+   end Mark_And_Set_Ghost_Body;
+
+   -----------------------------------
+   -- Mark_And_Set_Ghost_Completion --
+   -----------------------------------
+
+   procedure Mark_And_Set_Ghost_Completion
+     (N       : Node_Id;
+      Prev_Id : Entity_Id;
+      Mode    : out Ghost_Mode_Type)
+   is
+      Compl_Id : constant Entity_Id := Defining_Entity (N);
+      Policy   : Name_Id := No_Name;
+
+   begin
+      --  Save the previous Ghost mode in effect
+
+      Mode := Ghost_Mode;
+
+      --  A completion elaborated in a Ghost region is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Ghost_Mode = Check then
+         Policy := Name_Check;
+
+      elsif Ghost_Mode = Ignore then
+         Policy := Name_Ignore;
+
+      --  The completion becomes Ghost when its initial declaration is also
+      --  Ghost.
+
+      elsif Is_Checked_Ghost_Entity (Prev_Id) then
+         Policy := Name_Check;
+
+      elsif Is_Ignored_Ghost_Entity (Prev_Id) then
+         Policy := Name_Ignore;
+      end if;
+
+      --  The Ghost policy in effect at the point of declaration and at the
+      --  point of completion must match (SPARK RM 6.9(14)).
+
+      Check_Ghost_Completion
+        (Prev_Id  => Prev_Id,
+         Compl_Id => Compl_Id);
+
+      --  Mark the completion as Ghost
+
+      Mark_Ghost_Declaration_Or_Body (N, Policy);
+
+      --  Install the appropriate Ghost mode
+
+      Install_Ghost_Mode (Policy);
+   end Mark_And_Set_Ghost_Completion;
+
+   ------------------------------------
+   -- Mark_And_Set_Ghost_Declaration --
+   ------------------------------------
+
+   procedure Mark_And_Set_Ghost_Declaration
+     (N    : Node_Id;
+      Mode : out Ghost_Mode_Type)
+   is
+      Par_Id : Entity_Id;
+      Policy : Name_Id := No_Name;
+
+   begin
+      --  Save the previous Ghost mode in effect
+
+      Mode := Ghost_Mode;
+
+      --  A declaration becomes Ghost when it is subject to aspect or pragma
+      --  Ghost.
+
+      if Is_Subject_To_Ghost (N) then
+         Policy := Policy_In_Effect (Name_Ghost);
+
+      --  A declaration elaborated in a Ghost region is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      elsif Ghost_Mode = Check then
+         Policy := Name_Check;
+
+      elsif Ghost_Mode = Ignore then
+         Policy := Name_Ignore;
+
+      --  A child package or subprogram declaration becomes Ghost when its
+      --  parent is Ghost (SPARK RM 6.9(2)).
+
+      elsif Nkind_In (N, N_Generic_Function_Renaming_Declaration,
+                         N_Generic_Package_Declaration,
+                         N_Generic_Package_Renaming_Declaration,
+                         N_Generic_Procedure_Renaming_Declaration,
+                         N_Generic_Subprogram_Declaration,
+                         N_Package_Declaration,
+                         N_Package_Renaming_Declaration,
+                         N_Subprogram_Declaration,
+                         N_Subprogram_Renaming_Declaration)
+        and then Present (Parent_Spec (N))
+      then
+         Par_Id := Defining_Entity (Unit (Parent_Spec (N)));
+
+         if Is_Checked_Ghost_Entity (Par_Id) then
+            Policy := Name_Check;
+
+         elsif Is_Ignored_Ghost_Entity (Par_Id) then
+            Policy := Name_Ignore;
+         end if;
+      end if;
+
+      --  Mark the declaration and its formals as Ghost
+
+      Mark_Ghost_Declaration_Or_Body (N, Policy);
+
+      --  Install the appropriate Ghost mode
+
+      Install_Ghost_Mode (Policy);
+   end Mark_And_Set_Ghost_Declaration;
+
+   --------------------------------------
+   -- Mark_And_Set_Ghost_Instantiation --
+   --------------------------------------
+
+   procedure Mark_And_Set_Ghost_Instantiation
+     (N      : Node_Id;
+      Gen_Id : Entity_Id;
+      Mode   : out Ghost_Mode_Type)
+   is
+      Policy : Name_Id := No_Name;
+
+   begin
+      --  Save the previous Ghost mode in effect
+
+      Mode := Ghost_Mode;
+
+      --  An instantiation becomes Ghost when it is subject to pragma Ghost
+
+      if Is_Subject_To_Ghost (N) then
+         Policy := Policy_In_Effect (Name_Ghost);
+
+      --  An instantiation declaration within a Ghost region is automatically
+      --  Ghost (SPARK RM 6.9(2)).
+
+      elsif Ghost_Mode = Check then
+         Policy := Name_Check;
+
+      elsif Ghost_Mode = Ignore then
+         Policy := Name_Ignore;
+
+      --  Inherit the "ghostness" of the generic unit
+
+      elsif Is_Checked_Ghost_Entity (Gen_Id) then
+         Policy := Name_Check;
+
+      elsif Is_Ignored_Ghost_Entity (Gen_Id) then
+         Policy := Name_Ignore;
+      end if;
+
+      --  Mark the instantiation as Ghost
+
+      Mark_Ghost_Declaration_Or_Body (N, Policy);
+
+      --  Install the appropriate Ghost mode
+
+      Install_Ghost_Mode (Policy);
+   end Mark_And_Set_Ghost_Instantiation;
+
+   ---------------------------------------
+   -- Mark_And_Set_Ghost_Procedure_Call --
+   ---------------------------------------
+
+   procedure Mark_And_Set_Ghost_Procedure_Call
+     (N    : Node_Id;
+      Mode : out Ghost_Mode_Type)
+   is
+      Id : Entity_Id;
+
+   begin
+      --  Save the previous Ghost mode in effect
+
+      Mode := Ghost_Mode;
+
+      --  A procedure call becomes Ghost when the procedure being invoked is
+      --  Ghost. Install the Ghost mode of the procedure.
+
+      Id := Ghost_Entity (Name (N));
+
+      if Present (Id) then
+         if Is_Checked_Ghost_Entity (Id) then
+            Install_Ghost_Mode (Check);
+
+         elsif Is_Ignored_Ghost_Entity (Id) then
+            Install_Ghost_Mode (Ignore);
+
+            Set_Is_Ignored_Ghost_Node (N);
+            Propagate_Ignored_Ghost_Code (N);
+         end if;
+      end if;
+   end Mark_And_Set_Ghost_Procedure_Call;
+
+   ------------------------------------
+   -- Mark_Ghost_Declaration_Or_Body --
+   ------------------------------------
+
+   procedure Mark_Ghost_Declaration_Or_Body
+     (N    : Node_Id;
+      Mode : Name_Id)
+   is
+      Id : constant Entity_Id := Defining_Entity (N);
+
+      Mark_Formals : Boolean := False;
+      Param        : Node_Id;
+      Param_Id     : Entity_Id;
+
+   begin
+      --  Mark the related node and its entity
+
+      if Mode = Name_Check then
+         Mark_Formals := True;
+         Set_Is_Checked_Ghost_Entity (Id);
+
+      elsif Mode = Name_Ignore then
+         Mark_Formals := True;
+         Set_Is_Ignored_Ghost_Entity (Id);
+         Set_Is_Ignored_Ghost_Node (N);
+         Propagate_Ignored_Ghost_Code (N);
+      end if;
+
+      --  Mark all formal parameters when the related node denotes a subprogram
+      --  or a body. The traversal is performed via the specification because
+      --  the related subprogram or body may be unanalyzed.
+
+      --  ??? could extra formal parameters cause a Ghost leak?
+
+      if Mark_Formals
+        and then Nkind_In (N, N_Abstract_Subprogram_Declaration,
+                              N_Formal_Abstract_Subprogram_Declaration,
+                              N_Formal_Concrete_Subprogram_Declaration,
+                              N_Generic_Subprogram_Declaration,
+                              N_Subprogram_Body,
+                              N_Subprogram_Body_Stub,
+                              N_Subprogram_Declaration,
+                              N_Subprogram_Renaming_Declaration)
+      then
+         Param := First (Parameter_Specifications (Specification (N)));
+         while Present (Param) loop
+            Param_Id := Defining_Entity (Param);
+
+            if Mode = Name_Check then
+               Set_Is_Checked_Ghost_Entity (Param_Id);
+
+            elsif Mode = Name_Ignore then
+               Set_Is_Ignored_Ghost_Entity (Param_Id);
+            end if;
+
+            Next (Param);
+         end loop;
+      end if;
+   end Mark_Ghost_Declaration_Or_Body;
+
+   -----------------------
+   -- Mark_Ghost_Pragma --
+   -----------------------
+
+   procedure Mark_Ghost_Pragma
+     (N  : Node_Id;
+      Id : Entity_Id)
    is
    begin
-      if Is_Checked_Ghost_Entity (Context_Id) then
-         Set_Is_Ghost_Pragma (Prag);
+      --  A pragma becomes Ghost when it encloses a Ghost entity or relates to
+      --  a Ghost entity.
 
-      elsif Is_Ignored_Ghost_Entity (Context_Id) then
-         Set_Is_Ghost_Pragma (Prag);
-         Set_Is_Ignored_Ghost_Node (Prag);
-         Propagate_Ignored_Ghost_Code (Prag);
+      if Is_Checked_Ghost_Entity (Id) then
+         Set_Is_Checked_Ghost_Pragma (N);
+
+      elsif Is_Ignored_Ghost_Entity (Id) then
+         Set_Is_Ignored_Ghost_Pragma (N);
+         Set_Is_Ignored_Ghost_Node (N);
+         Propagate_Ignored_Ghost_Code (N);
       end if;
-   end Mark_Pragma_As_Ghost;
+   end Mark_Ghost_Pragma;
 
-   ----------------------------
-   -- Mark_Renaming_As_Ghost --
-   ----------------------------
+   -------------------------
+   -- Mark_Ghost_Renaming --
+   -------------------------
 
-   procedure Mark_Renaming_As_Ghost
-     (Ren_Decl : Node_Id;
-      Nam_Id   : Entity_Id)
+   procedure Mark_Ghost_Renaming
+     (N  : Node_Id;
+      Id : Entity_Id)
    is
-      Ren_Id : constant Entity_Id := Defining_Entity (Ren_Decl);
+      Policy : Name_Id := No_Name;
 
    begin
-      if Is_Checked_Ghost_Entity (Nam_Id) then
-         Set_Is_Checked_Ghost_Entity (Ren_Id);
+      --  A renaming becomes Ghost when it renames a Ghost entity
 
-      elsif Is_Ignored_Ghost_Entity (Nam_Id) then
-         Set_Is_Ignored_Ghost_Entity (Ren_Id);
-         Set_Is_Ignored_Ghost_Node (Ren_Decl);
-         Propagate_Ignored_Ghost_Code (Ren_Decl);
+      if Is_Checked_Ghost_Entity (Id) then
+         Policy := Name_Check;
+
+      elsif Is_Ignored_Ghost_Entity (Id) then
+         Policy := Name_Ignore;
       end if;
-   end Mark_Renaming_As_Ghost;
+
+      Mark_Ghost_Declaration_Or_Body (N, Policy);
+   end Mark_Ghost_Renaming;
 
    ----------------------------------
    -- Propagate_Ignored_Ghost_Code --
@@ -1091,7 +1483,7 @@ package body Ghost is
       Scop : Entity_Id;
 
    begin
-      --  Traverse the parent chain looking for blocks, packages and
+      --  Traverse the parent chain looking for blocks, packages, and
       --  subprograms or their respective bodies.
 
       Nod := Parent (N);
@@ -1187,17 +1579,6 @@ package body Ghost is
                Prune (N);
                return Skip;
 
-            --  A freeze node for an ignored ghost entity must be pruned as
-            --  well, to prevent meaningless references in the back end.
-
-            --  ??? the freeze node itself should be ignored ghost
-
-            elsif Nkind (N) = N_Freeze_Entity
-              and then Is_Ignored_Ghost_Entity (Entity (N))
-            then
-               Prune (N);
-               return Skip;
-
             --  Scoping constructs such as blocks, packages, subprograms and
             --  bodies offer some flexibility with respect to pruning.
 
@@ -1249,134 +1630,102 @@ package body Ghost is
       end loop;
    end Remove_Ignored_Ghost_Code;
 
+   ------------------------
+   -- Restore_Ghost_Mode --
+   ------------------------
+
+   procedure Restore_Ghost_Mode (Mode : Ghost_Mode_Type) is
+   begin
+      Ghost_Mode := Mode;
+   end Restore_Ghost_Mode;
+
    --------------------
    -- Set_Ghost_Mode --
    --------------------
 
-   procedure Set_Ghost_Mode (N : Node_Id; Id : Entity_Id := Empty) is
-      procedure Set_From_Entity (Ent_Id : Entity_Id);
-      --  Set the value of global variable Ghost_Mode depending on the mode of
-      --  entity Ent_Id.
+   procedure Set_Ghost_Mode
+     (N    : Node_Or_Entity_Id;
+      Mode : out Ghost_Mode_Type)
+   is
+      procedure Set_Ghost_Mode_From_Entity (Id : Entity_Id);
+      --  Install the Ghost mode of entity Id
 
-      procedure Set_From_Policy;
-      --  Set the value of global variable Ghost_Mode depending on the current
-      --  Ghost policy in effect.
+      --------------------------------
+      -- Set_Ghost_Mode_From_Entity --
+      --------------------------------
 
-      ---------------------
-      -- Set_From_Entity --
-      ---------------------
-
-      procedure Set_From_Entity (Ent_Id : Entity_Id) is
+      procedure Set_Ghost_Mode_From_Entity (Id : Entity_Id) is
       begin
-         Set_Ghost_Mode_From_Entity (Ent_Id);
-
-         if Is_Ignored_Ghost_Entity (Ent_Id) then
-            Set_Is_Ignored_Ghost_Node (N);
-            Propagate_Ignored_Ghost_Code (N);
+         if Is_Checked_Ghost_Entity (Id) then
+            Install_Ghost_Mode (Check);
+         elsif Is_Ignored_Ghost_Entity (Id) then
+            Install_Ghost_Mode (Ignore);
+         else
+            Install_Ghost_Mode (None);
          end if;
-      end Set_From_Entity;
-
-      ---------------------
-      -- Set_From_Policy --
-      ---------------------
-
-      procedure Set_From_Policy is
-         Policy : constant Name_Id := Policy_In_Effect (Name_Ghost);
-
-      begin
-         if Policy = Name_Check then
-            Ghost_Mode := Check;
-
-         elsif Policy = Name_Ignore then
-            Ghost_Mode := Ignore;
-
-            Set_Is_Ignored_Ghost_Node (N);
-            Propagate_Ignored_Ghost_Code (N);
-         end if;
-      end Set_From_Policy;
+      end Set_Ghost_Mode_From_Entity;
 
       --  Local variables
 
-      Nam_Id : Entity_Id;
+      Id : Entity_Id;
 
    --  Start of processing for Set_Ghost_Mode
 
    begin
-      --  The input node denotes one of the many declaration kinds that may be
-      --  subject to pragma Ghost.
+      --  Save the previous Ghost mode in effect
 
-      if Is_Declaration (N) then
-         if Is_Subject_To_Ghost (N) then
-            Set_From_Policy;
+      Mode := Ghost_Mode;
 
-         --  The declaration denotes the completion of a deferred constant,
-         --  pragma Ghost appears on the partial declaration.
+      --  The Ghost mode of an assignment statement depends on the Ghost mode
+      --  of the target.
 
-         elsif Nkind (N) = N_Object_Declaration
-           and then Constant_Present (N)
-           and then Present (Id)
-         then
-            Set_From_Entity (Id);
+      if Nkind (N) = N_Assignment_Statement then
+         Id := Ghost_Entity (Name (N));
 
-         --  The declaration denotes the full view of a private type, pragma
-         --  Ghost appears on the partial declaration.
-
-         elsif Nkind (N) = N_Full_Type_Declaration
-           and then Is_Private_Type (Defining_Entity (N))
-           and then Present (Id)
-         then
-            Set_From_Entity (Id);
+         if Present (Id) then
+            Set_Ghost_Mode_From_Entity (Id);
          end if;
 
-      --  The input denotes an assignment or a procedure call. In this case
-      --  the Ghost mode is dictated by the name of the construct.
+      --  The Ghost mode of a body or a declaration depends on the Ghost mode
+      --  of its defining entity.
 
-      elsif Nkind_In (N, N_Assignment_Statement,
-                         N_Procedure_Call_Statement)
-      then
-         Nam_Id := Ghost_Entity (Name (N));
+      elsif Is_Body (N) or else Is_Declaration (N) then
+         Set_Ghost_Mode_From_Entity (Defining_Entity (N));
 
-         if Present (Nam_Id) then
-            Set_From_Entity (Nam_Id);
-         end if;
+      --  The Ghost mode of an entity depends on the entity itself
 
-      --  The input denotes a package or subprogram body
+      elsif Nkind (N) in N_Entity then
+         Set_Ghost_Mode_From_Entity (N);
 
-      elsif Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
-         if (Present (Id) and then Is_Ghost_Entity (Id))
-           or else Is_Subject_To_Ghost (N)
-         then
-            Set_From_Policy;
-         end if;
+      --  The Ghost mode of a [generic] freeze node depends on the Ghost mode
+      --  of the entity being frozen.
 
-      --  The input denotes a pragma
+      elsif Nkind_In (N, N_Freeze_Entity, N_Freeze_Generic_Entity) then
+         Set_Ghost_Mode_From_Entity (Entity (N));
 
-      elsif Nkind (N) = N_Pragma and then Is_Ghost_Pragma (N) then
-         if Is_Ignored_Ghost_Node (N) then
-            Ghost_Mode := Ignore;
+      --  The Ghost mode of a pragma depends on the associated entity. The
+      --  property is encoded in the pragma itself.
+
+      elsif Nkind (N) = N_Pragma then
+         if Is_Checked_Ghost_Pragma (N) then
+            Install_Ghost_Mode (Check);
+         elsif Is_Ignored_Ghost_Pragma (N) then
+            Install_Ghost_Mode (Ignore);
          else
-            Ghost_Mode := Check;
+            Install_Ghost_Mode (None);
          end if;
 
-      --  The input denotes a freeze node
+      --  The Ghost mode of a procedure call depends on the Ghost mode of the
+      --  procedure being invoked.
 
-      elsif Nkind (N) = N_Freeze_Entity and then Present (Id) then
-         Set_From_Entity (Id);
+      elsif Nkind (N) = N_Procedure_Call_Statement then
+         Id := Ghost_Entity (Name (N));
+
+         if Present (Id) then
+            Set_Ghost_Mode_From_Entity (Id);
+         end if;
       end if;
    end Set_Ghost_Mode;
-
-   --------------------------------
-   -- Set_Ghost_Mode_From_Entity --
-   --------------------------------
-
-   procedure Set_Ghost_Mode_From_Entity (Id : Entity_Id) is
-   begin
-      if Is_Checked_Ghost_Entity (Id) then
-         Ghost_Mode := Check;
-      elsif Is_Ignored_Ghost_Entity (Id) then
-         Ghost_Mode := Ignore;
-      end if;
-   end Set_Ghost_Mode_From_Entity;
 
    -------------------------
    -- Set_Is_Ghost_Entity --

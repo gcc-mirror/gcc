@@ -1809,6 +1809,14 @@ package body Sinfo is
       return Flag11 (N);
    end Is_Checked;
 
+   function Is_Checked_Ghost_Pragma
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag3 (N);
+   end Is_Checked_Ghost_Pragma;
+
    function Is_Component_Left_Opnd
       (N : Node_Id) return Boolean is
    begin
@@ -1917,14 +1925,6 @@ package body Sinfo is
       return Flag2 (N);
    end Is_Generic_Contract_Pragma;
 
-   function Is_Ghost_Pragma
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Pragma);
-      return Flag3 (N);
-   end Is_Ghost_Pragma;
-
    function Is_Ignored
       (N : Node_Id) return Boolean is
    begin
@@ -1933,6 +1933,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma);
       return Flag9 (N);
    end Is_Ignored;
+
+   function Is_Ignored_Ghost_Pragma
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag8 (N);
+   end Is_Ignored_Ghost_Pragma;
 
    function Is_In_Discriminant_Check
       (N : Node_Id) return Boolean is
@@ -5088,6 +5096,14 @@ package body Sinfo is
       Set_Flag11 (N, Val);
    end Set_Is_Checked;
 
+   procedure Set_Is_Checked_Ghost_Pragma
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag3 (N, Val);
+   end Set_Is_Checked_Ghost_Pragma;
+
    procedure Set_Is_Component_Left_Opnd
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5196,14 +5212,6 @@ package body Sinfo is
       Set_Flag2 (N, Val);
    end Set_Is_Generic_Contract_Pragma;
 
-   procedure Set_Is_Ghost_Pragma
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Pragma);
-      Set_Flag3 (N, Val);
-   end Set_Is_Ghost_Pragma;
-
    procedure Set_Is_Ignored
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5212,6 +5220,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma);
       Set_Flag9 (N, Val);
    end Set_Is_Ignored;
+
+   procedure Set_Is_Ignored_Ghost_Pragma
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag8 (N, Val);
+   end Set_Is_Ignored_Ghost_Pragma;
 
    procedure Set_Is_In_Discriminant_Check
       (N : Node_Id; Val : Boolean := True) is

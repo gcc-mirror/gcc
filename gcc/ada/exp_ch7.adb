@@ -4353,9 +4353,8 @@ package body Exp_Ch7 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       Dummy        : Entity_Id;
+      Mode         : Ghost_Mode_Type;
       Priv_Item    : Node_Id;
       Proc_Body    : Node_Id;
       Proc_Body_Id : Entity_Id;
@@ -4406,6 +4405,11 @@ package body Exp_Ch7 is
          Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
       end if;
 
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the invariant procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode (Work_Typ, Mode);
+
       --  The type must either have invariants of its own, inherit class-wide
       --  invariants from parent types or interfaces, or be an array or record
       --  type whose components have invariants.
@@ -4416,7 +4420,7 @@ package body Exp_Ch7 is
       --  inherited by implementing types.
 
       if Is_Interface (Work_Typ) then
-         return;
+         goto Leave;
       end if;
 
       --  Obtain both views of the type
@@ -4445,7 +4449,7 @@ package body Exp_Ch7 is
             --  Nothing to do because the processing of the underlying full
             --  view already checked the invariants of the partial view.
 
-            return;
+            goto Leave;
          end if;
 
          --  Create a declaration for the "partial" invariant procedure if it
@@ -4482,13 +4486,8 @@ package body Exp_Ch7 is
       --  Nothing to do if the invariant procedure already has a body
 
       if Present (Corresponding_Body (Proc_Decl)) then
-         return;
+         goto Leave;
       end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the invariant procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
 
       --  Emulate the environment of the invariant procedure by installing
       --  its scope and formal parameters. Note that this is not needed, but
@@ -4667,7 +4666,8 @@ package body Exp_Ch7 is
          Append_Freeze_Action (Work_Typ, Proc_Body);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Build_Invariant_Procedure_Body;
 
    -------------------------------------------
@@ -4680,8 +4680,7 @@ package body Exp_Ch7 is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
+      Mode      : Ghost_Mode_Type;
       Proc_Decl : Node_Id;
       Proc_Id   : Entity_Id;
       Proc_Nam  : Name_Id;
@@ -4725,6 +4724,11 @@ package body Exp_Ch7 is
          Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
       end if;
 
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the invariant procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode (Work_Typ, Mode);
+
       --  The type must either have invariants of its own, inherit class-wide
       --  invariants from parent or interface types, or be an array or record
       --  type whose components have invariants.
@@ -4735,25 +4739,20 @@ package body Exp_Ch7 is
       --  inherited by implementing types.
 
       if Is_Interface (Work_Typ) then
-         return;
+         goto Leave;
 
       --  Nothing to do if the type already has a "partial" invariant procedure
 
       elsif Partial_Invariant then
          if Present (Partial_Invariant_Procedure (Work_Typ)) then
-            return;
+            goto Leave;
          end if;
 
       --  Nothing to do if the type already has a "full" invariant procedure
 
       elsif Present (Invariant_Procedure (Work_Typ)) then
-         return;
+         goto Leave;
       end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the invariant procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
 
       --  The caller requests the declaration of the "partial" invariant
       --  procedure.
@@ -4789,13 +4788,6 @@ package body Exp_Ch7 is
 
       if Opt.Generate_SCO then
          Set_Needs_Debug_Info (Proc_Id);
-      end if;
-
-      --  Mark the invariant procedure explicitly as Ghost because it does not
-      --  come from source.
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -4868,7 +4860,8 @@ package body Exp_Ch7 is
          Insert_After_And_Analyze (Typ_Decl, Proc_Decl);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Build_Invariant_Procedure_Declaration;
 
    ---------------------
@@ -5835,15 +5828,7 @@ package body Exp_Ch7 is
       Spec_Id : constant Entity_Id := Corresponding_Spec (N);
       Fin_Id  : Entity_Id;
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    begin
-      --  The package body is Ghost when the corresponding spec is Ghost. Set
-      --  the mode now to ensure that any nodes generated during expansion are
-      --  properly marked as Ghost.
-
-      Set_Ghost_Mode (N, Spec_Id);
-
       --  This is done only for non-generic packages
 
       if Ekind (Spec_Id) = E_Package then
@@ -5899,8 +5884,6 @@ package body Exp_Ch7 is
             end;
          end if;
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Package_Body;
 
    ----------------------------------

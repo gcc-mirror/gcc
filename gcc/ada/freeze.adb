@@ -2071,9 +2071,6 @@ package body Freeze is
       --  Determine whether an arbitrary entity is subject to Boolean aspect
       --  Import and its value is specified as True.
 
-      function New_Freeze_Node return Node_Id;
-      --  Create a new freeze node for entity E
-
       procedure Wrap_Imported_Subprogram (E : Entity_Id);
       --  If E is an entity for an imported subprogram with pre/post-conditions
       --  then this procedure will create a wrapper to ensure that proper run-
@@ -2283,14 +2280,12 @@ package body Freeze is
 
                   if Convention (Rec_Type) = Convention_C then
                      Error_Msg_N
-                       ("?x?discriminated record has no direct " &
-                        "equivalent in C",
-                        A2);
+                       ("?x?discriminated record has no direct equivalent in "
+                        & "C", A2);
                   else
                      Error_Msg_N
-                       ("?x?discriminated record has no direct " &
-                        "equivalent in C++",
-                        A2);
+                       ("?x?discriminated record has no direct equivalent in "
+                        & "C++", A2);
                   end if;
 
                   Error_Msg_NE
@@ -4703,39 +4698,6 @@ package body Freeze is
          return False;
       end Has_Boolean_Aspect_Import;
 
-      ---------------------
-      -- New_Freeze_Node --
-      ---------------------
-
-      function New_Freeze_Node return Node_Id is
-         Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-         Result          : Node_Id;
-
-      begin
-         --  Handle the case where an ignored Ghost subprogram freezes the type
-         --  of one of its formals. The type can either be non-Ghost or checked
-         --  Ghost. Since the freeze node for the type is generated in the
-         --  context of the subprogram, the node will be incorrectly flagged as
-         --  ignored Ghost and erroneously removed from the tree.
-
-         --    type Typ is ...;
-         --    procedure Ignored_Ghost_Proc (Formal : Typ) with Ghost;
-
-         --  Reset the Ghost mode to "none". This preserves the freeze node.
-
-         if Ghost_Mode = Ignore
-           and then not Is_Ignored_Ghost_Entity (E)
-           and then not Is_Ignored_Ghost_Node (E)
-         then
-            Ghost_Mode := None;
-         end if;
-
-         Result := New_Node (N_Freeze_Entity, Loc);
-
-         Ghost_Mode := Save_Ghost_Mode;
-         return Result;
-      end New_Freeze_Node;
-
       ------------------------------
       -- Wrap_Imported_Subprogram --
       ------------------------------
@@ -4927,7 +4889,7 @@ package body Freeze is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode : Ghost_Mode_Type;
 
    --  Start of processing for Freeze_Entity
 
@@ -4936,7 +4898,7 @@ package body Freeze is
       --  now to ensure that any nodes generated during freezing are properly
       --  flagged as Ghost.
 
-      Set_Ghost_Mode_From_Entity (E);
+      Set_Ghost_Mode (E, Mode);
 
       --  We are going to test for various reasons why this entity need not be
       --  frozen here, but in the case of an Itype that's defined within a
@@ -4953,14 +4915,12 @@ package body Freeze is
       --  Do not freeze if already frozen since we only need one freeze node
 
       if Is_Frozen (E) then
-         Ghost_Mode := Save_Ghost_Mode;
-         return No_List;
+         Result := No_List;
+         goto Leave;
 
       elsif Ekind (E) = E_Generic_Package then
          Result := Freeze_Generic_Entities (E);
-
-         Ghost_Mode := Save_Ghost_Mode;
-         return Result;
+         goto Leave;
 
       --  It is improper to freeze an external entity within a generic because
       --  its freeze node will appear in a non-valid context. The entity will
@@ -4974,8 +4934,8 @@ package body Freeze is
             Analyze_Aspects_At_Freeze_Point (E);
          end if;
 
-         Ghost_Mode := Save_Ghost_Mode;
-         return No_List;
+         Result := No_List;
+         goto Leave;
 
       --  AI05-0213: A formal incomplete type does not freeze the actual. In
       --  the instance, the same applies to the subtype renaming the actual.
@@ -4985,20 +4945,20 @@ package body Freeze is
         and then No (Full_View (Base_Type (E)))
         and then Ada_Version >= Ada_2012
       then
-         Ghost_Mode := Save_Ghost_Mode;
-         return No_List;
+         Result := No_List;
+         goto Leave;
 
       --  Formal subprograms are never frozen
 
       elsif Is_Formal_Subprogram (E) then
-         Ghost_Mode := Save_Ghost_Mode;
-         return No_List;
+         Result := No_List;
+         goto Leave;
 
       --  Generic types are never frozen as they lack delayed semantic checks
 
       elsif Is_Generic_Type (E) then
-         Ghost_Mode := Save_Ghost_Mode;
-         return No_List;
+         Result := No_List;
+         goto Leave;
 
       --  Do not freeze a global entity within an inner scope created during
       --  expansion. A call to subprogram E within some internal procedure
@@ -5031,8 +4991,8 @@ package body Freeze is
                   then
                      exit;
                   else
-                     Ghost_Mode := Save_Ghost_Mode;
-                     return No_List;
+                     Result := No_List;
+                     goto Leave;
                   end if;
                end if;
 
@@ -5067,8 +5027,8 @@ package body Freeze is
             end loop;
 
             if No (S) then
-               Ghost_Mode := Save_Ghost_Mode;
-               return No_List;
+               Result := No_List;
+               goto Leave;
             end if;
          end;
       end if;
@@ -5153,8 +5113,7 @@ package body Freeze is
 
             if not Is_Internal (E) and then Do_Freeze_Profile then
                if not Freeze_Profile (E) then
-                  Ghost_Mode := Save_Ghost_Mode;
-                  return Result;
+                  goto Leave;
                end if;
             end if;
 
@@ -5336,8 +5295,8 @@ package body Freeze is
                and then not Has_Delayed_Freeze (E))
          then
             Check_Compile_Time_Size (E);
-            Ghost_Mode := Save_Ghost_Mode;
-            return No_List;
+            Result := No_List;
+            goto Leave;
          end if;
 
          --  Check for error of Type_Invariant'Class applied to an untagged
@@ -5607,8 +5566,7 @@ package body Freeze is
 
             if not Is_Frozen (Root_Type (E)) then
                Set_Is_Frozen (E, False);
-               Ghost_Mode := Save_Ghost_Mode;
-               return Result;
+               goto Leave;
             end if;
 
             --  The equivalent type associated with a class-wide subtype needs
@@ -5749,8 +5707,7 @@ package body Freeze is
               and then not Present (Full_View (E))
             then
                Set_Is_Frozen (E, False);
-               Ghost_Mode := Save_Ghost_Mode;
-               return Result;
+               goto Leave;
 
             --  Case of full view present
 
@@ -5841,8 +5798,7 @@ package body Freeze is
                   Set_RM_Size   (E, RM_Size (Full_View (E)));
                end if;
 
-               Ghost_Mode := Save_Ghost_Mode;
-               return Result;
+               goto Leave;
 
             --  Case of underlying full view present
 
@@ -5871,8 +5827,7 @@ package body Freeze is
 
                Check_Debug_Info_Needed (E);
 
-               Ghost_Mode := Save_Ghost_Mode;
-               return Result;
+               goto Leave;
 
             --  Case of no full view present. If entity is derived or subtype,
             --  it is safe to freeze, correctness depends on the frozen status
@@ -5885,8 +5840,8 @@ package body Freeze is
 
             else
                Set_Is_Frozen (E, False);
-               Ghost_Mode := Save_Ghost_Mode;
-               return No_List;
+               Result := No_List;
+               goto Leave;
             end if;
 
          --  For access subprogram, freeze types of all formals, the return
@@ -5933,8 +5888,7 @@ package body Freeze is
          --  generic processing), so we never need freeze nodes for them.
 
          if Is_Generic_Type (E) then
-            Ghost_Mode := Save_Ghost_Mode;
-            return Result;
+            goto Leave;
          end if;
 
          --  Some special processing for non-generic types to complete
@@ -6465,7 +6419,7 @@ package body Freeze is
             Set_Sloc (F_Node, Loc);
 
          else
-            F_Node := New_Freeze_Node;
+            F_Node := New_Node (N_Freeze_Entity, Loc);
             Set_Freeze_Node (E, F_Node);
             Set_Access_Types_To_Process (F_Node, No_Elist);
             Set_TSS_Elist (F_Node, No_Elist);
@@ -6547,7 +6501,8 @@ package body Freeze is
          end if;
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
       return Result;
    end Freeze_Entity;
 
