@@ -3397,9 +3397,9 @@ package body Inline is
 
       elsif Present (Exit_Lab) then
 
-         --  If there is a single return statement at the end of the
-         --  subprogram, the corresponding goto statement and the
-         --  corresponding label are useless.
+         --  If there's a single return statement at the end of the subprogram,
+         --  the corresponding goto statement and the corresponding label are
+         --  useless.
 
          if Num_Ret = 1
            and then
@@ -4225,7 +4225,7 @@ package body Inline is
       Remove_Items (Aspect_Specifications (Body_Decl));
       Remove_Items (Declarations          (Body_Decl));
 
-      --  Pragmas Unmodified, Unreferenced and Unused may additionally appear
+      --  Pragmas Unmodified, Unreferenced, and Unused may additionally appear
       --  in the body of the subprogram.
 
       Remove_Items (Statements (Handled_Statement_Sequence (Body_Decl)));
