@@ -1,5 +1,9 @@
 2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/65411
+	* config/io/basic_file_stdio.cc (__basic_file<char>::close()): Don't
+	retry fclose on EINTR.
+
 	* include/profile/base.h: Remove unused header that leads to header
 	cycle in C++17 mode.
 
