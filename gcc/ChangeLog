@@ -1,3 +1,13 @@
+2017-01-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/33562
+	PR tree-optimization/61912
+	PR tree-optimization/77485
+	* sbitmap.h (bitmap_count_bits): Prototype.
+	(bitmap_clear_range, bitmap_set_range): Likewise.
+	* sbitmap.c (bitmap_clear_range): New function.
+	(bitmap_set_range, sbitmap_popcount, bitmap_count_bits): Likewise.
+
 2017-01-13  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/79043
