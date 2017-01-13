@@ -820,6 +820,9 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
 	  constraints[i] = p;
 
+	  if (alt_fail)
+	    break;
+
 	  /* How we account for this operand now depends on whether it
 	     is a pseudo register or not.  If it is, we first check if
 	     any register classes are valid.  If not, we ignore this
@@ -999,10 +1002,21 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	    alt_cost += ira_memory_move_cost[mode][classes[i]][1];
 	  else
 	    alt_fail = 1;
+
+	  if (alt_fail)
+	    break;
 	}
 
       if (alt_fail)
-	continue;
+	{
+	  /* The loop above might have exited early once the failure
+	     was seen.  Skip over the constraints for the remaining
+	     operands.  */
+	  i += 1;
+	  for (; i < n_ops; ++i)
+	    constraints[i] = skip_alternative (constraints[i]);
+	  continue;
+	}
 
       op_cost_add = alt_cost * frequency;
       /* Finally, update the costs with the information we've
