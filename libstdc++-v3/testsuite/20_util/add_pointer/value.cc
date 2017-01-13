@@ -34,3 +34,18 @@ void test01()
 		ClassType**>::value, "");
   static_assert(is_same<add_pointer<ClassType>::type, ClassType*>::value, "");
 }
+
+void test02()
+{
+  using std::add_pointer;
+  using std::is_same;
+
+  void f1();
+  using f1_type = decltype(f1);
+  using pf1_type = decltype(&f1);
+  static_assert(is_same<add_pointer<f1_type>::type, pf1_type>::value, "");
+  void f2() noexcept; // PR libstdc++/78361
+  using f2_type = decltype(f2);
+  using pf2_type = decltype(&f2);
+  static_assert(is_same<add_pointer<f2_type>::type, pf2_type>::value, "");
+}
