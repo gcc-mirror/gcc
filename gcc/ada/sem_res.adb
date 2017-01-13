@@ -6260,7 +6260,10 @@ package body Sem_Res is
       --  within the specialized Exp_Ch6 procedures for expanding those
       --  build-in-place calls.
 
-      --  e) If the subprogram is marked Inline_Always, then even if it returns
+      --  e) Calls to inlinable expression functions do not use the secondary
+      --  stack (since the call will be replaced by its returned object).
+
+      --  f) If the subprogram is marked Inline_Always, then even if it returns
       --  an unconstrained type the call does not require use of the secondary
       --  stack. However, inlining will only take place if the body to inline
       --  is already present. It may not be available if e.g. the subprogram is
@@ -6281,6 +6284,7 @@ package body Sem_Res is
       elsif Ekind (Nam) = E_Enumeration_Literal
         or else Is_Build_In_Place_Function (Nam)
         or else Is_Intrinsic_Subprogram (Nam)
+        or else Is_Inlinable_Expression_Function (Nam)
       then
          null;
 

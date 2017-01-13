@@ -1,3 +1,22 @@
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: minor grammar fixes in comment of Normalized_Position_Max.
+	* scil_ll.adb: Minor style fix in comment.
+	* sem_ch8.adb (Analyze_Expanded_Name): Perform dimension analysis
+	even if entity is already set, because the node may be renalyzed
+	after inlining transformations.
+
+2017-01-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Do not establish a transient scope
+	for a call to inlinable expression function (since the call will
+	be replaced by its returned object).
+	* exp_ch6.ads (Is_Inlinable_Expression_Function): New subprogram.
+	* exp_ch6.adb (Expression_Of_Expression_Function): New subprogram.
+	(Expand_Call): For inlinable expression function call replace the
+	call by its returned object.
+	(Is_Inlinable_Expression_Function): New subprogram.
+
 2017-01-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* checks.adb: Minor typo fix and reformatting.

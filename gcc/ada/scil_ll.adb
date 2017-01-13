@@ -75,7 +75,7 @@ package body SCIL_LL is
       Key        => Node_Id,
       Hash       => Hash,
       Equal      => "=");
-   --  This table records the value of attribute SCIL_Node of tree nodes.
+   --  This table records the value of attribute SCIL_Node of tree nodes
 
    --------------------
    -- Copy_SCIL_Node --

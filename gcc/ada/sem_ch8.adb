@@ -609,10 +609,11 @@ package body Sem_Ch8 is
             Set_Etype (N, Etype (Entity (N)));
          end if;
 
-         return;
       else
          Find_Expanded_Name (N);
       end if;
+
+      --  In either case, propagate dimension of entity to expanded name
 
       Analyze_Dimension (N);
    end Analyze_Expanded_Name;
