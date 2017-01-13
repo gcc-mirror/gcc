@@ -1,3 +1,17 @@
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb, inline.ads (Call_Can_Be_Inlined_In_GNATprove_Mode):
+	New function to detect when a call may be inlined or not in
+	GNATprove mode.
+	(Expand_Inlined_Call): Ensure that a temporary
+	is always created in the cases where a type conversion may be
+	needed on an input parameter in GNATprove mode, so that GNATprove
+	sees the check to perform.
+	* sem_res.adb (Resolve_Call): In GNATprove mode, skip inlining
+	when not applicable due to actual requiring type conversion
+	with possible check but no temporary value can be copied for
+	GNATprove to see the check.
+
 2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_aggr.adb, par_sco.adb, s-osprim-mingw.adb, exp_ch5.adb,
