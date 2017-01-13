@@ -274,6 +274,7 @@ package body Sem_Ch6 is
       New_Spec : Node_Id;
       Orig_N   : Node_Id;
       Ret      : Node_Id;
+      Ret_Type : Entity_Id;
 
       Prev : Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
@@ -366,16 +367,34 @@ package body Sem_Ch6 is
       then
          Set_Has_Completion (Prev, False);
          Set_Is_Inlined (Prev);
+         Ret_Type := Etype (Prev);
 
          --  An expression function that is a completion freezes the
-         --  expression. This means freezing the return type, and if it is
-         --  an access type, freezing its designated type as well.
+         --  expression. This means freezing the return type, and if it is an
+         --  access type, freezing its designated type as well.
 
          --  Note that we cannot defer this freezing to the analysis of the
          --  expression itself, because a freeze node might appear in a nested
          --  scope, leading to an elaboration order issue in gigi.
 
-         Freeze_Before (N, Etype (Prev));
+         --  An entity can only be frozen if it has a completion, so we must
+         --  check this explicitly. If it is declared elsewhere it will have
+         --  been frozen already, so only types declared in currently opend
+         --  scopes need to be tested.
+
+         if Ekind (Ret_Type) = E_Private_Type
+           and then In_Open_Scopes (Scope (Ret_Type))
+           and then not Is_Generic_Type (Ret_Type)
+           and then not Is_Frozen (Ret_Type)
+           and then No (Full_View (Ret_Type))
+         then
+            Error_Msg_NE
+              ("premature use of private type&",
+               Result_Definition (Specification (N)), Ret_Type);
+
+         else
+            Freeze_Before (N, Ret_Type);
+         end if;
 
          if Is_Access_Type (Etype (Prev)) then
             Freeze_Before (N, Designated_Type (Etype (Prev)));

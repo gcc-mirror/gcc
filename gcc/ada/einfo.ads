@@ -670,14 +670,13 @@ package Einfo is
 --       stored in a non-standard way, see body for details.
 
 --    Component_Bit_Offset (Uint11)
---       Defined in record components (E_Component, E_Discriminant) if a
---       component clause applies to the component. First bit position of
---       given component, computed from the first bit and position values
---       given in the component clause. A value of No_Uint means that the
---       value is not yet known. The value can be set by the appearance of
---       an explicit component clause in a record representation clause,
---       or it can be set by the front-end in package Layout, or it can be
---       set by the backend. By the time backend processing is completed,
+--       Defined in record components (E_Component, E_Discriminant). First
+--       bit position of given component, computed from the first bit and
+--       position values given in the component clause. A value of No_Uint
+--       means that the value is not yet known. The value can be set by the
+--       appearance of an explicit component clause in a record representation
+--       clause, or it can be set by the front-end in package Layout, or it can
+--       be set by the backend. By the time backend processing is completed,
 --       this field is always set. A negative value is used to represent
 --       a value which is not known at compile time, and must be computed
 --       at run-time (this happens if fields of a record have variable

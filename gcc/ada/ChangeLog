@@ -1,5 +1,47 @@
 2017-01-13  Javier Miranda  <miranda@adacore.com>
 
+	* einfo.ads (Component_Bit_Offset): Fix documentation.
+	* sem_ch13.adb (Check_Record_Representation_Clause): Skip check
+	on record holes for components with unknown compile-time offsets.
+
+2017-01-13  Bob Duff  <duff@adacore.com>
+
+	* ali.ads, ali.adb (Static_Elaboration_Model_Used): Remove unused flag.
+	* g-locfil.ads: Minor comment fix.
+
+2017-01-13  Bob Duff  <duff@adacore.com>
+
+	* binde.adb (Elab_New): New elaboration order algorithm
+	that is expected to cause fewer ABE issues. This is a work in
+	progress. The new algorithm is currently disabled, and can be
+	enable by the -dp switch, or by modifying the Do_Old and Do_New
+	etc. flags and rebuilding. Experimental code is included to
+	compare the results of the old and new algorithms.
+	* binde.ads: Use GNAT.Dynamic_Tables instead of Table, so we
+	can have multiple of these tables, so the old and new algorithms
+	can coexist.
+	* bindgen.ads (Gen_Output_File): Pass Elab_Order as an 'in'
+	parameter of type array. This avoids the global variable, and
+	allows bounds checking (which is normally defeated by the tables
+	packages). It also ensures that the Elab_Order is read-only
+	to Bindgen.
+	* bindgen.adb: Pass Elab_Order as an 'in' parameter to all
+	subprograms that need it, as above.
+	* debug.adb: Document new -dp switch. Modify doc of old -do
+	switch.
+	* gnatbind.adb (Gnatbind): Make use of new interfaces to Binde
+	and Bindgen.  Move writing of closure (-R and -Ra switches)
+	to Binde; that's more convenient.
+
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): If the expression
+	function is a completion, all entities referenced in the
+	expression are frozen. As a consequence, a reference to an
+	uncompleted private type from an enclosing scope is illegal.
+
+2017-01-13  Javier Miranda  <miranda@adacore.com>
+
 	* sem_ch6.adb (Freeze_Expr_Types): New subprogram.
 	(Analyze_Subprogram_Body_Helper): At the occurrence of an
 	expression function declaration that is a completion, its

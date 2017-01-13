@@ -181,14 +181,14 @@ package body Debug is
    --  dl
    --  dm
    --  dn  List details of manipulation of Num_Pred values
-   --  do  Use old preference for elaboration order
-   --  dp
+   --  do  Use older preference for elaboration order
+   --  dp  Use new preference for elaboration order
    --  dq
    --  dr
    --  ds
    --  dt
    --  du  List units as they are acquired
-   --  dv
+   --  dv  Verbose debugging printouts
    --  dw
    --  dx  Force binder to read xref information from ali files
    --  dy
@@ -809,13 +809,24 @@ package body Debug is
    --      the algorithm used to determine a correct order of elaboration. This
    --      is useful in diagnosing any problems in its behavior.
 
-   --  do  Use old elaboration order preference. The new preference rules
+   --  do  Use older elaboration order preference. The new preference rules
    --      prefer specs with no bodies to specs with bodies, and between two
    --      specs with bodies, prefers the one whose body is closer to being
    --      able to be elaborated. This is a clear improvement, but we provide
    --      this debug flag in case of regressions.
 
+   --  dp  Use new elaboration order preference. The new preference rules
+   --      elaborate all units within a strongly connected component together,
+   --      with no other units in between. In particular, if a spec/body pair
+   --      can be elaborated together, it will be. In the new order, the binder
+   --      behaves as if every pragma Elaborate_All that would be legal is
+   --      present, even if it does not appear in the source code. NOTE: We
+   --      intend to reverse the sense of this switch at some point, so the new
+   --      preference is the default.
+
    --  du  List unit name and file name for each unit as it is read in
+
+   --  dv  Verbose debugging printouts
 
    --  dx  Force the binder to read (and then ignore) the xref information
    --      in ali files (used to check that read circuit is working OK).

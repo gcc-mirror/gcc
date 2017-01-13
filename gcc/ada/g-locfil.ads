@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package GNAT.Lock_Files is
    --  Exception raised if file cannot be locked
 
    subtype Path_Name is String;
-   --  Pathname is used by all services provided in this unit to specified
+   --  Pathname is used by all services provided in this unit to specify
    --  directory name and file name. On DOS based systems both directory
    --  separators are handled (i.e. slash and backslash).
 
