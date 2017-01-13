@@ -7109,6 +7109,27 @@ package body Sem_Attr is
 
       end case;
 
+      --  In SPARK some attribute references depend on Tasking_State, so we
+      --  need to make sure we load this so that gnat2why has the entity
+      --  available. See SPARK RM 9(18) for the relevant rule.
+
+      if GNATprove_Mode then
+         declare
+            Unused : Entity_Id;
+         begin
+            case Attr_Id is
+               when Attribute_Callable   |
+                    Attribute_Caller     |
+                    Attribute_Count      |
+                    Attribute_Terminated =>
+                  Unused := RTE (RE_Tasking_State);
+
+               when others =>
+                  null;
+            end case;
+         end;
+      end if;
+
    --  All errors raise Bad_Attribute, so that we get out before any further
    --  damage occurs when an error is detected (for example, if we check for
    --  one attribute expression, and the check succeeds, we want to be able

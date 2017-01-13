@@ -4328,24 +4328,36 @@ package body Sem_Res is
 
             if Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter) then
 
-               --  If there is a type conversion, to make sure the return value
+               --  If there is a type conversion, make sure the return value
                --  meets the constraints of the variable before the conversion.
 
                if Nkind (A) = N_Type_Conversion then
                   if Is_Scalar_Type (A_Typ) then
                      Apply_Scalar_Range_Check
                        (Expression (A), Etype (Expression (A)), A_Typ);
+
+                     --  In addition, the returned value of the parameter
+                     --  must satisfy the bounds of the object type (see
+                     --  comment below).
+
+                     Apply_Scalar_Range_Check (A, A_Typ, F_Typ);
+
                   else
                      Apply_Range_Check
                        (Expression (A), Etype (Expression (A)), A_Typ);
                   end if;
 
-               --  If no conversion apply scalar range checks and length checks
-               --  base on the subtype of the actual (NOT that of the formal).
+               --  If no conversion, apply scalar range checks and length check
+               --  based on the subtype of the actual (NOT that of the formal).
+               --  This indicates that the check takes place on return from the
+               --  call. During expansion the required constraint checks are
+               --  inserted. In GNATprove mode, in the absence of expansion,
+               --  the flag indicates that the returned value is valid.
 
                else
                   if Is_Scalar_Type (F_Typ) then
                      Apply_Scalar_Range_Check (A, A_Typ, F_Typ);
+
                   elsif Is_Array_Type (F_Typ)
                     and then Ekind (F) = E_Out_Parameter
                   then

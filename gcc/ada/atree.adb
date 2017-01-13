@@ -556,7 +556,7 @@ package body Atree is
    --  information for the newly-allocated node is copied from it.
 
    procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id);
-   --  Fixup parent pointers for the syntactic children of Fix_Node after a
+   --  Fix up parent pointers for the syntactic children of Fix_Node after a
    --  copy, setting them to Fix_Node when they pointed to Ref_Node.
 
    procedure Mark_New_Ghost_Node (N : Node_Or_Entity_Id);
@@ -1430,7 +1430,7 @@ package body Atree is
 
    procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id) is
       procedure Fix_Parent (Field : Union_Id);
-      --  Fixup one parent pointer. Field is checked to see if it points to
+      --  Fix up one parent pointer. Field is checked to see if it points to
       --  a node, list, or element list that has a parent that points to
       --  Ref_Node. If so, the parent is reset to point to Fix_Node.
 

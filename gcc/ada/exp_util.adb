@@ -1237,14 +1237,17 @@ package body Exp_Util is
       procedure Replace_Object_And_Primitive_References
         (Expr      : Node_Id;
          Par_Typ   : Entity_Id;
-         Deriv_Typ : Entity_Id);
+         Deriv_Typ : Entity_Id;
+         Par_Obj   : Entity_Id := Empty;
+         Deriv_Obj : Entity_Id := Empty);
       --  Expr denotes an arbitrary expression. Par_Typ is a parent type in a
-      --  type hierarchy. Deriv_Typ is a type derived from Par_Typ. Perform the
-      --  following substitutions:
+      --  type hierarchy. Deriv_Typ is a type derived from Par_Typ. Par_Obj is
+      --  the formal parameter which emulates the current instance of Par_Typ.
+      --  Deriv_Obj is the formal parameter which emulates the current instance
+      --  of Deriv_Typ. Perform the following substitutions:
       --
-      --    * Replace a reference to the _object parameter of the parent type's
-      --      DIC procedure with a reference to the _object parameter of the
-      --      derived type's DIC procedure.
+      --    * Replace a reference to Par_Obj with a reference to Deriv_Obj if
+      --      applicable.
       --
       --    * Replace a call to an overridden parent primitive with a call to
       --      the overriding derived type primitive.
@@ -1340,11 +1343,13 @@ package body Exp_Util is
          Deriv_Typ : Entity_Id;
          Stmts     : in out List_Id)
       is
-         DIC_Args : constant List_Id :=
-                      Pragma_Argument_Associations (DIC_Prag);
-         DIC_Arg  : constant Node_Id := First (DIC_Args);
-         DIC_Expr : constant Node_Id := Expression_Copy (DIC_Arg);
-         Typ_Decl : constant Node_Id := Declaration_Node (Deriv_Typ);
+         Deriv_Decl : constant Node_Id   := Declaration_Node (Deriv_Typ);
+         Deriv_Proc : constant Entity_Id := DIC_Procedure (Deriv_Typ);
+         DIC_Args   : constant List_Id   :=
+                        Pragma_Argument_Associations (DIC_Prag);
+         DIC_Arg    : constant Node_Id   := First (DIC_Args);
+         DIC_Expr   : constant Node_Id   := Expression_Copy (DIC_Arg);
+         Par_Proc   : constant Entity_Id := DIC_Procedure (Par_Typ);
 
          Expr : Node_Id;
 
@@ -1373,15 +1378,19 @@ package body Exp_Util is
          --  handled by the overriding/inheritance mechanism and do not require
          --  an extra replacement pass.
 
+         pragma Assert (Present (Deriv_Proc) and then Present (Par_Proc));
+
          Replace_Object_And_Primitive_References
            (Expr      => Expr,
             Par_Typ   => Par_Typ,
-            Deriv_Typ => Deriv_Typ);
+            Deriv_Typ => Deriv_Typ,
+            Par_Obj   => First_Formal (Par_Proc),
+            Deriv_Obj => First_Formal (Deriv_Proc));
 
          --  Preanalyze the DIC expression to detect errors and at the same
          --  time capture the visibility of the proper package part.
 
-         Set_Parent (Expr, Typ_Decl);
+         Set_Parent (Expr, Deriv_Decl);
          Preanalyze_Assert_Expression (Expr, Any_Boolean);
 
          --  Once the DIC assertion expression is fully processed, add a check
@@ -1514,14 +1523,10 @@ package body Exp_Util is
       procedure Replace_Object_And_Primitive_References
         (Expr      : Node_Id;
          Par_Typ   : Entity_Id;
-         Deriv_Typ : Entity_Id)
+         Deriv_Typ : Entity_Id;
+         Par_Obj   : Entity_Id := Empty;
+         Deriv_Obj : Entity_Id := Empty)
       is
-         Deriv_Obj : Entity_Id;
-         --  The _object parameter of the derived type's DIC procedure
-
-         Par_Obj : Entity_Id;
-         --  The _object parameter of the parent type's DIC procedure
-
          function Replace_Ref (Ref : Node_Id) return Traverse_Result;
          --  Substitute a reference to an entity with a reference to the
          --  corresponding entity stored in in table Primitives_Mapping.
@@ -1556,7 +1561,10 @@ package body Exp_Util is
                --  The reference mentions the _object parameter of the parent
                --  type's DIC procedure.
 
-               elsif Ref_Id = Par_Obj then
+               elsif Present (Par_Obj)
+                 and then Present (Deriv_Obj)
+                 and then Ref_Id = Par_Obj
+               then
                   New_Ref := New_Occurrence_Of (Deriv_Obj, Loc);
 
                   --  The reference to _object acts as an actual parameter in a
@@ -1624,19 +1632,9 @@ package body Exp_Util is
 
          procedure Replace_Refs is new Traverse_Proc (Replace_Ref);
 
-         --  Local variables
-
-         Deriv_Proc : constant Entity_Id := DIC_Procedure (Deriv_Typ);
-         Par_Proc   : constant Entity_Id := DIC_Procedure (Par_Typ);
-
       --  Start of processing for Replace_Object_And_Primitive_References
 
       begin
-         pragma Assert (Present (Deriv_Proc) and then Present (Par_Proc));
-
-         Deriv_Obj := First_Entity (Deriv_Proc);
-         Par_Obj   := First_Entity (Par_Proc);
-
          --  Map each primitive operation of the parent type to the proper
          --  primitive of the derived type.
 
@@ -3908,7 +3906,15 @@ package body Exp_Util is
 
    function Find_DIC_Type (Typ : Entity_Id) return Entity_Id is
       Curr_Typ : Entity_Id;
-      DIC_Typ  : Entity_Id;
+      --  The current type being examined in the parent hierarchy traversal
+
+      DIC_Typ : Entity_Id;
+      --  The type which carries the DIC pragma. This variable denotes the
+      --  partial view when private types are involved.
+
+      Par_Typ : Entity_Id;
+      --  The parent type of the current type. This variable denotes the full
+      --  view when private types are involved.
 
    begin
       --  The input type defines its own DIC pragma, therefore it is the owner
@@ -3933,19 +3939,21 @@ package body Exp_Util is
             --  Look at the full view of a private type because the type may
             --  have a hidden parent introduced in the full view.
 
-            if Is_Private_Type (DIC_Typ)
-              and then Present (Full_View (DIC_Typ))
+            Par_Typ := DIC_Typ;
+
+            if Is_Private_Type (Par_Typ)
+              and then Present (Full_View (Par_Typ))
             then
-               DIC_Typ := Full_View (DIC_Typ);
+               Par_Typ := Full_View (Par_Typ);
             end if;
 
             --  Stop the climb once the nearest parent type which defines a DIC
             --  pragma of its own is encountered or when the root of the parent
             --  chain is reached.
 
-            exit when Has_Own_DIC (DIC_Typ) or else Curr_Typ = DIC_Typ;
+            exit when Has_Own_DIC (DIC_Typ) or else Curr_Typ = Par_Typ;
 
-            Curr_Typ := DIC_Typ;
+            Curr_Typ := Par_Typ;
          end loop;
       end if;
 

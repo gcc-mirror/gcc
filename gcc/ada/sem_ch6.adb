@@ -8408,7 +8408,7 @@ package body Sem_Ch6 is
    --  Start of processing for Fully_Conformant_Expressions
 
    begin
-      --  Non-conformant if paren count does not match. Note: if some idiot
+      --  Nonconformant if paren count does not match. Note: if some idiot
       --  complains that we don't do this right for more than 3 levels of
       --  parentheses, they will be treated with the respect they deserve.
 
@@ -8423,14 +8423,14 @@ package body Sem_Ch6 is
             return Entity (E1) = Entity (E2)
 
               --  One may be a discriminant that has been replaced by
-              --  the correspondding discriminal
+              --  the corresponding discriminal.
 
               or else (Chars (Entity (E1)) = Chars (Entity (E2))
                         and then Ekind (Entity (E1)) = E_Discriminant
                         and then Ekind (Entity (E2)) = E_In_Parameter)
 
-             --  AI12-050 : the loop variables of quantified expressions
-             --  match if the have the same identifier, even though they
+             --  AI12-050 : The loop variables of quantified expressions
+             --  match if they have the same identifier, even though they
              --  are different entities.
 
               or else (Chars (Entity (E1)) = Chars (Entity (E2))

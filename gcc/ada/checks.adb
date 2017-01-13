@@ -1447,13 +1447,17 @@ package body Checks is
          T_Typ := Typ;
       end if;
 
-      --  Nothing to do if discriminant checks are suppressed or else no code
-      --  is to be generated
+      --  Only apply checks when generating code and discriminant checks are
+      --  not suppressed. In GNATprove mode, we do not apply the checks, but we
+      --  still analyze the expression to possibly issue errors on SPARK code
+      --  when a run-time error can be detected at compile time.
 
-      if not Expander_Active
-        or else Discriminant_Checks_Suppressed (T_Typ)
-      then
-         return;
+      if not GNATprove_Mode then
+         if not Expander_Active
+           or else Discriminant_Checks_Suppressed (T_Typ)
+         then
+            return;
+         end if;
       end if;
 
       --  No discriminant checks necessary for an access when expression is
@@ -1688,6 +1692,12 @@ package body Checks is
                return;
             end if;
          end;
+      end if;
+
+      --  In GNATprove mode, we do not apply the checks
+
+      if GNATprove_Mode then
+         return;
       end if;
 
       --  Here we need a discriminant check. First build the expression
@@ -3075,15 +3085,24 @@ package body Checks is
           or else (not Length_Checks_Suppressed (Target_Typ));
 
    begin
-      --  Note: this means that we lose some useful warnings if the expander
-      --  is not active, and we also lose these warnings in SPARK mode ???
+      --  Only apply checks when generating code. In GNATprove mode, we do
+      --  not apply the checks, but we still call Selected_Length_Checks to
+      --  possibly issue errors on SPARK code when a run-time error can be
+      --  detected at compile time.
 
-      if not Expander_Active then
+      --  Note: this means that we lose some useful warnings if the expander
+      --  is not active.
+
+      if not Expander_Active and not GNATprove_Mode then
          return;
       end if;
 
       R_Result :=
         Selected_Length_Checks (Ck_Node, Target_Typ, Source_Typ, Empty);
+
+      if GNATprove_Mode then
+         return;
+      end if;
 
       for J in 1 .. 2 loop
          R_Cno := R_Result (J);
@@ -3186,12 +3205,23 @@ package body Checks is
       R_Result : Check_Result;
 
    begin
-      if not Expander_Active or not Checks_On then
-         return;
+      --  Only apply checks when generating code. In GNATprove mode, we do not
+      --  apply the checks, but we still call Selected_Range_Checks to possibly
+      --  issue errors on SPARK code when a run-time error can be detected at
+      --  compile time.
+
+      if not GNATprove_Mode then
+         if not Expander_Active or not Checks_On then
+            return;
+         end if;
       end if;
 
       R_Result :=
         Selected_Range_Checks (Ck_Node, Target_Typ, Source_Typ, Empty);
+
+      if GNATprove_Mode then
+         return;
+      end if;
 
       for J in 1 .. 2 loop
          R_Cno := R_Result (J);
@@ -9052,7 +9082,12 @@ package body Checks is
    --  Start of processing for Selected_Length_Checks
 
    begin
-      if not Expander_Active then
+      --  Checks will be applied only when generating code. In GNATprove mode,
+      --  we do not apply the checks, but we still call Selected_Length_Checks
+      --  to possibly issue errors on SPARK code when a run-time error can be
+      --  detected at compile time.
+
+      if not Expander_Active and not GNATprove_Mode then
          return Ret_Result;
       end if;
 
@@ -9602,7 +9637,12 @@ package body Checks is
    --  Start of processing for Selected_Range_Checks
 
    begin
-      if not Expander_Active then
+      --  Checks will be applied only when generating code. In GNATprove mode,
+      --  we do not apply the checks, but we still call Selected_Range_Checks
+      --  to possibly issue errors on SPARK code when a run-time error can be
+      --  detected at compile time.
+
+      if not Expander_Active and not GNATprove_Mode then
          return Ret_Result;
       end if;
 

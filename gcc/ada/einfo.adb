@@ -2093,7 +2093,7 @@ package body Einfo is
 
    function Is_Checked_Ghost_Entity (Id : E) return B is
    begin
-      --  Allow this attribute to appear on non-analyzed entities
+      --  Allow this attribute to appear on unanalyzed entities
 
       pragma Assert (Nkind (Id) in N_Entity
         or else Ekind (Id) = E_Void);
@@ -2283,7 +2283,7 @@ package body Einfo is
 
    function Is_Ignored_Ghost_Entity (Id : E) return B is
    begin
-      --  Allow this attribute to appear on non-analyzed entities
+      --  Allow this attribute to appear on unanalyzed entities
 
       pragma Assert (Nkind (Id) in N_Entity
         or else Ekind (Id) = E_Void);
@@ -5167,7 +5167,7 @@ package body Einfo is
 
    procedure Set_Is_Checked_Ghost_Entity (Id : E; V : B := True) is
    begin
-      --  Allow this attribute to appear on non-analyzed entities
+      --  Allow this attribute to appear on unanalyzed entities
 
       pragma Assert (Nkind (Id) in N_Entity
         or else Ekind (Id) = E_Void);
@@ -5372,7 +5372,7 @@ package body Einfo is
 
    procedure Set_Is_Ignored_Ghost_Entity (Id : E; V : B := True) is
    begin
-      --  Allow this attribute to appear on non-analyzed entities
+      --  Allow this attribute to appear on unanalyzed entities
 
       pragma Assert (Nkind (Id) in N_Entity
         or else Ekind (Id) = E_Void);
