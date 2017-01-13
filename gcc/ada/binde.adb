@@ -83,8 +83,8 @@ package body Binde is
    --  will be a successor of X (spec), and X (spec) will be a predecessor of
    --  Y (body).
    --
-   --  Note that we store the successors of each unit explictly. We don't store
-   --  the predecessors, but we store a count of them.
+   --  Note that we store the successors of each unit explicitly. We don't
+   --  store the predecessors, but we store a count of them.
    --
    --  The basic algorithm is to first compute a directed graph of units (type
    --  Unit_Node_Record, below), with successors as edges. A unit is "ready"
@@ -538,7 +538,7 @@ package body Binde is
 
          return False;
 
-      --  Prefer a pure or preelaborated unit to one that is not Pure should
+      --  Prefer a pure or preelaborated unit to one that is not. Pure should
       --  come before preelaborated.
 
       elsif Is_Pure_Or_Preelab_Unit (U1)
@@ -734,7 +734,7 @@ package body Binde is
 
       --  If either unit is predefined or internal, then we use the normal
       --  Better_Choice_Optimistic rule, since we don't want to disturb the
-      --  elaboration rules of the language with -p, same treatment for
+      --  elaboration rules of the language with -p; same treatment for
       --  Pure/Preelab.
 
       --  Prefer a predefined unit to a non-predefined unit
@@ -1035,7 +1035,7 @@ package body Binde is
       end if;
 
       --  For all successors, decrement the number of predecessors, and if it
-      --  becomes zero, then add to no predecessor list.
+      --  becomes zero, then add to no-predecessor list.
 
       S := UNR.Table (Chosen).Successors;
       while S /= No_Successor loop
@@ -2543,7 +2543,7 @@ package body Binde is
       --  private;", and pass in iterators to iterate over all nodes, and over
       --  the successors of a given node. However, that leads to using advanced
       --  features of Ada that are not allowed in the compiler and binder for
-      --  bootstrapping reason. It also leads to trampolines, which are not
+      --  bootstrapping reasons. It also leads to trampolines, which are not
       --  allowed in the compiler and binder. Restricting Node to be discrete
       --  allows us to iterate over all nodes with a 'for' loop, and allows us
       --  to attach temporary information to nodes by having an array indexed
@@ -2617,7 +2617,7 @@ package body Binde is
             Low_Links (N) := Index;
             Index := Index + 1;
 
-            --  Push it one the stack:
+            --  Push it on the stack:
 
             Top := Stack_Position_Of_N;
             Stack (Top) := N;
@@ -2902,7 +2902,7 @@ package body Binde is
 
          Compute_Unit_SCCs;
 
-         --  Initialize the no predecessor list
+         --  Initialize the no-predecessor list
 
          No_Pred := No_Unit_Id;
          for U in UNR.First .. UNR.Last loop
@@ -2913,7 +2913,7 @@ package body Binde is
          end loop;
 
          --  OK, now we determine the elaboration order proper. All we do is to
-         --  select the best choice from the no predecessor list until all the
+         --  select the best choice from the no-predecessor list until all the
          --  nodes have been chosen.
 
          Outer : loop
@@ -3100,7 +3100,7 @@ package body Binde is
 
          Gather_Dependencies;
 
-         --  Initialize the no predecessor list
+         --  Initialize the no-predecessor list
 
          No_Pred := No_Unit_Id;
          for U in UNR.First .. UNR.Last loop
@@ -3111,7 +3111,7 @@ package body Binde is
          end loop;
 
          --  OK, now we determine the elaboration order proper. All we do is to
-         --  select the best choice from the no predecessor list until all the
+         --  select the best choice from the no-predecessor list until all the
          --  nodes have been chosen.
 
          Outer : loop

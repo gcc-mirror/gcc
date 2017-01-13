@@ -379,7 +379,7 @@ package body Sem_Ch6 is
 
          --  An entity can only be frozen if it has a completion, so we must
          --  check this explicitly. If it is declared elsewhere it will have
-         --  been frozen already, so only types declared in currently opend
+         --  been frozen already, so only types declared in currently opened
          --  scopes need to be tested.
 
          if Ekind (Ret_Type) = E_Private_Type
@@ -2245,9 +2245,9 @@ package body Sem_Ch6 is
       --  to be used to undo the transformation.
 
       procedure Freeze_Expr_Types (Spec_Id : Entity_Id);
-      --  (AI12-0103) N is the body associated with an expression function that
-      --  is a completion, and Spec_Id its defining entity. Freeze before N all
-      --  the types referenced by the expression of the function.
+      --  AI12-0103: N is the body associated with an expression function that
+      --  is a completion, and Spec_Id is its defining entity. Freeze before N
+      --  all the types referenced by the expression of the function.
 
       function Is_Private_Concurrent_Primitive
         (Subp_Id : Entity_Id) return Boolean;
@@ -3498,8 +3498,9 @@ package body Sem_Ch6 is
             Set_Has_Delayed_Freeze (Spec_Id);
             Freeze_Before (N, Spec_Id);
 
-            --  At the occurrence of an expression function declaration that is
-            --  a completion, its expression causes freezing (AI12-0103).
+            --  AI12-0103: At the occurrence of an expression function
+            --  declaration that is a completion, its expression causes
+            --  freezing.
 
             if Has_Completion (Spec_Id)
               and then Was_Expression_Function (N)
@@ -8544,7 +8545,7 @@ package body Sem_Ch6 is
                         and then Ekind (Entity (E1)) = E_Discriminant
                         and then Ekind (Entity (E2)) = E_In_Parameter)
 
-             --  AI12-050 : The loop variables of quantified expressions
+             --  AI12-050: The loop variables of quantified expressions
              --  match if they have the same identifier, even though they
              --  are different entities.
 
