@@ -211,6 +211,17 @@ c_parser_gimple_compound_statement (c_parser *parser, gimple_seq *seq)
 	    }
 	  goto expr_stmt;
 
+	case CPP_SEMICOLON:
+	  {
+	    /* Empty stmt.  */
+	    location_t loc = c_parser_peek_token (parser)->location;
+	    c_parser_consume_token (parser);
+	    gimple *nop = gimple_build_nop ();
+	    gimple_set_location (nop, loc);
+	    gimple_seq_add_stmt (seq, nop);
+	    break;
+	  }
+
 	default:
 expr_stmt:
 	  c_parser_gimple_statement (parser, seq);
