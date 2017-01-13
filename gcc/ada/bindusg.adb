@@ -115,7 +115,7 @@ package body Bindusg is
 
       --  Line for -f switch
 
-      Write_Line ("  -felab-order  Force elaboration order");
+      Write_Line ("  -ffile    Force elaboration order from given file");
 
       --  Line for -F switch
 

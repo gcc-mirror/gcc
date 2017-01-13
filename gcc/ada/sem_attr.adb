@@ -7109,13 +7109,14 @@ package body Sem_Attr is
 
       end case;
 
-      --  In SPARK some attribute references depend on Tasking_State, so we
-      --  need to make sure we load this so that gnat2why has the entity
-      --  available. See SPARK RM 9(18) for the relevant rule.
+      --  In SPARK certain attributes (see below) depend on Tasking_State.
+      --  Ensure that the entity is available for gnat2why by loading it.
+      --  See SPARK RM 9(18) for the relevant rule.
 
       if GNATprove_Mode then
          declare
             Unused : Entity_Id;
+
          begin
             case Attr_Id is
                when Attribute_Callable   |

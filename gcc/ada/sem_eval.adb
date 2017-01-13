@@ -5469,6 +5469,40 @@ package body Sem_Eval is
                return Skip;
             end;
 
+         --  The predicate function may contain string-comparison operations
+         --  that have been converted into calls to run-time array-comparison
+         --  routines. To evaluate the predicate statically, we recover the
+         --  original comparison operation and replace the occurrence of the
+         --  formal by the static string value. The actuals of the generated
+         --  call are of the form X'Address.
+
+         elsif Nkind (N) in N_Op_Compare
+           and then Nkind (Left_Opnd (N)) = N_Function_Call
+         then
+            declare
+               C : constant Node_Id := Left_Opnd (N);
+               F : constant Node_Id := First (Parameter_Associations (C));
+               L : constant Node_Id := Prefix (F);
+               R : constant Node_Id := Prefix (Next (F));
+
+            begin
+               --  If an operand is an entity name, it is the formal of the
+               --  predicate function, so replace it with the string value.
+               --  It may be either operand in the call. The other operand
+               --  is a static string from the original predicate.
+
+               if Is_Entity_Name (L) then
+                  Rewrite (Left_Opnd (N),  New_Copy (Val));
+                  Rewrite (Right_Opnd (N), New_Copy (R));
+
+               else
+                  Rewrite (Left_Opnd (N),  New_Copy (L));
+                  Rewrite (Right_Opnd (N), New_Copy (Val));
+               end if;
+
+               return Skip;
+            end;
+
          else
             return OK;
          end if;

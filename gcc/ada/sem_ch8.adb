@@ -1936,6 +1936,12 @@ package body Sem_Ch8 is
       is
          Loc : constant Source_Ptr := Sloc (N);
 
+         function Build_Call
+           (Subp_Id : Entity_Id;
+            Params  : List_Id) return Node_Id;
+         --  Create a dispatching call to invoke routine Subp_Id with actuals
+         --  built from the parameter specifications of list Params.
+
          function Build_Expr_Fun_Call
            (Subp_Id : Entity_Id;
             Params  : List_Id) return Node_Id;
@@ -1943,12 +1949,6 @@ package body Sem_Ch8 is
          --  built from the parameter specifications of list Params. Return
          --  directly the call, so that it can be used inside an expression
          --  function. This is a specificity of the GNATprove mode.
-
-         function Build_Call
-           (Subp_Id : Entity_Id;
-            Params  : List_Id) return Node_Id;
-         --  Create a dispatching call to invoke routine Subp_Id with actuals
-         --  built from the parameter specifications of list Params.
 
          function Build_Spec (Subp_Id : Entity_Id) return Node_Id;
          --  Create a subprogram specification based on the subprogram profile
@@ -2027,6 +2027,8 @@ package body Sem_Ch8 is
             Formal   : Node_Id;
 
          begin
+            pragma Assert (Ekind_In (Subp_Id, E_Function, E_Operator));
+
             --  Build the actual parameters of the call
 
             Formal := First (Params);
@@ -2039,11 +2041,10 @@ package body Sem_Ch8 is
             --  Generate:
             --    Subp_Id (Actuals);
 
-            pragma Assert (Ekind_In (Subp_Id, E_Function, E_Operator));
-
-            return Make_Function_Call (Loc,
-              Name                   => Call_Ref,
-              Parameter_Associations => Actuals);
+            return
+              Make_Function_Call (Loc,
+                Name                   => Call_Ref,
+                Parameter_Associations => Actuals);
          end Build_Expr_Fun_Call;
 
          ----------------
@@ -2399,9 +2400,10 @@ package body Sem_Ch8 is
             Body_Decl :=
               Make_Expression_Function (Loc,
                 Specification => New_Spec,
-                Expression    => Build_Expr_Fun_Call
-                  (Subp_Id => Prim_Op,
-                   Params  => Parameter_Specifications (New_Spec)));
+                Expression    =>
+                  Build_Expr_Fun_Call
+                    (Subp_Id => Prim_Op,
+                     Params  => Parameter_Specifications (New_Spec)));
 
             Wrap_Id := Defining_Entity (Body_Decl);
 
