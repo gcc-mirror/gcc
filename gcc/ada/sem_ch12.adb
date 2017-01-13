@@ -3686,12 +3686,6 @@ package body Sem_Ch12 is
 
       Instantiation_Node := N;
 
-      --  Turn off style checking in instances. If the check is enabled on the
-      --  generic unit, a warning in an instance would just be noise. If not
-      --  enabled on the generic, then a warning in an instance is just wrong.
-
-      Style_Check := False;
-
       --  Case of instantiation of a generic package
 
       if Nkind (N) = N_Package_Instantiation then
@@ -3723,6 +3717,12 @@ package body Sem_Ch12 is
       Set_Incomplete_Actuals (Act_Decl_Id, New_Elmt_List);
 
       Preanalyze_Actuals (N, Act_Decl_Id);
+
+      --  Turn off style checking in instances. If the check is enabled on the
+      --  generic unit, a warning in an instance would just be noise. If not
+      --  enabled on the generic, then a warning in an instance is just wrong.
+
+      Style_Check := False;
 
       Init_Env;
       Env_Installed := True;

@@ -28,9 +28,14 @@ with Einfo;    use Einfo;
 with Exp_Ch5;  use Exp_Ch5;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
+with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Nmake;    use Nmake;
+with Rtsfind;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 
 package body Exp_SPARK is
@@ -38,6 +43,10 @@ package body Exp_SPARK is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Expand_SPARK_Attribute_Reference (N : Node_Id);
+   --  Replace occurrences of System'To_Address by calls to
+   --  System.Storage_Elements.To_Address
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
@@ -74,6 +83,12 @@ package body Exp_SPARK is
          when N_Object_Renaming_Declaration =>
             Expand_SPARK_N_Object_Renaming_Declaration (N);
 
+         --  Replace occurrences of System'To_Address by calls to
+         --  System.Storage_Elements.To_Address
+
+         when N_Attribute_Reference =>
+            Expand_SPARK_Attribute_Reference (N);
+
          --  Loop iterations over arrays need to be expanded, to avoid getting
          --  two names referring to the same object in memory (the array and
          --  the iterator) in GNATprove, especially since both can be written
@@ -100,6 +115,42 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK;
+
+   --------------------------------------
+   -- Expand_SPARK_Attribute_Reference --
+   --------------------------------------
+
+   procedure Expand_SPARK_Attribute_Reference (N : Node_Id) is
+      Aname   : constant Name_Id := Attribute_Name (N);
+      Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
+      Expr    : Node_Id;
+      Call    : Node_Id;
+
+   begin
+      if Attr_Id = Attribute_To_Address then
+         --  Extract argument to later reanalyze it in the new context
+
+         Expr := First (Expressions (N));
+         Nlists.Remove (Expr);
+         Set_Etype (Expr, Empty);
+         Set_Analyzed (Expr, False);
+
+         --  Create the call and insert it in the tree
+
+         Call := Make_Function_Call (Sloc (N),
+                    Name => New_Occurrence_Of
+                      (Rtsfind.RTE (Rtsfind.RE_To_Address), Sloc (N)),
+                    Parameter_Associations =>
+                      New_List (Expr));
+         Set_Etype (Call, Etype (N));
+         Rewrite (Old_Node => N, New_Node => Call);
+
+         --  Reanalyze argument and call in the new context
+
+         Analyze_And_Resolve (Expr, Rtsfind.RTE (Rtsfind.RE_Integer_Address));
+         Analyze_And_Resolve (N, Etype (N));
+      end if;
+   end Expand_SPARK_Attribute_Reference;
 
    ------------------------------------------------
    -- Expand_SPARK_N_Object_Renaming_Declaration --

@@ -69,10 +69,7 @@ procedure Gnatbind is
    --  The first library file, that should be a main subprogram if neither -n
    --  nor -z are used.
 
-   Std_Lib_File : File_Name_Type;
-   --  Standard library
-
-   Text     : Text_Buffer_Ptr;
+   Text : Text_Buffer_Ptr;
 
    Output_File_Name_Seen : Boolean := False;
    Output_File_Name      : String_Ptr := new String'("");
@@ -123,6 +120,9 @@ procedure Gnatbind is
    procedure Add_Artificial_ALI_File (Name : String) is
       Id : ALI_Id;
       pragma Warnings (Off, Id);
+
+      Std_Lib_File : File_Name_Type;
+      --  Standard library
 
    begin
       Name_Len := Name'Length;
@@ -769,7 +769,7 @@ begin
       --  Add System.Standard_Library to list to ensure that these files are
       --  included in the bind, even if not directly referenced from Ada code
       --  This is suppressed if the appropriate targparm switch is set. Be sure
-      --  in any case that System is in the closure, as it may contains linker
+      --  in any case that System is in the closure, as it may contain linker
       --  options. Note that it will be automatically added if s-stalib is
       --  added.
 
