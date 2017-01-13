@@ -1,5 +1,10 @@
 2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/70697
+	* gfortran.dg/coarray/event_4.f08: New test.
+
+2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/70696
 	* gfortran.dg/coarray/event_3.f08: New test.
 
