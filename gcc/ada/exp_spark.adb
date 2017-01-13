@@ -31,7 +31,7 @@ with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
-with Rtsfind;
+with Rtsfind;  use Rtsfind;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -121,29 +121,34 @@ package body Exp_SPARK is
    --------------------------------------
 
    procedure Expand_SPARK_Attribute_Reference (N : Node_Id) is
-      Aname   : constant Name_Id := Attribute_Name (N);
+      Aname   : constant Name_Id      := Attribute_Name (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
-      Expr    : Node_Id;
-      Call    : Node_Id;
+      Loc     : constant Source_Ptr   := Sloc (N);
+
+      Call : Node_Id;
+      Expr : Node_Id;
 
    begin
       if Attr_Id = Attribute_To_Address then
+
          --  Extract argument to later reanalyze it in the new context
 
          Expr := First (Expressions (N));
          Nlists.Remove (Expr);
-         Set_Etype (Expr, Empty);
+         Set_Etype    (Expr, Empty);
          Set_Analyzed (Expr, False);
 
          --  Create the call and insert it in the tree
 
-         Call := Make_Function_Call (Sloc (N),
-                    Name => New_Occurrence_Of
-                      (Rtsfind.RTE (Rtsfind.RE_To_Address), Sloc (N)),
-                    Parameter_Associations =>
-                      New_List (Expr));
+         Call :=
+           Make_Function_Call (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_To_Address), Loc),
+             Parameter_Associations => New_List (
+               Expr));
+
          Set_Etype (Call, Etype (N));
-         Rewrite (Old_Node => N, New_Node => Call);
+         Rewrite (N, Call);
 
          --  Reanalyze argument and call in the new context
 
