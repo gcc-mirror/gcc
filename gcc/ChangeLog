@@ -1,3 +1,13 @@
+2017-01-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline r244320.
+	2017-01-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/78253
+	* config/arm/arm.c (legitimize_pic_address): Handle reference to
+	weak symbol.
+	(arm_assemble_integer): Likewise.
+
 2016-01-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* postreload.c (reload_cse_simplify): Check for NO_FUNCTION_CSE
