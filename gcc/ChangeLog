@@ -1,3 +1,10 @@
+2017-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78304
+	* substring-locations.c (format_warning_va): Strengthen case 1 so
+	that both endpoints of the substring must be within the format
+	range for just the substring to be printed.
+
 2017-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.opt (msgx): Use ix86_isa_flags2 variable.

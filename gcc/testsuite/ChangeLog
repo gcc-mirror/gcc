@@ -1,3 +1,14 @@
+2017-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78304
+	* gcc.dg/format/diagnostic-ranges.c (test_macro): Undef INT_FMT.
+	(test_macro_2): New test.
+	(test_macro_3): New test.
+	(test_macro_4): New test.
+	(test_non_contiguous_strings): Convert line number to line offset.
+	* gcc.dg/format/pr78304-2.c: New test case.
+	* gcc.dg/format/pr78304.c: New test case.
+
 2017-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/funcspec-56.inc: Add missing options and
