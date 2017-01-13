@@ -1171,7 +1171,7 @@ package body Sem_Ch9 is
       Check_SPARK_05_Restriction ("delay statement is not allowed", N);
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
-      Analyze (E);
+      Analyze_And_Resolve (E);
       Typ := First_Subtype (Etype (E));
 
       if not Is_RTE (Typ, RO_CA_Time) and then

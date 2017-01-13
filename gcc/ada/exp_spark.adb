@@ -124,36 +124,28 @@ package body Exp_SPARK is
       Aname   : constant Name_Id      := Attribute_Name (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
       Loc     : constant Source_Ptr   := Sloc (N);
-
-      Call : Node_Id;
-      Expr : Node_Id;
+      Typ     : constant Entity_Id    := Etype (N);
+      Expr    : Node_Id;
 
    begin
       if Attr_Id = Attribute_To_Address then
 
-         --  Extract argument to later reanalyze it in the new context
+         --  Extract and convert argument to expected type for call
 
-         Expr := First (Expressions (N));
-         Nlists.Remove (Expr);
-         Set_Etype    (Expr, Empty);
-         Set_Analyzed (Expr, False);
+         Expr :=
+           Make_Type_Conversion (Loc,
+             Subtype_Mark =>
+               New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
+             Expression   => Relocate_Node (First (Expressions (N))));
 
-         --  Create the call and insert it in the tree
+         --  Replace attribute reference with call
 
-         Call :=
+         Rewrite (N,
            Make_Function_Call (Loc,
              Name                   =>
                New_Occurrence_Of (RTE (RE_To_Address), Loc),
-             Parameter_Associations => New_List (
-               Expr));
-
-         Set_Etype (Call, Etype (N));
-         Rewrite (N, Call);
-
-         --  Reanalyze argument and call in the new context
-
-         Analyze_And_Resolve (Expr, Rtsfind.RTE (Rtsfind.RE_Integer_Address));
-         Analyze_And_Resolve (N, Etype (N));
+             Parameter_Associations => New_List (Expr)));
+         Analyze_And_Resolve (N, Typ);
       end if;
    end Expand_SPARK_Attribute_Reference;
 
