@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "target-memory.h" /* for gfc_convert_boz */
 #include "constructor.h"
+#include "tree.h"
 
 
 /* The following set of functions provide access to gfc_expr* of
@@ -184,7 +185,7 @@ gfc_get_constant_expr (bt type, int kind, locus *where)
    blanked and null-terminated.  */
 
 gfc_expr *
-gfc_get_character_expr (int kind, locus *where, const char *src, int len)
+gfc_get_character_expr (int kind, locus *where, const char *src, gfc_charlen_t len)
 {
   gfc_expr *e;
   gfc_char_t *dest;
@@ -210,13 +211,14 @@ gfc_get_character_expr (int kind, locus *where, const char *src, int len)
 /* Get a new expression node that is an integer constant.  */
 
 gfc_expr *
-gfc_get_int_expr (int kind, locus *where, int value)
+gfc_get_int_expr (int kind, locus *where, HOST_WIDE_INT value)
 {
   gfc_expr *p;
   p = gfc_get_constant_expr (BT_INTEGER, kind,
 			     where ? where : &gfc_current_locus);
 
-  mpz_set_si (p->value.integer, value);
+  const wide_int w = wi::shwi (value, kind * BITS_PER_UNIT);
+  wi::to_mpz (w, p->value.integer, SIGNED);
 
   return p;
 }
@@ -631,6 +633,32 @@ gfc_extract_int (gfc_expr *expr, int *result)
     }
 
   *result = (int) mpz_get_si (expr->value.integer);
+
+  return NULL;
+}
+
+
+/* Same as gfc_extract_int, but use a HWI.  */
+
+const char *
+gfc_extract_hwi (gfc_expr *expr, HOST_WIDE_INT *result)
+{
+  if (expr->expr_type != EXPR_CONSTANT)
+    return _("Constant expression required at %C");
+
+  if (expr->ts.type != BT_INTEGER)
+    return _("Integer expression required at %C");
+
+  /* Use long_long_integer_type_node to determine when to saturate.  */
+  const wide_int val = wi::from_mpz (long_long_integer_type_node,
+				     expr->value.integer, false);
+
+  if (!wi::fits_shwi_p (val))
+    {
+      return _("Integer value too large in expression at %C");
+    }
+
+  *result = val.to_shwi ();
 
   return NULL;
 }
@@ -1655,7 +1683,7 @@ simplify_const_ref (gfc_expr *p)
 			 a substring out of it, update the type-spec's
 			 character length according to the first element
 			 (as all should have the same length).  */
-		      int string_len;
+		      gfc_charlen_t string_len;
 		      if ((c = gfc_constructor_first (p->value.constructor)))
 			{
 			  const gfc_expr* first = c->expr;
@@ -1824,18 +1852,18 @@ gfc_simplify_expr (gfc_expr *p, int type)
       if (gfc_is_constant_expr (p))
 	{
 	  gfc_char_t *s;
-	  int start, end;
+	  HOST_WIDE_INT start, end;
 
 	  start = 0;
 	  if (p->ref && p->ref->u.ss.start)
 	    {
-	      gfc_extract_int (p->ref->u.ss.start, &start);
+	      gfc_extract_hwi (p->ref->u.ss.start, &start);
 	      start--;  /* Convert from one-based to zero-based.  */
 	    }
 
 	  end = p->value.character.length;
 	  if (p->ref && p->ref->u.ss.end)
-	    gfc_extract_int (p->ref->u.ss.end, &end);
+	    gfc_extract_hwi (p->ref->u.ss.end, &end);
 
 	  if (end < start)
 	    end = start;

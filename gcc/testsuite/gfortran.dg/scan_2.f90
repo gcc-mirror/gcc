@@ -30,5 +30,5 @@ program p1
    call s1(.TRUE.)
 end program p1
 
-! { dg-final { scan-tree-dump-times "iscan = _gfortran_string_scan \\(2," 1 "original" } }
-! { dg-final { scan-tree-dump-times "iverify = _gfortran_string_verify \\(2," 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_string_scan \\(2," 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_string_verify \\(2," 1 "original" } }
