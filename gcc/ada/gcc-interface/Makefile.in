@@ -1270,7 +1270,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   s-tpopsp.adb<s-tpopsp-solaris.adb \
   g-soliop.ads<g-soliop-solaris.ads \
   $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS)
+  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<system-solaris-sparc.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb
