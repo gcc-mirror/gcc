@@ -3503,6 +3503,7 @@ package body Sem_Ch6 is
             --  freezing.
 
             if Has_Completion (Spec_Id)
+              and then Nkind (N) = N_Subprogram_Body
               and then Was_Expression_Function (N)
             then
                Freeze_Expr_Types (Spec_Id);
