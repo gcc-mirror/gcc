@@ -3573,6 +3573,10 @@ package body Sem_Ch12 is
    -- Analyze_Package_Instantiation --
    -----------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
@@ -4838,6 +4842,10 @@ package body Sem_Ch12 is
    --------------------------------------
    -- Analyze_Subprogram_Instantiation --
    --------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Analyze_Subprogram_Instantiation
      (N : Node_Id;
@@ -10786,6 +10794,10 @@ package body Sem_Ch12 is
    -- Instantiate_Package_Body --
    ------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Instantiate_Package_Body
      (Body_Info     : Pending_Body_Info;
       Inlined_Body  : Boolean := False;
@@ -11203,6 +11215,10 @@ package body Sem_Ch12 is
    ---------------------------------
    -- Instantiate_Subprogram_Body --
    ---------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Instantiate_Subprogram_Body
      (Body_Info     : Pending_Body_Info;

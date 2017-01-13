@@ -7011,6 +7011,10 @@ package body Exp_Ch3 is
    --  for initialization) are chained in the Actions field list of the freeze
    --  node using Append_Freeze_Actions.
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    function Freeze_Type (N : Node_Id) return Boolean is
       procedure Process_RACW_Types (Typ : Entity_Id);
       --  Validate and generate stubs for all RACW types associated with type

@@ -2002,6 +2002,10 @@ package body Freeze is
    -- Freeze_Entity --
    -------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    function Freeze_Entity
      (E                 : Entity_Id;
       N                 : Node_Id;

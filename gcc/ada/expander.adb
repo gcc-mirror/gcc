@@ -77,6 +77,10 @@ package body Expander is
    -- Expand --
    ------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Expand (N : Node_Id) is
       Mode : Ghost_Mode_Type;
 

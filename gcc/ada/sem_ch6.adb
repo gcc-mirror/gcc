@@ -1505,10 +1505,15 @@ package body Sem_Ch6 is
    -- Analyze_Procedure_Call --
    ----------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Procedure_Call (N : Node_Id) is
       procedure Analyze_Call_And_Resolve;
-      --  Do Analyze and Resolve calls for procedure call
-      --  At end, check illegal order dependence.
+      --  Do Analyze and Resolve calls for procedure call. At the end, check
+      --  for illegal order dependence.
+      --  ??? where is the check for illegal order dependencies?
 
       ------------------------------
       -- Analyze_Call_And_Resolve --
@@ -2135,6 +2140,10 @@ package body Sem_Ch6 is
    --  and for subprogram stubs of both kinds. In the case of stubs, only the
    --  specification matters, and is used to create a proper declaration for
    --  the subprogram, or to perform conformance checks.
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Analyze_Subprogram_Body_Helper (N : Node_Id) is
       Body_Spec : Node_Id             := Specification (N);

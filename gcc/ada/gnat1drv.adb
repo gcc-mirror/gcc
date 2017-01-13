@@ -286,6 +286,11 @@ procedure Gnat1drv is
 
          Debug_Generated_Code := False;
 
+         --  Disable Exception_Extra_Info (-gnateE) which generates more
+         --  complex trees with no added value, and may confuse CodePeer.
+
+         Exception_Extra_Info := False;
+
          --  Turn cross-referencing on in case it was disabled (e.g. by -gnatD)
          --  to support source navigation.
 

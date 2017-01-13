@@ -8244,6 +8244,10 @@ package body Sem_Ch13 is
    --  the typPredicateM version of the function, in which any occurrence of a
    --  Raise_Expression is converted to "return False".
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
@@ -8893,6 +8897,10 @@ package body Sem_Ch13 is
    ------------------------------------------
    -- Build_Predicate_Function_Declaration --
    ------------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    function Build_Predicate_Function_Declaration
      (Typ : Entity_Id) return Node_Id
