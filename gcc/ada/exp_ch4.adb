@@ -2140,47 +2140,47 @@ package body Exp_Ch4 is
 
       if Llo /= No_Uint and then Rlo /= No_Uint then
          case N_Op_Compare (Nkind (N)) is
-         when N_Op_Eq =>
-            if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
-               Set_True;
-            elsif Llo > Rhi or else Lhi < Rlo then
-               Set_False;
-            end if;
+            when N_Op_Eq =>
+               if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
+                  Set_True;
+               elsif Llo > Rhi or else Lhi < Rlo then
+                  Set_False;
+               end if;
 
-         when N_Op_Ge =>
-            if Llo >= Rhi then
-               Set_True;
-            elsif Lhi < Rlo then
-               Set_False;
-            end if;
+            when N_Op_Ge =>
+               if Llo >= Rhi then
+                  Set_True;
+               elsif Lhi < Rlo then
+                  Set_False;
+               end if;
 
-         when N_Op_Gt =>
-            if Llo > Rhi then
-               Set_True;
-            elsif Lhi <= Rlo then
-               Set_False;
-            end if;
+            when N_Op_Gt =>
+               if Llo > Rhi then
+                  Set_True;
+               elsif Lhi <= Rlo then
+                  Set_False;
+               end if;
 
-         when N_Op_Le =>
-            if Llo > Rhi then
-               Set_False;
-            elsif Lhi <= Rlo then
-               Set_True;
-            end if;
+            when N_Op_Le =>
+               if Llo > Rhi then
+                  Set_False;
+               elsif Lhi <= Rlo then
+                  Set_True;
+               end if;
 
-         when N_Op_Lt =>
-            if Llo >= Rhi then
-               Set_False;
-            elsif Lhi < Rlo then
-               Set_True;
-            end if;
+            when N_Op_Lt =>
+               if Llo >= Rhi then
+                  Set_False;
+               elsif Lhi < Rlo then
+                  Set_True;
+               end if;
 
-         when N_Op_Ne =>
-            if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
-               Set_False;
-            elsif Llo > Rhi or else Lhi < Rlo then
-               Set_True;
-            end if;
+            when N_Op_Ne =>
+               if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
+                  Set_False;
+               elsif Llo > Rhi or else Lhi < Rlo then
+                  Set_True;
+               end if;
          end case;
 
          --  All done if we did the rewrite
@@ -13170,56 +13170,57 @@ package body Exp_Ch4 is
 
          begin
             case N_Op_Compare (Nkind (N)) is
-            when N_Op_Eq =>
-               True_Result  := Res = EQ;
-               False_Result := Res = LT or else Res = GT or else Res = NE;
+               when N_Op_Eq =>
+                  True_Result  := Res = EQ;
+                  False_Result := Res = LT or else Res = GT or else Res = NE;
 
-            when N_Op_Ge =>
-               True_Result  := Res in Compare_GE;
-               False_Result := Res = LT;
+               when N_Op_Ge =>
+                  True_Result  := Res in Compare_GE;
+                  False_Result := Res = LT;
 
-               if Res = LE
-                 and then Constant_Condition_Warnings
-                 and then Comes_From_Source (Original_Node (N))
-                 and then Nkind (Original_Node (N)) = N_Op_Ge
-                 and then not In_Instance
-                 and then Is_Integer_Type (Etype (Left_Opnd (N)))
-                 and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
-               then
-                  Error_Msg_N
-                    ("can never be greater than, could replace by ""'=""?c?",
-                     N);
-                  Warning_Generated := True;
-               end if;
+                  if Res = LE
+                    and then Constant_Condition_Warnings
+                    and then Comes_From_Source (Original_Node (N))
+                    and then Nkind (Original_Node (N)) = N_Op_Ge
+                    and then not In_Instance
+                    and then Is_Integer_Type (Etype (Left_Opnd (N)))
+                    and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
+                  then
+                     Error_Msg_N
+                       ("can never be greater than, could replace by "
+                        & """'=""?c?", N);
+                     Warning_Generated := True;
+                  end if;
 
-            when N_Op_Gt =>
-               True_Result  := Res = GT;
-               False_Result := Res in Compare_LE;
+               when N_Op_Gt =>
+                  True_Result  := Res = GT;
+                  False_Result := Res in Compare_LE;
 
-            when N_Op_Lt =>
-               True_Result  := Res = LT;
-               False_Result := Res in Compare_GE;
+               when N_Op_Lt =>
+                  True_Result  := Res = LT;
+                  False_Result := Res in Compare_GE;
 
-            when N_Op_Le =>
-               True_Result  := Res in Compare_LE;
-               False_Result := Res = GT;
+               when N_Op_Le =>
+                  True_Result  := Res in Compare_LE;
+                  False_Result := Res = GT;
 
-               if Res = GE
-                 and then Constant_Condition_Warnings
-                 and then Comes_From_Source (Original_Node (N))
-                 and then Nkind (Original_Node (N)) = N_Op_Le
-                 and then not In_Instance
-                 and then Is_Integer_Type (Etype (Left_Opnd (N)))
-                 and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
-               then
-                  Error_Msg_N
-                    ("can never be less than, could replace by ""'=""?c?", N);
-                  Warning_Generated := True;
-               end if;
+                  if Res = GE
+                    and then Constant_Condition_Warnings
+                    and then Comes_From_Source (Original_Node (N))
+                    and then Nkind (Original_Node (N)) = N_Op_Le
+                    and then not In_Instance
+                    and then Is_Integer_Type (Etype (Left_Opnd (N)))
+                    and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
+                  then
+                     Error_Msg_N
+                       ("can never be less than, could replace by ""'=""?c?",
+                        N);
+                     Warning_Generated := True;
+                  end if;
 
-            when N_Op_Ne =>
-               True_Result  := Res = NE or else Res = GT or else Res = LT;
-               False_Result := Res = EQ;
+               when N_Op_Ne =>
+                  True_Result  := Res = NE or else Res = GT or else Res = LT;
+                  False_Result := Res = EQ;
             end case;
 
             --  If this is the first iteration, then we actually convert the

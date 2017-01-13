@@ -1147,22 +1147,23 @@ package body Sem_Dim is
          when N_Extended_Return_Statement =>
             Analyze_Dimension_Extended_Return_Statement (N);
 
-         when N_Attribute_Reference       |
-              N_Expanded_Name             |
-              N_Explicit_Dereference      |
-              N_Function_Call             |
-              N_Indexed_Component         |
-              N_Qualified_Expression      |
-              N_Selected_Component        |
-              N_Slice                     |
-              N_Type_Conversion           |
-              N_Unchecked_Type_Conversion =>
+         when N_Attribute_Reference
+            | N_Expanded_Name
+            | N_Explicit_Dereference
+            | N_Function_Call
+            | N_Indexed_Component
+            | N_Qualified_Expression
+            | N_Selected_Component
+            | N_Slice
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
             Analyze_Dimension_Has_Etype (N);
 
          --  In the presence of a repaired syntax error, an identifier
          --  may be introduced without a usable type.
 
-         when  N_Identifier                =>
+         when N_Identifier =>
             if Present (Etype (N)) then
                Analyze_Dimension_Has_Etype (N);
             end if;
@@ -1187,8 +1188,8 @@ package body Sem_Dim is
          when N_Unary_Op =>
             Analyze_Dimension_Unary_Op (N);
 
-         when others => null;
-
+         when others =>
+            null;
       end case;
    end Analyze_Dimension;
 
@@ -2021,11 +2022,13 @@ package body Sem_Dim is
       --  table from growing uselessly.
 
       case Nkind (N) is
-         when N_Attribute_Reference |
-              N_Indexed_Component   =>
+         when N_Attribute_Reference
+            | N_Indexed_Component
+         =>
             declare
-               Expr  : Node_Id;
                Exprs : constant List_Id := Expressions (N);
+               Expr  : Node_Id;
+
             begin
                if Present (Exprs) then
                   Expr := First (Exprs);
@@ -2036,15 +2039,17 @@ package body Sem_Dim is
                end if;
             end;
 
-         when N_Qualified_Expression      |
-              N_Type_Conversion           |
-              N_Unchecked_Type_Conversion =>
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
             Remove_Dimensions (Expression (N));
 
          when N_Selected_Component =>
             Remove_Dimensions (Selector_Name (N));
 
-         when others => null;
+         when others =>
+            null;
       end case;
    end Analyze_Dimension_Has_Etype;
 
@@ -2273,18 +2278,21 @@ package body Sem_Dim is
    procedure Analyze_Dimension_Unary_Op (N : Node_Id) is
    begin
       case Nkind (N) is
-         when N_Op_Plus | N_Op_Minus | N_Op_Abs =>
 
-            --  Propagate the dimension if the operand is not dimensionless
+         --  Propagate the dimension if the operand is not dimensionless
 
+         when N_Op_Abs
+            | N_Op_Minus
+            | N_Op_Plus
+         =>
             declare
                R : constant Node_Id := Right_Opnd (N);
             begin
                Move_Dimensions (R, N);
             end;
 
-         when others => null;
-
+         when others =>
+            null;
       end case;
    end Analyze_Dimension_Unary_Op;
 
@@ -3502,22 +3510,14 @@ package body Sem_Dim is
       function Belong_To_Numeric_Literal (C : Character) return Boolean is
       begin
          case C is
-            when '0' .. '9' |
-                 '_'        |
-                 '.'        |
-                 'e'        |
-                 '#'        |
-                 'A'        |
-                 'B'        |
-                 'C'        |
-                 'D'        |
-                 'E'        |
-                 'F'        =>
+            when '0' .. '9'
+               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+            =>
                return True;
 
             --  Make sure '+' or '-' is part of an exponent.
 
-            when '+'  | '-' =>
+            when '+' | '-' =>
                declare
                   Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
                begin
@@ -3526,7 +3526,7 @@ package body Sem_Dim is
 
             --  All other character doesn't belong to a numeric literal
 
-            when others     =>
+            when others =>
                return False;
          end case;
       end Belong_To_Numeric_Literal;

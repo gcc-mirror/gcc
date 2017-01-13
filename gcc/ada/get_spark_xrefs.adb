@@ -412,7 +412,6 @@ begin
                --  Loop through cross-references for this entity
 
                loop
-
                   declare
                      Line  : Nat;
                      Col   : Nat;

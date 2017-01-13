@@ -489,7 +489,6 @@ package body Expander is
 
                when others =>
                   null;
-
             end case;
 
          exception
@@ -507,16 +506,19 @@ package body Expander is
 
          if Scope_Is_Transient and then N = Node_To_Be_Wrapped then
             case Nkind (N) is
-               when N_Statement_Other_Than_Procedure_Call |
-                    N_Procedure_Call_Statement            =>
+               when N_Procedure_Call_Statement
+                  | N_Statement_Other_Than_Procedure_Call
+               =>
                   Wrap_Transient_Statement (N);
 
-               when N_Object_Declaration          |
-                    N_Object_Renaming_Declaration |
-                    N_Subtype_Declaration         =>
+               when N_Object_Declaration
+                  | N_Object_Renaming_Declaration
+                  | N_Subtype_Declaration
+               =>
                   Wrap_Transient_Declaration (N);
 
-               when others => Wrap_Transient_Expression (N);
+               when others =>
+                  Wrap_Transient_Expression (N);
             end case;
          end if;
 

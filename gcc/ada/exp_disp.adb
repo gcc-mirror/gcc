@@ -3448,9 +3448,9 @@ package body Exp_Disp is
                               (RTE (RE_Protected_Entry_Index), Loc),
                           Expression   => Make_Identifier (Loc, Name_uI)),
 
-                        Make_Identifier (Loc, Name_uP),   --  parameter block
-                        Make_Identifier (Loc, Name_uD),   --  delay
-                        Make_Identifier (Loc, Name_uM),   --  delay mode
+                        Make_Identifier (Loc, Name_uP),    --  parameter block
+                        Make_Identifier (Loc, Name_uD),    --  delay
+                        Make_Identifier (Loc, Name_uM),    --  delay mode
                         Make_Identifier (Loc, Name_uF)))); --  status flag
 
                when others =>

@@ -990,7 +990,7 @@ package body Sem_Warn is
                --  Similarly, the generic formals of a generic subprogram are
                --  not accessible.
 
-               when N_Generic_Subprogram_Declaration  =>
+               when N_Generic_Subprogram_Declaration =>
                   if Is_List_Member (Prev)
                     and then List_Containing (Prev) =
                                Generic_Formal_Declarations (P)
@@ -1014,12 +1014,13 @@ package body Sem_Warn is
 
                --  If we reach any other body, definitely not referenceable
 
-               when N_Package_Body    |
-                    N_Task_Body       |
-                    N_Entry_Body      |
-                    N_Protected_Body  |
-                    N_Block_Statement |
-                    N_Subunit         =>
+               when N_Block_Statement
+                  | N_Entry_Body
+                  | N_Package_Body
+                  | N_Protected_Body
+                  | N_Subunit
+                  | N_Task_Body
+               =>
                   return False;
 
                --  For all other cases, keep looking up tree
@@ -1792,7 +1793,9 @@ package body Sem_Warn is
 
          --  For identifier or expanded name, examine the entity involved
 
-         when N_Identifier | N_Expanded_Name =>
+         when N_Expanded_Name
+            | N_Identifier
+         =>
             declare
                E : constant Entity_Id := Entity (N);
 
@@ -2052,8 +2055,9 @@ package body Sem_Warn is
 
          --  Indexed component or slice
 
-         when N_Indexed_Component | N_Slice =>
-
+         when N_Indexed_Component
+            | N_Slice
+         =>
             --  If prefix does not involve dereferencing an access type, then
             --  we know we are OK if the component type is fully initialized,
             --  since the component will have been set as part of the default
@@ -2124,9 +2128,10 @@ package body Sem_Warn is
          --  For type conversions, qualifications, or expressions with actions,
          --  examine the expression.
 
-         when N_Type_Conversion         |
-              N_Qualified_Expression    |
-              N_Expression_With_Actions =>
+         when N_Expression_With_Actions
+            | N_Qualified_Expression
+            | N_Type_Conversion
+         =>
             Check_Unset_Reference (Expression (N));
 
          --  For explicit dereference, always check prefix, which will generate
@@ -2139,7 +2144,6 @@ package body Sem_Warn is
 
          when others =>
             null;
-
       end case;
    end Check_Unset_Reference;
 
@@ -4141,11 +4145,11 @@ package body Sem_Warn is
                   end if;
                end if;
 
-            when E_In_Parameter     |
-                 E_In_Out_Parameter =>
-
-               --  Do not emit message for formals of a renaming, because
-               --  they are never referenced explicitly.
+            when E_In_Out_Parameter
+               | E_In_Parameter
+            =>
+               --  Do not emit message for formals of a renaming, because they
+               --  are never referenced explicitly.
 
                if Nkind (Original_Node (Unit_Declaration_Node (Scope (E)))) /=
                                           N_Subprogram_Renaming_Declaration
@@ -4176,8 +4180,9 @@ package body Sem_Warn is
             when E_Discriminant =>
                Error_Msg_N ("?u?discriminant & is not referenced!", E);
 
-            when E_Named_Integer |
-                 E_Named_Real    =>
+            when E_Named_Integer
+               | E_Named_Real
+            =>
                Error_Msg_N -- CODEFIX
                  ("?u?named number & is not referenced!", E);
 

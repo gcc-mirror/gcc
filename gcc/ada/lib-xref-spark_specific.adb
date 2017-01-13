@@ -144,18 +144,20 @@ package body SPARK_Specific is
          end if;
 
          case Ekind (E) is
-            when E_Entry             |
-                 E_Entry_Family      |
-                 E_Generic_Function  |
-                 E_Generic_Package   |
-                 E_Generic_Procedure |
-                 E_Package           |
-                 E_Protected_Type    |
-                 E_Task_Type         =>
+            when E_Entry
+               | E_Entry_Family
+               | E_Generic_Function
+               | E_Generic_Package
+               | E_Generic_Procedure
+               | E_Package
+               | E_Protected_Type
+               | E_Task_Type
+            =>
                Typ := Xref_Entity_Letters (Ekind (E));
 
-            when E_Function | E_Procedure =>
-
+            when E_Function
+               | E_Procedure
+            =>
                --  In SPARK we need to distinguish protected functions and
                --  procedures from ordinary subprograms, but there are no
                --  special Xref letters for them. Since this distiction is
@@ -168,10 +170,11 @@ package body SPARK_Specific is
                   Typ := Xref_Entity_Letters (Ekind (E));
                end if;
 
-            when E_Package_Body    |
-                 E_Protected_Body  |
-                 E_Subprogram_Body |
-                 E_Task_Body       =>
+            when E_Package_Body
+               | E_Protected_Body
+               | E_Subprogram_Body
+               | E_Task_Body
+            =>
                Typ := Xref_Entity_Letters (Ekind (Unique_Entity (E)));
 
             when E_Void =>
@@ -456,7 +459,9 @@ package body SPARK_Specific is
                   end if;
                end;
 
-            when E_Loop_Parameter | E_In_Parameter =>
+            when E_In_Parameter
+               | E_Loop_Parameter
+            =>
                Result := True;
 
             when others =>
@@ -1091,9 +1096,9 @@ package body SPARK_Specific is
 
       while Present (Context) loop
          case Nkind (Context) is
-            when N_Package_Body          |
-                 N_Package_Specification =>
-
+            when N_Package_Body
+               | N_Package_Specification
+            =>
                --  Only return a library-level package
 
                if Is_Library_Level_Entity (Defining_Entity (Context)) then
@@ -1121,14 +1126,15 @@ package body SPARK_Specific is
                   Context := Parent (Context);
                end if;
 
-            when N_Entry_Body                 |
-                 N_Entry_Declaration          |
-                 N_Protected_Type_Declaration |
-                 N_Subprogram_Body            |
-                 N_Subprogram_Declaration     |
-                 N_Subprogram_Specification   |
-                 N_Task_Body                  |
-                 N_Task_Type_Declaration      =>
+            when N_Entry_Body
+               | N_Entry_Declaration
+               | N_Protected_Type_Declaration
+               | N_Subprogram_Body
+               | N_Subprogram_Declaration
+               | N_Subprogram_Specification
+               | N_Task_Body
+               | N_Task_Type_Declaration
+            =>
                Context := Defining_Entity (Context);
                exit;
 
@@ -1317,8 +1323,9 @@ package body SPARK_Specific is
                   Traverse_Protected_Body (Get_Body_From_Stub (N));
                end if;
 
-            when N_Protected_Type_Declaration   |
-                 N_Single_Protected_Declaration =>
+            when N_Protected_Type_Declaration
+               | N_Single_Protected_Declaration
+            =>
                Traverse_Visible_And_Private_Parts (Protected_Definition (N));
 
             when N_Task_Definition =>

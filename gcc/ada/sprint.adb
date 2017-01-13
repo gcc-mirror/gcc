@@ -3976,7 +3976,9 @@ package body Sprint is
 
             Write_Str (");");
 
-         when E_Signed_Integer_Subtype | E_Enumeration_Subtype =>
+         when E_Enumeration_Subtype
+            | E_Signed_Integer_Subtype
+         =>
             Write_Str_With_Col_Check ("subtype ");
             Write_Id (E);
             Write_Str (" is ");
@@ -3992,7 +3994,6 @@ package body Sprint is
             Write_Ekind (E);
             Write_Str (">;");
       end case;
-
    end Write_Implicit_Def;
 
    ------------------
@@ -4265,11 +4266,11 @@ package body Sprint is
                   --  Signed integer types, and modular integer subtypes,
                   --  and also enumeration subtypes.
 
-                  when E_Signed_Integer_Type     |
-                       E_Signed_Integer_Subtype  |
-                       E_Modular_Integer_Subtype |
-                       E_Enumeration_Subtype     =>
-
+                  when E_Enumeration_Subtype
+                     | E_Modular_Integer_Subtype
+                     | E_Signed_Integer_Subtype
+                     | E_Signed_Integer_Type
+                  =>
                      Write_Header (Ekind (Typ) = E_Signed_Integer_Type);
 
                      if Ekind (Typ) = E_Signed_Integer_Type then
@@ -4329,9 +4330,9 @@ package body Sprint is
 
                   --  Floating point types and subtypes
 
-                  when E_Floating_Point_Type    |
-                       E_Floating_Point_Subtype =>
-
+                  when E_Floating_Point_Subtype
+                     | E_Floating_Point_Type
+                  =>
                      Write_Header (Ekind (Typ) = E_Floating_Point_Type);
 
                      if Ekind (Typ) = E_Floating_Point_Type then
@@ -4374,7 +4375,9 @@ package body Sprint is
 
                   --  Record subtypes
 
-                  when E_Record_Subtype | E_Record_Subtype_With_Private =>
+                  when E_Record_Subtype
+                     | E_Record_Subtype_With_Private
+                  =>
                      Write_Header (False);
                      Write_Str ("record");
                      Indent_Begin;
@@ -4397,8 +4400,9 @@ package body Sprint is
 
                   --  Class-Wide types
 
-                  when E_Class_Wide_Type    |
-                       E_Class_Wide_Subtype =>
+                  when E_Class_Wide_Subtype
+                     | E_Class_Wide_Type
+                  =>
                      Write_Header (Ekind (Typ) = E_Class_Wide_Type);
                      Write_Name_With_Col_Check (Chars (Etype (Typ)));
                      Write_Str ("'Class");
@@ -4467,7 +4471,6 @@ package body Sprint is
                   when others =>
                      Write_Header (True);
                      Write_Str ("???");
-
                end case;
             end if;
 

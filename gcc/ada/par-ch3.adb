@@ -464,9 +464,9 @@ package body Ch3 is
 
       loop
          case Token is
-
-            when Tok_Access |
-                 Tok_Not    => --  Ada 2005 (AI-231)
+            when Tok_Access
+               | Tok_Not  --  Ada 2005 (AI-231)
+            =>
                Typedef_Node := P_Access_Type_Definition;
                exit;
 
@@ -777,10 +777,10 @@ package body Ch3 is
             --  Ada 2005 (AI-345): Protected, synchronized or task interface
             --  or Ada 2005 (AI-443): Synchronized private extension.
 
-            when Tok_Protected    |
-                 Tok_Synchronized |
-                 Tok_Task         =>
-
+            when Tok_Protected
+               | Tok_Synchronized
+               | Tok_Task
+            =>
                declare
                   Saved_Token : constant Token_Type := Token;
 
@@ -864,7 +864,6 @@ package body Ch3 is
                   Error_Msg_AP ("type definition expected");
                   raise Error_Resync;
                end if;
-
          end case;
       end loop;
 
@@ -4315,7 +4314,6 @@ package body Ch3 is
       end if;
 
       case Token is
-
          when Tok_Function =>
             Check_Bad_Layout;
             Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
@@ -4580,19 +4578,19 @@ package body Ch3 is
          --  judgment, because it is a real mess to go into statement mode
          --  prematurely in response to a junk declaration.
 
-         when Tok_Abort     |
-              Tok_Accept    |
-              Tok_Declare   |
-              Tok_Delay     |
-              Tok_Exit      |
-              Tok_Goto      |
-              Tok_If        |
-              Tok_Loop      |
-              Tok_Null      |
-              Tok_Requeue   |
-              Tok_Select    |
-              Tok_While     =>
-
+         when Tok_Abort
+            | Tok_Accept
+            | Tok_Declare
+            | Tok_Delay
+            | Tok_Exit
+            | Tok_Goto
+            | Tok_If
+            | Tok_Loop
+            | Tok_Null
+            | Tok_Requeue
+            | Tok_Select
+            | Tok_While
+         =>
             --  But before we decide that it's a statement, let's check for
             --  a reserved word misused as an identifier.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -393,16 +393,21 @@ package body Prj.PP is
                   Start_Line (Indent);
 
                   case Project_Qualifier_Of (Node, In_Tree) is
-                     when Unspecified | Standard =>
+                     when Standard
+                        | Unspecified
+                     =>
                         null;
-                     when Aggregate   =>
+                     when Aggregate =>
                         Write_String ("aggregate ", Indent);
+
                      when Aggregate_Library =>
                         Write_String ("aggregate library ", Indent);
-                     when Library     =>
+                     when Library =>
                         Write_String ("library ", Indent);
+
                      when Configuration =>
                         Write_String ("configuration ", Indent);
+
                      when Abstract_Project =>
                         Write_String ("abstract ", Indent);
                   end case;

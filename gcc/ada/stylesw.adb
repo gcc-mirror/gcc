@@ -306,7 +306,6 @@ package body Stylesw is
 
          if On then
             case C is
-
             when '+' =>
                null;
 
@@ -480,7 +479,6 @@ package body Stylesw is
 
          else
             case C is
-
             when '+' =>
                On := True;
 

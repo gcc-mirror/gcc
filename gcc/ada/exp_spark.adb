@@ -67,17 +67,19 @@ package body Exp_SPARK is
          --  user interaction. The verification back-end already takes care
          --  of qualifying names when needed.
 
-         when N_Block_Statement            |
-              N_Entry_Declaration          |
-              N_Package_Body               |
-              N_Package_Declaration        |
-              N_Protected_Type_Declaration |
-              N_Subprogram_Body            |
-              N_Task_Type_Declaration      =>
+         when N_Block_Statement
+            | N_Entry_Declaration
+            | N_Package_Body
+            | N_Package_Declaration
+            | N_Protected_Type_Declaration
+            | N_Subprogram_Body
+            | N_Task_Type_Declaration
+         =>
             Qualify_Entity_Names (N);
 
-         when N_Expanded_Name |
-              N_Identifier    =>
+         when N_Expanded_Name
+            | N_Identifier
+         =>
             Expand_SPARK_Potential_Renaming (N);
 
          when N_Object_Renaming_Declaration =>

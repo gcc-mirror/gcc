@@ -378,7 +378,6 @@ package body Exp_Dbug is
       Ren := Nam;
       loop
          case Nkind (Ren) is
-
             when N_Identifier =>
                exit;
 

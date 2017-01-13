@@ -1459,7 +1459,6 @@ package body Sem_Ch12 is
             Kind := Nkind (Analyzed_Formal);
 
             case Nkind (Formal) is
-
                when N_Formal_Subprogram_Declaration =>
                   exit when Kind in N_Formal_Subprogram_Declaration
                     and then
@@ -1473,7 +1472,10 @@ package body Sem_Ch12 is
                                             N_Generic_Package_Declaration,
                                             N_Package_Declaration);
 
-               when N_Use_Package_Clause | N_Use_Type_Clause => exit;
+               when N_Use_Package_Clause
+                  | N_Use_Type_Clause
+               =>
+                  exit;
 
                when others =>
 
@@ -1855,8 +1857,9 @@ package body Sem_Ch12 is
                --  they belong (we mustn't recopy them since this would mess up
                --  the Sloc values).
 
-               when N_Use_Package_Clause |
-                    N_Use_Type_Clause    =>
+               when N_Use_Package_Clause
+                  | N_Use_Type_Clause
+               =>
                   if Nkind (Original_Node (I_Node)) =
                                      N_Formal_Package_Declaration
                   then
@@ -1868,7 +1871,6 @@ package body Sem_Ch12 is
 
                when others =>
                   raise Program_Error;
-
             end case;
 
             Formal := Saved_Formal;
@@ -2656,13 +2658,13 @@ package body Sem_Ch12 is
             --  continue analysis to minimize cascaded errors.
 
             Error_Msg_N
-              ("generic parent cannot be used as formal package "
-               & "of a child unit", Gen_Id);
+              ("generic parent cannot be used as formal package of a child "
+               & "unit", Gen_Id);
 
          else
             Error_Msg_N
-              ("generic package cannot be used as a formal package "
-               & "within itself", Gen_Id);
+              ("generic package cannot be used as a formal package within "
+               & "itself", Gen_Id);
             Restore_Env;
             goto Leave;
          end if;
@@ -3135,56 +3137,56 @@ package body Sem_Ch12 is
       --  Enter the new name, and branch to specific routine
 
       case Nkind (Def) is
-         when N_Formal_Private_Type_Definition         =>
+         when N_Formal_Private_Type_Definition =>
             Analyze_Formal_Private_Type (N, T, Def);
 
-         when N_Formal_Derived_Type_Definition         =>
+         when N_Formal_Derived_Type_Definition =>
             Analyze_Formal_Derived_Type (N, T, Def);
 
-         when N_Formal_Incomplete_Type_Definition         =>
+         when N_Formal_Incomplete_Type_Definition =>
             Analyze_Formal_Incomplete_Type (T, Def);
 
-         when N_Formal_Discrete_Type_Definition        =>
+         when N_Formal_Discrete_Type_Definition =>
             Analyze_Formal_Discrete_Type (T, Def);
 
-         when N_Formal_Signed_Integer_Type_Definition  =>
+         when N_Formal_Signed_Integer_Type_Definition =>
             Analyze_Formal_Signed_Integer_Type (T, Def);
 
-         when N_Formal_Modular_Type_Definition         =>
+         when N_Formal_Modular_Type_Definition =>
             Analyze_Formal_Modular_Type (T, Def);
 
-         when N_Formal_Floating_Point_Definition       =>
+         when N_Formal_Floating_Point_Definition =>
             Analyze_Formal_Floating_Type (T, Def);
 
          when N_Formal_Ordinary_Fixed_Point_Definition =>
             Analyze_Formal_Ordinary_Fixed_Point_Type (T, Def);
 
-         when N_Formal_Decimal_Fixed_Point_Definition  =>
+         when N_Formal_Decimal_Fixed_Point_Definition =>
             Analyze_Formal_Decimal_Fixed_Point_Type (T, Def);
 
          when N_Array_Type_Definition =>
             Analyze_Formal_Array_Type (T, Def);
 
-         when N_Access_To_Object_Definition            |
-              N_Access_Function_Definition             |
-              N_Access_Procedure_Definition            =>
+         when N_Access_Function_Definition
+            | N_Access_Procedure_Definition
+            | N_Access_To_Object_Definition
+         =>
             Analyze_Generic_Access_Type (T, Def);
 
          --  Ada 2005: a interface declaration is encoded as an abstract
          --  record declaration or a abstract type derivation.
 
-         when N_Record_Definition                      =>
+         when N_Record_Definition =>
             Analyze_Formal_Interface_Type (N, T, Def);
 
-         when N_Derived_Type_Definition                =>
+         when N_Derived_Type_Definition =>
             Analyze_Formal_Derived_Interface_Type (N, T, Def);
 
-         when N_Error                                  =>
+         when N_Error =>
             null;
 
-         when others                                   =>
+         when others =>
             raise Program_Error;
-
       end case;
 
       Set_Is_Generic_Type (T);
@@ -9661,18 +9663,20 @@ package body Sem_Ch12 is
 
       begin
          case Nkind (Original_Node (F)) is
-            when N_Formal_Object_Declaration |
-                 N_Formal_Type_Declaration   =>
+            when N_Formal_Object_Declaration
+               | N_Formal_Type_Declaration
+            =>
                Formal_Ent := Defining_Identifier (F);
 
                while Chars (Act) /= Chars (Formal_Ent) loop
                   Next_Entity (Act);
                end loop;
 
-            when N_Formal_Subprogram_Declaration |
-                 N_Formal_Package_Declaration    |
-                 N_Package_Declaration           |
-                 N_Generic_Package_Declaration   =>
+            when N_Formal_Package_Declaration
+               | N_Formal_Subprogram_Declaration
+               | N_Generic_Package_Declaration
+               | N_Package_Declaration
+            =>
                Formal_Ent := Defining_Entity (F);
 
                while Chars (Act) /= Chars (Formal_Ent) loop
@@ -9766,19 +9770,19 @@ package body Sem_Ch12 is
          Kind : constant Node_Kind := Nkind (Original_Node (N));
       begin
          case Kind is
-            when N_Formal_Object_Declaration     =>
+            when N_Formal_Object_Declaration =>
                return Defining_Identifier (N);
 
-            when N_Formal_Type_Declaration       =>
+            when N_Formal_Type_Declaration =>
                return Defining_Identifier (N);
 
             when N_Formal_Subprogram_Declaration =>
                return Defining_Unit_Name (Specification (N));
 
-            when N_Formal_Package_Declaration    =>
+            when N_Formal_Package_Declaration =>
                return Defining_Identifier (Original_Node (N));
 
-            when N_Generic_Package_Declaration   =>
+            when N_Generic_Package_Declaration =>
                return Defining_Identifier (Original_Node (N));
 
             --  All other declarations are introduced by semantic analysis and
@@ -12815,19 +12819,19 @@ package body Sem_Ch12 is
             when N_Access_To_Object_Definition =>
                Validate_Access_Type_Instance;
 
-            when N_Access_Function_Definition |
-                 N_Access_Procedure_Definition =>
+            when N_Access_Function_Definition
+               | N_Access_Procedure_Definition
+            =>
                Validate_Access_Subprogram_Instance;
 
-            when N_Record_Definition           =>
+            when N_Record_Definition =>
                Validate_Interface_Type_Instance;
 
-            when N_Derived_Type_Definition     =>
+            when N_Derived_Type_Definition =>
                Validate_Derived_Interface_Type_Instance;
 
             when others =>
                raise Program_Error;
-
          end case;
       end if;
 
@@ -14523,14 +14527,16 @@ package body Sem_Ch12 is
             when N_Unary_Op =>
                Save_Global_Descendant (Union_Id (Right_Opnd (N)));
 
-            when N_Expanded_Name      |
-                 N_Selected_Component =>
+            when N_Expanded_Name
+               | N_Selected_Component
+            =>
                Save_Global_Descendant (Union_Id (Prefix (N)));
                Save_Global_Descendant (Union_Id (Selector_Name (N)));
 
-            when N_Identifier         |
-                 N_Character_Literal  |
-                 N_Operator_Symbol    =>
+            when N_Character_Literal
+               | N_Identifier
+               | N_Operator_Symbol
+            =>
                null;
 
             when others =>
@@ -15479,27 +15485,43 @@ package body Sem_Ch12 is
       end loop;
 
       case Attr_Id is
-         when Attribute_Adjacent |  Attribute_Ceiling   | Attribute_Copy_Sign |
-              Attribute_Floor    |  Attribute_Fraction  | Attribute_Machine   |
-              Attribute_Model    |  Attribute_Remainder | Attribute_Rounding  |
-              Attribute_Unbiased_Rounding  =>
+         when Attribute_Adjacent
+            | Attribute_Ceiling
+            | Attribute_Copy_Sign
+            | Attribute_Floor
+            | Attribute_Fraction
+            | Attribute_Machine
+            | Attribute_Model
+            | Attribute_Remainder
+            | Attribute_Rounding
+            | Attribute_Unbiased_Rounding
+         =>
             OK := Is_Fun
                     and then Num_F = 1
                     and then Is_Floating_Point_Type (T);
 
-         when Attribute_Image    | Attribute_Pred       | Attribute_Succ |
-              Attribute_Value    | Attribute_Wide_Image |
-              Attribute_Wide_Value  =>
-            OK := (Is_Fun and then Num_F = 1 and then Is_Scalar_Type (T));
+         when Attribute_Image
+            | Attribute_Pred
+            | Attribute_Succ
+            | Attribute_Value
+            | Attribute_Wide_Image
+            | Attribute_Wide_Value
+         =>
+            OK := Is_Fun and then Num_F = 1 and then Is_Scalar_Type (T);
 
-         when Attribute_Max      |  Attribute_Min  =>
-            OK := (Is_Fun and then Num_F = 2 and then Is_Scalar_Type (T));
+         when Attribute_Max
+            | Attribute_Min
+         =>
+            OK := Is_Fun and then Num_F = 2 and then Is_Scalar_Type (T);
 
          when Attribute_Input =>
             OK := (Is_Fun and then Num_F = 1);
 
-         when Attribute_Output | Attribute_Read | Attribute_Write =>
-            OK := (not Is_Fun and then Num_F = 2);
+         when Attribute_Output
+            | Attribute_Read
+            | Attribute_Write
+         =>
+            OK := not Is_Fun and then Num_F = 2;
 
          when others =>
             OK := False;

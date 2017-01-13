@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -263,14 +263,17 @@ package body Ada.Numerics.Aux is
                Asm (Template  => "fcos",
                   Outputs  => Double'Asm_Output ("=t", Result),
                   Inputs   => Double'Asm_Input  ("0", Reduced_X));
+
             when 1 =>
                Asm (Template  => "fsin",
                   Outputs  => Double'Asm_Output ("=t", Result),
                   Inputs   => Double'Asm_Input  ("0", -Reduced_X));
+
             when 2 =>
                Asm (Template  => "fcos ; fchs",
                   Outputs  => Double'Asm_Output ("=t", Result),
                   Inputs   => Double'Asm_Input  ("0", Reduced_X));
+
             when 3 =>
                Asm (Template  => "fsin",
                   Outputs  => Double'Asm_Output ("=t", Result),
@@ -448,14 +451,17 @@ package body Ada.Numerics.Aux is
                Asm (Template  => "fsin",
                   Outputs  => Double'Asm_Output ("=t", Result),
                   Inputs   => Double'Asm_Input  ("0", Reduced_X));
+
             when 1 =>
                Asm (Template  => "fcos",
                   Outputs  => Double'Asm_Output ("=t", Result),
                   Inputs   => Double'Asm_Input  ("0", Reduced_X));
+
             when 2 =>
                Asm (Template  => "fsin",
                   Outputs  => Double'Asm_Output ("=t", Result),
                   Inputs   => Double'Asm_Input  ("0", -Reduced_X));
+
             when 3 =>
                Asm (Template  => "fcos ; fchs",
                   Outputs  => Double'Asm_Output ("=t", Result),

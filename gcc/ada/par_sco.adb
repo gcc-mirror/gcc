@@ -756,7 +756,12 @@ package body Par_SCO is
             --  Logical operators, output table entries and then process
             --  operands recursively to deal with nested conditions.
 
-            when N_And_Then | N_Or_Else | N_Op_Not | N_Op_And | N_Op_Or =>
+            when N_And_Then
+               | N_Op_And
+               | N_Op_Not
+               | N_Op_Or
+               | N_Or_Else
+            =>
                declare
                   T : Character;
 
@@ -828,7 +833,6 @@ package body Par_SCO is
 
             when others =>
                return OK;
-
          end case;
       end Process_Node;
 
@@ -1131,21 +1135,21 @@ package body Par_SCO is
       Traverse_Aux_Decls (Cunit (U));
 
       case Nkind (Lu) is
-         when N_Generic_Instantiation       |
-              N_Generic_Package_Declaration |
-              N_Package_Body                |
-              N_Package_Declaration         |
-              N_Protected_Body              |
-              N_Subprogram_Body             |
-              N_Subprogram_Declaration      |
-              N_Task_Body                   =>
+         when N_Generic_Instantiation
+            | N_Generic_Package_Declaration
+            | N_Package_Body
+            | N_Package_Declaration
+            | N_Protected_Body
+            | N_Subprogram_Body
+            | N_Subprogram_Declaration
+            | N_Task_Body
+         =>
             Traverse_Declarations_Or_Statements (L => No_List, P => Lu);
 
+         --  All other cases of compilation units (e.g. renamings), generate no
+         --  SCO information.
+
          when others =>
-
-            --  All other cases of compilation units (e.g. renamings), generate
-            --  no SCO information.
-
             null;
       end case;
 
@@ -1477,7 +1481,9 @@ package body Par_SCO is
             when N_Case_Statement =>
                To_Node := Expression (N);
 
-            when N_If_Statement | N_Elsif_Part =>
+            when N_Elsif_Part
+               | N_If_Statement
+            =>
                To_Node := Condition (N);
 
             when N_Extended_Return_Statement =>
@@ -1486,15 +1492,18 @@ package body Par_SCO is
             when N_Loop_Statement =>
                To_Node := Iteration_Scheme (N);
 
-            when N_Asynchronous_Select          |
-                 N_Conditional_Entry_Call       |
-                 N_Selective_Accept             |
-                 N_Single_Protected_Declaration |
-                 N_Single_Task_Declaration      |
-                 N_Timed_Entry_Call             =>
+            when N_Asynchronous_Select
+               | N_Conditional_Entry_Call
+               | N_Selective_Accept
+               | N_Single_Protected_Declaration
+               | N_Single_Task_Declaration
+               | N_Timed_Entry_Call
+            =>
                T := F;
 
-            when N_Protected_Type_Declaration | N_Task_Type_Declaration =>
+            when N_Protected_Type_Declaration
+               | N_Task_Type_Declaration
+            =>
                if Has_Aspects (N) then
                   To_Node := Last (Aspect_Specifications (N));
 
@@ -1507,7 +1516,6 @@ package body Par_SCO is
 
             when others =>
                null;
-
          end case;
 
          if Present (To_Node) then
@@ -1662,12 +1670,13 @@ package body Par_SCO is
                --  specification. The corresponding pragma will have the same
                --  sloc.
 
-               when Aspect_Invariant      |
-                    Aspect_Post           |
-                    Aspect_Postcondition  |
-                    Aspect_Pre            |
-                    Aspect_Precondition   |
-                    Aspect_Type_Invariant =>
+               when Aspect_Invariant
+                  | Aspect_Post
+                  | Aspect_Postcondition
+                  | Aspect_Pre
+                  | Aspect_Precondition
+                  | Aspect_Type_Invariant
+               =>
                   C1 := 'a';
 
                --  Aspects whose checks are generated in client units,
@@ -1680,9 +1689,10 @@ package body Par_SCO is
                --  Pre/post can have checks in client units too because of
                --  inheritance, so should they be moved here???
 
-               when Aspect_Dynamic_Predicate |
-                    Aspect_Predicate         |
-                    Aspect_Static_Predicate  =>
+               when Aspect_Dynamic_Predicate
+                  | Aspect_Predicate
+                  | Aspect_Static_Predicate
+               =>
                   C1 := 'A';
 
                --  Other aspects: just process any decision nested in the
@@ -1692,7 +1702,6 @@ package body Par_SCO is
                   if Has_Decision (AE) then
                      C1 := 'X';
                   end if;
-
             end case;
 
             if C1 /= ASCII.NUL then
@@ -1744,7 +1753,9 @@ package body Par_SCO is
 
             --  Subprogram declaration or subprogram body stub
 
-            when N_Subprogram_Declaration | N_Subprogram_Body_Stub =>
+            when N_Subprogram_Body_Stub
+               | N_Subprogram_Declaration
+            =>
                Process_Decisions_Defer
                  (Parameter_Specifications (Specification (N)), 'X');
 
@@ -1763,7 +1774,9 @@ package body Par_SCO is
 
             --  Task or subprogram body
 
-            when N_Task_Body | N_Subprogram_Body =>
+            when N_Subprogram_Body
+               | N_Task_Body
+            =>
                Set_Statement_Entry;
                Traverse_Subprogram_Or_Task_Body (N);
 
@@ -1980,7 +1993,9 @@ package body Par_SCO is
                  (L => Else_Statements (N),
                   D => Current_Dominant);
 
-            when N_Timed_Entry_Call | N_Conditional_Entry_Call =>
+            when N_Conditional_Entry_Call
+               | N_Timed_Entry_Call
+            =>
                Extend_Statement_Sequence (N, 'S');
                Set_Statement_Entry;
 
@@ -2042,9 +2057,10 @@ package body Par_SCO is
             --  Unconditional exit points, which are included in the current
             --  statement sequence, but then terminate it
 
-            when N_Requeue_Statement |
-                 N_Goto_Statement    |
-                 N_Raise_Statement   =>
+            when N_Goto_Statement
+               | N_Raise_Statement
+               | N_Requeue_Statement
+            =>
                Extend_Statement_Sequence (N, ' ');
                Set_Statement_Entry;
                Current_Dominant := No_Dominant;
@@ -2139,14 +2155,14 @@ package body Par_SCO is
 
                begin
                   case Nam is
-                     when Name_Assert         |
-                          Name_Assert_And_Cut |
-                          Name_Assume         |
-                          Name_Check          |
-                          Name_Loop_Invariant |
-                          Name_Postcondition  |
-                          Name_Precondition   =>
-
+                     when Name_Assert
+                        | Name_Assert_And_Cut
+                        | Name_Assume
+                        | Name_Check
+                        | Name_Loop_Invariant
+                        | Name_Postcondition
+                        | Name_Precondition
+                     =>
                         --  For Assert/Check/Precondition/Postcondition, we
                         --  must generate a P entry for the decision. Note
                         --  that this is done unconditionally at this stage.
@@ -2204,7 +2220,9 @@ package body Par_SCO is
             --  want one entry in the SCOs, so we take the first, for which
             --  Prev_Ids is False.
 
-            when N_Object_Declaration | N_Number_Declaration =>
+            when N_Number_Declaration
+               | N_Object_Declaration
+            =>
                if not Prev_Ids (N) then
                   Extend_Statement_Sequence (N, 'o');
 
@@ -2216,14 +2234,18 @@ package body Par_SCO is
             --  All other cases, which extend the current statement sequence
             --  but do not terminate it, even if they have nested decisions.
 
-            when N_Protected_Type_Declaration | N_Task_Type_Declaration =>
+            when N_Protected_Type_Declaration
+               | N_Task_Type_Declaration
+            =>
                Extend_Statement_Sequence (N, 't');
                Process_Decisions_Defer (Discriminant_Specifications (N), 'X');
                Set_Statement_Entry;
 
                Traverse_Sync_Definition (N);
 
-            when N_Single_Protected_Declaration | N_Single_Task_Declaration =>
+            when N_Single_Protected_Declaration
+               | N_Single_Task_Declaration
+            =>
                Extend_Statement_Sequence (N, 'o');
                Set_Statement_Entry;
 
@@ -2240,33 +2262,35 @@ package body Par_SCO is
 
                begin
                   case NK is
-                     when N_Full_Type_Declaration         |
-                          N_Incomplete_Type_Declaration   |
-                          N_Private_Extension_Declaration |
-                          N_Private_Type_Declaration      =>
+                     when N_Full_Type_Declaration
+                        | N_Incomplete_Type_Declaration
+                        | N_Private_Extension_Declaration
+                        | N_Private_Type_Declaration
+                     =>
                         Typ := 't';
 
-                     when N_Subtype_Declaration           =>
+                     when N_Subtype_Declaration =>
                         Typ := 's';
 
-                     when N_Renaming_Declaration          =>
+                     when N_Renaming_Declaration =>
                         Typ := 'r';
 
-                     when N_Generic_Instantiation         =>
+                     when N_Generic_Instantiation =>
                         Typ := 'i';
 
-                     when N_Package_Body_Stub             |
-                          N_Protected_Body_Stub           |
-                          N_Representation_Clause         |
-                          N_Task_Body_Stub                |
-                          N_Use_Package_Clause            |
-                          N_Use_Type_Clause               =>
+                     when N_Package_Body_Stub
+                        | N_Protected_Body_Stub
+                        | N_Representation_Clause
+                        | N_Task_Body_Stub
+                        | N_Use_Package_Clause
+                        | N_Use_Type_Clause
+                     =>
                         Typ := ASCII.NUL;
 
                      when N_Procedure_Call_Statement =>
                         Typ := ' ';
 
-                     when others                          =>
+                     when others =>
                         if NK in N_Statement_Other_Than_Procedure_Call then
                            Typ := ' ';
                         else
@@ -2421,12 +2445,14 @@ package body Par_SCO is
 
    begin
       case Nkind (N) is
-         when N_Protected_Type_Declaration   |
-              N_Single_Protected_Declaration =>
+         when N_Protected_Type_Declaration
+            | N_Single_Protected_Declaration
+         =>
             Sync_Def := Protected_Definition (N);
 
-         when N_Single_Task_Declaration      |
-              N_Task_Type_Declaration        =>
+         when N_Single_Task_Declaration
+            | N_Task_Type_Declaration
+         =>
             Sync_Def := Task_Definition (N);
 
          when others =>
@@ -2724,7 +2750,6 @@ package body Par_SCO is
                      --  operator.
 
                      return T.C2 /= '?';
-
                end case;
             end;
          end loop;

@@ -543,9 +543,11 @@ procedure Gnat1drv is
                      Write_Line
                        ("(requesting support for Frontend ZCX exceptions)");
                      raise Unrecoverable_Error;
+
                   when False =>
                      Exception_Mechanism := Front_End_SJLJ;
                end case;
+
             when False =>
                case Targparm.ZCX_By_Default_On_Target is
                   when True =>

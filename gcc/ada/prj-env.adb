@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -887,7 +887,10 @@ package body Prj.Env is
                         when Spec =>
                            Suffix :=
                              Source.Language.Config.Mapping_Spec_Suffix;
-                        when Impl | Sep =>
+
+                        when Impl
+                           | Sep
+                        =>
                            Suffix :=
                              Source.Language.Config.Mapping_Body_Suffix;
                      end case;

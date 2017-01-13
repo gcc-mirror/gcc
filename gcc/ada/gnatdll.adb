@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -271,7 +271,6 @@ procedure Gnatdll is
 
       loop
          case Getopt ("g h v q k a? b: d: e: l: n m I:") is
-
             when ASCII.NUL =>
                exit;
 
@@ -305,11 +304,9 @@ procedure Gnatdll is
                end if;
 
             when 'k' =>
-
                MDLL.Kill_Suffix := True;
 
             when 'a' =>
-
                if Parameter = "" then
 
                   --  Default address for a relocatable dynamic library.
@@ -324,13 +321,10 @@ procedure Gnatdll is
                Must_Build_Relocatable := False;
 
             when 'b' =>
-
                DLL_Address := To_Unbounded_String (Parameter);
-
                Must_Build_Relocatable := True;
 
             when 'e' =>
-
                Def_Filename := To_Unbounded_String (Parameter);
 
             when 'd' =>
@@ -347,11 +341,9 @@ procedure Gnatdll is
                Build_Mode := Dynamic_Lib;
 
             when 'm' =>
-
                Gen_Map_File := True;
 
             when 'n' =>
-
                Build_Import := False;
 
             when 'l' =>
@@ -398,14 +390,12 @@ procedure Gnatdll is
 
       loop
          case Getopt ("*") is
-
             when ASCII.NUL =>
                exit;
 
             when others =>
                Bopts (B) := new String'(Full_Switch);
                B := B + 1;
-
          end case;
       end loop;
 

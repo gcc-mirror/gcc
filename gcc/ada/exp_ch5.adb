@@ -327,7 +327,10 @@ package body Exp_Ch5 is
       function Is_Non_Local_Array (Exp : Node_Id) return Boolean is
       begin
          case Nkind (Exp) is
-            when N_Indexed_Component | N_Selected_Component | N_Slice =>
+            when N_Indexed_Component
+               | N_Selected_Component
+               | N_Slice
+            =>
                return Is_Non_Local_Array (Prefix (Exp));
 
             when others =>
@@ -739,10 +742,15 @@ package body Exp_Ch5 is
                end if;
 
                case Cresult is
-                  when LT | LE | EQ => Set_Backwards_OK (N, False);
-                  when GT | GE      => Set_Forwards_OK  (N, False);
-                  when NE | Unknown => Set_Backwards_OK (N, False);
-                                       Set_Forwards_OK  (N, False);
+                  when EQ | LE | LT =>
+                     Set_Backwards_OK (N, False);
+
+                  when GE | GT =>
+                     Set_Forwards_OK  (N, False);
+
+                  when NE | Unknown =>
+                     Set_Backwards_OK (N, False);
+                     Set_Forwards_OK  (N, False);
                end case;
             end if;
          end if;

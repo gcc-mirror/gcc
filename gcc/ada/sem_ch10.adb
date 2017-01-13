@@ -3664,10 +3664,11 @@ package body Sem_Ch10 is
          --  Protect the frontend against previous critical errors
 
          case Nkind (Unit (Library_Unit (W))) is
-            when N_Subprogram_Declaration         |
-                 N_Package_Declaration            |
-                 N_Generic_Subprogram_Declaration |
-                 N_Generic_Package_Declaration    =>
+            when N_Generic_Package_Declaration
+               | N_Generic_Subprogram_Declaration
+               | N_Package_Declaration
+               | N_Subprogram_Declaration
+            =>
                null;
 
             when others =>
@@ -6003,8 +6004,9 @@ package body Sem_Ch10 is
             Error_Msg_N ("subprograms not allowed in limited with_clauses", N);
             return;
 
-         when N_Generic_Package_Declaration |
-              N_Generic_Subprogram_Declaration =>
+         when N_Generic_Package_Declaration
+            | N_Generic_Subprogram_Declaration
+         =>
             Error_Msg_N ("generics not allowed in limited with_clauses", N);
             return;
 

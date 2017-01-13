@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -529,7 +529,6 @@ package body Ada.Strings.Wide_Wide_Superbounded is
                raise Ada.Strings.Length_Error;
          end case;
       end if;
-
    end Super_Append;
 
    --  Case of Wide_Wide_String and Super_String

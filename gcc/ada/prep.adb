@@ -211,8 +211,14 @@ package body Prep is
    begin
       if New_Name /= No_Name then
          case Token is
-            when Tok_If  | Tok_Else | Tok_Elsif | Tok_End |
-                 Tok_And | Tok_Or   | Tok_Then =>
+            when Tok_And
+               | Tok_Else
+               | Tok_Elsif
+               | Tok_End
+               | Tok_If
+               | Tok_Or
+               | Tok_Then
+            =>
                if All_Keywords then
                   Token := Tok_Identifier;
                   Token_Name := New_Name;
@@ -458,12 +464,11 @@ package body Prep is
 
                --  Handle relational operator
 
-               elsif
-                 Token = Tok_Equal      or else
-                 Token = Tok_Less       or else
-                 Token = Tok_Less_Equal or else
-                 Token = Tok_Greater    or else
-                 Token = Tok_Greater_Equal
+               elsif     Token = Tok_Equal
+                 or else Token = Tok_Less
+                 or else Token = Tok_Less_Equal
+                 or else Token = Tok_Greater
+                 or else Token = Tok_Greater_Equal
                then
                   Relop := Token;
                   Scan.all;

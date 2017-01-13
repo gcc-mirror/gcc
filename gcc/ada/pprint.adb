@@ -205,7 +205,9 @@ package body Pprint is
          end if;
 
          case Nkind (Expr) is
-            when N_Defining_Identifier | N_Identifier =>
+            when N_Defining_Identifier
+               | N_Identifier
+            =>
                return Ident_Image (Expr, Expression_Image.Expr, Expand_Type);
 
             when N_Character_Literal =>
@@ -340,7 +342,9 @@ package body Pprint is
                   return ".all";
                end if;
 
-            when N_Expanded_Name | N_Selected_Component =>
+            when N_Expanded_Name
+               | N_Selected_Component
+            =>
                if Take_Prefix then
                   return
                     Expr_Name (Prefix (Expr)) & "." &
@@ -381,7 +385,9 @@ package body Pprint is
                   end if;
                end;
 
-            when N_Unchecked_Expression | N_Expression_With_Actions =>
+            when N_Expression_With_Actions
+               | N_Unchecked_Expression
+            =>
                return Expr_Name (Expression (Expr));
 
             when N_Raise_Constraint_Error =>
@@ -623,24 +629,27 @@ package body Pprint is
 
       loop
          case Nkind (Left) is
-            when N_And_Then                   |
-                 N_Binary_Op                  |
-                 N_Membership_Test            |
-                 N_Or_Else                    =>
+            when N_And_Then
+               | N_Binary_Op
+               | N_Membership_Test
+               | N_Or_Else
+            =>
                Left := Original_Node (Left_Opnd (Left));
 
-            when N_Attribute_Reference        |
-                 N_Expanded_Name              |
-                 N_Explicit_Dereference       |
-                 N_Indexed_Component          |
-                 N_Reference                  |
-                 N_Selected_Component         |
-                 N_Slice                      =>
+            when N_Attribute_Reference
+               | N_Expanded_Name
+               | N_Explicit_Dereference
+               | N_Indexed_Component
+               | N_Reference
+               | N_Selected_Component
+               | N_Slice
+            =>
                Left := Original_Node (Prefix (Left));
 
-            when N_Defining_Program_Unit_Name |
-                 N_Designator                 |
-                 N_Function_Call              =>
+            when N_Defining_Program_Unit_Name
+               | N_Designator
+               | N_Function_Call
+            =>
                Left := Original_Node (Name (Left));
 
             when N_Range =>
@@ -658,14 +667,16 @@ package body Pprint is
 
       loop
          case Nkind (Right) is
-            when N_And_Then           |
-                 N_Membership_Test    |
-                 N_Op                 |
-                 N_Or_Else            =>
+            when N_And_Then
+               | N_Membership_Test
+               | N_Op
+               | N_Or_Else
+            =>
                Right := Original_Node (Right_Opnd (Right));
 
-            when N_Expanded_Name      |
-                 N_Selected_Component =>
+            when N_Expanded_Name
+               | N_Selected_Component
+            =>
                Right := Original_Node (Selector_Name (Right));
 
             when N_Designator =>
@@ -749,33 +760,38 @@ package body Pprint is
             if Right /= Expr then
                while Scn < End_Sloc loop
                   case Src (Scn) is
-                  when ' ' | ASCII.HT =>
-                     if not Skipping_Comment and then not Underscore then
-                        Underscore := True;
-                        Index := Index + 1;
-                        Buffer (Index) := ' ';
-                     end if;
-
-                  --  CR/LF/FF is the end of any comment
-
-                  when ASCII.LF | ASCII.CR | ASCII.FF =>
-                     Skipping_Comment := False;
-
-                  when others =>
-                     Underscore := False;
-
-                     if not Skipping_Comment then
-
-                        --  Ignore comment
-
-                        if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
-                           Skipping_Comment := True;
-
-                        else
+                     when ' '
+                        | ASCII.HT
+                     =>
+                        if not Skipping_Comment and then not Underscore then
+                           Underscore := True;
                            Index := Index + 1;
-                           Buffer (Index) := Src (Scn);
+                           Buffer (Index) := ' ';
                         end if;
-                     end if;
+
+                     --  CR/LF/FF is the end of any comment
+
+                     when ASCII.CR
+                        | ASCII.FF
+                        | ASCII.LF
+                     =>
+                        Skipping_Comment := False;
+
+                     when others =>
+                        Underscore := False;
+
+                        if not Skipping_Comment then
+
+                           --  Ignore comment
+
+                           if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
+                              Skipping_Comment := True;
+
+                           else
+                              Index := Index + 1;
+                              Buffer (Index) := Src (Scn);
+                           end if;
+                        end if;
                   end case;
 
                   Scn := Scn + 1;

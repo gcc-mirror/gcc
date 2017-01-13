@@ -4738,8 +4738,9 @@ package body Sem_Aggr is
          when E_Array_Type  =>
             Comp_Typ := Component_Type (Typ);
 
-         when E_Component    |
-              E_Discriminant =>
+         when E_Component
+            | E_Discriminant
+         =>
             Comp_Typ := Etype (Typ);
 
          when others =>

@@ -215,7 +215,6 @@ package body Exp_Prag is
 
          when others => null;
       end case;
-
    end Expand_N_Pragma;
 
    -------------------------------
