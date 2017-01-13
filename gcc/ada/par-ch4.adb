@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,6 +76,7 @@ package body Ch4 is
    function P_Aggregate_Or_Paren_Expr                 return Node_Id;
    function P_Allocator                               return Node_Id;
    function P_Case_Expression_Alternative             return Node_Id;
+   function P_Iterated_Component_Association          return Node_Id;
    function P_Record_Or_Array_Component_Association   return Node_Id;
    function P_Factor                                  return Node_Id;
    function P_Primary                                 return Node_Id;
@@ -1260,6 +1261,10 @@ package body Ch4 is
       --  Called if <> is encountered as positional aggregate element. Issues
       --  error message and sets Expr_Node to Error.
 
+      function Is_Quantified_Expression return Boolean;
+      --  The presence of iterated component associations requires a one
+      --  token lookahead to distinguish it from quantified expressions.
+
       ---------------
       -- Box_Error --
       ---------------
@@ -1280,6 +1285,22 @@ package body Ch4 is
          Scan; -- past box
          Expr_Node := Error;
       end Box_Error;
+
+      ------------------------------
+      -- Is_Quantified_Expression --
+      ------------------------------
+
+      function Is_Quantified_Expression return Boolean is
+         Maybe      : Boolean;
+         Scan_State : Saved_Scan_State;
+
+      begin
+         Save_Scan_State (Scan_State);
+         Scan;   --  past FOR
+         Maybe := Token = Tok_All or else Token = Tok_Some;
+         Restore_Scan_State (Scan_State);  --  to FOR
+         return Maybe;
+      end Is_Quantified_Expression;
 
    --  Start of processing for P_Aggregate_Or_Paren_Expr
 
@@ -1309,7 +1330,7 @@ package body Ch4 is
 
       --  Quantified expression
 
-      elsif Token = Tok_For then
+      elsif Token = Tok_For and then Is_Quantified_Expression then
          Expr_Node := P_Quantified_Expression;
          T_Right_Paren;
          Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
@@ -1338,6 +1359,11 @@ package body Ch4 is
             else
                Restore_Scan_State (Scan_State); -- to NULL that must be expr
             end if;
+
+         elsif Token = Tok_For then
+            Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
+            Expr_Node := P_Iterated_Component_Association;
+            goto Aggregate;
          end if;
 
          --  Scan expression, handling box appearing as positional argument
@@ -1425,7 +1451,7 @@ package body Ch4 is
       end if;
 
       --  Prepare to scan list of component associations
-
+      <<Aggregate>>
       Expr_List  := No_List; -- don't set yet, maybe all named entries
       Assoc_List := No_List; -- don't set yet, maybe all positional entries
 
@@ -1515,7 +1541,7 @@ package body Ch4 is
          --  wrong, so let's get out now, before we start eating up stuff
          --  that doesn't belong to us.
 
-         if Token in Token_Class_Eterm then
+         if Token in Token_Class_Eterm and then Token /= Tok_For then
             Error_Msg_AP
               ("expecting expression or component association");
             exit;
@@ -1527,10 +1553,14 @@ package body Ch4 is
             Box_Error;
 
          --  Otherwise initiate for reentry to top of loop by scanning an
-         --  initial expression, unless the first token is OTHERS.
+         --  initial expression, unless the first token is OTHERS or FOR,
+         --  which indicates an iterated component association.
 
          elsif Token = Tok_Others then
             Expr_Node := Empty;
+
+         elsif Token = Tok_For then
+            Expr_Node := P_Iterated_Component_Association;
 
          else
             Save_Scan_State (Scan_State); -- at start of expression
@@ -1562,6 +1592,7 @@ package body Ch4 is
    --  ARRAY_COMPONENT_ASSOCIATION ::=
    --    DISCRETE_CHOICE_LIST => EXPRESSION
    --  | DISCRETE_CHOICE_LIST => <>
+   --  | ITERATED_COMPONENT_ASSOCIATION
 
    --  Note: this routine only handles the named cases, including others.
    --  Cases where the component choice list is not present have already
@@ -2718,12 +2749,21 @@ package body Ch4 is
                   return Error;
 
                elsif Ada_Version >= Ada_2012 then
-                  Node1 := P_Quantified_Expression;
+                  Save_Scan_State (Scan_State);
+                  Scan;   --  past FOR
 
-                  if not (Lparen and then Token = Tok_Right_Paren) then
-                     Error_Msg
-                      ("quantified expression must be parenthesized",
-                        Sloc (Node1));
+                  if Token = Tok_All or else Token = Tok_Some  then
+                     Restore_Scan_State (Scan_State);  -- To FOR
+                     Node1 := P_Quantified_Expression;
+
+                     if not (Lparen and then Token = Tok_Right_Paren) then
+                        Error_Msg
+                          ("quantified expression must be parenthesized",
+                           Sloc (Node1));
+                     end if;
+                  else
+                     Restore_Scan_State (Scan_State);  -- To FOR
+                     Node1 := P_Iterated_Component_Association;
                   end if;
 
                   return Node1;
@@ -2786,7 +2826,7 @@ package body Ch4 is
          raise Error_Resync;
       end if;
 
-      Scan; -- past SOME
+      Scan; -- past ALL or SOME
       I_Spec := P_Loop_Parameter_Specification;
 
       if Nkind (I_Spec) = N_Loop_Parameter_Specification then
@@ -3172,12 +3212,40 @@ package body Ch4 is
       return Case_Alt_Node;
    end P_Case_Expression_Alternative;
 
+   --------------------------------------
+   -- P_Iterated_Component_Association --
+   --------------------------------------
+
+   --  ITERATED_COMPONENT_ASSOCIATION ::=
+   --    for DEFINING_IDENTIFIER in DISCRETE_CHOICE_LIST => EXPRESSION
+
+   function P_Iterated_Component_Association return Node_Id is
+      Assoc_Node : Node_Id;
+
+   begin
+      Scan;  --  past FOR
+      Assoc_Node :=
+        New_Node (N_Iterated_Component_Association, Prev_Token_Ptr);
+      Set_Defining_Identifier (Assoc_Node, P_Defining_Identifier);
+      T_In;
+      Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
+      TF_Arrow;
+      Set_Expression (Assoc_Node, P_Expression);
+      return Assoc_Node;
+   end P_Iterated_Component_Association;
+
    ---------------------
    -- P_If_Expression --
    ---------------------
 
-   function P_If_Expression return Node_Id is
+   --  IF_EXPRESSION ::=
+   --    if CONDITION then DEPENDENT_EXPRESSION
+   --                {elsif CONDITION then DEPENDENT_EXPRESSION}
+   --                [else DEPENDENT_EXPRESSION]
 
+   --  DEPENDENT_EXPRESSION ::= EXPRESSION
+
+   function P_If_Expression return Node_Id is
       function P_If_Expression_Internal
         (Loc  : Source_Ptr;
          Cond : Node_Id) return Node_Id;
@@ -3355,7 +3423,9 @@ package body Ch4 is
 
    function P_Unparen_Cond_Case_Quant_Expression return Node_Id is
       Lparen : constant Boolean := Prev_Token = Tok_Left_Paren;
-      Result : Node_Id;
+
+      Result     : Node_Id;
+      Scan_State : Saved_Scan_State;
 
    begin
       --  Case expression
@@ -3376,14 +3446,28 @@ package body Ch4 is
             Error_Msg_N ("if expression must be parenthesized!", Result);
          end if;
 
-      --  Quantified expression
+      --  Quantified expression or iterated component association
 
       elsif Token = Tok_For then
-         Result := P_Quantified_Expression;
 
-         if not (Lparen and then Token = Tok_Right_Paren) then
-            Error_Msg_N
-              ("quantified expression must be parenthesized!", Result);
+         Save_Scan_State (Scan_State);
+         Scan;  --  past FOR
+
+         if Token = Tok_All or else Token = Tok_Some then
+            Restore_Scan_State (Scan_State);
+            Result := P_Quantified_Expression;
+
+            if not (Lparen and then Token = Tok_Right_Paren) then
+               Error_Msg_N
+                 ("quantified expression must be parenthesized!", Result);
+            end if;
+
+         else
+            --  If no quantifier keyword, this is an iterated component in
+            --  an aggregate.
+
+            Restore_Scan_State (Scan_State);
+            Result := P_Iterated_Component_Association;
          end if;
 
       --  No other possibility should exist (caller was supposed to check)

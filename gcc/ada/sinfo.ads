@@ -4098,8 +4098,24 @@ package Sinfo is
 
       --  ARRAY_COMPONENT_ASSOCIATION ::=
       --    DISCRETE_CHOICE_LIST => EXPRESSION
+      --  | ITERATED_COMPONENT_ASSOCIATION
 
       --  See Record_Component_Association (4.3.1) for node structure
+      --  The iterated_component_association is introduced into the
+      --  Corrigendum of Ada_2012 by AI12-061.
+
+      ------------------------------------------
+      -- 4.3.3 Iterated component Association --
+      ------------------------------------------
+
+      --  ITERATED_COMPONENT_ASSOCIATION ::=
+      --    for DEFINING_IDENTIFIER in DISCRETE_CHOICE_LIST => EXPRESSION
+
+      --  N_Iterated_Component_Association
+      --  Sloc points to FOR
+      --  Defining_Identifier (Node1)
+      --  Expression (Node3)
+      --  Discrete_Choices (List4)
 
       --------------------------------------------------
       -- 4.4  Expression/Relation/Term/Factor/Primary --
@@ -8645,6 +8661,7 @@ package Sinfo is
       N_Generic_Association,
       N_Handled_Sequence_Of_Statements,
       N_Index_Or_Discriminant_Constraint,
+      N_Iterated_Component_Association,
       N_Itype_Reference,
       N_Label,
       N_Modular_Type_Definition,
@@ -11461,6 +11478,13 @@ package Sinfo is
         2 => False,   --  Loop_Actions (List2-Sem)
         3 => True,    --  Expression (Node3)
         4 => False,   --  unused
+        5 => False),  --  unused
+
+     N_Iterated_Component_Association =>
+       (1 => True,    --  Defining_Identifier (Node1)
+        2 => False,   --  unused
+        3 => True,    --  Expression (Node3)
+        4 => True,    --  Discrete_Choices (List4)
         5 => False),  --  unused
 
      N_Extension_Aggregate =>

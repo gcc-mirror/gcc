@@ -1,3 +1,23 @@
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Handle Iterated_Component_Association.
+	* par-ch3.adb (P_Discrete_Choice_List): An
+	Iterated_Component_Association is an array aggregate component.
+	* par-ch4.adb (P_Iterated_Component_Association): New procedure.
+	(Is_Quantified_Expression): New function that performs a lookahead
+	to distinguish quantified expressions from iterated component
+	associations.
+	(P_Aggregate_Or_Paren_Expr): Recognize iterated component
+	associations.
+	(P_Unparen_Cond_Case_Quant_Expression, P_Primary): Ditto.
+	* sem.adb (Analyze): Handle Iterated_Component_Association.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Dummy handling of iterated
+	component associations.
+	* sinfo.ads, sinfo.adb: Entries for for
+	N_Iterated_Component_Association and its fields.
+	* sprint.adb (Sprint_Node_Actual): Handle
+	N_Iterated_Component_Association.
+
 2017-01-13  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch12.adb (Analyze_Package_Instantiation): Move disabiling

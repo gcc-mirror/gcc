@@ -1328,6 +1328,15 @@ package body Sprint is
                Sprint_Node (Expression (Node));
             end if;
 
+         when N_Iterated_Component_Association =>
+            Set_Debug_Sloc;
+            Write_Str (" for ");
+            Write_Id (Defining_Identifier (Node));
+            Write_Str (" in ");
+            Sprint_Bar_List (Choices (Node));
+            Write_Str (" => ");
+            Sprint_Node (Expression (Node));
+
          when N_Component_Clause =>
             Write_Indent;
             Sprint_Node (Component_Name (Node));

@@ -698,6 +698,7 @@ package body Sem is
               N_Function_Specification                 |
               N_Generic_Association                    |
               N_Index_Or_Discriminant_Constraint       |
+              N_Iterated_Component_Association         |
               N_Iteration_Scheme                       |
               N_Mod_Clause                             |
               N_Modular_Type_Definition                |

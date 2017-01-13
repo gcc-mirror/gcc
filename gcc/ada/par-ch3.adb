@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3852,6 +3852,10 @@ package body Ch3 is
          end if;
 
          if Token = Tok_Comma then
+            if Nkind (Expr_Node) = N_Iterated_Component_Association then
+               return Choices;
+            end if;
+
             Scan; -- past comma
 
             if Token = Tok_Vertical_Bar then

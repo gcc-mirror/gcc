@@ -2475,7 +2475,11 @@ package body Sem_Aggr is
                Check_Can_Never_Be_Null (Etype (N), Expr);
             end if;
 
-            if not Resolve_Aggr_Expr (Expr, Single_Elmt => True) then
+            if Nkind (Expr) = N_Iterated_Component_Association then
+               Error_Msg_N ("iterated association not implemented yet", Expr);
+               return Failure;
+
+            elsif not Resolve_Aggr_Expr (Expr, Single_Elmt => True) then
                return Failure;
             end if;
 

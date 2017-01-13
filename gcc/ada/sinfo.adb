@@ -790,6 +790,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Full_Type_Declaration
         or else NT (N).Nkind = N_Implicit_Label_Declaration
         or else NT (N).Nkind = N_Incomplete_Type_Declaration
+        or else NT (N).Nkind = N_Iterated_Component_Association
         or else NT (N).Nkind = N_Iterator_Specification
         or else NT (N).Nkind = N_Loop_Parameter_Specification
         or else NT (N).Nkind = N_Number_Declaration
@@ -879,6 +880,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Case_Statement_Alternative
+        or else NT (N).Nkind = N_Iterated_Component_Association
         or else NT (N).Nkind = N_Variant);
       return List4 (N);
    end Discrete_Choices;
@@ -1268,6 +1270,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Expression_Function
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Free_Statement
+        or else NT (N).Nkind = N_Iterated_Component_Association
         or else NT (N).Nkind = N_Mod_Clause
         or else NT (N).Nkind = N_Modular_Type_Definition
         or else NT (N).Nkind = N_Number_Declaration
@@ -4086,6 +4089,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Full_Type_Declaration
         or else NT (N).Nkind = N_Implicit_Label_Declaration
         or else NT (N).Nkind = N_Incomplete_Type_Declaration
+        or else NT (N).Nkind = N_Iterated_Component_Association
         or else NT (N).Nkind = N_Iterator_Specification
         or else NT (N).Nkind = N_Loop_Parameter_Specification
         or else NT (N).Nkind = N_Number_Declaration
@@ -4175,6 +4179,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Case_Statement_Alternative
+        or else NT (N).Nkind = N_Iterated_Component_Association
         or else NT (N).Nkind = N_Variant);
       Set_List4_With_Parent (N, Val);
    end Set_Discrete_Choices;
@@ -4555,6 +4560,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Expression_Function
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Free_Statement
+        or else NT (N).Nkind = N_Iterated_Component_Association
         or else NT (N).Nkind = N_Mod_Clause
         or else NT (N).Nkind = N_Modular_Type_Definition
         or else NT (N).Nkind = N_Number_Declaration
