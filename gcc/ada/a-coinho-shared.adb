@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2013-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,10 @@ package body Ada.Containers.Indefinite_Holders is
 
    procedure Free is
      new Ada.Unchecked_Deallocation (Element_Type, Element_Access);
+
+   procedure Detach (Container : Holder);
+   --  Detach data from shared copy if necessary. This is necessary to prepare
+   --  container to be modified.
 
    ---------
    -- "=" --
@@ -142,20 +146,9 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
-
-      elsif Container.Busy = 0
-        and then not System.Atomic_Counters.Is_One
-                       (Container.Reference.Counter)
-      then
-         --  Container is not locked and internal shared object is used by
-         --  other container, create copy of both internal shared object and
-         --  element.
-
-         Container'Unrestricted_Access.Reference :=
-            new Shared_Holder'
-              (Counter => <>,
-               Element => new Element_Type'(Container.Reference.Element.all));
       end if;
+
+      Detach (Container);
 
       declare
          Ref : constant Constant_Reference_Type :=
@@ -196,6 +189,34 @@ package body Ada.Containers.Indefinite_Holders is
                0);
       end if;
    end Copy;
+
+   ------------
+   -- Detach --
+   ------------
+
+   procedure Detach (Container : Holder) is
+   begin
+      if Container.Busy = 0
+        and then not System.Atomic_Counters.Is_One
+                       (Container.Reference.Counter)
+      then
+         --  Container is not locked and internal shared object is used by
+         --  other container, create copy of both internal shared object and
+         --  element.
+
+         declare
+            Old : constant Shared_Holder_Access := Container.Reference;
+
+         begin
+            Container'Unrestricted_Access.Reference :=
+               new Shared_Holder'
+                 (Counter => <>,
+                  Element =>
+                    new Element_Type'(Container.Reference.Element.all));
+            Unreference (Old);
+         end;
+      end if;
+   end Detach;
 
    -------------
    -- Element --
@@ -281,20 +302,9 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
-
-      elsif Container.Busy = 0
-        and then
-          not System.Atomic_Counters.Is_One (Container.Reference.Counter)
-      then
-         --  Container is not locked and internal shared object is used by
-         --  other container, create copy of both internal shared object and
-         --  element.
-
-         Container'Unrestricted_Access.Reference :=
-            new Shared_Holder'
-              (Counter => <>,
-               Element => new Element_Type'(Container.Reference.Element.all));
       end if;
+
+      Detach (Container);
 
       B := B + 1;
 
@@ -359,20 +369,9 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
-
-      elsif Container.Busy = 0
-        and then
-          not System.Atomic_Counters.Is_One (Container.Reference.Counter)
-      then
-         --  Container is not locked and internal shared object is used by
-         --  other container, create copy of both internal shared object and
-         --  element.
-
-         Container.Reference :=
-            new Shared_Holder'
-              (Counter => <>,
-               Element => new Element_Type'(Container.Reference.Element.all));
       end if;
+
+      Detach (Container);
 
       declare
          Ref : constant Reference_Type :=
@@ -477,20 +476,9 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
-
-      elsif Container.Busy = 0
-        and then
-          not System.Atomic_Counters.Is_One (Container.Reference.Counter)
-      then
-         --  Container is not locked and internal shared object is used by
-         --  other container, create copy of both internal shared object and
-         --  element.
-
-         Container'Unrestricted_Access.Reference :=
-            new Shared_Holder'
-              (Counter => <>,
-               Element => new Element_Type'(Container.Reference.Element.all));
       end if;
+
+      Detach (Container);
 
       B := B + 1;
 
