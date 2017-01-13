@@ -1,3 +1,10 @@
+2017-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77283
+	* gcc.dg/tree-ssa/split-path-7.c: Adjust.
+	* gcc.dg/tree-ssa/split-path-8.c: New testcase.
+	* gcc.dg/tree-ssa/split-path-9.c: Likewise.
+
 2017-01-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.dg/pr77862.c: Require fpic target.
