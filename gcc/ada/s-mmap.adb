@@ -112,6 +112,26 @@ package body System.Mmap is
    procedure To_Disk (Region : Mapped_Region);
    --  Write the region of the file back to disk if necessary, and free memory
 
+   ----------------------------
+   -- Open_Read_No_Exception --
+   ----------------------------
+
+   function Open_Read_No_Exception
+     (Filename              : String;
+      Use_Mmap_If_Available : Boolean := True) return Mapped_File
+   is
+      File : constant System_File :=
+         Open_Read (Filename, Use_Mmap_If_Available);
+   begin
+      if File = Invalid_System_File then
+         return Invalid_Mapped_File;
+      end if;
+
+      return new Mapped_File_Record'
+        (Current_Region => Invalid_Mapped_Region,
+         File           => File);
+   end Open_Read_No_Exception;
+
    ---------------
    -- Open_Read --
    ---------------
@@ -120,12 +140,15 @@ package body System.Mmap is
      (Filename              : String;
       Use_Mmap_If_Available : Boolean := True) return Mapped_File
    is
-      File : constant System_File :=
-         Open_Read (Filename, Use_Mmap_If_Available);
+      Res : constant Mapped_File :=
+        Open_Read_No_Exception (Filename, Use_Mmap_If_Available);
    begin
-      return new Mapped_File_Record'
-        (Current_Region => Invalid_Mapped_Region,
-         File           => File);
+      if Res = Invalid_Mapped_File then
+         raise Ada.IO_Exceptions.Name_Error
+           with "Cannot open " & Filename;
+      else
+         return Res;
+      end if;
    end Open_Read;
 
    ----------------
@@ -139,9 +162,14 @@ package body System.Mmap is
       File : constant System_File :=
          Open_Write (Filename, Use_Mmap_If_Available);
    begin
-      return new Mapped_File_Record'
-        (Current_Region => Invalid_Mapped_Region,
-         File           => File);
+      if File = Invalid_System_File then
+         raise Ada.IO_Exceptions.Name_Error
+           with "Cannot open " & Filename;
+      else
+         return new Mapped_File_Record'
+           (Current_Region => Invalid_Mapped_Region,
+            File           => File);
+      end if;
    end Open_Write;
 
    -----------

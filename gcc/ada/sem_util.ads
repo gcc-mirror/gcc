@@ -1849,21 +1849,21 @@ package Sem_Util is
       Map       : Elist_Id   := No_Elist;
       New_Sloc  : Source_Ptr := No_Location;
       New_Scope : Entity_Id  := Empty) return Node_Id;
-   --  Given a node that is the root of a subtree, Copy_Tree copies the entire
-   --  syntactic subtree, including recursively any descendants whose parent
-   --  field references a copied node (descendants not linked to a copied node
-   --  by the parent field are not copied, instead the copied tree references
-   --  the same descendant as the original in this case, which is appropriate
-   --  for non-syntactic fields such as Etype). The parent pointers in the
-   --  copy are properly set. Copy_Tree (Empty/Error) returns Empty/Error.
-   --  The one exception to the rule of not copying semantic fields is that
-   --  any implicit types attached to the subtree are duplicated, so that
-   --  the copy contains a distinct set of implicit type entities. Thus this
-   --  function is used when it is necessary to duplicate an analyzed tree,
-   --  declared in the same or some other compilation unit. This function is
-   --  declared here rather than in atree because it uses semantic information
-   --  in particular concerning the structure of itypes and the generation of
-   --  public symbols.
+   --  Given a node that is the root of a subtree, New_Copy_Tree copies the
+   --  entire syntactic subtree, including recursively any descendants whose
+   --  parent field references a copied node (descendants not linked to a
+   --  copied node by the parent field are not copied, instead the copied tree
+   --  references the same descendant as the original in this case, which is
+   --  appropriate for non-syntactic fields such as Etype). The parent pointers
+   --  in the copy are properly set. New_Copy_Tree (Empty/Error) returns
+   --  Empty/Error. The one exception to the rule of not copying semantic
+   --  fields is that any implicit types attached to the subtree are
+   --  duplicated, so that the copy contains a distinct set of implicit type
+   --  entities. Thus this function is used when it is necessary to duplicate
+   --  an analyzed tree, declared in the same or some other compilation unit.
+   --  This function is declared here rather than in atree because it uses
+   --  semantic information in particular concerning the structure of itypes
+   --  and the generation of public symbols.
 
    --  The Map argument, if set to a non-empty Elist, specifies a set of
    --  mappings to be applied to entities in the tree. The map has the form:

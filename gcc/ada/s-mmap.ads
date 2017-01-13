@@ -140,6 +140,11 @@ package System.Mmap is
    --  Name_Error is raised if the file does not exist.
    --  Filename should be compatible with the filesystem.
 
+   function Open_Read_No_Exception
+     (Filename              : String;
+      Use_Mmap_If_Available : Boolean := True) return Mapped_File;
+   --  Like Open_Read but return Invalid_Mapped_File in case of error
+
    function Open_Write
      (Filename              : String;
       Use_Mmap_If_Available : Boolean := True) return Mapped_File;

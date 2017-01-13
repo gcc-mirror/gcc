@@ -337,6 +337,10 @@ package body Checks is
    --  Like Apply_Selected_Length_Checks, except it doesn't modify
    --  anything, just returns a list of nodes as described in the spec of
    --  this package for the Range_Check function.
+   --  ??? In fact it does construct the test and insert it into the tree,
+   --  and insert actions in various ways (calling Insert_Action directly
+   --  in particular) so we do not call it in GNATprove mode, contrary to
+   --  Selected_Range_Checks.
 
    function Selected_Range_Checks
      (Ck_Node    : Node_Id;
@@ -3085,24 +3089,17 @@ package body Checks is
           or else (not Length_Checks_Suppressed (Target_Typ));
 
    begin
-      --  Only apply checks when generating code. In GNATprove mode, we do
-      --  not apply the checks, but we still call Selected_Length_Checks to
-      --  possibly issue errors on SPARK code when a run-time error can be
-      --  detected at compile time.
+      --  Only apply checks when generating code
 
       --  Note: this means that we lose some useful warnings if the expander
       --  is not active.
 
-      if not Expander_Active and not GNATprove_Mode then
+      if not Expander_Active then
          return;
       end if;
 
       R_Result :=
         Selected_Length_Checks (Ck_Node, Target_Typ, Source_Typ, Empty);
-
-      if GNATprove_Mode then
-         return;
-      end if;
 
       for J in 1 .. 2 loop
          R_Cno := R_Result (J);
@@ -9082,12 +9079,9 @@ package body Checks is
    --  Start of processing for Selected_Length_Checks
 
    begin
-      --  Checks will be applied only when generating code. In GNATprove mode,
-      --  we do not apply the checks, but we still call Selected_Length_Checks
-      --  to possibly issue errors on SPARK code when a run-time error can be
-      --  detected at compile time.
+      --  Checks will be applied only when generating code
 
-      if not Expander_Active and not GNATprove_Mode then
+      if not Expander_Active then
          return Ret_Result;
       end if;
 

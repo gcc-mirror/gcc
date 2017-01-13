@@ -57,8 +57,7 @@ package body System.Mmap.OS_Interface is
         Open_Read (Filename, Binary);
    begin
       if Fd = Invalid_FD then
-         raise Ada.IO_Exceptions.Name_Error
-           with "Cannot open " & Filename;
+         return Invalid_System_File;
       end if;
       return
         (Fd     => Fd,
@@ -78,8 +77,7 @@ package body System.Mmap.OS_Interface is
         Open_Read_Write (Filename, Binary);
    begin
       if Fd = Invalid_FD then
-         raise Ada.IO_Exceptions.Name_Error
-         with "Cannot open " & Filename;
+         return Invalid_System_File;
       end if;
       return
         (Fd     => Fd,

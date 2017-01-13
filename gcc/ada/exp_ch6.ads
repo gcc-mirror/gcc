@@ -201,7 +201,9 @@ package Exp_Ch6 is
 
    function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the result subtype of function
-   --  Func_Id needs finalization actions.
+   --  Func_Id might need finalization actions. This includes build-in-place
+   --  functions with tagged result types, since they can be invoked via
+   --  dispatching calls, and descendant types may require finalization.
 
    function Needs_Result_Accessibility_Level
      (Func_Id : Entity_Id) return Boolean;

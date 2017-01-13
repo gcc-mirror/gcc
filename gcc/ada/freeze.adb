@@ -1446,18 +1446,29 @@ package body Freeze is
          Prim := Node (Op_Node);
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
-            A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
+
+            --  Analyze the contract items of the parent operation, before
+            --  they are rewritten when inherited.
+
+            Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
+
+            A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
 
             if Present (A_Pre) and then Class_Present (A_Pre) then
+               A_Pre :=
+                 Expression (First (Pragma_Argument_Associations (A_Pre)));
                Build_Class_Wide_Expression
-                 (Expression (A_Pre), Prim, Par_Prim, Adjust_Sloc => False);
+                 (New_Copy_Tree (A_Pre), Prim, Par_Prim, Adjust_Sloc => False);
             end if;
 
-            A_Post := Find_Aspect (Par_Prim, Aspect_Post);
+            A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
 
             if Present (A_Post) and then Class_Present (A_Post) then
+               A_Post :=
+                 Expression (First (Pragma_Argument_Associations (A_Post)));
                Build_Class_Wide_Expression
-                 (Expression (A_Post), Prim, Par_Prim, Adjust_Sloc => False);
+                 (New_Copy_Tree (A_Post),
+                  Prim, Par_Prim, Adjust_Sloc => False);
             end if;
          end if;
 
