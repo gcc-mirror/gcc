@@ -16,6 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// COW strings don't support C++11 allocators:
+// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <testsuite_hooks.h>
@@ -58,13 +60,10 @@ operator!=(const mv_allocator<T>&, const mv_allocator<U>&) { return false; }
 void
 test01()
 {
-  // COW strings don't support C++11 allocators
-#if _GLIBCXX_USE_CXX11_ABI
   std::basic_string<char, std::char_traits<char>, mv_allocator<char>> s;
   auto t = std::move(s);
   VERIFY( s.get_allocator().moved_from );
   VERIFY( t.get_allocator().moved_to );
-#endif
 }
 
 int

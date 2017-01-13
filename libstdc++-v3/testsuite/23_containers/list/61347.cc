@@ -1,6 +1,7 @@
-// { dg-options "-O2 -D_GLIBCXX_USE_CXX11_ABI" }
+// { dg-options "-O2" }
 // { dg-do run { target c++11 } }
 // { dg-require-normal-mode "" }
+// { dg-require-effective-target cxx11-abi }
 
 // Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //

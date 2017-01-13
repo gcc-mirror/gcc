@@ -16,11 +16,12 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
+// COW strings don't support C++11 allocators:
+// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <testsuite_allocator.h>
  
-#if _GLIBCXX_USE_CXX11_ABI
 using C = wchar_t;
 const C c = L'a';
 using traits = std::char_traits<C>;
@@ -57,4 +58,3 @@ void test03()
   static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
   static_assert( noexcept( v1.swap(v2) ), "Swap cannot throw" );
 }
-#endif
