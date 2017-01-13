@@ -1,3 +1,40 @@
+2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79075
+	* testsuite/lib/libstdc++.exp (check_v3_target_filesystem_ts): Remove
+	redundant option from cxxflags.
+	(check_effective_target_cxx11-abi): Define.
+	* testsuite/21_strings/basic_string/allocator/71964.cc: Use cxx11-abi
+	effective target.
+	* testsuite/21_strings/basic_string/allocator/char/copy.cc: Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/minimal.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/move.cc: Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/move_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/noexcept.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/swap.cc: Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/minimal.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/move.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/move_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/noexcept.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/swap.cc:
+	Likewise.
+	* testsuite/23_containers/list/61347.cc: Likewise.
+	* testsuite/27_io/basic_fstream/cons/base.cc: Likewise.
+	* testsuite/27_io/ios_base/failure/cxx11.cc: Likewise.
+
 2017-01-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/78389

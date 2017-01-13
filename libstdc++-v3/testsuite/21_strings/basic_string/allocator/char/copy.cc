@@ -16,12 +16,13 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// COW strings don't support C++11 allocators:
+// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
  
-#if _GLIBCXX_USE_CXX11_ABI
 using C = char;
 const C c = 'a';
 using traits = std::char_traits<C>;
@@ -86,9 +87,3 @@ int main()
   test03();
   return 0;
 }
-#else
-int main()
-{
-  // COW strings don't support C++11 allocators
-}
-#endif
