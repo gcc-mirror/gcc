@@ -1,3 +1,14 @@
+2017-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt (msgx): Use ix86_isa_flags2 variable.
+	* config/i386/i386.c (ix86_target_string): Add missing options
+	to isa_opts and reorder options by implied ISAs.  Rename isa_opts2 to
+	isa2_opts, ix86_flag_opts to flag2_opts, ix86_target_other to
+	flags_other and ix86_target_other to flags2_other.  Display unknown
+	isa2 options.
+	(ix86_valid_target_attribute_inner_p): Add missing options and
+	reorder options by implied ISAs, as in ix86_target_string.
+
 2017-01-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* hash-table.h (hash_table::too_empty_p): New function.

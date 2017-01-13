@@ -4246,8 +4246,9 @@ ix86_using_red_zone (void)
    responsible for freeing the string.  */
 
 static char *
-ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
-		    int ix86_flags, const char *arch, const char *tune,
+ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
+		    int flags, int flags2,
+		    const char *arch, const char *tune,
 		    enum fpmath_unit fpmath, bool add_nl_p)
 {
   struct ix86_target_opts
@@ -4256,72 +4257,76 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
     HOST_WIDE_INT mask;		/* isa mask options */
   };
 
-  /* This table is ordered so that options like -msse4.2 that imply
-     preceding options while match those first.  */
+  /* This table is ordered so that options like -msse4.2 that imply other
+     ISAs come first.  Target string will be displayed in the same order.  */
+  static struct ix86_target_opts isa2_opts[] =
+  {
+    { "-msgx",		OPTION_MASK_ISA_SGX },
+    { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
+    { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
+    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ }
+  };
   static struct ix86_target_opts isa_opts[] =
   {
-    { "-mfma4",		OPTION_MASK_ISA_FMA4 },
+    { "-mavx512vbmi",	OPTION_MASK_ISA_AVX512VBMI },
+    { "-mavx512ifma",	OPTION_MASK_ISA_AVX512IFMA },
+    { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
+    { "-mavx512bw",	OPTION_MASK_ISA_AVX512BW },
+    { "-mavx512dq",	OPTION_MASK_ISA_AVX512DQ },
+    { "-mavx512er",	OPTION_MASK_ISA_AVX512ER },
+    { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
+    { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
+    { "-mavx512f",	OPTION_MASK_ISA_AVX512F },
+    { "-mavx2",		OPTION_MASK_ISA_AVX2 },
     { "-mfma",		OPTION_MASK_ISA_FMA },
     { "-mxop",		OPTION_MASK_ISA_XOP },
-    { "-mlwp",		OPTION_MASK_ISA_LWP },
-    { "-mavx512f",	OPTION_MASK_ISA_AVX512F },
-    { "-mavx512er",	OPTION_MASK_ISA_AVX512ER },
-    { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
-    { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
-    { "-mavx512dq",	OPTION_MASK_ISA_AVX512DQ },
-    { "-mavx512bw",	OPTION_MASK_ISA_AVX512BW },
-    { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
-    { "-mavx512ifma",	OPTION_MASK_ISA_AVX512IFMA },
-    { "-mavx512vbmi",	OPTION_MASK_ISA_AVX512VBMI },
-    { "-msse4a",	OPTION_MASK_ISA_SSE4A },
+    { "-mfma4",		OPTION_MASK_ISA_FMA4 },
+    { "-mf16c",		OPTION_MASK_ISA_F16C },
+    { "-mavx",		OPTION_MASK_ISA_AVX },
+/*  { "-msse4"		OPTION_MASK_ISA_SSE4 }, */
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
+    { "-msse4a",	OPTION_MASK_ISA_SSE4A },
     { "-mssse3",	OPTION_MASK_ISA_SSSE3 },
     { "-msse3",		OPTION_MASK_ISA_SSE3 },
+    { "-maes",		OPTION_MASK_ISA_AES },
+    { "-msha",		OPTION_MASK_ISA_SHA },
+    { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
     { "-msse2",		OPTION_MASK_ISA_SSE2 },
     { "-msse",		OPTION_MASK_ISA_SSE },
-    { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
     { "-m3dnowa",	OPTION_MASK_ISA_3DNOW_A },
+    { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
     { "-mmmx",		OPTION_MASK_ISA_MMX },
+    { "-mrtm",		OPTION_MASK_ISA_RTM },
+    { "-mprfchw",	OPTION_MASK_ISA_PRFCHW },
+    { "-mrdseed",	OPTION_MASK_ISA_RDSEED },
+    { "-madx",		OPTION_MASK_ISA_ADX },
+    { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
+    { "-mclflushopt",	OPTION_MASK_ISA_CLFLUSHOPT },
+    { "-mxsaves",	OPTION_MASK_ISA_XSAVES },
+    { "-mxsavec",	OPTION_MASK_ISA_XSAVEC },
+    { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
+    { "-mxsave",	OPTION_MASK_ISA_XSAVE },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mbmi",		OPTION_MASK_ISA_BMI },
     { "-mbmi2",		OPTION_MASK_ISA_BMI2 },
     { "-mlzcnt",	OPTION_MASK_ISA_LZCNT },
-    { "-mhle",		OPTION_MASK_ISA_HLE },
-    { "-mfxsr",		OPTION_MASK_ISA_FXSR },
-    { "-mrdseed",	OPTION_MASK_ISA_RDSEED },
-    { "-mprfchw",	OPTION_MASK_ISA_PRFCHW },
-    { "-madx",		OPTION_MASK_ISA_ADX },
     { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
+    { "-mcx16",		OPTION_MASK_ISA_CX16 },
+    { "-msahf",		OPTION_MASK_ISA_SAHF },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mcrc32",	OPTION_MASK_ISA_CRC32 },
-    { "-maes",		OPTION_MASK_ISA_AES },
-    { "-msha",		OPTION_MASK_ISA_SHA },
-    { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
-    { "-mf16c",		OPTION_MASK_ISA_F16C },
-    { "-mrtm",		OPTION_MASK_ISA_RTM },
-    { "-mxsave",	OPTION_MASK_ISA_XSAVE },
-    { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
-    { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
-    { "-mclflushopt",	OPTION_MASK_ISA_CLFLUSHOPT },
-    { "-mxsavec",	OPTION_MASK_ISA_XSAVEC },
-    { "-mxsaves",	OPTION_MASK_ISA_XSAVES },
-    { "-mmpx",		OPTION_MASK_ISA_MPX },
-    { "-mclwb",		OPTION_MASK_ISA_CLWB },
     { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
     { "-mclzero",	OPTION_MASK_ISA_CLZERO },
-    { "-mpku",		OPTION_MASK_ISA_PKU }
-  };
-  /* Additional structure for isa flags.  */
-  static struct ix86_target_opts isa_opts2[] =
-  {
-    { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
-    { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
-    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
-    { "-msgx",		OPTION_MASK_ISA_SGX }
+    { "-mpku",		OPTION_MASK_ISA_PKU },
+    { "-mlwp",		OPTION_MASK_ISA_LWP },
+    { "-mhle",		OPTION_MASK_ISA_HLE },
+    { "-mfxsr",		OPTION_MASK_ISA_FXSR },
+    { "-mmpx",		OPTION_MASK_ISA_MPX },
+    { "-mclwb",		OPTION_MASK_ISA_CLWB }
   };
   /* Flag options.  */
   static struct ix86_target_opts flag_opts[] =
@@ -4358,17 +4363,18 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
   };
 
   /* Additional flag options.  */
-  static struct ix86_target_opts ix86_flag_opts[] =
+  static struct ix86_target_opts flag2_opts[] =
   {
     { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY },
   };
 
-  const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (isa_opts2)
-		   + ARRAY_SIZE (flag_opts) + ARRAY_SIZE (ix86_flag_opts) + 6][2];
+  const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (isa2_opts)
+		   + ARRAY_SIZE (flag_opts) + ARRAY_SIZE (flag2_opts) + 6][2];
 
   char isa_other[40];
-  char target_other[40];
-  char ix86_target_other[40];
+  char isa2_other[40];
+  char flags_other[40];
+  char flags2_other[40];
   unsigned num = 0;
   unsigned i, j;
   char *ret;
@@ -4409,6 +4415,22 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
     abi = "-m32";
   opts[num++][0] = abi;
 
+  /* Pick out the options in isa2 options.  */
+  for (i = 0; i < ARRAY_SIZE (isa2_opts); i++)
+    {
+      if ((isa2 & isa2_opts[i].mask) != 0)
+	{
+	  opts[num++][0] = isa2_opts[i].option;
+	  isa2 &= ~ isa2_opts[i].mask;
+	}
+    }
+
+  if (isa2 && add_nl_p)
+    {
+      opts[num++][0] = isa2_other;
+      sprintf (isa2_other, "(other isa2: %#" HOST_WIDE_INT_PRINT "x)", isa2);
+    }
+
   /* Pick out the options in isa options.  */
   for (i = 0; i < ARRAY_SIZE (isa_opts); i++)
     {
@@ -4422,18 +4444,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
   if (isa && add_nl_p)
     {
       opts[num++][0] = isa_other;
-      sprintf (isa_other, "(other isa: %#" HOST_WIDE_INT_PRINT "x)",
-	       isa);
-    }
-
-  /* Pick out the options in isa2 options.  */
-  for (i = 0; i < ARRAY_SIZE (isa_opts2); i++)
-    {
-      if ((isa2 & isa_opts2[i].mask) != 0)
-	{
-	  opts[num++][0] = isa_opts2[i].option;
-	  isa &= ~ isa_opts2[i].mask;
-	}
+      sprintf (isa_other, "(other isa: %#" HOST_WIDE_INT_PRINT "x)", isa);
     }
 
   /* Add flag options.  */
@@ -4448,24 +4459,24 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2, int flags,
 
   if (flags && add_nl_p)
     {
-      opts[num++][0] = target_other;
-      sprintf (target_other, "(other flags: %#x)", flags);
+      opts[num++][0] = flags_other;
+      sprintf (flags_other, "(other flags: %#x)", flags);
     }
 
     /* Add additional flag options.  */
-  for (i = 0; i < ARRAY_SIZE (ix86_flag_opts); i++)
+  for (i = 0; i < ARRAY_SIZE (flag2_opts); i++)
     {
-      if ((ix86_flags & ix86_flag_opts[i].mask) != 0)
+      if ((flags2 & flag2_opts[i].mask) != 0)
 	{
-	  opts[num++][0] = ix86_flag_opts[i].option;
-	  ix86_flags &= ~ ix86_flag_opts[i].mask;
+	  opts[num++][0] = flag2_opts[i].option;
+	  flags2 &= ~ flag2_opts[i].mask;
 	}
     }
 
-  if (ix86_flags && add_nl_p)
+  if (flags2 && add_nl_p)
     {
-      opts[num++][0] = ix86_target_other;
-      sprintf (ix86_target_other, "(other flags: %#x)", ix86_flags);
+      opts[num++][0] = flags2_other;
+      sprintf (flags2_other, "(other flags2: %#x)", flags2);
     }
 
   /* Add -fpmath= option.  */
@@ -6616,65 +6627,70 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     int mask;
   } attrs[] = {
     /* isa options */
-    IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
-    IX86_ATTR_ISA ("abm",	OPT_mabm),
     IX86_ATTR_ISA ("sgx",	OPT_msgx),
+    IX86_ATTR_ISA ("avx5124fmaps", OPT_mavx5124fmaps),
+    IX86_ATTR_ISA ("avx5124vnniw", OPT_mavx5124vnniw),
+    IX86_ATTR_ISA ("avx512vpopcntdq", OPT_mavx512vpopcntdq),
+
+    IX86_ATTR_ISA ("avx512vbmi", OPT_mavx512vbmi),
+    IX86_ATTR_ISA ("avx512ifma", OPT_mavx512ifma),
+    IX86_ATTR_ISA ("avx512vl",	OPT_mavx512vl),
+    IX86_ATTR_ISA ("avx512bw",	OPT_mavx512bw),
+    IX86_ATTR_ISA ("avx512dq",	OPT_mavx512dq),
+    IX86_ATTR_ISA ("avx512er",	OPT_mavx512er),
+    IX86_ATTR_ISA ("avx512pf",	OPT_mavx512pf),
+    IX86_ATTR_ISA ("avx512cd",	OPT_mavx512cd),
+    IX86_ATTR_ISA ("avx512f",	OPT_mavx512f),
+    IX86_ATTR_ISA ("avx2",	OPT_mavx2),
+    IX86_ATTR_ISA ("fma",	OPT_mfma),
+    IX86_ATTR_ISA ("xop",	OPT_mxop),
+    IX86_ATTR_ISA ("fma4",	OPT_mfma4),
+    IX86_ATTR_ISA ("f16c",	OPT_mf16c),
+    IX86_ATTR_ISA ("avx",	OPT_mavx),
+    IX86_ATTR_ISA ("sse4",	OPT_msse4),
+    IX86_ATTR_ISA ("sse4.2",	OPT_msse4_2),
+    IX86_ATTR_ISA ("sse4.1",	OPT_msse4_1),
+    IX86_ATTR_ISA ("sse4a",	OPT_msse4a),
+    IX86_ATTR_ISA ("ssse3",	OPT_mssse3),
+    IX86_ATTR_ISA ("sse3",	OPT_msse3),
+    IX86_ATTR_ISA ("aes",	OPT_maes),
+    IX86_ATTR_ISA ("sha",	OPT_msha),
+    IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
+    IX86_ATTR_ISA ("sse2",	OPT_msse2),
+    IX86_ATTR_ISA ("sse",	OPT_msse),
+    IX86_ATTR_ISA ("3dnowa",	OPT_m3dnowa),
+    IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
+    IX86_ATTR_ISA ("mmx",	OPT_mmmx),
+    IX86_ATTR_ISA ("rtm",	OPT_mrtm),
+    IX86_ATTR_ISA ("prfchw",	OPT_mprfchw),
+    IX86_ATTR_ISA ("rdseed",	OPT_mrdseed),
+    IX86_ATTR_ISA ("adx",	OPT_madx),
+    IX86_ATTR_ISA ("prefetchwt1", OPT_mprefetchwt1),
+    IX86_ATTR_ISA ("clflushopt", OPT_mclflushopt),
+    IX86_ATTR_ISA ("xsaves",	OPT_mxsaves),
+    IX86_ATTR_ISA ("xsavec",	OPT_mxsavec),
+    IX86_ATTR_ISA ("xsaveopt",	OPT_mxsaveopt),
+    IX86_ATTR_ISA ("xsave",	OPT_mxsave),
+    IX86_ATTR_ISA ("abm",	OPT_mabm),
     IX86_ATTR_ISA ("bmi",	OPT_mbmi),
     IX86_ATTR_ISA ("bmi2",	OPT_mbmi2),
     IX86_ATTR_ISA ("lzcnt",	OPT_mlzcnt),
     IX86_ATTR_ISA ("tbm",	OPT_mtbm),
-    IX86_ATTR_ISA ("aes",	OPT_maes),
-    IX86_ATTR_ISA ("sha",	OPT_msha),
-    IX86_ATTR_ISA ("avx",	OPT_mavx),
-    IX86_ATTR_ISA ("avx2",	OPT_mavx2),
-    IX86_ATTR_ISA ("avx512f",	OPT_mavx512f),
-    IX86_ATTR_ISA ("avx512pf",	OPT_mavx512pf),
-    IX86_ATTR_ISA ("avx512er",	OPT_mavx512er),
-    IX86_ATTR_ISA ("avx512cd",	OPT_mavx512cd),
-    IX86_ATTR_ISA ("avx512dq",	OPT_mavx512dq),
-    IX86_ATTR_ISA ("avx512bw",	OPT_mavx512bw),
-    IX86_ATTR_ISA ("avx512vl",	OPT_mavx512vl),
-    IX86_ATTR_ISA ("avx5124fmaps",	OPT_mavx5124fmaps),
-    IX86_ATTR_ISA ("avx5124vnniw",	OPT_mavx5124vnniw),
-    IX86_ATTR_ISA ("avx512vpopcntdq",	OPT_mavx512vpopcntdq),
-    IX86_ATTR_ISA ("mmx",	OPT_mmmx),
-    IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
+    IX86_ATTR_ISA ("cx16",	OPT_mcx16),
+    IX86_ATTR_ISA ("sahf",	OPT_msahf),
     IX86_ATTR_ISA ("movbe",	OPT_mmovbe),
     IX86_ATTR_ISA ("crc32",	OPT_mcrc32),
-    IX86_ATTR_ISA ("sse",	OPT_msse),
-    IX86_ATTR_ISA ("sse2",	OPT_msse2),
-    IX86_ATTR_ISA ("sse3",	OPT_msse3),
-    IX86_ATTR_ISA ("sse4",	OPT_msse4),
-    IX86_ATTR_ISA ("sse4.1",	OPT_msse4_1),
-    IX86_ATTR_ISA ("sse4.2",	OPT_msse4_2),
-    IX86_ATTR_ISA ("sse4a",	OPT_msse4a),
-    IX86_ATTR_ISA ("ssse3",	OPT_mssse3),
-    IX86_ATTR_ISA ("fma4",	OPT_mfma4),
-    IX86_ATTR_ISA ("fma",	OPT_mfma),
-    IX86_ATTR_ISA ("xop",	OPT_mxop),
-    IX86_ATTR_ISA ("lwp",	OPT_mlwp),
     IX86_ATTR_ISA ("fsgsbase",	OPT_mfsgsbase),
     IX86_ATTR_ISA ("rdrnd",	OPT_mrdrnd),
-    IX86_ATTR_ISA ("f16c",	OPT_mf16c),
-    IX86_ATTR_ISA ("rtm",	OPT_mrtm),
-    IX86_ATTR_ISA ("hle",	OPT_mhle),
-    IX86_ATTR_ISA ("prfchw",	OPT_mprfchw),
-    IX86_ATTR_ISA ("rdseed",	OPT_mrdseed),
-    IX86_ATTR_ISA ("adx",	OPT_madx),
-    IX86_ATTR_ISA ("fxsr",	OPT_mfxsr),
-    IX86_ATTR_ISA ("xsave",	OPT_mxsave),
-    IX86_ATTR_ISA ("xsaveopt",	OPT_mxsaveopt),
-    IX86_ATTR_ISA ("prefetchwt1", OPT_mprefetchwt1),
-    IX86_ATTR_ISA ("clflushopt",	OPT_mclflushopt),
-    IX86_ATTR_ISA ("xsavec",	OPT_mxsavec),
-    IX86_ATTR_ISA ("xsaves",	OPT_mxsaves),
-    IX86_ATTR_ISA ("avx512vbmi",	OPT_mavx512vbmi),
-    IX86_ATTR_ISA ("avx512ifma",	OPT_mavx512ifma),
-    IX86_ATTR_ISA ("clwb",	OPT_mclwb),
     IX86_ATTR_ISA ("mwaitx",	OPT_mmwaitx),
-    IX86_ATTR_ISA ("clzero",    OPT_mclzero),
+    IX86_ATTR_ISA ("clzero",	OPT_mclzero),
     IX86_ATTR_ISA ("pku",	OPT_mpku),
+    IX86_ATTR_ISA ("lwp",	OPT_mlwp),
+    IX86_ATTR_ISA ("hle",	OPT_mhle),
+    IX86_ATTR_ISA ("fxsr",	OPT_mfxsr),
+    IX86_ATTR_ISA ("mpx",	OPT_mmpx),
+    IX86_ATTR_ISA ("clwb",	OPT_mclwb),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
