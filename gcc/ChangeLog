@@ -1,3 +1,8 @@
+2017-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (TARGET_OS_CPP_BUILTINS): Define __STDC_VERSION__
+	to 201112L since C++17.
+
 2017-01-13  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/78887
