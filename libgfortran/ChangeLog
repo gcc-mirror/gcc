@@ -1,3 +1,9 @@
+2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70696
+	* caf/single.c (_gfortran_caf_register): Allocate enough memory for
+	the event counter.
+
 2017-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78781

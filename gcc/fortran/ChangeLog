@@ -1,3 +1,9 @@
+2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70696
+	* trans-expr.c (gfc_get_tree_for_caf_expr): Ensure the backend_decl
+	is valid before accessing it.
+
 2017-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/79019
