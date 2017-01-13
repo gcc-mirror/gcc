@@ -116,7 +116,6 @@ package body ALI is
       Partition_Elaboration_Policy_Specified := ' ';
       Queuing_Policy_Specified               := ' ';
       SSO_Default_Specified                  := False;
-      Static_Elaboration_Model_Used          := False;
       Task_Dispatching_Policy_Specified      := ' ';
       Unreserve_All_Interrupts_Specified     := False;
       Frontend_Exceptions_Specified          := False;
@@ -1995,14 +1994,6 @@ package body ALI is
          end loop;
 
          Skip_Eol;
-
-         --  Check if static elaboration model used
-
-         if not Units.Table (Units.Last).Dynamic_Elab
-           and then not Units.Table (Units.Last).Internal
-         then
-            Static_Elaboration_Model_Used := True;
-         end if;
 
          C := Getc;
 

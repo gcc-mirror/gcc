@@ -10374,15 +10374,26 @@ package body Sem_Ch13 is
                   Nbit := Sbit;
                   for J in 1 .. Ncomps loop
                      CEnt := Comps (J);
-                     Error_Msg_Uint_1 := Component_Bit_Offset (CEnt) - Nbit;
 
-                     if Error_Msg_Uint_1 > 0 then
-                        Error_Msg_NE
-                          ("?H?^-bit gap before component&",
-                           Component_Name (Component_Clause (CEnt)), CEnt);
-                     end if;
+                     declare
+                        CBO : constant Uint := Component_Bit_Offset (CEnt);
 
-                     Nbit := Component_Bit_Offset (CEnt) + Esize (CEnt);
+                     begin
+                        --  Skip components with unknown offsets
+
+                        if CBO /= No_Uint and then CBO >= 0 then
+                           Error_Msg_Uint_1 := CBO - Nbit;
+
+                           if Error_Msg_Uint_1 > 0 then
+                              Error_Msg_NE
+                                ("?H?^-bit gap before component&",
+                                 Component_Name (Component_Clause (CEnt)),
+                                 CEnt);
+                           end if;
+
+                           Nbit := CBO + Esize (CEnt);
+                        end if;
+                     end;
                   end loop;
 
                   --  Process variant parts recursively if present
