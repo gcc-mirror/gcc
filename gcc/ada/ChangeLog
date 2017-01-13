@@ -1,3 +1,23 @@
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): The code that verifies
+	the legality of An others clause applies as well to a choice in
+	an Iterated_component_ association.
+	(Resolve_Iterated_Component_Association): An others choice
+	is legal.
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): An
+	Iterated_Component_Association is not static.
+
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Mark the Ghost mode as set in case
+	control is passed to the expresion handler before the new mode
+	is set.
+	* sem_ch12.adb (Analyze_Package_Instantiation,
+	Analyze_Subprogram_Instantiation): Mark the Ghost mode as set
+	in case control is passed to the expresion handler before the
+	new mode is set.
+
 2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_aggr.adb, sem_ch3.adb, inline.adb, sem_util.adb, exp_ch4.adb,

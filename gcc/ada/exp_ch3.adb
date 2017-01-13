@@ -7106,8 +7106,10 @@ package body Exp_Ch3 is
       --  Local variables
 
       Def_Id : constant Entity_Id := Entity (N);
-      Mode   : Ghost_Mode_Type;
-      Result : Boolean := False;
+
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
+      Result   : Boolean := False;
 
    --  Start of processing for Freeze_Type
 
@@ -7117,6 +7119,7 @@ package body Exp_Ch3 is
       --  marked as Ghost.
 
       Set_Ghost_Mode (Def_Id, Mode);
+      Mode_Set := True;
 
       --  Process any remote access-to-class-wide types designating the type
       --  being frozen.
@@ -7444,12 +7447,18 @@ package body Exp_Ch3 is
          Build_Invariant_Procedure_Body (Def_Id);
       end if;
 
-      Restore_Ghost_Mode (Mode);
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
+
       return Result;
 
    exception
       when RE_Not_Available =>
-         Restore_Ghost_Mode (Mode);
+         if Mode_Set then
+            Restore_Ghost_Mode (Mode);
+         end if;
+
          return False;
    end Freeze_Type;
 
