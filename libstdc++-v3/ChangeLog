@@ -1,6 +1,12 @@
 2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79075
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI] (basic_string):
+	Make _If_sv private.
+	[!_GLIBCXX_USE_CXX11_ABI] (basic_string): Add member functions taking
+	basic_string_view arguments.
+
+	PR libstdc++/79075
 	* testsuite/lib/libstdc++.exp (check_v3_target_filesystem_ts): Remove
 	redundant option from cxxflags.
 	(check_effective_target_cxx11-abi): Define.
