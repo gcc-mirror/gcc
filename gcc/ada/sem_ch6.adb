@@ -2978,8 +2978,72 @@ package body Sem_Ch6 is
       -----------------------
 
       procedure Freeze_Expr_Types (Spec_Id : Entity_Id) is
+         function Cloned_Expression return Node_Id;
+         --  Build a duplicate of the expression of the return statement that
+         --  has no defining entities shared with the original expression.
+
          function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result;
          --  Freeze all types referenced in the subtree rooted at Node
+
+         -----------------------
+         -- Cloned_Expression --
+         -----------------------
+
+         function Cloned_Expression return Node_Id is
+            function Clone_Id (Node : Node_Id) return Traverse_Result;
+            --  Tree traversal routine that clones the defining identifier of
+            --  iterator and loop parameter specification nodes.
+
+            ----------------
+            -- Check_Node --
+            ----------------
+
+            function Clone_Id (Node : Node_Id) return Traverse_Result is
+            begin
+               if Nkind_In (Node, N_Iterator_Specification,
+                                  N_Loop_Parameter_Specification)
+               then
+                  Set_Defining_Identifier (Node,
+                    New_Copy (Defining_Identifier (Node)));
+               end if;
+
+               return OK;
+            end Clone_Id;
+
+            -------------------
+            -- Clone_Def_Ids --
+            -------------------
+
+            procedure Clone_Def_Ids is new Traverse_Proc (Clone_Id);
+
+            --  Local variables
+
+            Return_Stmt : constant Node_Id :=
+                            First
+                              (Statements (Handled_Statement_Sequence (N)));
+            Dup_Expr    : Node_Id;
+
+         --  Start of processing for Cloned_Expression
+
+         begin
+            pragma Assert (Nkind (Return_Stmt) = N_Simple_Return_Statement);
+
+            --  We must duplicate the expression with semantic information to
+            --  inherit the decoration of global entities in generic instances.
+
+            Dup_Expr := New_Copy_Tree (Expression (Return_Stmt));
+
+            --  Replace the defining identifier of iterators and loop param
+            --  specifications by a clone to ensure that the cloned expression
+            --  and the original expression don't have shared identifiers;
+            --  otherwise, as part of the preanalysis of the expression, these
+            --  shared identifiers may be left decorated with itypes which
+            --  will not be available in the tree passed to the backend.
+
+            Clone_Def_Ids (Dup_Expr);
+
+            return Dup_Expr;
+         end Cloned_Expression;
 
          ----------------------
          -- Freeze_Type_Refs --
@@ -3007,19 +3071,13 @@ package body Sem_Ch6 is
 
          --  Local variables
 
-         Return_Stmt : constant Node_Id :=
-                         First (Statements (Handled_Statement_Sequence (N)));
-         Dup_Expr    : constant Node_Id :=
-                         New_Copy_Tree (Expression (Return_Stmt));
-
          Saved_First_Entity : constant Entity_Id := First_Entity (Spec_Id);
          Saved_Last_Entity  : constant Entity_Id := Last_Entity  (Spec_Id);
+         Dup_Expr           : constant Node_Id   := Cloned_Expression;
 
       --  Start of processing for Freeze_Expr_Types
 
       begin
-         pragma Assert (Nkind (Return_Stmt) = N_Simple_Return_Statement);
-
          --  Preanalyze a duplicate of the expression to have available the
          --  minimum decoration needed to locate referenced unfrozen types
          --  without adding any decoration to the function expression. This
@@ -3042,6 +3100,10 @@ package body Sem_Ch6 is
 
          Set_First_Entity (Spec_Id, Saved_First_Entity);
          Set_Last_Entity  (Spec_Id, Saved_Last_Entity);
+
+         if Present (Last_Entity (Spec_Id)) then
+            Set_Next_Entity (Last_Entity (Spec_Id), Empty);
+         end if;
 
          --  Freeze all types referenced in the expression
 

@@ -1,3 +1,22 @@
+2017-01-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Cloned_Expression): New subprogram.
+	(Freeze_Expr_Types): Complete previous patch since the expression
+	of an expression-function may have iterators and loops with
+	defining identifiers which, as part of the preanalysis of the
+	expression, may be left decorated with itypes that will not be
+	available in the tree passed to the backend.
+
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): Optimize a type
+	conversion to Integer of an expression that is an attribute
+	reference 'Pos on an enumeration type.
+
+2017-01-13  Bob Duff  <duff@adacore.com>
+
+	* atree.ads: Minor comment fix.
+
 2017-01-13  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch6.adb (Check_Aggregate_Accessibility): Ignore function

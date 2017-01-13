@@ -3390,7 +3390,53 @@ package body Checks is
                 In_Subrange_Of (Expr_Type, Target_Base, Fixed_Int => Conv_OK)
               and then not Float_To_Int
             then
-               Activate_Overflow_Check (N);
+               --  A small optimization : the attribute 'Pos applied to an
+               --  enumeration type has a known range, even though its type
+               --  is Universal_Integer. so in numeric conversions it is
+               --  usually within range of of the target integer type. Use the
+               --  static bounds of the base types to check.
+
+               if Nkind (Expr) = N_Attribute_Reference
+                 and then Attribute_Name (Expr) = Name_Pos
+                 and then Is_Enumeration_Type (Etype (Prefix (Expr)))
+                 and then Is_Integer_Type (Target_Type)
+               then
+                  declare
+                     Enum_T  : constant Entity_Id :=
+                               Root_Type (Etype (Prefix (Expr)));
+                     Int_T   : constant Entity_Id := Base_Type (Target_Type);
+                     Last_I  : constant Uint :=
+                        Intval (High_Bound (Scalar_Range (Int_T)));
+                     Last_E  : Uint;
+
+                  begin
+                     --  Character types have no explicit literals, we use
+                     --  the known number of characters in the type.
+
+                     if Root_Type (Enum_T) = Standard_Character then
+                        Last_E := UI_From_Int (255);
+
+                     elsif Enum_T = Standard_Wide_Character
+                       or else Enum_T = Standard_Wide_Wide_Character
+                     then
+                        Last_E := UI_From_Int (65535);
+
+                     else
+                        Last_E := Enumeration_Pos
+                            (Entity (High_Bound (Scalar_Range (Enum_T))));
+                     end if;
+
+                     if Last_E <= Last_I then
+                        null;
+
+                     else
+                        Activate_Overflow_Check (N);
+                     end if;
+                  end;
+
+               else
+                  Activate_Overflow_Check (N);
+               end if;
             end if;
 
             if not Range_Checks_Suppressed (Target_Type)
