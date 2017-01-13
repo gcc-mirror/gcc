@@ -1,3 +1,9 @@
+2017-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira-costs.c (record_reg_classes): Break from the inner loop
+	early once alt_fail is known to be true.  Update outer loop
+	handling accordingly.
+
 2017-01-13  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dse.c (decrement_count): New function.
