@@ -1,3 +1,14 @@
+2017-01-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/78389
+	* include/bits/list.tcc (merge(list&&)):
+	Adjust list sizes if the comparator throws.
+	(merge(list&&, _StrictWeakOrdering)): Likewise.
+	(sort()): Splice elements back from the scratch buffers
+	if the comparator throws.
+	(sort(_StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operations/78389.cc: New.
+
 2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Mark
