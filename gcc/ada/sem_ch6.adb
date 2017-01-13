@@ -663,11 +663,11 @@ package body Sem_Ch6 is
       -----------------------------------
 
       procedure Check_Aggregate_Accessibility (Aggr : Node_Id) is
-         Typ    : constant Entity_Id := Etype (Aggr);
-         Assoc  : Node_Id;
-         Discr  : Entity_Id;
-         Expr   : Node_Id;
-         Obj    : Node_Id;
+         Typ   : constant Entity_Id := Etype (Aggr);
+         Assoc : Node_Id;
+         Discr : Entity_Id;
+         Expr  : Node_Id;
+         Obj   : Node_Id;
 
       begin
          if Is_Record_Type (Typ) and then Has_Discriminants (Typ) then
@@ -676,6 +676,7 @@ package body Sem_Ch6 is
             while Present (Discr) loop
                if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
                   Expr := Expression (Assoc);
+
                   if Nkind (Expr) = N_Attribute_Reference
                     and then Attribute_Name (Expr) /= Name_Unrestricted_Access
                   then
@@ -686,21 +687,24 @@ package body Sem_Ch6 is
                         Obj := Prefix (Obj);
                      end loop;
 
-                     --  No check needed for an aliased formal.
-                     --  A run-time check may still be needed ???
+                     --  Do not check aliased formals or function calls. A
+                     --  run-time check may still be needed ???
 
                      if Is_Entity_Name (Obj)
-                       and then Is_Formal (Entity (Obj))
-                       and then Is_Aliased (Entity (Obj))
+                       and then Comes_From_Source (Obj)
                      then
-                        null;
+                        if Is_Formal (Entity (Obj))
+                           and then Is_Aliased (Entity (Obj))
+                        then
+                           null;
 
-                     elsif Object_Access_Level (Obj) >
-                             Scope_Depth (Scope (Scope_Id))
-                     then
-                        Error_Msg_N
-                          ("access discriminant in return aggregate would be "
-                           & "a dangling reference", Obj);
+                        elsif Object_Access_Level (Obj) >
+                                Scope_Depth (Scope (Scope_Id))
+                        then
+                           Error_Msg_N
+                             ("access discriminant in return aggregate would "
+                              & "be a dangling reference", Obj);
+                        end if;
                      end if;
                   end if;
                end if;
