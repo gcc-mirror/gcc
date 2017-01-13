@@ -64,6 +64,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static int
 chmod_internal (char *file, char *mode, gfc_charlen_type mode_len)
 {
+  int i;
   bool ugo[3];
   bool rwxXstugo[9];
   int set_mode, part;
@@ -103,7 +104,7 @@ chmod_internal (char *file, char *mode, gfc_charlen_type mode_len)
   honor_umask = false;
 #endif
 
-  for (gfc_charlen_type i = 0; i < mode_len; i++)
+  for (i = 0; i < mode_len; i++)
     {
       if (!continue_clause)
 	{

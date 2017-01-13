@@ -37,6 +37,7 @@ void
 getarg_i4 (GFC_INTEGER_4 *pos, char  *val, gfc_charlen_type val_len)
 {
   int argc;
+  int arglen;
   char **argv;
 
   get_args (&argc, &argv);
@@ -48,7 +49,7 @@ getarg_i4 (GFC_INTEGER_4 *pos, char  *val, gfc_charlen_type val_len)
 
   if ((*pos) + 1 <= argc  && *pos >=0 )
     {
-      gfc_charlen_type arglen = strlen (argv[*pos]);
+      arglen = strlen (argv[*pos]);
       if (arglen > val_len)
 	arglen = val_len;
       memcpy (val, argv[*pos], arglen);
@@ -118,8 +119,7 @@ get_command_argument_i4 (GFC_INTEGER_4 *number, char *value,
 			 GFC_INTEGER_4 *length, GFC_INTEGER_4 *status, 
 			 gfc_charlen_type value_len)
 {
-  int argc, stat_flag = GFC_GC_SUCCESS;
-  gfc_charlen_type arglen = 0;
+  int argc, arglen = 0, stat_flag = GFC_GC_SUCCESS;
   char **argv;
 
   if (number == NULL )
@@ -195,10 +195,10 @@ void
 get_command_i4 (char *command, GFC_INTEGER_4 *length, GFC_INTEGER_4 *status,
 		gfc_charlen_type command_len)
 {
-  int i, argc, thisarg;
+  int i, argc, arglen, thisarg;
   int stat_flag = GFC_GC_SUCCESS;
+  int tot_len = 0;
   char **argv;
-  gfc_charlen_type arglen, tot_len = 0;
 
   if (command == NULL && length == NULL && status == NULL)
     return; /* No need to do anything.  */

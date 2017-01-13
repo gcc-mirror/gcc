@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-require-effective-target ilp32 }
 !
 program main
   implicit none

@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
-#include "tree.h"
 
 
 /* Initialize a typespec to unknown.  */
@@ -280,25 +279,4 @@ get_c_kind(const char *c_kind_name, CInteropKind_t kinds_table[])
       return index;
 
   return ISOCBINDING_INVALID;
-}
-
-
-/* Convert between GMP integers (mpz_t) and HOST_WIDE_INT.  */
-
-HOST_WIDE_INT
-gfc_mpz_get_hwi (mpz_t op)
-{
-  /* Using long_long_integer_type_node as that is the integer type
-     node that closest matches HOST_WIDE_INT; both are guaranteed to
-     be at least 64 bits.  */
-  const wide_int w = wi::from_mpz (long_long_integer_type_node, op, true);
-  return w.to_shwi ();
-}
-
-
-void
-gfc_mpz_set_hwi (mpz_t rop, const HOST_WIDE_INT op)
-{
-  const wide_int w = wi::shwi (op, HOST_BITS_PER_WIDE_INT);
-  wi::to_mpz (w, rop, SIGNED);
 }

@@ -19,18 +19,6 @@
 	PR c++/71166
 	* g++.dg/cpp0x/constexpr-array18.C: New test.
 
-2017-01-13  Janne Blomqvist  <jb@gcc.gnu.org>
-
-	PR fortran/78534
-	PR fortran/66310
-	* gfortran.dg/repeat_4.f90: Use integers of kind C_SIZE_T.
-	* gfortran.dg/repeat_7.f90: New test for PR 66310.
-	* gfortran.dg/scan_2.f90: Handle potential cast in assignment.
-	* gfortran.dg/string_1.f90: Limit to ilp32 targets.
-	* gfortran.dg/string_1_lp64.f90: New test.
-	* gfortran.dg/string_3.f90: Limit to ilp32 targets.
-	* gfortran.dg/string_3_lp64.f90: New test.
-
 2017-01-13  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-dse-25.c: New test.

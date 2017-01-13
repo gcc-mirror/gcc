@@ -5198,7 +5198,7 @@ gfc_expr *
 gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 {
   gfc_expr *result;
-  gfc_charlen_t len;
+  int i, j, len, ncop, nlen;
   mpz_t ncopies;
   bool have_length = false;
 
@@ -5218,7 +5218,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   if (e->ts.u.cl && e->ts.u.cl->length
 	&& e->ts.u.cl->length->expr_type == EXPR_CONSTANT)
     {
-      len = gfc_mpz_get_hwi (e->ts.u.cl->length->value.integer);
+      len = mpz_get_si (e->ts.u.cl->length->value.integer);
       have_length = true;
     }
   else if (e->expr_type == EXPR_CONSTANT
@@ -5254,8 +5254,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 	}
       else
 	{
-	  mpz_init (mlen);
-	  gfc_mpz_set_hwi (mlen, len);
+	  mpz_init_set_si (mlen, len);
 	  mpz_tdiv_q (max, gfc_integer_kinds[i].huge, mlen);
 	  mpz_clear (mlen);
 	}
@@ -5279,12 +5278,11 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  HOST_WIDE_INT ncop;
   if (len ||
       (e->ts.u.cl->length &&
        mpz_sgn (e->ts.u.cl->length->value.integer) != 0))
     {
-      const char *res = gfc_extract_hwi (n, &ncop);
+      const char *res = gfc_extract_int (n, &ncop);
       gcc_assert (res == NULL);
     }
   else
@@ -5294,18 +5292,11 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     return gfc_get_character_expr (e->ts.kind, &e->where, NULL, 0);
 
   len = e->value.character.length;
-  gfc_charlen_t nlen = ncop * len;
-
-  /* Here's a semi-arbitrary limit. If the string is longer than 32 MB
-     (8 * 2**20 elements * 4 bytes (wide chars) per element) defer to
-     runtime instead of consuming (unbounded) memory and CPU at
-     compile time.  */
-  if (nlen > 8388608)
-    return NULL;
+  nlen = ncop * len;
 
   result = gfc_get_character_expr (e->ts.kind, &e->where, NULL, nlen);
-  for (size_t i = 0; i < (size_t) ncop; i++)
-    for (size_t j = 0; j < (size_t) len; j++)
+  for (i = 0; i < ncop; i++)
+    for (j = 0; j < len; j++)
       result->value.character.string[j+i*len]= e->value.character.string[j];
 
   result->value.character.string[nlen] = '\0';	/* For debugger */
