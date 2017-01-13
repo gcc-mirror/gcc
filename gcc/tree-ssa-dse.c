@@ -332,6 +332,99 @@ maybe_trim_constructor_store (ao_ref *ref, sbitmap live, gimple *stmt)
     }
 }
 
+/* STMT is a memcpy, memmove or memset.  Decrement the number of bytes
+   copied/set by DECREMENT.  */
+static void
+decrement_count (gimple *stmt, int decrement)
+{
+  tree *countp = gimple_call_arg_ptr (stmt, 2);
+  gcc_assert (TREE_CODE (*countp) == INTEGER_CST);
+  *countp = wide_int_to_tree (TREE_TYPE (*countp), (TREE_INT_CST_LOW (*countp)
+						    - decrement));
+
+}
+
+static void
+increment_start_addr (gimple *stmt, tree *where, int increment)
+{
+  if (TREE_CODE (*where) == SSA_NAME)
+    {
+      tree tem = make_ssa_name (TREE_TYPE (*where));
+      gassign *newop
+        = gimple_build_assign (tem, POINTER_PLUS_EXPR, *where,
+			       build_int_cst (sizetype, increment));
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_insert_before (&gsi, newop, GSI_SAME_STMT);
+      *where = tem;
+      update_stmt (gsi_stmt (gsi));
+      return;
+    }
+
+  *where = build_fold_addr_expr (fold_build2 (MEM_REF, char_type_node,
+                                             *where,
+                                             build_int_cst (ptr_type_node,
+                                                            increment)));
+}
+
+/* STMT is builtin call that writes bytes in bitmap ORIG, some bytes are dead
+   (ORIG & ~NEW) and need not be stored.  Try to rewrite STMT to reduce
+   the amount of data it actually writes.
+
+   Right now we only support trimming from the head or the tail of the
+   memory region.  In theory we could split the mem* call, but it's
+   likely of marginal value.  */
+
+static void
+maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
+{
+  switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
+    {
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMMOVE:
+      {
+	int head_trim, tail_trim;
+	compute_trims (ref, live, &head_trim, &tail_trim);
+
+	/* Tail trimming is easy, we can just reduce the count.  */
+        if (tail_trim)
+	  decrement_count (stmt, tail_trim);
+
+	/* Head trimming requires adjusting all the arguments.  */
+        if (head_trim)
+          {
+	    tree *dst = gimple_call_arg_ptr (stmt, 0);
+	    increment_start_addr (stmt, dst, head_trim);
+	    tree *src = gimple_call_arg_ptr (stmt, 1);
+	    increment_start_addr (stmt, src, head_trim);
+	    decrement_count (stmt, head_trim);
+	  }
+        break;
+      }
+
+    case BUILT_IN_MEMSET:
+      {
+	int head_trim, tail_trim;
+	compute_trims (ref, live, &head_trim, &tail_trim);
+
+	/* Tail trimming is easy, we can just reduce the count.  */
+        if (tail_trim)
+	  decrement_count (stmt, tail_trim);
+
+	/* Head trimming requires adjusting all the arguments.  */
+        if (head_trim)
+          {
+	    tree *dst = gimple_call_arg_ptr (stmt, 0);
+	    increment_start_addr (stmt, dst, head_trim);
+	    decrement_count (stmt, head_trim);
+	  }
+	break;
+      }
+
+      default:
+	break;
+    }
+}
+
 /* STMT is a memory write where one or more bytes written are dead
    stores.  ORIG is the bitmap of bytes stored by STMT.  LIVE is the
    bitmap of stores that are actually live.
@@ -619,7 +712,7 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 
 	      if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
 		{
-		  maybe_trim_partially_dead_store (&ref, m_live_bytes, stmt);
+		  maybe_trim_memstar_call (&ref, m_live_bytes, stmt);
 		  return;
 		}
 
