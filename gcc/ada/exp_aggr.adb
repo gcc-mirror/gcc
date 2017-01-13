@@ -492,7 +492,8 @@ package body Exp_Aggr is
                then
                   if Present (Component_Associations (N)) then
                      Indx :=
-                       First (Choices (First (Component_Associations (N))));
+                       First
+                         (Choice_List (First (Component_Associations (N))));
 
                      if Is_Entity_Name (Indx)
                        and then not Is_Type (Entity (Indx))
@@ -853,6 +854,9 @@ package body Exp_Aggr is
       --  Otherwise we call Build_Code recursively. As an optimization if the
       --  loop covers 3 or fewer scalar elements we generate a sequence of
       --  assignments.
+      --  If the component association that generates the loop comes from an
+      --  Iterated_Component_Association, the loop parameter has the name of
+      --  the corresponding parameter in the original construct.
 
       function Gen_While (L, H : Node_Id; Expr : Node_Id) return List_Id;
       --  Nodes L and H must be side-effect-free expressions. If the input
@@ -1644,6 +1648,9 @@ package body Exp_Aggr is
       --------------
 
       function Gen_Loop (L, H : Node_Id; Expr : Node_Id) return List_Id is
+         Is_Iterated_Component : constant Boolean :=
+           Nkind (Parent (Expr)) = N_Iterated_Component_Association;
+
          L_J : Node_Id;
 
          L_L : Node_Id;
@@ -1700,9 +1707,10 @@ package body Exp_Aggr is
 
             return S;
 
-         --  If loop bounds are the same then generate an assignment
+         --  If loop bounds are the same then generate an assignment, unless
+         --  the parent construct is an Iterated_Component_Association.
 
-         elsif Equal (L, H) then
+         elsif Equal (L, H) and then not Is_Iterated_Component then
             return Gen_Assign (New_Copy_Tree (L), Expr);
 
          --  If H - L <= 2 then generate a sequence of assignments when we are
@@ -1714,6 +1722,7 @@ package body Exp_Aggr is
            and then Local_Compile_Time_Known_Value (L)
            and then Local_Compile_Time_Known_Value (H)
            and then Local_Expr_Value (H) - Local_Expr_Value (L) <= 2
+           and then not Is_Iterated_Component
          then
             Append_List_To (S, Gen_Assign (New_Copy_Tree (L), Expr));
             Append_List_To (S, Gen_Assign (Add (1, To => L), Expr));
@@ -1727,7 +1736,13 @@ package body Exp_Aggr is
 
          --  Otherwise construct the loop, starting with the loop index L_J
 
-         L_J := Make_Temporary (Loc, 'J', L);
+         if Is_Iterated_Component then
+            L_J := Make_Defining_Identifier (Loc,
+                    Chars => (Chars (Defining_Identifier (Parent (Expr)))));
+
+         else
+            L_J := Make_Temporary (Loc, 'J', L);
+         end if;
 
          --  Construct "L .. H" in Index_Base. We use a qualified expression
          --  for the bound to convert to the index base, but we don't need
@@ -1739,7 +1754,7 @@ package body Exp_Aggr is
             L_L :=
               Make_Qualified_Expression (Loc,
                 Subtype_Mark => Index_Base_Name,
-                Expression   => L);
+                Expression   => New_Copy_Tree (L));
          end if;
 
          if Etype (H) = Index_Base then
@@ -1748,7 +1763,7 @@ package body Exp_Aggr is
             L_H :=
               Make_Qualified_Expression (Loc,
                 Subtype_Mark => Index_Base_Name,
-                Expression   => H);
+                Expression   => New_Copy_Tree (H));
          end if;
 
          L_Range :=
@@ -2027,7 +2042,7 @@ package body Exp_Aggr is
 
          Assoc := First (Component_Associations (N));
          while Present (Assoc) loop
-            Choice := First (Choices (Assoc));
+            Choice := First (Choice_List (Assoc));
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
                   Set_Loop_Actions (Assoc, New_List);
@@ -4255,6 +4270,8 @@ package body Exp_Aggr is
       --  Check whether all components of the aggregate are compile-time known
       --  values, and can be passed as is to the back-end without further
       --  expansion.
+      --  An Iterated_component_Association is treated as non-static, but there
+      --  are posibilities for optimization here.
 
       function Flatten
         (N   : Node_Id;
@@ -4318,6 +4335,7 @@ package body Exp_Aggr is
                elsif Nkind (Expression (Expr)) /= N_Aggregate
                  or else not Compile_Time_Known_Aggregate (Expression (Expr))
                  or else Expansion_Delayed (Expression (Expr))
+                 or else Nkind (Expr) = N_Iterated_Component_Association
                then
                   Static_Components := False;
                   exit;
@@ -4377,9 +4395,12 @@ package body Exp_Aggr is
 
                   if Box_Present (Assoc) then
                      return False;
+
+                  elsif Nkind (Assoc) = N_Iterated_Component_Association then
+                     return False;
                   end if;
 
-                  Choice := First (Choices (Assoc));
+                  Choice := First (Choice_List (Assoc));
 
                   while Present (Choice) loop
                      if Nkind (Choice) = N_Others_Choice then
@@ -4460,7 +4481,7 @@ package body Exp_Aggr is
             end if;
 
             Component_Loop : while Present (Elmt) loop
-               Choice := First (Choices (Elmt));
+               Choice := First (Choice_List (Elmt));
                Choice_Loop : while Present (Choice) loop
 
                   --  If we have an others choice, fill in the missing elements
@@ -5228,7 +5249,7 @@ package body Exp_Aggr is
          if Present (Component_Associations (Sub_Aggr)) then
             Assoc := Last (Component_Associations (Sub_Aggr));
 
-            if Nkind (First (Choices (Assoc))) = N_Others_Choice then
+            if Nkind (First (Choice_List (Assoc))) = N_Others_Choice then
                Others_Present (Dim) := True;
             end if;
          end if;
@@ -5513,7 +5534,7 @@ package body Exp_Aggr is
          elsif Present (Component_Associations (Sub_Aggr)) then
             Assoc := Last (Component_Associations (Sub_Aggr));
 
-            if Nkind (First (Choices (Assoc))) /= N_Others_Choice then
+            if Nkind (First (Choice_List (Assoc))) /= N_Others_Choice then
                Need_To_Check := False;
 
             else
@@ -5525,7 +5546,7 @@ package body Exp_Aggr is
                Nb_Choices := -1;
                Assoc := First (Component_Associations (Sub_Aggr));
                while Present (Assoc) loop
-                  Choice := First (Choices (Assoc));
+                  Choice := First (Choice_List (Assoc));
                   while Present (Choice) loop
                      Nb_Choices := Nb_Choices + 1;
                      Next (Choice);
@@ -5570,7 +5591,7 @@ package body Exp_Aggr is
             begin
                Assoc := First (Component_Associations (Sub_Aggr));
                while Present (Assoc) loop
-                  Choice := First (Choices (Assoc));
+                  Choice := First (Choice_List (Assoc));
                   while Present (Choice) loop
                      if Nkind (Choice) = N_Others_Choice then
                         exit;
@@ -6348,7 +6369,7 @@ package body Exp_Aggr is
                MX : constant         := 80;
 
             begin
-               if Nkind (First (Choices (CA))) = N_Others_Choice
+               if Nkind (First (Choice_List (CA))) = N_Others_Choice
                  and then Nkind (Expression (CA)) = N_Character_Literal
                  and then No (Expressions (N))
                then
@@ -7348,7 +7369,7 @@ package body Exp_Aggr is
 
       Assoc := First (Component_Associations (N));
       while Present (Assoc) loop
-         Choice := First (Choices (Assoc));
+         Choice := First (Choice_List (Assoc));
          while Present (Choice) loop
             if Nkind (Choice) /= N_Others_Choice then
                Nb_Choices := Nb_Choices + 1;
@@ -8091,7 +8112,7 @@ package body Exp_Aggr is
             elsif Present (Next (Expr)) then
                return False;
 
-            elsif Present (Next (First (Choices (Expr)))) then
+            elsif Present (Next (First (Choice_List (Expr)))) then
                return False;
 
             else

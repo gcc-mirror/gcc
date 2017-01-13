@@ -1,3 +1,32 @@
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Choice_List): Move function here
+	from sem_aggr.adb, for use elsewhere.
+	* sem_ch3.adb (Analyze_Object_Declaration): Use Choice_List.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Remove
+	Iterated_Component_Present.
+	* exp_aggr.adb: Use Choice_List throughout, to handle
+	Iterated_Component_Associations.
+	(Gen_Loop): Generate proper loop for an
+	Iterated_Component_Association: loop variable has the identifier
+	of the original association. Generate a loop even for a single
+	component choice, in order to make loop parameter visible in
+	expression.
+	(Flatten): An Iterated_Component_Association is not static.
+
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Expon): Ensure that the value of
+	float exponentiation for statically known small negative values
+	is the reciprocal of the exponentiation for the opposite value
+	of the exponent.
+	* s-exnllf.adb (Exn_Float, Exn_Long_Float, Exn_Long_Long_Float):
+	Ensure that the value of float exponentiation for negative values
+	is the reciprocal of the exponentiation for the opposite value
+	of the exponent.
+	* inline.adb (Expand_Inlined_Call): Fix the count
+	for the number of generated gotos.
+
 2017-01-13  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb: Code cleanup.

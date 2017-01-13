@@ -337,6 +337,12 @@ package Sem_Util is
    --  and the context is external to the protected operation, to warn against
    --  a possible unlocked access to data.
 
+   function Choice_List (N : Node_Id) return List_Id;
+   --  Utility to retrieve the choices of a Component_Association or the
+   --  Discrete_Choices of an Iterated_Component_Association. For various
+   --  reasons these nodes have a different structure even though they play
+   --  similar roles in array aggregates.
+
    function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id;
    --  Gather the entities of all abstract states and objects declared in the
    --  body state space of package body Body_Id.

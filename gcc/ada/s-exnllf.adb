@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,12 +34,28 @@
 --  a compile time known exponent in this range. The use of Float'Machine and
 --  Long_Float'Machine is to avoid unwanted extra precision in the results.
 
+--  Note that for a negative exponent in Left ** Right, we compute the result
+--  as:
+
+--     1.0 / (Left ** (-Right))
+
+--  Note that the case of Left being zero is not special, it will simply result
+--  in a division by zero at the end, yielding a correctly signed infinity, or
+--  possibly generating an overflow.
+
+--  Note on overflow: This coding assumes that the target generates infinities
+--  with standard IEEE semantics. If this is not the case, then the code
+--  for negative exponent may raise Constraint_Error. This follows the
+--  implementation permission given in RM 4.5.6(12).
+
 package body System.Exn_LLF is
+
+   subtype Negative is Integer range Integer'First .. -1;
 
    function Exp
      (Left  : Long_Long_Float;
-      Right : Integer) return Long_Long_Float;
-   --  Common routine used if Right not in 0 .. 4
+      Right : Natural) return Long_Long_Float;
+   --  Common routine used if Right is greater or equal to 5
 
    ---------------
    -- Exn_Float --
@@ -63,6 +79,8 @@ package body System.Exn_LLF is
          when 4 =>
             Temp := Float'Machine (Left * Left);
             return Float'Machine (Temp * Temp);
+         when Negative =>
+            return Float'Machine (1.0 / Exn_Float (Left, -Right));
          when others =>
             return
               Float'Machine
@@ -92,6 +110,8 @@ package body System.Exn_LLF is
          when 4 =>
             Temp := Long_Float'Machine (Left * Left);
             return Long_Float'Machine (Temp * Temp);
+         when Negative =>
+            return Long_Float'Machine (1.0 / Exn_Long_Float (Left, -Right));
          when others =>
             return
               Long_Float'Machine
@@ -121,6 +141,8 @@ package body System.Exn_LLF is
          when 4 =>
             Temp := Left * Left;
             return Temp * Temp;
+         when Negative =>
+            return 1.0 / Exn_Long_Long_Float (Left, -Right);
          when others =>
             return Exp (Left, Right);
       end case;
@@ -132,60 +154,29 @@ package body System.Exn_LLF is
 
    function Exp
      (Left  : Long_Long_Float;
-      Right : Integer) return Long_Long_Float
+      Right : Natural) return Long_Long_Float
    is
       Result : Long_Long_Float := 1.0;
       Factor : Long_Long_Float := Left;
-      Exp    : Integer := Right;
+      Exp    : Natural := Right;
 
    begin
       --  We use the standard logarithmic approach, Exp gets shifted right
       --  testing successive low order bits and Factor is the value of the
       --  base raised to the next power of 2. If the low order bit or Exp is
-      --  set, multiply the result by this factor. For negative exponents,
-      --  invert result upon return.
+      --  set, multiply the result by this factor.
 
-      if Exp >= 0 then
-         loop
-            if Exp rem 2 /= 0 then
-               Result := Result * Factor;
-            end if;
+      loop
+         if Exp rem 2 /= 0 then
+            Result := Result * Factor;
+         end if;
 
-            Exp := Exp / 2;
-            exit when Exp = 0;
-            Factor := Factor * Factor;
-         end loop;
+         Exp := Exp / 2;
+         exit when Exp = 0;
+         Factor := Factor * Factor;
+      end loop;
 
-         return Result;
-
-      --  Here we have a negative exponent, and we compute the result as:
-
-      --     1.0 / (Left ** (-Right))
-
-      --  Note that the case of Left being zero is not special, it will
-      --  simply result in a division by zero at the end, yielding a
-      --  correctly signed infinity, or possibly generating an overflow.
-
-      --  Note on overflow: The coding of this routine assumes that the
-      --  target generates infinities with standard IEEE semantics. If this
-      --  is not the case, then the code below may raise Constraint_Error.
-      --  This follows the implementation permission given in RM 4.5.6(12).
-
-      else
-         begin
-            loop
-               if Exp rem 2 /= 0 then
-                  Result := Result * Factor;
-               end if;
-
-               Exp := Exp / 2;
-               exit when Exp = 0;
-               Factor := Factor * Factor;
-            end loop;
-
-            return 1.0 / Result;
-         end;
-      end if;
+      return Result;
    end Exp;
 
 end System.Exn_LLF;

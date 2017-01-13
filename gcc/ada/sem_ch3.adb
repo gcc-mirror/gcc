@@ -4149,9 +4149,10 @@ package body Sem_Ch3 is
 
          elsif Nkind (E) = N_Aggregate
            and then Present (Component_Associations (E))
-           and then Present (Choices (First (Component_Associations (E))))
-           and then Nkind (First
-            (Choices (First (Component_Associations (E))))) = N_Others_Choice
+           and then Present (Choice_List (First (Component_Associations (E))))
+           and then
+             Nkind (First (Choice_List (First (Component_Associations (E)))))
+               = N_Others_Choice
          then
             null;
 
