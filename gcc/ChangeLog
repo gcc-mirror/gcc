@@ -1,8 +1,14 @@
 2017-01-13  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/33562
-        PR tree-optimization/61912
-        PR tree-optimization/77485
+	PR tree-optimization/61912
+	PR tree-optimization/77485
+	* tree-ssa-dse.c: Include expr.h.
+	(maybe_trim_constructor_store): New function.
+	(maybe_trim_partially_dead_store): Call maybe_trim_constructor_store.
+
+	PR tree-optimization/33562
+	PR tree-optimization/61912
+	PR tree-optimization/77485
 	* doc/invoke.texi: Document new dse-max-object-size param.
 	* params.def (PARM_DSE_MAX_OBJECT_SIZE): New PARAM.
 	* tree-ssa-dse.c: Include params.h.
