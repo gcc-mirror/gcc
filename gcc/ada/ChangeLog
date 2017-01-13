@@ -1,5 +1,27 @@
 2017-01-13  Yannick Moy  <moy@adacore.com>
 
+	* inline.adb (Remove_Aspects_And_Pragmas): Add Unused to the
+	list of pragmas to remove.  Remove pragmas from the list of
+	statements in the body to inline.
+	* namet.adb, namet.ads (Nam_In): New version with 12 parameters.
+
+2017-01-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Resolve_Aspects): New procedure, subsidiary of
+	Analyze_Declarations, to analyze and resolve the expressions of
+	aspect specifications in the current declarative list, so that
+	the expressions have proper entity and type info.  This is needed
+	for ASIS when there is no subsequent expansion to generate this
+	semantic information.
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Use Etype of
+	original expression, to suppress cascaded errors when expression
+	has been constant-folded.
+	(Resolve_Aspect_Expressions, Resolve_Name): Preserve entities in
+	ASIS mode, because there is no subsequent expansion to decorate
+	the tree.
+
+2017-01-13  Yannick Moy  <moy@adacore.com>
+
 	* inline.adb, inline.ads (Call_Can_Be_Inlined_In_GNATprove_Mode):
 	New function to detect when a call may be inlined or not in
 	GNATprove mode.

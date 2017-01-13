@@ -8963,10 +8963,12 @@ package body Sem_Ch13 is
       --  Expression to be analyzed at end of declarations
 
       Freeze_Expr : constant Node_Id := Expression (ASN);
-      --  Expression from call to Check_Aspect_At_Freeze_Point
+      --  Expression from call to Check_Aspect_At_Freeze_Point. We use
 
-      T : constant Entity_Id := Etype (Freeze_Expr);
-      --  Type required for preanalyze call
+      T : constant Entity_Id := Etype (Original_Node (Freeze_Expr));
+      --  Type required for preanalyze call. We use the originsl
+      --  expression to get the proper type, to prevent cascaded errors
+      --  when the expression is constant-folded.
 
       Err : Boolean;
       --  Set False if error
@@ -12681,6 +12683,9 @@ package body Sem_Ch13 is
       --  introduce a local identifier that would require proper expansion to
       --  handle properly.
 
+      --  In ASIS_Mode we preserve the entity in the source because there is
+      --  no subsequent expansion to decorate the tree.
+
       ------------------
       -- Resolve_Name --
       ------------------
@@ -12698,7 +12703,10 @@ package body Sem_Ch13 is
 
          elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
-            Set_Entity (N, Empty);
+
+            if not ASIS_Mode then
+               Set_Entity (N, Empty);
+            end if;
 
          elsif Nkind (N) = N_Quantified_Expression then
             return Skip;
