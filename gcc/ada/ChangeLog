@@ -1,3 +1,10 @@
+2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper):
+	Ensure that the input body is a subprogram body before trying to
+	determine whether it denoted an expression function.  Note that
+	subprogram body stubs cannot denote expression functions.
+
 2017-01-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* bindgen.adb, sem_ch6.adb, binde.adb, exp_ch3.adb: Minor reformatting
