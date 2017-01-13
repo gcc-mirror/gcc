@@ -1,3 +1,8 @@
+2017-01-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Aggregate_Accessibility): Ignore function
+	calls in accessibility check on return statement.
+
 2017-01-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper):
