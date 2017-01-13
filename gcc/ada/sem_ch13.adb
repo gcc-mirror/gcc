@@ -8963,12 +8963,12 @@ package body Sem_Ch13 is
       --  Expression to be analyzed at end of declarations
 
       Freeze_Expr : constant Node_Id := Expression (ASN);
-      --  Expression from call to Check_Aspect_At_Freeze_Point. We use
+      --  Expression from call to Check_Aspect_At_Freeze_Point.
 
       T : constant Entity_Id := Etype (Original_Node (Freeze_Expr));
-      --  Type required for preanalyze call. We use the originsl
-      --  expression to get the proper type, to prevent cascaded errors
-      --  when the expression is constant-folded.
+      --  Type required for preanalyze call. We use the original expression to
+      --  get the proper type, to prevent cascaded errors when the expression
+      --  is constant-folded.
 
       Err : Boolean;
       --  Set False if error

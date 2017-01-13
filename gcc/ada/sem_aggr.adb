@@ -1180,6 +1180,11 @@ package body Sem_Aggr is
       Index_Base_High : constant Node_Id   := Type_High_Bound (Index_Base);
       --  Ditto for the base type
 
+      Others_Present : Boolean := False;
+
+      Nb_Choices : Nat := 0;
+      --  Contains the overall number of named choices in this sub-aggregate
+
       function Add (Val : Uint; To : Node_Id) return Node_Id;
       --  Creates a new expression node where Val is added to expression To.
       --  Tries to constant fold whenever possible. To must be an already
@@ -1202,6 +1207,10 @@ package body Sem_Aggr is
       function Dynamic_Or_Null_Range (L, H : Node_Id) return Boolean;
       --  Returns True if range L .. H is dynamic or null
 
+      function Choice_List (N : Node_Id) return List_Id;
+      --  Utility to retrieve the choices of a Component_Association or the
+      --  Discrete_Choices of an Iterated_Component_Association.
+
       procedure Get (Value : out Uint; From : Node_Id; OK : out Boolean);
       --  Given expression node From, this routine sets OK to False if it
       --  cannot statically evaluate From. Otherwise it stores this static
@@ -1220,6 +1229,11 @@ package body Sem_Aggr is
       --  NOTE: In the case of "... => <>", we pass the in the
       --  N_Component_Association node as Expr, since there is no Expression in
       --  that case, and we need a Sloc for the error message.
+
+      procedure Resolve_Iterated_Component_Association
+        (N         : Node_Id;
+         Index_Typ : Entity_Id);
+      --  For AI12-061
 
       ---------
       -- Add --
@@ -1459,6 +1473,19 @@ package body Sem_Aggr is
            or else Val_L > Val_H;
       end Dynamic_Or_Null_Range;
 
+      -----------------
+      -- Choice_List --
+      -----------------
+
+      function Choice_List (N : Node_Id) return List_Id is
+      begin
+         if Nkind (N) = N_Iterated_Component_Association then
+            return Discrete_Choices (N);
+         else
+            return Choices (N);
+         end if;
+      end Choice_List;
+
       ---------
       -- Get --
       ---------
@@ -1626,37 +1653,82 @@ package body Sem_Aggr is
          return Resolution_OK;
       end Resolve_Aggr_Expr;
 
-      --  Variables local to Resolve_Array_Aggregate
+      --------------------------------------------
+      -- Resolve_Iterated_Component_Association --
+      --------------------------------------------
+
+      procedure Resolve_Iterated_Component_Association
+        (N         : Node_Id;
+         Index_Typ : Entity_Id)
+      is
+         Id  : constant Entity_Id  := Defining_Identifier (N);
+         Loc : constant Source_Ptr := Sloc (N);
+
+         Choice : Node_Id;
+         Dummy  : Boolean;
+         Ent    : Entity_Id;
+
+      begin
+         Choice := First (Discrete_Choices (N));
+
+         while Present (Choice) loop
+            if Nkind (Choice) = N_Others_Choice then
+               Error_Msg_N ("others choice not allowed in this context", N);
+               Others_Present := True;
+
+            else
+               Analyze_And_Resolve (Choice, Index_Typ);
+            end if;
+
+            Nb_Choices := Nb_Choices + 1;
+            Next (Choice);
+         end loop;
+
+         --  Create a scope in which to introduce an index, which is usually
+         --  visible in the expression for the component.
+
+         Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
+         Set_Etype  (Ent, Standard_Void_Type);
+         Set_Parent (Ent, Parent (N));
+
+         Enter_Name (Id);
+         Set_Etype (Id, Index_Typ);
+         Set_Ekind (Id, E_Variable);
+         Set_Scope (Id, Ent);
+
+         Push_Scope (Ent);
+         Dummy := Resolve_Aggr_Expr (Expression (N), False);
+         End_Scope;
+      end Resolve_Iterated_Component_Association;
+
+      --  Local variables
 
       Assoc   : Node_Id;
       Choice  : Node_Id;
       Expr    : Node_Id;
       Discard : Node_Id;
 
-      Delete_Choice : Boolean;
-      --  Used when replacing a subtype choice with predicate by a list
+      Iterated_Component_Present : Boolean := False;
 
       Aggr_Low  : Node_Id := Empty;
       Aggr_High : Node_Id := Empty;
       --  The actual low and high bounds of this sub-aggregate
 
+      Case_Table_Size : Nat;
+      --  Contains the size of the case table needed to sort aggregate choices
+
       Choices_Low  : Node_Id := Empty;
       Choices_High : Node_Id := Empty;
       --  The lowest and highest discrete choices values for a named aggregate
 
+      Delete_Choice : Boolean;
+      --  Used when replacing a subtype choice with predicate by a list
+
       Nb_Elements : Uint := Uint_0;
       --  The number of elements in a positional aggregate
 
-      Others_Present : Boolean := False;
-
-      Nb_Choices : Nat := 0;
-      --  Contains the overall number of named choices in this sub-aggregate
-
       Nb_Discrete_Choices : Nat := 0;
       --  The overall number of discrete choices (not counting others choice)
-
-      Case_Table_Size : Nat;
-      --  Contains the size of the case table needed to sort aggregate choices
 
    --  Start of processing for Resolve_Array_Aggregate
 
@@ -1675,6 +1747,12 @@ package body Sem_Aggr is
       if Present (Component_Associations (N)) then
          Assoc := First (Component_Associations (N));
          while Present (Assoc) loop
+            if Nkind (Assoc) = N_Iterated_Component_Association then
+               Resolve_Iterated_Component_Association (Assoc, Index_Typ);
+               Iterated_Component_Present := True;
+               goto Next_Assoc;
+            end if;
+
             Choice := First (Choices (Assoc));
             Delete_Choice := False;
             while Present (Choice) loop
@@ -1766,6 +1844,7 @@ package body Sem_Aggr is
                end;
             end loop;
 
+            <<Next_Assoc>>
             Next (Assoc);
          end loop;
       end if;
@@ -1780,7 +1859,7 @@ package body Sem_Aggr is
       then
          Error_Msg_N
            ("named association cannot follow positional association",
-            First (Choices (First (Component_Associations (N)))));
+            First (Choice_List (First (Component_Associations (N)))));
          return Failure;
       end if;
 
@@ -1860,7 +1939,8 @@ package body Sem_Aggr is
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
                Prev_Nb_Discrete_Choices := Nb_Discrete_Choices;
-               Choice := First (Choices (Assoc));
+               Choice := First (Choice_List (Assoc));
+
                loop
                   Analyze (Choice);
 
@@ -2475,11 +2555,7 @@ package body Sem_Aggr is
                Check_Can_Never_Be_Null (Etype (N), Expr);
             end if;
 
-            if Nkind (Expr) = N_Iterated_Component_Association then
-               Error_Msg_N ("iterated association not implemented yet", Expr);
-               return Failure;
-
-            elsif not Resolve_Aggr_Expr (Expr, Single_Elmt => True) then
+            if not Resolve_Aggr_Expr (Expr, Single_Elmt => True) then
                return Failure;
             end if;
 
@@ -2644,6 +2720,10 @@ package body Sem_Aggr is
       --  Check the dimensions of each component in the array aggregate
 
       Analyze_Dimension_Array_Aggregate (N, Component_Typ);
+
+      if Iterated_Component_Present then
+         Error_Msg_N ("iterated association not implemented yet", N);
+      end if;
 
       return Success;
    end Resolve_Array_Aggregate;

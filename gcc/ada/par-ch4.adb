@@ -1490,7 +1490,14 @@ package body Ch4 is
          --  Assume positional case if comma, right paren, or literal or
          --  identifier or OTHERS follows (the latter cases are missing
          --  comma cases). Also assume positional if a semicolon follows,
-         --  which can happen if there are missing parens
+         --  which can happen if there are missing parens.
+
+         elsif Nkind (Expr_Node) = N_Iterated_Component_Association then
+            if No (Assoc_List) then
+               Assoc_List := New_List (Expr_Node);
+            else
+               Append_To (Assoc_List, Expr_Node);
+            end if;
 
          elsif Token = Tok_Comma
            or else Token = Tok_Right_Paren
@@ -1500,8 +1507,8 @@ package body Ch4 is
          then
             if Present (Assoc_List) then
                Error_Msg_BC -- CODEFIX
-                  ("""='>"" expected (positional association cannot follow " &
-                   "named association)");
+                 ("""='>"" expected (positional association cannot follow "
+                  & "named association)");
             end if;
 
             if No (Expr_List) then

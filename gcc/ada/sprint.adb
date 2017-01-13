@@ -1333,7 +1333,7 @@ package body Sprint is
             Write_Str (" for ");
             Write_Id (Defining_Identifier (Node));
             Write_Str (" in ");
-            Sprint_Bar_List (Choices (Node));
+            Sprint_Bar_List (Discrete_Choices (Node));
             Write_Str (" => ");
             Sprint_Node (Expression (Node));
 

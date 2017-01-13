@@ -366,7 +366,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Formal_Abstract_Subprogram_Declaration
         or else NT (N).Nkind = N_Formal_Concrete_Subprogram_Declaration
         or else NT (N).Nkind = N_Formal_Package_Declaration
-        or else NT (N).Nkind = N_Generic_Association);
+        or else NT (N).Nkind = N_Generic_Association
+        or else NT (N).Nkind = N_Iterated_Component_Association);
       return Flag15 (N);
    end Box_Present;
 
@@ -2201,7 +2202,8 @@ package body Sinfo is
       (N : Node_Id) return List_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Component_Association);
+        or else NT (N).Nkind = N_Component_Association
+        or else NT (N).Nkind = N_Iterated_Component_Association);
       return List2 (N);
    end Loop_Actions;
 
@@ -3665,7 +3667,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Formal_Abstract_Subprogram_Declaration
         or else NT (N).Nkind = N_Formal_Concrete_Subprogram_Declaration
         or else NT (N).Nkind = N_Formal_Package_Declaration
-        or else NT (N).Nkind = N_Generic_Association);
+        or else NT (N).Nkind = N_Generic_Association
+        or else NT (N).Nkind = N_Iterated_Component_Association);
       Set_Flag15 (N, Val);
    end Set_Box_Present;
 
@@ -5491,7 +5494,8 @@ package body Sinfo is
       (N : Node_Id; Val : List_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Component_Association);
+        or else NT (N).Nkind = N_Component_Association
+        or else NT (N).Nkind = N_Iterated_Component_Association);
       Set_List2 (N, Val); -- semantic field, no parent set
    end Set_Loop_Actions;
 
