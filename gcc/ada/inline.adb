@@ -3200,17 +3200,12 @@ package body Inline is
                then
                   pragma Assert (not (Is_By_Reference_Type (Etype (A))));
                   pragma Assert (not (Is_Limited_Type (Etype (A))));
-                  Decl :=
+                  Append_To (Decls,
                     Make_Object_Declaration (Loc,
-                      Defining_Identifier => Temp,
+                      Defining_Identifier => Make_Temporary (Loc, 'C'),
                       Constant_Present    => True,
                       Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
-                      Expression          => New_Copy_Tree (New_A));
-                  Append (Decl, Decls);
-
-                  --  Create another name for the renaming
-
-                  Temp := Make_Temporary (Loc, 'C');
+                      Expression          => New_Copy_Tree (New_A)));
                end if;
 
                Decl :=

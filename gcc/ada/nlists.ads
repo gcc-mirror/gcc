@@ -302,13 +302,13 @@ package Nlists is
    --  Like Prepend_List, but arguments are the other way round
 
    procedure Prepend_New (Node : Node_Or_Entity_Id; To : in out List_Id);
-   pragma Inline (Append_New);
+   pragma Inline (Prepend_New);
    --  Prepends Node at the end of node list To. If To is non-existent list, a
    --  list is created. Node must be a non-empty node that is not already a
    --  member of a node list, and To must be a node list.
 
    procedure Prepend_New_To (To : in out List_Id; Node : Node_Or_Entity_Id);
-   pragma Inline (Append_New_To);
+   pragma Inline (Prepend_New_To);
    --  Like Prepend_New, but the arguments are in reverse order
 
    procedure Prepend_To
