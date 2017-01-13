@@ -1,5 +1,8 @@
 2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/profile/base.h: Remove unused header that leads to header
+	cycle in C++17 mode.
+
 	PR libstdc++/79075
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI] (basic_string):
 	Make _If_sv private.

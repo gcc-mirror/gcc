@@ -31,7 +31,6 @@
 #ifndef _GLIBCXX_PROFILE_BASE_H
 #define _GLIBCXX_PROFILE_BASE_H 1
 
-#include <functional>
 #include <profile/impl/profiler.h>
 
 // Profiling mode namespaces.
