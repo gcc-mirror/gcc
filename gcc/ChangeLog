@@ -1,5 +1,15 @@
 2017-01-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hash-table.h (hash_table::too_empty_p): New function.
+	(hash_table::expand): Use it.
+	(hash_table::traverse): Likewise.
+	(hash_table::empty_slot): Use sizeof (value_type) instead of
+	sizeof (PTR) to convert bytes to elements.  Shrink the table
+	if the current size is excessive for the current number of
+	elements.
+
+2017-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ira-costs.c (record_reg_classes): Break from the inner loop
 	early once alt_fail is known to be true.  Update outer loop
 	handling accordingly.
