@@ -1,5 +1,28 @@
 2017-01-13  Jeff Law  <law@redhat.com>
 
+        PR tree-optimization/33562
+        PR tree-optimization/61912
+        PR tree-optimization/77485
+	* doc/invoke.texi: Document new dse-max-object-size param.
+	* params.def (PARM_DSE_MAX_OBJECT_SIZE): New PARAM.
+	* tree-ssa-dse.c: Include params.h.
+	(dse_store_status): New enum.
+	(initialize_ao_ref_for_dse): New, partially extracted from
+	dse_optimize_stmt.
+	(valid_ao_ref_for_dse, normalize_ref): New.
+	(setup_live_bytes_from_ref, compute_trims): Likewise.
+	(clear_bytes_written_by, maybe_trim_complex_store): Likewise.
+	(maybe_trim_partially_dead_store): Likewise.
+	(maybe_trim_complex_store): Likewise.
+	(dse_classify_store): Renamed from dse_possibly_dead_store_p.
+	Track what bytes live from the original store.  Return tri-state
+	for dead, partially dead or live.
+	(dse_dom_walker): Add constructor, destructor and new private members.
+	(delete_dead_call, delete_dead_assignment): New extracted from
+	dse_optimize_stmt.
+	(dse_optimize_stmt): Make a member of dse_dom_walker.
+	Use initialize_ao_ref_for_dse.
+
 	PR tree-optimization/33562
 	PR tree-optimization/61912
 	PR tree-optimization/77485

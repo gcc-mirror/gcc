@@ -532,6 +532,11 @@ DEFPARAM(PARAM_AVG_LOOP_NITER,
 	 "Average number of iterations of a loop.",
 	 10, 1, 0)
 
+DEFPARAM(PARAM_DSE_MAX_OBJECT_SIZE,
+	 "dse-max-object-size",
+	 "Maximum size (in bytes) of objects tracked bytewise by dead store elimination.",
+	 256, 0, 0)
+
 DEFPARAM(PARAM_SCEV_MAX_EXPR_SIZE,
  	 "scev-max-expr-size",
 	 "Bound on size of expressions used in the scalar evolutions analyzer.",
