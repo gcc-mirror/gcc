@@ -1,3 +1,8 @@
+2017-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/funcspec-56.inc: Add missing options and
+	reorder options by implied ISAs, as in ix86_target_string.
+
 2017-01-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/71166
