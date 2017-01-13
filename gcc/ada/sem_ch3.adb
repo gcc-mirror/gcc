@@ -2178,6 +2178,10 @@ package body Sem_Ch3 is
       --  If the states have visible refinement, remove the visibility of each
       --  constituent at the end of the package body declaration.
 
+      procedure Resolve_Aspects;
+      --  Utility to resolve the expressions of aspects at the end of a list of
+      --  declarations.
+
       -----------------
       -- Adjust_Decl --
       -----------------
@@ -2369,6 +2373,21 @@ package body Sem_Ch3 is
          end if;
       end Remove_Visible_Refinements;
 
+      ---------------------
+      -- Resolve_Aspects --
+      ---------------------
+
+      procedure Resolve_Aspects is
+         E : Entity_Id;
+
+      begin
+         E := First_Entity (Current_Scope);
+         while Present (E) loop
+            Resolve_Aspect_Expressions (E);
+            Next_Entity (E);
+         end loop;
+      end Resolve_Aspects;
+
       --  Local variables
 
       Context     : Node_Id   := Empty;
@@ -2451,13 +2470,31 @@ package body Sem_Ch3 is
               and then not Is_Child_Unit (Current_Scope)
               and then No (Generic_Parent (Parent (L)))
             then
-               null;
+               --  This is needed in all cases to catch visibility errors in
+               --  aspect expressions, but several large user tests are now
+               --  rejected. Pending notification we restrict this call to
+               --  ASIS mode.
+
+               if ASIS_Mode then
+                  Resolve_Aspects;
+               end if;
 
             elsif L /= Visible_Declarations (Parent (L))
               or else No (Private_Declarations (Parent (L)))
               or else Is_Empty_List (Private_Declarations (Parent (L)))
             then
                Adjust_Decl;
+
+               --  In compilation mode the expansion of freeze node takes care
+               --  of resolving expressions of all aspects in the list. In ASIS
+               --  mode this must be done explicitly.
+
+               if ASIS_Mode
+                 and then Scope (Current_Scope) = Standard_Standard
+               then
+                  Resolve_Aspects;
+               end if;
+
                Freeze_All (First_Entity (Current_Scope), Decl);
                Freeze_From := Last_Entity (Current_Scope);
 
@@ -2473,16 +2510,7 @@ package body Sem_Ch3 is
             --  pragmas do not appear in the original generic tree.
 
             elsif Serious_Errors_Detected = 0 then
-               declare
-                  E : Entity_Id;
-
-               begin
-                  E := First_Entity (Current_Scope);
-                  while Present (E) loop
-                     Resolve_Aspect_Expressions (E);
-                     Next_Entity (E);
-                  end loop;
-               end;
+               Resolve_Aspects;
             end if;
 
          --  If next node is a body then freeze all types before the body.

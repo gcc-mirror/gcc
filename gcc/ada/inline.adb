@@ -1223,7 +1223,7 @@ package body Inline is
            and then not Same_Type (Etype (F), Etype (A))
            and then
              (Is_By_Reference_Type (Etype (A))
-              or else Is_Limited_Type (Etype (A)))
+               or else Is_Limited_Type (Etype (A)))
          then
             return False;
          end if;
@@ -1234,139 +1234,6 @@ package body Inline is
 
       return True;
    end Call_Can_Be_Inlined_In_GNATprove_Mode;
-
-   -------------------
-   -- Cannot_Inline --
-   -------------------
-
-   procedure Cannot_Inline
-     (Msg        : String;
-      N          : Node_Id;
-      Subp       : Entity_Id;
-      Is_Serious : Boolean := False)
-   is
-   begin
-      --  In GNATprove mode, inlining is the technical means by which the
-      --  higher-level goal of contextual analysis is reached, so issue
-      --  messages about failure to apply contextual analysis to a
-      --  subprogram, rather than failure to inline it.
-
-      if GNATprove_Mode
-        and then Msg (Msg'First .. Msg'First + 12) = "cannot inline"
-      then
-         declare
-            Len1 : constant Positive :=
-              String (String'("cannot inline"))'Length;
-            Len2 : constant Positive :=
-              String (String'("info: no contextual analysis of"))'Length;
-
-            New_Msg : String (1 .. Msg'Length + Len2 - Len1);
-
-         begin
-            New_Msg (1 .. Len2) := "info: no contextual analysis of";
-            New_Msg (Len2 + 1 .. Msg'Length + Len2 - Len1) :=
-              Msg (Msg'First + Len1 .. Msg'Last);
-            Cannot_Inline (New_Msg, N, Subp, Is_Serious);
-            return;
-         end;
-      end if;
-
-      pragma Assert (Msg (Msg'Last) = '?');
-
-      --  Legacy front end inlining model
-
-      if not Back_End_Inlining then
-
-         --  Do not emit warning if this is a predefined unit which is not
-         --  the main unit. With validity checks enabled, some predefined
-         --  subprograms may contain nested subprograms and become ineligible
-         --  for inlining.
-
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
-           and then not In_Extended_Main_Source_Unit (Subp)
-         then
-            null;
-
-         --  In GNATprove mode, issue a warning, and indicate that the
-         --  subprogram is not always inlined by setting flag Is_Inlined_Always
-         --  to False.
-
-         elsif GNATprove_Mode then
-            Set_Is_Inlined_Always (Subp, False);
-            Error_Msg_NE (Msg & "p?", N, Subp);
-
-         elsif Has_Pragma_Inline_Always (Subp) then
-
-            --  Remove last character (question mark) to make this into an
-            --  error, because the Inline_Always pragma cannot be obeyed.
-
-            Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
-
-         elsif Ineffective_Inline_Warnings then
-            Error_Msg_NE (Msg & "p?", N, Subp);
-         end if;
-
-      --  New semantics relying on back end inlining
-
-      elsif Is_Serious then
-
-         --  Remove last character (question mark) to make this into an error.
-
-         Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
-
-      --  In GNATprove mode, issue a warning, and indicate that the subprogram
-      --  is not always inlined by setting flag Is_Inlined_Always to False.
-
-      elsif GNATprove_Mode then
-         Set_Is_Inlined_Always (Subp, False);
-         Error_Msg_NE (Msg & "p?", N, Subp);
-
-      else
-
-         --  Do not emit warning if this is a predefined unit which is not
-         --  the main unit. This behavior is currently provided for backward
-         --  compatibility but it will be removed when we enforce the
-         --  strictness of the new rules.
-
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
-           and then not In_Extended_Main_Source_Unit (Subp)
-         then
-            null;
-
-         elsif Has_Pragma_Inline_Always (Subp) then
-
-            --  Emit a warning if this is a call to a runtime subprogram
-            --  which is located inside a generic. Previously this call
-            --  was silently skipped.
-
-            if Is_Generic_Instance (Subp) then
-               declare
-                  Gen_P : constant Entity_Id := Generic_Parent (Parent (Subp));
-               begin
-                  if Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Gen_P)))
-                  then
-                     Set_Is_Inlined (Subp, False);
-                     Error_Msg_NE (Msg & "p?", N, Subp);
-                     return;
-                  end if;
-               end;
-            end if;
-
-            --  Remove last character (question mark) to make this into an
-            --  error, because the Inline_Always pragma cannot be obeyed.
-
-            Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
-
-         else
-            Set_Is_Inlined (Subp, False);
-
-            if Ineffective_Inline_Warnings then
-               Error_Msg_NE (Msg & "p?", N, Subp);
-            end if;
-         end if;
-      end if;
-   end Cannot_Inline;
 
    --------------------------------------
    -- Can_Be_Inlined_In_GNATprove_Mode --
@@ -1521,7 +1388,8 @@ package body Inline is
 
       --  Local declarations
 
-      Id : Entity_Id;  --  Procedure or function entity for the subprogram
+      Id : Entity_Id;
+      --  Procedure or function entity for the subprogram
 
    --  Start of processing for Can_Be_Inlined_In_GNATprove_Mode
 
@@ -1623,6 +1491,139 @@ package body Inline is
          return True;
       end if;
    end Can_Be_Inlined_In_GNATprove_Mode;
+
+   -------------------
+   -- Cannot_Inline --
+   -------------------
+
+   procedure Cannot_Inline
+     (Msg        : String;
+      N          : Node_Id;
+      Subp       : Entity_Id;
+      Is_Serious : Boolean := False)
+   is
+   begin
+      --  In GNATprove mode, inlining is the technical means by which the
+      --  higher-level goal of contextual analysis is reached, so issue
+      --  messages about failure to apply contextual analysis to a
+      --  subprogram, rather than failure to inline it.
+
+      if GNATprove_Mode
+        and then Msg (Msg'First .. Msg'First + 12) = "cannot inline"
+      then
+         declare
+            Len1 : constant Positive :=
+              String (String'("cannot inline"))'Length;
+            Len2 : constant Positive :=
+              String (String'("info: no contextual analysis of"))'Length;
+
+            New_Msg : String (1 .. Msg'Length + Len2 - Len1);
+
+         begin
+            New_Msg (1 .. Len2) := "info: no contextual analysis of";
+            New_Msg (Len2 + 1 .. Msg'Length + Len2 - Len1) :=
+              Msg (Msg'First + Len1 .. Msg'Last);
+            Cannot_Inline (New_Msg, N, Subp, Is_Serious);
+            return;
+         end;
+      end if;
+
+      pragma Assert (Msg (Msg'Last) = '?');
+
+      --  Legacy front end inlining model
+
+      if not Back_End_Inlining then
+
+         --  Do not emit warning if this is a predefined unit which is not
+         --  the main unit. With validity checks enabled, some predefined
+         --  subprograms may contain nested subprograms and become ineligible
+         --  for inlining.
+
+         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+           and then not In_Extended_Main_Source_Unit (Subp)
+         then
+            null;
+
+         --  In GNATprove mode, issue a warning, and indicate that the
+         --  subprogram is not always inlined by setting flag Is_Inlined_Always
+         --  to False.
+
+         elsif GNATprove_Mode then
+            Set_Is_Inlined_Always (Subp, False);
+            Error_Msg_NE (Msg & "p?", N, Subp);
+
+         elsif Has_Pragma_Inline_Always (Subp) then
+
+            --  Remove last character (question mark) to make this into an
+            --  error, because the Inline_Always pragma cannot be obeyed.
+
+            Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
+
+         elsif Ineffective_Inline_Warnings then
+            Error_Msg_NE (Msg & "p?", N, Subp);
+         end if;
+
+      --  New semantics relying on back end inlining
+
+      elsif Is_Serious then
+
+         --  Remove last character (question mark) to make this into an error.
+
+         Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
+
+      --  In GNATprove mode, issue a warning, and indicate that the subprogram
+      --  is not always inlined by setting flag Is_Inlined_Always to False.
+
+      elsif GNATprove_Mode then
+         Set_Is_Inlined_Always (Subp, False);
+         Error_Msg_NE (Msg & "p?", N, Subp);
+
+      else
+
+         --  Do not emit warning if this is a predefined unit which is not
+         --  the main unit. This behavior is currently provided for backward
+         --  compatibility but it will be removed when we enforce the
+         --  strictness of the new rules.
+
+         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+           and then not In_Extended_Main_Source_Unit (Subp)
+         then
+            null;
+
+         elsif Has_Pragma_Inline_Always (Subp) then
+
+            --  Emit a warning if this is a call to a runtime subprogram
+            --  which is located inside a generic. Previously this call
+            --  was silently skipped.
+
+            if Is_Generic_Instance (Subp) then
+               declare
+                  Gen_P : constant Entity_Id := Generic_Parent (Parent (Subp));
+               begin
+                  if Is_Predefined_File_Name
+                       (Unit_File_Name (Get_Source_Unit (Gen_P)))
+                  then
+                     Set_Is_Inlined (Subp, False);
+                     Error_Msg_NE (Msg & "p?", N, Subp);
+                     return;
+                  end if;
+               end;
+            end if;
+
+            --  Remove last character (question mark) to make this into an
+            --  error, because the Inline_Always pragma cannot be obeyed.
+
+            Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
+
+         else
+            Set_Is_Inlined (Subp, False);
+
+            if Ineffective_Inline_Warnings then
+               Error_Msg_NE (Msg & "p?", N, Subp);
+            end if;
+         end if;
+      end if;
+   end Cannot_Inline;
 
    --------------------------------------------
    -- Check_And_Split_Unconstrained_Function --
@@ -3102,8 +3103,8 @@ package body Inline is
 
          if (Is_Entity_Name (A)
               and then
-               (not Is_Scalar_Type (Etype (A))
-                 or else Ekind (Entity (A)) = E_Enumeration_Literal)
+                (not Is_Scalar_Type (Etype (A))
+                  or else Ekind (Entity (A)) = E_Enumeration_Literal)
               and then not GNATprove_Mode)
 
          --  When the actual is an identifier and the corresponding formal is
@@ -3112,9 +3113,10 @@ package body Inline is
          --  GNATprove mode, to make sure any check on a type conversion
          --  will be issued.
 
-           or else (Nkind (A) = N_Identifier
-             and then Formal_Is_Used_Once (F)
-             and then not GNATprove_Mode)
+           or else
+             (Nkind (A) = N_Identifier
+               and then Formal_Is_Used_Once (F)
+               and then not GNATprove_Mode)
 
            or else
              (Nkind_In (A, N_Real_Literal,
@@ -4210,7 +4212,8 @@ package body Inline is
                                                 Name_Refined_Post,
                                                 Name_Test_Case,
                                                 Name_Unmodified,
-                                                Name_Unreferenced)
+                                                Name_Unreferenced,
+                                                Name_Unused)
             then
                Remove (Item);
             end if;
@@ -4224,6 +4227,11 @@ package body Inline is
    begin
       Remove_Items (Aspect_Specifications (Body_Decl));
       Remove_Items (Declarations          (Body_Decl));
+
+      --  Pragmas Unmodified, Unreferenced and Unused may additionally appear
+      --  in the body of the subprogram.
+
+      Remove_Items (Statements (Handled_Statement_Sequence (Body_Decl)));
    end Remove_Aspects_And_Pragmas;
 
    --------------------------
