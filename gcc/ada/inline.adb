@@ -1149,7 +1149,7 @@ package body Inline is
          Make_Defining_Identifier (Sloc (N), Name_uParent));
       Set_Corresponding_Spec (Original_Body, Empty);
 
-      --  Remove all aspects/pragmas that have no meaining in an inlined body
+      --  Remove all aspects/pragmas that have no meaning in an inlined body
 
       Remove_Aspects_And_Pragmas (Original_Body);
 
@@ -1203,6 +1203,37 @@ package body Inline is
       Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
       Set_Is_Inlined (Spec_Id);
    end Build_Body_To_Inline;
+
+   -------------------------------------------
+   -- Call_Can_Be_Inlined_In_GNATprove_Mode --
+   -------------------------------------------
+
+   function Call_Can_Be_Inlined_In_GNATprove_Mode
+    (N    : Node_Id;
+     Subp : Entity_Id) return Boolean
+   is
+      F : Entity_Id;
+      A : Node_Id;
+
+   begin
+      F := First_Formal (Subp);
+      A := First_Actual (N);
+      while Present (F) loop
+         if Ekind (F) /= E_Out_Parameter
+           and then not Same_Type (Etype (F), Etype (A))
+           and then
+             (Is_By_Reference_Type (Etype (A))
+              or else Is_Limited_Type (Etype (A)))
+         then
+            return False;
+         end if;
+
+         Next_Formal (F);
+         Next_Actual (A);
+      end loop;
+
+      return True;
+   end Call_Can_Be_Inlined_In_GNATprove_Mode;
 
    -------------------
    -- Cannot_Inline --
@@ -1406,8 +1437,8 @@ package body Inline is
          Formal     : Entity_Id;
          Formal_Typ : Entity_Id;
 
-         --  Start of processing for
-         --  Has_Formal_With_Discriminant_Dependent_Component
+      --  Start of processing for
+      --  Has_Formal_With_Discriminant_Dependent_Fields
 
       begin
          --  Inspect all parameters of the subprogram looking for a formal
@@ -3065,19 +3096,25 @@ package body Inline is
 
          --  If the actual is a literal and the formal has its address taken,
          --  we cannot pass the literal itself as an argument, so its value
-         --  must be captured in a temporary.
+         --  must be captured in a temporary. Skip this optimization in
+         --  GNATprove mode, to make sure any check on a type conversion
+         --  will be issued.
 
          if (Is_Entity_Name (A)
               and then
                (not Is_Scalar_Type (Etype (A))
-                 or else Ekind (Entity (A)) = E_Enumeration_Literal))
+                 or else Ekind (Entity (A)) = E_Enumeration_Literal)
+              and then not GNATprove_Mode)
 
          --  When the actual is an identifier and the corresponding formal is
          --  used only once in the original body, the formal can be substituted
-         --  directly with the actual parameter.
+         --  directly with the actual parameter. Skip this optimization in
+         --  GNATprove mode, to make sure any check on a type conversion
+         --  will be issued.
 
            or else (Nkind (A) = N_Identifier
-             and then Formal_Is_Used_Once (F))
+             and then Formal_Is_Used_Once (F)
+             and then not GNATprove_Mode)
 
            or else
              (Nkind_In (A, N_Real_Literal,
@@ -3147,7 +3184,33 @@ package body Inline is
                    Constant_Present    => True,
                    Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
                    Expression          => New_A);
+
             else
+               --  In GNATprove mode, make an explicit copy of input
+               --  parameters when formal and actual types differ, to make
+               --  sure any check on the type conversion will be issued.
+               --  The legality of the copy is ensured by calling first
+               --  Call_Can_Be_Inlined_In_GNATprove_Mode.
+
+               if GNATprove_Mode
+                 and then Ekind (F) /= E_Out_Parameter
+                 and then not Same_Type (Etype (F), Etype (A))
+               then
+                  pragma Assert (not (Is_By_Reference_Type (Etype (A))));
+                  pragma Assert (not (Is_Limited_Type (Etype (A))));
+                  Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Temp,
+                      Constant_Present    => True,
+                      Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
+                      Expression          => New_Copy_Tree (New_A));
+                  Append (Decl, Decls);
+
+                  --  Create another name for the renaming
+
+                  Temp := Make_Temporary (Loc, 'C');
+               end if;
+
                Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Temp,

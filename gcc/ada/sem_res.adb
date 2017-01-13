@@ -6624,6 +6624,14 @@ package body Sem_Res is
                     ("cannot inline & (in potentially unevaluated context)?",
                      N, Nam_UA);
 
+               --  Do not inline calls which would possibly lead to missing a
+               --  type conversion check on an input parameter.
+
+               elsif not Call_Can_Be_Inlined_In_GNATprove_Mode (N, Nam) then
+                  Cannot_Inline
+                    ("cannot inline & (possible check on input parameters)?",
+                     N, Nam_UA);
+
                --  Otherwise, inline the call
 
                else
