@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
 #include "params.h"
+#include "alias.h"
 
 /* This file implements dead store elimination.
 
@@ -271,6 +272,66 @@ maybe_trim_complex_store (ao_ref *ref, sbitmap live, gimple *stmt)
      are live.  We do not try to optimize those cases.  */
 }
 
+/* STMT initializes an object using a CONSTRUCTOR where one or more of the
+   bytes written are dead stores.  ORIG is the bitmap of bytes stored by
+   STMT.  LIVE is the bitmap of stores that are actually live.
+
+   Attempt to rewrite STMT so that only the real or imaginary part of
+   the object is actually stored.
+
+   The most common case for getting here is a CONSTRUCTOR with no elements
+   being used to zero initialize an object.  We do not try to handle other
+   cases as those would force us to fully cover the object with the
+   CONSTRUCTOR node except for the components that are dead.  */
+
+static void
+maybe_trim_constructor_store (ao_ref *ref, sbitmap live, gimple *stmt)
+{
+  tree ctor = gimple_assign_rhs1 (stmt);
+
+  /* This is the only case we currently handle.  It actually seems to
+     catch most cases of actual interest.  */
+  gcc_assert (CONSTRUCTOR_NELTS (ctor) == 0);
+
+  int head_trim = 0;
+  int tail_trim = 0;
+  compute_trims (ref, live, &head_trim, &tail_trim);
+
+  /* Now we want to replace the constructor initializer
+     with memset (object + head_trim, 0, size - head_trim - tail_trim).  */
+  if (head_trim || tail_trim)
+    {
+      /* We want &lhs for the MEM_REF expression.  */
+      tree lhs_addr = build_fold_addr_expr (gimple_assign_lhs (stmt));
+
+      if (! is_gimple_min_invariant (lhs_addr))
+	return;
+
+      /* The number of bytes for the new constructor.  */
+      int count = (ref->size / BITS_PER_UNIT) - head_trim - tail_trim;
+
+      /* And the new type for the CONSTRUCTOR.  Essentially it's just
+	 a char array large enough to cover the non-trimmed parts of
+	 the original CONSTRUCTOR.  Note we want explicit bounds here
+	 so that we know how many bytes to clear when expanding the
+	 CONSTRUCTOR.  */
+      tree type = build_array_type_nelts (char_type_node, count);
+
+      /* Build a suitable alias type rather than using alias set zero
+	 to avoid pessimizing.  */
+      tree alias_type = reference_alias_ptr_type (gimple_assign_lhs (stmt));
+
+      /* Build a MEM_REF representing the whole accessed area, starting
+	 at the first byte not trimmed.  */
+      tree exp = fold_build2 (MEM_REF, type, lhs_addr,
+			      build_int_cst (alias_type, head_trim));
+
+      /* Now update STMT with a new RHS and LHS.  */
+      gimple_assign_set_lhs (stmt, exp);
+      gimple_assign_set_rhs1 (stmt, build_constructor (type, NULL));
+    }
+}
+
 /* STMT is a memory write where one or more bytes written are dead
    stores.  ORIG is the bitmap of bytes stored by STMT.  LIVE is the
    bitmap of stores that are actually live.
@@ -287,6 +348,9 @@ maybe_trim_partially_dead_store (ao_ref *ref, sbitmap live, gimple *stmt)
     {
       switch (gimple_assign_rhs_code (stmt))
 	{
+	case CONSTRUCTOR:
+	  maybe_trim_constructor_store (ref, live, stmt);
+	  break;
 	case COMPLEX_CST:
 	  maybe_trim_complex_store (ref, live, stmt);
 	  break;

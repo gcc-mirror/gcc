@@ -1,8 +1,14 @@
 2017-01-13  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/33562
-        PR tree-optimization/61912
-        PR tree-optimization/77485
+	PR tree-optimization/61912
+	PR tree-optimization/77485
+	* g++.dg/tree-ssa/ssa-dse-1.C: New test.
+	* gcc.dg/tree-ssa/pr30375: Adjust expected output.
+	* gcc.dg/tree-ssa/ssa-dse-24.c: New test.
+
+	PR tree-optimization/33562
+	PR tree-optimization/61912
+	PR tree-optimization/77485
 	* gcc.dg/tree-ssa/complex-4.c: Remove xfail.
 	* gcc.dg/tree-ssa/complex-5.c: Likewise.
 	* gcc.dg/tree-ssa/ssa-dse-9.c: Likewise.
