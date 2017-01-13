@@ -1,3 +1,7 @@
+2017-01-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* inline.adb: Minor reformatting and typo fix.
+
 2017-01-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Choice_List): Move function here
