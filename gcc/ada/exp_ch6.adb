@@ -219,6 +219,10 @@ package body Exp_Ch6 is
    --  reference to the object itself, and the call becomes a call to the
    --  corresponding protected subprogram.
 
+   function Expression_Of_Expression_Function
+     (Subp : Entity_Id) return Node_Id;
+   --  Return the expression of the expression function Subp
+
    function Has_Unconstrained_Access_Discriminants
      (Subtyp : Entity_Id) return Boolean;
    --  Returns True if the given subtype is unconstrained and has one
@@ -3938,6 +3942,14 @@ package body Exp_Ch6 is
          if not Is_Inlined (Subp) then
             null;
 
+         --  Frontend inlining of expression functions (performed also when
+         --  backend inlining is enabled)
+
+         elsif Is_Inlinable_Expression_Function (Subp) then
+            Rewrite (N, New_Copy (Expression_Of_Expression_Function (Subp)));
+            Analyze (N);
+            return;
+
          --  Handle frontend inlining
 
          elsif not Back_End_Inlining then
@@ -6958,6 +6970,36 @@ package body Exp_Ch6 is
       end if;
    end Expand_Simple_Function_Return;
 
+   ---------------------------------------
+   -- Expression_Of_Expression_Function --
+   ---------------------------------------
+
+   function Expression_Of_Expression_Function
+     (Subp : Entity_Id) return Node_Id
+   is
+      Expr_Func : Node_Id;
+
+   begin
+      pragma Assert (Is_Expression_Function_Or_Completion (Subp));
+
+      if Nkind (Original_Node (Subprogram_Spec (Subp)))
+           = N_Expression_Function
+      then
+         Expr_Func := Original_Node (Subprogram_Spec (Subp));
+
+      elsif Nkind (Original_Node (Subprogram_Body (Subp)))
+              = N_Expression_Function
+      then
+         Expr_Func := Original_Node (Subprogram_Body (Subp));
+
+      else
+         pragma Assert (False);
+         null;
+      end if;
+
+      return Original_Node (Expression (Expr_Func));
+   end Expression_Of_Expression_Function;
+
    --------------------------------------------
    -- Has_Unconstrained_Access_Discriminants --
    --------------------------------------------
@@ -7284,6 +7326,39 @@ package body Exp_Ch6 is
          Analyze_Entry_Or_Subprogram_Contract (Subp);
       end if;
    end Freeze_Subprogram;
+
+   --------------------------------------
+   -- Is_Inlinable_Expression_Function --
+   --------------------------------------
+
+   function Is_Inlinable_Expression_Function (Subp : Entity_Id) return Boolean
+   is
+      Return_Expr : Node_Id;
+
+   begin
+      if Is_Expression_Function_Or_Completion (Subp)
+        and then Has_Pragma_Inline_Always (Subp)
+        and then Needs_No_Actuals (Subp)
+        and then No (Contract (Subp))
+        and then not Is_Dispatching_Operation (Subp)
+        and then Needs_Finalization (Etype (Subp))
+        and then not Is_Class_Wide_Type (Etype (Subp))
+        and then not (Has_Invariants (Etype (Subp)))
+        and then Present (Subprogram_Body (Subp))
+        and then Was_Expression_Function (Subprogram_Body (Subp))
+      then
+         Return_Expr := Expression_Of_Expression_Function (Subp);
+
+         --  The returned object must not have a qualified expression and its
+         --  nominal subtype must be statically compatible with the result
+         --  subtype of the expression function.
+
+         return Nkind (Return_Expr) = N_Identifier
+           and then Etype (Return_Expr) = Etype (Subp);
+      end if;
+
+      return False;
+   end Is_Inlinable_Expression_Function;
 
    -----------------------
    -- Is_Null_Procedure --

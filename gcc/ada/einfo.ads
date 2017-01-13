@@ -3647,8 +3647,8 @@ package Einfo is
 --       depends on discriminants. In this case, the Normalized_Position_Max
 --       field represents the maximum possible value of Normalized_Position
 --       assuming min/max values for discriminant subscripts in all fields.
---       This is used by Layout in front end layout mode to properly computed
---       the maximum size such records (needed for allocation purposes when
+--       This is used by Layout in front end layout mode to properly compute
+--       the maximum size of such records (needed for allocation purposes when
 --       there are default discriminants, and also for the 'Size value).
 
 --    Number_Dimensions (synthesized)
