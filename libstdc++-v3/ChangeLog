@@ -1,5 +1,8 @@
 2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Mark
+	XFAIL for C++17 until node reinsertion supports fancy pointers.
+
 	PR libstdc++/78361
 	* testsuite/20_util/add_pointer/value.cc: Test forming function
 	pointers.
