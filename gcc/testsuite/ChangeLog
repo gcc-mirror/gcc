@@ -1,3 +1,10 @@
+2017-01-14  Bernd Schmidt  <bschmidt@redhat.com>
+
+        PR rtl-optimization/78626
+        PR rtl-optimization/78727
+	* gcc.dg/torture/pr78626.c: New test.
+	* gcc.dg/torture/pr78727.c: New test.
+
 2017-01-14  Alan Modra  <amodra@gmail.com>
 
 	* gcc.c-torture/compile/pr72749.c: New test.

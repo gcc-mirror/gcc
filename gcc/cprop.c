@@ -1794,7 +1794,7 @@ one_cprop_pass (void)
   if (set_hash_table.n_elems > 0)
     {
       basic_block bb;
-      rtx_insn *insn;
+      auto_vec<rtx_insn *> uncond_traps;
 
       alloc_cprop_mem (last_basic_block_for_fn (cfun),
 		       set_hash_table.n_elems);
@@ -1810,6 +1810,9 @@ one_cprop_pass (void)
 		      EXIT_BLOCK_PTR_FOR_FN (cfun),
 		      next_bb)
 	{
+	  bool seen_uncond_trap = false;
+	  rtx_insn *insn;
+
 	  /* Reset tables used to keep track of what's still valid [since
 	     the start of the block].  */
 	  reset_opr_set_tables ();
@@ -1817,6 +1820,10 @@ one_cprop_pass (void)
 	  FOR_BB_INSNS (bb, insn)
 	    if (INSN_P (insn))
 	      {
+		bool was_uncond_trap
+		  = (GET_CODE (PATTERN (insn)) == TRAP_IF
+		     && XEXP (PATTERN (insn), 0) == const1_rtx);
+
 		changed |= cprop_insn (insn);
 
 		/* Keep track of everything modified by this insn.  */
@@ -1825,10 +1832,26 @@ one_cprop_pass (void)
 		       insn into a NOTE, or deleted the insn.  */
 		if (! NOTE_P (insn) && ! insn->deleted ())
 		  mark_oprs_set (insn);
+
+		if (!was_uncond_trap && !seen_uncond_trap
+		    && GET_CODE (PATTERN (insn)) == TRAP_IF
+		    && XEXP (PATTERN (insn), 0) == const1_rtx)
+		  {
+		    seen_uncond_trap = true;
+		    uncond_traps.safe_push (insn);
+		  }
 	      }
 	}
 
       changed |= bypass_conditional_jumps ();
+
+      while (!uncond_traps.is_empty ())
+	{
+	  rtx_insn *insn = uncond_traps.pop ();
+	  basic_block to_split = BLOCK_FOR_INSN (insn);
+	  remove_edge (split_block (to_split, insn));
+	  emit_barrier_after_bb (to_split);
+	}
 
       FREE_REG_SET (reg_set_bitmap);
       free_cprop_mem ();

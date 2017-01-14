@@ -1,3 +1,10 @@
+2017-01-14  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/78626
+	PR rtl-optimization/78727
+	* cprop.c (one_cprop_pass): Collect unconditional traps in the middle
+	of a block, and split such blocks after everything else is finished.
+
 2017-01-14  Alan Modra  <amodra@gmail.com>
 
 	PR target/72749
