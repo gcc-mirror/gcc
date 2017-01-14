@@ -600,7 +600,7 @@ private:
   void dse_optimize_stmt (gimple_stmt_iterator *);
 };
 
-/* Delete a dead call STMT, which is mem* call of some kind.  */
+/* Delete a dead call at GSI, which is mem* call of some kind.  */
 static void
 delete_dead_call (gimple_stmt_iterator *gsi)
 {
@@ -633,7 +633,7 @@ delete_dead_call (gimple_stmt_iterator *gsi)
     }
 }
 
-/* Delete a dead store STMT, which is a gimple assignment. */
+/* Delete a dead store at GSI, which is a gimple assignment. */
 
 static void
 delete_dead_assignment (gimple_stmt_iterator *gsi)
