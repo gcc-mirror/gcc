@@ -1,3 +1,14 @@
+2017-01-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/33562
+	PR tree-optimization/61912
+	PR tree-optimization/77485
+	* tree-ssa-dse.c (delete_dead_call): Accept gsi rather than
+	a statement.
+	(delete_dead_assignment): Likewise.
+	(dse_dom_walker::dse_optimize_stmt): Pass in the gsi rather than
+	statement to delete_dead_call and delete_dead_assignment.
+
 2017-01-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/78304
