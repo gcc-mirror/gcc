@@ -108,12 +108,14 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   uint8_type->integer_type()->set_is_byte();
   Named_object* byte_type = Named_object::make_type("byte", NULL, uint8_type,
 						    loc);
+  byte_type->type_value()->set_is_alias();
   this->add_named_type(byte_type->type_value());
 
   // "rune" is an alias for "int32".
   int32_type->integer_type()->set_is_rune();
   Named_object* rune_type = Named_object::make_type("rune", NULL, int32_type,
 						    loc);
+  rune_type->type_value()->set_is_alias();
   this->add_named_type(rune_type->type_value());
 
   this->add_named_type(Type::make_named_bool_type());
@@ -1774,6 +1776,10 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  // defined.
 	  if (rtype->classification() == Type::TYPE_POINTER)
 	    rtype = rtype->points_to();
+
+	  while (rtype->named_type() != NULL
+		 && rtype->named_type()->is_alias())
+	    rtype = rtype->named_type()->real_type();
 
 	  if (rtype->is_error_type())
 	    ret = Named_object::make_function(name, NULL, function);
@@ -6865,7 +6871,7 @@ Type_declaration::add_method_declaration(const std::string&  name,
   return ret;
 }
 
-// Return whether any methods ere defined.
+// Return whether any methods are defined.
 
 bool
 Type_declaration::has_methods() const
@@ -6878,6 +6884,36 @@ Type_declaration::has_methods() const
 void
 Type_declaration::define_methods(Named_type* nt)
 {
+  if (this->methods_.empty())
+    return;
+
+  while (nt->is_alias())
+    {
+      Type *t = nt->real_type()->forwarded();
+      if (t->named_type() != NULL)
+	nt = t->named_type();
+      else if (t->forward_declaration_type() != NULL)
+	{
+	  Named_object* no = t->forward_declaration_type()->named_object();
+	  Type_declaration* td = no->type_declaration_value();
+	  td->methods_.insert(td->methods_.end(), this->methods_.begin(),
+			      this->methods_.end());
+	  this->methods_.clear();
+	  return;
+	}
+      else
+	{
+	  for (std::vector<Named_object*>::const_iterator p =
+		 this->methods_.begin();
+	       p != this->methods_.end();
+	       ++p)
+	    go_error_at((*p)->location(),
+			("invalid receiver type "
+			 "(receiver must be a named type"));
+	  return;
+	}
+    }
+
   for (std::vector<Named_object*>::const_iterator p = this->methods_.begin();
        p != this->methods_.end();
        ++p)

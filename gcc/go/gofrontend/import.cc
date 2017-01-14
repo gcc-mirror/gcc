@@ -737,6 +737,13 @@ Import::read_type()
 
   this->require_c_string(" ");
 
+  bool is_alias = false;
+  if (this->match_c_string("= "))
+    {
+      stream->advance(2);
+      is_alias = true;
+    }
+
   // The package name may follow.  This is the name of the package in
   // the package clause of that package.  The type name will include
   // the pkgpath, which may be different.
@@ -809,6 +816,9 @@ Import::read_type()
 
 	  // This type has not yet been imported.
 	  ntype->clear_is_visible();
+
+	  if (is_alias)
+	    ntype->set_is_alias();
 
 	  if (!type->is_undefined() && type->interface_type() != NULL)
 	    this->gogo_->record_interface_type(type->interface_type());

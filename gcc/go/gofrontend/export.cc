@@ -608,6 +608,9 @@ Export::write_type(const Type* type)
       // definition of the type may refer to the named type via a
       // pointer.
       this->type_refs_[type] = index;
+
+      if (named_type != NULL && named_type->is_alias())
+	this->write_c_string("= ");
     }
 
   type->export_type(this);
