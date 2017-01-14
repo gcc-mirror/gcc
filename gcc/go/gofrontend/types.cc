@@ -328,10 +328,10 @@ Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
   t2 = t2->forwarded();
 
   // Ignore aliases for purposes of type identity.
-  if (t1->named_type() != NULL && t1->named_type()->is_alias())
-    t1 = t1->named_type()->real_type();
-  if (t2->named_type() != NULL && t2->named_type()->is_alias())
-    t2 = t2->named_type()->real_type();
+  while (t1->named_type() != NULL && t1->named_type()->is_alias())
+    t1 = t1->named_type()->real_type()->forwarded();
+  while (t2->named_type() != NULL && t2->named_type()->is_alias())
+    t2 = t2->named_type()->real_type()->forwarded();
 
   if (t1 == t2)
     return true;
@@ -822,6 +822,8 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 unsigned int
 Type::hash_for_method(Gogo* gogo) const
 {
+  if (this->named_type() != NULL && this->named_type()->is_alias())
+    return this->named_type()->real_type()->hash_for_method(gogo);
   unsigned int ret = 0;
   if (this->classification_ != TYPE_FORWARD)
     ret += this->classification_;
@@ -1165,8 +1167,8 @@ Bexpression*
 Type::type_descriptor_pointer(Gogo* gogo, Location location)
 {
   Type* t = this->forwarded();
-  if (t->named_type() != NULL && t->named_type()->is_alias())
-    t = t->named_type()->real_type();
+  while (t->named_type() != NULL && t->named_type()->is_alias())
+    t = t->named_type()->real_type()->forwarded();
   if (t->type_descriptor_var_ == NULL)
     {
       t->make_type_descriptor_var(gogo);
@@ -1585,6 +1587,9 @@ Type::make_type_descriptor_ptr_type()
 bool
 Type::needs_specific_type_functions(Gogo* gogo)
 {
+  Named_type* nt = this->named_type();
+  if (nt != NULL && nt->is_alias())
+    return false;
   if (!this->is_comparable())
     return false;
   if (!this->compare_is_identity(gogo))
@@ -1593,7 +1598,6 @@ Type::needs_specific_type_functions(Gogo* gogo)
   // We create a few predeclared types for type descriptors; they are
   // really just for the backend and don't need hash or equality
   // functions.
-  Named_type* nt = this->named_type();
   if (nt != NULL && Linemap::is_predeclared_location(nt->location()))
     return false;
 
@@ -1634,6 +1638,11 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 		     Function_type* equal_fntype, Named_object** hash_fn,
 		     Named_object** equal_fn)
 {
+  // If this loop leaves NAME as NULL, then the type does not have a
+  // name after all.
+  while (name != NULL && name->is_alias())
+    name = name->real_type()->named_type();
+
   if (!this->is_comparable())
     {
       *hash_fn = NULL;
@@ -2164,6 +2173,11 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
   Location bloc = Linemap::predeclared_location();
 
   Named_type* base_type = name->real_type()->named_type();
+  while (base_type->is_alias())
+    {
+      base_type = base_type->real_type()->named_type();
+      go_assert(base_type != NULL);
+    }
   go_assert(base_type != NULL);
 
   // The pointer to the type we are going to hash.  This is an
@@ -2371,8 +2385,8 @@ Bexpression*
 Type::gc_symbol_pointer(Gogo* gogo)
 {
   Type* t = this->forwarded();
-  if (t->named_type() != NULL && t->named_type()->is_alias())
-    t = t->named_type()->real_type();
+  while (t->named_type() != NULL && t->named_type()->is_alias())
+    t = t->named_type()->real_type()->forwarded();
   if (t->gc_symbol_var_ == NULL)
     {
       t->make_gc_symbol_var(gogo);
@@ -4857,7 +4871,10 @@ Struct_field::field_name() const
       if (dt->forward_declaration_type() != NULL)
 	return dt->forward_declaration_type()->name();
       else if (dt->named_type() != NULL)
-	return dt->named_type()->name();
+	{
+	  // Note that this can be an alias name.
+	  return dt->named_type()->name();
+	}
       else if (t->is_error_type() || dt->is_error_type())
 	{
 	  static const std::string error_string = "*error*";
@@ -5786,7 +5803,12 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
       else
 	ret->append(Gogo::unpack_hidden_name(p->field_name()));
       ret->push_back(' ');
-      this->append_reflection(p->type(), gogo, ret);
+      if (p->is_anonymous()
+	  && p->type()->named_type() != NULL
+	  && p->type()->named_type()->is_alias())
+	p->type()->named_type()->append_reflection_type_name(gogo, true, ret);
+      else
+	this->append_reflection(p->type(), gogo, ret);
 
       if (p->has_tag())
 	{
@@ -5866,7 +5888,15 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	      ret->append(buf);
 	      ret->append(n);
 	    }
-	  this->append_mangled_name(p->type(), gogo, ret);
+
+	  // For an anonymous field with an alias type, the field name
+	  // is the alias name.
+	  if (p->is_anonymous()
+	      && p->type()->named_type() != NULL
+	      && p->type()->named_type()->is_alias())
+	    p->type()->named_type()->append_mangled_type_name(gogo, true, ret);
+	  else
+	    this->append_mangled_name(p->type(), gogo, ret);
 	  if (p->has_tag())
 	    {
 	      const std::string& tag(p->tag());
@@ -9313,18 +9343,6 @@ Named_type::message_name() const
   return this->named_object_->message_name();
 }
 
-// Whether this is an alias.  There are currently only two aliases so
-// we just recognize them by name.
-
-bool
-Named_type::is_alias() const
-{
-  if (!this->is_builtin())
-    return false;
-  const std::string& name(this->name());
-  return name == "byte" || name == "rune";
-}
-
 // Return the base type for this type.  We have to be careful about
 // circular type definitions, which are invalid but may be seen here.
 
@@ -9384,6 +9402,7 @@ Named_type::named_type_is_comparable(std::string* reason) const
 Named_object*
 Named_type::add_method(const std::string& name, Function* function)
 {
+  go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
   return this->local_methods_->add_function(name, NULL, function);
@@ -9396,6 +9415,7 @@ Named_type::add_method_declaration(const std::string& name, Package* package,
 				   Function_type* type,
 				   Location location)
 {
+  go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
   return this->local_methods_->add_function_declaration(name, package, type,
@@ -9407,6 +9427,7 @@ Named_type::add_method_declaration(const std::string& name, Package* package,
 void
 Named_type::add_existing_method(Named_object* no)
 {
+  go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
   this->local_methods_->add_named_object(no);
@@ -9418,9 +9439,49 @@ Named_type::add_existing_method(Named_object* no)
 Named_object*
 Named_type::find_local_method(const std::string& name) const
 {
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      Named_type* nt = this->type_->named_type();
+      if (nt != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  Named_object* ret = nt->find_local_method(name);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      return NULL;
+    }
   if (this->local_methods_ == NULL)
     return NULL;
   return this->local_methods_->lookup(name);
+}
+
+// Return the list of local methods.
+
+const Bindings*
+Named_type::local_methods() const
+{
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      Named_type* nt = this->type_->named_type();
+      if (nt != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  const Bindings* ret = nt->local_methods();
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      return NULL;
+    }
+  return this->local_methods_;
 }
 
 // Return whether NAME is an unexported field or method, for better
@@ -9430,6 +9491,22 @@ bool
 Named_type::is_unexported_local_method(Gogo* gogo,
 				       const std::string& name) const
 {
+  if (this->is_error_)
+    return false;
+  if (this->is_alias_)
+    {
+      Named_type* nt = this->type_->named_type();
+      if (nt != NULL)
+	{
+	  if (this->seen_alias_)
+	    return false;
+	  this->seen_alias_ = true;
+	  bool ret = nt->is_unexported_local_method(gogo, name);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      return false;
+    }
   Bindings* methods = this->local_methods_;
   if (methods != NULL)
     {
@@ -9454,6 +9531,8 @@ Named_type::is_unexported_local_method(Gogo* gogo,
 void
 Named_type::finalize_methods(Gogo* gogo)
 {
+  if (this->is_alias_)
+    return;
   if (this->all_methods_ != NULL)
     return;
 
@@ -9474,6 +9553,56 @@ Named_type::finalize_methods(Gogo* gogo)
   Type::finalize_methods(gogo, this, this->location_, &this->all_methods_);
 }
 
+// Return whether this type has any methods.
+
+bool
+Named_type::has_any_methods() const
+{
+  if (this->is_error_)
+    return false;
+  if (this->is_alias_)
+    {
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return false;
+	  this->seen_alias_ = true;
+	  bool ret = this->type_->named_type()->has_any_methods();
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->has_any_methods();
+      return false;
+    }
+  return this->all_methods_ != NULL;
+}
+
+// Return the methods for this type.
+
+const Methods*
+Named_type::methods() const
+{
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  const Methods* ret = this->type_->named_type()->methods();
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->methods();
+      return NULL;
+    }
+  return this->all_methods_;
+}
+
 // Return the method NAME, or NULL if there isn't one or if it is
 // ambiguous.  Set *IS_AMBIGUOUS if the method exists but is
 // ambiguous.
@@ -9481,6 +9610,26 @@ Named_type::finalize_methods(Gogo* gogo)
 Method*
 Named_type::method_function(const std::string& name, bool* is_ambiguous) const
 {
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      if (is_ambiguous != NULL)
+	*is_ambiguous = false;
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  Named_type* nt = this->type_->named_type();
+	  Method* ret = nt->method_function(name, is_ambiguous);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->method_function(name, is_ambiguous);
+      return NULL;
+    }
   return Type::method_function(this->all_methods_, name, is_ambiguous);
 }
 
@@ -9491,6 +9640,25 @@ Named_type::method_function(const std::string& name, bool* is_ambiguous) const
 Expression*
 Named_type::interface_method_table(Interface_type* interface, bool is_pointer)
 {
+  if (this->is_error_)
+    return Expression::make_error(this->location_);
+  if (this->is_alias_)
+    {
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return Expression::make_error(this->location_);
+	  this->seen_alias_ = true;
+	  Named_type* nt = this->type_->named_type();
+	  Expression* ret = nt->interface_method_table(interface, is_pointer);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->interface_method_table(interface,
+								  is_pointer);
+      go_unreachable();
+    }
   return Type::interface_method_table(this, interface, is_pointer,
                                       &this->interface_method_tables_,
                                       &this->pointer_interface_method_tables_);
@@ -9609,6 +9777,55 @@ Find_type_use::type(Type* type)
   return TRAVERSE_CONTINUE;
 }
 
+// Look for a circular reference of an alias.
+
+class Find_alias : public Traverse
+{
+ public:
+  Find_alias(Named_type* find_type)
+    : Traverse(traverse_types),
+      find_type_(find_type), found_(false)
+  { }
+
+  // Whether we found the type.
+  bool
+  found() const
+  { return this->found_; }
+
+ protected:
+  int
+  type(Type*);
+
+ private:
+  // The type we are looking for.
+  Named_type* find_type_;
+  // Whether we found the type.
+  bool found_;
+};
+
+int
+Find_alias::type(Type* type)
+{
+  Named_type* nt = type->named_type();
+  if (nt != NULL)
+    {
+      if (nt == this->find_type_)
+	{
+	  this->found_ = true;
+	  return TRAVERSE_EXIT;
+	}
+
+      // We started from `type T1 = T2`, where T1 is find_type_ and T2
+      // is, perhaps indirectly, the parameter TYPE.  If TYPE is not
+      // an alias itself, it's OK if whatever T2 is defined as refers
+      // to T1.
+      if (!nt->is_alias())
+	return TRAVERSE_SKIP_COMPONENTS;
+    }
+
+  return TRAVERSE_CONTINUE;
+}
+
 // Verify that a named type does not refer to itself.
 
 bool
@@ -9617,6 +9834,22 @@ Named_type::do_verify()
   if (this->is_verified_)
     return true;
   this->is_verified_ = true;
+
+  if (this->is_error_)
+    return false;
+
+  if (this->is_alias_)
+    {
+      Find_alias find(this);
+      Type::traverse(this->type_, &find);
+      if (find.found())
+	{
+	  go_error_at(this->location_, "invalid recursive alias %qs",
+		      this->message_name().c_str());
+	  this->is_error_ = true;
+	  return false;
+	}
+    }
 
   Find_type_use find(this);
   Type::traverse(this->type_, &find);
@@ -9718,8 +9951,11 @@ Named_type::do_needs_key_update()
 unsigned int
 Named_type::do_hash_for_method(Gogo* gogo) const
 {
-  if (this->is_alias())
-    return this->type_->named_type()->do_hash_for_method(gogo);
+  if (this->is_error_)
+    return 0;
+
+  // Aliases are handled in Type::hash_for_method.
+  go_assert(!this->is_alias_);
 
   const std::string& name(this->named_object()->name());
   unsigned int ret = Type::hash_string(name, 0);
@@ -10089,8 +10325,17 @@ Named_type::do_get_backend(Gogo* gogo)
 Expression*
 Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  if (name == NULL && this->is_alias())
-    return this->type_->type_descriptor(gogo, this->type_);
+  if (this->is_error_)
+    return Expression::make_error(this->location_);
+  if (name == NULL && this->is_alias_)
+    {
+      if (this->seen_alias_)
+	return Expression::make_error(this->location_);
+      this->seen_alias_ = true;
+      Expression* ret = this->type_->type_descriptor(gogo, NULL);
+      this->seen_alias_ = false;
+      return ret;
+    }
 
   // If NAME is not NULL, then we don't really want the type
   // descriptor for this type; we want the descriptor for the
@@ -10106,9 +10351,25 @@ Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 void
 Named_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
-  if (this->is_alias())
+  this->append_reflection_type_name(gogo, false, ret);
+}
+
+// Add to the reflection string.  For an alias we normally use the
+// real name, but if USE_ALIAS is true we use the alias name itself.
+
+void
+Named_type::append_reflection_type_name(Gogo* gogo, bool use_alias,
+					std::string* ret) const
+{
+  if (this->is_error_)
+    return;
+  if (this->is_alias_ && !use_alias)
     {
+      if (this->seen_alias_)
+	return;
+      this->seen_alias_ = true;
       this->append_reflection(this->type_, gogo, ret);
+      this->seen_alias_ = false;
       return;
     }
   if (!this->is_builtin())
@@ -10173,9 +10434,25 @@ Named_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
 void
 Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 {
-  if (this->is_alias())
+  this->append_mangled_type_name(gogo, false, ret);
+}
+
+// Get the mangled name.  For an alias we normally get the real name,
+// but if USE_ALIAS is true we use the alias name itself.
+
+void
+Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
+				     std::string* ret) const
+{
+  if (this->is_error_)
+    return;
+  if (this->is_alias_ && !use_alias)
     {
+      if (this->seen_alias_)
+	return;
+      this->seen_alias_ = true;
       this->append_mangled_name(this->type_, gogo, ret);
+      this->seen_alias_ = false;
       return;
     }
   Named_object* no = this->named_object_;
@@ -11392,7 +11669,7 @@ Forward_declaration_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       if (name != NULL)
 	return this->named_type_descriptor(gogo, t, name);
       else
-	return Expression::make_type_descriptor(t, ploc);
+	return Expression::make_error(this->named_object_->location());
     }
 }
 
