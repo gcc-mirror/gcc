@@ -35,7 +35,7 @@ runtime_allocmcache(void)
 	if(rate > 0x3fffffff)	// make 2*rate not overflow
 		rate = 0x3fffffff;
 	if(rate != 0)
-		c->next_sample = runtime_fastrand1() % (2*rate);
+		c->next_sample = runtime_fastrand() % (2*rate);
 
 	return c;
 }

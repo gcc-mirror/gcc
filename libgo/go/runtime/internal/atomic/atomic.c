@@ -33,6 +33,8 @@ uint64_t Load64 (uint64_t *ptr)
 uint64_t
 Load64 (uint64_t *ptr)
 {
+  if (((uintptr_t) ptr & 7) != 0)
+    ptr = NULL;
   return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
 }
 
@@ -63,6 +65,8 @@ int64_t Loadint64 (int64_t *ptr)
 int64_t
 Loadint64 (int64_t *ptr)
 {
+  if (((uintptr_t) ptr & 7) != 0)
+    ptr = NULL;
   return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
 }
 
@@ -83,6 +87,8 @@ uint64_t Xadd64 (uint64_t *ptr, int64_t delta)
 uint64_t
 Xadd64 (uint64_t *ptr, int64_t delta)
 {
+  if (((uintptr_t) ptr & 7) != 0)
+    ptr = NULL;
   return __atomic_add_fetch (ptr, (uint64_t) delta, __ATOMIC_SEQ_CST);
 }
 
@@ -103,6 +109,8 @@ int64_t Xaddint64 (int64_t *ptr, int64_t delta)
 int64_t
 Xaddint64 (int64_t *ptr, int64_t delta)
 {
+  if (((uintptr_t) ptr & 7) != 0)
+    ptr = NULL;
   return __atomic_add_fetch (ptr, delta, __ATOMIC_SEQ_CST);
 }
 
@@ -123,6 +131,8 @@ uint64_t Xchg64 (uint64_t *ptr, uint64_t new)
 uint64_t
 Xchg64 (uint64_t *ptr, uint64_t new)
 {
+  if (((uintptr_t) ptr & 7) != 0)
+    ptr = NULL;
   return __atomic_exchange_n (ptr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -173,6 +183,8 @@ _Bool Cas64 (uint64_t *ptr, uint64_t old, uint64_t new)
 _Bool
 Cas64 (uint64_t *ptr, uint64_t old, uint64_t new)
 {
+  if (((uintptr_t) ptr & 7) != 0)
+    ptr = NULL;
   return __atomic_compare_exchange_n (ptr, &old, new, false, __ATOMIC_SEQ_CST, __ATOMIC_RELAXED);
 }
 
@@ -213,6 +225,8 @@ void Store64 (uint64_t *ptr, uint64_t val)
 void
 Store64 (uint64_t *ptr, uint64_t val)
 {
+  if (((uintptr_t) ptr & 7) != 0)
+    ptr = NULL;
   __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
 }
 

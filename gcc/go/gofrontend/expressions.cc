@@ -7091,7 +7091,7 @@ class Builtin_call_expression : public Call_expression
   Expression* flatten_append(Gogo*, Named_object*, Statement_inserter*);
 
   bool
-  check_int_value(Expression*, bool is_length);
+  check_int_value(Expression*, bool is_length, bool* small);
 
   // A pointer back to the general IR structure.  This avoids a global
   // variable, or passing it around everywhere.
@@ -7462,6 +7462,7 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 
   ++parg;
   Expression* len_arg;
+  bool len_small = false;
   if (parg == args->end())
     {
       if (is_slice)
@@ -7475,17 +7476,18 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
     {
       len_arg = *parg;
       len_arg->determine_type(&int_context);
-      if (!this->check_int_value(len_arg, true))
+      if (!this->check_int_value(len_arg, true, &len_small))
 	return Expression::make_error(this->location());
       ++parg;
     }
 
   Expression* cap_arg = NULL;
+  bool cap_small = false;
   if (is_slice && parg != args->end())
     {
       cap_arg = *parg;
       cap_arg->determine_type(&int_context);
-      if (!this->check_int_value(cap_arg, false))
+      if (!this->check_int_value(cap_arg, false, &cap_small))
 	return Expression::make_error(this->location());
 
       Numeric_constant nclen;
@@ -7526,9 +7528,13 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 	  inserter->insert(temp);
 	  len_arg = Expression::make_temporary_reference(temp, loc);
 	  cap_arg = Expression::make_temporary_reference(temp, loc);
+	  cap_small = len_small;
 	}
-      call = Runtime::make_call(Runtime::MAKESLICE, loc, 3, type_arg,
-				len_arg, cap_arg);
+
+      Runtime::Function code = Runtime::MAKESLICE;
+      if (!len_small || !cap_small)
+	code = Runtime::MAKESLICE64;
+      call = Runtime::make_call(code, loc, 3, type_arg, len_arg, cap_arg);
     }
   else if (is_map)
     {
@@ -7744,11 +7750,14 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 
 // Return whether an expression has an integer value.  Report an error
 // if not.  This is used when handling calls to the predeclared make
-// function.
+// function.  Set *SMALL if the value is known to fit in type "int".
 
 bool
-Builtin_call_expression::check_int_value(Expression* e, bool is_length)
+Builtin_call_expression::check_int_value(Expression* e, bool is_length,
+					 bool *small)
 {
+  *small = false;
+
   Numeric_constant nc;
   if (e->numeric_constant_value(&nc))
     {
@@ -7784,11 +7793,22 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
 	  return false;
 	}
 
+      *small = true;
       return true;
     }
 
   if (e->type()->integer_type() != NULL)
-    return true;
+    {
+      int ebits = e->type()->integer_type()->bits();
+      int intbits = Type::lookup_integer_type("int")->integer_type()->bits();
+
+      // We can treat ebits == intbits as small even for an unsigned
+      // integer type, because we will convert the value to int and
+      // then reject it in the runtime if it is negative.
+      *small = ebits <= intbits;
+
+      return true;
+    }
 
   go_error_at(e->location(), "non-integer %s argument to make",
 	      is_length ? "len" : "cap");

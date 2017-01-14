@@ -297,6 +297,7 @@ Node::op_format() const
 		case Runtime::MAKECHAN:
 		case Runtime::MAKEMAP:
 		case Runtime::MAKESLICE:
+		case Runtime::MAKESLICE64:
 		  op << "make";
 		  break;
 
@@ -418,7 +419,8 @@ Node::is_big(Escape_context* context) const
 	  Func_expression* fn = call->fn()->func_expression();
 	  if (fn != NULL
 	      && fn->is_runtime_function()
-	      && fn->runtime_code() == Runtime::MAKESLICE)
+	      && (fn->runtime_code() == Runtime::MAKESLICE
+		  || fn->runtime_code() == Runtime::MAKESLICE64))
 	    {
 	      // Second argument is length.
 	      Expression_list::iterator p = call->args()->begin();
@@ -1240,6 +1242,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 	      case Runtime::MAKECHAN:
 	      case Runtime::MAKEMAP:
 	      case Runtime::MAKESLICE:
+	      case Runtime::MAKESLICE64:
 	      case Runtime::SLICEBYTETOSTRING:
 	      case Runtime::SLICERUNETOSTRING:
 	      case Runtime::STRINGTOSLICEBYTE:
@@ -1849,6 +1852,7 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 		  case Runtime::MAKECHAN:
 		  case Runtime::MAKEMAP:
 		  case Runtime::MAKESLICE:
+		  case Runtime::MAKESLICE64:
 		    // DST = make(...).
 		  case Runtime::SLICEBYTETOSTRING:
 		    // DST = string([]byte{...}).
@@ -2623,6 +2627,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 		    case Runtime::MAKECHAN:
 		    case Runtime::MAKEMAP:
 		    case Runtime::MAKESLICE:
+		    case Runtime::MAKESLICE64:
 		    case Runtime::SLICEBYTETOSTRING:
 		    case Runtime::SLICERUNETOSTRING:
 		    case Runtime::STRINGTOSLICEBYTE:

@@ -32,28 +32,6 @@ func Ctz32(x uint32) uint32 {
 	return uint32(builtinCtz32(x))
 }
 
-//go:nosplit
-
-// Ctz16 counts trailing (low-order) zeroes,
-// and if all are zero, then 16.
-func Ctz16(x uint16) uint16 {
-	if x == 0 {
-		return 16
-	}
-	return uint16(builtinCtz32(uint32(x)))
-}
-
-//go:nosplit
-
-// Ctz8 counts trailing (low-order) zeroes,
-// and if all are zero, then 8.
-func Ctz8(x uint8) uint8 {
-	if x == 0 {
-		return 8
-	}
-	return uint8(builtinCtz32(uint32(x)))
-}
-
 //extern __builtin_bswap64
 func bswap64(uint64) uint64
 

@@ -12,8 +12,8 @@ import (
 
 // makeFuncImpl is the closure value implementing the function
 // returned by MakeFunc.
+// The first three words are layed out like ffi_go_closure.
 type makeFuncImpl struct {
-	// These first three words are layed out like ffi_go_closure.
 	code    uintptr
 	ffi_cif unsafe.Pointer
 	ffi_fun func(unsafe.Pointer, unsafe.Pointer)

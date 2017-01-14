@@ -9,15 +9,6 @@ package runtime
 
 import "unsafe"
 
-const (
-	// Computed constant. The definition of MaxSmallSize and the
-	// algorithm in msize.go produces some number of different allocation
-	// size classes. NumSizeClasses is that number. It's needed here
-	// because there are static arrays of this length; when msize runs its
-	// size choosing algorithm it double-checks that NumSizeClasses agrees.
-	_NumSizeClasses = 67
-)
-
 type mcachelist struct {
 	list  *mlink
 	nlist uint32
@@ -28,6 +19,8 @@ type mcachelist struct {
 //
 // mcaches are allocated from non-GC'd memory, so any heap pointers
 // must be specially handled.
+//
+//go:notinheap
 type mcache struct {
 	// The following members are accessed on every malloc,
 	// so they are grouped here for better caching.

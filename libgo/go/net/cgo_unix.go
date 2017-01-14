@@ -114,7 +114,15 @@ func cgoLookupPort(ctx context.Context, network, service string) (port int, err 
 }
 
 func cgoLookupServicePort(hints *syscall.Addrinfo, network, service string) (port int, err error) {
-	s := syscall.StringBytePtr(service)
+	s, err := syscall.BytePtrFromString(service)
+	if err != nil {
+		return 0, err
+	}
+	// Lowercase the service name in the memory passed to C.
+	for i := 0; i < len(service); i++ {
+		bp := (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(s)) + uintptr(i)))
+		*bp = lowerASCII(*bp)
+	}
 	var res *syscall.Addrinfo
 	syscall.Entersyscall()
 	gerrno := libc_getaddrinfo(nil, s, hints, &res)

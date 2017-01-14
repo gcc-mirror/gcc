@@ -14,7 +14,7 @@ type mOS struct {
 
 //go:noescape
 //extern _umtx_op
-func sys_umtx_op(addr *uint32, mode int32, val uint32, ptr2, ts *timespec) int32
+func sys_umtx_op(addr *uint32, mode int32, val uint32, uaddr1 uinptr, ts *umtx_time) int32
 
 // FreeBSD's umtx_op syscall is effectively the same as Linux's futex, and
 // thus the code is largely similar. See Linux implementation
@@ -28,14 +28,14 @@ func futexsleep(addr *uint32, val uint32, ns int64) {
 }
 
 func futexsleep1(addr *uint32, val uint32, ns int64) {
-	var tsp *timespec
+	var utp *umtx_time
 	if ns >= 0 {
-		var ts timespec
-		ts.tv_nsec = 0
-		ts.set_sec(int64(timediv(ns, 1000000000, (*int32)(unsafe.Pointer(&ts.tv_nsec)))))
-		tsp = &ts
+		var ut umtx_time
+		ut._clockid = _CLOCK_MONOTONIC
+		ut._timeout.set_sec(int64(timediv(ns, 1000000000, (*int32)(unsafe.Pointer(&ut._timeout.tv_nsec)))))
+		utp = &ut
 	}
-	ret := sys_umtx_op(addr, _UMTX_OP_WAIT_UINT_PRIVATE, val, nil, tsp)
+	ret := sys_umtx_op(addr, _UMTX_OP_WAIT_UINT_PRIVATE, val, unsafe.Sizeof(*utp), utp)
 	if ret >= 0 || ret == -_EINTR {
 		return
 	}
@@ -45,7 +45,7 @@ func futexsleep1(addr *uint32, val uint32, ns int64) {
 
 //go:nosplit
 func futexwakeup(addr *uint32, cnt uint32) {
-	ret := sys_umtx_op(addr, _UMTX_OP_WAKE_PRIVATE, cnt, nil, nil)
+	ret := sys_umtx_op(addr, _UMTX_OP_WAKE_PRIVATE, cnt, 0, nil)
 	if ret >= 0 {
 		return
 	}

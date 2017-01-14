@@ -253,6 +253,7 @@ kickoff(void)
 
 	fn = (void (*)(void*))(g->entry);
 	param = g->param;
+	g->entry = nil;
 	g->param = nil;
 	fn(param);
 	runtime_goexit1();
@@ -391,6 +392,8 @@ static bool exitsyscallfast(void);
 
 extern void setncpu(int32)
   __asm__(GOSYM_PREFIX "runtime.setncpu");
+extern void setpagesize(uintptr_t)
+  __asm__(GOSYM_PREFIX "runtime.setpagesize");
 extern void allgadd(G*)
   __asm__(GOSYM_PREFIX "runtime.allgadd");
 extern void mcommoninit(M*)
@@ -456,6 +459,7 @@ runtime_schedinit(void)
 	Eface i;
 
 	setncpu(runtime_ncpu);
+	setpagesize(getpagesize());
 	runtime_sched = runtime_getsched();
 
 	m = &runtime_m0;
@@ -646,15 +650,17 @@ void*
 runtime_mstart(void* mp)
 {
 	M *m;
+	G *gp;
 
 	m = (M*)mp;
 	g = m->g0;
 	g->m = m;
+	gp = g;
 
 	initcontext();
 
-	g->entry = nil;
-	g->param = nil;
+	gp->entry = nil;
+	gp->param = nil;
 
 	// Record top of stack for use by mcall.
 	// Once we call schedule we're never coming back,
@@ -662,19 +668,24 @@ runtime_mstart(void* mp)
 #ifdef USING_SPLIT_STACK
 	__splitstack_getcontext(&g->stackcontext[0]);
 #else
-	g->gcinitialsp = &mp;
+	gp->gcinitialsp = &mp;
 	// Setting gcstacksize to 0 is a marker meaning that gcinitialsp
 	// is the top of the stack, not the bottom.
-	g->gcstacksize = 0;
-	g->gcnextsp = &mp;
+	gp->gcstacksize = 0;
+	gp->gcnextsp = &mp;
 #endif
-	getcontext(ucontext_arg(&g->context[0]));
+	getcontext(ucontext_arg(&gp->context[0]));
 
-	if(g->entry != nil) {
+	if(gp->traceback != nil)
+		gtraceback(gp);
+
+	if(gp->entry != nil) {
 		// Got here from mcall.
-		void (*pfn)(G*) = (void (*)(G*))g->entry;
-		G* gp = (G*)g->param;
-		pfn(gp);
+		void (*pfn)(G*) = (void (*)(G*))gp->entry;
+		G* gp1 = (G*)gp->param;
+		gp->entry = nil;
+		gp->param = nil;
+		pfn(gp1);
 		*(int*)0x21 = 0x21;
 	}
 	runtime_minit();
@@ -767,27 +778,31 @@ void
 setGContext()
 {
 	int val;
+	G *gp;
 
 	initcontext();
-	g->entry = nil;
-	g->param = nil;
+	gp = g;
+	gp->entry = nil;
+	gp->param = nil;
 #ifdef USING_SPLIT_STACK
-	__splitstack_getcontext(&g->stackcontext[0]);
+	__splitstack_getcontext(&gp->stackcontext[0]);
 	val = 0;
 	__splitstack_block_signals(&val, nil);
 #else
-	g->gcinitialsp = &val;
-	g->gcstack = nil;
-	g->gcstacksize = 0;
-	g->gcnextsp = &val;
+	gp->gcinitialsp = &val;
+	gp->gcstack = nil;
+	gp->gcstacksize = 0;
+	gp->gcnextsp = &val;
 #endif
-	getcontext(ucontext_arg(&g->context[0]));
+	getcontext(ucontext_arg(&gp->context[0]));
 
-	if(g->entry != nil) {
+	if(gp->entry != nil) {
 		// Got here from mcall.
-		void (*pfn)(G*) = (void (*)(G*))g->entry;
-		G* gp = (G*)g->param;
-		pfn(gp);
+		void (*pfn)(G*) = (void (*)(G*))gp->entry;
+		G* gp1 = (G*)gp->param;
+		gp->entry = nil;
+		gp->param = nil;
+		pfn(gp1);
 		*(int*)0x22 = 0x22;
 	}
 }
@@ -1392,6 +1407,7 @@ __go_go(void (*fn)(void*), void* arg)
 			runtime_throw("bad spsize in __go_go");
 		newg->gcnextsp = sp;
 #endif
+		newg->traceback = nil;
 	} else {
 		uintptr malsize;
 

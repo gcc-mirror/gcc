@@ -215,11 +215,14 @@ func TestNonblockRecvRace(t *testing.T) {
 			select {
 			case <-c:
 			default:
-				t.Fatal("chan is not ready")
+				t.Error("chan is not ready")
 			}
 		}()
 		close(c)
 		<-c
+		if t.Failed() {
+			return
+		}
 	}
 }
 
@@ -316,14 +319,16 @@ func TestSelfSelect(t *testing.T) {
 						case c <- p:
 						case v := <-c:
 							if chanCap == 0 && v == p {
-								t.Fatalf("self receive")
+								t.Errorf("self receive")
+								return
 							}
 						}
 					} else {
 						select {
 						case v := <-c:
 							if chanCap == 0 && v == p {
-								t.Fatalf("self receive")
+								t.Errorf("self receive")
+								return
 							}
 						case c <- p:
 						}

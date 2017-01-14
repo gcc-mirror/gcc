@@ -19,10 +19,6 @@
 
 package runtime
 
-// Export temporarily for gccgo's C code to call:
-//go:linkname semacquire runtime.semacquire
-//go:linkname semrelease runtime.semrelease
-
 import (
 	"runtime/internal/atomic"
 	"runtime/internal/sys"
@@ -48,17 +44,22 @@ var semtable [semTabSize]struct {
 
 //go:linkname sync_runtime_Semacquire sync.runtime_Semacquire
 func sync_runtime_Semacquire(addr *uint32) {
-	semacquire(addr, true)
+	semacquire(addr, semaBlockProfile)
 }
 
 //go:linkname net_runtime_Semacquire net.runtime_Semacquire
 func net_runtime_Semacquire(addr *uint32) {
-	semacquire(addr, true)
+	semacquire(addr, semaBlockProfile)
 }
 
 //go:linkname sync_runtime_Semrelease sync.runtime_Semrelease
 func sync_runtime_Semrelease(addr *uint32) {
 	semrelease(addr)
+}
+
+//go:linkname sync_runtime_SemacquireMutex sync.runtime_SemacquireMutex
+func sync_runtime_SemacquireMutex(addr *uint32) {
+	semacquire(addr, semaBlockProfile|semaMutexProfile)
 }
 
 //go:linkname net_runtime_Semrelease net.runtime_Semrelease
@@ -73,8 +74,15 @@ func readyWithTime(s *sudog, traceskip int) {
 	goready(s.g, traceskip)
 }
 
+type semaProfileFlags int
+
+const (
+	semaBlockProfile semaProfileFlags = 1 << iota
+	semaMutexProfile
+)
+
 // Called from runtime.
-func semacquire(addr *uint32, profile bool) {
+func semacquire(addr *uint32, profile semaProfileFlags) {
 	gp := getg()
 	if gp != gp.m.curg {
 		throw("semacquire not on the G stack")
@@ -95,9 +103,16 @@ func semacquire(addr *uint32, profile bool) {
 	root := semroot(addr)
 	t0 := int64(0)
 	s.releasetime = 0
-	if profile && blockprofilerate > 0 {
+	s.acquiretime = 0
+	if profile&semaBlockProfile != 0 && blockprofilerate > 0 {
 		t0 = cputicks()
 		s.releasetime = -1
+	}
+	if profile&semaMutexProfile != 0 && mutexprofilerate > 0 {
+		if t0 == 0 {
+			t0 = cputicks()
+		}
+		s.acquiretime = t0
 	}
 	for {
 		lock(&root.lock)
@@ -150,8 +165,19 @@ func semrelease(addr *uint32) {
 			break
 		}
 	}
-	unlock(&root.lock)
 	if s != nil {
+		if s.acquiretime != 0 {
+			t0 := cputicks()
+			for x := root.head; x != nil; x = x.next {
+				if x.elem == unsafe.Pointer(addr) {
+					x.acquiretime = t0
+				}
+			}
+			mutexevent(t0-s.acquiretime, 3)
+		}
+	}
+	unlock(&root.lock)
+	if s != nil { // May be slow, so unlock first
 		readyWithTime(s, 5)
 	}
 }

@@ -314,7 +314,7 @@ void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
 #define runtime_getcallersp(p) __builtin_frame_address(0)
 void	runtime_mcall(void(*)(G*));
-uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
+uint32	runtime_fastrand(void) __asm__ (GOSYM_PREFIX "runtime.fastrand");
 int32	runtime_timediv(int64, int32, int32*)
   __asm__ (GOSYM_PREFIX "runtime.timediv");
 int32	runtime_round2(int32 x); // round x up to a power of 2.
@@ -506,10 +506,6 @@ void	runtime_newErrorCString(const char*, Eface*)
 /*
  * wrapped for go users
  */
-void	runtime_semacquire(uint32 volatile *, bool)
-     __asm__ (GOSYM_PREFIX "runtime.semacquire");
-void	runtime_semrelease(uint32 volatile *)
-     __asm__ (GOSYM_PREFIX "runtime.semrelease");
 void	runtime_procyield(uint32)
   __asm__(GOSYM_PREFIX "runtime.procyield");
 void	runtime_osyield(void)
@@ -596,3 +592,5 @@ extern void makeMainInitDone(void)
   __asm__ (GOSYM_PREFIX "runtime.makeMainInitDone");
 extern void closeMainInitDone(void)
   __asm__ (GOSYM_PREFIX "runtime.closeMainInitDone");
+extern void typedmemmove(const Type *, void *, const void *)
+  __asm__ (GOSYM_PREFIX "runtime.typedmemmove");

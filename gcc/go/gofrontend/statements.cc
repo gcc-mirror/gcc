@@ -707,8 +707,8 @@ Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       Move_ordered_evals moe(b);
       mie->traverse_subexpressions(&moe);
 
-      // Copy key and value into temporaries so that we can take their
-      // address without pushing the value onto the heap.
+      // Copy the key into a temporary so that we can take its address
+      // without pushing the value onto the heap.
 
       // var key_temp KEY_TYPE = MAP_INDEX
       Temporary_statement* key_temp = Statement::make_temporary(mt->key_type(),
@@ -716,23 +716,29 @@ Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 								loc);
       b->add_statement(key_temp);
 
+      // Copy the value into a temporary to ensure that it is
+      // evaluated before we add the key to the map.  This may matter
+      // if the value is itself a reference to the map.
+
       // var val_temp VAL_TYPE = RHS
       Temporary_statement* val_temp = Statement::make_temporary(mt->val_type(),
 								this->rhs_,
 								loc);
       b->add_statement(val_temp);
 
-      // mapassign1(TYPE, MAP, &key_temp, &val_temp)
+      // *mapassign(TYPE, MAP, &key_temp) = RHS
       Expression* a1 = Expression::make_type_descriptor(mt, loc);
       Expression* a2 = mie->map();
       Temporary_reference_expression* ref =
 	Expression::make_temporary_reference(key_temp, loc);
       Expression* a3 = Expression::make_unary(OPERATOR_AND, ref, loc);
+      Expression* call = Runtime::make_call(Runtime::MAPASSIGN, loc, 3,
+					    a1, a2, a3);
+      Type* ptrval_type = Type::make_pointer_type(mt->val_type());
+      call = Expression::make_cast(ptrval_type, call, loc);
+      Expression* indir = Expression::make_unary(OPERATOR_MULT, call, loc);
       ref = Expression::make_temporary_reference(val_temp, loc);
-      Expression* a4 = Expression::make_unary(OPERATOR_AND, ref, loc);
-      Expression* call = Runtime::make_call(Runtime::MAPASSIGN, loc, 4,
-					    a1, a2, a3, a4);
-      b->add_statement(Statement::make_statement(call, false));
+      b->add_statement(Statement::make_assignment(indir, ref, loc));
 
       return Statement::make_block_statement(b, loc);
     }
@@ -5313,7 +5319,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   else if (range_type->is_string_type())
     {
       index_type = Type::lookup_integer_type("int");
-      value_type = Type::lookup_integer_type("int32");
+      value_type = gogo->lookup_global("rune")->type_value();
     }
   else if (range_type->map_type() != NULL)
     {
@@ -5458,7 +5464,7 @@ For_range_statement::make_range_ref(Named_object* range_object,
 // Return a call to the predeclared function FUNCNAME passing a
 // reference to the temporary variable ARG.
 
-Expression*
+Call_expression*
 For_range_statement::call_builtin(Gogo* gogo, const char* funcname,
 				  Expression* arg,
 				  Location loc)
@@ -5664,7 +5670,7 @@ For_range_statement::lower_range_slice(Gogo* gogo,
 // Lower a for range over a string.
 
 void
-For_range_statement::lower_range_string(Gogo*,
+For_range_statement::lower_range_string(Gogo* gogo,
 					Block* enclosing,
 					Block* body_block,
 					Named_object* range_object,
@@ -5679,94 +5685,121 @@ For_range_statement::lower_range_string(Gogo*,
   Location loc = this->location();
 
   // The loop we generate:
+  //   len_temp := len(range)
   //   var next_index_temp int
-  //   for index_temp = 0; ; index_temp = next_index_temp {
-  //           next_index_temp, value_temp = stringiter2(range, index_temp)
-  //           if next_index_temp == 0 {
-  //                   break
+  //   for index_temp = 0; index_temp < len_temp; index_temp = next_index_temp {
+  //           value_temp = rune(range[index_temp])
+  //           if value_temp < utf8.RuneSelf {
+  //                   next_index_temp = index_temp + 1
+  //           } else {
+  //                   value_temp, next_index_temp = decoderune(range, index_temp)
   //           }
   //           index = index_temp
   //           value = value_temp
-  //           original body
+  //           // original body
   //   }
 
   // Set *PINIT to
+  //   len_temp := len(range)
   //   var next_index_temp int
   //   index_temp = 0
+  //   var value_temp rune // if value_temp not passed in
 
   Block* init = new Block(enclosing, loc);
+
+  Expression* ref = this->make_range_ref(range_object, range_temp, loc);
+  Call_expression* call = this->call_builtin(gogo, "len", ref, loc);
+  Temporary_statement* len_temp =
+    Statement::make_temporary(index_temp->type(), call, loc);
+  init->add_statement(len_temp);
 
   Temporary_statement* next_index_temp =
     Statement::make_temporary(index_temp->type(), NULL, loc);
   init->add_statement(next_index_temp);
 
-  Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
-
-  Temporary_reference_expression* ref =
+  Temporary_reference_expression* index_ref =
     Expression::make_temporary_reference(index_temp, loc);
-  ref->set_is_lvalue();
-  Statement* s = Statement::make_assignment(ref, zexpr, loc);
-
+  index_ref->set_is_lvalue();
+  Expression* zexpr = Expression::make_integer_ul(0, index_temp->type(), loc);
+  Statement* s = Statement::make_assignment(index_ref, zexpr, loc);
   init->add_statement(s);
+
+  Type* rune_type;
+  if (value_temp != NULL)
+    rune_type = value_temp->type();
+  else
+    {
+      rune_type = gogo->lookup_global("rune")->type_value();
+      value_temp = Statement::make_temporary(rune_type, NULL, loc);
+      init->add_statement(value_temp);
+    }
+
   *pinit = init;
 
-  // The loop has no condition.
+  // Set *PCOND to
+  //   index_temp < len_temp
 
-  *pcond = NULL;
+  index_ref = Expression::make_temporary_reference(index_temp, loc);
+  Expression* len_ref =
+    Expression::make_temporary_reference(len_temp, loc);
+  *pcond = Expression::make_binary(OPERATOR_LT, index_ref, len_ref, loc);
 
   // Set *PITER_INIT to
-  //   next_index_temp = runtime.stringiter(range, index_temp)
-  // or
-  //   next_index_temp, value_temp = runtime.stringiter2(range, index_temp)
-  // followed by
-  //   if next_index_temp == 0 {
-  //           break
+  //   value_temp = rune(range[index_temp])
+  //   if value_temp < utf8.RuneSelf {
+  //           next_index_temp = index_temp + 1
+  //   } else {
+  //           value_temp, next_index_temp = decoderune(range, index_temp)
   //   }
 
   Block* iter_init = new Block(body_block, loc);
 
-  Expression* p1 = this->make_range_ref(range_object, range_temp, loc);
-  Expression* p2 = Expression::make_temporary_reference(index_temp, loc);
-  Call_expression* call = Runtime::make_call((value_temp == NULL
-					      ? Runtime::STRINGITER
-					      : Runtime::STRINGITER2),
-					     loc, 2, p1, p2);
-
-  if (value_temp == NULL)
-    {
-      ref = Expression::make_temporary_reference(next_index_temp, loc);
-      ref->set_is_lvalue();
-      s = Statement::make_assignment(ref, call, loc);
-    }
-  else
-    {
-      Expression_list* lhs = new Expression_list();
-
-      ref = Expression::make_temporary_reference(next_index_temp, loc);
-      ref->set_is_lvalue();
-      lhs->push_back(ref);
-
-      ref = Expression::make_temporary_reference(value_temp, loc);
-      ref->set_is_lvalue();
-      lhs->push_back(ref);
-
-      Expression_list* rhs = new Expression_list();
-      rhs->push_back(Expression::make_call_result(call, 0));
-      rhs->push_back(Expression::make_call_result(call, 1));
-
-      s = Statement::make_tuple_assignment(lhs, rhs, loc);
-    }
+  ref = this->make_range_ref(range_object, range_temp, loc);
+  index_ref = Expression::make_temporary_reference(index_temp, loc);
+  ref = Expression::make_string_index(ref, index_ref, NULL, loc);
+  ref = Expression::make_cast(rune_type, ref, loc);
+  Temporary_reference_expression* value_ref =
+    Expression::make_temporary_reference(value_temp, loc);
+  value_ref->set_is_lvalue();
+  s = Statement::make_assignment(value_ref, ref, loc);
   iter_init->add_statement(s);
 
-  ref = Expression::make_temporary_reference(next_index_temp, loc);
-  zexpr = Expression::make_integer_ul(0, NULL, loc);
-  Expression* equals = Expression::make_binary(OPERATOR_EQEQ, ref, zexpr, loc);
+  value_ref = Expression::make_temporary_reference(value_temp, loc);
+  Expression* rune_self = Expression::make_integer_ul(0x80, rune_type, loc);
+  Expression* cond = Expression::make_binary(OPERATOR_LT, value_ref, rune_self,
+					     loc);
 
   Block* then_block = new Block(iter_init, loc);
-  s = Statement::make_break_statement(this->break_label(), loc);
+
+  Temporary_reference_expression* lhs =
+    Expression::make_temporary_reference(next_index_temp, loc);
+  lhs->set_is_lvalue();
+  index_ref = Expression::make_temporary_reference(index_temp, loc);
+  Expression* one = Expression::make_integer_ul(1, index_temp->type(), loc);
+  Expression* sum = Expression::make_binary(OPERATOR_PLUS, index_ref, one,
+					    loc);
+  s = Statement::make_assignment(lhs, sum, loc);
   then_block->add_statement(s);
 
-  s = Statement::make_if_statement(equals, then_block, NULL, loc);
+  Block* else_block = new Block(iter_init, loc);
+
+  ref = this->make_range_ref(range_object, range_temp, loc);
+  index_ref = Expression::make_temporary_reference(index_temp, loc);
+  call = Runtime::make_call(Runtime::DECODERUNE, loc, 2, ref, index_ref);
+
+  value_ref = Expression::make_temporary_reference(value_temp, loc);
+  value_ref->set_is_lvalue();
+  Expression* res = Expression::make_call_result(call, 0);
+  s = Statement::make_assignment(value_ref, res, loc);
+  else_block->add_statement(s);
+
+  lhs = Expression::make_temporary_reference(next_index_temp, loc);
+  lhs->set_is_lvalue();
+  res = Expression::make_call_result(call, 1);
+  s = Statement::make_assignment(lhs, res, loc);
+  else_block->add_statement(s);
+
+  s = Statement::make_if_statement(cond, then_block, else_block, loc);
   iter_init->add_statement(s);
 
   *piter_init = iter_init;
@@ -5776,11 +5809,10 @@ For_range_statement::lower_range_string(Gogo*,
 
   Block* post = new Block(enclosing, loc);
 
-  Temporary_reference_expression* lhs =
-    Expression::make_temporary_reference(index_temp, loc);
-  lhs->set_is_lvalue();
-  Expression* rhs = Expression::make_temporary_reference(next_index_temp, loc);
-  s = Statement::make_assignment(lhs, rhs, loc);
+  index_ref = Expression::make_temporary_reference(index_temp, loc);
+  index_ref->set_is_lvalue();
+  ref = Expression::make_temporary_reference(next_index_temp, loc);
+  s = Statement::make_assignment(index_ref, ref, loc);
 
   post->add_statement(s);
   *ppost = post;

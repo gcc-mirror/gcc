@@ -28,6 +28,9 @@ import (
 // Use the Kind method to find out the kind of type before
 // calling kind-specific methods. Calling a method
 // inappropriate to the kind of type causes a run-time panic.
+//
+// Type values are comparable, such as with the == operator.
+// Two Type values are equal if they represent identical types.
 type Type interface {
 	// Methods applicable to all types.
 
@@ -59,7 +62,7 @@ type Type interface {
 	// method signature, without a receiver, and the Func field is nil.
 	MethodByName(string) (Method, bool)
 
-	// NumMethod returns the number of methods in the type's method set.
+	// NumMethod returns the number of exported methods in the type's method set.
 	NumMethod() int
 
 	// Name returns the type's name within its package.
@@ -79,7 +82,7 @@ type Type interface {
 	// String returns a string representation of the type.
 	// The string representation may use shortened package names
 	// (e.g., base64 instead of "encoding/base64") and is not
-	// guaranteed to be unique among types. To test for equality,
+	// guaranteed to be unique among types. To test for type identity,
 	// compare the Types directly.
 	String() string
 
@@ -155,9 +158,18 @@ type Type interface {
 	// and a boolean indicating if the field was found.
 	FieldByName(name string) (StructField, bool)
 
-	// FieldByNameFunc returns the first struct field with a name
+	// FieldByNameFunc returns the struct field with a name
 	// that satisfies the match function and a boolean indicating if
 	// the field was found.
+	//
+	// FieldByNameFunc considers the fields in the struct itself
+	// and then the fields in any anonymous structs, in breadth first order,
+	// stopping at the shallowest nesting depth containing one or more
+	// fields satisfying the match function. If multiple fields at that depth
+	// satisfy the match function, they cancel each other
+	// and FieldByNameFunc returns no match.
+	// This behavior mirrors Go's handling of name lookup in
+	// structs containing anonymous fields.
 	FieldByNameFunc(match func(string) bool) (StructField, bool)
 
 	// In returns the type of a function type's i'th input parameter.
@@ -826,7 +838,7 @@ func (tag StructTag) Get(key string) string {
 // the value returned by Lookup is unspecified.
 func (tag StructTag) Lookup(key string) (value string, ok bool) {
 	// When modifying this code, also update the validateStructTag code
-	// in golang.org/x/tools/cmd/vet/structtag.go.
+	// in cmd/vet/structtag.go.
 
 	for tag != "" {
 		// Skip leading space.
@@ -1157,12 +1169,11 @@ func (t *rtype) ptrTo() *rtype {
 
 	// Create a new ptrType starting with the description
 	// of an *unsafe.Pointer.
-	p = new(ptrType)
 	var iptr interface{} = (*unsafe.Pointer)(nil)
 	prototype := *(**ptrType)(unsafe.Pointer(&iptr))
-	*p = *prototype
+	pp := *prototype
 
-	p.string = &s
+	pp.string = &s
 
 	// For the type structures linked into the binary, the
 	// compiler provides a good hash of the string.
@@ -1171,17 +1182,17 @@ func (t *rtype) ptrTo() *rtype {
 	// old hash and the new "*".
 	// p.hash = fnv1(t.hash, '*')
 	// This is the gccgo version.
-	p.hash = (t.hash << 4) + 9
+	pp.hash = (t.hash << 4) + 9
 
-	p.uncommonType = nil
-	p.ptrToThis = nil
-	p.elem = t
+	pp.uncommonType = nil
+	pp.ptrToThis = nil
+	pp.elem = t
 
 	if t.kind&kindNoPointers != 0 {
-		p.gc = unsafe.Pointer(&ptrDataGCProg)
+		pp.gc = unsafe.Pointer(&ptrDataGCProg)
 	} else {
-		p.gc = unsafe.Pointer(&ptrGC{
-			width:  p.size,
+		pp.gc = unsafe.Pointer(&ptrGC{
+			width:  pp.size,
 			op:     _GC_PTR,
 			off:    0,
 			elemgc: t.gc,
@@ -1189,7 +1200,7 @@ func (t *rtype) ptrTo() *rtype {
 		})
 	}
 
-	q := canonicalize(&p.rtype)
+	q := canonicalize(&pp.rtype)
 	p = (*ptrType)(unsafe.Pointer(q.(*rtype)))
 
 	ptrMap.m[t] = p
@@ -1331,10 +1342,22 @@ func directlyAssignable(T, V *rtype) bool {
 	}
 
 	// x's type T and V must  have identical underlying types.
-	return haveIdenticalUnderlyingType(T, V)
+	return haveIdenticalUnderlyingType(T, V, true)
 }
 
-func haveIdenticalUnderlyingType(T, V *rtype) bool {
+func haveIdenticalType(T, V Type, cmpTags bool) bool {
+	if cmpTags {
+		return T == V
+	}
+
+	if T.Name() != V.Name() || T.Kind() != V.Kind() {
+		return false
+	}
+
+	return haveIdenticalUnderlyingType(T.common(), V.common(), false)
+}
+
+func haveIdenticalUnderlyingType(T, V *rtype, cmpTags bool) bool {
 	if T == V {
 		return true
 	}
@@ -1353,18 +1376,18 @@ func haveIdenticalUnderlyingType(T, V *rtype) bool {
 	// Composite types.
 	switch kind {
 	case Array:
-		return T.Elem() == V.Elem() && T.Len() == V.Len()
+		return T.Len() == V.Len() && haveIdenticalType(T.Elem(), V.Elem(), cmpTags)
 
 	case Chan:
 		// Special case:
 		// x is a bidirectional channel value, T is a channel type,
 		// and x's type V and T have identical element types.
-		if V.ChanDir() == BothDir && T.Elem() == V.Elem() {
+		if V.ChanDir() == BothDir && haveIdenticalType(T.Elem(), V.Elem(), cmpTags) {
 			return true
 		}
 
 		// Otherwise continue test for identical underlying type.
-		return V.ChanDir() == T.ChanDir() && T.Elem() == V.Elem()
+		return V.ChanDir() == T.ChanDir() && haveIdenticalType(T.Elem(), V.Elem(), cmpTags)
 
 	case Func:
 		t := (*funcType)(unsafe.Pointer(T))
@@ -1373,12 +1396,12 @@ func haveIdenticalUnderlyingType(T, V *rtype) bool {
 			return false
 		}
 		for i, typ := range t.in {
-			if typ != v.in[i] {
+			if !haveIdenticalType(typ, v.in[i], cmpTags) {
 				return false
 			}
 		}
 		for i, typ := range t.out {
-			if typ != v.out[i] {
+			if !haveIdenticalType(typ, v.out[i], cmpTags) {
 				return false
 			}
 		}
@@ -1395,10 +1418,10 @@ func haveIdenticalUnderlyingType(T, V *rtype) bool {
 		return false
 
 	case Map:
-		return T.Key() == V.Key() && T.Elem() == V.Elem()
+		return haveIdenticalType(T.Key(), V.Key(), cmpTags) && haveIdenticalType(T.Elem(), V.Elem(), cmpTags)
 
 	case Ptr, Slice:
-		return T.Elem() == V.Elem()
+		return haveIdenticalType(T.Elem(), V.Elem(), cmpTags)
 
 	case Struct:
 		t := (*structType)(unsafe.Pointer(T))
@@ -1415,10 +1438,10 @@ func haveIdenticalUnderlyingType(T, V *rtype) bool {
 			if tf.pkgPath != vf.pkgPath && (tf.pkgPath == nil || vf.pkgPath == nil || *tf.pkgPath != *vf.pkgPath) {
 				return false
 			}
-			if tf.typ != vf.typ {
+			if !haveIdenticalType(tf.typ, vf.typ, cmpTags) {
 				return false
 			}
-			if tf.tag != vf.tag && (tf.tag == nil || vf.tag == nil || *tf.tag != *vf.tag) {
+			if cmpTags && tf.tag != vf.tag && (tf.tag == nil || vf.tag == nil || *tf.tag != *vf.tag) {
 				return false
 			}
 			if tf.offset != vf.offset {
@@ -1539,8 +1562,7 @@ func ChanOf(dir ChanDir, t Type) Type {
 	// Make a channel type.
 	var ichan interface{} = (chan unsafe.Pointer)(nil)
 	prototype := *(**chanType)(unsafe.Pointer(&ichan))
-	ch := new(chanType)
-	*ch = *prototype
+	ch := *prototype
 	ch.dir = uintptr(dir)
 	ch.string = &s
 
@@ -1602,8 +1624,7 @@ func MapOf(key, elem Type) Type {
 
 	// Make a map type.
 	var imap interface{} = (map[unsafe.Pointer]unsafe.Pointer)(nil)
-	mt := new(mapType)
-	*mt = **(**mapType)(unsafe.Pointer(&imap))
+	mt := **(**mapType)(unsafe.Pointer(&imap))
 	mt.string = &s
 
 	// gccgo uses a different hash
@@ -1684,7 +1705,7 @@ func FuncOf(in, out []Type, variadic bool) Type {
 	// Look in cache.
 	funcLookupCache.RLock()
 	for _, t := range funcLookupCache.m[hash] {
-		if haveIdenticalUnderlyingType(&ft.rtype, t) {
+		if haveIdenticalUnderlyingType(&ft.rtype, t, true) {
 			funcLookupCache.RUnlock()
 			return t
 		}
@@ -1698,7 +1719,7 @@ func FuncOf(in, out []Type, variadic bool) Type {
 		funcLookupCache.m = make(map[uint32][]*rtype)
 	}
 	for _, t := range funcLookupCache.m[hash] {
-		if haveIdenticalUnderlyingType(&ft.rtype, t) {
+		if haveIdenticalUnderlyingType(&ft.rtype, t, true) {
 			return t
 		}
 	}
@@ -1885,12 +1906,13 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 		gcPtr = unsafe.Pointer(&gc[0])
 	}
 
-	b := new(rtype)
-	b.align = int8(maxAlign)
-	b.fieldAlign = uint8(maxAlign)
-	b.size = size
-	b.kind = kind
-	b.gc = gcPtr
+	b := &rtype{
+		align:      int8(maxAlign),
+		fieldAlign: uint8(maxAlign),
+		size:       size,
+		kind:       kind,
+		gc:         gcPtr,
+	}
 	s := "bucket(" + *ktyp.string + "," + *etyp.string + ")"
 	b.string = &s
 	return b
@@ -2002,8 +2024,7 @@ func SliceOf(t Type) Type {
 	// Make a slice type.
 	var islice interface{} = ([]unsafe.Pointer)(nil)
 	prototype := *(**sliceType)(unsafe.Pointer(&islice))
-	slice := new(sliceType)
-	*slice = *prototype
+	slice := *prototype
 	slice.string = &s
 
 	// gccgo uses a different hash.
@@ -2061,6 +2082,7 @@ func StructOf(fields []StructField) Type {
 		hasPtr = false // records whether at least one struct-field is a pointer
 	)
 
+	lastzero := uintptr(0)
 	repr = append(repr, "struct {"...)
 	for i, field := range fields {
 		if field.Type == nil {
@@ -2138,7 +2160,20 @@ func StructOf(fields []StructField) Type {
 		}
 		size = f.offset + ft.size
 
+		if ft.size == 0 {
+			lastzero = size
+		}
+
 		fs[i] = f
+	}
+
+	if size > 0 && lastzero == size {
+		// This is a non-zero sized struct that ends in a
+		// zero-sized field. We add an extra byte of padding,
+		// to ensure that taking the address of the final
+		// zero-sized field can't manufacture a pointer to the
+		// next object in the heap. See issue 9401.
+		size++
 	}
 
 	if len(fs) > 0 {
@@ -2162,7 +2197,7 @@ func StructOf(fields []StructField) Type {
 	structLookupCache.RLock()
 	for _, st := range structLookupCache.m[hash] {
 		t := st.common()
-		if haveIdenticalUnderlyingType(&typ.rtype, t) {
+		if haveIdenticalUnderlyingType(&typ.rtype, t, true) {
 			structLookupCache.RUnlock()
 			return t
 		}
@@ -2179,7 +2214,7 @@ func StructOf(fields []StructField) Type {
 	}
 	for _, st := range structLookupCache.m[hash] {
 		t := st.common()
-		if haveIdenticalUnderlyingType(&typ.rtype, t) {
+		if haveIdenticalUnderlyingType(&typ.rtype, t, true) {
 			return t
 		}
 	}
@@ -2295,8 +2330,7 @@ func ArrayOf(count int, elem Type) Type {
 	// Make an array type.
 	var iarray interface{} = [1]unsafe.Pointer{}
 	prototype := *(**arrayType)(unsafe.Pointer(&iarray))
-	array := new(arrayType)
-	*array = *prototype
+	array := *prototype
 	array.string = &s
 
 	// gccgo uses a different hash.

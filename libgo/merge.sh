@@ -99,8 +99,7 @@ merge() {
         mv ${libgo}.tmp ${libgo}
         ;;
       *)
-        echo 1>&2 "merge.sh: $name: diff3 failure"
-        exit 1
+        echo 1>&2 "merge.sh: $name: DIFF3 FAILURE"
         ;;
       esac
     fi
@@ -122,35 +121,51 @@ merge() {
   fi
 }
 
-merge_c() {
-  from=$1
-  to=$2
-  oldfile=${OLDDIR}/src/runtime/$from
-  if test -f ${oldfile}; then
-    sed -e 's/·/_/g' < ${oldfile} > ${oldfile}.tmp
-    oldfile=${oldfile}.tmp
-    newfile=${NEWDIR}/src/runtime/$from
-    sed -e 's/·/_/g' < ${newfile} > ${newfile}.tmp
-    newfile=${newfile}.tmp
-    libgofile=runtime/$to
-    merge $from ${oldfile} ${newfile} ${libgofile}
-  fi
-}
-
 echo ${rev} > VERSION
 
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
+  skip=false
+  case "$f" in
+  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/*)
+    ;;
+  ./cmd/*)
+    skip=true
+    ;;
+  ./runtime/race/*)
+    skip=true
+    ;;
+  esac
+  if test "$skip" = "true"; then
+    continue
+  fi
+
   oldfile=${OLDDIR}/src/$f
   newfile=${NEWDIR}/src/$f
-  libgofile=go/$f
+  libgofile=go/`echo $f | sed -e 's|/vendor/|/|'`
   merge $f ${oldfile} ${newfile} ${libgofile}
 done
 
 (cd ${NEWDIR}/src && find . -name testdata -print) | while read d; do
+  skip=false
+  case "$f" in
+  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/*)
+    ;;
+  ./cmd/*)
+    skip=true
+    ;;
+  ./runtime/race/*)
+    skip=true
+    ;;
+  esac
+  if test "$skip" = "true"; then
+    continue
+  fi
+
   oldtd=${OLDDIR}/src/$d
   newtd=${NEWDIR}/src/$d
   libgotd=go/$d
   if ! test -d ${oldtd}; then
+    echo "merge.sh: $d: NEWDIR"
     continue
   fi
   (cd ${oldtd} && git ls-files .) | while read f; do
@@ -164,15 +179,6 @@ done
     merge ${name} ${oldfile} ${newfile} ${libgofile}
   done
 done
-
-runtime="chan.goc chan.h cpuprof.goc env_posix.c heapdump.c lock_futex.c lfstack.goc lock_sema.c mcache.c mcentral.c mfixalloc.c mgc0.c mgc0.h mheap.c msize.c netpoll.goc netpoll_epoll.c netpoll_kqueue.c netpoll_stub.c panic.c print.c proc.c race.h rdebug.goc runtime.c runtime.h signal_unix.c signal_unix.h malloc.h malloc.goc mprof.goc parfor.c runtime1.goc sema.goc sigqueue.goc string.goc time.goc"
-for f in $runtime; do
-  # merge_c $f $f
-  true
-done
-
-# merge_c os_linux.c thread-linux.c
-# merge_c mem_linux.c mem.c
 
 (cd ${OLDDIR}/src && find . -name '*.go' -print) | while read f; do
   oldfile=${OLDDIR}/src/$f

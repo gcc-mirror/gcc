@@ -2730,38 +2730,3 @@ runtime_MHeap_MapBits(MHeap *h)
 	runtime_SysMap(h->arena_start - n, n - h->bitmap_mapped, h->arena_reserved, &mstats()->gc_sys);
 	h->bitmap_mapped = n;
 }
-
-// typedmemmove copies a value of type t to dst from src.
-
-extern void typedmemmove(const Type* td, void *dst, const void *src)
-  __asm__ (GOSYM_PREFIX "reflect.typedmemmove");
-
-void
-typedmemmove(const Type* td, void *dst, const void *src)
-{
-	runtime_memmove(dst, src, td->__size);
-}
-
-// typedslicecopy copies a slice of elemType values from src to dst,
-// returning the number of elements copied.
-
-extern intgo typedslicecopy(const Type* elem, Slice dst, Slice src)
-  __asm__ (GOSYM_PREFIX "reflect.typedslicecopy");
-
-intgo
-typedslicecopy(const Type* elem, Slice dst, Slice src)
-{
-	intgo n;
-	void *dstp;
-	void *srcp;
-
-	n = dst.__count;
-	if (n > src.__count)
-		n = src.__count;
-	if (n == 0)
-		return 0;
-	dstp = dst.__values;
-	srcp = src.__values;
-	memmove(dstp, srcp, (uintptr_t)n * elem->__size);
-	return n;
-}

@@ -226,9 +226,6 @@ func FDZero(set *FdSet) {
 //sysnb Getgid() (gid int)
 //getgid() Gid_t
 
-//sysnb	Getpagesize() (pagesize int)
-//getpagesize() _C_int
-
 //sysnb	Getpgid(pid int) (pgid int, err error)
 //getpgid(pid Pid_t) Pid_t
 
@@ -377,21 +374,12 @@ func Settimeofday(tv *Timeval) (err error) {
 //sys	Munlockall() (err error)
 //munlockall() _C_int
 
-func TimespecToNsec(ts Timespec) int64 { return int64(ts.Sec)*1e9 + int64(ts.Nsec) }
-
-func NsecToTimespec(nsec int64) (ts Timespec) {
-	ts.Sec = Timespec_sec_t(nsec / 1e9)
-	ts.Nsec = Timespec_nsec_t(nsec % 1e9)
-	return
+func setTimespec(sec, nsec int64) Timespec {
+	return Timespec{Sec: Timespec_sec_t(sec), Nsec: Timespec_nsec_t(nsec)}
 }
 
-func TimevalToNsec(tv Timeval) int64 { return int64(tv.Sec)*1e9 + int64(tv.Usec)*1e3 }
-
-func NsecToTimeval(nsec int64) (tv Timeval) {
-	nsec += 999 // round up to microsecond
-	tv.Sec = Timeval_sec_t(nsec / 1e9)
-	tv.Usec = Timeval_usec_t(nsec % 1e9 / 1e3)
-	return
+func setTimeval(sec, usec int64) Timeval {
+	return Timeval{Sec: Timeval_sec_t(sec), Usec: Timeval_usec_t(usec)}
 }
 
 //sysnb	Tcgetattr(fd int, p *Termios) (err error)
