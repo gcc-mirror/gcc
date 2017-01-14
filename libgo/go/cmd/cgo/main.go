@@ -42,10 +42,6 @@ type Package struct {
 	GoFiles     []string // list of Go files
 	GccFiles    []string // list of gcc output files
 	Preamble    string   // collected preamble for _cgo_export.h
-
-	// See unsafeCheckPointerName.
-	CgoChecks         []string
-	DeferredCgoChecks []string
 }
 
 // A File collects information about a single Go input file.
@@ -153,6 +149,8 @@ var ptrSizeMap = map[string]int64{
 	"mipsn32":  4,
 	"mipso64":  8,
 	"mipsn64":  8,
+	"mips":     4,
+	"mipsle":   4,
 	"mips64":   8,
 	"mips64le": 8,
 	"ppc":      4,
@@ -175,6 +173,8 @@ var intSizeMap = map[string]int64{
 	"mipsn32":  4,
 	"mipso64":  8,
 	"mipsn64":  8,
+	"mips":     4,
+	"mipsle":   4,
 	"mips64":   8,
 	"mips64le": 8,
 	"ppc":      4,
@@ -200,6 +200,7 @@ var dynlinker = flag.Bool("dynlinker", false, "record dynamic linker information
 // constant values used in the host's C libraries and system calls.
 var godefs = flag.Bool("godefs", false, "for bootstrap: write Go definitions for C file to standard output")
 
+var srcDir = flag.String("srcdir", "", "source directory")
 var objDir = flag.String("objdir", "", "object directory")
 var importPath = flag.String("importpath", "", "import path of package being built (for comments in generated files)")
 var exportHeader = flag.String("exportheader", "", "where to write export header if any exported functions")
@@ -278,6 +279,9 @@ func main() {
 	// Use the beginning of the md5 of the input to disambiguate.
 	h := md5.New()
 	for _, input := range goFiles {
+		if *srcDir != "" {
+			input = filepath.Join(*srcDir, input)
+		}
 		f, err := os.Open(input)
 		if err != nil {
 			fatalf("%s", err)
@@ -289,6 +293,9 @@ func main() {
 
 	fs := make([]*File, len(goFiles))
 	for i, input := range goFiles {
+		if *srcDir != "" {
+			input = filepath.Join(*srcDir, input)
+		}
 		f := new(File)
 		f.ReadGo(input)
 		f.DiscardCgoDirectives()

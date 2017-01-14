@@ -411,7 +411,7 @@ func TestGoLookupIPWithResolverConfig(t *testing.T) {
 			// We need to take care with errors on both
 			// DNS message exchange layer and DNS
 			// transport layer because goLookupIP may fail
-			// when the IP connectivty on node under test
+			// when the IP connectivity on node under test
 			// gets lost during its run.
 			if err, ok := err.(*DNSError); !ok || tt.error != nil && (err.Name != tt.error.(*DNSError).Name || err.Server != tt.error.(*DNSError).Server || err.IsTimeout != tt.error.(*DNSError).IsTimeout) {
 				t.Errorf("got %v; want %v", err, tt.error)
@@ -455,14 +455,14 @@ func TestGoLookupIPOrderFallbackToFile(t *testing.T) {
 		name := fmt.Sprintf("order %v", order)
 
 		// First ensure that we get an error when contacting a non-existent host.
-		_, err := goLookupIPOrder(context.Background(), "notarealhost", order)
+		_, _, err := goLookupIPCNAMEOrder(context.Background(), "notarealhost", order)
 		if err == nil {
 			t.Errorf("%s: expected error while looking up name not in hosts file", name)
 			continue
 		}
 
 		// Now check that we get an address when the name appears in the hosts file.
-		addrs, err := goLookupIPOrder(context.Background(), "thor", order) // entry is in "testdata/hosts"
+		addrs, _, err := goLookupIPCNAMEOrder(context.Background(), "thor", order) // entry is in "testdata/hosts"
 		if err != nil {
 			t.Errorf("%s: expected to successfully lookup host entry", name)
 			continue
@@ -668,12 +668,14 @@ func TestIgnoreDNSForgeries(t *testing.T) {
 		b := make([]byte, 512)
 		n, err := s.Read(b)
 		if err != nil {
-			t.Fatal(err)
+			t.Error(err)
+			return
 		}
 
 		msg := &dnsMsg{}
 		if !msg.Unpack(b[:n]) {
-			t.Fatal("invalid DNS query")
+			t.Error("invalid DNS query")
+			return
 		}
 
 		s.Write([]byte("garbage DNS response packet"))
@@ -682,7 +684,8 @@ func TestIgnoreDNSForgeries(t *testing.T) {
 		msg.id++ // make invalid ID
 		b, ok := msg.Pack()
 		if !ok {
-			t.Fatal("failed to pack DNS response")
+			t.Error("failed to pack DNS response")
+			return
 		}
 		s.Write(b)
 
@@ -701,7 +704,8 @@ func TestIgnoreDNSForgeries(t *testing.T) {
 
 		b, ok = msg.Pack()
 		if !ok {
-			t.Fatal("failed to pack DNS response")
+			t.Error("failed to pack DNS response")
+			return
 		}
 		s.Write(b)
 	}()
@@ -740,8 +744,11 @@ func TestRetryTimeout(t *testing.T) {
 	}
 	defer conf.teardown()
 
-	if err := conf.writeAndUpdate([]string{"nameserver 192.0.2.1", // the one that will timeout
-		"nameserver 192.0.2.2"}); err != nil {
+	testConf := []string{
+		"nameserver 192.0.2.1", // the one that will timeout
+		"nameserver 192.0.2.2",
+	}
+	if err := conf.writeAndUpdate(testConf); err != nil {
 		t.Fatal(err)
 	}
 
@@ -767,28 +774,10 @@ func TestRetryTimeout(t *testing.T) {
 			t.Error("deadline didn't change")
 		}
 
-		r := &dnsMsg{
-			dnsMsgHdr: dnsMsgHdr{
-				id:                  q.id,
-				response:            true,
-				recursion_available: true,
-			},
-			question: q.question,
-			answer: []dnsRR{
-				&dnsRR_CNAME{
-					Hdr: dnsRR_Header{
-						Name:   q.question[0].Name,
-						Rrtype: dnsTypeCNAME,
-						Class:  dnsClassINET,
-					},
-					Cname: "golang.org",
-				},
-			},
-		}
-		return r, nil
+		return mockTXTResponse(q), nil
 	}
 
-	_, err = goLookupCNAME(context.Background(), "www.golang.org")
+	_, err = LookupTXT("www.golang.org")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -796,4 +785,78 @@ func TestRetryTimeout(t *testing.T) {
 	if deadline0.IsZero() {
 		t.Error("deadline0 still zero", deadline0)
 	}
+}
+
+func TestRotate(t *testing.T) {
+	// without rotation, always uses the first server
+	testRotate(t, false, []string{"192.0.2.1", "192.0.2.2"}, []string{"192.0.2.1:53", "192.0.2.1:53", "192.0.2.1:53"})
+
+	// with rotation, rotates through back to first
+	testRotate(t, true, []string{"192.0.2.1", "192.0.2.2"}, []string{"192.0.2.1:53", "192.0.2.2:53", "192.0.2.1:53"})
+}
+
+func testRotate(t *testing.T, rotate bool, nameservers, wantServers []string) {
+	origTestHookDNSDialer := testHookDNSDialer
+	defer func() { testHookDNSDialer = origTestHookDNSDialer }()
+
+	conf, err := newResolvConfTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conf.teardown()
+
+	var confLines []string
+	for _, ns := range nameservers {
+		confLines = append(confLines, "nameserver "+ns)
+	}
+	if rotate {
+		confLines = append(confLines, "options rotate")
+	}
+
+	if err := conf.writeAndUpdate(confLines); err != nil {
+		t.Fatal(err)
+	}
+
+	d := &fakeDNSDialer{}
+	testHookDNSDialer = func() dnsDialer { return d }
+
+	var usedServers []string
+	d.rh = func(s string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+		usedServers = append(usedServers, s)
+		return mockTXTResponse(q), nil
+	}
+
+	// len(nameservers) + 1 to allow rotation to get back to start
+	for i := 0; i < len(nameservers)+1; i++ {
+		if _, err := LookupTXT("www.golang.org"); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if !reflect.DeepEqual(usedServers, wantServers) {
+		t.Errorf("rotate=%t got used servers:\n%v\nwant:\n%v", rotate, usedServers, wantServers)
+	}
+}
+
+func mockTXTResponse(q *dnsMsg) *dnsMsg {
+	r := &dnsMsg{
+		dnsMsgHdr: dnsMsgHdr{
+			id:                  q.id,
+			response:            true,
+			recursion_available: true,
+		},
+		question: q.question,
+		answer: []dnsRR{
+			&dnsRR_TXT{
+				Hdr: dnsRR_Header{
+					Name:   q.question[0].Name,
+					Rrtype: dnsTypeTXT,
+					Class:  dnsClassINET,
+				},
+				Txt: "ok",
+			},
+		},
+	}
+
+	return r
 }

@@ -83,3 +83,7 @@ func ResolveReflectName(s string) {
 	resolveReflectName(newName(s, "", "", false))
 }
 */
+
+type Buffer struct {
+	buf []byte
+}

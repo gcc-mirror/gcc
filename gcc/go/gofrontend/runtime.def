@@ -31,12 +31,9 @@
 // The standard C memcmp function, used for struct comparisons.
 DEF_GO_RUNTIME(MEMCMP, "__go_memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT))
 
-// Range over a string, returning the next index.
-DEF_GO_RUNTIME(STRINGITER, "runtime.stringiter", P2(STRING, INT), R1(INT))
-
-// Range over a string, returning the next index and character.
-DEF_GO_RUNTIME(STRINGITER2, "runtime.stringiter2", P2(STRING, INT),
-	       R2(INT, RUNE))
+// Decode a non-ASCII rune from a string.
+DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
+	       R2(RUNE, INT))
 
 // Concatenate strings.
 DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings", P2(POINTER, SLICE),
@@ -87,7 +84,10 @@ DEF_GO_RUNTIME(COMPLEX128_DIV, "__go_complex128_div",
 	       P2(COMPLEX128, COMPLEX128), R1(COMPLEX128))
 
 // Make a slice.
-DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT64, INT64),
+DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT, INT),
+	       R1(SLICE))
+
+DEF_GO_RUNTIME(MAKESLICE64, "runtime.makeslice64", P3(TYPE, INT64, INT64),
 	       R1(SLICE))
 
 
@@ -119,8 +119,8 @@ DEF_GO_RUNTIME(MAPACCESS2_FAT, "runtime.mapaccess2_fat",
 	       P4(TYPE, MAP, POINTER, POINTER), R2(POINTER, BOOL))
 
 // Assignment to a key in a map.
-DEF_GO_RUNTIME(MAPASSIGN, "runtime.mapassign1",
-	       P4(TYPE, MAP, POINTER, POINTER), R0())
+DEF_GO_RUNTIME(MAPASSIGN, "runtime.mapassign", P3(TYPE, MAP, POINTER),
+	       R1(POINTER))
 
 // Delete a key from a map.
 DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P3(TYPE, MAP, POINTER), R0())

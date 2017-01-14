@@ -8,6 +8,7 @@ package runtime
 
 import (
 	"runtime/internal/atomic"
+	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -29,6 +30,9 @@ var LockedOSThread = lockedOSThread
 // var Xadduintptr = xadduintptr
 
 // var FuncPC = funcPC
+
+var Atoi = atoi
+var Atoi32 = atoi32
 
 type LFNode struct {
 	Next    uint64
@@ -150,7 +154,11 @@ func RunSchedLocalQueueEmptyTest(iters int) {
 //var Int64Hash = int64Hash
 //var EfaceHash = efaceHash
 //var IfaceHash = ifaceHash
-//var MemclrBytes = memclrBytes
+
+func MemclrBytes(b []byte) {
+	s := (*slice)(unsafe.Pointer(&b))
+	memclrNoHeapPointers(s.array, uintptr(s.len))
+}
 
 var HashLoad = &hashLoad
 
@@ -160,10 +168,7 @@ var HashLoad = &hashLoad
 //	return
 //}
 
-//var Gostringnocopy = gostringnocopy
-//var Maxstring = &maxstring
-
-//type Uintreg uintreg
+type Uintreg sys.Uintreg
 
 var Open = open
 var Close = closefd
@@ -207,9 +212,6 @@ func BenchSetType(n int, x interface{}) {
 
 const PtrSize = sys.PtrSize
 
-var TestingAssertE2I2GC = &testingAssertE2I2GC
-var TestingAssertE2T2GC = &testingAssertE2T2GC
-
 var ForceGCPeriod = &forcegcperiod
 */
 
@@ -230,7 +232,7 @@ func CountPagesInUse() (pagesInUse, counted uintptr) {
 
 	pagesInUse = uintptr(mheap_.pagesInUse)
 
-	for _, s := range h_allspans {
+	for _, s := range mheap_.allspans {
 		if s.state == mSpanInUse {
 			counted += s.npages
 		}

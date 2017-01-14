@@ -7319,7 +7319,7 @@ Map_type::do_get_backend(Gogo* gogo)
   static Btype* backend_map_type;
   if (backend_map_type == NULL)
     {
-      std::vector<Backend::Btyped_identifier> bfields(8);
+      std::vector<Backend::Btyped_identifier> bfields(9);
 
       Location bloc = Linemap::predeclared_location();
 
@@ -7337,29 +7337,34 @@ Map_type::do_get_backend(Gogo* gogo)
       bfields[2].btype = bfields[1].btype;
       bfields[2].location = bloc;
 
-      Type* uint32_type = Type::lookup_integer_type("uint32");
-      bfields[3].name = "hash0";
-      bfields[3].btype = uint32_type->get_backend(gogo);
+      Type* uint16_type = Type::lookup_integer_type("uint16");
+      bfields[3].name = "noverflow";
+      bfields[3].btype = uint16_type->get_backend(gogo);
       bfields[3].location = bloc;
+
+      Type* uint32_type = Type::lookup_integer_type("uint32");
+      bfields[4].name = "hash0";
+      bfields[4].btype = uint32_type->get_backend(gogo);
+      bfields[4].location = bloc;
 
       Btype* bvt = gogo->backend()->void_type();
       Btype* bpvt = gogo->backend()->pointer_type(bvt);
-      bfields[4].name = "buckets";
-      bfields[4].btype = bpvt;
-      bfields[4].location = bloc;
-
-      bfields[5].name = "oldbuckets";
+      bfields[5].name = "buckets";
       bfields[5].btype = bpvt;
       bfields[5].location = bloc;
 
-      Type* uintptr_type = Type::lookup_integer_type("uintptr");
-      bfields[6].name = "nevacuate";
-      bfields[6].btype = uintptr_type->get_backend(gogo);
+      bfields[6].name = "oldbuckets";
+      bfields[6].btype = bpvt;
       bfields[6].location = bloc;
 
-      bfields[7].name = "overflow";
-      bfields[7].btype = bpvt;
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      bfields[7].name = "nevacuate";
+      bfields[7].btype = uintptr_type->get_backend(gogo);
       bfields[7].location = bloc;
+
+      bfields[8].name = "overflow";
+      bfields[8].btype = bpvt;
+      bfields[8].location = bloc;
 
       Btype *bt = gogo->backend()->struct_type(bfields);
       bt = gogo->backend()->named_type("runtime.hmap", bt, bloc);

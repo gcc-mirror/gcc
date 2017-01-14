@@ -103,7 +103,7 @@ func f32hash(p unsafe.Pointer, h uintptr) uintptr {
 	case f == 0:
 		return c1 * (c0 ^ h) // +0, -0
 	case f != f:
-		return c1 * (c0 ^ h ^ uintptr(fastrand1())) // any kind of NaN
+		return c1 * (c0 ^ h ^ uintptr(fastrand())) // any kind of NaN
 	default:
 		return memhash(p, h, 4)
 	}
@@ -115,7 +115,7 @@ func f64hash(p unsafe.Pointer, h uintptr) uintptr {
 	case f == 0:
 		return c1 * (c0 ^ h) // +0, -0
 	case f != f:
-		return c1 * (c0 ^ h ^ uintptr(fastrand1())) // any kind of NaN
+		return c1 * (c0 ^ h ^ uintptr(fastrand())) // any kind of NaN
 	default:
 		return memhash(p, h, 8)
 	}
@@ -298,15 +298,6 @@ func efacevaleq(x eface, t *_type, p unsafe.Pointer) bool {
 		return x.data == p
 	}
 	return eq(x.data, p)
-}
-
-func eqstring(x, y string) bool {
-	a := stringStructOf(&x)
-	b := stringStructOf(&y)
-	if a.len != b.len {
-		return false
-	}
-	return memcmp(unsafe.Pointer(a.str), unsafe.Pointer(b.str), uintptr(a.len)) == 0
 }
 
 func cmpstring(x, y string) int {

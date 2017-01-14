@@ -29,6 +29,7 @@ const (
 	darwin64Bit    = runtime.GOOS == "darwin" && sizeofPtr == 8
 	dragonfly64Bit = runtime.GOOS == "dragonfly" && sizeofPtr == 8
 	netbsd32Bit    = runtime.GOOS == "netbsd" && sizeofPtr == 4
+	solaris64Bit   = runtime.GOOS == "solaris" && sizeofPtr == 8
 )
 
 // Do a system call.  We look at the size of uintptr to see how to pass

@@ -1500,7 +1500,7 @@ class For_range_statement : public Statement
   Expression*
   make_range_ref(Named_object*, Temporary_statement*, Location);
 
-  Expression*
+  Call_expression*
   call_builtin(Gogo*, const char* funcname, Expression* arg, Location);
 
   void

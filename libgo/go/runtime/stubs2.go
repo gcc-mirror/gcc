@@ -18,7 +18,11 @@ func exit(code int32)
 func nanotime() int64
 func usleep(usec uint32)
 
-func munmap(addr unsafe.Pointer, n uintptr)
+//extern mmap
+func mmap(addr unsafe.Pointer, length uintptr, prot, flags, fd int32, offset uintptr) unsafe.Pointer
+
+//extern munmap
+func munmap(addr unsafe.Pointer, n uintptr) int32
 
 //go:noescape
 func write(fd uintptr, p unsafe.Pointer, n int32) int32

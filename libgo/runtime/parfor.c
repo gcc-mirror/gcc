@@ -126,7 +126,7 @@ runtime_parfordo(ParFor *desc)
 				goto exit;
 			}
 			// Choose a random victim for stealing.
-			victim = runtime_fastrand1() % (desc->nthr-1);
+			victim = runtime_fastrand() % (desc->nthr-1);
 			if(victim >= tid)
 				victim++;
 			victimpos = &desc->thr[victim].pos;

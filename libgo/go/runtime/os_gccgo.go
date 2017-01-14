@@ -21,36 +21,15 @@ func mpreinit(mp *m) {
 // minit is called to initialize a new m (including the bootstrap m).
 // Called on the new thread, cannot allocate memory.
 func minit() {
-	// Initialize signal handling.
-	_g_ := getg()
-
-	var st _stack_t
-	sigaltstack(nil, &st)
-	if st.ss_flags&_SS_DISABLE != 0 {
-		signalstack(_g_.m.gsignalstack, _g_.m.gsignalstacksize)
-		_g_.m.newSigstack = true
-	} else {
-		_g_.m.newSigstack = false
-	}
+	minitSignals()
 
 	// FIXME: We should set _g_.m.procid here.
-
-	// restore signal mask from m.sigmask and unblock essential signals
-	nmask := _g_.m.sigmask
-	for i := range sigtable {
-		if sigtable[i].flags&_SigUnblock != 0 {
-			sigdelset(&nmask, int32(i))
-		}
-	}
-	sigprocmask(_SIG_SETMASK, &nmask, nil)
 }
 
 // Called from dropm to undo the effect of an minit.
 //go:nosplit
 func unminit() {
-	if getg().m.newSigstack {
-		signalstack(nil, 0)
-	}
+	unminitSignals()
 }
 
 var urandom_dev = []byte("/dev/urandom\x00")

@@ -33,9 +33,9 @@ extern const char _edata[] __attribute__ ((weak));
 extern const char __edata[] __attribute__ ((weak));
 extern const char __bss_start[] __attribute__ ((weak));
 
-extern void mapassign1 (const struct __go_map_type *, void *hmap,
-			const void *key, const void *val)
-  __asm__ (GOSYM_PREFIX "runtime.mapassign1");
+extern void *mapassign (const struct __go_map_type *, void *hmap,
+			const void *key)
+  __asm__ (GOSYM_PREFIX "runtime.mapassign");
 
 // The type descriptor for map[string] bool.  */
 extern const char __go_td_MN6_string__N4_bool[] __attribute__ ((weak));
@@ -95,12 +95,12 @@ runtime_Fieldtrack (void *m)
       if (__builtin_memchr (q1, '\0', q2 - q1) == NULL)
 	{
 	  String s;
-	  _Bool b;
+	  void *p;
 
 	  s.str = (const byte *) q1;
 	  s.len = q2 - q1;
-	  b = 1;
-	  mapassign1((const void*) __go_td_MN6_string__N4_bool, m, &s, &b);
+	  p = mapassign((const void*) __go_td_MN6_string__N4_bool, m, &s);
+	  *(_Bool*)p = 1;
 	}
 
       p = q2;

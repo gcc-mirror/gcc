@@ -266,7 +266,7 @@ func ready(gp *g, traceskip int, next bool) {
 	// status is Gwaiting or Gscanwaiting, make Grunnable and put on runq
 	casgstatus(gp, _Gwaiting, _Grunnable)
 	runqput(_g_.m.p.ptr(), gp, next)
-	if atomic.Load(&sched.npidle) != 0 && atomic.Load(&sched.nmspinning) == 0 { // TODO: fast atomic
+	if atomic.Load(&sched.npidle) != 0 && atomic.Load(&sched.nmspinning) == 0 {
 		wakep()
 	}
 	_g_.m.locks--
@@ -329,10 +329,15 @@ func helpgc(nproc int32) {
 // sched.stopwait to in order to request that all Gs permanently stop.
 const freezeStopWait = 0x7fffffff
 
+// freezing is set to non-zero if the runtime is trying to freeze the
+// world.
+var freezing uint32
+
 // Similar to stopTheWorld but best-effort and can be called several times.
 // There is no reverse operation, used during crashing.
 // This function must not lock any mutexes.
 func freezetheworld() {
+	atomic.Store(&freezing, 1)
 	// stopwait and preemption requests can be lost
 	// due to races with concurrently executing threads,
 	// so try several times
@@ -498,7 +503,7 @@ func casgstatus(gp *g, oldval, newval uint32) {
 // in panic or being exited, this may not reliably stop all
 // goroutines.
 func stopTheWorld(reason string) {
-	semacquire(&worldsema, false)
+	semacquire(&worldsema, 0)
 	getg().m.preemptoff = reason
 	systemstack(stopTheWorldWithSema)
 }
@@ -521,7 +526,7 @@ var worldsema uint32 = 1
 // preemption first and then should stopTheWorldWithSema on the system
 // stack:
 //
-//	semacquire(&worldsema, false)
+//	semacquire(&worldsema, 0)
 //	m.preemptoff = "reason"
 //	systemstack(stopTheWorldWithSema)
 //
@@ -590,14 +595,29 @@ func stopTheWorldWithSema() {
 			preemptall()
 		}
 	}
+
+	// sanity checks
+	bad := ""
 	if sched.stopwait != 0 {
-		throw("stopTheWorld: not stopped")
-	}
-	for i := 0; i < int(gomaxprocs); i++ {
-		p := allp[i]
-		if p.status != _Pgcstop {
-			throw("stopTheWorld: not stopped")
+		bad = "stopTheWorld: not stopped (stopwait != 0)"
+	} else {
+		for i := 0; i < int(gomaxprocs); i++ {
+			p := allp[i]
+			if p.status != _Pgcstop {
+				bad = "stopTheWorld: not stopped (status != _Pgcstop)"
+			}
 		}
+	}
+	if atomic.Load(&freezing) != 0 {
+		// Some other thread is panicking. This can cause the
+		// sanity checks above to fail if the panic happens in
+		// the signal handler on a stopped thread. Either way,
+		// we should halt this thread.
+		lock(&deadlock)
+		lock(&deadlock)
+	}
+	if bad != "" {
+		throw(bad)
 	}
 }
 
@@ -897,6 +917,7 @@ func oneNewExtraM() {
 	mp := allocm(nil, true, &g0SP, &g0SPSize)
 	gp := malg(true, false, nil, nil)
 	gp.gcscanvalid = true // fresh G, so no dequeueRescan necessary
+	gp.gcscandone = true
 	gp.gcRescan = -1
 
 	// malg returns status as Gidle, change to Gdead before adding to allg
@@ -1061,7 +1082,7 @@ retry:
 
 // Hands off P from syscall or locked M.
 // Always runs without a P, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func handoffp(_p_ *p) {
 	// handoffp must start an M in any situation where
 	// findrunnable would return a G to run on _p_.
@@ -1154,7 +1175,7 @@ func stoplockedm() {
 
 // Schedules the locked m to run the locked gp.
 // May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func startlockedm(gp *g) {
 	_g_ := getg()
 
@@ -1204,6 +1225,11 @@ func gcstopm() {
 // If inheritTime is true, gp inherits the remaining time in the
 // current time slice. Otherwise, it starts a new time slice.
 // Never returns.
+//
+// Write barriers are allowed because this is called immediately after
+// acquiring a P in several places.
+//
+//go:yeswritebarrierrec
 func execute(gp *g, inheritTime bool) {
 	_g_ := getg()
 
@@ -1302,7 +1328,7 @@ top:
 	// If number of spinning M's >= number of busy P's, block.
 	// This is necessary to prevent excessive CPU consumption
 	// when GOMAXPROCS>>1 but the program parallelism is low.
-	if !_g_.m.spinning && 2*atomic.Load(&sched.nmspinning) >= procs-atomic.Load(&sched.npidle) { // TODO: fast atomic
+	if !_g_.m.spinning && 2*atomic.Load(&sched.nmspinning) >= procs-atomic.Load(&sched.npidle) {
 		goto stop
 	}
 	if !_g_.m.spinning {
@@ -1310,7 +1336,7 @@ top:
 		atomic.Xadd(&sched.nmspinning, 1)
 	}
 	for i := 0; i < 4; i++ {
-		for enum := stealOrder.start(fastrand1()); !enum.done(); enum.next() {
+		for enum := stealOrder.start(fastrand()); !enum.done(); enum.next() {
 			if sched.gcwaiting != 0 {
 				goto top
 			}
@@ -1393,6 +1419,26 @@ stop:
 		}
 	}
 
+	// Check for idle-priority GC work again.
+	if gcBlackenEnabled != 0 && gcMarkWorkAvailable(nil) {
+		lock(&sched.lock)
+		_p_ = pidleget()
+		if _p_ != nil && _p_.gcBgMarkWorker == 0 {
+			pidleput(_p_)
+			_p_ = nil
+		}
+		unlock(&sched.lock)
+		if _p_ != nil {
+			acquirep(_p_)
+			if wasSpinning {
+				_g_.m.spinning = true
+				atomic.Xadd(&sched.nmspinning, 1)
+			}
+			// Go back to idle GC check.
+			goto stop
+		}
+	}
+
 	// poll network
 	if netpollinited() && atomic.Xchg64(&sched.lastpoll, 0) != 0 {
 		if _g_.m.p != 0 {
@@ -1421,6 +1467,27 @@ stop:
 	}
 	stopm()
 	goto top
+}
+
+// pollWork returns true if there is non-background work this P could
+// be doing. This is a fairly lightweight check to be used for
+// background work loops, like idle GC. It checks a subset of the
+// conditions checked by the actual scheduler.
+func pollWork() bool {
+	if sched.runqsize != 0 {
+		return true
+	}
+	p := getg().m.p.ptr()
+	if !runqempty(p) {
+		return true
+	}
+	if netpollinited() && sched.lastpoll != 0 {
+		if gp := netpoll(false); gp != nil {
+			injectglist(gp)
+			return true
+		}
+	}
+	return false
 }
 
 func resetspinning() {
@@ -1562,8 +1629,8 @@ top:
 func dropg() {
 	_g_ := getg()
 
-	_g_.m.curg.m = nil
-	_g_.m.curg = nil
+	setMNoWB(&_g_.m.curg.m, nil)
+	setGNoWB(&_g_.m.curg, nil)
 }
 
 func beforefork() {
@@ -1887,7 +1954,13 @@ func procresize(nprocs int32) *p {
 }
 
 // Associate p and the current m.
+//
+// This function is allowed to have write barriers even if the caller
+// isn't because it immediately acquires _p_.
+//
+//go:yeswritebarrierrec
 func acquirep(_p_ *p) {
+	// Do the part that isn't allowed to have write barriers.
 	acquirep1(_p_)
 
 	// have p; write barriers now allowed
@@ -1899,8 +1972,11 @@ func acquirep(_p_ *p) {
 	}
 }
 
-// May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+// acquirep1 is the first step of acquirep, which actually acquires
+// _p_. This is broken out so we can disallow write barriers for this
+// part, since we don't yet have a P.
+//
+//go:nowritebarrierrec
 func acquirep1(_p_ *p) {
 	_g_ := getg()
 
@@ -2064,7 +2140,7 @@ func sysmon() {
 			delay = 10 * 1000
 		}
 		usleep(delay)
-		if debug.schedtrace <= 0 && (sched.gcwaiting != 0 || atomic.Load(&sched.npidle) == uint32(gomaxprocs)) { // TODO: fast atomic
+		if debug.schedtrace <= 0 && (sched.gcwaiting != 0 || atomic.Load(&sched.npidle) == uint32(gomaxprocs)) {
 			lock(&sched.lock)
 			if atomic.Load(&sched.gcwaiting) != 0 || atomic.Load(&sched.npidle) == uint32(gomaxprocs) {
 				atomic.Store(&sched.sysmonwait, 1)
@@ -2347,7 +2423,7 @@ func schedtrace(detailed bool) {
 // Put mp on midle list.
 // Sched must be locked.
 // May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func mput(mp *m) {
 	mp.schedlink = sched.midle
 	sched.midle.set(mp)
@@ -2358,7 +2434,7 @@ func mput(mp *m) {
 // Try to get an m from midle list.
 // Sched must be locked.
 // May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func mget() *m {
 	mp := sched.midle.ptr()
 	if mp != nil {
@@ -2371,7 +2447,7 @@ func mget() *m {
 // Put gp on the global runnable queue.
 // Sched must be locked.
 // May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func globrunqput(gp *g) {
 	gp.schedlink = 0
 	if sched.runqtail != 0 {
@@ -2386,7 +2462,7 @@ func globrunqput(gp *g) {
 // Put gp at the head of the global runnable queue.
 // Sched must be locked.
 // May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func globrunqputhead(gp *g) {
 	gp.schedlink = sched.runqhead
 	sched.runqhead.set(gp)
@@ -2446,7 +2522,7 @@ func globrunqget(_p_ *p, max int32) *g {
 // Put p to on _Pidle list.
 // Sched must be locked.
 // May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func pidleput(_p_ *p) {
 	if !runqempty(_p_) {
 		throw("pidleput: P has non-empty run queue")
@@ -2459,7 +2535,7 @@ func pidleput(_p_ *p) {
 // Try get a p from _Pidle list.
 // Sched must be locked.
 // May run during STW, so write barriers are not allowed.
-//go:nowritebarrier
+//go:nowritebarrierrec
 func pidleget() *p {
 	_p_ := sched.pidle.ptr()
 	if _p_ != nil {
@@ -2503,7 +2579,7 @@ const randomizeScheduler = raceenabled
 // If the run queue is full, runnext puts g on the global queue.
 // Executed only by the owner P.
 func runqput(_p_ *p, gp *g, next bool) {
-	if randomizeScheduler && next && fastrand1()%2 == 0 {
+	if randomizeScheduler && next && fastrand()%2 == 0 {
 		next = false
 	}
 
@@ -2556,7 +2632,7 @@ func runqputslow(_p_ *p, gp *g, h, t uint32) bool {
 
 	if randomizeScheduler {
 		for i := uint32(1); i <= n; i++ {
-			j := fastrand1() % (i + 1)
+			j := fastrand() % (i + 1)
 			batch[i], batch[j] = batch[j], batch[i]
 		}
 	}
@@ -2681,7 +2757,11 @@ func runqsteal(_p_, p2 *p, stealRunNextG bool) *g {
 func setMaxThreads(in int) (out int) {
 	lock(&sched.lock)
 	out = int(sched.maxmcount)
-	sched.maxmcount = int32(in)
+	if in > 0x7fffffff { // MaxInt32
+		sched.maxmcount = 0x7fffffff
+	} else {
+		sched.maxmcount = int32(in)
+	}
 	checkmcount()
 	unlock(&sched.lock)
 	return
