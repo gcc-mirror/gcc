@@ -11,12 +11,11 @@
 @cindex Ada
 @cindex Fortran
 @cindex Go
-@cindex Java
 @cindex Objective-C
 @cindex Objective-C++
 GCC stands for ``GNU Compiler Collection''.  GCC is an integrated
 distribution of compilers for several major programming languages.  These
-languages currently include C, C++, Objective-C, Objective-C++, Java,
+languages currently include C, C++, Objective-C, Objective-C++,
 Fortran, Ada, and Go.
 
 The abbreviation @dfn{GCC} has multiple meanings in common use.  The

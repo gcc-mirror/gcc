@@ -1,3 +1,7 @@
+2017-01-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/frontends.texi (G++ and GCC): Remove references to Java.
+	
 2017-01-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/33562
