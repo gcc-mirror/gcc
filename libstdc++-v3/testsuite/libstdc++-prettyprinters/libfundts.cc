@@ -1,5 +1,6 @@
 // { dg-do run { target c++14 } }
 // { dg-options "-g -O0" }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //

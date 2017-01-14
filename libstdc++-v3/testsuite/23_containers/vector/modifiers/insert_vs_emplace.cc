@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // The class X and test code is by by Howard Hinnant and used under a
 // Creative Commons Attribution 4.0 International License.

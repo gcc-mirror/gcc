@@ -1,3 +1,38 @@
+2017-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/array/specialized_algorithms/swap_cxx17.cc:
+	Skip test when -D_GLIBCXX_PROFILE mode is included in options.
+	* testsuite/23_containers/map/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/try_emplace/1.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/modifiers/extract.cc::
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/extract.cc::
+	Likewise.
+	* testsuite/23_containers/unordered_set/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/insert_vs_emplace.cc:
+	Likewise.
+	* testsuite/25_algorithms/binary_search/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/partitioned.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+
 2017-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65411
