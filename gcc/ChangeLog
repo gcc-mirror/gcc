@@ -1,7 +1,20 @@
+2017-01-14  Alan Modra  <amodra@gmail.com>
+
+	PR target/72749
+	* combine.c (recog_for_combine_1): Set INSN_CODE before calling
+	target legitimate_combined_insn.
+	* config/rs6000/rs6000.c (TARGET_LEGITIMATE_COMBINED_INSN): Define.
+	(rs6000_legitimate_combined_insn): New function.
+	* config/rs6000/rs6000.md (UNSPEC_DOLOOP): Delete, and remove
+	all uses.
+	(ctr<mode>_internal3): Rename from *ctr<mode>_internal5.
+	(ctr<mode>_internal4): Rename from *ctr<mode>_internal6.
+	(ctr<mode>_internal1, ctr<mode>_internal2): Remove '*' from name.
+
 2017-01-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/frontends.texi (G++ and GCC): Remove references to Java.
-	
+
 2017-01-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/33562
@@ -362,7 +375,7 @@
 	* config.gcc (*-*-fuchsia*): Set native_system_header_dir.
 	(aarch64*-*-fuchsia*, arm*-*-fuchsia*, x86_64-*-fuchsia*): Add to
 	targets.
-	* config.host: (aarch64*-*-fuchsia*, arm*-*-fuchsia*): Add to hosts. 
+	* config.host: (aarch64*-*-fuchsia*, arm*-*-fuchsia*): Add to hosts.
 
 2016-01-10  Richard Biener  <rguenther@suse.de>
 

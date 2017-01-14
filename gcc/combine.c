@@ -11201,6 +11201,7 @@ recog_for_combine_1 (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
       old_icode = INSN_CODE (insn);
       PATTERN (insn) = pat;
       REG_NOTES (insn) = notes;
+      INSN_CODE (insn) = insn_code_number;
 
       /* Allow targets to reject combined insn.  */
       if (!targetm.legitimate_combined_insn (insn))
