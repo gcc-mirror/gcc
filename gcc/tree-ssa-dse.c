@@ -602,8 +602,9 @@ private:
 
 /* Delete a dead call STMT, which is mem* call of some kind.  */
 static void
-delete_dead_call (gimple *stmt)
+delete_dead_call (gimple_stmt_iterator *gsi)
 {
+  gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  Deleted dead call: ");
@@ -612,13 +613,12 @@ delete_dead_call (gimple *stmt)
     }
 
   tree lhs = gimple_call_lhs (stmt);
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   if (lhs)
     {
       tree ptr = gimple_call_arg (stmt, 0);
       gimple *new_stmt = gimple_build_assign (lhs, ptr);
       unlink_stmt_vdef (stmt);
-      if (gsi_replace (&gsi, new_stmt, true))
+      if (gsi_replace (gsi, new_stmt, true))
         bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
     }
   else
@@ -627,7 +627,7 @@ delete_dead_call (gimple *stmt)
       unlink_stmt_vdef (stmt);
 
       /* Remove the dead store.  */
-      if (gsi_remove (&gsi, true))
+      if (gsi_remove (gsi, true))
 	bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
       release_defs (stmt);
     }
@@ -636,8 +636,9 @@ delete_dead_call (gimple *stmt)
 /* Delete a dead store STMT, which is a gimple assignment. */
 
 static void
-delete_dead_assignment (gimple *stmt)
+delete_dead_assignment (gimple_stmt_iterator *gsi)
 {
+  gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  Deleted dead store: ");
@@ -649,9 +650,8 @@ delete_dead_assignment (gimple *stmt)
   unlink_stmt_vdef (stmt);
 
   /* Remove the dead store.  */
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   basic_block bb = gimple_bb (stmt);
-  if (gsi_remove (&gsi, true))
+  if (gsi_remove (gsi, true))
     bitmap_set_bit (need_eh_cleanup, bb->index);
 
   /* And release any SSA_NAMEs set in this statement back to the
@@ -717,7 +717,7 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 		}
 
 	      if (store_status == DSE_STORE_DEAD)
-		delete_dead_call (stmt);
+		delete_dead_call (gsi);
 	      return;
 	    }
 
@@ -760,7 +760,7 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  && !gimple_clobber_p (use_stmt))
 	return;
 
-      delete_dead_assignment (stmt);
+      delete_dead_assignment (gsi);
     }
 }
 
