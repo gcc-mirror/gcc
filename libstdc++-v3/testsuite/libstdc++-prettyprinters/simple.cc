@@ -2,6 +2,7 @@
 
 // { dg-do run }
 // { dg-options "-g -O0 -std=gnu++98" }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //

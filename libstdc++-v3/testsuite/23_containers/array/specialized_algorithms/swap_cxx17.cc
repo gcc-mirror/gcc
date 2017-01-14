@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
