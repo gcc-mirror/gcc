@@ -1,6 +1,17 @@
 2017-01-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline
+        2017-01-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/78389
+	* include/bits/list.tcc (merge(list&&)):
+	Adjust list sizes if the comparator throws.
+	(merge(list&&, _StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operations/78389.cc: New.
+
+2017-01-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
         2016-12-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Make the perfect-forwarding constructor of a two-element tuple
