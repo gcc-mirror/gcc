@@ -1,3 +1,12 @@
+2017-01-14  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/79090
+	* tree-ssa-dse.c (valid_ao_ref_for_dse): Reject zero length and
+	variable length stores.
+	(compute_trims): Delete dead assignment to *trim_tail.
+	(dse_dom_walker::dse_optimize_stmt): Optimize mem* calls with
+	zero length.
+
 2017-01-14  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/78626

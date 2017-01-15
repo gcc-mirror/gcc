@@ -129,6 +129,8 @@ valid_ao_ref_for_dse (ao_ref *ref)
 {
   return (ao_ref_base (ref)
 	  && ref->max_size != -1
+	  && ref->size != 0
+	  && ref->max_size == ref->size
 	  && (ref->offset % BITS_PER_UNIT) == 0
 	  && (ref->size % BITS_PER_UNIT) == 0
 	  && (ref->size != -1));
@@ -221,7 +223,6 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail)
      the REF to compute the trims.  */
 
   /* Now identify how much, if any of the tail we can chop off.  */
-  *trim_tail = 0;
   int last_orig = (ref->size / BITS_PER_UNIT) - 1;
   int last_live = bitmap_last_set_bit (live);
   *trim_tail = (last_orig - last_live) & ~0x1;
@@ -700,6 +701,16 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  case BUILT_IN_MEMMOVE:
 	  case BUILT_IN_MEMSET:
 	    {
+	      /* Occasionally calls with an explicit length of zero
+		 show up in the IL.  It's pointless to do analysis
+		 on them, they're trivially dead.  */
+	      tree size = gimple_call_arg (stmt, 2);
+	      if (integer_zerop (size))
+		{
+		  delete_dead_call (gsi);
+		  return;
+		}
+
 	      gimple *use_stmt;
 	      enum dse_store_status store_status;
 	      m_byte_tracking_enabled
