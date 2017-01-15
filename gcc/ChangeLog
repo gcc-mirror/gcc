@@ -1,3 +1,9 @@
+2017-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78751
+	* ifcvt.c (find_cond_trap): If we generated a non-existing insn,
+	give up.
+
 2017-01-14  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/79090
