@@ -4686,6 +4686,11 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   if (seq == NULL)
     return FALSE;
 
+  /* If that results in an invalid insn, back out.  */
+  for (rtx_insn *x = seq; x; x = NEXT_INSN (x))
+    if (recog_memoized (x) < 0)
+      return FALSE;
+
   /* Emit the new insns before cond_earliest.  */
   emit_insn_before_setloc (seq, cond_earliest, INSN_LOCATION (trap));
 
