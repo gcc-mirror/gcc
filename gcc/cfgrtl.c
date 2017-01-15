@@ -1935,7 +1935,8 @@ rtl_split_edge (edge edge_in)
 	  if (last
 	      && JUMP_P (last)
 	      && edge_in->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	      && extract_asm_operands (PATTERN (last)) != NULL_RTX
+	      && (extract_asm_operands (PATTERN (last))
+		  || JUMP_LABEL (last) == before)
 	      && patch_jump_insn (last, before, bb))
 	    df_set_bb_dirty (edge_in->src);
 	}

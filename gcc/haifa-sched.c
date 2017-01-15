@@ -6495,7 +6495,7 @@ dump_insn_stream (rtx_insn *head, rtx_insn *tail)
 
       if (sched_verbose >= 4)
 	{
-	  if (NOTE_P (insn) || recog_memoized (insn) < 0)
+	  if (NOTE_P (insn) || LABEL_P (insn) || recog_memoized (insn) < 0)
 	    fprintf (sched_dump, "nothing");
 	  else
 	    print_reservation (sched_dump, insn);

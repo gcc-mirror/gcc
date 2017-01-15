@@ -1,5 +1,13 @@
 2017-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR target/72749
+	* cfgrtl.c (rtl_split_edge): Also patch jump insns that jump to the
+	fallthrough.
+	* haifa-sched.c (dump_insn_stream): Don't crash if there is a label
+	in the currently scheduled RTL fragment.
+
+2017-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/78751
 	* ifcvt.c (find_cond_trap): If we generated a non-existing insn,
 	give up.
