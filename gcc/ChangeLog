@@ -1,3 +1,8 @@
+2017-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Do not
+	call recog here.  Assert that INSN_CODE (insn) is non-negative.
+
 2017-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/72749
