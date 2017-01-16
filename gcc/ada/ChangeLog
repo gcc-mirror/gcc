@@ -1,3 +1,8 @@
+2017-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/49726
+	* gcc-interface/lang.opt (gant, gnatO, gnat): Add Driver flag.
+
 2017-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (SPARC/Solaris): Fix typo.

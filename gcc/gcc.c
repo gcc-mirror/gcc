@@ -402,6 +402,7 @@ static const char *compare_debug_auxbase_opt_spec_function (int, const char **);
 static const char *pass_through_libs_spec_func (int, const char **);
 static const char *replace_extension_spec_func (int, const char **);
 static const char *greater_than_spec_func (int, const char **);
+static const char *debug_level_greater_than_spec_func (int, const char **);
 static char *convert_white_space (char *);
 
 /* The Specs Language
@@ -833,14 +834,16 @@ proper position among the other output files.  */
      && defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
 #  define ASM_DEBUG_SPEC						\
       (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG				\
-       ? "%{!g0:%{gdwarf*:--gdwarf2}%{!gdwarf*:%{g*:--gstabs}}}" ASM_MAP	\
-       : "%{!g0:%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}}" ASM_MAP)
+       ? "%{%:debug-level-gt(0):"					\
+	 "%{gdwarf*:--gdwarf2}%{!gdwarf*:%{g*:--gstabs}}}" ASM_MAP	\
+       : "%{%:debug-level-gt(0):"					\
+	 "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}}" ASM_MAP)
 # else
 #  if defined(DBX_DEBUGGING_INFO) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-#   define ASM_DEBUG_SPEC "%{g*:%{!g0:--gstabs}}" ASM_MAP
+#   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):--gstabs}}" ASM_MAP
 #  endif
 #  if defined(DWARF2_DEBUGGING_INFO) && defined(HAVE_AS_GDWARF2_DEBUG_FLAG)
-#   define ASM_DEBUG_SPEC "%{g*:%{!g0:--gdwarf2}}" ASM_MAP
+#   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):--gdwarf2}}" ASM_MAP
 #  endif
 # endif
 #endif
@@ -1119,7 +1122,8 @@ static const char *cpp_unique_options =
    in turn cause preprocessor symbols to be defined specially.  */
 static const char *cpp_options =
 "%(cpp_unique_options) %1 %{m*} %{std*&ansi&trigraphs} %{W*&pedantic*} %{w}\
- %{f*} %{g*:%{!g0:%{g*} %{!fno-working-directory:-fworking-directory}}} %{O*}\
+ %{f*} %{g*:%{%:debug-level-gt(0):%{g*}\
+ %{!fno-working-directory:-fworking-directory}}} %{O*}\
  %{undef} %{save-temps*:-fpch-preprocess}";
 
 /* This contains cpp options which are not passed when the preprocessor
@@ -1639,6 +1643,7 @@ static const struct spec_function static_spec_functions[] =
   { "pass-through-libs",	pass_through_libs_spec_func },
   { "replace-extension",	replace_extension_spec_func },
   { "gt",			greater_than_spec_func },
+  { "debug-level-gt",		debug_level_greater_than_spec_func },
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -9858,6 +9863,27 @@ greater_than_spec_func (int argc, const char **argv)
   gcc_assert (converted != argv[argc - 1]);
 
   if (arg > lim)
+    return "";
+
+  return NULL;
+}
+
+/* Returns "" if debug_info_level is greater than ARGV[ARGC-1].
+   Otherwise, return NULL.  */
+
+static const char *
+debug_level_greater_than_spec_func (int argc, const char **argv)
+{
+  char *converted;
+
+  if (argc != 1)
+    fatal_error (input_location,
+		 "wrong number of arguments to %%:debug-level-gt");
+
+  long arg = strtol (argv[0], &converted, 10);
+  gcc_assert (converted != argv[0]);
+
+  if (debug_info_level > arg)
     return "";
 
   return NULL;
