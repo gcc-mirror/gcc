@@ -1,3 +1,8 @@
+2017-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/78616
+	* system.h: Poison strndup.
+
 2017-01-16  Alan Modra  <amodra@gmail.com>
 
 	PR target/79098
