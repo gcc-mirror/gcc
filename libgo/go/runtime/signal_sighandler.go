@@ -25,7 +25,7 @@ var crashing int32
 // are not allowed.
 //
 //go:nowritebarrierrec
-func sighandler(sig uint32, info *siginfo, ctxt unsafe.Pointer, gp *g) {
+func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 	_g_ := getg()
 	c := sigctxt{info, ctxt}
 

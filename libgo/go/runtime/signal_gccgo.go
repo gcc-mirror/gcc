@@ -46,15 +46,13 @@ func kill(pid _pid_t, sig uint32) int32
 //extern setitimer
 func setitimer(which int32, new *_itimerval, old *_itimerval) int32
 
-type siginfo _siginfo_t
-
 type sigTabT struct {
 	flags int32
 	name  string
 }
 
 type sigctxt struct {
-	info *siginfo
+	info *_siginfo_t
 	ctxt unsafe.Pointer
 }
 
@@ -128,9 +126,9 @@ func raiseproc(sig uint32) {
 
 //go:nosplit
 //go:nowritebarrierrec
-func sigfwd(fn uintptr, sig uint32, info *siginfo, ctx unsafe.Pointer) {
+func sigfwd(fn uintptr, sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 	f1 := &[1]uintptr{fn}
-	f2 := *(*func(uint32, *siginfo, unsafe.Pointer))(unsafe.Pointer(&f1))
+	f2 := *(*func(uint32, *_siginfo_t, unsafe.Pointer))(unsafe.Pointer(&f1))
 	f2(sig, info, ctx)
 }
 

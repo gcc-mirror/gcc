@@ -485,10 +485,10 @@ func setSigactionHandler(*_sigaction, uintptr)
 // Retrieve fields from the siginfo_t and ucontext_t pointers passed
 // to a signal handler using C, as they are often hidden in a union.
 // Returns  and, if available, PC where signal occurred.
-func getSiginfo(*siginfo, unsafe.Pointer) (sigaddr uintptr, sigpc uintptr)
+func getSiginfo(*_siginfo_t, unsafe.Pointer) (sigaddr uintptr, sigpc uintptr)
 
 // Implemented in C for gccgo.
-func dumpregs(*siginfo, unsafe.Pointer)
+func dumpregs(*_siginfo_t, unsafe.Pointer)
 
 // Temporary for gccgo until we port proc.go.
 //go:linkname getsched runtime.getsched
