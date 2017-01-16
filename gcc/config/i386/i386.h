@@ -1211,9 +1211,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   (CC_REGNO_P (REGNO) ? VOIDmode					\
    : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode			\
    : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), false) \
-   : (MODE) == HImode && !(TARGET_PARTIAL_REG_STALL			\
+   : (MODE) == HImode && !((GENERAL_REGNO_P (REGNO)			\
+			    && TARGET_PARTIAL_REG_STALL)		\
 			   || MASK_REGNO_P (REGNO)) ? SImode		\
-   : (MODE) == QImode && !(TARGET_64BIT || QI_REGNO_P (REGNO)		\
+   : (MODE) == QImode && !(ANY_QI_REGNO_P (REGNO)			\
 			   || MASK_REGNO_P (REGNO)) ? SImode		\
    : (MODE))
 
