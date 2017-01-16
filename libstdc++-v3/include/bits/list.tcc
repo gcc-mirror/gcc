@@ -364,8 +364,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  __catch(...)
 	    {
 	      size_t __dist = distance(__first2, __last2);
-	      this->_M_inc_size(__dist);
-	      __x._M_set_size(__orig_size - __dist);
+	      this->_M_inc_size(__orig_size - __dist);
+	      __x._M_set_size(__dist);
 	      __throw_exception_again;
 	    }
 	}
@@ -412,8 +412,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    __catch(...)
 	      {
 		size_t __dist = distance(__first2, __last2);
-		this->_M_inc_size(__dist);
-		__x._M_set_size(__orig_size - __dist);
+		this->_M_inc_size(__orig_size - __dist);
+		__x._M_set_size(__dist);
 		__throw_exception_again;
 	      }
 	  }

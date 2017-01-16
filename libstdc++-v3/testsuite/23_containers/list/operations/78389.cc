@@ -57,15 +57,18 @@ int main()
     std::list<int> a{1, 2, 3, 4};
     std::list<int> b{5, 6, 7, 8, 9, 10, 11, 12};
     try {
-      a.merge(b, ThrowingComparator{5, 0});
+      a.merge(b, ThrowingComparator{4, 0});
     } catch (...) {
     }
-    VERIFY(a.size() == 8 && b.size() == 4);
+    VERIFY(a.size() == std::distance(a.begin(), a.end()) &&
+	   b.size() == std::distance(b.begin(), b.end()));
     std::list<X> ax{1, 2, 3, 4};
     std::list<X> bx{5, 6, 7, 8, 9, 10, 11, 12};
-    throw_after_X = 5;
+    throw_after_X = 4;
     try {
         ax.merge(bx);
     } catch (...) {
     }
+    VERIFY(ax.size() == std::distance(ax.begin(), ax.end()) &&
+	   bx.size() == std::distance(bx.begin(), bx.end()));
 }
