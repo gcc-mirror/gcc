@@ -22,8 +22,8 @@ test_ne_int (vector bool int x, vector bool int y)
 	return vec_cmpne (x, y);
 }
 
-vector bool long
-test_ne_long (vector bool long x, vector bool long y)
+vector bool long long
+test_ne_long (vector bool long long x, vector bool long long y)
 {
 	return vec_cmpne (x, y);
 }
