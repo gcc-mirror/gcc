@@ -2049,7 +2049,8 @@ format_directive (const pass_sprintf_length::call_info &info,
 		  const char* fmtstr
 		    = (info.bounded
 		       ? G_("%<%.*s%> directive output may be truncated "
-			    "writing %wu or more bytes a region of size %wu")
+			    "writing %wu or more bytes into a region "
+			    "of size %wu")
 		       : G_("%<%.*s%> directive writing %wu or more bytes "
 			    "into a region of size %wu"));
 		  warned = fmtwarn (dirloc, pargrange, NULL,

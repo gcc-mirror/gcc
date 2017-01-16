@@ -1,3 +1,8 @@
+2017-01-16  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-sprintf.c (format_directive): Correct a typo in a warning
+	message.
+
 2017-01-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rtx_is_swappable_p): Change
