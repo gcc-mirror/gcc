@@ -1,3 +1,11 @@
+2017-01-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/78389
+	* include/bits/list.tcc (merge(list&&)): Fix backwards size adjustments.
+	(merge(list&&, _StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operations/78389.cc: Add
+	better test for the sizes.
+
 2017-01-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/array/specialized_algorithms/swap_cxx17.cc:
