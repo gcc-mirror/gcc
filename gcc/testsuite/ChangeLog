@@ -1,3 +1,8 @@
+2017-01-16 Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-p9.c (test_ne_long()):
+	Change arguments and return type to bool long long.
+
 2017-01-16  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/79051
