@@ -16304,6 +16304,12 @@ vector unsigned short vec_vmuloub (vector unsigned char,
 
 vector float vec_nmsub (vector float, vector float, vector float);
 
+vector signed char vec_nabs (vector signed char);
+vector signed short vec_nabs (vector signed short);
+vector signed int vec_nabs (vector signed int);
+vector float vec_nabs (vector float);
+vector double vec_nabs (vector double);
+
 vector float vec_nor (vector float, vector float);
 vector signed int vec_nor (vector signed int, vector signed int);
 vector unsigned int vec_nor (vector unsigned int, vector unsigned int);
@@ -17709,6 +17715,8 @@ vector bool int vec_mergeo (vector bool int, vector bool int);
 vector long long vec_min (vector long long, vector long long);
 vector unsigned long long vec_min (vector unsigned long long,
                                    vector unsigned long long);
+
+vector signed long long vec_nabs (vector signed long long);
 
 vector long long vec_nand (vector long long, vector long long);
 vector long long vec_nand (vector bool long long, vector long long);
