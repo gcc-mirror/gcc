@@ -1,3 +1,9 @@
+2017-01-16  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/79051
+	* gcc.dg/attr-alloc_size-4.c: Avoid exercising a test case except
+	on x86.
+
 2017-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:

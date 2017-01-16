@@ -138,8 +138,10 @@ test_int_range (int n)
   sink (f_int_1 (SAR (-4, 1234)));   /* { dg-warning "argument 1 range \\\[1235, \[0-9\]+\\\] exceeds maximum object size 1234" } */
   sink (f_int_1 (SAR (min + 1, 1233)));
 
+#if __i386__ || __x86_64__
   /* Avoid failures described in bug 79051.  */
   sink (f_int_1 (SAR (min + 2, 1235)));   /* { dg-warning "argument 1 range \\\[1236, \[0-9\]+\\\] exceeds maximum object size 1234" "" { target { x86_64-*-* } } } */
+#endif
 
   sink (f_int_1 (SAR (0, max)));   /* { dg-warning "argument 1 range \\\[-\[0-9\]*, -1\\\] is negative" } */
   /* The range below includes zero which would be diagnosed by
