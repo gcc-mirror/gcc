@@ -360,7 +360,12 @@ typedef struct avr_args
       }                                                                 \
   } while (0)
 
-#define BRANCH_COST(speed_p, predictable_p) avr_branch_cost
+/* We increase branch costs after reload in order to keep basic-block
+   reordering from introducing out-of-line jumps and to prefer fall-through
+   edges instead.  The default branch costs are 0, mainly because otherwise
+   do_store_flag might come up with bloated code.  */
+#define BRANCH_COST(speed_p, predictable_p)     \
+  (avr_branch_cost + (reload_completed ? 4 : 0))
 
 #define SLOW_BYTE_ACCESS 0
 
