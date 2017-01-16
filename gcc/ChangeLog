@@ -1,5 +1,10 @@
 2017-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79080
+	* loop-doloop.c (doloop_modify): Call unshare_all_rtl_in_chain on
+	sequence.  Formatting fixes.
+	(doloop_optimize): Formatting fixes.
+
 	PR driver/49726
 	* gcc.c (debug_level_greater_than_spec_func): New function.
 	(static_spec_functions): Add debug-level-gt spec function.
