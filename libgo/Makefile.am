@@ -1132,7 +1132,7 @@ if LIBGO_IS_BSD
 $(eval $(call PACKAGE_template,golang_org/x/net/route))
 
 golang_org_x_net_route_lo = \
-	golang_org/x/net/route/route.lo
+	golang_org/x/net/route.lo
 golang_org_x_net_route_check = \
 	golang_org/x/net/route/check
 
@@ -1145,7 +1145,7 @@ if LIBGO_IS_SOLARIS
 $(eval $(call PACKAGE_template,golang_org/x/net/lif))
 
 golang_org_x_net_lif_lo = \
-	golang_org/x/net/lif/lif.lo
+	golang_org/x/net/lif.lo
 golang_org_x_net_lif_check = \
 	golang_org/x/net/lif/check
 
