@@ -1,3 +1,9 @@
+2017-01-16  Alan Modra  <amodra@gmail.com>
+
+	PR target/79098
+	* config/rs6000/rs6000.c (rs6000_legitimate_combined_insn): Don't
+	use a switch.
+
 2017-01-16  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.h (BRANCH_COST) [reload_completed]: Increase by 4.
