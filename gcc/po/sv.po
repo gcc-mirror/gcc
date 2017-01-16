@@ -14,6 +14,7 @@
 # offset		avstånd
 # overload		överlagra
 # rank			ordning
+# scope			räckvidd
 # store			lagra
 # thunk			snutt
 msgid ""
@@ -21,7 +22,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:52+0000\n"
-"PO-Revision-Date: 2017-01-07 12:33+0100\n"
+"PO-Revision-Date: 2017-01-15 13:46+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -5184,7 +5185,7 @@ msgstr "Aktuell stränglängd matchar inte den deklarerade för attrappargument 
 #: fortran/trans-decl.c:5644
 #, c-format
 msgid "Actual string length is shorter than the declared one for dummy argument '%s' (%ld/%ld)"
-msgstr "Aktuellt stränglängd är kortaren än den deklarerade för attrappargument ”%s” (%ld/%ld)"
+msgstr "Aktuell stränglängd är kortare än den deklarerade för attrappargument ”%s” (%ld/%ld)"
 
 #: fortran/trans-expr.c:8567
 #, c-format
@@ -15901,17 +15902,17 @@ msgstr "Andra argumentet till MOD vid %L är noll"
 #: calls.c:1354
 #, gcc-internal-format
 msgid "argument %i value %qE exceeds maximum object size %E"
-msgstr ""
+msgstr "argument %i:s värde %qE överskrider maximal objektstorlek %E"
 
 #: calls.c:1399 calls.c:1424
 #, gcc-internal-format
 msgid "argument %i range [%E, %E] exceeds maximum object size %E"
-msgstr ""
+msgstr "argument %i:s intervall [%E, %E] överskrider maximal objektstorlek %E"
 
 #: calls.c:1401
 #, gcc-internal-format
 msgid "argument %i range [%E, %E] is both negative and exceeds maximum object size %E"
-msgstr ""
+msgstr "argument %i:s intervall [%E, %E] är både negativt och överskrider maximal objektstorlek %E"
 
 #: calls.c:1418
 #, fuzzy, gcc-internal-format
@@ -15922,12 +15923,12 @@ msgstr "Argument till %s-funktion vid %L är negativt"
 #: calls.c:1453
 #, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds %<SIZE_MAX%>"
-msgstr ""
+msgstr "produkten %<%E * %E%> av argument %i och %i överskrider %<SIZE_MAX%>"
 
 #: calls.c:1459
 #, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds maximum object size %E"
-msgstr ""
+msgstr "produkten %<%E * %E%> av argument %i och %i överskrider maximal objektstorlek %E"
 
 #: calls.c:1470 calls.c:1473
 #, fuzzy, gcc-internal-format
@@ -17931,77 +17932,77 @@ msgstr "icke-null-argument %qD jämfört med NULL"
 #: gimple-ssa-sprintf.c:1960
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> avhugget när %wu byte skrevs till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:1962 gimple-ssa-sprintf.c:2058
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu bytes into a region of size %wu"
-msgstr ""
+msgstr "direktivet %<%.*s%> skrev %wu byte till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:1973
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size %wu"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> avhugget när mellan %wu och %wu byte skrevs till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:1976 gimple-ssa-sprintf.c:2027
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size %wu"
-msgstr ""
+msgstr "direktivet %<%.*s%> skrev mellan %wu och %wu byte till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:1987
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size %wu"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> avhugget när %wu eller fler byte skrevs till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:1989 gimple-ssa-sprintf.c:2013
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size %wu"
-msgstr ""
+msgstr "direktivet %<%.*s%> skrev %wu eller fler byte till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2011
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes a region of size %wu"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> kan ha huggts av när %wu eller mer byte skrevs till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2024
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size %wu"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> kan ha huggts av när mellan %wu och %wu byte skrevs till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2053
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated while writing %wu bytes into a region of size %wu"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> avhugget när %wu byte skrevs till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2055
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated while writing %wu byte into a region of size %wu"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> avhugget när %wu byte skrevs till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2060
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size %wu"
-msgstr ""
+msgstr "direktivet %<%.*s%> skrev %wu byte till en region av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2097
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %qu and %wu bytes may exceed minimum required size of 4095"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> mellan %qu och %wu byte kan överskrida minsta nödvändiga storlek på 4095"
 
 #: gimple-ssa-sprintf.c:2099
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %qu and %wu bytes exceeds minimum required size of 4095"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> mellan %qu och %wu byte överskrider minsta nödvändiga storlek på 4095"
 
 #: gimple-ssa-sprintf.c:2130
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes causes result to exceed %<INT_MAX%>"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> mellan %wu och %wu byte får resultatet att överskrida %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2132
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may cause result to exceed %<INT_MAX%>"
-msgstr ""
+msgstr "utdata från direktivet %<%.*s%> mellan %wu och %wu byte kan få resultatet att överskrida %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2144
 #, fuzzy, gcc-internal-format
@@ -18018,77 +18019,77 @@ msgstr "avaktivera passet %s för funktioner i intervallet [%u, %u]"
 #: gimple-ssa-sprintf.c:2150
 #, gcc-internal-format
 msgid "using the range [%E, %E] for directive argument"
-msgstr ""
+msgstr "använder intevallet [%E, %E] som direktivargument"
 
 #: gimple-ssa-sprintf.c:2235
 #, gcc-internal-format
 msgid "output may be truncated before the last format character"
-msgstr ""
+msgstr "utdata kan trunkeras före det sista formattecknet"
 
 #: gimple-ssa-sprintf.c:2238
 #, gcc-internal-format
 msgid "may write a terminating nul past the end of the destination"
-msgstr ""
+msgstr "kan skriva en avslutande nolla efter slutet på destinationen"
 
 #: gimple-ssa-sprintf.c:2240
 #, gcc-internal-format
 msgid "writing a terminating nul past the end of the destination"
-msgstr ""
+msgstr "skriver en avslutande nolla efter slutet på destinationen"
 
 #: gimple-ssa-sprintf.c:2252
 #, gcc-internal-format
 msgid "output may be truncated at or before format character %qc at offset %wu"
-msgstr ""
+msgstr "utdata kan trunkeras vid eller före formattecknet %qc på position %wu"
 
 #: gimple-ssa-sprintf.c:2254
 #, gcc-internal-format
 msgid "output truncated at format character %qc at offset %wu"
-msgstr ""
+msgstr "utdata trunkerades vid formattecknet %qc på positione %wu"
 
 #: gimple-ssa-sprintf.c:2256
 #, gcc-internal-format
 msgid "may write format character %#qc at offset %wu past the end of the destination"
-msgstr ""
+msgstr "kan skriva formatteknet %#qc på position %wu efter slutet på destinationen"
 
 #: gimple-ssa-sprintf.c:2258
 #, gcc-internal-format
 msgid "writing format character %#qc at offset %wu past the end of the destination"
-msgstr ""
+msgstr "skriver formatteknet %#qc på position %wu efter slutet på destinationen"
 
 #: gimple-ssa-sprintf.c:2282
 #, gcc-internal-format
 msgid "format output between %wu and %wu bytes into a destination of size %wu"
-msgstr ""
+msgstr "formatudata mellan %wu och %wu byte in i en destination av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2288
 #, gcc-internal-format
 msgid "format output %wu byte into a destination of size %wu"
-msgstr ""
+msgstr "formatudata på %wu byte in i en destination av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2289
 #, gcc-internal-format
 msgid "format output %wu bytes into a destination of size %wu"
-msgstr ""
+msgstr "formatudata på %wu byte in i en destination av storlek %wu"
 
 #: gimple-ssa-sprintf.c:2338
 #, gcc-internal-format
 msgid "output between %wu and %wu bytes causes result to exceed %<INT_MAX%>"
-msgstr ""
+msgstr "utdata mellan %wu och %wu byte får resultatet att överskrida %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2340
 #, gcc-internal-format
 msgid "output between %wu and %wu bytes may cause result to exceed %<INT_MAX%>"
-msgstr ""
+msgstr "utdata mellan %wu och %wu byte kan få resultatet att överskrida %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2935
 #, gcc-internal-format
 msgid "specified bound %wu exceeds maximum object size %wu"
-msgstr ""
+msgstr "angiven gräns på %wu överskrider maximal objektstorlek %wu"
 
 #: gimple-ssa-sprintf.c:2941
 #, gcc-internal-format
 msgid "specified bound %wu exceeds %<INT_MAX %>"
-msgstr ""
+msgstr "angiven gräns på %wu överskrider %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.c:2991
 #, fuzzy, gcc-internal-format
@@ -18099,7 +18100,7 @@ msgstr "nollpekare"
 #: gimple-ssa-sprintf.c:3008
 #, gcc-internal-format
 msgid "specified bound %wu exceeds the size %wu of the destination object"
-msgstr ""
+msgstr "angiven gräns på %wu överskrider storleken %wu på destinationsobjektet"
 
 #: gimple-ssa-sprintf.c:3020
 #, fuzzy, gcc-internal-format
@@ -18128,7 +18129,7 @@ msgstr "argumentet till %qs är för stort (max. %d)"
 #: gimple-ssa-warn-alloca.c:467
 #, gcc-internal-format, gfc-internal-format
 msgid "limit is %u bytes, but argument may be as large as %s"
-msgstr ""
+msgstr "gränsen är %u byte, men argumentet kan vara så stort som %s"
 
 #: gimple-ssa-warn-alloca.c:474
 #, fuzzy, gcc-internal-format
@@ -18145,7 +18146,7 @@ msgstr "argumentet till %qs är för stort (max. %d)"
 #: gimple-ssa-warn-alloca.c:480
 #, gcc-internal-format, gfc-internal-format
 msgid "limit is %u bytes, but argument is %s"
-msgstr ""
+msgstr "gränsen är %u byte, men argumentet är %s"
 
 #: gimple-ssa-warn-alloca.c:486
 #, fuzzy, gcc-internal-format
@@ -18174,17 +18175,17 @@ msgstr "ogiltigt användning av %<auto%>"
 #: gimple-ssa-warn-alloca.c:496
 #, gcc-internal-format
 msgid "use of %<alloca%> within a loop"
-msgstr ""
+msgstr "användning av %<alloca%> inuti en slinga"
 
 #: gimple-ssa-warn-alloca.c:501
 #, gcc-internal-format
 msgid "argument to variable-length array may be too large due to conversion from %qT to %qT"
-msgstr ""
+msgstr "argumentet till en vektor med variabel längd kan vara för stort på grund av konvertering från %qT till %qT"
 
 #: gimple-ssa-warn-alloca.c:504
 #, gcc-internal-format
 msgid "argument to %<alloca%> may be too large due to conversion from %qT to %qT"
-msgstr ""
+msgstr "argumentet till %<alloca%> kan vara för stort på grund av konvertering från %qT till %qT"
 
 #: gimple-ssa-warn-alloca.c:510
 #, fuzzy, gcc-internal-format
@@ -18217,17 +18218,17 @@ msgstr "sats utan effekt"
 #: gimplify.c:2085 gimplify.c:2093
 #, gcc-internal-format
 msgid "this statement may fall through"
-msgstr ""
+msgstr "denna sats kan falla igenom"
 
 #: gimplify.c:2095
 #, gcc-internal-format
 msgid "here"
-msgstr ""
+msgstr "här"
 
 #: gimplify.c:2202
 #, gcc-internal-format
 msgid "attribute %<fallthrough%> not preceding a case label or default label"
-msgstr ""
+msgstr "attributet %<fallthrough%> föregår inte en case-etikett eller standardetikett"
 
 #: gimplify.c:3270
 #, gcc-internal-format
@@ -18377,7 +18378,7 @@ msgstr "%qs %<if%>-klausulmodifierare förväntades snarare än %qs"
 #: gimplify.c:8557
 #, gcc-internal-format
 msgid "%<_Atomic%> %qD in implicit %<map%> clause"
-msgstr ""
+msgstr "%<_Atomic%> %qD i implicit %<map%>-klausul"
 
 #: gimplify.c:8590
 #, fuzzy, gcc-internal-format
@@ -19396,12 +19397,12 @@ msgstr "ignorera linjärt steg noll"
 #: omp-simd-clone.c:258
 #, gcc-internal-format
 msgid "ignoring %<#pragma omp declare simd%> on function with %<_Atomic%> qualified return type"
-msgstr ""
+msgstr "ignorerar %<#pragma omp declare simd%> på en funktion med en returtyp kvalificerad med %<_Atomic%>"
 
 #: omp-simd-clone.c:269
 #, gcc-internal-format
 msgid "ignoring %<#pragma omp declare simd%> on function with %<_Atomic%> qualified non-%<uniform%> argument"
-msgstr ""
+msgstr "ignorerar %<#pragma omp declare simd%> på en funktion med ett icke-%<uniform%>-argument kvalificerat med %<_Atomic%>"
 
 #: optabs.c:4195
 #, gcc-internal-format
@@ -19570,7 +19571,7 @@ msgstr "-fsanitize-recover=leak stödjs inte"
 #: opts.c:1004
 #, gcc-internal-format
 msgid "-fsanitize-address-use-after-scope requires -fstack-reuse=none option"
-msgstr ""
+msgstr "-fsanitize-address-use-after-scope förutsätter flaggan -fstack-reuse=none"
 
 #: opts.c:1409
 #, gcc-internal-format
@@ -19818,7 +19819,7 @@ msgstr "insticksmodul %s skulle ha angetts före -fplugin-arg-%s på kommandorad
 #: plugin.c:337
 #, gcc-internal-format, gfc-internal-format
 msgid "unable to register info for plugin '%s' - plugin name not found"
-msgstr ""
+msgstr "kan inte registrera information för insticksmodulen ”%s” – inget namn på insticksmodulen finns"
 
 #: plugin.c:433
 #, gcc-internal-format, gfc-internal-format
@@ -20586,7 +20587,7 @@ msgstr "%qs är inkompatibel med %qs"
 #: toplev.c:2052
 #, gcc-internal-format
 msgid "self-tests are not enabled in this build"
-msgstr ""
+msgstr "självtester är inte aktiverade i detta bygge"
 
 #: trans-mem.c:620
 #, gcc-internal-format
@@ -21114,12 +21115,12 @@ msgstr "vektortyper förväntades i sad-uttryck"
 #: tree-cfg.c:4194
 #, gcc-internal-format
 msgid "type mismatch in BIT_INSERT_EXPR"
-msgstr ""
+msgstr "typen stämmer inte i BIT_INSERT_EXPR"
 
 #: tree-cfg.c:4204
 #, gcc-internal-format
 msgid "not allowed type combination in BIT_INSERT_EXPR"
-msgstr ""
+msgstr "otillåten typkombination i BIT_INSERT_EXPR"
 
 #: tree-cfg.c:4212
 #, fuzzy, gcc-internal-format
@@ -21130,12 +21131,12 @@ msgstr "ogiltig position eller storleksoperand till BIT_FIELD_REF"
 #: tree-cfg.c:4222
 #, gcc-internal-format
 msgid "insertion out of range in BIT_INSERT_EXPR"
-msgstr ""
+msgstr "insättning utanför intervallet i BIT_INSERT_EXPR"
 
 #: tree-cfg.c:4232
 #, gcc-internal-format
 msgid "vector insertion not at element boundary"
-msgstr ""
+msgstr "vektorinsättning inte på elemntgräns"
 
 #: tree-cfg.c:4264
 #, gcc-internal-format
@@ -21638,12 +21639,12 @@ msgstr "trasigt i SSA"
 #: tree-profile.c:608
 #, gcc-internal-format
 msgid "target does not support atomic profile update, single mode is selected"
-msgstr ""
+msgstr "målet stödjer inte atomär profiluppdatering, enkelläge valt"
 
 #: tree-ssa-ccp.c:3385
 #, gcc-internal-format, gfc-internal-format
 msgid "argument %u null where non-null expected"
-msgstr ""
+msgstr "argument %u är noll där icke-noll förväntades"
 
 #: tree-ssa-ccp.c:3390
 #, fuzzy, gcc-internal-format
@@ -21730,7 +21731,7 @@ msgstr "%qE kan användas oinitierad i denna funktion"
 #: tree-ssa.c:641
 #, gcc-internal-format, gfc-internal-format
 msgid "multiple virtual PHI nodes in BB %d"
-msgstr ""
+msgstr "multipla virtuella PHI-noder i GB %d"
 
 #: tree-ssa.c:655 tree-ssa.c:684
 #, fuzzy, gcc-internal-format
@@ -21741,12 +21742,12 @@ msgstr "virtuell definition av en sats är inte aktuell"
 #: tree-ssa.c:671
 #, gcc-internal-format
 msgid "stmt with wrong VUSE"
-msgstr ""
+msgstr "sats med felaktig VUSE"
 
 #: tree-ssa.c:701
 #, gcc-internal-format, gfc-internal-format
 msgid "PHI node with wrong VUSE on edge from BB %d"
-msgstr ""
+msgstr "PHI-nod med felaktig VUSE på båge från GB %d"
 
 #: tree-ssa.c:727
 #, gcc-internal-format
@@ -23234,7 +23235,7 @@ msgstr "adressen till %qD kommer alltid beräknas till %<true%>"
 #: c-family/c-common.c:3335
 #, gcc-internal-format
 msgid "%<*%> in boolean context, suggest %<&&%> instead"
-msgstr ""
+msgstr "%<*%> i boolesk kontext, föreslår %<&&%> istället"
 
 #: c-family/c-common.c:3347
 #, fuzzy, gcc-internal-format
@@ -23251,7 +23252,7 @@ msgstr "kompilatorn kan anta att adressen till %qD kommer alltid beräknas till 
 #: c-family/c-common.c:3372
 #, gcc-internal-format
 msgid "?: using integer constants in boolean context"
-msgstr ""
+msgstr "?: använder heltalskonstanter i en boolesk kontext"
 
 #: c-family/c-common.c:3408
 #, gcc-internal-format
@@ -23408,7 +23409,7 @@ msgstr "felaktig flagga %s till pragma-attribut"
 #: c-family/c-common.c:5586
 #, gcc-internal-format
 msgid "%<fallthrough%> attribute specified multiple times"
-msgstr ""
+msgstr "attributet %<fallthrough%> angivet flera gånger"
 
 #: c-family/c-common.c:5590
 #, fuzzy, gcc-internal-format
@@ -23605,7 +23606,7 @@ msgstr "storleken på en namnlös vektor är för stor"
 #: c-family/c-common.c:7950
 #, gcc-internal-format
 msgid "environment variable SOURCE_DATE_EPOCH must expand to a non-negative integer less than or equal to %wd"
-msgstr ""
+msgstr "miljövariabeln SOURCE_DATE_EPOCH måste expandera till ett ickenegativt heltal mindre än eller lika med %wd"
 
 #: c-family/c-format.c:134 c-family/c-format.c:321
 #, gcc-internal-format
@@ -24144,12 +24145,12 @@ msgstr "föråldrad flagga -I- använd, använd -iquote istället"
 #: c-family/c-opts.c:385
 #, gcc-internal-format
 msgid "-Walloca-larger-than=0 is meaningless"
-msgstr ""
+msgstr "-Walloca-larger-than=0 är meningslöst"
 
 #: c-family/c-opts.c:390
 #, gcc-internal-format
 msgid "-Wvla-larger-than=0 is meaningless"
-msgstr ""
+msgstr "-Wvla-larger-than=0 är meningslöst"
 
 #: c-family/c-opts.c:415
 #, gcc-internal-format
@@ -24730,7 +24731,7 @@ msgstr "logiskt icke tillämpas endast på vänstersidan av jämförelsen"
 #: c-family/c-warn.c:382
 #, gcc-internal-format
 msgid "add parentheses around left hand side expression to silence this warning"
-msgstr ""
+msgstr "lägg till parenteser runt uttrycket på vänster hand för att tysta denna varning"
 
 #: c-family/c-warn.c:512
 #, gcc-internal-format
@@ -25225,7 +25226,7 @@ msgstr "%<memset%> använd med konstant parameter med längd noll; detta kan ber
 #: c-family/c-warn.c:1692
 #, gcc-internal-format
 msgid "%<memset%> used with length equal to number of elements without multiplication by element size"
-msgstr ""
+msgstr "%<memset%> använt med en längd lika med antalet element utan att multiplicera med elementstorleken"
 
 #: c-family/c-warn.c:1728 c/c-typeck.c:11218 c/c-typeck.c:11377
 #: cp/typeck.c:4872
@@ -26071,7 +26072,7 @@ msgstr "FPU-alternativ är bara tillgängliga för ARCv2-arkitekturen"
 #: config/arc/arc.c:878
 #, gcc-internal-format
 msgid "compact-casesi is not applicable to ARCv2"
-msgstr ""
+msgstr "compact-casesi är inte tillämplig på ARCv2"
 
 #: config/arc/arc.c:1377
 #, gcc-internal-format, gfc-internal-format
@@ -26658,7 +26659,7 @@ msgstr "ogiltig fpu för attribute(target(\"%s\"))"
 #: config/arm/arm.c:30336
 #, gcc-internal-format
 msgid "auto fpu selection not currently permitted here"
-msgstr ""
+msgstr "automatiskt fpu-val är närvarande inte tillåtet här"
 
 #: config/arm/arm.c:30343 config/i386/i386.c:6788 config/i386/i386.c:6835
 #: config/s390/s390.c:14875 config/s390/s390.c:14925 config/s390/s390.c:14942
@@ -27558,7 +27559,7 @@ msgstr "option(”%s”) var redan angivet"
 #: config/i386/i386.c:7118
 #, gcc-internal-format
 msgid "Only DWARF debug format is supported for interrupt service routine."
-msgstr ""
+msgstr "Endast felsökningsformatet DWARF stödjs för avbrottshanteringsrutiner."
 
 #: config/i386/i386.c:7217
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -27750,7 +27751,7 @@ msgstr "attributet ms_hook_prologue är inte kompatibelt med -mfentry i 32-bitsl
 #: config/i386/i386.c:13768
 #, gcc-internal-format
 msgid "Dynamic Realign Argument Pointer (DRAP) not supported in interrupt service routine.  This may be worked around by avoiding functions with aggregate return."
-msgstr ""
+msgstr "Dynamic Realign Argument Pointer (DRAP) stödjs inte i avbrottshanteringsrutiner.  Detta gan gås runt genom att undvika funktioner med sammansatta returvärden."
 
 #: config/i386/i386.c:14780
 #, gcc-internal-format
@@ -27988,17 +27989,18 @@ msgstr "%qE-inkompatibelt attribut ignorerat"
 #: config/i386/i386.c:41231
 #, gcc-internal-format
 msgid "interrupt service routine should have a pointer as the first argument"
-msgstr ""
+msgstr "avbrottshanteringsrutiner skall ha en pekare som första argument"
 
+# "unsigned %sint" är tänkt att expanderas till C-syntax
 #: config/i386/i386.c:41238
 #, gcc-internal-format, gfc-internal-format
 msgid "interrupt service routine should have unsigned %sint as the second argument"
-msgstr ""
+msgstr "avbrottshanteringsrutiner skall ha unsigned %sint som andra argument"
 
 #: config/i386/i386.c:41248
 #, gcc-internal-format
 msgid "interrupt service routine can only have a pointer argument and an optional integer argument"
-msgstr ""
+msgstr "avbrottshanteringrutiner kan endast ha ett pekarargument och ett valfritt heltalsargument"
 
 #: config/i386/i386.c:41251
 #, fuzzy, gcc-internal-format
@@ -28572,7 +28574,7 @@ msgstr "%qs måste användas tillsammans med %qs"
 #: config/mips/mips.c:19972
 #, gcc-internal-format
 msgid "%<-mmsa%> must be used with %<-mfp64%> and %<-mhard-float%>"
-msgstr ""
+msgstr "%<-mmsa%> måste användas med %<-mfp64%> och %<-mhard-float%>"
 
 #: config/mips/mips.c:19979
 #, gcc-internal-format
@@ -29018,7 +29020,7 @@ msgstr "COLLECT_GCC måste vara satt."
 #: config/nvptx/mkoffload.c:488
 #, gcc-internal-format
 msgid "either -fopenacc or -fopenmp must be set"
-msgstr ""
+msgstr "antingen -fopenacc eller -fopenmp måste vara satt"
 
 #: config/nvptx/mkoffload.c:552
 #, gcc-internal-format
@@ -29034,7 +29036,7 @@ msgstr "Den inbyggda funktionen %s stödjs inte med de aktuella flaggorna"
 #: config/nvptx/nvptx.c:260
 #, gcc-internal-format
 msgid "static initialization of variable %q+D in %<.shared%> memory is not supported"
-msgstr ""
+msgstr "statisk initiering av variabeln %q+D i %<.shared%>-minne stödjs inte"
 
 #: config/nvptx/nvptx.c:1809
 #, gcc-internal-format
@@ -29044,7 +29046,7 @@ msgstr "kan inte skicka ut ojusterade pekare i ptx-assembler"
 #: config/nvptx/nvptx.c:1999
 #, gcc-internal-format
 msgid "PTX does not support weak declarations (only weak definitions)"
-msgstr ""
+msgstr "PTX stödjer inte svaga deklarationer (endast svaga definitioner)"
 
 #: config/nvptx/nvptx.c:4151
 #, gcc-internal-format
@@ -29101,7 +29103,7 @@ msgstr "-mes0 kan endast användas med C"
 #: config/rl78/rl78.c:370
 #, gcc-internal-format
 msgid "mduc registers only saved for G13 target"
-msgstr ""
+msgstr "mduc-register sparas endast för målet G13"
 
 #: config/rl78/rl78.c:385
 #, gcc-internal-format
@@ -29446,7 +29448,7 @@ msgstr "-mefficient-unaligned-vsx behöver -mallow-movmisalign"
 #: config/rs6000/rs6000.c:4518
 #, gcc-internal-format
 msgid "-mvsx-small-integer requires -mpower8-vector, -mupper-regs-di, and -mdirect-move"
-msgstr ""
+msgstr "-mvsx-small-integer kräver -mpower8-vector, -mupper-regs-di och -mdirect-move"
 
 #: config/rs6000/rs6000.c:4530
 #, gcc-internal-format
@@ -29672,7 +29674,7 @@ msgstr "argument till dss måste vara en 2-bitars literal utan tecken"
 #: config/rs6000/rs6000.c:15844
 #, gcc-internal-format
 msgid "second argument to vec_vextract4b must be 0..12"
-msgstr ""
+msgstr "andra argumentet till vec_vextract4b måste vara 0..12"
 
 #: config/rs6000/rs6000.c:15861
 #, fuzzy, gcc-internal-format
@@ -32788,7 +32790,7 @@ msgstr "%<_Atomic%> tillämpat på en kvalificerad typ"
 #: c/c-parser.c:2602
 #, gcc-internal-format
 msgid "%<__GIMPLE%> only valid with -fgimple"
-msgstr ""
+msgstr "%<__GIMPLE%> är endast giltigt med -fgimple"
 
 #: c/c-parser.c:2695
 #, gcc-internal-format
@@ -34379,7 +34381,7 @@ msgstr "booleskt uttryck förväntades"
 #: c/c-typeck.c:4217
 #, gcc-internal-format
 msgid "did you mean to use logical not?"
-msgstr ""
+msgstr "tänkte du använda logiskt icke?"
 
 #: c/c-typeck.c:4227
 #, gcc-internal-format
@@ -35449,7 +35451,7 @@ msgstr "en linjär klausul använd på variabel som inte är heltal och inte pek
 #: c/c-typeck.c:13040
 #, gcc-internal-format
 msgid "%<_Atomic%> %qD in %<linear%> clause"
-msgstr ""
+msgstr "%<_Atomic%> %qD i %<linear%>-klausul"
 
 #: c/c-typeck.c:13060 cp/semantics.c:5969
 #, gcc-internal-format
@@ -35627,17 +35629,17 @@ msgstr "C++ kräver en befordrad typ, inte en uppräkningstyp, i %<va_arg%>"
 #: c/gimple-parser.c:505
 #, gcc-internal-format
 msgid "%<&&%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<&&%> är inte tillåtet i GIMPLE"
 
 #: c/gimple-parser.c:508
 #, gcc-internal-format
 msgid "%<||%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<||%> är inte tillåtet i GIMPLE"
 
 #: c/gimple-parser.c:576
 #, gcc-internal-format
 msgid "%<!%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<!%> är inte tillåtet i GIMPLE"
 
 #: c/gimple-parser.c:636
 #, fuzzy, gcc-internal-format
@@ -35791,7 +35793,7 @@ msgstr "  en konstruerare som tar ett ensamt argument av sin egen klasstyp är f
 #: cp/call.c:3544
 #, gcc-internal-format
 msgid "  an inherited constructor is not a candidate for initialization from an expression of the same or derived type"
-msgstr ""
+msgstr "  en ärvd konstruerare är inte en kandidat för initiering från ett uttryck av samma eller en härledd typ"
 
 #: cp/call.c:3922
 #, gcc-internal-format
@@ -36959,7 +36961,7 @@ msgstr "skiftuttrycket %q+E spiller över"
 #: cp/constexpr.c:1948
 #, gcc-internal-format
 msgid "arithmetic involving a null pointer in %qE"
-msgstr ""
+msgstr "aritmetik som innefattar en nollpekare i %qE"
 
 #: cp/constexpr.c:2142
 #, gcc-internal-format
@@ -38491,7 +38493,7 @@ msgstr "  det går inte att använda föråldrad bindning vid %q+D för att den 
 #: cp/decl.c:7208
 #, gcc-internal-format
 msgid "cannot decompose class type %qT because it has an anonymous union member"
-msgstr ""
+msgstr "kan inte dekomponera klasstypen %qT för att den har en anonym unionsmedlem"
 
 #: cp/decl.c:7215
 #, fuzzy, gcc-internal-format
@@ -38502,12 +38504,12 @@ msgstr "kan inte skapa en pekare till medlem av %q#T som inte är en klass"
 #: cp/decl.c:7240
 #, gcc-internal-format
 msgid "cannot decompose class type %qT: both it and its base class %qT have non-static data members"
-msgstr ""
+msgstr "kan inte dekomponera klasstypen %qT: både den och dess basklass %qT har ickestatiska datamedlemmar"
 
 #: cp/decl.c:7252
 #, gcc-internal-format
 msgid "cannot decompose class type %qT: its base classes %qT and %qT have non-static data members"
-msgstr ""
+msgstr "kan inte dekomponera klasstypen %qT: dess basklasser %qT och %qT har ickestatiska datamedlemmar"
 
 #: cp/decl.c:7444
 #, fuzzy, gcc-internal-format
@@ -38518,12 +38520,12 @@ msgstr "ISO C90 förbjuder vektor %qE med variabel längd"
 #: cp/decl.c:7452
 #, gcc-internal-format
 msgid "%u names provided while %qT decomposes into %wu elements"
-msgstr ""
+msgstr "%u namn gavs när %qT dekomponeras till %wu element"
 
 #: cp/decl.c:7455
 #, gcc-internal-format
 msgid "only %u names provided while %qT decomposes into %wu elements"
-msgstr ""
+msgstr "endast %u namn gavs när %qT dekomponeras till %wu element"
 
 #: cp/decl.c:7515
 #, fuzzy, gcc-internal-format
@@ -38760,7 +38762,7 @@ msgstr "specialisering av %qD i förekomma i namnrymdsräckvidd"
 #: cp/decl.c:8730
 #, gcc-internal-format
 msgid "deduction guide %qD must be declared in the same scope as %qT"
-msgstr ""
+msgstr "härledningsguiden %qD måste delkareras i samma räckvidd som %qT"
 
 #: cp/decl.c:8732
 #, fuzzy, gcc-internal-format
@@ -39195,7 +39197,7 @@ msgstr "complex ogiltig för %qs"
 #: cp/decl.c:10502
 #, gcc-internal-format
 msgid "template placeholder type %qT must be followed by a simple declarator-id"
-msgstr ""
+msgstr "mallens platshållartyp %qT måste följas av ett enklel deklarerar-id"
 
 #: cp/decl.c:10520
 #, gcc-internal-format
@@ -39306,7 +39308,7 @@ msgstr "indirekt funktion %q+D kan inte deklareras svag"
 #: cp/decl.c:10626
 #, gcc-internal-format
 msgid "type must be cv-qualified %<auto%> or reference to cv-qualified %<auto%>"
-msgstr ""
+msgstr "typen måste vara en cv-kvalificerad %<auto%> eller en referens till en cv-kvalificerad %<auto%>"
 
 #: cp/decl.c:10657
 #, gcc-internal-format
@@ -39393,7 +39395,7 @@ msgstr "typkvalificerare ignoreras för funktions returtyp"
 #: cp/decl.c:10918
 #, gcc-internal-format
 msgid "trailing return type %qT of deduction guide is not a specialization of %qT"
-msgstr ""
+msgstr "den avslutande returtypen %qT hos deduktionsguiden är inte en specialicering av %qT"
 
 #. Not using maybe_warn_cpp0x because this should
 #. always be an error.
@@ -41096,7 +41098,7 @@ msgstr "begäran av medlem %qD är tvetydig"
 #: cp/init.c:3032
 #, gcc-internal-format
 msgid "%<new%> of type %qT with extended alignment %d"
-msgstr ""
+msgstr "%<new%> av typ %qT med utökad justering %d"
 
 #: cp/init.c:3034
 #, fuzzy, gcc-internal-format
@@ -41107,7 +41109,7 @@ msgstr "klass %qT har inget fält med namnet %qD"
 #: cp/init.c:3037
 #, gcc-internal-format
 msgid "use %<-faligned-new%> to enable C++17 over-aligned new support"
-msgstr ""
+msgstr "använd %<-faligned-new%> för att aktivera stöd för C++17 överjusterade new"
 
 #: cp/init.c:3219
 #, gcc-internal-format
@@ -41302,7 +41304,7 @@ msgstr "strängliteral i funktionsmallsignatur"
 #: cp/mangle.c:3842
 #, gcc-internal-format
 msgid "mangled name for %qD will change in C++17 because the exception specification is part of a function type"
-msgstr ""
+msgstr "det manglade namnet för %qD kommer ändras i C++17 eftersom undantagsspecifikationen är en del av funktionstypen"
 
 #: cp/mangle.c:3876
 #, gcc-internal-format
@@ -41404,7 +41406,7 @@ msgstr "%q#D är implicit deklarerad som raderad för att %qT deklarerar en flyt
 #: cp/method.c:1790
 #, gcc-internal-format
 msgid "%q#D inherits from multiple base subobjects"
-msgstr ""
+msgstr "%q#D ärver från flera bassubjobjekt"
 
 #: cp/method.c:1810
 #, gcc-internal-format
@@ -41639,7 +41641,7 @@ msgstr "%<%T::%D%> namnger konstruerare i %qT"
 #: cp/name-lookup.c:3431
 #, gcc-internal-format
 msgid "cannot inherit constructors from indirect base %qT"
-msgstr ""
+msgstr "kan inte ärva konstruerare från den indirekta basen %qT"
 
 #: cp/name-lookup.c:3439
 #, gcc-internal-format
@@ -45157,7 +45159,7 @@ msgstr "icke-mall %qD använd som mall"
 #: cp/pt.c:25006
 #, gcc-internal-format
 msgid "cannot deduce template arguments for %qT, as it has no deduction guides or user-declared constructors"
-msgstr ""
+msgstr "kan inte härleda mallargument för %qT, eftersom den inte har några härledningsguider eller användardeklarerade konstruerare"
 
 #: cp/pt.c:25073
 #, gcc-internal-format
@@ -46382,7 +46384,7 @@ msgstr "tar adressen till uttryck av typ %<void%>"
 #: cp/typeck.c:5907
 #, gcc-internal-format
 msgid "did you mean to use logical not (%<!%>)?"
-msgstr ""
+msgstr "tänkte du använda logiskt icke (%<!%>)?"
 
 #: cp/typeck.c:6026
 #, gcc-internal-format
@@ -46417,17 +46419,17 @@ msgstr "ISO C++ förbjuder minskning av pekare på typ %qT"
 #: cp/typeck.c:6091
 #, gcc-internal-format
 msgid "use of an operand of type %qT in %<operator--%> is forbidden"
-msgstr ""
+msgstr "användning av en operand av typen %qT i %<operator--%> är förbjudet"
 
 #: cp/typeck.c:6100
 #, gcc-internal-format
 msgid "use of an operand of type %qT in %<operator++%> is forbidden in C++1z"
-msgstr ""
+msgstr "användning av en operand av typen %qT i %<operator++%> är förbjudet i C++1z"
 
 #: cp/typeck.c:6107
 #, gcc-internal-format
 msgid "use of an operand of type %qT in %<operator++%> is deprecated"
-msgstr ""
+msgstr "användning av en operand av typen %qT i %<operator++%> bör undvikas"
 
 #: cp/typeck.c:6269
 #, gcc-internal-format
@@ -47326,7 +47328,7 @@ msgstr "Oväntad co-vektorbeteckning vid %C"
 #: fortran/array.c:242
 #, gcc-internal-format, gfc-internal-format
 msgid "STAT= attribute in %C misplaced"
-msgstr ""
+msgstr "attributet STAT= i %C är felplacerat"
 
 #: fortran/array.c:251
 #, gcc-internal-format, gfc-internal-format
@@ -48086,7 +48088,7 @@ msgstr "Argumenten FROM och TO till den inbyggda MOVE_ALLOC vid %L måste ha sam
 #: fortran/check.c:3390
 #, gcc-internal-format, gfc-internal-format
 msgid "The FROM and TO arguments at %L violate aliasing restrictions (F2003 12.4.1.7)"
-msgstr ""
+msgstr "Argumenten FROM och TO vid %L bryter mod restriktioner (F2003 12.4.1.7)"
 
 #: fortran/check.c:3417
 #, gcc-internal-format
@@ -49716,7 +49718,7 @@ msgstr "Initierar redan initierad variabel vid %C"
 #: fortran/decl.c:7852
 #, gcc-internal-format, gfc-internal-format
 msgid "PARAMETER without '()' at %C"
-msgstr ""
+msgstr "PARAMETER utan ”()” vid %C"
 
 #: fortran/decl.c:7868
 #, gcc-internal-format, gfc-internal-format
@@ -50162,7 +50164,7 @@ msgstr "Syntaxfel i !GCC$ ATTRIBUTES-sats vid %C"
 #: fortran/dependency.c:105
 #, gcc-internal-format
 msgid "identical_array_ref(): inconsistent dimensions"
-msgstr ""
+msgstr "identical_array_ref(): inkonsistenta dimensioner"
 
 #: fortran/dependency.c:193
 #, gcc-internal-format
@@ -50182,7 +50184,7 @@ msgstr "Aktuellt INTENT(%s)-argument vid %L kan störa det aktuella argumentet v
 #: fortran/dependency.c:1280
 #, gcc-internal-format
 msgid "gfc_check_dependency: expecting an EXPR_VARIABLE"
-msgstr ""
+msgstr "gfc_check_dependency: en EXPR_VARIABLE förväntades"
 
 #: fortran/dump-parse-tree.c:201
 #, gcc-internal-format
@@ -51999,7 +52001,7 @@ msgstr "OPEN-sats vid %C måste ha antingen UNIT eller NEWUNIT angivet"
 #: fortran/io.c:2144
 #, gcc-internal-format, gfc-internal-format
 msgid "ACTION type conflicts with READONLY specifier at %C"
-msgstr ""
+msgstr "Typen ACTION står i konflikt med READONLY-specificeraren vid %C"
 
 #: fortran/io.c:2158
 #, gcc-internal-format, gfc-internal-format
@@ -52327,7 +52329,7 @@ msgstr "Ogiltigt tecken %<$%> vid %L.  Använd %<-fdollar-ok%> för att tillåta
 #: fortran/match.c:968
 #, gcc-internal-format, gfc-internal-format
 msgid ".XOR. operator at %C"
-msgstr ""
+msgstr ".XOR.-operator vid %C"
 
 #: fortran/match.c:1023
 #, gcc-internal-format, gfc-internal-format
@@ -52570,7 +52572,7 @@ msgstr "STOP-kod vid %L måste vara skalär"
 #: fortran/match.c:2921
 #, gcc-internal-format, gfc-internal-format
 msgid "STOP code at %C contains too many digits"
-msgstr ""
+msgstr "STOP-kod vid %C innehåller för många siffror"
 
 #: fortran/match.c:2942
 #, gcc-internal-format, gfc-internal-format
@@ -52590,7 +52592,7 @@ msgstr "Bildstyrsatsen STOP vid %C i DO CONCURRENT-block"
 #: fortran/match.c:2974
 #, gcc-internal-format, gfc-internal-format
 msgid "STOP code at %L must be a scalar CHARACTER constant or digit[digit[digit[digit[digit]]]]"
-msgstr ""
+msgstr "STOP-kod vid %L måste vara en skalär CHARACTER-konstant eller siffra[siffra[siffra[siffra[siffra]]]]"
 
 #: fortran/match.c:2987
 #, gcc-internal-format, gfc-internal-format
@@ -53367,7 +53369,7 @@ msgstr "Kan inte öppna modulfilen %qs för läsning vid %C: %s"
 #: fortran/module.c:6940
 #, gcc-internal-format
 msgid "Module file %qs has not been generated, either because the module does not contain a MODULE PROCEDURE or there is an error in the module."
-msgstr ""
+msgstr "Modulfilen %qs har inte genererats, antingen för att modulen inte innehåller en MODULE PROCEDURE eller så finns det ett fel i modulen."
 
 #: fortran/module.c:6951
 #, gcc-internal-format
@@ -53562,12 +53564,12 @@ msgstr "OMP DECLARE TARGET på en variabel vid %C är ett element i ett COMMON-b
 #: fortran/openmp.c:3056
 #, gcc-internal-format, gfc-internal-format
 msgid "OMP DECLARE TARGET variable at %L previously mentioned in LINK clause and later in TO clause"
-msgstr ""
+msgstr "OMP DECLARE TARGET-variabeln vid %L nämndes tidigare i en LINK-klausul och senare i en TO-klausul"
 
 #: fortran/openmp.c:3062
 #, gcc-internal-format, gfc-internal-format
 msgid "OMP DECLARE TARGET variable at %L previously mentioned in TO clause and later in LINK clause"
-msgstr ""
+msgstr "OMP DECLARE TARGET-variabel vid %L nämndes tidigare i en TO-klausul och senare i en LINK-klausul"
 
 #: fortran/openmp.c:3066
 #, gcc-internal-format, gfc-internal-format
