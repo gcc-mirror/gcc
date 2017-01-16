@@ -1,3 +1,12 @@
+2017-01-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/33562
+	PR tree-optimization/61912
+	PR tree-optimization/77485
+	PR tree-optimization/79090
+	* gcc.dg/tree-ssa/ssa-dse-29.c: New test.
+	* g++.dg/tree-ssa/ssa-dse-2.C: New test.
+
 2017-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79089
