@@ -9085,40 +9085,41 @@ rs6000_const_not_ok_for_debug_p (rtx x)
 static bool
 rs6000_legitimate_combined_insn (rtx_insn *insn)
 {
-  switch (INSN_CODE (insn))
-    {
-      /* Reject creating doloop insns.  Combine should not be allowed
-	 to create these for a number of reasons:
-	 1) In a nested loop, if combine creates one of these in an
-	 outer loop and the register allocator happens to allocate ctr
-	 to the outer loop insn, then the inner loop can't use ctr.
-	 Inner loops ought to be more highly optimized.
-	 2) Combine often wants to create one of these from what was
-	 originally a three insn sequence, first combining the three
-	 insns to two, then to ctrsi/ctrdi.  When ctrsi/ctrdi is not
-	 allocated ctr, the splitter takes use back to the three insn
-	 sequence.  It's better to stop combine at the two insn
-	 sequence.
-	 3) Faced with not being able to allocate ctr for ctrsi/crtdi
-	 insns, the register allocator sometimes uses floating point
-	 or vector registers for the pseudo.  Since ctrsi/ctrdi is a
-	 jump insn and output reloads are not implemented for jumps,
-	 the ctrsi/ctrdi splitters need to handle all possible cases.
-	 That's a pain, and it gets to be seriously difficult when a
-	 splitter that runs after reload needs memory to transfer from
-	 a gpr to fpr.  See PR70098 and PR71763 which are not fixed
-	 for the difficult case.  It's better to not create problems
-	 in the first place.  */
-    case CODE_FOR_ctrsi_internal1:
-    case CODE_FOR_ctrdi_internal1:
-    case CODE_FOR_ctrsi_internal2:
-    case CODE_FOR_ctrdi_internal2:
-    case CODE_FOR_ctrsi_internal3:
-    case CODE_FOR_ctrdi_internal3:
-    case CODE_FOR_ctrsi_internal4:
-    case CODE_FOR_ctrdi_internal4:
-      return false;
-    }
+  int icode = INSN_CODE (insn);
+
+  /* Reject creating doloop insns.  Combine should not be allowed
+     to create these for a number of reasons:
+     1) In a nested loop, if combine creates one of these in an
+     outer loop and the register allocator happens to allocate ctr
+     to the outer loop insn, then the inner loop can't use ctr.
+     Inner loops ought to be more highly optimized.
+     2) Combine often wants to create one of these from what was
+     originally a three insn sequence, first combining the three
+     insns to two, then to ctrsi/ctrdi.  When ctrsi/ctrdi is not
+     allocated ctr, the splitter takes use back to the three insn
+     sequence.  It's better to stop combine at the two insn
+     sequence.
+     3) Faced with not being able to allocate ctr for ctrsi/crtdi
+     insns, the register allocator sometimes uses floating point
+     or vector registers for the pseudo.  Since ctrsi/ctrdi is a
+     jump insn and output reloads are not implemented for jumps,
+     the ctrsi/ctrdi splitters need to handle all possible cases.
+     That's a pain, and it gets to be seriously difficult when a
+     splitter that runs after reload needs memory to transfer from
+     a gpr to fpr.  See PR70098 and PR71763 which are not fixed
+     for the difficult case.  It's better to not create problems
+     in the first place.  */
+  if (icode != CODE_FOR_nothing
+      && (icode == CODE_FOR_ctrsi_internal1
+	  || icode == CODE_FOR_ctrdi_internal1
+	  || icode == CODE_FOR_ctrsi_internal2
+	  || icode == CODE_FOR_ctrdi_internal2
+	  || icode == CODE_FOR_ctrsi_internal3
+	  || icode == CODE_FOR_ctrdi_internal3
+	  || icode == CODE_FOR_ctrsi_internal4
+	  || icode == CODE_FOR_ctrdi_internal4))
+    return false;
+
   return true;
 }
 
