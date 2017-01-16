@@ -1,3 +1,10 @@
+2017-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78304
+	* gcc.dg/format/pr78304.c: Convert argument from integral type
+	to a pointer.
+	* gcc.dg/format/pr78304-2.c: Likewise.
+
 2017-01-16  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c: New vec_nabs testcase.
