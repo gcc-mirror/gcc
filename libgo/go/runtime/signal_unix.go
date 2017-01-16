@@ -202,7 +202,7 @@ func sigpipe() {
 // This is called by the signal handler, and the world may be stopped.
 //go:nosplit
 //go:nowritebarrierrec
-func sigtrampgo(sig uint32, info *siginfo, ctx unsafe.Pointer) {
+func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 	if sigfwdgo(sig, info, ctx) {
 		return
 	}
@@ -446,7 +446,7 @@ func badsignal(sig uintptr, c *sigctxt) {
 // This is called by the signal handler, and the world may be stopped.
 //go:nosplit
 //go:nowritebarrierrec
-func sigfwdgo(sig uint32, info *siginfo, ctx unsafe.Pointer) bool {
+func sigfwdgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) bool {
 	if sig >= uint32(len(sigtable)) {
 		return false
 	}
