@@ -1,3 +1,8 @@
+2017-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/49726
+	* c.opt (gen-decls): Add Driver flag.
+
 2017-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:

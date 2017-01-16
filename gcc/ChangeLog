@@ -1,3 +1,17 @@
+2017-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/49726
+	* gcc.c (debug_level_greater_than_spec_func): New function.
+	(static_spec_functions): Add debug-level-gt spec function.
+	(ASM_DEBUG_SPEC, cpp_options): Use %:debug-level-gt(0) instead of
+	!g0.
+	* config/darwin.h (DSYMUTIL_SPEC, ASM_DEBUG_SPEC): Likewise.
+	* config/darwin9.h (DSYMUTIL_SPEC, ASM_DEBUG_SPEC): Likewise.
+	* common.opt (g, gcoff, gdwarf, gdwarf-, ggdb, gno-pubnames,
+	gpubnames, ggnu-pubnames, gno-record-gcc-switches,
+	grecord-gcc-switches, gno-strict-dwarf, gstrict-dwarf, gstabs,
+	gstabs+, gtoggle, gvms, gxcoff, gxcoff+): Add Driver flag.
+
 2017-01-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (HARD_REGNO_CALLER_SAVE_MODE): Apply HImode and
