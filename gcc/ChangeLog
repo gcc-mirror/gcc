@@ -1,3 +1,8 @@
+2017-01-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (HARD_REGNO_CALLER_SAVE_MODE): Apply HImode and
+	QImode fixups to general and mask registers only.
+
 2017-01-16  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c (altivec_overloaded_builtins): Add support
