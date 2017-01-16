@@ -5,7 +5,7 @@ extern int printf (const char *, ...);
 
 # define PRIu32		"u"
 
-void test (long size)
+void test (const char *msg)
 {
-  printf ("size: %" PRIu32 "\n", size); /* { dg-warning "expects argument of type" } */
+  printf ("size: %" PRIu32 "\n", msg); /* { dg-warning "expects argument of type" } */
 }
