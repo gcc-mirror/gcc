@@ -212,10 +212,14 @@ setup_live_bytes_from_ref (ao_ref *ref, sbitmap live_bytes)
    tail of ORIG resulting in a bitmap that is a superset of LIVE.
 
    Store the number of elements trimmed from the head and tail in
-   TRIM_HEAD and TRIM_TAIL.  */
+   TRIM_HEAD and TRIM_TAIL.
+
+   STMT is the statement being trimmed and is used for debugging dump
+   output only.  */
 
 static void
-compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail)
+compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
+	       gimple *stmt)
 {
   /* We use sbitmaps biased such that ref->offset is bit zero and the bitmap
      extends through ref->size.  So we know that in the original bitmap
@@ -231,6 +235,15 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail)
   int first_orig = 0;
   int first_live = bitmap_first_set_bit (live);
   *trim_head = (first_live - first_orig) & ~0x1;
+
+  if ((*trim_head || *trim_tail)
+      && dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  Trimming statement (head = %d, tail = %d): ",
+	       *trim_head, *trim_tail);
+      print_gimple_stmt (dump_file, stmt, dump_flags, 0);
+      fprintf (dump_file, "\n");
+    }
 }
 
 /* STMT initializes an object from COMPLEX_CST where one or more of the
@@ -244,7 +257,7 @@ static void
 maybe_trim_complex_store (ao_ref *ref, sbitmap live, gimple *stmt)
 {
   int trim_head, trim_tail;
-  compute_trims (ref, live, &trim_head, &trim_tail);
+  compute_trims (ref, live, &trim_head, &trim_tail, stmt);
 
   /* The amount of data trimmed from the head or tail must be at
      least half the size of the object to ensure we're trimming
@@ -296,7 +309,7 @@ maybe_trim_constructor_store (ao_ref *ref, sbitmap live, gimple *stmt)
 
   int head_trim = 0;
   int tail_trim = 0;
-  compute_trims (ref, live, &head_trim, &tail_trim);
+  compute_trims (ref, live, &head_trim, &tail_trim, stmt);
 
   /* Now we want to replace the constructor initializer
      with memset (object + head_trim, 0, size - head_trim - tail_trim).  */
@@ -384,7 +397,7 @@ maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
     case BUILT_IN_MEMMOVE:
       {
 	int head_trim, tail_trim;
-	compute_trims (ref, live, &head_trim, &tail_trim);
+	compute_trims (ref, live, &head_trim, &tail_trim, stmt);
 
 	/* Tail trimming is easy, we can just reduce the count.  */
         if (tail_trim)
@@ -405,7 +418,7 @@ maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
     case BUILT_IN_MEMSET:
       {
 	int head_trim, tail_trim;
-	compute_trims (ref, live, &head_trim, &tail_trim);
+	compute_trims (ref, live, &head_trim, &tail_trim, stmt);
 
 	/* Tail trimming is easy, we can just reduce the count.  */
         if (tail_trim)
