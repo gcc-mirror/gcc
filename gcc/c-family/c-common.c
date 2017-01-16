@@ -7419,16 +7419,18 @@ set_underlying_type (tree x)
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;
     }
-  else if (TREE_TYPE (x) != error_mark_node
-	   && DECL_ORIGINAL_TYPE (x) == NULL_TREE)
+  else if (DECL_ORIGINAL_TYPE (x) == NULL_TREE)
     {
       tree tt = TREE_TYPE (x);
       DECL_ORIGINAL_TYPE (x) = tt;
-      tt = build_variant_type_copy (tt);
-      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
-      TYPE_NAME (tt) = x;
-      TREE_USED (tt) = TREE_USED (x);
-      TREE_TYPE (x) = tt;
+      if (tt != error_mark_node)
+	{
+	  tt = build_variant_type_copy (tt);
+	  TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
+	  TYPE_NAME (tt) = x;
+	  TREE_USED (tt) = TREE_USED (x);
+	  TREE_TYPE (x) = tt;
+	}
     }
 }
 
