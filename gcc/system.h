@@ -840,7 +840,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #ifndef USES_ISL
 #undef calloc
 #undef strdup
- #pragma GCC poison calloc strdup
+#undef strndup
+ #pragma GCC poison calloc strdup strndup
 #endif
 
 #if !defined(FLEX_SCANNER) && !defined(YYBISON)
