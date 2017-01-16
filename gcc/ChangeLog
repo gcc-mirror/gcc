@@ -1,5 +1,10 @@
 2017-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/79089
+	* gimplify.c (gimplify_init_constructor): If want_value and
+	object == lhs, unshare lhs to avoid invalid tree sharing.  Formatting
+	fix.
+
 	PR target/79080
 	* loop-doloop.c (doloop_modify): Call unshare_all_rtl_in_chain on
 	sequence.  Formatting fixes.

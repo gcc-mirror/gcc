@@ -1,5 +1,8 @@
 2017-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/79089
+	* gcc.c-torture/compile/pr79089.c: New test.
+
 	PR target/79080
 	* gcc.dg/pr79080.c: New test.
 
