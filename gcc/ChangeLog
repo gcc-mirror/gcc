@@ -1,3 +1,8 @@
+2017-01-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rtx_is_swappable_p): Change
+	UNSPEC_VSX__XXSPLTD to require special splat handling.
+
 2017-01-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/78616
