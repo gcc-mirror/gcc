@@ -169,6 +169,14 @@
 	as _Literal ( type ) number in case usual suffixes do not
 	preserve all information.
 
+2017-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77283
+	* gimple-ssa-split-paths.c: Include gimple-ssa.h, tree-phinodes.h
+	and ssa-iterators.h.
+	(is_feasible_trace): Implement a cost model based on joiner
+	PHI node uses.
+
 2017-01-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/79004
