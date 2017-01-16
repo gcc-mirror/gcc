@@ -1172,13 +1172,13 @@ extra_go_files_runtime_internal_sys = version.go
 @HAVE_STAT_TIMESPEC_TRUE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = --tag=solaristag
 @LIBGO_IS_SOLARIS_FALSE@matchargs_os = 
 @LIBGO_IS_BSD_TRUE@golang_org_x_net_route_lo = \
-@LIBGO_IS_BSD_TRUE@	golang_org/x/net/route/route.lo
+@LIBGO_IS_BSD_TRUE@	golang_org/x/net/route.lo
 
 @LIBGO_IS_BSD_TRUE@golang_org_x_net_route_check = \
 @LIBGO_IS_BSD_TRUE@	golang_org/x/net/route/check
 
 @LIBGO_IS_SOLARIS_TRUE@golang_org_x_net_lif_lo = \
-@LIBGO_IS_SOLARIS_TRUE@	golang_org/x/net/lif/lif.lo
+@LIBGO_IS_SOLARIS_TRUE@	golang_org/x/net/lif.lo
 
 @LIBGO_IS_SOLARIS_TRUE@golang_org_x_net_lif_check = \
 @LIBGO_IS_SOLARIS_TRUE@	golang_org/x/net/lif/check
