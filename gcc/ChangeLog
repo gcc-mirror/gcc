@@ -1,3 +1,20 @@
+2017-01-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c (altivec_overloaded_builtins): Add support
+	for built-in functions
+	vector signed char vec_nabs (vector signed char)
+	vector signed short vec_nabs (vector signed short)
+	vector signed int vec_nabs (vector signed int)
+	vector signed long long vec_nabs (vector signed long long)
+	vector float vec_nabs (vector float)
+	vector double vec_nabs (vector double)
+	* config/rs6000/rs6000-builtin.def: Add definitions for NABS functions
+	and NABS overload.
+	* config/rs6000/altivec.md: New define_expand nabs<mode>2 types
+	* config/rs6000/altivec.h: New define for vec_nabs built-in function.
+	* doc/extend.texi: Update the documentation file for the new built-in
+	functions.
+
 2017-01-16  Martin Sebor  <msebor@redhat.com>
 
 	* gimple-ssa-sprintf.c (format_directive): Correct a typo in a warning
