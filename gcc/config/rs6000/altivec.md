@@ -156,6 +156,8 @@
    UNSPEC_CMPRB
    UNSPEC_CMPRB2
    UNSPEC_CMPEQB
+   UNSPEC_VRLMI
+   UNSPEC_VRLNM
 ])
 
 (define_c_enum "unspecv"
@@ -168,8 +170,10 @@
 
 ;; Like VI, defined in vector.md, but add ISA 2.07 integer vector ops
 (define_mode_iterator VI2 [V4SI V8HI V16QI V2DI])
-;; Short vec in modes
+;; Short vec int modes
 (define_mode_iterator VIshort [V8HI V16QI])
+;; Longer vec int modes for rotate/mask ops
+(define_mode_iterator VIlong [V2DI V4SI])
 ;; Vec float modes
 (define_mode_iterator VF [V4SF])
 ;; Vec modes, pity mode iterators are not composable
@@ -1626,6 +1630,25 @@
   "<VI_unit>"
   "vrl<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vrl<VI_char>mi"
+  [(set (match_operand:VIlong 0 "register_operand" "=v")
+        (unspec:VIlong [(match_operand:VIlong 1 "register_operand" "0")
+	                (match_operand:VIlong 2 "register_operand" "v")
+		        (match_operand:VIlong 3 "register_operand" "v")]
+		       UNSPEC_VRLMI))]
+  "TARGET_P9_VECTOR"
+  "vrl<VI_char>mi %0,%2,%3"
+  [(set_attr "type" "veclogical")])
+
+(define_insn "altivec_vrl<VI_char>nm"
+  [(set (match_operand:VIlong 0 "register_operand" "=v")
+        (unspec:VIlong [(match_operand:VIlong 1 "register_operand" "v")
+		        (match_operand:VIlong 2 "register_operand" "v")]
+		       UNSPEC_VRLNM))]
+  "TARGET_P9_VECTOR"
+  "vrl<VI_char>nm %0,%1,%2"
+  [(set_attr "type" "veclogical")])
 
 (define_insn "altivec_vsl"
   [(set (match_operand:V4SI 0 "register_operand" "=v")

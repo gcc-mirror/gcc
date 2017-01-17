@@ -1927,12 +1927,22 @@ BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
 BU_P9V_AV_2 (VADUB,		"vadub",		CONST,  vaduv16qi3)
 BU_P9V_AV_2 (VADUH,		"vaduh",		CONST,  vaduv8hi3)
 BU_P9V_AV_2 (VADUW,		"vaduw",		CONST,  vaduv4si3)
+BU_P9V_AV_2 (VRLWNM,		"vrlwnm",		CONST,	altivec_vrlwnm)
+BU_P9V_AV_2 (VRLDNM,		"vrldnm",		CONST,	altivec_vrldnm)
 
 /* ISA 3.0 vector overloaded 2 argument functions. */
 BU_P9V_OVERLOAD_2 (VADU,	"vadu")
 BU_P9V_OVERLOAD_2 (VADUB,	"vadub")
 BU_P9V_OVERLOAD_2 (VADUH,	"vaduh")
 BU_P9V_OVERLOAD_2 (VADUW,	"vaduw")
+BU_P9V_OVERLOAD_2 (RLNM,	"rlnm")
+
+/* ISA 3.0 3-argument vector functions.  */
+BU_P9V_AV_3 (VRLWMI,		"vrlwmi",		CONST,	altivec_vrlwmi)
+BU_P9V_AV_3 (VRLDMI,		"vrldmi",		CONST,	altivec_vrldmi)
+
+/* ISA 3.0 vector overloaded 3-argument functions.  */
+BU_P9V_OVERLOAD_3 (RLMI,	"rlmi")
 
 /* 1 argument vsx scalar functions added in ISA 3.0 (power9).  */
 BU_P9V_64BIT_VSX_1 (VSEEDP,	"scalar_extract_exp",	CONST,	xsxexpdp)

@@ -18187,6 +18187,43 @@ If any of the enabled test conditions is true, the corresponding entry
 in the result vector is -1.  Otherwise (all of the enabled test
 conditions are false), the corresponding entry of the result vector is 0.
 
+The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
+@smallexample
+vector unsigned int vec_rlmi (vector unsigned int, vector unsigned int,
+                              vector unsigned int);
+vector unsigned long long vec_rlmi (vector unsigned long long,
+                                    vector unsigned long long,
+                                    vector unsigned long long);
+vector unsigned int vec_rlnm (vector unsigned int, vector unsigned int,
+                              vector unsigned int);
+vector unsigned long long vec_rlnm (vector unsigned long long,
+                                    vector unsigned long long,
+                                    vector unsigned long long);
+vector unsigned int vec_vrlnm (vector unsigned int, vector unsigned int);
+vector unsigned long long vec_vrlnm (vector unsigned long long,
+                                     vector unsigned long long);
+@end smallexample
+
+The result of @code{vec_rlmi} is obtained by rotating each element of
+the first argument vector left and inserting it under mask into the
+second argument vector.  The third argument vector contains the mask
+beginning in bits 11:15, the mask end in bits 19:23, and the shift
+count in bits 27:31, of each element.
+
+The result of @code{vec_rlnm} is obtained by rotating each element of
+the first argument vector left and ANDing it with a mask specified by
+the second and third argument vectors.  The second argument vector
+contains the shift count for each element in the low-order byte.  The
+third argument vector contains the mask end for each element in the
+low-order byte, with the mask begin in the next higher byte.
+
+The result of @code{vec_vrlnm} is obtained by rotating each element
+of the first argument vector left and ANDing it with a mask.  The
+second argument vector contains the mask  beginning in bits 11:15,
+the mask end in bits 19:23, and the shift count in bits 27:31,
+of each element.
+
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
 
