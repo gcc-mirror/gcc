@@ -577,16 +577,22 @@ tree_digits (tree x, int base, HOST_WIDE_INT prec, bool plus, bool prefix)
       if (tree_fits_shwi_p (x))
 	{
 	  HOST_WIDE_INT i = tree_to_shwi (x);
-	  if (i < 0)
-	    {
-	      absval = -i;
-	      res = 1;
-	    }
-	  else
-	    {
-	      absval = i;
-	      res = plus;
-	    }
+         if (HOST_WIDE_INT_MIN == i)
+           {
+             /* Avoid undefined behavior due to negating a minimum.  */
+             absval = HOST_WIDE_INT_MAX;
+             res = 1;
+           }
+         else if (i < 0)
+	   {
+	     absval = -i;
+	     res = 1;
+	   }
+	 else
+	   {
+	     absval = i;
+	     res = plus;
+	   }
 	}
       else
 	return -1;
