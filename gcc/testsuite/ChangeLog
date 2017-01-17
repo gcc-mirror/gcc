@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78341
+	* g++.dg/cpp0x/pr78341.C: New test.
+
 	PR middle-end/50199
 	* gcc.dg/lto/pr50199_0.c: New test.
 
