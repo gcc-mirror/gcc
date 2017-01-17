@@ -1,3 +1,12 @@
+2017-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/52563
+	PR testsuite/71237
+	PR testsuite/77737
+	* gcc.dg/tree-ssa/scev-3.c: Re-write to a GIMPLE testcase for IVOPTs.
+	* gcc.dg/tree-ssa/scev-4.c: Likewise.
+	* gcc.dg/tree-ssa/scev-5.c: Likewise.
+
 2017-01-17  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr79066.c: New.
