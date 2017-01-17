@@ -16615,10 +16615,6 @@ static dw_loc_descr_ref
 field_byte_offset (const_tree decl, struct vlr_context *ctx,
 		   HOST_WIDE_INT *cst_offset)
 {
-  offset_int object_offset_in_bits;
-  offset_int object_offset_in_bytes;
-  offset_int bitpos_int;
-  bool is_byte_offset_cst, is_bit_offset_cst;
   tree tree_result;
   dw_loc_list_ref loc_result;
 
@@ -16629,20 +16625,21 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
   else
     gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
-  is_bit_offset_cst = TREE_CODE (DECL_FIELD_BIT_OFFSET (decl)) != INTEGER_CST;
-  is_byte_offset_cst = TREE_CODE (DECL_FIELD_OFFSET (decl)) != INTEGER_CST;
-
   /* We cannot handle variable bit offsets at the moment, so abort if it's the
      case.  */
-  if (is_bit_offset_cst)
+  if (TREE_CODE (DECL_FIELD_BIT_OFFSET (decl)) != INTEGER_CST)
     return NULL;
 
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   /* We used to handle only constant offsets in all cases.  Now, we handle
      properly dynamic byte offsets only when PCC bitfield type doesn't
      matter.  */
-  if (PCC_BITFIELD_TYPE_MATTERS && is_byte_offset_cst && is_bit_offset_cst)
+  if (PCC_BITFIELD_TYPE_MATTERS
+      && TREE_CODE (DECL_FIELD_OFFSET (decl)) == INTEGER_CST)
     {
+      offset_int object_offset_in_bits;
+      offset_int object_offset_in_bytes;
+      offset_int bitpos_int;
       tree type;
       tree field_size_tree;
       offset_int deepest_bitpos;
@@ -16737,13 +16734,23 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
 	  object_offset_in_bits
 	    = round_up_to_align (object_offset_in_bits, decl_align_in_bits);
 	}
-    }
-#endif /* PCC_BITFIELD_TYPE_MATTERS */
 
-  tree_result = byte_position (decl);
+      object_offset_in_bytes
+	= wi::lrshift (object_offset_in_bits, LOG2_BITS_PER_UNIT);
+      if (ctx->variant_part_offset == NULL_TREE)
+	{
+	  *cst_offset = object_offset_in_bytes.to_shwi ();
+	  return NULL;
+	}
+      tree_result = wide_int_to_tree (sizetype, object_offset_in_bytes);
+    }
+  else
+#endif /* PCC_BITFIELD_TYPE_MATTERS */
+    tree_result = byte_position (decl);
+
   if (ctx->variant_part_offset != NULL_TREE)
-    tree_result = fold (build2 (PLUS_EXPR, TREE_TYPE (tree_result),
-				ctx->variant_part_offset, tree_result));
+    tree_result = fold_build2 (PLUS_EXPR, TREE_TYPE (tree_result),
+			       ctx->variant_part_offset, tree_result);
 
   /* If the byte offset is a constant, it's simplier to handle a native
      constant rather than a DWARF expression.  */
@@ -22221,14 +22228,12 @@ analyze_variants_discr (tree variant_part_decl,
 
 	      if (!lower_cst_included)
 		lower_cst
-		  = fold (build2 (PLUS_EXPR, TREE_TYPE (lower_cst),
-				  lower_cst,
-				  build_int_cst (TREE_TYPE (lower_cst), 1)));
+		  = fold_build2 (PLUS_EXPR, TREE_TYPE (lower_cst), lower_cst,
+				 build_int_cst (TREE_TYPE (lower_cst), 1));
 	      if (!upper_cst_included)
 		upper_cst
-		  = fold (build2 (MINUS_EXPR, TREE_TYPE (upper_cst),
-				  upper_cst,
-				  build_int_cst (TREE_TYPE (upper_cst), 1)));
+		  = fold_build2 (MINUS_EXPR, TREE_TYPE (upper_cst), upper_cst,
+				 build_int_cst (TREE_TYPE (upper_cst), 1));
 
 	      if (!get_discr_value (lower_cst,
 				    &new_node->dw_discr_lower_bound)
@@ -22397,8 +22402,8 @@ gen_variant_part (tree variant_part_decl, struct vlr_context *vlr_ctx,
 		 we recurse.  */
 
 	      vlr_sub_ctx.variant_part_offset
-	        = fold (build2 (PLUS_EXPR, TREE_TYPE (variant_part_offset),
-				variant_part_offset, byte_position (member)));
+		= fold_build2 (PLUS_EXPR, TREE_TYPE (variant_part_offset),
+			       variant_part_offset, byte_position (member));
 	      gen_variant_part (member, &vlr_sub_ctx, variant_die);
 	    }
 	  else

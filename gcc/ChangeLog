@@ -1,7 +1,16 @@
-2017-01-17 Thomas Preud'homme <thomas.preudhomme@arm.com>
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/78839
+	* dwarf2out.c (field_byte_offset): Restore the
+	PCC_BITFIELD_TYPE_MATTERS behavior for INTEGER_CST DECL_FIELD_OFFSET
+	and DECL_FIELD_BIT_OFFSET.  Use fold_build2 instead of build2 + fold.
+	(analyze_variants_discr, gen_variant_part): Use fold_build2 instead
+	of build2 + fold.
+
+2017-01-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
-	2016-12-07 Thomas Preud'homme <thomas.preudhomme@arm.com>
+	2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR rtl-optimization/78617
 	* lra-remat.c (do_remat): Initialize live_hard_regs from live in
