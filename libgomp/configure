@@ -15299,10 +15299,12 @@ if test "${with_cuda_driver_lib+set}" = set; then :
   withval=$with_cuda_driver_lib;
 fi
 
-if test "x$with_cuda_driver" != x; then
-  CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
-  CUDA_DRIVER_LIB=$with_cuda_driver/lib
-fi
+case "x$with_cuda_driver" in
+  x | xno) ;;
+  *) CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
+     CUDA_DRIVER_LIB=$with_cuda_driver/lib
+     ;;
+esac
 if test "x$with_cuda_driver_include" != x; then
   CUDA_DRIVER_INCLUDE=$with_cuda_driver_include
 fi
@@ -15320,6 +15322,7 @@ PLUGIN_NVPTX=0
 PLUGIN_NVPTX_CPPFLAGS=
 PLUGIN_NVPTX_LDFLAGS=
 PLUGIN_NVPTX_LIBS=
+PLUGIN_NVPTX_DYNAMIC=0
 
 
 
@@ -15426,9 +15429,17 @@ rm -f core conftest.err conftest.$ac_objext \
 	LIBS=$PLUGIN_NVPTX_save_LIBS
 	case $PLUGIN_NVPTX in
 	  nvptx*)
-	    PLUGIN_NVPTX=0
-	    as_fn_error "CUDA driver package required for nvptx support" "$LINENO" 5
-	    ;;
+	    if test "x$CUDA_DRIVER_INCLUDE" = x \
+	       && test "x$CUDA_DRIVER_LIB" = x; then
+	      PLUGIN_NVPTX=1
+	      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
+	      PLUGIN_NVPTX_LIBS='-ldl'
+	      PLUGIN_NVPTX_DYNAMIC=1
+	    else
+	      PLUGIN_NVPTX=0
+	      as_fn_error "CUDA driver package required for nvptx support" "$LINENO" 5
+	    fi
+	  ;;
 	esac
 	;;
       hsa*)
@@ -15511,6 +15522,11 @@ fi
 
 cat >>confdefs.h <<_ACEOF
 #define PLUGIN_NVPTX $PLUGIN_NVPTX
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PLUGIN_NVPTX_DYNAMIC $PLUGIN_NVPTX_DYNAMIC
 _ACEOF
 
  if test $PLUGIN_HSA = 1; then
