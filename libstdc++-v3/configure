@@ -53327,6 +53327,12 @@ fi
 done
 
     ;;
+
+  *-fuchsia*)
+    SECTION_FLAGS='-ffunction-sections -fdata-sections'
+
+    ;;
+
   *-hpux*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
 
