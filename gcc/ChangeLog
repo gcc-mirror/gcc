@@ -1,3 +1,11 @@
+2017-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71433
+	* tree-vrp.c (register_new_assert_for): Merge same asserts
+	on all incoming edges.
+	(process_assert_insertions_for): Handle insertions at the
+	beginning of BBs.
+
 2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/cygwin.h (LIBGCJ_SONAME): Remove.
