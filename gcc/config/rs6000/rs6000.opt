@@ -672,3 +672,31 @@ Enable default conversions between __float128 & long double.
 mvsx-small-integer
 Target Report Mask(VSX_SMALL_INTEGER) Var(rs6000_isa_flags)
 Enable small integers to be in VSX registers.
+
+mstack-protector-guard=
+Target RejectNegative Joined Enum(stack_protector_guard) Var(rs6000_stack_protector_guard) Init(SSP_TLS)
+Use given stack-protector guard.
+
+Enum
+Name(stack_protector_guard) Type(enum stack_protector_guard)
+Valid arguments to -mstack-protector-guard=:
+
+EnumValue
+Enum(stack_protector_guard) String(tls) Value(SSP_TLS)
+
+EnumValue
+Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
+
+mstack-protector-guard-reg=
+Target RejectNegative Joined Var(rs6000_stack_protector_guard_reg_str)
+Use the given base register for addressing the stack-protector guard.
+
+TargetVariable
+int rs6000_stack_protector_guard_reg = 0
+
+mstack-protector-guard-offset=
+Target RejectNegative Joined Integer Var(rs6000_stack_protector_guard_offset_str)
+Use the given offset for addressing the stack-protector guard.
+
+TargetVariable
+long rs6000_stack_protector_guard_offset = 0

@@ -4942,6 +4942,54 @@ rs6000_option_override_internal (bool global_init_p)
 				    atoi (rs6000_sched_insert_nops_str));
     }
 
+  /* Handle stack protector */
+  if (!global_options_set.x_rs6000_stack_protector_guard)
+#ifdef TARGET_THREAD_SSP_OFFSET
+    rs6000_stack_protector_guard = SSP_TLS;
+#else
+    rs6000_stack_protector_guard = SSP_GLOBAL;
+#endif
+
+#ifdef TARGET_THREAD_SSP_OFFSET
+  rs6000_stack_protector_guard_offset = TARGET_THREAD_SSP_OFFSET;
+  rs6000_stack_protector_guard_reg = TARGET_64BIT ? 13 : 2;
+#endif
+
+  if (global_options_set.x_rs6000_stack_protector_guard_offset_str)
+    {
+      char *endp;
+      const char *str = rs6000_stack_protector_guard_offset_str;
+
+      errno = 0;
+      long offset = strtol (str, &endp, 0);
+      if (!*str || *endp || errno)
+	error ("%qs is not a valid number "
+	       "in -mstack-protector-guard-offset=", str);
+
+      if (!IN_RANGE (offset, -0x8000, 0x7fff)
+	  || (TARGET_64BIT && (offset & 3)))
+	error ("%qs is not a valid offset "
+	       "in -mstack-protector-guard-offset=", str);
+
+      rs6000_stack_protector_guard_offset = offset;
+    }
+
+  if (global_options_set.x_rs6000_stack_protector_guard_reg_str)
+    {
+      const char *str = rs6000_stack_protector_guard_reg_str;
+      int reg = decode_reg_name (str);
+
+      if (!IN_RANGE (reg, 1, 31))
+	error ("%qs is not a valid base register "
+	       "in -mstack-protector-guard-reg=", str);
+
+      rs6000_stack_protector_guard_reg = reg;
+    }
+
+  if (rs6000_stack_protector_guard == SSP_TLS
+      && !IN_RANGE (rs6000_stack_protector_guard_reg, 1, 31))
+    error ("-mstack-protector-guard=tls needs a valid base register");
+
   if (global_init_p)
     {
 #ifdef TARGET_REGNAMES
