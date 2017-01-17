@@ -1,3 +1,9 @@
+2017-01-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/77445
+	* gcc.dg/tree-ssa/pr77445-2.c: New testcase.
+	* gcc.dg/tree-ssa/pr77445.c: New testcase.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/tree-ssa/ssa-dse-2.C (size_t): Typedef to __SIZE_TYPE__

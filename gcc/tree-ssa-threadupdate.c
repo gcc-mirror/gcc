@@ -301,7 +301,11 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 	  remove_edge (e);
 	}
       else
-	ei_next (&ei);
+	{
+	  e->probability = REG_BR_PROB_BASE;
+	  e->count = bb->count;
+	  ei_next (&ei);
+	}
     }
 
   /* If the remaining edge is a loop exit, there must have
@@ -2212,8 +2216,8 @@ duplicate_thread_path (edge entry, edge exit,
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
   edge redirected;
-  int total_freq = 0, entry_freq = 0;
-  gcov_type total_count = 0, entry_count = 0;
+  int curr_freq;
+  gcov_type curr_count;
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
@@ -2240,27 +2244,6 @@ duplicate_thread_path (edge entry, edge exit,
       free_region_copy = true;
     }
 
-  if (entry->dest->count)
-    {
-      total_count = entry->dest->count;
-      entry_count = entry->count;
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (entry_count > total_count)
-	entry_count = total_count;
-    }
-  else
-    {
-      total_freq = entry->dest->frequency;
-      entry_freq = EDGE_FREQUENCY (entry);
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (total_freq == 0)
-	total_freq = 1;
-      else if (entry_freq > total_freq)
-	entry_freq = total_freq;
-    }
-
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), false);
 
@@ -2270,17 +2253,61 @@ duplicate_thread_path (edge entry, edge exit,
      invalidating the property that is propagated by executing all the blocks of
      the jump-thread path in order.  */
 
+  curr_count = entry->count;
+  curr_freq = EDGE_FREQUENCY (entry);
+
   for (i = 0; i < n_region; i++)
     {
       edge e;
       edge_iterator ei;
       basic_block bb = region_copy[i];
 
+      /* Watch inconsistent profile.  */
+      if (curr_count > region[i]->count)
+	curr_count = region[i]->count;
+      if (curr_freq > region[i]->frequency)
+	curr_freq = region[i]->frequency;
+      /* Scale current BB.  */
+      if (region[i]->count)
+	{
+	  /* In the middle of the path we only scale the frequencies.
+	     In last BB we need to update probabilities of outgoing edges
+	     because we know which one is taken at the threaded path.  */
+	  if (i + 1 != n_region)
+	    scale_bbs_frequencies_gcov_type (region + i, 1,
+					     region[i]->count - curr_count,
+					     region[i]->count);
+	  else
+	    update_bb_profile_for_threading (region[i],
+					     curr_freq, curr_count,
+					     exit);
+	  scale_bbs_frequencies_gcov_type (region_copy + i, 1, curr_count,
+					   region_copy[i]->count);
+	}
+      else if (region[i]->frequency)
+	{
+	  if (i + 1 != n_region)
+	    scale_bbs_frequencies_int (region + i, 1,
+				       region[i]->frequency - curr_freq,
+				       region[i]->frequency);
+	  else
+	    update_bb_profile_for_threading (region[i],
+					     curr_freq, curr_count,
+					     exit);
+	  scale_bbs_frequencies_int (region_copy + i, 1, curr_freq,
+				     region_copy[i]->frequency);
+	}
+
       if (single_succ_p (bb))
 	{
 	  /* Make sure the successor is the next node in the path.  */
 	  gcc_assert (i + 1 == n_region
 		      || region_copy[i + 1] == single_succ_edge (bb)->dest);
+	  if (i + 1 != n_region)
+	    {
+	      curr_freq = EDGE_FREQUENCY (single_succ_edge (bb));
+	      curr_count = single_succ_edge (bb)->count;
+	    }
 	  continue;
 	}
 
@@ -2307,22 +2334,13 @@ duplicate_thread_path (edge entry, edge exit,
 	    if (orig)
 	      redirect_edge_and_branch_force (e, orig);
 	  }
+	else
+	  {
+	    curr_freq = EDGE_FREQUENCY (e);
+	    curr_count = e->count;
+	  }
     }
 
-  if (total_count)
-    {
-      scale_bbs_frequencies_gcov_type (region, n_region,
-				       total_count - entry_count,
-				       total_count);
-      scale_bbs_frequencies_gcov_type (region_copy, n_region, entry_count,
-				       total_count);
-    }
-  else
-    {
-      scale_bbs_frequencies_int (region, n_region, total_freq - entry_freq,
-				 total_freq);
-      scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
-    }
 
   if (flag_checking)
     verify_jump_thread (region_copy, n_region);
@@ -2337,11 +2355,12 @@ duplicate_thread_path (edge entry, edge exit,
 
   edge e = make_edge (region_copy[n_region - 1], exit->dest, EDGE_FALLTHRU);
 
-  if (e) {
-    rescan_loop_exit (e, true, false);
-    e->probability = REG_BR_PROB_BASE;
-    e->count = region_copy[n_region - 1]->count;
-  }
+  if (e)
+    {
+      rescan_loop_exit (e, true, false);
+      e->probability = REG_BR_PROB_BASE;
+      e->count = region_copy[n_region - 1]->count;
+    }
 
   /* Redirect the entry and add the phi node arguments.  */
   if (entry->dest == loop->header)
