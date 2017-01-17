@@ -1,3 +1,9 @@
+2017-01-17  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/71207
+	* ipa-polymorphic-call.c (contains_type_p): Fix wrong
+	assumption and add comment.
+
 2017-01-17  Nathan Sidwell  <nathan@acm.org>
 
 	* ipa-visibility.c (localize_node): New function, broken out of ...
