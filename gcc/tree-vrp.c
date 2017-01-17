@@ -5032,6 +5032,17 @@ register_new_assert_for (tree name, tree expr,
 	      loc->si = si;
 	      return;
 	    }
+	  /* If we have the same assertion on all incoming edges of a BB
+	     instead insert it at the beginning of it.  */
+	  if (e && loc->e
+	      && dest_bb == loc->e->dest
+	      && EDGE_COUNT (dest_bb->preds) == 2)
+	    {
+	      loc->bb = dest_bb;
+	      loc->e = NULL;
+	      loc->si = gsi_none ();
+	      return;
+	    }
 	}
 
       /* Update the last node of the list and move to the next one.  */
@@ -6429,6 +6440,15 @@ process_assert_insertions_for (tree name, assert_locus *loc)
       return true;
     }
 
+  /* If the stmt iterator points at the end then this is an insertion
+     at the beginning of a block.  */
+  if (gsi_end_p (loc->si))
+    {
+      gimple_stmt_iterator si = gsi_after_labels (loc->bb);
+      gsi_insert_before (&si, assert_stmt, GSI_SAME_STMT);
+      return false;
+
+    }
   /* Otherwise, we can insert right after LOC->SI iff the
      statement must not be the last statement in the block.  */
   stmt = gsi_stmt (loc->si);
