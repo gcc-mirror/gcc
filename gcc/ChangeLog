@@ -1,3 +1,8 @@
+2017-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/67205
+	* config/aarch64/aarch64.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Define
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/71669
