@@ -1,3 +1,25 @@
+2017-01-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_rlmi): New #define.
+	(vec_vrlnm): Likewise.
+	(vec_rlnm): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VRLMI): New UNSPEC enum value.
+	(UNSPEC_VRLNM): Likewise.
+	(VIlong): New mode iterator.
+	(altivec_vrl<VI_char>mi): New define_insn.
+	(altivec_vrl<VI_char>nm): Likewise.
+	* config/rs6000/rs6000-builtin.def (VRLWNM): New monomorphic
+	function entry.
+	(VRLDNM): Likewise.
+	(RLNM): New polymorphic function entry.
+	(VRLWMI): New monomorphic function entry.
+	(VRLDMI): Likewise.
+	(RLMI): New polymorphic function entry.
+	* config/rs6000/r6000-c.c (altivec_overloaded_builtin_table): Add
+	new entries for P9V_BUILTIN_VEC_RLMI and P9V_BUILTIN_VEC_RLNM.
+	* doc/extend.texi: Add description of vec_rlmi, vec_rlnm, and
+	vec_vrlnm.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/78839

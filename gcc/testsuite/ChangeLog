@@ -1,3 +1,7 @@
+2017-01-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* vec-rlmi-rlnm.c: New file.
+
 2017-01-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/61636
