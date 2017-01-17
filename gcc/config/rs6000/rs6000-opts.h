@@ -154,6 +154,12 @@ enum rs6000_vector {
   VECTOR_OTHER			/* Some other vector unit */
 };
 
+/* Where to get the canary for the stack protector.  */
+enum stack_protector_guard {
+  SSP_TLS,			/* per-thread canary in TLS block */
+  SSP_GLOBAL			/* global canary */
+};
+
 /* No enumeration is defined to index the -mcpu= values (entries in
    processor_target_table), with the type int being used instead, but
    we need to distinguish the special "native" value.  */

@@ -1,3 +1,20 @@
+2017-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/78875
+	* config/rs6000/rs6000-opts.h (stack_protector_guard): New enum.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Handle
+	the new options.
+	* config/rs6000/rs6000.md (stack_protect_set): Handle the new more
+	flexible settings.
+	(stack_protect_test): Ditto.
+	* config/rs6000/rs6000.opt (mstack-protector-guard=,
+	mstack-protector-guard-reg=, mstack-protector-guard-offset=): New
+	options.
+	* doc/invoke.texi (Option Summary) [RS/6000 and PowerPC Options]:
+	Add -mstack-protector-guard=, -mstack-protector-guard-reg=, and
+	-mstack-protector-guard-offset=.
+	(RS/6000 and PowerPC Options): Ditto.
+
 2017-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (MASK_CLASS_P): New define.
