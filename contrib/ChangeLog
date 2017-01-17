@@ -1,3 +1,8 @@
+2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_update: Remove entries related to GCJ and libgcj.
+	Complete copyright years and adjust my e-mail address.
+
 2017-01-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc_update: Adjust touch list for ARM.
