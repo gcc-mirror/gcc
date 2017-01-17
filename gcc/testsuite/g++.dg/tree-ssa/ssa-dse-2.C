@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dse2-details" } */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern "C"
 {
   extern void *memmove (void *__dest, const void *__src, size_t __n) throw ()
