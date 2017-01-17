@@ -10980,10 +10980,7 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 
 	  if (TARGET_TOC
 	      && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
-	      && constant_pool_expr_p (XEXP (operands[1], 0))
-	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (
-			get_pool_constant (XEXP (operands[1], 0)),
-			get_pool_mode (XEXP (operands[1], 0))))
+	      && use_toc_relative_ref (XEXP (operands[1], 0), mode))
 	    {
 	      rtx tocref = create_TOC_reference (XEXP (operands[1], 0),
 						 operands[0]);
