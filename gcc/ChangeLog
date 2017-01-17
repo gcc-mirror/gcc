@@ -1,3 +1,12 @@
+2017-01-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (MASK_CLASS_P): New define.
+	* config/i386/i386.c (inline_secondary_memory_needed): Ensure that
+	there are no registers from different register sets also when
+	mask registers are used.  Update function comment.
+	* config/i386/i386.md (*movsi_internal): Split (*k/*krm) alternative
+	to (*k/*r) and (*k/*km) alternatives.
+
 2017-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (eh_return): Remove pattern and splitter.
@@ -216,7 +225,7 @@
 	definitions accordingly.
 
 2017-01-17  Kito Cheng  <kito.cheng@gmail.com>
-            Kuan-Lin Chen  <kuanlinchentw@gmail.com>
+	    Kuan-Lin Chen  <kuanlinchentw@gmail.com>
 
 	PR target/79079
 	* internal-fn.c (expand_mul_overflow): Use convert_modes instead of
@@ -295,14 +304,14 @@
 
 	Revert:
 	2016-12-02  Tadek Kijkowski  <tkijkowski@gmail.com>
-        * Makefile.in (PREPROCESSOR_DEFINES): Add a level of indirection
-        for several include directories that may be relative to sysroot.
-        * config/i386/x-mingw32 (gplus_includedir): Define.
-        (gplus_tool_includedir, gplus_backward_include_dir): Likewise.
-        (native_system_includedir): Likewise.
-        * config/i386/mingw32.h (STANDARD_STARTFILE_PREFIX_1): Do not
-        override if TARGET_SYSTEM_ROOT is defined.
-        (NATIVE_SYSTEM_HEADER_DIR): Likewise.
+	* Makefile.in (PREPROCESSOR_DEFINES): Add a level of indirection
+	for several include directories that may be relative to sysroot.
+	* config/i386/x-mingw32 (gplus_includedir): Define.
+	(gplus_tool_includedir, gplus_backward_include_dir): Likewise.
+	(native_system_includedir): Likewise.
+	* config/i386/mingw32.h (STANDARD_STARTFILE_PREFIX_1): Do not
+	override if TARGET_SYSTEM_ROOT is defined.
+	(NATIVE_SYSTEM_HEADER_DIR): Likewise.
 
 	PR tree-optimization/79090
 	PR tree-optimization/33562

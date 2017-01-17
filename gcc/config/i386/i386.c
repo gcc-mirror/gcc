@@ -39868,18 +39868,18 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
-/* If we are copying between general and FP registers, we need a memory
-   location. The same is true for SSE and MMX registers.
+/* If we are copying between registers from different register sets
+   (e.g. FP and integer), we may need a memory location.
 
-   To optimize register_move_cost performance, allow inline variant.
-
-   The macro can't work reliably when one of the CLASSES is class containing
-   registers from multiple units (SSE, MMX, integer).  We avoid this by never
-   combining those units in single alternative in the machine description.
+   The function can't work reliably when one of the CLASSES is a class
+   containing registers from multiple sets.  We avoid this by never combining
+   different sets in a single alternative in the machine description.
    Ensure that this constraint holds to avoid unexpected surprises.
 
-   When STRICT is false, we are being called from REGISTER_MOVE_COST, so do not
-   enforce these sanity checks.  */
+   When STRICT is false, we are being called from REGISTER_MOVE_COST,
+   so do not enforce these sanity checks.
+
+   To optimize register_move_cost performance, define inline variant.  */
 
 static inline bool
 inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
@@ -39887,12 +39887,15 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 {
   if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
     return false;
+
   if (MAYBE_FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class1)
       || MAYBE_FLOAT_CLASS_P (class2) != FLOAT_CLASS_P (class2)
       || MAYBE_SSE_CLASS_P (class1) != SSE_CLASS_P (class1)
       || MAYBE_SSE_CLASS_P (class2) != SSE_CLASS_P (class2)
       || MAYBE_MMX_CLASS_P (class1) != MMX_CLASS_P (class1)
-      || MAYBE_MMX_CLASS_P (class2) != MMX_CLASS_P (class2))
+      || MAYBE_MMX_CLASS_P (class2) != MMX_CLASS_P (class2)
+      || MAYBE_MASK_CLASS_P (class1) != MASK_CLASS_P (class1)
+      || MAYBE_MASK_CLASS_P (class2) != MASK_CLASS_P (class2))
     {
       gcc_assert (!strict || lra_in_progress);
       return true;
@@ -39902,7 +39905,7 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
     return true;
 
   /* Between mask and general, we have moves no larger than word size.  */
-  if ((MAYBE_MASK_CLASS_P (class1) != MAYBE_MASK_CLASS_P (class2))
+  if ((MASK_CLASS_P (class1) != MASK_CLASS_P (class2))
       && (GET_MODE_SIZE (mode) > UNITS_PER_WORD))
   return true;
 
