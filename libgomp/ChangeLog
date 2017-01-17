@@ -1,5 +1,8 @@
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* plugin/hsa.h: Add GCC runtime library exception.
+	* plugin/hsa_ext_finalize.h: Likewise.
+
 	* plugin/configfrag.ac: For --without-cuda-driver don't initialize
 	CUDA_DRIVER_INCLUDE nor CUDA_DRIVER_LIB.  If both
 	CUDA_DRIVER_INCLUDE and CUDA_DRIVER_LIB are empty and linking small
