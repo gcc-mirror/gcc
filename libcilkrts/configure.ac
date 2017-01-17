@@ -253,6 +253,8 @@ else
 fi
 AC_SUBST(link_cilkrts)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 # Must be last
 AC_OUTPUT

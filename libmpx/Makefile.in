@@ -255,7 +255,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 @LIBMPX_SUPPORTED_TRUE@SUBDIRS = mpxrt $(am__append_1)
 @LIBMPX_SUPPORTED_TRUE@nodist_toolexeclib_HEADERS = libmpx.spec
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

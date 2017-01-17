@@ -1794,6 +1794,9 @@ static struct plugin_gcc_version gcc_version = {basever, datestamp,
 EOF
 changequote([,])dnl
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 # Internationalization
 ZW_GNU_GETTEXT_SISTER_DIR
 

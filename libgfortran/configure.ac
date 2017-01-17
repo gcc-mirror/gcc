@@ -621,6 +621,9 @@ LIBGFOR_CHECK_AVX2
 # Check wether we support AVX512f extensions
 LIBGFOR_CHECK_AVX512F
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then

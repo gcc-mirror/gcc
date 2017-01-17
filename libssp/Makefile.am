@@ -8,7 +8,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 MAINT_CHARSET = latin1
 
 # May be used by various substitution variables.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 if LIBSSP_USE_SYMVER
 if LIBSSP_USE_SYMVER_GNU

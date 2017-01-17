@@ -856,7 +856,7 @@ else
 REVISION_c  := $(shell cat $(REVISION))
 endif
 
-version     := $(BASEVER_c)
+version     := $(shell @get_gcc_base_ver@ $(BASEVER))
 
 PATCHLEVEL_c := \
   $(shell echo $(BASEVER_c) | sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\)$$/\1/')
@@ -2124,7 +2124,8 @@ DRIVER_DEFINES = \
   $(if $(SHLIB),$(if $(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC)) \
   -DCONFIGURE_SPECS="\"@CONFIGURE_SPECS@\""
 
-CFLAGS-gcc.o += $(DRIVER_DEFINES)
+CFLAGS-gcc.o += $(DRIVER_DEFINES) -DBASEVER=$(BASEVER_s)
+gcc.o: $(BASEVER)
 
 specs.h : s-specs ; @true
 s-specs : Makefile

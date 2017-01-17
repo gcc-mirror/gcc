@@ -894,6 +894,10 @@ ideas of what it is for.  People use it as if it specified where to
 install part of GCC@.  Perhaps they make this assumption because
 installing GCC creates the directory.
 
+@item --with-gcc-major-version-only
+Specifies that GCC should use only the major number rather than
+@var{major}.@var{minor}.@var{patchlevel} in filesystem paths.
+
 @item --with-native-system-header-dir=@var{dirname}
 Specifies that @var{dirname} is the directory that contains native system
 header files, rather than @file{/usr/include}.  This option is most useful

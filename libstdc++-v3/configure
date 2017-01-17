@@ -602,6 +602,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 WARN_FLAGS
 OPTIMIZE_CXXFLAGS
 TOPLEVEL_INCLUDES
@@ -897,6 +898,7 @@ enable_libstdcxx_threads
 enable_libstdcxx_filesystem_ts
 with_gxx_include_dir
 enable_version_specific_runtime_libs
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1616,6 +1618,8 @@ Optional Packages:
                           set the std::string ABI to use by default
   --with-gxx-include-dir=DIR
                           installation directory for include files
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -11597,7 +11601,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11600 "configure"
+#line 11604 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11703,7 +11707,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11706 "configure"
+#line 11710 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15389,7 +15393,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15392 "configure"
+#line 15396 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15424,7 +15428,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15427 "configure"
+#line 15431 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15459,7 +15463,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15462 "configure"
+#line 15466 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15495,7 +15499,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15498 "configure"
+#line 15502 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15576,7 +15580,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15579 "configure"
+#line 15583 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15618,7 +15622,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15621 "configure"
+#line 15625 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15652,7 +15656,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15655 "configure"
+#line 15659 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -81618,6 +81622,21 @@ $as_echo "$gxx_include_dir" >&6; }
 
 
   WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
+
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
 
 
 

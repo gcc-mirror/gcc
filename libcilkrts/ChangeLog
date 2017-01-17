@@ -1,3 +1,13 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* aclocal.m4: Include ../config/acx.m4.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
 2016-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/68945

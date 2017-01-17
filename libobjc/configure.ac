@@ -347,6 +347,9 @@ AC_SUBST(OBJC_BOEHM_GC)
 AC_SUBST(OBJC_BOEHM_GC_INCLUDES)
 AC_SUBST(OBJC_BOEHM_GC_LIBS)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 # ------
 # Output
 # ------

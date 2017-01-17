@@ -1,3 +1,22 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* fragment.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* po/Makefile.in: Regenerated.
+	* libsupc++/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* python/Makefile.in: Regenerated.
+	* src/c++11/Makefile.in: Regenerated.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/filesystem/Makefile.in: Regenerated.
+
 2017-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66145
