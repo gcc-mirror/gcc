@@ -1,3 +1,9 @@
+2017-01-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79058
+	* ira-conflicts.c (ira_build_conflicts): Update total conflict
+	hard regs for inner regno.
+
 2017-01-17  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/71207

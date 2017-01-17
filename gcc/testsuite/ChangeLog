@@ -1,3 +1,8 @@
+2017-01-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79058
+	* gcc.target/arm/pr79058.c: New.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71854
