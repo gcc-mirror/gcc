@@ -26,7 +26,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
 
 ## May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 config_path= @config_path@
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) \

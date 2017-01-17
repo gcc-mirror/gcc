@@ -601,6 +601,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 GENINSRC_FALSE
 GENINSRC_TRUE
 BUILD_LIBQUADMATH_FALSE
@@ -750,6 +751,7 @@ enable_libtool_lock
 enable_maintainer_mode
 enable_symvers
 enable_generated_files_in_srcdir
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1406,6 +1408,8 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -10568,7 +10572,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10571 "configure"
+#line 10575 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10674,7 +10678,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10677 "configure"
+#line 10681 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12916,6 +12920,20 @@ else
   GENINSRC_TRUE='#'
   GENINSRC_FALSE=
 fi
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
 
 
 

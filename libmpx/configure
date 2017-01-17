@@ -11585,6 +11585,9 @@ else
   multilib_arg=
 fi
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 ac_config_files="$ac_config_files Makefile libmpx.spec"
 
 ac_config_headers="$ac_config_headers config.h"

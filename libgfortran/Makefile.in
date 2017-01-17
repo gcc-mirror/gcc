@@ -525,6 +525,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
 extra_ldflags_libgfortran = @extra_ldflags_libgfortran@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -566,7 +567,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBGFOR_USE_SYMVER_FALSE@version_arg = 
 @LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=$(srcdir)/gfortran.map
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_arg = -Wl,-M,gfortran.map-sun

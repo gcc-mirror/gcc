@@ -236,6 +236,7 @@ docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 gcc_version = @gcc_version@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@

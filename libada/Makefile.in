@@ -67,7 +67,7 @@ host_subdir = @host_subdir@
 GCC_DIR=$(MULTIBUILDTOP)../../$(host_subdir)/gcc
 
 target_noncanonical:=@target_noncanonical@
-version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)
 ADA_RTS_DIR=$(GCC_DIR)/ada/rts$(subst /,_,$(MULTISUBDIR))
 ADA_RTS_SUBDIR=./rts$(subst /,_,$(MULTISUBDIR))

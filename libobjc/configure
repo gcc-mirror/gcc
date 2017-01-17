@@ -600,6 +600,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 OBJC_BOEHM_GC_LIBS
 OBJC_BOEHM_GC_INCLUDES
 OBJC_BOEHM_GC
@@ -725,6 +726,7 @@ enable_objc_gc
 with_target_bdw_gc
 with_target_bdw_gc_include
 with_target_bdw_gc_lib
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1379,6 +1381,8 @@ Optional Packages:
                           files
   --with-target-bdw-gc-lib=PATHLIST
                           specify directories for installed bdw-gc library
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -10590,7 +10594,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10593 "configure"
+#line 10597 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10696,7 +10700,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10699 "configure"
+#line 10703 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11680,6 +11684,21 @@ else
   OBJC_BOEHM_GC_LIBS=$BDW_GC_LIBS
 fi
 
+
+
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
 
 
 

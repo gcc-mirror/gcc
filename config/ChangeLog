@@ -1,3 +1,10 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* acx.m4 (GCC_BASE_VER): New m4 function.
+	(ACX_TOOL_DIRS): Require GCC_BASE_VER, for
+	--with-gcc-major-version-only use just major number from BASE-VER.
+
 2017-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR go/78978

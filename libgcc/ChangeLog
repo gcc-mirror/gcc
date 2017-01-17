@@ -1,3 +1,11 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.in (version): Use @get_gcc_base_ver@ instead of cat to get
+	version from BASE-VER file.
+	* configure: Regenerated.
+
 2017-01-13  Joe Seymour  <joe.s@somniumtech.com>
 
 	* config/msp430/t-msp430 (libmul_none.a, libmul_16.a, libmul_32.a,

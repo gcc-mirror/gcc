@@ -254,6 +254,9 @@ AM_CONDITIONAL(ARCH_I386,
 AM_CONDITIONAL(ARCH_X86_64,
 	       [test "$ARCH" = x86 && test x$libat_cv_wordsize = x8])
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 if test ${multilib} = yes; then
   multilib_arg="--enable-multilib"
 else

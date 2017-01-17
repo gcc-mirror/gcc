@@ -4,7 +4,7 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 ## May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 ## Symbol versioning (copied from libssp).
 if LIBGFOR_USE_SYMVER
