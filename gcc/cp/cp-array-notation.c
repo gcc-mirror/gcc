@@ -1198,6 +1198,10 @@ expand_array_notation_exprs (tree t)
       }
 
     case OMP_PARALLEL:
+      OMP_PARALLEL_BODY (t)
+	= expand_array_notation_exprs (OMP_PARALLEL_BODY (t));
+      return t;
+
     case OMP_TASK:
     case OMP_FOR:
     case OMP_SINGLE:

@@ -1,3 +1,9 @@
+2017-01-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c++/70565
+	* cp-array-notation.c (expand_array_notation_exprs): Handle
+	OMP_PARALLEL.
+
 2017-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78337 - ICE on invalid with generic lambda
