@@ -1,3 +1,15 @@
+2017-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/61636
+	* cp-tree.h (maybe_generic_this_capture): Declare.
+	* lambda.c (resolvable_dummy_lambda): New, broken out of ...
+	(maybe_resolve_dummy): ... here.  Call it.
+	(maybe_generic_this_capture): New.
+	* parser.c (cp_parser_postfix_expression): Speculatively capture
+	this in generic lambda in unresolved member function call.
+	* pt.c (tsubst_copy_and_build): Force hard error from failed
+	member function lookup in generic lambda.
+
 2017-01-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR c++/70565
