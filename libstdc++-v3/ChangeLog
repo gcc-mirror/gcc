@@ -1,5 +1,13 @@
 2017-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69699
+	* doc/xml/manual/abi.xml (abi.versioning.history): Explain why the
+	_GLIBCXX__ macro is not useful. Remove redundant date information
+	and link to the GCC release timeline.
+	(abi.versioning.active): Move partial sentence into the previous
+	paragraph.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/79114
 	* libsupc++/nested_exception.h (throw_with_nested): Use decay instead
 	of remove_reference.
