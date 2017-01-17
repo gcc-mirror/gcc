@@ -1,3 +1,12 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50199
+	* lto-lang.c (lto_post_options): Force flag_merge_constants = 1
+	if it was 0.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
