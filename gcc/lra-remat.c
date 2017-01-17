@@ -1124,6 +1124,7 @@ update_scratch_ops (rtx_insn *remat_insn)
 static bool
 do_remat (void)
 {
+  unsigned regno;
   rtx_insn *insn;
   basic_block bb;
   bitmap_head avail_cands;
@@ -1131,12 +1132,21 @@ do_remat (void)
   bool changed_p = false;
   /* Living hard regs and hard registers of living pseudos.  */
   HARD_REG_SET live_hard_regs;
+  bitmap_iterator bi;
 
   bitmap_initialize (&avail_cands, &reg_obstack);
   bitmap_initialize (&active_cands, &reg_obstack);
   FOR_EACH_BB_FN (bb, cfun)
     {
-      REG_SET_TO_HARD_REG_SET (live_hard_regs, df_get_live_out (bb));
+      CLEAR_HARD_REG_SET (live_hard_regs);
+      EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb), 0, regno, bi)
+	{
+	  int hard_regno = regno < FIRST_PSEUDO_REGISTER
+			   ? regno
+			   : reg_renumber[regno];
+	  if (hard_regno >= 0)
+	    SET_HARD_REG_BIT (live_hard_regs, hard_regno);
+	}
       bitmap_and (&avail_cands, &get_remat_bb_data (bb)->avin_cands,
 		  &get_remat_bb_data (bb)->livein_cands);
       /* Activating insns are always in the same block as their corresponding
