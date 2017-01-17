@@ -1,3 +1,10 @@
+2017-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79114
+	* libsupc++/nested_exception.h (throw_with_nested): Use decay instead
+	of remove_reference.
+	* testsuite/18_support/nested_exception/79114.cc: New test.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
