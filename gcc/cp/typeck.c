@@ -5848,6 +5848,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	errstring = _("wrong type argument to bit-complement");
       else if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	arg = cp_perform_integral_promotions (arg, complain);
+      else if (!noconvert && VECTOR_TYPE_P (TREE_TYPE (arg)))
+	arg = mark_rvalue_use (arg);
       break;
 
     case ABS_EXPR:
