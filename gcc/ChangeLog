@@ -1,3 +1,8 @@
+2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/cygwin.h (LIBGCJ_SONAME): Remove.
+	* config/i386/mingw32.h (LIBGCJ_SONAME): Remove.
+
 2017-01-17  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/78633
