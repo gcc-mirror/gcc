@@ -18272,6 +18272,23 @@ add_data_member_location_attribute (dw_die_ref die,
 
   if (! loc_descr)
     {
+      /* While DW_AT_data_bit_offset has been added already in DWARF4,
+	 e.g. GDB only added support to it in November 2016.  For DWARF5
+	 we need newer debug info consumers anyway.  We might change this
+	 to dwarf_version >= 4 once most consumers catched up.  */
+      if (dwarf_version >= 5
+	  && TREE_CODE (decl) == FIELD_DECL
+	  && DECL_BIT_FIELD_TYPE (decl))
+	{
+	  tree off = bit_position (decl);
+	  if (tree_fits_uhwi_p (off) && get_AT (die, DW_AT_bit_size))
+	    {
+	      remove_AT (die, DW_AT_byte_size);
+	      remove_AT (die, DW_AT_bit_offset);
+	      add_AT_unsigned (die, DW_AT_data_bit_offset, tree_to_uhwi (off));
+	      return;
+	    }
+	}
       if (dwarf_version > 2)
 	{
 	  /* Don't need to output a location expression, just the constant. */

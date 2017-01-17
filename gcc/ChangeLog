@@ -1,3 +1,11 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/71669
+	* dwarf2out.c (add_data_member_location_attribute): For constant
+	offset bitfield emit for -gdwarf-5 DW_AT_data_bit_offset attribute
+	instead of DW_AT_data_member_location, DW_AT_bit_offset and
+	DW_AT_byte_size attributes.
+
 2017-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Also use a TOC reference
