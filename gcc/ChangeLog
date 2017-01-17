@@ -1,3 +1,10 @@
+2017-01-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/77445
+	* tree-ssa-threadupdate.c (remove_ctrl_stmt_and_useless_edges):
+	correctly set frequency of oudgoing edge.
+	(duplicate_thread_path): Fix profile updating.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
