@@ -1,3 +1,10 @@
+2017-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71497
+	* c-c++-common/Wmisleading-indentation-3.c: Update wording of
+	expected messages.
+	* c-c++-common/Wmisleading-indentation.c: Likewise.
+
 2017-01-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/79058
