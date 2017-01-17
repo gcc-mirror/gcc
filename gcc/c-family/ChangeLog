@@ -1,3 +1,9 @@
+2017-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/71497
+	* c-indentation.c (warn_for_misleading_indentation): Use the past
+	subjunctive in the note.
+
 2017-01-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR c/79116
