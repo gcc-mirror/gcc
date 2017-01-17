@@ -1,3 +1,17 @@
+2017-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (eh_return): Remove pattern and splitter.
+	* config/aarch64/aarch64.h (AARCH64_EH_STACKADJ_REGNUM): Remove.
+	(EH_RETURN_HANDLER_RTX): New define.
+	* config/aarch64/aarch64.c (aarch64_frame_pointer_required):
+	Force frame pointer in EH return functions.
+	(aarch64_expand_epilogue): Add barrier for eh_return.
+	(aarch64_final_eh_return_addr): Remove.
+	(aarch64_eh_return_handler_rtx): New function.
+	* config/aarch64/aarch64-protos.h (aarch64_final_eh_return_addr):
+	Remove.
+	(aarch64_eh_return_handler_rtx): New prototype.
+
 2017-01-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.h (vec_rlmi): New #define.
