@@ -1,3 +1,16 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78866
+	* openmp.c (resolve_omp_clauses): Diagnose assumed size arrays in
+	OpenMP map, to and from clauses.
+	* trans-openmp.c: Include diagnostic-core.h, temporarily redefining
+	GCC_DIAG_STYLE to __gcc_tdiag__.
+	(gfc_omp_finish_clause): Diagnose implicitly mapped assumed size
+	arrays.
+
 2016-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

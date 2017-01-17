@@ -1,7 +1,17 @@
-2017-01-17 Thomas Preud'homme <thomas.preudhomme@arm.com>
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78866
+	* gfortran.dg/gomp/map-1.f90: Add expected error.
+	* gfortran.dg/gomp/pr78866-1.f90: New test.
+	* gfortran.dg/gomp/pr78866-2.f90: New test.
+
+2017-01-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
-	2016-12-07 Thomas Preud'homme <thomas.preudhomme@arm.com>
+	2016-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR rtl-optimization/78617
 	* gcc.c-torture/execute/pr78617.c: New test.
