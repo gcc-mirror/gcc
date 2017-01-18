@@ -1,3 +1,10 @@
+2017-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/78952
+	* config/i386/i386.md (any_extract): New code iterator.
+	(*insvqi_2): Use any_extract for source operand.
+	(*insvqi_3): Use any_shiftrt for source operand.
+
 2017-01-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_sched_adjust_priority)
@@ -15,7 +22,7 @@
 
 2017-01-18  Matthias Klose  <doko@ubuntu.com>
 
-       * doc/install.texi: Allow default for --with-target-bdw-gc-include.
+	* doc/install.texi: Allow default for --with-target-bdw-gc-include.
 
 2016-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -40,12 +47,6 @@
 	(s390_invalid_arg_for_unprototyped_fn): Likewise.
 	(s390_valid_target_attribute_inner_p): Likewise.
 	* config/s390/s390.md ("tabort"): Likewise.
-
-2017-01-18  Jakub Jelinek  <jakub@redhat.com>
-
-	* gcc.target/s390/target-attribute/tattr-2.c: Add -fno-ipa-icf
-	to dg-options.
-	(p0): Add missing dg-error.
 
 2017-01-18  Toma Tabacu  <toma.tabacu@imgtec.com>
 
