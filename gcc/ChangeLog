@@ -1,3 +1,11 @@
+2017-01-18  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+	* config/rs6000/rs6000-protos.h (expand_strn_compare): Add arg.
+	* config/rs6000/rs6000.c (expand_strn_compare): Add ability to expand
+	strcmp. Fix bug where comparison didn't stop with zero byte. Fix
+	case where N arg is SIZE_MAX.
+	* config/rs6000/rs6000.md (cmpstrnsi): Args to expand_strn_compare.
+	(cmpstrsi): Add pattern.
+
 2017-01-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
