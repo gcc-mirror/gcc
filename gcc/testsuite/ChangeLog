@@ -1,3 +1,13 @@
+2017-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-threads.c (dejagnu_pass): Remove decl.
+	(dejagnu_fail): Likewise.
+	(dejagnu_note): Likewise.
+	(pass): Provide forward decl, moving true decl to after #include
+	of harness.h.
+	(fail): Likewise.
+	(note): Likewise.
+
 2017-01-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p9-xxbr-1.c: New test.
