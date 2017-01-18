@@ -1,3 +1,9 @@
+2016-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-builtin-8.c: Add new form for
+	vec_bperm.
+	* gcc.target/powerpc/p9-vbpermd.c: New file.
+
 2017-01-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/htm-builtins-compile-2.c (must_not_compile1):

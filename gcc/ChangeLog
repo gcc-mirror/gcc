@@ -1,3 +1,17 @@
+2016-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_bperm): Change #define.
+	* config/rs6000/altivec.md (UNSPEC_VBPERMD): New enum constant.
+	(altivec_vbpermq2): New define_insn.
+	(altivec_vbpermd): Likewise.
+	* config/rs6000/rs6000-builtin.def (VBPERMQ2): New monomorphic
+	function interface.
+	(VBPERMD): Likewise.
+	(VBPERM): New polymorphic function interface.
+	* config/rs6000/r6000-c.c (altivec_overloaded_builtins_table):
+	Add entries for P9V_BUILTIN_VEC_VBPERM.
+	* doc/extend.texi: Add interfaces for vec_bperm.
+
 2017-01-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-c.c (s390_expand_overloaded_builtin): Downcase

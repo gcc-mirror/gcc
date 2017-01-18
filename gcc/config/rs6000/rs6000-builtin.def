@@ -1811,6 +1811,7 @@ BU_P8V_AV_2 (VMAXUD,		"vmaxud",	CONST,	umaxv2di3)
 BU_P8V_AV_2 (VMRGEW,		"vmrgew",	CONST,	p8_vmrgew)
 BU_P8V_AV_2 (VMRGOW,		"vmrgow",	CONST,	p8_vmrgow)
 BU_P8V_AV_2 (VBPERMQ,		"vbpermq",	CONST,	altivec_vbpermq)
+BU_P8V_AV_2 (VBPERMQ2,		"vbpermq2",	CONST,	altivec_vbpermq2)
 BU_P8V_AV_2 (VPKUDUM,		"vpkudum",	CONST,	altivec_vpkudum)
 BU_P8V_AV_2 (VPKSDSS,		"vpksdss",	CONST,	altivec_vpksdss)
 BU_P8V_AV_2 (VPKUDUS,		"vpkudus",	CONST,	altivec_vpkudus)
@@ -1929,6 +1930,7 @@ BU_P9V_AV_2 (VADUH,		"vaduh",		CONST,  vaduv8hi3)
 BU_P9V_AV_2 (VADUW,		"vaduw",		CONST,  vaduv4si3)
 BU_P9V_AV_2 (VRLWNM,		"vrlwnm",		CONST,	altivec_vrlwnm)
 BU_P9V_AV_2 (VRLDNM,		"vrldnm",		CONST,	altivec_vrldnm)
+BU_P9V_AV_2 (VBPERMD,		"vbpermd",		CONST,  altivec_vbpermd)
 
 /* ISA 3.0 vector overloaded 2 argument functions. */
 BU_P9V_OVERLOAD_2 (VADU,	"vadu")
@@ -1936,6 +1938,7 @@ BU_P9V_OVERLOAD_2 (VADUB,	"vadub")
 BU_P9V_OVERLOAD_2 (VADUH,	"vaduh")
 BU_P9V_OVERLOAD_2 (VADUW,	"vaduw")
 BU_P9V_OVERLOAD_2 (RLNM,	"rlnm")
+BU_P9V_OVERLOAD_2 (VBPERM,	"vbperm_api")
 
 /* ISA 3.0 3-argument vector functions.  */
 BU_P9V_AV_3 (VRLWMI,		"vrlwmi",		CONST,	altivec_vrlwmi)
