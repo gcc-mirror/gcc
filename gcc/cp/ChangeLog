@@ -1,4 +1,4 @@
-2017-01-17  Jason Merrill  <jason@redhat.com>
+2017-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78894 - ICE with class deduction and default arg
 	* pt.c (build_deduction_guide): Set DECL_PRIMARY_TEMPLATE.
