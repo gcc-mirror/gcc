@@ -1594,6 +1594,8 @@ d_unqualified_name (struct d_info *di)
     ret = d_source_name (di);
   else if (IS_LOWER (peek))
     {
+      if (peek == 'o' && d_peek_next_char (di) == 'n')
+	d_advance (di, 2);
       ret = d_operator_name (di);
       if (ret != NULL && ret->type == DEMANGLE_COMPONENT_OPERATOR)
 	{

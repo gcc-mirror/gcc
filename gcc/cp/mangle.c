@@ -2817,6 +2817,12 @@ write_template_args (tree args)
 static void
 write_member_name (tree member)
 {
+  if (abi_version_at_least (11) && IDENTIFIER_OPNAME_P (member))
+    {
+      write_string ("on");
+      if (abi_warn_or_compat_version_crosses (11))
+	G.need_abi_warning = 1;
+    }
   if (identifier_p (member))
     write_unqualified_id (member);
   else if (DECL_P (member))

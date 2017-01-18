@@ -1,5 +1,11 @@
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
+	PR c++/70182
+	* doc/invoke.texi (fabi-version): Mention mangling fix for
+	operator names.
+
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
 	PR c++/77489
 	* doc/invoke.texi (fabi-version): Document discriminator mangling.
 

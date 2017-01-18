@@ -1,5 +1,10 @@
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
+	PR c++/70182
+	* mangle.c (write_template_args): Add "on" for operator names.
+
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
 	PR c++/77489
 	* mangle.c (write_discriminator): Handle discriminator >= 10.
 
