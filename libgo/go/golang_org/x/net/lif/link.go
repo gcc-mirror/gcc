@@ -84,7 +84,7 @@ func links(eps []endpoint, name string) ([]Link, error) {
 		b := make([]byte, lifn.Count*sizeofLifreq)
 		lifc.Family = uint16(ep.af)
 		lifc.Len = lifn.Count * sizeofLifreq
-		littleEndian.PutUint64(lifc.Lifcu[:], uint64(uintptr(unsafe.Pointer(&b[0]))))
+		lifc.Lifcu = unsafe.Pointer(&b[0])
 		ioc = int64(sysSIOCGLIFCONF)
 		if err := ioctl(ep.s, uintptr(ioc), unsafe.Pointer(&lifc)); err != nil {
 			continue
