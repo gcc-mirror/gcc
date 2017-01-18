@@ -256,16 +256,19 @@ no)
       for i in `echo $with_target_bdw_gc_include | tr ',' ' '`; do
         case "$i" in
           *=*) sd=${i%%=*}; d=${i#*=} ;;
-          *) sd=.; d=$i ;;
+          *) sd=.; d=$i; fallback=$i ;;
         esac
         if test "$mldir" = "$sd"; then
           bdw_val=$d
         fi
       done
-      if test "x$bdw_val" = x; then
+      if test "x$bdw_val" = x && test "x$bdw_inc_dir" = x && test "x$fallback" != x; then
+        bdw_inc_dir="$fallback"
+      elif test "x$bdw_val" = x; then
         AC_MSG_ERROR([no multilib path ($mldir) found in --with-target-bdw-gc-include])
+      else
+        bdw_inc_dir="$bdw_val"
       fi
-      bdw_inc_dir="$bdw_val"
     fi
     bdw_val=
     if test "x$with_target_bdw_gc_lib" != x; then
@@ -290,45 +293,55 @@ no)
       AC_MSG_ERROR([no multilib path ($mldir) found in --with-target-bdw-gc-lib])
     fi
     BDW_GC_CFLAGS="-I$bdw_inc_dir"
-    BDW_GC_LIBS="-L$bdw_lib_dir -lgc"
+    if test -f $bdw_lib_dir/libgc.la; then
+      BDW_GC_LIBS="$bdw_lib_dir/libgc.la"
+    else
+      BDW_GC_LIBS="-L$bdw_lib_dir -lgc"
+    fi
     AC_MSG_RESULT([found])
   fi
 
-  AC_MSG_CHECKING([for system boehm-gc])
-  save_CFLAGS=$CFLAGS
-  save_LIBS=$LIBS
-  CFLAGS="$CFLAGS $BDW_GC_CFLAGS"
-  LIBS="$LIBS $BDW_GC_LIBS"
-  dnl the link test is not good enough for ARM32 multilib detection,
-  dnl first check to link, then to run
-  AC_LINK_IFELSE(
-    [AC_LANG_PROGRAM([#include <gc/gc.h>],[GC_init()])],
-    [
-      AC_RUN_IFELSE([AC_LANG_SOURCE([[
-        #include <gc/gc.h>
-        int main() {
-          GC_init();
-          return 0;
-        }
-        ]])],
-        [system_bdw_gc_found=yes],
-        [system_bdw_gc_found=no],
-        dnl assume no system boehm-gc for cross builds ...
-        [system_bdw_gc_found=no]
-      )
-    ],
-    [system_bdw_gc_found=no])
-  CFLAGS=$save_CFLAGS
-  LIBS=$save_LIBS
-  if test x$enable_objc_gc = xauto && test x$system_bdw_gc_found = xno; then
-    AC_MSG_WARN([system bdw-gc not found, not building libobjc_gc])
-    use_bdw_gc=no
-  elif test x$enable_objc_gc = xyes && test x$system_bdw_gc_found = xno; then
-    AC_MSG_ERROR([system bdw-gc required but not found])
-  else
+  case "$BDW_GC_LIBS" in
+  *libgc.la)
     use_bdw_gc=yes
-    AC_MSG_RESULT([found])
-  fi
+    ;;
+  *)
+    AC_MSG_CHECKING([for system boehm-gc])
+    save_CFLAGS=$CFLAGS
+    save_LIBS=$LIBS
+    CFLAGS="$CFLAGS $BDW_GC_CFLAGS"
+    LIBS="$LIBS $BDW_GC_LIBS"
+    dnl the link test is not good enough for ARM32 multilib detection,
+    dnl first check to link, then to run
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([#include <gc/gc.h>],[GC_init()])],
+      [
+        AC_RUN_IFELSE([AC_LANG_SOURCE([[
+          #include <gc/gc.h>
+          int main() {
+            GC_init();
+            return 0;
+          }
+          ]])],
+          [system_bdw_gc_found=yes],
+          [system_bdw_gc_found=no],
+          dnl assume no system boehm-gc for cross builds ...
+          [system_bdw_gc_found=no]
+        )
+      ],
+      [system_bdw_gc_found=no])
+    CFLAGS=$save_CFLAGS
+    LIBS=$save_LIBS
+    if test x$enable_objc_gc = xauto && test x$system_bdw_gc_found = xno; then
+      AC_MSG_WARN([system bdw-gc not found, not building libobjc_gc])
+      use_bdw_gc=no
+    elif test x$enable_objc_gc = xyes && test x$system_bdw_gc_found = xno; then
+      AC_MSG_ERROR([system bdw-gc required but not found])
+    else
+      use_bdw_gc=yes
+      AC_MSG_RESULT([found])
+    fi
+  esac
 esac
 
 if test "$use_bdw_gc" = no; then
