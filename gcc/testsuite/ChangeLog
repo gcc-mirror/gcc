@@ -1,3 +1,9 @@
+2017-01-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79004
+	* gcc.target/powerpc/pr79004.c: Add -mfloat128 to the test
+	options.  Fix up the syntax for using \m and \M.
+
 2017-01-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/78875
