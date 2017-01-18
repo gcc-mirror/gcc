@@ -14070,6 +14070,26 @@ aarch64_sched_fusion_priority (rtx_insn *insn, int max_pri,
   return;
 }
 
+/* Implement the TARGET_SCHED_ADJUST_PRIORITY hook.
+   Adjust priority of sha1h instructions so they are scheduled before
+   other SHA1 instructions.  */
+
+static int
+aarch64_sched_adjust_priority (rtx_insn *insn, int priority)
+{
+  rtx x = PATTERN (insn);
+
+  if (GET_CODE (x) == SET)
+    {
+      x = SET_SRC (x);
+
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_SHA1H)
+	return priority + 10;
+    }
+
+  return priority;
+}
+
 /* Given OPERANDS of consecutive load/store, check if we can merge
    them into ldp/stp.  LOAD is true if they are load instructions.
    MODE is the mode of memory operands.  */
@@ -14990,6 +15010,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
+#undef TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY aarch64_sched_adjust_priority
 
 #undef TARGET_SCHED_MACRO_FUSION_P
 #define TARGET_SCHED_MACRO_FUSION_P aarch64_macro_fusion_p
