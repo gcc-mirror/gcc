@@ -1,3 +1,18 @@
+2017-01-18  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/50069
+	PR fortran/55086
+	* trans-expr.c (gfc_conv_variable): Don't treat temporary variables
+	as function arguments.
+	* trans-stmt.c (forall_make_variable_temp,
+	generate_loop_for_temp_to_lhs, gfc_trans_assign_need_temp,
+	gfc_trans_forall_1): Don't adjust offset of forall temporary
+	for array sections, make forall temporaries work for substring
+	expressions, improve test coverage by adding -ftest-forall-temp
+	option to request usage of temporary array in forall code.
+	* lang.opt: Add -ftest-forall-temp option.
+	* invoke.texi: Add -ftest-forall-temp option.
+
 2017-01-18  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* primary.c (caf_variable_attr): Improve figuring whether the current
