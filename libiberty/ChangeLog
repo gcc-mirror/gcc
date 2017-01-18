@@ -1,5 +1,12 @@
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
+	PR PR c++/70182
+	* cp-demangle.c (d_unqualified_name): Handle "on" for
+	operator names.
+	* testsuite/demangle-expected: Add tests.
+
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
 	PR c++/77489
 	* cp-demangle.c (d_discriminator): Handle discriminator >= 10.
 	* testsuite/demangle-expected: Add tests for discriminator.

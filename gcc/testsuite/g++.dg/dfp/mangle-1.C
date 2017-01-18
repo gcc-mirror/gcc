@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-fabi-version=10" }
 
 // Mangling of classes from std::decimal are special-cased.
 // Derived from g++.dg/abi/mangle13.C.

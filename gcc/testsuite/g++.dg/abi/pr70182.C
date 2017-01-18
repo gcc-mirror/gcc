@@ -1,4 +1,4 @@
-// { dg-options "-fabi-version=10" }
+// { dg-options "-fabi-version=0" }
 
 struct A {
   template <typename T> int f ();
@@ -23,6 +23,6 @@ template void g<A> (S<&A::operator int>);
 template void g<A> (S<&A::operator-<double> >);
 
 // { dg-final { scan-assembler _Z1gI1AEv1SIXadsrT_1fIiEEE } }
-// { dg-final { scan-assembler _Z1gI1AEv1SIXadsrT_plEE } }
-// { dg-final { scan-assembler _Z1gI1AEv1SIXadsrT_cviEE } }
-// { dg-final { scan-assembler _Z1gI1AEv1SIXadsrT_miIdEEE } }
+// { dg-final { scan-assembler _Z1gI1AEv1SIXadsrT_onplEE } }
+// { dg-final { scan-assembler _Z1gI1AEv1SIXadsrT_oncviEE } }
+// { dg-final { scan-assembler _Z1gI1AEv1SIXadsrT_onmiIdEEE } }

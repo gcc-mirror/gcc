@@ -4682,3 +4682,10 @@ _ZZ3foovE8localVar__9_
 
 _ZZ3foovE8localVar__12
 _ZZ3foovE8localVar__12
+
+# PR 70182
+_Z1gI1AEv1SIXadsrT_onplEE
+void g<A>(S<&A::operator+>)
+
+_Z1gI1AEv1SIXadsrT_plEE
+void g<A>(S<&A::operator+>)
