@@ -1,3 +1,9 @@
+2017-01-18  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* gcc.dg/cpp/mi1.c: Adjust testcase.
+	* gcc.dg/pch/cpp-3.c: Likewise.
+
 2016-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-builtin-8.c: Add new form for
