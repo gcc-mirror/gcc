@@ -3899,6 +3899,51 @@
   [(set_attr "type" "vecperm")])
 
 
+;; Support for ISA 3.0 vector byte reverse
+
+;; Swap all bytes with in a vector
+(define_insn "p9_xxbrq_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=wa")
+	(bswap:V1TI (match_operand:V1TI 1 "vsx_register_operand" "wa")))]
+  "TARGET_P9_VECTOR"
+  "xxbrq %x0,%x1"
+  [(set_attr "type" "vecperm")])
+
+(define_expand "p9_xxbrq_v16qi"
+  [(use (match_operand:V16QI 0 "vsx_register_operand" "=wa"))
+   (use (match_operand:V16QI 1 "vsx_register_operand" "=wa"))]
+  "TARGET_P9_VECTOR"
+{
+  rtx op0 = gen_lowpart (V1TImode, operands[0]);
+  rtx op1 = gen_lowpart (V1TImode, operands[1]);
+  emit_insn (gen_p9_xxbrq_v1ti (op0, op1));
+  DONE;
+})
+
+;; Swap all bytes in each 64-bit element
+(define_insn "p9_xxbrd_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wa")
+	(bswap:VSX_D (match_operand:VSX_D 1 "vsx_register_operand" "wa")))]
+  "TARGET_P9_VECTOR"
+  "xxbrd %x0,%x1"
+  [(set_attr "type" "vecperm")])
+
+;; Swap all bytes in each 32-bit element
+(define_insn "p9_xxbrw_<mode>"
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
+	(bswap:VSX_W (match_operand:VSX_W 1 "vsx_register_operand" "wa")))]
+  "TARGET_P9_VECTOR"
+  "xxbrw %x0,%x1"
+  [(set_attr "type" "vecperm")])
+
+;; Swap all bytes in each 16-bit element
+(define_insn "p9_xxbrh_v8hi"
+  [(set (match_operand:V8HI 0 "vsx_register_operand" "=wa")
+	(bswap:V8HI (match_operand:V8HI 1 "vsx_register_operand" "wa")))]
+  "TARGET_P9_VECTOR"
+  "xxbrh %x0,%x1"
+  [(set_attr "type" "vecperm")])
+
 
 ;; Operand numbers for the following peephole2
 (define_constants

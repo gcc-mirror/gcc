@@ -1954,6 +1954,14 @@ BU_P9V_64BIT_VSX_1 (VSESDP,	"scalar_extract_sig",	CONST,	xsxsigdp)
 BU_P9V_VSX_1 (VSTDCNDP,	"scalar_test_neg_dp",	CONST,	xststdcnegdp)
 BU_P9V_VSX_1 (VSTDCNSP,	"scalar_test_neg_sp",	CONST,	xststdcnegsp)
 
+BU_P9V_VSX_1 (XXBRQ_V16QI,	"xxbrq_v16qi",	CONST,	p9_xxbrq_v16qi)
+BU_P9V_VSX_1 (XXBRQ_V1TI,	"xxbrq_v1ti",	CONST,	p9_xxbrq_v1ti)
+BU_P9V_VSX_1 (XXBRD_V2DI,	"xxbrd_v2di",	CONST,	p9_xxbrd_v2di)
+BU_P9V_VSX_1 (XXBRD_V2DF,	"xxbrd_v2df",	CONST,	p9_xxbrd_v2df)
+BU_P9V_VSX_1 (XXBRW_V4SI,	"xxbrw_v4si",	CONST,	p9_xxbrw_v4si)
+BU_P9V_VSX_1 (XXBRW_V4SF,	"xxbrw_v4sf",	CONST,	p9_xxbrw_v4sf)
+BU_P9V_VSX_1 (XXBRH_V8HI,	"xxbrh_v8hi",	CONST,	p9_xxbrh_v8hi)
+
 /* 2 argument vsx scalar functions added in ISA 3.0 (power9).  */
 BU_P9V_64BIT_VSX_2 (VSIEDP,	"scalar_insert_exp",	CONST,	xsiexpdp)
 
@@ -1972,6 +1980,8 @@ BU_P9V_OVERLOAD_1 (VSESDP,	"scalar_extract_sig")
 BU_P9V_OVERLOAD_1 (VSTDCN,	"scalar_test_neg")
 BU_P9V_OVERLOAD_1 (VSTDCNDP,	"scalar_test_neg_dp")
 BU_P9V_OVERLOAD_1 (VSTDCNSP,	"scalar_test_neg_sp")
+
+BU_P9V_OVERLOAD_1 (REVB,	"revb")
 
 /* ISA 3.0 vector scalar overloaded 2 argument functions.  */
 BU_P9V_OVERLOAD_2 (VSIEDP,	"scalar_insert_exp")

@@ -444,6 +444,8 @@
 
 #define vec_xlx __builtin_vec_vextulx
 #define vec_xrx __builtin_vec_vexturx
+
+#define vec_revb __builtin_vec_revb
 #endif
 
 /* Predicates.
