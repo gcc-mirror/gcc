@@ -3609,7 +3609,11 @@ d_local_name (struct d_info *di)
     }
 }
 
-/* <discriminator> ::= _ <(non-negative) number>
+/* <discriminator> ::= _ <number>    # when number < 10
+                   ::= __ <number> _ # when number >= 10
+
+   <discriminator> ::= _ <number>    # when number >=10
+   is also accepted to support gcc versions that wrongly mangled that way.
 
    We demangle the discriminator, but we don't print it out.  FIXME:
    We should print it out in verbose mode.  */
@@ -3617,14 +3621,28 @@ d_local_name (struct d_info *di)
 static int
 d_discriminator (struct d_info *di)
 {
-  int discrim;
+  int discrim, num_underscores = 1;
 
   if (d_peek_char (di) != '_')
     return 1;
   d_advance (di, 1);
+  if (d_peek_char (di) == '_')
+    {
+      ++num_underscores;
+      d_advance (di, 1);
+    }
+
   discrim = d_number (di);
   if (discrim < 0)
     return 0;
+  if (num_underscores > 1 && discrim >= 10)
+    {
+      if (d_peek_char (di) == '_')
+	d_advance (di, 1);
+      else
+	return 0;
+    }
+
   return 1;
 }
 
