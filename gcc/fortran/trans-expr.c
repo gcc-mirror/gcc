@@ -1839,11 +1839,10 @@ gfc_get_tree_for_caf_expr (gfc_expr *expr)
       }
 
   /* Make sure the backend_decl is present before accessing it.  */
-  if (expr->symtree->n.sym->backend_decl == NULL_TREE)
-    expr->symtree->n.sym->backend_decl
-	= gfc_get_symbol_decl (expr->symtree->n.sym);
-  caf_decl = expr->symtree->n.sym->backend_decl;
-  gcc_assert (caf_decl);
+  caf_decl = expr->symtree->n.sym->backend_decl == NULL_TREE
+      ? gfc_get_symbol_decl (expr->symtree->n.sym)
+      : expr->symtree->n.sym->backend_decl;
+
   if (expr->symtree->n.sym->ts.type == BT_CLASS)
     {
       if (expr->ref && expr->ref->type == REF_ARRAY)
