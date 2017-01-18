@@ -366,17 +366,19 @@ write_exception_spec (tree spec)
       return;
     }
 
-  if (nothrow_spec_p (spec))
+  if (spec == noexcept_true_spec || spec == empty_except_spec)
     write_string ("Do");
-  else if (TREE_PURPOSE (spec))
+  else if (tree expr = TREE_PURPOSE (spec))
     {
-      gcc_assert (uses_template_parms (TREE_PURPOSE (spec)));
+      /* noexcept (expr)  */
+      gcc_assert (uses_template_parms (expr));
       write_string ("DO");
-      write_expression (TREE_PURPOSE (spec));
+      write_expression (expr);
       write_char ('E');
     }
   else
     {
+      /* throw (type-list) */
       write_string ("Dw");
       for (tree t = spec; t; t = TREE_CHAIN (t))
 	write_type (TREE_VALUE (t));
@@ -829,7 +831,6 @@ write_encoding (const tree decl)
 
       if (tmpl)
 	{
-	  ++processing_template_decl;
 	  fn_type = get_mostly_instantiated_function_type (decl);
 	  /* FN_TYPE will not have parameter types for in-charge or
 	     VTT parameters.  Therefore, we pass NULL_TREE to
@@ -846,9 +847,6 @@ write_encoding (const tree decl)
       write_bare_function_type (fn_type,
 				mangle_return_type_p (decl),
 				d);
-
-      if (tmpl)
-	--processing_template_decl;
     }
 }
 
