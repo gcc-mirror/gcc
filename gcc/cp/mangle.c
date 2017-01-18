@@ -1952,7 +1952,8 @@ discriminator_for_string_literal (tree /*function*/,
   return 0;
 }
 
-/*   <discriminator> := _ <number>
+/*   <discriminator> := _ <number>    # when number < 10
+                     := __ <number> _ # when number >= 10
 
    The discriminator is used only for the second and later occurrences
    of the same name within a single function. In this case <number> is
@@ -1965,7 +1966,15 @@ write_discriminator (const int discriminator)
   if (discriminator > 0)
     {
       write_char ('_');
+      if (abi_version_at_least (11) && discriminator - 1 >= 10)
+	{
+	  write_char ('_');
+	  if (abi_warn_or_compat_version_crosses (11))
+	    G.need_abi_warning = 1;
+	}
       write_unsigned_number (discriminator - 1);
+      if (abi_version_at_least (11) && discriminator - 1 >= 10)
+	write_char ('_');
     }
 }
 
