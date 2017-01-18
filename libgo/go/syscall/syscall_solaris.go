@@ -29,3 +29,20 @@ func direntNamlen(buf []byte) (uint64, bool) {
 	}
 	return reclen - uint64(unsafe.Offsetof(Dirent{}.Name)), true
 }
+
+//sysnb getexecname() (execname unsafe.Pointer, err error)
+//getexecname() *byte
+
+func Getexecname() (path string, err error) {
+	ptr, err := getexecname()
+	if err != nil {
+		return "", err
+	}
+	bytes := (*[1 << 29]byte)(ptr)[:]
+	for i, b := range bytes {
+		if b == 0 {
+			return string(bytes[:i]), nil
+		}
+	}
+	panic("unreachable")
+}
