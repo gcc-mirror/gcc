@@ -78,6 +78,28 @@ htm_available ()
   if (__get_cpuid_max (0, NULL) >= 7)
     {
       unsigned a, b, c, d;
+      /* TSX is broken on some processors.  This can be fixed by microcode,
+	 but we cannot reliably detect whether the microcode has been
+	 updated.  Therefore, do not report availability of TSX on these
+	 processors.  We use the same approach here as in glibc (see
+	 https://sourceware.org/ml/libc-alpha/2016-12/msg00470.html).  */
+      __cpuid (0, a, b, c, d);
+      if (b == 0x756e6547 && c == 0x6c65746e && d == 0x49656e69)
+	{
+	  __cpuid (1, a, b, c, d);
+	  if (((a >> 8) & 0x0f) == 0x06) // Family.
+	    {
+	      unsigned model = ((a >> 4) & 0x0f) // Model.
+		  + ((a >> 12) & 0xf0); // Extended model.
+	      unsigned stepping = a & 0x0f;
+	      if ((model == 0x3c)
+		  || (model == 0x45)
+		  || (model == 0x46)
+		  /* Xeon E7 v3 has correct TSX if stepping >= 4.  */
+		  || ((model == 0x3f) && (stepping < 4)))
+		return false;
+	    }
+	}
       __cpuid_count (7, 0, a, b, c, d);
       if (b & cpuid_rtm)
 	return true;
