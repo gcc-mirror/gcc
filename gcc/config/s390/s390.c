@@ -820,13 +820,13 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       bflags = bflags_for_builtin (fcode);
       if ((bflags & B_HTM) && !TARGET_HTM)
 	{
-	  error ("Builtin %qF is not supported without -mhtm "
+	  error ("builtin %qF is not supported without -mhtm "
 		 "(default with -march=zEC12 and higher).", fndecl);
 	  return const0_rtx;
 	}
       if ((bflags & B_VX) && !TARGET_VX)
 	{
-	  error ("Builtin %qF is not supported without -mvx "
+	  error ("builtin %qF is not supported without -mvx "
 		 "(default with -march=z13 and higher).", fndecl);
 	  return const0_rtx;
 	}
@@ -846,7 +846,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     }
   else if (fcode < S390_OVERLOADED_BUILTIN_VAR_OFFSET)
     {
-      error ("Unresolved overloaded builtin");
+      error ("unresolved overloaded builtin");
       return const0_rtx;
     }
   else
@@ -981,7 +981,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       if (!insn_op->predicate (op[arity], insn_op->mode))
 	{
-	  error ("Invalid argument %d for builtin %qF", arity + 1, fndecl);
+	  error ("invalid argument %d for builtin %qF", arity + 1, fndecl);
 	  return const0_rtx;
 	}
       arity++;
@@ -11558,7 +11558,7 @@ s390_invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, 
 	   && (funcdecl == NULL_TREE
 	       || (TREE_CODE (funcdecl) == FUNCTION_DECL
 		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
-	  ? N_("Vector argument passed to unprototyped function")
+	  ? N_("vector argument passed to unprototyped function")
 	  : NULL);
 }
 
@@ -14938,7 +14938,7 @@ s390_valid_target_attribute_inner_p (tree args,
       else if (attrs[i].only_as_pragma && !force_pragma)
 	{
 	  /* Value is not allowed for the target attribute.  */
-	  error ("Value %qs is not supported by attribute %<target%>",
+	  error ("value %qs is not supported by attribute %<target%>",
 		 attrs[i].string);
 	  return false;
 	}

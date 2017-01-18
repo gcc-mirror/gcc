@@ -466,7 +466,7 @@ s390_expand_overloaded_builtin (location_t loc,
     case S390_OVERLOADED_BUILTIN_s390_vec_step:
       if (TREE_CODE (TREE_TYPE ((*arglist)[0])) != VECTOR_TYPE)
 	{
-	  error_at (loc, "Builtin vec_step can only be used on vector types.");
+	  error_at (loc, "builtin vec_step can only be used on vector types.");
 	  return error_mark_node;
 	}
       return build_int_cst (NULL_TREE,
@@ -856,7 +856,7 @@ s390_resolve_overloaded_builtin (location_t loc,
       if (bflags_for_builtin(ob_fcode) & B_INT)
 	{
 	  error_at (loc,
-		    "Builtin %qF is for GCC internal use only.",
+		    "builtin %qF is for GCC internal use only.",
 		    ob_fndecl);
 	  return error_mark_node;
 	}
@@ -873,7 +873,7 @@ s390_resolve_overloaded_builtin (location_t loc,
   if (ob_args_num != in_args_num)
     {
       error_at (loc,
-		"Mismatch in number of arguments for builtin %qF. "
+		"mismatch in number of arguments for builtin %qF. "
 		"Expected: %d got %d", ob_fndecl,
 		ob_args_num, in_args_num);
       return error_mark_node;
