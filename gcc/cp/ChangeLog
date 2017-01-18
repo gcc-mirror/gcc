@@ -1,3 +1,8 @@
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/77489
+	* mangle.c (write_discriminator): Reorganize abi warning check.
+
 2017-01-18  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h: Clarify exception spec node comment.
