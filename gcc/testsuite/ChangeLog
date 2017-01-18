@@ -1,3 +1,8 @@
+2017-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78488
+	* g++.dg/cpp1z/inh-ctor37.C: New.
+
 2017-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/78952
