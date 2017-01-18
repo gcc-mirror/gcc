@@ -1,3 +1,9 @@
+2017-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/target-attribute/tattr-2.c: Add -fno-ipa-icf
+	to dg-options.
+	(p0): Add missing dg-error.
+
 2017-01-18  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* config/mips/mips.h (ISA_HAS_DIV3): Remove unused macro.
