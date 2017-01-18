@@ -2207,8 +2207,12 @@ is named as @samp{.} (dot), or is omitted (e.g.
 The options @option{--with-target-bdw-gc-include} and
 @option{--with-target-bdw-gc-lib} must always be specified together
 for each multilib variant and they take precedence over
-@option{--with-target-bdw-gc}.  If none of these options are
-specified, the library is assumed in default locations.
+@option{--with-target-bdw-gc}.  If @option{--with-target-bdw-gc-include}
+is missing values for a multilib, then the value for the default
+multilib is used (e.g. @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
+@samp{--with-target-bdw-gc-lib=/opt/bdw-gc/lib64,32=/opt-bdw-gc/lib32}).
+If none of these options are specified, the library is assumed in
+default locations.
 @end table
 
 @html

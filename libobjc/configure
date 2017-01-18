@@ -11567,16 +11567,19 @@ $as_echo "using paths configured with --with-target-bdw-gc options" >&6; }
       for i in `echo $with_target_bdw_gc_include | tr ',' ' '`; do
         case "$i" in
           *=*) sd=${i%%=*}; d=${i#*=} ;;
-          *) sd=.; d=$i ;;
+          *) sd=.; d=$i; fallback=$i ;;
         esac
         if test "$mldir" = "$sd"; then
           bdw_val=$d
         fi
       done
-      if test "x$bdw_val" = x; then
+      if test "x$bdw_val" = x && test "x$bdw_inc_dir" = x && test "x$fallback" != x; then
+        bdw_inc_dir="$fallback"
+      elif test "x$bdw_val" = x; then
         as_fn_error "no multilib path ($mldir) found in --with-target-bdw-gc-include" "$LINENO" 5
+      else
+        bdw_inc_dir="$bdw_val"
       fi
-      bdw_inc_dir="$bdw_val"
     fi
     bdw_val=
     if test "x$with_target_bdw_gc_lib" != x; then
@@ -11601,18 +11604,27 @@ $as_echo "using paths configured with --with-target-bdw-gc options" >&6; }
       as_fn_error "no multilib path ($mldir) found in --with-target-bdw-gc-lib" "$LINENO" 5
     fi
     BDW_GC_CFLAGS="-I$bdw_inc_dir"
-    BDW_GC_LIBS="-L$bdw_lib_dir -lgc"
+    if test -f $bdw_lib_dir/libgc.la; then
+      BDW_GC_LIBS="$bdw_lib_dir/libgc.la"
+    else
+      BDW_GC_LIBS="-L$bdw_lib_dir -lgc"
+    fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
 $as_echo "found" >&6; }
   fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for system boehm-gc" >&5
+  case "$BDW_GC_LIBS" in
+  *libgc.la)
+    use_bdw_gc=yes
+    ;;
+  *)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for system boehm-gc" >&5
 $as_echo_n "checking for system boehm-gc... " >&6; }
-  save_CFLAGS=$CFLAGS
-  save_LIBS=$LIBS
-  CFLAGS="$CFLAGS $BDW_GC_CFLAGS"
-  LIBS="$LIBS $BDW_GC_LIBS"
-      if test x$gcc_no_link = xyes; then
+    save_CFLAGS=$CFLAGS
+    save_LIBS=$LIBS
+    CFLAGS="$CFLAGS $BDW_GC_CFLAGS"
+    LIBS="$LIBS $BDW_GC_LIBS"
+            if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -11628,18 +11640,18 @@ GC_init()
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
-      if test "$cross_compiling" = yes; then :
-          system_bdw_gc_found=no
+        if test "$cross_compiling" = yes; then :
+            system_bdw_gc_found=no
 
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-        #include <gc/gc.h>
-        int main() {
-          GC_init();
-          return 0;
-        }
+          #include <gc/gc.h>
+          int main() {
+            GC_init();
+            return 0;
+          }
 
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
@@ -11657,19 +11669,20 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-  CFLAGS=$save_CFLAGS
-  LIBS=$save_LIBS
-  if test x$enable_objc_gc = xauto && test x$system_bdw_gc_found = xno; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: system bdw-gc not found, not building libobjc_gc" >&5
+    CFLAGS=$save_CFLAGS
+    LIBS=$save_LIBS
+    if test x$enable_objc_gc = xauto && test x$system_bdw_gc_found = xno; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: system bdw-gc not found, not building libobjc_gc" >&5
 $as_echo "$as_me: WARNING: system bdw-gc not found, not building libobjc_gc" >&2;}
-    use_bdw_gc=no
-  elif test x$enable_objc_gc = xyes && test x$system_bdw_gc_found = xno; then
-    as_fn_error "system bdw-gc required but not found" "$LINENO" 5
-  else
-    use_bdw_gc=yes
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+      use_bdw_gc=no
+    elif test x$enable_objc_gc = xyes && test x$system_bdw_gc_found = xno; then
+      as_fn_error "system bdw-gc required but not found" "$LINENO" 5
+    else
+      use_bdw_gc=yes
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
 $as_echo "found" >&6; }
-  fi
+    fi
+  esac
 esac
 
 if test "$use_bdw_gc" = no; then
