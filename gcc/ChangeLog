@@ -1,3 +1,8 @@
+2017-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79040
+	* config/rs6000/altivec.h: Fix typo of vec_cntlz to vec_cnttz.
+
 2017-01-18  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 	* config/rs6000/rs6000-protos.h (expand_strn_compare): Add arg.
 	* config/rs6000/rs6000.c (expand_strn_compare): Add ability to expand
