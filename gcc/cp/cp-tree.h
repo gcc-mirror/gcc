@@ -6449,6 +6449,7 @@ extern cp_expr perform_koenig_lookup		(cp_expr, vec<tree, va_gc> *,
 						 tsubst_flags_t);
 extern tree finish_call_expr			(tree, vec<tree, va_gc> **, bool,
 						 bool, tsubst_flags_t);
+extern tree lookup_and_finish_template_variable (tree, tree, tsubst_flags_t = tf_warning_or_error);
 extern tree finish_template_variable		(tree, tsubst_flags_t = tf_warning_or_error);
 extern cp_expr finish_increment_expr		(cp_expr, enum tree_code);
 extern tree finish_this_expr			(void);

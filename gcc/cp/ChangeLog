@@ -1,3 +1,11 @@
+2017-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68666 - member variable template-id
+	* typeck.c (finish_class_member_access_expr): Handle variable
+	template-id.
+	* pt.c (lookup_and_finish_template_variable): No longer static.
+	* cp-tree.h: Declare it.
+
 2017-01-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78488
