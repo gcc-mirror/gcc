@@ -1,4 +1,4 @@
-/* Test strncmp builtin expansion for compilation and proper execution.  */
+/* Test strcmp builtin expansion for compilation and proper execution.  */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target ptr32plus } */
@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define RUN_TEST(SZ, ALIGN) test_strncmp_ ## SZ ## _ ## ALIGN ()
+#define RUN_TEST(SZ, ALIGN) test_strcmp_ ## SZ ## _ ## ALIGN ()
 
 #define DEF_TEST(SZ, ALIGN)                                                 \
-static void test_strncmp_ ## SZ ## _ ## ALIGN (void) {     		    \
+static void test_strcmp_ ## SZ ## _ ## ALIGN (void) {     		    \
   char one[3 * (SZ > 10 ? SZ : 10)];					    \
   char two[3 * (SZ > 10 ? SZ : 10)];					    \
   char three[8192] __attribute__ ((aligned (4096)));       		    \
@@ -31,21 +31,21 @@ static void test_strncmp_ ## SZ ## _ ## ALIGN (void) {     		    \
       b[i] = '2';					   		    \
       a[SZ] = 0;							    \
       b[SZ] = 0;					   		    \
-      if (!((r1 = strncmp (b, a, SZ)) > 0))   		   		    \
+      if (!((r1 = strcmp (b, a)) > 0))   		   		    \
 	abort ();							    \
-      if (!((r1 = strncmp (a, b, SZ)) < 0))			   	    \
+      if (!((r1 = strcmp (a, b)) < 0))			   	            \
 	abort ();							    \
       b[i] = '1';					   		    \
-      if (!((r1 = strncmp (a, b, SZ)) == 0))		   		    \
+      if (!((r1 = strcmp (a, b)) == 0))		   		            \
 	abort ();							    \
       for(j = i; j < SZ ; j++)			   		            \
 	{						   		    \
 	  a[j] = '1';            			   		    \
 	  b[j] = '2';			                   		    \
 	}						   		    \
-      if (!((r1 = strncmp (b, a, SZ)) > 0))		   		    \
+      if (!((r1 = strcmp (b, a)) > 0))		   		            \
 	abort ();							    \
-      if (!((r1 = strncmp (a, b, SZ)) < 0))		   		    \
+      if (!((r1 = strcmp (a, b)) < 0))		   		            \
 	abort ();							    \
       for(j = 0; j < i ; j++)						    \
         {								    \
@@ -55,7 +55,7 @@ static void test_strncmp_ ## SZ ## _ ## ALIGN (void) {     		    \
 	  a[j+1] = '1';							    \
 	  b[j] = '\0';							    \
 	  b[j+1] = '2';							    \
-	  if ((r1 = strncmp (b, a, SZ)) != 0)				    \
+	  if ((r1 = strcmp (b, a)) != 0)				    \
 	    abort ();							    \
 	}                                                                   \
       a = three + 4096 - (SZ / 2 + (i & 1) * ALIGN);		   	    \
@@ -66,12 +66,12 @@ static void test_strncmp_ ## SZ ## _ ## ALIGN (void) {     		    \
       b[i] = '2';					   		    \
       a[SZ] = 0;							    \
       b[SZ] = 0;					   		    \
-      if (!((r1 = strncmp(b, a, SZ)) > 0))   		   		    \
+      if (!((r1 = strcmp(b, a)) > 0))   		   		    \
 	abort ();							    \
-      if (!((r1 = strncmp(a, b, SZ)) < 0))			   	    \
+      if (!((r1 = strcmp(a, b)) < 0))			   	            \
 	abort ();							    \
       b[i] = '1';					   		    \
-      if (!((r1 = strncmp(a, b, SZ)) == 0))		   		    \
+      if (!((r1 = strcmp(a, b)) == 0))		   		            \
 	abort ();							    \
     }							                    \
 }                                                                

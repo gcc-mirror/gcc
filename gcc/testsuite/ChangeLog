@@ -1,3 +1,7 @@
+2017-01-18  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+	* gcc.dg/strcmp-1.c: New test.
+	* gcc.dg/strncmp-1.c: Add test for a bug that escaped.
+
 2017-01-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-threads.c (dejagnu_pass): Remove decl.
