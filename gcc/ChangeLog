@@ -1,5 +1,9 @@
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
+	* doc/invoke.texi (fabi-version): Correct number of occurrences.
+
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
 	* doc/invoke.texi (fabi-version): Spelling fix.
 
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
