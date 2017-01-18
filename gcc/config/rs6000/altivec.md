@@ -150,6 +150,7 @@
    UNSPEC_VSUBEUQM
    UNSPEC_VSUBECUQ
    UNSPEC_VBPERMQ
+   UNSPEC_VBPERMD
    UNSPEC_BCDADD
    UNSPEC_BCDSUB
    UNSPEC_BCD_OVERFLOW
@@ -3679,8 +3680,26 @@
 		     UNSPEC_VBPERMQ))]
   "TARGET_P8_VECTOR"
   "vbpermq %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
+
+; One of the vector API interfaces requires returning vector unsigned char.
+(define_insn "altivec_vbpermq2"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
+		       (match_operand:V16QI 2 "register_operand" "v")]
+		      UNSPEC_VBPERMQ))]
+  "TARGET_P8_VECTOR"
+  "vbpermq %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vbpermd"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "v")
+		      (match_operand:V16QI 2 "register_operand" "v")]
+		     UNSPEC_VBPERMD))]
+  "TARGET_P9_VECTOR"
+  "vbpermd %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
 
 ;; Decimal Integer operations
 (define_int_iterator UNSPEC_BCD_ADD_SUB [UNSPEC_BCDADD UNSPEC_BCDSUB])

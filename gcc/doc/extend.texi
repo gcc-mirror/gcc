@@ -17836,6 +17836,10 @@ vector unsigned long long vec_vaddudm (vector unsigned long long,
 vector long long vec_vbpermq (vector signed char, vector signed char);
 vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
 
+vector unsigned char vec_bperm (vector unsigned char, vector unsigned char);
+vector unsigned long long vec_bperm (vector unsigned __int128,
+                                     vector unsigned char);
+
 vector long long vec_cntlz (vector long long);
 vector unsigned long long vec_cntlz (vector unsigned long long);
 vector int vec_cntlz (vector int);
@@ -18004,6 +18008,9 @@ If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
 are available:
 
 @smallexample
+vector unsigned long long vec_bperm (vector unsigned long long,
+                                     vector unsigned char);
+
 vector bool char vec_cmpne (vector bool char, vector bool char);
 vector bool short vec_cmpne (vector bool short, vector bool short);
 vector bool int vec_cmpne (vector bool int, vector bool int);

@@ -351,7 +351,7 @@
 #define vec_vaddudm __builtin_vec_vaddudm
 #define vec_vadduqm __builtin_vec_vadduqm
 #define vec_vbpermq __builtin_vec_vbpermq
-#define vec_bperm __builtin_vec_vbpermq
+#define vec_bperm __builtin_vec_vbperm_api
 #define vec_vclz __builtin_vec_vclz
 #define vec_cntlz __builtin_vec_vclz
 #define vec_vclzb __builtin_vec_vclzb
