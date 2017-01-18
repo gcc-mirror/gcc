@@ -24968,6 +24968,13 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
       current_template_parms = save_parms;
       --processing_template_decl;
     }
+  else
+    {
+      /* Copy the parms so we can set DECL_PRIMARY_TEMPLATE.  */
+      tparms = copy_node (tparms);
+      INNERMOST_TEMPLATE_PARMS (tparms)
+	= copy_node (INNERMOST_TEMPLATE_PARMS (tparms));
+    }
 
   tree fntype = build_function_type (type, fparms);
   tree ded_fn = build_lang_decl_loc (DECL_SOURCE_LOCATION (ctor),
@@ -24978,6 +24985,7 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   DECL_TEMPLATE_RESULT (ded_tmpl) = ded_fn;
   TREE_TYPE (ded_tmpl) = TREE_TYPE (ded_fn);
   DECL_TEMPLATE_INFO (ded_fn) = build_template_info (ded_tmpl, targs);
+  DECL_PRIMARY_TEMPLATE (ded_tmpl) = ded_tmpl;
   if (ci)
     set_constraints (ded_tmpl, ci);
 
