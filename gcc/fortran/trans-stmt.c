@@ -3196,7 +3196,7 @@ forall_make_variable_temp (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
       gfc_add_block_to_block (post, &tse.post);
       tse.expr = build_fold_indirect_ref_loc (input_location, tse.expr);
 
-      if (e->ts.type != BT_CHARACTER)
+      if (c->expr1->ref->u.ar.type != AR_SECTION)
 	{
 	  /* Use the variable offset for the temporary.  */
 	  tmp = gfc_conv_array_offset (old_sym->backend_decl);
@@ -3526,114 +3526,103 @@ gfc_do_allocate (tree bytesize, tree size, tree * pdata, stmtblock_t * pblock,
 
 static tree
 generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree count3,
-			       tree count1, tree wheremask, bool invert)
+			       tree count1,
+			       gfc_ss *lss, gfc_ss *rss,
+			       tree wheremask, bool invert)
 {
-  gfc_ss *lss;
-  gfc_se lse, rse;
-  stmtblock_t block, body;
-  gfc_loopinfo loop1;
+  stmtblock_t block, body1;
+  gfc_loopinfo loop;
+  gfc_se lse;
+  gfc_se rse;
   tree tmp;
   tree wheremaskexpr;
 
-  /* Walk the lhs.  */
-  lss = gfc_walk_expr (expr);
+  (void) rss; /* TODO: unused.  */
+
+  gfc_start_block (&block);
+
+  gfc_init_se (&rse, NULL);
+  gfc_init_se (&lse, NULL);
 
   if (lss == gfc_ss_terminator)
     {
-      gfc_start_block (&block);
-
-      gfc_init_se (&lse, NULL);
-
-      /* Translate the expression.  */
+      gfc_init_block (&body1);
       gfc_conv_expr (&lse, expr);
-
-      /* Form the expression for the temporary.  */
-      tmp = gfc_build_array_ref (tmp1, count1, NULL);
-
-      /* Use the scalar assignment as is.  */
-      gfc_add_block_to_block (&block, &lse.pre);
-      gfc_add_modify (&block, lse.expr, tmp);
-      gfc_add_block_to_block (&block, &lse.post);
-
-      /* Increment the count1.  */
-      tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (count1),
-			     count1, gfc_index_one_node);
-      gfc_add_modify (&block, count1, tmp);
-
-      tmp = gfc_finish_block (&block);
+      rse.expr = gfc_build_array_ref (tmp1, count1, NULL);
     }
   else
     {
-      gfc_start_block (&block);
+      /* Initialize the loop.  */
+      gfc_init_loopinfo (&loop);
 
-      gfc_init_loopinfo (&loop1);
-      gfc_init_se (&rse, NULL);
-      gfc_init_se (&lse, NULL);
+      /* We may need LSS to determine the shape of the expression.  */
+      gfc_add_ss_to_loop (&loop, lss);
 
-      /* Associate the lss with the loop.  */
-      gfc_add_ss_to_loop (&loop1, lss);
-
-      /* Calculate the bounds of the scalarization.  */
-      gfc_conv_ss_startstride (&loop1);
-      /* Setup the scalarizing loops.  */
-      gfc_conv_loop_setup (&loop1, &expr->where);
+      gfc_conv_ss_startstride (&loop);
+      gfc_conv_loop_setup (&loop, &expr->where);
 
       gfc_mark_ss_chain_used (lss, 1);
+      /* Start the loop body.  */
+      gfc_start_scalarized_body (&loop, &body1);
 
-      /* Start the scalarized loop body.  */
-      gfc_start_scalarized_body (&loop1, &body);
-
-      /* Setup the gfc_se structures.  */
-      gfc_copy_loopinfo_to_se (&lse, &loop1);
+      /* Translate the expression.  */
+      gfc_copy_loopinfo_to_se (&lse, &loop);
       lse.ss = lss;
-
-      /* Form the expression of the temporary.  */
-      if (lss != gfc_ss_terminator)
-	rse.expr = gfc_build_array_ref (tmp1, count1, NULL);
-      /* Translate expr.  */
       gfc_conv_expr (&lse, expr);
 
-      /* Use the scalar assignment.  */
-      rse.string_length = lse.string_length;
-      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, true, true);
+      /* Form the expression of the temporary.  */
+      rse.expr = gfc_build_array_ref (tmp1, count1, NULL);
+    }
 
-      /* Form the mask expression according to the mask tree list.  */
-      if (wheremask)
-	{
-	  wheremaskexpr = gfc_build_array_ref (wheremask, count3, NULL);
-	  if (invert)
-	    wheremaskexpr = fold_build1_loc (input_location, TRUTH_NOT_EXPR,
-					     TREE_TYPE (wheremaskexpr),
-					     wheremaskexpr);
-	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 wheremaskexpr, tmp,
-				 build_empty_stmt (input_location));
-       }
+  /* Use the scalar assignment.  */
+  rse.string_length = lse.string_length;
+  tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts,
+				 expr->expr_type == EXPR_VARIABLE, false);
 
-      gfc_add_expr_to_block (&body, tmp);
+  /* Form the mask expression according to the mask tree list.  */
+  if (wheremask)
+    {
+      wheremaskexpr = gfc_build_array_ref (wheremask, count3, NULL);
+      if (invert)
+	wheremaskexpr = fold_build1_loc (input_location, TRUTH_NOT_EXPR,
+					 TREE_TYPE (wheremaskexpr),
+					 wheremaskexpr);
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+			     wheremaskexpr, tmp,
+			     build_empty_stmt (input_location));
+    }
 
-      /* Increment count1.  */
-      tmp = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
-			     count1, gfc_index_one_node);
-      gfc_add_modify (&body, count1, tmp);
+  gfc_add_expr_to_block (&body1, tmp);
 
+  tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (count1),
+			 count1, gfc_index_one_node);
+  gfc_add_modify (&body1, count1, tmp);
+
+  if (lss == gfc_ss_terminator)
+      gfc_add_block_to_block (&block, &body1);
+  else
+    {
       /* Increment count3.  */
       if (count3)
 	{
 	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
-				 gfc_array_index_type, count3,
-				 gfc_index_one_node);
-	  gfc_add_modify (&body, count3, tmp);
+				 gfc_array_index_type,
+				 count3, gfc_index_one_node);
+	  gfc_add_modify (&body1, count3, tmp);
 	}
 
       /* Generate the copying loops.  */
-      gfc_trans_scalarizing_loops (&loop1, &body);
-      gfc_add_block_to_block (&block, &loop1.pre);
-      gfc_add_block_to_block (&block, &loop1.post);
-      gfc_cleanup_loop (&loop1);
+      gfc_trans_scalarizing_loops (&loop, &body1);
 
-      tmp = gfc_finish_block (&block);
+      gfc_add_block_to_block (&block, &loop.pre);
+      gfc_add_block_to_block (&block, &loop.post);
+
+      gfc_cleanup_loop (&loop);
+      /* TODO: Reuse lss and rss when copying temp->lhs.  Need to be careful
+	 as tree nodes in SS may not be valid in different scope.  */
     }
+
+  tmp = gfc_finish_block (&block);
   return tmp;
 }
 
@@ -3989,25 +3978,38 @@ gfc_trans_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
 
   /* Calculate the size of temporary needed in the assignment. Return loop, lss
      and rss which are used in function generate_loop_for_rhs_to_temp().  */
-  gfc_init_block (&inner_size_body);
-  inner_size = compute_inner_temp_size (expr1, expr2, &inner_size_body,
-					&lss, &rss);
-
   /* The type of LHS. Used in function allocate_temp_for_forall_nest */
-  if (expr1->ts.type == BT_CHARACTER && expr1->ts.u.cl->length)
+  if (expr1->ts.type == BT_CHARACTER)
     {
-      if (!expr1->ts.u.cl->backend_decl)
+      type = NULL;
+      if (expr1->ref && expr1->ref->type == REF_SUBSTRING)
 	{
-	  gfc_se tse;
-	  gfc_init_se (&tse, NULL);
-	  gfc_conv_expr (&tse, expr1->ts.u.cl->length);
-	  expr1->ts.u.cl->backend_decl = tse.expr;
+	  gfc_se ssse;
+	  gfc_init_se (&ssse, NULL);
+	  gfc_conv_expr (&ssse, expr1);
+	  type = gfc_get_character_type_len (gfc_default_character_kind,
+					     ssse.string_length);
 	}
-      type = gfc_get_character_type_len (gfc_default_character_kind,
-				         expr1->ts.u.cl->backend_decl);
+      else
+	{
+	  if (!expr1->ts.u.cl->backend_decl)
+	    {
+	      gfc_se tse;
+	      gcc_assert (expr1->ts.u.cl->length);
+	      gfc_init_se (&tse, NULL);
+	      gfc_conv_expr (&tse, expr1->ts.u.cl->length);
+	      expr1->ts.u.cl->backend_decl = tse.expr;
+	    }
+	  type = gfc_get_character_type_len (gfc_default_character_kind,
+					     expr1->ts.u.cl->backend_decl);
+	}
     }
   else
     type = gfc_typenode_for_spec (&expr1->ts);
+
+  gfc_init_block (&inner_size_body);
+  inner_size = compute_inner_temp_size (expr1, expr2, &inner_size_body,
+					&lss, &rss);
 
   /* Allocate temporary for nested forall construct according to the
      information in nested_forall_info and inner_size.  */
@@ -4030,8 +4032,14 @@ gfc_trans_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
   if (wheremask)
     gfc_add_modify (block, count, gfc_index_zero_node);
 
+  /* TODO: Second call to compute_inner_temp_size to initialize lss and
+     rss;  there must be a better way.  */
+  inner_size = compute_inner_temp_size (expr1, expr2, &inner_size_body,
+					&lss, &rss);
+
   /* Generate codes to copy the temporary to lhs.  */
   tmp = generate_loop_for_temp_to_lhs (expr1, tmp1, count, count1,
+				       lss, rss,
 				       wheremask, invert);
 
   /* Generate body and loops according to the information in
@@ -4488,8 +4496,8 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 
           /* Temporaries due to array assignment data dependencies introduce
              no end of problems.  */
-	  if (need_temp)
-            gfc_trans_assign_need_temp (c->expr1, c->expr2, NULL, false,
+	  if (need_temp || flag_test_forall_temp)
+	    gfc_trans_assign_need_temp (c->expr1, c->expr2, NULL, false,
                                         nested_forall_info, &block);
           else
             {
@@ -4517,7 +4525,12 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
         /* Pointer assignment inside FORALL.  */
 	case EXEC_POINTER_ASSIGN:
           need_temp = gfc_check_dependency (c->expr1, c->expr2, 0);
-          if (need_temp)
+	  /* Avoid cases where a temporary would never be needed and where
+	     the temp code is guaranteed to fail.  */
+	  if (need_temp
+	      || (flag_test_forall_temp
+		  && c->expr2->expr_type != EXPR_CONSTANT
+		  && c->expr2->expr_type != EXPR_NULL))
             gfc_trans_pointer_assign_need_temp (c->expr1, c->expr2,
                                                 nested_forall_info, &block);
           else
@@ -5125,7 +5138,8 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
               if (nested_forall_info != NULL)
                 {
                   need_temp = gfc_check_dependency (expr1, expr2, 0);
-                  if (need_temp && cnext->op != EXEC_ASSIGN_CALL)
+		  if ((need_temp || flag_test_forall_temp)
+		    && cnext->op != EXEC_ASSIGN_CALL)
                     gfc_trans_assign_need_temp (expr1, expr2,
 						cmask, invert,
                                                 nested_forall_info, block);

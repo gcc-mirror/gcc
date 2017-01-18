@@ -1,3 +1,15 @@
+2017-01-18  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/50069
+	PR fortran/55086
+	* gfortran.dg/pr50069_1.f90: New test.
+	* gfortran.dg/pr50069_2.f90: New test.
+	* gfortran.dg/pr55086_1.f90: New test.
+	* gfortran.dg/pr55086_1_tfat.f90: New test.
+	* gfortran.dg/pr55086_2.f90: New test.
+	* gfortran.dg/pr55086_2_tfat.f90: New test.
+	* gfortran.dg/pr55086_aliasing_dummy_4_tfat.f90: New test.
+
 2017-01-18  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 	* gcc.dg/strcmp-1.c: New test.
 	* gcc.dg/strncmp-1.c: Add test for a bug that escaped.

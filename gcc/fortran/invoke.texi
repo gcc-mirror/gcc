@@ -124,6 +124,7 @@ by type.  Explanations are in the following sections.
 -fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
 -fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
 -freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std}
+-ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -458,6 +459,10 @@ that are permitted but obsolescent in later standards. @samp{-std=f2008ts}
 allows the Fortran 2008 standard including the additions of the 
 Technical Specification (TS) 29113 on Further Interoperability of Fortran
 with C and TS 18508 on Additional Parallel Features in Fortran.
+
+@item -ftest-forall-temp
+@opindex @code{ftest-forall-temp}
+Enhance test coverage by forcing most forall assignments to use temporary.
 
 @end table
 
