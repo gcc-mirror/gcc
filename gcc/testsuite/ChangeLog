@@ -1,3 +1,8 @@
+2017-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79091
+	* g++.dg/pr79091.C: New.
+
 2017-01-17  Joe Seymour  <joe.s@somniumtech.com>
 
 	* gcc.target/msp430/mul_f5_muldef.c: New test.
