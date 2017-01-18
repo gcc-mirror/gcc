@@ -1,3 +1,10 @@
+2017-01-18  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* config/mips/mips.h (ISA_HAS_DIV3): Remove unused macro.
+	(ISA_AVOID_DIV_HILO): New macro.
+	(ISA_HAS_DIV): Use new ISA_AVOID_DIV_HILO macro.
+	(ISA_HAS_DDIV): Likewise.
+
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* doc/invoke.texi (fabi-version): Correct number of occurrences.
