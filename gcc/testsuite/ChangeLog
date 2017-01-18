@@ -1,3 +1,7 @@
+2017-01-17  Joe Seymour  <joe.s@somniumtech.com>
+
+	* gcc.target/msp430/mul_f5_muldef.c: New test.
+
 2017-01-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/79004
