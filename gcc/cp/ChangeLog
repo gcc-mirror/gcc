@@ -1,3 +1,9 @@
+2017-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78488
+	* call.c (build_over_call): When checking ellipsis conversions for
+	an inherited ctor, make sure there is at least one conversion.
+
 2017-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78894 - ICE with class deduction and default arg

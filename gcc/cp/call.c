@@ -7899,6 +7899,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 could handle this by open-coding the inherited constructor rather than
 	 defining it, but let's not bother now.  */
       if (!cp_unevaluated_operand
+	  && cand->num_convs
 	  && cand->convs[cand->num_convs-1]->ellipsis_p)
 	{
 	  if (complain & tf_error)
