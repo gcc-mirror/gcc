@@ -3680,7 +3680,7 @@
 		     UNSPEC_VBPERMQ))]
   "TARGET_P8_VECTOR"
   "vbpermq %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecperm")])
 
 ; One of the vector API interfaces requires returning vector unsigned char.
 (define_insn "altivec_vbpermq2"
@@ -3690,7 +3690,7 @@
 		      UNSPEC_VBPERMQ))]
   "TARGET_P8_VECTOR"
   "vbpermq %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vbpermd"
   [(set (match_operand:V2DI 0 "register_operand" "=v")
