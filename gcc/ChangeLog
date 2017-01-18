@@ -1,5 +1,11 @@
 2017-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/altivec.md (altivec_vbpermq): Change "type"
+	attribute from vecsimple to vecperm.
+	(altivec_vbpermq2): Likewise.
+
+2017-01-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	PR target/79040
 	* config/rs6000/altivec.h: Fix typo of vec_cntlz to vec_cnttz.
 
