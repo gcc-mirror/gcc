@@ -1,3 +1,8 @@
+2017-01-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70696
+	* gfortran.dg/coarray_event_1.f08: New test.
+
 2017-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77416

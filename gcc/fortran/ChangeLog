@@ -1,3 +1,12 @@
+2017-01-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70696
+	Missed some cases, here they are:
+	* trans-decl.c (gfc_build_qualified_array): Add static tokens to the
+	parent function's scope.
+	* trans-expr.c (gfc_get_tree_for_caf_expr): Shorten code.  Remove
+	unnecessary assert.
+
 2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70697
