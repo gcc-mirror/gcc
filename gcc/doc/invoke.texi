@@ -2254,7 +2254,7 @@ attributes (e.g. @samp{stdcall}).
 Version 11, which first appeared in G++ 7, corrects the mangling of
 sizeof... expressions and operator names.  For multiple entities with
 the same name within a function, that are declared in different scopes,
-the mangling now changes starting with the eighth occurence.  It also
+the mangling now changes starting with the eighth occurrence.  It also
 implies @option{-fnew-inheriting-ctors}.
 
 See also @option{-Wabi}.
