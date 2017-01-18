@@ -1,5 +1,12 @@
 2017-01-18  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	* primary.c (caf_variable_attr): Improve figuring whether the current
+	component is the last one refed.
+	* trans-stmt.c (gfc_trans_allocate): Do not generate sync_all calls
+	when allocating pointer or allocatable components.
+
+2017-01-18  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	* gfortran.texi: Add missing parameters to caf-API functions.  Correct
 	typos and clarify some descriptions.
 

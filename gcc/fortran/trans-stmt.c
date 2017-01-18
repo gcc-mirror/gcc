@@ -5506,8 +5506,10 @@ gfc_trans_allocate (gfc_code * code)
   stmtblock_t block;
   stmtblock_t post;
   tree nelems;
-  bool upoly_expr, tmp_expr3_len_flag = false, al_len_needs_set, is_coarray ;
+  bool upoly_expr, tmp_expr3_len_flag = false, al_len_needs_set, is_coarray;
+  bool needs_caf_sync, caf_refs_comp;
   gfc_symtree *newsym = NULL;
+  symbol_attribute caf_attr;
 
   if (!code->ext.alloc.list)
     return NULL_TREE;
@@ -5516,7 +5518,7 @@ gfc_trans_allocate (gfc_code * code)
   expr3 = expr3_vptr = expr3_len = expr3_esize = NULL_TREE;
   label_errmsg = label_finish = errmsg = errlen = NULL_TREE;
   e3_is = E3_UNSET;
-  is_coarray = false;
+  is_coarray = needs_caf_sync = false;
 
   gfc_init_block (&block);
   gfc_init_block (&post);
@@ -6087,16 +6089,20 @@ gfc_trans_allocate (gfc_code * code)
 	    /* Handle size computation of the type declared to alloc.  */
 	    memsz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
-	  if (gfc_caf_attr (expr).codimension
-	      && flag_coarray == GFC_FCOARRAY_LIB)
+	  /* Store the caf-attributes for latter use.  */
+	  if (flag_coarray == GFC_FCOARRAY_LIB
+	      && (caf_attr = gfc_caf_attr (expr, true, &caf_refs_comp))
+		 .codimension)
 	    {
 	      /* Scalar allocatable components in coarray'ed derived types make
 		 it here and are treated now.  */
 	      tree caf_decl, token;
 	      gfc_se caf_se;
 
-	      /* Set flag, to add synchronize after the allocate.  */
 	      is_coarray = true;
+	      /* Set flag, to add synchronize after the allocate.  */
+	      needs_caf_sync = needs_caf_sync
+		  || caf_attr.coarray_comp || !caf_refs_comp;
 
 	      gfc_init_se (&caf_se, NULL);
 
@@ -6121,8 +6127,14 @@ gfc_trans_allocate (gfc_code * code)
 	{
 	  /* Allocating coarrays needs a sync after the allocate executed.
 	     Set the flag to add the sync after all objects are allocated.  */
-	  is_coarray = is_coarray || (gfc_caf_attr (expr).codimension
-				      && flag_coarray == GFC_FCOARRAY_LIB);
+	  if (flag_coarray == GFC_FCOARRAY_LIB
+	      && (caf_attr = gfc_caf_attr (expr, true, &caf_refs_comp))
+		 .codimension)
+	    {
+	      is_coarray = true;
+	      needs_caf_sync = needs_caf_sync
+		  || caf_attr.coarray_comp || !caf_refs_comp;
+	    }
 
 	  if (expr->ts.type == BT_CHARACTER && al_len != NULL_TREE
 	      && expr3_len != NULL_TREE)
@@ -6401,7 +6413,7 @@ gfc_trans_allocate (gfc_code * code)
       gfc_add_modify (&block, se.expr, tmp);
     }
 
-  if (is_coarray && flag_coarray == GFC_FCOARRAY_LIB)
+  if (needs_caf_sync)
     {
       /* Add a sync all after the allocation has been executed.  */
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,

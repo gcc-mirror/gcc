@@ -2449,7 +2449,7 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
   gfc_clear_attr (&attr);
 
   if (refs_comp)
-    *refs_comp = 0;
+    *refs_comp = false;
 
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
     {
@@ -2527,8 +2527,10 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
 	    allocatable = comp->attr.allocatable;
 	  }
 
-	if (refs_comp && strcmp (comp->name, "_data") != 0)
-	  *refs_comp = 1;
+	if (refs_comp && strcmp (comp->name, "_data") != 0
+	    && (ref->next == NULL
+		|| (ref->next->type == REF_ARRAY && ref->next->next == NULL)))
+	  *refs_comp = true;
 
 	if (pointer || attr.proc_pointer)
 	  target = 1;
