@@ -1,3 +1,10 @@
+2017-01-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/htm-builtins-compile-2.c (must_not_compile1):
+	(must_not_compile2): Downcase first letter of error messages.
+	* gcc.target/s390/target-attribute/tattr-13.c (b): Likewise.
+	* gcc.target/s390/vector/vec-abi-vararg-2.c: Likewise.
+
 2017-01-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79091

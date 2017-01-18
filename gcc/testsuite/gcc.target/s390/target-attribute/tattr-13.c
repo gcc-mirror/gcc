@@ -14,5 +14,5 @@ void a(void)
 __attribute__ ((target("zvector","arch=z13")))
 void
 b(void)
-{ /* { dg-error "Value .zvector. is not supported by attribute .target." } */
+{ /* { dg-error "value .zvector. is not supported by attribute .target." } */
 }
