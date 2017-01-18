@@ -1,3 +1,18 @@
+2017-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77416
+	* gcc.target/powerpc/pr77416.c Guard the test only for ilp32 effective
+	target.  Use powerpc* instead of powerpc64* in targets.  Remove -m32
+	from dg-options.
+	* gcc.target/powerpc/pr64205.c: Remove -m32 from dg-options of ilp32
+	guarded test.
+	* gcc.target/powerpc/fusion4.c: Likewise.
+	* gcc.target/powerpc/pr63491.c: Remove -m64 from dg-options of lp64
+	guarded test.
+	* gcc.target/powerpc/pr58673-1.c: Likewise.
+	* gcc.target/powerpc/pr58673-2.c: Likewise.
+	* gcc.target/powerpc/pr59054.c: Likewise.
+
 2017-01-18  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061
