@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2" } */
+/* { dg-options "-mcpu=power9 -O2 -mfloat128" } */
 
 #include <math.h>
 
@@ -101,18 +101,18 @@ void to_uns_short_store_n (TYPE a, unsigned short *p, long n) { p[n] = (unsigned
 void to_uns_int_store_n (TYPE a, unsigned int *p, long n) { p[n] = (unsigned int)a; }
 void to_uns_long_store_n (TYPE a, unsigned long *p, long n) { p[n] = (unsigned long)a; }
 
-/* { dg-final { scan-assembler-not "\mbl __"       } } */
-/* { dg-final { scan-assembler     "\mxscvdpqp\M"  } } */
-/* { dg-final { scan-assembler     "\mxscvqpdp\M"  } } */
-/* { dg-final { scan-assembler     "\mxscvqpdpo\M" } } */
-/* { dg-final { scan-assembler     "\mxscvqpsdz\M" } } */
-/* { dg-final { scan-assembler     "\mxscvqpswz\M" } } */
-/* { dg-final { scan-assembler     "\mxscvsdqp\M"  } } */
-/* { dg-final { scan-assembler     "\mxscvudqp\M"  } } */
-/* { dg-final { scan-assembler     "\mlxsd\M"      } } */
-/* { dg-final { scan-assembler     "\mlxsiwax\M"   } } */
-/* { dg-final { scan-assembler     "\mlxsiwzx\M"   } } */
-/* { dg-final { scan-assembler     "\mlxssp\M"     } } */
-/* { dg-final { scan-assembler     "\mstxsd\M"     } } */
-/* { dg-final { scan-assembler     "\mstxsiwx\M"   } } */
-/* { dg-final { scan-assembler     "\mstxssp\M"    } } */
+/* { dg-final { scan-assembler-not {\mbl __}       } } */
+/* { dg-final { scan-assembler     {\mxscvdpqp\M}  } } */
+/* { dg-final { scan-assembler     {\mxscvqpdp\M}  } } */
+/* { dg-final { scan-assembler     {\mxscvqpdpo\M} } } */
+/* { dg-final { scan-assembler     {\mxscvqpsdz\M} } } */
+/* { dg-final { scan-assembler     {\mxscvqpswz\M} } } */
+/* { dg-final { scan-assembler     {\mxscvsdqp\M}  } } */
+/* { dg-final { scan-assembler     {\mxscvudqp\M}  } } */
+/* { dg-final { scan-assembler     {\mlxsd\M}      } } */
+/* { dg-final { scan-assembler     {\mlxsiwax\M}   } } */
+/* { dg-final { scan-assembler     {\mlxsiwzx\M}   } } */
+/* { dg-final { scan-assembler     {\mlxssp\M}     } } */
+/* { dg-final { scan-assembler     {\mstxsd\M}     } } */
+/* { dg-final { scan-assembler     {\mstxsiwx\M}   } } */
+/* { dg-final { scan-assembler     {\mstxssp\M}    } } */
