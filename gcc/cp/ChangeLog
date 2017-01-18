@@ -1,5 +1,8 @@
 2017-01-18  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h: Clarify exception spec node comment.
+	* except.c (nothrow_spec_p): Simplify by checking node-equality.
+
 	PR c++/79091
 	* mangle.c (write_exception_spec): Check nothrow explicitly.
 	(write_encoding): Don't increment processing_template_decl around

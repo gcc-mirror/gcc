@@ -1143,15 +1143,17 @@ bool
 nothrow_spec_p (const_tree spec)
 {
   gcc_assert (!DEFERRED_NOEXCEPT_SPEC_P (spec));
-  if (spec == NULL_TREE
-      || TREE_VALUE (spec) != NULL_TREE
-      || spec == noexcept_false_spec)
-    return false;
-  if (TREE_PURPOSE (spec) == NULL_TREE
+
+  if (spec == empty_except_spec
       || spec == noexcept_true_spec)
     return true;
-  gcc_assert (processing_template_decl
-	      || TREE_PURPOSE (spec) == error_mark_node);
+
+  gcc_assert (!spec
+	      || TREE_VALUE (spec)
+	      || spec == noexcept_false_spec
+	      || TREE_PURPOSE (spec) == error_mark_node
+	      || processing_template_decl);
+
   return false;
 }
 
