@@ -1,5 +1,14 @@
 2017-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69301
+	* include/std/atomic (atomic<T>::load, atomic<T>::exchange): Use
+	aligned buffer instead of default-initialized variable.
+	* testsuite/29_atomics/atomic/69301.cc: New test.
+	* include/experimental/memory (observer_ptr::release): Use reserved
+	name.
+	* include/ext/pointer.h (_Pointer_adapter::operator++(int))
+	(_Pointer_adapter::operator--(int)): Likewise.
+
 	PR libstdc++/68925
 	* include/experimental/random (randint): Use temporary instead of
 	thread_local static.

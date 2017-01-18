@@ -124,9 +124,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr __pointer
       release() noexcept
       {
-	__pointer tmp = get();
+	__pointer __tmp = get();
 	reset();
-	return tmp;
+	return __tmp;
       }
 
       constexpr void
