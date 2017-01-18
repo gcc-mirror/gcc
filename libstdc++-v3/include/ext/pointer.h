@@ -449,9 +449,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline _Pointer_adapter 
       operator++(int)
       {
-        _Pointer_adapter tmp(*this);
+        _Pointer_adapter __tmp(*this);
         _Storage_policy::set(_Storage_policy::get() + 1);
-        return tmp;
+        return __tmp;
       }
   
       inline _Pointer_adapter& 
@@ -464,9 +464,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline _Pointer_adapter
       operator--(int) 
       {
-        _Pointer_adapter tmp(*this);
+        _Pointer_adapter __tmp(*this);
         _Storage_policy::set(_Storage_policy::get() - 1);
-        return tmp;
+        return __tmp;
       }
   
     }; // class _Pointer_adapter
