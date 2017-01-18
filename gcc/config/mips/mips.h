@@ -967,19 +967,25 @@ struct mips_cpu_info {
 /* ISA supports instructions DMUL, DMULU, DMUH, DMUHU.  */
 #define ISA_HAS_R6DMUL		(TARGET_64BIT && mips_isa_rev >= 6)
 
+/* For Loongson, it is preferable to use the Loongson-specific division and
+   modulo instructions instead of the regular (D)DIV(U) instruction,
+   because the former are faster and can also have the effect of reducing
+   code size.  */
+#define ISA_AVOID_DIV_HILO	((TARGET_LOONGSON_2EF			\
+				  || TARGET_LOONGSON_3A)		\
+				 && !TARGET_MIPS16)
+
 /* ISA supports instructions DDIV and DDIVU. */
 #define ISA_HAS_DDIV		(TARGET_64BIT				\
 				 && !TARGET_MIPS5900			\
+				 && !ISA_AVOID_DIV_HILO			\
 				 && mips_isa_rev <= 5)
 
 /* ISA supports instructions DIV and DIVU.
    This is always true, but the macro is needed for ISA_HAS_<D>DIV
    in mips.md.  */
-#define ISA_HAS_DIV		(mips_isa_rev <= 5)
-
-#define ISA_HAS_DIV3		((TARGET_LOONGSON_2EF			\
-				  || TARGET_LOONGSON_3A)		\
-				 && !TARGET_MIPS16)
+#define ISA_HAS_DIV		(!ISA_AVOID_DIV_HILO			\
+				 && mips_isa_rev <= 5)
 
 /* ISA supports instructions DIV, DIVU, MOD and MODU.  */
 #define ISA_HAS_R6DIV		(mips_isa_rev >= 6)
