@@ -18231,6 +18231,34 @@ second argument vector contains the mask  beginning in bits 11:15,
 the mask end in bits 19:23, and the shift count in bits 27:31,
 of each element.
 
+If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
+are available:
+@smallexample
+vector signed char vec_revb (vector signed char);
+vector unsigned char vec_revb (vector unsigned char);
+vector short vec_revb (vector short);
+vector unsigned short vec_revb (vector unsigned short);
+vector int vec_revb (vector int);
+vector unsigned int vec_revb (vector unsigned int);
+vector float vec_revb (vector float);
+vector long long vec_revb (vector long long);
+vector unsigned long long vec_revb (vector unsigned long long);
+vector double vec_revb (vector double);
+@end smallexample
+
+On 64-bit targets, if the ISA 3.0 additions (@option{-mcpu=power9})
+are available:
+@smallexample
+vector long vec_revb (vector long);
+vector unsigned long vec_revb (vector unsigned long);
+vector __int128_t vec_revb (vector __int128_t);
+vector __uint128_t vec_revb (vector __uint128_t);
+@end smallexample
+
+The @code{vec_revb} built-in function reverses the bytes on an element
+by element basis.  A vector of @code{vector unsigned char} or
+@code{vector signed char} reverses the bytes in the whole word.
+
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
 
