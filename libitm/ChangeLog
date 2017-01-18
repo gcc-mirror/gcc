@@ -1,3 +1,8 @@
+2017-01-18  Torvald Riegel  <triegel@redhat.com>
+
+	* config/x86/target.h (htm_available): Add check for some processors
+	on which TSX is broken.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
