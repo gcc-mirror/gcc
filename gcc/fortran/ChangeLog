@@ -1,4 +1,9 @@
-2017-01-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+2017-01-18  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.texi: Add missing parameters to caf-API functions.  Correct
+	typos and clarify some descriptions.
+
+2017-01-18  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70696
 	Missed some cases, here they are:
