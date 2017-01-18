@@ -1,3 +1,9 @@
+2017-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/78952
+	* gcc.target/i386/pr78952-1.c: New test.
+	* gcc.target/i386/pr78952-2.c: Ditto.
+
 2017-01-18  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.dg/coarray_alloc_with_implicit_sync_2.f90: New test.
@@ -45,6 +51,12 @@
 
 	PR c++/79091
 	* g++.dg/pr79091.C: New.
+
+2017-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/target-attribute/tattr-2.c: Add -fno-ipa-icf
+	to dg-options.
+	(p0): Add missing dg-error.
 
 2017-01-17  Joe Seymour  <joe.s@somniumtech.com>
 
@@ -177,7 +189,7 @@
 2017-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
-        2017-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+	2017-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71737
 	* g++.dg/cpp0x/pr71737.C: New.
@@ -198,8 +210,8 @@
 
 2017-01-14  Bernd Schmidt  <bschmidt@redhat.com>
 
-        PR rtl-optimization/78626
-        PR rtl-optimization/78727
+	PR rtl-optimization/78626
+	PR rtl-optimization/78727
 	* gcc.dg/torture/pr78626.c: New test.
 	* gcc.dg/torture/pr78727.c: New test.
 
