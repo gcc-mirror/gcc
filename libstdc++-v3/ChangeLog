@@ -1,5 +1,10 @@
 2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/64903
+	* include/bits/stl_algo.h (is_partioned): Don't retest the partition
+	point.
+	* testsuite/25_algorithms/is_partitioned/2.cc: New test.
+
 	* doc/xml/manual/abi.xml: Fix typo.
 	* doc/html/manual/abi.html: Likewise.
 
