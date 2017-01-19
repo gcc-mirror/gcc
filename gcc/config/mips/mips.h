@@ -1066,11 +1066,13 @@ struct mips_cpu_info {
 
 /* ISA has 4 operand fused madd instructions of the form
    'd = [+-] (a * b [+-] c)'.  */
-#define ISA_HAS_FUSED_MADD4	TARGET_MIPS8000
+#define ISA_HAS_FUSED_MADD4	(TARGET_MIPS8000 || TARGET_LOONGSON_3A)
 
 /* ISA has 4 operand unfused madd instructions of the form
    'd = [+-] (a * b [+-] c)'.  */
-#define ISA_HAS_UNFUSED_MADD4	(ISA_HAS_FP4 && !TARGET_MIPS8000)
+#define ISA_HAS_UNFUSED_MADD4	(ISA_HAS_FP4				\
+				 && !TARGET_MIPS8000			\
+				 && !TARGET_LOONGSON_3A)
 
 /* ISA has 3 operand r6 fused madd instructions of the form
    'c = c [+-] (a * b)'.  */

@@ -1,3 +1,9 @@
+2017-01-19  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* config/mips/mips.h (ISA_HAS_FUSED_MADD4): Enable for
+	TARGET_LOONGSON_3A.
+	(ISA_HAS_UNFUSED_MADD4): Exclude TARGET_LOONGSON_3A.
+
 2017-01-19  Doug Gilmore  <doug.gilmore@imgtec.com>
 
 	PR target/78176
