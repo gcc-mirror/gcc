@@ -1,5 +1,10 @@
 2017-01-20  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.md (cmpstrnsi, cmpstrsi): Fail if
+	optimizing for size.
+
+2017-01-20  Alan Modra  <amodra@gmail.com>
+
 	PR target/79144
 	* config/rs6000/rs6000.c (expand_strn_compare): Get the asm name
 	for strcmp and strncmp from corresponding builtin decl.
