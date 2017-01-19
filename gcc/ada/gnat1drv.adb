@@ -1439,7 +1439,7 @@ begin
       --  are delayed till now, since it is perfectly possible for gigi to
       --  generate errors, modify the tree (in particular by setting flags
       --  indicating that elaboration is required, and also to back annotate
-      --  representation information for List_Rep_Info.
+      --  representation information for List_Rep_Info).
 
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;

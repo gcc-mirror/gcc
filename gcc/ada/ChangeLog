@@ -1,3 +1,23 @@
+2017-01-19  Steve Baird  <baird@adacore.com>
+
+	* sem_util.ads: Add new Use_Full_View Boolean parameter to
+	Get_Index_Bounds.
+	* sem_util.adb (Get_Index_Bounds): replace calls to Scalar_Range with
+	calls to a newly-defined Scalar_Range_Of_Right_View function.
+
+2017-01-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: minor fix of unbalanced parens in comment
+	* lib-xref.ads (Traverse_Compilation_Unit): declaration moved
+	to visible part of the package to allow re-use in GNATprove.
+	* lib-xref-spark_specific.adb (Traverse_Stub): routine refactored
+	from repeated code of Traverse_Compilation_Unit.
+	(Traverse_Declaration_Or_Statement): fixed detection of
+	generic subprograms and packages; also, iteration over case
+	statement alternatives rewritten to avoid testing if the first
+	alternative is present (since it must be present due to Ada
+	syntax restrictions).
+
 2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Body): Mark the spec as

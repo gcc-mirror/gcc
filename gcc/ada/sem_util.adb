@@ -8037,9 +8037,30 @@ package body Sem_Util is
    -- Get_Index_Bounds --
    ----------------------
 
-   procedure Get_Index_Bounds (N : Node_Id; L, H : out Node_Id) is
+   procedure Get_Index_Bounds
+     (N : Node_Id;
+      L, H : out Node_Id;
+      Use_Full_View : Boolean := False)
+   is
       Kind : constant Node_Kind := Nkind (N);
       R    : Node_Id;
+
+      function Scalar_Range_Of_Right_View return Node_Id;
+      --  Call Scalar_Range with argument determined by Use_Full_View
+      --  parameter.
+
+      --------------------------------
+      -- Scalar_Range_Of_Right_View --
+      --------------------------------
+
+      function Scalar_Range_Of_Right_View return Node_Id is
+         E : Entity_Id := Entity (N);
+      begin
+         if Use_Full_View and then Present (Full_View (E)) then
+            E := Full_View (E);
+         end if;
+         return Scalar_Range (E);
+      end Scalar_Range_Of_Right_View;
 
    begin
       if Kind = N_Range then
@@ -8060,16 +8081,16 @@ package body Sem_Util is
          end if;
 
       elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
-         if Error_Posted (Scalar_Range (Entity (N))) then
+         if Error_Posted (Scalar_Range_Of_Right_View) then
             L := Error;
             H := Error;
 
-         elsif Nkind (Scalar_Range (Entity (N))) = N_Subtype_Indication then
-            Get_Index_Bounds (Scalar_Range (Entity (N)), L, H);
+         elsif Nkind (Scalar_Range_Of_Right_View) = N_Subtype_Indication then
+            Get_Index_Bounds (Scalar_Range_Of_Right_View, L, H);
 
          else
-            L := Low_Bound  (Scalar_Range (Entity (N)));
-            H := High_Bound (Scalar_Range (Entity (N)));
+            L := Low_Bound  (Scalar_Range_Of_Right_View);
+            H := High_Bound (Scalar_Range_Of_Right_View);
          end if;
 
       else
