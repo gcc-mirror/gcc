@@ -112,6 +112,9 @@ package body Sem_Elab is
       --  The current scope of the call. This is restored when we complete the
       --  delayed call, so that we do this in the right scope.
 
+      From_SPARK_Code : Boolean;
+      --  Save indication of whether this call is under SPARK_Mode => On
+
       From_Elab_Code : Boolean;
       --  Save indication of whether this call is from elaboration code
 
@@ -1941,13 +1944,17 @@ package body Sem_Elab is
    ----------------------
 
    procedure Check_Elab_Calls is
+      Save_SPARK_Mode : SPARK_Mode_Type;
+
    begin
-      --  If expansion is disabled, do not generate any checks. Also skip
+      --  If expansion is disabled, do not generate any checks, unless we
+      --  are in GNATprove mode, so that errors are issued in GNATprove for
+      --  violations of static elaboration rules in SPARK code. Also skip
       --  checks if any subunits are missing because in either case we lack the
       --  full information that we need, and no object file will be created in
       --  any case.
 
-      if not Expander_Active
+      if (not Expander_Active and not GNATprove_Mode)
         or else Is_Generic_Unit (Cunit_Entity (Main_Unit))
         or else Subunits_Missing
       then
@@ -1964,12 +1971,21 @@ package body Sem_Elab is
             Push_Scope (Delay_Check.Table (J).Curscop);
             From_Elab_Code := Delay_Check.Table (J).From_Elab_Code;
 
+            --  Set appropriate value of SPARK_Mode
+
+            Save_SPARK_Mode := SPARK_Mode;
+
+            if Delay_Check.Table (J).From_SPARK_Code then
+               SPARK_Mode := On;
+            end if;
+
             Check_Internal_Call_Continue (
               N           => Delay_Check.Table (J).N,
               E           => Delay_Check.Table (J).E,
               Outer_Scope => Delay_Check.Table (J).Outer_Scope,
               Orig_Ent    => Delay_Check.Table (J).Orig_Ent);
 
+            SPARK_Mode := Save_SPARK_Mode;
             Pop_Scope;
          end loop;
 
@@ -2223,12 +2239,13 @@ package body Sem_Elab is
 
       if Delaying_Elab_Checks then
          Delay_Check.Append (
-           (N              => N,
-            E              => E,
-            Orig_Ent       => Orig_Ent,
-            Curscop        => Current_Scope,
-            Outer_Scope    => Outer_Scope,
-            From_Elab_Code => From_Elab_Code));
+           (N               => N,
+            E               => E,
+            Orig_Ent        => Orig_Ent,
+            Curscop         => Current_Scope,
+            Outer_Scope     => Outer_Scope,
+            From_Elab_Code  => From_Elab_Code,
+            From_SPARK_Code => SPARK_Mode = On));
          return;
 
       --  Otherwise, call phase 2 continuation right now

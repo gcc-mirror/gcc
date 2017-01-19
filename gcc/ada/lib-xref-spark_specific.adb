@@ -701,10 +701,13 @@ package body SPARK_Specific is
          end;
       end loop;
 
-      for Index in Drefs.First .. Drefs.Last loop
-         Xrefs.Append (Drefs.Table (Index));
-         Nrefs := Nrefs + 1;
-      end loop;
+      declare
+         Drefs_Table : Drefs.Table_Type
+           renames Drefs.Table (Drefs.First .. Drefs.Last);
+      begin
+         Xrefs.Append_All (Xrefs.Table_Type (Drefs_Table));
+         Nrefs := Nrefs + Drefs_Table'Length;
+      end;
 
       --  Capture the definition Sloc values. As in the case of normal cross
       --  references, we have to wait until now to get the correct value.

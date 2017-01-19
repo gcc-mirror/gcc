@@ -1,3 +1,61 @@
+2017-01-19  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Pass_Aggregate_To_Back_End): Renamed as
+	Build_Back_End_Aggregate.
+	(Generate_Aggregate_For_Derived_Type): Code cleanup.
+	(Prepend_Stored_Values): Code cleanup.
+
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Check for an
+	incomplete return type after attempting to freeze it, so that
+	other freeze actiona are generated in the proper order.
+
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): If the type is a string
+	type, ie. a type whose component is a character type, and the
+	aggregate is positional, do not convert into a string literal
+	if the index type is not an integer type, because the original
+	type may be required in an enclosing operation.
+
+2017-01-19  Bob Duff  <duff@adacore.com>
+
+	* binde.adb, debug.adb: Enable new elaboration order algorithm
+	by default. -dp switch reverts to the old algorithm.
+
+2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb Add with and use clauses for Exp_Ch7.
+	(Analyze_Declarations): Create the DIC and Invariant
+	procedure bodies s after all freezing has taken place.
+	(Build_Assertion_Bodies): New routine.
+	* sem_ch7.adb Remove the with and use clauses for Exp_Ch7
+	and Exp_Util.
+	(Analyze_Package_Specification): Remove the
+	generation of the DIC and Invariant procedure bodies. This is
+	now done by Analyze_Declarations.
+	* sem_disp.adb (Check_Dispatching_Operation): DIC and Invariant
+	procedures are never treated as primitives.
+
+2017-01-19  Yannick Moy  <moy@adacore.com>
+
+	* frontend.adb: Analyze inlined bodies and check elaboration
+	rules in GNATprove mode too.
+	* sem_elab.adb (Delay_Element): Add Boolean component to save
+	indication that call is in SPARK code.	(Check_Elab_Calls):
+	Check elaboration rules in GNATprove mode, and correctly set
+	the current value of SPARK_Mode.
+	* lib-xref-spark_specific.adb
+	(Add_SPARK_Xrefs): Simplify iteration over dereferences.
+
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Do no enable overflow
+	checks on the expression for the high bound of concatenation
+	when checks are disabled, to suppress warnings about potential
+	constraint errors in restricted runtimes.
+
 2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Mark the

@@ -37,8 +37,7 @@ with System.OS_Lib;
 
 package body Binde is
 
-   --  We now have Elab_New, a new elaboration-order algorithm. It has the
-   --  property that ???
+   --  We now have Elab_New, a new elaboration-order algorithm.
    --
    --  However, any change to elaboration order can break some programs.
    --  Therefore, we are keeping the old algorithm in place, to be selected
@@ -289,7 +288,12 @@ package body Binde is
 
    function Debug_Flag_Older return Boolean;
    function Debug_Flag_Old return Boolean;
-   --  True if debug flags select the old or older algorithms
+   --  True if debug flags select the old or older algorithms. Pretty much any
+   --  change to elaboration order can break some programs. For example,
+   --  programs can depend on elaboration order even without failing
+   --  access-before-elaboration checks. A trivial example is a program that
+   --  prints text during elaboration. Therefore, we have flags to revert to
+   --  the old(er) algorithms.
 
    procedure Validate (Order : Unit_Id_Array; Doing_New : Boolean);
    --  Assert that certain properties are true
@@ -1134,10 +1138,7 @@ package body Binde is
 
    function Debug_Flag_Old return Boolean is
    begin
-      --  For now, Debug_Flag_P means "use the new algorithm". Once it is
-      --  stable, we intend to remove the "not" below.
-
-      return not Debug_Flag_P;
+      return Debug_Flag_P;
    end Debug_Flag_Old;
 
    ----------------------
