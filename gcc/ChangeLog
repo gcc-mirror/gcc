@@ -1,3 +1,9 @@
+2017-01-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/78407
+	* symtab.c (symtab_node::equal_address_to): Fix comparing of
+	interposable aliases.
+
 2017-01-18  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/78516
