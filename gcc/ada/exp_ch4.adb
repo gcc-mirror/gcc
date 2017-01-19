@@ -3286,9 +3286,12 @@ package body Exp_Ch4 is
       --  very weird cases, so in the general case we need an overflow check on
       --  the high bound. We can avoid this for the common case of string types
       --  and other types whose index is Positive, since we chose a wider range
-      --  for the arithmetic type.
+      --  for the arithmetic type. If checks are suppressed we do not set the
+      --  flag, and possibly superfluous warnings will be omitted.
 
-      if Istyp /= Standard_Positive then
+      if Istyp /= Standard_Positive
+        and then not Overflow_Checks_Suppressed (Istyp)
+      then
          Activate_Overflow_Check (High_Bound);
       end if;
 

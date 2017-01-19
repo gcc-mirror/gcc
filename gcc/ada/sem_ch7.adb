@@ -35,11 +35,9 @@ with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Elists;    use Elists;
 with Errout;    use Errout;
-with Exp_Ch7;   use Exp_Ch7;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
-with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Lib;       use Lib;
@@ -1432,30 +1430,6 @@ package body Sem_Ch7 is
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
          end if;
 
-         if Is_Type (E) then
-
-            --  Preanalyze and resolve the Default_Initial_Condition assertion
-            --  expression at the end of the visible declarations to catch any
-            --  errors.
-
-            if Has_DIC (E) then
-               Build_DIC_Procedure_Body (E);
-            end if;
-
-            --  Preanalyze and resolve the invariants of a private type at the
-            --  end of the visible declarations to catch potential errors. Note
-            --  that inherited class-wide invariants are not considered because
-            --  they have already been resolved.
-
-            if Ekind_In (E, E_Limited_Private_Type,
-                            E_Private_Type,
-                            E_Record_Type_With_Private)
-              and then Has_Own_Invariants (E)
-            then
-               Build_Invariant_Procedure_Body (E, Partial_Invariant => True);
-            end if;
-         end if;
-
          Next_Entity (E);
       end loop;
 
@@ -1633,30 +1607,6 @@ package body Sem_Ch7 is
          then
             Error_Msg_N
               ("full view of & does not have preelaborable initialization", E);
-         end if;
-
-         if Is_Type (E) and then Serious_Errors_Detected > 0 then
-
-            --  Preanalyze and resolve the Default_Initial_Condition assertion
-            --  expression at the end of the private declarations when freezing
-            --  did not take place due to errors or because the context is a
-            --  generic unit.
-
-            if Has_DIC (E) then
-               Build_DIC_Procedure_Body (E);
-            end if;
-
-            --  Preanalyze and resolve the invariants of a private type's full
-            --  view at the end of the private declarations in case freezing
-            --  did not take place either due to errors or because the context
-            --  is a generic unit.
-
-            if not Is_Private_Type (E)
-              and then Has_Private_Declaration (E)
-              and then Has_Invariants (E)
-            then
-               Build_Invariant_Procedure_Body (E);
-            end if;
          end if;
 
          Next_Entity (E);

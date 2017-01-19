@@ -182,7 +182,7 @@ package body Debug is
    --  dm
    --  dn  List details of manipulation of Num_Pred values
    --  do  Use older preference for elaboration order
-   --  dp  Use new preference for elaboration order
+   --  dp  Use old preference for elaboration order
    --  dq
    --  dr
    --  ds
@@ -813,16 +813,15 @@ package body Debug is
    --      prefer specs with no bodies to specs with bodies, and between two
    --      specs with bodies, prefers the one whose body is closer to being
    --      able to be elaborated. This is a clear improvement, but we provide
-   --      this debug flag in case of regressions.
+   --      this debug flag in case of regressions. Note: -do is even older than
+   --      -dp.
 
-   --  dp  Use new elaboration order preference. The new preference rules
+   --  dp  Use old elaboration order preference. The new preference rules
    --      elaborate all units within a strongly connected component together,
    --      with no other units in between. In particular, if a spec/body pair
    --      can be elaborated together, it will be. In the new order, the binder
    --      behaves as if every pragma Elaborate_All that would be legal is
-   --      present, even if it does not appear in the source code. NOTE: We
-   --      intend to reverse the sense of this switch at some point, so the new
-   --      preference is the default.
+   --      present, even if it does not appear in the source code.
 
    --  du  List unit name and file name for each unit as it is read in
 

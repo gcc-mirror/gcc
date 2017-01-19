@@ -986,13 +986,16 @@ package body Sem_Aggr is
 
       elsif Is_Array_Type (Typ) then
 
-         --  First a special test, for the case of a positional aggregate
-         --  of characters which can be replaced by a string literal.
+         --  First a special test, for the case of a positional aggregate of
+         --  characters which can be replaced by a string literal.
 
-         --  Do not perform this transformation if this was a string literal to
-         --  start with, whose components needed constraint checks, or if the
-         --  component type is non-static, because it will require those checks
-         --  and be transformed back into an aggregate.
+         --  Do not perform this transformation if this was a string literal
+         --  to start with, whose components needed constraint checks, or if
+         --  the component type is non-static, because it will require those
+         --  checks and be transformed back into an aggregate. If the index
+         --  type is not Integer the aggregate may represent a user-defined
+         --  string type but the context might need the original type so we
+         --  do not perform the transformation at this point.
 
          if Number_Dimensions (Typ) = 1
            and then Is_Standard_Character_Type (Component_Type (Typ))
@@ -1002,6 +1005,8 @@ package body Sem_Aggr is
            and then not Is_Bit_Packed_Array (Typ)
            and then Nkind (Original_Node (Parent (N))) /= N_String_Literal
            and then Is_OK_Static_Subtype (Component_Type (Typ))
+           and then Base_Type (Etype (First_Index (Typ))) =
+                      Base_Type (Standard_Integer)
          then
             declare
                Expr : Node_Id;

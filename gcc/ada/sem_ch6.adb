@@ -369,31 +369,29 @@ package body Sem_Ch6 is
          Set_Is_Inlined (Prev);
          Ret_Type := Etype (Prev);
 
-         --  An expression function that is a completion freezes the
-         --  expression. This means freezing the return type, and if it is an
-         --  access type, freezing its designated type as well.
+         --  An expression function which acts as a completion freezes the
+         --  expression. This means freezing the return type, and if it is
+         --  an access type, freezing its designated type as well.
 
          --  Note that we cannot defer this freezing to the analysis of the
          --  expression itself, because a freeze node might appear in a nested
          --  scope, leading to an elaboration order issue in gigi.
 
-         --  An entity can only be frozen if it has a completion, so we must
-         --  check this explicitly. If it is declared elsewhere it will have
-         --  been frozen already, so only types declared in currently opened
-         --  scopes need to be tested.
+         Freeze_Before (N, Ret_Type);
 
-         if Ekind (Ret_Type) = E_Private_Type
-           and then In_Open_Scopes (Scope (Ret_Type))
+         --  An entity can only be frozen if it is complete, so if the type
+         --  is still unfrozen it must still be incomplete in some way, e.g.
+         --  a privte type without a full view, or a type derived from such
+         --  in an enclosing scope. Except in a generic context, such an
+         --  incomplete type is an error.
+
+         if not Is_Frozen (Ret_Type)
            and then not Is_Generic_Type (Ret_Type)
-           and then not Is_Frozen (Ret_Type)
-           and then No (Full_View (Ret_Type))
+           and then not Inside_A_Generic
          then
             Error_Msg_NE
               ("premature use of private type&",
                Result_Definition (Specification (N)), Ret_Type);
-
-         else
-            Freeze_Before (N, Ret_Type);
          end if;
 
          if Is_Access_Type (Etype (Prev)) then
