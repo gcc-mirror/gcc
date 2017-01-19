@@ -1,3 +1,12 @@
+2016-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_nopcrelative_literal_loads):
+	Delete.
+	* config/aarch64/aarch64.md
+	(aarch64_reload_movcp<GPF_TF:mode><P:mode>): Delete reference to
+	aarch64_nopcrelative_literal_loads.
+	(aarch64_reload_movcp<VALL:mode><P:mode>): Likewise.
+
 2017-01-19  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* config/mips/mips.h (ISA_HAS_FUSED_MADD4): Enable for
