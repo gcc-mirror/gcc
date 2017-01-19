@@ -5881,12 +5881,12 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
-      --  Before listing the possible candidates, check whether this
-      --  a prefix of a selected component that has been rewritten as
-      --  a parameterless function call because there is a callable
-      --  candidate interpretation. If there is a hidden package in
-      --  the list of homonyms of the function name (bad programming
-      --  style in any case) suggest that this is the intended entity.
+      --  Before listing the possible candidates, check whether this is
+      --  a prefix of a selected component that has been rewritten as a
+      --  parameterless function call because there is a callable candidate
+      --  interpretation. If there is a hidden package in the list of homonyms
+      --  of the function name (bad programming style in any case) suggest that
+      --  this is the intended entity.
 
       if No (Parameter_Associations (N))
         and then Nkind (Parent (N)) = N_Selected_Component
@@ -5903,6 +5903,7 @@ package body Sem_Ch4 is
                   Error_Msg_N
                     ("no legal interpretations as function call,!", Nam);
                   Error_Msg_NE ("\package& is not visible", N, Ent);
+
                   Rewrite (Parent (N),
                     New_Occurrence_Of (Any_Type, Sloc (N)));
                   return;
@@ -5913,8 +5914,8 @@ package body Sem_Ch4 is
          end;
       end if;
 
-      --   Analyze each candidate call again, with full error reporting
-      --   for each.
+      --  Analyze each candidate call again, with full error reporting for
+      --  each.
 
       Error_Msg_N
         ("no candidate interpretations match the actuals:!", Nam);

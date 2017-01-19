@@ -1253,7 +1253,7 @@ package body Exp_Ch11 is
    begin
       --  Nothing to do when generating C code
 
-      if Generate_C_Code then
+      if Modify_Tree_For_C then
          return;
       end if;
 

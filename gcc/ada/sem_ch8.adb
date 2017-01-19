@@ -7033,14 +7033,14 @@ package body Sem_Ch8 is
                   Save_Interps (P, Nam);
 
                   --  We use Replace here because this is one of those cases
-                  --  where the parser has missclassified the node, and we
-                  --  fix things up and then do the semantic analysis on the
-                  --  fixed up node. Normally we do this using one of the
-                  --  Sinfo.CN routines, but this is too tricky for that.
+                  --  where the parser has missclassified the node, and we fix
+                  --  things up and then do the semantic analysis on the fixed
+                  --  up node. Normally we do this using one of the Sinfo.CN
+                  --  routines, but this is too tricky for that.
 
-                  --  Note that using Rewrite would be wrong, because we
-                  --  would have a tree where the original node is unanalyzed,
-                  --  and this violates the required interface for ASIS.
+                  --  Note that using Rewrite would be wrong, because we would
+                  --  have a tree where the original node is unanalyzed, and
+                  --  this violates the required interface for ASIS.
 
                   Replace (P,
                     Make_Function_Call (Sloc (P), Name => Nam));
@@ -7049,9 +7049,9 @@ package body Sem_Ch8 is
 
                   Analyze_Call (P);
 
-                  --  If the prefix is illegal after this transformation,
-                  --  there may be visibility errors on the prefix. The
-                  --  safest is to treat the selected component as an error.
+                  --  If the prefix is illegal after this transformation, there
+                  --  may be visibility errors on the prefix. The safest is to
+                  --  treat the selected component as an error.
 
                   if Error_Posted (P) then
                      Set_Etype (N, Any_Type);
@@ -7068,8 +7068,8 @@ package body Sem_Ch8 is
          else
             --  Format node as expanded name, to avoid cascaded errors
 
-            --  If the limited_with transformation was applied earlier,
-            --  restore source for proper error reporting.
+            --  If the limited_with transformation was applied earlier, restore
+            --  source for proper error reporting.
 
             if not Comes_From_Source (P)
               and then Nkind (P) = N_Explicit_Dereference

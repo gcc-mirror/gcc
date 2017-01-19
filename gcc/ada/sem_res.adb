@@ -11022,7 +11022,7 @@ package body Sem_Res is
       --  remove side effects in order to store the result of the conversion
       --  into a temporary.
 
-      if Generate_C_Code
+      if Modify_Tree_For_C
         and then Nkind (N) = N_Type_Conversion
         and then Nkind (Parent (N)) /= N_Object_Declaration
         and then Is_Access_Type (Etype (N))

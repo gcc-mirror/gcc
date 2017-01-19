@@ -1452,7 +1452,7 @@ package body Exp_Dbug is
       --  Qualification needed for enumeration literals when generating C code
       --  (to simplify their management in the backend).
 
-      elsif Generate_C_Code
+      elsif Modify_Tree_For_C
         and then Ekind (Ent) = E_Enumeration_Literal
         and then Scope (Ultimate_Alias (Ent)) /= Standard_Standard
       then

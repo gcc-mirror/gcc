@@ -1,3 +1,37 @@
+2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref-spark_specific.adb, sem_util.adb, sem_util.ads,
+	sem_ch4.adb, sem_ch8.adb, lib-xref.ads: Minor reformatting.
+
+2017-01-19  Bob Duff  <duff@adacore.com>
+
+	* bcheck.adb (Check_Consistent_Dynamic_Elaboration_Checking):
+	Increment Warnings_Detected.  It was decrementing, which is
+	wrong since we just issued a warning message.
+	* binderr.ads (Errors_Detected, Warnings_Detected): Declare
+	these variables to be of subtype Nat instead of Int, because
+	they should never be negative.
+
+2017-01-19  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb (Build_Postconditions_Procedure): Replace
+	Generate_C_Code by Modify_Tree_For_C.
+	* exp_aggr.adb (Build_Record_Aggr_Code, Expand_Array_Aggregate):
+	Replace Generate_C_Code by Modify_Tree_For_C.
+	* exp_attr.adb (Float_Valid, Is_GCC_Target): Replace Generate_C_Code by
+	Modify_Tree_For_C.
+	* exp_ch11.adb (Expand_N_Exception_Declaration): Replace
+	Generate_C_Code by Modify_Tree_For_C.
+	* exp_ch4.adb (Expand_Allocator_Expression): Replace
+	Generate_C_Code by Modify_Tree_For_C.
+	* exp_dbug.adb (Qualify_Entity_Name): Replace Generate_C_Code
+	by Modify_Tree_For_C.
+	* exp_util.adb (Remove_Side_Effects, Side_Effect_Free): Replace
+	Generate_C_Code by Modify_Tree_For_C.
+	* sem_res.adb (Resolve_Type_Conversion): Replace Generate_C_Code
+	by Modify_Tree_For_C.
+	* sinfo.ads (Modify_Tree_For_C): Adding documentation.
+
 2017-01-19  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Expression_Of_Expression_Function): New

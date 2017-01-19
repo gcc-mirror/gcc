@@ -653,8 +653,9 @@ package Lib.Xref is
 
       generic
          with procedure Process (N : Node_Id) is <>;
-      procedure Traverse_Compilation_Unit (CU           : Node_Id;
-                                           Inside_Stubs : Boolean);
+      procedure Traverse_Compilation_Unit
+        (CU           : Node_Id;
+         Inside_Stubs : Boolean);
       --  Call Process on all declarations within compilation unit CU. If
       --  Inside_Stubs is True, then the body of stubs is also traversed.
       --  Generic declarations are ignored.

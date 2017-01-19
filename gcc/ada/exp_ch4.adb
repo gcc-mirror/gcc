@@ -1101,7 +1101,7 @@ package body Exp_Ch4 is
       --  generating C code, to simplify the work in the code generator.
 
       elsif Aggr_In_Place
-        or else (Generate_C_Code and then Nkind (Exp) = N_Aggregate)
+        or else (Modify_Tree_For_C and then Nkind (Exp) = N_Aggregate)
       then
          Temp := Make_Temporary (Loc, 'P', N);
          Temp_Decl :=

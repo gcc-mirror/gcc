@@ -3657,7 +3657,7 @@ package body Exp_Aggr is
                   end if;
                end if;
 
-               if Generate_C_Code
+               if Modify_Tree_For_C
                  and then Nkind (Expr_Q) = N_Aggregate
                  and then Is_Array_Type (Etype (Expr_Q))
                  and then Present (First_Index (Etype (Expr_Q)))
@@ -6245,7 +6245,7 @@ package body Exp_Aggr is
          if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
            and then not AAMP_On_Target
            and then not CodePeer_Mode
-           and then not Generate_C_Code
+           and then not Modify_Tree_For_C
            and then not Possible_Bit_Aligned_Component (Target)
            and then not Is_Possibly_Unaligned_Slice (Target)
            and then Aggr_Assignment_OK_For_Backend (N)

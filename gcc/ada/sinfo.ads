@@ -790,6 +790,11 @@ package Sinfo is
    --    they are systematically expanded into loops (for arrays) and
    --    individual assignments (for records).
 
+   --    Unconstrained array types are handled by means of fat pointers.
+
+   --    Postconditions are inlined by the frontend since their body may have
+   --    references to itypes defined in the enclosing subprogram.
+
    ------------------------------------
    -- Description of Semantic Fields --
    ------------------------------------

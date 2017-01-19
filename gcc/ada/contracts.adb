@@ -2222,7 +2222,7 @@ package body Contracts is
          --  enclosing subprogram, which would cause problems for unnesting
          --  routines in the absence of inlining.
 
-         if Generate_C_Code then
+         if Modify_Tree_For_C then
             Set_Has_Pragma_Inline        (Proc_Id);
             Set_Has_Pragma_Inline_Always (Proc_Id);
             Set_Is_Inlined               (Proc_Id);
