@@ -3416,7 +3416,7 @@ package body Sem_Prag is
       Loc     : constant Source_Ptr := Sloc (N);
       Prag_Id : Pragma_Id;
 
-      Pname : Name_Id;
+      Pname : Name_Id := Pragma_Name (N);
       --  Name of the source pragma, or name of the corresponding aspect for
       --  pragmas which originate in a source aspect. In the latter case, the
       --  name may be different from the pragma name.
@@ -10354,9 +10354,13 @@ package body Sem_Prag is
 
       Check_Restriction_No_Use_Of_Pragma (N);
 
-      --  Deal with unrecognized pragma
+      --  Ignore pragma if Ignore_Pragma applies
 
-      Pname := Pragma_Name (N);
+      if Get_Name_Table_Boolean3 (Pname) then
+         return;
+      end if;
+
+      --  Deal with unrecognized pragma
 
       if not Is_Pragma_Name (Pname) then
          if Warn_On_Unrecognized_Pragma then
@@ -10373,12 +10377,6 @@ package body Sem_Prag is
             end loop;
          end if;
 
-         return;
-      end if;
-
-      --  Ignore pragma if Ignore_Pragma applies
-
-      if Get_Name_Table_Boolean3 (Pname) then
          return;
       end if;
 

@@ -3411,13 +3411,16 @@ package body Sem_Ch5 is
       --  expanded).
 
       --  In other cases in GNATprove mode then we want to analyze the loop
-      --  body now, since no rewriting will occur.
+      --  body now, since no rewriting will occur. Within a generic the
+      --  GNATprove mode is irrelevant, we must analyze the generic for
+      --  non-local name capture.
 
       if Present (Iter)
         and then Present (Iterator_Specification (Iter))
       then
          if GNATprove_Mode
            and then Is_Iterator_Over_Array (Iterator_Specification (Iter))
+           and then not Inside_A_Generic
          then
             null;
 

@@ -1,3 +1,23 @@
+2017-01-19  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration): Process underlying types.
+	Emit GNAT encodings for object renamings involving record components
+	whose normalized bit offset is not null.
+	* uintp.h (UI_No_Uint): Declare.
+
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): In GNATprove mode the
+	statements within an element iterator loop are only analyzed
+	agter the loop is rewritten. Within a generic the analysis must
+	be performed in any case to complete name capture.
+
+2017-01-19  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Check for ignored pragmas first,
+	before checking for unrecognized pragmas.
+	Initialize Pname on its declarations; that's always good style.
+
 2017-01-19  Claire Dross  <dross@adacore.com>
 
 	* exp_ch7.adb (Build_Invariant_Procedure_Body): Semi-insert the
