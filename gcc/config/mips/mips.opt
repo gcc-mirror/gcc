@@ -388,6 +388,10 @@ mlra
 Target Report Var(mips_lra_flag) Init(1) Save
 Use LRA instead of reload.
 
+mlxc1-sxc1
+Target Report Var(mips_lxc1_sxc1) Init(1)
+Use lwxc1/swxc1/ldxc1/sdxc1 instructions where applicable.
+
 mtune=
 Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.

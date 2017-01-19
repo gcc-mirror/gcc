@@ -1375,6 +1375,25 @@ On MIPS targets, make @option{-msynci} the default when no
 On MIPS targets, make @option{-mno-synci} the default when no
 @option{-msynci} option is passed.  This is the default.
 
+@item --with-lxc1-sxc1
+On MIPS targets, make @option{-mlxc1-sxc1} the default when no
+@option{-mno-lxc1-sxc1} option is passed.  This is the default.
+
+@item --without-lxc1-sxc1
+On MIPS targets, make @option{-mno-lxc1-sxc1} the default when no
+@option{-mlxc1-sxc1} option is passed.  The indexed load/store
+instructions are not directly a problem but can lead to unexpected
+behaviour when deployed in an application intended for a 32-bit address
+space but run on a 64-bit processor.  The issue is seen because all
+known MIPS 64-bit Linux kernels execute o32 and n32 applications
+with 64-bit addressing enabled which affects the overflow behaviour
+of the indexed addressing mode.  GCC will assume that ordinary
+32-bit arithmetic overflow behaviour is the same whether performed
+as an @code{addu} instruction or as part of the address calculation
+in @code{lwxc1} type instructions.  This assumption holds true in a
+pure 32-bit environment and can hold true in a 64-bit environment if
+the address space is accurately set to be 32-bit for o32 and n32.
+
 @item --with-mips-plt
 On MIPS targets, make use of copy relocations and PLTs.
 These features are extensions to the traditional

@@ -1,3 +1,18 @@
+2017-01-19  Doug Gilmore  <doug.gilmore@imgtec.com>
+
+	PR target/78176
+	* config.gcc (supported_defaults): Add lxc1-sxc1.
+	(with_lxc1_sxc1): Add validation.
+	(all_defaults): Add lxc1-sxc1.
+	* config/mips/mips.opt (mlxc1-sxc1): New option.
+	* gcc/config/mips/mips.h (OPTION_DEFAULT_SPECS): Add a default for
+	mlxc1-sxc1.
+	(TARGET_CPU_CPP_BUILTINS): Add builtin_define for
+	__mips_no_lxc1_sxc1.
+	(ISA_HAS_LXC1_SXC1): Gate with mips_lxc1_sxc1.
+	* gcc/doc/invoke.texi (-mlxc1-sxc1): Document the new option.
+	* doc/install.texi (--with-lxc1-sxc1): Document the new option.
+
 2017-01-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/72488
