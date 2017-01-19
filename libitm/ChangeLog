@@ -1,3 +1,8 @@
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (htm_available): Determine vendor from
+	__get_cpuid_max return.  Use signature_INTEL_ebx.  Cleanup.
+
 2017-01-18  Torvald Riegel  <triegel@redhat.com>
 
 	* config/x86/target.h (htm_available): Add check for some processors
