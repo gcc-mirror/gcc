@@ -140,7 +140,7 @@ test_int_range (int n)
 
 #if __i386__ || __x86_64__
   /* Avoid failures described in bug 79051.  */
-  sink (f_int_1 (SAR (min + 2, 1235)));   /* { dg-warning "argument 1 range \\\[1236, \[0-9\]+\\\] exceeds maximum object size 1234" "" { target { x86_64-*-* } } } */
+  sink (f_int_1 (SAR (min + 2, 1235)));   /* { dg-warning "argument 1 range \\\[1236, \[0-9\]+\\\] exceeds maximum object size 1234" "" { target { i?86-*-* x86_64-*-* } } } */
 #endif
 
   sink (f_int_1 (SAR (0, max)));   /* { dg-warning "argument 1 range \\\[-\[0-9\]*, -1\\\] is negative" } */

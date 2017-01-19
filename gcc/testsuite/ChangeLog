@@ -1,3 +1,9 @@
+2017-01-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/79051
+	* gcc.dg/attr-alloc_size-4.c (test_int_range) [__i386__ ||
+	__x86_64__]: Allow for target i?86-*-*.
+
 2017-01-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	PR target/78176
