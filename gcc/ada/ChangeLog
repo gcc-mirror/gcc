@@ -1,3 +1,9 @@
+2017-01-19  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch9.adb (Is_Pure_Barrier): Create function
+	Is_Count_Attribute to identify an expansion of the 'Count
+	attribute.
+
 2017-01-19  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* exp_dbug.adb (Debug_Renaming_Declaration): Process underlying types.
