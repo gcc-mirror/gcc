@@ -1498,9 +1498,10 @@ package body Sem is
              --  compiling a separate unit (this is to handle a situation
              --  where this new processing causes trouble).
 
-             or else ((Configurable_Run_Time_Mode or No_Run_Time_Mode)
-                       and not Debug_Flag_Dot_ZZ
-                       and Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit));
+             or else
+               ((Configurable_Run_Time_Mode or No_Run_Time_Mode)
+                  and then not Debug_Flag_Dot_ZZ
+                  and then Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit));
       end if;
 
       Full_Analysis      := True;
