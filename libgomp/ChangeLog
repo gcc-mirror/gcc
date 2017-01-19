@@ -1,3 +1,8 @@
+2017-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* plugin/cuda/cuda.h (CUdeviceptr): Typedef to unsigned long long even
+	for _WIN64.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* plugin/hsa.h: Add GCC runtime library exception.
