@@ -1,5 +1,13 @@
 2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/67085
+	* include/bits/stl_heap.h (push_heap, __adjust_heap, __pop_heap)
+	(pop_heap, __make_heap, make_heap, __sort_heap, sort_heap): Use
+	_GLIBCXX_MOVE when passing comparison function to other functions.
+	(is_heap_until, is_heap): Use std::move when passing comparison
+	function.
+	* testsuite/23_containers/priority_queue/67085.cc: New test.
+
 	PR libstdc++/78905
 	* doc/xml/manual/abi.xml (abi.versioning.history): Add markup to
 	macro names, filenames, and literal values. Document _GLIBCXX_RELEASE.
