@@ -113,7 +113,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     __is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	      _Compare __comp)
-    { return std::__is_heap(__first, __comp, std::distance(__first, __last)); }
+    {
+      return std::__is_heap(__first, _GLIBCXX_MOVE(__comp),
+			    std::distance(__first, __last));
+    }
 
   // Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap,
   // + is_heap and is_heap_until in C++0x.
@@ -336,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _ValueType __value = _GLIBCXX_MOVE(*(__first + __parent));
 	  std::__adjust_heap(__first, __parent, __len, _GLIBCXX_MOVE(__value),
-			     _GLIBCXX_MOVE(__comp));
+			     __comp);
 	  if (__parent == 0)
 	    return;
 	  __parent--;
@@ -401,7 +404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (__last - __first > 1)
 	{
 	  --__last;
-	  std::__pop_heap(__first, __last, __last, _GLIBCXX_MOVE(__comp));
+	  std::__pop_heap(__first, __last, __last, __comp);
 	}
     }
 
