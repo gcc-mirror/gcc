@@ -3745,6 +3745,16 @@ package body Exp_Ch7 is
          --  The partial view of Par_Typ
 
       begin
+         --  Do not process array types because they cannot have true parent
+         --  types. This also prevents the generation of a duplicate invariant
+         --  check when the input type is an array base type because its Etype
+         --  denotes the first subtype, both of which share the same component
+         --  type.
+
+         if Is_Array_Type (T) then
+            return;
+         end if;
+
          --  Climb the parent type chain
 
          Curr_Typ := T;
