@@ -1,3 +1,17 @@
+2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78905
+	* doc/xml/manual/abi.xml (abi.versioning.history): Add markup to
+	macro names, filenames, and literal values. Document _GLIBCXX_RELEASE.
+	Document that the deprecated _GLIBCXX_VERSION macro was removed for
+	the 4.0.0 release.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am (_GLIBCXX_RELEASE): Set value.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config (_GLIBCXX_RELEASE): Add #define.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Use lineno of 0 in
+	dg-error.
+
 2017-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69301
@@ -22,7 +36,7 @@
 
 	PR libstdc++/69699
 	* doc/xml/manual/abi.xml (abi.versioning.history): Explain why the
-	_GLIBCXX__ macro is not useful. Remove redundant date information
+	__GLIBCXX__ macro is not useful. Remove redundant date information
 	and link to the GCC release timeline.
 	(abi.versioning.active): Move partial sentence into the previous
 	paragraph.
