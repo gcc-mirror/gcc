@@ -777,8 +777,13 @@ package body Sem_Cat is
       Specification : Node_Id := Empty;
 
    begin
-      Set_Is_Pure
-        (E, Is_Pure (Scop) and then Is_Library_Level_Entity (E));
+      --  Do not modify the purity of an internally generated entity if it has
+      --  been explicitly marked as pure for optimization purposes.
+
+      if not Has_Pragma_Pure_Function (E) then
+         Set_Is_Pure
+           (E, Is_Pure (Scop) and then Is_Library_Level_Entity (E));
+      end if;
 
       if not Is_Remote_Call_Interface (E) then
          if Ekind (E) in Subprogram_Kind then

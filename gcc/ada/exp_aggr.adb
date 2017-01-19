@@ -6756,9 +6756,9 @@ package body Exp_Aggr is
 
          elsif Is_Derived_Type (Typ) then
 
-            --  For untagged types, non-stored discriminants are replaced
-            --  with stored discriminants, which are the ones that gigi uses
-            --  to describe the type and its components.
+            --  For untagged types, non-stored discriminants are replaced with
+            --  stored discriminants, which are the ones that gigi uses to
+            --  describe the type and its components.
 
             Generate_Aggregate_For_Derived_Type : declare
                Constraints  : constant List_Id := New_List;
@@ -6782,9 +6782,8 @@ package body Exp_Aggr is
                   while Present (Discriminant) loop
                      New_Comp :=
                        Make_Component_Association (Loc,
-                         Choices    =>
-                           New_List (New_Occurrence_Of (Discriminant, Loc)),
-
+                         Choices    => New_List (
+                           New_Occurrence_Of (Discriminant, Loc)),
                          Expression =>
                            New_Copy_Tree
                              (Get_Discriminant_Value
@@ -6853,6 +6852,7 @@ package body Exp_Aggr is
                             (Discriminant,
                              Typ,
                              Discriminant_Constraint (Typ)));
+
                      Append (New_Comp, Constraints);
                      Next_Stored_Discriminant (Discriminant);
                   end loop;
@@ -6949,7 +6949,6 @@ package body Exp_Aggr is
             --  all the inherited components.
 
             if Is_Derived_Type (Typ) then
-
                declare
                   First_Comp   : Node_Id;
                   Parent_Comps : List_Id;
@@ -7014,10 +7013,11 @@ package body Exp_Aggr is
             elsif Tagged_Type_Expansion then
                declare
                   Tag_Name  : constant Node_Id :=
-                    New_Occurrence_Of (First_Tag_Component (Typ), Loc);
+                                New_Occurrence_Of
+                                  (First_Tag_Component (Typ), Loc);
                   Typ_Tag   : constant Entity_Id := RTE (RE_Tag);
                   Conv_Node : constant Node_Id :=
-                    Unchecked_Convert_To (Typ_Tag, Tag_Value);
+                                Unchecked_Convert_To (Typ_Tag, Tag_Value);
 
                begin
                   Set_Etype (Conv_Node, Typ_Tag);
@@ -7040,8 +7040,8 @@ package body Exp_Aggr is
       begin
          Aggr := N;
          while Present (Parent (Aggr))
-           and then Nkind_In (Parent (Aggr), N_Component_Association,
-                                             N_Aggregate)
+           and then Nkind_In (Parent (Aggr), N_Aggregate,
+                                             N_Component_Association)
          loop
             Aggr := Parent (Aggr);
          end loop;
@@ -7081,8 +7081,8 @@ package body Exp_Aggr is
       --  aggregates for C++ imported types must be expanded.
 
       if Ada_Version >= Ada_2005 and then Is_Limited_View (Typ) then
-         if not Nkind_In (Parent (N), N_Object_Declaration,
-                                      N_Component_Association)
+         if not Nkind_In (Parent (N), N_Component_Association,
+                                      N_Object_Declaration)
          then
             Convert_To_Assignments (N, Typ);
 

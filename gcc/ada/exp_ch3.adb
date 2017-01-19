@@ -4590,7 +4590,7 @@ package body Exp_Ch3 is
               Discrete_Subtype_Definitions => New_List (
                 Make_Subtype_Indication (Loc,
                   Subtype_Mark => New_Occurrence_Of (Standard_Natural, Loc),
-                  Constraint =>
+                  Constraint   =>
                     Make_Range_Constraint (Loc,
                       Range_Expression =>
                         Make_Range (Loc,
@@ -4809,6 +4809,8 @@ package body Exp_Ch3 is
       if not Debug_Generated_Code then
          Set_Debug_Info_Off (Fent);
       end if;
+
+      Set_Is_Inlined (Fent);
 
    exception
       when RE_Not_Available =>
