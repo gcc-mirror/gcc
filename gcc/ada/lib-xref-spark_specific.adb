@@ -703,7 +703,7 @@ package body SPARK_Specific is
 
       declare
          Drefs_Table : Drefs.Table_Type
-           renames Drefs.Table (Drefs.First .. Drefs.Last);
+                         renames Drefs.Table (Drefs.First .. Drefs.Last);
       begin
          Xrefs.Append_All (Xrefs.Table_Type (Drefs_Table));
          Nrefs := Nrefs + Drefs_Table'Length;

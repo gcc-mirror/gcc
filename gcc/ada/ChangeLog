@@ -1,3 +1,12 @@
+2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref-spark_specific.adb: Minor reformatting.
+	* exp_ch7.adb (Add_Parent_Invariants): Do not process array types.
+
+2017-01-19  Tristan Gingold  <gingold@adacore.com>
+
+	* fe.h (Constant_Value): Export.
+
 2017-01-19  Javier Miranda  <miranda@adacore.com>
 
 	* exp_aggr.adb (Pass_Aggregate_To_Back_End): Renamed as
