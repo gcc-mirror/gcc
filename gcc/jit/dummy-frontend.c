@@ -207,55 +207,6 @@ jit_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
   return NULL;
 }
 
-/* Return an integer type with PRECISION bits of precision,
-   that is unsigned if UNSIGNEDP is nonzero, otherwise signed.  */
-
-static tree
-jit_langhook_type_for_size (unsigned precision, int unsignedp)
-{
-  int i;
-
-  if (precision == TYPE_PRECISION (integer_type_node))
-    return unsignedp ? unsigned_type_node : integer_type_node;
-
-  if (precision == TYPE_PRECISION (signed_char_type_node))
-    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
-
-  if (precision == TYPE_PRECISION (short_integer_type_node))
-    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-
-  if (precision == TYPE_PRECISION (long_integer_type_node))
-    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
-
-  if (precision == TYPE_PRECISION (long_long_integer_type_node))
-    return unsignedp
-	   ? long_long_unsigned_type_node
-	   : long_long_integer_type_node;
-
-  for (i = 0; i < NUM_INT_N_ENTS; i ++)
-    if (int_n_enabled_p[i]
-	&& precision == int_n_data[i].bitsize)
-      return (unsignedp ? int_n_trees[i].unsigned_type
-	      : int_n_trees[i].signed_type);
-
-  if (precision <= TYPE_PRECISION (intQI_type_node))
-    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
-
-  if (precision <= TYPE_PRECISION (intHI_type_node))
-    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
-
-  if (precision <= TYPE_PRECISION (intSI_type_node))
-    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
-
-  if (precision <= TYPE_PRECISION (intDI_type_node))
-    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-
-  if (precision <= TYPE_PRECISION (intTI_type_node))
-    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
-
-  return NULL_TREE;
-}
-
 /* Record a builtin function.  We just ignore builtin functions.  */
 
 static tree
@@ -294,9 +245,6 @@ jit_langhook_getdecls (void)
 
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE	jit_langhook_type_for_mode
-
-#undef LANG_HOOKS_TYPE_FOR_SIZE
-#define LANG_HOOKS_TYPE_FOR_SIZE	jit_langhook_type_for_size
 
 #undef LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION	jit_langhook_builtin_function

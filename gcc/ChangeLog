@@ -1,3 +1,10 @@
+2017-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* langhooks-def.h (lhd_type_for_size): New decl.
+	(LANG_HOOKS_TYPE_FOR_SIZE): Define as lhd_type_for_size.
+	* langhooks.c (lhd_type_for_size): New function, taken from
+	lto_type_for_size.
+
 2017-01-19  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/power9.md (power9-alu): Remove 'cmp' type and add

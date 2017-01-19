@@ -36,8 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto.h"
 #include "cilk.h"
 
-static tree lto_type_for_size (unsigned, int);
-
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
@@ -570,7 +568,7 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
 static tree
 builtin_type_for_size (int size, bool unsignedp)
 {
-  tree type = lto_type_for_size (size, unsignedp);
+  tree type = lang_hooks.types.type_for_size (size, unsignedp);
   return type ? type : error_mark_node;
 }
 
@@ -866,56 +864,6 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   /* Initialize the compiler back end.  */
   return false;
 }
-
-/* Return an integer type with PRECISION bits of precision,
-   that is unsigned if UNSIGNEDP is nonzero, otherwise signed.  */
-
-static tree
-lto_type_for_size (unsigned precision, int unsignedp)
-{
-  int i;
-
-  if (precision == TYPE_PRECISION (integer_type_node))
-    return unsignedp ? unsigned_type_node : integer_type_node;
-
-  if (precision == TYPE_PRECISION (signed_char_type_node))
-    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
-
-  if (precision == TYPE_PRECISION (short_integer_type_node))
-    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-
-  if (precision == TYPE_PRECISION (long_integer_type_node))
-    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
-
-  if (precision == TYPE_PRECISION (long_long_integer_type_node))
-    return unsignedp
-	   ? long_long_unsigned_type_node
-	   : long_long_integer_type_node;
-
-  for (i = 0; i < NUM_INT_N_ENTS; i ++)
-    if (int_n_enabled_p[i]
-	&& precision == int_n_data[i].bitsize)
-      return (unsignedp ? int_n_trees[i].unsigned_type
-	      : int_n_trees[i].signed_type);
-
-  if (precision <= TYPE_PRECISION (intQI_type_node))
-    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
-
-  if (precision <= TYPE_PRECISION (intHI_type_node))
-    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
-
-  if (precision <= TYPE_PRECISION (intSI_type_node))
-    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
-
-  if (precision <= TYPE_PRECISION (intDI_type_node))
-    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-
-  if (precision <= TYPE_PRECISION (intTI_type_node))
-    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
-
-  return NULL_TREE;
-}
-
 
 /* Return a data type that has machine mode MODE.
    If the mode is an integer,
@@ -1364,8 +1312,6 @@ static void lto_init_ts (void)
 #define LANG_HOOKS_GET_ALIAS_SET gimple_get_alias_set
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE lto_type_for_mode
-#undef LANG_HOOKS_TYPE_FOR_SIZE
-#define LANG_HOOKS_TYPE_FOR_SIZE lto_type_for_size
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lto_set_decl_assembler_name
 #undef LANG_HOOKS_GLOBAL_BINDINGS_P
