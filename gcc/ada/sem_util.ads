@@ -891,11 +891,18 @@ package Sem_Util is
    --  ancestor declared in a parent unit, even if there is an intermediate
    --  derivation that does not see the full view of that ancestor.
 
-   procedure Get_Index_Bounds (N : Node_Id; L, H : out Node_Id);
+   procedure Get_Index_Bounds
+     (N : Node_Id;
+      L, H : out Node_Id;
+      Use_Full_View : Boolean := False);
    --  This procedure assigns to L and H respectively the values of the low and
    --  high bounds of node N, which must be a range, subtype indication, or the
    --  name of a scalar subtype. The result in L, H may be set to Error if
    --  there was an earlier error in the range.
+   --  Use_Full_View is intended for use by clients other than the compiler
+   --  (specifically, gnat2scil) to indicate that we want the full view if
+   --  the index type turns out to be a partial view; this case should
+   --  not arise during normal compilation of semantically correct programs.
 
    function Get_Enum_Lit_From_Pos
      (T   : Entity_Id;

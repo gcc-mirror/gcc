@@ -99,13 +99,6 @@ package body SPARK_Specific is
    function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range;
    --  Hash function for hash table
 
-   generic
-      with procedure Process (N : Node_Id) is <>;
-   procedure Traverse_Compilation_Unit (CU : Node_Id; Inside_Stubs : Boolean);
-   --  Call Process on all declarations within compilation unit CU. If flag
-   --  Inside_Stubs is True, then the body of stubs is also traversed. Generic
-   --  declarations are ignored.
-
    --------------------
    -- Add_SPARK_File --
    --------------------
@@ -1269,63 +1262,54 @@ package body SPARK_Specific is
       ---------------------------------------
 
       procedure Traverse_Declaration_Or_Statement (N : Node_Id) is
+         function Traverse_Stub (N : Node_Id) return Boolean;
+         --  Returns True iff stub N should be traversed
+
+         function Traverse_Stub (N : Node_Id) return Boolean is
+         begin
+            pragma Assert (Nkind_In (N, N_Package_Body_Stub,
+                                        N_Protected_Body_Stub,
+                                        N_Subprogram_Body_Stub,
+                                        N_Task_Body_Stub));
+
+            return Inside_Stubs and then Present (Library_Unit (N));
+         end Traverse_Stub;
+
+      --  Start of processing for Traverse_Declaration_Or_Statement
+
       begin
          case Nkind (N) is
             when N_Package_Declaration =>
                Traverse_Visible_And_Private_Parts (Specification (N));
 
             when N_Package_Body =>
-               if Ekind (Defining_Entity (N)) /= E_Generic_Package then
-                  Traverse_Package_Body (N);
-               end if;
+               Traverse_Package_Body (N);
 
             when N_Package_Body_Stub =>
-               if Present (Library_Unit (N)) then
-                  declare
-                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
-                  begin
-                     if Inside_Stubs
-                       and then Ekind (Defining_Entity (Body_N)) /=
-                                  E_Generic_Package
-                     then
-                        Traverse_Package_Body (Body_N);
-                     end if;
-                  end;
+               if Traverse_Stub (N) then
+                  Traverse_Package_Body (Get_Body_From_Stub (N));
                end if;
 
             when N_Subprogram_Body =>
-               if not Is_Generic_Subprogram (Defining_Entity (N)) then
-                  Traverse_Subprogram_Body (N);
-               end if;
+               Traverse_Subprogram_Body (N);
 
             when N_Entry_Body =>
                Traverse_Subprogram_Body (N);
 
             when N_Subprogram_Body_Stub =>
-               if Present (Library_Unit (N)) then
-                  declare
-                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
-                  begin
-                     if Inside_Stubs
-                       and then
-                         not Is_Generic_Subprogram (Defining_Entity (Body_N))
-                     then
-                        Traverse_Subprogram_Body (Body_N);
-                     end if;
-                  end;
+               if Traverse_Stub (N) then
+                  Traverse_Subprogram_Body (Get_Body_From_Stub (N));
                end if;
 
             when N_Protected_Body =>
                Traverse_Protected_Body (N);
 
             when N_Protected_Body_Stub =>
-               if Present (Library_Unit (N)) and then Inside_Stubs then
+               if Traverse_Stub (N) then
                   Traverse_Protected_Body (Get_Body_From_Stub (N));
                end if;
 
-            when N_Protected_Type_Declaration
-               | N_Single_Protected_Declaration
-            =>
+            when N_Protected_Type_Declaration =>
                Traverse_Visible_And_Private_Parts (Protected_Definition (N));
 
             when N_Task_Definition =>
@@ -1335,7 +1319,7 @@ package body SPARK_Specific is
                Traverse_Task_Body (N);
 
             when N_Task_Body_Stub =>
-               if Present (Library_Unit (N)) and then Inside_Stubs then
+               if Traverse_Stub (N) then
                   Traverse_Task_Body (Get_Body_From_Stub (N));
                end if;
 
@@ -1372,12 +1356,12 @@ package body SPARK_Specific is
                --  Process case branches
 
                declare
-                  Alt : Node_Id;
+                  Alt : Node_Id := First (Alternatives (N));
                begin
-                  Alt := First (Alternatives (N));
-                  while Present (Alt) loop
+                  loop
                      Traverse_Declarations_Or_Statements (Statements (Alt));
                      Next (Alt);
+                     exit when No (Alt);
                   end loop;
                end;
 
@@ -1458,8 +1442,18 @@ package body SPARK_Specific is
       -- Traverse_Package_Body --
       ---------------------------
 
-      procedure Traverse_Package_Body (N : Node_Id) renames
-        Traverse_Declarations_And_HSS;
+      procedure Traverse_Package_Body (N : Node_Id) is
+         Spec_E : constant Entity_Id := Unique_Defining_Entity (N);
+      begin
+         case Ekind (Spec_E) is
+            when E_Package =>
+               Traverse_Declarations_And_HSS (N);
+            when E_Generic_Package =>
+               null;
+            when others =>
+               raise Program_Error;
+         end case;
+      end Traverse_Package_Body;
 
       -----------------------------
       -- Traverse_Protected_Body --
@@ -1474,8 +1468,18 @@ package body SPARK_Specific is
       -- Traverse_Subprogram_Body --
       ------------------------------
 
-      procedure Traverse_Subprogram_Body (N : Node_Id) renames
-        Traverse_Declarations_And_HSS;
+      procedure Traverse_Subprogram_Body (N : Node_Id) is
+         Spec_E : constant Entity_Id := Unique_Defining_Entity (N);
+      begin
+         case Ekind (Spec_E) is
+            when E_Function | E_Procedure | Entry_Kind =>
+               Traverse_Declarations_And_HSS (N);
+            when Generic_Subprogram_Kind =>
+               null;
+            when others =>
+               raise Program_Error;
+         end case;
+      end Traverse_Subprogram_Body;
 
       ------------------------
       -- Traverse_Task_Body --
