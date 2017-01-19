@@ -1,5 +1,8 @@
 2017-01-19  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (check_initializer): Always use build_aggr_init for array
+	decomposition.
+
 	PR c++/79130 - decomposition and direct-initialization
 	* init.c (build_aggr_init): Communicate direct-initialization to
 	build_vec_init.
