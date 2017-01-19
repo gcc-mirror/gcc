@@ -1,3 +1,43 @@
+2017-01-19  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Remove side effects on
+	actuals that are allocators with qualified expression since the
+	initialization of the object is performed by means of individual
+	statements (and hence it must be done before the call).
+
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Minor reformatting.
+	(Build_Derived_Enumeration_Type): If the derived type inherits a
+	dynamic predicate from its parent, the bounds of the type must
+	freeze because an explicit constraint is constructed for the
+	type and the corresponding range is elaborated now.
+
+2017-01-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_attr.ads: minor fix of inconsistent casing in comment
+	* lib-writ.ads: minor align comments in columns
+	* sem_ch3.adb: Minor reformatting.
+	* spark_xrefs.ads: minor fix typo in SPARK-related comment
+	* table.ads: minor style fix in comment
+	* lib-xref-spark_specific.adb
+	(Add_SPARK_Xrefs): simplify processing of SPARK cross-references.
+	* sem_ch12.adb: minor whitespace fix
+	* freeze.adb: Add comment.
+	* sem_util.adb (Unique_Name): for instances of
+	generic subprograms ignore the name of the wrapper package.
+
+2017-01-19  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Resolve_Record_Aggregate):
+	Factorize code needed for aggregates of limited and unlimited
+	types in a new routine.
+	(Pass_Aggregate_To_Back_End): New subprogram.
+
+2017-01-19  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.adb (Pragma_Name): Only access up to Last_Pair of Pragma_Map.
+
 2017-01-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.ads, sem_ch4.adb (Try_Object_Operation): Make subprogram

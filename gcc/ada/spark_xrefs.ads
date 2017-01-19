@@ -137,7 +137,7 @@ package SPARK_Xrefs is
    --      dependency-number and filename identify a file in FD lines
 
    --      entity-number and entity identify a scope in FS lines
-   --      for the file previously identified file.
+   --      for the previously identified file.
 
    --      (filename and entity are just a textual representations of
    --       dependency-number and entity-number)

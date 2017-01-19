@@ -6545,6 +6545,9 @@ package body Exp_Aggr is
       --  because it will not be set when type and its parent are in the
       --  same scope, and the parent component needs expansion.
 
+      procedure Pass_Aggregate_To_Back_End;
+      --  Build a proper aggregate to be handled by the back-end
+
       function Top_Level_Aggregate (N : Node_Id) return Node_Id;
       --  For nested aggregates return the ultimate enclosing aggregate; for
       --  non-nested aggregates return N.
@@ -6723,155 +6726,16 @@ package body Exp_Aggr is
          end loop;
       end Has_Visible_Private_Ancestor;
 
-      -------------------------
-      -- Top_Level_Aggregate --
-      -------------------------
+      --------------------------------
+      -- Pass_Aggregate_To_Back_End --
+      --------------------------------
 
-      function Top_Level_Aggregate (N : Node_Id) return Node_Id is
-         Aggr : Node_Id;
+      procedure Pass_Aggregate_To_Back_End is
+         Comp      : Entity_Id;
+         New_Comp  : Node_Id;
+         Tag_Value : Node_Id;
 
       begin
-         Aggr := N;
-         while Present (Parent (Aggr))
-           and then Nkind_In (Parent (Aggr), N_Component_Association,
-                                             N_Aggregate)
-         loop
-            Aggr := Parent (Aggr);
-         end loop;
-
-         return Aggr;
-      end Top_Level_Aggregate;
-
-      --  Local variables
-
-      Top_Level_Aggr : constant Node_Id := Top_Level_Aggregate (N);
-      Tag_Value      : Node_Id;
-      Comp           : Entity_Id;
-      New_Comp       : Node_Id;
-
-   --  Start of processing for Expand_Record_Aggregate
-
-   begin
-      --  If the aggregate is to be assigned to an atomic/VFA variable, we have
-      --  to prevent a piecemeal assignment even if the aggregate is to be
-      --  expanded. We create a temporary for the aggregate, and assign the
-      --  temporary instead, so that the back end can generate an atomic move
-      --  for it.
-
-      if Is_Atomic_VFA_Aggregate (N) then
-         return;
-
-      --  No special management required for aggregates used to initialize
-      --  statically allocated dispatch tables
-
-      elsif Is_Static_Dispatch_Table_Aggregate (N) then
-         return;
-      end if;
-
-      --  Ada 2005 (AI-318-2): We need to convert to assignments if components
-      --  are build-in-place function calls. The assignments will each turn
-      --  into a build-in-place function call. If components are all static,
-      --  we can pass the aggregate to the backend regardless of limitedness.
-
-      --  Extension aggregates, aggregates in extended return statements, and
-      --  aggregates for C++ imported types must be expanded.
-
-      if Ada_Version >= Ada_2005 and then Is_Limited_View (Typ) then
-         if not Nkind_In (Parent (N), N_Object_Declaration,
-                                      N_Component_Association)
-         then
-            Convert_To_Assignments (N, Typ);
-
-         elsif Nkind (N) = N_Extension_Aggregate
-           or else Convention (Typ) = Convention_CPP
-         then
-            Convert_To_Assignments (N, Typ);
-
-         elsif not Size_Known_At_Compile_Time (Typ)
-           or else Component_Not_OK_For_Backend
-           or else not Static_Components
-         then
-            Convert_To_Assignments (N, Typ);
-
-         else
-            Set_Compile_Time_Known_Aggregate (N);
-            Set_Expansion_Delayed (N, False);
-         end if;
-
-      --  Gigi doesn't properly handle temporaries of variable size so we
-      --  generate it in the front-end
-
-      elsif not Size_Known_At_Compile_Time (Typ)
-        and then Tagged_Type_Expansion
-      then
-         Convert_To_Assignments (N, Typ);
-
-      --  An aggregate used to initialize a controlled object must be turned
-      --  into component assignments as the components themselves may require
-      --  finalization actions such as adjustment.
-
-      elsif Needs_Finalization (Typ) then
-         Convert_To_Assignments (N, Typ);
-
-      --  Ada 2005 (AI-287): In case of default initialized components we
-      --  convert the aggregate into assignments.
-
-      elsif Has_Default_Init_Comps (N) then
-         Convert_To_Assignments (N, Typ);
-
-      --  Check components
-
-      elsif Component_Not_OK_For_Backend then
-         Convert_To_Assignments (N, Typ);
-
-      --  If an ancestor is private, some components are not inherited and we
-      --  cannot expand into a record aggregate.
-
-      elsif Has_Visible_Private_Ancestor (Typ) then
-         Convert_To_Assignments (N, Typ);
-
-      --  ??? The following was done to compile fxacc00.ads in the ACVCs. Gigi
-      --  is not able to handle the aggregate for Late_Request.
-
-      elsif Is_Tagged_Type (Typ) and then Has_Discriminants (Typ) then
-         Convert_To_Assignments (N, Typ);
-
-      --  If the tagged types covers interface types we need to initialize all
-      --  hidden components containing pointers to secondary dispatch tables.
-
-      elsif Is_Tagged_Type (Typ) and then Has_Interfaces (Typ) then
-         Convert_To_Assignments (N, Typ);
-
-      --  If some components are mutable, the size of the aggregate component
-      --  may be distinct from the default size of the type component, so
-      --  we need to expand to insure that the back-end copies the proper
-      --  size of the data. However, if the aggregate is the initial value of
-      --  a constant, the target is immutable and might be built statically
-      --  if components are appropriate.
-
-      elsif Has_Mutable_Components (Typ)
-        and then
-          (Nkind (Parent (Top_Level_Aggr)) /= N_Object_Declaration
-            or else not Constant_Present (Parent (Top_Level_Aggr))
-            or else not Static_Components)
-      then
-         Convert_To_Assignments (N, Typ);
-
-      --  If the type involved has bit aligned components, then we are not sure
-      --  that the back end can handle this case correctly.
-
-      elsif Type_May_Have_Bit_Aligned_Components (Typ) then
-         Convert_To_Assignments (N, Typ);
-
-      --  When generating C, only generate an aggregate when declaring objects
-      --  since C does not support aggregates in e.g. assignment statements.
-
-      elsif Modify_Tree_For_C and then not In_Object_Declaration (N) then
-         Convert_To_Assignments (N, Typ);
-
-      --  In all other cases, build a proper aggregate to be handled by gigi
-
-      else
          if Nkind (N) = N_Aggregate then
 
             --  If the aggregate is static and can be handled by the back-end,
@@ -7164,8 +7028,158 @@ package body Exp_Aggr is
                end;
             end if;
          end if;
+      end Pass_Aggregate_To_Back_End;
+
+      -------------------------
+      -- Top_Level_Aggregate --
+      -------------------------
+
+      function Top_Level_Aggregate (N : Node_Id) return Node_Id is
+         Aggr : Node_Id;
+
+      begin
+         Aggr := N;
+         while Present (Parent (Aggr))
+           and then Nkind_In (Parent (Aggr), N_Component_Association,
+                                             N_Aggregate)
+         loop
+            Aggr := Parent (Aggr);
+         end loop;
+
+         return Aggr;
+      end Top_Level_Aggregate;
+
+      --  Local variables
+
+      Top_Level_Aggr : constant Node_Id := Top_Level_Aggregate (N);
+
+   --  Start of processing for Expand_Record_Aggregate
+
+   begin
+      --  If the aggregate is to be assigned to an atomic/VFA variable, we have
+      --  to prevent a piecemeal assignment even if the aggregate is to be
+      --  expanded. We create a temporary for the aggregate, and assign the
+      --  temporary instead, so that the back end can generate an atomic move
+      --  for it.
+
+      if Is_Atomic_VFA_Aggregate (N) then
+         return;
+
+      --  No special management required for aggregates used to initialize
+      --  statically allocated dispatch tables
+
+      elsif Is_Static_Dispatch_Table_Aggregate (N) then
+         return;
       end if;
 
+      --  Ada 2005 (AI-318-2): We need to convert to assignments if components
+      --  are build-in-place function calls. The assignments will each turn
+      --  into a build-in-place function call. If components are all static,
+      --  we can pass the aggregate to the backend regardless of limitedness.
+
+      --  Extension aggregates, aggregates in extended return statements, and
+      --  aggregates for C++ imported types must be expanded.
+
+      if Ada_Version >= Ada_2005 and then Is_Limited_View (Typ) then
+         if not Nkind_In (Parent (N), N_Object_Declaration,
+                                      N_Component_Association)
+         then
+            Convert_To_Assignments (N, Typ);
+
+         elsif Nkind (N) = N_Extension_Aggregate
+           or else Convention (Typ) = Convention_CPP
+         then
+            Convert_To_Assignments (N, Typ);
+
+         elsif not Size_Known_At_Compile_Time (Typ)
+           or else Component_Not_OK_For_Backend
+           or else not Static_Components
+         then
+            Convert_To_Assignments (N, Typ);
+
+         --  In all other cases, build a proper aggregate to be handled by
+         --  the back-end
+
+         else
+            Pass_Aggregate_To_Back_End;
+         end if;
+
+      --  Gigi doesn't properly handle temporaries of variable size so we
+      --  generate it in the front-end
+
+      elsif not Size_Known_At_Compile_Time (Typ)
+        and then Tagged_Type_Expansion
+      then
+         Convert_To_Assignments (N, Typ);
+
+      --  An aggregate used to initialize a controlled object must be turned
+      --  into component assignments as the components themselves may require
+      --  finalization actions such as adjustment.
+
+      elsif Needs_Finalization (Typ) then
+         Convert_To_Assignments (N, Typ);
+
+      --  Ada 2005 (AI-287): In case of default initialized components we
+      --  convert the aggregate into assignments.
+
+      elsif Has_Default_Init_Comps (N) then
+         Convert_To_Assignments (N, Typ);
+
+      --  Check components
+
+      elsif Component_Not_OK_For_Backend then
+         Convert_To_Assignments (N, Typ);
+
+      --  If an ancestor is private, some components are not inherited and we
+      --  cannot expand into a record aggregate.
+
+      elsif Has_Visible_Private_Ancestor (Typ) then
+         Convert_To_Assignments (N, Typ);
+
+      --  ??? The following was done to compile fxacc00.ads in the ACVCs. Gigi
+      --  is not able to handle the aggregate for Late_Request.
+
+      elsif Is_Tagged_Type (Typ) and then Has_Discriminants (Typ) then
+         Convert_To_Assignments (N, Typ);
+
+      --  If the tagged types covers interface types we need to initialize all
+      --  hidden components containing pointers to secondary dispatch tables.
+
+      elsif Is_Tagged_Type (Typ) and then Has_Interfaces (Typ) then
+         Convert_To_Assignments (N, Typ);
+
+      --  If some components are mutable, the size of the aggregate component
+      --  may be distinct from the default size of the type component, so
+      --  we need to expand to insure that the back-end copies the proper
+      --  size of the data. However, if the aggregate is the initial value of
+      --  a constant, the target is immutable and might be built statically
+      --  if components are appropriate.
+
+      elsif Has_Mutable_Components (Typ)
+        and then
+          (Nkind (Parent (Top_Level_Aggr)) /= N_Object_Declaration
+            or else not Constant_Present (Parent (Top_Level_Aggr))
+            or else not Static_Components)
+      then
+         Convert_To_Assignments (N, Typ);
+
+      --  If the type involved has bit aligned components, then we are not sure
+      --  that the back end can handle this case correctly.
+
+      elsif Type_May_Have_Bit_Aligned_Components (Typ) then
+         Convert_To_Assignments (N, Typ);
+
+      --  When generating C, only generate an aggregate when declaring objects
+      --  since C does not support aggregates in e.g. assignment statements.
+
+      elsif Modify_Tree_For_C and then not In_Object_Declaration (N) then
+         Convert_To_Assignments (N, Typ);
+
+      --  In all other cases, build a proper aggregate to be handled by gigi
+
+      else
+         Pass_Aggregate_To_Back_End;
+      end if;
    end Expand_Record_Aggregate;
 
    ----------------------------
