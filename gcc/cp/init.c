@@ -1574,20 +1574,24 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   TREE_READONLY (exp) = 0;
   TREE_THIS_VOLATILE (exp) = 0;
 
-  if (init && init != void_type_node
-      && TREE_CODE (init) != TREE_LIST
-      && !(TREE_CODE (init) == TARGET_EXPR
-	   && TARGET_EXPR_DIRECT_INIT_P (init))
-      && !DIRECT_LIST_INIT_P (init))
-    flags |= LOOKUP_ONLYCONVERTING;
-
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree itype = init ? TREE_TYPE (init) : NULL_TREE;
       int from_array = 0;
 
       if (VAR_P (exp) && DECL_DECOMPOSITION_P (exp))
-	from_array = 1;
+	{
+	  from_array = 1;
+	  if (init && DECL_P (init)
+	      && !(flags & LOOKUP_ONLYCONVERTING))
+	    {
+	      /* Wrap the initializer in a CONSTRUCTOR so that build_vec_init
+		 recognizes it as direct-initialization.  */
+	      init = build_constructor_single (init_list_type_node,
+					       NULL_TREE, init);
+	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	    }
+	}
       else
 	{
 	  /* An array may not be initialized use the parenthesized
@@ -1620,6 +1624,13 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
 	TREE_TYPE (init) = itype;
       return stmt_expr;
     }
+
+  if (init && init != void_type_node
+      && TREE_CODE (init) != TREE_LIST
+      && !(TREE_CODE (init) == TARGET_EXPR
+	   && TARGET_EXPR_DIRECT_INIT_P (init))
+      && !DIRECT_LIST_INIT_P (init))
+    flags |= LOOKUP_ONLYCONVERTING;
 
   if ((VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
       && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (type)))
@@ -3825,6 +3836,18 @@ build_vec_init (tree base, tree maxindex, tree init,
       && from_array != 2)
     init = TARGET_EXPR_INITIAL (init);
 
+  bool direct_init = false;
+  if (from_array && init && BRACE_ENCLOSED_INITIALIZER_P (init)
+      && CONSTRUCTOR_NELTS (init) == 1)
+    {
+      tree elt = CONSTRUCTOR_ELT (init, 0)->value;
+      if (TREE_CODE (TREE_TYPE (elt)) == ARRAY_TYPE)
+	{
+	  direct_init = DIRECT_LIST_INIT_P (init);
+	  init = elt;
+	}
+    }
+
   /* If we have a braced-init-list, make sure that the array
      is big enough for all the initializers.  */
   bool length_check = (init && TREE_CODE (init) == CONSTRUCTOR
@@ -3904,18 +3927,6 @@ build_vec_init (tree base, tree maxindex, tree init,
   rval = get_temp_regvar (ptype, base);
   base = get_temp_regvar (ptype, rval);
   iterator = get_temp_regvar (ptrdiff_type_node, maxindex);
-
-  bool direct_init = false;
-  if (from_array && init && BRACE_ENCLOSED_INITIALIZER_P (init)
-      && CONSTRUCTOR_NELTS (init) == 1)
-    {
-      tree elt = CONSTRUCTOR_ELT (init, 0)->value;
-      if (TREE_CODE (TREE_TYPE (elt)) == ARRAY_TYPE)
-	{
-	  direct_init = DIRECT_LIST_INIT_P (init);
-	  init = elt;
-	}
-    }
 
   /* If initializing one array from another, initialize element by
      element.  We rely upon the below calls to do the argument
