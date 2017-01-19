@@ -35,7 +35,7 @@ libcuda.so.1 are not available.  */
 
 typedef void *CUcontext;
 typedef int CUdevice;
-#ifdef __LP64__
+#if defined(__LP64__) || defined(_WIN64)
 typedef unsigned long long CUdeviceptr;
 #else
 typedef unsigned CUdeviceptr;
