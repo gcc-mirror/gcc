@@ -1,3 +1,12 @@
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78478
+	* acinclude.m4: Include ../config/ax_check_define.m4
+	* configure.ac: Check if _SOFT_FLOAT is defined.
+	* configure.host (i?86 | x86_64): Use fpu-generic when
+	have_soft_float is set.
+	* configure: Regenerate.
+
 2017-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79127
