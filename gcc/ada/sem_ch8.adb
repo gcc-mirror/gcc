@@ -7048,7 +7048,18 @@ package body Sem_Ch8 is
                   --  Now analyze the reformatted node
 
                   Analyze_Call (P);
-                  Analyze_Selected_Component (N);
+
+                  --  If the prefix is illegal after this transformation,
+                  --  there may be visibility errors on the prefix. The
+                  --  safest is to treat the selected component as an error.
+
+                  if Error_Posted (P) then
+                     Set_Etype (N, Any_Type);
+                     return;
+
+                  else
+                     Analyze_Selected_Component (N);
+                  end if;
                end if;
             end if;
 

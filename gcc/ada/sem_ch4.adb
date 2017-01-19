@@ -5881,6 +5881,38 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
+      --  Before listing the possible candidates, check whether this
+      --  a prefix of a selected component that has been rewritten as
+      --  a parameterless function call because there is a callable
+      --  candidate interpretation. If there is a hidden package in
+      --  the list of homonyms of the function name (bad programming
+      --  style in any case) suggest that this is the intended entity.
+
+      if No (Parameter_Associations (N))
+        and then Nkind (Parent (N)) = N_Selected_Component
+        and then Nkind (Parent (Parent (N))) in N_Declaration
+        and then Is_Overloaded (Nam)
+      then
+         declare
+            Ent : Entity_Id;
+
+         begin
+            Ent := Current_Entity (Nam);
+            while Present (Ent) loop
+               if Ekind (Ent) = E_Package then
+                  Error_Msg_N
+                    ("no legal interpretations as function call,!", Nam);
+                  Error_Msg_NE ("\package& is not visible", N, Ent);
+                  Rewrite (Parent (N),
+                    New_Occurrence_Of (Any_Type, Sloc (N)));
+                  return;
+               end if;
+
+               Ent := Homonym (Ent);
+            end loop;
+         end;
+      end if;
+
       --   Analyze each candidate call again, with full error reporting
       --   for each.
 
