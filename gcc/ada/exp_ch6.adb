@@ -219,18 +219,18 @@ package body Exp_Ch6 is
    --  reference to the object itself, and the call becomes a call to the
    --  corresponding protected subprogram.
 
-   function Expression_Of_Expression_Function
-     (Subp : Entity_Id) return Node_Id;
-   --  Return the expression of the expression function Subp
-
-   function Has_Unconstrained_Access_Discriminants
-     (Subtyp : Entity_Id) return Boolean;
-   --  Returns True if the given subtype is unconstrained and has one
-   --  or more access discriminants.
-
    procedure Expand_Simple_Function_Return (N : Node_Id);
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
+
+   function Expression_Of_Expression_Function
+     (Subp : Entity_Id) return Node_Id;
+   --  Return the expression of expression function Subp
+
+   function Has_Unconstrained_Access_Discriminants
+     (Subtyp : Entity_Id) return Boolean;
+   --  Returns True if the given subtype is unconstrained and has one or more
+   --  access discriminants.
 
    procedure Rewrite_Function_Call_For_C (N : Node_Id);
    --  When generating C code, replace a call to a function that returns an
@@ -3943,7 +3943,7 @@ package body Exp_Ch6 is
             null;
 
          --  Frontend inlining of expression functions (performed also when
-         --  backend inlining is enabled)
+         --  backend inlining is enabled).
 
          elsif Is_Inlinable_Expression_Function (Subp) then
             Rewrite (N, New_Copy (Expression_Of_Expression_Function (Subp)));
@@ -6982,13 +6982,13 @@ package body Exp_Ch6 is
    begin
       pragma Assert (Is_Expression_Function_Or_Completion (Subp));
 
-      if Nkind (Original_Node (Subprogram_Spec (Subp)))
-           = N_Expression_Function
+      if Nkind (Original_Node (Subprogram_Spec (Subp))) =
+           N_Expression_Function
       then
          Expr_Func := Original_Node (Subprogram_Spec (Subp));
 
-      elsif Nkind (Original_Node (Subprogram_Body (Subp)))
-              = N_Expression_Function
+      elsif Nkind (Original_Node (Subprogram_Body (Subp))) =
+              N_Expression_Function
       then
          Expr_Func := Original_Node (Subprogram_Body (Subp));
 
@@ -7331,7 +7331,8 @@ package body Exp_Ch6 is
    -- Is_Inlinable_Expression_Function --
    --------------------------------------
 
-   function Is_Inlinable_Expression_Function (Subp : Entity_Id) return Boolean
+   function Is_Inlinable_Expression_Function
+     (Subp : Entity_Id) return Boolean
    is
       Return_Expr : Node_Id;
 
@@ -7353,8 +7354,9 @@ package body Exp_Ch6 is
          --  nominal subtype must be statically compatible with the result
          --  subtype of the expression function.
 
-         return Nkind (Return_Expr) = N_Identifier
-           and then Etype (Return_Expr) = Etype (Subp);
+         return
+           Nkind (Return_Expr) = N_Identifier
+             and then Etype (Return_Expr) = Etype (Subp);
       end if;
 
       return False;
