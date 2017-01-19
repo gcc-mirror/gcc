@@ -1,3 +1,8 @@
+2017-01-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/79121
+	* gcc.c-torture/execute/pr79121.c: New test.
+
 2017-01-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p9-xxbr-1.c: Fix typos in submission.
