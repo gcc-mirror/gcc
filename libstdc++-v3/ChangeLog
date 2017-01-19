@@ -1,5 +1,8 @@
 2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/abi.xml: Fix typo.
+	* doc/html/manual/abi.html: Likewise.
+
 	PR libstdc++/67085
 	* include/bits/predefined_ops.h (_Iter_less_val, _Val_less_iter): Add
 	converting constructors from _Iter_less_iter.
