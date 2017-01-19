@@ -50,6 +50,15 @@ namespace __ops
 
   struct _Iter_less_val
   {
+#if __cplusplus >= 201103L
+    constexpr _Iter_less_val() = default;
+#else
+    _Iter_less_val() { }
+#endif
+
+    explicit
+    _Iter_less_val(_Iter_less_iter) { }
+
     template<typename _Iterator, typename _Value>
       bool
       operator()(_Iterator __it, _Value& __val) const
@@ -66,6 +75,15 @@ namespace __ops
 
   struct _Val_less_iter
   {
+#if __cplusplus >= 201103L
+    constexpr _Val_less_iter() = default;
+#else
+    _Val_less_iter() { }
+#endif
+
+    explicit
+    _Val_less_iter(_Iter_less_iter) { }
+
     template<typename _Value, typename _Iterator>
       bool
       operator()(_Value& __val, _Iterator __it) const
@@ -141,6 +159,18 @@ namespace __ops
 	: _M_comp(_GLIBCXX_MOVE(__comp))
       { }
 
+      explicit
+      _Iter_comp_val(const _Iter_comp_iter<_Compare>& __comp)
+	: _M_comp(__comp._M_comp)
+      { }
+
+#if __cplusplus >= 201103L
+      explicit
+      _Iter_comp_val(_Iter_comp_iter<_Compare>&& __comp)
+	: _M_comp(std::move(__comp._M_comp))
+      { }
+#endif
+
       template<typename _Iterator, typename _Value>
 	bool
 	operator()(_Iterator __it, _Value& __val)
@@ -155,7 +185,7 @@ namespace __ops
   template<typename _Compare>
     inline _Iter_comp_val<_Compare>
     __iter_comp_val(_Iter_comp_iter<_Compare> __comp)
-    { return _Iter_comp_val<_Compare>(_GLIBCXX_MOVE(__comp._M_comp)); }
+    { return _Iter_comp_val<_Compare>(_GLIBCXX_MOVE(__comp)); }
 
   template<typename _Compare>
     struct _Val_comp_iter
@@ -166,6 +196,18 @@ namespace __ops
       _Val_comp_iter(_Compare __comp)
 	: _M_comp(_GLIBCXX_MOVE(__comp))
       { }
+
+      explicit
+      _Val_comp_iter(const _Iter_comp_iter<_Compare>& __comp)
+	: _M_comp(__comp._M_comp)
+      { }
+
+#if __cplusplus >= 201103L
+      explicit
+      _Val_comp_iter(_Iter_comp_iter<_Compare>&& __comp)
+	: _M_comp(std::move(__comp._M_comp))
+      { }
+#endif
 
       template<typename _Value, typename _Iterator>
 	bool
@@ -181,7 +223,7 @@ namespace __ops
   template<typename _Compare>
     inline _Val_comp_iter<_Compare>
     __val_comp_iter(_Iter_comp_iter<_Compare> __comp)
-    { return _Val_comp_iter<_Compare>(_GLIBCXX_MOVE(__comp._M_comp)); }
+    { return _Val_comp_iter<_Compare>(_GLIBCXX_MOVE(__comp)); }
 
   template<typename _Value>
     struct _Iter_equals_val

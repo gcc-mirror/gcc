@@ -1,6 +1,22 @@
 2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/67085
+	* include/bits/predefined_ops.h (_Iter_less_val, _Val_less_iter): Add
+	converting constructors from _Iter_less_iter.
+	(_Iter_comp_val, _Val_comp_iter): Add converting constructors from
+	_Iter_comp_iter.
+	(__iter_comp_val(_Iter_comp_iter<C>): Use converting constructor.
+	(__val_comp_iter(_Iter_comp_iter<C>): Likewise.
+	* include/bits/stl_heap.h (__is_heap_until, __push_heap, __pop_heap)
+	(__make_heap, __sort_heap): Change _Compare parameters to references.
+	(__is_heap, push_heap, __adjust_heap, __pop_heap, pop_heap)
+	(__make_heap, make_heap, sort_heap, is_heap_until): Pass comparison
+	functions as lvalues.
+	(is_heap): Call __is_heap_until directly to avoid copying __comp.
+	* testsuite/23_containers/priority_queue/67085.cc: Adjust test to
+	count copies during construction with empty sequence.
+
+	PR libstdc++/67085
 	* include/bits/stl_heap.h (__is_heap): Use _GLIBCXX_MOVE.
 	(__make_heap, __sort_heap): Don't use _GLIBCXX_MOVE inside loops.
 	* testsuite/23_containers/priority_queue/67085.cc: Adjust expected

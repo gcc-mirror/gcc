@@ -32,11 +32,11 @@ struct CopyCounter : std::less<int>
 void
 test01()
 {
-  int v[] = {1, 2, 3, 4};
-  std::priority_queue<int, std::vector<int>, CopyCounter> q{v, v+4};
-  VERIFY(count == 4);
+  int i;
+  std::priority_queue<int, std::vector<int>, CopyCounter> q{&i, &i};
+  VERIFY(count == 2);
   q.push(1);
-  VERIFY(count == 5);
+  VERIFY(count == 3);
 }
 
 int
