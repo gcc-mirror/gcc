@@ -1,3 +1,8 @@
+2017-01-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70696
+	* gfortran.dg/coarray_43.f90: New test.
+
 2017-01-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR rtl-optimization/79121

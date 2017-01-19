@@ -1,3 +1,9 @@
+2017-01-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70696
+	* trans-decl.c (gfc_build_qualified_array): Add static decl to parent
+	function only, when the decl-context is not the translation unit.
+
 2017-01-18  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/50069
