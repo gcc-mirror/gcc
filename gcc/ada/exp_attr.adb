@@ -6525,7 +6525,7 @@ package body Exp_Attr is
             begin
                --  The C and AAMP back-ends handle Valid for fpt types
 
-               if Generate_C_Code or else Float_Rep (Btyp) = AAMP then
+               if Modify_Tree_For_C or else Float_Rep (Btyp) = AAMP then
                   Analyze_And_Resolve (Pref, Ptyp);
                   Set_Etype (N, Standard_Boolean);
                   Set_Analyzed (N);
@@ -8155,7 +8155,7 @@ package body Exp_Attr is
       begin
          return not CodePeer_Mode
            and then not AAMP_On_Target
-           and then not Generate_C_Code;
+           and then not Modify_Tree_For_C;
       end Is_GCC_Target;
 
    --  Start of processing for Is_Inline_Floating_Point_Attribute

@@ -1444,12 +1444,15 @@ package body SPARK_Specific is
 
       procedure Traverse_Package_Body (N : Node_Id) is
          Spec_E : constant Entity_Id := Unique_Defining_Entity (N);
+
       begin
          case Ekind (Spec_E) is
             when E_Package =>
                Traverse_Declarations_And_HSS (N);
+
             when E_Generic_Package =>
                null;
+
             when others =>
                raise Program_Error;
          end case;
@@ -1470,12 +1473,18 @@ package body SPARK_Specific is
 
       procedure Traverse_Subprogram_Body (N : Node_Id) is
          Spec_E : constant Entity_Id := Unique_Defining_Entity (N);
+
       begin
          case Ekind (Spec_E) is
-            when E_Function | E_Procedure | Entry_Kind =>
+            when Entry_Kind
+               | E_Function
+               | E_Procedure
+            =>
                Traverse_Declarations_And_HSS (N);
+
             when Generic_Subprogram_Kind =>
                null;
+
             when others =>
                raise Program_Error;
          end case;

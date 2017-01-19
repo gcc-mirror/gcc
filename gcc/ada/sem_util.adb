@@ -8068,13 +8068,11 @@ package body Sem_Util is
    ----------------------
 
    procedure Get_Index_Bounds
-     (N : Node_Id;
-      L, H : out Node_Id;
+     (N             : Node_Id;
+      L             : out Node_Id;
+      H             : out Node_Id;
       Use_Full_View : Boolean := False)
    is
-      Kind : constant Node_Kind := Nkind (N);
-      R    : Node_Id;
-
       function Scalar_Range_Of_Right_View return Node_Id;
       --  Call Scalar_Range with argument determined by Use_Full_View
       --  parameter.
@@ -8085,12 +8083,21 @@ package body Sem_Util is
 
       function Scalar_Range_Of_Right_View return Node_Id is
          E : Entity_Id := Entity (N);
+
       begin
          if Use_Full_View and then Present (Full_View (E)) then
             E := Full_View (E);
          end if;
+
          return Scalar_Range (E);
       end Scalar_Range_Of_Right_View;
+
+      --  Local variables
+
+      Kind : constant Node_Kind := Nkind (N);
+      Rng  : Node_Id;
+
+   --  Start of processing for Get_Index_Bounds
 
    begin
       if Kind = N_Range then
@@ -8098,9 +8105,9 @@ package body Sem_Util is
          H := High_Bound (N);
 
       elsif Kind = N_Subtype_Indication then
-         R := Range_Expression (Constraint (N));
+         Rng := Range_Expression (Constraint (N));
 
-         if R = Error then
+         if Rng = Error then
             L := Error;
             H := Error;
             return;
