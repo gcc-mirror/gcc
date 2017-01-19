@@ -1,3 +1,11 @@
+2017-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79127
+	* acinclude.m4 (LIBGFOR_CHECK_AVX512F): Ensure the test clobbers
+	some zmm16+ registers to verify they are handled by unwind info
+	properly if needed.
+	* configure: Regenerated.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
