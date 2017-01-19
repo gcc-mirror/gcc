@@ -8073,24 +8073,25 @@ package body Sem_Util is
       H             : out Node_Id;
       Use_Full_View : Boolean := False)
    is
-      function Scalar_Range_Of_Right_View return Node_Id;
-      --  Call Scalar_Range with argument determined by Use_Full_View
-      --  parameter.
+      function Scalar_Range_Of_Type (Typ : Entity_Id) return Node_Id;
+      --  Obtain the scalar range of type Typ. If flag Use_Full_View is set and
+      --  Typ qualifies, the scalar range is obtained from the full view of the
+      --  type.
 
-      --------------------------------
-      -- Scalar_Range_Of_Right_View --
-      --------------------------------
+      --------------------------
+      -- Scalar_Range_Of_Type --
+      --------------------------
 
-      function Scalar_Range_Of_Right_View return Node_Id is
-         E : Entity_Id := Entity (N);
+      function Scalar_Range_Of_Type (Typ : Entity_Id) return Node_Id is
+         T : Entity_Id := Typ;
 
       begin
-         if Use_Full_View and then Present (Full_View (E)) then
-            E := Full_View (E);
+         if Use_Full_View and then Present (Full_View (T)) then
+            T := Full_View (T);
          end if;
 
-         return Scalar_Range (E);
-      end Scalar_Range_Of_Right_View;
+         return Scalar_Range (T);
+      end Scalar_Range_Of_Type;
 
       --  Local variables
 
@@ -8118,16 +8119,18 @@ package body Sem_Util is
          end if;
 
       elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
-         if Error_Posted (Scalar_Range_Of_Right_View) then
+         Rng := Scalar_Range_Of_Type (Entity (N));
+
+         if Error_Posted (Rng) then
             L := Error;
             H := Error;
 
-         elsif Nkind (Scalar_Range_Of_Right_View) = N_Subtype_Indication then
-            Get_Index_Bounds (Scalar_Range_Of_Right_View, L, H);
+         elsif Nkind (Rng) = N_Subtype_Indication then
+            Get_Index_Bounds (Rng, L, H);
 
          else
-            L := Low_Bound  (Scalar_Range_Of_Right_View);
-            H := High_Bound (Scalar_Range_Of_Right_View);
+            L := Low_Bound  (Rng);
+            H := High_Bound (Rng);
          end if;
 
       else
