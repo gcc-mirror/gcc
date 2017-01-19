@@ -1,3 +1,13 @@
+2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Mark the spec as
+	returning by reference not just for subprogram body stubs,
+	but for all subprogram cases.
+	* sem_util.adb: Code reformatting.
+	(Requires_Transient_Scope): Update the call to Results_Differ.
+	(Results_Differ): Update the parameter profile and the associated
+	comment on usage.
+
 2017-01-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_dim.adb (Analyze_Dimension): Analyze object declaration and

@@ -5542,13 +5542,7 @@ package body Exp_Ch6 is
          Utyp : constant Entity_Id := Underlying_Type (Typ);
 
       begin
-         if not Acts_As_Spec (N)
-           and then Nkind (Parent (Parent (Spec_Id))) /=
-                      N_Subprogram_Body_Stub
-         then
-            null;
-
-         elsif Is_Limited_View (Typ) then
+         if Is_Limited_View (Typ) then
             Set_Returns_By_Ref (Spec_Id);
 
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
@@ -7306,9 +7300,11 @@ package body Exp_Ch6 is
       declare
          Typ  : constant Entity_Id := Etype (Subp);
          Utyp : constant Entity_Id := Underlying_Type (Typ);
+
       begin
          if Is_Limited_View (Typ) then
             Set_Returns_By_Ref (Subp);
+
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
             Set_Returns_By_Ref (Subp);
          end if;
