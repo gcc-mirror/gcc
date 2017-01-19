@@ -253,7 +253,15 @@ package body GPrep is
 
             Scanner.Initialize_Scanner (Deffile);
 
-            Prep.Parse_Def_File;
+            --  Parse the definition file without "replace in comments"
+
+            declare
+               Replace : constant Boolean := Opt.Replace_In_Comments;
+            begin
+               Opt.Replace_In_Comments := False;
+               Prep.Parse_Def_File;
+               Opt.Replace_In_Comments := Replace;
+            end;
          end;
       end if;
 
