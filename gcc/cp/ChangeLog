@@ -1,3 +1,12 @@
+2017-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79130 - decomposition and direct-initialization
+	* init.c (build_aggr_init): Communicate direct-initialization to
+	build_vec_init.
+	(build_vec_init): Check for array copy sooner.
+	* parser.c (cp_parser_decomposition_declaration): Remove call to
+	build_x_compound_expr_from_list.
+
 2017-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68666 - member variable template-id

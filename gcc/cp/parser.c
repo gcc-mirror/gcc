@@ -13026,9 +13026,6 @@ cp_parser_decomposition_declaration (cp_parser *parser,
       *init_loc = cp_lexer_peek_token (parser->lexer)->location;
       tree initializer = cp_parser_initializer (parser, &is_direct_init,
 						&non_constant_p);
-      if (TREE_CODE (initializer) == TREE_LIST)
-	initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
-						       tf_warning_or_error);
 
       if (decl != error_mark_node)
 	{
