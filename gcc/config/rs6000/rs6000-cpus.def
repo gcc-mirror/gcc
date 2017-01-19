@@ -62,7 +62,6 @@
 				 | OPTION_MASK_VSX_SMALL_INTEGER)
 
 /* Add ISEL back into ISA 3.0, since it is supposed to be a win.  Do not add
-   P9_MINMAX until the hardware that supports it is available.  Do not add
    FLOAT128_HW here until we are ready to make -mfloat128 on by default.  */
 #define ISA_3_0_MASKS_SERVER	(ISA_2_7_MASKS_SERVER			\
 				 | OPTION_MASK_ISEL			\
@@ -70,6 +69,7 @@
 				 | OPTION_MASK_P9_FUSION		\
 				 | OPTION_MASK_P9_DFORM_SCALAR		\
 				 | OPTION_MASK_P9_DFORM_VECTOR		\
+				 | OPTION_MASK_P9_MINMAX		\
 				 | OPTION_MASK_P9_MISC			\
 				 | OPTION_MASK_P9_VECTOR)
 
@@ -81,7 +81,8 @@
 				 | OPTION_MASK_DIRECT_MOVE		\
 				 | OPTION_MASK_UPPER_REGS_DI		\
 				 | OPTION_MASK_UPPER_REGS_DF		\
-				 | OPTION_MASK_UPPER_REGS_SF)
+				 | OPTION_MASK_UPPER_REGS_SF		\
+				 | OPTION_MASK_VSX_SMALL_INTEGER)
 
 #define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)
 

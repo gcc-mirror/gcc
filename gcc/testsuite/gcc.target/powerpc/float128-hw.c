@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_float128_hw_ok } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2" } */
+/* { dg-options "-mcpu=power9 -O2 -mfloat128" } */
 
 __float128 f128_add (__float128 a, __float128 b) { return a+b; }
 __float128 f128_sub (__float128 a, __float128 b) { return a-b; }
