@@ -1,3 +1,11 @@
+2017-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* lto-lang.c (builtin_type_for_size): Convert call to
+	lto_type_for_size to one through the langhook.
+	(lto_type_for_size): Move to langhooks.c and rename to
+	lhd_type_for_size.
+	(LANG_HOOKS_TYPE_FOR_SIZE): Don't redefine.
+
 2017-01-18  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061
