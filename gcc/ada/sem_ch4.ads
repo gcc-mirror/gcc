@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,5 +63,17 @@ package Sem_Ch4  is
    --    d) A slice
    --  The resolution of the construct requires some semantic information
    --  on the prefix and the indexes.
+
+   function Try_Object_Operation
+     (N            : Node_Id;
+      CW_Test_Only : Boolean := False) return Boolean;
+   --  Ada 2005 (AI-252): Support the object.operation notation. If node N
+   --  is a call in this notation, it is transformed into a normal subprogram
+   --  call where the prefix is a parameter, and True is returned. If node
+   --  N is not of this form, it is unchanged, and False is returned. If
+   --  CW_Test_Only is true then N is an N_Selected_Component node which
+   --  is part of a call to an entry or procedure of a tagged concurrent
+   --  type and this routine is invoked to search for class-wide subprograms
+   --  conflicting with the target entity.
 
 end Sem_Ch4;

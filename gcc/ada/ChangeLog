@@ -1,3 +1,18 @@
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.ads, sem_ch4.adb (Try_Object_Operation): Make subprogram
+	public, for use elsewhere.
+	* sem_ch6.adb (Analyze_Procedure_Call): In SPARK_Mode and within
+	an Inlined_body, recognize a call that uses object notation
+	and has not been rewritten as a regular call because regular
+	expansion has not taken place.
+
+2017-01-19  Bob Duff  <duff@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): Disable small optimization
+	in case of generic formal discrete types, because it causes crashes in
+	the compiler when built with assertions on.
+
 2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib-xref-spark_specific.adb, sem_util.adb, sem_util.ads,
