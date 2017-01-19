@@ -3391,14 +3391,17 @@ package body Checks is
               and then not Float_To_Int
             then
                --  A small optimization: the attribute 'Pos applied to an
-               --  enumeration type has a known range, even though its type
-               --  is Universal_Integer. So in numeric conversions it is
-               --  usually within range of the target integer type. Use the
-               --  static bounds of the base types to check.
+               --  enumeration type has a known range, even though its type is
+               --  Universal_Integer. So in numeric conversions it is usually
+               --  within range of the target integer type. Use the static
+               --  bounds of the base types to check. Disable this optimization
+               --  in case of a generic formal discrete type, because we don't
+               --  necessarily know the upper bound yet.
 
                if Nkind (Expr) = N_Attribute_Reference
                  and then Attribute_Name (Expr) = Name_Pos
                  and then Is_Enumeration_Type (Etype (Prefix (Expr)))
+                 and then not Is_Generic_Type (Etype (Prefix (Expr)))
                  and then Is_Integer_Type (Target_Type)
                then
                   declare
