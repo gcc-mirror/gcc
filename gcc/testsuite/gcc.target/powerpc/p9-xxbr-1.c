@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc64le-*-* } } } */
+/* { dg-do compile { target { powerpc64*-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-mcpu=power9 -O3" } */
@@ -61,7 +61,7 @@ rev_double (vector double a)
   return vec_revb (a);		/* XXBRD.  */
 }
 
-/* { dg-final { scan-assembler-count "xxbrd" 1 } } */
-/* { dg-final { scan-assembler-count "xxbrh" 2 } } */
-/* { dg-final { scan-assembler-count "xxbrq" 3 } } */
-/* { dg-final { scan-assembler-count "xxbrw" 3 } } */
+/* { dg-final { scan-assembler-times "xxbrd" 1 } } */
+/* { dg-final { scan-assembler-times "xxbrh" 2 } } */
+/* { dg-final { scan-assembler-times "xxbrq" 3 } } */
+/* { dg-final { scan-assembler-times "xxbrw" 3 } } */

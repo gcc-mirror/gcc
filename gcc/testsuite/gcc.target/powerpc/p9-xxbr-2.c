@@ -1,7 +1,7 @@
-/* { dg-do compile { target { powerpc64le-*-* && lp64 } } } */
+/* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mcpu=power9 -O3" } */
+/* { dg-options "-mcpu=power9 -O2" } */
 
 #include <altivec.h>
 
@@ -32,5 +32,5 @@ rev_uint128 (vector __uint128_t a)
   return vec_revb (a);		/* XXBRQ.  */
 }
 
-/* { dg-final { scan-assembler-count "xxbrd" 2 } } */
-/* { dg-final { scan-assembler-count "xxbrq" 2 } } */
+/* { dg-final { scan-assembler-times "xxbrd" 2 } } */
+/* { dg-final { scan-assembler-times "xxbrq" 2 } } */
