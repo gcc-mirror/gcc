@@ -1,3 +1,14 @@
+2017-01-19  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/power9.md (power9-alu): Remove 'cmp' type and add
+	define_bypass for CR latency.
+	(power9-cracked-alu): Update bypass latency and remove power9-branch.
+	(power9-alu2): Add define_bypass for CR latency.
+	(power9-cmp): New.
+	(power9-mul): Update insn latency.
+	(power9-mul-compare): Update insn latency, bypass latency and remove
+	power9-branch.
+
 2016-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_nopcrelative_literal_loads):
