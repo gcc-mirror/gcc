@@ -1,3 +1,9 @@
+2017-01-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/79121
+	* expr.c (expand_expr_real_2, case LSHIFT_EXPR): Look at the signedness
+	of the inner type when shifting an extended value.
+
 2017-01-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/78407
