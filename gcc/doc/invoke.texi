@@ -909,6 +909,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcompact-branches=@var{policy} @gol
 -mfp-exceptions  -mno-fp-exceptions @gol
 -mvr4130-align  -mno-vr4130-align  -msynci  -mno-synci @gol
+-mlxc1-sxc1 -mno-lxc1-sxc1 @gol
 -mrelax-pic-calls  -mno-relax-pic-calls  -mmcount-ra-address @gol
 -mframe-header-opt  -mno-frame-header-opt}
 
