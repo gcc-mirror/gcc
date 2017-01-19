@@ -1,3 +1,10 @@
+2017-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/72488
+	* tree-ssa-sccvn.c (run_scc_vn): When we abort the VN make
+	sure to restore SSA info.
+	* tree-ssa.c (verify_ssa): Verify SSA info is not shared.
+
 2017-01-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR rtl-optimization/79121
