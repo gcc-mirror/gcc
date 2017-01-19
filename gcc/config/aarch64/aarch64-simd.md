@@ -338,6 +338,24 @@
   }
 )
 
+(define_expand "copysign<mode>3"
+  [(match_operand:VHSDF 0 "register_operand")
+   (match_operand:VHSDF 1 "register_operand")
+   (match_operand:VHSDF 2 "register_operand")]
+  "TARGET_FLOAT && TARGET_SIMD"
+{
+  rtx v_bitmask = gen_reg_rtx (<V_cmp_result>mode);
+  int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
+
+  emit_move_insn (v_bitmask,
+		  aarch64_simd_gen_const_vector_dup (<V_cmp_result>mode,
+						     HOST_WIDE_INT_M1U << bits));
+  emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], v_bitmask,
+					 operands[2], operands[1]));
+  DONE;
+}
+)
+
 (define_insn "*aarch64_mul3_elt<mode>"
  [(set (match_operand:VMUL 0 "register_operand" "=w")
     (mult:VMUL

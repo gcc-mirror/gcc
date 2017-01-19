@@ -11237,14 +11237,16 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
 
 /* Return a const_int vector of VAL.  */
 rtx
-aarch64_simd_gen_const_vector_dup (machine_mode mode, int val)
+aarch64_simd_gen_const_vector_dup (machine_mode mode, HOST_WIDE_INT val)
 {
   int nunits = GET_MODE_NUNITS (mode);
   rtvec v = rtvec_alloc (nunits);
   int i;
 
+  rtx cache = GEN_INT (val);
+
   for (i=0; i < nunits; i++)
-    RTVEC_ELT (v, i) = GEN_INT (val);
+    RTVEC_ELT (v, i) = cache;
 
   return gen_rtx_CONST_VECTOR (mode, v);
 }

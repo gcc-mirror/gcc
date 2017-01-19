@@ -1,3 +1,11 @@
+2017-01-19  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_gen_const_vector_dup):
+	Change int to HOST_WIDE_INT.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_simd_gen_const_vector_dup): Likewise.
+	* config/aarch64/aarch64-simd.md: Add copysign<mode>3.
+
 2017-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* langhooks-def.h (lhd_type_for_size): New decl.

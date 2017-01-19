@@ -6158,7 +6158,8 @@ proc check_effective_target_vect_call_copysignf { } {
     } else {
 	set et_vect_call_copysignf_saved($et_index) 0
 	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
-	     || [istarget powerpc*-*-*] } {
+	     || [istarget powerpc*-*-*]
+	     || [istarget aarch64*-*-*] } {
 	   set et_vect_call_copysignf_saved($et_index) 1
 	}
     }

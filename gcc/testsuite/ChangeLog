@@ -1,3 +1,8 @@
+2017-01-19  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc/testsuite/lib/target-supports.exp
+	(check_effective_target_vect_call_copysignf): Enable for AArch64.
+
 2017-01-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/79051
