@@ -19869,10 +19869,13 @@ expand_strn_compare (rtx operands[], int no_length)
 	}
 
       if (no_length)
-	emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "strcmp"),
-				 target, LCT_NORMAL, GET_MODE (target), 2,
-				 force_reg (Pmode, XEXP (src1, 0)), Pmode,
-				 force_reg (Pmode, XEXP (src2, 0)), Pmode);
+	{
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
+				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
+	}
       else
 	{
 	  /* -m32 -mpowerpc64 results in word_mode being DImode even
@@ -19886,7 +19889,8 @@ expand_strn_compare (rtx operands[], int no_length)
 
 	  emit_move_insn (len_rtx, bytes_rtx);
 
-	  emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "strncmp"),
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
 				   target, LCT_NORMAL, GET_MODE (target), 3,
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
@@ -20131,10 +20135,13 @@ expand_strn_compare (rtx operands[], int no_length)
 
       /* Construct call to strcmp/strncmp to compare the rest of the string.  */
       if (no_length)
-	emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "strcmp"),
-				 target, LCT_NORMAL, GET_MODE (target), 2,
-				 force_reg (Pmode, XEXP (src1, 0)), Pmode,
-				 force_reg (Pmode, XEXP (src2, 0)), Pmode);
+	{
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
+				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
+	}
       else
 	{
 	  rtx len_rtx;
@@ -20144,7 +20151,8 @@ expand_strn_compare (rtx operands[], int no_length)
 	    len_rtx = gen_reg_rtx (SImode);
 
 	  emit_move_insn (len_rtx, GEN_INT (bytes - compare_length));
-	  emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "strncmp"),
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
 				   target, LCT_NORMAL, GET_MODE (target), 3,
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
