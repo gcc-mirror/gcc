@@ -1,3 +1,12 @@
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension): Analyze object declaration and
+	identifier nodes that do not come from source, to handle properly
+	dimensionality check within an inlined body which inclddes both
+	original operands and rewritten operands. This removes spurious
+	dimensionality errors in the presence of front-end inlining,
+	as well as in SPARK mode.
+
 2017-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/49726

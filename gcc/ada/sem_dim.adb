@@ -1122,16 +1122,22 @@ package body Sem_Dim is
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
       --  dimensions for nodes that don't come from source, except for subtype
       --  declarations where the dimensions are inherited from the base type,
-      --  and for explicit dereferences generated when expanding iterators.
+      --  for explicit dereferences generated when expanding iterators, and
+      --  for object declarations generated for inlining.
 
       if Ada_Version < Ada_2012 then
          return;
 
-      elsif not Comes_From_Source (N)
-        and then Nkind (N) /= N_Subtype_Declaration
-        and then Nkind (N) /= N_Explicit_Dereference
-      then
-         return;
+      elsif not Comes_From_Source (N) then
+         if Nkind_In (N, N_Explicit_Dereference,
+                         N_Identifier,
+                         N_Object_Declaration,
+                         N_Subtype_Declaration)
+         then
+            null;
+         else
+            return;
+         end if;
       end if;
 
       case Nkind (N) is
@@ -2138,7 +2144,8 @@ package body Sem_Dim is
             end if;
          end if;
 
-         --  Removal of dimensions in expression
+         --  Remove dimensions in expression after checking consistency
+         --  with given type.
 
          Remove_Dimensions (Expr);
       end if;
