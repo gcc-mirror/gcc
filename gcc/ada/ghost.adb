@@ -1490,7 +1490,9 @@ package body Ghost is
       while Present (Nod) loop
          Scop := Empty;
 
-         if Nkind (Nod) = N_Block_Statement then
+         if Nkind (Nod) = N_Block_Statement
+           and then Present (Identifier (Nod))
+         then
             Scop := Entity (Identifier (Nod));
 
          elsif Nkind_In (Nod, N_Package_Body,

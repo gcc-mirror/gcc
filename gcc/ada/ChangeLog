@@ -1,3 +1,18 @@
+2017-01-19  Javier Miranda  <miranda@adacore.com>
+
+	* ghost.adb (Propagate_Ignored_Ghost_Code): Protect access to the
+	identifier attribute of a block-statement node. Required to avoid
+	assertion failure when building the new containers library.
+
+2017-01-19  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb: Update comment.
+
+2017-01-19  Vincent Celier  <celier@adacore.com>
+
+	* gprep.adb (Gnatprep): Parse the definition file without
+	"replace in comments" even when switch -C is used.
+
 2017-01-19  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch9.adb (Is_Pure_Barrier): Create function
