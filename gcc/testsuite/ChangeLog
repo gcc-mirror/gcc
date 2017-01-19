@@ -1,3 +1,8 @@
+2017-01-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-hw.c: Do not require IEEE 128-bit
+	floating point hardware to run test.
+
 2017-01-19  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc/testsuite/lib/target-supports.exp
