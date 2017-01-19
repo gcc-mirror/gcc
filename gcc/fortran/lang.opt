@@ -490,7 +490,7 @@ Assume that the source file is fixed form.
 
 ftest-forall-temp
 Fortran Var(flag_test_forall_temp) Init(0)
-Force creation of temporary to test infrequently-executed forall code
+Force creation of temporary to test infrequently-executed forall code.
 
 finteger-4-integer-8
 Fortran RejectNegative Var(flag_integer4_kind,8)
