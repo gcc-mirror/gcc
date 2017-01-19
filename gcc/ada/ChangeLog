@@ -1,3 +1,12 @@
+2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Mark the
+	representation-to-position function as inlined.
+	* sem_cat.adb (Set_Categorization_From_Scope): Do not modify
+	the purity of an internally generated entity if it has been
+	explicitly marked as pure for optimization purposes.
+	* exp_aggr.adb: Minor reformatting.
+
 2017-01-19  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.adb (Expand_Call): Remove side effects on
