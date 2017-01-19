@@ -1,5 +1,11 @@
 2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config.gcc (x86_64-*-rtems*): Use i386/rtemself.h
+	instead of i386/rtems-64.h.
+	* config/i386/rtems-64.h: Remove.
+
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/78478
 	Revert:
 	2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
