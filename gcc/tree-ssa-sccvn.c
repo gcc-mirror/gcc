@@ -4755,6 +4755,7 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   if (walker.fail)
     {
+      scc_vn_restore_ssa_info ();
       free_scc_vn ();
       return false;
     }
