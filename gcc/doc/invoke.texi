@@ -19932,6 +19932,12 @@ it is unused.
 
 This optimization is off by default at all optimization levels.
 
+@item -mlxc1-sxc1
+@itemx -mno-lxc1-sxc1
+@opindex mlxc1-sxc1
+When applicable, enable (disable) the generation of @code{lwxc1},
+@code{swxc1}, @code{ldxc1}, @code{sdxc1} instructions.  Enabled by default.
+
 @end table
 
 @node MMIX Options

@@ -1,3 +1,14 @@
+2017-01-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	PR target/78176
+	* gcc.target/mips/lxc1-sxc1-1.c: New file.
+	* gcc.target/mips/lxc1-sxc1-2.c: Likewise.
+	* gcc.target/mips/mips.exp (mips_option_groups): Add ghost option
+	HAS_LXC1.
+	(mips_option_groups): Add -m[no-]lxc1-sxc1.
+	(mips-dg-init): Detect default -mno-lxc1-sxc1.
+	(mips-dg-options): Handle HAS_LXC1 arch upgrade/downgrade.
+
 2017-01-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70696
