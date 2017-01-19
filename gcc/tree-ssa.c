@@ -1027,24 +1027,49 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
 
   timevar_push (TV_TREE_SSA_VERIFY);
 
-  /* Keep track of SSA names present in the IL.  */
-  size_t i;
-  tree name;
-
-  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      gimple *stmt;
-      TREE_VISITED (name) = 0;
+      /* Keep track of SSA names present in the IL.  */
+      size_t i;
+      tree name;
+      hash_map <void *, tree> ssa_info;
 
-      verify_ssa_name (name, virtual_operand_p (name));
-
-      stmt = SSA_NAME_DEF_STMT (name);
-      if (!gimple_nop_p (stmt))
+      FOR_EACH_SSA_NAME (i, name, cfun)
 	{
-	  basic_block bb = gimple_bb (stmt);
-	  if (verify_def (bb, definition_block,
-			  name, stmt, virtual_operand_p (name)))
-	    goto err;
+	  gimple *stmt;
+	  TREE_VISITED (name) = 0;
+
+	  verify_ssa_name (name, virtual_operand_p (name));
+
+	  stmt = SSA_NAME_DEF_STMT (name);
+	  if (!gimple_nop_p (stmt))
+	    {
+	      basic_block bb = gimple_bb (stmt);
+	      if (verify_def (bb, definition_block,
+			      name, stmt, virtual_operand_p (name)))
+		goto err;
+	    }
+
+	  void *info = NULL;
+	  if (POINTER_TYPE_P (TREE_TYPE (name)))
+	    info = SSA_NAME_PTR_INFO (name);
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name)))
+	    info = SSA_NAME_RANGE_INFO (name);
+	  if (info)
+	    {
+	      bool existed;
+	      tree &val = ssa_info.get_or_insert (info, &existed);
+	      if (existed)
+		{
+		  error ("shared SSA name info");
+		  print_generic_expr (stderr, val, 0);
+		  fprintf (stderr, " and ");
+		  print_generic_expr (stderr, name, 0);
+		  fprintf (stderr, "\n");
+		  goto err;
+		}
+	      else
+		val = name;
+	    }
 	}
     }
 
