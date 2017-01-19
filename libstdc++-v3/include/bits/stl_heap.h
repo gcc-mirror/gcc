@@ -200,7 +200,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _ValueType __value = _GLIBCXX_MOVE(*(__last - 1));
       std::__push_heap(__first, _DistanceType((__last - __first) - 1),
 		       _DistanceType(0), _GLIBCXX_MOVE(__value),
-		       __gnu_cxx::__ops::__iter_comp_val(__comp));
+		       __gnu_cxx::__ops::
+		       __iter_comp_val(_GLIBCXX_MOVE(__comp)));
     }
 
   template<typename _RandomAccessIterator, typename _Distance,
@@ -229,7 +230,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       std::__push_heap(__first, __holeIndex, __topIndex, 
 		       _GLIBCXX_MOVE(__value),
-		       __gnu_cxx::__ops::__iter_comp_val(__comp));
+		       __gnu_cxx::__ops::
+		       __iter_comp_val(_GLIBCXX_MOVE(__comp)));
     }
 
   template<typename _RandomAccessIterator, typename _Compare>
@@ -246,7 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       *__result = _GLIBCXX_MOVE(*__first);
       std::__adjust_heap(__first, _DistanceType(0),
 			 _DistanceType(__last - __first),
-			 _GLIBCXX_MOVE(__value), __comp);
+			 _GLIBCXX_MOVE(__value), _GLIBCXX_MOVE(__comp));
     }
 
   /**
@@ -310,7 +312,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  --__last;
 	  std::__pop_heap(__first, __last, __last,
-			  __gnu_cxx::__ops::__iter_comp_iter(__comp));
+			  __gnu_cxx::__ops::
+			  __iter_comp_iter(_GLIBCXX_MOVE(__comp)));
 	}
     }
 
@@ -333,7 +336,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _ValueType __value = _GLIBCXX_MOVE(*(__first + __parent));
 	  std::__adjust_heap(__first, __parent, __len, _GLIBCXX_MOVE(__value),
-			     __comp);
+			     _GLIBCXX_MOVE(__comp));
 	  if (__parent == 0)
 	    return;
 	  __parent--;
@@ -386,7 +389,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       std::__make_heap(__first, __last,
-		       __gnu_cxx::__ops::__iter_comp_iter(__comp));
+		       __gnu_cxx::__ops::
+		       __iter_comp_iter(_GLIBCXX_MOVE(__comp)));
     }
 
   template<typename _RandomAccessIterator, typename _Compare>
@@ -397,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (__last - __first > 1)
 	{
 	  --__last;
-	  std::__pop_heap(__first, __last, __last, __comp);
+	  std::__pop_heap(__first, __last, __last, _GLIBCXX_MOVE(__comp));
 	}
     }
 
@@ -449,7 +453,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
       std::__sort_heap(__first, __last,
-		       __gnu_cxx::__ops::__iter_comp_iter(__comp));
+		       __gnu_cxx::__ops::
+		       __iter_comp_iter(_GLIBCXX_MOVE(__comp)));
     }
 
 #if __cplusplus >= 201103L
@@ -504,7 +509,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return __first
 	+ std::__is_heap_until(__first, std::distance(__first, __last),
-			       __gnu_cxx::__ops::__iter_comp_iter(__comp));
+			       __gnu_cxx::__ops::
+			       __iter_comp_iter(std::move(__comp)));
     }
 
   /**
@@ -531,7 +537,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	    _Compare __comp)
-    { return std::is_heap_until(__first, __last, __comp) == __last; }
+    {
+      return std::is_heap_until(__first, __last, std::move(__comp))
+	== __last;
+    }
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
