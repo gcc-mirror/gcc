@@ -6025,6 +6025,25 @@ package body Exp_Ch9 is
       ---------------------
 
       function Is_Pure_Barrier (N : Node_Id) return Traverse_Result is
+         function Is_Count_Attribute (N : Node_Id) return Boolean;
+         --  Check whether N is part of an expansion of the Count attribute.
+         --  Return True if N represents the expanded function call.
+
+         ------------------------
+         -- Is_Count_Attribute --
+         ------------------------
+
+         function Is_Count_Attribute (N : Node_Id) return Boolean is
+         begin
+            return
+              Nkind (N) = N_Function_Call
+                and then Present (Original_Node (N))
+                and then Nkind (Original_Node (N)) = N_Attribute_Reference
+                and then Attribute_Name (Original_Node (N)) = Name_Count;
+         end Is_Count_Attribute;
+
+      --  Start of processing for Is_Pure_Barrier
+
       begin
          case Nkind (N) is
             when N_Expanded_Name
@@ -6032,6 +6051,12 @@ package body Exp_Ch9 is
             =>
                if No (Entity (N)) then
                   return Abandon;
+               end if;
+
+               if Present (Parent (N))
+                 and then Is_Count_Attribute (Parent (N))
+               then
+                  return OK;
                end if;
 
                case Ekind (Entity (N)) is
@@ -6056,6 +6081,11 @@ package body Exp_Ch9 is
                   when others =>
                      null;
                end case;
+
+            when N_Function_Call =>
+               if Is_Count_Attribute (N) then
+                  return OK;
+               end if;
 
             when N_Character_Literal
                | N_Integer_Literal
