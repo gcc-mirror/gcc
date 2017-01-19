@@ -3315,6 +3315,17 @@ package body Exp_Ch6 is
             Add_View_Conversion_Invariants (Formal, Actual);
          end if;
 
+         --  Generating C the initialization of an allocator is performed by
+         --  means of individual statements, and hence it must be done before
+         --  the call.
+
+         if Modify_Tree_For_C
+           and then Nkind (Actual) = N_Allocator
+           and then Nkind (Expression (Actual)) = N_Qualified_Expression
+         then
+            Remove_Side_Effects (Actual);
+         end if;
+
          --  This label is required when skipping extra actual generation for
          --  Unchecked_Union parameters.
 

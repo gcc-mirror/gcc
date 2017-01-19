@@ -5305,6 +5305,9 @@ package body Freeze is
          --  trigger the analysis of aspect expressions, so in this case we
          --  want to continue the freezing process.
 
+         --  Is_Generic_Unit (Scope (E)) is dubious here, do we want instead
+         --  In_Generic_Scope (E)???
+
          if Present (Scope (E))
            and then Is_Generic_Unit (Scope (E))
            and then

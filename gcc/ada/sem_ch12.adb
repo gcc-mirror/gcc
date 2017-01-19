@@ -6372,8 +6372,7 @@ package body Sem_Ch12 is
 
             Set_Is_Generic_Actual_Type (E, True);
             Set_Is_Hidden (E, False);
-            Set_Is_Potentially_Use_Visible (E,
-              In_Use (Instance));
+            Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
 
             --  We constructed the generic actual type as a subtype of the
             --  supplied type. This means that it normally would not inherit

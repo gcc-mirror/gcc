@@ -381,7 +381,7 @@ package body SPARK_Specific is
       Rnums : array (0 .. Nrefs + Nrefs_Add) of Nat;
       --  This array contains numbers of references in the Xrefs table. This
       --  list is sorted in output order. The extra 0'th entry is convenient
-      --  for the call to sort. When we sort the table, we move the entries in
+      --  for the call to sort. When we sort the table, we move the indices in
       --  Rnums around, but we do not move the original table entries.
 
       ---------------------
@@ -683,7 +683,7 @@ package body SPARK_Specific is
       Col        : Nat;
       From_Index : Xref_Index;
       Line       : Nat;
-      Loc        : Source_Ptr;
+      Prev_Loc   : Source_Ptr;
       Prev_Typ   : Character;
       Ref_Count  : Nat;
       Ref_Id     : Entity_Id;
@@ -701,17 +701,9 @@ package body SPARK_Specific is
          end;
       end loop;
 
-      --  Set up the pointer vector for the sort
-
-      for Index in 1 .. Nrefs loop
-         Rnums (Index) := Index;
-      end loop;
-
       for Index in Drefs.First .. Drefs.Last loop
          Xrefs.Append (Drefs.Table (Index));
-
-         Nrefs         := Nrefs + 1;
-         Rnums (Nrefs) := Xrefs.Last;
+         Nrefs := Nrefs + 1;
       end loop;
 
       --  Capture the definition Sloc values. As in the case of normal cross
@@ -730,7 +722,7 @@ package body SPARK_Specific is
 
       for Index in 1 .. Ref_Count loop
          declare
-            Ref : Xref_Key renames Xrefs.Table (Rnums (Index)).Key;
+            Ref : Xref_Key renames Xrefs.Table (Index).Key;
 
          begin
             if SPARK_Entities (Ekind (Ref.Ent))
@@ -745,7 +737,7 @@ package body SPARK_Specific is
               and then Get_Scope_Num (Ref.Ref_Scope) /= No_Scope
             then
                Nrefs         := Nrefs + 1;
-               Rnums (Nrefs) := Rnums (Index);
+               Rnums (Nrefs) := Index;
             end if;
          end;
       end loop;
@@ -778,7 +770,7 @@ package body SPARK_Specific is
 
       Ref_Count := Nrefs;
       Nrefs     := 0;
-      Loc       := No_Location;
+      Prev_Loc  := No_Location;
       Prev_Typ  := 'm';
 
       for Index in 1 .. Ref_Count loop
@@ -786,10 +778,10 @@ package body SPARK_Specific is
             Ref : Xref_Key renames Xrefs.Table (Rnums (Index)).Key;
 
          begin
-            if Ref.Loc /= Loc
+            if Ref.Loc /= Prev_Loc
               or else (Prev_Typ = 'm' and then Ref.Typ = 'r')
             then
-               Loc           := Ref.Loc;
+               Prev_Loc      := Ref.Loc;
                Prev_Typ      := Ref.Typ;
                Nrefs         := Nrefs + 1;
                Rnums (Nrefs) := Rnums (Index);

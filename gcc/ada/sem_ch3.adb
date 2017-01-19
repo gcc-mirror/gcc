@@ -2466,6 +2466,8 @@ package body Sem_Ch3 is
                Freeze_All (First_Entity (Current_Scope), Decl);
                Freeze_From := Last_Entity (Current_Scope);
 
+            --  Current scope is a package specification
+
             elsif Scope (Current_Scope) /= Standard_Standard
               and then not Is_Child_Unit (Current_Scope)
               and then No (Generic_Parent (Parent (L)))
@@ -2485,6 +2487,8 @@ package body Sem_Ch3 is
             then
                Adjust_Decl;
 
+               --  End of a package declaration
+
                --  In compilation mode the expansion of freeze node takes care
                --  of resolving expressions of all aspects in the list. In ASIS
                --  mode this must be done explicitly.
@@ -2494,6 +2498,9 @@ package body Sem_Ch3 is
                then
                   Resolve_Aspects;
                end if;
+
+               --  This is a freeze point because it is the end of a
+               --  compilation unit.
 
                Freeze_All (First_Entity (Current_Scope), Decl);
                Freeze_From := Last_Entity (Current_Scope);
@@ -2561,6 +2568,12 @@ package body Sem_Ch3 is
             end if;
 
             Adjust_Decl;
+
+            --  The generated body of an expression function does not freeze,
+            --  unless it is a completion, in which case only the expression
+            --  itself freezes. THis is handled when the body itself is
+            --  analyzed (see Freeze_Expr_Types, sem_ch6.adb).
+
             Freeze_All (Freeze_From, Decl);
             Freeze_From := Last_Entity (Current_Scope);
          end if;
@@ -6740,8 +6753,12 @@ package body Sem_Ch3 is
          --  If we constructed a default range for the case where no range
          --  was given, then the expressions in the range must not freeze
          --  since they do not correspond to expressions in the source.
+         --  However, if the type inherits predicates the expressions will
+         --  be elaborated earlier and must freeze.
 
-         if Nkind (Indic) /= N_Subtype_Indication then
+         if Nkind (Indic) /= N_Subtype_Indication
+           and then not Has_Predicates (Derived_Type)
+         then
             Set_Must_Not_Freeze (Lo);
             Set_Must_Not_Freeze (Hi);
             Set_Must_Not_Freeze (Rang_Expr);

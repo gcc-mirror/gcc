@@ -20971,48 +20971,78 @@ package body Sem_Util is
 
    function Unique_Name (E : Entity_Id) return String is
 
-      --  Names of E_Subprogram_Body or E_Package_Body entities are not
+      --  Names in E_Subprogram_Body or E_Package_Body entities are not
       --  reliable, as they may not include the overloading suffix. Instead,
       --  when looking for the name of E or one of its enclosing scope, we get
       --  the name of the corresponding Unique_Entity.
 
-      function Get_Scoped_Name (E : Entity_Id) return String;
-      --  Return the name of E prefixed by all the names of the scopes to which
-      --  E belongs, except for Standard.
+      U : constant Entity_Id := Unique_Entity (E);
 
-      ---------------------
-      -- Get_Scoped_Name --
-      ---------------------
+      function This_Name return String;
 
-      function Get_Scoped_Name (E : Entity_Id) return String is
-         Name : constant String := Get_Name_String (Chars (E));
+      ---------------
+      -- This_Name --
+      ---------------
+
+      function This_Name return String is
       begin
-         if Has_Fully_Qualified_Name (E)
-           or else Scope (E) = Standard_Standard
-         then
-            return Name;
-         else
-            return Get_Scoped_Name (Unique_Entity (Scope (E))) & "__" & Name;
-         end if;
-      end Get_Scoped_Name;
+         return Get_Name_String (Chars (U));
+      end This_Name;
 
    --  Start of processing for Unique_Name
 
    begin
-      if E = Standard_Standard then
-         return Get_Name_String (Name_Standard);
-
-      elsif Scope (E) = Standard_Standard
-        and then not (Ekind (E) = E_Package or else Is_Subprogram (E))
+      if E = Standard_Standard
+        or else Has_Fully_Qualified_Name (E)
       then
-         return Get_Name_String (Name_Standard) & "__" &
-           Get_Name_String (Chars (E));
+         return This_Name;
 
       elsif Ekind (E) = E_Enumeration_Literal then
-         return Unique_Name (Etype (E)) & "__" & Get_Name_String (Chars (E));
+         return Unique_Name (Etype (E)) & "__" & This_Name;
 
       else
-         return Get_Scoped_Name (Unique_Entity (E));
+         declare
+            S : constant Entity_Id := Scope (U);
+            pragma Assert (Present (S));
+
+         begin
+            --  Prefix names of predefined types with standard__, but leave
+            --  names of user-defined packages and subprograms without prefix
+            --  (even if technically they are nested in the Standard package).
+
+            if S = Standard_Standard then
+               if Ekind (U) = E_Package or else Is_Subprogram (U) then
+                  return This_Name;
+               else
+                  return Unique_Name (S) & "__" & This_Name;
+               end if;
+
+            --  For intances of generic subprograms use the name of the related
+            --  instace and skip the scope of its wrapper package.
+
+            elsif Is_Wrapper_Package (S) then
+               pragma Assert (Scope (S) = Scope (Related_Instance (S)));
+               --  Wrapper package and the instantiation are in the same scope
+
+               declare
+                  Enclosing_Name : constant String :=
+                    Unique_Name (Scope (S)) & "__" &
+                      Get_Name_String (Chars (Related_Instance (S)));
+
+               begin
+                  if Is_Subprogram (U)
+                    and then not Is_Generic_Actual_Subprogram (U)
+                  then
+                     return Enclosing_Name;
+                  else
+                     return Enclosing_Name & "__" & This_Name;
+                  end if;
+               end;
+
+            else
+               return Unique_Name (S) & "__" & This_Name;
+            end if;
+         end;
       end if;
    end Unique_Name;
 
