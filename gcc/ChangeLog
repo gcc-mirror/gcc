@@ -1,3 +1,11 @@
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78478
+	Revert:
+	2013-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/rtemself.h (LONG_DOUBLE_TYPE_SIZE): New define.
+
 2017-01-19  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_gen_const_vector_dup):

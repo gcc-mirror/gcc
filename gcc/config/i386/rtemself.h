@@ -28,6 +28,3 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_assert ("system=rtems");	\
     }						\
   while (0)
-
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_80387 ? 80 : 64)
