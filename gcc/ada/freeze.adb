@@ -2439,9 +2439,15 @@ package body Freeze is
             end if;
 
             --  The array type requires its own invariant procedure in order to
-            --  verify the component invariant over all elements.
+            --  verify the component invariant over all elements. In GNATprove
+            --  mode, the component invariants are checked by other means. They
+            --  should not be added to the array type invariant procedure, so
+            --  that the procedure can be used to check the array type
+            --  invariants if any.
 
-            if Has_Invariants (Component_Type (Arr)) then
+            if Has_Invariants (Component_Type (Arr))
+              and then not GNATprove_Mode
+            then
                Set_Has_Own_Invariants (Arr);
 
                --  The array type is an implementation base type. Propagate the
@@ -4362,9 +4368,14 @@ package body Freeze is
                --  order to verify the invariant of each individual component.
                --  Do not consider internal components such as _parent because
                --  parent class-wide invariants are always inherited.
+               --  In GNATprove mode, the component invariants are checked by
+               --  other means. They should not be added to the record type
+               --  invariant procedure, so that the procedure can be used to
+               --  check the recordy type invariants if any.
 
                if Comes_From_Source (Comp)
                  and then Has_Invariants (Etype (Comp))
+                   and then not GNATprove_Mode
                then
                   Set_Has_Own_Invariants (Rec);
                end if;

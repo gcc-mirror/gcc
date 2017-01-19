@@ -1,3 +1,21 @@
+2017-01-19  Claire Dross  <dross@adacore.com>
+
+	* exp_ch7.adb (Build_Invariant_Procedure_Body): Semi-insert the
+	body into the tree for GNATprove by setting its Parent field. The
+	components invariants of composite types are not checked by
+	the composite type's invariant procedure in GNATprove mode.
+	(Build_Invariant_Procedure_Declaration): Semi-insert the
+	declaration into the tree for GNATprove by setting its Parent
+	field.
+	* freeze.adb (Freeze_Arry_Type):In GNATprove mode, do not add
+	the component invariants to the array type  invariant procedure
+	so that the procedure can be used to  check the array type
+	invariants if any.
+	(Freeze_Record_Type): In GNATprove mode, do
+	not add the component invariants to the record type  invariant
+	procedure so that the procedure can be used to	check the record
+	type invariants if any.
+
 2017-01-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* lib-xref-spark_specific.adb: Minor reformatting.

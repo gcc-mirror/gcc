@@ -3581,30 +3581,41 @@ package body Exp_Ch7 is
 
          begin
             if Has_Invariants (Comp_Typ) then
-               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  The component type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
+               --  In GNATprove mode, the component invariants are checked by
+               --  other means. They should not be added to the array type
+               --  invariant procedure, so that the procedure can be used to
+               --  check the array type invariants if any.
 
-               pragma Assert (Present (Proc_Id));
+               if GNATprove_Mode then
+                  null;
 
-               --  Generate:
-               --    <Comp_Typ>Invariant (_object (<Indices>));
+               else
+                  Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
+                  --  The component type should have an invariant procedure
+                  --  if it has invariants of its own or inherits class-wide
+                  --  invariants from parent or interface types.
 
-               if not Has_Null_Body (Proc_Id) then
-                  Append_New_To (Comp_Checks,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Proc_Id, Loc),
-                      Parameter_Associations => New_List (
-                        Make_Indexed_Component (Loc,
-                          Prefix      => New_Occurrence_Of (Obj_Id, Loc),
-                          Expressions => New_Copy_List (Indices)))));
+                  pragma Assert (Present (Proc_Id));
+
+                  --  Generate:
+                  --    <Comp_Typ>Invariant (_object (<Indices>));
+
+                  --  Note that the invariant procedure may have a null body if
+                  --  assertions are disabled or Assertion_Policy Ignore is in
+                  --  effect.
+
+                  if not Has_Null_Body (Proc_Id) then
+                     Append_New_To (Comp_Checks,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name                   =>
+                           New_Occurrence_Of (Proc_Id, Loc),
+                         Parameter_Associations => New_List (
+                           Make_Indexed_Component (Loc,
+                             Prefix      => New_Occurrence_Of (Obj_Id, Loc),
+                             Expressions => New_Copy_List (Indices)))));
+                  end if;
                end if;
 
                Produced_Check := True;
@@ -3653,7 +3664,7 @@ package body Exp_Ch7 is
                --    end loop;
 
                --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
+               --  assertions are disabled or Assertion_Policy Ignore is in
                --  effect.
 
                if Present (Comp_Checks) then
@@ -3928,33 +3939,44 @@ package body Exp_Ch7 is
             --  this case verify the access value itself.
 
             if Has_Invariants (Comp_Typ) then
-               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  The component type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
+               --  In GNATprove mode, the component invariants are checked by
+               --  other means. They should not be added to the record type
+               --  invariant procedure, so that the procedure can be used to
+               --  check the record type invariants if any.
 
-               pragma Assert (Present (Proc_Id));
+               if GNATprove_Mode then
+                  null;
 
-               --  Generate:
-               --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
+               else
+                  Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
+                  --  The component type should have an invariant procedure
+                  --  if it has invariants of its own or inherits class-wide
+                  --  invariants from parent or interface types.
 
-               if not Has_Null_Body (Proc_Id) then
-                  Append_New_To (Comp_Checks,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Proc_Id, Loc),
-                      Parameter_Associations => New_List (
-                        Make_Selected_Component (Loc,
-                          Prefix        =>
-                            Unchecked_Convert_To
-                              (T, New_Occurrence_Of (Obj_Id, Loc)),
-                          Selector_Name =>
-                            New_Occurrence_Of (Comp_Id, Loc)))));
+                  pragma Assert (Present (Proc_Id));
+
+                  --  Generate:
+                  --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
+
+                  --  Note that the invariant procedure may have a null body if
+                  --  assertions are disabled or Assertion_Policy Ignore is in
+                  --  effect.
+
+                  if not Has_Null_Body (Proc_Id) then
+                     Append_New_To (Comp_Checks,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name                   =>
+                           New_Occurrence_Of (Proc_Id, Loc),
+                         Parameter_Associations => New_List (
+                           Make_Selected_Component (Loc,
+                             Prefix        =>
+                               Unchecked_Convert_To
+                                 (T, New_Occurrence_Of (Obj_Id, Loc)),
+                             Selector_Name =>
+                               New_Occurrence_Of (Comp_Id, Loc)))));
+                  end if;
                end if;
 
                Produced_Check           := True;
@@ -4667,12 +4689,18 @@ package body Exp_Ch7 is
       Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
       --  The body should not be inserted into the tree when the context is
-      --  ASIS, GNATprove or a generic unit because it is not part of the
-      --  template. Note that the body must still be generated in order to
-      --  resolve the invariants.
+      --  ASIS or a generic unit because it is not part of the template. Note
+      --  that the body must still be generated in order to resolve the
+      --  invariants.
 
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+      if ASIS_Mode or Inside_A_Generic then
          null;
+
+      --  Semi-insert the body into the tree for GNATprove by setting its
+      --  Parent field. This allows for proper upstream tree traversals.
+
+      elsif GNATprove_Mode then
+         Set_Parent (Proc_Body, Parent (Declaration_Node (Work_Typ)));
 
       --  Otherwise the body is part of the freezing actions of the type
 
@@ -4865,11 +4893,16 @@ package body Exp_Ch7 is
                     New_Occurrence_Of (Work_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS, GNATprove or a generic unit because it is not part of the
-      --  template.
+      --  is ASIS or a generic unit because it is not part of the template.
 
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+      if ASIS_Mode or Inside_A_Generic then
          null;
+
+      --  Semi-insert the declaration into the tree for GNATprove by setting
+      --  its Parent field. This allows for proper upstream tree traversals.
+
+      elsif GNATprove_Mode then
+         Set_Parent (Proc_Decl, Parent (Typ_Decl));
 
       --  Otherwise insert the declaration
 
