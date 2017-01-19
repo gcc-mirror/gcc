@@ -615,6 +615,10 @@ package Sem_Util is
    --  continuation lines to the message explaining why type T is limited.
    --  Messages are placed at node N.
 
+   function Expression_Of_Expression_Function
+     (Subp : Entity_Id) return Node_Id;
+   --  Return the expression of expression function Subp
+
    type Extensions_Visible_Mode is
      (Extensions_Visible_None,
       --  Extensions_Visible does not yield a mode when SPARK_Mode is off. This
@@ -1488,6 +1492,20 @@ package Sem_Util is
       Typ : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by the derived type declaration for type Typ.
+
+   function Is_Inlinable_Expression_Function (Subp : Entity_Id) return Boolean;
+   --  Return True if Subp is an expression function that fulfills all the
+   --  following requirements for inlining:
+   --     1. pragma/aspect Inline_Always
+   --     2. No formals
+   --     3. No contracts
+   --     4. No dispatching primitive
+   --     5. Result subtype controlled (or with controlled components)
+   --     6. Result subtype not subject to type-invariant checks
+   --     7. Result subtype not a class-wide type
+   --     8. Return expression naming an object global to the function
+   --     9. Nominal subtype of the returned object statically compatible
+   --        with the result subtype of the expression function.
 
    function Is_Iterator (Typ : Entity_Id) return Boolean;
    --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in

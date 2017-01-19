@@ -1,3 +1,23 @@
+2017-01-19  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Expression_Of_Expression_Function): New
+	subprogram.
+	(Is_Inlinable_Expression_Function): New subprogram.
+	* exp_ch6.ads, exp_ch6.adb (Expression_Of_Expression_Function): Moved
+	to Sem_Util.
+	(Is_Inlinable_Expression_Function): Moved to Sem_Util.
+
+2017-01-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Diagnose_Call): Improve error message when a
+	selected component has a prefix that might be interpreted
+	as a parameterless function call, but none of the candidate
+	interpretations is parameterless, and there is a hidden homonym
+	of the prefix that is a package.
+	* sem_ch8.adb (Find_Selected_Component): If the prefix might be
+	interpreted as a parameterless function call and its analysis
+	fails, do not call Analyze_Selected_Component.
+
 2017-01-19  Steve Baird  <baird@adacore.com>
 
 	* sem_util.ads: Add new Use_Full_View Boolean parameter to

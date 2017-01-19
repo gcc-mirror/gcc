@@ -6691,6 +6691,36 @@ package body Sem_Util is
       end if;
    end Explain_Limited_Type;
 
+   ---------------------------------------
+   -- Expression_Of_Expression_Function --
+   ---------------------------------------
+
+   function Expression_Of_Expression_Function
+     (Subp : Entity_Id) return Node_Id
+   is
+      Expr_Func : Node_Id;
+
+   begin
+      pragma Assert (Is_Expression_Function_Or_Completion (Subp));
+
+      if Nkind (Original_Node (Subprogram_Spec (Subp))) =
+           N_Expression_Function
+      then
+         Expr_Func := Original_Node (Subprogram_Spec (Subp));
+
+      elsif Nkind (Original_Node (Subprogram_Body (Subp))) =
+              N_Expression_Function
+      then
+         Expr_Func := Original_Node (Subprogram_Body (Subp));
+
+      else
+         pragma Assert (False);
+         null;
+      end if;
+
+      return Original_Node (Expression (Expr_Func));
+   end Expression_Of_Expression_Function;
+
    -------------------------------
    -- Extensions_Visible_Status --
    -------------------------------
@@ -13072,6 +13102,41 @@ package body Sem_Util is
       return Is_Inherited_Operation (E)
         and then Defining_Identifier (Parent (E)) = Typ;
    end Is_Inherited_Operation_For_Type;
+
+   --------------------------------------
+   -- Is_Inlinable_Expression_Function --
+   --------------------------------------
+
+   function Is_Inlinable_Expression_Function
+     (Subp : Entity_Id) return Boolean
+   is
+      Return_Expr : Node_Id;
+
+   begin
+      if Is_Expression_Function_Or_Completion (Subp)
+        and then Has_Pragma_Inline_Always (Subp)
+        and then Needs_No_Actuals (Subp)
+        and then No (Contract (Subp))
+        and then not Is_Dispatching_Operation (Subp)
+        and then Needs_Finalization (Etype (Subp))
+        and then not Is_Class_Wide_Type (Etype (Subp))
+        and then not (Has_Invariants (Etype (Subp)))
+        and then Present (Subprogram_Body (Subp))
+        and then Was_Expression_Function (Subprogram_Body (Subp))
+      then
+         Return_Expr := Expression_Of_Expression_Function (Subp);
+
+         --  The returned object must not have a qualified expression and its
+         --  nominal subtype must be statically compatible with the result
+         --  subtype of the expression function.
+
+         return
+           Nkind (Return_Expr) = N_Identifier
+             and then Etype (Return_Expr) = Etype (Subp);
+      end if;
+
+      return False;
+   end Is_Inlinable_Expression_Function;
 
    -----------------
    -- Is_Iterator --
