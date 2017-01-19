@@ -17,26 +17,18 @@
 
 // { dg-do run { target c++11 } }
 
-#include <queue>
-#include <testsuite_hooks.h>
-
-unsigned count;
-
-struct CopyCounter : std::less<int>
-{
-  CopyCounter() = default;
-  CopyCounter(const CopyCounter&) { ++count; }
-  CopyCounter(CopyCounter&&) = default;
-};
+#include <functional>
+#include <algorithm>
+#include <iterator>
 
 void
 test01()
 {
-  int v[] = {1, 2, 3, 4};
-  std::priority_queue<int, std::vector<int>, CopyCounter> q{v, v+4};
-  VERIFY(count == 4);
-  q.push(1);
-  VERIFY(count == 5);
+  int i[] = { 1, 2, 3, 4 };
+  std::function<bool(int, int)> f = std::less<>{};
+  // If this uses a moved-from std::function we'll get an exception:
+  std::make_heap(std::begin(i), std::end(i), f);
+  std::sort_heap(std::begin(i), std::end(i), f);
 }
 
 int
