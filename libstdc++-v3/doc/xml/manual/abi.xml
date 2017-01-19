@@ -378,22 +378,26 @@ compatible.
     <listitem><para>GCC 3.2: <code>-fabi-version=1</code></para></listitem>
     <listitem><para>GCC 3.3: <code>-fabi-version=1</code></para></listitem>
     <listitem><para>GCC 3.4, GCC 4.x: <code>-fabi-version=2</code> <emphasis>(Incompatible with previous)</emphasis></para></listitem>
+    <listitem><para>GCC 5 and higher: <code>-fabi-version=0</code> <emphasis>(See GCC manual for meaning)</emphasis></para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
 
    <listitem>
     <para>Incremental bumping of a library pre-defined macro. For releases
-    before 3.4.0, the macro is __GLIBCPP__. For later releases, it's
-    __GLIBCXX__. (The libstdc++ project generously changed from CPP to
-    CXX throughout its source to allow the "C" pre-processor the CPP
-    macro namespace.) These macros are defined as the date the library
-    was released, in compressed ISO date format, as an unsigned long.
+    before 3.4.0, the macro is <symbol>__GLIBCPP__</symbol>. For later
+    releases, it's <symbol>__GLIBCXX__</symbol>. (The libstdc++ project
+    generously changed from CPP to CXX throughout its source to allow the
+    "C" pre-processor the CPP macro namespace.) These macros are defined
+    as the date the library was released, in compressed ISO date format,
+    as an integer constant.
     </para>
 
     <para>
-    This macro is defined in the file "c++config" in the
-    "libstdc++-v3/include/bits" directory. Up to GCC 4.1.0, it was
+    This macro is defined in the file
+    <filename class="headerfile">c++config</filename> in the
+    <filename class="directory">libstdc++-v3/include/bits</filename>
+    directory.  Up to GCC 4.1.0, it was
     changed every night by an automated script. Since GCC 4.1.0 it is set
     during configuration to the same value as
     <filename>gcc/DATESTAMP</filename>, so for an official release its value
@@ -404,51 +408,54 @@ compatible.
     </para>
 
     <para>
-    This macro is not useful for determining whether a particular feature is
-    supported by the version of libstdc++ you are using. The date of a release
-    might be after a feature was added to the development trunk, but the
-    release could be from an older branch. For example, in the 5.4.0 release
-    the macro has the value 20160603 which is greater than the 20160427 value
-    of the macro in the 6.1.0 release, but there are features supported in the
-    6.1.0 release that are not supported in 5.4.0 release.
+    This macro can be used in code to detect whether the C++ Standard Library
+    implementation in use is libstdc++, but is not useful for detecting the
+    libstdc++ version, nor whether particular features are supported.
+    The macro value might be a date after a feature was added to the
+    development trunk, but the release could be from an older branch without
+    the feature. For example, in the 5.4.0 release the macro has the value
+    <literal>20160603</literal> which is greater than the
+    <literal>20160427</literal> value of the macro in the 6.1.0 release,
+    but there are features supported in the 6.1.0 release that are not
+    supported in 5.4.0 release.
     You also can't test for the the exact values listed below to try and
     identify a release, because a snapshot taken from the gcc-5-branch on
     2016-04-27 would have the same value for the macro as the 6.1.0 release
     despite being a different version.
     Many GNU/Linux distributions build their GCC packages from snapshots, so
-    the macro can have dates that doesn't correspond to official releases.
+    the macro can have dates that don't correspond to official releases.
     </para>
 
     <para>
     It is versioned as follows:
     </para>
     <itemizedlist>
-    <listitem><para>GCC 3.0.0: 20010615</para></listitem>
-    <listitem><para>GCC 3.0.1: 20010819</para></listitem>
-    <listitem><para>GCC 3.0.2: 20011023</para></listitem>
-    <listitem><para>GCC 3.0.3: 20011220</para></listitem>
-    <listitem><para>GCC 3.0.4: 20020220</para></listitem>
-    <listitem><para>GCC 3.1.0: 20020514</para></listitem>
-    <listitem><para>GCC 3.1.1: 20020725</para></listitem>
-    <listitem><para>GCC 3.2.0: 20020814</para></listitem>
-    <listitem><para>GCC 3.2.1: 20021119</para></listitem>
-    <listitem><para>GCC 3.2.2: 20030205</para></listitem>
-    <listitem><para>GCC 3.2.3: 20030422</para></listitem>
-    <listitem><para>GCC 3.3.0: 20030513</para></listitem>
-    <listitem><para>GCC 3.3.1: 20030804</para></listitem>
-    <listitem><para>GCC 3.3.2: 20031016</para></listitem>
-    <listitem><para>GCC 3.3.3: 20040214</para></listitem>
-    <listitem><para>GCC 3.4.0: 20040419</para></listitem>
-    <listitem><para>GCC 3.4.1: 20040701</para></listitem>
-    <listitem><para>GCC 3.4.2: 20040906</para></listitem>
-    <listitem><para>GCC 3.4.3: 20041105</para></listitem>
-    <listitem><para>GCC 3.4.4: 20050519</para></listitem>
-    <listitem><para>GCC 3.4.5: 20051201</para></listitem>
-    <listitem><para>GCC 3.4.6: 20060306</para></listitem>
-    <listitem><para>GCC 4.0.0: 20050421</para></listitem>
-    <listitem><para>GCC 4.0.1: 20050707</para></listitem>
-    <listitem><para>GCC 4.0.2: 20050921</para></listitem>
-    <listitem><para>GCC 4.0.3: 20060309</para></listitem>
+    <listitem><para>GCC 3.0.0: <literal>20010615</literal></para></listitem>
+    <listitem><para>GCC 3.0.1: <literal>20010819</literal></para></listitem>
+    <listitem><para>GCC 3.0.2: <literal>20011023</literal></para></listitem>
+    <listitem><para>GCC 3.0.3: <literal>20011220</literal></para></listitem>
+    <listitem><para>GCC 3.0.4: <literal>20020220</literal></para></listitem>
+    <listitem><para>GCC 3.1.0: <literal>20020514</literal></para></listitem>
+    <listitem><para>GCC 3.1.1: <literal>20020725</literal></para></listitem>
+    <listitem><para>GCC 3.2.0: <literal>20020814</literal></para></listitem>
+    <listitem><para>GCC 3.2.1: <literal>20021119</literal></para></listitem>
+    <listitem><para>GCC 3.2.2: <literal>20030205</literal></para></listitem>
+    <listitem><para>GCC 3.2.3: <literal>20030422</literal></para></listitem>
+    <listitem><para>GCC 3.3.0: <literal>20030513</literal></para></listitem>
+    <listitem><para>GCC 3.3.1: <literal>20030804</literal></para></listitem>
+    <listitem><para>GCC 3.3.2: <literal>20031016</literal></para></listitem>
+    <listitem><para>GCC 3.3.3: <literal>20040214</literal></para></listitem>
+    <listitem><para>GCC 3.4.0: <literal>20040419</literal></para></listitem>
+    <listitem><para>GCC 3.4.1: <literal>20040701</literal></para></listitem>
+    <listitem><para>GCC 3.4.2: <literal>20040906</literal></para></listitem>
+    <listitem><para>GCC 3.4.3: <literal>20041105</literal></para></listitem>
+    <listitem><para>GCC 3.4.4: <literal>20050519</literal></para></listitem>
+    <listitem><para>GCC 3.4.5: <literal>20051201</literal></para></listitem>
+    <listitem><para>GCC 3.4.6: <literal>20060306</literal></para></listitem>
+    <listitem><para>GCC 4.0.0: <literal>20050421</literal></para></listitem>
+    <listitem><para>GCC 4.0.1: <literal>20050707</literal></para></listitem>
+    <listitem><para>GCC 4.0.2: <literal>20050921</literal></para></listitem>
+    <listitem><para>GCC 4.0.3: <literal>20060309</literal></para></listitem>
     <listitem><para>
       GCC 4.1.0 and later: the GCC release date, as shown in the
       <link xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -461,41 +468,63 @@ compatible.
 
     <listitem>
     <para>
-    Incremental bumping of a library pre-defined macro,
-    _GLIBCPP_VERSION. This macro is defined as the released version of
-    the library, as a string literal. This is only implemented in
-    GCC 3.1.0 releases and higher, and is deprecated in 3.4 (where it
-    is called _GLIBCXX_VERSION).
+    Since GCC 7, incremental bumping of a library pre-defined macro,
+    <symbol>_GLIBCXX_RELEASE</symbol>. This macro is defined to the GCC
+    major version that the libstdc++ headers belong to, as an integer constant.
+    When compiling with GCC it has the same value as GCC's pre-defined
+    macro <symbol>__GNUC__</symbol>.
+    This macro can be used when libstdc++ is used with a non-GNU
+    compiler where <symbol>__GNUC__</symbol> is not defined, or has a
+    different value that doesn't correspond to the libstdc++ version.
     </para>
 
     <para>
-    This macro is defined in the file "c++config" in the
-    "libstdc++-v3/include/bits" directory and is generated
-    automatically by autoconf as part of the configure-time generation
-    of config.h.
+    This macro is defined in the file
+    <filename class="headerfile">c++config</filename> in the
+    <filename class="directory">libstdc++-v3/include/bits</filename>
+    directory and is generated automatically by autoconf as part of the
+    configure-time generation of
+    <filename class="headerfile">config.h</filename> and subsequently
+    <filename class="headerfile">&lt;bits/c++config.h&gt;</filename>.
+    </para>
+    </listitem>
+
+    <listitem>
+    <para>
+    Historically, incremental bumping of a library pre-defined macro,
+    <symbol>_GLIBCPP_VERSION</symbol>. This macro was defined as the
+    released version of the library, as a string literal. This was only
+    implemented in GCC 3.1.0 releases and higher, and was deprecated in
+    3.4.x (where it was called <symbol>_GLIBCXX_VERSION</symbol>),
+    and is not defined in 4.0.0 and higher.
+    </para>
+
+    <para>
+    This macro is defined in the same file as
+    <symbol>_GLIBCXX_RELEASE</symbol>, described above.
     </para>
 
     <para>
     It is versioned as follows:
     </para>
     <itemizedlist>
-    <listitem><para>GCC 3.0.0: "3.0.0"</para></listitem>
-    <listitem><para>GCC 3.0.1: "3.0.0" (Error, should be "3.0.1")</para></listitem>
-    <listitem><para>GCC 3.0.2: "3.0.0" (Error, should be "3.0.2")</para></listitem>
-    <listitem><para>GCC 3.0.3: "3.0.0" (Error, should be "3.0.3")</para></listitem>
-    <listitem><para>GCC 3.0.4: "3.0.0" (Error, should be "3.0.4")</para></listitem>
-    <listitem><para>GCC 3.1.0: "3.1.0"</para></listitem>
-    <listitem><para>GCC 3.1.1: "3.1.1"</para></listitem>
-    <listitem><para>GCC 3.2.0: "3.2"</para></listitem>
-    <listitem><para>GCC 3.2.1: "3.2.1"</para></listitem>
-    <listitem><para>GCC 3.2.2: "3.2.2"</para></listitem>
-    <listitem><para>GCC 3.2.3: "3.2.3"</para></listitem>
-    <listitem><para>GCC 3.3.0: "3.3"</para></listitem>
-    <listitem><para>GCC 3.3.1: "3.3.1"</para></listitem>
-    <listitem><para>GCC 3.3.2: "3.3.2"</para></listitem>
-    <listitem><para>GCC 3.3.3: "3.3.3"</para></listitem>
-    <listitem><para>GCC 3.4: "version-unused"</para></listitem>
-    <listitem><para>GCC 4.x: "version-unused"</para></listitem>
+    <listitem><para>GCC 3.0.0: <literal>"3.0.0"</literal></para></listitem>
+    <listitem><para>GCC 3.0.1: <literal>"3.0.0"</literal> (Error, should be <literal>"3.0.1"</literal>)</para></listitem>
+    <listitem><para>GCC 3.0.2: <literal>"3.0.0"</literal> (Error, should be <literal>"3.0.2"</literal>)</para></listitem>
+    <listitem><para>GCC 3.0.3: <literal>"3.0.0"</literal> (Error, should be <literal>"3.0.3"</literal>)</para></listitem>
+    <listitem><para>GCC 3.0.4: <literal>"3.0.0"</literal> (Error, should be <literal>"3.0.4"</literal>)</para></listitem>
+    <listitem><para>GCC 3.1.0: <literal>"3.1.0"</literal></para></listitem>
+    <listitem><para>GCC 3.1.1: <literal>"3.1.1"</literal></para></listitem>
+    <listitem><para>GCC 3.2.0: <literal>"3.2"</literal></para></listitem>
+    <listitem><para>GCC 3.2.1: <literal>"3.2.1"</literal></para></listitem>
+    <listitem><para>GCC 3.2.2: <literal>"3.2.2"</literal></para></listitem>
+    <listitem><para>GCC 3.2.3: <literal>"3.2.3"</literal></para></listitem>
+    <listitem><para>GCC 3.3.0: <literal>"3.3"</literal></para></listitem>
+    <listitem><para>GCC 3.3.1: <literal>"3.3.1"</literal></para></listitem>
+    <listitem><para>GCC 3.3.2: <literal>"3.3.2"</literal></para></listitem>
+    <listitem><para>GCC 3.3.3: <literal>"3.3.3"</literal></para></listitem>
+    <listitem><para>GCC 3.4: <literal>"version-unused"</literal></para></listitem>
+    <listitem><para>GCC 4 and later: not defined</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -508,7 +537,7 @@ compatible.
     </para>
     <para>
     All C++ includes are installed in
-    <filename class="directory">include/c++</filename>, then nest in a
+    <filename class="directory">include/c++</filename>, then nested in a
     directory hierarchy corresponding to the C++ compiler's released
     version. This version corresponds to the variable "gcc_version" in
     "libstdc++-v3/acinclude.m4," and more details can be found in that
