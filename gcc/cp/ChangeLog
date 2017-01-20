@@ -1,3 +1,12 @@
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+	
+	Backported from mainline
+	2017-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77545
+	PR c++/77284
+	* constexpr.c (potential_constant_expression_1): Handle CLEANUP_STMT.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
