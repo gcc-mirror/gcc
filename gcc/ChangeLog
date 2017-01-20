@@ -1,3 +1,19 @@
+2017-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	PR target/77455
+	* config/aarch64/aarch64.md (eh_return): Remove pattern and splitter.
+	* config/aarch64/aarch64.h (AARCH64_EH_STACKADJ_REGNUM): Remove.
+	(EH_RETURN_HANDLER_RTX): New define.
+	* config/aarch64/aarch64.c (aarch64_frame_pointer_required):
+	Force frame pointer in EH return functions.
+	(aarch64_expand_epilogue): Add barrier for eh_return.
+	(aarch64_final_eh_return_addr): Remove.
+	(aarch64_eh_return_handler_rtx): New function.
+	* config/aarch64/aarch64-protos.h (aarch64_final_eh_return_addr):
+	Remove.
+	(aarch64_eh_return_handler_rtx): New prototype.
+
 2017-01-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from mainline

@@ -1,3 +1,9 @@
+2017-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	PR target/77455
+	* gcc.target/aarch64/eh_return.c: New test.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 	
 	Backported from mainline
