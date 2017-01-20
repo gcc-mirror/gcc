@@ -1,3 +1,12 @@
+2017-01-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb: Reenable code.
+
+2017-01-20  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Document lack of Do_Division_Check flag
+	on float exponentiation.
+
 2017-01-19  Javier Miranda  <miranda@adacore.com>
 
 	* ghost.adb (Propagate_Ignored_Ghost_Code): Protect access to the
