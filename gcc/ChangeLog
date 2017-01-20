@@ -1,3 +1,11 @@
+2017-01-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/78875
+	PR target/79140
+	* config/rs6000/rs6000.c (TARGET_STACK_PROTECT_GUARD): Unconditionally
+	define to rs6000_init_stack_protect_guard.
+	(rs6000_init_stack_protect_guard): New function.
+
 2017-01-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 	    Yunqiang Su  <yunqiang.su@imgtec.com>
 
