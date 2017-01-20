@@ -1,3 +1,12 @@
+2017-01-19  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/return_address_sign_1.c: New testcase for no
+	combined instructions.
+	* gcc.target/aarch64/return_address_sign_2.c: New testcase for combined
+	instructions.
+	* gcc.target/aarch64/return_address_sign_3.c: New testcase for disable
+	of pointer authentication.
+
 2017-01-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/float128-hw.c: Do not require IEEE 128-bit

@@ -3513,6 +3513,12 @@ Specifies the core for which to tune the performance of this function and also
 whose architectural features to use.  The behavior and valid arguments are the
 same as for the @option{-mcpu=} command-line option.
 
+@item sign-return-address
+@cindex @code{sign-return-address} function attribute, AArch64
+Select the function scope on which return address signing will be applied.  The
+behaviour and permissible arguments are the same as for the command-line option
+@option{-msign-return-address=}.  The default value is @code{none}.
+
 @end table
 
 The above target attributes can be specified as follows:

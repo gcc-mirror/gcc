@@ -1032,6 +1032,10 @@
 (define_int_iterator FMAXMIN_UNS [UNSPEC_FMAX UNSPEC_FMIN
 				  UNSPEC_FMAXNM UNSPEC_FMINNM])
 
+(define_int_iterator PAUTH_LR_SP [UNSPEC_PACISP UNSPEC_AUTISP])
+
+(define_int_iterator PAUTH_17_16 [UNSPEC_PACI1716 UNSPEC_AUTI1716])
+
 (define_int_iterator VQDMULH [UNSPEC_SQDMULH UNSPEC_SQRDMULH])
 
 (define_int_iterator USSUQADD [UNSPEC_SUQADD UNSPEC_USQADD])
@@ -1217,6 +1221,18 @@
 				  (UNSPEC_UCVTF "ucvtf")
 				  (UNSPEC_FCVTZS "fcvtzs")
 				  (UNSPEC_FCVTZU "fcvtzu")])
+
+;; Pointer authentication mnemonic prefix.
+(define_int_attr pauth_mnem_prefix [(UNSPEC_PACISP "paci")
+				    (UNSPEC_AUTISP "auti")
+				    (UNSPEC_PACI1716 "paci")
+				    (UNSPEC_AUTI1716 "auti")])
+
+;; Pointer authentication HINT number for NOP space instructions using A Key.
+(define_int_attr pauth_hint_num_a [(UNSPEC_PACISP "25")
+				    (UNSPEC_AUTISP "29")
+				    (UNSPEC_PACI1716 "8")
+				    (UNSPEC_AUTI1716 "12")])
 
 (define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
 			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")

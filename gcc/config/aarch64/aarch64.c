@@ -3123,6 +3123,22 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
     }
 }
 
+/* Return TRUE if return address signing should be enabled for the current
+   function, otherwise return FALSE.  */
+
+bool
+aarch64_return_address_signing_enabled (void)
+{
+  /* This function should only be called after frame laid out.   */
+  gcc_assert (cfun->machine->frame.laid_out);
+
+  /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
+     if it's LR is pushed onto stack.  */
+  return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
+	  || (aarch64_ra_sign_scope == AARCH64_FUNCTION_NON_LEAF
+	      && cfun->machine->frame.reg_offset[LR_REGNUM] >= 0));
+}
+
 /* Emit code to save the callee-saved registers from register number START
    to LIMIT to the stack at the location starting at offset START_OFFSET,
    skipping any write-back candidates if SKIP_WB is true.  */
@@ -3541,6 +3557,10 @@ aarch64_expand_prologue (void)
   unsigned reg2 = cfun->machine->frame.wb_candidate2;
   rtx_insn *insn;
 
+  /* Sign return address for functions.  */
+  if (aarch64_return_address_signing_enabled ())
+    emit_insn (gen_pacisp ());
+
   if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size;
 
@@ -3676,6 +3696,25 @@ aarch64_expand_epilogue (bool for_sibcall)
       REG_NOTES (insn) = cfi_ops;
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+
+  /* We prefer to emit the combined return/authenticate instruction RETAA,
+     however there are three cases in which we must instead emit an explicit
+     authentication instruction.
+
+	1) Sibcalls don't return in a normal way, so if we're about to call one
+	   we must authenticate.
+
+	2) The RETAA instruction is not available before ARMv8.3-A, so if we are
+	   generating code for !TARGET_ARMV8_3 we can't use it and must
+	   explicitly authenticate.
+
+	3) On an eh_return path we make extra stack adjustments to update the
+	   canonical frame address to be the exception handler's CFA.  We want
+	   to authenticate using the CFA of the function which calls eh_return.
+    */
+  if (aarch64_return_address_signing_enabled ()
+      && (for_sibcall || !TARGET_ARMV8_3 || crtl->calls_eh_return))
+    emit_insn (gen_autisp ());
 
   /* Stack adjustment for exception handler.  */
   if (crtl->calls_eh_return)
@@ -8889,6 +8928,9 @@ aarch64_override_options (void)
     error ("Assembler does not support -mabi=ilp32");
 #endif
 
+  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
+    sorry ("Return address signing is only supported for -mabi=lp64");
+
   /* Make sure we properly set up the explicit options.  */
   if ((aarch64_cpu_string && valid_cpu)
        || (aarch64_tune_string && valid_tune))
@@ -9272,6 +9314,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
   { "cpu", aarch64_attr_custom, false, aarch64_handle_attr_cpu, OPT_mcpu_ },
   { "tune", aarch64_attr_custom, false, aarch64_handle_attr_tune,
      OPT_mtune_ },
+  { "sign-return-address", aarch64_attr_enum, false, NULL,
+     OPT_msign_return_address_ },
   { NULL, aarch64_attr_custom, false, NULL, OPT____ }
 };
 

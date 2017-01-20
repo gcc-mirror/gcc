@@ -14100,6 +14100,14 @@ accessed using a single instruction and emitted after each function.  This
 limits the maximum size of functions to 1MB.  This is enabled by default for
 @option{-mcmodel=tiny}.
 
+@item -msign-return-address=@var{scope}
+@opindex msign-return-address
+Select the function scope on which return address signing will be applied.
+Permissible values are @samp{none}, which disables return address signing,
+@samp{non-leaf}, which enables pointer signing for functions which are not leaf
+functions, and @samp{all}, which enables pointer signing for all functions.  The
+default value is @samp{none}.
+
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
