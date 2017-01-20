@@ -1,3 +1,8 @@
+2017-01-20  Joe Seymour  <joe.s@somniumtech.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SIZE_T_MANGLING): Support uint20_t.
+	* configure: Regenerate.
+
 2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69240
