@@ -1,5 +1,63 @@
 2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* ghost.adb (Mark_Ghost_Clause): New routine.
+	(Prune_Node): Do not prune compilation unit nodes.
+	(Remove_Ignored_Ghost_Code): Prune the compilation unit node directly.
+	This does not touch the node itself, but does prune all its fields.
+	* ghost.ads (Mark_Ghost_Clause): New routine.
+	* sem_ch8.adb (Analyze_Use_Package): Emit an error when a use
+	package clause mentions Ghost and non-Ghost packages. Mark a
+	use package clause as Ghost when it mentions a Ghost package.
+	(Analyze_Use_Type): Emit an error when a use type clause mentions
+	Ghost and non-Ghost types. Mark a use type clause as Ghost when
+	it mentions a Ghost type.
+	* sem_ch10.adb (Analyze_With_Clause): Mark a with clause as
+	Ghost when it withs a Ghost unit.
+
+2017-01-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Call): If a function call
+	returns a limited view of a type and at the point of the call the
+	function is not declared in the extended main unit then replace
+	it with the non-limited view, which must be available. If the
+	called function is in the extended main unit then no action is
+	needed since the back-end handles this case.
+
+2017-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Contains_Subp_Or_Const_Refs): Rename into...
+	(Contains_Subprograms_Refs): ...this.  Adjust comment
+	for constants.	(Is_Subp_Or_Const_Ref): Rename into...
+	(Is_Subprogram_Ref): ...this.
+	(Has_Referencer): Rename Has_Non_Subp_Const_Referencer variable into
+	Has_Non_Subprograms_Referencer and adjust comment.  Remove
+	incorrect shortcut for package declarations and bodies.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): If the scope of the
+	base type differs from that of the completion and the private
+	subtype is an itype (created for a constraint on an access
+	type e.g.), set Delayed_Freeze on both to prevent out-of-scope
+	anomalies in gigi.
+
+2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper):
+	When inheriting the SPARK_Mode of a prior expression function,
+	look at the properly resolved entity rather than the initial
+	candidate which may denote a homonym.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Rewrite_Assertion_Kind): If the name is
+	Precondition or Postcondition, and the context is pragma
+	Check_Policy, indicate that this Pre-Ada2012 usage is deprecated
+	and suggest the standard names Assertion_Policy /Pre /Post
+	instead.
+
+2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch10.adb, sem_cat.adb: Minor reformatting.
 
 2017-01-20  Javier Miranda  <miranda@adacore.com>
