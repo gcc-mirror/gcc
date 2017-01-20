@@ -1,6 +1,18 @@
 2017-01-20  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-03-26  Richard Biener  <rguenther@suse.de>
+	            Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR ipa/70366
+	* ipa-inline-transform.c (inline_call): Pass opts_for_fn (to->decl)
+	instead of
+	TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl))
+	as 2nd argument to cl_optimization_restore().
+
+2017-01-20  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-common.c (parse_optimize_options): Do not silently ignore
