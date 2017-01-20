@@ -1,3 +1,8 @@
+2017-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71264
+	* gcc.dg/vect/pr71264.c: Make sure memory is aligned.
+
 2017-01-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/madd4-1.c: New file.
