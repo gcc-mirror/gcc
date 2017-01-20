@@ -1985,7 +1985,7 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
   if (FALLTHROUGH_LABEL_P (label))
     return false;
 
-  /* Don't warn for a non-case label followed by a statement:
+  /* Don't warn for non-case labels followed by a statement:
        case 0:
 	 foo ();
        label:
@@ -1993,7 +1993,12 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
      as these are likely intentional.  */
   if (!case_label_p (&gimplify_ctxp->case_labels, label))
     {
-      gsi_next (&gsi);
+      tree l;
+      while (!gsi_end_p (gsi)
+	     && gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
+	     && (l = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi))))
+	     && !case_label_p (&gimplify_ctxp->case_labels, l))
+	gsi_next (&gsi);
       if (gsi_end_p (gsi) || gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
 	return false;
     }
