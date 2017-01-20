@@ -1,3 +1,7 @@
+2017-01-20  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/linux-unwind.h: Always include aarch64-unwind.h.
+
 2017-01-19  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-unwind.h: New file.
