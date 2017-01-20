@@ -1688,9 +1688,6 @@ package body Freeze is
    --  as they are generated.
 
    procedure Freeze_All (From : Entity_Id; After : in out Node_Id) is
-      E     : Entity_Id;
-      Decl  : Node_Id;
-
       procedure Freeze_All_Ent (From : Entity_Id; After : in out Node_Id);
       --  This is the internal recursive routine that does freezing of entities
       --  (but NOT the analysis of default expressions, which should not be
@@ -1863,10 +1860,10 @@ package body Freeze is
                   --  current package, but this body does not freeze incomplete
                   --  types that may be declared in this private part.
 
-                  if (Nkind_In (Bod, N_Subprogram_Body,
-                                     N_Entry_Body,
+                  if (Nkind_In (Bod, N_Entry_Body,
                                      N_Package_Body,
                                      N_Protected_Body,
+                                     N_Subprogram_Body,
                                      N_Task_Body)
                         or else Nkind (Bod) in N_Body_Stub)
                     and then
@@ -1884,6 +1881,12 @@ package body Freeze is
             Next_Entity (E);
          end loop;
       end Freeze_All_Ent;
+
+      --  Local variables
+
+      Decl : Node_Id;
+      E    : Entity_Id;
+      Item : Entity_Id;
 
    --  Start of processing for Freeze_All
 
@@ -1925,33 +1928,28 @@ package body Freeze is
                elsif Nkind (Decl) = N_Subprogram_Declaration
                  and then Present (Corresponding_Body (Decl))
                  and then
-                   Nkind (Unit_Declaration_Node (Corresponding_Body (Decl)))
-                                          = N_Subprogram_Renaming_Declaration
+                   Nkind (Unit_Declaration_Node (Corresponding_Body (Decl))) =
+                     N_Subprogram_Renaming_Declaration
                then
                   Build_And_Analyze_Renamed_Body
                     (Decl, Corresponding_Body (Decl), After);
                end if;
             end if;
 
-         elsif Ekind (E) in Task_Kind
-           and then Nkind_In (Parent (E), N_Task_Type_Declaration,
-                                          N_Single_Task_Declaration)
-         then
-            declare
-               Ent : Entity_Id;
+         --  Freeze the default expressions of entries, entry families, and
+         --  protected subprograms.
 
-            begin
-               Ent := First_Entity (E);
-               while Present (Ent) loop
-                  if Is_Entry (Ent)
-                    and then not Default_Expressions_Processed (Ent)
-                  then
-                     Process_Default_Expressions (Ent, After);
-                  end if;
+         elsif Is_Concurrent_Type (E) then
+            Item := First_Entity (E);
+            while Present (Item) loop
+               if (Is_Entry (Item) or else Is_Subprogram (Item))
+                 and then not Default_Expressions_Processed (Item)
+               then
+                  Process_Default_Expressions (Item, After);
+               end if;
 
-                  Next_Entity (Ent);
-               end loop;
-            end;
+               Next_Entity (Item);
+            end loop;
          end if;
 
          --  Historical note: We used to create a finalization master for an

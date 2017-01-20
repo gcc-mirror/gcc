@@ -4209,6 +4209,9 @@ package body Sem_Ch10 is
            or else Implicit_With (Item)
            or else Limited_Present (Item)
            or else Error_Posted (Item)
+            --  Skip processing malformed trees
+           or else (Try_Semantics
+                      and then Nkind (Name (Item)) not in N_Has_Entity)
          then
             null;
 

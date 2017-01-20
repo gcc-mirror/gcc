@@ -2262,6 +2262,13 @@ package body Sem_Ch13 is
 
                   if A_Id = Aspect_Dynamic_Predicate then
                      Set_Has_Dynamic_Predicate_Aspect (E);
+
+                     --  If the entity has a dynamic predicate, any inherited
+                     --  static predicate becomes dynamic as well, and the
+                     --  predicate function includes the conjunction of both.
+
+                     Set_Has_Static_Predicate_Aspect (E, False);
+
                   elsif A_Id = Aspect_Static_Predicate then
                      Set_Has_Static_Predicate_Aspect (E);
                   end if;

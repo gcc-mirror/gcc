@@ -2483,13 +2483,12 @@ package body Inline is
                --  errors, e.g. when the expression is a numeric literal and
                --  the context is private. If the expression is an aggregate,
                --  use a qualified expression, because an aggregate is not a
-               --  legal argument of a conversion. Ditto for numeric literals,
-               --  which must be resolved to a specific type.
+               --  legal argument of a conversion. Ditto for numeric literals
+               --  and attributes that yield a universal type, because those
+               --  must be resolved to a specific type.
 
-               if Nkind_In (Expression (N), N_Aggregate,
-                                            N_Null,
-                                            N_Real_Literal,
-                                            N_Integer_Literal)
+               if Nkind_In (Expression (N), N_Aggregate, N_Null)
+                 or else Yields_Universal_Type (Expression (N))
                then
                   Ret :=
                     Make_Qualified_Expression (Sloc (N),
