@@ -4590,13 +4590,16 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
     }
   tree step = fd->loop.step;
 
-  bool is_simt = (safelen_int > 1
-		  && omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
-				      OMP_CLAUSE__SIMT_));
-  tree simt_lane = NULL_TREE, simt_maxlane = NULL_TREE;
+  bool is_simt = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
+				  OMP_CLAUSE__SIMT_);
   if (is_simt)
     {
       cfun->curr_properties &= ~PROP_gimple_lomp_dev;
+      is_simt = safelen_int > 1;
+    }
+  tree simt_lane = NULL_TREE, simt_maxlane = NULL_TREE;
+  if (is_simt)
+    {
       simt_lane = create_tmp_var (unsigned_type_node);
       gimple *g = gimple_build_call_internal (IFN_GOMP_SIMT_LANE, 0);
       gimple_call_set_lhs (g, simt_lane);

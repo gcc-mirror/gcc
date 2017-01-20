@@ -1613,14 +1613,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *ARG_UNUSED (fun))
+  virtual bool gate (function *fun)
     {
-      /* FIXME: this should use PROP_gimple_lomp_dev.  */
-#ifdef ACCEL_COMPILER
-      return true;
-#else
-      return ENABLE_OFFLOADING && (flag_openmp || in_lto_p);
-#endif
+      return !(fun->curr_properties & PROP_gimple_lomp_dev);
     }
   virtual unsigned int execute (function *)
     {

@@ -4413,6 +4413,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   bool purge_dead_abnormal_edges;
   gcall *call_stmt;
   unsigned int i;
+  unsigned int prop_mask, src_properties;
 
   /* The gimplifier uses input_location in too many places, such as
      internal_get_tmp_var ().  */
@@ -4617,11 +4618,13 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   id->call_stmt = stmt;
 
   /* If the src function contains an IFN_VA_ARG, then so will the dst
-     function after inlining.  */
-  if ((id->src_cfun->curr_properties & PROP_gimple_lva) == 0)
+     function after inlining.  Likewise for IFN_GOMP_USE_SIMT.  */
+  prop_mask = PROP_gimple_lva | PROP_gimple_lomp_dev;
+  src_properties = id->src_cfun->curr_properties & prop_mask;
+  if (src_properties != prop_mask)
     {
       struct function *dst_cfun = DECL_STRUCT_FUNCTION (id->dst_fn);
-      dst_cfun->curr_properties &= ~PROP_gimple_lva;
+      dst_cfun->curr_properties &= src_properties | ~prop_mask;
     }
 
   gcc_assert (!id->src_cfun->after_inlining);
