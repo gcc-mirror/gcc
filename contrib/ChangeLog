@@ -1,5 +1,9 @@
-2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>
+2017-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* update-copyright.py (LibJavaFilter): Remove.
+
+2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>	
+	
 	* gcc_update: Remove entries related to GCJ and libgcj.
 	Complete copyright years and adjust my e-mail address.
 
