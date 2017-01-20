@@ -1,3 +1,26 @@
+2017-01-19  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-unwind.h: New file.
+	(DWARF_REGNUM_AARCH64_RA_STATE): Define.
+	(MD_POST_EXTRACT_ROOT_ADDR): New target marcro and define it on AArch64.
+	(MD_POST_EXTRACT_FRAME_ADDR): Likewise.
+	(MD_POST_FROB_EH_HANDLER_ADDR): Likewise.
+	(MD_FROB_UPDATE_CONTEXT): Define it on AArch64.
+	(aarch64_post_extract_frame_addr): New function.
+	(aarch64_post_frob_eh_handler_addr): New function.
+	(aarch64_frob_update_context): New function.
+	* config/aarch64/linux-unwind.h: Include aarch64-unwind.h
+	* config.host (aarch64*-*-elf, aarch64*-*-rtems*,
+	aarch64*-*-freebsd*):
+	Initialize md_unwind_header to include aarch64-unwind.h.
+	* unwind-dw2.c (struct _Unwind_Context): Define "RA_A_SIGNED_BIT".
+	(execute_cfa_program): Multiplex DW_CFA_GNU_window_save for
+	__aarch64__.
+	(uw_update_context): Honor MD_POST_EXTRACT_FRAME_ADDR.
+	(uw_init_context_1): Honor MD_POST_EXTRACT_ROOT_ADDR.
+	(uw_frob_return_addr): New function.
+	(uw_install_context): Use uw_frob_return_addr.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
