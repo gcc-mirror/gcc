@@ -1,5 +1,12 @@
 2017-01-20  Martin Liska  <mliska@suse.cz>
 
+	PR lto/69188
+	* tree-profile.c (init_ic_make_global_vars): Do not call
+	finalize_decl.
+	(gimple_init_gcov_profiler): Likewise.
+
+2017-01-20  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/71190
 	* cgraph.h (maybe_create_reference): Remove argument and
 	update comment.

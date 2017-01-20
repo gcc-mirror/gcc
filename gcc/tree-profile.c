@@ -94,8 +94,6 @@ init_ic_make_global_vars (void)
   if (targetm.have_tls)
     set_decl_tls_model (ic_void_ptr_var, decl_default_tls_model (ic_void_ptr_var));
 
-  varpool_node::finalize_decl (ic_void_ptr_var);
-
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
 
   ic_gcov_type_ptr_var
@@ -112,8 +110,6 @@ init_ic_make_global_vars (void)
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
   if (targetm.have_tls)
     set_decl_tls_model (ic_gcov_type_ptr_var, decl_default_tls_model (ic_gcov_type_ptr_var));
-
-  varpool_node::finalize_decl (ic_gcov_type_ptr_var);
 }
 
 /* Create the type and function decls for the interface with gcov.  */
@@ -209,8 +205,6 @@ gimple_init_gcov_profiler (void)
       TREE_STATIC (tree_time_profiler_counter) = 1;
       DECL_ARTIFICIAL (tree_time_profiler_counter) = 1;
       DECL_INITIAL (tree_time_profiler_counter) = NULL;
-
-      varpool_node::finalize_decl (tree_time_profiler_counter);
 
       /* void (*) (gcov_type *, gcov_type)  */
       average_profiler_fn_type
