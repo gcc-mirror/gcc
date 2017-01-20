@@ -2399,8 +2399,10 @@ package body Sem_Ch6 is
          --  of subprogram body From and insert them after node To. The pragmas
          --  in question are:
          --    Ghost
-         --    SPARK_Mode
          --    Volatile_Function
+         --  Also copy pragma SPARK_Mode if present in the declarative list
+         --  of subprogram body From and insert it after node To. This pragma
+         --  should not be moved, as it applies to the body too.
 
          ------------------
          -- Move_Pragmas --
@@ -2425,14 +2427,17 @@ package body Sem_Ch6 is
             while Present (Decl) loop
                Next_Decl := Next (Decl);
 
-               if Nkind (Decl) = N_Pragma
-                 and then Nam_In (Pragma_Name_Unmapped (Decl),
-                                  Name_Ghost,
-                                  Name_SPARK_Mode,
-                                  Name_Volatile_Function)
-               then
-                  Remove (Decl);
-                  Insert_After (To, Decl);
+               if Nkind (Decl) = N_Pragma then
+                  if Pragma_Name_Unmapped (Decl) = Name_SPARK_Mode then
+                     Insert_After (To, New_Copy_Tree (Decl));
+
+                  elsif Nam_In (Pragma_Name_Unmapped (Decl),
+                                Name_Ghost,
+                                Name_Volatile_Function)
+                  then
+                     Remove (Decl);
+                     Insert_After (To, Decl);
+                  end if;
                end if;
 
                Decl := Next_Decl;
@@ -2462,6 +2467,13 @@ package body Sem_Ch6 is
          Insert_Before (N, Subp_Decl);
          Move_Aspects (N, To => Subp_Decl);
          Move_Pragmas (N, To => Subp_Decl);
+
+         --  Ensure that the generated corresponding spec and original body
+         --  share the same SPARK_Mode pragma or aspect. As a result, both have
+         --  the same SPARK_Mode attributes, and the global SPARK_Mode value is
+         --  correctly set for local subprograms.
+
+         Copy_SPARK_Mode_Aspect (Subp_Decl, To => N);
 
          Analyze (Subp_Decl);
 
@@ -2515,13 +2527,6 @@ package body Sem_Ch6 is
          Body_Spec := Copy_Subprogram_Spec (Body_Spec);
          Set_Specification (N, Body_Spec);
          Body_Id := Analyze_Subprogram_Specification (Body_Spec);
-
-         --  Ensure that the generated corresponding spec and original body
-         --  share the same SPARK_Mode attributes.
-
-         Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Spec_Id));
-         Set_SPARK_Pragma_Inherited
-           (Body_Id, SPARK_Pragma_Inherited (Spec_Id));
       end Build_Subprogram_Declaration;
 
       ----------------------------

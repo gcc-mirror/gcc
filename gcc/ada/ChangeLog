@@ -1,3 +1,33 @@
+2017-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_warn.adb (Warn_On_Useless_Assignment): Adjust wording of warning
+	message.
+
+2017-01-20  Nicolas Roche  <roche@adacore.com>
+
+	* terminals.c: Ignore failures on setpgid and tcsetpgrp commands.
+
+2017-01-20  Bob Duff  <duff@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Compare): Disable the expr+literal
+	(etc) optimizations when the type is modular.
+
+2017-01-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Move_Pragmas): move some pragmas,
+	but copy the SPARK_Mode pragma instead of moving it.
+	(Build_Subprogram_Declaration): Ensure that the generated spec
+	and original body share the same SPARK_Pragma aspect/pragma.
+	* sem_util.adb, sem_util.ads (Copy_SPARK_Mode_Aspect): New
+	procedure to copy SPARK_Mode aspect.
+
+2017-01-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Disable Resolve_Aspects
+	even in ASIS mode.
+	* sem_ch13.adb (Resolve_Name): Enable setting the entity to
+	Empty even in ASIS mode.
+
 2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb: minor style fixes in comments.
