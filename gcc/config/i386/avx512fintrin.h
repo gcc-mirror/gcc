@@ -8966,6 +8966,22 @@ _mm512_cmpneq_epu64_mask (__m512i __X, __m512i __Y)
 #define _MM_CMPINT_GT	    0x6
 
 #ifdef __OPTIMIZE__
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftli_mask16 (__mmask16 __A, unsigned int __B)
+{
+  return (__mmask16) __builtin_ia32_kshiftlihi ((__mmask16) __A,
+						(__mmask8) __B);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftri_mask16 (__mmask16 __A, unsigned int __B)
+{
+  return (__mmask16) __builtin_ia32_kshiftrihi ((__mmask16) __A,
+						(__mmask8) __B);
+}
+
 extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_cmp_epi64_mask (__m512i __X, __m512i __Y, const int __P)
@@ -9120,6 +9136,12 @@ _mm_mask_cmp_round_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y,
 }
 
 #else
+#define _kshiftli_mask16(X, Y)						\
+  ((__mmask16) __builtin_ia32_kshiftlihi ((__mmask16)(X), (__mmask8)(Y)))
+
+#define _kshiftri_mask16(X, Y)						\
+  ((__mmask16) __builtin_ia32_kshiftrihi ((__mmask16)(X), (__mmask8)(Y)))
+
 #define _mm512_cmp_epi64_mask(X, Y, P)					\
   ((__mmask8) __builtin_ia32_cmpq512_mask ((__v8di)(__m512i)(X),	\
 					   (__v8di)(__m512i)(Y), (int)(P),\

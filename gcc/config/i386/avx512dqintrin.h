@@ -997,6 +997,20 @@ _mm512_maskz_cvtepu64_pd (__mmask8 __U, __m512i __A)
 }
 
 #ifdef __OPTIMIZE__
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftli_mask8 (__mmask8 __A, unsigned int __B)
+{
+  return (__mmask8) __builtin_ia32_kshiftliqi ((__mmask8) __A, (__mmask8) __B);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftri_mask8 (__mmask8 __A, unsigned int __B)
+{
+  return (__mmask8) __builtin_ia32_kshiftriqi ((__mmask8) __A, (__mmask8) __B);
+}
+
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_range_pd (__m512d __A, __m512d __B, int __C)
@@ -2008,6 +2022,12 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
 }
 
 #else
+#define _kshiftli_mask8(X, Y)						\
+  ((__mmask8) __builtin_ia32_kshiftliqi ((__mmask8)(X), (__mmask8)(Y)))
+
+#define _kshiftri_mask8(X, Y)						\
+  ((__mmask8) __builtin_ia32_kshiftriqi ((__mmask8)(X), (__mmask8)(Y)))
+
 #define _mm_range_sd(A, B, C)						\
   ((__m128d) __builtin_ia32_rangesd128_round ((__v2df)(__m128d)(A),	\
     (__v2df)(__m128d)(B), (int)(C),					\

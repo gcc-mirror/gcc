@@ -1410,7 +1410,7 @@
 ;; Mask variant shift mnemonics
 (define_code_attr mshift [(ashift "shiftl") (lshiftrt "shiftr")])
 
-(define_insn "*k<code><mode>"
+(define_insn "k<code><mode>"
   [(set (match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "=k")
 	(any_lshift:SWI1248_AVX512BWDQ
 	  (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")
