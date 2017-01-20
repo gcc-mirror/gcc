@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include <errno.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -216,6 +217,7 @@ runtime_newosproc(M *mp)
 	pthread_attr_t attr;
 	sigset_t clear, old;
 	pthread_t tid;
+	int tries;
 	int ret;
 
 	if(pthread_attr_init(&attr) != 0)
@@ -234,11 +236,21 @@ runtime_newosproc(M *mp)
 
 	sigemptyset(&old);
 	pthread_sigmask(SIG_BLOCK, &clear, &old);
-	ret = pthread_create(&tid, &attr, runtime_mstart, mp);
+
+	for (tries = 0; tries < 20; tries++) {
+		ret = pthread_create(&tid, &attr, runtime_mstart, mp);
+		if (ret != EAGAIN) {
+			break;
+		}
+		runtime_usleep((tries + 1) * 1000); // Milliseconds.
+	}
+
 	pthread_sigmask(SIG_SETMASK, &old, nil);
 
-	if (ret != 0)
+	if (ret != 0) {
+		runtime_printf("pthread_create failed: %d\n", ret);
 		runtime_throw("pthread_create");
+	}
 }
 
 // First function run by a new goroutine.  This replaces gogocall.

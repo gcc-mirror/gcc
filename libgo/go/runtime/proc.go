@@ -43,6 +43,9 @@ import (
 //go:linkname runqempty runtime.runqempty
 //go:linkname runqput runtime.runqput
 
+// Function called by misc/cgo/test.
+//go:linkname lockedOSThread runtime.lockedOSThread
+
 // Functions temporarily in C that have not yet been ported.
 func allocm(*p, bool, *unsafe.Pointer, *uintptr) *m
 func malg(bool, bool, *unsafe.Pointer, *uintptr) *g

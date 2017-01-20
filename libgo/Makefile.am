@@ -360,6 +360,11 @@ toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
 	testing/quick.gox
 
+toolexeclibgotestinginternaldir = $(toolexeclibgotestingdir)/internal
+
+toolexeclibgotestinginternal_DATA = \
+	testing/internal/testdeps.gox
+
 toolexeclibgotextdir = $(toolexeclibgodir)/text
 
 toolexeclibgotext_DATA = \
