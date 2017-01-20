@@ -252,6 +252,20 @@ proc check_runtime {prop args} {
     }]
 }
 
+# Return 1 if GCC was configured with $pattern.
+proc check_configured_with { pattern } {
+    global tool
+
+    set gcc_output [${tool}_target_compile "-v" "" "none" ""]
+    if { [ regexp "Configured with: \[^\n\]*$pattern" $gcc_output ] } {
+        verbose "Matched: $pattern" 2
+        return 1
+    }
+
+    verbose "Failed to match: $pattern" 2
+    return 0
+}
+
 ###############################
 # proc check_weak_available { }
 ###############################
@@ -3815,6 +3829,12 @@ proc check_effective_target_arm_arch_v7ve_ok { } {
 
 proc add_options_for_arm_arch_v7ve { flags } {
     return "$flags -march=armv7ve"
+}
+
+# Return 1 if GCC was configured with --with-mode=
+proc check_effective_target_default_mode { } {
+
+    return [check_configured_with "with-mode="]
 }
 
 # Return 1 if this is an ARM target where -marm causes ARM to be
