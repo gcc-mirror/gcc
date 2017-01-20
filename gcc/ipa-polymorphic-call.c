@@ -506,12 +506,12 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
   /* Check that type is within range.  */
   if (offset < 0)
     return false;
-  if (TYPE_SIZE (outer_type) && TYPE_SIZE (otr_type)
-      && TREE_CODE (TYPE_SIZE (outer_type)) == INTEGER_CST
-      && TREE_CODE (TYPE_SIZE (otr_type)) == INTEGER_CST
-      && wi::ltu_p (wi::to_offset (TYPE_SIZE (outer_type)),
-		    (wi::to_offset (TYPE_SIZE (otr_type)) + offset)))
-    return false;
+
+  /* PR ipa/71207
+     As OUTER_TYPE can be a type which has a diamond virtual inheritance,
+     it's not necessary that INNER_TYPE will fit within OUTER_TYPE with
+     a given offset.  It can happen that INNER_TYPE also contains a base object,
+     however it would point to the same instance in the OUTER_TYPE.  */
 
   context.offset = offset;
   context.outer_type = TYPE_MAIN_VARIANT (outer_type);
