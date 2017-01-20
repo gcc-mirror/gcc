@@ -40,8 +40,23 @@ test01()
   VERIFY( u.max()[1] == std::numeric_limits<result_type::value_type>::max() );
 }
 
+void
+test02()
+{
+  using param_type = __gnu_cxx::normal_mv_distribution<2>::param_type;
+  const param_type p({5.0, 4.0}, {4.0, 9.0});
+  __gnu_cxx::normal_mv_distribution<2> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef __gnu_cxx::normal_mv_distribution<2>::result_type result_type;
+  VERIFY( u.min()[0] == std::numeric_limits<result_type::value_type>::lowest() );
+  VERIFY( u.max()[0] == std::numeric_limits<result_type::value_type>::max() );
+  VERIFY( u.min()[1] == std::numeric_limits<result_type::value_type>::lowest() );
+  VERIFY( u.max()[1] == std::numeric_limits<result_type::value_type>::max() );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

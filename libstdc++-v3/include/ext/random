@@ -404,6 +404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -431,6 +432,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return (__p1._M_alpha == __p2._M_alpha
 		  && __p1._M_beta == __p2._M_beta); }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void
@@ -710,6 +715,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_mean == __p2._M_mean && __p1._M_t == __p2._M_t; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	template <typename _InputIterator1, typename _InputIterator2>
 	  void _M_init_full(_InputIterator1 __meanbegin,
@@ -942,6 +951,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -965,8 +975,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_nu == __p2._M_nu
-	      && __p1._M_sigma == __p2._M_sigma; }
+	{ return __p1._M_nu == __p2._M_nu && __p1._M_sigma == __p2._M_sigma; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void _M_initialize();
@@ -1184,6 +1197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -1207,8 +1221,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_mu == __p2._M_mu
-	      && __p1._M_omega == __p2._M_omega; }
+	{ return __p1._M_mu == __p2._M_mu && __p1._M_omega == __p2._M_omega; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void _M_initialize();
@@ -1417,6 +1434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -1441,6 +1459,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_alpha == __p2._M_alpha && __p1._M_mu == __p2._M_mu; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void _M_initialize();
@@ -1651,6 +1673,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -1680,9 +1703,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_lambda == __p2._M_lambda
+	{
+	  return __p1._M_lambda == __p2._M_lambda
 	      && __p1._M_mu == __p2._M_mu
-	      && __p1._M_nu == __p2._M_nu; }
+	      && __p1._M_nu == __p2._M_nu;
+	}
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void _M_initialize();
@@ -1890,6 +1919,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -1913,6 +1943,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void _M_initialize();
@@ -2126,6 +2160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -2149,8 +2184,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_q == __p2._M_q
-	      && __p1._M_omega == __p2._M_omega; }
+	{ return __p1._M_q == __p2._M_q && __p1._M_omega == __p2._M_omega; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void _M_initialize();
@@ -2359,6 +2397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -2393,8 +2432,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b
-		  && __p1._M_c == __p2._M_c); }
+	{
+	  return (__p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b
+		  && __p1._M_c == __p2._M_c);
+	}
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 
@@ -2646,8 +2691,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_mu == __p2._M_mu
-		  && __p1._M_kappa == __p2._M_kappa); }
+	{ return __p1._M_mu == __p2._M_mu && __p1._M_kappa == __p2._M_kappa; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	_RealType _M_mu;
@@ -2889,6 +2937,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && (__p1._M_K == __p2._M_K)
 	      && (__p1._M_n == __p2._M_n); }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 
 	result_type _M_N;
@@ -3111,6 +3163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -3133,8 +3186,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_a == __p2._M_a
-	      && __p1._M_b == __p2._M_b; }
+	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void _M_initialize();
@@ -3317,6 +3373,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef std::array<_RealType, _Dimen> result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -3325,8 +3382,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
 	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
+	operator==(const param_type&, const param_type&)
 	{ return true; }
+
+	friend bool
+	operator!=(const param_type&, const param_type&)
+	{ return false; }
       };
 
       /**
@@ -3529,6 +3590,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_radius == __p2._M_radius; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	_RealType _M_radius;

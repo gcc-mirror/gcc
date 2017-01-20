@@ -36,8 +36,20 @@ test01()
   VERIFY( u.max() == 20 );
 }
 
+void
+test02()
+{
+  using param_type = std::uniform_int_distribution<int>::param_type;
+  const param_type p(1, 20);
+  std::uniform_int_distribution<int> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == 1 );
+  VERIFY( u.max() == 20 );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

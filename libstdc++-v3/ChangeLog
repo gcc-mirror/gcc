@@ -1,5 +1,84 @@
 2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69240
+	* include/bits/random.h (uniform_real_distribution::param_type)
+	(normal_distribution::param_type, lognormal_distribution::param_type)
+	(gamma_distribution::param_type, chi_squared_distribution::param_type)
+	(cauchy_distribution::param_type, fisher_f_distribution::param_type)
+	(student_t_distribution::param_type)
+	(bernoulli_distribution::param_type, binomial_distribution::param_type)
+	(geometric_distribution::param_type)
+	(negative_binomial_distribution::param_type)
+	(poisson_distribution::param_type)
+	(exponential_distribution::param_type)
+	(weibull_distribution::param_type)
+	(extreme_value_distribution::param_type)
+	(discrete_distribution::param_type)
+	(piecewise_constant_distribution::param_type)
+	(piecewise_linear_distribution::param_type): Define operator!=.
+	* include/bits/uniform_int_dist.h
+	(uniform_int_distribution::param_type): Likewise.
+	* include/ext/random (beta_distribution::param_type)
+	(rice_distribution::param_type, nakagami_distribution::param_type)
+	(pareto_distribution::param_type, k_distribution::param_type)
+	(arcsine_distribution::param_type, hoyt_distribution::param_type)
+	(triangular_distribution::param_type)
+	(von_mises_distribution::param_type)
+	(hypergeometric_distribution::param_type)
+	(logistic_distribution::param_type)
+	(uniform_on_sphere_distribution::param_type)
+	(uniform_inside_sphere_distribution::param_type): Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/cons/parms.cc:
+	Test construction with param_type.
+	* testsuite/26_numerics/random/binomial_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/cons/
+	parms.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/cons/
+	parms.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/uniform_real_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/ext/random/arcsine_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/beta_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/hoyt_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/hypergeometric_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/ext/random/k_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/logistic_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/nakagami_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/pareto_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/rice_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/triangular_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/cons/
+	parms.cc: Likewise.
+	* testsuite/ext/random/von_mises_distribution/cons/parms.cc: Likewise.
+
 	PR libstdc++/72792
 	* include/bits/alloc_traits.h (__allocator_traits_base::__diff_type)
 	(__allocator_traits_base::__size_type): Remove.

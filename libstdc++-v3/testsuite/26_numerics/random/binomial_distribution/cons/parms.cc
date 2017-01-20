@@ -36,8 +36,20 @@ test01()
   VERIFY( u.max() == u.t() );
 }
 
+void
+test02()
+{
+  using param_type = std::binomial_distribution<>::param_type;
+  const param_type p(3, 0.75);
+  std::binomial_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == 0 );
+  VERIFY( u.max() == u.t() );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }
