@@ -1187,7 +1187,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  break;
 
 	case DW_CFA_GNU_window_save:
-#ifdef __aarch64__
+#if defined (__aarch64__) && !defined (__ILP32__)
 	  /* This CFA is multiplexed with Sparc.  On AArch64 it's used to toggle
 	     return address signing status.  */
 	  fs->regs.reg[DWARF_REGNUM_AARCH64_RA_STATE].loc.offset ^= 1;

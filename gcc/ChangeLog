@@ -1,3 +1,8 @@
+2017-01-20  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_init_builtins): Register
+	register pauth builtins for LP64 only.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79152

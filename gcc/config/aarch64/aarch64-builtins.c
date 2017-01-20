@@ -983,9 +983,14 @@ aarch64_init_builtins (void)
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
 
-/* Initialize pointer authentication builtins which are backed by instructions
-   in NOP encoding space.  */
-  aarch64_init_pauth_hint_builtins ();
+  /* Initialize pointer authentication builtins which are backed by instructions
+     in NOP encoding space.
+
+     NOTE: these builtins are supposed to be used by libgcc unwinder only, as
+     there is no support on return address signing under ILP32, we don't
+     register them.  */
+  if (!TARGET_ILP32)
+    aarch64_init_pauth_hint_builtins ();
 }
 
 tree

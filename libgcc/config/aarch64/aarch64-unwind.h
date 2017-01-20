@@ -22,7 +22,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef AARCH64_UNWIND_H
+#if !defined (AARCH64_UNWIND_H) && !defined (__ILP32__)
 #define AARCH64_UNWIND_H
 
 #define DWARF_REGNUM_AARCH64_RA_STATE 34
@@ -84,4 +84,4 @@ aarch64_frob_update_context (struct _Unwind_Context *context,
   return;
 }
 
-#endif /* defined AARCH64_UNWIND_H */
+#endif /* defined AARCH64_UNWIND_H && defined __ILP32__ */
