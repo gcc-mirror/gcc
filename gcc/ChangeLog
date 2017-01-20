@@ -1,6 +1,15 @@
 2017-01-20  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c (inline_call): Drop
+	-fstrict-aliasing when 	inlining -fno-strict-aliasing into
+	-fstrict-aliasing body.
+
+2017-01-20  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-01-17  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/71207
