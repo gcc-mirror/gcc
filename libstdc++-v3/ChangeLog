@@ -1,5 +1,20 @@
 2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/72792
+	PR libstdc++/72793
+	* include/bits/alloc_traits.h (__allocator_traits_base::__rebind):
+	Replace with class template using void_t.
+	(__alloc_rebind): Define in terms of
+	__allocator_traits_base::__rebind.
+	(allocator_traits): Remove unconditional static_assert for
+	rebind_alloc.
+	* include/bits/ptr_traits.h (__replace_first_arg): Remove type member.
+	(pointer_traits::__rebind): Replace with class template using void_t.
+	(pointer_traits::rebind): Define in terms of __rebind.
+	(pointer_traits): Remove unconditional static_assert for rebind.
+	* testsuite/20_util/allocator_traits/members/rebind_alloc.cc: New test.
+	* testsuite/20_util/pointer_traits/rebind.cc: New test.
+
 	PR libstdc++/69321
 	* include/experimental/any (__any_caster): Avoid instantiating
 	manager function for types that can't be stored in any.

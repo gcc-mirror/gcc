@@ -44,8 +44,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct __allocator_traits_base
   {
-    template<typename _Alloc, typename _Up>
-      using __rebind = typename _Alloc::template rebind<_Up>::other;
+    template<typename _Tp, typename _Up, typename = void>
+      struct __rebind : __replace_first_arg<_Tp, _Up> { };
+
+    template<typename _Tp, typename _Up>
+      struct __rebind<_Tp, _Up,
+		      __void_t<typename _Tp::template rebind<_Up>::other>>
+      { using type = typename _Tp::template rebind<_Up>::other; };
 
   protected:
     template<typename _Tp>
@@ -71,9 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   template<typename _Alloc, typename _Up>
-    using __alloc_rebind = __detected_or_t_<__replace_first_arg_t,
-					    __allocator_traits_base::__rebind,
-					    _Alloc, _Up>;
+    using __alloc_rebind
+      = typename __allocator_traits_base::template __rebind<_Alloc, _Up>::type;
 
   /**
    * @brief  Uniform interface to all allocator types.
@@ -183,9 +187,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using rebind_alloc = __alloc_rebind<_Alloc, _Tp>;
       template<typename _Tp>
 	using rebind_traits = allocator_traits<rebind_alloc<_Tp>>;
-
-      static_assert(!is_same<rebind_alloc<value_type>, __undefined>::value,
-	  "allocator defines rebind or is like Alloc<T, Args>");
 
     private:
       template<typename _Alloc2>
