@@ -146,6 +146,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgoruntimedir)" \
 	"$(DESTDIR)$(toolexeclibgosyncdir)" \
 	"$(DESTDIR)$(toolexeclibgotestingdir)" \
+	"$(DESTDIR)$(toolexeclibgotestinginternaldir)" \
 	"$(DESTDIR)$(toolexeclibgotextdir)" \
 	"$(DESTDIR)$(toolexeclibgotexttemplatedir)" \
 	"$(DESTDIR)$(toolexeclibgounicodedir)"
@@ -265,7 +266,8 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoos_DATA) \
 	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
 	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
+	$(toolexeclibgotesting_DATA) \
+	$(toolexeclibgotestinginternal_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
@@ -739,6 +741,10 @@ toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
 	testing/quick.gox
+
+toolexeclibgotestinginternaldir = $(toolexeclibgotestingdir)/internal
+toolexeclibgotestinginternal_DATA = \
+	testing/internal/testdeps.gox
 
 toolexeclibgotextdir = $(toolexeclibgodir)/text
 toolexeclibgotext_DATA = \
@@ -2645,6 +2651,27 @@ uninstall-toolexeclibgotestingDATA:
 	@list='$(toolexeclibgotesting_DATA)'; test -n "$(toolexeclibgotestingdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgotestingdir)'; $(am__uninstall_files_from_dir)
+install-toolexeclibgotestinginternalDATA: $(toolexeclibgotestinginternal_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclibgotestinginternal_DATA)'; test -n "$(toolexeclibgotestinginternaldir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgotestinginternaldir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgotestinginternaldir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgotestinginternaldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgotestinginternaldir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgotestinginternalDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgotestinginternal_DATA)'; test -n "$(toolexeclibgotestinginternaldir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibgotestinginternaldir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgotextDATA: $(toolexeclibgotext_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgotext_DATA)'; test -n "$(toolexeclibgotextdir)" || list=; \
@@ -2849,7 +2876,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) all-multi $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2935,7 +2962,9 @@ install-exec-am: install-multi install-toolexeclibLIBRARIES \
 	install-toolexeclibgonetrpcDATA install-toolexeclibgoosDATA \
 	install-toolexeclibgopathDATA install-toolexeclibgoregexpDATA \
 	install-toolexeclibgoruntimeDATA install-toolexeclibgosyncDATA \
-	install-toolexeclibgotestingDATA install-toolexeclibgotextDATA \
+	install-toolexeclibgotestingDATA \
+	install-toolexeclibgotestinginternalDATA \
+	install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
 	install-toolexeclibgounicodeDATA
 
@@ -3005,6 +3034,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgoruntimeDATA \
 	uninstall-toolexeclibgosyncDATA \
 	uninstall-toolexeclibgotestingDATA \
+	uninstall-toolexeclibgotestinginternalDATA \
 	uninstall-toolexeclibgotextDATA \
 	uninstall-toolexeclibgotexttemplateDATA \
 	uninstall-toolexeclibgounicodeDATA
@@ -3046,7 +3076,9 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgonetrpcDATA install-toolexeclibgoosDATA \
 	install-toolexeclibgopathDATA install-toolexeclibgoregexpDATA \
 	install-toolexeclibgoruntimeDATA install-toolexeclibgosyncDATA \
-	install-toolexeclibgotestingDATA install-toolexeclibgotextDATA \
+	install-toolexeclibgotestingDATA \
+	install-toolexeclibgotestinginternalDATA \
+	install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
 	install-toolexeclibgounicodeDATA installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
@@ -3080,6 +3112,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgoruntimeDATA \
 	uninstall-toolexeclibgosyncDATA \
 	uninstall-toolexeclibgotestingDATA \
+	uninstall-toolexeclibgotestinginternalDATA \
 	uninstall-toolexeclibgotextDATA \
 	uninstall-toolexeclibgotexttemplateDATA \
 	uninstall-toolexeclibgounicodeDATA
