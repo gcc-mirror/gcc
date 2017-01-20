@@ -1,5 +1,14 @@
 2017-01-19  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins): New
+	entries for AARCH64_PAUTH_BUILTIN_XPACLRI,
+	AARCH64_PAUTH_BUILTIN_PACIA1716, AARCH64_PAUTH_BUILTIN_AUTIA1716.
+	(aarch64_init_pauth_hint_builtins): New.
+	(aarch64_init_builtins): Call aarch64_init_pauth_hint_builtins.
+	(aarch64_expand_builtin): Expand new builtins.
+
+2017-01-19  Jiong Wang  <jiong.wang@arm.com>
+
 	* reg-notes.def (CFA_TOGGLE_RA_MANGLE): New reg-note.
 	* combine-stack-adj.c (no_unhandled_cfa): Handle
 	REG_CFA_TOGGLE_RA_MANGLE.
