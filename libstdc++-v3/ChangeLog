@@ -1,5 +1,11 @@
 2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79156
+	* include/bits/shared_ptr_base.h (__enable_shared_from_this_base):
+	Fix return type.
+	(__enable_shared_from_this): Declare __shared_ptr as a friend.
+	* testsuite/ext/shared_ptr/1.cc: New test.
+
 	PR libstdc++/64903
 	* include/bits/stl_algo.h (is_partioned): Don't retest the partition
 	point.
