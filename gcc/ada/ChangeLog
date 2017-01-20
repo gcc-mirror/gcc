@@ -1,7 +1,3 @@
-2017-01-20  Arnaud Charlet  <charlet@adacore.com>
-
-	* exp_ch3.adb: Reenable code.
-
 2017-01-20  Yannick Moy  <moy@adacore.com>
 
 	* sinfo.ads: Document lack of Do_Division_Check flag
