@@ -1,3 +1,9 @@
+2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64903
+	* include/bits/stl_algo.h (is_partitioned): Use increment instead of
+	std::advance.
+
 2017-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79156
@@ -7,7 +13,7 @@
 	* testsuite/ext/shared_ptr/1.cc: New test.
 
 	PR libstdc++/64903
-	* include/bits/stl_algo.h (is_partioned): Don't retest the partition
+	* include/bits/stl_algo.h (is_partitioned): Don't retest the partition
 	point.
 	* testsuite/25_algorithms/is_partitioned/2.cc: New test.
 
