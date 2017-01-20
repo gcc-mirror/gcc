@@ -5263,7 +5263,18 @@ push_template_decl_real (tree decl, bool is_friend)
 	}
       else if (DECL_IMPLICIT_TYPEDEF_P (decl)
 	       && CLASS_TYPE_P (TREE_TYPE (decl)))
-	/* OK */;
+	{
+	  /* Class template, set TEMPLATE_TYPE_PARM_FOR_CLASS.  */
+	  tree parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
+	  for (int i = 0; i < TREE_VEC_LENGTH (parms); ++i)
+	    {
+	      tree t = TREE_VALUE (TREE_VEC_ELT (parms, i));
+	      if (TREE_CODE (t) == TYPE_DECL)
+		t = TREE_TYPE (t);
+	      if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+		TEMPLATE_TYPE_PARM_FOR_CLASS (t) = true;
+	    }
+	}
       else if (TREE_CODE (decl) == TYPE_DECL
 	       && TYPE_DECL_ALIAS_P (decl))
 	/* alias-declaration */
@@ -18649,12 +18660,16 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
 	*arg = TYPE_MAIN_VARIANT (*arg);
     }
 
-  /* From C++0x [14.8.2.1/3 temp.deduct.call] (after DR606), "If P is
-     of the form T&&, where T is a template parameter, and the argument
-     is an lvalue, T is deduced as A& */
+  /* [14.8.2.1/3 temp.deduct.call], "A forwarding reference is an rvalue
+     reference to a cv-unqualified template parameter that does not represent a
+     template parameter of a class template (during class template argument
+     deduction (13.3.1.8)). If P is a forwarding reference and the argument is
+     an lvalue, the type "lvalue reference to A" is used in place of A for type
+     deduction. */
   if (TREE_CODE (*parm) == REFERENCE_TYPE
       && TYPE_REF_IS_RVALUE (*parm)
       && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
+      && !TEMPLATE_TYPE_PARM_FOR_CLASS (TREE_TYPE (*parm))
       && cp_type_quals (TREE_TYPE (*parm)) == TYPE_UNQUALIFIED
       && (arg_expr ? lvalue_p (arg_expr)
 	  /* try_one_overload doesn't provide an arg_expr, but
@@ -24798,8 +24813,12 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
   if (TREE_CODE (olddecl) == TYPE_DECL
       || TREE_CODE (olddecl) == TEMPLATE_DECL)
     {
-      newtype = cxx_make_type (TREE_CODE (TREE_TYPE (olddecl)));
+      tree oldtype = TREE_TYPE (olddecl);
+      newtype = cxx_make_type (TREE_CODE (oldtype));
       TYPE_MAIN_VARIANT (newtype) = newtype;
+      if (TREE_CODE (oldtype) == TEMPLATE_TYPE_PARM)
+	TEMPLATE_TYPE_PARM_FOR_CLASS (newtype)
+	  = TEMPLATE_TYPE_PARM_FOR_CLASS (oldtype);
     }
   else
     newtype = tsubst (TREE_TYPE (olddecl), tsubst_args,

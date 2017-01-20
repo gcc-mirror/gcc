@@ -1,5 +1,11 @@
 2017-01-19  Jason Merrill  <jason@redhat.com>
 
+	US 20 - forwarding references and class template argument deduction
+	* cp-tree.h (TEMPLATE_TYPE_PARM_FOR_CLASS): New.
+	* pt.c (push_template_decl_real): Set it.
+	(maybe_adjust_types_for_deduction): Check it.
+	(rewrite_template_parm): Copy it.
+
 	US 19 - deduction guides and constructors
 	* call.c (joust): Prefer deduction guides to constructors.
 	* pt.c (build_deduction_guide): Set DECL_ARTIFICIAL.
