@@ -21348,7 +21348,7 @@ package body Sem_Prag is
 
             procedure Set_SPARK_Context is
             begin
-               SPARK_Mode := Mode_Id;
+               SPARK_Mode        := Mode_Id;
                SPARK_Mode_Pragma := N;
             end Set_SPARK_Context;
 
