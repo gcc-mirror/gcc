@@ -1,5 +1,12 @@
 2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69321
+	* include/experimental/any (__any_caster): Avoid instantiating
+	manager function for types that can't be stored in any.
+	* include/std/any (__any_caster): Likewise.
+	* testsuite/20_util/any/misc/any_cast.cc: Test non-copyable type.
+	* testsuite/experimental/any/misc/any_cast.cc: Likewise.
+
 	PR libstdc++/64903
 	* include/bits/stl_algo.h (is_partitioned): Use increment instead of
 	std::advance.
