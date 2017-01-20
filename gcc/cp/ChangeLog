@@ -1,5 +1,10 @@
 2017-01-19  Jason Merrill  <jason@redhat.com>
 
+	US 19 - deduction guides and constructors
+	* call.c (joust): Prefer deduction guides to constructors.
+	* pt.c (build_deduction_guide): Set DECL_ARTIFICIAL.
+	(deduction_guide_p): Check DECL_P.
+
 	* decl.c (check_initializer): Always use build_aggr_init for array
 	decomposition.
 

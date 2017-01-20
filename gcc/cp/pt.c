@@ -24776,8 +24776,9 @@ dguide_name_p (tree name)
 bool
 deduction_guide_p (tree fn)
 {
-  if (tree name = DECL_NAME (fn))
-    return dguide_name_p (name);
+  if (DECL_P (fn))
+    if (tree name = DECL_NAME (fn))
+      return dguide_name_p (name);
   return false;
 }
 
@@ -24981,7 +24982,9 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 				     FUNCTION_DECL,
 				     dguide_name (type), fntype);
   DECL_ARGUMENTS (ded_fn) = fargs;
+  DECL_ARTIFICIAL (ded_fn) = true;
   tree ded_tmpl = build_template_decl (ded_fn, tparms, /*member*/false);
+  DECL_ARTIFICIAL (ded_tmpl) = true;
   DECL_TEMPLATE_RESULT (ded_tmpl) = ded_fn;
   TREE_TYPE (ded_tmpl) = TREE_TYPE (ded_fn);
   DECL_TEMPLATE_INFO (ded_fn) = build_template_info (ded_tmpl, targs);
