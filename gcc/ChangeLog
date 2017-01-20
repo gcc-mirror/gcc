@@ -1,3 +1,8 @@
+2017-01-20  Martin Liska  <mliska@suse.cz>
+
+	* read-rtl-function.c (function_reader::create_function): Use
+	build_decl instread of build_decl_stat.
+
 2017-01-20  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* config/i386/avx512bwintrin.h: Add k-mask registers shift intrinsics.

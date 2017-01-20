@@ -481,8 +481,7 @@ function_reader::create_function ()
   tree return_type = int_type;
   tree arg_types[3] = {int_type, int_type, int_type};
   tree fn_type = build_function_type_array (return_type, 3, arg_types);
-  tree fndecl = build_decl_stat (UNKNOWN_LOCATION, FUNCTION_DECL, fn_name,
-				 fn_type);
+  tree fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, fn_name, fn_type);
   tree resdecl = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE,
 			     return_type);
   DECL_ARTIFICIAL (resdecl) = 1;
