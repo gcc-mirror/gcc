@@ -36,8 +36,20 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
+void
+test02()
+{
+  using param_type = std::geometric_distribution<>::param_type;
+  const param_type p(0.75);
+  std::geometric_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef std::geometric_distribution<>::result_type result_type;
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

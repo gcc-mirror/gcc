@@ -36,8 +36,20 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
+void
+test02()
+{
+  using param_type = std::poisson_distribution<>::param_type;
+  const param_type p(5.0);
+  std::poisson_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef std::poisson_distribution<>::result_type result_type;
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

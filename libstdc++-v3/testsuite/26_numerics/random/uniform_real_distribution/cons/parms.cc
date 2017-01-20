@@ -36,8 +36,20 @@ test01()
   VERIFY( u.max() == 5.0 );
 }
 
+void
+test02()
+{
+  using param_type = std::uniform_real_distribution<double>::param_type;
+  const param_type p(-5.0, 5.0);
+  std::uniform_real_distribution<double> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == -5.0 );
+  VERIFY( u.max() == 5.0 );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

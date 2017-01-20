@@ -37,8 +37,21 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
+void
+test02()
+{
+  using param_type = std::cauchy_distribution<>::param_type;
+  const param_type p(5.0, 2.0);
+  std::cauchy_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef std::cauchy_distribution<>::result_type result_type;
+  VERIFY( u.min() == std::numeric_limits<result_type>::lowest() );
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

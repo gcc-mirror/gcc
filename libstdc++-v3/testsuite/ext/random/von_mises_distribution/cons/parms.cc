@@ -34,8 +34,20 @@ test01()
   VERIFY( u.max() == __gnu_cxx::__math_constants<double>::__pi );
 }
 
+void
+test02()
+{
+  using param_type = __gnu_cxx::von_mises_distribution<>::param_type;
+  const param_type p(1.5, 3.0);
+  __gnu_cxx::von_mises_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == -__gnu_cxx::__math_constants<double>::__pi );
+  VERIFY( u.max() == __gnu_cxx::__math_constants<double>::__pi );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

@@ -37,9 +37,20 @@ test01()
   VERIFY( u.max() == 2 );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type = __gnu_cxx::hypergeometric_distribution<>::param_type;
+  const param_type p(15, 3, 2);
+  __gnu_cxx::hypergeometric_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == 0 );
+  VERIFY( u.max() == 2 );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

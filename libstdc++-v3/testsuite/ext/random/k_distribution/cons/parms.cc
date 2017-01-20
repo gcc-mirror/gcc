@@ -38,9 +38,20 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type = __gnu_cxx::k_distribution<>::param_type;
+  const param_type p(2.0, 1.5, 3.0);
+  __gnu_cxx::k_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef __gnu_cxx::k_distribution<>::result_type result_type;
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

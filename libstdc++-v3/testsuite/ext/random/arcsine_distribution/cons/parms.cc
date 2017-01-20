@@ -33,9 +33,20 @@ test01()
   VERIFY( u.max() == 3.0 );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type = __gnu_cxx::arcsine_distribution<>::param_type;
+  const param_type p(-1.5, 3.0);
+  __gnu_cxx::arcsine_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == -1.5 );
+  VERIFY( u.max() == 3.0 );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }
