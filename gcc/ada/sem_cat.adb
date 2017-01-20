@@ -1015,20 +1015,23 @@ package body Sem_Cat is
          Item := First (Context_Items (P));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
-              and then not (Implicit_With (Item)
-                             or else Limited_Present (Item)
+              and then
+                not (Implicit_With (Item)
+                      or else Limited_Present (Item)
 
-                             --  Skip if error already posted on the WITH
-                             --  clause (in which case the Name attribute
-                             --  may be invalid). In particular, this fixes
-                             --  the problem of hanging in the presence of a
-                             --  WITH clause on a child that is an illegal
-                             --  generic instantiation.
+                      --  Skip if error already posted on the WITH clause (in
+                      --  which case the Name attribute may be invalid). In
+                      --  particular, this fixes the problem of hanging in the
+                      --  presence of a WITH clause on a child that is an
+                      --  illegal generic instantiation.
 
-                             or else Error_Posted (Item))
-               and then not (Try_Semantics
-                             --  Skip processing malformed trees
-                             and then Nkind (Name (Item)) not in N_Has_Entity)
+                      or else Error_Posted (Item))
+              and then
+                not (Try_Semantics
+
+                      --  Skip processing malformed trees
+
+                      and then Nkind (Name (Item)) not in N_Has_Entity)
             then
                Entity_Of_Withed := Entity (Name (Item));
                Check_Categorization_Dependencies

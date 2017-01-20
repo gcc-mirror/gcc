@@ -4202,16 +4202,18 @@ package body Sem_Ch10 is
 
          --  Do not install private_with_clauses declaration, unless unit
          --  is itself a private child unit, or is a body. Note that for a
-         --  subprogram body the private_with_clause does not take effect until
-         --  after the specification.
+         --  subprogram body the private_with_clause does not take effect
+         --  until after the specification.
 
          if Nkind (Item) /= N_With_Clause
            or else Implicit_With (Item)
            or else Limited_Present (Item)
            or else Error_Posted (Item)
+
             --  Skip processing malformed trees
+
            or else (Try_Semantics
-                      and then Nkind (Name (Item)) not in N_Has_Entity)
+                     and then Nkind (Name (Item)) not in N_Has_Entity)
          then
             null;
 
