@@ -1,5 +1,51 @@
 2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch9.adb: minor style fixes in comments.
+	* sem_ch9.adb (Analyze_Delay_Relative): in GNATprove mode a delay
+	relative statement introduces an implicit dependency on
+	Ada.Real_Time.Clock_Time.
+	* sem_util.adb: Minor reformatting.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Aspect Alignment
+	must be treated as delayed aspect even if the expression is
+	a literal, because the aspect affects the freezing and the
+	elaboration of the object to which it applies.
+
+2017-01-20  Tristan Gingold  <gingold@adacore.com>
+
+	* s-osinte-vxworks.ads (Interrup_Range): New subtype.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Do not warn about the
+	presence of a pragma Unreferenced if the entity appears as the
+	actual in a procedure call that does not come from source.
+
+2017-01-20  Pascal Obry  <obry@adacore.com>
+
+	* expect.c, terminals.c: Fix some warnings about unused variables.
+	* gsocket.h, adaint.c, adaint.h: Fix some more warnings in the C part
+	of the runtime.
+
+2017-01-20  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Constrained): Apply an access check (check that
+	the prefix is not null) when the prefix denotes an object of an
+	access type; that is, when there is an implicit dereference.
+
+2017-01-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* s-rident.ads (constant Profile_Info): Remove
+	No_Calendar from GNAT_Extended_Ravenscar restrictions.
+
+2017-01-20  Tristan Gingold  <gingold@adacore.com>
+
+	*  s-maccod.ads: Add pragma No_Elaboration_Code_All
+
+2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* ghost.adb (Mark_Ghost_Clause): New routine.
 	(Prune_Node): Do not prune compilation unit nodes.
 	(Remove_Ignored_Ghost_Code): Prune the compilation unit node directly.

@@ -863,6 +863,14 @@ package body Lib.Xref is
             elsif Is_On_LHS (N) then
                null;
 
+            --  No warning if the reference is in a call that does not come
+            --  from source (e.g. a call to a controlled type primitive).
+
+            elsif not Comes_From_Source (Parent (N))
+              and then Nkind (Parent (N)) = N_Procedure_Call_Statement
+            then
+               null;
+
             --  For entry formals, we want to place the warning message on the
             --  corresponding entity in the accept statement. The current scope
             --  is the body of the accept, so we find the formal whose name

@@ -567,7 +567,6 @@ package System.Rident is
 
                            --  plus these additional restrictions:
 
-                           No_Calendar                      => True,
                            No_Implicit_Task_Allocations     => True,
                            No_Implicit_Protected_Object_Allocations
                                                             => True,

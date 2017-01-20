@@ -2044,9 +2044,12 @@ package body Sem_Ch13 is
                   if A_Id in Boolean_Aspects and then No (Expr) then
                      Delay_Required := False;
 
-                  --  For non-Boolean aspects, don't delay if integer literal
+                  --  For non-Boolean aspects, don't delay if integer literal,
+                  --  unless the aspect is Alignment, which affects the
+                  --  freezing of an initialized object.
 
                   elsif A_Id not in Boolean_Aspects
+                    and then A_Id /= Aspect_Alignment
                     and then Present (Expr)
                     and then Nkind (Expr) = N_Integer_Literal
                   then

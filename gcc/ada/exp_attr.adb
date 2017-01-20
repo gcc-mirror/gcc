@@ -2682,46 +2682,57 @@ package body Exp_Attr is
                         Res := True;
                      end if;
                   end if;
-
-               --  If the prefix is not a variable or is aliased, then
-               --  definitely true; if it's a formal parameter without an
-               --  associated extra formal, then treat it as constrained.
-
-               --  Ada 2005 (AI-363): An aliased prefix must be known to be
-               --  constrained in order to set the attribute to True.
-
-               elsif not Is_Variable (Pref)
-                 or else Present (Formal_Ent)
-                 or else (Ada_Version < Ada_2005
-                            and then Is_Aliased_View (Pref))
-                 or else (Ada_Version >= Ada_2005
-                            and then Is_Constrained_Aliased_View (Pref))
-               then
-                  Res := True;
-
-               --  Variable case, look at type to see if it is constrained.
-               --  Note that the one case where this is not accurate (the
-               --  procedure formal case), has been handled above.
-
-               --  We use the Underlying_Type here (and below) in case the
-               --  type is private without discriminants, but the full type
-               --  has discriminants. This case is illegal, but we generate it
-               --  internally for passing to the Extra_Constrained parameter.
-
                else
-                  --  In Ada 2012, test for case of a limited tagged type, in
-                  --  which case the attribute is always required to return
-                  --  True. The underlying type is tested, to make sure we also
-                  --  return True for cases where there is an unconstrained
-                  --  object with an untagged limited partial view which has
-                  --  defaulted discriminants (such objects always produce a
-                  --  False in earlier versions of Ada). (Ada 2012: AI05-0214)
 
-                  Res := Is_Constrained (Underlying_Type (Etype (Ent)))
-                           or else
-                             (Ada_Version >= Ada_2012
-                               and then Is_Tagged_Type (Underlying_Type (Ptyp))
-                               and then Is_Limited_Type (Ptyp));
+                  --  For access type, apply access check as needed
+
+                  if Is_Access_Type (Ptyp) then
+                     Apply_Access_Check (N);
+                  end if;
+
+                  --  If the prefix is not a variable or is aliased, then
+                  --  definitely true; if it's a formal parameter without an
+                  --  associated extra formal, then treat it as constrained.
+
+                  --  Ada 2005 (AI-363): An aliased prefix must be known to be
+                  --  constrained in order to set the attribute to True.
+
+                  if not Is_Variable (Pref)
+                    or else Present (Formal_Ent)
+                    or else (Ada_Version < Ada_2005
+                               and then Is_Aliased_View (Pref))
+                    or else (Ada_Version >= Ada_2005
+                               and then Is_Constrained_Aliased_View (Pref))
+                  then
+                     Res := True;
+
+                  --  Variable case, look at type to see if it is constrained.
+                  --  Note that the one case where this is not accurate (the
+                  --  procedure formal case), has been handled above.
+
+                  --  We use the Underlying_Type here (and below) in case the
+                  --  type is private without discriminants, but the full type
+                  --  has discriminants. This case is illegal, but we generate
+                  --  it internally for passing to the Extra_Constrained
+                  --  parameter.
+
+                  else
+                     --  In Ada 2012, test for case of a limited tagged type,
+                     --  in which case the attribute is always required to
+                     --  return True. The underlying type is tested, to make
+                     --  sure we also return True for cases where there is an
+                     --  unconstrained object with an untagged limited partial
+                     --  view which has defaulted discriminants (such objects
+                     --  always produce a False in earlier versions of
+                     --  Ada). (Ada 2012: AI05-0214)
+
+                     Res :=
+                       Is_Constrained (Underlying_Type (Etype (Ent)))
+                         or else
+                           (Ada_Version >= Ada_2012
+                             and then Is_Tagged_Type (Underlying_Type (Ptyp))
+                             and then Is_Limited_Type (Ptyp));
+                  end if;
                end if;
 
                Rewrite (N, New_Occurrence_Of (Boolean_Literals (Res), Loc));

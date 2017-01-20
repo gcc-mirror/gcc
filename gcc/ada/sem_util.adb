@@ -16151,9 +16151,9 @@ package body Sem_Util is
    -- NCT_Assoc --
    ---------------
 
-   --  The hash table NCT_Assoc associates old entities in the table
-   --  with their corresponding new entities (i.e. the pairs of entries
-   --  presented in the original Map argument are Key-Element pairs).
+   --  The hash table NCT_Assoc associates old entities in the table with their
+   --  corresponding new entities (i.e. the pairs of entries presented in the
+   --  original Map argument are Key-Element pairs).
 
    package NCT_Assoc is new Simple_HTable (
      Header_Num => NCT_Header_Num,
@@ -16167,10 +16167,10 @@ package body Sem_Util is
    -- NCT_Itype_Assoc --
    ---------------------
 
-   --  The hash table NCT_Itype_Assoc contains entries only for those
-   --  old nodes which have a non-empty Associated_Node_For_Itype set.
-   --  The key is the associated node, and the element is the new node
-   --  itself (NOT the associated node for the new node).
+   --  The hash table NCT_Itype_Assoc contains entries only for those old
+   --  nodes which have a non-empty Associated_Node_For_Itype set. The key
+   --  is the associated node, and the element is the new node itself (NOT
+   --  the associated node for the new node).
 
    package NCT_Itype_Assoc is new Simple_HTable (
      Header_Num => NCT_Header_Num,
@@ -16227,9 +16227,9 @@ package body Sem_Util is
       --  Called during first phase to visit all elements of an Elist
 
       procedure Visit_Field (F : Union_Id; N : Node_Id);
-      --  Visit a single field, recursing to call Visit_Node or Visit_List
-      --  if the field is a syntactic descendant of the current node (i.e.
-      --  its parent is Node N).
+      --  Visit a single field, recursing to call Visit_Node or Visit_List if
+      --  the field is a syntactic descendant of the current node (i.e. its
+      --  parent is Node N).
 
       procedure Visit_Itype (Old_Itype : Entity_Id);
       --  Called during first phase to visit subsidiary fields of a defining
@@ -16286,6 +16286,7 @@ package body Sem_Util is
       procedure Build_NCT_Hash_Tables is
          Elmt : Elmt_Id;
          Ent  : Entity_Id;
+
       begin
          if NCT_Hash_Table_Setup then
             NCT_Assoc.Reset;
@@ -16309,9 +16310,9 @@ package body Sem_Util is
                begin
                   if Present (Anode) then
 
-                     --  Enter a link between the associated node of the
-                     --  old Itype and the new Itype, for updating later
-                     --  when node is copied.
+                     --  Enter a link between the associated node of the old
+                     --  Itype and the new Itype, for updating later when node
+                     --  is copied.
 
                      NCT_Itype_Assoc.Set (Anode, Node (Elmt));
                   end if;
@@ -16470,19 +16471,18 @@ package body Sem_Util is
                if Nkind (Old_E) = N_Parameter_Association
                  and then Present (Next_Named_Actual (Old_E))
                then
-                  if First_Named_Actual (Old_Node)
-                    = Explicit_Actual_Parameter (Old_E)
+                  if First_Named_Actual (Old_Node) =
+                       Explicit_Actual_Parameter (Old_E)
                   then
                      Set_First_Named_Actual
                        (New_Node, Explicit_Actual_Parameter (New_E));
                   end if;
 
-                  --  Now scan parameter list from the beginning,to locate
+                  --  Now scan parameter list from the beginning, to locate
                   --  next named actual, which can be out of order.
 
                   Old_Next := First (Parameter_Associations (Old_Node));
                   New_Next := First (Parameter_Associations (New_Node));
-
                   while Nkind (Old_Next) /= N_Parameter_Association
                     or else Explicit_Actual_Parameter (Old_Next) /=
                                               Next_Named_Actual (Old_E)
@@ -16728,8 +16728,8 @@ package body Sem_Util is
 
             --  Note: the exclusion of self-referential copies is just an
             --  optimization, since the search of the already copied list
-            --  would catch it, but it is a common case (Etype pointing
-            --  to itself for an Itype that is a base type).
+            --  would catch it, but it is a common case (Etype pointing to
+            --  itself for an Itype that is a base type).
 
             elsif Has_Extension (Node_Id (F))
               and then Is_Itype (Entity_Id (F))
@@ -16785,8 +16785,8 @@ package body Sem_Util is
 
          New_Itype := New_Copy (Old_Itype);
 
-         --  The new Itype has all the attributes of the old one, and
-         --  we just copy the contents of the entity. However, the back-end
+         --  The new Itype has all the attributes of the old one, and we
+         --  just copy the contents of the entity. However, the back-end
          --  needs different names for debugging purposes, so we create a
          --  new internal name for it in all cases.
 
@@ -16803,7 +16803,6 @@ package body Sem_Util is
             --  Case of hash tables used
 
             if NCT_Hash_Tables_Used then
-
                Ent := NCT_Assoc.Get (Associated_Node_For_Itype (Old_Itype));
 
                if Present (Ent) then
@@ -16811,11 +16810,12 @@ package body Sem_Util is
                end if;
 
                Ent := NCT_Itype_Assoc.Get (Old_Itype);
+
                if Present (Ent) then
                   Set_Associated_Node_For_Itype (Ent, New_Itype);
 
-               --  If the hash table has no association for this Itype and
-               --  its associated node, enter one now.
+               --  If the hash table has no association for this Itype and its
+               --  associated node, enter one now.
 
                else
                   NCT_Itype_Assoc.Set
@@ -16872,7 +16872,7 @@ package body Sem_Util is
          --  If a record subtype is simply copied, the entity list will be
          --  shared. Thus cloned_Subtype must be set to indicate the sharing.
 
-         if Ekind_In (Old_Itype, E_Record_Subtype, E_Class_Wide_Subtype) then
+         if Ekind_In (Old_Itype, E_Class_Wide_Subtype, E_Record_Subtype) then
             Set_Cloned_Subtype (New_Itype, Old_Itype);
          end if;
 
@@ -16889,14 +16889,14 @@ package body Sem_Util is
 
          elsif Is_Array_Type (Old_Itype) then
             if Present (First_Index (Old_Itype)) then
-               Visit_Field (Union_Id (List_Containing
-                                (First_Index (Old_Itype))),
-                            Old_Itype);
+               Visit_Field
+                 (Union_Id (List_Containing (First_Index (Old_Itype))),
+                  Old_Itype);
             end if;
 
             if Is_Packed (Old_Itype) then
-               Visit_Field (Union_Id (Packed_Array_Impl_Type (Old_Itype)),
-                            Old_Itype);
+               Visit_Field
+                 (Union_Id (Packed_Array_Impl_Type (Old_Itype)), Old_Itype);
             end if;
          end if;
       end Visit_Itype;
@@ -16923,17 +16923,14 @@ package body Sem_Util is
       ----------------
 
       procedure Visit_Node (N : Node_Or_Entity_Id) is
-
-      --  Start of processing for Visit_Node
-
       begin
          --  Handle case of an Itype, which must be copied
 
          if Has_Extension (N) and then Is_Itype (N) then
 
             --  Nothing to do if already in the list. This can happen with an
-            --  Itype entity that appears more than once in the tree.
-            --  Note that we do not want to visit descendants in this case.
+            --  Itype entity that appears more than once in the tree. Note that
+            --  we do not want to visit descendants in this case.
 
             --  Test for already in list when hash table is used
 
@@ -17005,13 +17002,13 @@ package body Sem_Util is
          end;
       end if;
 
-      --  Hash table set up if required, now start phase one by visiting
-      --  top node (we will recursively visit the descendants).
+      --  Hash table set up if required, now start phase one by visiting top
+      --  node (we will recursively visit the descendants).
 
       Visit_Node (Source);
 
-      --  Now the second phase of the copy can start. First we process
-      --  all the mapped entities, copying their descendants.
+      --  Now the second phase of the copy can start. First we process all the
+      --  mapped entities, copying their descendants.
 
       if Present (Actual_Map) then
          declare
@@ -17026,6 +17023,7 @@ package body Sem_Util is
                if Is_Itype (New_Itype) then
                   Copy_Itype_With_Replacement (New_Itype);
                end if;
+
                Next_Elmt (Elmt);
             end loop;
          end;

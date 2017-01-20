@@ -1162,6 +1162,19 @@ package body Sem_Ch9 is
       Check_Potentially_Blocking_Operation (N);
       Analyze_And_Resolve (E, Standard_Duration);
       Check_Restriction (No_Fixed_Point, E);
+
+      --  In SPARK mode the relative delay statement introduces an implicit
+      --  dependency on the Ada.Real_Time.Clock_Time abstract state, so we must
+      --  force the loading of the Ada.Real_Time package.
+
+      if GNATprove_Mode then
+         declare
+            Unused : Entity_Id;
+
+         begin
+            Unused := RTE (RO_RT_Time);
+         end;
+      end if;
    end Analyze_Delay_Relative;
 
    -------------------------
