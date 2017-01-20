@@ -1026,6 +1026,9 @@ package body Sem_Cat is
                              --  generic instantiation.
 
                              or else Error_Posted (Item))
+               and then not (Try_Semantics
+                             --  Skip processing malformed trees
+                             and then Nkind (Name (Item)) not in N_Has_Entity)
             then
                Entity_Of_Withed := Entity (Name (Item));
                Check_Categorization_Dependencies

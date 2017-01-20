@@ -1,3 +1,35 @@
+2017-01-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Access_Type_Declaration): Protect access to the
+	Entity attribute.
+	* sem_ch10.adb (Install_Siblings): Skip processing malformed trees.
+	* sem_cat.adb (Validate_Categoriztion_Dependency): Skip processing
+	malformed trees.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specification, case
+	Dynamic_Predicate): If the entity E is a subtype that inherits
+	a static predicate for its parent P,, the inherited and the
+	new predicate combine in the generated predicate function,
+	and E only has a dynamic predicate.
+
+2017-01-20  Tristan Gingold  <gingold@adacore.com>
+
+	* s-boustr.ads, s-boustr.adb: New package.
+	* Makefile.rtl: Add s-boustr.
+
+2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* inline.adb (Process_Formals): Qualify the
+	expression of a return statement when it yields a universal type.
+
+2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_All): Freeze the default
+	expressions of all eligible formal parameters that appear in
+	entries, entry families, and protected subprograms.
+
 2017-01-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Check_Nonoverridable_Aspects); Refine check
