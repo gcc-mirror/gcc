@@ -7776,7 +7776,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
   enum tree_code code;
   enum tree_code_class tclass;
 
-  if (t == NULL_TREE)
+  if (t == NULL_TREE || t == error_mark_node)
     {
       hstate.merge_hash (0);
       return;

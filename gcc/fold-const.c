@@ -2722,6 +2722,9 @@ combine_comparisons (location_t loc,
    If OEP_ADDRESS_OF is set, we are actually comparing addresses of objects,
    not values of expressions.
 
+   If OEP_LEXICOGRAPHIC is set, then also handle expressions with side-effects
+   such as MODIFY_EXPR, RETURN_EXPR, as well as STATEMENT_LISTs.
+
    Unless OEP_MATCH_SIDE_EFFECTS is set, the function returns false on
    any operand with side effect.  This is unnecesarily conservative in the
    case we know that arg0 and arg1 are in disjoint code paths (such as in
@@ -3154,6 +3157,23 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case BIT_INSERT_EXPR:
 	  return OP_SAME (0) && OP_SAME (1) && OP_SAME (2);
 
+	case MODIFY_EXPR:
+	case INIT_EXPR:
+	case COMPOUND_EXPR:
+	case PREDECREMENT_EXPR:
+	case PREINCREMENT_EXPR:
+	case POSTDECREMENT_EXPR:
+	case POSTINCREMENT_EXPR:
+	  if (flags & OEP_LEXICOGRAPHIC)
+	    return OP_SAME (0) && OP_SAME (1);
+	  return 0;
+
+	case CLEANUP_POINT_EXPR:
+	case EXPR_STMT:
+	  if (flags & OEP_LEXICOGRAPHIC)
+	    return OP_SAME (0);
+	  return 0;
+
 	default:
 	  return 0;
 	}
@@ -3190,7 +3210,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      cef &= ECF_CONST | ECF_PURE;
 	    else
 	      cef &= ECF_CONST;
-	    if (!cef)
+	    if (!cef && !(flags & OEP_LEXICOGRAPHIC))
 	      return 0;
 	  }
 
@@ -3269,7 +3289,38 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	    }
 	  return 1;
 	}
+      else if (TREE_CODE (arg0) == STATEMENT_LIST
+	       && (flags & OEP_LEXICOGRAPHIC))
+	{
+	  /* Compare the STATEMENT_LISTs.  */
+	  tree_stmt_iterator tsi1, tsi2;
+	  tree body1 = CONST_CAST_TREE (arg0);
+	  tree body2 = CONST_CAST_TREE (arg1);
+	  for (tsi1 = tsi_start (body1), tsi2 = tsi_start (body2); ;
+	       tsi_next (&tsi1), tsi_next (&tsi2))
+	    {
+	      /* The lists don't have the same number of statements.  */
+	      if (tsi_end_p (tsi1) ^ tsi_end_p (tsi2))
+		return 0;
+	      if (tsi_end_p (tsi1) && tsi_end_p (tsi2))
+		return 1;
+	      if (!operand_equal_p (tsi_stmt (tsi1), tsi_stmt (tsi2),
+				    OEP_LEXICOGRAPHIC))
+		return 0;
+	    }
+	}
       return 0;
+
+    case tcc_statement:
+      switch (TREE_CODE (arg0))
+	{
+	case RETURN_EXPR:
+	  if (flags & OEP_LEXICOGRAPHIC)
+	    return OP_SAME_WITH_NULL (0);
+	  return 0;
+	default:
+	  return 0;
+	 }
 
     default:
       return 0;
@@ -13897,7 +13948,7 @@ fold_build_cleanup_point_expr (tree type, tree expr)
         return expr;
     }
 
-  return build1 (CLEANUP_POINT_EXPR, type, expr);
+  return build1_loc (EXPR_LOCATION (expr), CLEANUP_POINT_EXPR, type, expr);
 }
 
 /* Given a pointer value OP0 and a type TYPE, return a simplified version

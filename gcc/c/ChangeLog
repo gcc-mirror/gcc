@@ -1,3 +1,8 @@
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64279
+	* c-typeck.c (build_conditional_expr): Warn about duplicated branches.
+
 2017-01-13  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_compound_statement): Handle

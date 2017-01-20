@@ -1537,6 +1537,7 @@ extern void maybe_warn_bool_compare (location_t, enum tree_code, tree, tree);
 extern bool maybe_warn_shift_overflow (location_t, tree, tree);
 extern void warn_duplicated_cond_add_or_warn (location_t, tree, vec<tree> **);
 extern bool diagnose_mismatched_attributes (tree, tree);
+extern tree do_warn_duplicated_branches_r (tree *, int *, void *);
 
 /* In c-attribs.c.  */
 extern bool attribute_takes_identifier_p (const_tree);

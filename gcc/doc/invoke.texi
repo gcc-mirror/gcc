@@ -3734,7 +3734,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
 -Wbool-compare  @gol
 -Wbool-operation  @gol
--Wc++11-compat  -Wc++14-compat@gol
+-Wc++11-compat  -Wc++14-compat  @gol
 -Wchar-subscripts  @gol
 -Wcomment  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
@@ -5262,6 +5262,22 @@ which rarely makes sense.  (In C++, decrementing a boolean is always invalid.
 Incrementing a boolean is invalid in C++1z, and deprecated otherwise.)
 
 This warning is enabled by @option{-Wall}.
+
+@item -Wduplicated-branches
+@opindex Wno-duplicated-branches
+@opindex Wduplicated-branches
+Warn when an if-else has identical branches.  This warning detects cases like
+@smallexample
+if (p != NULL)
+  return 0;
+else
+  return 0;
+@end smallexample
+It doesn't warn when both branches contain just a null statement.  This warning
+also warn for conditional operators:
+@smallexample
+  int i = x ? *p : *p;
+@end smallexample
 
 @item -Wduplicated-cond
 @opindex Wno-duplicated-cond

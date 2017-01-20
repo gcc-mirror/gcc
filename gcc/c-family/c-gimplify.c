@@ -125,6 +125,10 @@ c_genericize (tree fndecl)
 		 &pset);
     }
 
+  if (warn_duplicated_branches)
+    walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+				  do_warn_duplicated_branches_r, NULL);
+
   /* Dump the C-specific tree IR.  */
   dump_orig = get_dump_info (TDI_original, &local_dump_flags);
   if (dump_orig)

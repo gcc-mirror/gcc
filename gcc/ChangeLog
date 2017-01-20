@@ -1,3 +1,17 @@
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64279
+	* doc/invoke.texi: Document -Wduplicated-branches.
+	* fold-const.c (operand_equal_p): Handle MODIFY_EXPR, INIT_EXPR,
+	COMPOUND_EXPR, PREDECREMENT_EXPR, PREINCREMENT_EXPR,
+	POSTDECREMENT_EXPR, POSTINCREMENT_EXPR, CLEANUP_POINT_EXPR, EXPR_STMT,
+	STATEMENT_LIST, and RETURN_EXPR.  For non-pure non-const functions
+	return 0 only when not OEP_LEXICOGRAPHIC.
+	(fold_build_cleanup_point_expr): Use the expression
+	location when building CLEANUP_POINT_EXPR.
+	* tree-core.h (enum operand_equal_flag): Add OEP_LEXICOGRAPHIC.
+	* tree.c (add_expr): Handle error_mark_node.
+
 2017-01-20  Martin Liska  <mliska@suse.cz>
 
 	PR lto/69188

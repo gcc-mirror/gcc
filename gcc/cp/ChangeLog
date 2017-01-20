@@ -1,3 +1,10 @@
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64279
+	* call.c (build_conditional_expr_1): Warn about duplicated branches.
+	* semantics.c (finish_expr_stmt): Build statement using the proper
+	location.
+
 2017-01-19  Jason Merrill  <jason@redhat.com>
 
 	US 20 - forwarding references and class template argument deduction
