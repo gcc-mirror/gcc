@@ -118,10 +118,23 @@ void test04()
   ExplicitCopy ec2{any_cast<ExplicitCopy>(std::move(x))};
 }
 
+void test05()
+{
+  // PR libstdc++/69321
+  struct noncopyable {
+    noncopyable(noncopyable const&) = delete;
+  };
+
+  any a;
+  auto p = any_cast<noncopyable>(&a);
+  VERIFY( p == nullptr );
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  test05();
 }
