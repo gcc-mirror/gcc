@@ -1,3 +1,9 @@
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79152
+	* gimplify.c (should_warn_for_implicit_fallthrough): Handle consecutive
+	non-case labels.
+
 2017-01-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	* omp-expand.c (expand_omp_simd): Clear PROP_gimple_lomp_dev regardless
