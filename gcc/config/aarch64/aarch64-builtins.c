@@ -376,6 +376,10 @@ enum aarch64_builtins
   AARCH64_CRC32_BUILTIN_BASE,
   AARCH64_CRC32_BUILTINS
   AARCH64_CRC32_BUILTIN_MAX,
+  /* ARMv8.3-A Pointer Authentication Builtins.  */
+  AARCH64_PAUTH_BUILTIN_AUTIA1716,
+  AARCH64_PAUTH_BUILTIN_PACIA1716,
+  AARCH64_PAUTH_BUILTIN_XPACLRI,
   AARCH64_BUILTIN_MAX
 };
 
@@ -923,6 +927,33 @@ aarch64_init_fp16_types (void)
   aarch64_fp16_ptr_type_node = build_pointer_type (aarch64_fp16_type_node);
 }
 
+/* Pointer authentication builtins that will become NOP on legacy platform.
+   Currently, these builtins are for internal use only (libgcc EH unwinder).  */
+
+void
+aarch64_init_pauth_hint_builtins (void)
+{
+  /* Pointer Authentication builtins.  */
+  tree ftype_pointer_auth
+    = build_function_type_list (ptr_type_node, ptr_type_node,
+				unsigned_intDI_type_node, NULL_TREE);
+  tree ftype_pointer_strip
+    = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
+
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_AUTIA1716]
+    = add_builtin_function ("__builtin_aarch64_autia1716", ftype_pointer_auth,
+			    AARCH64_PAUTH_BUILTIN_AUTIA1716, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_PACIA1716]
+    = add_builtin_function ("__builtin_aarch64_pacia1716", ftype_pointer_auth,
+			    AARCH64_PAUTH_BUILTIN_PACIA1716, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_XPACLRI]
+    = add_builtin_function ("__builtin_aarch64_xpaclri", ftype_pointer_strip,
+			    AARCH64_PAUTH_BUILTIN_XPACLRI, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+}
+
 void
 aarch64_init_builtins (void)
 {
@@ -951,6 +982,10 @@ aarch64_init_builtins (void)
 
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
+
+/* Initialize pointer authentication builtins which are backed by instructions
+   in NOP encoding space.  */
+  aarch64_init_pauth_hint_builtins ();
 }
 
 tree
@@ -1292,6 +1327,44 @@ aarch64_expand_builtin (tree exp,
 	  pat = GEN_FCN (icode) (op0);
 	}
       emit_insn (pat);
+      return target;
+
+    case AARCH64_PAUTH_BUILTIN_AUTIA1716:
+    case AARCH64_PAUTH_BUILTIN_PACIA1716:
+    case AARCH64_PAUTH_BUILTIN_XPACLRI:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = force_reg (Pmode, expand_normal (arg0));
+
+      if (!target)
+	target = gen_reg_rtx (Pmode);
+      else
+	target = force_reg (Pmode, target);
+
+      emit_move_insn (target, op0);
+
+      if (fcode == AARCH64_PAUTH_BUILTIN_XPACLRI)
+	{
+	  rtx lr = gen_rtx_REG (Pmode, R30_REGNUM);
+	  icode = CODE_FOR_xpaclri;
+	  emit_move_insn (lr, op0);
+	  emit_insn (GEN_FCN (icode) ());
+	  emit_move_insn (target, lr);
+	}
+      else
+	{
+	  tree arg1 = CALL_EXPR_ARG (exp, 1);
+	  rtx op1 = force_reg (Pmode, expand_normal (arg1));
+	  icode = (fcode == AARCH64_PAUTH_BUILTIN_PACIA1716
+		   ? CODE_FOR_paci1716 : CODE_FOR_auti1716);
+
+	  rtx x16_reg = gen_rtx_REG (Pmode, R16_REGNUM);
+	  rtx x17_reg = gen_rtx_REG (Pmode, R17_REGNUM);
+	  emit_move_insn (x17_reg, op0);
+	  emit_move_insn (x16_reg, op1);
+	  emit_insn (GEN_FCN (icode) ());
+	  emit_move_insn (target, x17_reg);
+	}
+
       return target;
     }
 
