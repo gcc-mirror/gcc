@@ -614,8 +614,8 @@ package body Einfo is
    --    Is_Ignored_Transient            Flag295
    --    Has_Partial_Visible_Refinement  Flag296
    --    Is_Entry_Wrapper                Flag297
+   --    Is_Underlying_Full_View         Flag298
 
-   --    (unused)                        Flag298
    --    (unused)                        Flag299
    --    (unused)                        Flag300
 
@@ -2611,6 +2611,11 @@ package body Einfo is
    begin
       return Flag117 (Implementation_Base_Type (Id));
    end Is_Unchecked_Union;
+
+   function Is_Underlying_Full_View (Id : E) return B is
+   begin
+      return Flag298 (Id);
+   end Is_Underlying_Full_View;
 
    function Is_Underlying_Record_View (Id : E) return B is
    begin
@@ -5708,6 +5713,12 @@ package body Einfo is
       pragma Assert (Id = Base_Type (Id));
       Set_Flag117 (Id, V);
    end Set_Is_Unchecked_Union;
+
+   procedure Set_Is_Underlying_Full_View (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag298 (Id, V);
+   end Set_Is_Underlying_Full_View;
 
    procedure Set_Is_Underlying_Record_View (Id : E; V : B := True) is
    begin
@@ -9457,6 +9468,7 @@ package body Einfo is
       W ("Is_Trivial_Subprogram",           Flag235 (Id));
       W ("Is_True_Constant",                Flag163 (Id));
       W ("Is_Unchecked_Union",              Flag117 (Id));
+      W ("Is_Underlying_Full_View",         Flag298 (Id));
       W ("Is_Underlying_Record_View",       Flag246 (Id));
       W ("Is_Unimplemented",                Flag284 (Id));
       W ("Is_Unsigned_Type",                Flag144 (Id));

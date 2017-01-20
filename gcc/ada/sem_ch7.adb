@@ -2178,6 +2178,7 @@ package body Sem_Ch7 is
                then
                   Set_Full_View (Id, Underlying_Full_View (Full));
                   Set_Underlying_Full_View (Id, Full);
+                  Set_Is_Underlying_Full_View (Full);
 
                   Set_Underlying_Full_View (Full, Empty);
                   Set_Is_Frozen (Full_View (Id));

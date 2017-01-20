@@ -2171,11 +2171,14 @@ package body Sem_Cat is
       --  Error if the name is a primary in an expression. The parent must not
       --  be an operator, or a selected component or an indexed component that
       --  is itself a primary. Entities that are actuals do not need to be
-      --  checked, because the call itself will be diagnosed.
+      --  checked, because the call itself will be diagnosed. Entities in a
+      --  generic unit or within a preanalyzed expression are not checked:
+      --  only their use in executable code matters.
 
       if Is_Primary (N)
         and then (not Inside_A_Generic
                    or else Present (Enclosing_Generic_Body (N)))
+        and then not In_Spec_Expression
       then
          if Ekind (Entity (N)) = E_Variable
            or else Ekind (Entity (N)) in Formal_Object_Kind

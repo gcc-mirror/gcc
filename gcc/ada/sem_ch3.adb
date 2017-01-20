@@ -7444,6 +7444,7 @@ package body Sem_Ch3 is
                   Set_Full_View (Derived_Type, Full_Der);
                else
                   Set_Underlying_Full_View (Derived_Type, Full_Der);
+                  Set_Is_Underlying_Full_View (Full_Der);
                end if;
 
                if not Is_Base_Type (Derived_Type) then
@@ -7501,6 +7502,7 @@ package body Sem_Ch3 is
             Set_Full_View (Derived_Type, Full_Der);
          else
             Set_Underlying_Full_View (Derived_Type, Full_Der);
+            Set_Is_Underlying_Full_View (Full_Der);
          end if;
 
          --  In any case, the primitive operations are inherited from the
@@ -7607,6 +7609,7 @@ package body Sem_Ch3 is
             else
                Build_Full_Derivation;
                Set_Underlying_Full_View (Derived_Type, Full_Der);
+               Set_Is_Underlying_Full_View (Full_Der);
             end if;
 
             --  The full view will be used to swap entities on entry/exit to
@@ -10018,6 +10021,7 @@ package body Sem_Ch3 is
 
       Analyze (Indic);
       Set_Underlying_Full_View (Typ, Full_View (Subt));
+      Set_Is_Underlying_Full_View (Full_View (Subt));
    end Build_Underlying_Full_View;
 
    -------------------------------

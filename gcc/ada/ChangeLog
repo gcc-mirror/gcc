@@ -1,5 +1,44 @@
 2017-01-20  Yannick Moy  <moy@adacore.com>
 
+	* sem_ch10.adb (Check_No_Elab_Code_All): Do not issue an error
+	on implicitly with'ed units in GNATprove mode.
+	* sinfo.ads (Implicit_With): Document use of flag for implicitly
+	with'ed units in GNATprove mode.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_cat.adb (Validate_Static_Object_Name): In a preelaborated
+	unit Do not report an error on a non-static entity that appears
+	in the context of a spec expression, such as an aspect expression.
+
+2017-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag298 now denotes Is_Underlying_Full_View.
+	(Is_Underlying_Full_View): New routine.
+	(Set_Is_Underlying_Full_View): New routine.
+	(Write_Entity_Flags): Add an entry for Is_Underlying_Full_View.
+	* einfo.ads Add new attribute Is_Underlying_Full_View.
+	(Is_Underlying_Full_View): New routine along with pragma Inline.
+	(Set_Is_Underlying_Full_View): New routine along with pragma Inline.
+	* exp_util.adb (Build_DIC_Procedure_Body): Do not consider
+	class-wide types and underlying full views. The first subtype
+	is used as the working type for all Itypes, not just array base types.
+	(Build_DIC_Procedure_Declaration): Do not consider
+	class-wide types and underlying full views. The first subtype
+	is used as the working type for all Itypes, not just array
+	base types.
+	* freeze.adb (Freeze_Entity): Inherit the freeze node of a full
+	view or an underlying full view without clobbering the attributes
+	of a previous freeze node.
+	(Inherit_Freeze_Node): New routine.
+	* sem_ch3.adb (Build_Derived_Private_Type): Mark an underlying
+	full view as such.
+	(Build_Underlying_Full_View): Mark an underlying full view as such.
+	* sem_ch7.adb (Install_Private_Declarations): Mark an underlying
+	full view as such.
+
+2017-01-20  Yannick Moy  <moy@adacore.com>
+
 	* sinfo.ads: Document lack of Do_Division_Check flag
 	on float exponentiation.
 
