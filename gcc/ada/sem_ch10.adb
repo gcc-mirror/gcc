@@ -6116,6 +6116,14 @@ package body Sem_Ch10 is
                if Nkind (CI) = N_With_Clause
                  and then not
                    No_Elab_Code_All (Get_Source_Unit (Library_Unit (CI)))
+
+                 --  In GNATprove mode, some runtime units are implicitly
+                 --  loaded to make their entities available for analysis. In
+                 --  this case, ignore violations of No_Elaboration_Code_All
+                 --  for this special analysis mode.
+
+                 and then not
+                   (GNATprove_Mode and then Implicit_With (CI))
                then
                   Error_Msg_Sloc := Sloc (No_Elab_Code_All_Pragma);
                   Error_Msg_N

@@ -2087,6 +2087,12 @@ package body Freeze is
       --  Determine whether an arbitrary entity is subject to Boolean aspect
       --  Import and its value is specified as True.
 
+      procedure Inherit_Freeze_Node
+        (Fnod : Node_Id;
+         Typ  : Entity_Id);
+      --  Set type Typ's freeze node to refer to Fnode. This routine ensures
+      --  that any attributes attached to Typ's original node are preserved.
+
       procedure Wrap_Imported_Subprogram (E : Entity_Id);
       --  If E is an entity for an imported subprogram with pre/post-conditions
       --  then this procedure will create a wrapper to ensure that proper run-
@@ -4726,6 +4732,60 @@ package body Freeze is
          return False;
       end Has_Boolean_Aspect_Import;
 
+      -------------------------
+      -- Inherit_Freeze_Node --
+      -------------------------
+
+      procedure Inherit_Freeze_Node
+        (Fnod : Node_Id;
+         Typ  : Entity_Id)
+      is
+         Typ_Fnod : constant Node_Id := Freeze_Node (Typ);
+
+      begin
+         Set_Freeze_Node (Typ, Fnod);
+         Set_Entity (Fnod, Typ);
+
+         --  The input type had an existing node. Propagate relevant attributes
+         --  from the old freeze node to the inherited freeze node.
+
+         --  ??? if both freeze nodes have attributes, would they differ?
+
+         if Present (Typ_Fnod) then
+
+            --  Attribute Access_Types_To_Process
+
+            if Present (Access_Types_To_Process (Typ_Fnod))
+              and then No (Access_Types_To_Process (Fnod))
+            then
+               Set_Access_Types_To_Process (Fnod,
+                 Access_Types_To_Process (Typ_Fnod));
+            end if;
+
+            --  Attribute Actions
+
+            if Present (Actions (Typ_Fnod)) and then No (Actions (Fnod)) then
+               Set_Actions (Fnod, Actions (Typ_Fnod));
+            end if;
+
+            --  Attribute First_Subtype_Link
+
+            if Present (First_Subtype_Link (Typ_Fnod))
+              and then No (First_Subtype_Link (Fnod))
+            then
+               Set_First_Subtype_Link (Fnod, First_Subtype_Link (Typ_Fnod));
+            end if;
+
+            --  Attribute TSS_Elist
+
+            if Present (TSS_Elist (Typ_Fnod))
+              and then No (TSS_Elist (Fnod))
+            then
+               Set_TSS_Elist (Fnod, TSS_Elist (Typ_Fnod));
+            end if;
+         end if;
+      end Inherit_Freeze_Node;
+
       ------------------------------
       -- Wrap_Imported_Subprogram --
       ------------------------------
@@ -5776,9 +5836,9 @@ package body Freeze is
                         F_Node := Freeze_Node (Full);
 
                         if Present (F_Node) then
-                           Set_Freeze_Node (Full_View (E), F_Node);
-                           Set_Entity (F_Node, Full_View (E));
-
+                           Inherit_Freeze_Node
+                             (Fnod => F_Node,
+                              Typ  => Full_View (E));
                         else
                            Set_Has_Delayed_Freeze (Full_View (E), False);
                            Set_Freeze_Node (Full_View (E), Empty);
@@ -5789,9 +5849,9 @@ package body Freeze is
                         F_Node := Freeze_Node (Full_View (E));
 
                         if Present (F_Node) then
-                           Set_Freeze_Node (E, F_Node);
-                           Set_Entity (F_Node, E);
-
+                           Inherit_Freeze_Node
+                             (Fnod => F_Node,
+                              Typ  => E);
                         else
                            --  {Incomplete,Private}_Subtypes with Full_Views
                            --  constrained by discriminants.
@@ -5847,9 +5907,9 @@ package body Freeze is
                   F_Node := Freeze_Node (Underlying_Full_View (E));
 
                   if Present (F_Node) then
-                     Set_Freeze_Node (E, F_Node);
-                     Set_Entity (F_Node, E);
-
+                     Inherit_Freeze_Node
+                       (Fnod => F_Node,
+                        Typ  => E);
                   else
                      Set_Has_Delayed_Freeze (E, False);
                      Set_Freeze_Node (E, Empty);

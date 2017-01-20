@@ -1736,13 +1736,24 @@ package body Exp_Util is
    --  Start of processing for Build_DIC_Procedure_Body
 
    begin
-      Work_Typ := Typ;
+      Work_Typ := Base_Type (Typ);
 
-      --  The input type denotes the implementation base type of a constrained
-      --  array type. Work with the first subtype as the DIC pragma is on its
-      --  rep item chain.
+      --  Do not process class-wide types as these are Itypes, but lack a first
+      --  subtype (see below).
 
-      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+      if Is_Class_Wide_Type (Work_Typ) then
+         return;
+
+      --  Do not process the underlying full view of a private type. There is
+      --  no way to get back to the partial view, plus the body will be built
+      --  by the full view or the base type.
+
+      elsif Is_Underlying_Full_View (Work_Typ) then
+         return;
+
+      --  Use the first subtype when dealing with various base types
+
+      elsif Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
 
       --  The input denotes the corresponding record type of a protected or a
@@ -1964,13 +1975,24 @@ package body Exp_Util is
       --  The working type
 
    begin
-      Work_Typ := Typ;
+      Work_Typ := Base_Type (Typ);
 
-      --  The input type denotes the implementation base type of a constrained
-      --  array type. Work with the first subtype as the DIC pragma is on its
-      --  rep item chain.
+      --  Do not process class-wide types as these are Itypes, but lack a first
+      --  subtype (see below).
 
-      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
+      if Is_Class_Wide_Type (Work_Typ) then
+         return;
+
+      --  Do not process the underlying full view of a private type. There is
+      --  no way to get back to the partial view, plus the body will be built
+      --  by the full view or the base type.
+
+      elsif Is_Underlying_Full_View (Work_Typ) then
+         return;
+
+      --  Use the first subtype when dealing with various base types
+
+      elsif Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
 
       --  The input denotes the corresponding record type of a protected or a
