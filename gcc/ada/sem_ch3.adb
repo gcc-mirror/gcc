@@ -2781,44 +2781,48 @@ package body Sem_Ch3 is
       ----------------------------------
 
       procedure Check_Nonoverridable_Aspects is
-         Prev_Aspects   : constant List_Id :=
-                            Aspect_Specifications (Parent (Def_Id));
-         Par_Type       : Entity_Id;
-
-         function Has_Aspect_Spec
-           (Specs : List_Id;
-            Aspect_Name : Name_Id) return Boolean;
+         function Get_Aspect_Spec
+           (Specs       : List_Id;
+            Aspect_Name : Name_Id) return Node_Id;
          --  Check whether a list of aspect specifications includes an entry
          --  for a specific aspect. The list is either that of a partial or
          --  a full view.
 
          ---------------------
-         -- Has_Aspect_Spec --
+         -- Get_Aspect_Spec --
          ---------------------
 
-         function Has_Aspect_Spec
-           (Specs : List_Id;
-            Aspect_Name : Name_Id) return Boolean
+         function Get_Aspect_Spec
+           (Specs       : List_Id;
+            Aspect_Name : Name_Id) return Node_Id
          is
             Spec : Node_Id;
+
          begin
             Spec := First (Specs);
             while Present (Spec) loop
                if Chars (Identifier (Spec)) = Aspect_Name then
-                  return True;
+                  return Spec;
                end if;
                Next (Spec);
             end loop;
-            return False;
-         end Has_Aspect_Spec;
+
+            return Empty;
+         end Get_Aspect_Spec;
+
+         --  Local variables
+
+         Prev_Aspects   : constant List_Id :=
+                            Aspect_Specifications (Parent (Def_Id));
+         Par_Type       : Entity_Id;
+         Prev_Aspect    : Node_Id;
 
       --  Start of processing for Check_Nonoverridable_Aspects
 
       begin
-
-         --  Get parent type of derived type. Note that Prev is the entity
-         --  in the partial declaration, but its contents are now those of
-         --  full view, while Def_Id reflects the partial view.
+         --  Get parent type of derived type. Note that Prev is the entity in
+         --  the partial declaration, but its contents are now those of full
+         --  view, while Def_Id reflects the partial view.
 
          if Is_Private_Type (Def_Id) then
             Par_Type := Etype (Full_View (Def_Id));
@@ -2834,10 +2838,13 @@ package body Sem_Ch3 is
            and then Present (Discriminant_Specifications (Parent (Prev)))
            and then Present (Get_Reference_Discriminant (Par_Type))
          then
-            if
-              not Has_Aspect_Spec (Prev_Aspects, Name_Implicit_Dereference)
-                and then Present
-                  (Discriminant_Specifications (Original_Node (Parent (Prev))))
+            Prev_Aspect :=
+              Get_Aspect_Spec (Prev_Aspects, Name_Implicit_Dereference);
+
+            if No (Prev_Aspect)
+              and then Present
+                         (Discriminant_Specifications
+                           (Original_Node (Parent (Prev))))
             then
                Error_Msg_N
                  ("type does not inherit implicit dereference", Prev);
@@ -2847,13 +2854,27 @@ package body Sem_Ch3 is
                --  is consistent with that of the parent.
 
                declare
-                  Par_Discr : constant Entity_Id :=
+                  Par_Discr  : constant Entity_Id :=
                                 Get_Reference_Discriminant (Par_Type);
-                  Cur_Discr : constant Entity_Id :=
+                  Cur_Discr  : constant Entity_Id :=
                                 Get_Reference_Discriminant (Prev);
+
                begin
                   if Corresponding_Discriminant (Cur_Discr) /= Par_Discr then
                      Error_Msg_N ("aspect incosistent with that of parent", N);
+                  end if;
+
+                  --  Check that specification in partial view matches the
+                  --  inherited aspect. Compare names directly because aspect
+                  --  expression may not be analyzed.
+
+                  if Present (Prev_Aspect)
+                    and then Nkind (Expression (Prev_Aspect)) = N_Identifier
+                    and then Chars (Expression (Prev_Aspect)) /=
+                               Chars (Cur_Discr)
+                  then
+                     Error_Msg_N
+                       ("aspect incosistent with that of parent", N);
                   end if;
                end;
             end if;
@@ -9666,9 +9687,8 @@ package body Sem_Ch3 is
                   null;
 
                elsif Nkind (Parent (Parent (Def))) = N_Component_Declaration
-                 and then
-                   Has_Per_Object_Constraint
-                     (Defining_Identifier (Parent (Parent (Def))))
+                 and then Has_Per_Object_Constraint
+                            (Defining_Identifier (Parent (Parent (Def))))
                then
                   null;
 
@@ -9688,7 +9708,7 @@ package body Sem_Ch3 is
 
             if Ekind (Etype (Discr)) = E_Anonymous_Access_Type
               and then not Is_Class_Wide_Type
-                         (Designated_Type (Etype (Discr)))
+                             (Designated_Type (Etype (Discr)))
               and then Etype (Discr_Expr (J)) /= Any_Type
               and then Is_Class_Wide_Type
                          (Designated_Type (Etype (Discr_Expr (J))))
@@ -9702,7 +9722,7 @@ package body Sem_Ch3 is
             then
                Error_Msg_NE
                  ("constraint for discriminant& must be access to variable",
-                    Def, Discr);
+                  Def, Discr);
             end if;
          end if;
 

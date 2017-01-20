@@ -1,3 +1,37 @@
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Nonoverridable_Aspects); Refine check
+	for illegal inherited Implicit_Dereference aspects with renamed
+	discriminants.
+
+2017-01-20  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb (switch d.6): do not avoid declaring unreferenced itypes.
+	* nlists.ads (Lock_Lists, Unlock_Lists): New subprograms.
+	* nlists.adb (Lock_Lists, Unlock_Lists): New subprograms.
+	(Set_First, Set_Last, Set_List_Link, Set_Next, Set_Parent,
+	Set_Prev, Tree_Read): Adding assertion.
+	* atree.ads (Lock_Nodes, Unlock_Nodes): New subprograms.
+	* atree.adb (Lock_Nodes, Unlock_Nodes): New subprograms.
+	(Set_Analyzed, Set_Check_Actuals, Set_Comes_From_Source,
+	Set_Ekind, Set_Error_Posted, Set_Has_Aspects,
+	Set_Is_Ignored_Ghost_Node, Set_Original_Node, Set_Paren_Count,
+	Set_Parent, Set_Sloc, Set_Nkind, Set_FieldNN, Set_NodeNN,
+	Set_ListNN, Set_ElistNN, Set_NameN, Set_StrN, Set_UintNN,
+	Set_UrealNN, Set_FlagNNN, Set_NodeN_With_Parent,
+	Set_ListN_With_Parent): Adding assertion.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Diagnose properly a pragma
+	import that applies to several homograph subprograms. when one
+	of them is declared by a subprogram body.
+
+2017-01-20  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Remove optimization
+	that nulls out calls to null procedures.
+
 2017-01-20  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Expand_Inlined_Call): Keep more

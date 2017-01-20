@@ -3920,16 +3920,13 @@ package body Exp_Ch6 is
 
       if Ekind_In (Subp, E_Function, E_Procedure) then
 
-         --  We perform two simple optimization on calls:
-
-         --  a) replace calls to null procedures unconditionally;
-
-         --  b) for To_Address, just do an unchecked conversion. Not only is
-         --  this efficient, but it also avoids order of elaboration problems
-         --  when address clauses are inlined (address expression elaborated
+         --  We perform a simple optimization on calls for To_Address by
+         --  replacing them with an unchecked conversion. Not only is this
+         --  efficient, but it also avoids order of elaboration problems when
+         --  address clauses are inlined (address expression elaborated at the
          --  at the wrong point).
 
-         --  We perform these optimization regardless of whether we are in the
+         --  We perform this optimization regardless of whether we are in the
          --  main unit or in a unit in the context of the main unit, to ensure
          --  that tree generated is the same in both cases, for CodePeer use.
 
@@ -3937,10 +3934,6 @@ package body Exp_Ch6 is
             Rewrite (Call_Node,
               Unchecked_Convert_To
                 (RTE (RE_Address), Relocate_Node (First_Actual (Call_Node))));
-            return;
-
-         elsif Is_Null_Procedure (Subp) then
-            Rewrite (Call_Node, Make_Null_Statement (Loc));
             return;
          end if;
 
