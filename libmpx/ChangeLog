@@ -1,7 +1,7 @@
 2017-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
-	* aclocal.m4: Include ../config/acx.m4.
+	* aclocal.m4: Regenerated.
 	* configure: Regenerated.
 	* Makefile.in: Regenerated.
 	* mpxrt/Makefile.in: Regenerated.
