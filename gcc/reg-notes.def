@@ -177,6 +177,11 @@ REG_NOTE (CFA_WINDOW_SAVE)
    the rest of the compiler as a CALL_INSN.  */
 REG_NOTE (CFA_FLUSH_QUEUE)
 
+/* Attached to insns that are RTX_FRAME_RELATED_P, toggling the mangling status
+   of return address.  Currently it's only used by AArch64.  The argument is
+   ignored.  */
+REG_NOTE (CFA_TOGGLE_RA_MANGLE)
+
 /* Indicates what exception region an INSN belongs in.  This is used
    to indicate what region to which a call may throw.  REGION 0
    indicates that a call cannot throw at all.  REGION -1 indicates
