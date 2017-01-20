@@ -330,6 +330,14 @@ package body Sem_Ch5 is
                then
                   null;
 
+               --  This may be a call to a parameterless function through an
+               --  implicit dereference, so discard interpretation as well.
+
+               elsif Is_Entity_Name (Lhs)
+                 and then Has_Implicit_Dereference (It.Typ)
+               then
+                  null;
+
                elsif Has_Compatible_Type (Rhs, It.Typ) then
                   if T1 /= Any_Type then
 

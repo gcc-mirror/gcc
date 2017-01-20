@@ -2836,6 +2836,8 @@ package body Sem_Ch3 is
          then
             if
               not Has_Aspect_Spec (Prev_Aspects, Name_Implicit_Dereference)
+                and then Present
+                  (Discriminant_Specifications (Original_Node (Parent (Prev))))
             then
                Error_Msg_N
                  ("type does not inherit implicit dereference", Prev);
@@ -8973,6 +8975,9 @@ package body Sem_Ch3 is
 
       --  STEP 5a: Copy the parent record declaration for untagged types
 
+      Set_Has_Implicit_Dereference
+        (Derived_Type, Has_Implicit_Dereference (Parent_Type));
+
       if not Is_Tagged then
 
          --  Discriminant_Constraint (Derived_Type) has been properly
@@ -9015,8 +9020,6 @@ package body Sem_Ch3 is
             Set_Stored_Constraint
               (Derived_Type, Expand_To_Stored_Constraint (Parent_Type, Discs));
             Replace_Components (Derived_Type, New_Decl);
-            Set_Has_Implicit_Dereference
-              (Derived_Type, Has_Implicit_Dereference (Parent_Type));
          end if;
 
          --  Insert the new derived type declaration
@@ -9635,12 +9638,19 @@ package body Sem_Ch3 is
             --  If any of the discriminant constraints is given by a
             --  discriminant and we are in a derived type declaration we
             --  have a discriminant renaming. Establish link between new
-            --  and old discriminant.
+            --  and old discriminant. The new discriminant has an implicit
+            --  dereference if the old one does.
 
             if Denotes_Discriminant (Discr_Expr (J)) then
                if Derived_Def then
-                  Set_Corresponding_Discriminant
-                    (Entity (Discr_Expr (J)), Discr);
+                  declare
+                     New_Discr : constant Entity_Id := Entity (Discr_Expr (J));
+
+                  begin
+                     Set_Corresponding_Discriminant (New_Discr, Discr);
+                     Set_Has_Implicit_Dereference (New_Discr,
+                       Has_Implicit_Dereference (Discr));
+                  end;
                end if;
 
             --  Force the evaluation of non-discriminant expressions.

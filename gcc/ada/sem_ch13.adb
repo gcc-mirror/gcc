@@ -1808,11 +1808,17 @@ package body Sem_Ch13 is
                     ("aspect must name a discriminant of current type", Expr);
 
                else
+
+                  --  Discriminant type be an anonymous access type or an
+                  --  anonymous access to subprogram.
+                  --  Missing synchronized types???
+
                   Disc := First_Discriminant (E);
                   while Present (Disc) loop
                      if Chars (Expr) = Chars (Disc)
-                       and then Ekind (Etype (Disc)) =
-                                  E_Anonymous_Access_Type
+                       and then Ekind_In (Etype (Disc),
+                                  E_Anonymous_Access_Type,
+                                  E_Anonymous_Access_Subprogram_Type)
                      then
                         Set_Has_Implicit_Dereference (E);
                         Set_Has_Implicit_Dereference (Disc);
@@ -8684,7 +8690,7 @@ package body Sem_Ch13 is
                         Expression => Expr))));
 
             --  If declaration has not been analyzed yet, Insert declaration
-            --  before freeze node.  Insert body itself after freeze node.
+            --  before freeze node. Insert body itself after freeze node.
 
             if not Analyzed (FDecl) then
                Insert_Before_And_Analyze (N, FDecl);

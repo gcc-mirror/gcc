@@ -2469,6 +2469,7 @@ package body Sem_Res is
                                   N_Attribute_Reference,
                                   N_And_Then,
                                   N_Indexed_Component,
+                                  N_Identifier,
                                   N_Or_Else,
                                   N_Range,
                                   N_Selected_Component,
@@ -2626,7 +2627,9 @@ package body Sem_Res is
                            --  replaced by the appropriate call during late
                            --  expansion.
 
-                           if not Box_Present (Elmt) then
+                           if Nkind (Elmt) /= N_Iterated_Component_Association
+                             and then not Box_Present (Elmt)
+                           then
                               Check_Elmt (Expression (Elmt));
                            end if;
 
