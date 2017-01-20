@@ -1,3 +1,8 @@
+2017-01-20  Graham Markall  <graham.markall@embecosm.com>
+
+	* config/arc/arc.h (LINK_SPEC): Use arclinux_nps emulation when
+	mcpu=nps400.
+
 2017-01-20  Martin Jambor  <mjambor@suse.cz>
 
         * hsa.h: Renaed to hsa-common.h.  Adjusted a comment.
