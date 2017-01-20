@@ -1,3 +1,8 @@
+2017-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78495 - wrong code inherited ctor and invisi-ref parm
+	* cp-gimplify.c (cp_generize_r): Don't skip thunks.
+
 2017-01-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/77829
