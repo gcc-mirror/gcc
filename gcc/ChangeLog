@@ -1,6 +1,14 @@
 2017-01-20  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-common.c (parse_optimize_options): Do not silently ignore
+	-fstrict-aliasing changes.
+
+2017-01-20  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2016-01-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-transform.c (inline_call): Drop
