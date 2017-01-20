@@ -7633,6 +7633,17 @@ package body Sem_Prag is
                   goto Continue;
                end if;
 
+               if Is_Subprogram (E1)
+                 and then Nkind (Parent (Declaration_Node (E1))) =
+                            N_Subprogram_Body
+                 and then not Relaxed_RM_Semantics
+               then
+                  Set_Has_Completion (E);  --  to prevent cascaded error
+                  Error_Pragma_Ref
+                    ("pragma% requires separate spec and must come before "
+                     & "body#", E1);
+               end if;
+
                --  Do not set the pragma on inherited operations or on formal
                --  subprograms.
 

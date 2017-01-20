@@ -340,8 +340,17 @@ package Nlists is
    procedure Lock;
    --  Called to lock tables before back end is called
 
+   procedure Lock_Lists;
+   --  Called to lock list contents when assertions are enabled. Without
+   --  assertions calling this subprogram has no effect. The initial state
+   --  of the lock is unlocked.
+
    procedure Unlock;
    --  Unlock tables, in cases where the back end needs to modify them
+
+   procedure Unlock_Lists;
+   --  Called to unlock list contents when assertions are enabled; if
+   --  assertions are not enabled calling this subprogram has no effect.
 
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant
