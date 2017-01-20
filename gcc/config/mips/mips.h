@@ -639,6 +639,8 @@ struct mips_cpu_info {
 	builtin_define ("__GCC_HAVE_BUILTIN_MIPS_CACHE");		\
       if (!ISA_HAS_LXC1_SXC1)						\
 	builtin_define ("__mips_no_lxc1_sxc1");				\
+      if (!ISA_HAS_UNFUSED_MADD4 && !ISA_HAS_FUSED_MADD4)		\
+	builtin_define ("__mips_no_madd4");				\
     }									\
   while (0)
 
@@ -869,7 +871,8 @@ struct mips_cpu_info {
   {"llsc", "%{!mllsc:%{!mno-llsc:-m%(VALUE)}}" }, \
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
   {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" },			\
-  {"lxc1-sxc1", "%{!mlxc1-sxc1:%{!mno-lxc1-sxc1:-m%(VALUE)}}" } \
+  {"lxc1-sxc1", "%{!mlxc1-sxc1:%{!mno-lxc1-sxc1:-m%(VALUE)}}" }, \
+  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" } \
 
 /* A spec that infers the:
    -mnan=2008 setting from a -mips argument,
@@ -1066,11 +1069,14 @@ struct mips_cpu_info {
 
 /* ISA has 4 operand fused madd instructions of the form
    'd = [+-] (a * b [+-] c)'.  */
-#define ISA_HAS_FUSED_MADD4	(TARGET_MIPS8000 || TARGET_LOONGSON_3A)
+#define ISA_HAS_FUSED_MADD4	(mips_madd4				\
+				 && (TARGET_MIPS8000			\
+				     || TARGET_LOONGSON_3A))
 
 /* ISA has 4 operand unfused madd instructions of the form
    'd = [+-] (a * b [+-] c)'.  */
-#define ISA_HAS_UNFUSED_MADD4	(ISA_HAS_FP4				\
+#define ISA_HAS_UNFUSED_MADD4	(mips_madd4				\
+				 && ISA_HAS_FP4				\
 				 && !TARGET_MIPS8000			\
 				 && !TARGET_LOONGSON_3A)
 

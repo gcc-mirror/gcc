@@ -1394,6 +1394,20 @@ in @code{lwxc1} type instructions.  This assumption holds true in a
 pure 32-bit environment and can hold true in a 64-bit environment if
 the address space is accurately set to be 32-bit for o32 and n32.
 
+@item --with-madd4
+On MIPS targets, make @option{-mmadd4} the default when no
+@option{-mno-madd4} option is passed.  This is the default.
+
+@item --without-madd4
+On MIPS targets, make @option{-mno-madd4} the default when no
+@option{-mmadd4} option is passed.  The @code{madd4} instruction
+family can be problematic when targeting a combination of cores that
+implement these instructions differently.  There are two known cores
+that implement these as fused operations instead of unfused (where
+unfused is normally expected).  Disabling these instructions is the
+only way to ensure compatible code is generated; this will incur
+a performance penalty.
+
 @item --with-mips-plt
 On MIPS targets, make use of copy relocations and PLTs.
 These features are extensions to the traditional
