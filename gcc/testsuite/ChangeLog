@@ -1,3 +1,13 @@
+2017-01-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (check_configured_with): New procedure.
+	(check_effective_target_default_mode): new effective target.
+	* gcc.target/arm/optional_thumb-1.c: Skip if GCC was configured with a
+	default mode.  Fix dg-skip-if target selector syntax.
+	* gcc.target/arm/optional_thumb-2.c: Likewise.
+	* gcc.target/arm/optional_thumb-3.c: Fix dg-skip-if target selector
+	syntax.
+
 2017-01-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/77829
