@@ -624,7 +624,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
       || in_lto_p)
     new_node->unique_name = true;
   FOR_EACH_VEC_SAFE_ELT (tree_map, i, map)
-    new_node->maybe_create_reference (map->new_tree, IPA_REF_ADDR, NULL);
+    new_node->maybe_create_reference (map->new_tree, NULL);
 
   if (ipa_transforms_to_apply.exists ())
     new_node->ipa_transforms_to_apply

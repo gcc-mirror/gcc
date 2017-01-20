@@ -588,18 +588,25 @@ symtab_node::create_reference (symtab_node *referred_node,
   return ref;
 }
 
-/* If VAL is a reference to a function or a variable, add a reference from
-   this symtab_node to the corresponding symbol table node.  USE_TYPE specify
-   type of the use and STMT the statement (if it exists).  Return the new
-   reference or NULL if none was created.  */
-
 ipa_ref *
-symtab_node::maybe_create_reference (tree val, enum ipa_ref_use use_type,
-				     gimple *stmt)
+symtab_node::maybe_create_reference (tree val, gimple *stmt)
 {
   STRIP_NOPS (val);
-  if (TREE_CODE (val) != ADDR_EXPR)
-    return NULL;
+  ipa_ref_use use_type;
+
+  switch (TREE_CODE (val))
+    {
+    case VAR_DECL:
+      use_type = IPA_REF_LOAD;
+      break;
+    case ADDR_EXPR:
+      use_type = IPA_REF_ADDR;
+      break;
+    default:
+      gcc_assert (!handled_component_p (val));
+      return NULL;
+    }
+
   val = get_base_var (val);
   if (val && VAR_OR_FUNCTION_DECL_P (val))
     {
