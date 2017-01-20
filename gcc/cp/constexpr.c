@@ -5295,6 +5295,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       /* We can see these in statement-expressions.  */
       return true;
 
+    case CLEANUP_STMT:
     case EMPTY_CLASS_EXPR:
       return false;
 

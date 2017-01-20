@@ -1,3 +1,13 @@
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+	
+	Backported from mainline
+	2017-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77545
+	PR c++/77284
+	* g++.dg/cpp0x/range-for32.C: New test.
+	* g++.dg/cpp0x/range-for33.C: New test.
+
 2017-01-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from mainline
