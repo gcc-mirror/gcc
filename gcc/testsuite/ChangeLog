@@ -1,3 +1,25 @@
+2017-01-20  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx512bw-kshiftld-1.c: New test.
+	* gcc.target/i386/avx512bw-kshiftlq-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kshiftlb-1.c: Ditto.
+	* gcc.target/i386/avx512f-kshiftlw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftrd-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftrq-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kshiftrb-1.c: Ditto.
+	* gcc.target/i386/avx512f-kshiftrw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftld-2.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftlq-2.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftrd-2.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftrq-2.c: Ditto.
+	* gcc.target/i386/avx512dq-kshiftlb-2.c: Ditto.
+	* gcc.target/i386/avx512dq-kshiftrb-2.c: Ditto.
+	* gcc.target/i386/avx512f-kshiftlw-2.c: Ditto.
+	* gcc.target/i386/avx512f-kshiftrw-2.c: Ditto.
+	* gcc.target/i386/avx-1.c: Test new intrinsics.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2017-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71264

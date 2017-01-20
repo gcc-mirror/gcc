@@ -2569,6 +2569,38 @@ _mm512_cmple_epi16_mask (__m512i __X, __m512i __Y)
 }
 
 #ifdef __OPTIMIZE__
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftli_mask32 (__mmask32 __A, unsigned int __B)
+{
+  return (__mmask32) __builtin_ia32_kshiftlisi ((__mmask32) __A,
+						(__mmask8) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftli_mask64 (__mmask64 __A, unsigned int __B)
+{
+  return (__mmask64) __builtin_ia32_kshiftlidi ((__mmask64) __A,
+						(__mmask8) __B);
+}
+
+extern __inline __mmask32
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftri_mask32 (__mmask32 __A, unsigned int __B)
+{
+  return (__mmask32) __builtin_ia32_kshiftrisi ((__mmask32) __A,
+						(__mmask8) __B);
+}
+
+extern __inline __mmask64
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kshiftri_mask64 (__mmask64 __A, unsigned int __B)
+{
+  return (__mmask64) __builtin_ia32_kshiftridi ((__mmask64) __A,
+						(__mmask8) __B);
+}
+
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_alignr_epi8 (__m512i __A, __m512i __B, const int __N)
@@ -2972,6 +3004,18 @@ _mm512_bsrli_epi128 (__m512i __A, const int __N)
 }
 
 #else
+#define _kshiftli_mask32(X, Y)							\
+  ((__mmask32) __builtin_ia32_kshiftlisi ((__mmask32)(X), (__mmask8)(Y)))
+
+#define _kshiftli_mask64(X, Y)							\
+  ((__mmask64) __builtin_ia32_kshiftlidi ((__mmask64)(X), (__mmask8)(Y)))
+
+#define _kshiftri_mask32(X, Y)							\
+  ((__mmask32) __builtin_ia32_kshiftrisi ((__mmask32)(X), (__mmask8)(Y)))
+
+#define _kshiftri_mask64(X, Y)							\
+  ((__mmask64) __builtin_ia32_kshiftridi ((__mmask64)(X), (__mmask8)(Y)))
+
 #define _mm512_alignr_epi8(X, Y, N)						    \
   ((__m512i) __builtin_ia32_palignr512 ((__v8di)(__m512i)(X),			    \
 					(__v8di)(__m512i)(Y),			    \

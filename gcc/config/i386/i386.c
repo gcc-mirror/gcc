@@ -35073,10 +35073,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4DI_FTYPE_V8DI_INT:
     case QI_FTYPE_V4SF_INT:
     case QI_FTYPE_V2DF_INT:
-    case UQI_FTYPE_UQI_INT:
-    case UHI_FTYPE_UHI_INT:
-    case USI_FTYPE_USI_INT:
-    case UDI_FTYPE_UDI_INT:
+    case UQI_FTYPE_UQI_UQI_CONST:
+    case UHI_FTYPE_UHI_UQI:
+    case USI_FTYPE_USI_UQI:
+    case UDI_FTYPE_UDI_UQI:
       nargs = 2;
       nargs_constant = 1;
       break;
