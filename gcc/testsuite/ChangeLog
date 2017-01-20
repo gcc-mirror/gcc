@@ -1,3 +1,10 @@
+2017-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77829
+	PR c++/78656
+	* g++.dg/spellcheck-pr77829.C: New test case.
+	* g++.dg/spellcheck-pr78656.C: New test case.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64279

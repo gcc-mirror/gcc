@@ -6937,7 +6937,8 @@ extern tree cp_fully_fold			(tree);
 extern void clear_fold_cache			(void);
 
 /* in name-lookup.c */
-extern void suggest_alternatives_for            (location_t, tree);
+extern void suggest_alternatives_for            (location_t, tree, bool);
+extern bool suggest_alternative_in_explicit_scope (location_t, tree, tree);
 extern tree strip_using_decl                    (tree);
 
 /* in constraint.cc */

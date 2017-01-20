@@ -5332,7 +5332,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		 template_p, done, address_p,
 		 template_arg_p,
 		 &error_msg,
-                 id_expr_token->location));
+		 id_expression.get_location ()));
 	if (error_msg)
 	  cp_parser_error (parser, error_msg);
 	decl.set_location (id_expr_token->location);
@@ -5425,7 +5425,7 @@ cp_parser_id_expression (cp_parser *parser,
       tree saved_scope;
       tree saved_object_scope;
       tree saved_qualifying_scope;
-      tree unqualified_id;
+      cp_expr unqualified_id;
       bool is_template;
 
       /* See if the next token is the `template' keyword.  */
