@@ -11667,6 +11667,12 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
 	return 18;
     }
 
+  /* The tricks done in the code below apply for little-endian vector layout.
+     For big-endian vectors only allow vectors of the form { a, a, a..., a }.
+     FIXME: Implement logic for big-endian vectors.  */
+  if (BYTES_BIG_ENDIAN && vector && !const_vec_duplicate_p (op))
+    return -1;
+
   /* Splat vector constant out into a byte vector.  */
   for (i = 0; i < n_elts; i++)
     {

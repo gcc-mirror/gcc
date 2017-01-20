@@ -1,3 +1,9 @@
+2017-01-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71270
+	* config/arm/arm.c (neon_valid_immediate): Reject vector constants
+	in big-endian mode when they are not a single duplicated value.
+
 2017-01-20  Richard Biener  <rguenther@suse.de>
 
 	* BASE-VER: Bump to 7.0.1.
