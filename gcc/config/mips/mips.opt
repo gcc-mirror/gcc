@@ -392,6 +392,10 @@ mlxc1-sxc1
 Target Report Var(mips_lxc1_sxc1) Init(1)
 Use lwxc1/swxc1/ldxc1/sdxc1 instructions where applicable.
 
+mmadd4
+Target Report Var(mips_madd4) Init(1)
+Use 4-operand madd.s/madd.d and related instructions where applicable.
+
 mtune=
 Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.

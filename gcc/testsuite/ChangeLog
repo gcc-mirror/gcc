@@ -1,3 +1,18 @@
+2017-01-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/madd4-1.c: New file.
+	* gcc.target/mips/madd4-2.c: Likewise.
+	* gcc.target/mips/mips.exp (mips_option_groups): Add ghost option
+	HAS_MADD4.
+	(mips_option_groups): Add -m[no-]madd4.
+	(mips-dg-init): Detect default -mno-madd4.
+	(mips-dg-options): Handle HAS_MADD4 arch upgrade/downgrade.
+	* gcc.target/mips/mips-ps-type.c: Add -mmadd4 test option.
+	* gcc.target/mips/mips-ps-type-2.c: Likewise.
+	* gcc.target/mips/nmadd-1.c: Likewise.
+	* gcc.target/mips/nmadd-2.c: Likewise.
+	* gcc.target/mips/nmadd-3.c: Likewise.
+
 2017-01-19  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/return_address_sign_1.c: New testcase for no

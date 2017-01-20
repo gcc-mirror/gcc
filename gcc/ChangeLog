@@ -1,3 +1,19 @@
+2017-01-19  Matthew Fortune  <matthew.fortune@imgtec.com>
+	    Yunqiang Su  <yunqiang.su@imgtec.com>
+
+	* config.gcc (supported_defaults): Add madd4.
+	(with_madd4): Add validation.
+	(all_defaults): Add madd4.
+	* config/mips/mips.opt (mmadd4): New option.
+	* gcc/config/mips/mips.h (OPTION_DEFAULT_SPECS): Add a default for
+	mmadd4.
+	(TARGET_CPU_CPP_BUILTINS): Add builtin_define for
+	__mips_no_madd4.
+	(ISA_HAS_UNFUSED_MADD4): Gate with mips_madd4.
+	(ISA_HAS_FUSED_MADD4): Likewise.
+	* gcc/doc/invoke.texi (-mmadd4): Document the new option.
+	* gcc/doc/install.texi (--with-madd4): Document the new option.
+
 2017-01-19  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins): New

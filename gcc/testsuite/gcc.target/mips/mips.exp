@@ -256,6 +256,7 @@ set mips_option_groups {
     ldc "HAS_LDC"
     movn "HAS_MOVN"
     madd "HAS_MADD"
+    madd4_ghost "HAS_MADD4"
     maddps "HAS_MADDPS"
     lsa "(|!)HAS_LSA"
     lxc1 "HAS_LXC1"
@@ -284,6 +285,7 @@ foreach option {
     local-sdata
     long-calls
     lxc1-sxc1
+    madd4
     paired-single
     plt
     shared
@@ -863,6 +865,12 @@ proc mips-dg-init {} {
 	    "-mlxc1-sxc1"
 	    #endif
 
+	    #ifdef __mips_no_madd4
+	    "-mno-madd4"
+	    #else
+	    "-mmadd4"
+	    #endif
+
 	    #ifdef __mips_synci
 	    "-msynci",
 	    #else
@@ -1182,6 +1190,7 @@ proc mips-dg-options { args } {
 	#
 	} elseif { $isa < 4
 		   && ([mips_have_test_option_p options "HAS_LXC1"]
+		       || [mips_have_test_option_p options "HAS_MADD4"]
 		       || [mips_have_test_option_p options "HAS_MOVN"]) } {
 	    mips_make_test_option options "-mips4"
         # We need MIPS III or higher for:
@@ -1224,8 +1233,9 @@ proc mips-dg-options { args } {
 		       || [mips_have_test_option_p options "-mfix-r10000"]
 		       || [mips_have_test_option_p options "NOT_HAS_DMUL"]
 		       || [mips_have_test_option_p options "HAS_LXC1"]
-		       || [mips_have_test_option_p options "HAS_MOVN"]
 		       || [mips_have_test_option_p options "HAS_MADD"]
+		       || [mips_have_test_option_p options "HAS_MADD4"]
+		       || [mips_have_test_option_p options "HAS_MOVN"]
 		       || [mips_have_test_option_p options "-mpaired-single"]
 		       || [mips_have_test_option_p options "-mnan=legacy"]
 		       || [mips_have_test_option_p options "-mabs=legacy"]
