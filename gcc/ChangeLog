@@ -1,5 +1,16 @@
 2017-01-20  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/71190
+	* cgraph.h (maybe_create_reference): Remove argument and
+	update comment.
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Remove one
+	argument.
+	* ipa-cp.c (create_specialized_node): Likewise.
+	* symtab.c (symtab_node::maybe_create_reference): Handle
+	VAR_DECLs and ADDR_EXPRs and select ipa_ref_use type.
+
+2017-01-20  Martin Liska  <mliska@suse.cz>
+
 	* read-rtl-function.c (function_reader::create_function): Use
 	build_decl instread of build_decl_stat.
 
