@@ -1142,7 +1142,7 @@ package body Sem_Eval is
          return Unknown;
       end if;
 
-      --  We do not attempt comparisons for packed arrays arrays represented as
+      --  We do not attempt comparisons for packed arrays represented as
       --  modular types, where the semantics of comparison is quite different.
 
       if Is_Packed_Array_Impl_Type (Ltyp)
@@ -1329,28 +1329,35 @@ package body Sem_Eval is
          --  J .. J + 1. This code can conclude LT with a difference of 1,
          --  even if the range of J is not known.
 
-         declare
-            Lnode : Node_Id;
-            Loffs : Uint;
-            Rnode : Node_Id;
-            Roffs : Uint;
+         --  This would be wrong for modular types (e.g. X < X + 1 is False if
+         --  X is the largest number).
 
-         begin
-            Compare_Decompose (L, Lnode, Loffs);
-            Compare_Decompose (R, Rnode, Roffs);
+         if not Is_Modular_Integer_Type (Ltyp)
+           and then not Is_Modular_Integer_Type (Rtyp)
+         then
+            declare
+               Lnode : Node_Id;
+               Loffs : Uint;
+               Rnode : Node_Id;
+               Roffs : Uint;
 
-            if Is_Same_Value (Lnode, Rnode) then
-               if Loffs = Roffs then
-                  return EQ;
-               elsif Loffs < Roffs then
-                  Diff.all := Roffs - Loffs;
-                  return LT;
-               else
-                  Diff.all := Loffs - Roffs;
-                  return GT;
+            begin
+               Compare_Decompose (L, Lnode, Loffs);
+               Compare_Decompose (R, Rnode, Roffs);
+
+               if Is_Same_Value (Lnode, Rnode) then
+                  if Loffs = Roffs then
+                     return EQ;
+                  elsif Loffs < Roffs then
+                     Diff.all := Roffs - Loffs;
+                     return LT;
+                  else
+                     Diff.all := Loffs - Roffs;
+                     return GT;
+                  end if;
                end if;
-            end if;
-         end;
+            end;
+         end if;
 
          --  Next, try range analysis and see if operand ranges are disjoint
 

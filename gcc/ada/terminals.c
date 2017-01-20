@@ -1425,10 +1425,10 @@ __gnat_setup_child_communication
   if (desc->slave_fd > 2) close (desc->slave_fd);
 
   /* adjust process group settings */
-  if ((status = setpgid (pid, pid)) == -1)
-    return -1;
-  if ((status = tcsetpgrp (0, pid)) == -1)
-    return -1;
+  /* ignore failures of the following two commands as the context might not
+   * allow making those changes. */
+  setpgid (pid, pid);
+  tcsetpgrp (0, pid);
 
   /* launch the program */
   execvp (new_argv[0], new_argv);

@@ -424,6 +424,12 @@ package Sem_Util is
    --  of inlining, and for private protected ops. Also used to create bodies
    --  for stubbed subprograms.
 
+   procedure Copy_SPARK_Mode_Aspect (From : Node_Id; To : Node_Id);
+   --  Copy the SPARK_Mode aspect if present in the aspect specifications
+   --  of node From to node To. On entry it is assumed that To does not have
+   --  aspect specifications. If From has no aspects, the routine has no
+   --  effect.
+
    function Copy_Subprogram_Spec (Spec : Node_Id) return Node_Id;
    --  Replicate a function or a procedure specification denoted by Spec. The
    --  resulting tree is an exact duplicate of the original tree. New entities

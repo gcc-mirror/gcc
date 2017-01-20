@@ -4999,6 +4999,24 @@ package body Sem_Util is
       return Plist;
    end Copy_Parameter_List;
 
+   ----------------------------
+   -- Copy_SPARK_Mode_Aspect --
+   ----------------------------
+
+   procedure Copy_SPARK_Mode_Aspect (From : Node_Id; To : Node_Id) is
+      pragma Assert (not Has_Aspects (To));
+      Asp : Node_Id;
+   begin
+      if Has_Aspects (From) then
+         Asp := Find_Aspect (Defining_Entity (From), Aspect_SPARK_Mode);
+
+         if Present (Asp) then
+            Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
+            Set_Has_Aspects (To, True);
+         end if;
+      end if;
+   end Copy_SPARK_Mode_Aspect;
+
    --------------------------
    -- Copy_Subprogram_Spec --
    --------------------------

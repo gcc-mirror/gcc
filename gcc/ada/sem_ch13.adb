@@ -12731,7 +12731,7 @@ package body Sem_Ch13 is
          elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
 
-            if not ASIS_Mode then
+            if True or else not ASIS_Mode then -- ????
                Set_Entity (N, Empty);
             end if;
 
