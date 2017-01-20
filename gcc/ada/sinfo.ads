@@ -700,7 +700,10 @@ package Sinfo is
    --  analysis, on expression nodes that may trigger the corresponding
    --  check. The front end then inserts or not the check during expansion. In
    --  particular, these flags should also be correctly set in ASIS mode and
-   --  GNATprove mode.
+   --  GNATprove mode. As a special case, the front end does not insert a
+   --  Do_Division_Check flag on float exponentiation expressions, for the case
+   --  where the value is 0.0 and the exponent is negative, although this case
+   --  does lead to a division check failure.
 
    --  Note: the expander always takes care of the Do_Range check case,
    --  so this flag will never be set in the expanded tree passed to the
