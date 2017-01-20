@@ -20,11 +20,13 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+/* Always include AArch64 unwinder header file.  */
+#include "config/aarch64/aarch64-unwind.h"
+
 #ifndef inhibit_libc
 
 #include <signal.h>
 #include <sys/ucontext.h>
-#include "config/aarch64/aarch64-unwind.h"
 
 
 /* Since insns are always stored LE, on a BE system the opcodes will
