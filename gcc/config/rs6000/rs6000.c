@@ -38588,6 +38588,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VSX_CVSPDPN:
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
+	  case UNSPEC_VSX_XXSPLTD:
 	    *special = SH_SPLAT;
 	    return 1;
 	  case UNSPEC_REDUC_PLUS:

@@ -1,3 +1,10 @@
+2017-01-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-01-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-27.c: New.
+
 2017-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backport from mainline
@@ -5,7 +12,7 @@
 	* gcc.target/aarch64/eh_return.c: New test.
 
 2017-01-20  Marek Polacek  <polacek@redhat.com>
-	
+
 	Backported from mainline
 	2017-01-04  Marek Polacek  <polacek@redhat.com>
 
