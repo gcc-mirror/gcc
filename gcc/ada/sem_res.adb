@@ -2465,11 +2465,11 @@ package body Sem_Res is
                --  with a name that is an explicit dereference, there is
                --  nothing to be done at this point.
 
-               elsif Nkind_In (N, N_Explicit_Dereference,
-                                  N_Attribute_Reference,
+               elsif Nkind_In (N, N_Attribute_Reference,
                                   N_And_Then,
-                                  N_Indexed_Component,
+                                  N_Explicit_Dereference,
                                   N_Identifier,
+                                  N_Indexed_Component,
                                   N_Or_Else,
                                   N_Range,
                                   N_Selected_Component,

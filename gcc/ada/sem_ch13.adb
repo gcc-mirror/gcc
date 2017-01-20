@@ -1808,17 +1808,17 @@ package body Sem_Ch13 is
                     ("aspect must name a discriminant of current type", Expr);
 
                else
-
                   --  Discriminant type be an anonymous access type or an
                   --  anonymous access to subprogram.
+
                   --  Missing synchronized types???
 
                   Disc := First_Discriminant (E);
                   while Present (Disc) loop
                      if Chars (Expr) = Chars (Disc)
                        and then Ekind_In (Etype (Disc),
-                                  E_Anonymous_Access_Type,
-                                  E_Anonymous_Access_Subprogram_Type)
+                                          E_Anonymous_Access_Subprogram_Type,
+                                          E_Anonymous_Access_Type)
                      then
                         Set_Has_Implicit_Dereference (E);
                         Set_Has_Implicit_Dereference (Disc);
