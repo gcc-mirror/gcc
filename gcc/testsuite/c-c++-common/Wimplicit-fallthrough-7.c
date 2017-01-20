@@ -39,9 +39,9 @@ f (int i)
   switch (i)
     {
     case 1:
-      do /* { dg-warning "statement may fall through" "" { target c++ } 42 } */
+      do
 	bar (2);
-      while (--i); /* { dg-warning "statement may fall through" "" { target c } 44 } */
+      while (--i); /* { dg-warning "statement may fall through" } */
     case 2:
       bar (99);
     }

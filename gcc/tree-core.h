@@ -814,7 +814,9 @@ enum operand_equal_flag {
   /* Internal within operand_equal_p:  */
   OEP_NO_HASH_CHECK = 16,
   /* Internal within inchash::add_expr:  */
-  OEP_HASH_CHECK = 32
+  OEP_HASH_CHECK = 32,
+  /* Makes operand_equal_p handle more expressions:  */
+  OEP_LEXICOGRAPHIC = 64
 };
 
 /* Enum and arrays used for tree allocation stats.

@@ -5302,6 +5302,13 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
  valid_operands:
   result = build3_loc (loc, COND_EXPR, result_type, arg1, arg2, arg3);
 
+  /* If the ARG2 and ARG3 are the same and don't have side-effects,
+     warn here, because the COND_EXPR will be turned into ARG2.  */
+  if (warn_duplicated_branches
+      && (arg2 == arg3 || operand_equal_p (arg2, arg3, 0)))
+    warning_at (EXPR_LOCATION (result), OPT_Wduplicated_branches,
+		"this condition has identical branches");
+
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
 

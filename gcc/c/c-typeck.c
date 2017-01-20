@@ -5193,6 +5193,15 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
     ret = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, ret);
 
   protected_set_expr_location (ret, colon_loc);
+
+  /* If the OP1 and OP2 are the same and don't have side-effects,
+     warn here, because the COND_EXPR will be turned into OP1.  */
+  if (warn_duplicated_branches
+      && TREE_CODE (ret) == COND_EXPR
+      && (op1 == op2 || operand_equal_p (op1, op2, 0)))
+    warning_at (EXPR_LOCATION (ret), OPT_Wduplicated_branches,
+		"this condition has identical branches");
+
   return ret;
 }
 

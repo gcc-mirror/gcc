@@ -468,6 +468,10 @@ Wdiv-by-zero
 C ObjC C++ ObjC++ Var(warn_div_by_zero) Init(1) Warning
 Warn about compile-time integer division by zero.
 
+Wduplicated-branches
+C ObjC C++ ObjC++ Var(warn_duplicated_branches) Init(0) Warning
+Warn about duplicated branches in if-else statements.
+
 Wduplicated-cond
 C ObjC C++ ObjC++ Var(warn_duplicated_cond) Init(0) Warning
 Warn about duplicated conditions in an if-else-if chain.

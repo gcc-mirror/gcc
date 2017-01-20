@@ -2217,3 +2217,73 @@ warn_for_restrict (unsigned param_pos, vec<tree, va_gc> *args)
 
   free (arg_positions);
 }
+
+/* Callback function to determine whether an expression TP or one of its
+   subexpressions comes from macro expansion.  Used to suppress bogus
+   warnings.  */
+
+static tree
+expr_from_macro_expansion_r (tree *tp, int *, void *)
+{
+  if (CAN_HAVE_LOCATION_P (*tp)
+      && from_macro_expansion_at (EXPR_LOCATION (*tp)))
+    return integer_zero_node;
+
+  return NULL_TREE;
+}
+
+/* Possibly warn when an if-else has identical branches.  */
+
+static void
+do_warn_duplicated_branches (tree expr)
+{
+  tree thenb = COND_EXPR_THEN (expr);
+  tree elseb = COND_EXPR_ELSE (expr);
+
+  /* Don't bother if there's no else branch.  */
+  if (elseb == NULL_TREE)
+    return;
+
+  /* And don't warn for empty statements.  */
+  if (TREE_CODE (thenb) == NOP_EXPR
+      && TREE_TYPE (thenb) == void_type_node
+      && TREE_OPERAND (thenb, 0) == size_zero_node)
+    return;
+
+  /* ... or empty branches.  */
+  if (TREE_CODE (thenb) == STATEMENT_LIST
+      && STATEMENT_LIST_HEAD (thenb) == NULL)
+    return;
+
+  /* Compute the hash of the then branch.  */
+  inchash::hash hstate0 (0);
+  inchash::add_expr (thenb, hstate0);
+  hashval_t h0 = hstate0.end ();
+
+  /* Compute the hash of the else branch.  */
+  inchash::hash hstate1 (0);
+  inchash::add_expr (elseb, hstate1);
+  hashval_t h1 = hstate1.end ();
+
+  /* Compare the hashes.  */
+  if (h0 == h1
+      && operand_equal_p (thenb, elseb, OEP_LEXICOGRAPHIC)
+      /* Don't warn if any of the branches or their subexpressions comes
+	 from a macro.  */
+      && !walk_tree_without_duplicates (&thenb, expr_from_macro_expansion_r,
+					NULL)
+      && !walk_tree_without_duplicates (&elseb, expr_from_macro_expansion_r,
+					NULL))
+    warning_at (EXPR_LOCATION (expr), OPT_Wduplicated_branches,
+		"this condition has identical branches");
+}
+
+/* Callback for c_genericize to implement -Wduplicated-branches.  */
+
+tree
+do_warn_duplicated_branches_r (tree *tp, int *, void *)
+{
+  if (TREE_CODE (*tp) == COND_EXPR)
+    do_warn_duplicated_branches (*tp);
+  return NULL_TREE;
+}

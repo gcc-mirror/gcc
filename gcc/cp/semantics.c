@@ -670,6 +670,7 @@ tree
 finish_expr_stmt (tree expr)
 {
   tree r = NULL_TREE;
+  location_t loc = EXPR_LOCATION (expr);
 
   if (expr != NULL_TREE)
     {
@@ -694,7 +695,7 @@ finish_expr_stmt (tree expr)
       if (TREE_CODE (expr) != CLEANUP_POINT_EXPR)
 	{
 	  if (TREE_CODE (expr) != EXPR_STMT)
-	    expr = build_stmt (input_location, EXPR_STMT, expr);
+	    expr = build_stmt (loc, EXPR_STMT, expr);
 	  expr = maybe_cleanup_point_expr_void (expr);
 	}
 

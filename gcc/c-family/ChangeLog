@@ -1,3 +1,14 @@
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64279
+	* c-common.h (do_warn_duplicated_branches_r): Declare.
+	* c-gimplify.c (c_genericize): Walk the function tree calling
+	do_warn_duplicated_branches_r.
+	* c-warn.c (expr_from_macro_expansion_r): New.
+	(do_warn_duplicated_branches): New.
+	(do_warn_duplicated_branches_r): New.
+	* c.opt (Wduplicated-branches): New option.
+
 2017-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/71497
