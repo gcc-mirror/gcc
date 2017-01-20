@@ -587,25 +587,6 @@
   [(set_attr "type" "branch")]
 )
 
-(define_insn "eh_return"
-  [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")]
-    UNSPECV_EH_RETURN)]
-  ""
-  "#"
-  [(set_attr "type" "branch")]
-
-)
-
-(define_split
-  [(unspec_volatile [(match_operand:DI 0 "register_operand" "")]
-    UNSPECV_EH_RETURN)]
-  "reload_completed"
-  [(set (match_dup 1) (match_dup 0))]
-  {
-    operands[1] = aarch64_final_eh_return_addr ();
-  }
-)
-
 (define_insn "*cb<optab><mode>1"
   [(set (pc) (if_then_else (EQL (match_operand:GPI 0 "register_operand" "r")
 				(const_int 0))
