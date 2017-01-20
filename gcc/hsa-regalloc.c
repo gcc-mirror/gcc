@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "cfghooks.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 
 
 /* Process a PHI node PHI of basic block BB as a part of naive out-f-ssa.  */

@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcse.h"
 #include "tree-chkp.h"
 #include "omp-offload.h"
-#include "hsa.h"
+#include "hsa-common.h"
 #include "edit-context.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
