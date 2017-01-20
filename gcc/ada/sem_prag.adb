@@ -282,11 +282,16 @@ package body Sem_Prag is
    --  function, this routine finds the corresponding state and sets the entity
    --  of N to that of the state.
 
-   procedure Rewrite_Assertion_Kind (N : Node_Id);
+   procedure Rewrite_Assertion_Kind
+     (N           : Node_Id;
+      From_Policy : Boolean := False);
    --  If N is Pre'Class, Post'Class, Invariant'Class, or Type_Invariant'Class,
    --  then it is rewritten as an identifier with the corresponding special
    --  name _Pre, _Post, _Invariant, or _Type_Invariant. Used by pragmas Check
-   --  and Check_Policy.
+   --  and Check_Policy. If the names are Precondition or Postcondition, this
+   --  combination is deprecated in favor of Assertion_Policy and Ada2012
+   --  Aspect names. The parameter From_Policy indicates that the pragma
+   --  is the old non-standard Check_Policy and not a rewritten pragma.
 
    procedure Set_Elab_Unit_Name (N : Node_Id; With_Item : Node_Id);
    --  Place semantic information on the argument of an Elaborate/Elaborate_All
@@ -12807,7 +12812,8 @@ package body Sem_Prag is
                Check_Arg_Count (2);
                Check_Optional_Identifier (Arg1, Name_Name);
                Kind := Get_Pragma_Arg (Arg1);
-               Rewrite_Assertion_Kind (Kind);
+               Rewrite_Assertion_Kind (Kind,
+                 From_Policy => Comes_From_Source (N));
                Check_Arg_Is_Identifier (Arg1);
 
                --  Check forbidden check kind
@@ -29448,10 +29454,14 @@ package body Sem_Prag is
    -- Rewrite_Assertion_Kind --
    ----------------------------
 
-   procedure Rewrite_Assertion_Kind (N : Node_Id) is
+   procedure Rewrite_Assertion_Kind
+     (N           : Node_Id;
+      From_Policy : Boolean := False)
+   is
       Nam : Name_Id;
 
    begin
+      Nam := No_Name;
       if Nkind (N) = N_Attribute_Reference
         and then Attribute_Name (N) = Name_Class
         and then Nkind (Prefix (N)) = N_Identifier
@@ -29473,6 +29483,25 @@ package body Sem_Prag is
                return;
          end case;
 
+      --  Recommend standard use of aspect names Pre/Post
+
+      elsif Nkind (N) = N_Identifier
+        and then From_Policy
+        and then Serious_Errors_Detected = 0
+        and then not ASIS_Mode
+      then
+         if Chars (N) = Name_Precondition
+          or else Chars (N) = Name_Postcondition
+         then
+            Error_Msg_N (" Check_Policy is a non-standard pragma??", N);
+            Error_Msg_N
+              (" \use Assertion_Policy and aspect names Pre/Post"
+                & " for Ada2012 conformance?", N);
+         end if;
+         return;
+      end if;
+
+      if Nam /= No_Name then
          Rewrite (N, Make_Identifier (Sloc (N), Chars => Nam));
       end if;
    end Rewrite_Assertion_Kind;

@@ -11929,12 +11929,22 @@ package body Sem_Ch3 is
       --  already frozen. We skip this processing if the type is an anonymous
       --  subtype of a record component, or is the corresponding record of a
       --  protected type, since these are processed when the enclosing type
-      --  is frozen.
+      --  is frozen. If the parent type is declared in a nested package then
+      --  the freezing of the private and full views also happens later.
 
       if not Is_Type (Scope (Full)) then
-         Set_Has_Delayed_Freeze (Full,
-           Has_Delayed_Freeze (Full_Base)
-             and then (not Is_Frozen (Full_Base)));
+         if Is_Itype (Priv)
+           and then In_Same_Source_Unit (Full, Full_Base)
+           and then Scope (Full_Base) /= Scope (Full)
+         then
+            Set_Has_Delayed_Freeze (Full);
+            Set_Has_Delayed_Freeze (Priv);
+
+         else
+            Set_Has_Delayed_Freeze (Full,
+              Has_Delayed_Freeze (Full_Base)
+                and then (not Is_Frozen (Full_Base)));
+         end if;
       end if;
 
       Set_Freeze_Node (Full, Empty);

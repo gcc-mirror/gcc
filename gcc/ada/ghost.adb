@@ -1430,6 +1430,34 @@ package body Ghost is
    end Mark_Ghost_Declaration_Or_Body;
 
    -----------------------
+   -- Mark_Ghost_Clause --
+   -----------------------
+
+   procedure Mark_Ghost_Clause (N : Node_Id) is
+      Nam : Node_Id := Empty;
+
+   begin
+      if Nkind (N) = N_Use_Package_Clause then
+         Nam := First (Names (N));
+
+      elsif Nkind (N) = N_Use_Type_Clause then
+         Nam := First (Subtype_Marks (N));
+
+      elsif Nkind (N) = N_With_Clause then
+         Nam := Name (N);
+      end if;
+
+      if Present (Nam)
+        and then Is_Entity_Name (Nam)
+        and then Present (Entity (Nam))
+        and then Is_Ignored_Ghost_Entity (Entity (Nam))
+      then
+         Set_Is_Ignored_Ghost_Node (N);
+         Propagate_Ignored_Ghost_Code (N);
+      end if;
+   end Mark_Ghost_Clause;
+
+   -----------------------
    -- Mark_Ghost_Pragma --
    -----------------------
 
@@ -1574,10 +1602,17 @@ package body Ghost is
             Id : Entity_Id;
 
          begin
+            --  Do not prune compilation unit nodes because many mechanisms
+            --  depend on their presence. Note that context items must still
+            --  be processed.
+
+            if Nkind (N) = N_Compilation_Unit then
+               return OK;
+
             --  The node is either declared as ignored Ghost or is a byproduct
             --  of expansion. Destroy it and stop the traversal on this branch.
 
-            if Is_Ignored_Ghost_Node (N) then
+            elsif Is_Ignored_Ghost_Node (N) then
                Prune (N);
                return Skip;
 
@@ -1628,7 +1663,7 @@ package body Ghost is
 
    begin
       for Index in Ignored_Ghost_Units.First .. Ignored_Ghost_Units.Last loop
-         Prune_Tree (Unit (Ignored_Ghost_Units.Table (Index)));
+         Prune_Tree (Ignored_Ghost_Units.Table (Index));
       end loop;
    end Remove_Ignored_Ghost_Code;
 

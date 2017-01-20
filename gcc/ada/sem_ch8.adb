@@ -3616,10 +3616,10 @@ package body Sem_Ch8 is
    --  within the package itself, ignore it.
 
    procedure Analyze_Use_Package (N : Node_Id) is
-      Pack_Name : Node_Id;
+      Ghost_Id  : Entity_Id := Empty;
+      Living_Id : Entity_Id := Empty;
       Pack      : Entity_Id;
-
-   --  Start of processing for Analyze_Use_Package
+      Pack_Name : Node_Id;
 
    begin
       Check_SPARK_05_Restriction ("use clause is not allowed", N);
@@ -3664,8 +3664,8 @@ package body Sem_Ch8 is
 
                if Entity (Pref) = Standard_Standard then
                   Error_Msg_N
-                   ("predefined package Standard cannot appear"
-                     & " in a context clause", Pref);
+                    ("predefined package Standard cannot appear in a context "
+                     & "clause", Pref);
                end if;
             end;
          end if;
@@ -3673,8 +3673,8 @@ package body Sem_Ch8 is
          Next (Pack_Name);
       end loop;
 
-      --  Loop through package names to mark all entities as potentially
-      --  use visible.
+      --  Loop through package names to mark all entities as potentially use
+      --  visible.
 
       Pack_Name := First (Names (N));
       while Present (Pack_Name) loop
@@ -3710,6 +3710,21 @@ package body Sem_Ch8 is
                if Applicable_Use (Pack_Name) then
                   Use_One_Package (Pack, N);
                end if;
+
+               --  Capture the first Ghost package and the first living package
+
+               if Is_Entity_Name (Pack_Name) then
+                  Pack := Entity (Pack_Name);
+
+                  if Is_Ghost_Entity (Pack) then
+                     if No (Ghost_Id) then
+                        Ghost_Id := Pack;
+                     end if;
+
+                  elsif No (Living_Id) then
+                     Living_Id := Pack;
+                  end if;
+               end if;
             end if;
 
          --  Report error because name denotes something other than a package
@@ -3720,6 +3735,25 @@ package body Sem_Ch8 is
 
          Next (Pack_Name);
       end loop;
+
+      --  Detect a mixture of Ghost packages and living packages within the
+      --  same use package clause. Ideally one would split a use package clause
+      --  with multiple names into multiple use package clauses with a single
+      --  name, however clients of the front end would have to adapt to this
+      --  change.
+
+      if Present (Ghost_Id) and then Present (Living_Id) then
+         Error_Msg_N
+           ("use clause cannot mention ghost and non-ghost ghost units", N);
+
+         Error_Msg_Sloc := Sloc (Ghost_Id);
+         Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
+
+         Error_Msg_Sloc := Sloc (Living_Id);
+         Error_Msg_NE ("\& # declared as non-ghost", N, Living_Id);
+      end if;
+
+      Mark_Ghost_Clause (N);
    end Analyze_Use_Package;
 
    ----------------------
@@ -3727,8 +3761,10 @@ package body Sem_Ch8 is
    ----------------------
 
    procedure Analyze_Use_Type (N : Node_Id) is
-      E  : Entity_Id;
-      Id : Node_Id;
+      E         : Entity_Id;
+      Ghost_Id  : Entity_Id := Empty;
+      Id        : Node_Id;
+      Living_Id : Entity_Id := Empty;
 
    begin
       Set_Hidden_By_Use_Clause (N, No_Elist);
@@ -3834,8 +3870,37 @@ package body Sem_Ch8 is
             end if;
          end if;
 
+         --  Capture the first Ghost type and the first living type
+
+         if Is_Ghost_Entity (E) then
+            if No (Ghost_Id) then
+               Ghost_Id := E;
+            end if;
+
+         elsif No (Living_Id) then
+            Living_Id := E;
+         end if;
+
          Next (Id);
       end loop;
+
+      --  Detect a mixture of Ghost types and living types within the same use
+      --  type clause. Ideally one would split a use type clause with multiple
+      --  marks into multiple use type clauses with a single mark, however
+      --  clients of the front end will have to adapt to this change.
+
+      if Present (Ghost_Id) and then Present (Living_Id) then
+         Error_Msg_N
+           ("use clause cannot mention ghost and non-ghost ghost types", N);
+
+         Error_Msg_Sloc := Sloc (Ghost_Id);
+         Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
+
+         Error_Msg_Sloc := Sloc (Living_Id);
+         Error_Msg_NE ("\& # declared as non-ghost", N, Living_Id);
+      end if;
+
+      Mark_Ghost_Clause (N);
    end Analyze_Use_Type;
 
    --------------------

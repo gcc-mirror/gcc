@@ -3843,12 +3843,12 @@ package body Sem_Ch6 is
       --    end P;                                      --    mode is ON
 
       elsif not Comes_From_Source (N)
-        and then Present (Prev_Id)
-        and then Is_Expression_Function (Prev_Id)
+        and then Present (Spec_Id)
+        and then Is_Expression_Function (Spec_Id)
       then
-         Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Prev_Id));
+         Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Spec_Id));
          Set_SPARK_Pragma_Inherited
-           (Body_Id, SPARK_Pragma_Inherited (Prev_Id));
+           (Body_Id, SPARK_Pragma_Inherited (Spec_Id));
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
       --  with explicit pragma). Exclude the case where the SPARK_Mode appears

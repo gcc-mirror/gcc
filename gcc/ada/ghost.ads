@@ -183,6 +183,11 @@ package Ghost is
    --  prior to processing the procedure call. This routine starts a Ghost
    --  region and must be used in conjunction with Restore_Ghost_Mode.
 
+   procedure Mark_Ghost_Clause (N : Node_Id);
+   --  Mark use package, use type, or with clause N as Ghost when:
+   --
+   --    * The clause mentions a Ghost entity
+
    procedure Mark_Ghost_Pragma
      (N  : Node_Id;
       Id : Entity_Id);
