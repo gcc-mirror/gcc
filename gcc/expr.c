@@ -8929,9 +8929,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
 	/* Left shift optimization when shifting across word_size boundary.
 
-	   If mode == GET_MODE_WIDER_MODE (word_mode), then normally there isn't
-	   native instruction to support this wide mode left shift.  Given below
-	   scenario:
+	   If mode == GET_MODE_WIDER_MODE (word_mode), then normally
+	   there isn't native instruction to support this wide mode
+	   left shift.  Given below scenario:
 
 	    Type A = (Type) B  << C
 
@@ -8940,10 +8940,11 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
 			 | word_size |
 
-	   If the shift amount C caused we shift B to across the word size
-	   boundary, i.e part of B shifted into high half of destination
-	   register, and part of B remains in the low half, then GCC will use
-	   the following left shift expand logic:
+	   If the shift amount C caused we shift B to across the word
+	   size boundary, i.e part of B shifted into high half of
+	   destination register, and part of B remains in the low
+	   half, then GCC will use the following left shift expand
+	   logic:
 
 	   1. Initialize dest_low to B.
 	   2. Initialize every bit of dest_high to the sign bit of B.
@@ -8953,20 +8954,30 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	   5. Logic right shift D by (word_size - C).
 	   6. Or the result of 4 and 5 to finalize dest_high.
 
-	   While, by checking gimple statements, if operand B is coming from
-	   signed extension, then we can simplify above expand logic into:
+	   While, by checking gimple statements, if operand B is
+	   coming from signed extension, then we can simplify above
+	   expand logic into:
 
 	      1. dest_high = src_low >> (word_size - C).
 	      2. dest_low = src_low << C.
 
-	   We can use one arithmetic right shift to finish all the purpose of
-	   steps 2, 4, 5, 6, thus we reduce the steps needed from 6 into 2.  */
+	   We can use one arithmetic right shift to finish all the
+	   purpose of steps 2, 4, 5, 6, thus we reduce the steps
+	   needed from 6 into 2.
+
+	   The case is similar for zero extension, except that we
+	   initialize dest_high to zero rather than copies of the sign
+	   bit from B.  Furthermore, we need to use a logical right shift
+	   in this case.
+
+	   The choice of sign-extension versus zero-extension is
+	   determined entirely by whether or not B is signed and is
+	   independent of the current setting of unsignedp.  */
 
 	temp = NULL_RTX;
 	if (code == LSHIFT_EXPR
 	    && target
 	    && REG_P (target)
-	    && ! unsignedp
 	    && mode == GET_MODE_WIDER_MODE (word_mode)
 	    && GET_MODE_SIZE (mode) == 2 * GET_MODE_SIZE (word_mode)
 	    && TREE_CONSTANT (treeop1)
@@ -8987,6 +8998,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    rtx_insn *seq, *seq_old;
 		    unsigned int high_off = subreg_highpart_offset (word_mode,
 								    mode);
+		    bool extend_unsigned
+		      = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def)));
 		    rtx low = lowpart_subreg (word_mode, op0, mode);
 		    rtx dest_low = lowpart_subreg (word_mode, target, mode);
 		    rtx dest_high = simplify_gen_subreg (word_mode, target,
@@ -8998,7 +9011,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    start_sequence ();
 		    /* dest_high = src_low >> (word_size - C).  */
 		    temp = expand_variable_shift (RSHIFT_EXPR, word_mode, low,
-						  rshift, dest_high, unsignedp);
+						  rshift, dest_high,
+						  extend_unsigned);
 		    if (temp != dest_high)
 		      emit_move_insn (dest_high, temp);
 

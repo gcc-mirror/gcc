@@ -1,3 +1,12 @@
+2017-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from mainline
+	2017-01-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/79121
+	* expr.c (expand_expr_real_2, case LSHIFT_EXPR): Look at the signedness
+	of the inner type when shifting an extended value.
+
 2017-01-20  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
