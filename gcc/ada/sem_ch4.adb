@@ -913,8 +913,8 @@ package body Sem_Ch4 is
    --  the type-checking is similar to that of other calls.
 
    procedure Analyze_Call (N : Node_Id) is
+      Actuals : constant List_Id    := Parameter_Associations (N);
       Loc     : constant Source_Ptr := Sloc (N);
-      Actuals : constant List_Id := Parameter_Associations (N);
       Nam     : Node_Id;
       X       : Interp_Index;
       It      : Interp;
@@ -1325,10 +1325,13 @@ package body Sem_Ch4 is
                   then
                      Rewrite (Name (N),
                        Make_Explicit_Dereference (Loc,
-                         Prefix => Make_Selected_Component (Loc,
-                           Prefix        =>
-                             (New_Occurrence_Of (Entity (Nam), Loc)),
-                           Selector_Name => New_Occurrence_Of (It.Nam, Loc))));
+                         Prefix =>
+                           Make_Selected_Component (Loc,
+                             Prefix        =>
+                               New_Occurrence_Of (Entity (Nam), Loc),
+                             Selector_Name =>
+                               New_Occurrence_Of (It.Nam, Loc))));
+
                      Analyze (N);
                      return;
 
@@ -1342,8 +1345,7 @@ package body Sem_Ch4 is
                   Set_Etype (Nam, It.Typ);
                end if;
 
-            elsif Nkind_In (Name (N), N_Selected_Component,
-                                      N_Function_Call)
+            elsif Nkind_In (Name (N), N_Function_Call, N_Selected_Component)
             then
                Remove_Interp (X);
             end if;

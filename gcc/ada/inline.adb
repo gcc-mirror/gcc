@@ -3158,10 +3158,8 @@ package body Inline is
             --  unconstrained type renaming a local variable of constrained
             --  type, which is not expected by GNATprove.
 
-            elsif Etype (F) /= Etype (A)
-              and then not GNATprove_Mode
-            then
-               New_A := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
+            elsif Etype (F) /= Etype (A) and then not GNATprove_Mode then
+               New_A    := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
                Temp_Typ := Etype (F);
 
             else
