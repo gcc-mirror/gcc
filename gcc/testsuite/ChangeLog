@@ -1,3 +1,10 @@
+2017-01-20  Jiong Wang  <jiong.wang@arm.com>
+
+	* testsuite/gcc.target/aarch64/return_address_sign_1.c: Enable on LP64
+	only.
+	* testsuite/gcc.target/aarch64/return_address_sign_2.c: Likewise.
+	* testsuite/gcc.target/aarch64/return_address_sign_3.c: Likewise.
+
 2017-01-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79495

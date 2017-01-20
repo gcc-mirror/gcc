@@ -1,6 +1,7 @@
 /* Testing return address signing where combined instructions used.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -msign-return-address=all" } */
+/* { dg-require-effective-target lp64 } */
 
 int foo (int);
 int bar (int, int);

@@ -1,5 +1,11 @@
 2017-01-20  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64-unwind.h: Empty this file on ILP32.
+	* unwind-dw2.c (execute_cfa_program):  Only multiplexing
+	DW_CFA_GNU_window_save for AArch64 and LP64.
+
+2017-01-20  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/linux-unwind.h: Always include aarch64-unwind.h.
 
 2017-01-19  Jiong Wang  <jiong.wang@arm.com>

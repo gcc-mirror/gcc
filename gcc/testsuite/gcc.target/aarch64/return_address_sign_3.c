@@ -1,6 +1,7 @@
 /* Testing the disable of return address signing.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -msign-return-address=all" } */
+/* { dg-require-effective-target lp64 } */
 
 int bar (int, int);
 
