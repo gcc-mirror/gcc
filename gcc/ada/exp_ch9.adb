@@ -4524,7 +4524,7 @@ package body Exp_Ch9 is
                      --  If actual is an out parameter of a null-excluding
                      --  access type, there is access check on entry, so set
                      --  Suppress_Assignment_Checks on the generated statement
-                     --  that assigns the actual to the parameter block
+                     --  that assigns the actual to the parameter block.
 
                      Set_Suppress_Assignment_Checks (Last (Stats));
                   end if;
@@ -6817,7 +6817,7 @@ package body Exp_Ch9 is
          Insert_Before (N, Decl);
          Analyze (Decl);
 
-         --  Rewrite abortable part into a call to this procedure.
+         --  Rewrite abortable part into a call to this procedure
 
          Astats :=
            New_List (
@@ -9030,7 +9030,7 @@ package body Exp_Ch9 is
                   elsif Restriction_Active (No_Implicit_Heap_Allocations) then
                      if not Discriminated_Size (Defining_Identifier (Priv))
                      then
-                        --  Any object of the type will be  non-static.
+                        --  Any object of the type will be non-static
 
                         Error_Msg_N ("component has non-static size??", Priv);
                         Error_Msg_NE
@@ -9039,7 +9039,7 @@ package body Exp_Ch9 is
                            & "No_Implicit_Heap_Allocations??", Priv, Prot_Typ);
                      else
 
-                        --  Object will be non-static if discriminants are.
+                        --  Object will be non-static if discriminants are
 
                         Error_Msg_NE
                           ("creation of protected object of type& with "
@@ -9055,7 +9055,7 @@ package body Exp_Ch9 is
                   then
                      if not Discriminated_Size (Defining_Identifier (Priv))
                      then
-                        --  Any object of the type will be  non-static.
+                        --  Any object of the type will be non-static
 
                         Error_Msg_N ("component has non-static size??", Priv);
                         Error_Msg_NE
@@ -9064,7 +9064,7 @@ package body Exp_Ch9 is
                            & "No_Implicit_Protected_Object_Allocations??",
                            Priv, Prot_Typ);
                      else
-                        --  Object will be non-static if discriminants are.
+                        --  Object will be non-static if discriminants are
 
                         Error_Msg_NE
                           ("creation of protected object of type& with "
@@ -13769,7 +13769,7 @@ package body Exp_Ch9 is
                     Expression
                      (First (Pragma_Argument_Associations (Prio_Clause)));
 
-                  --  Get_Rep_Item returns either priority pragma.
+                  --  Get_Rep_Item returns either priority pragma
 
                   if Pragma_Name (Prio_Clause) = Name_Priority then
                      Prio_Type := RTE (RE_Any_Priority);

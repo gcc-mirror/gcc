@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --            Copyright (C) 1991-1994, Florida State University             --
---          Copyright (C) 1995-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,6 +83,8 @@ package System.OS_Interface is
    type HW_Interrupt is new int range 0 .. Max_HW_Interrupt;
 
    Max_Interrupt : constant := Max_HW_Interrupt;
+   subtype Interrupt_Range is Natural range 0 .. Max_HW_Interrupt;
+   --  For s-interr
 
    --  Signals common to Vxworks 5.x and 6.x
 
