@@ -3559,7 +3559,11 @@ aarch64_expand_prologue (void)
 
   /* Sign return address for functions.  */
   if (aarch64_return_address_signing_enabled ())
-    emit_insn (gen_pacisp ());
+    {
+      insn = emit_insn (gen_pacisp ());
+      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size;
@@ -3714,7 +3718,11 @@ aarch64_expand_epilogue (bool for_sibcall)
     */
   if (aarch64_return_address_signing_enabled ()
       && (for_sibcall || !TARGET_ARMV8_3 || crtl->calls_eh_return))
-    emit_insn (gen_autisp ());
+    {
+      insn = emit_insn (gen_autisp ());
+      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
 
   /* Stack adjustment for exception handler.  */
   if (crtl->calls_eh_return)

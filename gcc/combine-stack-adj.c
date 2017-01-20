@@ -208,6 +208,7 @@ no_unhandled_cfa (rtx_insn *insn)
       case REG_CFA_SET_VDRAP:
       case REG_CFA_WINDOW_SAVE:
       case REG_CFA_FLUSH_QUEUE:
+      case REG_CFA_TOGGLE_RA_MANGLE:
 	return false;
       }
 

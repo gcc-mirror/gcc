@@ -1,5 +1,15 @@
 2017-01-19  Jiong Wang  <jiong.wang@arm.com>
 
+	* reg-notes.def (CFA_TOGGLE_RA_MANGLE): New reg-note.
+	* combine-stack-adj.c (no_unhandled_cfa): Handle
+	REG_CFA_TOGGLE_RA_MANGLE.
+	* dwarf2cfi.c (dwarf2out_frame_debug): Handle REG_CFA_TOGGLE_RA_MANGLE.
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Generates DWARF
+	info for return address signing.
+	(aarch64_expand_epilogue): Likewise.
+
+2017-01-19  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64-opts.h (aarch64_function_type): New enum.
 	* config/aarch64/aarch64-protos.h
 	(aarch64_return_address_signing_enabled): New declaration.
