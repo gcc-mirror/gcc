@@ -1,6 +1,20 @@
 2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/72792
+	* include/bits/alloc_traits.h (__allocator_traits_base::__diff_type)
+	(__allocator_traits_base::__size_type): Remove.
+	(allocator_traits::_Ptr): New class template to detect const and void
+	pointer types without instantiating pointer_traits::rebind
+	unnecessarily.
+	(allocator_traits::_Diff): Likewise for detecting difference_type.
+	(allocator_traits::_Size): New class template to detect size_type
+	without instantiating make_unsigned unnecessarily.
+	* include/bits/ptr_traits.h (pointer_traits::element_type): Use
+	__detected_or_t instead of __detected_or_t_.
+	* include/std/type_traits (__detected_or_t_): Remove.
+	* testsuite/20_util/allocator_traits/members/pointers.cc: New test.
+
+	PR libstdc++/72792
 	PR libstdc++/72793
 	* include/bits/alloc_traits.h (__allocator_traits_base::__rebind):
 	Replace with class template using void_t.
