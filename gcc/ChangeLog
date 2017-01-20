@@ -1,3 +1,19 @@
+2017-01-20  Martin Jambor  <mjambor@suse.cz>
+
+        * hsa.h: Renaed to hsa-common.h.  Adjusted a comment.
+        * hsa.c: Renaed to hsa-common.c.  Change include of gt-hsa.h to
+        gt-hsa-common.h.
+        * Makefile.in (OBJS): Rename hsa.o to hsa-common.o.
+        (GTFILES): Rename hsa.c to hsa-common.c.
+        * hsa-brig.c: Change include of hsa.h to hsa-common.h.
+        * hsa-dump.c: Likewise.
+        * hsa-gen.c: Likewise.
+        * hsa-regalloc.c: Likewise.
+        * ipa-hsa.c: Likewise.
+        * omp-expand.c: Likewise.
+        * omp-low.c: Likewise.
+        * toplev.c: Likewise.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64279

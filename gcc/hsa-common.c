@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "stringpool.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 #include "internal-fn.h"
 #include "ctype.h"
 #include "builtins.h"
@@ -991,4 +991,4 @@ hsa_internal_fn::get_argument_type (int n)
     }
 }
 
-#include "gt-hsa.h"
+#include "gt-hsa-common.h"

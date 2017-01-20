@@ -1320,7 +1320,7 @@ OBJS = \
 	haifa-sched.o \
 	hash-map-tests.o \
 	hash-set-tests.o \
-	hsa.o \
+	hsa-common.o \
 	hsa-gen.o \
 	hsa-regalloc.o \
 	hsa-brig.o \
@@ -2508,7 +2508,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/sancov.c \
   $(srcdir)/ipa-devirt.c \
   $(srcdir)/internal-fn.h \
-  $(srcdir)/hsa.c \
+  $(srcdir)/hsa-common.c \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,

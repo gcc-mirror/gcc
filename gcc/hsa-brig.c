@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "print-tree.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 #include "gomp-constants.h"
 
 /* Convert VAL to little endian form, if necessary.  */

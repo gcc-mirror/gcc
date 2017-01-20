@@ -1309,7 +1309,7 @@ hsa_internal_fn_hasher::equal (const value_type a, const compare_type b)
   return a->m_fn == b->m_fn && a->m_type_bit_size == b->m_type_bit_size;
 }
 
-/* in hsa.c */
+/* in hsa-common.c */
 extern struct hsa_function_representation *hsa_cfun;
 extern hash_map <tree, vec <const char *> *> *hsa_decl_kernel_dependencies;
 extern hsa_summary_t *hsa_summaries;

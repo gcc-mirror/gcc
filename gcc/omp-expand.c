@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cilk.h"
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"
-#include "hsa.h"
+#include "hsa-common.h"
 
 
 /* OMP region information.  Every parallel and workshare
