@@ -1,3 +1,28 @@
+2017-01-19  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-opts.h (aarch64_function_type): New enum.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_return_address_signing_enabled): New declaration.
+	* config/aarch64/aarch64.c (aarch64_return_address_signing_enabled):
+	New function.
+	(aarch64_expand_prologue): Sign return address before it's pushed onto
+	stack.
+	(aarch64_expand_epilogue): Authenticate return address fetched from
+	stack.
+	(aarch64_override_options): Sanity check for ILP32 and ISA level.
+	(aarch64_attributes): New function attributes for "sign-return-address".
+	* config/aarch64/aarch64.md (UNSPEC_AUTI1716, UNSPEC_AUTISP,
+	UNSPEC_PACI1716, UNSPEC_PACISP, UNSPEC_XPACLRI): New unspecs.
+	("*do_return"): Generate combined instructions according to key index.
+	("<pauth_mnem_prefix>sp", "<pauth_mnem_prefix1716", "xpaclri"): New.
+	* config/aarch64/iterators.md (PAUTH_LR_SP, PAUTH_17_16): New integer
+	iterators.
+	(pauth_mnem_prefix, pauth_hint_num_a): New integer attributes.
+	* config/aarch64/aarch64.opt (msign-return-address=): New.
+	* doc/extend.texi (AArch64 Function Attributes): Documents
+	"sign-return-address=".
+	* doc/invoke.texi (AArch64 Options): Documents "-msign-return-address=".
+
 2017-01-19  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* doc/invoke.texi: Add missing -mlxc1-sxc1 options to
