@@ -1,3 +1,28 @@
+2017-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77829
+	PR c++/78656
+	* cp-tree.h (suggest_alternatives_for): Add bool param.
+	(suggest_alternative_in_explicit_scope): New decl.
+	* error.c (qualified_name_lookup_error): When SCOPE is a namespace
+	that isn't the global one, call new function
+	suggest_alternative_in_explicit_scope, only calling
+	suggest_alternatives_for if it fails, and disabling near match
+	searches fort that case.  When SCOPE is the global namespace,
+	pass true for new param to suggest_alternatives_for to allow for
+	fuzzy name lookups.
+	* lex.c (unqualified_name_lookup_error): Pass true for new param
+	to suggest_alternatives_for.
+	* name-lookup.c (consider_binding_level): Add forward decl.
+	(suggest_alternatives_for): Add "suggest_misspellings" param,
+	using it to conditionalize the fuzzy name-lookup code.
+	(suggest_alternative_in_explicit_scope): New function.
+	* parser.c (cp_parser_primary_expression): When calling
+	finish_id_expression, pass location of id_expression rather
+	than that of id_expr_token.
+	(cp_parser_id_expression): Convert local "unqualified_id" from
+	tree to cp_expr to avoid implicitly dropping location information.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64279
