@@ -913,6 +913,7 @@ package body Sem_Ch4 is
    --  the type-checking is similar to that of other calls.
 
    procedure Analyze_Call (N : Node_Id) is
+      Loc     : constant Source_Ptr := Sloc (N);
       Actuals : constant List_Id := Parameter_Associations (N);
       Nam     : Node_Id;
       X       : Interp_Index;
@@ -1310,17 +1311,32 @@ package body Sem_Ch4 is
 
             --  If the interpretation succeeds, mark the proper type of the
             --  prefix (any valid candidate will do). If not, remove the
-            --  candidate interpretation. This only needs to be done for
-            --  overloaded protected operations, for other entities disambi-
-            --  guation is done directly in Resolve.
+            --  candidate interpretation. If this is a parameterless call
+            --  on an anonymous access to subprogram, X is a variable with
+            --  an access discriminant D, the entity in the interpretation is
+            --  D, so rewrite X as X.D.all.
 
             if Success then
                if Deref
                  and then Nkind (Parent (N)) /= N_Explicit_Dereference
                then
-                  Set_Entity (Nam, It.Nam);
-                  Insert_Explicit_Dereference (Nam);
-                  Set_Etype (Nam, Nam_Ent);
+                  if Ekind (It.Nam) = E_Discriminant
+                    and then Has_Implicit_Dereference (It.Nam)
+                  then
+                     Rewrite (Name (N),
+                       Make_Explicit_Dereference (Loc,
+                         Prefix => Make_Selected_Component (Loc,
+                           Prefix        =>
+                             (New_Occurrence_Of (Entity (Nam), Loc)),
+                           Selector_Name => New_Occurrence_Of (It.Nam, Loc))));
+                     Analyze (N);
+                     return;
+
+                  else
+                     Set_Entity (Nam, It.Nam);
+                     Insert_Explicit_Dereference (Nam);
+                     Set_Etype (Nam, Nam_Ent);
+                  end if;
 
                else
                   Set_Etype (Nam, It.Typ);
@@ -7981,10 +7997,12 @@ package body Sem_Ch4 is
 
       if not Is_Overloaded (Func_Name) then
          Func := Entity (Func_Name);
+
          Indexing :=
            Make_Function_Call (Loc,
              Name                   => New_Occurrence_Of (Func, Loc),
              Parameter_Associations => Assoc);
+
          Set_Parent (Indexing, Parent (N));
          Set_Generalized_Indexing (N, Indexing);
          Analyze (Indexing);
@@ -8009,7 +8027,6 @@ package body Sem_Ch4 is
              Name                   =>
                Make_Identifier (Loc, Chars (Func_Name)),
              Parameter_Associations => Assoc);
-
          Set_Parent (Indexing, Parent (N));
          Set_Generalized_Indexing (N, Indexing);
          Set_Etype (N, Any_Type);
@@ -8024,7 +8041,7 @@ package body Sem_Ch4 is
             Get_First_Interp (Func_Name, I, It);
             Set_Etype (Indexing, Any_Type);
 
-            --  Analyze eacn candidae function with the given actuals
+            --  Analyze each candidate function with the given actuals
 
             while Present (It.Nam) loop
                Analyze_One_Call (Indexing, It.Nam, False, Success);

@@ -1,5 +1,36 @@
 2017-01-20  Yannick Moy  <moy@adacore.com>
 
+	* inline.adb (Expand_Inlined_Call): Keep more
+	precise type of actual for inlining whenever possible. In
+	particular, do not switch to the formal type in GNATprove mode in
+	some case where the GNAT backend might require it for visibility.
+
+2017-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Non_Overridable_Aspects): An inherited
+	aspect Implicit_Dereference can be inherited by a full view if
+	the partial view has no discriminants, because there is no way
+	to apply the aspect to the partial view.
+	(Build_Derived_Record_Type): If derived type renames discriminants
+	of the parent, the new discriminant inherits the aspect from
+	the old one.
+	* sem_ch4.adb (Analyze_Call): Handle properly a parameterless
+	call through an access discriminant designating a subprogram.
+	* sem_ch5.adb (Analyze_Assignment): (Analyze_Call): Handle
+	properly a parameterless call through an access discriminant on
+	the left-hand side of an assignment.
+	* sem_res.adb (resolve): If an interpreation involves a
+	discriminant with an implicit dereference and the expression is an
+	entity, resolution takes place later in the appropriate routine.
+	* sem_ch13.adb (Analyze_Aspect_Implicit_Dereference): Recognize
+	access discriminants that designate a subprogram type.
+
+2017-01-20  Pascal Obry  <obry@adacore.com>
+
+	* a-locale.adb, a-locale.ads: Update Ada.Locales for RM 2012 COR:1:2016
+
+2017-01-20  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch10.adb (Check_No_Elab_Code_All): Do not issue an error
 	on implicitly with'ed units in GNATprove mode.
 	* sinfo.ads (Implicit_With): Document use of flag for implicitly

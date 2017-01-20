@@ -3087,8 +3087,10 @@ package body Inline is
 
          elsif Base_Type (Etype (F)) = Base_Type (Etype (A))
            and then Etype (F) /= Base_Type (Etype (F))
+           and then Is_Constrained (Etype (F))
          then
             Temp_Typ := Etype (F);
+
          else
             Temp_Typ := Etype (A);
          end if;
@@ -3150,7 +3152,15 @@ package body Inline is
                    Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
                    Expression   => Relocate_Node (Expression (A)));
 
-            elsif Etype (F) /= Etype (A) then
+            --  In GNATprove mode, keep the most precise type of the actual
+            --  for the temporary variable. Otherwise, the AST may contain
+            --  unexpected assignment statements to a temporary variable of
+            --  unconstrained type renaming a local variable of constrained
+            --  type, which is not expected by GNATprove.
+
+            elsif Etype (F) /= Etype (A)
+              and then not GNATprove_Mode
+            then
                New_A := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
                Temp_Typ := Etype (F);
 
