@@ -62,10 +62,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       using __cv_pointer = typename _Tp::const_void_pointer;
     template<typename _Tp>
-      using __diff_type = typename _Tp::difference_type;
-    template<typename _Tp>
-      using __size_type = typename _Tp::size_type;
-    template<typename _Tp>
       using __pocca = typename _Tp::propagate_on_container_copy_assignment;
     template<typename _Tp>
       using __pocma = typename _Tp::propagate_on_container_move_assignment;
@@ -98,15 +94,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       using pointer = __detected_or_t<value_type*, __pointer, _Alloc>;
 
+    private:
+      // Select _Func<_Alloc> or pointer_traits<pointer>::rebind<_Tp>
+      template<template<typename> class _Func, typename _Tp, typename = void>
+	struct _Ptr
+	{
+	  using type = typename pointer_traits<pointer>::template rebind<_Tp>;
+	};
+
+      template<template<typename> class _Func, typename _Tp>
+	struct _Ptr<_Func, _Tp, __void_t<_Func<_Alloc>>>
+	{
+	  using type = _Func<_Alloc>;
+	};
+
+      // Select _A2::difference_type or pointer_traits<_Ptr>::difference_type
+      template<typename _A2, typename _PtrT, typename = void>
+	struct _Diff
+	{ using type = typename pointer_traits<_PtrT>::difference_type; };
+
+      template<typename _A2, typename _PtrT>
+	struct _Diff<_A2, _PtrT, __void_t<typename _A2::difference_type>>
+	{ using type = typename _A2::difference_type; };
+
+      // Select _A2::size_type or make_unsigned<_DiffT>::type
+      template<typename _A2, typename _DiffT, typename = void>
+	struct _Size : make_unsigned<_DiffT> { };
+
+      template<typename _A2, typename _DiffT>
+	struct _Size<_A2, _DiffT, __void_t<typename _A2::size_type>>
+	{ using type = typename _A2::size_type; };
+
+    public:
       /**
        * @brief   The allocator's const pointer type.
        *
        * @c Alloc::const_pointer if that type exists, otherwise
        * <tt> pointer_traits<pointer>::rebind<const value_type> </tt>
       */
-      using const_pointer
-	= __detected_or_t<__ptr_rebind<pointer, const value_type>,
-			  __c_pointer, _Alloc>;
+      using const_pointer = typename _Ptr<__c_pointer, const value_type>::type;
 
       /**
        * @brief   The allocator's void pointer type.
@@ -114,8 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @c Alloc::void_pointer if that type exists, otherwise
        * <tt> pointer_traits<pointer>::rebind<void> </tt>
       */
-      using void_pointer
-	= __detected_or_t<__ptr_rebind<pointer, void>, __v_pointer, _Alloc>;
+      using void_pointer = typename _Ptr<__v_pointer, void>::type;
 
       /**
        * @brief   The allocator's const void pointer type.
@@ -123,9 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @c Alloc::const_void_pointer if that type exists, otherwise
        * <tt> pointer_traits<pointer>::rebind<const void> </tt>
       */
-      using const_void_pointer
-	= __detected_or_t<__ptr_rebind<pointer, const void>, __cv_pointer,
-			  _Alloc>;
+      using const_void_pointer = typename _Ptr<__cv_pointer, const void>::type;
 
       /**
        * @brief   The allocator's difference type
@@ -133,9 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @c Alloc::difference_type if that type exists, otherwise
        * <tt> pointer_traits<pointer>::difference_type </tt>
       */
-      using difference_type
-	= __detected_or_t<typename pointer_traits<pointer>::difference_type,
-			  __diff_type, _Alloc>;
+      using difference_type = typename _Diff<_Alloc, pointer>::type;
 
       /**
        * @brief   The allocator's size type
@@ -143,9 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @c Alloc::size_type if that type exists, otherwise
        * <tt> make_unsigned<difference_type>::type </tt>
       */
-      using size_type
-	= __detected_or_t<typename make_unsigned<difference_type>::type,
-			  __size_type, _Alloc>;
+      using size_type = typename _Size<_Alloc, difference_type>::type;
 
       /**
        * @brief   How the allocator is propagated on copy assignment

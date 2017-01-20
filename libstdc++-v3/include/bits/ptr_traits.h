@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// The type pointed to.
       using element_type
-	= __detected_or_t_<__get_first_arg_t, __element_type, _Ptr>;
+	= __detected_or_t<__get_first_arg_t<_Ptr>, __element_type, _Ptr>;
 
       /// The type used to represent the difference between two pointers.
       using difference_type
