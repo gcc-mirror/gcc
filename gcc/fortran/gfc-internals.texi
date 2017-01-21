@@ -761,11 +761,11 @@ Some relevant references:
 GNU @command{ld} manual}
 
 @item
-@uref{http://www.akkadia.org/drepper/symbol-versioning, ELF Symbol
+@uref{https://www.akkadia.org/drepper/symbol-versioning, ELF Symbol
 Versioning - Ulrich Depper}
 
 @item
-@uref{http://www.akkadia.org/drepper/dsohowto.pdf, How to Write Shared
+@uref{https://www.akkadia.org/drepper/dsohowto.pdf, How to Write Shared
 Libraries - Ulrich Drepper (see Chapter 3)}
 
 @end itemize
