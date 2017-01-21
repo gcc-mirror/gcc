@@ -869,6 +869,10 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
       bb->count = 0;
     }
 
+  bb->frequency -= edge_frequency;
+  if (bb->frequency < 0)
+    bb->frequency = 0;
+
   /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
      Watch for overflows.  */
   if (bb->frequency)
@@ -882,15 +886,12 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
 		 "%i->%i too small (it is %i, should be %i).\n",
 		 taken_edge->src->index, taken_edge->dest->index,
 		 taken_edge->probability, prob);
-      prob = taken_edge->probability;
+      prob = taken_edge->probability * 6 / 8;
     }
 
   /* Now rescale the probabilities.  */
   taken_edge->probability -= prob;
   prob = REG_BR_PROB_BASE - prob;
-  bb->frequency -= edge_frequency;
-  if (bb->frequency < 0)
-    bb->frequency = 0;
   if (prob <= 0)
     {
       if (dump_file)

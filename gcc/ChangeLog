@@ -1,3 +1,8 @@
+2017-01-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/78407
+	* cfg.c (update_bb_profile_for_threading): Fix updating of probablity.
+
 2017-01-21  Bernd Schmidt  <bschmidt@redhat.com>
 
 	rtl-optimization/79125
