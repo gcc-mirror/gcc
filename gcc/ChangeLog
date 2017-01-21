@@ -1,3 +1,9 @@
+2017-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Thread-Local): Change www.akkadia.org reference
+	to https.
+	* doc/invoke.texi (Code Gen Options): Ditto.
+
 2017-01-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/78407
