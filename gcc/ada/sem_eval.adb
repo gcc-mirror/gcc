@@ -1329,26 +1329,29 @@ package body Sem_Eval is
          --  J .. J + 1. This code can conclude LT with a difference of 1,
          --  even if the range of J is not known.
 
-         --  This would be wrong for modular types (e.g. X < X + 1 is False if
-         --  X is the largest number).
+         declare
+            Lnode : Node_Id;
+            Loffs : Uint;
+            Rnode : Node_Id;
+            Roffs : Uint;
 
-         if not Is_Modular_Integer_Type (Ltyp)
-           and then not Is_Modular_Integer_Type (Rtyp)
-         then
-            declare
-               Lnode : Node_Id;
-               Loffs : Uint;
-               Rnode : Node_Id;
-               Roffs : Uint;
+         begin
+            Compare_Decompose (L, Lnode, Loffs);
+            Compare_Decompose (R, Rnode, Roffs);
 
-            begin
-               Compare_Decompose (L, Lnode, Loffs);
-               Compare_Decompose (R, Rnode, Roffs);
+            if Is_Same_Value (Lnode, Rnode) then
+               if Loffs = Roffs then
+                  return EQ;
+               end if;
 
-               if Is_Same_Value (Lnode, Rnode) then
-                  if Loffs = Roffs then
-                     return EQ;
-                  elsif Loffs < Roffs then
+               --  When the offsets are not equal, we can go farther only if
+               --  the types are not modular (e.g. X < X + 1 is False if X is
+               --  the largest number).
+
+               if not Is_Modular_Integer_Type (Ltyp)
+                 and then not Is_Modular_Integer_Type (Rtyp)
+               then
+                  if Loffs < Roffs then
                      Diff.all := Roffs - Loffs;
                      return LT;
                   else
@@ -1356,8 +1359,8 @@ package body Sem_Eval is
                      return GT;
                   end if;
                end if;
-            end;
-         end if;
+            end if;
+         end;
 
          --  Next, try range analysis and see if operand ranges are disjoint
 

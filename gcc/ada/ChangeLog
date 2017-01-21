@@ -1,3 +1,8 @@
+2017-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Compare): Reinstate the expr+literal (etc)
+	optimizations when the type is modular and the offsets are equal.
+
 2017-01-20  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_warn.adb (Warn_On_Useless_Assignment): Adjust wording of warning
