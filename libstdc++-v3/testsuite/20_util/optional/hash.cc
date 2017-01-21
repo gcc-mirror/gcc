@@ -29,6 +29,12 @@ template<class T>
 auto f(...) -> decltype(std::false_type());
 
 static_assert(!decltype(f<S>(0))::value, "");
+static_assert(!std::is_callable<
+	      std::hash<std::optional<S>>&
+	      (std::optional<S> const&)>::value, "");
+static_assert(std::is_callable<
+	      std::hash<std::optional<int>>&
+	      (std::optional<int> const&)>::value, "");
 
 int main()
 {

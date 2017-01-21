@@ -1,3 +1,18 @@
+2017-01-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make poisoned hashes SFINAE away the call operator of the hash.
+	* include/bits/functional_hash.h
+	(__poison_hash::__enable_hash_call): New.
+	* include/std/optional (__optional_hash_call_base): New.
+	(hash<optional<_Tp>>): Derive from the new base,
+	move the hash function into that base.
+	* include/std/variant (__variant_hash_call_base_impl): New.
+	(__variant_hash_call_base): Likewise.
+	(hash<variant<_Types...>>): Derive from the new base,
+	move the hash function into that base.
+	* testsuite/20_util/optional/hash.cc: Add tests for is_callable.
+	* testsuite/20_util/variant/hash.cc: Likewise.
+
 2017-01-20  Joe Seymour  <joe.s@somniumtech.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SIZE_T_MANGLING): Support uint20_t.

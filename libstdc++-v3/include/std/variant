@@ -1273,14 +1273,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   std::forward<_Variants>(__variants)...);
     }
 
-  template<typename... _Types>
-    struct hash<variant<_Types...>>
-    : private __detail::__variant::_Variant_hash_base<
-	variant<_Types...>, std::index_sequence_for<_Types...>>
+  template<bool, typename... _Types>
+    struct __variant_hash_call_base_impl
     {
-      using result_type = size_t;
-      using argument_type = variant<_Types...>;
-
       size_t
       operator()(const variant<_Types...>& __t) const
       noexcept((is_nothrow_callable_v<hash<decay_t<_Types>>(_Types)> && ...))
@@ -1295,6 +1290,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	return hash<size_t>{}(__t.index());
       }
+    };
+
+  template<typename... _Types>
+    struct __variant_hash_call_base_impl<false, _Types...> {};
+
+  template<typename... _Types>
+    using __variant_hash_call_base =
+    __variant_hash_call_base_impl<(__poison_hash<remove_const_t<_Types>>::
+				   __enable_hash_call &&...), _Types...>;
+
+  template<typename... _Types>
+    struct hash<variant<_Types...>>
+    : private __detail::__variant::_Variant_hash_base<
+        variant<_Types...>, std::index_sequence_for<_Types...>>,
+      public __variant_hash_call_base<_Types...>
+    {
+      using result_type = size_t;
+      using argument_type = variant<_Types...>;
     };
 
   template<>

@@ -60,6 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename = void>
     struct __poison_hash
     {
+      static constexpr bool __enable_hash_call = false;
     private:
       // Private rather than deleted to be non-trivially-copyable.
       __poison_hash(__poison_hash&&);
@@ -69,6 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct __poison_hash<_Tp, __void_t<decltype(hash<_Tp>()(declval<_Tp>()))>>
     {
+      static constexpr bool __enable_hash_call = true;
     };
 
   // Helper struct for SFINAE-poisoning non-enum types.
