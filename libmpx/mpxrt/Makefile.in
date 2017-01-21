@@ -251,7 +251,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 # May be used by toolexeclibdir.
-@LIBMPX_SUPPORTED_TRUE@gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+@LIBMPX_SUPPORTED_TRUE@gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBMPX_SUPPORTED_TRUE@AM_CPPFLAGS = -I$(top_srcdir)/..
 @LIBMPX_SUPPORTED_TRUE@AM_CFLAGS = $(XCFLAGS)
 @LIBMPX_SUPPORTED_TRUE@toolexeclib_LTLIBRARIES = libmpx.la

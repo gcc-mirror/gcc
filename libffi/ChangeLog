@@ -1,3 +1,15 @@
+2017-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* include/Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead
+	of cat to get version from BASE-VER file.
+	* configure: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* Makefile.in: Regenerated.
+	* man/Makefile.in: Regenerated.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.
