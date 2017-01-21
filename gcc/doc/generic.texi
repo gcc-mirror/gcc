@@ -3238,7 +3238,7 @@ This tree has one field that holds the name of the spawning function.
 @end smallexample
 
 Detailed description for usage and functionality of @code{_Cilk_spawn} can be 
-found at http://www.cilkplus.org
+found at @uref{https://www.cilkplus.org}.
 
 @item CILK_SYNC_STMT
 
