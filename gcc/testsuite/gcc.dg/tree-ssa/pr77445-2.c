@@ -119,5 +119,5 @@ enum STATES FMS( u8 **in , u32 *transitions) {
 /* The profile is not updated perfectly because it is inconsitent from
    profile estimation stage. But the number of inconsistencies should not
    increase much.  */
-/* { dg-final { scan-tree-dump "Jumps threaded: 16" "thread1" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 1[1-9]" "thread1" } } */
 /* { dg-final { scan-tree-dump-times "Invalid sum" 2 "thread1" } } */
