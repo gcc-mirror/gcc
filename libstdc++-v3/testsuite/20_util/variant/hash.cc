@@ -33,6 +33,17 @@ static_assert(!decltype(f<std::variant<S>>(0))::value, "");
 static_assert(!decltype(f<std::variant<S, S>>(0))::value, "");
 static_assert(decltype(f<std::variant<int>>(0))::value, "");
 static_assert(decltype(f<std::variant<int, int>>(0))::value, "");
+static_assert(!std::is_callable<
+	      std::hash<std::variant<S>>&(std::variant<S> const&)>::value, "");
+static_assert(!std::is_callable<
+	      std::hash<std::variant<S, int>>&
+	      (std::variant<S, int> const&)>::value, "");
+static_assert(std::is_callable<
+	      std::hash<std::variant<int>>&
+	      (std::variant<int> const&)>::value, "");
+static_assert(std::is_callable<
+	      std::hash<std::variant<int, int>>&
+	      (std::variant<int, int> const&)>::value, "");
 
 int main()
 {
