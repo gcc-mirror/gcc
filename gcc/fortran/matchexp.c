@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "arith.h"
 #include "match.h"
 
-static char expression_syntax[] = N_("Syntax error in expression at %C");
+static const char expression_syntax[] = N_("Syntax error in expression at %C");
 
 
 /* Match a user-defined operator name.  This is a normal name with a

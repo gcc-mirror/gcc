@@ -2149,7 +2149,7 @@ gfc_add_component (gfc_symbol *sym, const char *name,
   else
     tail->next = p;
 
-  p->name = gfc_get_string (name);
+  p->name = gfc_get_string ("%s", name);
   p->loc = gfc_current_locus;
   p->ts.type = BT_UNKNOWN;
 
@@ -2756,7 +2756,7 @@ gfc_new_symtree (gfc_symtree **root, const char *name)
   gfc_symtree *st;
 
   st = XCNEW (gfc_symtree);
-  st->name = gfc_get_string (name);
+  st->name = gfc_get_string ("%s", name);
 
   gfc_insert_bbt (root, st, compare_symtree);
   return st;
@@ -2772,7 +2772,7 @@ gfc_delete_symtree (gfc_symtree **root, const char *name)
 
   st0 = gfc_find_symtree (*root, name);
 
-  st.name = gfc_get_string (name);
+  st.name = gfc_get_string ("%s", name);
   gfc_delete_bbt (root, &st, compare_symtree);
 
   free (st0);
@@ -2834,7 +2834,7 @@ gfc_get_uop (const char *name)
   st = gfc_new_symtree (&ns->uop_root, name);
 
   uop = st->n.uop = XCNEW (gfc_user_op);
-  uop->name = gfc_get_string (name);
+  uop->name = gfc_get_string ("%s", name);
   uop->access = ACCESS_UNKNOWN;
   uop->ns = ns;
 
@@ -2955,7 +2955,7 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   if (strlen (name) > GFC_MAX_SYMBOL_LEN)
     gfc_internal_error ("new_symbol(): Symbol name too long");
 
-  p->name = gfc_get_string (name);
+  p->name = gfc_get_string ("%s", name);
 
   /* Make sure flags for symbol being C bound are clear initially.  */
   p->attr.is_bind_c = 0;
@@ -4146,7 +4146,7 @@ gfc_get_gsymbol (const char *name)
 
   s = XCNEW (gfc_gsymbol);
   s->type = GSYM_UNKNOWN;
-  s->name = gfc_get_string (name);
+  s->name = gfc_get_string ("%s", name);
 
   gfc_insert_bbt (&gfc_gsym_root, s, gsym_compare);
 
@@ -4609,7 +4609,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
     }
 
   /* Say what module this symbol belongs to.  */
-  tmp_sym->module = gfc_get_string (mod_name);
+  tmp_sym->module = gfc_get_string ("%s", mod_name);
   tmp_sym->from_intmod = INTMOD_ISO_C_BINDING;
   tmp_sym->intmod_sym_id = s;
   tmp_sym->attr.is_iso_c = 1;
@@ -4706,7 +4706,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	      gfc_get_sym_tree (hidden_name, gfc_current_ns, &tmp_symtree, false);
 	      dt_sym = tmp_symtree->n.sym;
 	      dt_sym->name = gfc_get_string (s == ISOCBINDING_PTR
-					    ? "c_ptr" : "c_funptr");
+					     ? "c_ptr" : "c_funptr");
 
 	      /* Generate an artificial generic function.  */
 	      head = tmp_sym->generic;
@@ -4726,7 +4726,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	    }
 
 	  /* Say what module this symbol belongs to.  */
-	  dt_sym->module = gfc_get_string (mod_name);
+	  dt_sym->module = gfc_get_string ("%s", mod_name);
 	  dt_sym->from_intmod = INTMOD_ISO_C_BINDING;
 	  dt_sym->intmod_sym_id = s;
           dt_sym->attr.use_assoc = 1;

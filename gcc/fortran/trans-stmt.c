@@ -5883,8 +5883,8 @@ gfc_trans_allocate (gfc_code * code)
 	  newsym = XCNEW (gfc_symtree);
 	  /* The name of the symtree should be unique, because gfc_create_var ()
 	     took care about generating the identifier.  */
-	  newsym->name = gfc_get_string (IDENTIFIER_POINTER (
-							    DECL_NAME (expr3)));
+	  newsym->name
+	    = gfc_get_string ("%s", IDENTIFIER_POINTER (DECL_NAME (expr3)));
 	  newsym->n.sym = gfc_new_symbol (newsym->name, NULL);
 	  /* The backend_decl is known.  It is expr3, which is inserted
 	     here.  */

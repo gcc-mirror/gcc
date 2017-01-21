@@ -875,7 +875,7 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 		    /* if op2 < 0, op1**op2 == 0  because abs(op1) > 1.  */
 		    mpz_set_si (result->value.integer, 0);
 		  }
-		else if (gfc_extract_int (op2, &power) != NULL)
+		else if (gfc_extract_int (op2, &power))
 		  {
 		    /* If op2 doesn't fit in an int, the exponentiation will
 		       overflow, because op2 > 0 and abs(op1) > 1.  */
