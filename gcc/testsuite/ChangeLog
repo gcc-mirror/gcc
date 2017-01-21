@@ -1,3 +1,8 @@
+2017-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/79169
+	* g++.dg/warn/Wduplicated-branches1.C: Use signed char.
+
 2017-01-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/pr77445-2.c: Adjust template.

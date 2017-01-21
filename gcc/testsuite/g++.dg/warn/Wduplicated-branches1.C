@@ -4,7 +4,7 @@
 
 template <typename T>
 void
-f (char i, int *p)
+f (signed char i, int *p)
 {
   if (i)
     *p = (signed short) i;
@@ -17,5 +17,5 @@ f (char i, int *p)
     *p = (unsigned short) i;
 }
 
-template void f<unsigned short>(char, int *); // { dg-message "required from here" }
-template void f<signed short>(char, int *);
+template void f<unsigned short>(signed char, int *); // { dg-message "required from here" }
+template void f<signed short>(signed char, int *);
