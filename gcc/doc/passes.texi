@@ -163,7 +163,7 @@ done by @code{builtin_expand_cilk_pop_frame} in @file{cilk-common.c}.
 @end itemize
 
 Documentation about Cilk Plus and language specification is provided under the
-"Learn" section in @w{@uref{http://www.cilkplus.org/}}.  It is worth mentioning
+"Learn" section in @w{@uref{https://www.cilkplus.org}}.  It is worth mentioning
 that the current implementation follows ABI 1.1.
 
 @node Gimplification pass
