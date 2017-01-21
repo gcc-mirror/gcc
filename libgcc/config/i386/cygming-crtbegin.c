@@ -42,10 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIBGCC_SONAME "libgcc_s.dll"
 #endif
 
-#ifndef LIBGCJ_SONAME
-#define LIBGCJ_SONAME "libgcj_s.dll"
-#endif
-
 #if DWARF2_UNWIND_INFO
 /* Make the declarations weak.  This is critical for
    _Jv_RegisterClasses because it lives in libgcj.a  */
