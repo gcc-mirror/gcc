@@ -3080,7 +3080,7 @@ void gfc_resolve_oacc_blocks (gfc_code *, gfc_namespace *);
 /* expr.c */
 void gfc_free_actual_arglist (gfc_actual_arglist *);
 gfc_actual_arglist *gfc_copy_actual_arglist (gfc_actual_arglist *);
-const char *gfc_extract_int (gfc_expr *, int *);
+bool gfc_extract_int (gfc_expr *, int *, int = 0);
 bool is_subref_array (gfc_expr *);
 bool gfc_is_simply_contiguous (gfc_expr *, bool, bool);
 bool gfc_check_init_expr (gfc_expr *);

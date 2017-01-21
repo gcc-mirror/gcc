@@ -333,11 +333,11 @@ add_sym (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type
       break;
 
     case SZ_NOTHING:
-      next_sym->name = gfc_get_string (name);
+      next_sym->name = gfc_get_string ("%s", name);
 
       strcpy (buf, "_gfortran_");
       strcat (buf, name);
-      next_sym->lib_name = gfc_get_string (buf);
+      next_sym->lib_name = gfc_get_string ("%s", buf);
 
       next_sym->pure = (cl != CLASS_IMPURE);
       next_sym->elemental = (cl == CLASS_ELEMENTAL);
@@ -884,7 +884,7 @@ find_sym (gfc_intrinsic_sym *start, int n, const char *name)
   /* name may be a user-supplied string, so we must first make sure
      that we're comparing against a pointer into the global string
      table.  */
-  const char *p = gfc_get_string (name);
+  const char *p = gfc_get_string ("%s", name);
 
   while (n > 0)
     {
@@ -1153,7 +1153,7 @@ make_alias (const char *name, int standard)
 
     case SZ_NOTHING:
       next_sym[0] = next_sym[-1];
-      next_sym->name = gfc_get_string (name);
+      next_sym->name = gfc_get_string ("%s", name);
       next_sym->standard = standard;
       next_sym++;
       break;

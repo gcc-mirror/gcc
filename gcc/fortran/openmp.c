@@ -1025,12 +1025,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (m == MATCH_YES)
 		{
 		  int collapse;
-		  const char *p = gfc_extract_int (cexpr, &collapse);
-		  if (p)
-		    {
-		      gfc_error_now (p);
-		      collapse = 1;
-		    }
+		  if (gfc_extract_int (cexpr, &collapse, -1))
+		    collapse = 1;
 		  else if (collapse <= 0)
 		    {
 		      gfc_error_now ("COLLAPSE clause argument not"
@@ -1485,12 +1481,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (m == MATCH_YES)
 		{
 		  int ordered = 0;
-		  const char *p = gfc_extract_int (cexpr, &ordered);
-		  if (p)
-		    {
-		      gfc_error_now (p);
-		      ordered = 0;
-		    }
+		  if (gfc_extract_int (cexpr, &ordered, -1))
+		    ordered = 0;
 		  else if (ordered <= 0)
 		    {
 		      gfc_error_now ("ORDERED clause argument not"
@@ -2866,7 +2858,7 @@ gfc_match_omp_declare_reduction (void)
       const char *predef_name = NULL;
 
       omp_udr = gfc_get_omp_udr ();
-      omp_udr->name = gfc_get_string (name);
+      omp_udr->name = gfc_get_string ("%s", name);
       omp_udr->rop = rop;
       omp_udr->ts = tss[i];
       omp_udr->where = where;

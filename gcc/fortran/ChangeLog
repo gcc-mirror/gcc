@@ -1,3 +1,65 @@
+2017-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_extract_int): Change return type to bool.  Add
+	int argument with = 0.
+	* decl.c (gfc_match_kind_spec): Adjust gfc_extract_int caller, pass
+	1 as new last argument to it, don't emit gfc_error.
+	(match_char_kind): Likewise.
+	(gfc_match_decl_type_spec): Use gfc_get_string ("%s", x) instead of
+	gfc_get_string (x).
+	(gfc_match_derived_decl, match_binding_attributes): Likewise.
+	(gfc_match_structure_decl): Don't sprintf back to name, call
+	get_struct_decl directly with gfc_dt_upper_string (name) result.
+	* trans-stmt.c (gfc_trans_allocate): Use gfc_get_string ("%s", x)
+	instead of gfc_get_string (x).
+	* module.c (gfc_dt_lower_string, gfc_dt_upper_string,
+	gfc_match_use, gfc_match_submodule, find_true_name, mio_pool_string,
+	mio_symtree_ref, mio_expr, mio_omp_udr_expr, load_generic_interfaces,
+	load_omp_udrs, load_needed, read_module, dump_module,
+	create_intrinsic_function, import_iso_c_binding_module,
+	create_int_parameter, create_int_parameter_array, create_derived_type,
+	use_iso_fortran_env_module): Likewise.
+	* error.c (gfc_diagnostic_starter, gfc_diagnostic_start_span): Use
+	pp_verbatim (context->printer, "%s", x) instead of
+	pp_verbatim (context->printer, x).
+	* match.c (gfc_match_small_int): Adjust gfc_extract_int caller, pass
+	1 as new last argument to it, don't emit gfc_error.
+	(gfc_match_small_int_expr): Likewise.
+	* iresolve.c (gfc_get_string): Optimize format "%s" case.
+	(resolve_bound): Use gfc_get_string ("%s", x) instead of
+	gfc_get_string (x).
+	(resolve_transformational): Formatting fix.
+	(gfc_resolve_char_achar): Change name argument to bool is_achar,
+	use a single format string and if is_achar add "a" before "char".
+	(gfc_resolve_achar, gfc_resolve_char): Adjust callers.
+	* expr.c (gfc_extract_int): Change return type to bool, return true
+	if some error occurred.  Add REPORT_ERROR argument, if non-zero
+	call either gfc_error or gfc_error_now depending on its sign.
+	* arith.c (arith_power): Adjust gfc_extract_int caller.
+	* symbol.c (gfc_add_component): Use gfc_get_string ("%s", x) instead
+	of gfc_get_string (x).
+	(gfc_new_symtree, gfc_delete_symtree, gfc_get_uop, gfc_new_symbol,
+	gfc_get_gsymbol, generate_isocbinding_symbol): Likewise.
+	* openmp.c (gfc_match_omp_clauses): Adjust gfc_extract_int caller, pass
+	-1 as new last argument to it, don't emit gfc_error_now.
+	(gfc_match_omp_declare_reduction): Use gfc_get_string ("%s", x)
+	instead of gfc_get_string (x).
+	* check.c (kind_check): Adjust gfc_extract_int caller.
+	* intrinsic.c (add_sym, find_sym, make_alias): Use
+	gfc_get_string ("%s", x) instead of gfc_get_string (x).
+	* simplify.c (get_kind, gfc_simplify_btest, gfc_simplify_maskr,
+	gfc_simplify_maskl, gfc_simplify_poppar, gfc_simplify_repeat,
+	gfc_simplify_selected_int_kind, gfc_simplify_selected_real_kind):
+	Adjust gfc_extract_int callers.
+	* trans-decl.c (gfc_find_module): Use gfc_get_string ("%s", x)
+	instead of gfc_get_string (x).
+	* matchexp.c (expression_syntax): Add const.
+	* primary.c (match_kind_param, match_hollerith_constant,
+	match_string_constant): Adjust gfc_extract_int callers.
+	(match_keyword_arg): Use gfc_get_string ("%s", x) instead of
+	gfc_get_string (x).
+	* frontend-passes.c (optimize_minmaxloc): Likewise.
+
 2017-01-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70696

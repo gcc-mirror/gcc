@@ -611,28 +611,44 @@ gfc_replace_expr (gfc_expr *dest, gfc_expr *src)
 
 
 /* Try to extract an integer constant from the passed expression node.
-   Returns an error message or NULL if the result is set.  It is
-   tempting to generate an error and return true or false, but
-   failure is OK for some callers.  */
+   Return true if some error occurred, false on success.  If REPORT_ERROR
+   is non-zero, emit error, for positive REPORT_ERROR using gfc_error,
+   for negative using gfc_error_now.  */
 
-const char *
-gfc_extract_int (gfc_expr *expr, int *result)
+bool
+gfc_extract_int (gfc_expr *expr, int *result, int report_error)
 {
   if (expr->expr_type != EXPR_CONSTANT)
-    return _("Constant expression required at %C");
+    {
+      if (report_error > 0)
+	gfc_error ("Constant expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Constant expression required at %C");
+      return true;
+    }
 
   if (expr->ts.type != BT_INTEGER)
-    return _("Integer expression required at %C");
+    {
+      if (report_error > 0)
+	gfc_error ("Integer expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer expression required at %C");
+      return true;
+    }
 
   if ((mpz_cmp_si (expr->value.integer, INT_MAX) > 0)
       || (mpz_cmp_si (expr->value.integer, INT_MIN) < 0))
     {
-      return _("Integer value too large in expression at %C");
+      if (report_error > 0)
+	gfc_error ("Integer value too large in expression at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer value too large in expression at %C");
+      return true;
     }
 
   *result = (int) mpz_get_si (expr->value.integer);
 
-  return NULL;
+  return false;
 }
 
 

@@ -4649,7 +4649,7 @@ gfc_find_module (const char *name)
     {
       module_htab_entry *entry = ggc_cleared_alloc<module_htab_entry> ();
 
-      entry->name = gfc_get_string (name);
+      entry->name = gfc_get_string ("%s", name);
       entry->decls = hash_table<module_decl_hasher>::create_ggc (10);
       *slot = entry;
     }

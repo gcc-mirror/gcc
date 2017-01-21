@@ -514,7 +514,6 @@ match
 gfc_match_small_int (int *value)
 {
   gfc_expr *expr;
-  const char *p;
   match m;
   int i;
 
@@ -522,14 +521,9 @@ gfc_match_small_int (int *value)
   if (m != MATCH_YES)
     return m;
 
-  p = gfc_extract_int (expr, &i);
+  if (gfc_extract_int (expr, &i, 1))
+    m = MATCH_ERROR;
   gfc_free_expr (expr);
-
-  if (p != NULL)
-    {
-      gfc_error (p);
-      m = MATCH_ERROR;
-    }
 
   *value = i;
   return m;
@@ -547,7 +541,6 @@ gfc_match_small_int (int *value)
 match
 gfc_match_small_int_expr (int *value, gfc_expr **expr)
 {
-  const char *p;
   match m;
   int i;
 
@@ -555,13 +548,8 @@ gfc_match_small_int_expr (int *value, gfc_expr **expr)
   if (m != MATCH_YES)
     return m;
 
-  p = gfc_extract_int (*expr, &i);
-
-  if (p != NULL)
-    {
-      gfc_error (p);
-      m = MATCH_ERROR;
-    }
+  if (gfc_extract_int (*expr, &i, 1))
+    m = MATCH_ERROR;
 
   *value = i;
   return m;

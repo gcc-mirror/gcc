@@ -1089,7 +1089,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
     }
   else
     {
-      pp_verbatim (context->printer, locus_prefix);
+      pp_verbatim (context->printer, "%s", locus_prefix);
       free (locus_prefix);
       /* Fortran uses an empty line between locus and caret line.  */
       pp_newline (context->printer);
@@ -1106,7 +1106,7 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 {
   char *locus_prefix;
   locus_prefix = gfc_diagnostic_build_locus_prefix (context, exploc);
-  pp_verbatim (context->printer, locus_prefix);
+  pp_verbatim (context->printer, "%s", locus_prefix);
   free (locus_prefix);
   pp_newline (context->printer);
   /* Fortran uses an empty line between locus and caret line.  */
