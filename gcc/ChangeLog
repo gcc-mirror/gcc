@@ -1,3 +1,10 @@
+2017-01-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/61729
+	PR target/77850
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Adjust address to
+	read from, for big endian.
+
 2017-01-20  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_init_builtins): Register
