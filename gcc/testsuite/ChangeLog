@@ -1,3 +1,8 @@
+2017-01-21  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/79125
+	* gcc.dg/torture/pr79125.c: New test.
+
 2017-01-20  Jiong Wang  <jiong.wang@arm.com>
 
 	* testsuite/gcc.target/aarch64/return_address_sign_1.c: Enable on LP64
