@@ -1,3 +1,10 @@
+2017-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* testsuite/Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead
+	of cat to get version from BASE-VER file.
+	* testsuite/Makefile.in: Regenerated.
+
 2017-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* plugin/cuda/cuda.h (CUdeviceptr): Typedef to unsigned long long even

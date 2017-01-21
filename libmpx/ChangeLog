@@ -1,3 +1,12 @@
+2017-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* mpxrt/Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead
+	of cat to get version from BASE-VER file.
+	* mpxwrap/Makefile.am (gcc_version): Likewise.
+	* mpxrt/Makefile.in: Regenerated.
+	* mpxwrap/Makefile.in: Regenerated.
+
 2017-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
