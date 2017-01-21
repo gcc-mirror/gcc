@@ -1248,6 +1248,8 @@ local_cprop_pass (void)
   bool changed = false;
   unsigned i;
 
+  auto_vec<rtx_insn *> uncond_traps;
+
   cselib_init (0);
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1255,6 +1257,9 @@ local_cprop_pass (void)
 	{
 	  if (INSN_P (insn))
 	    {
+	      bool was_uncond_trap
+		= (GET_CODE (PATTERN (insn)) == TRAP_IF
+		   && XEXP (PATTERN (insn), 0) == const1_rtx);
 	      rtx note = find_reg_equal_equiv_note (insn);
 	      do
 		{
@@ -1273,6 +1278,13 @@ local_cprop_pass (void)
 			  break;
 			}
 		    }
+		  if (!was_uncond_trap
+		      && GET_CODE (PATTERN (insn)) == TRAP_IF
+		      && XEXP (PATTERN (insn), 0) == const1_rtx)
+		    {
+		      uncond_traps.safe_push (insn);
+		      break;
+		    }
 		  if (insn->deleted ())
 		    break;
 		}
@@ -1286,6 +1298,14 @@ local_cprop_pass (void)
     }
 
   cselib_finish ();
+
+  while (!uncond_traps.is_empty ())
+    {
+      rtx_insn *insn = uncond_traps.pop ();
+      basic_block to_split = BLOCK_FOR_INSN (insn);
+      remove_edge (split_block (to_split, insn));
+      emit_barrier_after_bb (to_split);
+    }
 
   return changed;
 }

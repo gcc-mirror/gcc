@@ -1,3 +1,9 @@
+2017-01-21  Bernd Schmidt  <bschmidt@redhat.com>
+
+	rtl-optimization/79125
+	* cprop.c (local_cprop_pass): Handle cases where we make an
+	unconditional trap.
+
 2017-01-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/61729
