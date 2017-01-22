@@ -721,7 +721,10 @@ decode_oacc_directive (void)
 	goto do_spec_only;					\
       if (match_word_omp_simd (keyword, subr, &old_locus,	\
 			       &simd_matched) == MATCH_YES)	\
-	return st;						\
+	{							\
+	  ret = st;						\
+	  goto finish;						\
+	}							\
       else							\
 	undo_new_statement ();				  	\
     } while (0);
@@ -736,7 +739,10 @@ decode_oacc_directive (void)
 	goto do_spec_only;					\
       else if (match_word (keyword, subr, &old_locus)		\
 	       == MATCH_YES)					\
-	return st;						\
+	{							\
+	  ret = st;						\
+	  goto finish;						\
+	}							\
       else							\
 	undo_new_statement ();				  	\
     } while (0);
@@ -746,7 +752,10 @@ decode_oacc_directive (void)
     do {							\
       if (match_word_omp_simd (keyword, subr, &old_locus,	\
 			       &simd_matched) == MATCH_YES)	\
-	return st;						\
+	{							\
+	  ret = st;						\
+	  goto finish;						\
+	}							\
       else							\
 	undo_new_statement ();				  	\
     } while (0);
@@ -758,7 +767,10 @@ decode_oacc_directive (void)
 	;							\
       else if (match_word (keyword, subr, &old_locus)		\
 	       == MATCH_YES)					\
-	return st;						\
+	{							\
+	  ret = st;						\
+	  goto finish;						\
+	}							\
       else							\
 	undo_new_statement ();				  	\
     } while (0);
@@ -770,25 +782,17 @@ decode_omp_directive (void)
   char c;
   bool simd_matched = false;
   bool spec_only = false;
+  gfc_statement ret = ST_NONE;
+  bool pure_ok = true;
 
   gfc_enforce_clean_symbol_state ();
 
   gfc_clear_error ();	/* Clear any pending errors.  */
   gfc_clear_warning ();	/* Clear any pending warnings.  */
 
-  if (gfc_pure (NULL))
-    {
-      gfc_error_now ("OpenMP directives at %C may not appear in PURE "
-		     "or ELEMENTAL procedures");
-      gfc_error_recovery ();
-      return ST_NONE;
-    }
-
   if (gfc_current_state () == COMP_FUNCTION
       && gfc_current_block ()->result->ts.kind == -1)
     spec_only = true;
-
-  gfc_unset_implicit_pure (NULL);
 
   old_locus = gfc_current_locus;
 
@@ -797,6 +801,33 @@ decode_omp_directive (void)
      first character.  */
 
   c = gfc_peek_ascii_char ();
+
+  /* match is for directives that should be recognized only if
+     -fopenmp, matchs for directives that should be recognized
+     if either -fopenmp or -fopenmp-simd.
+     Handle only the directives allowed in PURE/ELEMENTAL procedures
+     first (those also shall not turn off implicit pure).  */
+  switch (c)
+    {
+    case 'd':
+      matchds ("declare simd", gfc_match_omp_declare_simd,
+	       ST_OMP_DECLARE_SIMD);
+      matchdo ("declare target", gfc_match_omp_declare_target,
+	       ST_OMP_DECLARE_TARGET);
+      break;
+    case 's':
+      matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
+      break;
+    }
+
+  pure_ok = false;
+  if (flag_openmp && gfc_pure (NULL))
+    {
+      gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
+		     "at %C may not appear in PURE or ELEMENTAL procedures");
+      gfc_error_recovery ();
+      return ST_NONE;
+    }
 
   /* match is for directives that should be recognized only if
      -fopenmp, matchs for directives that should be recognized
@@ -818,10 +849,6 @@ decode_omp_directive (void)
     case 'd':
       matchds ("declare reduction", gfc_match_omp_declare_reduction,
 	       ST_OMP_DECLARE_REDUCTION);
-      matchds ("declare simd", gfc_match_omp_declare_simd,
-	       ST_OMP_DECLARE_SIMD);
-      matchdo ("declare target", gfc_match_omp_declare_target,
-	       ST_OMP_DECLARE_TARGET);
       matchs ("distribute parallel do simd",
 	      gfc_match_omp_distribute_parallel_do_simd,
 	      ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD);
@@ -923,7 +950,6 @@ decode_omp_directive (void)
     case 's':
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos, ST_OMP_SECTION);
-      matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
       matcho ("single", gfc_match_omp_single, ST_OMP_SINGLE);
       break;
     case 't':
@@ -996,6 +1022,23 @@ decode_omp_directive (void)
   gfc_error_recovery ();
 
   return ST_NONE;
+
+ finish:
+  if (!pure_ok)
+    {
+      gfc_unset_implicit_pure (NULL);
+
+      if (!flag_openmp && gfc_pure (NULL))
+	{
+	  gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
+			 "at %C may not appear in PURE or ELEMENTAL "
+			 "procedures");
+	  reject_statement ();
+	  gfc_error_recovery ();
+	  return ST_NONE;
+	}
+    }
+  return ret;
 
  do_spec_only:
   reject_statement ();

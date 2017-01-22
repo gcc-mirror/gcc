@@ -1,3 +1,12 @@
+2017-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/79154
+	* parse.c (matchs, matcho, matchds, matchdo): Replace return st;
+	with { ret = st; goto finish; }.
+	(decode_omp_directive): Allow declare simd, declare target and
+	simd directives in PURE/ELEMENTAL procedures.  Only call
+	gfc_unset_implicit_pure on successful match of other procedures.
+
 2017-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gfc-internals.texi (Symbol Versioning): Change references
