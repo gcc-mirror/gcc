@@ -1230,7 +1230,7 @@
     details than for C, and most CPU designers (for good reasons elaborated
     below) have not stepped up to publish C++ ABIs.  Such an ABI has been
     defined for the Itanium architecture (see
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.codesourcery.com/cxx-abi/">C++
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://mentorembedded.github.io/cxx-abi/">C++
     ABI for Itanium</link>) and that is used by G++ and other compilers
     as the de facto standard ABI on many common architectures (including x86).
     G++ can also use the ARM architecture's EABI, for embedded

@@ -1,3 +1,11 @@
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Merge from mainline
+	2017-01-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Update address of C++ ABI link.
+	* doc/xml/manual/abi.xml: Ditto.
+	
 2017-01-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline
