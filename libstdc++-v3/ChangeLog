@@ -1,3 +1,7 @@
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/test.xml: Fix link into gccint online manual.
+
 2017-01-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Make poisoned hashes SFINAE away the call operator of the hash.

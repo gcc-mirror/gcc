@@ -820,7 +820,7 @@ with specific options, and additional options for 32-bit x86:
   <para>
     In addition to the usual <link
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    xlink:href="https://gcc.gnu.org/onlinedocs/gccint/Require-support.html">Variants
+    xlink:href="https://gcc.gnu.org/onlinedocs/gccint/Require-Support.html">Variants
     of <literal>dg-require-<replaceable>support</replaceable></literal></link>
     several more directives are available for use in libstdc++ tests,
     including the following:
