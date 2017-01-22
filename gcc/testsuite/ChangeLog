@@ -1,3 +1,7 @@
+2017-01-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/tree-ssa/pr77445-2.c: Quote brackets.
+
 2017-01-21  Marek Polacek  <polacek@redhat.com>
 
 	PR testsuite/79169
