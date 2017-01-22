@@ -1,5 +1,10 @@
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/install.texi (Specific): opensource.apple.com uses https
+	now. Remove trailing slash.
+
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* README.Portability: Remove note on an Irix compatibility issue.
 
 2017-01-22  Dimitry Andric <dim@FreeBSD.org>
