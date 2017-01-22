@@ -31,6 +31,8 @@ along with Gcov; see the file COPYING3.  If not see
    probabilities of fall through arcs.  */
 
 #include "config.h"
+#define INCLUDE_ALGORITHM
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -41,8 +43,6 @@ along with Gcov; see the file COPYING3.  If not see
 
 #include <getopt.h>
 
-#include <vector>
-#include <algorithm>
 #include "md5.h"
 
 using namespace std;

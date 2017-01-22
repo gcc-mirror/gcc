@@ -1,3 +1,9 @@
+2017-01-22  Dimitry Andric <dim@FreeBSD.org>
+
+	* gcov.c (INCLUDE_ALGORITHM): Define.
+	(INCLUDE_VECTOR): Define.
+	No longer include <vector> and <algorithm> directly.
+	
 2017-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (Thread-Local): Change www.akkadia.org reference
