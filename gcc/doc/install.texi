@@ -4218,7 +4218,7 @@ PowerPC running Darwin (Mac OS X kernel).
 Pre-installed versions of Mac OS X may not include any developer tools,
 meaning that you will not be able to build GCC from source.  Tool
 binaries are available at
-@uref{http://opensource.apple.com/}.
+@uref{https://opensource.apple.com}.
 
 This version of GCC requires at least cctools-590.36.  The
 cctools-590.36 package referenced from
