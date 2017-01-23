@@ -191,7 +191,7 @@ struct ParFor
 					// otherwise parfor may return while other threads are still working
 	ParForThread *thr;		// array of thread descriptors
 	// stats
-	uint64 nsteal;
+	uint64 nsteal __attribute__((aligned(8))); // force alignment for m68k
 	uint64 nstealcnt;
 	uint64 nprocyield;
 	uint64 nosyield;
