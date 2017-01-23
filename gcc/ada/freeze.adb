@@ -1356,6 +1356,7 @@ package body Freeze is
                                                          N_Object_Declaration
            and then not Is_Imported (Entity (Nod))
            and then not Has_Completion (Entity (Nod))
+           and then not Is_Frozen (Entity (Nod))
          then
             Error_Msg_NE
               ("premature use of& in call or instance", N, Entity (Nod));

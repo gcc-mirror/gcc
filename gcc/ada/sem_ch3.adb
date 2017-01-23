@@ -2637,7 +2637,7 @@ package body Sem_Ch3 is
             --  Check for an edge case that may cause premature freezing of a
             --  private type.
 
-            --  If there is an array type which uses a private type from an
+            --  If there is an type which depends on a private type from an
             --  enclosing package that is in the same scope as a non-completing
             --  expression function then we cannot freeze here.
 

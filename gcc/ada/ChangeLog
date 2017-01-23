@@ -1,3 +1,9 @@
+2017-01-23  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Correct comments
+	* freeze.adb (Find_Constant): Add detection of deferred constants
+	so they are not incorrectly flagged as premature.
+
 2017-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* scans.ads: New token At_Sign. Remove '@' from list of illegal
