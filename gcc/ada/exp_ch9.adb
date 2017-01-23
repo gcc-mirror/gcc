@@ -9038,13 +9038,12 @@ package body Exp_Ch9 is
                            & "violate restriction "
                            & "No_Implicit_Heap_Allocations??", Priv, Prot_Typ);
                      else
-
                         --  Object will be non-static if discriminants are
 
                         Error_Msg_NE
                           ("creation of protected object of type& with "
-                           &  "non-static discriminants  will violate"
-                           & " restriction No_Implicit_Heap_Allocations??",
+                           & "non-static discriminants will violate "
+                           & "restriction No_Implicit_Heap_Allocations??",
                            Priv, Prot_Typ);
                      end if;
 
@@ -9068,7 +9067,7 @@ package body Exp_Ch9 is
 
                         Error_Msg_NE
                           ("creation of protected object of type& with "
-                           & "non-static discriminants  will violate "
+                           & "non-static discriminants will violate "
                            & "restriction "
                            & "No_Implicit_Protected_Object_Allocations??",
                            Priv, Prot_Typ);
