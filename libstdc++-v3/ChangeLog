@@ -1,5 +1,9 @@
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/debug.xml: code.google.com uses https now.
+
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/xml/manual/test.xml: Fix link into gccint online manual.
 
 2017-01-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
