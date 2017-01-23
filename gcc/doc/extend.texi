@@ -15133,17 +15133,19 @@ unsigned long long int scalar_extract_sig (double source);
 
 double
 scalar_insert_exp (unsigned long long int significand, unsigned long long int exponent);
+double
+scalar_insert_exp (double significand, unsigned long long int exponent);
 
 int scalar_cmp_exp_gt (double arg1, double arg2);
 int scalar_cmp_exp_lt (double arg1, double arg2);
 int scalar_cmp_exp_eq (double arg1, double arg2);
 int scalar_cmp_exp_unordered (double arg1, double arg2);
 
-int scalar_test_data_class (float source, unsigned int condition);
-int scalar_test_data_class (double source, unsigned int condition);
+bool scalar_test_data_class (float source, const int condition);
+bool scalar_test_data_class (double source, const int condition);
 
-int scalar_test_neg (float source);
-int scalar_test_neg (double source);
+bool scalar_test_neg (float source);
+bool scalar_test_neg (double source);
 
 int __builtin_byte_in_set (unsigned char u, unsigned long long set);
 int __builtin_byte_in_range (unsigned char u, unsigned int range);
@@ -15178,19 +15180,30 @@ random number.  The @code{__builtin_darn_raw} function provides a
 64-bit raw random number.  The @code{__builtin_darn_32} function
 provides a 32-bit random number.
 
-The @code{scalar_extract_sig} and @code{scalar_insert_exp}
+The @code{scalar_extract_exp} and @code{scalar_extract_sig}
 functions require a 64-bit environment supporting ISA 3.0 or later.
-The @code{scalar_extract_exp} and @code{vec_extract_sig} built-in
-functions return the significand and exponent respectively of their
-@code{source} arguments.  The
-@code{scalar_insert_exp} built-in function returns a double-precision
+The @code{scalar_extract_exp} and @code{scalar_extract_sig} built-in
+functions return the significand and the biased exponent value
+respectively of their @code{source} arguments.
+Within the result returned by @code{scalar_extract_sig},
+the @code{0x10000000000000} bit is set if the
+function's @code{source} argument is in normalized form.
+Otherwise, this bit is set to 0.
+Note that the sign of the significand is not represented in the result
+returned from the @code{scalar_extract_sig} function.  Use the
+@code{scalar_test_neg} function to test the sign of its @code{double}
+argument.
+
+The @code{scalar_insert_exp} 
+function requires a 64-bit environment supporting ISA 3.0 or later.
+The @code{scalar_insert_exp} built-in function returns a double-precision
 floating point value that is constructed by assembling the values of its
 @code{significand} and @code{exponent} arguments.  The sign of the
 result is copied from the most significant bit of the
 @code{significand} argument.  The significand and exponent components
 of the result are composed of the least significant 11 bits of the
-@code{significand} argument and the least significant 52 bits of the
-@code{exponent} argument.
+@code{exponent} argument and the least significant 52 bits of the
+@code{significand} argument.
 
 The @code{scalar_cmp_exp_gt}, @code{scalar_cmp_exp_lt},
 @code{scalar_cmp_exp_eq}, and @code{scalar_cmp_exp_unordered} built-in
@@ -15199,11 +15212,11 @@ than, equal to, or not comparable to @code{arg2} respectively.  The
 arguments are not comparable if one or the other equals NaN (not a
 number). 
 
-The @code{scalar_test_data_class} built-in functions return a non-zero
-value if any of the condition tests enabled by the value of the
-@code{condition} variable are true.  The
-@code{condition} argument must be an unsigned integer with value not
-exceeding 127.  The
+The @code{scalar_test_data_class} built-in function returns 1
+if any of the condition tests enabled by the value of the
+@code{condition} variable are true, and 0 otherwise.  The
+@code{condition} argument must be a compile-time constant integer with
+value not exceeding 127.  The
 @code{condition} argument is encoded as a bitmask with each bit
 enabling the testing of a different condition, as characterized by the
 following:
@@ -15217,10 +15230,8 @@ following:
 0x01    Test for -Denormal
 @end smallexample
 
-If all of the enabled test conditions are false, the return value is 0.
-
-The @code{scalar_test_neg} built-in functions return a non-zero value
-if their @code{source} argument holds a negative value.
+The @code{scalar_test_neg} built-in function returns 1 if its
+@code{source} argument holds a negative value, 0 otherwise.
 
 The @code{__builtin_byte_in_set} function requires a
 64-bit environment supporting ISA 3.0 or later.  This function returns
@@ -18140,39 +18151,66 @@ elements of the vector result.
 The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
 @smallexample
-__vector int
+__vector unsigned int
 vec_extract_exp (__vector float source);
-__vector long long int
+__vector unsigned long long int
 vec_extract_exp (__vector double source);
 
-__vector int
+__vector unsigned int
 vec_extract_sig (__vector float source);
-__vector long long int
+__vector unsigned long long int
 vec_extract_sig (__vector double source);
 
 __vector float
 vec_insert_exp (__vector unsigned int significands,
                 __vector unsigned int exponents);
+__vector float
+vec_insert_exp (__vector unsigned float significands,
+                __vector unsigned int exponents);
 __vector double
 vec_insert_exp (__vector unsigned long long int significands,
                 __vector unsigned long long int exponents);
+__vector double
+vec_insert_exp (__vector unsigned double significands,
+                __vector unsigned long long int exponents);
 
-__vector int vec_test_data_class (__vector float source,
-                                  unsigned int condition);
-__vector long long int vec_test_data_class (__vector double source,
-                                            unsigned int condition);
+__vector bool int vec_test_data_class (__vector float source,
+                                       const int condition);
+__vector bool long long int vec_test_data_class (__vector double source,
+                                                 const int condition);
 @end smallexample
 
 The @code{vec_extract_sig} and @code{vec_extract_exp} built-in
-functions return vectors representing the significands and exponents
-of their @code{source} arguments respectively.  The
-@code{vec_insert_exp} built-in functions return a vector of single- or
-double-precision floating
+functions return vectors representing the significands and biased
+exponent values of their @code{source} arguments respectively.
+Within the result vector returned by @code{vec_extract_sig}, the
+@code{0x800000} bit of each vector element returned when the
+function's @code{source} argument is of type @code{float} is set to 1
+if the corresponding floating point value is in normalized form.
+Otherwise, this bit is set to 0.  When the @code{source} argument is
+of type @code{double}, the @code{0x10000000000000} bit within each of
+the result vector's elements is set according to the same rules.
+Note that the sign of the significand is not represented in the result
+returned from the @code{vec_extract_sig} function.  To extract the
+sign bits, use the
+@code{vec_cpsgn} function, which returns a new vector within which all
+of the sign bits of its second argument vector are overwritten with the
+sign bits copied from the coresponding elements of its first argument
+vector, and all other (non-sign) bits of the second argument vector
+are copied unchanged into the result vector.
+
+The @code{vec_insert_exp} built-in functions return a vector of
+single- or double-precision floating
 point values constructed by assembling the values of their
 @code{significands} and @code{exponents} arguments into the
-corresponding elements of the returned vector.  The sign of each
+corresponding elements of the returned vector.
+The sign of each
 element of the result is copied from the most significant bit of the
-corresponding entry within the @code{significands} argument.  The
+corresponding entry within the @code{significands} argument.
+Note that the relevant
+bits of the @code{significands} argument are the same, for both integer
+and floating point types.
+The
 significand and exponent components of each element of the result are
 composed of the least significant bits of the corresponding
 @code{significands} element and the least significant bits of the
@@ -18181,8 +18219,8 @@ corresponding @code{exponents} element.
 The @code{vec_test_data_class} built-in function returns a vector
 representing the results of testing the @code{source} vector for the
 condition selected by the @code{condition} argument.  The
-@code{condition} argument must be an unsigned integer with value not
-exceeding 127.  The
+@code{condition} argument must be a compile-time constant integer with
+value not exceeding 127.  The
 @code{condition} argument is encoded as a bitmask with each bit
 enabling the testing of a different condition, as characterized by the
 following:

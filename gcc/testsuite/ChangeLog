@@ -1,3 +1,51 @@
+2017-01-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/scalar-insert-exp-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-5.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-0.c: Adjust return
+	type of test function to reflect change in built-in function's
+	return type.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-4.c: Adjust return
+	type and second argument type to reflect change in built-in
+	function's type signature.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-6.c: Adjust return
+	type of test function to reflect change in built-in function's
+	return type.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-7.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-0.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-0.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-1.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-2.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-exp-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-0.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-1.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-2.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-extract-sig-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-insert-exp-4.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-5.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-6.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-7.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-0.c: Adjust return
+	type of test function to reflect change in built-in function's
+	return type.
+	* gcc.target/powerpc/bfp/vec-test-data-class-1.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-2.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-3.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-4.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-5.c: Likewise.
+	* gcc.target/powerpc/bfp/vec-test-data-class-6.c: Adjust types of
+	test function's result and second argument to reflect change in
+	built-in function's type signature.
+	* gcc.target/powerpc/bfp/vec-test-data-class-7.c: Likewise.
+
 2017-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR C++/71710
