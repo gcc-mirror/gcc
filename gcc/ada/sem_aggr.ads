@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Types; use Types;
 
 package Sem_Aggr is
 
+   procedure Resolve_Delta_Aggregate     (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Aggregate           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Extension_Aggregate (N : Node_Id; Typ : Entity_Id);
 

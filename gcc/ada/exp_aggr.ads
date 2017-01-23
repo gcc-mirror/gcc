@@ -28,6 +28,7 @@ with Types; use Types;
 package Exp_Aggr is
 
    procedure Expand_N_Aggregate           (N : Node_Id);
+   procedure Expand_N_Delta_Aggregate     (N : Node_Id);
    procedure Expand_N_Extension_Aggregate (N : Node_Id);
 
    function Is_Delayed_Aggregate (N : Node_Id) return Boolean;

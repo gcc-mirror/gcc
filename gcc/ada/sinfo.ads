@@ -4133,6 +4133,15 @@ package Sinfo is
       --  Note that Box_Present is always False, but it is intentionally added
       --  for completeness.
 
+      ----------------------------
+      --  4.3.4 Delta Aggregate --
+      ----------------------------
+
+      --  N_Delta_Aggregate
+      --  Sloc points to left parenthesis
+      --  Expression (Node3)
+      --  Component_Associations (List2)
+
       --------------------------------------------------
       -- 4.4  Expression/Relation/Term/Factor/Primary --
       --------------------------------------------------
@@ -8475,6 +8484,7 @@ package Sinfo is
       N_Aggregate,
       N_Allocator,
       N_Case_Expression,
+      N_Delta_Aggregate,
       N_Extension_Aggregate,
       N_Raise_Expression,
       N_Range,
@@ -11523,6 +11533,13 @@ package Sinfo is
         3 => True,    --  Expression (Node3)
         4 => True,    --  Discrete_Choices (List4)
         5 => False),  --  unused
+
+     N_Delta_Aggregate =>
+       (1 => False,   --  Expressions (List1)
+        2 => True,    --  Component_Associations (List2)
+        3 => True,    --  Expression (Node3)
+        4 => False,   --  Unused
+        5 => False),  --  Etype (Node5-Sem)
 
      N_Extension_Aggregate =>
        (1 => True,    --  Expressions (List1)

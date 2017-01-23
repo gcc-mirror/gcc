@@ -1775,6 +1775,13 @@ package body Sprint is
                Write_Indent_Str (";");
             end if;
 
+         when N_Delta_Aggregate =>
+            Write_Str_With_Col_Check_Sloc ("(");
+            Sprint_Node (Expression (Node));
+            Write_Str_With_Col_Check (" with delta ");
+            Sprint_Comma_List (Component_Associations (Node));
+            Write_Char (')');
+
          when N_Extension_Aggregate =>
             Write_Str_With_Col_Check_Sloc ("(");
             Sprint_Node (Ancestor_Part (Node));

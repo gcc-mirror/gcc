@@ -1381,7 +1381,7 @@ package body Ch4 is
             Expr_Node := P_Expression_Or_Range_Attribute_If_OK;
          end if;
 
-         --  Extension aggregate
+         --  Extension or Delta aggregate
 
          if Token = Tok_With then
             if Nkind (Expr_Node) = N_Attribute_Reference
@@ -1395,9 +1395,18 @@ package body Ch4 is
                Error_Msg_SC ("(Ada 83) extension aggregate not allowed");
             end if;
 
-            Aggregate_Node := New_Node (N_Extension_Aggregate, Lparen_Sloc);
-            Set_Ancestor_Part (Aggregate_Node, Expr_Node);
             Scan; -- past WITH
+            if Token = Tok_Delta then
+               Scan; -- past DELTA
+               Aggregate_Node := New_Node (N_Delta_Aggregate, Lparen_Sloc);
+               Set_Expression (Aggregate_Node, Expr_Node);
+               Expr_Node := Empty;
+               goto Aggregate;
+
+            else
+               Aggregate_Node := New_Node (N_Extension_Aggregate, Lparen_Sloc);
+               Set_Ancestor_Part (Aggregate_Node, Expr_Node);
+            end if;
 
             --  Deal with WITH NULL RECORD case
 
@@ -1586,7 +1595,11 @@ package body Ch4 is
       --  All component associations (positional and named) have been scanned
 
       T_Right_Paren;
-      Set_Expressions (Aggregate_Node, Expr_List);
+
+      if Nkind (Aggregate_Node) /= N_Delta_Aggregate then
+         Set_Expressions (Aggregate_Node, Expr_List);
+      end if;
+
       Set_Component_Associations (Aggregate_Node, Assoc_List);
       return Aggregate_Node;
    end P_Aggregate_Or_Paren_Expr;
@@ -1622,6 +1635,10 @@ package body Ch4 is
       Assoc_Node : Node_Id;
 
    begin
+      if Token = Tok_For then
+         return P_Iterated_Component_Association;
+      end if;
+
       Assoc_Node := New_Node (N_Component_Association, Token_Ptr);
       Set_Choices (Assoc_Node, P_Discrete_Choice_List);
       Set_Sloc (Assoc_Node, Token_Ptr);

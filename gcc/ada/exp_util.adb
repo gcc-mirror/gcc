@@ -5831,6 +5831,7 @@ package body Exp_Util is
                | N_Defining_Operator_Symbol
                | N_Defining_Program_Unit_Name
                | N_Delay_Alternative
+               | N_Delta_Aggregate
                | N_Delta_Constraint
                | N_Derived_Type_Definition
                | N_Designator
