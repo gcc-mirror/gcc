@@ -1,3 +1,32 @@
+2017-01-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb: Minor fix in comment.
+
+2017-01-23  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.adb (Do_Report) remove freed chunks from chunks
+	count in Sort = Memory_Usage or Allocations_Count
+
+2017-01-23  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb: Code cleanup.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Move all global
+	variables to the local variable section. Update the profile
+	of various nested routine that previously had visibility
+	of those globals. One the matching phase has completed,
+	remove certain classes of clauses which are considered noise.
+	(Check_Dependency_Clause): Properly detect a match between two
+	'Result attributes. Update the various post-match cases to use
+	Is_Already_Matched as this routine now automatically recognizes
+	a previously matched 'Result attribute.
+	(Is_Already_Matched): New routine.
+	(Remove_Extra_Clauses): New routine.
+	(Report_Extra_Clauses): Remove the detection of ... => null
+	clauses as this is now done in Remove_Extra_Clauses.
+
 2017-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): In ASIS mode do not
