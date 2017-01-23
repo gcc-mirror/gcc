@@ -2282,7 +2282,22 @@ package body Sem_Aggr is
                               if Lo_Dup > Hi_Dup then
                                  null;
 
-                              --  Otherwise place proper message
+                              --  Otherwise place proper message. Because
+                              --  of the missing expansion of subtypes with
+                              --  predicates in ASIS mode, do not report
+                              --  spurious overlap errors.
+
+                              elsif ASIS_Mode
+                                and then
+                                  ((Is_Type (Entity (Table (J).Choice))
+                                    and then Has_Predicates
+                                      (Entity (Table (J).Choice)))
+                                   or else
+                                     (Is_Type (Entity (Table (K).Choice))
+                                       and then Has_Predicates
+                                          (Entity (Table (K).Choice))))
+                              then
+                                 null;
 
                               else
                                  --  We place message on later choice, with a

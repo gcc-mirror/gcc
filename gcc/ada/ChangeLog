@@ -1,3 +1,15 @@
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): In ASIS mode do not
+	report on spurious overlaps between values involving a subtype
+	with a static predicate, because the expansion of such a subtype
+	into individual ranges in inhibited in ASIS mode.
+
+2017-01-23  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Add detection
+	of an edge case and delay freezing if it is present.
+
 2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, exp_spark.adb, exp_attr.adb, sem_ch9.adb, sem_prag.adb,

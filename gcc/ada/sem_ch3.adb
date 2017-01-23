@@ -2490,6 +2490,10 @@ package body Sem_Ch3 is
       Body_Seen : Boolean := False;
       --  Flag set when the first body [stub] is encountered
 
+      Ignore_Freezing : Boolean;
+      --  Flag set when deciding to freeze an expression function in the
+      --  current scope.
+
    --  Start of processing for Analyze_Declarations
 
    begin
@@ -2630,45 +2634,83 @@ package body Sem_Ch3 is
 
          elsif not Analyzed (Next_Decl) and then Is_Body (Next_Decl) then
 
-            --  When a controlled type is frozen, the expander generates stream
-            --  and controlled type support routines. If the freeze is caused
-            --  by the stand alone body of Initialize, Adjust and Finalize, the
-            --  expander will end up using the wrong version of these routines
-            --  as the body has not been processed yet. To remedy this, detect
-            --  a late controlled primitive and create a proper spec for it.
-            --  This ensures that the primitive will override its inherited
-            --  counterpart before the freeze takes place.
+            --  If there is an array type that uses a private type from an
+            --  enclosing package which is in the same scope as an expression
+            --  function that is not a completion then we cannot freeze here.
+            --  So identify the case here and delay freezing.
 
-            --  If the declaration we just processed is a body, do not attempt
-            --  to examine Next_Decl as the late primitive idiom can only apply
-            --  to the first encountered body.
+            Ignore_Freezing := False;
 
-            --  The spec of the late primitive is not generated in ASIS mode to
-            --  ensure a consistent list of primitives that indicates the true
-            --  semantic structure of the program (which is not relevant when
-            --  generating executable code.
-
-            --  ??? a cleaner approach may be possible and/or this solution
-            --  could be extended to general-purpose late primitives, TBD.
-
-            if not ASIS_Mode and then not Body_Seen and then not Is_Body (Decl)
+            if Nkind (Next_Decl) = N_Subprogram_Body
+              and then Was_Expression_Function (Next_Decl)
+              and then not Is_Compilation_Unit (Current_Scope)
+              and then not Is_Generic_Instance (Current_Scope)
             then
-               Body_Seen := True;
 
-               if Nkind (Next_Decl) = N_Subprogram_Body then
-                  Handle_Late_Controlled_Primitive (Next_Decl);
-               end if;
+               --  Loop through all entities in the current scope to identify
+               --  an instance of the edge case outlined above.
+
+               declare
+                  Curr : Entity_Id := First_Entity (Current_Scope);
+               begin
+                  loop
+                     if Nkind (Curr) in N_Entity
+                       and then Depends_On_Private (Curr)
+                     then
+                        Ignore_Freezing := True;
+                        exit;
+                     end if;
+
+                     exit when Last_Entity (Current_Scope) = Curr;
+                     Curr := Next_Entity (Curr);
+                  end loop;
+               end;
             end if;
 
-            Adjust_Decl;
+            if not Ignore_Freezing then
 
-            --  The generated body of an expression function does not freeze,
-            --  unless it is a completion, in which case only the expression
-            --  itself freezes. THis is handled when the body itself is
-            --  analyzed (see Freeze_Expr_Types, sem_ch6.adb).
+               --  When a controlled type is frozen, the expander generates
+               --  stream and controlled-type support routines. If the freeze
+               --  is caused by the stand-alone body of Initialize, Adjust, or
+               --  Finalize, the expander will end up using the wrong version
+               --  of these routines, as the body has not been processed yet.
+               --  To remedy this, detect a late controlled primitive and
+               --  create a proper spec for it. This ensures that the primitive
+               --  will override its inherited counterpart before the freeze
+               --  takes place.
 
-            Freeze_All (Freeze_From, Decl);
-            Freeze_From := Last_Entity (Current_Scope);
+               --  If the declaration we just processed is a body, do not
+               --  attempt to examine Next_Decl as the late primitive idiom can
+               --  only apply to the first encountered body.
+
+               --  The spec of the late primitive is not generated in ASIS mode
+               --  to ensure a consistent list of primitives that indicates the
+               --  true semantic structure of the program (which is not
+               --  relevant when generating executable code).
+
+               --  ??? A cleaner approach may be possible and/or this solution
+               --  could be extended to general-purpose late primitives, TBD.
+
+               if not ASIS_Mode and then not Body_Seen
+                 and then not Is_Body (Decl)
+               then
+                  Body_Seen := True;
+
+                  if Nkind (Next_Decl) = N_Subprogram_Body then
+                     Handle_Late_Controlled_Primitive (Next_Decl);
+                  end if;
+               end if;
+
+               Adjust_Decl;
+
+               --  The generated body of an expression function does not
+               --  freeze, unless it is a completion, in which case only the
+               --  expression itself freezes. This is handled when the body
+               --  itself is analyzed (see Freeze_Expr_Types, sem_ch6.adb).
+
+               Freeze_All (Freeze_From, Decl);
+               Freeze_From := Last_Entity (Current_Scope);
+            end if;
          end if;
 
          Decl := Next_Decl;
