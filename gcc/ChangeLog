@@ -1,3 +1,13 @@
+2017-01-23  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* config/i386/avx512bwintrin.h: Add k-mask test, kortest intrinsics.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512fintrin.h: Ditto.
+	* gcc/config/i386/i386.c: Handle new builtins.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/sse.md (ktest<mode>, kortest<mode>): New.
+	(UNSPEC_KORTEST, UNSPEC_KTEST): New.
+
 2017-01-23  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 
@@ -41,7 +51,7 @@
 	now. Remove trailing slash.
 
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* README.Portability: Remove note on an Irix compatibility issue.
 
 2017-01-22  Dimitry Andric <dim@FreeBSD.org>
@@ -49,7 +59,7 @@
 	* gcov.c (INCLUDE_ALGORITHM): Define.
 	(INCLUDE_VECTOR): Define.
 	No longer include <vector> and <algorithm> directly.
-	
+
 2017-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (Thread-Local): Change www.akkadia.org reference

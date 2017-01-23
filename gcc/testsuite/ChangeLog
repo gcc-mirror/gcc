@@ -1,3 +1,22 @@
+2017-01-23  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx512bw-ktestd-1.c: New test.
+	* gcc.target/i386/avx512bw-ktestq-1.c: Ditto.
+	* gcc.target/i386/avx512dq-ktestb-1.c: Ditto.
+	* gcc.target/i386/avx512f-ktestw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kortestd-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kortestq-1.c: Ditto.
+	* gcc.target/i386/avx512dq-kortestb-1.c: Ditto.
+	* gcc.target/i386/avx512f-kortestw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-ktestd-2.c: Ditt
+	* gcc.target/i386/avx512bw-ktestq-2.c: Ditto.
+	* gcc.target/i386/avx512dq-ktestb-2.c: Ditto.
+	* gcc.target/i386/avx512f-ktestw-2.c: Ditto.
+	* gcc.target/i386/avx512bw-kortestd-2.c: Ditto.
+	* gcc.target/i386/avx512bw-kortestq-2.c: Ditto.
+	* gcc.target/i386/avx512dq-kortestb-2.c: Ditto.
+	* gcc.target/i386/avx512f-kortestw-2.c: Ditto.
+
 2017-01-23  Richard Biener  <rguenther@suse.de>
 	    Nick Clifton  <nickc@redhat.com>
 

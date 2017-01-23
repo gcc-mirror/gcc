@@ -34,6 +34,50 @@
 #define __DISABLE_AVX512DQ__
 #endif /* __AVX512DQ__ */
 
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktest_mask8_u8  (__mmask8 __A,  __mmask8 __B, unsigned char *__CF)
+{
+  *__CF = (unsigned char) __builtin_ia32_ktestcqi (__A, __B);
+  return (unsigned char) __builtin_ia32_ktestzqi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktestz_mask8_u8 (__mmask8 __A, __mmask8 __B)
+{
+  return (unsigned char) __builtin_ia32_ktestzqi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktestc_mask8_u8 (__mmask8 __A, __mmask8 __B)
+{
+  return (unsigned char) __builtin_ia32_ktestcqi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortest_mask8_u8  (__mmask8 __A,  __mmask8 __B, unsigned char *__CF)
+{
+  *__CF = (unsigned char) __builtin_ia32_kortestcqi (__A, __B);
+  return (unsigned char) __builtin_ia32_kortestzqi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortestz_mask8_u8 (__mmask8 __A, __mmask8 __B)
+{
+  return (unsigned char) __builtin_ia32_kortestzqi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortestc_mask8_u8 (__mmask8 __A, __mmask8 __B)
+{
+  return (unsigned char) __builtin_ia32_kortestcqi (__A, __B);
+}
+
 extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _kadd_mask8 (__mmask8 __A, __mmask8 __B)

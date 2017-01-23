@@ -37642,15 +37642,99 @@ rdseed_step:
       emit_insn (gen_pop (gen_rtx_REG (word_mode, FLAGS_REG)));
       return 0;
 
+    case IX86_BUILTIN_KTESTC8:
+      icode = CODE_FOR_ktestqi;
+      mode0 = QImode;
+      mode1 = CCCmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KTESTZ8:
+      icode = CODE_FOR_ktestqi;
+      mode0 = QImode;
+      mode1 = CCZmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KTESTC16:
+      icode = CODE_FOR_ktesthi;
+      mode0 = HImode;
+      mode1 = CCCmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KTESTZ16:
+      icode = CODE_FOR_ktesthi;
+      mode0 = HImode;
+      mode1 = CCZmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KTESTC32:
+      icode = CODE_FOR_ktestsi;
+      mode0 = SImode;
+      mode1 = CCCmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KTESTZ32:
+      icode = CODE_FOR_ktestsi;
+      mode0 = SImode;
+      mode1 = CCZmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KTESTC64:
+      icode = CODE_FOR_ktestdi;
+      mode0 = DImode;
+      mode1 = CCCmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KTESTZ64:
+      icode = CODE_FOR_ktestdi;
+      mode0 = DImode;
+      mode1 = CCZmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KORTESTC8:
+      icode = CODE_FOR_kortestqi;
+      mode0 = QImode;
+      mode1 = CCCmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KORTESTZ8:
+      icode = CODE_FOR_kortestqi;
+      mode0 = QImode;
+      mode1 = CCZmode;
+      goto kortest;
+
     case IX86_BUILTIN_KORTESTC16:
-      icode = CODE_FOR_kortestchi;
+      icode = CODE_FOR_kortesthi;
       mode0 = HImode;
       mode1 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ16:
-      icode = CODE_FOR_kortestzhi;
+      icode = CODE_FOR_kortesthi;
       mode0 = HImode;
+      mode1 = CCZmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KORTESTC32:
+      icode = CODE_FOR_kortestsi;
+      mode0 = SImode;
+      mode1 = CCCmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KORTESTZ32:
+      icode = CODE_FOR_kortestsi;
+      mode0 = SImode;
+      mode1 = CCZmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KORTESTC64:
+      icode = CODE_FOR_kortestdi;
+      mode0 = DImode;
+      mode1 = CCCmode;
+      goto kortest;
+
+    case IX86_BUILTIN_KORTESTZ64:
+      icode = CODE_FOR_kortestdi;
+      mode0 = DImode;
       mode1 = CCZmode;
 
     kortest:
