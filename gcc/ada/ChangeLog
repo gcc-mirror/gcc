@@ -1,3 +1,23 @@
+2017-01-23  Justin Squirek  <squirek@adacore.com>
+
+	* exp_strm.ads, exp_strm.ads
+	(Build_Record_Or_Elementary_Input_Function): Add an extra parameter so
+	as to avoid getting the underlying type by default.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Remove use of
+	underlying type in the Iiput and output attribute cases when
+	building their respective functions.
+
+2017-01-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* scng.adb: Minor reformatting of error message.
+
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Do not attempt
+	to freeze the return type of an expression funxtion that is a
+	completion, if the type is a limited view and the non-limited
+	view is available.
+
 2017-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch4.adb (P_Aggregate_Or_Parent_Expr): Recognize delta
