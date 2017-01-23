@@ -1,5 +1,11 @@
 2017-01-23  Claire Dross  <dross@adacore.com>
 
+	* exp_spark.adb (Expand_SPARK_Attribute_Reference): For attributes
+	which return Universal_Integer, force the overflow check flag for
+	Length and Range_Length for types as big as Long_Long_Integer.
+
+2017-01-23  Claire Dross  <dross@adacore.com>
+
 	* exp_spark.adb (Expand_SPARK_Attribute_Reference):  For
 	attributes which return Universal_Integer, introduce a conversion
 	to the expected type with the appropriate check flags set.

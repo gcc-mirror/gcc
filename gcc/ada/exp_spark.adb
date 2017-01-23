@@ -38,6 +38,9 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
+with Uintp; use Uintp;
+with Sem_Eval; use Sem_Eval;
+with Stand; use Stand;
 
 package body Exp_SPARK is
 
@@ -171,7 +174,54 @@ package body Exp_SPARK is
         or else Attr_Id = Attribute_Aft
         or else Attr_Id = Attribute_Max_Alignment_For_Allocation
       then
-         Apply_Universal_Integer_Attribute_Checks (N);
+
+         --  If the expected type is Long_Long_Integer, there will be no check
+         --  flag as the compiler assumes attributes always fit in this type.
+         --  Since in SPARK_Mode we do not take Storage_Error into account, we
+         --  cannot make this assumption and need to produce a check.
+         --  ??? It should be enough to add this check for attributes 'Length
+         --  and 'Range_Length when the type is as big as Long_Long_Integer.
+
+         declare
+            Typ : Entity_Id := Empty;
+         begin
+            if Attr_Id = Attribute_Range_Length then
+               Typ := Etype (Prefix (N));
+            elsif Attr_Id = Attribute_Length then
+               Typ := Etype (Prefix (N));
+
+               declare
+                  Indx   : Node_Id;
+                  J      : Int;
+               begin
+                  if Is_Access_Type (Typ) then
+                     Typ := Designated_Type (Typ);
+                  end if;
+
+                  if No (Expressions (N)) then
+                     J := 1;
+                  else
+                     J := UI_To_Int (Expr_Value (First (Expressions (N))));
+                  end if;
+
+                  Indx := First_Index (Typ);
+                  while J > 1 loop
+                     Next_Index (Indx);
+                     J := J - 1;
+                  end loop;
+
+                  Typ := Etype (Indx);
+               end;
+            end if;
+
+            Apply_Universal_Integer_Attribute_Checks (N);
+
+            if Present (Typ)
+              and then RM_Size (Typ) = RM_Size (Standard_Long_Long_Integer)
+            then
+               Set_Do_Overflow_Check (N);
+            end if;
+         end;
       end if;
    end Expand_SPARK_Attribute_Reference;
 
