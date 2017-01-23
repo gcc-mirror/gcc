@@ -1,3 +1,23 @@
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Remove extra
+	spaces from error messages.
+
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Check_Large_Modular_Array): New procedure,
+	subsidiary to Expand_N_Object_ Declaration, to compute a guard on
+	an object declaration for an array type with a modular index type
+	with the size of Long_Long_Integer. Special processing is needed
+	in this case to compute reliably the size of the object, and
+	eventually  to raise Storage_Error, when wrap-around arithmetic
+	might compute a meangingless size for the object.
+
+2017-01-23  Justin Squirek  <squirek@adacore.com>
+
+	* a-wtenau.adb, par-endh.adb, sem_prag.adb,
+	sem_type.adb: Code cleanups.
+
 2017-01-23  Bob Duff  <duff@adacore.com>
 
 	* sem_res.adb (Resolve_Call): In the part of the code where

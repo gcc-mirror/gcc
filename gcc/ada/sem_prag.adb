@@ -23951,7 +23951,7 @@ package body Sem_Prag is
             --  Attribute 'Result matches attribute 'Result
 
             elsif Is_Attribute_Result (Dep_Item)
-              and then Is_Attribute_Result (Dep_Item)
+               and then Is_Attribute_Result (Ref_Item)
             then
                Matched := True;
 
