@@ -463,23 +463,6 @@ begin
       end if;
    end if;
 
-   --  In GNATprove mode, force the loading of a few RTE units. This step is
-   --  skipped if we had a fatal error during parsing.
-
-   if GNATprove_Mode
-     and then Fatal_Error (Main_Unit) /= Error_Detected
-   then
-      declare
-         Unused : Entity_Id;
-
-      begin
-         --  Ensure that System.Interrupt_Priority is available to GNATprove
-         --  for the generation of VCs related to ceiling priority.
-
-         Unused := RTE (RE_Interrupt_Priority);
-      end;
-   end if;
-
    --  Qualify all entity names in inner packages, package bodies, etc
 
    Exp_Dbug.Qualify_All_Entity_Names;
