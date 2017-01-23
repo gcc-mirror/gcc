@@ -1,3 +1,48 @@
+2017-01-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/79108
+	* ipa-prop.h (ipa_param_descriptor): Anotate with with GTY(()).
+	(ipa_node_params): Annotate with GTY((for_user)).  Make descriptors
+	field a pointer to garbage collected vector, mark lattices and
+	ipcp_orig_node with GTY((skip)).
+	(ipa_get_param_count): Adjust to descriptors being a pointer.
+	(ipa_get_param): Likewise.
+	(ipa_get_type): Likewise.
+	(ipa_get_param_move_cost): Likewise.
+	(ipa_set_param_used): Likewise.
+	(ipa_get_controlled_uses): Likewise.
+	(ipa_set_controlled_uses): Likewise.
+	(ipa_is_param_used): Likewise.
+	(ipa_node_params_t): Move into garbage collector.  New methods insert
+	and remove.
+	(ipa_node_params_sum): Annotate wth GTY(()).
+	(ipa_check_create_node_params): Adjust to ipa_node_params_sum being
+	garbage collected.
+	(ipa_load_from_parm_agg): Adjust declaration.
+	* ipa-icf.c (param_used_p): Adjust to descriptors being a pointer.
+	* ipa-profile.c (ipa_profile): Likewise.
+	* ipa-prop.c (ipa_get_param_decl_index_1): Likewise.
+	(ipa_populate_param_decls): Make descriptors parameter garbage
+	collected.
+	(ipa_dump_param): Adjust to descriptors being a pointer.
+	(ipa_alloc_node_params): Likewise.
+	(ipa_initialize_node_params): Likewise.
+	(load_from_param_1): Make descriptors parameter garbage collected.
+	(load_from_unmodified_param): Likewise.
+	(load_from_param): Likewise.
+	(ipa_load_from_parm_agg): Likewise.
+	(ipa_node_params::~ipa_node_params): Removed.
+	(ipa_free_all_node_params): Remove call to delete operator.
+	(ipa_node_params_t::insert): New.
+	(ipa_node_params_t::remove): Likewise.
+	(ipa_node_params_t::duplicate): Adjust to descriptors being a pointer,
+	copy known_csts and known_contexts vectors.
+	(ipa_read_node_info): Adjust to descriptors being a pointer.
+	(ipcp_modif_dom_walker): Make m_descriptors field garbage
+	collected.
+	(ipcp_transform_function): Make descriptors variable garbage
+	collected.
+
 2017-01-23  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* config/i386/avx512bwintrin.h: Add k-mask test, kortest intrinsics.
