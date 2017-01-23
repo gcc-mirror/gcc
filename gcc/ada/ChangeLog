@@ -1,3 +1,18 @@
+2017-01-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree): Code cleanup:
+	removal of the internal map (ie. variable Actual_Map, its
+	associated local variables, and all the code handling it).
+	* sem_ch9.adb (Analyze_Task_Type_Declaration): in GNATprove mode
+	force loading of the System package when processing a task type.
+	(Analyze_Protected_Type_Declaration): in GNATprove mode force
+	loading of the System package when processing a protected type.
+	* sem_ch10.adb (Analyze_Compilation_Unit): in GNATprove mode
+	force loading of the System package when processing compilation
+	unit with a main-like subprogram.
+	* frontend.adb (Frontend): remove forced loading of the System
+	package.
+
 2017-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Default_Initial_Condition): If the desired type

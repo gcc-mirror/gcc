@@ -1133,6 +1133,48 @@ package body Sem_Ch10 is
 
             Style_Check := Save_Style_Check;
          end;
+
+         --  In GNATprove mode, force the loading of a Interrupt_Priority when
+         --  processing compilation units with potentially "main" subprograms.
+         --  This is required for the ceiling priority protocol checks, which
+         --  are trigerred by these subprograms.
+
+         if GNATprove_Mode
+           and then Nkind_In (Unit_Node, N_Subprogram_Body,
+                                         N_Procedure_Instantiation,
+                                         N_Function_Instantiation)
+         then
+            declare
+               Spec   : Node_Id;
+               Unused : Entity_Id;
+
+            begin
+               case Nkind (Unit_Node) is
+                  when N_Subprogram_Body =>
+                     Spec := Specification (Unit_Node);
+
+                  when N_Subprogram_Instantiation =>
+                     Spec :=
+                       Subprogram_Specification (Entity (Name (Unit_Node)));
+
+                  when others =>
+                     raise Program_Error;
+               end case;
+
+               pragma Assert (Nkind (Spec) in N_Subprogram_Specification);
+
+               --  Only subprogram with no parameters can act as "main", and if
+               --  it is a function, it needs to return an integer.
+
+               if No (Parameter_Specifications (Spec))
+                 and then (Nkind (Spec) = N_Procedure_Specification
+                             or else
+                           Is_Integer_Type (Etype (Result_Definition (Spec))))
+               then
+                  Unused := RTE (RE_Interrupt_Priority);
+               end if;
+            end;
+         end if;
       end if;
 
       --  Deal with creating elaboration counter if needed. We create an
