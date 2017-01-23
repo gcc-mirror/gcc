@@ -1,3 +1,10 @@
+2017-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/71406 - ICE with scope-ref'd template id exprs
+	PR c++/77508
+	* typeck.c (finish_class_member_access_expr): Break up SCOPE_REF
+	before breaking up TEMPLATE_ID_EXPR.
+
 2017-01-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78495 - wrong code inherited ctor and invisi-ref parm
