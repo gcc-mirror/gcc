@@ -1,6 +1,13 @@
 2017-01-23  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-01-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/lto/pr69188_0.c: Require profiling support for testcase.
+
+2017-01-23  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-01-20  Martin Liska  <mliska@suse.cz>
 
 	PR lto/69188
