@@ -1,3 +1,8 @@
+2017-01-23  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/78384
+	* tree-ssa-loop-split.c (patch_loop_exit): Use correct edge.
+
 2017-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79186
