@@ -1019,13 +1019,11 @@ package body Exp_Attr is
 
       --  Local variables
 
-      Exprs     : constant List_Id   := Expressions (N);
       Pref      : constant Node_Id   := Prefix (N);
-      Typ       : constant Entity_Id := Etype (Pref);
+      Base_Typ  : constant Entity_Id := Base_Type (Etype (Pref));
+      Exprs     : constant List_Id   := Expressions (N);
+      Aux_Decl  : Node_Id;
       Blk       : Node_Id;
-      CW_Decl   : Node_Id;
-      CW_Temp   : Entity_Id;
-      CW_Typ    : Entity_Id;
       Decls     : List_Id;
       Installed : Boolean;
       Loc       : Source_Ptr;
@@ -1048,10 +1046,10 @@ package body Exp_Attr is
          Loop_Id   := Entity (First (Exprs));
          Loop_Stmt := Label_Construct (Parent (Loop_Id));
 
-      --  Climb the parent chain to find the nearest enclosing loop. Skip all
-      --  internally generated loops for quantified expressions and for
-      --  element iterators over multidimensional arrays: pragma applies to
-      --  source loop.
+      --  Climb the parent chain to find the nearest enclosing loop. Skip
+      --  all internally generated loops for quantified expressions and for
+      --  element iterators over multidimensional arrays because the pragma
+      --  applies to source loop.
 
       else
          Loop_Stmt := N;
@@ -1350,49 +1348,68 @@ package body Exp_Attr is
       --  Preserve the tag of the prefix by offering a specific view of the
       --  class-wide version of the prefix.
 
-      if Is_Tagged_Type (Typ) then
+      if Is_Tagged_Type (Base_Typ) then
+         Tagged_Case : declare
+            CW_Temp : Entity_Id;
+            CW_Typ  : Entity_Id;
 
-         --  Generate:
-         --    CW_Temp : constant Typ'Class := Typ'Class (Pref);
+         begin
+            --  Generate:
+            --    CW_Temp : constant Base_Typ'Class := Base_Typ'Class (Pref);
 
-         CW_Temp := Make_Temporary (Loc, 'T');
-         CW_Typ  := Class_Wide_Type (Typ);
+            CW_Temp := Make_Temporary (Loc, 'T');
+            CW_Typ  := Class_Wide_Type (Base_Typ);
 
-         CW_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => CW_Temp,
-             Constant_Present    => True,
-             Object_Definition   => New_Occurrence_Of (CW_Typ, Loc),
-             Expression          =>
-               Convert_To (CW_Typ, Relocate_Node (Pref)));
-         Append_To (Decls, CW_Decl);
+            Aux_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => CW_Temp,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (CW_Typ, Loc),
+                Expression          =>
+                  Convert_To (CW_Typ, Relocate_Node (Pref)));
+            Append_To (Decls, Aux_Decl);
 
-         --  Generate:
-         --    Temp : Typ renames Typ (CW_Temp);
+            --  Generate:
+            --    Temp : Base_Typ renames Base_Typ (CW_Temp);
 
-         Temp_Decl :=
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Temp_Id,
-             Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
-             Name                =>
-               Convert_To (Typ, New_Occurrence_Of (CW_Temp, Loc)));
-         Append_To (Decls, Temp_Decl);
+            Temp_Decl :=
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Temp_Id,
+                Subtype_Mark        => New_Occurrence_Of (Base_Typ, Loc),
+                Name                =>
+                  Convert_To (Base_Typ, New_Occurrence_Of (CW_Temp, Loc)));
+            Append_To (Decls, Temp_Decl);
+         end Tagged_Case;
 
-      --  Non-tagged case
+      --  Untagged case
 
       else
-         CW_Decl := Empty;
+         Untagged_Case : declare
+            Temp_Expr : Node_Id;
 
-         --  Generate:
-         --    Temp : constant Typ := Pref;
+         begin
+            Aux_Decl := Empty;
 
-         Temp_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Temp_Id,
-             Constant_Present    => True,
-             Object_Definition   => New_Occurrence_Of (Typ, Loc),
-             Expression          => Relocate_Node (Pref));
-         Append_To (Decls, Temp_Decl);
+            --  Generate a nominal type for the constant when the prefix is of
+            --  a constrained type. This is achieved by setting the Etype of
+            --  the relocated prefix to its base type. Since the prefix is now
+            --  the initialization expression of the constant, its freezing
+            --  will produce a proper nominal type.
+
+            Temp_Expr := Relocate_Node (Pref);
+            Set_Etype (Temp_Expr, Base_Typ);
+
+            --  Generate:
+            --    Temp : constant Base_Typ := Pref;
+
+            Temp_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp_Id,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (Base_Typ, Loc),
+                Expression          => Temp_Expr);
+            Append_To (Decls, Temp_Decl);
+         end Untagged_Case;
       end if;
 
       --  Step 4: Analyze all bits
@@ -1418,8 +1435,8 @@ package body Exp_Attr is
       --  the declaration of the constant.
 
       else
-         if Present (CW_Decl) then
-            Analyze (CW_Decl);
+         if Present (Aux_Decl) then
+            Analyze (Aux_Decl);
          end if;
 
          Analyze (Temp_Decl);

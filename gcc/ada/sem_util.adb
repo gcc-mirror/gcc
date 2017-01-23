@@ -9118,12 +9118,54 @@ package body Sem_Util is
      (Item_Id  : Entity_Id;
       Property : Name_Id) return Boolean
    is
+      function Protected_Object_Has_Enabled_Property return Boolean;
+      --  Determine whether a protected object denoted by Item_Id has the
+      --  property enabled.
+
       function State_Has_Enabled_Property return Boolean;
       --  Determine whether a state denoted by Item_Id has the property enabled
 
       function Variable_Has_Enabled_Property return Boolean;
       --  Determine whether a variable denoted by Item_Id has the property
       --  enabled.
+
+      -------------------------------------------
+      -- Protected_Object_Has_Enabled_Property --
+      -------------------------------------------
+
+      function Protected_Object_Has_Enabled_Property return Boolean is
+         Constits     : constant Elist_Id := Part_Of_Constituents (Item_Id);
+         Constit_Elmt : Elmt_Id;
+         Constit_Id   : Entity_Id;
+
+      begin
+         --  Protected objects always have the properties Async_Readers and
+         --  Async_Writers. (SPARK RM 7.1.2(16))
+
+         if Property = Name_Async_Readers
+           or else Property = Name_Async_Writers
+         then
+            return True;
+
+         --  Protected objects that have Part_Of components also inherit
+         --  their properties Effective_Reads and Effective_Writes. (SPARK
+         --  RM 7.1.2(16))
+
+         elsif Present (Constits) then
+            Constit_Elmt := First_Elmt (Constits);
+            while Present (Constit_Elmt) loop
+               Constit_Id := Node (Constit_Elmt);
+
+               if Has_Enabled_Property (Constit_Id, Property) then
+                  return True;
+               end if;
+
+               Next_Elmt (Constit_Elmt);
+            end loop;
+         end if;
+
+         return False;
+      end Protected_Object_Has_Enabled_Property;
 
       --------------------------------
       -- State_Has_Enabled_Property --
@@ -9302,7 +9344,19 @@ package body Sem_Util is
          --  The implicit case lacks all property pragmas
 
          elsif No (AR) and then No (AW) and then No (ER) and then No (EW) then
-            return True;
+
+            --  A variable of a protected type only has the properties
+            --  Async_Readers and Async_Writers. It cannot have Part_Of
+            --  components (only protected objects can), hence it cannot
+            --  inherit their properties Effective_Reads and Effective_Writes.
+            --  (SPARK RM 7.1.2(16))
+
+            if Is_Protected_Type (Etype (Item_Id)) then
+               return Property = Name_Async_Readers
+                 or else Property = Name_Async_Writers;
+            else
+               return True;
+            end if;
 
          else
             return False;
@@ -9320,6 +9374,14 @@ package body Sem_Util is
 
       elsif Ekind (Item_Id) = E_Variable then
          return Variable_Has_Enabled_Property;
+
+      --  By default, protected objects only have the properties Async_Readers
+      --  and Async_Writers. If they have Part_Of components, they also inherit
+      --  their properties Effective_Reads and Effective_Writes. (SPARK RM
+      --  7.1.2(16))
+
+      elsif Ekind (Item_Id) = E_Protected_Object then
+         return Protected_Object_Has_Enabled_Property;
 
       --  Otherwise a property is enabled when the related item is effectively
       --  volatile.

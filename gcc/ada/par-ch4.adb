@@ -2798,7 +2798,7 @@ package body Ch4 is
                Scan; -- past minus
 
             when Tok_At_Sign =>    --  AI12-0125 : target_name
-               if not Extensions_Allowed then
+               if Ada_Version < Ada_2020 then
                   Error_Msg_SC ("target name is an Ada 2020 extension");
                   Error_Msg_SC ("\compile with -gnatX");
                end if;

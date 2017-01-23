@@ -101,6 +101,11 @@ package Opt is
    --  GPRBUILD
    --  Set to True by gprbuild when the version of GNAT is 5.03 or before.
 
+   Checksum_Accumulate_Limited_Checksum : Boolean := False;
+   --  Used to control the computation of the limited view of a package.
+   --  (Not currently used, possible optimization for ALI files of units
+   --  in limited with_clauses).
+
    ----------------------------------------------
    -- Settings of Modes for Current Processing --
    ----------------------------------------------
@@ -117,7 +122,7 @@ package Opt is
    --  trying to specify other values will be ignored (in case of pragma
    --  Ada_xxx) or generate an error (in case of -gnat83/95/xx switches).
 
-   type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012);
+   type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2020);
    pragma Ordered (Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.

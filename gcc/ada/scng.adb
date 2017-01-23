@@ -1612,7 +1612,7 @@ package body Scng is
             end if;
 
          when '@' =>
-            if not Extensions_Allowed then
+            if Ada_Version < Ada_2020 then
                Error_Illegal_Character;
                Scan_Ptr := Scan_Ptr + 1;
 
