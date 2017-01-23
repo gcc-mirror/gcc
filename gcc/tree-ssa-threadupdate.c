@@ -2086,42 +2086,6 @@ mark_threaded_blocks (bitmap threaded_blocks)
   else
     bitmap_copy (threaded_blocks, tmp);
 
-  /* Look for jump threading paths which cross multiple loop headers.
-
-     The code to thread through loop headers will change the CFG in ways
-     that invalidate the cached loop iteration information.  So we must
-     detect that case and wipe the cached information.  */
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
-    {
-      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  if (e->aux)
-	    {
-	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-
-	      for (unsigned int i = 0, crossed_headers = 0;
-		   i < path->length ();
-		   i++)
-		{
-		  basic_block dest = (*path)[i]->e->dest;
-		  basic_block src = (*path)[i]->e->src;
-		  crossed_headers += (dest == dest->loop_father->header);
-		  /* If we step from a block outside an irreducible region
-		     to a block inside an irreducible region, then we have
-		     crossed into a loop.  */
-		  crossed_headers += ((src->flags & BB_IRREDUCIBLE_LOOP)
-				      != (dest->flags & BB_IRREDUCIBLE_LOOP));
-		  if (crossed_headers > 1)
-		    {
-		      vect_free_loop_info_assumptions (dest->loop_father);
-		      break;
-		    }
-		}
-	    }
-	}
-    }
-
   /* If we have a joiner block (J) which has two successors S1 and S2 and
      we are threading though S1 and the final destination of the thread
      is S2, then we must verify that any PHI nodes in S2 have the same
@@ -2160,6 +2124,46 @@ mark_threaded_blocks (bitmap threaded_blocks)
 		    {
 		      delete_jump_thread_path (path);
 		      e->aux = NULL;
+		    }
+		}
+	    }
+	}
+    }
+
+  /* Look for jump threading paths which cross multiple loop headers.
+
+     The code to thread through loop headers will change the CFG in ways
+     that invalidate the cached loop iteration information.  So we must
+     detect that case and wipe the cached information.  */
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (e->aux)
+	    {
+	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
+
+	      for (unsigned int i = 0, crossed_headers = 0;
+		   i < path->length ();
+		   i++)
+		{
+		  basic_block dest = (*path)[i]->e->dest;
+		  basic_block src = (*path)[i]->e->src;
+		  /* If we enter a loop.  */
+		  if (flow_loop_nested_p (src->loop_father, dest->loop_father))
+		    ++crossed_headers;
+		  /* If we step from a block outside an irreducible region
+		     to a block inside an irreducible region, then we have
+		     crossed into a loop.  */
+		  else if (! (src->flags & BB_IRREDUCIBLE_LOOP)
+			   && (dest->flags & BB_IRREDUCIBLE_LOOP))
+		      ++crossed_headers;
+		  if (crossed_headers > 1)
+		    {
+		      vect_free_loop_info_assumptions
+			((*path)[path->length () - 1]->e->dest->loop_father);
+		      break;
 		    }
 		}
 	    }
