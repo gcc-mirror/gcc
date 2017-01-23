@@ -196,8 +196,8 @@ int main (void)
   TEST_VBSL(uint, , poly, p, 64, 1);
   TEST_VBSL(uint, q, poly, p, 64, 2);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vbsl_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vbsl_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vbsl_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vbsl_expected, "");
 
   /* vceq_p64 tests. */
 #undef TEST_MSG
@@ -248,7 +248,7 @@ int main (void)
 
   TEST_VCOMBINE(poly, p, 64, 1, 2);
 
-  CHECK(TEST_MSG, poly, 64, 2, PRIx16, vcombine_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vcombine_expected, "");
 
   /* vcreate_p64 tests.  */
 #undef TEST_MSG
@@ -271,7 +271,7 @@ int main (void)
 
   TEST_VCREATE(poly, p, 64, 1);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vcreate_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vcreate_expected, "");
 
   /* vdup_lane_p64 tests.  */
 #undef TEST_MSG
@@ -295,8 +295,8 @@ int main (void)
   TEST_VDUP_LANE(, poly, p, 64, 1, 1, 0);
   TEST_VDUP_LANE(q, poly, p, 64, 2, 1, 0);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vdup_lane_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vdup_lane_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vdup_lane_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vdup_lane_expected, "");
 
   /* vdup_n_p64 tests.  */
 #undef TEST_MSG
@@ -320,16 +320,16 @@ int main (void)
 
     switch (i) {
     case 0:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vdup_n_expected0, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vdup_n_expected0, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vdup_n_expected0, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vdup_n_expected0, "");
       break;
     case 1:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vdup_n_expected1, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vdup_n_expected1, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vdup_n_expected1, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vdup_n_expected1, "");
       break;
     case 2:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vdup_n_expected2, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vdup_n_expected2, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vdup_n_expected2, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vdup_n_expected2, "");
       break;
     default:
       abort();
@@ -366,8 +366,8 @@ int main (void)
   TEST_VEXT(, poly, p, 64, 1, 0);
   TEST_VEXT(q, poly, p, 64, 2, 1);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vext_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vext_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vext_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vext_expected, "");
 
   /* vget_low_p64 tests.  */
 #undef TEST_MSG
@@ -387,7 +387,7 @@ int main (void)
 
   TEST_VGET_LOW(poly, p, 64, 1, 2);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vget_low_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vget_low_expected, "");
 
   /* vget_high_p64 tests.  */
 #undef TEST_MSG
@@ -407,7 +407,7 @@ int main (void)
 
   TEST_VGET_HIGH(poly, p, 64, 1, 2);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vget_high_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vget_high_expected, "");
 
   /* vld1_p64 tests.  */
 #undef TEST_MSG
@@ -429,8 +429,8 @@ int main (void)
   TEST_VLD1(vld1_vector, buffer, , poly, p, 64, 1);
   TEST_VLD1(vld1_vector, buffer, q, poly, p, 64, 2);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld1_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vld1_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld1_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vld1_expected, "");
 
   /* vld1_dup_p64 tests.  */
 #undef TEST_MSG
@@ -454,16 +454,16 @@ int main (void)
 
     switch (i) {
     case 0:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld1_dup_expected0, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vld1_dup_expected0, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld1_dup_expected0, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vld1_dup_expected0, "");
       break;
     case 1:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld1_dup_expected1, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vld1_dup_expected1, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld1_dup_expected1, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vld1_dup_expected1, "");
       break;
     case 2:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld1_dup_expected2, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vld1_dup_expected2, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld1_dup_expected2, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vld1_dup_expected2, "");
       break;
     default:
       abort();
@@ -497,8 +497,8 @@ int main (void)
   TEST_VLD1_LANE(, poly, p, 64, 1, 0);
   TEST_VLD1_LANE(q, poly, p, 64, 2, 0);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld1_lane_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vld1_lane_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld1_lane_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vld1_lane_expected, "");
 
   /* vldX_p64 tests.  */
 #define DECL_VLDX(T1, W, N, X)						\
@@ -535,37 +535,37 @@ int main (void)
 #define TEST_MSG "VLD2/VLD2Q"
   CLEAN(result, poly, 64, 1);
   TEST_VLDX(, poly, p, 64, 1, 2);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld2_expected_0, "chunk 0");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld2_expected_0, "chunk 0");
   CLEAN(result, poly, 64, 1);
   TEST_EXTRA_CHUNK(poly, 64, 1, 2, 1);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld2_expected_1, "chunk 1");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld2_expected_1, "chunk 1");
 
 #undef TEST_MSG
 #define TEST_MSG "VLD3/VLD3Q"
   CLEAN(result, poly, 64, 1);
   TEST_VLDX(, poly, p, 64, 1, 3);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld3_expected_0, "chunk 0");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld3_expected_0, "chunk 0");
   CLEAN(result, poly, 64, 1);
   TEST_EXTRA_CHUNK(poly, 64, 1, 3, 1);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld3_expected_1, "chunk 1");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld3_expected_1, "chunk 1");
   CLEAN(result, poly, 64, 1);
   TEST_EXTRA_CHUNK(poly, 64, 1, 3, 2);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld3_expected_2, "chunk 2");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld3_expected_2, "chunk 2");
 
 #undef TEST_MSG
 #define TEST_MSG "VLD4/VLD4Q"
   CLEAN(result, poly, 64, 1);
   TEST_VLDX(, poly, p, 64, 1, 4);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_0, "chunk 0");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_0, "chunk 0");
   CLEAN(result, poly, 64, 1);
   TEST_EXTRA_CHUNK(poly, 64, 1, 4, 1);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_1, "chunk 1");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_1, "chunk 1");
   CLEAN(result, poly, 64, 1);
   TEST_EXTRA_CHUNK(poly, 64, 1, 4, 2);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_2, "chunk 2");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_2, "chunk 2");
   CLEAN(result, poly, 64, 1);
   TEST_EXTRA_CHUNK(poly, 64, 1, 4, 3);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_3, "chunk 3");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_expected_3, "chunk 3");
 
   /* vldX_dup_p64 tests.  */
 #define DECL_VLDX_DUP(T1, W, N, X)					\
@@ -596,37 +596,37 @@ int main (void)
 #define TEST_MSG "VLD2_DUP/VLD2Q_DUP"
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP(, poly, p, 64, 1, 2);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld2_dup_expected_0, "chunk 0");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld2_dup_expected_0, "chunk 0");
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP_EXTRA_CHUNK(poly, 64, 1, 2, 1);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld2_dup_expected_1, "chunk 1");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld2_dup_expected_1, "chunk 1");
 
 #undef TEST_MSG
 #define TEST_MSG "VLD3_DUP/VLD3Q_DUP"
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP(, poly, p, 64, 1, 3);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld3_dup_expected_0, "chunk 0");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld3_dup_expected_0, "chunk 0");
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP_EXTRA_CHUNK(poly, 64, 1, 3, 1);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld3_dup_expected_1, "chunk 1");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld3_dup_expected_1, "chunk 1");
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP_EXTRA_CHUNK(poly, 64, 1, 3, 2);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld3_dup_expected_2, "chunk 2");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld3_dup_expected_2, "chunk 2");
 
 #undef TEST_MSG
 #define TEST_MSG "VLD4_DUP/VLD4Q_DUP"
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP(, poly, p, 64, 1, 4);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_0, "chunk 0");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_0, "chunk 0");
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP_EXTRA_CHUNK(poly, 64, 1, 4, 1);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_1, "chunk 1");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_1, "chunk 1");
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP_EXTRA_CHUNK(poly, 64, 1, 4, 2);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_2, "chunk 2");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_2, "chunk 2");
   CLEAN(result, poly, 64, 1);
   TEST_VLDX_DUP_EXTRA_CHUNK(poly, 64, 1, 4, 3);
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_3, "chunk 3");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vld4_dup_expected_3, "chunk 3");
 
   /* vsli_p64 tests.  */
 #undef TEST_MSG
@@ -661,8 +661,8 @@ int main (void)
   TEST_VSXI(vsli, , poly, p, 64, 1, 3);
   TEST_VSXI(vsli, q, poly, p, 64, 2, 53);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vsli_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vsli_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vsli_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vsli_expected, "");
 
   /* Test cases with maximum shift amount.  */
   CLEAN(result, poly, 64, 1);
@@ -672,8 +672,8 @@ int main (void)
   TEST_VSXI(vsli, q, poly, p, 64, 2, 63);
 
 #define COMMENT "(max shift amount)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vsli_expected_max_shift, COMMENT);
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vsli_expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vsli_expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vsli_expected_max_shift, COMMENT);
 
   /* vsri_p64 tests.  */
 #undef TEST_MSG
@@ -691,8 +691,8 @@ int main (void)
   TEST_VSXI(vsri, , poly, p, 64, 1, 3);
   TEST_VSXI(vsri, q, poly, p, 64, 2, 53);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vsri_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vsri_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vsri_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vsri_expected, "");
 
   /* Test cases with maximum shift amount.  */
   CLEAN(result, poly, 64, 1);
@@ -702,8 +702,8 @@ int main (void)
   TEST_VSXI(vsri, q, poly, p, 64, 2, 64);
 
 #define COMMENT "(max shift amount)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vsri_expected_max_shift, COMMENT);
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vsri_expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vsri_expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vsri_expected_max_shift, COMMENT);
 
   /* vst1_lane_p64 tests.  */
 #undef TEST_MSG
@@ -724,8 +724,8 @@ int main (void)
   TEST_VST1_LANE(, poly, p, 64, 1, 0);
   TEST_VST1_LANE(q, poly, p, 64, 2, 0);
 
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vst1_lane_expected, "");
-  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vst1_lane_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vst1_lane_expected, "");
+  CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vst1_lane_expected, "");
 
 #ifdef __aarch64__
 
@@ -751,16 +751,16 @@ int main (void)
 
     switch (i) {
     case 0:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vmov_n_expected0, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vmov_n_expected0, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vmov_n_expected0, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vmov_n_expected0, "");
       break;
     case 1:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vmov_n_expected1, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vmov_n_expected1, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vmov_n_expected1, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vmov_n_expected1, "");
       break;
     case 2:
-      CHECK(TEST_MSG, poly, 64, 1, PRIx64, vmov_n_expected2, "");
-      CHECK(TEST_MSG, poly, 64, 2, PRIx64, vmov_n_expected2, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vmov_n_expected2, "");
+      CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vmov_n_expected2, "");
       break;
     default:
       abort();
@@ -780,8 +780,8 @@ int main (void)
 	    TEST_MSG, __FILE__, __LINE__,				   \
 	    STR(VECT_VAR(vget_lane_expected, T1, W, N)),		   \
 	    STR(VECT_NAME(T1, W, N)),					   \
-	    VECT_VAR(vget_lane_vector, T1, W, N),			   \
-	    VECT_VAR(vget_lane_expected, T1, W, N));			   \
+	    (uint##W##_t)VECT_VAR(vget_lane_vector, T1, W, N),		   \
+	    (uint##W##_t)VECT_VAR(vget_lane_expected, T1, W, N));	   \
     abort ();								   \
   }
 
@@ -864,9 +864,9 @@ VECT_VAR_DECL_INIT(buffer_vld4_lane, poly, 64, 4);
   TEST_EXTRA_CHUNK(poly, 64, 1, X, Y) \
   TEST_EXTRA_CHUNK(poly, 64, 2, X, Y)
 
-#define CHECK_RESULTS_VLD_STX_LANE(test_name,EXPECTED,comment)	\
-  CHECK(test_name, poly, 64, 1, PRIx64, EXPECTED, comment);	\
-  CHECK(test_name, poly, 64, 2, PRIx64, EXPECTED, comment);
+#define CHECK_RESULTS_VLD_STX_LANE(test_name,EXPECTED,comment)		\
+  CHECK_POLY(test_name, poly, 64, 1, PRIx64, EXPECTED, comment);	\
+  CHECK_POLY(test_name, poly, 64, 2, PRIx64, EXPECTED, comment);
 
   /* Declare the temporary buffers / variables.  */
   DECL_ALL_VLD_STX_LANE(2);
@@ -908,8 +908,8 @@ VECT_VAR_DECL_INIT(buffer_vld4_lane, poly, 64, 4);
 
   TEST_ALL_EXTRA_CHUNKS(4, 1);
   CHECK_RESULTS_VLD_STX_LANE (TEST_MSG, expected_vld_st4_1, " chunk 1");
-  TEST_ALL_EXTRA_CHUNKS(4, 2);
 
+  TEST_ALL_EXTRA_CHUNKS(4, 2);
   CHECK_RESULTS_VLD_STX_LANE (TEST_MSG, expected_vld_st4_2, " chunk 2");
 
   TEST_ALL_EXTRA_CHUNKS(4, 3);
@@ -961,12 +961,12 @@ VECT_VAR_DECL_INIT(buffer_vld4_lane, poly, 64, 4);
   TEST_ALL_VSTX_LANE(2);
 
 #define CMT " (chunk 0)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st2_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st2_0, CMT);
 
   TEST_ALL_EXTRA_CHUNKS(2, 1);
 #undef CMT
 #define CMT " chunk 1"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st2_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st2_1, CMT);
 
   /* Check vst3_lane/vst3q_lane.  */
   clean_results ();
@@ -976,19 +976,19 @@ VECT_VAR_DECL_INIT(buffer_vld4_lane, poly, 64, 4);
 
 #undef CMT
 #define CMT " (chunk 0)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st3_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st3_0, CMT);
 
   TEST_ALL_EXTRA_CHUNKS(3, 1);
 
 #undef CMT
 #define CMT " (chunk 1)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st3_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st3_1, CMT);
 
   TEST_ALL_EXTRA_CHUNKS(3, 2);
 
 #undef CMT
 #define CMT " (chunk 2)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st3_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st3_2, CMT);
 
   /* Check vst4_lane/vst4q_lane.  */
   clean_results ();
@@ -998,25 +998,25 @@ VECT_VAR_DECL_INIT(buffer_vld4_lane, poly, 64, 4);
 
 #undef CMT
 #define CMT " (chunk 0)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_0, CMT);
 
   TEST_ALL_EXTRA_CHUNKS(4, 1);
 
 #undef CMT
 #define CMT " (chunk 1)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_1, CMT);
 
   TEST_ALL_EXTRA_CHUNKS(4, 2);
 
 #undef CMT
 #define CMT " (chunk 2)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_2, CMT);
 
   TEST_ALL_EXTRA_CHUNKS(4, 3);
 
 #undef CMT
 #define CMT " (chunk 3)"
-  CHECK(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_3, CMT);
+  CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, expected_vld_st4_3, CMT);
 
 #endif /* __aarch64__.  */
 

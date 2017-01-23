@@ -167,7 +167,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl1, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl1, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl1, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl1, "");
 
   /* Check vtbl2.  */
   clean_results ();
@@ -177,7 +177,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl2, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl2, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl2, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl2, "");
 
   /* Check vtbl3.  */
   clean_results ();
@@ -187,7 +187,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl3, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl3, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl3, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl3, "");
 
   /* Check vtbl4.  */
   clean_results ();
@@ -197,7 +197,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbl4, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbl4, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl4, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbl4, "");
 
 
   /* Now test VTBX.  */
@@ -249,7 +249,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx1, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx1, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx1, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx1, "");
 
   /* Check vtbx2.  */
   clean_results ();
@@ -259,7 +259,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx2, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx2, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx2, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx2, "");
 
   /* Check vtbx3.  */
   clean_results ();
@@ -269,7 +269,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx3, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx3, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx3, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx3, "");
 
   /* Check vtbx4.  */
   clean_results ();
@@ -279,7 +279,7 @@ void exec_vtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vtbx4, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vtbx4, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx4, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vtbx4, "");
 }
 
 int main (void)

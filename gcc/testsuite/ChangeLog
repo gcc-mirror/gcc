@@ -1,3 +1,59 @@
+2017-01-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (CHECK_POLY): New.
+	(CHECK_RESULTS_NAMED_NO_FP16): Call CHECK_POLY instead of CHECK
+	for poly*_t types.
+	* gcc.target/aarch64/advsimd-intrinsics/vcnt.c (FNNAME): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcombine.c (void
+	exec_vcombine): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcreate.c (FNNAME): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_high.c (void exec_vget_high): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_low.c (void exec_vget_low): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX.c (void exec_vldX): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c (void exec_vldX_dup): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_lane.c (void exec_vldX_lane): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vmul.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vmvn.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqtbX.c (void exec_vqtbX): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p128.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vrev.c (void exec_vrev): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsXi_n.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshuffle.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsli_n.c (void vsli_extra): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsri_n.c (void vsri_extra): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c (void exec_vstX_lane): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vtbX.c (void exec_vtbX): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c (int main):
+	Likewise.
+	(TEST_VGET_LANE): Cast to uint to avoid warning.
+	* gcc.target/aarch64/advsimd-intrinsics/unary_sat_op.inc (void
+	FNNAME): Fix PRIx format for int16_t, int32_t, uint16_t, uint32_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vfms_vfma_n.c (void
+	exec_vfma_vfms_n): Fix PRIx format for float64_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vmovn.c (void exec_vmovn):
+	Fix PRIx format for int8_t, int16_t, uint8_t, uint16_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vmul_lane.c (void
+	exec_vmul_lane): Fix PRIx format for int16_t, uint16_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vmul_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vmull.c (void exec_vmull):
+	Fix PRIx format for int16_t, int64_t, uint16_t, uint64_t. Call
+	CHECK_POLY instead of CHECK for poly64_t types.
+	* gcc.target/aarch64/advsimd-intrinsics/vmull_lane.c (void
+	exec_vmull_lane): Fix PRIx format for int64_t, uint64_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vpXXX.inc:
+	Fix PRIx format for int8_t, int16_t, uint8_t, uint16_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vqabs.c (void
+	vqabs_extra): Fix PRIx format for int16_t, int32_t, uint16_t,
+	uint32_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull.c: Fix PRIx format
+	for int32_t, int64_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vqneg.c (void
+	vqneg_extra): Fix PRIx format for int16_t, int32_t.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p64.c
+	(TEST_VREINTERPRET_TO_POLY): New. (main): Call
+	TEST_VREINTERPRET_TO_POLY instead of TEST_VREINTERPRET where
+	needed.
+
 2017-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/79154
