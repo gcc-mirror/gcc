@@ -3744,18 +3744,26 @@ package body Exp_Attr is
                --  A special case arises if we have a defined _Read routine,
                --  since in this case we are required to call this routine.
 
-               if Present (TSS (Base_Type (U_Type), TSS_Stream_Read)) then
-                  Build_Record_Or_Elementary_Input_Function
-                    (Loc, U_Type, Decl, Fname);
-                  Insert_Action (N, Decl);
+               declare
+                  Typ : Entity_Id := P_Type;
+               begin
+                  if Present (Full_View (Typ)) then
+                     Typ := Full_View (Typ);
+                  end if;
 
-               --  For normal cases, we call the I_xxx routine directly
+                  if Present (TSS (Base_Type (Typ), TSS_Stream_Read)) then
+                     Build_Record_Or_Elementary_Input_Function
+                       (Loc, Typ, Decl, Fname, Use_Underlying => False);
+                     Insert_Action (N, Decl);
 
-               else
-                  Rewrite (N, Build_Elementary_Input_Call (N));
-                  Analyze_And_Resolve (N, P_Type);
-                  return;
-               end if;
+                  --  For normal cases, we call the I_xxx routine directly
+
+                  else
+                     Rewrite (N, Build_Elementary_Input_Call (N));
+                     Analyze_And_Resolve (N, P_Type);
+                     return;
+                  end if;
+               end;
 
             --  Array type case
 
@@ -4839,18 +4847,26 @@ package body Exp_Attr is
                --  A special case arises if we have a defined _Write routine,
                --  since in this case we are required to call this routine.
 
-               if Present (TSS (Base_Type (U_Type), TSS_Stream_Write)) then
-                  Build_Record_Or_Elementary_Output_Procedure
-                    (Loc, U_Type, Decl, Pname);
-                  Insert_Action (N, Decl);
+               declare
+                  Typ : Entity_Id := P_Type;
+               begin
+                  if Present (Full_View (Typ)) then
+                     Typ := Full_View (Typ);
+                  end if;
 
-               --  For normal cases, we call the W_xxx routine directly
+                  if Present (TSS (Base_Type (Typ), TSS_Stream_Write)) then
+                     Build_Record_Or_Elementary_Output_Procedure
+                       (Loc, Typ, Decl, Pname);
+                     Insert_Action (N, Decl);
 
-               else
-                  Rewrite (N, Build_Elementary_Write_Call (N));
-                  Analyze (N);
-                  return;
-               end if;
+                  --  For normal cases, we call the W_xxx routine directly
+
+                  else
+                     Rewrite (N, Build_Elementary_Write_Call (N));
+                     Analyze (N);
+                     return;
+                  end if;
+               end;
 
             --  Array type case
 

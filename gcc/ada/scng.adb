@@ -1613,7 +1613,7 @@ package body Scng is
 
          when '@' =>
             if Ada_Version < Ada_2020 then
-               Error_Msg ("target_name is an Ada2020 feature", Scan_Ptr);
+               Error_Msg ("target_name is an Ada 2020 feature", Scan_Ptr);
                Scan_Ptr := Scan_Ptr + 1;
 
             else
