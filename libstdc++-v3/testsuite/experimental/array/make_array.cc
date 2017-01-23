@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/array>
+#include <functional> // for std::ref and std::reference_wrapper
 
 struct MoveOnly
 {
