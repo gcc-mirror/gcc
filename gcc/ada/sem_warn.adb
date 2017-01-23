@@ -4336,12 +4336,12 @@ package body Sem_Warn is
                         --  Give appropriate message, distinguishing between
                         --  assignment statements and out parameters.
 
-                        if Nkind_In (Parent (LA), N_Procedure_Call_Statement,
-                                                  N_Parameter_Association)
+                        if Nkind_In (Parent (LA), N_Parameter_Association,
+                                                  N_Procedure_Call_Statement)
                         then
                            Error_Msg_NE
-                             ("?m?& modified by call, but value might not "
-                              & "be referenced", LA, Ent);
+                             ("?m?& modified by call, but value might not be "
+                              & "referenced", LA, Ent);
 
                         else
                            Error_Msg_NE -- CODEFIX

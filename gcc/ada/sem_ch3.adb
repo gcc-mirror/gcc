@@ -11943,7 +11943,7 @@ package body Sem_Ch3 is
          else
             Set_Has_Delayed_Freeze (Full,
               Has_Delayed_Freeze (Full_Base)
-                and then (not Is_Frozen (Full_Base)));
+                and then not Is_Frozen (Full_Base));
          end if;
       end if;
 

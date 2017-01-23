@@ -1,3 +1,18 @@
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, exp_spark.adb, exp_attr.adb, sem_ch9.adb, sem_prag.adb,
+	sem_util.adb, sem_warn.adb, exp_ch3.adb: Minor reformatting.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Subprogram): Ensure that all anonymous
+	access-to-subprogram types inherit the convention of the
+	associated subprogram.	(Set_Profile_Convention): New routine.
+	* sem_ch6.adb (Check_Conformance): Do not compare the conventions
+	of the two entities directly, use Conventions_Match to account
+	for anonymous access-to-subprogram and subprogram types.
+	(Conventions_Match): New routine.
+
 2017-01-23  Claire Dross  <dross@adacore.com>
 
 	* exp_spark.adb (Expand_SPARK_Attribute_Reference): For attributes

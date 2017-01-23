@@ -174,7 +174,6 @@ package body Exp_SPARK is
         or else Attr_Id = Attribute_Aft
         or else Attr_Id = Attribute_Max_Alignment_For_Allocation
       then
-
          --  If the expected type is Long_Long_Integer, there will be no check
          --  flag as the compiler assumes attributes always fit in this type.
          --  Since in SPARK_Mode we do not take Storage_Error into account, we
@@ -187,12 +186,14 @@ package body Exp_SPARK is
          begin
             if Attr_Id = Attribute_Range_Length then
                Typ := Etype (Prefix (N));
+
             elsif Attr_Id = Attribute_Length then
                Typ := Etype (Prefix (N));
 
                declare
-                  Indx   : Node_Id;
-                  J      : Int;
+                  Indx : Node_Id;
+                  J    : Int;
+
                begin
                   if Is_Access_Type (Typ) then
                      Typ := Designated_Type (Typ);
