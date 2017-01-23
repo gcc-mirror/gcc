@@ -563,6 +563,9 @@ package body Sem is
          when N_Subunit =>
             Analyze_Subunit (N);
 
+         when N_Target_Name =>
+            Analyze_Target_Name (N);
+
          when N_Task_Body =>
             Analyze_Task_Body (N);
 

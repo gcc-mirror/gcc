@@ -115,6 +115,13 @@ package body Exp_Ch5 is
    --  clause (this last case is required because holes in the tagged type
    --  might be filled with components from child types).
 
+   procedure Expand_Assign_With_Target_Names (N : Node_Id);
+   --  (AI12-0125): N is an assignment statement whose RHS contains occurrences
+   --  of @ that designate the value of the LHS of the assignment. If the LHS
+   --  is side-effect free the target names can be replaced with a copy of the
+   --  LHS; otherwise the semantics of the assignment is described in terms of
+   --  a procedure with an in-out parameter, and expanded as such.
+
    procedure Expand_Formal_Container_Loop (N : Node_Id);
    --  Use the primitives specified in an Iterable aspect to expand a loop
    --  over a so-called formal container, primarily for SPARK usage.
@@ -1605,6 +1612,111 @@ package body Exp_Ch5 is
       end;
    end Expand_Assign_Record;
 
+   -------------------------------------
+   -- Expand_Assign_With_Target_Names --
+   -------------------------------------
+
+   procedure Expand_Assign_With_Target_Names (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      LHS : constant Node_Id := Name (N);
+      RHS : constant Node_Id := Expression (N);
+      Ent : Entity_Id;
+
+      New_RHS : Node_Id;
+
+      function  Replace_Target (N : Node_Id) return Traverse_Result;
+      --  Replace occurrences of the target name by the proper entity: either
+      --  the entity of the LHS in simple cases, or the formal of the
+      --  constructed procedure otherwise.
+
+      --------------------
+      -- Replace_Target --
+      --------------------
+
+      function  Replace_Target (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Target_Name then
+            Rewrite (N, New_Occurrence_Of (Ent, Sloc (N)));
+         end if;
+
+         Set_Analyzed (N, False);
+         return OK;
+      end Replace_Target;
+
+      procedure Replace_Target_Name is new Traverse_Proc (Replace_Target);
+
+   begin
+
+      New_RHS := New_Copy_Tree (RHS);
+
+      if Is_Entity_Name (LHS)
+         and then not Is_Renaming_Of_Object (Entity (LHS))
+      then
+         Ent := Entity (LHS);
+         Replace_Target_Name (New_RHS);
+         Rewrite (N,
+           Make_Assignment_Statement (Loc,
+             Name => Relocate_Node (LHS),
+             Expression => New_RHS));
+
+      elsif Side_Effect_Free (LHS) then
+         Ent := Make_Temporary (Loc, 'T');
+         Insert_Before_And_Analyze (N,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Ent,
+             Object_Definition   => New_Occurrence_Of (Etype (LHS), Loc),
+             Expression          => New_Copy_Tree (LHS)));
+         Replace_Target_Name (New_RHS);
+         Rewrite (N,
+           Make_Assignment_Statement (Loc,
+             Name => Relocate_Node (LHS),
+             Expression => New_RHS));
+
+      else
+         Ent := Make_Temporary (Loc, 'T');
+
+         declare
+            Proc : constant Entity_Id :=
+              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('P'));
+            Formals : constant List_Id := New_List (
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Ent,
+                In_Present          => True,
+                Out_Present         => True,
+                Parameter_Type      => New_Occurrence_Of (Etype (LHS), Loc)));
+            Spec : constant Node_Id :=
+              Make_Procedure_Specification (Loc,
+                 Defining_Unit_Name => Proc,
+                 Parameter_Specifications => Formals);
+            Subp_Body : Node_Id;
+            Call      : Node_Id;
+         begin
+            Replace_Target_Name (New_RHS);
+
+            Subp_Body :=
+               Make_Subprogram_Body (Loc,
+                  Specification => Spec,
+                  Declarations  => Empty_List,
+                  Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Assignment_Statement (Loc,
+                         Name => New_Occurrence_Of (Ent, Loc),
+                         Expression => New_RHS))));
+
+            Insert_Before_And_Analyze (N, Subp_Body);
+            Call := Make_Procedure_Call_Statement (Loc,
+              Name => New_Occurrence_Of (Proc, Loc),
+              Parameter_Associations => New_List (Relocate_Node (LHS)));
+            Rewrite (N, Call);
+         end;
+      end if;
+
+      --  Analyze rewritten node, either as assignment or procedure call.
+
+      Analyze (N);
+   end Expand_Assign_With_Target_Names;
+
    -----------------------------------
    -- Expand_N_Assignment_Statement --
    -----------------------------------
@@ -1645,6 +1757,16 @@ package body Exp_Ch5 is
         and then not Validity_Check_Subscripts
       then
          Check_Valid_Lvalue_Subscripts (Lhs);
+      end if;
+
+      --  Separate expansion if RHS contain target names. Note that assignment
+      --  may already have been expanded if RHS is aggregate.
+
+      if Nkind (N) = N_Assignment_Statement
+        and then Has_Target_Names (N)
+      then
+         Expand_Assign_With_Target_Names (N);
+         return;
       end if;
 
       --  Ada 2005 (AI-327): Handle assignment to priority of protected object

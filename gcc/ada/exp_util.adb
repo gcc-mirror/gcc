@@ -5930,6 +5930,7 @@ package body Exp_Util is
                | N_String_Literal
                | N_Subtype_Indication
                | N_Subunit
+               | N_Target_Name
                | N_Task_Definition
                | N_Terminate_Alternative
                | N_Triggering_Alternative

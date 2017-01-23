@@ -1543,6 +1543,10 @@ package Sinfo is
    --    code outside the Character range but within Wide_Character range)
    --    appears in the string. Used to implement pragma preference rules.
 
+   --  Has_Target_Names (Flag8-Sem)
+   --    Present in assignment statements. Indicates that the RHS contains
+   --    target names (see AI12-0125-3) and must be expanded accordingly.
+
    --  Has_Wide_Wide_Character (Flag13-Sem)
    --    Present in string literals, set if any wide character (i.e. character
    --    code outside the Wide_Character range) appears in the string. Used to
@@ -4794,6 +4798,7 @@ package Sinfo is
       --  Forwards_OK (Flag5-Sem)
       --  Backwards_OK (Flag6-Sem)
       --  No_Ctrl_Actions (Flag7-Sem)
+      --  Has_Target_Names (Flag8-Sem)
       --  Componentwise_Assignment (Flag14-Sem)
       --  Suppress_Assignment_Checks (Flag18-Sem)
 
@@ -4807,6 +4812,19 @@ package Sinfo is
       --  might cause the back end to generate separate assignments). In this
       --  case the front end must generate an extra temporary and initialize
       --  this temporary as required (the temporary itself is not atomic).
+
+      ------------------
+      --  Target_Name --
+      ------------------
+
+      --  N_Target_Name
+      --  Sloc points to @
+      --  Etype (Node5-Sem)
+
+      --  Note (Ada 2020): node is used during analysis as a placeholder for
+      --  the value of the LHS of the enclosing assignment statement. Node is
+      --  eventually rewritten together with enclosing assignment, and backends
+      --  are not aware of it.
 
       -----------------------
       -- 5.3  If Statement --
@@ -8463,6 +8481,7 @@ package Sinfo is
       N_Reference,
       N_Selected_Component,
       N_Slice,
+      N_Target_Name,
       N_Type_Conversion,
       N_Unchecked_Expression,
       N_Unchecked_Type_Conversion,
@@ -9384,6 +9403,9 @@ package Sinfo is
 
    function Has_Storage_Size_Pragma
      (N : Node_Id) return Boolean;    -- Flag5
+
+   function Has_Target_Names
+     (N : Node_Id) return Boolean;    -- Flag8
 
    function Has_Wide_Character
      (N : Node_Id) return Boolean;    -- Flag11
@@ -10437,6 +10459,9 @@ package Sinfo is
 
    procedure Set_Has_Storage_Size_Pragma
      (N : Node_Id; Val : Boolean := True);    -- Flag5
+
+   procedure Set_Has_Target_Names
+     (N : Node_Id; Val : Boolean := True);    -- Flag8
 
    procedure Set_Has_Wide_Character
      (N : Node_Id; Val : Boolean := True);    -- Flag11
@@ -11737,6 +11762,13 @@ package Sinfo is
         4 => False,   --  unused
         5 => False),  --  unused
 
+     N_Target_Name =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  Etype (Node5-Sem)
+
      N_If_Statement =>
        (1 => True,    --  Condition (Node1)
         2 => True,    --  Then_Statements (List2)
@@ -12944,6 +12976,7 @@ package Sinfo is
    pragma Inline (Has_Private_View);
    pragma Inline (Has_Relative_Deadline_Pragma);
    pragma Inline (Has_Storage_Size_Pragma);
+   pragma Inline (Has_Target_Names);
    pragma Inline (Has_Wide_Character);
    pragma Inline (Has_Wide_Wide_Character);
    pragma Inline (Header_Size_Added);
@@ -13292,6 +13325,7 @@ package Sinfo is
    pragma Inline (Set_Has_Self_Reference);
    pragma Inline (Set_Has_SP_Choice);
    pragma Inline (Set_Has_Storage_Size_Pragma);
+   pragma Inline (Set_Has_Target_Names);
    pragma Inline (Set_Has_Wide_Character);
    pragma Inline (Set_Has_Wide_Wide_Character);
    pragma Inline (Set_Header_Size_Added);

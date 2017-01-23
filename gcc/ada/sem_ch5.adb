@@ -64,6 +64,11 @@ with Uintp;    use Uintp;
 
 package body Sem_Ch5 is
 
+   Current_LHS : Node_Id := Empty;
+   --  Holds the left-hand side of the assignment statement being analyzed.
+   --  Used to determine the type of a target_name appearing on the RHS, for
+   --  AI12-0125 and the use of '@' as an abbreviation for the LHS.
+
    Unblocked_Exit_Count : Nat := 0;
    --  This variable is used when processing if statements, case statements,
    --  and block statements. It counts the number of exit points that are not
@@ -279,6 +284,9 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Assignment
 
    begin
+      --  Save LHS for use in target names (AI12-125).
+      Current_LHS := Lhs;
+
       Mark_Coextensions (N, Rhs);
 
       --  Analyze the target of the assignment first in case the expression
@@ -558,7 +566,19 @@ package body Sem_Ch5 is
       --  Now we can complete the resolution of the right hand side
 
       Set_Assignment_Type (Lhs, T1);
+
       Resolve (Rhs, T1);
+
+      --  If the right-hand side contains target names, expansion has been
+      --  disabled to prevent expansion that might move target names out of
+      --  the context of the assignment statement. Restore the expander mode
+      --  now so that assignment statement can be properly expanded.
+
+      if  Nkind (N) = N_Assignment_Statement
+        and then Has_Target_Names (N)
+      then
+         Expander_Mode_Restore;
+      end if;
 
       --  This is the point at which we check for an unset reference
 
@@ -918,6 +938,7 @@ package body Sem_Ch5 is
       Analyze_Dimension (N);
 
    <<Leave>>
+      Current_LHS := Empty;
       Restore_Ghost_Mode (Mode);
    end Analyze_Assignment;
 
@@ -3512,6 +3533,30 @@ package body Sem_Ch5 is
    begin
       null;
    end Analyze_Null_Statement;
+
+   -------------------------
+   -- Analyze_Target_Name --
+   -------------------------
+
+   procedure Analyze_Target_Name (N : Node_Id) is
+   begin
+      if No (Current_LHS) then
+         Error_Msg_N ("target name can only appear within an assignment", N);
+         Set_Etype (N, Any_Type);
+      else
+         Set_Has_Target_Names (Parent (Current_LHS));
+         Set_Etype (N, Etype (Current_LHS));
+
+         --  Disable expansion for the rest of the analysis of the current
+         --  right-hand side. The enclosing assignment statement will be
+         --  rewritten during expansion, together with occurrences of the
+         --  target name.
+
+         if Expander_Active then
+            Expander_Mode_Save_And_Set (False);
+         end if;
+      end if;
+   end Analyze_Target_Name;
 
    ------------------------
    -- Analyze_Statements --

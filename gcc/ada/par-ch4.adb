@@ -1,4 +1,4 @@
-------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -145,7 +145,7 @@ package body Ch4 is
    --  | INDEXED_COMPONENT  | SLICE
    --  | SELECTED_COMPONENT | ATTRIBUTE
    --  | TYPE_CONVERSION    | FUNCTION_CALL
-   --  | CHARACTER_LITERAL
+   --  | CHARACTER_LITERAL  | TARGET_NAME
 
    --  DIRECT_NAME ::= IDENTIFIER | OPERATOR_SYMBOL
 
@@ -180,6 +180,8 @@ package body Ch4 is
    --    [formal_parameter_SELECTOR_NAME =>] EXPLICIT_ACTUAL_PARAMETER
 
    --  EXPLICIT_ACTUAL_PARAMETER ::= EXPRESSION | variable_NAME
+
+   --  TARGET_NAME ::= @   (AI12-0125-3: abbreviation for LHS)
 
    --  Note: syntactically a procedure call looks just like a function call,
    --  so this routine is in practice used to scan out procedure calls as well.
@@ -229,6 +231,10 @@ package body Ch4 is
       end if;
 
       --  Loop through designators in qualified name
+      --  AI12-0125 : target_name
+      if Token = Tok_At_Sign then
+         Scan_Reserved_Identifier (Force_Msg => False);
+      end if;
 
       Name_Node := Token_Node;
 
@@ -2332,8 +2338,8 @@ package body Ch4 is
       if Token = Tok_Dot then
          Error_Msg_SC ("prefix for selection is not a name");
 
-         --  If qualified expression, comment and continue, otherwise something
-         --  is pretty nasty so do an Error_Resync call.
+         --  If qualified expression, comment and continue, otherwise
+         --  something is pretty nasty so do an Error_Resync call.
 
          if Ada_Version < Ada_2012
            and then Nkind (Node1) = N_Qualified_Expression
@@ -2790,6 +2796,15 @@ package body Ch4 is
             when Tok_Minus =>
                Error_Msg_SC ("parentheses required for unary minus");
                Scan; -- past minus
+
+            when Tok_At_Sign =>    --  AI12-0125 : target_name
+               if not Extensions_Allowed then
+                  Error_Msg_SC ("target name is an Ada 2020 extension");
+                  Error_Msg_SC ("\compile with -gnatX");
+               end if;
+
+               Node1 := P_Name;
+               return Node1;
 
             --  Anything else is illegal as the first token of a primary, but
             --  we test for some common errors, to improve error messages.

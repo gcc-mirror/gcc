@@ -3287,6 +3287,9 @@ package body Sprint is
             Extra_Blank_Line;
             Sprint_Node (Proper_Body (Node));
 
+         when N_Target_Name =>
+            Write_Char ('@');
+
          when N_Task_Body =>
             Write_Indent_Str_Sloc ("task body ");
             Write_Id (Defining_Identifier (Node));

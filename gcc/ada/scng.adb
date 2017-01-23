@@ -158,6 +158,7 @@ package body Scng is
             | Tok_And
             | Tok_Apostrophe
             | Tok_Array
+            | Tok_At_Sign
             | Tok_Asterisk
             | Tok_At
             | Tok_Body
@@ -302,6 +303,7 @@ package body Scng is
             | Tok_Array
             | Tok_Asterisk
             | Tok_At
+            | Tok_At_Sign
             | Tok_Body
             | Tok_Box
             | Tok_Char_Literal
@@ -1609,6 +1611,19 @@ package body Scng is
                return;
             end if;
 
+         when '@' =>
+            if not Extensions_Allowed then
+               Error_Illegal_Character;
+               Scan_Ptr := Scan_Ptr + 1;
+
+            else
+               --  AI12-0125-03 : @ is target_name
+               Accumulate_Checksum ('@');
+               Scan_Ptr := Scan_Ptr + 1;
+               Token := Tok_At_Sign;
+               return;
+            end if;
+
          --  Asterisk (can be multiplication operator or double asterisk which
          --  is the exponentiation compound delimiter).
 
@@ -2421,8 +2436,9 @@ package body Scng is
             Error_Illegal_Character;
 
          --  Invalid graphic characters
-
-         when '#' | '$' | '?' | '@' | '`' | '\' | '^' | '~' =>
+         --  Note that '@' is handled elsewhere, because following AI12-125
+         --  it denotes the target_name of an assignment.
+         when '#' | '$' | '?' | '`' | '\' | '^' | '~' =>
 
             --  If Set_Special_Character has been called for this character,
             --  set Scans.Special_Character and return a Special token.
