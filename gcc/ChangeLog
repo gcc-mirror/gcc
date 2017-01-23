@@ -5,6 +5,10 @@
 	(TARGET_MAX_NOCE_IFCVT_SEQ_COST): Define.
 	* ifcvt.c (noce_try_cmove): Add missing cost check.
 
+	PR rtl-optimization/71724
+	* combine.c (if_then_else_cond): Look for situations where it is
+	beneficial to undo the work of one of the recursive calls.
+
 2017-01-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/70754
