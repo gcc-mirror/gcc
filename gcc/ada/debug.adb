@@ -558,7 +558,7 @@ package body Debug is
    --  d.o  Conservative elaboration order for indirect calls. This causes
    --       P'Access to be treated as a call in more cases.
 
-   --  d.p  In Ada 95 (or 83) mode, use original Ada 95 behaviour for the
+   --  d.p  In Ada 95 (or 83) mode, use original Ada 95 behavior for the
    --       interpretation of component clauses crossing byte boundaries when
    --       using the non-default bit order (i.e. ignore AI95-0133).
 

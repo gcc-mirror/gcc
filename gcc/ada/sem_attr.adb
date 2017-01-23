@@ -4295,13 +4295,13 @@ package body Sem_Attr is
 
          --  Local variables
 
-         Context           : constant Node_Id := Parent (N);
-         Attr              : Node_Id;
-         Enclosing_Loop    : Node_Id;
-         Loop_Id           : Entity_Id := Empty;
-         Scop              : Entity_Id;
-         Stmt              : Node_Id;
-         Enclosing_Pragma  : Node_Id   := Empty;
+         Context   : constant Node_Id := Parent (N);
+         Attr      : Node_Id;
+         Encl_Loop : Node_Id;
+         Encl_Prag : Node_Id   := Empty;
+         Loop_Id   : Entity_Id := Empty;
+         Scop      : Entity_Id;
+         Stmt      : Node_Id;
 
       --  Start of processing for Loop_Entry
 
@@ -4419,7 +4419,7 @@ package body Sem_Attr is
                                Name_Assert_And_Cut,
                                Name_Assume)
             then
-               Enclosing_Pragma := Original_Node (Stmt);
+               Encl_Prag := Original_Node (Stmt);
 
             --  Locate the enclosing loop (if any). Note that Ada 2012 array
             --  iteration may be expanded into several nested loops, we are
@@ -4431,14 +4431,14 @@ package body Sem_Attr is
               and then Comes_From_Source (Original_Node (Stmt))
               and then Nkind (Original_Node (Stmt)) = N_Loop_Statement
             then
-               Enclosing_Loop := Stmt;
+               Encl_Loop := Stmt;
 
                --  The original attribute reference may lack a loop name. Use
                --  the name of the enclosing loop because it is the related
                --  loop.
 
                if No (Loop_Id) then
-                  Loop_Id := Entity (Identifier (Enclosing_Loop));
+                  Loop_Id := Entity (Identifier (Encl_Loop));
                end if;
 
                exit;
@@ -4467,7 +4467,7 @@ package body Sem_Attr is
          then
             null;
 
-         elsif No (Enclosing_Pragma) then
+         elsif No (Encl_Prag) then
             Error_Attr ("attribute% must appear within appropriate pragma", N);
          end if;
 
@@ -4504,8 +4504,8 @@ package body Sem_Attr is
          then
             null;
 
-         elsif Present (Enclosing_Loop)
-           and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
+         elsif Present (Encl_Loop)
+           and then Entity (Identifier (Encl_Loop)) /= Loop_Id
          then
             Error_Attr_P
               ("prefix of attribute % that applies to outer loop must denote "
@@ -4521,9 +4521,7 @@ package body Sem_Attr is
          --  early transformation also avoids the generation of a useless loop
          --  entry constant.
 
-         if Present (Enclosing_Pragma)
-           and then Is_Ignored (Enclosing_Pragma)
-         then
+         if Present (Encl_Prag) and then Is_Ignored (Encl_Prag) then
             Rewrite (N, Relocate_Node (P));
             Preanalyze_And_Resolve (N);
 

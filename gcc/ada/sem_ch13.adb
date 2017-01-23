@@ -81,7 +81,7 @@ package body Sem_Ch13 is
    -----------------------
 
    procedure Adjust_Record_For_Reverse_Bit_Order_Ada_95 (R : Entity_Id);
-   --  Helper routine providing the original (pre-AI95-0133) behaviour for
+   --  Helper routine providing the original (pre-AI95-0133) behavior for
    --  Adjust_Record_For_Reverse_Bit_Order.
 
    procedure Alignment_Check_For_Size_Change (Typ : Entity_Id; Size : Uint);
@@ -364,9 +364,9 @@ package body Sem_Ch13 is
       SSU    : constant Uint := UI_From_Int (System_Storage_Unit);
 
    begin
-      --  Processing here used to depend on Ada version: the behaviour was
+      --  Processing here used to depend on Ada version: the behavior was
       --  changed by AI95-0133. However this AI is a Binding interpretation,
-      --  so we now implement it even in Ada 95 mode. The original behaviour
+      --  so we now implement it even in Ada 95 mode. The original behavior
       --  from unamended Ada 95 is still available for compatibility under
       --  debugging switch -gnatd.
 

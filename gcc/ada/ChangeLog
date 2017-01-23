@@ -1,3 +1,8 @@
+2017-01-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Has_Enabled_Property): Treat
+	protected objects and variables differently from other variables.
+
 2017-01-23  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order):
