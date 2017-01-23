@@ -133,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:52+0000\n"
-"PO-Revision-Date: 2017-01-14 17:33+0100\n"
+"PO-Revision-Date: 2017-01-22 11:43+0100\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -15084,20 +15084,16 @@ msgid "method type does not match object type"
 msgstr "le type de la méthode ne correspond pas au type de l'objet"
 
 #: go/gofrontend/expressions.cc:7193
-#, fuzzy
-#| msgid "invalid use of `this' in non-member function"
 msgid "invalid use of %<...%> with builtin function"
-msgstr "utilisation invalide de « ceci » dans un non membre de fonction"
+msgstr "utilisation invalide de %<...%> avec une fonction interne"
 
 #: go/gofrontend/expressions.cc:7204
-#, fuzzy
-#| msgid "invalid type argument of `%s'"
 msgid "invalid use of method value as argument of Offsetof"
-msgstr "type d'argument invalide pour « %s »"
+msgstr "utilisation invalide de la valeur de la méthode comme argument de Offsetof"
 
 #: go/gofrontend/expressions.cc:7218
 msgid "argument of Offsetof implies indirection of an embedded field"
-msgstr ""
+msgstr "l'argument de Offsetof implique l'indirection d'un champ imbriqué"
 
 #: go/gofrontend/expressions.cc:7243 go/gofrontend/expressions.cc:7280
 #: go/gofrontend/expressions.cc:7422 go/gofrontend/expressions.cc:8437
@@ -15105,10 +15101,8 @@ msgstr ""
 #: go/gofrontend/expressions.cc:8664 go/gofrontend/expressions.cc:8740
 #: go/gofrontend/expressions.cc:9989 go/gofrontend/expressions.cc:10006
 #: go/gofrontend/expressions.cc:10022
-#, fuzzy
-#| msgid "no arguments"
 msgid "not enough arguments"
-msgstr "pas d'argument"
+msgstr "pas assez d'arguments"
 
 #: go/gofrontend/expressions.cc:7245 go/gofrontend/expressions.cc:7282
 #: go/gofrontend/expressions.cc:8442 go/gofrontend/expressions.cc:8569
@@ -15116,421 +15110,321 @@ msgstr "pas d'argument"
 #: go/gofrontend/expressions.cc:8742 go/gofrontend/expressions.cc:9538
 #: go/gofrontend/expressions.cc:9994 go/gofrontend/expressions.cc:10008
 #: go/gofrontend/expressions.cc:10029
-#, fuzzy
-#| msgid "too many arguments for format"
 msgid "too many arguments"
-msgstr "trop d'arguments pour le format"
+msgstr "trop d'arguments"
 
 #: go/gofrontend/expressions.cc:7284
-#, fuzzy
-#| msgid "argument %d must be referable"
 msgid "argument 1 must be a map"
-msgstr "argument %d doit pouvoir être référencé"
+msgstr "l'argument 1 doit être un tableau associatif"
 
 #: go/gofrontend/expressions.cc:7448
-#, fuzzy
-#| msgid "invalid return type for member function `%#D'"
 msgid "invalid type for make function"
-msgstr "type retourné invalide pour le membre de la fonction « %#D »"
+msgstr "type invalide pour la fonction make"
 
 #: go/gofrontend/expressions.cc:7460
 msgid "length required when allocating a slice"
-msgstr ""
+msgstr "longueur requise en allouant une tranche"
 
 #: go/gofrontend/expressions.cc:7492
 msgid "len larger than cap"
-msgstr ""
+msgstr "len plus grand que cap"
 
 #: go/gofrontend/expressions.cc:7501
-#, fuzzy
-#| msgid "too many arguments to process"
 msgid "too many arguments to make"
-msgstr "trop d'arguments à traiter"
+msgstr "trop d'arguments passés à make"
 
 #: go/gofrontend/expressions.cc:8486
-#, fuzzy
-#| msgid "UPPER argument must be string, array, mode or integer"
 msgid "argument must be array or slice or channel"
-msgstr "argument du HAUT doit être une chaîne, un tableau, un mode ou un entier"
+msgstr "l'argument doit être un tableau, une tranche ou un canal"
 
 #: go/gofrontend/expressions.cc:8496
-#, fuzzy
-#| msgid "UPPER argument must be string, array, mode or integer"
 msgid "argument must be string or array or slice or map or channel"
-msgstr "argument du HAUT doit être une chaîne, un tableau, un mode ou un entier"
+msgstr "l'argument doit être une chaîne, un tableau, une tranche, un tableau associatif ou un canal"
 
 #: go/gofrontend/expressions.cc:8542
-#, fuzzy
-#| msgid "unimplemented built-in function `%s'"
 msgid "unsupported argument type to builtin function"
-msgstr "fonction interne non implantée « %s »"
+msgstr "type d'argument non supporté pour une fonction interne"
 
 #: go/gofrontend/expressions.cc:8553
-#, fuzzy
-#| msgid "argument %d must be referable"
 msgid "argument must be channel"
-msgstr "argument %d doit pouvoir être référencé"
+msgstr "l'argument doit être un canal"
 
 #: go/gofrontend/expressions.cc:8555
 msgid "cannot close receive-only channel"
-msgstr ""
+msgstr "impossible de fermer un canal en réception uniquement"
 
 #: go/gofrontend/expressions.cc:8577
-#, fuzzy
-#| msgid "argument %d must be referable"
 msgid "argument must be a field reference"
-msgstr "argument %d doit pouvoir être référencé"
+msgstr "l'argument doit être une référence à un champ"
 
 #: go/gofrontend/expressions.cc:8607
-#, fuzzy
-#| msgid "first argument to `%s' must be a mode"
 msgid "left argument must be a slice"
-msgstr "premier argument de « %s » doit être un mode"
+msgstr "l'argument de gauche doit être une tranche"
 
 #: go/gofrontend/expressions.cc:8615
 msgid "element types must be the same"
-msgstr ""
+msgstr "les types des éléments doivent être les mêmes"
 
 #: go/gofrontend/expressions.cc:8620
-#, fuzzy
-#| msgid "first argument to `%s' must be a mode"
 msgid "first argument must be []byte"
-msgstr "premier argument de « %s » doit être un mode"
+msgstr "le premier argument doit être []byte"
 
 #: go/gofrontend/expressions.cc:8623
-#, fuzzy
-#| msgid "ABS argument must be discrete or real mode"
 msgid "second argument must be slice or string"
-msgstr "argument ABS doit être en mode discret ou réel"
+msgstr "le deuxième argument doit être une tranche ou une chaîne"
 
 #: go/gofrontend/expressions.cc:8732
-#, fuzzy
-#| msgid "parameter `%s' has incomplete type"
 msgid "argument must have complex type"
-msgstr "le paramètre « %s » a un type incomplet"
+msgstr "l'argument doit avoir le type complexe"
 
 #: go/gofrontend/expressions.cc:8750
-#, fuzzy
-#| msgid "macro names must be identifiers"
 msgid "complex arguments must have identical types"
-msgstr "les noms de macro doivent être des identificateurs"
+msgstr "les arguments complexes doivent avoir des types identiques"
 
 #: go/gofrontend/expressions.cc:8752
-#, fuzzy
-#| msgid "argument 1 to `%s' must be of floating point mode"
 msgid "complex arguments must have floating-point type"
-msgstr "argument 1 de « %s » doit être en mode virgule flottante"
+msgstr "les arguments complexes doivent avoir un type en virgule flottante"
 
 #: go/gofrontend/expressions.cc:9309 go/gofrontend/expressions.cc:9935
 #: go/gofrontend/expressions.cc:10331
-#, fuzzy
-#| msgid "In function"
 msgid "expected function"
-msgstr "Dans la fonction"
+msgstr "fonction attendue"
 
 #: go/gofrontend/expressions.cc:9337
 msgid "multiple-value argument in single-value context"
-msgstr ""
+msgstr "argument à valeur multiple dans un contexte à valeur unique"
 
 #: go/gofrontend/expressions.cc:9542
-#, fuzzy
-#| msgid "invalid use of non-lvalue array"
 msgid "invalid use of %<...%> with non-slice"
-msgstr "utilisation invalide d'un tableau n'étant pas membre gauche"
+msgstr "utilisation invalide de %<...%> avec quelque chose qui n'est pas une tranche"
 
 #: go/gofrontend/expressions.cc:9943
 msgid "function result count mismatch"
-msgstr ""
+msgstr "Désaccord dans le nombre de résultats de la fonction"
 
 #: go/gofrontend/expressions.cc:9961
-#, fuzzy
-#| msgid "incompatible types in %s"
 msgid "incompatible type for receiver"
-msgstr "type incompatibles dans %s"
+msgstr "type incompatible pour le récepteur"
 
 #: go/gofrontend/expressions.cc:9979
-#, fuzzy
-#| msgid "invalid use of `this' in non-member function"
 msgid "invalid use of %<...%> calling non-variadic function"
-msgstr "utilisation invalide de « ceci » dans un non membre de fonction"
+msgstr "utilisation invalide de %<...%> dans l'appel d'une fonction pas variadique"
 
 #: go/gofrontend/expressions.cc:10340 go/gofrontend/expressions.cc:10354
-#, fuzzy
-#| msgid "number of CASE selectors does not match the number of CASE label lists"
 msgid "number of results does not match number of values"
-msgstr "nombre de sélecteurs de CASE ne concorde pas avec la liste des étiquettes du CASE"
+msgstr "le nombre de résultats ne correspond pas au nombre de valeurs"
 
 #: go/gofrontend/expressions.cc:10643 go/gofrontend/expressions.cc:11148
-#, fuzzy
-#| msgid "PROCESS copy number must be integer"
 msgid "index must be integer"
-msgstr "processus de copie de nombres doit être entier"
+msgstr "l'index doit être un entier"
 
 #: go/gofrontend/expressions.cc:10651 go/gofrontend/expressions.cc:11156
-#, fuzzy
-#| msgid "PROCESS copy number must be integer"
 msgid "slice end must be integer"
-msgstr "processus de copie de nombres doit être entier"
+msgstr "la fin de la tranche doit être un entier"
 
 #: go/gofrontend/expressions.cc:10659
-#, fuzzy
-#| msgid "switch quantity not an integer"
 msgid "slice capacity must be integer"
-msgstr "quantité du switch n'est pas un entier"
+msgstr "la capacité de la tranche doit être un entier"
 
 #: go/gofrontend/expressions.cc:10709 go/gofrontend/expressions.cc:11190
 msgid "inverted slice range"
-msgstr ""
+msgstr "la plage de la tranche est inversée"
 
 #: go/gofrontend/expressions.cc:10752
-#, fuzzy
-#| msgid "%s is not addressable"
 msgid "slice of unaddressable value"
-msgstr "%s n'est pas addressable"
+msgstr "tranche d'une valeur qui ne peut pas être adressée"
 
 #: go/gofrontend/expressions.cc:11413
-#, fuzzy
-#| msgid "incompatible types in %s"
 msgid "incompatible type for map index"
-msgstr "type incompatibles dans %s"
+msgstr "type incompatible pour l'index du tableau associatif"
 
 #: go/gofrontend/expressions.cc:11780
 msgid "expected interface or pointer to interface"
-msgstr ""
+msgstr "interface ou pointeur vers une interface attendu"
 
 #: go/gofrontend/expressions.cc:12466
-#, fuzzy
-#| msgid "too many index expressions"
 msgid "too many expressions for struct"
-msgstr "trop d'expressions d'index"
+msgstr "trop d'expressions pour struct"
 
 #: go/gofrontend/expressions.cc:12479
-#, fuzzy
-#| msgid "too few arguments for format"
 msgid "too few expressions for struct"
-msgstr "trop peu d'arguments dans le format"
+msgstr "trop peu d'expressions pour struct"
 
 #: go/gofrontend/expressions.cc:14067 go/gofrontend/statements.cc:1619
-#, fuzzy
-#| msgid "Invalid interface type"
 msgid "type assertion only valid for interface types"
-msgstr "Type d'interface invalide"
+msgstr "assertion de type uniquement valable pour des types d'interfaces"
 
 #: go/gofrontend/expressions.cc:14079
 msgid "impossible type assertion: type does not implement interface"
-msgstr ""
+msgstr "assertion de type impossible: le type n'implémente pas l'interface"
 
 #: go/gofrontend/expressions.cc:14207 go/gofrontend/expressions.cc:14227
 #: go/gofrontend/statements.cc:1464
-#, fuzzy
-#| msgid "unexpected operand"
 msgid "expected channel"
-msgstr "opérande inattendue"
+msgstr "canal attendu"
 
 #: go/gofrontend/expressions.cc:14232 go/gofrontend/statements.cc:1469
 msgid "invalid receive on send-only channel"
-msgstr ""
+msgstr "réception invalide sur un canal qui ne peut que envoyer"
 
 #: go/gofrontend/parse.cc:3098
 msgid "parentheses required around this composite literal to avoid parsing ambiguity"
-msgstr ""
+msgstr "des parenthèses sont requises autour de ce littéral composite pour éviter des ambiguïtés dans l'analyse"
 
 #: go/gofrontend/parse.cc:4656
 msgid "cannot fallthrough final case in switch"
-msgstr ""
+msgstr "le « case » final du « switch » ne peut pas être ouvert"
 
 #: go/gofrontend/statements.cc:768
-#, fuzzy
-#| msgid "invalid lvalue in assignment"
 msgid "invalid left hand side of assignment"
-msgstr "membre gauche de l'affectation invalide"
+msgstr "membre gauche invalide dans l'affectation"
 
 #: go/gofrontend/statements.cc:779 go/gofrontend/statements.cc:1181
 msgid "use of untyped nil"
-msgstr ""
+msgstr "utilisation d'un nul sans type"
 
 #: go/gofrontend/statements.cc:1303
-#, fuzzy
-#| msgid "expected a name string here"
 msgid "expected map index on right hand side"
-msgstr "un nom de chaîne est attendu ici"
+msgstr "un index sur un tableau associatif est attendu dans le membre de droite"
 
 #: go/gofrontend/statements.cc:2704 go/gofrontend/statements.cc:2734
-#, fuzzy
-#| msgid "too few arguments to procedure"
 msgid "not enough arguments to return"
-msgstr "trop peu d'arguments pour la procédure"
+msgstr "pas assez d'arguments à retourner"
 
 #: go/gofrontend/statements.cc:2712
-#, fuzzy
-#| msgid "return-statement with a value, in function declared with a void return type"
 msgid "return with value in function with no return type"
-msgstr "déclaration d'un retour sans valeur, dans la fonction déclarée avec un type retourné void"
+msgstr "retour avec valeur rencontré dans une fonction sans type de retour"
 
 #: go/gofrontend/statements.cc:2740
-#, fuzzy
-#| msgid "too many 'l' suffixes in integer constant"
 msgid "too many values in return statement"
-msgstr "trop de « l » en suffixe dans les constantes entières"
+msgstr "trop de valeurs dans l'instruction de retour"
 
 #: go/gofrontend/statements.cc:3147
-#, fuzzy
-#| msgid "unexpected address expression"
 msgid "expected boolean expression"
-msgstr "expression d'adresse inattendue"
+msgstr "expression booléenne attendue"
 
 #: go/gofrontend/statements.cc:4238
 msgid "cannot type switch on non-interface value"
-msgstr ""
+msgstr "un « switch » sur un type ne peut pas porter sur une valeur qui n'est pas une interface"
 
 #: go/gofrontend/statements.cc:4373
-#, fuzzy
-#| msgid "incompatible types in %s"
 msgid "incompatible types in send"
-msgstr "type incompatibles dans %s"
+msgstr "type incompatible dans l'envoi"
 
 #: go/gofrontend/statements.cc:4378
-#, fuzzy
-#| msgid "invalid base in read control sequence"
 msgid "invalid send on receive-only channel"
-msgstr "base invalide dans la séquence de contrôle de lecture"
+msgstr "envoi invalide sur un canal qui ne peut que recevoir"
 
 #: go/gofrontend/statements.cc:5329
 msgid "too many variables for range clause with channel"
-msgstr ""
+msgstr "trop de variables pour l'instruction « range » avec un canal"
 
 #: go/gofrontend/statements.cc:5336
 msgid "range clause must have array, slice, string, map, or channel type"
-msgstr ""
+msgstr "l'instruction « range » doit avoir un type tableau, tranche, chaîne, tableau associatif ou canal"
 
 #: go/gofrontend/types.cc:513
-#, fuzzy
-#| msgid "invalid operation on uninstantiated type"
 msgid "invalid comparison of non-ordered type"
-msgstr "opération invalide sur un type non instancié"
+msgstr "comparaison invalide d'un type non ordonné"
 
 #: go/gofrontend/types.cc:529
 msgid "slice can only be compared to nil"
-msgstr ""
+msgstr "une tranche peut uniquement être comparée à nul"
 
 #: go/gofrontend/types.cc:531
 msgid "map can only be compared to nil"
-msgstr ""
+msgstr "un tableau associatif peut uniquement être comparé à nul"
 
 #: go/gofrontend/types.cc:533
 msgid "func can only be compared to nil"
-msgstr ""
+msgstr "une fonction peut uniquement être comparée à nul"
 
 #: go/gofrontend/types.cc:539
-#, fuzzy, c-format
-#| msgid "invalid option %s"
+#, c-format
 msgid "invalid operation (%s)"
-msgstr "option invalide %s"
+msgstr "opération invalide (%s)"
 
 #: go/gofrontend/types.cc:562
-#, fuzzy
-#| msgid "invalid operation on uninstantiated type"
 msgid "invalid comparison of non-comparable type"
-msgstr "opération invalide sur un type non instancié"
+msgstr "comparaison invalide d'un type non comparable"
 
 #: go/gofrontend/types.cc:575
-#, fuzzy
-#| msgid "invalid operation on uninstantiated type"
 msgid "invalid comparison of generated struct"
-msgstr "opération invalide sur un type non instancié"
+msgstr "comparaison invalide d'une structure générée"
 
 #: go/gofrontend/types.cc:586
 msgid "invalid comparison of non-comparable struct"
-msgstr ""
+msgstr "comparaison invalide d'une structure non comparable"
 
 #: go/gofrontend/types.cc:596
-#, fuzzy
-#| msgid "invalid use of non-lvalue array"
 msgid "invalid comparison of generated array"
-msgstr "utilisation invalide d'un tableau n'étant pas membre gauche"
+msgstr "comparaison invalide d'un tableau généré"
 
 #: go/gofrontend/types.cc:603
-#, fuzzy
-#| msgid "invalid use of non-lvalue array"
 msgid "invalid comparison of non-comparable array"
-msgstr "utilisation invalide d'un tableau n'étant pas membre gauche"
+msgstr "comparaison invalide d'un tableau non comparable"
 
 #: go/gofrontend/types.cc:631
 msgid "multiple-value function call in single-value context"
-msgstr ""
+msgstr "appel de fonction à valeur multiple dans un contexte à valeur unique"
 
 #: go/gofrontend/types.cc:708
 msgid "need explicit conversion"
-msgstr ""
+msgstr "conversion explicite nécessaire"
 
 #: go/gofrontend/types.cc:715
-#, fuzzy, c-format
-#| msgid "cannot convert type `%T' to type `%T'"
+#, c-format
 msgid "cannot use type %s as type %s"
-msgstr "ne peut convertir type « %T » vers le type « %T »"
+msgstr "impossible d'utiliser le type %s comme type %s"
 
 #: go/gofrontend/types.cc:3542
-#, fuzzy
-#| msgid "different type"
 msgid "different receiver types"
-msgstr "type différent"
+msgstr "types de récepteurs différents"
 
 #: go/gofrontend/types.cc:3562 go/gofrontend/types.cc:3575
 #: go/gofrontend/types.cc:3590
-#, fuzzy
-#| msgid "destructors take no parameters"
 msgid "different number of parameters"
-msgstr "destructeurs ne prend aucun paramètre"
+msgstr "nombre de paramètres différents"
 
 #: go/gofrontend/types.cc:3583
-#, fuzzy
-#| msgid "different type"
 msgid "different parameter types"
-msgstr "type différent"
+msgstr "types de paramètres différents"
 
 #: go/gofrontend/types.cc:3598
-#, fuzzy
-#| msgid "different type"
 msgid "different varargs"
-msgstr "type différent"
+msgstr "varargs différents"
 
 #: go/gofrontend/types.cc:3607 go/gofrontend/types.cc:3620
 #: go/gofrontend/types.cc:3635
 msgid "different number of results"
-msgstr ""
+msgstr "nombre de résultats différents"
 
 #: go/gofrontend/types.cc:3628
-#, fuzzy
-#| msgid "different type"
 msgid "different result types"
-msgstr "type différent"
+msgstr "types de résultats différents"
 
 #: go/gofrontend/types.cc:8120
 #, c-format
 msgid "need explicit conversion; missing method %s%s%s"
-msgstr ""
+msgstr "conversion explicite nécessaire, méthode %s%s%s manquante"
 
 #: go/gofrontend/types.cc:8137 go/gofrontend/types.cc:8279
-#, fuzzy, c-format
-#| msgid "incompatible type for argument %d of `%s'"
+#, c-format
 msgid "incompatible type for method %s%s%s"
-msgstr "type incompatible pour l'argument n°%d de « %s »"
+msgstr "type incompatible pour la méthode %s%s%s"
 
 #: go/gofrontend/types.cc:8141 go/gofrontend/types.cc:8283
-#, fuzzy, c-format
-#| msgid "incompatible type for argument %d of `%s'"
+#, c-format
 msgid "incompatible type for method %s%s%s (%s)"
-msgstr "type incompatible pour l'argument n°%d de « %s »"
+msgstr "type incompatible pour la méthode %s%s%s (%s)"
 
 #: go/gofrontend/types.cc:8220 go/gofrontend/types.cc:8233
 msgid "pointer to interface type has no methods"
-msgstr ""
+msgstr "le pointeur vers le type d'interface n'a pas de méthode"
 
 #: go/gofrontend/types.cc:8222 go/gofrontend/types.cc:8235
-#, fuzzy
-#| msgid "error while parsing methods"
 msgid "type has no methods"
-msgstr "erreur lors de l'analyse syntaxique des méthodes"
+msgstr "le type n'a pas de méthode"
 
 #: go/gofrontend/types.cc:8256
 #, c-format
@@ -15545,24 +15439,24 @@ msgstr "méthode manquante %s%s%s"
 #: go/gofrontend/types.cc:8300
 #, c-format
 msgid "method %s%s%s requires a pointer receiver"
-msgstr ""
+msgstr "la méthode %s%s%s exige un récepteur pointeur"
 
 #: go/gofrontend/types.cc:8318
 #, c-format
 msgid "method %s%s%s is marked go:nointerface"
-msgstr ""
+msgstr "la méthode %s%s%s est marquée comme go:nointerface"
 
 #. Warn about and ignore all others for now, but store them.
 #: attribs.c:436 c-family/c-attribs.c:2400 objc/objc-act.c:4957
 #: objc/objc-act.c:6926 objc/objc-act.c:8113 objc/objc-act.c:8164
 #, gcc-internal-format
 msgid "%qE attribute directive ignored"
-msgstr "attribut de directive %qE ignoré"
+msgstr "directive d'attribut %qE ignorée"
 
 #: attribs.c:440
 #, gcc-internal-format
 msgid "%<%E::%E%> scoped attribute directive ignored"
-msgstr ""
+msgstr "directive d'attribut de portée %<%E::%E%> ignorée"
 
 #: attribs.c:449
 #, gcc-internal-format
@@ -15580,7 +15474,7 @@ msgstr "attribut ignoré"
 #: attribs.c:464
 #, gcc-internal-format
 msgid "an attribute that appertains to a type-specifier is ignored"
-msgstr ""
+msgstr "un attribut qui appartient à un spécificateur de type est ignoré"
 
 #: attribs.c:481
 #, gcc-internal-format
@@ -15593,15 +15487,14 @@ msgid "%qE attribute only applies to function types"
 msgstr "l'attribut %qE ne s'applique qu'à des types de fonction"
 
 #: attribs.c:539
-#, fuzzy, gcc-internal-format
-#| msgid "type attributes are honored only at type definition"
+#, gcc-internal-format
 msgid "type attributes ignored after type is already defined"
-msgstr "type d'attributs sont honorés seulement lors de la définitions de type"
+msgstr "les attributs de type sont ignorés après que le type ait déjà été défini"
 
 #: auto-profile.c:347
 #, gcc-internal-format
 msgid "Offset exceeds 16 bytes."
-msgstr ""
+msgstr "Le décalage excède 16 octets."
 
 #: auto-profile.c:854
 #, gcc-internal-format
@@ -15609,252 +15502,232 @@ msgid "Not expected TAG."
 msgstr "TAG inattendu."
 
 #: auto-profile.c:920
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Could not open source file %s.\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot open profile file %s."
-msgstr "N'a pu ouvrir le fichier source %s."
+msgstr "N'a pu ouvrir le fichier profil %s."
 
 #: auto-profile.c:926
 #, gcc-internal-format
 msgid "AutoFDO profile magic number does not match."
-msgstr ""
+msgstr "Le nombre magique du profil AutoFDO ne correspond pas."
 
 #: auto-profile.c:934
 #, gcc-internal-format, gfc-internal-format
 msgid "AutoFDO profile version %u does match %u."
-msgstr ""
+msgstr "La version %u du profil AutoFDO ne correspond pas à %u."
 
 #: auto-profile.c:946
 #, gcc-internal-format, gfc-internal-format
 msgid "Cannot read string table from %s."
-msgstr ""
+msgstr "Impossible de lire la table des chaînes depuis %s."
 
 #: auto-profile.c:954
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot find file for class %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read function profile from %s."
-msgstr "Ne peut repérer le fichier pour la classe %s."
+msgstr "Impossible de lire le profil de fonction depuis %s."
 
 #: auto-profile.c:964
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s: cannot get working directory: %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read working set from %s."
-msgstr "Ne peut repérer le répertoire de travail %s."
+msgstr "Impossible de lire l'ensemble de travail depuis %s."
 
 #: bt-load.c:1564
 #, gcc-internal-format
 msgid "branch target register load optimization is not intended to be run twice"
-msgstr "optimisation du chargement du registre cible de branchement est pas prévu pour être exécuté deux fois"
+msgstr "l'optimisation du chargement du registre cible du branchement n'est pas prévue pour être exécutée deux fois"
 
 #: builtins.c:642
-#, fuzzy, gcc-internal-format
-#| msgid "offset outside bounds of constant string"
+#, gcc-internal-format
 msgid "offset %qwi outside bounds of constant string"
-msgstr "décalage hors des limites d'une chaîne de constante"
+msgstr "le décalage %qwi est hors des limites de la chaîne constante"
 
 #: builtins.c:1240
-#, fuzzy, gcc-internal-format
-#| msgid "second arg to `__builtin_prefetch' must be a constant"
+#, gcc-internal-format
 msgid "second argument to %<__builtin_prefetch%> must be a constant"
-msgstr "second argument de « __builtin_prefetch » doit être une constante"
+msgstr "le deuxième argument de %<__builtin_prefetch%> doit être une constante"
 
 #: builtins.c:1247
-#, fuzzy, gcc-internal-format
-#| msgid "invalid second arg to __builtin_prefetch; using zero"
+#, gcc-internal-format
 msgid "invalid second argument to %<__builtin_prefetch%>; using zero"
-msgstr "second argument invalide de « __builtin_prefetch »; utilisation de zéro"
+msgstr "le deuxième argument de %<__builtin_prefetch%> est invalide; utilisation de zéro"
 
 #: builtins.c:1255
-#, fuzzy, gcc-internal-format
-#| msgid "third arg to `__builtin_prefetch' must be a constant"
+#, gcc-internal-format
 msgid "third argument to %<__builtin_prefetch%> must be a constant"
-msgstr "troisième argument de « __builtin_prefetch » doit être une constante"
+msgstr "le troisième argument de %<__builtin_prefetch%> doit être une constante"
 
 #: builtins.c:1262
-#, fuzzy, gcc-internal-format
-#| msgid "invalid third arg to __builtin_prefetch; using zero"
+#, gcc-internal-format
 msgid "invalid third argument to %<__builtin_prefetch%>; using zero"
-msgstr "troisième argument invalide de « __builtin_prefetch »; utilisation de zéro"
+msgstr "le troisième argument de %<__builtin_prefetch%> est invalide; utilisation de zéro"
 
 #: builtins.c:3165
 #, gcc-internal-format
 msgid "%K%qD: specified size %wu exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: la taille %wu spécifiée excède la taille maximale %wu de l'objet"
 
 #: builtins.c:3172
 #, gcc-internal-format
 msgid "%K%qD: specified size between %wu and %wu exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: la taille spécifiée entre %wu et %wu excède la taille maximale %wu de l'objet"
 
 #: builtins.c:3197
 #, gcc-internal-format
 msgid "%K%qD: writing at least %wu byte into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: l'écriture d'au moins %wu octets dans une région de taille %wu déborde de la destination"
 
 #: builtins.c:3204
 #, gcc-internal-format
 msgid "%K%qD: writing %wu byte into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: l'écriture de %wu octet dans une région de taille %wu déborde de la destination"
 
 #: builtins.c:3206
 #, gcc-internal-format
 msgid "%K%qD writing %wu bytes into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: l'écriture de %wu octets dans une région de taille %wu déborde de la destination"
 
 #: builtins.c:3212
 #, gcc-internal-format
 msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: écrire entre %wu et %wu octets dans une région de taille %wu déborde de la destination"
 
 #: builtins.c:3241
 #, gcc-internal-format
 msgid "%K%qD: specified bound %wu exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: la limite spécifiée (%wu) excède la taille maximale de l'objet (%wu)"
 
 #: builtins.c:3248
 #, gcc-internal-format
 msgid "%K%qD: specified bound between %wu and %wu  exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: la limite spécifiée entre %wu et %wu excède la taille maximale de l'objet (%wu)"
 
 #: builtins.c:3262
 #, gcc-internal-format
 msgid "%K%qD: specified bound %wu exceeds the size %wu of the destination"
-msgstr ""
+msgstr "%K%qD: la limite spécifiée (%wu) excède la taille %wu de la destination"
 
 #: builtins.c:3269
 #, gcc-internal-format
 msgid "%K%qD: specified bound between %wu and %wu  exceeds the size %wu of the destination"
-msgstr ""
+msgstr "%K%qD: la limite spécifiée entre %wu et %wu excède la taille de la destination (%wu)"
 
 #: builtins.c:3767 builtins.c:3831
 #, gcc-internal-format
 msgid "specified bound %wu equals the size of the destination"
-msgstr ""
+msgstr "la limite spécifiée (%wu) est égale à la taille de la destination"
 
 #: builtins.c:4674 gimplify.c:3130
-#, fuzzy, gcc-internal-format
-#| msgid "too many arguments to function `va_start'"
+#, gcc-internal-format
 msgid "too few arguments to function %<va_start%>"
-msgstr "trop d'arguments pour la function « va_start »"
+msgstr "trop peu d'arguments pour la fonction %<va_start%>"
 
 #: builtins.c:4774
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type argument"
+#, gcc-internal-format
 msgid "invalid argument to %qD"
-msgstr "type d'argument invalide"
+msgstr "argument invalide pour %qD"
 
 #: builtins.c:4787
-#, fuzzy, gcc-internal-format
-#| msgid "unused arguments in $-style format"
+#, gcc-internal-format
 msgid "unsupported argument to %qD"
-msgstr "arguments inutilisés dans le format de style $"
+msgstr "argument non supporté par %qD"
 
 #. Warn since no effort is made to ensure that any frame
 #. beyond the current one exists or can be safely reached.
 #: builtins.c:4795
 #, gcc-internal-format
 msgid "calling %qD with a nonzero argument is unsafe"
-msgstr ""
+msgstr "appeler %qD avec un argument non nul n'est pas sûr"
 
 #: builtins.c:5062
-#, fuzzy, gcc-internal-format
-#| msgid "argument of `__builtin_eh_return_regno' must be constant"
+#, gcc-internal-format
 msgid "both arguments to %<__builtin___clear_cache%> must be pointers"
-msgstr "l'argument de « __builtin_eh_return_regno » doit être une constante"
+msgstr "les deux arguments de %<__builtin___clear_cache%> doivent être des pointeurs"
 
 #: builtins.c:5161
-#, fuzzy, gcc-internal-format
-#| msgid "initializer specified for non-member function `%D'"
+#, gcc-internal-format
 msgid "trampoline generated for nested function %qD"
-msgstr "initialisation spécifiée pour une fonction %qD n'étant pas membre"
+msgstr "trampoline généré pour la fonction imbriquée %qD"
 
 #: builtins.c:5505 builtins.c:5518
 #, gcc-internal-format
 msgid "%qD changed semantics in GCC 4.4"
-msgstr ""
+msgstr "%qD a changé de sémantique dans GCC 4.4"
 
 #: builtins.c:5624
-#, fuzzy, gcc-internal-format
-#| msgid "Tune alignment for the specified chip or CPU version"
+#, gcc-internal-format
 msgid "unknown architecture specifier in memory model to builtin"
-msgstr "Ajuster l'alignement pour la version de processeur ou de circuit spécifiée"
+msgstr "spécificateur d'architecture inconnu dans le modèle mémoire de la fonction interne"
 
 #: builtins.c:5632
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type `%T' for default argument to `%T'"
+#, gcc-internal-format
 msgid "invalid memory model argument to builtin"
-msgstr "type invalide pour l'argument par défaut"
+msgstr "argument de modèle mémoire invalide dans la fonction interne"
 
 #: builtins.c:5693 builtins.c:5817
 #, gcc-internal-format
 msgid "failure memory model cannot be stronger than success memory model for %<__atomic_compare_exchange%>"
-msgstr ""
+msgstr "le modèle mémoire en cas d'échec ne peut pas être plus fort que le modèle mémoire en cas de succès pour %<__atomic_compare_exchange%>"
 
 #: builtins.c:5701 builtins.c:5825
 #, gcc-internal-format
 msgid "invalid failure memory model for %<__atomic_compare_exchange%>"
-msgstr ""
+msgstr "modèle mémoire en cas d'échec invalide pour %<__atomic_compare_exchange%>"
 
 #: builtins.c:5883
 #, gcc-internal-format
 msgid "invalid memory model for %<__atomic_load%>"
-msgstr ""
+msgstr "modèle mémoire invalide pour %<__atomic_load%>"
 
 #: builtins.c:5915 builtins.c:6102
-#, fuzzy, gcc-internal-format
-#| msgid "invalid mode for gen_tst_reg"
+#, gcc-internal-format
 msgid "invalid memory model for %<__atomic_store%>"
-msgstr "mode invalide pour gen_tst_reg"
+msgstr "modèle mémoire invalide pour %<__atomic_store%>"
 
 #: builtins.c:6219
 #, gcc-internal-format
 msgid "non-constant argument 1 to __atomic_always_lock_free"
-msgstr ""
+msgstr "argument 1 non constant pour __atomic_always_lock_free"
 
 #: builtins.c:6261
 #, gcc-internal-format
 msgid "non-integer argument 1 to __atomic_is_lock_free"
-msgstr ""
+msgstr "argument 1 non entier pour __atomic_is_lock_free"
 
 #: builtins.c:6325
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_eh_return not supported on this target"
+#, gcc-internal-format
 msgid "__builtin_thread_pointer is not supported on this target"
-msgstr "« __builtin_eh_return » n'est pas possible sur cette cible"
+msgstr "__builtin_thread_pointer n'est pas supporté sur cette cible"
 
 #: builtins.c:6345
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_eh_return not supported on this target"
+#, gcc-internal-format
 msgid "__builtin_set_thread_pointer is not supported on this target"
-msgstr "« __builtin_eh_return » n'est pas possible sur cette cible"
+msgstr "__builtin_set_thread_pointer n'est pas supporté sur cette cible"
 
 #. All valid uses of __builtin_va_arg_pack () are removed during
 #. inlining.
 #: builtins.c:6605 expr.c:10745
 #, gcc-internal-format
 msgid "%Kinvalid use of %<__builtin_va_arg_pack ()%>"
-msgstr ""
+msgstr "%Kutilisation invalide de %<__builtin_va_arg_pack ()%>"
 
 #. All valid uses of __builtin_va_arg_pack_len () are removed during
 #. inlining.
 #: builtins.c:6611
 #, gcc-internal-format
 msgid "%Kinvalid use of %<__builtin_va_arg_pack_len ()%>"
-msgstr ""
+msgstr "%Kutilisation invalide de %<__builtin_va_arg_pack_len ()%>"
 
 #: builtins.c:6848
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_longjmp second argument must be 1"
+#, gcc-internal-format
 msgid "%<__builtin_longjmp%> second argument must be 1"
-msgstr "le second argument de « __builtin_longjmp » doit être 1"
+msgstr "le deuxième argument de %<__builtin_longjmp%> doit être 1"
 
 #. Software implementation of Pointer Bounds Checker is NYI.
 #. Target support is required.
 #: builtins.c:7490
-#, fuzzy, gcc-internal-format
-#| msgid "target format does not support infinity"
+#, gcc-internal-format
 msgid "Your target platform does not support -fcheck-pointer-bounds"
-msgstr "le format cible ne supporte pas l'infini"
+msgstr "Votre plateforme cible ne supporte pas -fcheck-pointer-bounds"
 
 #: builtins.c:7809
 #, gcc-internal-format
@@ -15862,128 +15735,114 @@ msgid "target format does not support infinity"
 msgstr "le format cible ne supporte pas l'infini"
 
 #: builtins.c:9427
-#, fuzzy, gcc-internal-format
-#| msgid "`va_start' used in function with fixed args"
+#, gcc-internal-format
 msgid "%<va_start%> used in function with fixed args"
-msgstr "« va_start » utilisé dans une fonction ayant des arguments fixes"
+msgstr "%<va_start%> utilisé dans une fonction ayant des arguments fixes"
 
 #: builtins.c:9435
-#, fuzzy, gcc-internal-format
-#| msgid "too many arguments to function `va_start'"
+#, gcc-internal-format
 msgid "wrong number of arguments to function %<va_start%>"
-msgstr "trop d'arguments pour la function « va_start »"
+msgstr "nombre erroné d'arguments pour la fonction %<va_start%>"
 
 #: builtins.c:9450
-#, fuzzy, gcc-internal-format
-#| msgid "`__builtin_next_arg' called without an argument"
+#, gcc-internal-format
 msgid "%<__builtin_next_arg%> called without an argument"
-msgstr "« __builtin_next_arg » appelé sans argument"
+msgstr "%<__builtin_next_arg%> appelé sans argument"
 
 #: builtins.c:9455
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments specified for `%s' attribute"
+#, gcc-internal-format
 msgid "wrong number of arguments to function %<__builtin_next_arg%>"
-msgstr "nombre erroné d'arguments spécifié pour l'attribut « %s »"
+msgstr "nombre erroné d'arguments pour la fonction %<__builtin_next_arg%>"
 
 #: builtins.c:9487
-#, fuzzy, gcc-internal-format
-#| msgid "second parameter of `va_start' not last named argument"
+#, gcc-internal-format
 msgid "second parameter of %<va_start%> not last named argument"
-msgstr "second paramètre de « va_start » n'est pas le dernier argument nommé"
+msgstr "le deuxième paramètre de %<va_start%> n'est pas le dernier argument nommé"
 
 #: builtins.c:9500
 #, gcc-internal-format
 msgid "undefined behavior when second parameter of %<va_start%> is declared with %<register%> storage"
-msgstr ""
+msgstr "le comportement est indéfini quand le second paramètre de %<va_start%> est déclaré avec le stockage %<register%>"
 
 #: builtins.c:9529
-#, fuzzy, gcc-internal-format
-#| msgid "starting bit in POS must be an integer constant"
+#, gcc-internal-format
 msgid "%Kfirst argument of %D must be a pointer, second integer constant"
-msgstr "bit de départ dans la POSITION doit être une constante entière"
+msgstr "%Kle premier argument de %D doit être un pointeur et le second une constante entière"
 
 #: builtins.c:9542
-#, fuzzy, gcc-internal-format
-#| msgid "argument of `asm' is not a constant string"
+#, gcc-internal-format
 msgid "%Klast argument of %D is not integer constant between 0 and 3"
-msgstr "l'argument de « asm » n'est pas une chaîne de constante"
+msgstr "%Kle dernier argument de %D n'est pas une constante entière entre 0 et 3"
 
 #: builtins.c:9816
 #, gcc-internal-format
 msgid "%Kattempt to free a non-heap object %qD"
-msgstr ""
+msgstr "%Ktentative de libérer un objet %qD qui n'est pas sur le tas"
 
 #: builtins.c:9819
 #, gcc-internal-format
 msgid "%Kattempt to free a non-heap object"
-msgstr ""
+msgstr "%Ktentative de libérer un objet qui n'est pas sur le tas"
 
 #: calls.c:1319
-#, fuzzy, gcc-internal-format
-#| msgid "right shift count is negative"
+#, gcc-internal-format
 msgid "argument %i value %qE is negative"
-msgstr "le compteur de décalage vers la droite est négatif"
+msgstr "la valeur %2$qE de l'argument %1$i est négative"
 
 #: calls.c:1337
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "DO step value is zero"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %i value is zero"
-msgstr "La valeur de pas de DO est zéro"
+msgstr "la valeur de l'argument %i est zéro"
 
 #: calls.c:1354
 #, gcc-internal-format
 msgid "argument %i value %qE exceeds maximum object size %E"
-msgstr ""
+msgstr "la valeur %2$qE de l'argument %1$i excède la taille maximale de l'objet (%3$E)"
 
 #: calls.c:1399 calls.c:1424
 #, gcc-internal-format
 msgid "argument %i range [%E, %E] exceeds maximum object size %E"
-msgstr ""
+msgstr "l'argument %i, ayant une plage [%E, %E], excède la taille maximale de l'objet (%E)"
 
 #: calls.c:1401
 #, gcc-internal-format
 msgid "argument %i range [%E, %E] is both negative and exceeds maximum object size %E"
-msgstr ""
+msgstr "l'argument %i, ayant une plage [%E, %E] est à la fois négatif et excède la taille maximale de l'objet (%E)"
 
 #: calls.c:1418
-#, fuzzy, gcc-internal-format
-#| msgid "right shift count is negative"
+#, gcc-internal-format
 msgid "argument %i range [%E, %E] is negative"
-msgstr "le compteur de décalage vers la droite est négatif"
+msgstr "l'argument %i ayant une plage [%E, %E] est négatif"
 
 #: calls.c:1453
 #, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds %<SIZE_MAX%>"
-msgstr ""
+msgstr "le produit %<%E * %E%> des arguments %i et %i excède %<SIZE_MAX%>"
 
 #: calls.c:1459
 #, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds maximum object size %E"
-msgstr ""
+msgstr "le produit %<%E * %E%> des arguments %i et %i excède la taille maximale de l'objet (%E)"
 
 #: calls.c:1470 calls.c:1473
-#, fuzzy, gcc-internal-format
-#| msgid "argument %d must be referable"
+#, gcc-internal-format
 msgid "argument %i in the range [%E, %E]"
-msgstr "argument %d doit pouvoir être référencé"
+msgstr "l'argument %i est dans la plage [%E, %E]"
 
 #: calls.c:1484
-#, fuzzy, gcc-internal-format
-#| msgid "call to non-function `%D'"
+#, gcc-internal-format
 msgid "in a call to built-in allocation function %qD"
-msgstr "appel à une non fonction « %D »"
+msgstr "dans un appel à la fonction d'allocation interne %qD"
 
 #: calls.c:1487
-#, fuzzy, gcc-internal-format
-#| msgid "invalid function declaration"
+#, gcc-internal-format
 msgid "in a call to allocation function %qD declared here"
-msgstr "déclaration de fonction invalide"
+msgstr "dans un appel à la fonction d'allocation %qD déclarée ici"
 
 #: calls.c:1501
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot tail-call: %s"
-msgstr "[%s introuvable]"
+msgstr "impossible d'appeler en fin de fonction (tail-call): %s"
 
 #: calls.c:3064
 #, gcc-internal-format
@@ -15991,21 +15850,19 @@ msgid "function call has aggregate value"
 msgstr "l'appel de fonction a une valeur d'agrégat"
 
 #: calls.c:3742
-#, fuzzy, gcc-internal-format
-#| msgid "Pass all arguments on stack"
+#, gcc-internal-format
 msgid "passing too large argument on stack"
-msgstr "Passer tous les arguments par la pile"
+msgstr "passage d'un argument trop grand sur la pile"
 
 #: cfgexpand.c:1645 function.c:993 varasm.c:2179
 #, gcc-internal-format
 msgid "size of variable %q+D is too large"
-msgstr "taille de la variable %q+D est trop grande"
+msgstr "la taille de la variable %q+D est trop grande"
 
 #: cfgexpand.c:1657
-#, fuzzy, gcc-internal-format
-#| msgid "global register variable `%s' used in nested function"
+#, gcc-internal-format
 msgid "cannot allocate stack for variable %q+D, naked function."
-msgstr "variable globale de registre « %s » utilisée dans une fonction imbriquée"
+msgstr "impossible d'allouer la pile pour la variable %q+D, fonction nue."
 
 #: cfgexpand.c:2734
 #, gcc-internal-format
@@ -16013,15 +15870,14 @@ msgid "too many alternatives in %<asm%>"
 msgstr "trop d'alternatives dans %<asm%>"
 
 #: cfgexpand.c:2741
-#, fuzzy, gcc-internal-format
-#| msgid "operand constraints for `asm' differ in number of alternatives"
+#, gcc-internal-format
 msgid "operand constraints for %<asm%> differ in number of alternatives"
-msgstr "contraintes de l'opérande pour %<asm%> diffèrent en nombre d'alternatives"
+msgstr "les contraintes de l'opérande pour %<asm%> diffèrent en nombre d'alternatives"
 
 #: cfgexpand.c:2762
 #, gcc-internal-format
 msgid "asm-specifier for variable %qE conflicts with asm clobber list"
-msgstr "asm-specifier pour la variable %qE est en conflit avec la liste asm clobber"
+msgstr "le spécificateur « asm » pour la variable %qE est en conflit avec la liste d'écrasement de l'asm"
 
 #: cfgexpand.c:2836
 #, gcc-internal-format
@@ -16038,37 +15894,37 @@ msgstr "nom de registre %qs inconnu dans %<asm%>"
 #: cfgexpand.c:2910
 #, gcc-internal-format
 msgid "PIC register clobbered by %qs in %<asm%>"
-msgstr "registre PIC %qs est maltraité dans %<asm%>"
+msgstr "le registre PIC est écrasé par %qs dans %<asm%>"
 
 #: cfgexpand.c:3015
 #, gcc-internal-format, gfc-internal-format
 msgid "output number %d not directly addressable"
-msgstr "nombre de sortie %d n,est pas directement addressable"
+msgstr "la sortie numéro %d n'est pas directement adressable"
 
 #: cfgexpand.c:3096
 #, gcc-internal-format
 msgid "asm operand %d probably doesn%'t match constraints"
-msgstr "opérande asm %d ne concorde pas probablement avec les contraintes"
+msgstr "opérande asm %d ne concorde probablement pas avec les contraintes"
 
 #: cfgexpand.c:3279
 #, gcc-internal-format
 msgid "asm clobber conflict with output operand"
-msgstr "asm clobber est en conflit sans opérande de sortie"
+msgstr "la liste des registres écrasés en asm est en conflit avec l'opérande de sortie"
 
 #: cfgexpand.c:3283
 #, gcc-internal-format
 msgid "asm clobber conflict with input operand"
-msgstr "asm globber est en conflit avec l'opérande d'entrée"
+msgstr "la liste des registres écrasés en asm est en conflit avec l'opérande d'entrée"
 
 #: cfgexpand.c:6238
 #, gcc-internal-format
 msgid "stack protector not protecting local variables: variable length buffer"
-msgstr ""
+msgstr "la protection de la pile ne protège pas les variables locales: tampon de longueur variable"
 
 #: cfgexpand.c:6242
 #, gcc-internal-format, gfc-internal-format
 msgid "stack protector not protecting function: all local arrays are less than %d bytes long"
-msgstr ""
+msgstr "la protection de la pile ne protège pas la fonction: tous les tableaux locaux font moins de %d octets de longueur"
 
 #: cfghooks.c:111
 #, gcc-internal-format, gfc-internal-format
@@ -16081,69 +15937,64 @@ msgid "prev_bb of %d should be %d, not %d"
 msgstr "prev_bb de %d devrait être %d, pas %d"
 
 #: cfghooks.c:134
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Basic block %d succ edge is corrupted"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Block %i has loop_father, but there are no loops"
-msgstr "verify_flow_info : le bloc %i manque d’un loop_father"
+msgstr "verify_flow_info: Le bloc %i a loop_father mais il n'y a pas de boucles"
 
 #: cfghooks.c:140
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Basic block %d succ edge is corrupted"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Block %i lacks loop_father"
-msgstr "verify_flow_info : le bloc %i manque d’un loop_father"
+msgstr "verify_flow_info: Le bloc %i n'a pas de loop_father"
 
 #: cfghooks.c:146
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong count of block %i %i"
-msgstr "verify_flow_info : Nombre de blocs erroné %i %i"
+msgstr "verify_flow_info: Nombre de blocs erroné %i %i"
 
 #: cfghooks.c:152
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong frequency of block %i %i"
-msgstr "verify_flow_info : Fréquence de blocs erronée %i %i"
+msgstr "verify_flow_info: Fréquence de blocs erronée %i %i"
 
 #: cfghooks.c:160
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Duplicate edge %i->%i"
-msgstr "verify_flow_info : arête dupliquée %i->%i"
+msgstr "verify_flow_info: Arête dupliquée %i->%i"
 
 #: cfghooks.c:166
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong probability of edge %i->%i %i"
-msgstr "verify_flow_info : probabilité de l'arête %i->%i %i erronée"
+msgstr "verify_flow_info: Mauvaise probabilité de l'arête %i->%i %i"
 
 #: cfghooks.c:172
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong count of edge %i->%i %i"
-msgstr "verify_flow_info : Mauvais nombre d'arête %i->%i %i"
+msgstr "verify_flow_info: Mauvais décompte d'arête %i->%i %i"
 
 #: cfghooks.c:184
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Basic block %d succ edge is corrupted"
-msgstr "verify_flow_info : l'arête succ du bloc de base %d est corrompue"
+msgstr "verify_flow_info: L'arête succ du bloc de base %d est corrompue"
 
 #: cfghooks.c:198
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Wrong amount of branch edges after unconditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong amount of branch edges after unconditional jump %i"
-msgstr "Mauvais nombre d'arêtes de branchement après le branchement inconditionnel %i"
+msgstr "mauvais nombre d'arêtes de branchement après le branchement inconditionnel %i"
 
 #: cfghooks.c:206 cfghooks.c:217
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %d pred edge is corrupted"
-msgstr "arête pred du bloc de base %d corrompue"
+msgstr "l'arête pred du bloc de base %d est corrompue"
 
-# FIXME
 #: cfghooks.c:218
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "dominator of %d should be %d, not %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "its dest_idx should be %d, not %d"
-msgstr "le dominateur de %d devrait être %d, et non %d"
+msgstr "son dest_idx devrait être %d, pas %d"
 
 #: cfghooks.c:247
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %i edge lists are corrupted"
-msgstr "les listes d'arêtes du  bloc de base %i sont corrompues"
+msgstr "les listes d'arêtes du bloc de base %i sont corrompues"
 
 #: cfghooks.c:260
 #, gcc-internal-format
@@ -16151,392 +16002,344 @@ msgid "verify_flow_info failed"
 msgstr "verify_flow_info a échoué"
 
 #: cfghooks.c:310
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support dump_bb_for_graph"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas dump_bb_for_graph"
 
 #: cfghooks.c:353
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %%n$ operand number formats"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support redirect_edge_and_branch"
-msgstr "%s ne permet pas le format d'opérande de nombre %%n$"
+msgstr "%s ne supporte pas redirect_edge_and_branch"
 
 #: cfghooks.c:373
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_remove_branch_p"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas can_remove_branch_p"
 
 #: cfghooks.c:470
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %%n$ operand number formats"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support redirect_edge_and_branch_force"
-msgstr "%s ne permet pas le format d'opérande de nombre %%n$"
+msgstr "%s ne supporte pas redirect_edge_and_branch_force"
 
 #: cfghooks.c:508
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support split_block"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas split_block"
 
 #: cfghooks.c:575
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support move_block_after"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas move_block_after"
 
 #: cfghooks.c:588
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support delete_basic_block"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas delete_basic_block"
 
 #: cfghooks.c:635
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support split_edge"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas split_edge"
 
 #: cfghooks.c:710
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support create_basic_block"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas create_basic_block"
 
 #: cfghooks.c:751
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_merge_blocks_p"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas can_merge_blocks_p"
 
 #: cfghooks.c:762
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support predict_edge"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas predict_edge"
 
 #: cfghooks.c:771
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support predicted_by_p"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas predicted_by_p"
 
 #: cfghooks.c:785
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support merge_blocks"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas merge_blocks"
 
 #: cfghooks.c:866
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support make_forwarder_block"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas make_forwarder_block"
 
 #: cfghooks.c:1022
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support force_nonfallthru"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas force_nonfallthru"
 
 #: cfghooks.c:1056
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "does not support multilib"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_duplicate_block_p"
-msgstr "ne supporte pas multilib"
+msgstr "%s ne supporte pas can_duplicate_block_p"
 
 #: cfghooks.c:1078
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support duplicate_block"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas duplicate_block"
 
 #: cfghooks.c:1172
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support block_ends_with_call_p"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas block_ends_with_call_p"
 
 #: cfghooks.c:1183
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support block_ends_with_condjump_p"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas block_ends_with_condjump_p"
 
 #: cfghooks.c:1201
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support flow_call_edges_add"
-msgstr "%s ne supporte pas %s"
+msgstr "%s ne supporte pas flow_call_edges_add"
 
 #: cfgloop.c:1326
 #, gcc-internal-format
 msgid "loop verification on loop tree that needs fixup"
-msgstr ""
+msgstr "vérification des boucles sur l'arbre des boucles dont les itérations n'ont pas été ajustées (loop fixup)"
 
 #: cfgloop.c:1342
 #, gcc-internal-format
 msgid "corrupt loop tree root"
-msgstr ""
+msgstr "racine corrompue dans l'arbre des boucles"
 
 #: cfgloop.c:1352
 #, gcc-internal-format, gfc-internal-format
 msgid "loop with header %d marked for removal"
-msgstr ""
+msgstr "la boucle avec l'en-tête %d est marquée pour être retirée"
 
 #: cfgloop.c:1357
 #, gcc-internal-format, gfc-internal-format
 msgid "loop with header %d not in loop tree"
-msgstr ""
+msgstr "la boucle avec l'en-tête %d n'est pas dans l'arbre des boucles"
 
 #: cfgloop.c:1363
 #, gcc-internal-format, gfc-internal-format
 msgid "non-loop with header %d not marked for removal"
-msgstr ""
+msgstr "la non-boucle avec l'en-tête %d n'est pas marquée pour être retirée"
 
 #: cfgloop.c:1377
 #, gcc-internal-format, gfc-internal-format
 msgid "removed loop %d in loop tree"
-msgstr ""
+msgstr "boucle %d retirée de l'arbre des boucles"
 
 #: cfgloop.c:1385
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Size of loop %d should be %d, not %d."
+#, gcc-internal-format, gfc-internal-format
 msgid "size of loop %d should be %d, not %d"
-msgstr "La taille de la boucle %d devrait être %d, et non %d."
+msgstr "la taille de la boucle %d devrait être %d, et non %d"
 
-# FIXME
 #: cfgloop.c:1396
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Bb %d do not belong to loop %d."
+#, gcc-internal-format, gfc-internal-format
 msgid "bb %d does not belong to loop %d"
-msgstr "Bb %d n'appartient pas à la boucle %d."
+msgstr "le bloc de base %d n'appartient pas à la boucle %d"
 
 #: cfgloop.c:1408
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Size of loop %d should be %d, not %d."
+#, gcc-internal-format, gfc-internal-format
 msgid "bb %d has father loop %d, should be loop %d"
-msgstr "La taille de la boucle %d devrait être %d, et non %d."
+msgstr "le bloc de base %d a la boucle %d comme parent, cela devrait être la boucle %d"
 
 #: cfgloop.c:1424
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's header does not have exactly 2 entries."
+#, gcc-internal-format
 msgid "loop %d%'s header is not a loop header"
-msgstr "L'en-tête de la boucle %d n'a pas exactement 2 entrées."
+msgstr "l'en-tête de la boucle %d n'est pas un en-tête de boucle"
 
 #: cfgloop.c:1430
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's header does not have exactly 2 entries."
+#, gcc-internal-format
 msgid "loop %d%'s header does not have exactly 2 entries"
-msgstr "L'en-tête de la boucle %d n'a pas exactement 2 entrées."
+msgstr "l'en-tête de la boucle %d n'a pas exactement 2 entrées"
 
 #: cfgloop.c:1437
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's latch does not have header as successor."
+#, gcc-internal-format
 msgid "loop %d%'s latch does not have an edge to its header"
-msgstr "Le verrou %d de la boucle n'a pas une en-tête comme successeur."
+msgstr "le retour de la boucle %d n'a pas d'arête vers son en-tête"
 
 #: cfgloop.c:1442
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's latch does not have header as successor."
+#, gcc-internal-format
 msgid "loop %d%'s latch is not dominated by its header"
-msgstr "Le verrou %d de la boucle n'a pas une en-tête comme successeur."
+msgstr "le retour de la boucle %d n'est pas dominé par son en-tête"
 
 #: cfgloop.c:1450
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's latch does not have exactly 1 successor."
+#, gcc-internal-format
 msgid "loop %d%'s latch does not have exactly 1 successor"
-msgstr "Le verrou %d de la boucle n'a pas exactement 1 successeur."
+msgstr "le retour de la boucle %d n'a pas exactement 1 successeur"
 
 #: cfgloop.c:1455
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's latch does not have header as successor."
+#, gcc-internal-format
 msgid "loop %d%'s latch does not have header as successor"
-msgstr "Le verrou %d de la boucle n'a pas une en-tête comme successeur."
+msgstr "le retour de la boucle %d n'a pas un en-tête comme successeur"
 
 #: cfgloop.c:1460
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's latch does not belong directly to it."
+#, gcc-internal-format
 msgid "loop %d%'s latch does not belong directly to it"
-msgstr "Le verrou %d de la boucle ne lui appartient pas directement."
+msgstr "le retour de la boucle %d ne lui appartient pas directement"
 
 #: cfgloop.c:1466
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's header does not belong directly to it."
+#, gcc-internal-format
 msgid "loop %d%'s header does not belong directly to it"
-msgstr "L'entête de la boucle %d ne lui appartient pas directement."
+msgstr "l'en-tête de la boucle %d ne lui appartient pas directement"
 
 #: cfgloop.c:1472
-#, fuzzy, gcc-internal-format
-#| msgid "Loop %d's latch is marked as part of irreducible region."
+#, gcc-internal-format
 msgid "loop %d%'s latch is marked as part of irreducible region"
-msgstr "Le verrou %d de la boucle est défini comme faisant partie d'une zone irréductible"
+msgstr "le retour de la boucle %d est marqué comme faisant partie d'une région irréductible"
 
 #: cfgloop.c:1505
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Basic block %d should be marked irreducible."
+#, gcc-internal-format, gfc-internal-format
 msgid "basic block %d should be marked irreducible"
-msgstr "bloc de base %d devrait être marqué irréductible."
+msgstr "le bloc de base %d devrait être marqué irréductible"
 
 #: cfgloop.c:1511
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Basic block %d should not be marked irreducible."
+#, gcc-internal-format, gfc-internal-format
 msgid "basic block %d should not be marked irreducible"
-msgstr "bloc de base %d ne devrait pas être marqué irréductible."
+msgstr "le bloc de base %d ne devrait pas être marqué irréductible"
 
 #: cfgloop.c:1519
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Edge from %d to %d should be marked irreducible."
+#, gcc-internal-format, gfc-internal-format
 msgid "edge from %d to %d should be marked irreducible"
-msgstr "Bordures à partir de %d à %d devraient être marqués irréductibles."
+msgstr "l'arête de %d à %d devrait être marquée irréductible"
 
 #: cfgloop.c:1526
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Edge from %d to %d should not be marked irreducible."
+#, gcc-internal-format, gfc-internal-format
 msgid "edge from %d to %d should not be marked irreducible"
-msgstr "Bordures à partir de %d à %d ne devraient être marquées irréductibles."
+msgstr "l'arête de %d à %d ne devrait pas être marquée irréductible"
 
 #: cfgloop.c:1540
 #, gcc-internal-format, gfc-internal-format
 msgid "corrupted head of the exits list of loop %d"
-msgstr ""
+msgstr "en-tête corrompu de la liste des sorties de la boucle %d"
 
 #: cfgloop.c:1558
 #, gcc-internal-format, gfc-internal-format
 msgid "corrupted exits list of loop %d"
-msgstr ""
+msgstr "liste des sorties corrompue pour la boucle %d"
 
 #: cfgloop.c:1567
 #, gcc-internal-format, gfc-internal-format
 msgid "nonempty exits list of loop %d, but exits are not recorded"
-msgstr ""
+msgstr "la liste des sorties de la boucle %d n'est pas vide mais des sorties ne sont pas enregistrées"
 
 #: cfgloop.c:1594
 #, gcc-internal-format, gfc-internal-format
 msgid "exit %d->%d not recorded"
-msgstr ""
+msgstr "sortie %d->%d pas enregistrée"
 
 #: cfgloop.c:1617
 #, gcc-internal-format, gfc-internal-format
 msgid "wrong list of exited loops for edge  %d->%d"
-msgstr ""
+msgstr "mauvaise liste des boucles sorties pour l'arête %d->%d"
 
 #: cfgloop.c:1626
 #, gcc-internal-format
 msgid "too many loop exits recorded"
-msgstr ""
+msgstr "trop de sorties de boucle enregistrées"
 
 #: cfgloop.c:1637
 #, gcc-internal-format, gfc-internal-format
 msgid "%d exits recorded for loop %d (having %d exits)"
-msgstr ""
+msgstr "%d sorties enregistrées pour la boucle %d (qui a %d sorties)"
 
 #: cfgrtl.c:2328
 #, gcc-internal-format, gfc-internal-format
 msgid "non-cold basic block %d dominated by a block in the cold partition (%d)"
-msgstr ""
+msgstr "le bloc de base %d n'est pas froid mais il est dominé par un bloc dans la partition froide (%d)"
 
 #: cfgrtl.c:2405
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "multiple declarations for method `%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "multiple hot/cold transitions found (bb %i)"
-msgstr "multiples déclarations pour la méthode « %s »"
+msgstr "transitions chaud/froid multiples trouvées (bb %i)"
 
 #: cfgrtl.c:2413
 #, gcc-internal-format
 msgid "partition found but function partition flag not set"
-msgstr ""
+msgstr "une partition a été trouvée mais le fanion de partition de fonction n'est pas mis"
 
 #: cfgrtl.c:2451
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: REG_BR_PROB does not match cfg %wi %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: REG_BR_PROB does not match cfg %i %i"
-msgstr "verify_flow_info: REG_BR_PROB ne correspond pas à la config %wi %i"
+msgstr "verify_flow_info: REG_BR_PROB ne correspond pas à la config %i %i"
 
 #: cfgrtl.c:2472
 #, gcc-internal-format
 msgid "EDGE_CROSSING incorrectly set across same section"
-msgstr ""
+msgstr "EDGE_CROSSING incorrectement défini au travers de la même section"
 
 #: cfgrtl.c:2477
 #, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge crosses section boundary in bb %i"
-msgstr ""
+msgstr "une arête fallthru traverse une frontière de section dans le bb %i"
 
 #: cfgrtl.c:2483
 #, gcc-internal-format, gfc-internal-format
 msgid "EH edge crosses section boundary in bb %i"
-msgstr ""
+msgstr "une arête EH traverse une frontière de section dans le bb %i"
 
 #: cfgrtl.c:2489
 #, gcc-internal-format, gfc-internal-format
 msgid "No region crossing jump at section boundary in bb %i"
-msgstr ""
+msgstr "Pas de saut pour traverser une région à la frontière de section dans le bb %i"
 
 #: cfgrtl.c:2496
 #, gcc-internal-format
 msgid "EDGE_CROSSING missing across section boundary"
-msgstr ""
+msgstr "EDGE_CROSSING manquant au travers d'une frontière de section"
 
 #: cfgrtl.c:2526
 #, gcc-internal-format, gfc-internal-format
 msgid "Region crossing jump across same section in bb %i"
-msgstr ""
+msgstr "Saut traversant une région au travers de la même section dans le bb %i"
 
 #: cfgrtl.c:2533
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing REG_EH_REGION note in the end of bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "missing REG_EH_REGION note at the end of bb %i"
-msgstr "REG_EH_REGION note manquante à la fin du bb %i"
+msgstr "note REG_EH_REGION manquante à la fin du bb %i"
 
 #: cfgrtl.c:2538
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Too many outgoing branch edges from bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "too many exception handling edges in bb %i"
-msgstr "Trop d'arêtes de branchement sortantes dans le bb %i"
+msgstr "trop d'arêtes de gestion des exceptions dans le bb %i"
 
 #: cfgrtl.c:2546
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Too many outgoing branch edges from bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "too many outgoing branch edges from bb %i"
-msgstr "Trop d'arêtes de branchement sortantes dans le bb %i"
+msgstr "trop d'arêtes de branchements sortants depuis le bb %i"
 
 #: cfgrtl.c:2551
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Fallthru edge after unconditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge after unconditional jump in bb %i"
-msgstr "Arrête fallthru après le branchement inconditionnel %i"
+msgstr "arête fallthru après un branchement inconditionnel dans le bb %i"
 
 #: cfgrtl.c:2556
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Wrong amount of branch edges after unconditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong number of branch edges after unconditional jump in bb %i"
-msgstr "Mauvais nombre d'arêtes de branchement après le branchement inconditionnel %i"
+msgstr "mauvais nombre d'arêtes de branchements après le branchement inconditionnel dans le bb %i"
 
 #: cfgrtl.c:2563
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Wrong amount of branch edges after conditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong amount of branch edges after conditional jump in bb %i"
-msgstr "Mauvais nombre d'arêtes de branchement après le branchement conditionnel %i"
+msgstr "mauvaise quantité d'arêtes de branchements après le branchement conditionnel dans le bb %i"
 
 #: cfgrtl.c:2569
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Call edges for non-call insn in bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "abnormal call edges for non-call insn in bb %i"
-msgstr "Arrêtes d'appel pour un insn n'étant pas d'appel dans le bb %i"
+msgstr "arêtes d'appels anormales pour une insn qui n'est pas un appel dans le bb %i"
 
 #: cfgrtl.c:2574
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Call edges for non-call insn in bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "sibcall edges for non-call insn in bb %i"
-msgstr "Arrêtes d'appel pour un insn n'étant pas d'appel dans le bb %i"
+msgstr "arêtes « sibcall » (appel d'une fonction similaire en fin de fonction) pour une insn qui n'est pas un appel dans le bb %i"
 
 #: cfgrtl.c:2584
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Abnormal edges for no purpose in bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "abnormal edges for no purpose in bb %i"
-msgstr "Arrête anormale sans but dans le bb %i"
+msgstr "arête anormale sans aucune utilité dans le bb %i"
 
 #: cfgrtl.c:2622 cfgrtl.c:2632
 #, gcc-internal-format, gfc-internal-format
@@ -16556,435 +16359,409 @@ msgstr "dans le bloc de base %d :"
 #: cfgrtl.c:2681
 #, gcc-internal-format, gfc-internal-format
 msgid "BB_RTL flag not set for block %d"
-msgstr ""
+msgstr "fanion BB_RTL manquant pour le bloc %d"
 
 #: cfgrtl.c:2688
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d basic block pointer is %d, should be %d"
-msgstr ""
+msgstr "le pointeur du bloc de base de l'insn %d est %d, il devrait être %d"
 
 #: cfgrtl.c:2699
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d in header of bb %d has non-NULL basic block"
-msgstr ""
+msgstr "l'insn %d dans l'en-tête du bb %d a un bloc de base non NULL"
 
+# « footer » aurait dû être « tail » il me semble: je l'ai traduit comme cela
 #: cfgrtl.c:2707
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d in footer of bb %d has non-NULL basic block"
-msgstr ""
+msgstr "l'insn %d dans la fin du bb %d a un bloc de base non NULL"
 
 #: cfgrtl.c:2780 cfgrtl.c:2828
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "insn outside basic block"
+#, gcc-internal-format, gfc-internal-format
 msgid "insn %d outside of basic blocks has non-NULL bb field"
-msgstr "insn à l'extérieur de tout bloc de base"
+msgstr "l'insn %d en dehors des blocs de base a un champ bb non NULL"
 
 #: cfgrtl.c:2788
 #, gcc-internal-format, gfc-internal-format
 msgid "end insn %d for block %d not found in the insn stream"
-msgstr "fin insn %d du bloc %d n'a pas été repéré dans le flot insn"
+msgstr "l'insn de fin %d du bloc %d n'a pas été trouvée dans le flot des insn"
 
 #: cfgrtl.c:2801
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d is in multiple basic blocks (%d and %d)"
-msgstr "insn %d est dans de multiples blocs de base (%d et %d)"
+msgstr "l'insn %d est dans plusieurs blocs de base (%d et %d)"
 
 #: cfgrtl.c:2813
 #, gcc-internal-format, gfc-internal-format
 msgid "head insn %d for block %d not found in the insn stream"
-msgstr "en-tête insn %d du bloc %d n'a pas été repérée dans le flot insn"
+msgstr "l'insn de tête %d du bloc %d n'a pas été trouvée dans le flot des insn"
 
 #: cfgrtl.c:2861
 #, gcc-internal-format, gfc-internal-format
 msgid "missing barrier after block %i"
-msgstr "barrière manquante après le boc %i"
+msgstr "barrière manquante après le bloc %i"
 
 #: cfgrtl.c:2877
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Incorrect blocks for fallthru %i->%i"
-msgstr "verify_flow_info: blocs incorrects pour le fallthru %i->%i"
+msgstr "verify_flow_info: Blocs incorrects pour le fallthru %i->%i"
 
 #: cfgrtl.c:2886
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Incorrect fallthru %i->%i"
-msgstr "verify_flow_info: fallthru incorrect %i->%i"
+msgstr "verify_flow_info: Fallthru incorrect %i->%i"
 
 #: cfgrtl.c:2922
 #, gcc-internal-format
 msgid "basic blocks not laid down consecutively"
-msgstr "les blocs de base ne se suivent pas consécutivement"
+msgstr "les blocs de base n'ont pas été disposés consécutivement"
 
-# FIXME
-# bb est une abréviation courante dans cette partie du fichier pour « basic block »
 #: cfgrtl.c:2960
 #, gcc-internal-format, gfc-internal-format
 msgid "number of bb notes in insn chain (%d) != n_basic_blocks (%d)"
-msgstr "nombre de bb noté dans la chaîne d'insn (%d) != n_basic_blocks (%d)"
+msgstr "le nombre d'annotations des bb dans la chaîne des insn (%d) != n_basic_blocks (%d)"
 
 #: cgraph.c:2962
-#, fuzzy, gcc-internal-format
-#| msgid "left shift count is negative"
+#, gcc-internal-format
 msgid "caller edge count is negative"
-msgstr "le compteur de décalage vers la gauche est négatif"
+msgstr "le nombre d'arêtes de l'appelant est négatif"
 
 #: cgraph.c:2967
 #, gcc-internal-format
 msgid "caller edge frequency is negative"
-msgstr ""
+msgstr "la fréquence de l'arête de l'appelant est négative"
 
 #: cgraph.c:2972
 #, gcc-internal-format
 msgid "caller edge frequency is too large"
-msgstr ""
+msgstr "la fréquence de l'arête de l'appelant est trop grande"
 
 #: cgraph.c:3056
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "no field (yet) for tag %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "aux field set for edge %s->%s"
-msgstr "pas de champ (encore) pour l'étiquette %s"
+msgstr "champ aux défini pour l'arête %s->%s"
 
 #: cgraph.c:3063
-#, fuzzy, gcc-internal-format
-#| msgid "left shift count is negative"
+#, gcc-internal-format
 msgid "execution count is negative"
-msgstr "le compteur de décalage vers la gauche est négatif"
+msgstr "le compteur d'exécution est négatif"
 
 #: cgraph.c:3068
 #, gcc-internal-format
 msgid "inline clone in same comdat group list"
-msgstr ""
+msgstr "clone en ligne dans la même liste du groupe comdat"
 
 #: cgraph.c:3073
-#, fuzzy, gcc-internal-format
-#| msgid "no symbol table found"
+#, gcc-internal-format
 msgid "local symbols must be defined"
-msgstr "aucune table des symboles trouvée"
+msgstr "les symboles locaux doivent être définis"
 
 #: cgraph.c:3078
 #, gcc-internal-format
 msgid "externally visible inline clone"
-msgstr ""
+msgstr "clone en ligne visible depuis l'extérieur"
 
 #: cgraph.c:3083
 #, gcc-internal-format
 msgid "inline clone with address taken"
-msgstr ""
+msgstr "clone en ligne avec l'adresse prise"
 
 #: cgraph.c:3088
 #, gcc-internal-format
 msgid "inline clone is forced to output"
-msgstr ""
+msgstr "le clone en ligne est forcé à sortir"
 
 #: cgraph.c:3095
 #, gcc-internal-format, gfc-internal-format
 msgid "aux field set for indirect edge from %s"
-msgstr ""
+msgstr "champ aux défini pour une arête indirecte depuis %s"
 
 #: cgraph.c:3102
 #, gcc-internal-format, gfc-internal-format
 msgid "An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
-msgstr ""
+msgstr "Une arête indirecte depuis %s n'est pas marquée comme indirecte ou a un indirect_info associé, l'instruction correspondante est: "
 
 #: cgraph.c:3117
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local function called by %s outside its comdat"
-msgstr ""
+msgstr "la fonction locale comdat est appelée par %s en dehors de son comdat"
 
 #: cgraph.c:3127
-#, fuzzy, gcc-internal-format
-#| msgid "section pointer missing"
+#, gcc-internal-format
 msgid "inlined_to pointer is wrong"
-msgstr "pointeur de section manquant"
+msgstr "le pointeur inlined_to est faux"
 
 #: cgraph.c:3132
-#, fuzzy, gcc-internal-format
-#| msgid "multiple `virtual' specifiers"
+#, gcc-internal-format
 msgid "multiple inline callers"
-msgstr "spécificateurs « virtual » multiples"
+msgstr "appelants en ligne multiples"
 
 #: cgraph.c:3139
 #, gcc-internal-format
 msgid "inlined_to pointer set for noninline callers"
-msgstr ""
+msgstr "pointeur inlined_to défini pour des appelants pas en ligne"
 
 #: cgraph.c:3159
 #, gcc-internal-format, gfc-internal-format
 msgid "caller edge frequency %i does not match BB frequency %i"
-msgstr ""
+msgstr "la fréquence de l'arête d'appelant %i ne correspond pas à la fréquence du BB %i"
 
 #: cgraph.c:3177
 #, gcc-internal-format, gfc-internal-format
 msgid "indirect call frequency %i does not match BB frequency %i"
-msgstr ""
+msgstr "la fréquence d'appel indirecte %i ne correspond pas à la fréquence du BB %i"
 
 #: cgraph.c:3186
 #, gcc-internal-format
 msgid "inlined_to pointer is set but no predecessors found"
-msgstr ""
+msgstr "le pointeur inlined_to est défini mais aucun prédécesseur trouvé"
 
 #: cgraph.c:3191
-#, fuzzy, gcc-internal-format
-#| msgid "invalid pointer to bit-field `%D'"
+#, gcc-internal-format
 msgid "inlined_to pointer refers to itself"
-msgstr "pointeur invalide pour un champ de bits « %D »"
+msgstr "le pointeur inlined_to fait référence à lui même"
 
 #: cgraph.c:3203
 #, gcc-internal-format
 msgid "cgraph_node has wrong clone_of"
-msgstr ""
+msgstr "le cgraph_node a un mauvais clone_of"
 
 #: cgraph.c:3215
-#, fuzzy, gcc-internal-format
-#| msgid "range mode has non-constant limits"
+#, gcc-internal-format
 msgid "cgraph_node has wrong clone list"
-msgstr "mode d'étendue a des limites non constantes"
+msgstr "le cgraph_node a une mauvaise liste de clones"
 
 #: cgraph.c:3221
 #, gcc-internal-format
 msgid "cgraph_node is in clone list but it is not clone"
-msgstr ""
+msgstr "le cgraph_node est dans la liste des clones mais il n'est pas un clone"
 
 #: cgraph.c:3226
 #, gcc-internal-format
 msgid "cgraph_node has wrong prev_clone pointer"
-msgstr ""
+msgstr "le cgraph_node a un mauvais pointeur prev_clone"
 
 #: cgraph.c:3231
 #, gcc-internal-format
 msgid "double linked list of clones corrupted"
-msgstr ""
+msgstr "la liste doublement liée des clones est corrompue"
 
 #: cgraph.c:3243
 #, gcc-internal-format
 msgid "Alias has call edges"
-msgstr ""
+msgstr "L'alias a des arêtes d'appel"
 
 #: cgraph.c:3251
 #, gcc-internal-format
 msgid "Alias has non-alias reference"
-msgstr ""
+msgstr "L'alias a une référence qui n'est pas un alias"
 
 #: cgraph.c:3256
 #, gcc-internal-format
 msgid "Alias has more than one alias reference"
-msgstr ""
+msgstr "L'alias a plus d'une référence alias"
 
 #: cgraph.c:3263
 #, gcc-internal-format
 msgid "Analyzed alias has no reference"
-msgstr ""
+msgstr "L'alias analysé n'a pas de référence"
 
 #: cgraph.c:3272
 #, gcc-internal-format
 msgid "Instrumentation clone does not reference original node"
-msgstr ""
+msgstr "Le clone modifié pour ajouter du code ne fait pas référence au nœud original"
 
 #: cgraph.c:3279
 #, gcc-internal-format
 msgid "Not instrumented node has non-NULL original declaration"
-msgstr ""
+msgstr "Le nœud, bien que non modifié pour ajouter du code, déclare un nœud original non NULL"
 
 #: cgraph.c:3289
 #, gcc-internal-format
 msgid "Instrumented node has wrong original declaration"
-msgstr ""
+msgstr "Le nœud modifié pour ajouter du code à une mauvaise déclaration originale"
 
 #: cgraph.c:3307
 #, gcc-internal-format
 msgid "Node has more than one chkp reference"
-msgstr ""
+msgstr "Le nœud a plus d'une référence chkp"
 
 #: cgraph.c:3312
-#, fuzzy, gcc-internal-format
-#| msgid "cannot declare references to references"
+#, gcc-internal-format
 msgid "Wrong node is referenced with chkp reference"
-msgstr "ne peut déclarer des références vers des références"
+msgstr "Le mauvais nœud est référencé avec la référence chkp"
 
 #: cgraph.c:3320
 #, gcc-internal-format
 msgid "Analyzed node has no reference to instrumented version"
-msgstr ""
+msgstr "Le nœud analysé n'a aucune référence vers la version où le code a été ajouté"
 
 #: cgraph.c:3334
 #, gcc-internal-format
 msgid "Alias chain for instrumented node is broken"
-msgstr ""
+msgstr "La chaine des alias pour le nœud avec le code ajouté est rompue"
 
 #: cgraph.c:3343
 #, gcc-internal-format
 msgid "No edge out of thunk node"
-msgstr ""
+msgstr "Pas d'arête hors du nœud du fragment"
 
 #: cgraph.c:3348
 #, gcc-internal-format
 msgid "More than one edge out of thunk node"
-msgstr ""
+msgstr "Plus d'une arête sortante hors du nœud du fragment"
 
 #: cgraph.c:3353
 #, gcc-internal-format
 msgid "Thunk is not supposed to have body"
-msgstr ""
+msgstr "Le fragment n'est pas supposé avoir un contenu"
 
 #: cgraph.c:3359
 #, gcc-internal-format
 msgid "Instrumentation thunk has wrong edge callee"
-msgstr ""
+msgstr "Le fragment pour ajouter du code a une mauvaise arête vers l'appelé"
 
 #: cgraph.c:3395
 #, gcc-internal-format
 msgid "shared call_stmt:"
-msgstr ""
+msgstr "call_stmt partagé:"
 
 #: cgraph.c:3403
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' used prior to declaration"
+#, gcc-internal-format
 msgid "edge points to wrong declaration:"
-msgstr "« %s » utilisé avant sa déclaration"
+msgstr "l'arête pointe vers la mauvaise déclaration:"
 
 #: cgraph.c:3412
 #, gcc-internal-format
 msgid "an indirect edge with unknown callee corresponding to a call_stmt with a known declaration:"
-msgstr ""
+msgstr "une arête indirecte avec un appelé inconnu correspondant à un call_stmt avec une déclaration connue:"
 
 #: cgraph.c:3422
 #, gcc-internal-format
 msgid "missing callgraph edge for call stmt:"
-msgstr ""
+msgstr "arête callgraph manquante pour l'appel stmt:"
 
 #: cgraph.c:3432
 #, gcc-internal-format
 msgid "reference to dead statement"
-msgstr ""
+msgstr "référence à une instruction morte"
 
 #: cgraph.c:3445
 #, gcc-internal-format, gfc-internal-format
 msgid "edge %s->%s has no corresponding call_stmt"
-msgstr ""
+msgstr "l'arête %s->%s n'a pas de call_stmt correspondant"
 
 #: cgraph.c:3457
 #, gcc-internal-format, gfc-internal-format
 msgid "an indirect edge from %s has no corresponding call_stmt"
-msgstr ""
+msgstr "une arête indirecte depuis %s n'a pas de call_stmt correspondant"
 
 #: cgraph.c:3468
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_cgraph_node failed"
-msgstr "verify_flow_info a échoué"
+msgstr "verify_cgraph_node a échoué"
 
-# FIXME
 #: cgraph.c:3575 varpool.c:304
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "string section missing"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: section %s is missing"
-msgstr "chaîne de section manquante"
+msgstr "%s: la section %s est manquante"
 
 #: cgraphunit.c:681
 #, gcc-internal-format
 msgid "%<weakref%> attribute should be accompanied with an %<alias%> attribute"
-msgstr ""
+msgstr "l'attribut %<weakref%> devrait être accompagné d'un attribut %<alias%>"
 
 #: cgraphunit.c:733 cgraphunit.c:769
 #, gcc-internal-format
 msgid "%<externally_visible%> attribute have effect only on public objects"
-msgstr ""
+msgstr "l'attribut %<externally_visible%> n'a d'effet que dans des objets publiques"
 
 #: cgraphunit.c:740
-#, fuzzy, gcc-internal-format
-#| msgid "warning: -pipe ignored because -time specified"
+#, gcc-internal-format
 msgid "%<weakref%> attribute ignored because function is defined"
-msgstr "AVERTISSEMENT: -pipe ignoré parce que -time a été spécifié"
+msgstr "l'attribut %<weakref%> est ignoré car la fonction est définie"
 
 #: cgraphunit.c:752
-#, fuzzy, gcc-internal-format
-#| msgid "Warn when an inlined function cannot be inlined"
+#, gcc-internal-format
 msgid "always_inline function might not be inlinable"
-msgstr "Avertir lorsque des fonctions en ligne ne peuvent être enligne"
+msgstr "il pourrait ne pas être possible de mettre en ligne la fonction always_inline"
 
 #: cgraphunit.c:777
 #, gcc-internal-format
 msgid "%<weakref%> attribute ignored because variable is initialized"
-msgstr ""
+msgstr "l'attribut %<weakref%> est ignoré car la variable est initialisée"
 
 #. include_self=
 #: cgraphunit.c:937 c/c-decl.c:11111
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%F' used but never defined"
+#, gcc-internal-format
 msgid "%q+F used but never defined"
-msgstr "« %F » utilisé mais n'a jamais été défini"
+msgstr "%q+F utilisé mais jamais défini"
 
 #: cgraphunit.c:939 c/c-decl.c:11120
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%F' declared `static' but never defined"
+#, gcc-internal-format
 msgid "%q+F declared %<static%> but never defined"
-msgstr "« %F » déclaré « static » mais n'a jamais été définie"
+msgstr "%q+F déclaré %<static%> mais jamais défini"
 
 #: cgraphunit.c:983
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' defined but not used"
+#, gcc-internal-format
 msgid "%qD defined but not used"
-msgstr "« %F » défini mais n'a pas été utilisé"
+msgstr "%qD défini mais pas utilisé"
 
 #: cgraphunit.c:1287 c-family/c-pragma.c:337
 #, gcc-internal-format
 msgid "%q+D aliased to undefined symbol %qE"
-msgstr ""
+msgstr "%q+D est un synonyme vers le symbole non défini %qE"
 
 #: cgraphunit.c:1303
 #, gcc-internal-format
 msgid "%q+D aliased to external symbol %qE"
-msgstr ""
+msgstr "%q+D est un synonyme vers le symbole externe %qE"
 
 #: cgraphunit.c:1324
 #, gcc-internal-format
 msgid "%q+D alias in between function and variable is not supported"
-msgstr ""
+msgstr "l'alias %q+D entre une fonction et une variable n'est pas supporté"
 
 #: cgraphunit.c:1326
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid declaration"
+#, gcc-internal-format
 msgid "%q+D aliased declaration"
-msgstr "Déclaration invalide"
+msgstr "déclaration synonyme %q+D"
 
 #: cgraphunit.c:1397
-#, fuzzy, gcc-internal-format
-#| msgid "field `%s' declared as a function"
+#, gcc-internal-format
 msgid "failed to reclaim unneeded function"
-msgstr "champ déclaré comme une fonction"
+msgstr "échec lors de la récupération de la fonction inutile"
 
 #: cgraphunit.c:1425
 #, gcc-internal-format
 msgid "failed to reclaim unneeded function in same comdat group"
-msgstr ""
+msgstr "échec lors de la récupération de la fonction inutile dans le même groupe comdat"
 
 #: cgraphunit.c:1669
-#, fuzzy, gcc-internal-format
-#| msgid "generic thunk code fails for method `%#D' which uses `...'"
+#, gcc-internal-format
 msgid "generic thunk code fails for method %qD which uses %<...%>"
-msgstr "code « thunk» générique a échoué pour la méthode « %#D » laquelle utilise « ...  »"
+msgstr "le code du fragment générique échoue pour la méthode %qD qui utilise %<...%>"
 
 #: cgraphunit.c:2027
-#, fuzzy, gcc-internal-format
-#| msgid "%Jsize of return value of '%D' is %u bytes"
+#, gcc-internal-format
 msgid "size of return value of %q+D is %u bytes"
-msgstr "taille de la valeur retournée par « %D » est %u octets"
+msgstr "la valeur retournée par %q+D a une taille de %u octets"
 
 #: cgraphunit.c:2030
-#, fuzzy, gcc-internal-format
-#| msgid "%Jsize of return value of '%D' is larger than %wd bytes"
+#, gcc-internal-format
 msgid "size of return value of %q+D is larger than %wd bytes"
-msgstr "taille de la valeur retournée par « %D » supérieure à %wd octets"
+msgstr "la taille de la valeur retournée par %q+D est supérieure à %wd octets"
 
 #: cgraphunit.c:2525
 #, gcc-internal-format
 msgid "nodes with unreleased memory found"
-msgstr ""
+msgstr "des nœuds ont été trouvé avec une mémoire non libérée"
 
 #: collect-utils.c:68
-#, fuzzy, gcc-internal-format
-#| msgid "%s: %s: can't get status: %s\n"
+#, gcc-internal-format
 msgid "can't get program status: %m"
-msgstr "%s: %s: ne peut obtenir l'état: %s\n"
+msgstr "ne peut obtenir le statut du programme: %m"
 
 #: collect-utils.c:82
 #, gcc-internal-format, gfc-internal-format
@@ -16997,51 +16774,45 @@ msgid "%s returned %d exit status"
 msgstr "%s a retourné %d comme valeur de sortie"
 
 #: collect-utils.c:133
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Could not open source file %s.\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not open response file %s"
-msgstr "N'a pu ouvrir le fichier source %s.\n"
+msgstr "n'a pu ouvrir le fichier de réponse %s"
 
 #: collect-utils.c:139
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "could not find specs file %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not write to response file %s"
-msgstr "ne peut repérer le fichiers des specs %s\n"
+msgstr "n'a pu écrire dans le fichier de réponse %s"
 
 #: collect-utils.c:145
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Could not open source file %s.\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not close response file %s"
-msgstr "N'a pu ouvrir le fichier source %s.\n"
+msgstr "n'a pu fermer le fichier de réponse %s"
 
 #: collect-utils.c:179
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot find `%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot find '%s'"
-msgstr "« %s » introuvable"
+msgstr "« %s » introuvable"
 
 #: collect-utils.c:183 collect2.c:2361 collect2.c:2560 gcc.c:3072 gcc.c:6771
-#, fuzzy, gcc-internal-format
-#| msgid "opening output file %s: %m"
+#, gcc-internal-format
 msgid "pex_init failed: %m"
-msgstr "ouverture du fichier de sortie %s: %m"
+msgstr "échec de pex_init: %m"
 
 #: collect-utils.c:192 collect2.c:2370 collect2.c:2568 gcc.c:8402
-#, fuzzy, gcc-internal-format
-#| msgid "%s: %s"
+#, gcc-internal-format
 msgid "%s: %m"
-msgstr "%s : %s"
+msgstr "%s: %m"
 
 #: collect2.c:702
 #, gcc-internal-format
 msgid "COLLECT_LTO_WRAPPER must be set"
-msgstr ""
+msgstr "COLLECT_LTO_WRAPPER  doit être défini"
 
 #: collect2.c:966 gcc.c:7297 lto-wrapper.c:1479
 #: config/i386/intelmic-mkoffload.c:554 config/nvptx/mkoffload.c:403
 #, gcc-internal-format
 msgid "atexit failed"
-msgstr ""
+msgstr "échec de atexit"
 
 #: collect2.c:1064
 #, gcc-internal-format
@@ -17049,10 +16820,9 @@ msgid "no arguments"
 msgstr "pas d'argument"
 
 #: collect2.c:1303 opts.c:903
-#, fuzzy, gcc-internal-format
-#| msgid "-m%s not supported in this configuration"
+#, gcc-internal-format
 msgid "LTO support has not been enabled in this configuration"
-msgstr "-m%s n'est pas supporté par cette configuration"
+msgstr "le support LTO n'a pas été activé dans cette configuration"
 
 #: collect2.c:1344
 #, gcc-internal-format
@@ -17060,36 +16830,31 @@ msgid "can't open %s: %m"
 msgstr "ne peut ouvrir %s: %m"
 
 #: collect2.c:1450
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unknown machine mode `%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown demangling style '%s'"
-msgstr "mode machine « %s » inconnu"
+msgstr "style de décodage des noms « %s » inconnu"
 
 # I18N
 #: collect2.c:1546 collect2.c:1729 collect2.c:1769
-#, fuzzy, gcc-internal-format
-#| msgid "fopen %s"
+#, gcc-internal-format
 msgid "fopen %s: %m"
-msgstr "fopen() %s"
+msgstr "fopen %s: %m"
 
 # I18N
 #: collect2.c:1549 collect2.c:1734 collect2.c:1772
-#, fuzzy, gcc-internal-format
-#| msgid "fclose %s"
+#, gcc-internal-format
 msgid "fclose %s: %m"
-msgstr "fclose() %s"
+msgstr "fclose %s: %m"
 
 #: collect2.c:2335
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find `nm'"
+#, gcc-internal-format
 msgid "cannot find 'nm'"
-msgstr "« nm » introuvable"
+msgstr "« nm » introuvable"
 
 #: collect2.c:2383
-#, fuzzy, gcc-internal-format
-#| msgid "can't open output file `%s'"
+#, gcc-internal-format
 msgid "can't open nm output: %m"
-msgstr "ne peut ouvrir le fichier de sortie « %s »"
+msgstr "impossible d'ouvrir la sortie de nm: %m"
 
 #: collect2.c:2467
 #, gcc-internal-format, gfc-internal-format
@@ -17102,16 +16867,14 @@ msgid "fini function found in object %s"
 msgstr "fonction fini() trouvée dans l'objet %s"
 
 #: collect2.c:2535
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find `ldd'"
+#, gcc-internal-format
 msgid "cannot find 'ldd'"
-msgstr "« ldd » introuvable"
+msgstr "« ldd » introuvable"
 
 #: collect2.c:2581
-#, fuzzy, gcc-internal-format
-#| msgid "can't open output file `%s'"
+#, gcc-internal-format
 msgid "can't open ldd output: %m"
-msgstr "ne peut ouvrir le fichier de sortie « %s »"
+msgstr "impossible d'ouvrir la sortie de ldd: %m"
 
 #: collect2.c:2599
 #, gcc-internal-format, gfc-internal-format
@@ -17121,17 +16884,17 @@ msgstr "dépendance dynamique %s introuvable"
 #: collect2.c:2611
 #, gcc-internal-format, gfc-internal-format
 msgid "unable to open dynamic dependency '%s'"
-msgstr "incapable d'ouvrir la dépendance dynamique « %s »"
+msgstr "incapable d'ouvrir la dépendance dynamique « %s »"
 
 #: collect2.c:2775
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: not a COFF file"
-msgstr "%s : n'est pas un fichier COFF"
+msgstr "%s: pas un fichier COFF"
 
 #: collect2.c:2933
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: cannot open as COFF file"
-msgstr "%s : ne peut ouvrir en tant que fichier COFF"
+msgstr "%s: ne peut ouvrir en tant que fichier COFF"
 
 # I18N
 #: collect2.c:2992
@@ -17147,7 +16910,7 @@ msgstr "ne peut convertir en un type pointeur"
 #: convert.c:389
 #, gcc-internal-format
 msgid "pointer value used where a floating point value was expected"
-msgstr "valeur de pointeur utilisée là où une valeur à virgule flottante était attendue"
+msgstr "valeur de pointeur utilisée là où une valeur en virgule flottante était attendue"
 
 #: convert.c:393
 #, gcc-internal-format
@@ -17160,10 +16923,9 @@ msgid "conversion to incomplete type"
 msgstr "conversion vers un type incomplet"
 
 #: convert.c:945
-#, fuzzy, gcc-internal-format
-#| msgid "can't convert between vector values of different size"
+#, gcc-internal-format
 msgid "can%'t convert a vector of type %qT to type %qT which has different size"
-msgstr "ne peut convertir entre des valeurs de vecteurs de tailles différentes"
+msgstr "ne peut convertir un vecteur de type %qT en un type %qT de taille différente"
 
 #: convert.c:953
 #, gcc-internal-format
@@ -17181,56 +16943,50 @@ msgid "aggregate value used where a complex was expected"
 msgstr "valeur d'agrégat utilisée là où un complexe était attendu"
 
 #: convert.c:1076
-#, fuzzy, gcc-internal-format
-#| msgid "can't convert between vector values of different size"
+#, gcc-internal-format
 msgid "can%'t convert a value of type %qT to vector type %qT which has different size"
-msgstr "ne peut convertir entre des valeurs de vecteurs de tailles différentes"
+msgstr "ne peut convertir une valeur de type %qT vers le type vectoriel %qT qui a une taille différente"
 
 #: convert.c:1084
-#, fuzzy, gcc-internal-format
-#| msgid "can't convert value to a vector"
+#, gcc-internal-format
 msgid "can%'t convert value to a vector"
-msgstr "ne peut convertir une valeur en vecteur"
+msgstr "ne peut convertir une valeur en un vecteur"
 
 #: convert.c:1123
-#, fuzzy, gcc-internal-format
-#| msgid "aggregate value used where a float was expected"
+#, gcc-internal-format
 msgid "aggregate value used where a fixed-point was expected"
-msgstr "valeur d'agrégat utilisée là où un flottant était attendu"
+msgstr "valeur d'agrégat utilisée là où une virgule flottante était attendue"
 
 #: coverage.c:200
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is not a gcov data file"
+#, gcc-internal-format
 msgid "%qs is not a gcov data file"
-msgstr "« %s » n'est pas un fichier de données gcov"
+msgstr "%qs n'est pas un fichier de données gcov"
 
 #: coverage.c:211
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is version `%.4s', expected version `%.4s'"
+#, gcc-internal-format
 msgid "%qs is version %q.*s, expected version %q.*s"
-msgstr "« %s » est de version « %.4s », version « %.4s » attendue"
+msgstr "%qs est à la version %q.*s, version %q.*s attendue"
 
 #: coverage.c:293 coverage.c:303
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Profile does not match flowgraph of function %s (out of date?)"
+#, gcc-internal-format, gfc-internal-format
 msgid "Profile data for function %u is corrupted"
-msgstr "Profil ne concorde pas le graphe de flux de la fonction %s (périmé?)"
+msgstr "Les données de profilage de la fonction %u sont corrompues"
 
 #: coverage.c:294
-#, fuzzy, gcc-internal-format
-#| msgid "checksum is %x instead of %x"
+#, gcc-internal-format
 msgid "checksum is (%x,%x) instead of (%x,%x)"
-msgstr "somme de contrôle est %x au lieu de %x"
+msgstr "la somme de contrôle est (%x,%x) au lieu de (%x,%x)"
 
 #: coverage.c:304
 #, gcc-internal-format, gfc-internal-format
 msgid "number of counters is %d instead of %d"
 msgstr "nombre de compteurs est %d au lieu de %d"
 
+# le %s est remplacé par un nom de compteur qui n'est pas traduit, par ex: arcs, pow2, interval, single…
 #: coverage.c:311
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot merge separate %s counters for function %u"
-msgstr "ne peut faire la fusion séparée des compteurs %s pour la fonction %u"
+msgstr "ne peut fusionner les compteurs « %s » séparés pour la fonction %u"
 
 #: coverage.c:330
 #, gcc-internal-format
@@ -17240,23 +16996,22 @@ msgstr "%qs a débordé"
 #: coverage.c:388
 #, gcc-internal-format
 msgid "the control flow of function %qE does not match its profile data (counter %qs)"
-msgstr ""
+msgstr "le flot de contrôle de la fonction %qE ne correspond pas aux données de profilage (compteur %qs)"
 
 #: coverage.c:404
 #, gcc-internal-format
 msgid "execution counts estimated\n"
-msgstr ""
+msgstr "compteurs d'exécution estimés\n"
 
 #: coverage.c:405
-#, fuzzy, gcc-internal-format
-#| msgid "file %s not found, execution counts assumed to be zero"
+#, gcc-internal-format
 msgid "execution counts assumed to be zero\n"
-msgstr "fichier %s non repéré, compteur d'exécution assumé être à zéro"
+msgstr "les compteurs d'exécution sont supposés être à zéro\n"
 
 #: coverage.c:417
 #, gcc-internal-format
 msgid "source locations for function %qE have changed, the profile data may be out of date"
-msgstr ""
+msgstr "l'emplacement des sources de la fonction %qE a changé, les données de profilage sont périmées"
 
 #: coverage.c:681
 #, gcc-internal-format
@@ -17271,126 +17026,112 @@ msgstr "ne peut ouvrir %s"
 #: data-streamer-in.c:53
 #, gcc-internal-format
 msgid "bytecode stream: string too long for the string table"
-msgstr ""
+msgstr "flux bytecode: chaîne trop longue pour la table des chaînes"
 
 #: data-streamer-in.c:84 data-streamer-in.c:113
 #, gcc-internal-format
 msgid "bytecode stream: found non-null terminated string"
-msgstr ""
+msgstr "flux bytecode: chaîne trouvée sans zéro terminal"
 
 #: dbgcnt.c:133
 #, gcc-internal-format
 msgid "cannot find a valid counter:value pair:"
-msgstr ""
+msgstr "impossible de trouver une paire compteur:valeur valide:"
 
 #: dbgcnt.c:134
 #, gcc-internal-format, gfc-internal-format
 msgid "-fdbg-cnt=%s"
-msgstr ""
+msgstr "-fdbg-cnt=%s"
 
 #: dbgcnt.c:135
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "        %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "          %s"
-msgstr "        %s"
+msgstr "          %s"
 
 #: dbxout.c:3333
 #, gcc-internal-format
 msgid "common symbol debug info is not structured as symbol+offset"
-msgstr ""
+msgstr "les informations de débogage des symboles communs ne sont pas structurées sous la forme symbole+offset"
 
-# FIXME
 #: dbxout.c:3805
-#, fuzzy, gcc-internal-format
-#| msgid "stack limits not supported on this target"
+#, gcc-internal-format
 msgid "global destructors not supported on this target"
-msgstr "les limites de la pile ne sont pas supportées sur cette cible"
+msgstr "les destructeurs globaux ne sont pas supportés sur cette cible"
 
-# FIXME
 #: dbxout.c:3822
-#, fuzzy, gcc-internal-format
-#| msgid "stack limits not supported on this target"
+#, gcc-internal-format
 msgid "global constructors not supported on this target"
-msgstr "les limites de la pile ne sont pas supportées sur cette cible"
+msgstr "les constructeurs globaux ne sont pas supportés sur cette cible"
 
 #: diagnostic.c:1461
 #, gcc-internal-format, gfc-internal-format
 msgid "in %s, at %s:%d"
 msgstr "dans %s, à %s:%d"
 
-# FIXME
 #: dominance.c:1169
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "dominator of %d should be %d, not %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "dominator of %d status unknown"
-msgstr "le dominateur de %d devrait être %d, et non %d"
+msgstr "statut inconnu pour le dominateur de %d"
 
-# FIXME
 #: dominance.c:1177
 #, gcc-internal-format, gfc-internal-format
 msgid "dominator of %d should be %d, not %d"
 msgstr "le dominateur de %d devrait être %d, et non %d"
 
 #: dumpfile.c:321 dumpfile.c:485 dumpfile.c:578
-#, fuzzy, gcc-internal-format
-#| msgid "could not open dump file `%s'"
+#, gcc-internal-format
 msgid "could not open dump file %qs: %m"
-msgstr "ne peut ouvrir le fichier de vidange « %s »"
+msgstr "ne peut ouvrir le fichier de vidange %qs: %m"
 
 #: dumpfile.c:820
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring unknown option `%.*s' in `-fdump-%s'"
+#, gcc-internal-format
 msgid "ignoring unknown option %q.*s in %<-fdump-%s%>"
-msgstr "option inconnue « %.*s » ignorée dans « -fdump-%s »"
+msgstr "option inconnue %q.*s ignorée dans %<-fdump-%s%>"
 
 #: dumpfile.c:928
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring unknown option `%.*s' in `-fdump-%s'"
+#, gcc-internal-format
 msgid "unknown option %q.*s in %<-fopt-info-%s%>"
-msgstr "option inconnue « %.*s » ignorée dans « -fdump-%s »"
+msgstr "option %q.*s inconnue dans %<-fopt-info-%s%>"
 
 #: dumpfile.c:960
 #, gcc-internal-format
 msgid "ignoring possibly conflicting option %<-fopt-info-%s%>"
-msgstr ""
+msgstr "ignore l'option %<-fopt-info-%s%> qui entre peut-être en conflit"
 
 #: dwarf2out.c:1091
 #, gcc-internal-format
 msgid "multiple EH personalities are supported only with assemblers supporting .cfi_personality directive"
-msgstr ""
+msgstr "les personnalités EH multiples sont uniquement supportées avec les assembleurs qui supportent la directive .cfi_personality"
 
 #: dwarf2out.c:13590
 #, gcc-internal-format, gfc-internal-format
 msgid "non-delegitimized UNSPEC %s (%d) found in variable location"
-msgstr ""
+msgstr "UNSPEC non délégitimisé %s (%d) trouvé à l'emplacement de la variable"
 
 #: dwarf2out.c:27078
 #, gcc-internal-format
 msgid "-feliminate-dwarf2-dups is broken for C++, ignoring"
-msgstr ""
+msgstr "-feliminate-dwarf2-dups ne fonctionne pas en C++, il est ignoré"
 
 #: emit-rtl.c:2757
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid rtl sharing found in the insn"
+#, gcc-internal-format
 msgid "invalid rtl sharing found in the insn"
 msgstr "partage rtl invalide repéré dans l'insn"
 
 #: emit-rtl.c:2759
-#, fuzzy, gcc-internal-format
-#| msgid "Shared rtx"
+#, gcc-internal-format
 msgid "shared rtx"
 msgstr "rtx partagé"
 
 #: emit-rtl.c:2761
-#, fuzzy, gcc-internal-format
-#| msgid "internal gcc abort"
+#, gcc-internal-format
 msgid "internal consistency failure"
-msgstr "abandon interne de gcc"
+msgstr "défaut d'inconsistance interne"
 
 #: emit-rtl.c:3865
 #, gcc-internal-format
 msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
-msgstr "ICE : emit_insn utilisé là où emit_jump_insn était attendu :\n"
+msgstr "ICE: emit_insn utilisé là où emit_jump_insn est attendu :\n"
 
 #: errors.c:133
 #, gcc-internal-format, gfc-internal-format
@@ -17398,66 +17139,60 @@ msgid "abort in %s, at %s:%d"
 msgstr "abandon dans %s, à %s:%d"
 
 #: except.c:2124
-#, fuzzy, gcc-internal-format
-#| msgid "argument of `__builtin_eh_return_regno' must be constant"
+#, gcc-internal-format
 msgid "argument of %<__builtin_eh_return_regno%> must be constant"
-msgstr "l'argument de « __builtin_eh_return_regno » doit être une constante"
+msgstr "l'argument de %<__builtin_eh_return_regno%> doit être une constante"
 
 #: except.c:2259
 #, gcc-internal-format
 msgid "__builtin_eh_return not supported on this target"
-msgstr "« __builtin_eh_return » n'est pas possible sur cette cible"
+msgstr "« __builtin_eh_return » n'est pas supporté sur cette cible"
 
 #: except.c:3315 except.c:3340
 #, gcc-internal-format, gfc-internal-format
 msgid "region_array is corrupted for region %i"
-msgstr ""
+msgstr "region_array est corrompu pour la région %i"
 
 #: except.c:3328 except.c:3359
 #, gcc-internal-format, gfc-internal-format
 msgid "lp_array is corrupted for lp %i"
-msgstr ""
+msgstr "lp_array est corrompu pour le lp %i"
 
 #: except.c:3345
 #, gcc-internal-format, gfc-internal-format
 msgid "outer block of region %i is wrong"
-msgstr ""
+msgstr "le bloc extérieur de la région %i n'est pas bon"
 
 #: except.c:3350
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "negative string length"
+#, gcc-internal-format, gfc-internal-format
 msgid "negative nesting depth of region %i"
-msgstr "longueur négative de chaîne"
+msgstr "profondeur d'imbrication négative pour la région %i"
 
 #: except.c:3364
 #, gcc-internal-format, gfc-internal-format
 msgid "region of lp %i is wrong"
-msgstr ""
+msgstr "la région du lp %i n'est pas bonne"
 
 #: except.c:3391
 #, gcc-internal-format, gfc-internal-format
 msgid "tree list ends on depth %i"
-msgstr ""
+msgstr "la liste de l'arbre se termine à la profondeur %i"
 
 #: except.c:3396
-#, fuzzy, gcc-internal-format
-#| msgid "cast does not match function type"
+#, gcc-internal-format
 msgid "region_array does not match region_tree"
-msgstr "le transtypage ne concorde pas avec le type de la fonction"
+msgstr "region_array ne correspond pas à region_tree"
 
 #: except.c:3401
-#, fuzzy, gcc-internal-format
-#| msgid "cast does not match function type"
+#, gcc-internal-format
 msgid "lp_array does not match region_tree"
-msgstr "le transtypage ne concorde pas avec le type de la fonction"
+msgstr "lp_array ne correspond pas à region_tree"
 
 #: except.c:3408
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_eh_tree failed"
-msgstr "verify_flow_info a échoué"
+msgstr "verify_eh_tree a échoué"
 
-# FIXME
 #: explow.c:1482
 #, gcc-internal-format
 msgid "stack limits not supported on this target"
@@ -17466,75 +17201,67 @@ msgstr "les limites de la pile ne sont pas supportées sur cette cible"
 #: expmed.c:338
 #, gcc-internal-format
 msgid "reverse scalar storage order"
-msgstr ""
+msgstr "ordre de stockage inverse des scalaires"
 
 #: expmed.c:355
 #, gcc-internal-format
 msgid "reverse floating-point scalar storage order"
-msgstr ""
+msgstr "ordre de stockage inverse des scalaires en virgule flottante"
 
 #: expmed.c:399
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Generate code for the C400"
+#, gcc-internal-format, gfc-internal-format
 msgid "reverse storage order for %smode"
-msgstr "Générer le code pour le C400"
+msgstr "ordre de stockage inverse pour le mode %s"
 
 #: expmed.c:642
 #, gcc-internal-format
 msgid "write of %wu-bit data outside the bound of destination object, data truncated into %wu-bit"
-msgstr ""
+msgstr "écriture de %wu bits de données hors des limites de l'objet de destination, les données ont été tronquées dans %wu bits"
 
 #: expr.c:10752
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%D' redeclared with attribute noinline"
+#, gcc-internal-format
 msgid "%Kcall to %qs declared with attribute error: %s"
-msgstr "fonction « %D » redéclarée avec l'attribut non enligne"
+msgstr "%Kappel à %qs déclaré avec une erreur d'attribut: %s"
 
 #: expr.c:10759
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%D' redeclared with attribute noinline"
+#, gcc-internal-format
 msgid "%Kcall to %qs declared with attribute warning: %s"
-msgstr "fonction « %D » redéclarée avec l'attribut non enligne"
+msgstr "%Kappel à %qs déclaré avec un avertissement d'attribut: %s"
 
 #: final.c:1534
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument of `%s' attribute"
+#, gcc-internal-format
 msgid "invalid argument %qs to -fdebug-prefix-map"
-msgstr "type d'argument invalide pour l'attribut « %s »"
+msgstr "argument %qs invalide à -fdebug-prefix-map"
 
 #: final.c:1836
-#, fuzzy, gcc-internal-format
-#| msgid "%Jsize of '%D' is larger than %d bytes"
+#, gcc-internal-format
 msgid "the frame size of %wd bytes is larger than %wd bytes"
-msgstr "taille de « %D » est plus grande que %d octets"
+msgstr "la taille de trame de %wd octets est plus grande que %wd octets"
 
 #: final.c:4621 toplev.c:1387 tree-cfgcleanup.c:1148
-#, fuzzy, gcc-internal-format
-#| msgid "could not open dump file `%s'"
+#, gcc-internal-format
 msgid "could not open final insn dump file %qs: %m"
-msgstr "ne peut ouvrir le fichier de vidange « %s »"
+msgstr "n'a pu ouvrir le fichier de vidange des insn finales %qs: %m"
 
 #: final.c:4674 tree-cfgcleanup.c:1164
-#, fuzzy, gcc-internal-format
-#| msgid "could not open dump file `%s'"
+#, gcc-internal-format
 msgid "could not close final insn dump file %qs: %m"
-msgstr "ne peut ouvrir le fichier de vidange « %s »"
+msgstr "n'a pu fermer le fichier de vidange des insn finales %qs: %m"
 
 #: fixed-value.c:128
-#, fuzzy, gcc-internal-format
-#| msgid "large integer implicitly truncated to unsigned type"
+#, gcc-internal-format
 msgid "large fixed-point constant implicitly truncated to fixed-point type"
-msgstr "grand entier implicitement tronqué pour un type non signé"
+msgstr "la constante de grande taille en virgule fixe a été tronquée implicitement en un type en virgule fixe"
 
 #: fold-const.c:3966 fold-const.c:3976
 #, gcc-internal-format, gfc-internal-format
 msgid "comparison is always %d due to width of bit-field"
-msgstr "comparaison est toujours %d en raison de la largeur du champ de bits"
+msgstr "la comparaison est toujours %d en raison de la largeur du champ de bits"
 
 #: fold-const.c:5237 tree-ssa-reassoc.c:2333 tree-ssa-reassoc.c:2964
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying range test"
-msgstr ""
+msgstr "suppose qu'un débordement signé n'a pas lieu quand le test de la plage est simplifié"
 
 #: fold-const.c:5686 fold-const.c:5700
 #, gcc-internal-format, gfc-internal-format
@@ -17542,26 +17269,24 @@ msgid "comparison is always %d"
 msgstr "comparaison est toujours %d"
 
 #: fold-const.c:5837
-#, fuzzy, gcc-internal-format
-#| msgid "`or' of unmatched not-equal tests is always 1"
+#, gcc-internal-format
 msgid "%<or%> of unmatched not-equal tests is always 1"
-msgstr "« or » de tests non pairé de non égalité est toujours 1"
+msgstr "un %<or%> de tests de non égalités non appariés est toujours 1"
 
 #: fold-const.c:5842
-#, fuzzy, gcc-internal-format
-#| msgid "`and' of mutually exclusive equal-tests is always 0"
+#, gcc-internal-format
 msgid "%<and%> of mutually exclusive equal-tests is always 0"
-msgstr "« and » de tests d'égalité mutuellement exclusifs est toujours 0"
+msgstr "un %<and%> de tests d'égalités mutuellement exclusifs est toujours 0"
 
 #: fold-const.c:8097
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when reducing constant in comparison"
-msgstr ""
+msgstr "suppose qu'un débordement signé n'a pas lieu lorsque la constante dans la comparaison est réduite"
 
 #: fold-const.c:8470
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when combining constants around a comparison"
-msgstr ""
+msgstr "suppose qu'un débordement signé n'a pas lieu lorsque des constantes sont combinées autour d'une comparaison"
 
 #: fold-const.c:11933
 #, gcc-internal-format
@@ -17569,59 +17294,55 @@ msgid "fold check: original tree changed by fold"
 msgstr "vérification fold: arbre originale modifié par fold"
 
 #: function.c:242
-#, fuzzy, gcc-internal-format
-#| msgid "size of array `%s' is too large"
+#, gcc-internal-format
 msgid "total size of local objects too large"
-msgstr "la taille du tableau « %s » est trop grande"
+msgstr "la taille totale des objets locaux est trop grande"
 
 #: function.c:1765 gimplify.c:6082
-#, fuzzy, gcc-internal-format
-#| msgid "impossible constraint in `asm'"
+#, gcc-internal-format
 msgid "impossible constraint in %<asm%>"
-msgstr "contrainte impossible dans « asm »"
+msgstr "contrainte impossible dans %<asm%>"
 
 #: function.c:4389
-#, fuzzy, gcc-internal-format
-#| msgid "%Jvariable '%D' might be clobbered by `longjmp' or `vfork'"
+#, gcc-internal-format
 msgid "variable %q+D might be clobbered by %<longjmp%> or %<vfork%>"
-msgstr "variable « %D » pourrait être maltraitée par un «longjmp» ou un «vfork »"
+msgstr "la variable %q+D pourrait être écrasée par %<longjmp%> ou %<vfork%>"
 
 #: function.c:4410
-#, fuzzy, gcc-internal-format
-#| msgid "%Jargument '%D' might be clobbered by `longjmp' or `vfork'"
+#, gcc-internal-format
 msgid "argument %q+D might be clobbered by %<longjmp%> or %<vfork%>"
-msgstr "argument « %D » pourrait être maltraitée par un «longjmp» ou un «vfork »"
+msgstr "l'argument %q+D pourrait être écrasé par %<longjmp%> ou %<vfork%>"
 
 #: function.c:5055
 #, gcc-internal-format
 msgid "function returns an aggregate"
-msgstr "fonction retourne un agrégat"
+msgstr "la fonction retourne un agrégat"
 
 #: gcc.c:2111 gcc.c:2132
 #, gcc-internal-format, gfc-internal-format
 msgid "specs %%include syntax malformed after %ld characters"
-msgstr "syntaxe des specs %%include mal composée après %ld caractères"
+msgstr "la syntaxe des specs %%include est mal formée après %ld caractères"
 
 #: gcc.c:2159 gcc.c:2169 gcc.c:2180 gcc.c:2191
 #, gcc-internal-format, gfc-internal-format
 msgid "specs %%rename syntax malformed after %ld characters"
-msgstr "specs de la syntaxe %%rename mal composées après %ld caractères"
+msgstr "la syntaxe des specs %%rename est mal formée après %ld caractères"
 
+# le message signifie bien que la spec à renommer n'a pas été trouvée et non qu'on n'a pas trouvé qu'elle avait été renommée
 #: gcc.c:2202
 #, gcc-internal-format, gfc-internal-format
 msgid "specs %s spec was not found to be renamed"
-msgstr "specs de la spécification %s n'a pas été trouvé pour être renommer"
+msgstr "la spécification des specs %s à renommer n'a pas été trouvée"
 
 #: gcc.c:2210
-#, fuzzy, gcc-internal-format
-#| msgid "%s: attempt to rename spec '%s' to already defined spec '%s'"
+#, gcc-internal-format
 msgid "%s: attempt to rename spec %qs to already defined spec %qs"
-msgstr "%s: tentative pour renommer la spécification « %s » à un spécification « %s » déjà définie"
+msgstr "%s: tentative de renommer la spécification %qs en une spécification %qs déjà définie"
 
 #: gcc.c:2232
 #, gcc-internal-format, gfc-internal-format
 msgid "specs unknown %% command after %ld characters"
-msgstr "specs inconnus de la commande %% après %ld caractères"
+msgstr "commande specs %% inconnue après %ld caractères"
 
 #: gcc.c:2244 gcc.c:2258
 #, gcc-internal-format, gfc-internal-format
@@ -17631,12 +17352,12 @@ msgstr "fichier de specs mal composé après %ld caractères"
 #: gcc.c:2313
 #, gcc-internal-format
 msgid "spec file has no spec for linking"
-msgstr "fichier de specs n'a pas de spécification pour l'édition de liens"
+msgstr "le fichier de spec n'a pas de spécification pour l'édition de liens"
 
 #: gcc.c:2861
 #, gcc-internal-format
 msgid "system path %qs is not absolute"
-msgstr ""
+msgstr "le chemin système %qs n'est pas absolu"
 
 #: gcc.c:2949
 #, gcc-internal-format
