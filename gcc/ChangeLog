@@ -1,3 +1,13 @@
+2017-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79088
+	PR tree-optimization/79188
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Move code
+	resetting loop bounds after last path deletion.  Reset loop
+	bounds of the target loop, make code match the comments.
+	* tree-ssa-threadbackwards.c (pass_early_thread_jumps::execute):
+	Make sure loops need no fixups.
+
 2017-01-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-builtin.def (VSIEDPF): Add scalar insert

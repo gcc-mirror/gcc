@@ -1,3 +1,10 @@
+2017-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79088
+	PR tree-optimization/79188
+	* gcc.dg/torture/pr79088.c: New testcase.
+	* gcc.dg/torture/pr79188.c: Likewise.
+
 2017-01-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/bfp/scalar-insert-exp-3.c: New test.
