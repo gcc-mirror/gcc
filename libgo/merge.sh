@@ -147,7 +147,7 @@ done
 
 (cd ${NEWDIR}/src && find . -name testdata -print) | while read d; do
   skip=false
-  case "$f" in
+  case "$d" in
   ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/*)
     ;;
   ./cmd/*)
