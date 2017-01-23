@@ -1,5 +1,11 @@
 2017-01-23  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/asan/use-after-scope-10.c: New test.
+	* gcc.dg/asan/use-after-scope-11.c: New test.
+	* g++.dg/asan/use-after-scope-5.C: New test.
+
+2017-01-23  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/asan/use-after-scope-3.c: Add additional flags.
 	* gcc.dg/asan/use-after-scope-9.c: Likewise and grep for
 	sanopt optimization for ASAN_POISON.

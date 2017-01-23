@@ -67,6 +67,8 @@ extern hash_set <tree> *asan_used_labels;
 #define ASAN_STACK_FRAME_MAGIC		0x41b58ab3
 #define ASAN_STACK_RETIRED_MAGIC	0x45e0360e
 
+#define ASAN_USE_AFTER_SCOPE_ATTRIBUTE	"use after scope memory"
+
 /* Various flags for Asan builtins.  */
 enum asan_check_flags
 {

@@ -1367,10 +1367,18 @@ eliminate_unnecessary_stmts (void)
 		  update_stmt (stmt);
 		  release_ssa_name (name);
 
-		  /* GOMP_SIMD_LANE without lhs is not needed.  */
-		  if (gimple_call_internal_p (stmt)
-		      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
-		    remove_dead_stmt (&gsi, bb);
+		  /* GOMP_SIMD_LANE or ASAN_POISON without lhs is not
+		     needed.  */
+		  if (gimple_call_internal_p (stmt))
+		    switch (gimple_call_internal_fn (stmt))
+		      {
+		      case IFN_GOMP_SIMD_LANE:
+		      case IFN_ASAN_POISON:
+			remove_dead_stmt (&gsi, bb);
+			break;
+		      default:
+			break;
+		      }
 		}
 	      else if (gimple_call_internal_p (stmt))
 		switch (gimple_call_internal_fn (stmt))

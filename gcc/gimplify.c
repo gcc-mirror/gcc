@@ -1206,8 +1206,21 @@ asan_poison_variables (hash_set<tree> *variables, bool poison, gimple_seq *seq_p
 
   sorted_variables.qsort (sort_by_decl_uid);
 
-  for (unsigned i = 0; i < sorted_variables.length (); i++)
-    asan_poison_variable (sorted_variables[i], poison, seq_p);
+  unsigned i;
+  tree var;
+  FOR_EACH_VEC_ELT (sorted_variables, i, var)
+    {
+      asan_poison_variable (var, poison, seq_p);
+
+      /* Add use_after_scope_memory attribute for the variable in order
+	 to prevent re-written into SSA.  */
+      if (!lookup_attribute (ASAN_USE_AFTER_SCOPE_ATTRIBUTE,
+			     DECL_ATTRIBUTES (var)))
+	DECL_ATTRIBUTES (var)
+	  = tree_cons (get_identifier (ASAN_USE_AFTER_SCOPE_ATTRIBUTE),
+		       integer_one_node,
+		       DECL_ATTRIBUTES (var));
+    }
 }
 
 /* Gimplify a BIND_EXPR.  Just voidify and recurse.  */
