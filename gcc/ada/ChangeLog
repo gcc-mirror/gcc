@@ -1,3 +1,51 @@
+2017-01-23  Pascal Obry  <obry@adacore.com>
+
+	* s-taprop-mingw.adb (Enter_Task): Initialize the Thread handle which
+	is needed when a foreign thread call a Win32 API using a thread handle
+	like GetThreadTimes() for example.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Do not
+	allow an 'Address clause to be specified on a prefix of a
+	class-wide type.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Ensure that the prefix of
+	attribute 'Valid is a renaming of the original expression when
+	the expression denotes a name. For all other kinds of expression,
+	use a constant to capture the value.
+	* exp_util.adb (Is_Name_Reference): Moved to Sem_Util.
+	* sem_util.ads, sem_util.adb (Is_Name_Reference): Moved from Exp_Util.
+
+2017-01-23  Justin Squirek  <squirek@adacore.com>
+
+	* sem_eval.adb (Eval_Integer_Literal): Add special
+	case to avoid optimizing out check if the literal appears in
+	an if-expression.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Do not
+	allow an 'Address clause to be specified on a prefix of a
+	class-wide type.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Ensure that the prefix of
+	attribute 'Valid is a renaming of the original expression when
+	the expression denotes a name. For all other kinds of expression,
+	use a constant to capture the value.
+	* exp_util.adb (Is_Name_Reference): Moved to Sem_Util.
+	* sem_util.ads, sem_util.adb (Is_Name_Reference): Moved from Exp_Util.
+
+2017-01-23  Justin Squirek  <squirek@adacore.com>
+
+	* sem_eval.adb (Eval_Integer_Literal): Add special
+	case to avoid optimizing out check if the literal appears in
+	an if-expression.
+
 2017-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Try_Primitive_Operations,

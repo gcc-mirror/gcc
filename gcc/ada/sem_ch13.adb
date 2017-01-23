@@ -4915,7 +4915,20 @@ package body Sem_Ch13 is
               or else Has_Controlled_Component (Etype (U_Ent))
             then
                Error_Msg_NE
-                 ("??controlled object& must not be overlaid", Nam, U_Ent);
+                 ("??controlled object & must not be overlaid", Nam, U_Ent);
+               Error_Msg_N
+                 ("\??Program_Error will be raised at run time", Nam);
+               Insert_Action (Declaration_Node (U_Ent),
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Overlaid_Controlled_Object));
+               return;
+
+            --  Case of an address clause for a class-wide object which is
+            --  considered erroneous.
+
+            elsif Is_Class_Wide_Type (Etype (U_Ent)) then
+               Error_Msg_NE
+                 ("??class-wide object & must not be overlaid", Nam, U_Ent);
                Error_Msg_N
                  ("\??Program_Error will be raised at run time", Nam);
                Insert_Action (Declaration_Node (U_Ent),

@@ -7206,12 +7206,18 @@ package body Checks is
             Force_Evaluation (Exp, Name_Req => False);
          end if;
 
-         --  Build the prefix for the 'Valid call
+         --  Build the prefix for the 'Valid call. If the expression denotes
+         --  a name, use a renaming to alias it, otherwise use a constant to
+         --  capture the value of the expression.
+
+         --    Temp : ... renames Expr;      --  reference to a name
+         --    Temp : constant ... := Expr;  --  all other cases
 
          PV :=
            Duplicate_Subexpr_No_Checks
              (Exp           => Exp,
               Name_Req      => False,
+              Renaming_Req  => Is_Name_Reference (Exp),
               Related_Id    => Related_Id,
               Is_Low_Bound  => Is_Low_Bound,
               Is_High_Bound => Is_High_Bound);

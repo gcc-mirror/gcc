@@ -13405,6 +13405,60 @@ package body Sem_Util is
       end if;
    end Is_Local_Variable_Reference;
 
+   -----------------------
+   -- Is_Name_Reference --
+   -----------------------
+
+   function Is_Name_Reference (N : Node_Id) return Boolean is
+   begin
+      if Is_Entity_Name (N) then
+         return Present (Entity (N)) and then Is_Object (Entity (N));
+      end if;
+
+      case Nkind (N) is
+         when N_Indexed_Component
+            | N_Slice
+         =>
+            return
+              Is_Name_Reference (Prefix (N))
+                or else Is_Access_Type (Etype (Prefix (N)));
+
+         --  Attributes 'Input, 'Old and 'Result produce objects
+
+         when N_Attribute_Reference =>
+            return
+              Nam_In (Attribute_Name (N), Name_Input, Name_Old, Name_Result);
+
+         when N_Selected_Component =>
+            return
+              Is_Name_Reference (Selector_Name (N))
+                and then
+                  (Is_Name_Reference (Prefix (N))
+                    or else Is_Access_Type (Etype (Prefix (N))));
+
+         when N_Explicit_Dereference =>
+            return True;
+
+         --  A view conversion of a tagged name is a name reference
+
+         when N_Type_Conversion =>
+            return
+              Is_Tagged_Type (Etype (Subtype_Mark (N)))
+                and then Is_Tagged_Type (Etype (Expression (N)))
+                and then Is_Name_Reference (Expression (N));
+
+         --  An unchecked type conversion is considered to be a name if the
+         --  operand is a name (this construction arises only as a result of
+         --  expansion activities).
+
+         when N_Unchecked_Type_Conversion =>
+            return Is_Name_Reference (Expression (N));
+
+         when others =>
+            return False;
+      end case;
+   end Is_Name_Reference;
+
    ---------------------------------
    -- Is_Nontrivial_DIC_Procedure --
    ---------------------------------

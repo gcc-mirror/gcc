@@ -9014,12 +9014,6 @@ package body Exp_Util is
       --  is present (xxx is taken from the Chars field of Related_Nod),
       --  otherwise it generates an internal temporary.
 
-      function Is_Name_Reference (N : Node_Id) return Boolean;
-      --  Determine if the tree referenced by N represents a name. This is
-      --  similar to Is_Object_Reference but returns true only if N can be
-      --  renamed without the need for a temporary, the typical example of
-      --  an object not in this category being a function call.
-
       ---------------------
       -- Build_Temporary --
       ---------------------
@@ -9049,61 +9043,6 @@ package body Exp_Util is
             return Make_Temporary (Loc, Id, Related_Nod);
          end if;
       end Build_Temporary;
-
-      -----------------------
-      -- Is_Name_Reference --
-      -----------------------
-
-      function Is_Name_Reference (N : Node_Id) return Boolean is
-      begin
-         if Is_Entity_Name (N) then
-            return Present (Entity (N)) and then Is_Object (Entity (N));
-         end if;
-
-         case Nkind (N) is
-            when N_Indexed_Component
-               | N_Slice
-            =>
-               return
-                 Is_Name_Reference (Prefix (N))
-                   or else Is_Access_Type (Etype (Prefix (N)));
-
-            --  Attributes 'Input, 'Old and 'Result produce objects
-
-            when N_Attribute_Reference =>
-               return
-                 Nam_In
-                   (Attribute_Name (N), Name_Input, Name_Old, Name_Result);
-
-            when N_Selected_Component =>
-               return
-                 Is_Name_Reference (Selector_Name (N))
-                   and then
-                     (Is_Name_Reference (Prefix (N))
-                       or else Is_Access_Type (Etype (Prefix (N))));
-
-            when N_Explicit_Dereference =>
-               return True;
-
-            --  A view conversion of a tagged name is a name reference
-
-            when N_Type_Conversion =>
-               return
-                 Is_Tagged_Type (Etype (Subtype_Mark (N)))
-                   and then Is_Tagged_Type (Etype (Expression (N)))
-                   and then Is_Name_Reference (Expression (N));
-
-            --  An unchecked type conversion is considered to be a name if
-            --  the operand is a name (this construction arises only as a
-            --  result of expansion activities).
-
-            when N_Unchecked_Type_Conversion =>
-               return Is_Name_Reference (Expression (N));
-
-            when others =>
-               return False;
-         end case;
-      end Is_Name_Reference;
 
       --  Local variables
 
