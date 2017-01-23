@@ -1826,7 +1826,7 @@ noce_try_cmove (struct noce_if_info *if_info)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = end_ifcvt_sequence (if_info);
-	  if (!seq)
+	  if (!seq || !noce_conversion_profitable_p (seq, if_info))
 	    return FALSE;
 
 	  emit_insn_before_setloc (seq, if_info->jump,

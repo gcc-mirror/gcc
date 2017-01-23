@@ -1,3 +1,10 @@
+2017-01-23  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/78634
+	* config/i386/i386.c (ix86_max_noce_ifcvt_seq_cost): New function.
+	(TARGET_MAX_NOCE_IFCVT_SEQ_COST): Define.
+	* ifcvt.c (noce_try_cmove): Add missing cost check.
+
 2017-01-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/70754

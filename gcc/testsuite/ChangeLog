@@ -1,3 +1,8 @@
+2017-01-23  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/78634
+	* gcc.target/i386/funcspec-11.c: Also pass -mtune=i686.
+
 2017-01-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/70754
