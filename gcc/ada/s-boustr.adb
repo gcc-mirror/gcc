@@ -83,6 +83,15 @@ package body System.Bounded_Strings is
       Append (X, S (P - 1 .. S'Last));
    end Append_Address;
 
+   -------------
+   -- Is_Full --
+   -------------
+
+   function Is_Full (X : Bounded_String) return Boolean is
+   begin
+      return X.Length >= X.Max_Length;
+   end Is_Full;
+
    ---------------
    -- To_String --
    ---------------

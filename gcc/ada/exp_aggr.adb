@@ -6444,16 +6444,16 @@ package body Exp_Aggr is
    ------------------------------
 
    procedure Expand_N_Delta_Aggregate (N : Node_Id) is
-      Loc :  constant Source_Ptr := Sloc (N);
-      Temp : constant Entity_Id := Make_Temporary (Loc, 'T');
-      Typ  : constant Entity_Id := Etype (N);
+      Loc  : constant Source_Ptr := Sloc (N);
+      Typ  : constant Entity_Id  := Etype (N);
       Decl : Node_Id;
 
    begin
-      Decl := Make_Object_Declaration (Loc,
-         Defining_Identifier => Temp,
-         Object_Definition => New_Occurrence_Of (Typ, Loc),
-         Expression => New_Copy_Tree (Expression (N)));
+      Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Make_Temporary (Loc, 'T'),
+          Object_Definition   => New_Occurrence_Of (Typ, Loc),
+          Expression          => New_Copy_Tree (Expression (N)));
 
       if Is_Array_Type (Etype (N)) then
          Expand_Delta_Array_Aggregate (N, New_List (Decl));
@@ -6467,14 +6467,18 @@ package body Exp_Aggr is
    ----------------------------------
 
    procedure Expand_Delta_Array_Aggregate (N : Node_Id; Deltas : List_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Temp   : constant Entity_Id  := Defining_Identifier (First (Deltas));
-      Assoc  : Node_Id;
-      Choice : Node_Id;
+      Loc   : constant Source_Ptr := Sloc (N);
+      Temp  : constant Entity_Id  := Defining_Identifier (First (Deltas));
+      Assoc : Node_Id;
+
       function Generate_Loop (C : Node_Id) return Node_Id;
       --  Generate a loop containing individual component assignments for
       --  choices that are ranges, subtype indications, subtype names, and
       --  iterated component associations.
+
+      -------------------
+      -- Generate_Loop --
+      -------------------
 
       function Generate_Loop (C : Node_Id) return Node_Id is
          Sl : constant Source_Ptr := Sloc (C);
@@ -6491,20 +6495,28 @@ package body Exp_Aggr is
 
          return
            Make_Loop_Statement (Loc,
-              Iteration_Scheme => Make_Iteration_Scheme (Sl,
-                Loop_Parameter_Specification =>
-                Make_Loop_Parameter_Specification (Sl,
-                  Defining_Identifier => Ix,
-                  Discrete_Subtype_Definition => New_Copy_Tree (C))),
-              End_Label => Empty,
-              Statements =>
-                New_List (
-                  Make_Assignment_Statement (Sl,
-                    Name       => Make_Indexed_Component (Sl,
+             Iteration_Scheme =>
+               Make_Iteration_Scheme (Sl,
+                 Loop_Parameter_Specification =>
+                   Make_Loop_Parameter_Specification (Sl,
+                     Defining_Identifier         => Ix,
+                     Discrete_Subtype_Definition => New_Copy_Tree (C))),
+
+              Statements      => New_List (
+                Make_Assignment_Statement (Sl,
+                  Name       =>
+                    Make_Indexed_Component (Sl,
                       Prefix      => New_Occurrence_Of (Temp, Sl),
                       Expressions => New_List (New_Occurrence_Of (Ix, Sl))),
-                    Expression => New_Copy_Tree (Expression (Assoc)))));
+                  Expression => New_Copy_Tree (Expression (Assoc)))),
+              End_Label       => Empty);
       end Generate_Loop;
+
+      --  Local variables
+
+      Choice : Node_Id;
+
+   --  Start of processing for Expand_Delta_Array_Aggregate
 
    begin
       Assoc := First (Component_Associations (N));
@@ -6524,7 +6536,7 @@ package body Exp_Aggr is
 
                if Nkind (Choice) = N_Range
                  or else (Is_Entity_Name (Choice)
-                   and then Is_Type (Entity (Choice)))
+                           and then Is_Type (Entity (Choice)))
                then
                   Append_To (Deltas, Generate_Loop (Choice));
 
@@ -6534,11 +6546,12 @@ package body Exp_Aggr is
 
                else
                   Append_To (Deltas,
-                     Make_Assignment_Statement (Sloc (Choice),
-                       Name => Make_Indexed_Component (Sloc (Choice),
-                         Prefix => New_Occurrence_Of (Temp, Loc),
-                         Expressions => New_List (New_Copy_Tree (Choice))),
-                       Expression => New_Copy_Tree (Expression (Assoc))));
+                    Make_Assignment_Statement (Sloc (Choice),
+                      Name       =>
+                        Make_Indexed_Component (Sloc (Choice),
+                          Prefix      => New_Occurrence_Of (Temp, Loc),
+                          Expressions => New_List (New_Copy_Tree (Choice))),
+                      Expression => New_Copy_Tree (Expression (Assoc))));
                end if;
 
                Next (Choice);
@@ -6569,11 +6582,12 @@ package body Exp_Aggr is
          Choice := First (Choice_List (Assoc));
          while Present (Choice) loop
             Append_To (Deltas,
-               Make_Assignment_Statement (Sloc (Choice),
-                 Name => Make_Selected_Component (Sloc (Choice),
-                   Prefix => New_Occurrence_Of (Temp, Loc),
-                   Selector_Name => Make_Identifier (Loc, Chars (Choice))),
-                 Expression => New_Copy_Tree (Expression (Assoc))));
+              Make_Assignment_Statement (Sloc (Choice),
+                Name       =>
+                  Make_Selected_Component (Sloc (Choice),
+                    Prefix        => New_Occurrence_Of (Temp, Loc),
+                    Selector_Name => Make_Identifier (Loc, Chars (Choice))),
+                Expression => New_Copy_Tree (Expression (Assoc))));
             Next (Choice);
          end loop;
 

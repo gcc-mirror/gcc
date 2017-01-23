@@ -215,6 +215,9 @@ package body Expander is
                when N_Delay_Until_Statement =>
                   Expand_N_Delay_Until_Statement (N);
 
+               when N_Delta_Aggregate =>
+                  Expand_N_Delta_Aggregate (N);
+
                when N_Entry_Body =>
                   Expand_N_Entry_Body (N);
 

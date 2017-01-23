@@ -2360,6 +2360,9 @@ package body Checks is
                  and then not Is_Elementary_Type (Etype (Orig_Act_2))
                  and then May_Cause_Aliasing (Formal_1, Formal_2)
                then
+                  Remove_Side_Effects (Actual_1);
+                  Remove_Side_Effects (Actual_2);
+
                   Overlap_Check
                     (Actual_1 => Actual_1,
                      Actual_2 => Actual_2,

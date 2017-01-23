@@ -48,6 +48,9 @@ package System.Bounded_Strings is
    procedure Append_Address (X : in out Bounded_String; A : Address);
    --  Append an address to X
 
+   function Is_Full (X : Bounded_String) return Boolean;
+   --  Return True iff X is full and any character or string will be dropped
+   --  if appended.
 private
    type Bounded_String (Max_Length : Natural) is limited record
       Length : Natural := 0;

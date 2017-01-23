@@ -1898,6 +1898,11 @@ package body Ch3 is
                  ("aspect specifications must come after initialization "
                   & "expression",
                   Sloc (First (Aspect_Specifications (Decl_Node))));
+
+            else
+               --  In any case, the assignment symbol doesn't belong.
+
+               Error_Msg ("misplaced assignment symbol", Scan_Ptr);
             end if;
 
             Set_Expression (Decl_Node, Init_Expr_Opt);

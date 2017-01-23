@@ -111,10 +111,10 @@ package Exp_Strm is
       Fnam           : out Entity_Id;
       Use_Underlying : Boolean := True);
    --  Build function for Input attribute for record type or for an elementary
-   --  type (the latter is used only in the case where a user defined Read
-   --  routine is defined, since in other cases, Input calls the appropriate
-   --  runtime library routine directly. The flag Use_Underlying controls
-   --  weither the base type or the underlying type of the base type of Typ is
+   --  type (the latter is used only in the case where a user-defined Read
+   --  routine is defined, since, in other cases, Input calls the appropriate
+   --  runtime library routine directly). The flag Use_Underlying controls
+   --  whether the base type or the underlying type of the base type of Typ is
    --  used during construction.
 
    procedure Build_Record_Or_Elementary_Output_Procedure

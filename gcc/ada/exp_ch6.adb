@@ -2832,10 +2832,12 @@ package body Exp_Ch6 is
          CW_Interface_Formals_Present :=
            CW_Interface_Formals_Present
              or else
-               (Ekind (Etype (Formal)) = E_Class_Wide_Type
+               (Is_Class_Wide_Type (Etype (Formal))
                  and then Is_Interface (Etype (Etype (Formal))))
              or else
                (Ekind (Etype (Formal)) = E_Anonymous_Access_Type
+                 and then Is_Class_Wide_Type (Directly_Designated_Type
+                                               (Etype (Etype (Formal))))
                  and then Is_Interface (Directly_Designated_Type
                                          (Etype (Etype (Formal)))));
 
