@@ -874,6 +874,10 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 		  {
 		    /* if op2 < 0, op1**op2 == 0  because abs(op1) > 1.  */
 		    mpz_set_si (result->value.integer, 0);
+		    if (warn_integer_division)
+		      gfc_warning_now (OPT_Winteger_division, "Negative "
+				       "exponent of integer has zero "
+				       "result at %L", &result->where);
 		  }
 		else if (gfc_extract_int (op2, &power))
 		  {
