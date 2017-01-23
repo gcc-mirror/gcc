@@ -106,7 +106,7 @@ package body Debug is
    --  d.m  For -gnatl, print full source only for main unit
    --  d.n  Print source file names
    --  d.o  Conservative elaboration order for indirect calls
-   --  d.p
+   --  d.p  Use original Ada 95 semantics for Bit_Order (disable AI95-0133)
    --  d.q
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
    --  d.s
@@ -557,6 +557,10 @@ package body Debug is
 
    --  d.o  Conservative elaboration order for indirect calls. This causes
    --       P'Access to be treated as a call in more cases.
+
+   --  d.p  In Ada 95 (or 83) mode, use original Ada 95 behaviour for the
+   --       interpretation of component clauses crossing byte boundaries when
+   --       using the non-default bit order (i.e. ignore AI95-0133).
 
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.

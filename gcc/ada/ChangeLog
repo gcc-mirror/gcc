@@ -1,3 +1,16 @@
+2017-01-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order):
+	Split original Ada 95 part off into new subprogram
+	below. Call that subprogram (instead of proceeding with
+	AI95-0133 behaviour) if debug switch -gnatd.p is in use.
+	(Adjust_Record_For_Reverse_Bit_Order_Ada_95): ... new subprogram
+	* debug.adb Document new switch -gnatd.p
+	* freeze.adb (Freeze_Entity.Freeze_Record_Type): Do not adjust
+	record for reverse bit order if an error has already been posted
+	on the record type.  This avoids generating extraneous "info:"
+	messages for illegal code.
+
 2017-01-23  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch3.adb (Analyze_Declarations): Correct comments

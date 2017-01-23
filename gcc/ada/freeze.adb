@@ -4262,10 +4262,14 @@ package body Freeze is
                  ("\??since no component clauses were specified", ADC);
 
             --  Here is where we do the processing to adjust component clauses
-            --  for reversed bit order, when not using reverse SSO.
+            --  for reversed bit order, when not using reverse SSO. If an error
+            --  has been reported on Rec already (such as SSO incompatible with
+            --  bit order), don't bother adjusting as this may generate extra
+            --  noise.
 
             elsif Reverse_Bit_Order (Rec)
               and then not Reverse_Storage_Order (Rec)
+              and then not Error_Posted (Rec)
             then
                Adjust_Record_For_Reverse_Bit_Order (Rec);
 
