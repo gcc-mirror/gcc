@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "domwalk.h"
 #include "statistics.h"
+#include "asan.h"
 
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
 
@@ -1807,6 +1808,26 @@ maybe_replace_use_in_debug_stmt (use_operand_p use_p)
 }
 
 
+/* If DEF has x_5 = ASAN_POISON () as its current def, add
+   ASAN_POISON_USE (x_5) stmt before GSI to denote the stmt writes into
+   a poisoned (out of scope) variable.  */
+
+static void
+maybe_add_asan_poison_write (tree def, gimple_stmt_iterator *gsi)
+{
+  tree cdef = get_current_def (def);
+  if (cdef != NULL
+      && TREE_CODE (cdef) == SSA_NAME
+      && gimple_call_internal_p (SSA_NAME_DEF_STMT (cdef), IFN_ASAN_POISON))
+    {
+      gcall *call
+	= gimple_build_call_internal (IFN_ASAN_POISON_USE, 1, cdef);
+      gimple_set_location (call, gimple_location (gsi_stmt (*gsi)));
+      gsi_insert_before (gsi, call, GSI_SAME_STMT);
+    }
+}
+
+
 /* If the operand pointed to by DEF_P is an SSA name in NEW_SSA_NAMES
    or OLD_SSA_NAMES, or if it is a symbol marked for renaming,
    register it as the current definition for the names replaced by
@@ -1837,7 +1858,11 @@ maybe_register_def (def_operand_p def_p, gimple *stmt,
 	      def = get_or_create_ssa_default_def (cfun, sym);
 	    }
 	  else
-	    def = make_ssa_name (def, stmt);
+	    {
+	      if (asan_sanitize_use_after_scope ())
+		maybe_add_asan_poison_write (def, &gsi);
+	      def = make_ssa_name (def, stmt);
+	    }
 	  SET_DEF (def_p, def);
 
 	  tree tracked_var = target_for_debug_bind (sym);

@@ -1590,6 +1590,10 @@ is_asan_mark_p (gimple *stmt)
       && VAR_P (TREE_OPERAND (addr, 0)))
     {
       tree var = TREE_OPERAND (addr, 0);
+      if (lookup_attribute (ASAN_USE_AFTER_SCOPE_ATTRIBUTE,
+			    DECL_ATTRIBUTES (var)))
+	return false;
+
       unsigned addressable = TREE_ADDRESSABLE (var);
       TREE_ADDRESSABLE (var) = 0;
       bool r = is_gimple_reg (var);
@@ -1911,7 +1915,16 @@ execute_update_addresses_taken (void)
 			    gsi_replace (&gsi, call, GSI_SAME_STMT);
 			  }
 			else
-			  gsi_remove (&gsi, true);
+			  {
+			    /* In ASAN_MARK (UNPOISON, &b, ...) the variable
+			       is uninitialized.  Avoid dependencies on
+			       previous out of scope value.  */
+			    tree clobber
+			      = build_constructor (TREE_TYPE (var), NULL);
+			    TREE_THIS_VOLATILE (clobber) = 1;
+			    gimple *g = gimple_build_assign (var, clobber);
+			    gsi_replace (&gsi, g, GSI_SAME_STMT);
+			  }
 			continue;
 		      }
 		  }

@@ -3094,6 +3094,8 @@ create_asan_shadow_var (tree var_decl,
     return *slot;
 }
 
+/* Expand ASAN_POISON ifn.  */
+
 bool
 asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 			bool *need_commit_edge_insert,
@@ -3107,8 +3109,8 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
       return true;
     }
 
-  tree shadow_var  = create_asan_shadow_var (SSA_NAME_VAR (poisoned_var),
-					     shadow_vars_mapping);
+  tree shadow_var = create_asan_shadow_var (SSA_NAME_VAR (poisoned_var),
+					    shadow_vars_mapping);
 
   bool recover_p;
   if (flag_sanitize & SANITIZE_USER_ADDRESS)
@@ -3122,16 +3124,16 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 						 ASAN_MARK_POISON),
 				  build_fold_addr_expr (shadow_var), size);
 
-  use_operand_p use_p;
+  gimple *use;
   imm_use_iterator imm_iter;
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, poisoned_var)
+  FOR_EACH_IMM_USE_STMT (use, imm_iter, poisoned_var)
     {
-      gimple *use = USE_STMT (use_p);
       if (is_gimple_debug (use))
 	continue;
 
       int nargs;
-      tree fun = report_error_func (false, recover_p, tree_to_uhwi (size),
+      bool store_p = gimple_call_internal_p (use, IFN_ASAN_POISON_USE);
+      tree fun = report_error_func (store_p, recover_p, tree_to_uhwi (size),
 				    &nargs);
 
       gcall *call = gimple_build_call (fun, 1,
@@ -3160,7 +3162,10 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
       else
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (use);
-	  gsi_insert_before (&gsi, call, GSI_NEW_STMT);
+	  if (store_p)
+	    gsi_replace (&gsi, call, true);
+	  else
+	    gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 	}
     }
 

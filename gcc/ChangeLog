@@ -1,3 +1,24 @@
+2017-01-23  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* asan.h: Define ASAN_USE_AFTER_SCOPE_ATTRIBUTE.
+	* asan.c (asan_expand_poison_ifn): Support stores and use
+	appropriate ASAN report function.
+	* internal-fn.c (expand_ASAN_POISON_USE): New function.
+	* internal-fn.def (ASAN_POISON_USE): Declare.
+	* tree-into-ssa.c (maybe_add_asan_poison_write): New function.
+	(maybe_register_def): Create ASAN_POISON_USE when sanitizing.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Remove
+	ASAN_POISON calls w/o LHS.
+	* tree-ssa.c (execute_update_addresses_taken): Create clobber
+	for ASAN_MARK (UNPOISON, &x, ...) in order to prevent usage of a LHS
+	from ASAN_MARK (POISON, &x, ...) coming to a PHI node.
+	* gimplify.c (asan_poison_variables): Add attribute
+	use_after_scope_memory to variables that really needs to live
+	in memory.
+	* tree-ssa.c (is_asan_mark_p): Do not rewrite into SSA when
+	having the attribute.
+
 2017-01-23  Martin Liska  <mliska@suse.cz>
 
 	* asan.c (create_asan_shadow_var): New function.
