@@ -6,12 +6,6 @@
 	lhd_type_for_size.
 	(LANG_HOOKS_TYPE_FOR_SIZE): Don't redefine.
 
-2017-01-18  Maxim Ostapenko  <m.ostapenko@samsung.com>
-
-	PR lto/79061
-	* lto.c (lto_read_decls): accept location cache for
-	TRANSLATION_UNIT_DECL.
-
 2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/50199
