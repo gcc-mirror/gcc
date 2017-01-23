@@ -1,3 +1,19 @@
+2017-01-23  Martin Liska  <mliska@suse.cz>
+
+	* asan.c (create_asan_shadow_var): New function.
+	(asan_expand_poison_ifn): Likewise.
+	* asan.h (asan_expand_poison_ifn): New declaration.
+	* internal-fn.c (expand_ASAN_POISON): Likewise.
+	* internal-fn.def (ASAN_POISON): New builtin.
+	* sanopt.c (pass_sanopt::execute): Expand
+	asan_expand_poison_ifn.
+	* tree-inline.c (copy_decl_for_dup_finish): Make function
+	external.
+	* tree-inline.h (copy_decl_for_dup_finish): Likewise.
+	* tree-ssa.c (is_asan_mark_p): New function.
+	(execute_update_addresses_taken): Rewrite local variables
+	(identified just by use-after-scope as addressable) into SSA.
+
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): opensource.apple.com uses https

@@ -1,3 +1,9 @@
+2017-01-23  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/asan/use-after-scope-3.c: Add additional flags.
+	* gcc.dg/asan/use-after-scope-9.c: Likewise and grep for
+	sanopt optimization for ASAN_POISON.
+
 2016-01-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/lto/pr69188_0.c: Require profiling support for testcase.
