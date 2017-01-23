@@ -99,13 +99,14 @@ ipa_func_spec_opts_forbid_analysis_p (struct cgraph_node *node)
    to INFO.  */
 
 static int
-ipa_get_param_decl_index_1 (vec<ipa_param_descriptor> descriptors, tree ptree)
+ipa_get_param_decl_index_1 (vec<ipa_param_descriptor, va_gc> *descriptors,
+			    tree ptree)
 {
   int i, count;
 
-  count = descriptors.length ();
+  count = vec_safe_length (descriptors);
   for (i = 0; i < count; i++)
-    if (descriptors[i].decl_or_type == ptree)
+    if ((*descriptors)[i].decl_or_type == ptree)
       return i;
 
   return -1;
@@ -125,7 +126,7 @@ ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 
 static void
 ipa_populate_param_decls (struct cgraph_node *node,
-			  vec<ipa_param_descriptor> &descriptors)
+			  vec<ipa_param_descriptor, va_gc> &descriptors)
 {
   tree fndecl;
   tree fnargs;
@@ -168,10 +169,10 @@ void
 ipa_dump_param (FILE *file, struct ipa_node_params *info, int i)
 {
   fprintf (file, "param #%i", i);
-  if (info->descriptors[i].decl_or_type)
+  if ((*info->descriptors)[i].decl_or_type)
     {
       fprintf (file, " ");
-      print_generic_expr (file, info->descriptors[i].decl_or_type, 0);
+      print_generic_expr (file, (*info->descriptors)[i].decl_or_type, 0);
     }
 }
 
@@ -183,8 +184,8 @@ ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
-  if (!info->descriptors.exists () && param_count)
-    info->descriptors.safe_grow_cleared (param_count);
+  if (!info->descriptors && param_count)
+    vec_safe_grow_cleared (info->descriptors, param_count);
 }
 
 /* Initialize the ipa_node_params structure associated with NODE by counting
@@ -196,10 +197,10 @@ ipa_initialize_node_params (struct cgraph_node *node)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
-  if (!info->descriptors.exists ())
+  if (!info->descriptors)
     {
       ipa_alloc_node_params (node, count_formal_params (node->decl));
-      ipa_populate_param_decls (node, info->descriptors);
+      ipa_populate_param_decls (node, *info->descriptors);
     }
 }
 
@@ -867,7 +868,7 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
 
 static int
 load_from_param_1 (struct ipa_func_body_info *fbi,
-		   vec<ipa_param_descriptor> descriptors,
+		   vec<ipa_param_descriptor, va_gc> *descriptors,
 		   gimple *stmt)
 {
   int index;
@@ -892,7 +893,7 @@ load_from_param_1 (struct ipa_func_body_info *fbi,
 
 static int
 load_from_unmodified_param (struct ipa_func_body_info *fbi,
-			    vec<ipa_param_descriptor> descriptors,
+			    vec<ipa_param_descriptor, va_gc> *descriptors,
 			    gimple *stmt)
 {
   if (!gimple_assign_single_p (stmt))
@@ -906,7 +907,7 @@ load_from_unmodified_param (struct ipa_func_body_info *fbi,
 
 static int
 load_from_param (struct ipa_func_body_info *fbi,
-		 vec<ipa_param_descriptor> descriptors,
+		 vec<ipa_param_descriptor, va_gc> *descriptors,
 		 gimple *stmt)
 {
   if (!is_gimple_assign (stmt))
@@ -1010,7 +1011,7 @@ parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
 
 bool
 ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
-			vec<ipa_param_descriptor> descriptors,
+			vec<ipa_param_descriptor, va_gc> *descriptors,
 			gimple *stmt, tree op, int *index_p,
 			HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
 			bool *by_ref_p, bool *guaranteed_unmodified)
@@ -3604,33 +3605,11 @@ ipa_free_all_edge_args (void)
   vec_free (ipa_edge_args_vector);
 }
 
-/* Frees all dynamically allocated structures that the param info points
-   to.  */
-
-ipa_node_params::~ipa_node_params ()
-{
-  descriptors.release ();
-  free (lattices);
-  /* Lattice values and their sources are deallocated with their alocation
-     pool.  */
-  known_csts.release ();
-  known_contexts.release ();
-
-  lattices = NULL;
-  ipcp_orig_node = NULL;
-  analysis_done = 0;
-  node_enqueued = 0;
-  do_clone_for_all_contexts = 0;
-  is_all_contexts_clone = 0;
-  node_dead = 0;
-}
-
 /* Free all ipa_node_params structures.  */
 
 void
 ipa_free_all_node_params (void)
 {
-  delete ipa_node_params_sum;
   ipa_node_params_sum = NULL;
 }
 
@@ -3792,6 +3771,36 @@ ipa_add_new_function (cgraph_node *node, void *data ATTRIBUTE_UNUSED)
     ipa_analyze_node (node);
 }
 
+/* Initialize a newly created param info.  */
+
+void
+ipa_node_params_t::insert (cgraph_node *, ipa_node_params *info)
+{
+  info->lattices = NULL;
+  info->ipcp_orig_node = NULL;
+  info->analysis_done = 0;
+  info->node_enqueued = 0;
+  info->do_clone_for_all_contexts = 0;
+  info->is_all_contexts_clone = 0;
+  info->node_dead = 0;
+  info->node_within_scc = 0;
+  info->node_calling_single_call = 0;
+  info->versionable = 0;
+}
+
+/* Frees all dynamically allocated structures that the param info points
+   to.  */
+
+void
+ipa_node_params_t::remove (cgraph_node *, ipa_node_params *info)
+{
+  free (info->lattices);
+  /* Lattice values and their sources are deallocated with their alocation
+     pool.  */
+  info->known_csts.release ();
+  info->known_contexts.release ();
+}
+
 /* Hook that is called by summary when a node is duplicated.  */
 
 void
@@ -3801,9 +3810,11 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 {
   ipa_agg_replacement_value *old_av, *new_av;
 
-  new_info->descriptors = old_info->descriptors.copy ();
+  new_info->descriptors = vec_safe_copy (old_info->descriptors);
   new_info->lattices = NULL;
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
+  new_info->known_csts = old_info->known_csts.copy ();
+  new_info->known_contexts = old_info->known_contexts.copy ();
 
   new_info->analysis_done = old_info->analysis_done;
   new_info->node_enqueued = old_info->node_enqueued;
@@ -5022,7 +5033,7 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   ipa_alloc_node_params (node, streamer_read_uhwi (ib));
 
   for (k = 0; k < ipa_get_param_count (info); k++)
-    info->descriptors[k].move_cost = streamer_read_uhwi (ib);
+    (*info->descriptors)[k].move_cost = streamer_read_uhwi (ib);
 
   bp = streamer_read_bitpack (ib);
   if (ipa_get_param_count (info) != 0)
@@ -5033,7 +5044,7 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   for (k = 0; k < ipa_get_param_count (info); k++)
     {
       ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
-      info->descriptors[k].decl_or_type = stream_read_tree (ib, data_in);
+      (*info->descriptors)[k].decl_or_type = stream_read_tree (ib, data_in);
     }
   for (e = node->callees; e; e = e->next_callee)
     {
@@ -5483,7 +5494,7 @@ class ipcp_modif_dom_walker : public dom_walker
 {
 public:
   ipcp_modif_dom_walker (struct ipa_func_body_info *fbi,
-			 vec<ipa_param_descriptor> descs,
+			 vec<ipa_param_descriptor, va_gc> *descs,
 			 struct ipa_agg_replacement_value *av,
 			 bool *sc, bool *cc)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
@@ -5493,7 +5504,7 @@ public:
 
 private:
   struct ipa_func_body_info *m_fbi;
-  vec<ipa_param_descriptor> m_descriptors;
+  vec<ipa_param_descriptor, va_gc> *m_descriptors;
   struct ipa_agg_replacement_value *m_aggval;
   bool *m_something_changed, *m_cfg_changed;
 };
@@ -5751,7 +5762,7 @@ ipcp_update_vr (struct cgraph_node *node)
 unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
-  vec<ipa_param_descriptor> descriptors = vNULL;
+  vec<ipa_param_descriptor, va_gc> *descriptors = NULL;
   struct ipa_func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
   int param_count;
@@ -5783,8 +5794,8 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.param_count = param_count;
   fbi.aa_walked = 0;
 
-  descriptors.safe_grow_cleared (param_count);
-  ipa_populate_param_decls (node, descriptors);
+  vec_safe_grow_cleared (descriptors, param_count);
+  ipa_populate_param_decls (node, *descriptors);
   calculate_dominance_info (CDI_DOMINATORS);
   ipcp_modif_dom_walker (&fbi, descriptors, aggval, &something_changed,
 			 &cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -5799,7 +5810,7 @@ ipcp_transform_function (struct cgraph_node *node)
   (*ipcp_transformations)[node->uid].bits = NULL;
   (*ipcp_transformations)[node->uid].m_vr = NULL;
 
-  descriptors.release ();
+  vec_free (descriptors);
 
   if (!something_changed)
     return 0;

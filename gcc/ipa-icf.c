@@ -539,9 +539,8 @@ sem_function::param_used_p (unsigned int i)
 
   struct ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
 
-  if (parms_info->descriptors.is_empty ()
-      || parms_info->descriptors.length () <= i)
-     return true;
+  if (vec_safe_length (parms_info->descriptors) <= i)
+    return true;
 
   return ipa_is_param_used (IPA_NODE_REF (get_node ()), i);
 }
