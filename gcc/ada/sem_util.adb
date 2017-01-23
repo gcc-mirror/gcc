@@ -9344,17 +9344,8 @@ package body Sem_Util is
          --  The implicit case lacks all property pragmas
 
          elsif No (AR) and then No (AW) and then No (ER) and then No (EW) then
-
-            --  A variable of a protected type only has the properties
-            --  Async_Readers and Async_Writers. It cannot have Part_Of
-            --  components (only protected objects can), hence it cannot
-            --  inherit their properties Effective_Reads and Effective_Writes.
-            --  (SPARK RM 7.1.2(16))
-
             if Is_Protected_Type (Etype (Item_Id)) then
-               return
-                 Property = Name_Async_Readers
-                   or else Property = Name_Async_Writers;
+               return Protected_Object_Has_Enabled_Property;
             else
                return True;
             end if;

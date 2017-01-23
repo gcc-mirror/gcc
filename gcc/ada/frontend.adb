@@ -463,9 +463,12 @@ begin
       end if;
    end if;
 
-   --  In GNATprove mode, force the loading of a few RTE units
+   --  In GNATprove mode, force the loading of a few RTE units. This step is
+   --  skipped if we had a fatal error during parsing.
 
-   if GNATprove_Mode then
+   if GNATprove_Mode
+     and then Fatal_Error (Main_Unit) /= Error_Detected
+   then
       declare
          Unused : Entity_Id;
 

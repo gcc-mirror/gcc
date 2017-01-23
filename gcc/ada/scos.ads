@@ -152,6 +152,7 @@ package SCOs is
    --      o        object declaration
    --      r        renaming declaration
    --      i        generic instantiation
+   --      d        any other kind of declaration
    --      A        ACCEPT statement (from ACCEPT to end of parameter profile)
    --      C        CASE statement (from CASE to end of expression)
    --      E        EXIT statement

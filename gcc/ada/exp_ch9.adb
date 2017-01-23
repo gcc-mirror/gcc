@@ -688,11 +688,11 @@ package body Exp_Ch9 is
       --  The name of the formal that holds the address of the parameter block
       --  for the call.
 
-      Comp            : Entity_Id;
-      Decl            : Node_Id;
-      Formal          : Entity_Id;
-      New_F           : Entity_Id;
-      Renamed_Formal  : Node_Id;
+      Comp           : Entity_Id;
+      Decl           : Node_Id;
+      Formal         : Entity_Id;
+      New_F          : Entity_Id;
+      Renamed_Formal : Node_Id;
 
    begin
       Formal := First_Formal (Ent);
@@ -2117,7 +2117,7 @@ package body Exp_Ch9 is
                Iface_Op_Param := Next (Iface_Op_Param);
             end if;
 
-            Wrapper_Param  := First (Wrapper_Params);
+            Wrapper_Param := First (Wrapper_Params);
             while Present (Iface_Op_Param)
               and then Present (Wrapper_Param)
             loop
@@ -2599,7 +2599,7 @@ package body Exp_Ch9 is
       ------------------------------
 
       function Convert_Discriminant_Ref (Bound : Node_Id) return Node_Id is
-         B   : Node_Id;
+         B : Node_Id;
 
       begin
          if Is_Entity_Name (Bound)
@@ -3888,22 +3888,22 @@ package body Exp_Ch9 is
       Pid       : Node_Id;
       N_Op_Spec : Node_Id) return Node_Id
    is
-      Loc          : constant Source_Ptr := Sloc (N);
-      Op_Spec      : Node_Id;
-      P_Op_Spec    : Node_Id;
-      Uactuals     : List_Id;
-      Pformal      : Node_Id;
-      Unprot_Call  : Node_Id;
-      Sub_Body     : Node_Id;
-      Lock_Name    : Node_Id;
-      Lock_Stmt    : Node_Id;
-      R            : Node_Id;
-      Return_Stmt  : Node_Id := Empty;    -- init to avoid gcc 3 warning
-      Pre_Stmts    : List_Id := No_List;  -- init to avoid gcc 3 warning
-      Stmts        : List_Id;
-      Object_Parm  : Node_Id;
-      Exc_Safe     : Boolean;
-      Lock_Kind    : RE_Id;
+      Loc         : constant Source_Ptr := Sloc (N);
+      Op_Spec     : Node_Id;
+      P_Op_Spec   : Node_Id;
+      Uactuals    : List_Id;
+      Pformal     : Node_Id;
+      Unprot_Call : Node_Id;
+      Sub_Body    : Node_Id;
+      Lock_Name   : Node_Id;
+      Lock_Stmt   : Node_Id;
+      R           : Node_Id;
+      Return_Stmt : Node_Id := Empty;    -- init to avoid gcc 3 warning
+      Pre_Stmts   : List_Id := No_List;  -- init to avoid gcc 3 warning
+      Stmts       : List_Id;
+      Object_Parm : Node_Id;
+      Exc_Safe    : Boolean;
+      Lock_Kind   : RE_Id;
 
    begin
       Op_Spec := Specification (N);
@@ -4143,12 +4143,12 @@ package body Exp_Ch9 is
    ---------------------------------------------
 
    procedure Build_Protected_Subprogram_Call_Cleanup
-     (Op_Spec   : Node_Id;
-      Conc_Typ  : Node_Id;
-      Loc       : Source_Ptr;
-      Stmts     : List_Id)
+     (Op_Spec  : Node_Id;
+      Conc_Typ : Node_Id;
+      Loc      : Source_Ptr;
+      Stmts    : List_Id)
    is
-      Nam       : Node_Id;
+      Nam : Node_Id;
 
    begin
       --  If the associated protected object has entries, a protected
@@ -4892,7 +4892,7 @@ package body Exp_Ch9 is
           Identifier   => New_Occurrence_Of (Blkent, Loc),
           Declarations => New_List (
 
-            --  _Chain  : Activation_Chain;
+            --  _Chain : Activation_Chain;
 
             Make_Object_Declaration (Loc,
               Defining_Identifier => Chain,
@@ -4962,7 +4962,7 @@ package body Exp_Ch9 is
           Identifier => New_Occurrence_Of (Blkent, Loc),
           Declarations => New_List (
 
-            --  _Chain  : Activation_Chain;
+            --  _Chain : Activation_Chain;
 
             Make_Object_Declaration (Loc,
               Defining_Identifier => Chain,
@@ -8630,7 +8630,7 @@ package body Exp_Ch9 is
    --    type poV (discriminants) is record
    --      _Object       : aliased <kind>Protection
    --         [(<entry count> [, <handler count>])];
-   --      [entry_family  : array (bounds) of Void;]
+   --      [entry_family : array (bounds) of Void;]
    --      <private data fields>
    --    end record;
 
@@ -8938,17 +8938,17 @@ package body Exp_Ch9 is
 
       --  Local variables
 
-      Body_Arr     : Node_Id;
-      Body_Id      : Entity_Id;
-      Cdecls       : List_Id;
-      Comp         : Node_Id;
-      Expr         : Node_Id;
-      New_Priv     : Node_Id;
-      Obj_Def      : Node_Id;
-      Object_Comp  : Node_Id;
-      Priv         : Node_Id;
-      Rec_Decl     : Node_Id;
-      Sub          : Node_Id;
+      Body_Arr    : Node_Id;
+      Body_Id     : Entity_Id;
+      Cdecls      : List_Id;
+      Comp        : Node_Id;
+      Expr        : Node_Id;
+      New_Priv    : Node_Id;
+      Obj_Def     : Node_Id;
+      Object_Comp : Node_Id;
+      Priv        : Node_Id;
+      Rec_Decl    : Node_Id;
+      Sub         : Node_Id;
 
    --  Start of processing for Expand_N_Protected_Type_Declaration
 
@@ -13690,17 +13690,17 @@ package body Exp_Ch9 is
    function Make_Initialize_Protection
      (Protect_Rec : Entity_Id) return List_Id
    is
-      Loc         : constant Source_Ptr := Sloc (Protect_Rec);
-      P_Arr       : Entity_Id;
-      Pdec        : Node_Id;
-      Ptyp        : constant Node_Id    :=
-                      Corresponding_Concurrent_Type (Protect_Rec);
-      Args        : List_Id;
-      L           : constant List_Id    := New_List;
-      Has_Entry   : constant Boolean    := Has_Entries (Ptyp);
-      Prio_Type   : Entity_Id;
-      Prio_Var    : Entity_Id           := Empty;
-      Restricted  : constant Boolean    := Restricted_Profile;
+      Loc        : constant Source_Ptr := Sloc (Protect_Rec);
+      P_Arr      : Entity_Id;
+      Pdec       : Node_Id;
+      Ptyp       : constant Node_Id    :=
+                     Corresponding_Concurrent_Type (Protect_Rec);
+      Args       : List_Id;
+      L          : constant List_Id    := New_List;
+      Has_Entry  : constant Boolean    := Has_Entries (Ptyp);
+      Prio_Type  : Entity_Id;
+      Prio_Var   : Entity_Id           := Empty;
+      Restricted : constant Boolean    := Restricted_Profile;
 
    begin
       --  We may need two calls to properly initialize the object, one to
