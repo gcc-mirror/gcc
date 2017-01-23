@@ -30,6 +30,8 @@ extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);
 extern bool asan_expand_check_ifn (gimple_stmt_iterator *, bool);
 extern bool asan_expand_mark_ifn (gimple_stmt_iterator *);
+extern bool asan_expand_poison_ifn (gimple_stmt_iterator *, bool *,
+				    hash_map<tree, tree> &);
 
 extern gimple_stmt_iterator create_cond_insert_point
      (gimple_stmt_iterator *, bool, bool, bool, basic_block *, basic_block *);

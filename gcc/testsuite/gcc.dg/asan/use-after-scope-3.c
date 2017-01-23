@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-shouldfail "asan" }
+// { dg-additional-options "-O0" }
 
 int
 main (void)
