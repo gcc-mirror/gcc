@@ -2164,10 +2164,11 @@ remove_name_from_operation (gimple *stmt, tree op)
 }
 
 /* Reassociates the expression in that NAME1 and NAME2 are used so that they
-   are combined in a single statement, and returns this statement.  */
+   are combined in a single statement, and returns this statement.  Note the
+   statement is inserted before INSERT_BEFORE if it's not NULL.  */
 
 static gimple *
-reassociate_to_the_same_stmt (tree name1, tree name2)
+reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
 {
   gimple *stmt1, *stmt2, *root1, *root2, *s1, *s2;
   gassign *new_stmt, *tmp_stmt;
@@ -2224,6 +2225,12 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   var = create_tmp_reg (type, "predreastmp");
   new_name = make_ssa_name (var);
   new_stmt = gimple_build_assign (new_name, code, name1, name2);
+  if (insert_before && stmt_dominates_stmt_p (insert_before, s1))
+    bsi = gsi_for_stmt (insert_before);
+  else
+    bsi = gsi_for_stmt (s1);
+
+  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
 
   var = create_tmp_reg (type, "predreastmp");
   tmp_name = make_ssa_name (var);
@@ -2240,7 +2247,6 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   s1 = gsi_stmt (bsi);
   update_stmt (s1);
 
-  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
   gsi_insert_before (&bsi, tmp_stmt, GSI_SAME_STMT);
 
   return new_stmt;
@@ -2249,10 +2255,11 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
 /* Returns the statement that combines references R1 and R2.  In case R1
    and R2 are not used in the same statement, but they are used with an
    associative and commutative operation in the same expression, reassociate
-   the expression so that they are used in the same statement.  */
+   the expression so that they are used in the same statement.  The combined
+   statement is inserted before INSERT_BEFORE if it's not NULL.  */
 
 static gimple *
-stmt_combining_refs (dref r1, dref r2)
+stmt_combining_refs (dref r1, dref r2, gimple *insert_before)
 {
   gimple *stmt1, *stmt2;
   tree name1 = name_for_ref (r1);
@@ -2263,7 +2270,7 @@ stmt_combining_refs (dref r1, dref r2)
   if (stmt1 == stmt2)
     return stmt1;
 
-  return reassociate_to_the_same_stmt (name1, name2);
+  return reassociate_to_the_same_stmt (name1, name2, insert_before);
 }
 
 /* Tries to combine chains CH1 and CH2 together.  If this succeeds, the
@@ -2309,14 +2316,42 @@ combine_chains (chain_p ch1, chain_p ch2)
   new_chain->rslt_type = rslt_type;
   new_chain->length = ch1->length;
 
-  for (i = 0; (ch1->refs.iterate (i, &r1)
-	       && ch2->refs.iterate (i, &r2)); i++)
+  gimple *insert = NULL;
+  auto_vec<dref> tmp_refs;
+  gcc_assert (ch1->refs.length () == ch2->refs.length ());
+  /* Process in reverse order so dominance point is ready when it comes
+     to the root ref.  */
+  for (i = ch1->refs.length (); i > 0; i--)
     {
+      r1 = ch1->refs[i - 1];
+      r2 = ch2->refs[i - 1];
       nw = XCNEW (struct dref_d);
-      nw->stmt = stmt_combining_refs (r1, r2);
       nw->distance = r1->distance;
+      nw->stmt = stmt_combining_refs (r1, r2, i == 1 ? insert : NULL);
 
-      new_chain->refs.safe_push (nw);
+      /* Record dominance point where root combined stmt should be inserted
+	 for chains with 0 length.  Though all root refs dominate following
+	 refs, it's possible the combined stmt doesn't.  See PR70754.  */
+      if (ch1->length == 0
+	  && (insert == NULL || stmt_dominates_stmt_p (nw->stmt, insert)))
+	insert = nw->stmt;
+
+      tmp_refs.safe_push (nw);
+    }
+
+  /* Restore the order for new chain's refs.  */
+  for (i = tmp_refs.length (); i > 0; i--)
+    new_chain->refs.safe_push (tmp_refs[i - 1]);
+
+  ch1->combined = true;
+  ch2->combined = true;
+
+  /* For chains with 0 length, has_max_use_after must be true since root
+     combined stmt must dominates others.  */
+  if (new_chain->length == 0)
+    {
+      new_chain->has_max_use_after = true;
+      return new_chain;
     }
 
   new_chain->has_max_use_after = false;
@@ -2331,8 +2366,6 @@ combine_chains (chain_p ch1, chain_p ch2)
 	}
     }
 
-  ch1->combined = true;
-  ch2->combined = true;
   return new_chain;
 }
 
