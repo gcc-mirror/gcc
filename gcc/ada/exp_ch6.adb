@@ -6073,7 +6073,7 @@ package body Exp_Ch6 is
       --  Exp_Ch9.Build_Simple_Entry_Call. The call is intra-object only if the
       --  subprogram being called is in the protected body being compiled, and
       --  if the protected object in the call is statically the enclosing type.
-      --  The object may be an component of some other data structure, in which
+      --  The object may be a component of some other data structure, in which
       --  case this must be handled as an inter-object call.
 
       if not In_Open_Scopes (Scop)

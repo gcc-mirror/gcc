@@ -1,3 +1,31 @@
+2017-01-23  Yannick Moy  <moy@adacore.com>
+
+	* frontend.adb (Frontend): Do not load runtime
+	unit for GNATprove when parsing failed.
+	* exp_ch9.adb: minor removal of extra whitespace
+	* exp_ch6.adb: minor typo in comment
+	* sem_util.adb: Code cleanup.
+	* exp_ch9.ads, par-ch2.adb: minor style fixes in whitespace and comment
+	* a-ngcefu.adb: minor style fix in whitespace
+
+2017-01-23  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Document usage of 'd' as default SCO kind for
+	declarations.
+	* par_sco.adb (Traverse_Declarations_Or_Statements.
+	Traverse_Degenerate_Subprogram): New supporting routine for expression
+	functions and null procedures.
+	(Traverse_Declarations_Or_Statements.Traverse_One): Add
+	N_Expression_Function to the subprogram case; add required
+	support for null procedures and expression functions.
+
+2017-01-23  Bob Duff  <duff@adacore.com>
+
+	* namet.ads (Bounded_String): Decrease the size of type
+	Bounded_String to avoid running out of stack space.
+	* namet.ads (Append): Don't ignore buffer overflow; raise
+	Program_Error instead.
+
 2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch5.adb, freeze.adb, par-ch4.adb, scng.adb, sem_ch13.adb,

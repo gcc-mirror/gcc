@@ -115,10 +115,12 @@ package body Namet is
 
    procedure Append (Buf : in out Bounded_String; C : Character) is
    begin
-      if Buf.Length < Buf.Chars'Last then
-         Buf.Length := Buf.Length + 1;
-         Buf.Chars (Buf.Length) := C;
+      if Buf.Length >= Buf.Chars'Last then
+         raise Program_Error;
       end if;
+
+      Buf.Length := Buf.Length + 1;
+      Buf.Chars (Buf.Length) := C;
    end Append;
 
    procedure Append (Buf : in out Bounded_String; V : Nat) is

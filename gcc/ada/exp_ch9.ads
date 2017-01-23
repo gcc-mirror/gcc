@@ -273,7 +273,7 @@ package Exp_Ch9 is
    --  is the entity for the corresponding protected type declaration.
 
    function External_Subprogram (E : Entity_Id) return Entity_Id;
-   --  return the external version of a protected operation, which locks
+   --  Return the external version of a protected operation, which locks
    --  the object before invoking the internal protected subprogram body.
 
    function Find_Master_Scope (E : Entity_Id) return Entity_Id;

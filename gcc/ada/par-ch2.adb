@@ -436,7 +436,7 @@ package body Ch2 is
    --  Error recovery: Cannot raise Error_Resync
 
    procedure P_Pragmas_Opt (List : List_Id) is
-      P     : Node_Id;
+      P : Node_Id;
 
    begin
       while Token = Tok_Pragma loop

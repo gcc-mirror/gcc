@@ -1440,7 +1440,10 @@ package body Par_SCO is
       --  This routine is logically the same as Process_Decisions, except that
       --  the arguments are saved in the SD table for later processing when
       --  Set_Statement_Entry is called, which goes through the saved entries
-      --  making the corresponding calls to Process_Decision.
+      --  making the corresponding calls to Process_Decision. Note: the
+      --  enclosing statement must have already been added to the current
+      --  statement sequence, so that nested decisions are properly
+      --  identified as such.
 
       procedure Process_Decisions_Defer (L : List_Id; T : Character);
       pragma Inline (Process_Decisions_Defer);
@@ -1456,6 +1459,10 @@ package body Par_SCO is
 
       procedure Traverse_Aspects (N : Node_Id);
       --  Helper for Traverse_One: traverse N's aspect specifications
+
+      procedure Traverse_Degenerate_Subprogram (N : Node_Id);
+      --  Common code to handle null procedures and expression functions.
+      --  Emit a SCO of the given Kind and N outside of the dominance flow.
 
       -------------------------------
       -- Extend_Statement_Sequence --
@@ -1513,6 +1520,9 @@ package body Par_SCO is
                else
                   To_Node := Defining_Identifier (N);
                end if;
+
+            when N_Subexpr =>
+               To_Node := N;
 
             when others =>
                null;
@@ -1720,6 +1730,44 @@ package body Par_SCO is
          end loop;
       end Traverse_Aspects;
 
+      ------------------------------------
+      -- Traverse_Degenerate_Subprogram --
+      ------------------------------------
+
+      procedure Traverse_Degenerate_Subprogram (N : Node_Id) is
+      begin
+         --  Complete current sequence of statements
+
+         Set_Statement_Entry;
+
+         declare
+            Saved_Dominant : constant Dominant_Info := Current_Dominant;
+            --  Save last statement in current sequence as dominant
+
+         begin
+            --  Output statement SCO for degenerate subprogram body
+            --  (null statement or freestanding expression) outside of
+            --  the dominance chain.
+
+            Current_Dominant := No_Dominant;
+            Extend_Statement_Sequence (N, Typ => ' ');
+
+            --  For the case of an expression-function, collect decisions
+            --  embedded in the expression now.
+
+            if Nkind (N) in N_Subexpr then
+               Process_Decisions_Defer (N, 'X');
+            end if;
+            Set_Statement_Entry;
+
+            --  Restore current dominant information designating last
+            --  statement in previous sequence (i.e. make the dominance
+            --  chain skip over the degenerate body).
+
+            Current_Dominant := Saved_Dominant;
+         end;
+      end Traverse_Degenerate_Subprogram;
+
       ------------------
       -- Traverse_One --
       ------------------
@@ -1755,9 +1803,30 @@ package body Par_SCO is
 
             when N_Subprogram_Body_Stub
                | N_Subprogram_Declaration
+               | N_Expression_Function
             =>
-               Process_Decisions_Defer
-                 (Parameter_Specifications (Specification (N)), 'X');
+               declare
+                  Spec : constant Node_Id := Specification (N);
+               begin
+                  Process_Decisions_Defer
+                    (Parameter_Specifications (Spec), 'X');
+
+                  --  Case of a null procedure: generate a NULL statement SCO
+
+                  if Nkind (N) = N_Subprogram_Declaration
+                    and then Nkind (Spec) = N_Procedure_Specification
+                    and then Null_Present (Spec)
+                  then
+                     Traverse_Degenerate_Subprogram (N);
+
+                  --  Case of an expression function: generate a statement
+                  --  SCO for the expression (and then decision SCOs for any
+                  --  nested decisions).
+
+                  elsif Nkind (N) = N_Expression_Function then
+                     Traverse_Degenerate_Subprogram (Expression (N));
+                  end if;
+               end;
 
             --  Entry declaration
 

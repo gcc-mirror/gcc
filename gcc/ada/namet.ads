@@ -31,7 +31,6 @@
 
 with Alloc;
 with Table;
-with Hostparm; use Hostparm;
 with System;   use System;
 with Types;    use Types;
 
@@ -149,9 +148,9 @@ package Namet is
 --  and the Boolean field is initialized to False, when a new Name table entry
 --  is created.
 
-   type Bounded_String (Max_Length : Natural := 4 * Max_Line_Length) is limited
-   --  The default here is intended to be an infinite value that ensures that
-   --  we never overflow the buffer (names this long are too absurd to worry).
+   type Bounded_String (Max_Length : Natural := 2**12) is limited
+   --  It's unlikely to have names longer than this. But we don't want to make
+   --  it too big, because we declare these on the stack in recursive routines.
    record
       Length : Natural := 0;
       Chars  : String (1 .. Max_Length);
