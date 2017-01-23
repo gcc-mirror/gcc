@@ -1,3 +1,40 @@
+2017-01-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_strm.ads: Minor reformatting and typo fixes.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aggr.adb, par_sco.adb, exp_util.adb, sem.adb, sem_ch4.adb,
+	exp_aggr.adb: Minor reformatting.
+	* g-diopit.adb: minor grammar/punctuation fix in comment.
+	* g-byorma.ads: minor fix of unbalanced parens in comment.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par.adb: Update the documentation of component Labl.
+	* par-ch6.adb (P_Return_Statement): Set the expected label of
+	an extended return statement to Error.
+
+2017-01-23  Tristan Gingold  <gingold@adacore.com>
+
+	* s-boustr.ads, s-boustr.adb (Is_Full): New function.
+
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* expander.adb: Handle N_Delta_Aggregate.
+
+2017-01-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Improve the code that
+	checks if some formal of the called subprogram is a class-wide
+	interface, to handle subtypes of class-wide interfaces.
+
+2017-01-23  Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Apply_Parameter_Aliasing_Checks):
+	Remove side effects of the actuals before generating the overlap
+	check.
+
 2017-01-23  Justin Squirek  <squirek@adacore.com>
 
 	* exp_strm.ads, exp_strm.ads

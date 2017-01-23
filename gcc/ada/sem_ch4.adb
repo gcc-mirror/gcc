@@ -9287,19 +9287,20 @@ package body Sem_Ch4 is
                Typ := Corresponding_Record_Type (Typ);
             end if;
 
-            --  Simple case. Object may be a subtype of the tagged type or
-            --  may be the corresponding record of a synchronized type.
+            --  Simple case. Object may be a subtype of the tagged type or may
+            --  be the corresponding record of a synchronized type.
 
             return Obj_Type = Typ
               or else Base_Type (Obj_Type) = Typ
               or else Corr_Type = Typ
 
               --  Object may be of a derived type whose parent has unknown
-              --  discriminants, in which case the type matches the
-              --  underlying record view of its base.
+              --  discriminants, in which case the type matches the underlying
+              --  record view of its base.
 
-              or else (Has_Unknown_Discriminants (Typ)
-                and then Typ = Underlying_Record_View (Base_Type (Obj_Type)))
+              or else
+                (Has_Unknown_Discriminants (Typ)
+                  and then Typ = Underlying_Record_View (Base_Type (Obj_Type)))
 
                --  Prefix can be dereferenced
 
@@ -9307,8 +9308,8 @@ package body Sem_Ch4 is
                 (Is_Access_Type (Corr_Type)
                   and then Designated_Type (Corr_Type) = Typ)
 
-               --  Formal is an access parameter, for which the object
-               --  can provide an access.
+               --  Formal is an access parameter, for which the object can
+               --  provide an access.
 
               or else
                 (Ekind (Typ) = E_Anonymous_Access_Type

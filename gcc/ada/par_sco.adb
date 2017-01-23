@@ -1431,9 +1431,9 @@ package body Par_SCO is
       --  Record first entries used in SC/SD at this recursive level
 
       procedure Extend_Statement_Sequence (N : Node_Id; Typ : Character);
-      --  Extend the current statement sequence to encompass the node N. Typ
-      --  is the letter that identifies the type of statement/declaration that
-      --  is being added to the sequence.
+      --  Extend the current statement sequence to encompass the node N. Typ is
+      --  the letter that identifies the type of statement/declaration that is
+      --  being added to the sequence.
 
       procedure Process_Decisions_Defer (N : Node_Id; T : Character);
       pragma Inline (Process_Decisions_Defer);
@@ -1461,8 +1461,8 @@ package body Par_SCO is
       --  Helper for Traverse_One: traverse N's aspect specifications
 
       procedure Traverse_Degenerate_Subprogram (N : Node_Id);
-      --  Common code to handle null procedures and expression functions.
-      --  Emit a SCO of the given Kind and N outside of the dominance flow.
+      --  Common code to handle null procedures and expression functions. Emit
+      --  a SCO of the given Kind and N outside of the dominance flow.
 
       -------------------------------
       -- Extend_Statement_Sequence --
@@ -1745,9 +1745,9 @@ package body Par_SCO is
             --  Save last statement in current sequence as dominant
 
          begin
-            --  Output statement SCO for degenerate subprogram body
-            --  (null statement or freestanding expression) outside of
-            --  the dominance chain.
+            --  Output statement SCO for degenerate subprogram body (null
+            --  statement or freestanding expression) outside of the dominance
+            --  chain.
 
             Current_Dominant := No_Dominant;
             Extend_Statement_Sequence (N, Typ => ' ');
@@ -1758,11 +1758,12 @@ package body Par_SCO is
             if Nkind (N) in N_Subexpr then
                Process_Decisions_Defer (N, 'X');
             end if;
+
             Set_Statement_Entry;
 
-            --  Restore current dominant information designating last
-            --  statement in previous sequence (i.e. make the dominance
-            --  chain skip over the degenerate body).
+            --  Restore current dominant information designating last statement
+            --  in previous sequence (i.e. make the dominance chain skip over
+            --  the degenerate body).
 
             Current_Dominant := Saved_Dominant;
          end;
@@ -1801,9 +1802,9 @@ package body Par_SCO is
 
             --  Subprogram declaration or subprogram body stub
 
-            when N_Subprogram_Body_Stub
+            when N_Expression_Function
+               | N_Subprogram_Body_Stub
                | N_Subprogram_Declaration
-               | N_Expression_Function
             =>
                declare
                   Spec : constant Node_Id := Specification (N);
@@ -1819,9 +1820,9 @@ package body Par_SCO is
                   then
                      Traverse_Degenerate_Subprogram (N);
 
-                  --  Case of an expression function: generate a statement
-                  --  SCO for the expression (and then decision SCOs for any
-                  --  nested decisions).
+                  --  Case of an expression function: generate a statement SCO
+                  --  for the expression (and then decision SCOs for any nested
+                  --  decisions).
 
                   elsif Nkind (N) = N_Expression_Function then
                      Traverse_Degenerate_Subprogram (Expression (N));

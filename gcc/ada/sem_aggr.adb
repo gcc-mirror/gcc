@@ -2740,12 +2740,8 @@ package body Sem_Aggr is
    -----------------------------
 
    procedure Resolve_Delta_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Base       : constant Node_Id   := Expression (N);
-      Deltas     : constant List_Id   := Component_Associations (N);
-      Assoc      : Node_Id;
-      Choice     : Node_Id;
-      Comp_Type  : Entity_Id;
-      Index_Type : Entity_Id;
+      Base   : constant Node_Id := Expression (N);
+      Deltas : constant List_Id := Component_Associations (N);
 
       function Get_Component_Type (Nam : Node_Id) return Entity_Id;
 
@@ -2775,12 +2771,22 @@ package body Sem_Aggr is
          return Any_Type;
       end Get_Component_Type;
 
+      --  Local variables
+
+      Assoc      : Node_Id;
+      Choice     : Node_Id;
+      Comp_Type  : Entity_Id;
+      Index_Type : Entity_Id;
+
+   --  Start of processing for Resolve_Delta_Aggregate
+
    begin
       if not Is_Composite_Type (Typ) then
          Error_Msg_N ("not a composite type", N);
       end if;
 
       Analyze_And_Resolve (Base, Typ);
+
       if Is_Array_Type (Typ) then
          Index_Type := Etype (First_Index (Typ));
          Assoc := First (Deltas);
@@ -2800,10 +2806,10 @@ package body Sem_Aggr is
                end loop;
 
                declare
-                  Id  : constant Entity_Id  := Defining_Identifier (Assoc);
-                  Ent : constant Entity_Id  :=
-                    New_Internal_Entity
-                      (E_Loop, Current_Scope, Sloc (Assoc), 'L');
+                  Id  : constant Entity_Id := Defining_Identifier (Assoc);
+                  Ent : constant Entity_Id :=
+                          New_Internal_Entity
+                            (E_Loop, Current_Scope, Sloc (Assoc), 'L');
 
                begin
                   Set_Etype  (Ent, Standard_Void_Type);
@@ -2838,8 +2844,9 @@ package body Sem_Aggr is
                         if Base_Type (Entity (Choice)) /=
                            Base_Type (Index_Type)
                         then
-                           Error_Msg_NE ("choice does mat match index type of",
-                             Choice, Typ);
+                           Error_Msg_NE
+                             ("choice does mat match index type of",
+                              Choice, Typ);
                         end if;
                      else
                         Resolve (Choice, Index_Type);
