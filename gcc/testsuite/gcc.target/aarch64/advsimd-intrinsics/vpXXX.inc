@@ -63,11 +63,11 @@ void FNNAME (INSN_NAME) (void)
 #endif
   TEST_VPXXX(INSN_NAME, float, f, 32, 2);
 
-  CHECK(TEST_MSG, int, 8, 8, PRIx32, expected, "");
-  CHECK(TEST_MSG, int, 16, 4, PRIx64, expected, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 8, 8, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 16, 4, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
 #if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");
