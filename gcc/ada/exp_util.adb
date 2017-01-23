@@ -3782,7 +3782,13 @@ package body Exp_Util is
       then
          --  Nothing to be done if no underlying record view available
 
-         if No (Underlying_Record_View (Unc_Type)) then
+         --  If this is a limited type derived from a type with unknown
+         --  discriminants, do not expand either, so that subsequent
+         --  expansion of the call can add build-in-place parameters to call.
+
+         if No (Underlying_Record_View (Unc_Type))
+           or else Is_Limited_Type (Unc_Type)
+         then
             null;
 
          --  Otherwise use the Underlying_Record_View to create the proper

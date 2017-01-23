@@ -1,3 +1,16 @@
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Primitive_Operations,
+	Is_Valid_First_Argument_Of): argument is valid if it is a derived
+	type with unknown discriminants that matches its underlying
+	record view.
+	* exp_util.adb (Expand_Subtype_From_Expr): Do not expand
+	expression if its type is derived from a limited type with
+	unknown discriminants, because the expansion (which is a call)
+	must be expanded in the enclosing context to add the proper build-
+	in-place parameters to the call.
+	* lib.ads, exp_ch9.adb: Minor fixes in comments.
+
 2017-01-23  Yannick Moy  <moy@adacore.com>
 
 	* frontend.adb (Frontend): Do not load runtime

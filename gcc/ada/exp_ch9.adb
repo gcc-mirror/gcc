@@ -8469,9 +8469,9 @@ package body Exp_Ch9 is
 
       Op_Body := First (Declarations (N));
 
-      --  The protected body is replaced with the bodies of its
-      --  protected operations, and the declarations for internal objects
-      --  that may have been created for entry family bounds.
+      --  The protected body is replaced with the bodies of its protected
+      --  operations, and the declarations for internal objects that may
+      --  have been created for entry family bounds.
 
       Rewrite (N, Make_Null_Statement (Sloc (N)));
       Analyze (N);

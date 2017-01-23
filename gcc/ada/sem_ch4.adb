@@ -9294,6 +9294,13 @@ package body Sem_Ch4 is
               or else Base_Type (Obj_Type) = Typ
               or else Corr_Type = Typ
 
+              --  Object may be of a derived type whose parent has unknown
+              --  discriminants, in which case the type matches the
+              --  underlying record view of its base.
+
+              or else (Has_Unknown_Discriminants (Typ)
+                and then Typ = Underlying_Record_View (Base_Type (Obj_Type)))
+
                --  Prefix can be dereferenced
 
               or else
