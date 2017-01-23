@@ -1606,6 +1606,14 @@ package body Sinfo is
       return Flag5 (N);
    end Has_Storage_Size_Pragma;
 
+   function Has_Target_Names
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Assignment_Statement);
+      return Flag8 (N);
+   end Has_Target_Names;
+
    function Has_Wide_Character
       (N : Node_Id) return Boolean is
    begin
@@ -4897,6 +4905,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Definition);
       Set_Flag5 (N, Val);
    end Set_Has_Storage_Size_Pragma;
+
+   procedure Set_Has_Target_Names
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Assignment_Statement);
+      Set_Flag8 (N, Val);
+   end Set_Has_Target_Names;
 
    procedure Set_Has_Wide_Character
       (N : Node_Id; Val : Boolean := True) is

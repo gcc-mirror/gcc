@@ -1,3 +1,31 @@
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* scans.ads: New token At_Sign. Remove '@' from list of illegal
+	characters for future version of the language. '@' is legal name.
+	* scng.ads, scng.adb (Scan):  Handle '@' appropriately.
+	* scn.adb (Scan_Reserved_Identifier): An occurrence of '@'
+	denotes a Target_Name.
+	* par-ch4.adb (P_Name, P_Primary): Handle Target_Name.
+	* sinfo.ads, sinfo.adb (N_Target_Name): New non-terminal node.
+	(Has_Target_Names): New flag on N_Assignment_Statement, to
+	indicate that RHS has occurrences of N_Target_Name.
+	* sem.adb: Call Analyze_Target_Name.
+	* sem_ch5.ads, sem_ch5.adb (Analyze_Target_Name): New subpogram.
+	(urrent_LHS): Global variable that denotes LHS of assignment,
+	used in the analysis of Target_Name nodes.
+	* sem_res.adb (Resolve_Target_Name): New procedure.
+	* exp_ch5.adb (Expand_Assign_With_Target_Names): (AI12-0125):
+	N is an assignment statement whose RHS contains occurences of @
+	that designate the value of the LHS of the assignment. If the
+	LHS is side-effect free the target names can be replaced with
+	a copy of the LHS; otherwise the semantics of the assignment
+	is described in terms of a procedure with an in-out parameter,
+	and expanded as such.
+	(Expand_N_Assignment_Statement): Call
+	Expand_Assign_With_Target_Names when needed.
+	* exp_util.adb (Insert_Actions): Take into account N_Target_Name.
+	* sprint.adb: Handle N_Target_Name.
+
 2017-01-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* checks.adb: Minor fix in comment.

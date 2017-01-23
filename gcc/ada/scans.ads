@@ -61,6 +61,8 @@ package Scans is
 
       Tok_Identifier,      -- identifier   Name, Lit_Or_Name, Desig
 
+      Tok_At_Sign,         -- @  AI12-0125-3 : target name
+
       Tok_Double_Asterisk, -- **
 
       Tok_Ampersand,       -- &            Binary_Addop
@@ -213,8 +215,10 @@ package Scans is
       --  also when scanning project files (where it is needed because of ???)
 
       Tok_Special,
-      --  Used only in preprocessor scanning (to represent one of the
-      --  characters '#', '$', '?', '@', '`', '\', '^', '~', or '_'. The
+      --  AI12-0125-03 : target name as abbreviation for LHS
+
+      --  Otherwise used only in preprocessor scanning (to represent one of
+      --  the characters '#', '$', '?', '@', '`', '\', '^', '~', or '_'. The
       --  character value itself is stored in Scans.Special_Character.
 
       Tok_SPARK_Hide,
@@ -269,12 +273,13 @@ package Scans is
    --  of Pascal style not equal operator).
 
    subtype Token_Class_Name is
-     Token_Type range Tok_Char_Literal .. Tok_Identifier;
+   Token_Type range Tok_Char_Literal .. Tok_At_Sign;
    --  First token of name (4.1),
    --    (identifier, char literal, operator symbol)
+   --  Includes '@' after Ada2012 corrigendum.
 
    subtype Token_Class_Desig is
-     Token_Type range Tok_Operator_Symbol .. Tok_Identifier;
+     Token_Type range Tok_Operator_Symbol .. Tok_At_Sign;
    --  Token which can be a Designator (identifier, operator symbol)
 
    subtype Token_Class_Namext is
@@ -397,6 +402,11 @@ package Scans is
    --  file being compiled. This CRC includes only program tokens, and
    --  excludes comments.
 
+   Limited_Checksum : Word := 0;
+   --  Used to accumulate a CRC representing significant tokens in the
+   --  limited view of a package, i.e. visible type names and related
+   --  tagged indicators.
+
    First_Non_Blank_Location : Source_Ptr := No_Location; -- init for -gnatVa
    --  Location of first non-blank character on the line containing the
    --  current token (i.e. the location of the character whose column number
@@ -461,8 +471,9 @@ package Scans is
    --  Wide_Character).
 
    Special_Character : Character;
+   --  AI12-0125-03 : '@' as target name is handled elsewhere.
    --  Valid only when Token = Tok_Special. Returns one of the characters
-   --  '#', '$', '?', '@', '`', '\', '^', '~', or '_'.
+   --  '#', '$', '?', '`', '\', '^', '~', or '_'.
    --
    --  Why only this set? What about wide characters???
 
