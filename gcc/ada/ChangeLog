@@ -1,3 +1,10 @@
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ghost.ads, ghost.adb (Is_Ignored_Ghost_Unit): New routine.
+	* gnat1drv.adb Generate an empty object file for an ignored
+	Ghost compilation unit.
+	* inline.adb, sem_util.adb, sem_ch4.adb: Minor reformatting.
+
 2017-01-23  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch4.adb (Analyze_Indexed_Component_Form):

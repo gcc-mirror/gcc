@@ -36,7 +36,7 @@ with Fmap;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Frontend;
-with Ghost;
+with Ghost;    use Ghost;
 with Gnatvsn;  use Gnatvsn;
 with Inline;
 with Lib;      use Lib;
@@ -919,6 +919,7 @@ procedure Gnat1drv is
    --  Local variables
 
    Back_End_Mode : Back_End.Back_End_Mode_Type;
+   Ecode         : Exit_Code_Type;
 
    Main_Unit_Kind : Node_Kind;
    --  Kind of main compilation unit node
@@ -1265,16 +1266,21 @@ begin
          --  it must not produce an ALI or object file. Do not emit any errors
          --  related to code generation because the unit does not exist.
 
-         if Main_Unit_Kind = N_Null_Statement
-           and then Is_Ignored_Ghost_Node
-                      (Original_Node (Unit (Main_Unit_Node)))
-         then
-            null;
+         if Is_Ignored_Ghost_Unit (Main_Unit_Node) then
+
+            --  Exit the gnat driver with success, otherwise external builders
+            --  such as gnatmake and gprbuild will treat the compilation of an
+            --  ignored Ghost unit as a failure. Note that this will produce
+            --  an empty object file for the unit.
+
+            Ecode := E_Success;
 
          --  Otherwise the unit is missing a crucial piece that prevents code
          --  generation.
 
          else
+            Ecode := E_No_Code;
+
             Set_Standard_Error;
             Write_Str ("cannot generate code for file ");
             Write_Name (Unit_File_Name (Main_Unit));
@@ -1335,9 +1341,11 @@ begin
          Namet.Finalize;
          Check_Rep_Info;
 
-         --  Exit program with error indication, to kill object file
+         --  Exit the driver with an appropriate status indicator. This will
+         --  generate an empty object file for ignored Ghost units, otherwise
+         --  no object file will be generated.
 
-         Exit_Program (E_No_Code);
+         Exit_Program (Ecode);
       end if;
 
       --  In -gnatc mode, we only do annotation if -gnatt or -gnatR is also set
