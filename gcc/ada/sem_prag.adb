@@ -23772,45 +23772,35 @@ package body Sem_Prag is
    ------------------------------------------
 
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id) is
-      Body_Inputs  : Elist_Id := No_Elist;
-      Body_Outputs : Elist_Id := No_Elist;
-      --  The inputs and outputs of the subprogram body synthesized from pragma
-      --  Refined_Depends.
-
-      Dependencies : List_Id := No_List;
-      Depends      : Node_Id;
-      --  The corresponding Depends pragma along with its clauses
-
-      Matched_Items : Elist_Id := No_Elist;
-      --  A list containing the entities of all successfully matched items
-      --  found in pragma Depends.
-
-      Refinements : List_Id := No_List;
-      --  The clauses of pragma Refined_Depends
-
-      Spec_Id : Entity_Id;
-      --  The entity of the subprogram subject to pragma Refined_Depends
-
-      Spec_Inputs  : Elist_Id := No_Elist;
-      Spec_Outputs : Elist_Id := No_Elist;
-      --  The inputs and outputs of the subprogram spec synthesized from pragma
-      --  Depends.
-
       procedure Check_Dependency_Clause
-        (States     : Elist_Id;
-         Dep_Clause : Node_Id);
+        (Spec_Id       : Entity_Id;
+         Dep_Clause    : Node_Id;
+         Dep_States    : Elist_Id;
+         Refinements   : List_Id;
+         Matched_Items : in out Elist_Id);
       --  Try to match a single dependency clause Dep_Clause against one or
       --  more refinement clauses found in list Refinements. Each successful
       --  match eliminates at least one refinement clause from Refinements.
-      --  States is a list of states appearing in dependencies obtained by
-      --  calling Get_States_Seen.
+      --  Spec_Id denotes the entity of the related subprogram. Dep_States
+      --  denotes the entities of all abstract states which appear in pragma
+      --  Depends. Matched_Items contains the entities of all successfully
+      --  matched items found in pragma Depends.
 
-      procedure Check_Output_States;
+      procedure Check_Output_States
+        (Spec_Id      : Entity_Id;
+         Spec_Inputs  : Elist_Id;
+         Spec_Outputs : Elist_Id;
+         Body_Inputs  : Elist_Id;
+         Body_Outputs : Elist_Id);
       --  Determine whether pragma Depends contains an output state with a
       --  visible refinement and if so, ensure that pragma Refined_Depends
-      --  mentions all its constituents as outputs.
+      --  mentions all its constituents as outputs. Spec_Id is the entity of
+      --  the related subprograms. Spec_Inputs and Spec_Outputs denote the
+      --  inputs and outputs of the subprogram spec synthesized from pragma
+      --  Depends. Body_Inputs and Body_Outputs denote the inputs and outputs
+      --  of the subprogram body synthesized from pragma Refined_Depends.
 
-      function Get_States_Seen (Dependencies : List_Id) return Elist_Id;
+      function Collect_States (Clauses : List_Id) return Elist_Id;
       --  Given a normalized list of dependencies obtained from calling
       --  Normalize_Clauses, return a list containing the entities of all
       --  states appearing in dependencies. It helps in checking refinements
@@ -23822,19 +23812,37 @@ package body Sem_Prag is
       --  each clause by creating multiple dependencies with exactly one input
       --  and one output.
 
-      procedure Report_Extra_Clauses;
-      --  Emit an error for each extra clause found in list Refinements
+      procedure Remove_Extra_Clauses
+        (Clauses       : List_Id;
+         Matched_Items : Elist_Id);
+      --  Given a list of refinement clauses Clauses, remove all clauses whose
+      --  inputs and/or outputs have been previously matched. See the body for
+      --  all special cases. Matched_Items contains the entities of all matched
+      --  items found in pragma Depends.
+
+      procedure Report_Extra_Clauses
+        (Spec_Id : Entity_Id;
+         Clauses : List_Id);
+      --  Emit an error for each extra clause found in list Clauses. Spec_Id
+      --  denotes the entity of the related subprogram.
 
       -----------------------------
       -- Check_Dependency_Clause --
       -----------------------------
 
       procedure Check_Dependency_Clause
-        (States     : Elist_Id;
-         Dep_Clause : Node_Id)
+        (Spec_Id       : Entity_Id;
+         Dep_Clause    : Node_Id;
+         Dep_States    : Elist_Id;
+         Refinements   : List_Id;
+         Matched_Items : in out Elist_Id)
       is
          Dep_Input  : constant Node_Id := Expression (Dep_Clause);
          Dep_Output : constant Node_Id := First (Choices (Dep_Clause));
+
+         function Is_Already_Matched (Dep_Item : Node_Id) return Boolean;
+         --  Determine whether dependency item Dep_Item has been matched in a
+         --  previous clause.
 
          function Is_In_Out_State_Clause return Boolean;
          --  Determine whether dependence clause Dep_Clause denotes an abstract
@@ -23873,6 +23881,28 @@ package body Sem_Prag is
 
          procedure Record_Item (Item_Id : Entity_Id);
          --  Store the entity of an item denoted by Item_Id in Matched_Items
+
+         ------------------------
+         -- Is_Already_Matched --
+         ------------------------
+
+         function Is_Already_Matched (Dep_Item : Node_Id) return Boolean is
+            Item_Id : Entity_Id := Empty;
+
+         begin
+            --  When the dependency item denotes attribute 'Result, check for
+            --  the entity of the related subprogram.
+
+            if Is_Attribute_Result (Dep_Item) then
+               Item_Id := Spec_Id;
+
+            elsif Is_Entity_Name (Dep_Item) then
+               Item_Id := Available_View (Entity_Of (Dep_Item));
+            end if;
+
+            return
+              Present (Item_Id) and then Contains (Matched_Items, Item_Id);
+         end Is_Already_Matched;
 
          ----------------------------
          -- Is_In_Out_State_Clause --
@@ -23950,9 +23980,14 @@ package body Sem_Prag is
 
             --  Attribute 'Result matches attribute 'Result
 
-            --  ??? this is incorrect, Ref_Item should be checked as well
+            elsif Is_Attribute_Result (Dep_Item)
+              and then Is_Attribute_Result (Ref_Item)
+            then
+               --  Put the entity of the related function on the list of
+               --  matched items because attribute 'Result does not carry
+               --  an entity similar to states and constituents.
 
-            elsif Is_Attribute_Result (Dep_Item) then
+               Record_Item (Spec_Id);
                Matched := True;
 
             --  Abstract states, current instances of concurrent types,
@@ -23988,7 +24023,7 @@ package body Sem_Prag is
                                                   E_Variable)
                           and then Present (Encapsulating_State (Ref_Item_Id))
                           and then Find_Encapsulating_State
-                                     (States, Ref_Item_Id) = Dep_Item_Id
+                                     (Dep_States, Ref_Item_Id) = Dep_Item_Id
                         then
                            Record_Item (Dep_Item_Id);
                            Matched := True;
@@ -24029,9 +24064,11 @@ package body Sem_Prag is
 
          procedure Record_Item (Item_Id : Entity_Id) is
          begin
-            if not Contains (Matched_Items, Item_Id) then
-               Append_New_Elmt (Item_Id, Matched_Items);
+            if No (Matched_Items) then
+               Matched_Items := New_Elmt_List;
             end if;
+
+            Append_Unique_Elmt (Item_Id, Matched_Items);
          end Record_Item;
 
          --  Local variables
@@ -24130,8 +24167,8 @@ package body Sem_Prag is
          --  Depending on the order or composition of refinement clauses, an
          --  In_Out state clause may not be directly refinable.
 
-         --    Depends         => ((Output, State) => (Input, State))
          --    Refined_State   => (State => (Constit_1, Constit_2))
+         --    Depends         => ((Output, State) => (Input, State))
          --    Refined_Depends => (Constit_1 => Input, Output => Constit_2)
 
          --  Matching normalized clause (State => State) fails because there is
@@ -24143,25 +24180,24 @@ package body Sem_Prag is
 
          if not Clause_Matched
            and then Is_In_Out_State_Clause
-           and then
-             Contains (Matched_Items, Available_View (Entity_Of (Dep_Input)))
+           and then Is_Already_Matched (Dep_Input)
          then
             Clause_Matched := True;
          end if;
 
          --  A clause where the input is an abstract state with visible null
-         --  refinement is implicitly matched when the output has already been
-         --  matched in a previous clause.
+         --  refinement or a 'Result attribute is implicitly matched when the
+         --  output has already been matched in a previous clause.
 
-         --    Depends         => (Output => State)  --  implicitly OK
          --    Refined_State   => (State => null)
+         --    Depends         => (Output => State)      --  implicitly OK
          --    Refined_Depends => (Output => ...)
+         --    Depends         => (...'Result => State)  --  implicitly OK
+         --    Refined_Depends => (...'Result => ...)
 
          if not Clause_Matched
            and then Is_Null_Refined_State (Dep_Input)
-           and then Is_Entity_Name (Dep_Output)
-           and then
-             Contains (Matched_Items, Available_View (Entity_Of (Dep_Output)))
+           and then Is_Already_Matched (Dep_Output)
          then
             Clause_Matched := True;
          end if;
@@ -24170,15 +24206,13 @@ package body Sem_Prag is
          --  refinement is implicitly matched when the input has already been
          --  matched in a previous clause.
 
-         --    Depends           => (State => Input)  --  implicitly OK
          --    Refined_State     => (State => null)
+         --    Depends           => (State => Input)  --  implicitly OK
          --    Refined_Depends   => (... => Input)
 
          if not Clause_Matched
            and then Is_Null_Refined_State (Dep_Output)
-           and then Is_Entity_Name (Dep_Input)
-           and then
-             Contains (Matched_Items, Available_View (Entity_Of (Dep_Input)))
+           and then Is_Already_Matched (Dep_Input)
          then
             Clause_Matched := True;
          end if;
@@ -24187,8 +24221,8 @@ package body Sem_Prag is
          --  pragma Refined_Depends contains a solitary null. Only an abstract
          --  state with null refinement can possibly match these cases.
 
-         --    Depends         => (State => null)
          --    Refined_State   => (State => null)
+         --    Depends         => (State => null)
          --    Refined_Depends =>  null            --  OK
 
          if not Clause_Matched then
@@ -24220,7 +24254,13 @@ package body Sem_Prag is
       -- Check_Output_States --
       -------------------------
 
-      procedure Check_Output_States is
+      procedure Check_Output_States
+        (Spec_Id      : Entity_Id;
+         Spec_Inputs  : Elist_Id;
+         Spec_Outputs : Elist_Id;
+         Body_Inputs  : Elist_Id;
+         Body_Outputs : Elist_Id)
+      is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether all constituents of state State_Id with full
          --  visible refinement are used as outputs in pragma Refined_Depends.
@@ -24350,54 +24390,63 @@ package body Sem_Prag is
          end if;
       end Check_Output_States;
 
-      ---------------------
-      -- Get_States_Seen --
-      ---------------------
+      --------------------
+      -- Collect_States --
+      --------------------
 
-      function Get_States_Seen (Dependencies : List_Id) return Elist_Id is
-         States_Seen : Elist_Id := No_Elist;
+      function Collect_States (Clauses : List_Id) return Elist_Id is
+         procedure Collect_State
+           (Item   : Node_Id;
+            States : in out Elist_Id);
+         --  Add the entity of Item to list States when it denotes to a state
 
-         procedure Get_State (Glob_Item : Node_Id);
-         --  Add global item to States_Seen when it corresponds to a state
+         -------------------
+         -- Collect_State --
+         -------------------
 
-         ---------------
-         -- Get_State --
-         ---------------
-
-         procedure Get_State (Glob_Item : Node_Id) is
+         procedure Collect_State
+           (Item   : Node_Id;
+            States : in out Elist_Id)
+         is
             Id : Entity_Id;
+
          begin
-            if Is_Entity_Name (Glob_Item) then
-               Id := Entity_Of (Glob_Item);
+            if Is_Entity_Name (Item) then
+               Id := Entity_Of (Item);
 
                if Ekind (Id) = E_Abstract_State then
-                  Append_New_Elmt (Id, States_Seen);
+                  if No (States) then
+                     States := New_Elmt_List;
+                  end if;
+
+                  Append_Unique_Elmt (Id, States);
                end if;
             end if;
-         end Get_State;
+         end Collect_State;
 
          --  Local variables
 
-         Dep_Clause : Node_Id;
-         Dep_Input  : Node_Id;
-         Dep_Output : Node_Id;
+         Clause : Node_Id;
+         Input  : Node_Id;
+         Output : Node_Id;
+         States : Elist_Id := No_Elist;
 
-      --  Start of processing for Get_States_Seen
+      --  Start of processing for Collect_States
 
       begin
-         Dep_Clause := First (Dependencies);
-         while Present (Dep_Clause) loop
-            Dep_Input  := Expression (Dep_Clause);
-            Dep_Output := First (Choices (Dep_Clause));
+         Clause := First (Clauses);
+         while Present (Clause) loop
+            Input  := Expression (Clause);
+            Output := First (Choices (Clause));
 
-            Get_State (Dep_Input);
-            Get_State (Dep_Output);
+            Collect_State (Input,  States);
+            Collect_State (Output, States);
 
-            Next (Dep_Clause);
+            Next (Clause);
          end loop;
 
-         return States_Seen;
-      end Get_States_Seen;
+         return States;
+      end Collect_States;
 
       -----------------------
       -- Normalize_Clauses --
@@ -24565,10 +24614,90 @@ package body Sem_Prag is
       end Normalize_Clauses;
 
       --------------------------
+      -- Remove_Extra_Clauses --
+      --------------------------
+
+      procedure Remove_Extra_Clauses
+        (Clauses       : List_Id;
+         Matched_Items : Elist_Id)
+      is
+         Clause      : Node_Id;
+         Input       : Node_Id;
+         Input_Id    : Entity_Id;
+         Next_Clause : Node_Id;
+         Output      : Node_Id;
+         State_Id    : Entity_Id;
+
+      begin
+         Clause := First (Clauses);
+         while Present (Clause) loop
+            Next_Clause := Next (Clause);
+
+            Input  := Expression (Clause);
+            Output := First (Choices (Clause));
+
+            --  Recognize a clause of the form
+
+            --    null => Input
+
+            --  where Input is a constituent of a state which was already
+            --  successfully matched. This clause must be removed because it
+            --  simply indicates that some of the constituents of the state
+            --  are not used.
+
+            --    Refined_State   => (State => (Constit_1, Constit_2))
+            --    Depends         => (Output => State)
+            --    Refined_Depends => ((Output => Constit_1),  --  State matched
+            --                        (null => Constit_2))    --  OK
+
+            if Nkind (Output) = N_Null and then Is_Entity_Name (Input) then
+
+               --  Handle abstract views generated for limited with clauses
+
+               Input_Id := Available_View (Entity_Of (Input));
+
+               --  The input must be a constituent of a state
+
+               if Ekind_In (Input_Id, E_Abstract_State,
+                                      E_Constant,
+                                      E_Variable)
+                 and then Present (Encapsulating_State (Input_Id))
+               then
+                  State_Id := Encapsulating_State (Input_Id);
+
+                  --  The state must have a non-null visible refinement and be
+                  --  matched in a previous clause.
+
+                  if Has_Non_Null_Visible_Refinement (State_Id)
+                    and then Contains (Matched_Items, State_Id)
+                  then
+                     Remove (Clause);
+                  end if;
+               end if;
+
+            --  Recognize a clause of the form
+
+            --    Output => null
+
+            --  where Output is an arbitrary item. This clause must be removed
+            --  because a null input legitimately matches anything.
+
+            elsif Nkind (Input) = N_Null then
+               Remove (Clause);
+            end if;
+
+            Clause := Next_Clause;
+         end loop;
+      end Remove_Extra_Clauses;
+
+      --------------------------
       -- Report_Extra_Clauses --
       --------------------------
 
-      procedure Report_Extra_Clauses is
+      procedure Report_Extra_Clauses
+        (Spec_Id : Entity_Id;
+         Clauses : List_Id)
+      is
          Clause : Node_Id;
 
       begin
@@ -24578,23 +24707,12 @@ package body Sem_Prag is
          if Is_Generic_Instance (Spec_Id) then
             null;
 
-         elsif Present (Refinements) then
-            Clause := First (Refinements);
+         elsif Present (Clauses) then
+            Clause := First (Clauses);
             while Present (Clause) loop
-
-               --  Do not complain about a null input refinement, since a null
-               --  input legitimately matches anything.
-
-               if Nkind (Clause) = N_Component_Association
-                 and then Nkind (Expression (Clause)) = N_Null
-               then
-                  null;
-
-               else
-                  SPARK_Msg_N
-                    ("unmatched or extra clause in dependence refinement",
-                     Clause);
-               end if;
+               SPARK_Msg_N
+                 ("unmatched or extra clause in dependence refinement",
+                  Clause);
 
                Next (Clause);
             end loop;
@@ -24606,9 +24724,39 @@ package body Sem_Prag is
       Body_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
       Errors    : constant Nat       := Serious_Errors_Detected;
-      Deps      : Node_Id;
-      Dummy     : Boolean;
-      Refs      : Node_Id;
+
+      Clause : Node_Id;
+      Deps   : Node_Id;
+      Dummy  : Boolean;
+      Refs   : Node_Id;
+
+      Body_Inputs  : Elist_Id := No_Elist;
+      Body_Outputs : Elist_Id := No_Elist;
+      --  The inputs and outputs of the subprogram body synthesized from pragma
+      --  Refined_Depends.
+
+      Dependencies : List_Id := No_List;
+      Depends      : Node_Id;
+      --  The corresponding Depends pragma along with its clauses
+
+      Matched_Items : Elist_Id := No_Elist;
+      --  A list containing the entities of all successfully matched items
+      --  found in pragma Depends.
+
+      Refinements : List_Id := No_List;
+      --  The clauses of pragma Refined_Depends
+
+      Spec_Id : Entity_Id;
+      --  The entity of the subprogram subject to pragma Refined_Depends
+
+      Spec_Inputs  : Elist_Id := No_Elist;
+      Spec_Outputs : Elist_Id := No_Elist;
+      --  The inputs and outputs of the subprogram spec synthesized from pragma
+      --  Depends.
+
+      States : Elist_Id := No_Elist;
+      --  A list containing the entities of all states whose constituents
+      --  appear in pragma Depends.
 
    --  Start of processing for Analyze_Refined_Depends_In_Decl_Part
 
@@ -24690,7 +24838,12 @@ package body Sem_Prag is
             --  For an output state with a visible refinement, ensure that all
             --  constituents appear as outputs in the dependency refinement.
 
-            Check_Output_States;
+            Check_Output_States
+              (Spec_Id      => Spec_Id,
+               Spec_Inputs  => Spec_Inputs,
+               Spec_Outputs => Spec_Outputs,
+               Body_Inputs  => Body_Inputs,
+               Body_Outputs => Body_Outputs);
          end if;
 
          --  Matching is disabled in ASIS because clauses are not normalized as
@@ -24707,6 +24860,10 @@ package body Sem_Prag is
          pragma Assert (Nkind (Deps) = N_Aggregate);
          Dependencies := New_Copy_List_Tree (Component_Associations (Deps));
          Normalize_Clauses (Dependencies);
+
+         --  Gather all states which appear in Depends
+
+         States := Collect_States (Dependencies);
 
          Refs := Expression (Get_Argument (N, Spec_Id));
 
@@ -24727,20 +24884,33 @@ package body Sem_Prag is
          --  and one input. Examine all clauses of pragma Depends looking for
          --  matching clauses in pragma Refined_Depends.
 
-         declare
-            States_Seen : constant Elist_Id := Get_States_Seen (Dependencies);
-            Clause      : Node_Id;
+         Clause := First (Dependencies);
+         while Present (Clause) loop
+            Check_Dependency_Clause
+              (Spec_Id       => Spec_Id,
+               Dep_Clause    => Clause,
+               Dep_States    => States,
+               Refinements   => Refinements,
+               Matched_Items => Matched_Items);
 
-         begin
-            Clause := First (Dependencies);
-            while Present (Clause) loop
-               Check_Dependency_Clause (States_Seen, Clause);
-               Next (Clause);
-            end loop;
-         end;
+            Next (Clause);
+         end loop;
+
+         --  Pragma Refined_Depends may contain multiple clarification clauses
+         --  which indicate that certain constituents do not influence the data
+         --  flow in any way. Such clauses must be removed as long as the state
+         --  has been matched, otherwise they will be incorrectly flagged as
+         --  unmatched.
+
+         --    Refined_State   => (State => (Constit_1, Constit_2))
+         --    Depends         => (Output => State)
+         --    Refined_Depends => ((Output => Constit_1),  --  State matched
+         --                        (null => Constit_2))    --  must be removed
+
+         Remove_Extra_Clauses (Refinements, Matched_Items);
 
          if Serious_Errors_Detected = Errors then
-            Report_Extra_Clauses;
+            Report_Extra_Clauses (Spec_Id, Refinements);
          end if;
       end if;
 

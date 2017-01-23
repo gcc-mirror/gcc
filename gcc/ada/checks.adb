@@ -826,10 +826,10 @@ package body Checks is
    -- Apply_Arithmetic_Overflow_Strict --
    --------------------------------------
 
-   --  This routine is called only if the type is an integer type, and a
-   --  software arithmetic overflow check may be needed for op (add, subtract,
-   --  or multiply). This check is performed only if Software_Overflow_Checking
-   --  is enabled and Do_Overflow_Check is set. In this case we expand the
+   --  This routine is called only if the type is an integer type and an
+   --  arithmetic overflow check may be needed for op (add, subtract, or
+   --  multiply). This check is performed if Backend_Overflow_Checks_On_Target
+   --  is not enabled and Do_Overflow_Check is set. In this case we expand the
    --  operation into a more complex sequence of tests that ensures that
    --  overflow is properly caught.
 

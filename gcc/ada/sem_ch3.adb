@@ -2634,10 +2634,12 @@ package body Sem_Ch3 is
 
          elsif not Analyzed (Next_Decl) and then Is_Body (Next_Decl) then
 
-            --  If there is an array type that uses a private type from an
-            --  enclosing package which is in the same scope as an expression
-            --  function that is not a completion then we cannot freeze here.
-            --  So identify the case here and delay freezing.
+            --  Check for an edge case that may cause premature freezing of a
+            --  private type.
+
+            --  If there is an array type which uses a private type from an
+            --  enclosing package that is in the same scope as a non-completing
+            --  expression function then we cannot freeze here.
 
             Ignore_Freezing := False;
 
@@ -2646,9 +2648,9 @@ package body Sem_Ch3 is
               and then not Is_Compilation_Unit (Current_Scope)
               and then not Is_Generic_Instance (Current_Scope)
             then
-
                --  Loop through all entities in the current scope to identify
-               --  an instance of the edge case outlined above.
+               --  an instance of the edge-case outlined above and ignore
+               --  freezeing if it is detected.
 
                declare
                   Curr : Entity_Id := First_Entity (Current_Scope);
@@ -2691,7 +2693,8 @@ package body Sem_Ch3 is
                --  ??? A cleaner approach may be possible and/or this solution
                --  could be extended to general-purpose late primitives, TBD.
 
-               if not ASIS_Mode and then not Body_Seen
+               if not ASIS_Mode
+                 and then not Body_Seen
                  and then not Is_Body (Decl)
                then
                   Body_Seen := True;
