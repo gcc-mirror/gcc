@@ -131,7 +131,7 @@ msgstr ""
 "Project-Id-Version: cpplib 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2017-01-10 18:00+0200\n"
+"PO-Revision-Date: 2017-01-23 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -258,7 +258,7 @@ msgstr "konverterer undvigesekvens til kørselstegnsæt"
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr "manglende åbent citationstegn"
+msgstr "manglende indledende citationstegn"
 
 #: charset.c:1827 charset.c:1891
 msgid "character constant too long for its type"
