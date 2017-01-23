@@ -191,7 +191,6 @@ gcc/testsuite/g++/g++.sum
 gcc/testsuite/objc/objc.sum
 $TARGET/libstdc++-v3/testsuite/libstdc++.sum
 $TARGET/libffi/testsuite/libffi.sum
-$TARGET/libjava/testsuite/libjava.sum
 $TARGET/libgomp/testsuite/libgomp.sum
 $TARGET/libmudflap/testsuite/libmudflap.sum"
 COMPILERS="gcc/cc1

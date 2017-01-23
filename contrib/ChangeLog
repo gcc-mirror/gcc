@@ -1,3 +1,8 @@
+2017-01-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* patch_tester.sh (TESTLOGS): Remove
+	$TARGET/libjava/testsuite/libjava.sum.
+
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* warn_summary: Remove the -java option.
