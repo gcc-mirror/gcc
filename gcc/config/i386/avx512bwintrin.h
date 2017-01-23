@@ -40,6 +40,94 @@ typedef char __v64qi __attribute__ ((__vector_size__ (64)));
 
 typedef unsigned long long __mmask64;
 
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktest_mask32_u8  (__mmask32 __A,  __mmask32 __B, unsigned char *__CF)
+{
+  *__CF = (unsigned char) __builtin_ia32_ktestcsi (__A, __B);
+  return (unsigned char) __builtin_ia32_ktestzsi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktest_mask64_u8  (__mmask64 __A,  __mmask64 __B, unsigned char *__CF)
+{
+  *__CF = (unsigned char) __builtin_ia32_ktestcdi (__A, __B);
+  return (unsigned char) __builtin_ia32_ktestzdi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktestz_mask32_u8 (__mmask32 __A, __mmask32 __B)
+{
+  return (unsigned char) __builtin_ia32_ktestzsi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktestz_mask64_u8 (__mmask64 __A, __mmask64 __B)
+{
+  return (unsigned char) __builtin_ia32_ktestzdi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktestc_mask32_u8 (__mmask32 __A, __mmask32 __B)
+{
+  return (unsigned char) __builtin_ia32_ktestcsi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_ktestc_mask64_u8 (__mmask64 __A, __mmask64 __B)
+{
+  return (unsigned char) __builtin_ia32_ktestcdi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortest_mask32_u8  (__mmask32 __A,  __mmask32 __B, unsigned char *__CF)
+{
+  *__CF = (unsigned char) __builtin_ia32_kortestcsi (__A, __B);
+  return (unsigned char) __builtin_ia32_kortestzsi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortest_mask64_u8  (__mmask64 __A,  __mmask64 __B, unsigned char *__CF)
+{
+  *__CF = (unsigned char) __builtin_ia32_kortestcdi (__A, __B);
+  return (unsigned char) __builtin_ia32_kortestzdi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortestz_mask32_u8 (__mmask32 __A, __mmask32 __B)
+{
+  return (unsigned char) __builtin_ia32_kortestzsi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortestz_mask64_u8 (__mmask64 __A, __mmask64 __B)
+{
+  return (unsigned char) __builtin_ia32_kortestzdi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortestc_mask32_u8 (__mmask32 __A, __mmask32 __B)
+{
+  return (unsigned char) __builtin_ia32_kortestcsi (__A, __B);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_kortestc_mask64_u8 (__mmask64 __A, __mmask64 __B)
+{
+  return (unsigned char) __builtin_ia32_kortestcdi (__A, __B);
+}
+
 extern __inline __mmask32
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _kadd_mask32 (__mmask32 __A, __mmask32 __B)

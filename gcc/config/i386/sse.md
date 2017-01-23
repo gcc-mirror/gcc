@@ -108,6 +108,8 @@
 
   ;; Mask operations
   UNSPEC_MASKOP
+  UNSPEC_KORTEST
+  UNSPEC_KTEST
 
   ;; For embed. rounding feature
   UNSPEC_EMBEDDED_ROUNDING
@@ -1422,31 +1424,27 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
-;;There are kortrest[bdq] but no intrinsics for them.
-;;We probably don't need to implement them.
-(define_insn "kortestzhi"
-  [(set (reg:CCZ FLAGS_REG)
-	(compare:CCZ
-	  (ior:HI
-	    (match_operand:HI 0 "register_operand" "k")
-	    (match_operand:HI 1 "register_operand" "k"))
-	  (const_int 0)))]
-  "TARGET_AVX512F && ix86_match_ccmode (insn, CCZmode)"
-  "kortestw\t{%1, %0|%0, %1}"
-  [(set_attr "mode" "HI")
+(define_insn "ktest<mode>"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "k")
+	   (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")]
+	  UNSPEC_KTEST))]
+  "TARGET_AVX512F"
+  "ktest<mskmodesuffix>\t{%1, %0|%0, %1}"
+  [(set_attr "mode" "<MODE>")
    (set_attr "type" "msklog")
    (set_attr "prefix" "vex")])
 
-(define_insn "kortestchi"
-  [(set (reg:CCC FLAGS_REG)
-	(compare:CCC
-	  (ior:HI
-	    (match_operand:HI 0 "register_operand" "k")
-	    (match_operand:HI 1 "register_operand" "k"))
-	  (const_int -1)))]
-  "TARGET_AVX512F && ix86_match_ccmode (insn, CCCmode)"
-  "kortestw\t{%1, %0|%0, %1}"
-  [(set_attr "mode" "HI")
+(define_insn "kortest<mode>"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "k")
+	   (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")]
+	  UNSPEC_KORTEST))]
+  "TARGET_AVX512F"
+  "kortest<mskmodesuffix>\t{%1, %0|%0, %1}"
+  [(set_attr "mode" "<MODE>")
    (set_attr "type" "msklog")
    (set_attr "prefix" "vex")])
 
