@@ -1,3 +1,8 @@
+2017-01-23  Thomas Koenig  <tkoenig@netcologne.de>
+
+	* arith.c (arith_power):  If simplifying integer power expression
+	to zero, warn if -Winteger-division is given.
+
 2017-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/79154
