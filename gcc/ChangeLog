@@ -1,3 +1,14 @@
+2017-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (assign_assembler_name_if_neeeded): Rename to ...
+	(assign_assembler_name_if_needed): ... this.
+	* tree.c (assign_assembler_name_if_neeeded): Rename to ...
+	(assign_assembler_name_if_needed): ... this.
+	(free_lang_data_in_cgraph): Adjust callers.
+	* cgraphunit.c (cgraph_node::analyze): Likewise.
+	* omp-expand.c (expand_omp_taskreg, expand_omp_target):
+	Likewise.
+
 2017-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79088

@@ -616,7 +616,7 @@ cgraph_node::analyze (void)
     {
       push_cfun (DECL_STRUCT_FUNCTION (decl));
 
-      assign_assembler_name_if_neeeded (decl);
+      assign_assembler_name_if_needed (decl);
 
       /* Make sure to gimplify bodies only once.  During analyzing a
 	 function we lower it, which will require gimplified nested
