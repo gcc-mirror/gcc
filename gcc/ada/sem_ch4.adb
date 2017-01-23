@@ -2407,7 +2407,13 @@ package body Sem_Ch4 is
             end if;
 
             if Is_Array_Type (Array_Type) then
-               null;
+
+               --  In order to correctly access First_Index component later,
+               --  replace string literal subtype by its parent type.
+
+               if Ekind (Array_Type) = E_String_Literal_Subtype then
+                  Array_Type := Etype (Array_Type);
+               end if;
 
             elsif Present (Pent) and then Ekind (Pent) = E_Entry_Family then
                Analyze (Exp);

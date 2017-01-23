@@ -959,6 +959,7 @@ package body Inline is
 
       function Has_Single_Return_In_GNATprove_Mode return Boolean is
          Last_Statement : Node_Id := Empty;
+         Body_To_Inline : constant Node_Id := N;
 
          function Check_Return (N : Node_Id) return Traverse_Result;
          --  Returns OK on node N if this is not a return statement different
@@ -970,18 +971,29 @@ package body Inline is
 
          function Check_Return (N : Node_Id) return Traverse_Result is
          begin
-            if Nkind_In (N, N_Simple_Return_Statement,
-                            N_Extended_Return_Statement)
-            then
-               if N = Last_Statement then
-                  return OK;
-               else
-                  return Abandon;
-               end if;
+            case Nkind (N) is
+               when N_Simple_Return_Statement
+                  | N_Extended_Return_Statement
+               =>
+                  if N = Last_Statement then
+                     return OK;
+                  else
+                     return Abandon;
+                  end if;
 
-            else
-               return OK;
-            end if;
+               --  Skip locally declared subprogram bodies inside the body to
+               --  inline, as the return statements inside those do not count.
+
+               when N_Subprogram_Body =>
+                  if N = Body_To_Inline then
+                     return OK;
+                  else
+                     return Skip;
+                  end if;
+
+               when others =>
+                  return OK;
+            end case;
          end Check_Return;
 
          function Check_All_Returns is new Traverse_Func (Check_Return);
@@ -3151,13 +3163,16 @@ package body Inline is
                    Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
                    Expression   => Relocate_Node (Expression (A)));
 
-            --  In GNATprove mode, keep the most precise type of the actual
-            --  for the temporary variable. Otherwise, the AST may contain
-            --  unexpected assignment statements to a temporary variable of
-            --  unconstrained type renaming a local variable of constrained
-            --  type, which is not expected by GNATprove.
+            --  In GNATprove mode, keep the most precise type of the actual for
+            --  the temporary variable, when the formal type is unconstrained.
+            --  Otherwise, the AST may contain unexpected assignment statements
+            --  to a temporary variable of unconstrained type renaming a
+            --  local variable of constrained type, which is not expected
+            --  by GNATprove.
 
-            elsif Etype (F) /= Etype (A) and then not GNATprove_Mode then
+            elsif Etype (F) /= Etype (A)
+              and then (not GNATprove_Mode or else Is_Constrained (Etype (F)))
+            then
                New_A    := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
                Temp_Typ := Etype (F);
 
