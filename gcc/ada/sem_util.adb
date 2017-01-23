@@ -16089,7 +16089,10 @@ package body Sem_Util is
    begin
       --  Ada 2005 or later, and formals present
 
-      if Ada_Version >= Ada_2005 and then Present (First_Formal (E)) then
+      if Ada_Version >= Ada_2005
+        and then Present (First_Formal (E))
+        and then No (Default_Value (First_Formal (E)))
+      then
          Formal := Next_Formal (First_Formal (E));
          while Present (Formal) loop
             if No (Default_Value (Formal)) then

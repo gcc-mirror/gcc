@@ -5974,7 +5974,12 @@ package body Sem_Res is
       --  component type of that array type, the node is really an indexing of
       --  the parameterless call. Resolve as such. A pathological case occurs
       --  when the type of the component is an access to the array type. In
-      --  this case the call is truly ambiguous.
+      --  this case the call is truly ambiguous. If the call is to an intrinsic
+      --  subprogram, it can't be an indexed component. This check is necessary
+      --  because if it's Unchecked_Conversion, and we have "type T_Ptr is
+      --  access T;" and "type T is array (...) of T_Ptr;" (i.e. an array of
+      --  pointers to the same array), the compiler gets confused and does an
+      --  infinite recursion.
 
       elsif (Needs_No_Actuals (Nam) or else Needs_One_Actual (Nam))
         and then
@@ -5984,7 +5989,8 @@ package body Sem_Res is
              (Is_Access_Type (Etype (Nam))
                and then Is_Array_Type (Designated_Type (Etype (Nam)))
                and then
-                 Covers (Typ, Component_Type (Designated_Type (Etype (Nam))))))
+                 Covers (Typ, Component_Type (Designated_Type (Etype (Nam))))
+               and then not Is_Intrinsic_Subprogram (Entity (Subp))))
       then
          declare
             Index_Node : Node_Id;
