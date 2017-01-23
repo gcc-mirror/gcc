@@ -2649,8 +2649,8 @@ package body Sem_Ch3 is
               and then not Is_Generic_Instance (Current_Scope)
             then
                --  Loop through all entities in the current scope to identify
-               --  an instance of the edge-case outlined above and ignore
-               --  freezeing if it is detected.
+               --  an instance of the edge case outlined above and ignore
+               --  freezing if it is detected.
 
                declare
                   Curr : Entity_Id := First_Entity (Current_Scope);
