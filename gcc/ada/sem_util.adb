@@ -9140,16 +9140,16 @@ package body Sem_Util is
 
       begin
          --  Protected objects always have the properties Async_Readers and
-         --  Async_Writers. (SPARK RM 7.1.2(16))
+         --  Async_Writers (SPARK RM 7.1.2(16)).
 
          if Property = Name_Async_Readers
            or else Property = Name_Async_Writers
          then
             return True;
 
-         --  Protected objects that have Part_Of components also inherit
-         --  their properties Effective_Reads and Effective_Writes. (SPARK
-         --  RM 7.1.2(16))
+         --  Protected objects that have Part_Of components also inherit their
+         --  properties Effective_Reads and Effective_Writes
+         --  (SPARK RM 7.1.2(16)).
 
          elsif Present (Constits) then
             Constit_Elmt := First_Elmt (Constits);
@@ -9352,8 +9352,9 @@ package body Sem_Util is
             --  (SPARK RM 7.1.2(16))
 
             if Is_Protected_Type (Etype (Item_Id)) then
-               return Property = Name_Async_Readers
-                 or else Property = Name_Async_Writers;
+               return
+                 Property = Name_Async_Readers
+                   or else Property = Name_Async_Writers;
             else
                return True;
             end if;
@@ -9377,8 +9378,8 @@ package body Sem_Util is
 
       --  By default, protected objects only have the properties Async_Readers
       --  and Async_Writers. If they have Part_Of components, they also inherit
-      --  their properties Effective_Reads and Effective_Writes. (SPARK RM
-      --  7.1.2(16))
+      --  their properties Effective_Reads and Effective_Writes
+      --  (SPARK RM 7.1.2(16)).
 
       elsif Ekind (Item_Id) = E_Protected_Object then
          return Protected_Object_Has_Enabled_Property;

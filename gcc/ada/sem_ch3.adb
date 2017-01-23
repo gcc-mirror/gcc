@@ -2634,12 +2634,11 @@ package body Sem_Ch3 is
 
          elsif not Analyzed (Next_Decl) and then Is_Body (Next_Decl) then
 
-            --  Check for an edge case that may cause premature freezing of a
-            --  private type.
-
-            --  If there is an type which depends on a private type from an
-            --  enclosing package that is in the same scope as a non-completing
-            --  expression function then we cannot freeze here.
+            --  Check for an edge case that may cause premature freezing of
+            --  a private type. If there is a type which depends on another
+            --  private type from an enclosing package that is in the same
+            --  scope as a non-completing expression function then we cannot
+            --  freeze here.
 
             Ignore_Freezing := False;
 

@@ -1332,8 +1332,6 @@ package body Freeze is
    -------------------------------
 
    procedure Check_Expression_Function (N : Node_Id; Nam : Entity_Id) is
-      Decl : Node_Id;
-
       function Find_Constant (Nod : Node_Id) return Traverse_Result;
       --  Function to search for deferred constant
 
@@ -1375,6 +1373,10 @@ package body Freeze is
       end Find_Constant;
 
       procedure Check_Deferred is new Traverse_Proc (Find_Constant);
+
+      --  Local variables
+
+      Decl : Node_Id;
 
    --  Start of processing for Check_Expression_Function
 

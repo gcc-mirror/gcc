@@ -8727,7 +8727,7 @@ package body Exp_Ch9 is
 
       function Static_Component_Size (Comp : Entity_Id) return Boolean;
       --  When compiling under the Ravenscar profile, private components must
-      --  have a static size, or else a protected object  will require heap
+      --  have a static size, or else a protected object will require heap
       --  allocation, violating the corresponding restriction. It is preferable
       --  to make this check here, because it provides a better error message
       --  than the back-end, which refers to the object as a whole.

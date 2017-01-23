@@ -41,8 +41,8 @@ package Sem_Ch5 is
    procedure Analyze_Loop_Parameter_Specification (N : Node_Id);
    procedure Analyze_Loop_Statement               (N : Node_Id);
    procedure Analyze_Null_Statement               (N : Node_Id);
-   procedure Analyze_Target_Name                  (N : Node_Id);
    procedure Analyze_Statements                   (L : List_Id);
+   procedure Analyze_Target_Name                  (N : Node_Id);
 
    procedure Analyze_Label_Entity (E : Entity_Id);
    --  This procedure performs direct analysis of the label entity E. It

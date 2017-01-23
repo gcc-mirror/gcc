@@ -1,3 +1,20 @@
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb, freeze.adb, par-ch4.adb, scng.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch5.adb, sem_ch5.ads, sem_util.adb, sinfo.ads: Minor
+	reformatting.
+	* exp_ch9.adb: minor style fix in comment.
+
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Handle properly a type derived
+	for a limited record extension with unknown discriminants whose
+	full view has no discriminants.
+
+2017-01-23  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb: Alphabetize with clauses.
+
 2017-01-23  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Has_Enabled_Property): Treat
