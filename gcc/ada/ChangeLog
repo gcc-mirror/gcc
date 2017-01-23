@@ -1,3 +1,14 @@
+2017-01-23  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Call): In the part of the code where
+	it is deciding whether to turn the call into an indexed
+	component, avoid doing so if the call is to an instance of
+	Unchecked_Conversion. Otherwise, the compiler turns it into an
+	indexed component, and resolution of that turns it back into a
+	function call, and so on, resulting in infinite recursion.
+	* sem_util.adb (Needs_One_Actual): If the first formal has a
+	default, then return False.
+
 2017-01-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_eval.adb (Compile_Time_Compare): Reinstate the expr+literal (etc)
