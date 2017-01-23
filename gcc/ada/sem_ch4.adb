@@ -2419,9 +2419,7 @@ package body Sem_Ch4 is
                Analyze (Exp);
                Set_Etype (N, Any_Type);
 
-               if not Has_Compatible_Type
-                 (Exp, Entry_Index_Type (Pent))
-               then
+               if not Has_Compatible_Type (Exp, Entry_Index_Type (Pent)) then
                   Error_Msg_N ("invalid index type in entry name", N);
 
                elsif Present (Next (Exp)) then

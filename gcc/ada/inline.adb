@@ -958,8 +958,8 @@ package body Inline is
       -----------------------------------------
 
       function Has_Single_Return_In_GNATprove_Mode return Boolean is
-         Last_Statement : Node_Id := Empty;
          Body_To_Inline : constant Node_Id := N;
+         Last_Statement : Node_Id := Empty;
 
          function Check_Return (N : Node_Id) return Traverse_Result;
          --  Returns OK on node N if this is not a return statement different
@@ -972,8 +972,8 @@ package body Inline is
          function Check_Return (N : Node_Id) return Traverse_Result is
          begin
             case Nkind (N) is
-               when N_Simple_Return_Statement
-                  | N_Extended_Return_Statement
+               when N_Extended_Return_Statement
+                  | N_Simple_Return_Statement
                =>
                   if N = Last_Statement then
                      return OK;
@@ -3166,9 +3166,9 @@ package body Inline is
             --  In GNATprove mode, keep the most precise type of the actual for
             --  the temporary variable, when the formal type is unconstrained.
             --  Otherwise, the AST may contain unexpected assignment statements
-            --  to a temporary variable of unconstrained type renaming a
-            --  local variable of constrained type, which is not expected
-            --  by GNATprove.
+            --  to a temporary variable of unconstrained type renaming a local
+            --  variable of constrained type, which is not expected by
+            --  GNATprove.
 
             elsif Etype (F) /= Etype (A)
               and then (not GNATprove_Mode or else Is_Constrained (Etype (F)))

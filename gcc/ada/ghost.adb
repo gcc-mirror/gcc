@@ -940,6 +940,21 @@ package body Ghost is
       return False;
    end Is_Ghost_Procedure_Call;
 
+   ---------------------------
+   -- Is_Ignored_Ghost_Unit --
+   ---------------------------
+
+   function Is_Ignored_Ghost_Unit (N : Node_Id) return Boolean is
+   begin
+      --  Inspect the original node of the unit in case removal of ignored
+      --  Ghost code has already taken place.
+
+      return
+        Nkind (N) = N_Compilation_Unit
+          and then Is_Ignored_Ghost_Entity
+                     (Defining_Entity (Original_Node (Unit (N))));
+   end Is_Ignored_Ghost_Unit;
+
    -------------------------
    -- Is_Subject_To_Ghost --
    -------------------------
@@ -1603,8 +1618,8 @@ package body Ghost is
 
          begin
             --  Do not prune compilation unit nodes because many mechanisms
-            --  depend on their presence. Note that context items must still
-            --  be processed.
+            --  depend on their presence. Note that context items are still
+            --  being processed.
 
             if Nkind (N) = N_Compilation_Unit then
                return OK;

@@ -94,6 +94,10 @@ package Ghost is
    --  Determine whether arbitrary node N denotes a procedure call invoking a
    --  Ghost procedure.
 
+   function Is_Ignored_Ghost_Unit (N : Node_Id) return Boolean;
+   --  Determine whether compilation unit N is subject to pragma Ghost with
+   --  policy Ignore.
+
    procedure Lock;
    --  Lock internal tables before calling backend
 

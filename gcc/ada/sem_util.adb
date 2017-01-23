@@ -16227,13 +16227,13 @@ package body Sem_Util is
       New_Scope : Entity_Id  := Empty) return Node_Id
    is
       Actual_Map : Elist_Id := Map;
-      --  This is the actual map for the copy. It is initialized with the
-      --  given elements, and then enlarged as required for Itypes that are
-      --  copied during the first phase of the copy operation. The visit
-      --  procedures add elements to this map as Itypes are encountered.
-      --  The reason we cannot use Map directly, is that it may well be
-      --  (and normally is) initialized to No_Elist, and if we have mapped
-      --  entities, we have to reset it to point to a real Elist.
+      --  This is the actual map for the copy. It is initialized with the given
+      --  elements, and then enlarged as required for Itypes that are copied
+      --  during the first phase of the copy operation. The visit procedures
+      --  add elements to this map as Itypes are encountered. The reason we
+      --  cannot use Map directly, is that it may well be (and normally is)
+      --  initialized to No_Elist, and if we have mapped entities, we have to
+      --  reset it to point to a real Elist.
 
       NCT_Hash_Threshold : constant := 20;
       --  If there are more than this number of pairs of entries in the map,
@@ -16265,11 +16265,10 @@ package body Sem_Util is
       --  phase, the tree is copied, using the replacement map to replace any
       --  Itype references within the copied tree.
 
-      --  The following hash tables are used if the Map supplied has more
-      --  than hash threshold entries to speed up access to the map. If
-      --  there are fewer entries, then the map is searched sequentially
-      --  (because setting up a hash table for only a few entries takes
-      --  more time than it saves.
+      --  The following hash tables are used if the Map supplied has more than
+      --  hash threshold entries to speed up access to the map. If there are
+      --  fewer entries, then the map is searched sequentially (because setting
+      --  up a hash table for only a few entries takes more time than it saves.
 
       subtype NCT_Header_Num is Int range 0 .. 511;
       --  Defines range of headers in hash tables (512 headers)
