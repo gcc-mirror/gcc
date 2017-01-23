@@ -24,5 +24,5 @@ int main()
 {
   int dummy;
   auto bad = std::experimental::make_array(std::ref(dummy));
-  // { dg-error "make_array cannot be used without an explicit target type if any of the types given is a reference_wrapper" "" { target *-*-* } 76 }
+  // { dg-error "explicit target type" "" { target *-*-* } 78 }
 }

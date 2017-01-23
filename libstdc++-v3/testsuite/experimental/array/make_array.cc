@@ -18,7 +18,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/array>
-#include <functional>
 
 struct MoveOnly
 {
@@ -27,7 +26,7 @@ struct MoveOnly
   MoveOnly& operator=(MoveOnly&&) = default;
 };
 
-int main()
+void test01()
 {
   char x[42];
   std::array<char, 42> y = std::experimental::to_array(x);
@@ -44,4 +43,14 @@ int main()
   constexpr std::array<long, 3> zz2
     = std::experimental::make_array(1,2L, 3);
   constexpr std::array<MoveOnly, 1> zzz2 = std::experimental::make_array(MoveOnly{});
+}
+
+void test02()
+{
+  // PR libstdc++/79195
+  struct A {};
+  struct B : A {};
+  struct C : A {};
+  auto arr = std::experimental::make_array<A>(B{}, C{});
+  static_assert(std::is_same<decltype(arr), std::array<A, 2>>::value, "");
 }
