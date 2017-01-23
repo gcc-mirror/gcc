@@ -2289,13 +2289,13 @@ package body Sem_Aggr is
 
                               elsif ASIS_Mode
                                 and then
-                                  ((Is_Type (Entity (Table (J).Choice))
-                                    and then Has_Predicates
-                                      (Entity (Table (J).Choice)))
-                                   or else
-                                     (Is_Type (Entity (Table (K).Choice))
+                                   ((Is_Type (Entity (Table (J).Choice))
                                        and then Has_Predicates
-                                          (Entity (Table (K).Choice))))
+                                         (Entity (Table (J).Choice)))
+                                  or else
+                                    (Is_Type (Entity (Table (K).Choice))
+                                       and then Has_Predicates
+                                         (Entity (Table (K).Choice))))
                               then
                                  null;
 
