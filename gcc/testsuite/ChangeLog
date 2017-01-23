@@ -1,3 +1,9 @@
+2017-01-23  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/79196
+	* gcc.dg/asan/pr79196.c: New test.
+	* gcc.dg/strlenopt-30.c: Update scanned pattern.
+
 2017-01-23  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/78384

@@ -2225,10 +2225,10 @@ handle_char_store (gimple_stmt_iterator *gsi)
   return true;
 }
 
-/* Try to fold strstr (s, t) eq/ne s to memcmp (s, t, strlen (t)) eq/ne 0.  */
+/* Try to fold strstr (s, t) eq/ne s to strncmp (s, t, strlen (t)) eq/ne 0.  */
 
 static void
-fold_strstr_to_memcmp (tree rhs1, tree rhs2, gimple *stmt)
+fold_strstr_to_strncmp (tree rhs1, tree rhs2, gimple *stmt)
 {
   if (TREE_CODE (rhs1) != SSA_NAME
       || TREE_CODE (rhs2) != SSA_NAME)
@@ -2273,34 +2273,34 @@ fold_strstr_to_memcmp (tree rhs1, tree rhs2, gimple *stmt)
 	  if (arg1_len != NULL_TREE)
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (call_stmt);
-	      tree memcmp_decl = builtin_decl_explicit (BUILT_IN_MEMCMP);
-	      gcall *memcmp_call = gimple_build_call (memcmp_decl, 3,
+	      tree strncmp_decl = builtin_decl_explicit (BUILT_IN_STRNCMP);
+	      gcall *strncmp_call = gimple_build_call (strncmp_decl, 3,
 						      arg0, arg1, arg1_len);
-	      tree memcmp_lhs = make_ssa_name (integer_type_node);
-	      gimple_set_vuse (memcmp_call, gimple_vuse (call_stmt));
-	      gimple_call_set_lhs (memcmp_call, memcmp_lhs);
+	      tree strncmp_lhs = make_ssa_name (integer_type_node);
+	      gimple_set_vuse (strncmp_call, gimple_vuse (call_stmt));
+	      gimple_call_set_lhs (strncmp_call, strncmp_lhs);
 	      gsi_remove (&gsi, true);
-	      gsi_insert_before (&gsi, memcmp_call, GSI_SAME_STMT);
-	      tree zero = build_zero_cst (TREE_TYPE (memcmp_lhs));
+	      gsi_insert_before (&gsi, strncmp_call, GSI_SAME_STMT);
+	      tree zero = build_zero_cst (TREE_TYPE (strncmp_lhs));
 
 	      if (is_gimple_assign (stmt))
 		{
 		  if (gimple_assign_rhs_code (stmt) == COND_EXPR)
 		    {
 		      tree cond = gimple_assign_rhs1 (stmt);
-		      TREE_OPERAND (cond, 0) = memcmp_lhs;
+		      TREE_OPERAND (cond, 0) = strncmp_lhs;
 		      TREE_OPERAND (cond, 1) = zero;
 		    }
 		  else
 		    {
-		      gimple_assign_set_rhs1 (stmt, memcmp_lhs);
+		      gimple_assign_set_rhs1 (stmt, strncmp_lhs);
 		      gimple_assign_set_rhs2 (stmt, zero);
 		    }
 		}
 	      else
 		{
 		  gcond *cond = as_a<gcond *> (stmt);
-		  gimple_cond_set_lhs (cond, memcmp_lhs);
+		  gimple_cond_set_lhs (cond, strncmp_lhs);
 		  gimple_cond_set_rhs (cond, zero);
 		}
 	      update_stmt (stmt);
@@ -2398,12 +2398,12 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 	    enum tree_code cond_code = TREE_CODE (cond);
 
 	    if (cond_code == EQ_EXPR || cond_code == NE_EXPR)
-	      fold_strstr_to_memcmp (TREE_OPERAND (cond, 0),
-				     TREE_OPERAND (cond, 1), stmt);
+	      fold_strstr_to_strncmp (TREE_OPERAND (cond, 0),
+				      TREE_OPERAND (cond, 1), stmt);
 	  }
 	else if (code == EQ_EXPR || code == NE_EXPR)
-	  fold_strstr_to_memcmp (gimple_assign_rhs1 (stmt),
-				 gimple_assign_rhs2 (stmt), stmt);
+	  fold_strstr_to_strncmp (gimple_assign_rhs1 (stmt),
+				  gimple_assign_rhs2 (stmt), stmt);
       }
     else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
 	{
@@ -2423,8 +2423,8 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
     {
       enum tree_code code = gimple_cond_code (cond);
       if (code == EQ_EXPR || code == NE_EXPR)
-	fold_strstr_to_memcmp (gimple_cond_lhs (stmt),
-			       gimple_cond_rhs (stmt), stmt);
+	fold_strstr_to_strncmp (gimple_cond_lhs (stmt),
+				gimple_cond_rhs (stmt), stmt);
     }
 
   if (gimple_vdef (stmt))
