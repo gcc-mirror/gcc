@@ -1,3 +1,9 @@
+2017-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79186
+	* gcc.dg/torture/pr79186.c: New testcase.
+	* gcc.dg/torture/pr79187.c: Likewise.
+
 2017-01-23  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/vrp8.c: New test.

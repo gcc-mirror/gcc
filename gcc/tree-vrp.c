@@ -5035,6 +5035,7 @@ register_new_assert_for (tree name, tree expr,
 	  /* If we have the same assertion on all incoming edges of a BB
 	     instead insert it at the beginning of it.  */
 	  if (e && loc->e
+	      && e != loc->e
 	      && dest_bb == loc->e->dest
 	      && EDGE_COUNT (dest_bb->preds) == 2)
 	    {
