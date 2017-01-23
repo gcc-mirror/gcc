@@ -5620,42 +5620,45 @@ package body Exp_Ch3 is
          if Is_Array_Type (Typ)
            and then Is_Modular_Integer_Type (Etype (First_Index (Typ)))
          then
-            --  To prevent arithmetic overflow with large values, we
-            --  raise Storage_Error under the following guard:
-            --
-            --  (Arr'Last / 2 - Arr'First / 2) > (Typ'Last - 1) / 2
+            --  To prevent arithmetic overflow with large values, we raise
+            --  Storage_Error under the following guard:
 
-            --  This takes care of the boundary case, but it is preferable
-            --  to use a smaller limit, because even on 64-bit architectures
-            --  an array of more than 2 ** 30 bytes is likely to raise
+            --    (Arr'Last / 2 - Arr'First / 2) > (2 ** 30)
+
+            --  This takes care of the boundary case, but it is preferable to
+            --  use a smaller limit, because even on 64-bit architectures an
+            --  array of more than 2 ** 30 bytes is likely to raise
             --  Storage_Error.
 
             Index_Typ := Etype (First_Index (Typ));
+
             if RM_Size (Index_Typ) = RM_Size (Standard_Long_Long_Integer) then
                Insert_Action (N,
-                  Make_Raise_Storage_Error (Loc,
+                 Make_Raise_Storage_Error (Loc,
                    Condition =>
                      Make_Op_Ge (Loc,
                        Left_Opnd  =>
                          Make_Op_Subtract (Loc,
-                           Left_Opnd =>
+                           Left_Opnd  =>
                              Make_Op_Divide (Loc,
-                               Left_Opnd =>
+                               Left_Opnd  =>
                                  Make_Attribute_Reference (Loc,
-                                   Prefix => New_Occurrence_Of (Typ, Loc),
-                                 Attribute_Name => Name_Last),
-                                Right_Opnd =>
-                                  Make_Integer_Literal (Loc, Uint_2)),
+                                   Prefix         =>
+                                     New_Occurrence_Of (Typ, Loc),
+                                   Attribute_Name => Name_Last),
+                               Right_Opnd =>
+                                 Make_Integer_Literal (Loc, Uint_2)),
                            Right_Opnd =>
                              Make_Op_Divide (Loc,
                                Left_Opnd =>
                                  Make_Attribute_Reference (Loc,
-                                   Prefix => New_Occurrence_Of (Typ, Loc),
+                                   Prefix         =>
+                                     New_Occurrence_Of (Typ, Loc),
                                    Attribute_Name => Name_First),
-                                Right_Opnd =>
-                                  Make_Integer_Literal (Loc, Uint_2))),
+                               Right_Opnd =>
+                                 Make_Integer_Literal (Loc, Uint_2))),
                        Right_Opnd =>
-                         Make_Integer_Literal (Loc,  (Uint_2 ** 30))),
+                         Make_Integer_Literal (Loc, (Uint_2 ** 30))),
                    Reason    => SE_Object_Too_Large));
             end if;
          end if;

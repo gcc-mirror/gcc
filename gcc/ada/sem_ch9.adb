@@ -1154,6 +1154,7 @@ package body Sem_Ch9 is
 
    procedure Analyze_Delay_Relative (N : Node_Id) is
       E : constant Node_Id := Expression (N);
+
    begin
       Tasking_Used := True;
       Check_SPARK_05_Restriction ("delay statement is not allowed", N);

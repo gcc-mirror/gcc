@@ -5006,6 +5006,7 @@ package body Sem_Util is
    procedure Copy_SPARK_Mode_Aspect (From : Node_Id; To : Node_Id) is
       pragma Assert (not Has_Aspects (To));
       Asp : Node_Id;
+
    begin
       if Has_Aspects (From) then
          Asp := Find_Aspect (Defining_Entity (From), Aspect_SPARK_Mode);

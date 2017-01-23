@@ -2682,8 +2682,8 @@ package body Exp_Attr is
                         Res := True;
                      end if;
                   end if;
-               else
 
+               else
                   --  For access type, apply access check as needed
 
                   if Is_Access_Type (Ptyp) then
@@ -2700,9 +2700,9 @@ package body Exp_Attr is
                   if not Is_Variable (Pref)
                     or else Present (Formal_Ent)
                     or else (Ada_Version < Ada_2005
-                               and then Is_Aliased_View (Pref))
+                              and then Is_Aliased_View (Pref))
                     or else (Ada_Version >= Ada_2005
-                               and then Is_Constrained_Aliased_View (Pref))
+                              and then Is_Constrained_Aliased_View (Pref))
                   then
                      Res := True;
 

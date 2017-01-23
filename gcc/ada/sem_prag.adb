@@ -23950,9 +23950,9 @@ package body Sem_Prag is
 
             --  Attribute 'Result matches attribute 'Result
 
-            elsif Is_Attribute_Result (Dep_Item)
-               and then Is_Attribute_Result (Ref_Item)
-            then
+            --  ??? this is incorrect, Ref_Item should be checked as well
+
+            elsif Is_Attribute_Result (Dep_Item) then
                Matched := True;
 
             --  Abstract states, current instances of concurrent types,
@@ -29491,13 +29491,14 @@ package body Sem_Prag is
         and then not ASIS_Mode
       then
          if Chars (N) = Name_Precondition
-          or else Chars (N) = Name_Postcondition
+           or else Chars (N) = Name_Postcondition
          then
-            Error_Msg_N (" Check_Policy is a non-standard pragma??", N);
+            Error_Msg_N ("Check_Policy is a non-standard pragma??", N);
             Error_Msg_N
-              (" \use Assertion_Policy and aspect names Pre/Post"
-                & " for Ada2012 conformance?", N);
+              ("\use Assertion_Policy and aspect names Pre/Post for "
+               & "Ada2012 conformance?", N);
          end if;
+
          return;
       end if;
 
