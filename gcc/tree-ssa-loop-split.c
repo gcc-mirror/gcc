@@ -159,7 +159,7 @@ patch_loop_exit (struct loop *loop, gcond *guard, tree nextval, tree newbound,
 			     nextval, newbound);
   update_stmt (stmt);
 
-  edge stay = single_pred_edge (loop->latch);
+  edge stay = EDGE_SUCC (exit->src, EDGE_SUCC (exit->src, 0) == exit);
 
   exit->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
   stay->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
