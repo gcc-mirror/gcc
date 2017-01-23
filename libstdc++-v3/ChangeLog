@@ -1,3 +1,16 @@
+2017-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79195
+	* include/experimental/array (__make_array_elem): New class template
+	and partial specialization.
+	(__is_reference_wrapper): Move into __make_array_elem specialization.
+	(make_array): Use __make_array_elem to determine element type and move
+	static assertion into specialization. Qualify std::forward call.
+	(to_array): Add exception specifiation.
+	* testsuite/experimental/array/make_array.cc: Test argument types
+	without a common type.
+	* testsuite/experimental/array/neg.cc: Adjust expected error message.
+
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/debug.xml: code.google.com uses https now.
