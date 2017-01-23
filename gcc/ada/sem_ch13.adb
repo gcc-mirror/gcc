@@ -4908,7 +4908,7 @@ package body Sem_Ch13 is
                     ("\?j?use interrupt procedure instead", N);
                end if;
 
-            --  Case of an address clause for a controlled object which we
+            --  Case of an address clause for a controlled object, which we
             --  consider to be erroneous.
 
             elsif Is_Controlled (Etype (U_Ent))
@@ -4923,7 +4923,7 @@ package body Sem_Ch13 is
                    Reason => PE_Overlaid_Controlled_Object));
                return;
 
-            --  Case of an address clause for a class-wide object which is
+            --  Case of an address clause for a class-wide object, which is
             --  considered erroneous.
 
             elsif Is_Class_Wide_Type (Etype (U_Ent)) then

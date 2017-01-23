@@ -2682,7 +2682,7 @@ package body Sem_Eval is
       --  If the literal appears in a non-expression context, then it is
       --  certainly appearing in a non-static context, so check it. This is
       --  actually a redundant check, since Check_Non_Static_Context would
-      --  check it, but it seems worth while to optimize out the call.
+      --  check it, but it seems worthwhile to optimize out the call.
 
       --  An exception is made for a literal in an if or case expression
 
