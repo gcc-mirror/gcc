@@ -4706,7 +4706,7 @@ extern tree tree_strip_nop_conversions (tree);
 extern tree tree_strip_sign_nop_conversions (tree);
 extern const_tree strip_invariant_refs (const_tree);
 extern tree lhd_gcc_personality (void);
-extern void assign_assembler_name_if_neeeded (tree);
+extern void assign_assembler_name_if_needed (tree);
 extern void warn_deprecated_use (tree, tree);
 extern void cache_integer_cst (tree);
 extern const char *combined_fn_name (combined_fn);

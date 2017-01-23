@@ -1350,7 +1350,7 @@ expand_omp_taskreg (struct omp_region *region)
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
       if (need_asm)
-	assign_assembler_name_if_neeeded (child_fn);
+	assign_assembler_name_if_needed (child_fn);
 
       if (optimize)
 	optimize_omp_library_calls (entry_stmt);
@@ -7061,7 +7061,7 @@ expand_omp_target (struct omp_region *region)
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
       if (need_asm)
-	assign_assembler_name_if_neeeded (child_fn);
+	assign_assembler_name_if_needed (child_fn);
       cgraph_edge::rebuild_edges ();
 
       /* Some EH regions might become dead, see PR34608.  If
