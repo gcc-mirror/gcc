@@ -1,3 +1,9 @@
+2017-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79186
+	* tree-vrp.c (register_new_assert_for): Make sure we've seen
+	both incoming edges before moving an assert.
+
 2017-01-23  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (load_from_param_1): Removed.
