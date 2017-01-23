@@ -1,3 +1,16 @@
+2017-01-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Analyze_Indexed_Component_Form):
+	Adapt to inlined prefix with string literal subtype.
+	* inline.adb (Expand_Inlined_Call): Keep unchecked
+	conversion inside inlined call when formal type is constrained.
+
+2017-01-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree): Code cleanup:
+	removal of global variables. All the global variables, global
+	functions and tables of this subprogram are now declared locally.
+
 2017-01-23  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_strm.ads: Minor reformatting and typo fixes.
