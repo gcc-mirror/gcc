@@ -284,7 +284,8 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Assignment
 
    begin
-      --  Save LHS for use in target names (AI12-125).
+      --  Save LHS for use in target names (AI12-125)
+
       Current_LHS := Lhs;
 
       Mark_Coextensions (N, Rhs);
@@ -574,9 +575,7 @@ package body Sem_Ch5 is
       --  the context of the assignment statement. Restore the expander mode
       --  now so that assignment statement can be properly expanded.
 
-      if  Nkind (N) = N_Assignment_Statement
-        and then Has_Target_Names (N)
-      then
+      if Nkind (N) = N_Assignment_Statement and then Has_Target_Names (N) then
          Expander_Mode_Restore;
       end if;
 
@@ -3543,6 +3542,7 @@ package body Sem_Ch5 is
       if No (Current_LHS) then
          Error_Msg_N ("target name can only appear within an assignment", N);
          Set_Etype (N, Any_Type);
+
       else
          Set_Has_Target_Names (Parent (Current_LHS));
          Set_Etype (N, Etype (Current_LHS));

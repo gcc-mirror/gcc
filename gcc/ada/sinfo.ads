@@ -1538,14 +1538,14 @@ package Sinfo is
    --    A flag present in an N_Task_Definition node to flag the presence of a
    --    Storage_Size pragma.
 
+   --  Has_Target_Names (Flag8-Sem)
+   --    Present in assignment statements. Indicates that the RHS contains
+   --    target names (see AI12-0125-3) and must be expanded accordingly.
+
    --  Has_Wide_Character (Flag11-Sem)
    --    Present in string literals, set if any wide character (i.e. character
    --    code outside the Character range but within Wide_Character range)
    --    appears in the string. Used to implement pragma preference rules.
-
-   --  Has_Target_Names (Flag8-Sem)
-   --    Present in assignment statements. Indicates that the RHS contains
-   --    target names (see AI12-0125-3) and must be expanded accordingly.
 
    --  Has_Wide_Wide_Character (Flag13-Sem)
    --    Present in string literals, set if any wide character (i.e. character

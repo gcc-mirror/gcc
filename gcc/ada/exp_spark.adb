@@ -33,14 +33,14 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
+with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
+with Stand;    use Stand;
 with Tbuild;   use Tbuild;
-with Uintp; use Uintp;
-with Sem_Eval; use Sem_Eval;
-with Stand; use Stand;
+with Uintp;    use Uintp;
 
 package body Exp_SPARK is
 

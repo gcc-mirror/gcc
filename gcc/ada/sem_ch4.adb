@@ -716,6 +716,23 @@ package body Sem_Ch4 is
                then
                   null;
 
+               --  An unusual case arises when the parent of a derived type is
+               --  a limited record extension  with unknown discriminants, and
+               --  its full view has no discriminants.
+               --
+               --  A more general fix might be to create the proper underlying
+               --  type for such a derived type, but it is a record type with
+               --  no private attributes, so this required extending the
+               --  meaning of this attribute. ???
+
+               elsif Ekind (Etype (Type_Id)) = E_Record_Type_With_Private
+                 and then Present (Underlying_Type (Etype (Type_Id)))
+                 and then
+                   not Has_Discriminants (Underlying_Type (Etype (Type_Id)))
+                 and then not Comes_From_Source (Parent (N))
+               then
+                  null;
+
                elsif Is_Class_Wide_Type (Type_Id) then
                   Error_Msg_N
                     ("initialization required in class-wide allocation", N);

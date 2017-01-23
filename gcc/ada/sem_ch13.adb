@@ -352,16 +352,16 @@ package body Sem_Ch13 is
    -----------------------------------------
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id) is
-      Comp : Node_Id;
-      CC   : Node_Id;
-
       Max_Machine_Scalar_Size : constant Uint :=
                                   UI_From_Int
                                     (Standard_Long_Long_Integer_Size);
       --  We use this as the maximum machine scalar size
 
+      SSU : constant Uint := UI_From_Int (System_Storage_Unit);
+
+      CC     : Node_Id;
+      Comp   : Node_Id;
       Num_CC : Natural;
-      SSU    : constant Uint := UI_From_Int (System_Storage_Unit);
 
    begin
       --  Processing here used to depend on Ada version: the behavior was
@@ -380,12 +380,12 @@ package body Sem_Ch13 is
       --  same byte offset and processing them together. Same approach is still
       --  valid in later versions including Ada 2012.
 
-      --  This first loop through components does two things. First it
-      --  deals with the case of components with component clauses whose
-      --  length is greater than the maximum machine scalar size (either
-      --  accepting them or rejecting as needed). Second, it counts the
-      --  number of components with component clauses whose length does
-      --  not exceed this maximum for later processing.
+      --  This first loop through components does two things. First it deals
+      --  with the case of components with component clauses whose length is
+      --  greater than the maximum machine scalar size (either accepting them
+      --  or rejecting as needed). Second, it counts the number of components
+      --  with component clauses whose length does not exceed this maximum for
+      --  later processing.
 
       Num_CC := 0;
       Comp   := First_Component_Or_Discriminant (R);
@@ -402,8 +402,8 @@ package body Sem_Ch13 is
 
                if Lbit >= Max_Machine_Scalar_Size then
 
-                  --  This is allowed only if first bit is zero, and
-                  --  last bit + 1 is a multiple of storage unit size.
+                  --  This is allowed only if first bit is zero, and last bit
+                  --  + 1 is a multiple of storage unit size.
 
                   if Fbit = 0 and then (Lbit + 1) mod SSU = 0 then
 
@@ -435,28 +435,25 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := Lbit + 1;
                      Error_Msg_Uint_2 := Max_Machine_Scalar_Size;
                      Error_Msg_F
-                       ("\last bit + 1 (^) exceeds maximum machine "
-                        & "scalar size (^)",
-                        First_Bit (CC));
+                       ("\last bit + 1 (^) exceeds maximum machine scalar "
+                        & "size (^)", First_Bit (CC));
 
                      if (Lbit + 1) mod SSU /= 0 then
                         Error_Msg_Uint_1 := SSU;
                         Error_Msg_F
                           ("\and is not a multiple of Storage_Unit (^) "
-                           & "(RM 13.5.1(10))",
-                           First_Bit (CC));
+                           & "(RM 13.5.1(10))", First_Bit (CC));
 
                      else
                         Error_Msg_Uint_1 := Fbit;
                         Error_Msg_F
                           ("\and first bit (^) is non-zero "
-                           & "(RM 13.4.1(10))",
-                           First_Bit (CC));
+                           & "(RM 13.4.1(10))", First_Bit (CC));
                      end if;
                   end if;
 
-               --  OK case of machine scalar related component clause,
-               --  For now, just count them.
+               --  OK case of machine scalar related component clause. For now,
+               --  just count them.
 
                else
                   Num_CC := Num_CC + 1;
@@ -467,16 +464,14 @@ package body Sem_Ch13 is
          Next_Component_Or_Discriminant (Comp);
       end loop;
 
-      --  We need to sort the component clauses on the basis of the
-      --  Position values in the clause, so we can group clauses with
-      --  the same Position together to determine the relevant machine
-      --  scalar size.
+      --  We need to sort the component clauses on the basis of the Position
+      --  values in the clause, so we can group clauses with the same Position
+      --  together to determine the relevant machine scalar size.
 
       Sort_CC : declare
          Comps : array (0 .. Num_CC) of Entity_Id;
-         --  Array to collect component and discriminant entities. The
-         --  data starts at index 1, the 0'th entry is for the sort
-         --  routine.
+         --  Array to collect component and discriminant entities. The data
+         --  starts at index 1, the 0'th entry is for the sort routine.
 
          function CP_Lt (Op1, Op2 : Natural) return Boolean;
          --  Compare routine for Sort
@@ -486,17 +481,17 @@ package body Sem_Ch13 is
 
          package Sorting is new GNAT.Heap_Sort_G (CP_Move, CP_Lt);
 
+         MaxL : Uint;
+         --  Maximum last bit value of any component in this set
+
+         MSS : Uint;
+         --  Corresponding machine scalar size
+
          Start : Natural;
          Stop  : Natural;
          --  Start and stop positions in the component list of the set of
          --  components with the same starting position (that constitute
          --  components in a single machine scalar).
-
-         MaxL  : Uint;
-         --  Maximum last bit value of any component in this set
-
-         MSS   : Uint;
-         --  Corresponding machine scalar size
 
          -----------
          -- CP_Lt --
@@ -504,7 +499,8 @@ package body Sem_Ch13 is
 
          function CP_Lt (Op1, Op2 : Natural) return Boolean is
          begin
-            return Position (Component_Clause (Comps (Op1))) <
+            return
+              Position (Component_Clause (Comps (Op1))) <
               Position (Component_Clause (Comps (Op2)));
          end CP_Lt;
 
@@ -529,12 +525,12 @@ package body Sem_Ch13 is
                CC   : constant Node_Id := Component_Clause (Comp);
 
             begin
-               --  Collect only component clauses whose last bit is less
-               --  than machine scalar size. Any component clause whose
-               --  last bit exceeds this value does not take part in
-               --  machine scalar layout considerations. The test for
-               --  Error_Posted makes sure we exclude component clauses
-               --  for which we already posted an error.
+               --  Collect only component clauses whose last bit is less than
+               --  machine scalar size. Any component clause whose last bit
+               --  exceeds this value does not take part in machine scalar
+               --  layout considerations. The test for Error_Posted makes sure
+               --  we exclude component clauses for which we already posted an
+               --  error.
 
                if Present (CC)
                  and then not Error_Posted (Last_Bit (CC))
@@ -553,10 +549,10 @@ package body Sem_Ch13 is
 
          Sorting.Sort (Num_CC);
 
-         --  We now have all the components whose size does not exceed
-         --  the max machine scalar value, sorted by starting position.
-         --  In this loop we gather groups of clauses starting at the
-         --  same position, to process them in accordance with AI-133.
+         --  We now have all the components whose size does not exceed the max
+         --  machine scalar value, sorted by starting position. In this loop we
+         --  gather groups of clauses starting at the same position, to process
+         --  them in accordance with AI-133.
 
          Stop := 0;
          while Stop < Num_CC loop
@@ -583,14 +579,14 @@ package body Sem_Ch13 is
                end if;
             end loop;
 
-            --  Now we have a group of component clauses from Start to
-            --  Stop whose positions are identical, and MaxL is the
-            --  maximum last bit value of any of these components.
+            --  Now we have a group of component clauses from Start to Stop
+            --  whose positions are identical, and MaxL is the maximum last
+            --  bit value of any of these components.
 
-            --  We need to determine the corresponding machine scalar
-            --  size. This loop assumes that machine scalar sizes are
-            --  even, and that each possible machine scalar has twice
-            --  as many bits as the next smaller one.
+            --  We need to determine the corresponding machine scalar size.
+            --  This loop assumes that machine scalar sizes are even, and that
+            --  each possible machine scalar has twice as many bits as the next
+            --  smaller one.
 
             MSS := Max_Machine_Scalar_Size;
             while MSS mod 2 = 0
@@ -600,10 +596,9 @@ package body Sem_Ch13 is
                MSS := MSS / 2;
             end loop;
 
-            --  Here is where we fix up the Component_Bit_Offset value
-            --  to account for the reverse bit order. Some examples of
-            --  what needs to be done for the case of a machine scalar
-            --  size of 8 are:
+            --  Here is where we fix up the Component_Bit_Offset value to
+            --  account for the reverse bit order. Some examples of what needs
+            --  to be done for the case of a machine scalar size of 8 are:
 
             --    First_Bit .. Last_Bit     Component_Bit_Offset
             --      old          new          old       new
@@ -617,8 +612,8 @@ package body Sem_Ch13 is
             --     1 .. 4       3 .. 6         1         3
             --     4 .. 7       0 .. 3         4         0
 
-            --  The rule is that the first bit is obtained by subtracting
-            --  the old ending bit from machine scalar size - 1.
+            --  The rule is that the first bit is obtained by subtracting the
+            --  old ending bit from machine scalar size - 1.
 
             for C in Start .. Stop loop
                declare
@@ -634,19 +629,19 @@ package body Sem_Ch13 is
                   if Warn_On_Reverse_Bit_Order then
                      Error_Msg_Uint_1 := MSS;
                      Error_Msg_N
-                       ("info: reverse bit order in machine " &
-                        "scalar of length^?V?", First_Bit (CC));
+                       ("info: reverse bit order in machine scalar of "
+                        & "length^?V?", First_Bit (CC));
                      Error_Msg_Uint_1 := NFB;
                      Error_Msg_Uint_2 := NLB;
 
                      if Bytes_Big_Endian then
                         Error_Msg_NE
-                          ("\big-endian range for component "
-                           & "& is ^ .. ^?V?", First_Bit (CC), Comp);
+                          ("\big-endian range for component & is ^ .. ^?V?",
+                           First_Bit (CC), Comp);
                      else
                         Error_Msg_NE
-                          ("\little-endian range for component"
-                           & "& is ^ .. ^?V?", First_Bit (CC), Comp);
+                          ("\little-endian range for component & is ^ .. ^?V?",
+                           First_Bit (CC), Comp);
                      end if;
                   end if;
 
@@ -663,8 +658,8 @@ package body Sem_Ch13 is
    ------------------------------------------------
 
    procedure Adjust_Record_For_Reverse_Bit_Order_Ada_95 (R : Entity_Id) is
-      Comp : Node_Id;
       CC   : Node_Id;
+      Comp : Node_Id;
 
    begin
       --  For Ada 95, we just renumber bits within a storage unit. We do the
@@ -707,8 +702,8 @@ package body Sem_Ch13 is
                     and then CSZ mod System_Storage_Unit = 0
                   then
                      Error_Msg_N
-                       ("info: multi-byte field specified with "
-                        & "non-standard Bit_Order?V?", CLC);
+                       ("info: multi-byte field specified with non-standard "
+                        & "Bit_Order?V?", CLC);
 
                      if Bytes_Big_Endian then
                         Error_Msg_N
@@ -724,11 +719,11 @@ package body Sem_Ch13 is
 
                   else
                      Error_Msg_N
-                       ("attempt to specify non-contiguous field "
-                        & "not permitted", CLC);
+                       ("attempt to specify non-contiguous field not "
+                        & "permitted", CLC);
                      Error_Msg_N
-                       ("\caused by non-standard Bit_Order "
-                        & "specified in legacy Ada 95 mode", CLC);
+                       ("\caused by non-standard Bit_Order specified in "
+                        & "legacy Ada 95 mode", CLC);
                   end if;
 
                --  Case where field fits in one storage unit
@@ -740,14 +735,14 @@ package body Sem_Ch13 is
                     and then Warn_On_Reverse_Bit_Order
                   then
                      Error_Msg_N
-                       ("info: Bit_Order clause does not affect " &
-                        "byte ordering?V?", Pos);
+                       ("info: Bit_Order clause does not affect byte "
+                        & "ordering?V?", Pos);
                      Error_Msg_Uint_1 :=
                        Intval (Pos) + Intval (FB) /
                        System_Storage_Unit;
                      Error_Msg_N
-                       ("info: position normalized to ^ before bit " &
-                        "order interpreted?V?", Pos);
+                       ("info: position normalized to ^ before bit order "
+                        & "interpreted?V?", Pos);
                   end if;
 
                   --  Here is where we fix up the Component_Bit_Offset value
@@ -769,16 +764,13 @@ package body Sem_Ch13 is
                   --  The rule is that the first bit is is obtained by
                   --  subtracting the old ending bit from storage_unit - 1.
 
-                  Set_Component_Bit_Offset
-                    (Comp,
-                     (Storage_Unit_Offset * System_Storage_Unit) +
-                       (System_Storage_Unit - 1) -
-                       (Start_Bit + CSZ - 1));
+                  Set_Component_Bit_Offset (Comp,
+                    (Storage_Unit_Offset * System_Storage_Unit) +
+                      (System_Storage_Unit - 1) -
+                      (Start_Bit + CSZ - 1));
 
-                  Set_Normalized_First_Bit
-                    (Comp,
-                     Component_Bit_Offset (Comp) mod
-                       System_Storage_Unit);
+                  Set_Normalized_First_Bit (Comp,
+                    Component_Bit_Offset (Comp) mod System_Storage_Unit);
                end if;
             end;
          end if;

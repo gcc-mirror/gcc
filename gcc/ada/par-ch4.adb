@@ -232,6 +232,7 @@ package body Ch4 is
 
       --  Loop through designators in qualified name
       --  AI12-0125 : target_name
+
       if Token = Tok_At_Sign then
          Scan_Reserved_Identifier (Force_Msg => False);
       end if;
@@ -2331,15 +2332,15 @@ package body Ch4 is
       --  Come here at end of simple expression, where we do a couple of
       --  special checks to improve error recovery.
 
-      --  Special test to improve error recovery. If the current token
-      --  is a period, then someone is trying to do selection on something
-      --  that is not a name, e.g. a qualified expression.
+      --  Special test to improve error recovery. If the current token is a
+      --  period, then someone is trying to do selection on something that is
+      --  not a name, e.g. a qualified expression.
 
       if Token = Tok_Dot then
          Error_Msg_SC ("prefix for selection is not a name");
 
-         --  If qualified expression, comment and continue, otherwise
-         --  something is pretty nasty so do an Error_Resync call.
+         --  If qualified expression, comment and continue, otherwise something
+         --  is pretty nasty so do an Error_Resync call.
 
          if Ada_Version < Ada_2012
            and then Nkind (Node1) = N_Qualified_Expression
@@ -2797,7 +2798,7 @@ package body Ch4 is
                Error_Msg_SC ("parentheses required for unary minus");
                Scan; -- past minus
 
-            when Tok_At_Sign =>    --  AI12-0125 : target_name
+            when Tok_At_Sign =>  --  AI12-0125 : target_name
                if Ada_Version < Ada_2020 then
                   Error_Msg_SC ("target name is an Ada 2020 extension");
                   Error_Msg_SC ("\compile with -gnatX");
