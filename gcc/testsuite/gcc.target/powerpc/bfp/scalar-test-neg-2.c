@@ -4,8 +4,9 @@
 /* { dg-options "-mcpu=power8" } */
 
 #include <altivec.h>
+#include <stdbool.h>
 
-unsigned int
+bool
 test_neg (float *p)
 {
   float source = *p;

@@ -4,9 +4,10 @@
 /* { dg-options "-mcpu=power9" } */
 
 #include <altivec.h>
+#include <stdbool.h>
 
-unsigned int
-test_data_class (double *p, unsigned int condition_flag)
+bool
+test_data_class (double *p, const int condition_flag)
 {
   double source = *p;
 

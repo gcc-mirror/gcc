@@ -3426,6 +3426,16 @@
   "xsiexpdp %x0,%1,%2"
   [(set_attr "type" "fpsimple")])
 
+;; VSX Scalar Insert Exponent Double-Precision Floating Point Argument
+(define_insn "xsiexpdpf"
+  [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
+	(unspec:DF [(match_operand:DF 1 "register_operand" "r")
+		    (match_operand:DI 2 "register_operand" "r")]
+	 UNSPEC_VSX_SIEXPDP))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "xsiexpdp %x0,%1,%2"
+  [(set_attr "type" "fpsimple")])
+
 ;; VSX Scalar Compare Exponents Double-Precision
 (define_expand "xscmpexpdp_<code>"
   [(set (match_dup 3)

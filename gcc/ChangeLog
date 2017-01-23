@@ -1,3 +1,45 @@
+2017-01-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (VSIEDPF): Add scalar insert
+	exponent support with double type for first argument.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Changed
+	type returned by __builtin_vec_extract_sig,
+	__builtin_vec_extract_sig_sp, and __builtin_vec_extract_sig_dp
+	functions from "vector int" to "vector unsigned int" or from
+	"vector long long int" to "vector unsigned long long int".
+	Changed type returned by __builtin_vec_extract_exp,
+	__builtin_vec_extract_exp_sp, and __builtin_vec_extract_exp_dp
+	functions from "vector int" to "vector unsigned int" or from
+	"vector long long int" to "vector unsigned long long int".
+	Changed return type of __builtin_vec_test_data_class,
+	__builtin_vec_test_data_class_sp, and
+	__builtin_vec_test_data_class_dp from "vector int" to
+	"vector bool int" or from "vector long long int" to "vector bool
+	long long int" and changed second argument type from "unsigned
+	int" to "int".  Added new overloaded function forms "vector float
+	__builtin_vec_insert_exp (vector float, vector unsigned int)" and
+	"vector float __builtin_vec_insert_exp_sp (vector float, vector
+	unsigned int)" and "vector double __builtin_vec_insert_exp (vector
+	double, vector unsigned long long int)" and "vector double
+	__builtin_vec_insert_exp_dp (vector double, vector unsigned long
+	long int)".  Changed return type of
+	__builtin_scalar_test_data_class and
+	__builtin_scalar_test_data_class_sp and
+	__builtin_scalar_test_data_class_dp from "unsigned int" to "bool
+	int" and changed second argument from "unsigned int" to "int".
+	Changed type returned by __builtin_scalar_test_neg,
+	__builtin_scalar_test_neg_sp, and __builtin_scalar_test_neg_dp
+	from "int" to "bool int".  Added new overloaded function form
+	"double __builtin_scalar_insert_exp (double, unsigned long long int)".
+	* config/rs6000/vsx.md (xsiexpdpf): New insn for scalar insert
+	exponent double-precision with floating point first argument.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Adjust
+	documentation of scalar_test_data_class, scalar_test_neg,
+	scalar_extract_sig, scalar_extract_exp, scalar_insert_exp,
+	vector_extract_exp, vec_extract_sig, vec_insert_exp, and
+	vec_test_data_class built-in functions to reflect refinements in
+	their type signatures.
+
 2017-01-23  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/aarch64/aarch64.c (aarch64_elf_asm_constructor): Increase
