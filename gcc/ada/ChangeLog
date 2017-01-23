@@ -1,3 +1,16 @@
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Default_Initial_Condition): If the desired type
+	declaration is a derived type declaration with discriminants,
+	it is rewritten as a private type declaration.
+	* sem_ch13.adb (Replace_Type_References_Generic,
+	Visible_Component): A discriminated private type with descriminnts
+	has components that must be rewritten as selected components
+	if they appear as identifiers in an aspect expression such as
+	a Default_Initial_Condition.
+	* sem_util.adb (Defining_Entity): support N_Iterator_Specification
+	nodes.
+
 2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* ghost.ads, ghost.adb (Is_Ignored_Ghost_Unit): New routine.

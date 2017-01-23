@@ -5238,6 +5238,7 @@ package body Sem_Util is
             | N_Full_Type_Declaration
             | N_Implicit_Label_Declaration
             | N_Incomplete_Type_Declaration
+            | N_Iterator_Specification
             | N_Loop_Parameter_Specification
             | N_Number_Declaration
             | N_Object_Declaration
