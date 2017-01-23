@@ -1,3 +1,44 @@
+2017-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (P_Aggregate_Or_Parent_Expr): Recognize delta
+	aggregate construct.
+	(P_Record_Or_Array_Component_Association): An array aggregate
+	can start with an Iterated_Component_Association.
+	* scng.adb: Modify error message on improper use of @ in earlier
+	versions of the language.
+	* sinfo.ads: New node kind N_Delta_Aggregate.
+	* sinfo.adb: An N_Delta_Aggregate has component associations and
+	an expression.
+	* sem_res.adb (Resolve): Call Resolve_Delta_Aggregate.
+	* sem_aggr.ads, sem_aggr.adb (Resolve_Iterated_Component_Association):
+	Create a new index for each one of the choices in the association,
+	to prevent spurious homonyms in the scope.
+	(Resolve_Delta_Aggregate): New.
+	* sem.adb: An N_Delta_Aggregate is analyzed like an aggregate.
+	* exp_util.adb (Insert_Actions): Take into account
+	N_Delta_Aggregate.
+	* exp_aggr.ads: New procedure Expand_N_Delta_Aggregate.
+	* exp_aggr.adb: New procedure Expand_N_Delta_Aggregate,
+	and local procedures Expand_Delta_Array_Aggregate and
+	expand_Delta_Record_Aggregate.
+	* sprint.adb: Handle N_Delta_Aggregate.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Exception_Declaration): Generate an
+	empty name when the exception declaration is subject to pragma
+	Discard_Names.
+	(Null_String): New routine.
+
+2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch9.adb (P_Protected_Definition): Parse
+	any optional and potentially illegal pragmas which appear in
+	a protected operation declaration list.
+	(P_Task_Items): Parse
+	any optional and potentially illegal pragmas which appear in a
+	task item list.
+
 2017-01-23  Pascal Obry  <obry@adacore.com>
 
 	* s-taprop-mingw.adb (Enter_Task): Initialize the Thread handle which

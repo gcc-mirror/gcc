@@ -84,6 +84,9 @@ package body Exp_Aggr is
    --  expression with actions, which becomes the Initialization_Statements for
    --  Obj.
 
+   procedure Expand_Delta_Array_Aggregate  (N : Node_Id; Deltas : List_Id);
+   procedure Expand_Delta_Record_Aggregate (N : Node_Id; Deltas : List_Id);
+
    function Has_Default_Init_Comps (N : Node_Id) return Boolean;
    --  N is an aggregate (record or array). Checks the presence of default
    --  initialization (<>) in any component (Ada 2005: AI-287).
@@ -6435,6 +6438,151 @@ package body Exp_Aggr is
       when RE_Not_Available =>
          return;
    end Expand_N_Aggregate;
+
+   ------------------------------
+   -- Expand_N_Delta_Aggregate --
+   ------------------------------
+
+   procedure Expand_N_Delta_Aggregate (N : Node_Id) is
+      Loc :  constant Source_Ptr := Sloc (N);
+      Temp : constant Entity_Id := Make_Temporary (Loc, 'T');
+      Typ  : constant Entity_Id := Etype (N);
+      Decl : Node_Id;
+
+   begin
+      Decl := Make_Object_Declaration (Loc,
+         Defining_Identifier => Temp,
+         Object_Definition => New_Occurrence_Of (Typ, Loc),
+         Expression => New_Copy_Tree (Expression (N)));
+
+      if Is_Array_Type (Etype (N)) then
+         Expand_Delta_Array_Aggregate (N, New_List (Decl));
+      else
+         Expand_Delta_Record_Aggregate (N, New_List (Decl));
+      end if;
+   end Expand_N_Delta_Aggregate;
+
+   ----------------------------------
+   -- Expand_Delta_Array_Aggregate --
+   ----------------------------------
+
+   procedure Expand_Delta_Array_Aggregate (N : Node_Id; Deltas : List_Id) is
+      Loc    : constant Source_Ptr := Sloc (N);
+      Temp   : constant Entity_Id  := Defining_Identifier (First (Deltas));
+      Assoc  : Node_Id;
+      Choice : Node_Id;
+      function Generate_Loop (C : Node_Id) return Node_Id;
+      --  Generate a loop containing individual component assignments for
+      --  choices that are ranges, subtype indications, subtype names, and
+      --  iterated component associations.
+
+      function Generate_Loop (C : Node_Id) return Node_Id is
+         Sl : constant Source_Ptr := Sloc (C);
+         Ix : Entity_Id;
+
+      begin
+         if Nkind (Parent (C)) = N_Iterated_Component_Association then
+            Ix :=
+              Make_Defining_Identifier (Loc,
+                Chars => (Chars (Defining_Identifier (Parent (C)))));
+         else
+            Ix := Make_Temporary (Sl, 'I');
+         end if;
+
+         return
+           Make_Loop_Statement (Loc,
+              Iteration_Scheme => Make_Iteration_Scheme (Sl,
+                Loop_Parameter_Specification =>
+                Make_Loop_Parameter_Specification (Sl,
+                  Defining_Identifier => Ix,
+                  Discrete_Subtype_Definition => New_Copy_Tree (C))),
+              End_Label => Empty,
+              Statements =>
+                New_List (
+                  Make_Assignment_Statement (Sl,
+                    Name       => Make_Indexed_Component (Sl,
+                      Prefix      => New_Occurrence_Of (Temp, Sl),
+                      Expressions => New_List (New_Occurrence_Of (Ix, Sl))),
+                    Expression => New_Copy_Tree (Expression (Assoc)))));
+      end Generate_Loop;
+
+   begin
+      Assoc := First (Component_Associations (N));
+      while Present (Assoc) loop
+         Choice := First (Choice_List (Assoc));
+         if Nkind (Assoc) = N_Iterated_Component_Association then
+            while Present (Choice) loop
+               Append_To (Deltas, Generate_Loop (Choice));
+               Next (Choice);
+            end loop;
+
+         else
+            while Present (Choice) loop
+
+               --  Choice can be given by a range, a subtype indication, a
+               --  subtype name, a scalar value, or an entity.
+
+               if Nkind (Choice) = N_Range
+                 or else (Is_Entity_Name (Choice)
+                   and then Is_Type (Entity (Choice)))
+               then
+                  Append_To (Deltas, Generate_Loop (Choice));
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Append_To (Deltas,
+                    Generate_Loop (Range_Expression (Constraint (Choice))));
+
+               else
+                  Append_To (Deltas,
+                     Make_Assignment_Statement (Sloc (Choice),
+                       Name => Make_Indexed_Component (Sloc (Choice),
+                         Prefix => New_Occurrence_Of (Temp, Loc),
+                         Expressions => New_List (New_Copy_Tree (Choice))),
+                       Expression => New_Copy_Tree (Expression (Assoc))));
+               end if;
+
+               Next (Choice);
+            end loop;
+         end if;
+
+         Next (Assoc);
+      end loop;
+
+      Insert_Actions (N, Deltas);
+      Rewrite (N, New_Occurrence_Of (Temp, Loc));
+   end Expand_Delta_Array_Aggregate;
+
+   -----------------------------------
+   -- Expand_Delta_Record_Aggregate --
+   -----------------------------------
+
+   procedure Expand_Delta_Record_Aggregate (N : Node_Id; Deltas : List_Id) is
+      Loc    : constant Source_Ptr := Sloc (N);
+      Temp   : constant Entity_Id  := Defining_Identifier (First (Deltas));
+      Assoc  : Node_Id;
+      Choice : Node_Id;
+
+   begin
+      Assoc := First (Component_Associations (N));
+
+      while Present (Assoc) loop
+         Choice := First (Choice_List (Assoc));
+         while Present (Choice) loop
+            Append_To (Deltas,
+               Make_Assignment_Statement (Sloc (Choice),
+                 Name => Make_Selected_Component (Sloc (Choice),
+                   Prefix => New_Occurrence_Of (Temp, Loc),
+                   Selector_Name => Make_Identifier (Loc, Chars (Choice))),
+                 Expression => New_Copy_Tree (Expression (Assoc))));
+            Next (Choice);
+         end loop;
+
+         Next (Assoc);
+      end loop;
+
+      Insert_Actions (N, Deltas);
+      Rewrite (N, New_Occurrence_Of (Temp, Loc));
+   end Expand_Delta_Record_Aggregate;
 
    ----------------------------------
    -- Expand_N_Extension_Aggregate --

@@ -466,6 +466,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Aggregate
+        or else NT (N).Nkind = N_Delta_Aggregate
         or else NT (N).Nkind = N_Extension_Aggregate);
       return List2 (N);
    end Component_Associations;
@@ -1265,6 +1266,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Component_Declaration
         or else NT (N).Nkind = N_Delay_Relative_Statement
         or else NT (N).Nkind = N_Delay_Until_Statement
+        or else NT (N).Nkind = N_Delta_Aggregate
         or else NT (N).Nkind = N_Discriminant_Association
         or else NT (N).Nkind = N_Discriminant_Specification
         or else NT (N).Nkind = N_Exception_Declaration
@@ -3775,6 +3777,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Aggregate
+        or else NT (N).Nkind = N_Delta_Aggregate
         or else NT (N).Nkind = N_Extension_Aggregate);
       Set_List2_With_Parent (N, Val);
    end Set_Component_Associations;
@@ -4565,6 +4568,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Component_Declaration
         or else NT (N).Nkind = N_Delay_Relative_Statement
         or else NT (N).Nkind = N_Delay_Until_Statement
+        or else NT (N).Nkind = N_Delta_Aggregate
         or else NT (N).Nkind = N_Discriminant_Association
         or else NT (N).Nkind = N_Discriminant_Specification
         or else NT (N).Nkind = N_Exception_Declaration

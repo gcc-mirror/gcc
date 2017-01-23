@@ -196,6 +196,9 @@ package body Sem is
          when N_Delay_Relative_Statement =>
             Analyze_Delay_Relative (N);
 
+         when N_Delta_Aggregate =>
+            Analyze_Aggregate (N);
+
          when N_Delay_Until_Statement =>
             Analyze_Delay_Until (N);
 

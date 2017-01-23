@@ -2870,6 +2870,9 @@ package body Sem_Res is
             when N_Character_Literal =>
                Resolve_Character_Literal         (N, Ctx_Type);
 
+            when N_Delta_Aggregate =>
+               Resolve_Delta_Aggregate           (N, Ctx_Type);
+
             when N_Expanded_Name =>
                Resolve_Entity_Name               (N, Ctx_Type);
 

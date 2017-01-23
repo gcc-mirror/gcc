@@ -1171,11 +1171,8 @@ package body Exp_Ch11 is
    --     end if;
 
    procedure Expand_N_Exception_Declaration (N : Node_Id) is
-      Id      : constant Entity_Id  := Defining_Identifier (N);
-      Loc     : constant Source_Ptr := Sloc (N);
-      Ex_Id   : Entity_Id;
-      Flag_Id : Entity_Id;
-      L       : List_Id;
+      Id  : constant Entity_Id  := Defining_Identifier (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       procedure Force_Static_Allocation_Of_Referenced_Objects
         (Aggregate : Node_Id);
@@ -1204,6 +1201,9 @@ package body Exp_Ch11 is
       --  not subject to an address clause, and whose declaration contains
       --  references to other local (non-hoisted) objects (e.g., in the initial
       --  value expression).
+
+      function Null_String return String_Id;
+      --  Build a null-terminated empty string
 
       ---------------------------------------------------
       -- Force_Static_Allocation_Of_Referenced_Objects --
@@ -1248,6 +1248,24 @@ package body Exp_Ch11 is
          Fixup_Tree (Aggregate);
       end Force_Static_Allocation_Of_Referenced_Objects;
 
+      -----------------
+      -- Null_String --
+      -----------------
+
+      function Null_String return String_Id is
+      begin
+         Start_String;
+         Store_String_Char (Get_Char_Code (ASCII.NUL));
+         return End_String;
+      end Null_String;
+
+      --  Local variables
+
+      Ex_Id   : Entity_Id;
+      Ex_Val  : String_Id;
+      Flag_Id : Entity_Id;
+      L       : List_Id;
+
    --  Start of processing for Expand_N_Exception_Declaration
 
    begin
@@ -1262,14 +1280,25 @@ package body Exp_Ch11 is
       Ex_Id :=
         Make_Defining_Identifier (Loc, New_External_Name (Chars (Id), 'E'));
 
+      --  Do not generate an external name if the exception declaration is
+      --  subject to pragma Discard_Names. Use a null-terminated empty name
+      --  to ensure that Ada.Exceptions.Exception_Name functions properly.
+
+      if Global_Discard_Names or else Discard_Names (Ex_Id) then
+         Ex_Val := Null_String;
+
+      --  Otherwise generate the fully qualified name of the exception
+
+      else
+         Ex_Val := Fully_Qualified_Name_String (Id);
+      end if;
+
       Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Ex_Id,
           Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
-          Expression          =>
-            Make_String_Literal (Loc,
-              Strval => Fully_Qualified_Name_String (Id))));
+          Expression          => Make_String_Literal (Loc, Ex_Val)));
 
       Set_Is_Statically_Allocated (Ex_Id);
 
