@@ -12688,10 +12688,13 @@ package body Sem_Ch13 is
          E : Entity_Id;
 
       begin
-         if Ekind (T) /= E_Record_Type then
-            return Empty;
 
-         else
+         --  Types with nameable components are records and discriminated
+         --  private types.
+
+         if Ekind (T) = E_Record_Type
+           or else (Is_Private_Type (T) and then Has_Discriminants (T))
+         then
             E := First_Entity (T);
             while Present (E) loop
                if Comes_From_Source (E) and then Chars (E) = Comp then
@@ -12700,9 +12703,11 @@ package body Sem_Ch13 is
 
                Next_Entity (E);
             end loop;
-
-            return Empty;
          end if;
+
+         --  Nothing by that name, or type has no components.
+
+         return Empty;
       end Visible_Component;
 
    --  Start of processing for Replace_Type_References_Generic

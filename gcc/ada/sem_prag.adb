@@ -13840,9 +13840,13 @@ package body Sem_Prag is
                      Error_Msg_N ("pragma % duplicates pragma declared#", N);
                   end if;
 
-               --  Skip internally generated code
+               --  Skip internally generated code. Note that derived type
+               --  declarations of untagged types with discriminants are
+               --  rewritten as private type declarations.
 
-               elsif not Comes_From_Source (Stmt) then
+               elsif not Comes_From_Source (Stmt)
+                 and then Nkind (Stmt) /= N_Private_Type_Declaration
+               then
                   null;
 
                --  The associated private type [extension] has been found, stop
