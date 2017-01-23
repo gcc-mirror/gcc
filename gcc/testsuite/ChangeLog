@@ -1,5 +1,8 @@
 2017-01-23  Nathan Sidwell  <nathan@acm.org>
 
+	PR C++/71710
+	* g++.dg/template/pr71710.C: New.
+
 	PR c++/71406
 	PR c++/77508
 	* g++.dg/template/pr71406.C: New.

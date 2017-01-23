@@ -17470,7 +17470,14 @@ tsubst_copy_and_build (tree t,
 	if (member == error_mark_node)
 	  RETURN (error_mark_node);
 
-	if (type_dependent_expression_p (object))
+	if (TREE_CODE (member) == FIELD_DECL)
+	  {
+	    r = finish_non_static_data_member (member, object, NULL_TREE);
+	    if (TREE_CODE (r) == COMPONENT_REF)
+	      REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (t);
+	    RETURN (r);
+	  }
+	else if (type_dependent_expression_p (object))
 	  /* We can't do much here.  */;
 	else if (!CLASS_TYPE_P (object_type))
 	  {
@@ -17534,13 +17541,6 @@ tsubst_copy_and_build (tree t,
 			 TREE_OPERAND (member, 0));
 	      }
 	    RETURN (error_mark_node);
-	  }
-	else if (TREE_CODE (member) == FIELD_DECL)
-	  {
-	    r = finish_non_static_data_member (member, object, NULL_TREE);
-	    if (TREE_CODE (r) == COMPONENT_REF)
-	      REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (t);
-	    RETURN (r);
 	  }
 
 	r = finish_class_member_access_expr (object, member,
