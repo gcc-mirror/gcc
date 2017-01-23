@@ -5787,7 +5787,10 @@ aarch64_elf_asm_constructor (rtx symbol, int priority)
   else
     {
       section *s;
-      char buf[18];
+      /* While priority is known to be in range [0, 65535], so 18 bytes
+         would be enough, the compiler might not know that.  To avoid
+         -Wformat-truncation false positive, use a larger size.  */
+      char buf[23];
       snprintf (buf, sizeof (buf), ".init_array.%.5u", priority);
       s = get_section (buf, SECTION_WRITE, NULL);
       switch_to_section (s);
@@ -5804,7 +5807,10 @@ aarch64_elf_asm_destructor (rtx symbol, int priority)
   else
     {
       section *s;
-      char buf[18];
+      /* While priority is known to be in range [0, 65535], so 18 bytes
+         would be enough, the compiler might not know that.  To avoid
+         -Wformat-truncation false positive, use a larger size.  */
+      char buf[23];
       snprintf (buf, sizeof (buf), ".fini_array.%.5u", priority);
       s = get_section (buf, SECTION_WRITE, NULL);
       switch_to_section (s);
