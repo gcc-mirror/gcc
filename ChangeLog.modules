@@ -1,0 +1,9 @@
+2017-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	Branch creation.
+	Use this Changelog for all branch changes, including merges.
+
+Local Variables:
+mode: change-log
+change-log-default-name: "ChangeLog.modules"
+End:
