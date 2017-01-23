@@ -1,5 +1,14 @@
 2017-01-23  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.c (load_from_param_1): Removed.
+	(load_from_unmodified_param): Bits from load_from_param_1 put back
+	here.
+	(load_from_param): Removed.
+	(compute_complex_assign_jump_func): Removed stmt2 and just replaced it
+	with stmt.  Reverted back to use of load_from_unmodified_param.
+
+2017-01-23  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/79108
 	* ipa-prop.h (ipa_param_descriptor): Anotate with with GTY(()).
 	(ipa_node_params): Annotate with GTY((for_user)).  Make descriptors

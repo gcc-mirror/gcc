@@ -1,5 +1,9 @@
 2017-01-23  Martin Jambor  <mjambor@suse.cz>
 
+	* gcc.dg/ipa/vrp8.c: New test.
+
+2017-01-23  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/79108
 	* gfortran.dg/lto/pr79108_0.f90: New test.
 

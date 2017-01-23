@@ -862,19 +862,21 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
   return !modified;
 }
 
-/* Main worker for load_from_unmodified_param and load_from_param.
-   If STMT is an assignment that loads a value from an parameter declaration,
-   return the index of the parameter in ipa_node_params.  Otherwise return -1.  */
+/* If STMT is an assignment that loads a value from an parameter declaration,
+   return the index of the parameter in ipa_node_params which has not been
+   modified.  Otherwise return -1.  */
 
 static int
-load_from_param_1 (struct ipa_func_body_info *fbi,
-		   vec<ipa_param_descriptor, va_gc> *descriptors,
-		   gimple *stmt)
+load_from_unmodified_param (struct ipa_func_body_info *fbi,
+			    vec<ipa_param_descriptor, va_gc> *descriptors,
+			    gimple *stmt)
 {
   int index;
   tree op1;
 
-  gcc_checking_assert (is_gimple_assign (stmt));
+  if (!gimple_assign_single_p (stmt))
+    return -1;
+
   op1 = gimple_assign_rhs1 (stmt);
   if (TREE_CODE (op1) != PARM_DECL)
     return -1;
@@ -885,40 +887,6 @@ load_from_param_1 (struct ipa_func_body_info *fbi,
     return -1;
 
   return index;
-}
-
-/* If STMT is an assignment that loads a value from an parameter declaration,
-   return the index of the parameter in ipa_node_params which has not been
-   modified.  Otherwise return -1.  */
-
-static int
-load_from_unmodified_param (struct ipa_func_body_info *fbi,
-			    vec<ipa_param_descriptor, va_gc> *descriptors,
-			    gimple *stmt)
-{
-  if (!gimple_assign_single_p (stmt))
-    return -1;
-
-  return load_from_param_1 (fbi, descriptors, stmt);
-}
-
-/* If STMT is an assignment that loads a value from an parameter declaration,
-   return the index of the parameter in ipa_node_params.  Otherwise return -1.  */
-
-static int
-load_from_param (struct ipa_func_body_info *fbi,
-		 vec<ipa_param_descriptor, va_gc> *descriptors,
-		 gimple *stmt)
-{
-  if (!is_gimple_assign (stmt))
-    return -1;
-
-  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
-  if ((get_gimple_rhs_class (rhs_code) != GIMPLE_SINGLE_RHS)
-      && (get_gimple_rhs_class (rhs_code) != GIMPLE_UNARY_RHS))
-    return -1;
-
-  return load_from_param_1 (fbi, descriptors, stmt);
 }
 
 /* Return true if memory reference REF (which must be a load through parameter
@@ -1154,7 +1122,6 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
   tree op1, tc_ssa, base, ssa;
   bool reverse;
   int index;
-  gimple *stmt2 = stmt;
 
   op1 = gimple_assign_rhs1 (stmt);
 
@@ -1163,16 +1130,13 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
       if (SSA_NAME_IS_DEFAULT_DEF (op1))
 	index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op1));
       else
-	{
-	  index = load_from_param (fbi, info->descriptors,
-				   SSA_NAME_DEF_STMT (op1));
-	  stmt2 = SSA_NAME_DEF_STMT (op1);
-	}
+	index = load_from_unmodified_param (fbi, info->descriptors,
+					    SSA_NAME_DEF_STMT (op1));
       tc_ssa = op1;
     }
   else
     {
-      index = load_from_param (fbi, info->descriptors, stmt);
+      index = load_from_unmodified_param (fbi, info->descriptors, stmt);
       tc_ssa = gimple_assign_lhs (stmt);
     }
 
@@ -1202,11 +1166,11 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 	    break;
 	  }
 	case GIMPLE_UNARY_RHS:
-	  if (is_gimple_assign (stmt2)
-	      && gimple_assign_rhs_class (stmt2) == GIMPLE_UNARY_RHS
-	      && ! CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2)))
+	  if (is_gimple_assign (stmt)
+	      && gimple_assign_rhs_class (stmt) == GIMPLE_UNARY_RHS
+	      && ! CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
 	    ipa_set_jf_unary_pass_through (jfunc, index,
-					   gimple_assign_rhs_code (stmt2));
+					   gimple_assign_rhs_code (stmt));
 	default:;
 	}
       return;
