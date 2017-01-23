@@ -1,3 +1,14 @@
+2017-01-23  Richard Biener  <rguenther@suse.de>
+	    Nick Clifton  <nickc@redhat.com>
+
+	PR testsuite/78421
+	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):
+	If the target is ARM return the result of the
+	check_effective_target_arm_vect_no_misalign proc.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c: If the target does not
+	support unaligned vectors then only expect one of the loops to be
+	unrolled.
+
 2017-01-23  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/asan/use-after-scope-10.c: New test.
