@@ -1,3 +1,18 @@
+2017-01-23  Claire Dross  <dross@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Attribute_Reference):  For
+	attributes which return Universal_Integer, introduce a conversion
+	to the expected type with the appropriate check flags set.
+	* sem_res.adb (Resolve_Range): The higher bound can be in Typ's
+	base type if the range is null. It may still be invalid if it
+	is higher than the lower bound. This is checked later in the
+	context in which the range appears.
+
+2017-01-23  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* scos.ads: Introduce a constant to represent ignored
+	dependencies in SCO_Unit_Table_Entry.
+
 2017-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Remove extra

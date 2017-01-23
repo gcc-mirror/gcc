@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Exp_Ch5;  use Exp_Ch5;
 with Exp_Dbug; use Exp_Dbug;
@@ -148,6 +149,29 @@ package body Exp_SPARK is
                New_Occurrence_Of (RTE (RE_To_Address), Loc),
              Parameter_Associations => New_List (Expr)));
          Analyze_And_Resolve (N, Typ);
+
+      --  For attributes which return Universal_Integer, introduce a conversion
+      --  to the expected type with the appropriate check flags set.
+
+      elsif Attr_Id = Attribute_Alignment
+        or else Attr_Id = Attribute_Bit
+        or else Attr_Id = Attribute_Bit_Position
+        or else Attr_Id = Attribute_Descriptor_Size
+        or else Attr_Id = Attribute_First_Bit
+        or else Attr_Id = Attribute_Last_Bit
+        or else Attr_Id = Attribute_Length
+        or else Attr_Id = Attribute_Max_Size_In_Storage_Elements
+        or else Attr_Id = Attribute_Pos
+        or else Attr_Id = Attribute_Position
+        or else Attr_Id = Attribute_Range_Length
+        or else Attr_Id = Attribute_Object_Size
+        or else Attr_Id = Attribute_Size
+        or else Attr_Id = Attribute_Value_Size
+        or else Attr_Id = Attribute_VADS_Size
+        or else Attr_Id = Attribute_Aft
+        or else Attr_Id = Attribute_Max_Alignment_For_Allocation
+      then
+         Apply_Universal_Integer_Attribute_Checks (N);
       end if;
    end Expand_SPARK_Attribute_Reference;
 
