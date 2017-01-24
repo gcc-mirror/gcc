@@ -1,3 +1,9 @@
+2017-01-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/79123
+	* gimple-ssa-warn-alloca.c (alloca_call_type): Make sure
+	casts from signed to unsigned really don't have a range.
+
 2017-01-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* gimple-ssa-sprintf.c (format_floating): Change MPFR_RNDx to

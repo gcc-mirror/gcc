@@ -272,6 +272,7 @@ static struct alloca_type_and_limit
 alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
+  bool tentative_cast_from_signed = false;
   tree len = gimple_call_arg (stmt, 0);
   tree len_casted = NULL;
   wide_int min, max;
@@ -352,8 +353,26 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	  // with this heuristic.  Hopefully, this VR_ANTI_RANGE
 	  // nonsense will go away, and we won't have to catch the
 	  // sign conversion problems with this crap.
+	  //
+	  // This is here to catch things like:
+	  // void foo(signed int n) {
+	  //   if (n < 100)
+	  //     alloca(n);
+	  //   ...
+	  // }
 	  if (cast_from_signed_p (len, invalid_casted_type))
-	    return alloca_type_and_limit (ALLOCA_CAST_FROM_SIGNED);
+	    {
+	      // Unfortunately this also triggers:
+	      //
+	      // __SIZE_TYPE__ n = (__SIZE_TYPE__)blah;
+	      // if (n < 100)
+	      //   alloca(n);
+	      //
+	      // ...which is clearly bounded.  So, double check that
+	      // the paths leading up to the size definitely don't
+	      // have a bound.
+	      tentative_cast_from_signed = true;
+	    }
 	}
       // No easily determined range and try other things.
     }
@@ -371,10 +390,12 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	  ret = alloca_call_type_by_arg (len, len_casted,
 					 EDGE_PRED (bb, ix), max_size);
 	  if (ret.type != ALLOCA_OK)
-	    return ret;
+	    break;
 	}
     }
 
+  if (tentative_cast_from_signed && ret.type != ALLOCA_OK)
+    return alloca_type_and_limit (ALLOCA_CAST_FROM_SIGNED);
   return ret;
 }
 
