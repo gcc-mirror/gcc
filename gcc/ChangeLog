@@ -1,3 +1,8 @@
+2017-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_compilation_unit_header, output_file_names):
+	Avoid -Wformat-security warning.
+
 2017-01-23  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (thunderx2t99_addrcost_table): Improve

@@ -10286,7 +10286,7 @@ output_compilation_unit_header (enum dwarf_unit_type ut)
 	case DW_UT_split_type: name = "DW_UT_split_type"; break;
 	default: gcc_unreachable ();
 	}
-      dw2_asm_output_data (1, ut, name);
+      dw2_asm_output_data (1, ut, "%s", name);
       dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
     }
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, abbrev_section_label,
@@ -11551,7 +11551,8 @@ output_file_names (void)
       if (DWARF5_USE_DEBUG_LINE_STR)
 	str_form = DW_FORM_line_strp;
       dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
-      dw2_asm_output_data_uleb128 (str_form, get_DW_FORM_name (str_form));
+      dw2_asm_output_data_uleb128 (str_form, "%s",
+				   get_DW_FORM_name (str_form));
       dw2_asm_output_data_uleb128 (ndirs + idx_offset, "Directories count");
       if (str_form == DW_FORM_string)
 	{
@@ -11631,10 +11632,12 @@ output_file_names (void)
       dw2_asm_output_data (1, 2, "File name entry format count");
 #endif
       dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
-      dw2_asm_output_data_uleb128 (str_form, get_DW_FORM_name (str_form));
+      dw2_asm_output_data_uleb128 (str_form, "%s",
+				   get_DW_FORM_name (str_form));
       dw2_asm_output_data_uleb128 (DW_LNCT_directory_index,
 				   "DW_LNCT_directory_index");
-      dw2_asm_output_data_uleb128 (idx_form, get_DW_FORM_name (idx_form));
+      dw2_asm_output_data_uleb128 (idx_form, "%s",
+				   get_DW_FORM_name (idx_form));
 #ifdef VMS_DEBUGGING_INFO
       dw2_asm_output_data_uleb128 (DW_LNCT_timestamp, "DW_LNCT_timestamp");
       dw2_asm_output_data_uleb128 (DW_FORM_udata, "DW_FORM_udata");
