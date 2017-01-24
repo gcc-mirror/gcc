@@ -183,12 +183,6 @@ struct format_result
      the return value of a call.  */
   bool knownrange;
 
-  /* True when the output of the formatted call is constant (and
-     thus a candidate for string constant folding).  This is rare
-     and typically requires that the arguments of all directives
-     are also constant.  CONSTANT implies BOUNDED.  */
-  bool constant;
-
   /* True if no individual directive resulted in more than 4095 bytes
      of output (the total NUMBER_CHARS might be greater).  */
   bool under4k;
@@ -452,7 +446,6 @@ struct fmtresult
   : argmin (), argmax (),
     knownrange (min < HOST_WIDE_INT_MAX),
     bounded (),
-    constant (),
     nullp ()
   {
     range.min = min;
@@ -465,11 +458,10 @@ struct fmtresult
   : argmin (), argmax (),
     knownrange (min < HOST_WIDE_INT_MAX && max < HOST_WIDE_INT_MAX),
     bounded (),
-    constant (),
     nullp ()
   {
     range.min = min;
-    range.max = min;
+    range.max = max;
   }
 
   /* The range a directive's argument is in.  */
@@ -489,12 +481,6 @@ struct fmtresult
      value range propagation or the width of the formt directive),
      false otherwise.  */
   bool bounded;
-
-  /* True when the output of a directive is constant.  This is rare
-     and typically requires that the argument(s) of the directive
-     are also constant (such as determined by constant propagation,
-     though not value range propagation).  */
-  bool constant;
 
   /* True when the argument is a null pointer.  */
   bool nullp;
@@ -818,7 +804,7 @@ static fmtresult
 format_none (const directive &, tree)
 {
   fmtresult res (0);
-  res.bounded = res.constant = true;
+  res.bounded = true;
   return res;
 }
 
@@ -828,7 +814,7 @@ static fmtresult
 format_percent (const directive &, tree)
 {
   fmtresult res (1);
-  res.bounded = res.constant = true;
+  res.bounded = true;
   return res;
 }
 
@@ -1095,7 +1081,6 @@ format_integer (const directive &dir, tree arg)
 	{
 	  res.range.max = len;
 	  res.bounded = true;
-	  res.constant = true;
 	  res.knownrange = true;
 	  res.bounded = true;
 	}
@@ -1537,7 +1522,6 @@ format_floating (const directive &dir, tree arg)
 
   /* The minimum and maximum number of bytes produced by the directive.  */
   fmtresult res;
-  res.constant = true;
 
   /* Get the real type format desription for the target.  */
   const REAL_VALUE_TYPE *rvp = TREE_REAL_CST_PTR (arg);
@@ -1634,7 +1618,6 @@ get_string_length (tree str)
       fmtresult res;
       res.range.min = res.range.max = tree_to_shwi (slen);
       res.bounded = true;
-      res.constant = true;
       res.knownrange = true;
       return res;
     }
@@ -1661,11 +1644,6 @@ get_string_length (tree str)
 	 actual length but perhaps by their maximum possible length).  */
       res.bounded = res.range.max < target_int_max ();
       res.knownrange = res.bounded;
-
-      /* Set RES.CONSTANT to false even though that may be overly
-	 conservative in rare cases like: 'x ? a : b' where a and
-	 b have the same lengths and consist of the same characters.  */
-      res.constant = false;
 
       return res;
     }
@@ -1713,7 +1691,6 @@ format_character (const directive &dir, tree arg)
       res.range.min = res.range.max = 1;
       res.bounded = true;
       res.knownrange = true;
-      res.constant = arg && TREE_CODE (arg) == INTEGER_CST;
     }
 
   /* Adjust the lengths for field width.  */
@@ -1759,7 +1736,8 @@ format_string (const directive &dir, tree arg)
 
   /* Compute the range the argument's length can be in.  */
   fmtresult slen = get_string_length (arg);
-  if (slen.constant)
+  if (slen.range.min == slen.range.max
+      && slen.range.min < HOST_WIDE_INT_MAX)
     {
       gcc_checking_assert (slen.range.min == slen.range.max);
 
@@ -1807,7 +1785,6 @@ format_string (const directive &dir, tree arg)
 	     precision is either not specified or it is specified and
 	     its value is known.  */
 	  res.bounded = true;
-	  res.constant = dir.prec != HOST_WIDE_INT_MIN;
 	}
       else if (dir.width == HOST_WIDE_INT_MIN)
 	{
@@ -1868,7 +1845,6 @@ format_string (const directive &dir, tree arg)
 	 of bytes is known or contrained to some range.  */
       res.bounded = 0 <= dir.prec || slen.bounded;
       res.knownrange = slen.knownrange;
-      res.constant = false;
     }
 
   /* Adjust the lengths for field width.  */
@@ -1888,7 +1864,7 @@ format_string (const directive &dir, tree arg)
 
   /* When precision is specified the range of characters on output
      is known to be bounded by it.  */
-  if (HOST_WIDE_INT_MIN != dir.width && HOST_WIDE_INT_MIN != dir.prec)
+  if (HOST_WIDE_INT_MIN != dir.width && -1 < dir.prec)
     res.knownrange = true;
 
   return res;
@@ -1936,10 +1912,9 @@ format_directive (const pass_sprintf_length::call_info &info,
   /* Compute the (approximate) length of the formatted output.  */
   fmtresult fmtres = dir.fmtfunc (dir, arg);
 
-  /* The overall result is bounded and constant only if the output
-     of every directive is bounded and constant, respectively.  */
+  /* The overall result is bounded only if the output of every directive
+     is bounded.  */
   res->bounded &= fmtres.bounded;
-  res->constant &= fmtres.constant;
 
   /* Record whether the output of all directives is known to be
      bounded by some maximum, implying that their arguments are
@@ -2792,11 +2767,10 @@ pass_sprintf_length::compute_format_length (call_info &info,
   res->number_chars = res->number_chars_min = res->number_chars_max = 0;
 
   /* No directive has been seen yet so the length of output is bounded
-     by the known range [0, 0] and constant (with no conversion producing
-     more than 4K bytes) until determined otherwise.  */
+     by the known range [0, 0] (with no conversion producing more than
+     4K bytes) until determined otherwise.  */
   res->bounded = true;
   res->knownrange = true;
-  res->constant = true;
   res->under4k = true;
   res->floating = false;
   res->warned = false;
@@ -2877,7 +2851,30 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 			     const pass_sprintf_length::call_info &info,
 			     const format_result &res)
 {
+  if (!res.bounded)
+    return false;
+
   tree lhs = gimple_get_lhs (info.callstmt);
+
+  /* Set to true when the entire call has been removed.  */
+  bool removed = false;
+
+  /* The minumum return value.  */
+  unsigned HOST_WIDE_INT minretval = res.number_chars_min;
+
+  /* The maximum return value.  */
+  unsigned HOST_WIDE_INT maxretval = res.number_chars_max;
+
+  /* Adjust the number of bytes which includes the terminating nul
+     to reflect the return value of the function which does not.
+     Because the valid range of the function is [INT_MIN, INT_MAX],
+     a valid range before the adjustment below is [0, INT_MAX + 1]
+     (the functions only return negative values on error or undefined
+     behavior).  */
+  if (minretval <= target_int_max () + 1)
+    --minretval;
+  if (maxretval <= target_int_max () + 1)
+    --maxretval;
 
   /* Avoid the return value optimization when the behavior of the call
      is undefined either because any directive may have produced 4K or
@@ -2885,34 +2882,40 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
      the output overflows the destination object (but leave it enabled
      when the function is bounded because then the behavior is well-
      defined).  */
-  if (lhs
-      && res.bounded
-      && res.under4k
-      && (info.bounded || res.number_chars <= info.objsize)
-      && res.number_chars - 1 <= target_int_max ()
+  if (res.under4k
+      && minretval == maxretval
+      && (info.bounded || minretval < info.objsize)
+      && minretval <= target_int_max ()
       /* Not prepared to handle possibly throwing calls here; they shouldn't
 	 appear in non-artificial testcases, except when the __*_chk routines
 	 are badly declared.  */
       && !stmt_ends_bb_p (info.callstmt))
     {
-      tree cst = build_int_cst (integer_type_node, res.number_chars - 1);
+      tree cst = build_int_cst (integer_type_node, minretval);
 
-      if (info.nowrite)
+      if (lhs == NULL_TREE
+	  && info.nowrite)
+	{
+	  /* Remove the call to the bounded function with a zero size
+	     (e.g., snprintf(0, 0, "%i", 123)) if there is no lhs.  */
+	  unlink_stmt_vdef (info.callstmt);
+	  gsi_remove (gsi, true);
+	  removed = true;
+	}
+      else if (info.nowrite)
 	{
 	  /* Replace the call to the bounded function with a zero size
 	     (e.g., snprintf(0, 0, "%i", 123) with the constant result
-	     of the function minus 1 for the terminating NUL which
-	     the function's  return value does not include.  */
+	     of the function.  */
 	  if (!update_call_from_tree (gsi, cst))
 	    gimplify_and_update_call_from_tree (gsi, cst);
 	  gimple *callstmt = gsi_stmt (*gsi);
 	  update_stmt (callstmt);
 	}
-      else
+      else if (lhs)
 	{
 	  /* Replace the left-hand side of the call with the constant
-	     result of the formatted function minus 1 for the terminating
-	     NUL which the function's return value does not include.  */
+	     result of the formatted function.  */
 	  gimple_call_set_lhs (info.callstmt, NULL_TREE);
 	  gimple *g = gimple_build_assign (lhs, cst);
 	  gsi_insert_after (gsi, g, GSI_NEW_STMT);
@@ -2921,88 +2924,56 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 
       if (dump_file)
 	{
-	  location_t callloc = gimple_location (info.callstmt);
-	  fprintf (dump_file, "On line %i substituting ",
-		   LOCATION_LINE (callloc));
-	  print_generic_expr (dump_file, cst, dump_flags);
-	  fprintf (dump_file, " for ");
-	  print_generic_expr (dump_file, info.func, dump_flags);
-	  fprintf (dump_file, " %s (output %s).\n",
-		   info.nowrite ? "call" : "return value",
-		   res.constant ? "constant" : "variable");
+	  if (removed)
+	    fprintf (dump_file, "  Removing call statement.");
+	  else
+	    {
+	      fprintf (dump_file, "  Substituting ");
+	      print_generic_expr (dump_file, cst, dump_flags);
+	      fprintf (dump_file, " for %s.\n",
+		       info.nowrite ? "statement" : "return value");
+	    }
 	}
     }
-  else if (lhs == NULL_TREE
-	   && info.nowrite
-	   && !stmt_ends_bb_p (info.callstmt))
+  else if (lhs)
     {
-      /* Remove the call to the bounded function with a zero size
-	 (e.g., snprintf(0, 0, "%i", 123)) if there is no lhs.  */
-      unlink_stmt_vdef (info.callstmt);
-      gsi_remove (gsi, true);
-      if (dump_file)
-	{
-	  location_t callloc = gimple_location (info.callstmt);
-	  fprintf (dump_file, "On line %i removing ",
-		   LOCATION_LINE (callloc));
-	  print_generic_expr (dump_file, info.func, dump_flags);
-	  fprintf (dump_file, " call.\n");
-	}
-      return true;
-    }
-  else
-    {
-      unsigned HOST_WIDE_INT maxbytes;
+      bool setrange = false;
 
-      if (lhs
-	  && res.bounded
-	  && ((maxbytes = res.number_chars - 1) <= target_int_max ()
-	      || (res.number_chars_min - 1 <= target_int_max ()
-		  && (maxbytes = res.number_chars_max - 1) <= target_int_max ()))
-	  && (info.bounded || maxbytes < info.objsize))
+      if ((info.bounded || maxretval < info.objsize)
+	  && res.under4k
+	  && (minretval < target_int_max ()
+	      && maxretval < target_int_max ()))
 	{
 	  /* If the result is in a valid range bounded by the size of
 	     the destination set it so that it can be used for subsequent
 	     optimizations.  */
 	  int prec = TYPE_PRECISION (integer_type_node);
 
-	  if (res.number_chars < target_int_max () && res.under4k)
-	    {
-	      wide_int num = wi::shwi (res.number_chars - 1, prec);
-	      set_range_info (lhs, VR_RANGE, num, num);
-	    }
-	  else if (res.number_chars_min < target_int_max ()
-		   && res.number_chars_max < target_int_max ())
-	    {
-	      wide_int min = wi::shwi (res.under4k ? res.number_chars_min - 1
-				       : target_int_min (), prec);
-	      wide_int max = wi::shwi (res.number_chars_max - 1, prec);
-	      set_range_info (lhs, VR_RANGE, min, max);
-	    }
+	  wide_int min = wi::shwi (minretval, prec);
+	  wide_int max = wi::shwi (maxretval, prec);
+	  set_range_info (lhs, VR_RANGE, min, max);
+
+	  setrange = true;
 	}
 
       if (dump_file)
 	{
 	  const char *inbounds
-	    = (res.number_chars_min <= info.objsize
-	       ? (res.number_chars_max <= info.objsize
+	    = (minretval < info.objsize
+	       ? (maxretval < info.objsize
 		  ? "in" : "potentially out-of")
 	       : "out-of");
 
-	  location_t callloc = gimple_location (info.callstmt);
-	  fprintf (dump_file, "On line %i ", LOCATION_LINE (callloc));
-	  print_generic_expr (dump_file, info.func, dump_flags);
-
-	  const char *ign = lhs ? "" : " ignored";
-	  if (res.number_chars >= HOST_WIDE_INT_MAX)
+	  const char *what = setrange ? "Setting" : "Discarding";
+	  if (minretval != maxretval)
 	    fprintf (dump_file,
-		     " %s-bounds return value in range [%lu, %lu]%s.\n",
-		     inbounds,
-		     (unsigned long)res.number_chars_min - 1,
-		     (unsigned long)res.number_chars_max - 1, ign);
+		     "  %s %s-bounds return value range [%llu, %llu].\n",
+		     what, inbounds,
+		     (unsigned long long)minretval,
+		     (unsigned long long)maxretval);
 	  else
-	    fprintf (dump_file, " %s-bounds return value %lu%s.\n",
-		     inbounds, (unsigned long)res.number_chars - 1, ign);
+	    fprintf (dump_file, "  %s %s-bounds return value %llu.\n",
+		     what, inbounds, (unsigned long long)minretval);
 	}
     }
 

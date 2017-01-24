@@ -1,6 +1,13 @@
 2017-01-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78703
+	* gimple-ssa-sprintf.c (struct format_result): Remove constant member.
+	(struct fmtresult, format_integer, format_floating): Adjust.
+	(get_string_length, format_string,format_directive): Same.
+	(pass_sprintf_length::compute_format_length): Same.
+	(try_substitute_return_value): Simplify slightly.
+
+	PR middle-end/78703
 	* gimple-ssa-sprintf.c (pass_sprintf_length::gate): Adjust formatting.
 	(fmtresult::operator+=): Outlined.
 	(struct fmtresult): Add ctors.
