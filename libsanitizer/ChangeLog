@@ -1,5 +1,7 @@
 2017-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.tgt: Enable tsan and lsan on powerpc64{,le}-*-linux*.
+
 	PR sanitizer/79168
 	* merge.sh (change_comment_headers): Don't remove 2nd and 3rd line
 	if the 3rd line doesn't contain 'The LLVM Compiler Infrastructure'
