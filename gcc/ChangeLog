@@ -15,6 +15,7 @@
 	PR middle-end/78703
 	* gimple-ssa-sprintf.c (struct format_result): Remove constant member.
 	(struct fmtresult, format_integer, format_floating): Adjust.
+	(fmtresult::fmtresult): Set max correctly in two argument ctor.
 	(get_string_length, format_string,format_directive): Same.
 	(pass_sprintf_length::compute_format_length): Same.
 	(try_substitute_return_value): Simplify slightly.
