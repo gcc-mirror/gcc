@@ -1,3 +1,8 @@
+2017-01-24 Jeff Law  <law@redhat.com>
+
+	* config/microblaze/microblaze.h (ASM_FORMAT_PRIVATE_NAME): Increase
+	buffer size.
+
 2017-01-24  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/79159
