@@ -104,6 +104,12 @@ const pass_data pass_data_sprintf_length = {
   0,	                   // properties_finish
 };
 
+/* Set to the warning level for the current function which is equal
+   either to warn_format_trunc for bounded functions or to
+   warn_format_overflow otherwise.  */
+
+static int warn_level;
+
 struct format_result;
 
 class pass_sprintf_length : public gimple_opt_pass
@@ -137,10 +143,10 @@ public:
 bool
 pass_sprintf_length::gate (function *)
 {
-  /* Run the pass iff -Warn-format-length is specified and either
-     not optimizing and the pass is being invoked early, or when
-     optimizing and the pass is being invoked during optimization
-     (i.e., "late").  */
+  /* Run the pass iff -Warn-format-overflow or -Warn-format-truncation
+     is specified and either not optimizing and the pass is being invoked
+     early, or when optimizing and the pass is being invoked during
+     optimization (i.e., "late").  */
   return ((warn_format_overflow > 0
 	   || warn_format_trunc > 0
 	   || flag_printf_return_value)
@@ -937,7 +943,37 @@ format_integer (const directive &dir, tree arg)
   HOST_WIDE_INT width = dir.width;
   HOST_WIDE_INT prec = dir.prec;
 
-  bool sign = dir.specifier == 'd' || dir.specifier == 'i';
+  /* Base to format the number in.  */
+  int base;
+
+  /* True when a signed conversion is preceded by a sign or space.  */
+  bool maybesign = false;
+
+  /* True for signed conversions (i.e., 'd' and 'i').  */
+  bool sign = false;
+
+  switch (dir.specifier)
+    {
+    case 'd':
+    case 'i':
+      /* Space and '+' are  only meaningful for signed conversions.  */
+      maybesign = dir.get_flag (' ') | dir.get_flag ('+');
+      sign = true;
+      base = 10;
+      break;
+    case 'u':
+      base = 10;
+      break;
+    case 'o':
+      base = 8;
+      break;
+    case 'X':
+    case 'x':
+      base = 16;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   /* The type of the "formal" argument expected by the directive.  */
   tree dirtype = NULL_TREE;
@@ -1007,34 +1043,6 @@ format_integer (const directive &dir, tree arg)
     {
       /* When a constant argument has been provided use its value
 	 rather than type to determine the length of the output.  */
-
-      /* Base to format the number in.  */
-      int base;
-
-      /* True when a signed conversion is preceded by a sign or space.  */
-      bool maybesign = false;
-
-      switch (dir.specifier)
-	{
-	case 'd':
-	case 'i':
-	  /* Space and '+' are  only meaningful for signed conversions.  */
-	  maybesign = dir.get_flag (' ') | dir.get_flag ('+');
-	  base = 10;
-	  break;
-	case 'u':
-	  base = 10;
-	  break;
-	case 'o':
-	  base = 8;
-	  break;
-	case 'X':
-	case 'x':
-	  base = 16;
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
 
       HOST_WIDE_INT len;
 
@@ -1665,11 +1673,11 @@ format_character (const directive &dir, tree arg)
      to a "%lc" directive adjusted for precision but not field width.
      6 is the longest UTF-8 sequence for a single wide character.  */
   const unsigned HOST_WIDE_INT max_bytes_for_unknown_wc
-    = (0 <= dir.prec ? dir.prec : warn_format_overflow > 1 ? 6 : 1);
+    = (0 <= dir.prec ? dir.prec : warn_level > 1 ? 6 : 1);
 
     if (dir.modifier == FMT_LEN_l)
     {
-      /* Positive if the argument is a wide NUL character?  */
+      /* Positive if the argument is a wide NUL character.  */
       int nul = (arg && TREE_CODE (arg) == INTEGER_CST
 		 ? integer_zerop (arg) : -1);
 
@@ -1679,7 +1687,7 @@ format_character (const directive &dir, tree arg)
 	 is the smaller of either 0 (at level 1) or 1 (at level 2)
 	 and WIDTH, and the maximum is MB_CUR_MAX in the selected
 	 locale, which is unfortunately, unknown.  */
-      res.range.min = warn_format_overflow == 1 ? !nul : nul < 1;
+      res.range.min = warn_level == 1 ? !nul : nul < 1;
       res.range.max = max_bytes_for_unknown_wc;
       /* The range above is good enough to issue warnings but not
 	 for value range propagation, so clear BOUNDED.  */
@@ -1756,7 +1764,7 @@ format_string (const directive &dir, tree arg)
 	{
 	  bounded = false;
 
-	  if (warn_format_overflow > 1)
+	  if (warn_level > 1)
 	    {
 	      /* Leave the minimum number of bytes the wide string
 		 converts to equal to its length and set the maximum
@@ -1870,6 +1878,145 @@ format_string (const directive &dir, tree arg)
   return res;
 }
 
+/* At format string location describe by DIRLOC in a call described
+   by INFO, issue a warning for a directive DIR whose output may be
+   in excess of the available space AVAIL_RANGE in the destination
+   given the formatting result FMTRES.  This function does nothing
+   except decide whether to issue a warning for a possible write
+   past the end or truncation and, if so, format the warning.
+   Return true if a warning has been issued.  */
+
+static bool
+maybe_warn (substring_loc &dirloc, source_range *pargrange,
+	    const pass_sprintf_length::call_info &info,
+	    unsigned HOST_WIDE_INT navail, const result_range &res,
+	    const directive &dir)
+{
+  bool warned = false;
+
+  if (res.min < res.max)
+    {
+      /* The result is a range (i.e., it's inexact).  */
+      if (!warned)
+	{
+	  if (navail < res.min)
+	    {
+	      /* The minimum directive output is longer than there is
+		 room in the destination.  */
+	      if (res.min == res.max)
+		{
+		  const char* fmtstr
+		    = (info.bounded
+		       ? G_("%<%.*s%> directive output truncated writing "
+			    "%wu bytes into a region of size %wu")
+		       : G_("%<%.*s%> directive writing %wu bytes "
+			    "into a region of size %wu"));
+		  warned = fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
+				    fmtstr,
+				    (int)dir.len, dir.beg, res.min,
+				    navail);
+		}
+	      else if (res.max < HOST_WIDE_INT_MAX)
+		{
+		  const char* fmtstr
+		    = (info.bounded
+		       ? G_("%<%.*s%> directive output truncated writing "
+			    "between %wu and %wu bytes into a region of "
+			    "size %wu")
+		       : G_("%<%.*s%> directive writing between %wu and "
+			    "%wu bytes into a region of size %wu"));
+		  warned = fmtwarn (dirloc, pargrange, NULL,
+				    info.warnopt (), fmtstr,
+				    (int)dir.len, dir.beg,
+				    res.min, res.max, navail);
+		}
+	      else
+		{
+		  const char* fmtstr
+		    = (info.bounded
+		       ? G_("%<%.*s%> directive output truncated writing "
+			    "%wu or more bytes into a region of size %wu")
+		       : G_("%<%.*s%> directive writing %wu or more bytes "
+			    "into a region of size %wu"));
+		  warned = fmtwarn (dirloc, pargrange, NULL,
+				    info.warnopt (), fmtstr,
+				    (int)dir.len, dir.beg,
+				    res.min, navail);
+		}
+	    }
+	  else if (navail < res.max
+		   && (dir.specifier != 's'
+		       || res.max < HOST_WIDE_INT_MAX)
+		   && ((info.bounded
+			&& (!info.retval_used ()
+			    || warn_level > 1))
+		       || (!info.bounded
+			   && (dir.specifier == 's'
+			       || warn_level > 1))))
+	    {
+	      /* The maximum directive output is longer than there is
+		 room in the destination and the output length is either
+		 explicitly constrained by the precision (for strings)
+		 or the warning level is greater than 1.  */
+	      if (res.max >= HOST_WIDE_INT_MAX)
+		{
+		  const char* fmtstr
+		    = (info.bounded
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing %wu or more bytes into a region "
+			    "of size %wu")
+		       : G_("%<%.*s%> directive writing %wu or more bytes "
+			    "into a region of size %wu"));
+		  warned = fmtwarn (dirloc, pargrange, NULL,
+				    info.warnopt (), fmtstr,
+				    (int)dir.len, dir.beg,
+				    res.min, navail);
+		}
+	      else
+		{
+		  const char* fmtstr
+		    = (info.bounded
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing between %wu and %wu bytes into a region "
+			    "of size %wu")
+		       : G_("%<%.*s%> directive writing between %wu and %wu "
+			    "bytes into a region of size %wu"));
+		  warned = fmtwarn (dirloc, pargrange, NULL,
+				    info.warnopt (), fmtstr,
+				    (int)dir.len, dir.beg,
+				    res.min, res.max,
+				    navail);
+		}
+	    }
+	}
+    }
+  else
+    {
+      if (!warned && res.min > 0 && navail < res.min)
+	{
+	  const char* fmtstr
+	    = (info.bounded
+	       ? (1 < res.min
+		  ? G_("%<%.*s%> directive output truncated while writing "
+		       "%wu bytes into a region of size %wu")
+		  : G_("%<%.*s%> directive output truncated while writing "
+		       "%wu byte into a region of size %wu"))
+	       : (1 < res.min
+		  ? G_("%<%.*s%> directive writing %wu bytes "
+		       "into a region of size %wu")
+		  : G_("%<%.*s%> directive writing %wu byte "
+		       "into a region of size %wu")));
+
+	  warned = fmtwarn (dirloc, pargrange, NULL,
+			    info.warnopt (), fmtstr,
+			    (int)dir.len, dir.beg, res.min,
+			    navail);
+	}
+    }
+
+  return warned;
+}
+
 /* Compute the length of the output resulting from the conversion
    specification DIR with the argument ARG in a call described by INFO
    and update the overall result of the call in *RES.  The format directive
@@ -1970,109 +2117,19 @@ format_directive (const pass_sprintf_length::call_info &info,
       return false;
     }
 
-  bool warned = res->warned;
-
   /* Compute the number of available bytes in the destination.  There
      must always be at least one byte of space for the terminating
      NUL that's appended after the format string has been processed.  */
   unsigned HOST_WIDE_INT navail = min_bytes_remaining (info.objsize, *res);
 
+  bool warned = res->warned;
+
+  if (!warned)
+    warned = maybe_warn (dirloc, pargrange, info, navail,
+			 fmtres.range, dir);
+
   if (fmtres.range.min < fmtres.range.max)
     {
-      /* The result is a range (i.e., it's inexact).  */
-      if (!warned)
-	{
-	  if (navail < fmtres.range.min)
-	    {
-	      /* The minimum directive output is longer than there is
-		 room in the destination.  */
-	      if (fmtres.range.min == fmtres.range.max)
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output truncated writing "
-			    "%wu bytes into a region of size %wu")
-		       : G_("%<%.*s%> directive writing %wu bytes "
-			    "into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
-				    fmtstr,
-				    (int)cvtlen, cvtbeg, fmtres.range.min,
-				    navail);
-		}
-	      else if (fmtres.range.max < HOST_WIDE_INT_MAX)
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output truncated writing "
-			    "between %wu and %wu bytes into a region of "
-			    "size %wu")
-		       : G_("%<%.*s%> directive writing between %wu and "
-			    "%wu bytes into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    info.warnopt (), fmtstr,
-				    (int)cvtlen, cvtbeg,
-				    fmtres.range.min, fmtres.range.max, navail);
-		}
-	      else
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output truncated writing "
-			    "%wu or more bytes into a region of size %wu")
-		       : G_("%<%.*s%> directive writing %wu or more bytes "
-			    "into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    info.warnopt (), fmtstr,
-				    (int)cvtlen, cvtbeg,
-				    fmtres.range.min, navail);
-		}
-	    }
-	  else if (navail < fmtres.range.max
-		   && (dir.specifier != 's'
-		       || fmtres.range.max < HOST_WIDE_INT_MAX)
-		   && ((info.bounded
-			&& (!info.retval_used ()
-			    || warn_format_trunc > 1))
-		       || (!info.bounded
-			   && (dir.specifier == 's'
-			       || warn_format_overflow > 1))))
-	    {
-	      /* The maximum directive output is longer than there is
-		 room in the destination and the output length is either
-		 explicitly constrained by the precision (for strings)
- 		 or the warning level is greater than 1.  */
-	      if (fmtres.range.max >= HOST_WIDE_INT_MAX)
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output may be truncated "
-			    "writing %wu or more bytes into a region "
-			    "of size %wu")
-		       : G_("%<%.*s%> directive writing %wu or more bytes "
-			    "into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    info.warnopt (), fmtstr,
-				    (int)cvtlen, cvtbeg,
-				    fmtres.range.min, navail);
-		}
-	      else
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output may be truncated "
-			    "writing between %wu and %wu bytes into a region "
-			    "of size %wu")
-		       : G_("%<%.*s%> directive writing between %wu and %wu "
-			    "bytes into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    info.warnopt (), fmtstr,
-				    (int)cvtlen, cvtbeg,
-				    fmtres.range.min, fmtres.range.max,
-				    navail);
-		}
-	    }
-	}
-
       /* Disable exact length checking but adjust the minimum and maximum.  */
       res->number_chars = HOST_WIDE_INT_M1U;
       if (res->number_chars_max < HOST_WIDE_INT_MAX
@@ -2082,29 +2139,7 @@ format_directive (const pass_sprintf_length::call_info &info,
       res->number_chars_min += fmtres.range.min;
     }
   else
-    {
-      if (!warned && fmtres.range.min > 0 && navail < fmtres.range.min)
-	{
-	  const char* fmtstr
-	    = (info.bounded
-	       ? (1 < fmtres.range.min
-		  ? G_("%<%.*s%> directive output truncated while writing "
-		       "%wu bytes into a region of size %wu")
-		  : G_("%<%.*s%> directive output truncated while writing "
-		       "%wu byte into a region of size %wu"))
-	       : (1 < fmtres.range.min
-		  ? G_("%<%.*s%> directive writing %wu bytes "
-		       "into a region of size %wu")
-		  : G_("%<%.*s%> directive writing %wu byte "
-		       "into a region of size %wu")));
-
-	  warned = fmtwarn (dirloc, pargrange, NULL,
-			    info.warnopt (), fmtstr,
-			    (int)cvtlen, cvtbeg, fmtres.range.min,
-			    navail);
-	}
       *res += fmtres.range.min;
-    }
 
   /* Has the minimum directive output length exceeded the maximum
      of 4095 bytes required to be supported?  */
@@ -2112,7 +2147,7 @@ format_directive (const pass_sprintf_length::call_info &info,
   if (!minunder4k || fmtres.range.max > 4095)
     res->under4k = false;
 
-  if (!warned && warn_format_overflow > 1
+  if (!warned && warn_level > 1
       && (!minunder4k || fmtres.range.max > 4095))
     {
       /* The directive output may be longer than the maximum required
@@ -2149,7 +2184,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 
   if (!warned
       && (exceedmin
-	  || (warn_format_overflow > 1
+	  || (warn_level > 1
 	      && res->number_chars_max > target_int_max ())))
     {
       /* The directive output causes the total length of output
@@ -2189,6 +2224,18 @@ format_directive (const pass_sprintf_length::call_info &info,
     }
 
   res->warned |= warned;
+
+  if (dump_file && *dir.beg)
+    {
+      fprintf (dump_file, "    Result: %lli, %lli "
+	       "(%lli, %lli, %lli)\n",
+	       (long long)fmtres.range.min,
+	       (long long)fmtres.range.max,
+	       (long long)res->number_chars,
+	       (long long)res->number_chars_min,
+	       (long long)res->number_chars_max);
+    }
+
   return true;
 }
 
@@ -2228,7 +2275,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
      are bounded by the arrays they are known to refer to.  */
   if (!res->warned
       && (avail_range.max < nbytes
-	  || ((res->knownrange || warn_format_overflow > 1)
+	  || ((res->knownrange || warn_level > 1)
 	      && avail_range.min < nbytes)))
     {
       /* Set NAVAIL to the number of available bytes used to decide
@@ -2236,7 +2283,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 	 warning will depend on AVAIL_RANGE.  */
       unsigned HOST_WIDE_INT navail = avail_range.max;
       if (nbytes <= navail && avail_range.min < HOST_WIDE_INT_MAX
-	  && (res->knownrange || warn_format_overflow > 1))
+	  && (res->knownrange || warn_level > 1))
 	navail = avail_range.min;
 
       /* Compute the offset of the first format character that is beyond
@@ -2281,7 +2328,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 	  if (!info.bounded
 	      || !boundrange
 	      || !info.retval_used ()
-	      || warn_format_trunc > 1)
+	      || warn_level > 1)
 	    res->warned = fmtwarn (loc, NULL, NULL, info.warnopt (), text);
 	}
       else
@@ -2303,7 +2350,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 	  if (!info.bounded
 	      || !boundrange
 	      || !info.retval_used ()
-	      || warn_format_trunc > 1)
+	      || warn_level > 1)
 	    res->warned = fmtwarn (loc, NULL, NULL, info.warnopt (),
 				   text, info.fmtstr[off], off);
 	}
@@ -2345,7 +2392,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 
   if (!res->warned
       && (exceedmin
-	  || (warn_format_overflow > 1
+	  || (warn_level > 1
 	      && (res->number_chars_max - !end) > target_int_max ())))
     {
       /* The function's output exceeds INT_MAX bytes.  */
@@ -2355,7 +2402,7 @@ add_bytes (const pass_sprintf_length::call_info &info,
 	 warning will depend on AVAIL_RANGE.  */
       unsigned HOST_WIDE_INT navail = avail_range.max;
       if (nbytes <= navail && avail_range.min < HOST_WIDE_INT_MAX
-	  && (res->bounded || warn_format_overflow > 1))
+	  && (res->bounded || warn_level > 1))
 	navail = avail_range.min;
 
       /* Compute the offset of the first format character that is beyond
@@ -2763,6 +2810,17 @@ bool
 pass_sprintf_length::compute_format_length (call_info &info,
 					    format_result *res)
 {
+  if (dump_file)
+    {
+      location_t callloc = gimple_location (info.callstmt);
+      fprintf (dump_file, "%s:%i: ",
+	       LOCATION_FILE (callloc), LOCATION_LINE (callloc));
+      print_generic_expr (dump_file, info.func, dump_flags);
+
+      fprintf (dump_file, ": objsize = %llu, fmtstr = \"%s\"\n",
+	       (unsigned long long)info.objsize, info.fmtstr);
+    }
+
   /* Reset exact, minimum, and maximum character counters.  */
   res->number_chars = res->number_chars_min = res->number_chars_max = 0;
 
@@ -2822,13 +2880,14 @@ pass_sprintf_length::compute_format_length (call_info &info,
 static unsigned HOST_WIDE_INT
 get_destination_size (tree dest)
 {
+  /* Initialize object size info before trying to compute it.  */
+  init_object_sizes ();
+
   /* Use __builtin_object_size to determine the size of the destination
      object.  When optimizing, determine the smallest object (such as
      a member array as opposed to the whole enclosing object), otherwise
      use type-zero object size to determine the size of the enclosing
      object (the function fails without optimization in this type).  */
-
-  init_object_sizes ();
 
   int ost = optimize > 0;
   unsigned HOST_WIDE_INT size;
@@ -2977,7 +3036,10 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	}
     }
 
-  return false;
+  if (dump_file)
+    fputc ('\n', dump_file);
+
+  return removed;
 }
 
 /* Determine if a GIMPLE CALL is to one of the sprintf-like built-in
@@ -3085,6 +3147,9 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       return false;
     }
 
+  /* Set the global warning level for this function.  */
+  warn_level = info.bounded ? warn_format_trunc : warn_format_overflow;
+
   /* The first argument is a pointer to the destination.  */
   tree dstptr = gimple_call_arg (info.callstmt, 0);
 
@@ -3138,7 +3203,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	  if (range_type == VR_RANGE)
 	    {
 	      dstsize
-		= (warn_format_overflow < 2
+		= (warn_level < 2
 		   ? wi::fits_uhwi_p (max) ? max.to_uhwi () : max.to_shwi ()
 		   : wi::fits_uhwi_p (min) ? min.to_uhwi () : min.to_shwi ());
 	    }
@@ -3224,6 +3289,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       && flag_printf_return_value
       && (!flag_rounding_math || !res.floating))
     return try_substitute_return_value (gsi, info, res);
+
   return false;
 }
 
@@ -3249,6 +3315,7 @@ pass_sprintf_length::execute (function *fun)
 	}
     }
 
+  /* Clean up object size info.  */
   fini_object_sizes ();
 
   return 0;
