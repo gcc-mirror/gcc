@@ -180,7 +180,6 @@ operator == (const cp_expr &lhs, tree rhs)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
       IDENTIFIER_CTOR_OR_DTOR_P (in IDENTIFIER_NODE)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
-      DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
@@ -193,8 +192,8 @@ operator == (const cp_expr &lhs, tree rhs)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
-      DECL_CONSTRUCTION_VTABLE_P (in VAR_DECL)
       TYPE_MARKED_P (in _TYPE)
+      DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
       CALL_EXPR_OPERATOR_SYNTAX (in CALL_EXPR, AGGR_INIT_EXPR)
 
@@ -2643,7 +2642,7 @@ struct GTY(()) lang_decl {
 /* Nonzero for a VAR_DECL iff an explicit initializer was provided
    or a non-trivial constructor is called.  */
 #define DECL_NONTRIVIALLY_INITIALIZED_P(NODE)	\
-   (TREE_LANG_FLAG_3 (VAR_DECL_CHECK (NODE)))
+   (TREE_LANG_FLAG_6 (VAR_DECL_CHECK (NODE)))
 
 /* Nonzero for a VAR_DECL that was initialized with a
    constant-expression.  */
@@ -2895,12 +2894,6 @@ struct GTY(()) lang_decl {
 /* 1 iff FUNCTION_TYPE or METHOD_TYPE has &&-ref-qualifier.  */
 #define FUNCTION_RVALUE_QUALIFIED(NODE) \
   TREE_LANG_FLAG_5 (FUNC_OR_METHOD_CHECK (NODE))
-
-/* Returns 1 iff VAR_DECL is a construction virtual table.
-   DECL_VTABLE_OR_VTT_P will be true in this case and must be checked
-   before using this macro.  */
-#define DECL_CONSTRUCTION_VTABLE_P(NODE) \
-  TREE_LANG_FLAG_6 (VAR_DECL_CHECK (NODE))
 
 /* 1 iff NODE is function-local, but for types.  */
 #define LOCAL_CLASS_P(NODE)				\
