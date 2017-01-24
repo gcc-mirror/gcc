@@ -1,3 +1,9 @@
+2017-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79205
+	* cp-gimplify.c (cp_genericize_r): Add result of
+	convert_from_reference on invisiref parm to p_set.
+
 2017-01-24  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/78469 - defaulted ctor and inaccessible dtor
