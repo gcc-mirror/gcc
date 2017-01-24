@@ -1,3 +1,10 @@
+2017-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR bootstrap/79198
+	* ipa-prop.c (ipa_free_all_node_params): Call summary destructor.
+	* ipa-prop.c (ipa_node_params_t::insert): Initialize fields known_csts
+	and known_contexts.
+
 2017-01-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/79123

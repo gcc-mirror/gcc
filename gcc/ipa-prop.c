@@ -3574,6 +3574,7 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_all_node_params (void)
 {
+  ipa_node_params_sum->~ipa_node_params_t ();
   ipa_node_params_sum = NULL;
 }
 
@@ -3742,6 +3743,8 @@ ipa_node_params_t::insert (cgraph_node *, ipa_node_params *info)
 {
   info->lattices = NULL;
   info->ipcp_orig_node = NULL;
+  info->known_csts = vNULL;
+  info->known_contexts = vNULL;
   info->analysis_done = 0;
   info->node_enqueued = 0;
   info->do_clone_for_all_contexts = 0;
