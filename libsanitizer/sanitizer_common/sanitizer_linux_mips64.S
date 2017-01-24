@@ -1,4 +1,6 @@
 // This file is dual licensed under the MIT and the University of Illinois Open
+// Source Licenses. See LICENSE.TXT for details.
+
 // Avoid being marked as needing an executable stack:
 #if defined(__linux__) && defined(__ELF__)
 .section .note.GNU-stack,"",%progbits

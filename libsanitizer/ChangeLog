@@ -1,3 +1,16 @@
+2017-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79168
+	* merge.sh (change_comment_headers): Don't remove 2nd and 3rd line
+	if the 3rd line doesn't contain 'The LLVM Compiler Infrastructure'
+	text.
+	* sanitizer_common/sanitizer_linux_mips64.S: Regenerated.
+	* sanitizer_common/sanitizer_linux_x86_64.S: Likewise.
+	* tsan/tsan_ppc_regs.h: Likewise.
+	* tsan/tsan_rtl_aarch64.S: Likewise.
+	* tsan/tsan_rtl_mips64.S: Likewise.
+	* tsan/tsan_rtl_ppc64.S: Likewise.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
