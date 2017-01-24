@@ -273,9 +273,9 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
 static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
 {
     {
-      0, /* hi  */
-      0, /* si  */
-      0, /* di  */
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
       2, /* ti  */
     },
   0, /* pre_modify  */
