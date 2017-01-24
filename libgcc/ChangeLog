@@ -1,3 +1,8 @@
+2017-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* soft-fp/op-common.h (_FP_MUL, _FP_FMA, _FP_DIV): Add
+	/* FALLTHRU */ comments.
+
 2017-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/cygming-crtbegin.c (LIBGCJ_SONAME): No longer #define.
