@@ -4407,6 +4407,7 @@ rewrite_expr_tree_parallel (gassign *stmt, int width,
 {
   enum tree_code opcode = gimple_assign_rhs_code (stmt);
   int op_num = ops.length ();
+  gcc_assert (op_num > 0);
   int stmt_num = op_num - 1;
   gimple **stmts = XALLOCAVEC (gimple *, stmt_num);
   int op_index = op_num - 1;
