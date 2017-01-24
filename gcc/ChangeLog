@@ -1,3 +1,9 @@
+2017-01-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/77439
+	* config/arm/arm.c (arm_function_ok_for_sibcall): Add back restriction
+	for long calls with APCS frame and VFP.
+
 2017-01-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* cfg.c (original_copy_tables_initialized_p): New function.
