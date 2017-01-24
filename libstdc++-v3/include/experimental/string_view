@@ -456,19 +456,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(basic_string_view<_CharT, _Traits> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
-    { return __x.compare(__y) == 0; }
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
     inline bool
     operator==(basic_string_view<_CharT, _Traits> __x,
                __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
-    { return __x.compare(__y) == 0; }
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
     inline bool
     operator==(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
-    { return __x.compare(__y) == 0; }
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
     inline bool

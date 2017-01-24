@@ -1,3 +1,9 @@
+2017-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79206
+	* include/experimental/string_view (operator==): Check sizes first.
+	* include/std/string_view (operator==): Likewise.
+
 2017-01-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/array/make_array.cc: Restore <functional>
