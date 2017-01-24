@@ -1,3 +1,24 @@
+2017-01-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78703
+	* gimple-ssa-sprintf.c (pass_sprintf_length::gate): Adjust formatting.
+	(fmtresult::operator+=): Outlined.
+	(struct fmtresult): Add ctors.
+	(struct conversion_spec): Rename...
+	(struct directive): ...to this.  Add and remove data members.
+	(directive::set_width, directive::set_precision): New functions.
+	(format_percent): Use fmtresult ctor.
+	(get_width_and_precision): Remove.
+	(format_integer): Make naming changes.  Avoid computing width and
+	precision.
+	(format_floating): Same.  Adjust indentation.
+	(format_character, format_none): New functions.
+	(format_string): Moved character handling to format_character.
+	(format_directive): Remove arguments, change return type.
+	(parse_directive): New function.
+	(pass_sprintf_length::compute_format_length): Move directive
+	parsing to parse_directive.
+
 2017-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (assign_assembler_name_if_neeeded): Rename to ...
