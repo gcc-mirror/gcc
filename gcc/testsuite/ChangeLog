@@ -1,6 +1,27 @@
 2017-01-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77646
+	* gcc.dg/torture/pr77646.c: New testcase.
+
+	2016-11-05  David Edelsohn  <dje.gcc@gmail.com>
+		Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/78188
+	PR c++/71848
+	* g++.dg/ipa/pr78188.C: New test.	
+
+	2016-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77648
+	* gcc.dg/torture/pr77648-1.c: New testcase.
+	* gcc.dg/torture/pr77648-2.c: Likewise.
+
+2017-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2016-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77855
