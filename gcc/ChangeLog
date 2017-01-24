@@ -1,3 +1,9 @@
+2017-01-24  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/79132
+	* tree-ssa-reassoc.c (rewrite_expr_tree_parallel): Insert assert
+	that would prevent us to call alloca with -1 as argument.
+
 2017-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (output_compilation_unit_header, output_file_names):
