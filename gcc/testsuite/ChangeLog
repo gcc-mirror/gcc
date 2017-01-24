@@ -1,3 +1,9 @@
+2017-01-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	PR target/78041
+	* gcc.target/arm/pr78041.c: New test.
+
 2017-01-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
