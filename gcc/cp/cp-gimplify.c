@@ -1107,6 +1107,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   if (wtd->handle_invisiref_parm_p && is_invisiref_parm (stmt))
     {
       *stmt_p = convert_from_reference (stmt);
+      p_set->add (*stmt_p);
       *walk_subtrees = 0;
       return NULL;
     }
