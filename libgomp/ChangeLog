@@ -1,3 +1,9 @@
+2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* plugin/hsa.h: Moved to top level include.
+	* plugin/plugin-hsa.c: Chanfgd include of hsa.h accordingly.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046

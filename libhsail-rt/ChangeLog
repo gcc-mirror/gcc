@@ -1,0 +1,27 @@
+2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* Makefile.am: New file.
+	* target-config.h.in: Likewise.
+	* configure.ac: Likewise.
+	* configure: Likewise.
+	* config.h.in: Likewise.
+	* aclocal.m4: Likewise.
+	* README: Likewise.
+	* Makefile.in: Likewise.
+	* include/internal/fibers.h: Likewise.
+	* include/internal/phsa-queue-interface.h: Likewise.
+	* include/internal/phsa-rt.h: Likewise.
+	* include/internal/workitems.h: Likewise.
+	* rt/arithmetic.c: Likewise.
+	* rt/atomics.c: Likewise.
+	* rt/bitstring.c: Likewise.
+	* rt/fbarrier.c: Likewise.
+	* rt/fibers.c: Likewise.
+	* rt/fp16.c: Likewise.
+	* rt/misc.c: Likewise.
+	* rt/multimedia.c: Likewise.
+	* rt/queue.c: Likewise.
+	* rt/sat_arithmetic.c: Likewise.
+	* rt/segment.c: Likewise.
+	* rt/workitems.c: Likewise.

@@ -1,3 +1,23 @@
+2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* lib/brig-dg.exp: New file.
+	* lib/brig.exp: Likewise.
+	* brig.dg/README: Likewise.
+	* brig.dg/dg.exp: Likewise.
+	* brig.dg/test/gimple/alloca.hsail: Likewise.
+	* brig.dg/test/gimple/atomics.hsail: Likewise.
+	* brig.dg/test/gimple/branches.hsail: Likewise.
+	* brig.dg/test/gimple/fbarrier.hsail: Likewise.
+	* brig.dg/test/gimple/function_calls.hsail: Likewise.
+	* brig.dg/test/gimple/kernarg.hsail: Likewise.
+	* brig.dg/test/gimple/mem.hsail: Likewise.
+	* brig.dg/test/gimple/mulhi.hsail: Likewise.
+	* brig.dg/test/gimple/packed.hsail: Likewise.
+	* brig.dg/test/gimple/smoke_test.hsail: Likewise.
+	* brig.dg/test/gimple/variables.hsail: Likewise.
+	* brig.dg/test/gimple/vector.hsail: Likewise.
+
 2017-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/asan/asan_test.C: Enable on all *-*-linux* targets that
