@@ -1,3 +1,12 @@
+2017-01-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79118 - anon-members and constexpr
+	* constexpr.c (cx_check_missing_mem_inits): Caller passes type not
+	ctor decl.  Recursively check anonymous members.
+	(register_constexpr_fundef): Adjust cx_check_missing_mem_inits
+	call.
+	(explain_invalid_constexpr_fn): Likewise.
+
 2017-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/71710 - template using directive of field
