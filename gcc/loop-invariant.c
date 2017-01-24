@@ -624,13 +624,17 @@ find_exits (struct loop *loop, basic_block *body,
 
 	  FOR_EACH_EDGE (e, ei, body[i]->succs)
 	    {
-	      if (flow_bb_inside_loop_p (loop, e->dest))
-		continue;
-
-	      bitmap_set_bit (may_exit, i);
-	      bitmap_set_bit (has_exit, i);
-	      outermost_exit = find_common_loop (outermost_exit,
-						 e->dest->loop_father);
+	      if (! flow_bb_inside_loop_p (loop, e->dest))
+		{
+		  bitmap_set_bit (may_exit, i);
+		  bitmap_set_bit (has_exit, i);
+		  outermost_exit = find_common_loop (outermost_exit,
+						     e->dest->loop_father);
+		}
+	      /* If we enter a subloop that might never terminate treat
+	         it like a possible exit.  */
+	      if (flow_loop_nested_p (loop, e->dest->loop_father))
+		bitmap_set_bit (may_exit, i);
 	    }
 	  continue;
 	}
@@ -913,7 +917,7 @@ pre_check_invariant_p (bool simple, rtx dest)
    unless the program ends due to a function call.  */
 
 static void
-find_invariant_insn (rtx_insn *insn, bool always_reached, bool always_executed)
+find_invariant_insn (rtx_insn *insn, bool, bool always_executed)
 {
   df_ref ref;
   struct def *def;
@@ -947,8 +951,8 @@ find_invariant_insn (rtx_insn *insn, bool always_reached, bool always_executed)
   if (can_throw_internal (insn))
     return;
 
-  /* We cannot make trapping insn executed, unless it was executed before.  */
-  if (may_trap_or_fault_p (PATTERN (insn)) && !always_reached)
+  /* We cannot make trapping insn executed.  */
+  if (may_trap_or_fault_p (PATTERN (insn)))
     return;
 
   depends_on = BITMAP_ALLOC (NULL);

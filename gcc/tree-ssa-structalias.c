@@ -5371,7 +5371,7 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
 	    if (!pair
 		&& offset + foff != 0)
 	      {
-		fieldoff_s e = {0, offset + foff, false, false, false, false};
+		fieldoff_s e = {0, offset + foff, false, false, true, false};
 		pair = fieldstack->safe_push (e);
 	      }
 
