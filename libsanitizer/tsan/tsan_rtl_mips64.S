@@ -1,4 +1,6 @@
 .section .text
+.set noreorder
+
 .hidden __tsan_setjmp
 .comm _ZN14__interception11real_setjmpE,8,8
 .globl setjmp

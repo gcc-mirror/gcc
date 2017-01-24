@@ -1,4 +1,6 @@
 #ifndef TSAN_INTERCEPTORS_H
+#define TSAN_INTERCEPTORS_H
+
 #include "sanitizer_common/sanitizer_stacktrace.h"
 #include "tsan_rtl.h"
 
