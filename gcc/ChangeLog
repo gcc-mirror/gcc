@@ -1,3 +1,8 @@
+2017-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR translation/79208
+	* ipa-devirt.c (odr_types_equivalent_p): Fix typo in diagnostic.
+
 2017-01-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR bootstrap/79198
