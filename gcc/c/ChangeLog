@@ -1,3 +1,26 @@
+2017-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c: Include "read-rtl-function.h" and
+	"run-rtl-passes.h".
+	(c_parser_declaration_or_fndef): Rename "gimple-pass-list" in
+	grammar to gimple-or-rtl-pass-list.  Add rtl-function-definition
+	production.  Update for renaming of field "gimple_pass" to
+	"gimple_or_rtl_pass".  If __RTL was seen, call
+	c_parser_parse_rtl_body.  Convert a timevar_push/pop pair
+	to an auto_timevar, to cope with early exit.
+	(c_parser_declspecs): Update RID_GIMPLE handling for renaming of
+	field "gimple_pass" to "gimple_or_rtl_pass", and for renaming of
+	c_parser_gimple_pass_list to c_parser_gimple_or_rtl_pass_list.
+	Handle RID_RTL.
+	(c_parser_parse_rtl_body): New function.
+	* c-tree.h (enum c_declspec_word): Add cdw_rtl.
+	(struct c_declspecs): Rename field "gimple_pass" to
+	"gimple_or_rtl_pass".  Add field "rtl_p".
+	* gimple-parser.c (c_parser_gimple_pass_list): Rename to...
+	(c_parser_gimple_or_rtl_pass_list): ...this, updating accordingly.
+	* gimple-parser.h (c_parser_gimple_pass_list): Rename to...
+	(c_parser_gimple_or_rtl_pass_list): ...this.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64279

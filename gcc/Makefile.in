@@ -1433,6 +1433,7 @@ OBJS = \
 	rtlhash.o \
 	rtlanal.o \
 	rtlhooks.o \
+	run-rtl-passes.o \
 	sbitmap.o \
 	sched-deps.o \
 	sched-ebb.o \

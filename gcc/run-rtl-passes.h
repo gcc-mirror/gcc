@@ -1,4 +1,4 @@
-/* read-rtl-function.h - Reader for RTL function dumps
+/* run-rtl-passes.h - Run a subset of the RTL passes
    Copyright (C) 2016-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -17,12 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_READ_RTL_FUNCTION_H
-#define GCC_READ_RTL_FUNCTION_H
+#ifndef GCC_RUN_RTL_PASSES_H
+#define GCC_RUN_RTL_PASSES_H
 
-extern bool read_rtl_function_body (const char *path);
+extern void run_rtl_passes (char *initial_pass_name);
 
-extern bool read_rtl_function_body_from_file_range (location_t start_loc,
-						    location_t end_loc);
-
-#endif /* GCC_READ_RTL_FUNCTION_H */
+#endif /* GCC_RUN_RTL_PASSES_H */

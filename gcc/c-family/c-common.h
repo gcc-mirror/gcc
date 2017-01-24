@@ -124,6 +124,9 @@ enum rid
   /* "__PHI", for parsing PHI function in GIMPLE FE.  */
   RID_PHI,
 
+  /* "__RTL", for the RTL-parsing extension to the C frontend.  */
+  RID_RTL,
+
   /* C11 */
   RID_ALIGNAS, RID_GENERIC,
 

@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "c-parser.h"
 #include "gimple-parser.h"
+#include "read-rtl-function.h"
+#include "run-rtl-passes.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1311,6 +1313,8 @@ static tree c_parser_array_notation (location_t, c_parser *, tree, tree);
 static tree c_parser_cilk_clause_vectorlength (c_parser *, tree, bool);
 static void c_parser_cilk_grainsize (c_parser *, bool *);
 
+static void c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass);
+
 /* Parse a translation unit (C90 6.7, C99 6.9).
 
    translation-unit:
@@ -1547,7 +1551,11 @@ static void c_finish_oacc_routine (struct oacc_routine_data *, tree, bool);
    GIMPLE:
 
    gimple-function-definition:
-     declaration-specifiers[opt] __GIMPLE (gimple-pass-list) declarator
+     declaration-specifiers[opt] __GIMPLE (gimple-or-rtl-pass-list) declarator
+       declaration-list[opt] compound-statement
+
+   rtl-function-definition:
+     declaration-specifiers[opt] __RTL (gimple-or-rtl-pass-list) declarator
        declaration-list[opt] compound-statement  */
 
 static void
@@ -2045,7 +2053,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
         tv = TV_PARSE_INLINE;
       else
         tv = TV_PARSE_FUNC;
-      timevar_push (tv);
+      auto_timevar at (g_timer, tv);
 
       /* Parse old-style parameter declarations.  ??? Attributes are
 	 not allowed to start declaration specifiers here because of a
@@ -2077,11 +2085,27 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
          function body as GIMPLE.  */
       if (specs->gimple_p)
 	{
-	  cfun->pass_startwith = specs->gimple_pass;
+	  cfun->pass_startwith = specs->gimple_or_rtl_pass;
 	  bool saved = in_late_binary_op;
 	  in_late_binary_op = true;
 	  c_parser_parse_gimple_body (parser);
 	  in_late_binary_op = saved;
+	}
+      /* Similarly, if it was marked with __RTL, use the RTL parser now,
+	 consuming the function body.  */
+      else if (specs->rtl_p)
+	{
+	  c_parser_parse_rtl_body (parser, specs->gimple_or_rtl_pass);
+
+	  /* Normally, store_parm_decls sets next_is_function_body,
+	     anticipating a function body.  We need a push_scope/pop_scope
+	     pair to flush out this state, or subsequent function parsing
+	     will go wrong.  */
+	  push_scope ();
+	  pop_scope ();
+
+	  finish_function ();
+	  return;
 	}
       else
 	{
@@ -2113,7 +2137,6 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       if (specs->gimple_p)
 	DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
-      timevar_pop (tv);
       break;
     }
 }
@@ -2605,7 +2628,13 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  c_parser_consume_token (parser);
 	  specs->gimple_p = true;
 	  specs->locations[cdw_gimple] = loc;
-	  specs->gimple_pass = c_parser_gimple_pass_list (parser);
+	  specs->gimple_or_rtl_pass = c_parser_gimple_or_rtl_pass_list (parser);
+	  break;
+	case RID_RTL:
+	  c_parser_consume_token (parser);
+	  specs->rtl_p = true;
+	  specs->locations[cdw_rtl] = loc;
+	  specs->gimple_or_rtl_pass = c_parser_gimple_or_rtl_pass_list (parser);
 	  break;
 	default:
 	  goto out;
@@ -18294,6 +18323,76 @@ c_parser_array_notation (location_t loc, c_parser *parser, tree initial_index,
   if (value_tree != error_mark_node)
     SET_EXPR_LOCATION (value_tree, loc);
   return value_tree;
+}
+
+/* Parse the body of a function declaration marked with "__RTL".
+
+   The RTL parser works on the level of characters read from a
+   FILE *, whereas c_parser works at the level of tokens.
+   Square this circle by consuming all of the tokens up to and
+   including the closing brace, recording the start/end of the RTL
+   fragment, and reopening the file and re-reading the relevant
+   lines within the RTL parser.
+
+   This requires the opening and closing braces of the C function
+   to be on separate lines from the RTL they wrap.
+
+   Take ownership of START_WITH_PASS, if non-NULL.  */
+
+void
+c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass)
+{
+  if (!c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
+    {
+      free (start_with_pass);
+      return;
+    }
+
+  location_t start_loc = c_parser_peek_token (parser)->location;
+
+  /* Consume all tokens, up to the closing brace, handling
+     matching pairs of braces in the rtl dump.  */
+  int num_open_braces = 1;
+  while (1)
+    {
+      switch (c_parser_peek_token (parser)->type)
+	{
+	case CPP_OPEN_BRACE:
+	  num_open_braces++;
+	  break;
+	case CPP_CLOSE_BRACE:
+	  if (--num_open_braces == 0)
+	    goto found_closing_brace;
+	  break;
+	case CPP_EOF:
+	  error_at (start_loc, "no closing brace");
+	  free (start_with_pass);
+	  return;
+	default:
+	  break;
+	}
+      c_parser_consume_token (parser);
+    }
+
+ found_closing_brace:
+  /* At the closing brace; record its location.  */
+  location_t end_loc = c_parser_peek_token (parser)->location;
+
+  /* Consume the closing brace.  */
+  c_parser_consume_token (parser);
+
+  /* Invoke the RTL parser.  */
+  if (!read_rtl_function_body_from_file_range (start_loc, end_loc))
+    {
+      free (start_with_pass);
+      return;
+    }
+
+ /*  If a pass name was provided for START_WITH_PASS, run the backend
+     accordingly now, on the cfun created above, transferring
+     ownership of START_WITH_PASS.  */
+  if (start_with_pass)
+    run_rtl_passes (start_with_pass);
 }
 
 #include "gt-c-c-parser.h"

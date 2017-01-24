@@ -437,6 +437,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__volatile__",	RID_VOLATILE,	0 },
   { "__GIMPLE",		RID_GIMPLE,	D_CONLY },
   { "__PHI",		RID_PHI,	D_CONLY },
+  { "__RTL",		RID_RTL,	D_CONLY },
   { "alignas",		RID_ALIGNAS,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "alignof",		RID_ALIGNOF,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "asm",		RID_ASM,	D_ASM },

@@ -1118,18 +1118,18 @@ c_parser_gimple_label (c_parser *parser, gimple_seq *seq)
   return;
 }
 
-/* Parse gimple pass list.
+/* Parse gimple/RTL pass list.
 
-   gimple-pass-list:
+   gimple-or-rtl-pass-list:
      startwith("pass-name")
  */
 
 char *
-c_parser_gimple_pass_list (c_parser *parser)
+c_parser_gimple_or_rtl_pass_list (c_parser *parser)
 {
   char *pass = NULL;
 
-  /* Accept __GIMPLE.  */
+  /* Accept __GIMPLE/__RTL.  */
   if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
     return NULL;
   c_parser_consume_token (parser);

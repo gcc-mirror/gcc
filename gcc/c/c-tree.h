@@ -268,6 +268,7 @@ enum c_declspec_word {
   cdw_alignas,
   cdw_address_space,
   cdw_gimple,
+  cdw_rtl,
   cdw_number_of_elements /* This one must always be the last
 			    enumerator.  */
 };
@@ -291,8 +292,8 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
-  /* The pass to start compiling a __GIMPLE function with.  */
-  char *gimple_pass;
+  /* The pass to start compiling a __GIMPLE or __RTL function with.  */
+  char *gimple_or_rtl_pass;
   /* The base-2 log of the greatest alignment required by an _Alignas
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
@@ -367,6 +368,8 @@ struct c_declspecs {
   BOOL_BITFIELD alignas_p : 1;
   /* Whether any __GIMPLE specifier was specified.  */
   BOOL_BITFIELD gimple_p : 1;
+  /* Whether any __RTL specifier was specified.  */
+  BOOL_BITFIELD rtl_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };

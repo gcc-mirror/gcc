@@ -411,6 +411,16 @@ md_reader::read_char (void)
   else
     m_read_md_colno++;
 
+  /* If we're filtering lines, treat everything before the range of
+     interest as a space, and as EOF for everything after.  */
+  if (m_first_line && m_last_line)
+    {
+      if (m_read_md_lineno < m_first_line)
+	return ' ';
+      if (m_read_md_lineno > m_last_line)
+	return EOF;
+    }
+
   return ch;
 }
 
@@ -991,7 +1001,9 @@ md_reader::md_reader (bool compact)
   m_read_md_lineno (0),
   m_read_md_colno (0),
   m_first_dir_md_include (NULL),
-  m_last_dir_md_include_ptr (&m_first_dir_md_include)
+  m_last_dir_md_include_ptr (&m_first_dir_md_include),
+  m_first_line (0),
+  m_last_line (0)
 {
   /* Set the global singleton pointer.  */
   md_reader_ptr = this;
@@ -1310,6 +1322,26 @@ md_reader::read_file (const char *filename)
       perror (m_read_md_filename);
       return false;
     }
+  handle_toplevel_file ();
+  return !have_error;
+}
+
+/* Read FILENAME, filtering to just the given lines.  */
+
+bool
+md_reader::read_file_fragment (const char *filename,
+			       int first_line,
+			       int last_line)
+{
+  m_read_md_filename = filename;
+  m_read_md_file = fopen (m_read_md_filename, "r");
+  if (m_read_md_file == 0)
+    {
+      perror (m_read_md_filename);
+      return false;
+    }
+  m_first_line = first_line;
+  m_last_line = last_line;
   handle_toplevel_file ();
   return !have_error;
 }

@@ -217,6 +217,19 @@ static void handle_alias_pairs (void);
 /* Used for vtable lookup in thunk adjusting.  */
 static GTY (()) tree vtable_entry_type;
 
+/* Return true if this symbol is a function from the C frontend specified
+   directly in RTL form (with "__RTL").  */
+
+bool
+symtab_node::native_rtl_p () const
+{
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    return false;
+  if (!DECL_STRUCT_FUNCTION (decl))
+    return false;
+  return DECL_STRUCT_FUNCTION (decl)->curr_properties & PROP_rtl;
+}
+
 /* Determine if symbol declaration is needed.  That is, visible to something
    either outside this translation unit, something magic in the system
    configury */
@@ -225,8 +238,10 @@ symtab_node::needed_p (void)
 {
   /* Double check that no one output the function into assembly file
      early.  */
-  gcc_checking_assert (!DECL_ASSEMBLER_NAME_SET_P (decl)
-	               || !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)));
+  if (!native_rtl_p ())
+      gcc_checking_assert
+	(!DECL_ASSEMBLER_NAME_SET_P (decl)
+	 || !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)));
 
   if (!definition)
     return false;
@@ -435,6 +450,14 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
       && !DECL_DISREGARD_INLINE_LIMITS (decl))
     node->force_output = 1;
 
+  /* __RTL functions were already output as soon as they were parsed (due
+     to the large amount of global state in the backend).
+     Mark such functions as "force_output" to reflect the fact that they
+     will be in the asm file when considering the symbols they reference.
+     The attempt to output them later on will bail out immediately.  */
+  if (node->native_rtl_p ())
+    node->force_output = 1;
+
   /* When not optimizing, also output the static functions. (see
      PR24561), but don't do so for always_inline functions, functions
      declared inline and nested functions.  These were optimized out
@@ -568,6 +591,12 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 void
 cgraph_node::analyze (void)
 {
+  if (native_rtl_p ())
+    {
+      analyzed = true;
+      return;
+    }
+
   tree decl = this->decl;
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
@@ -1226,7 +1255,8 @@ analyze_functions (bool first_time)
 
 	  gcc_assert (!cnode->definition || cnode->thunk.thunk_p
 		      || cnode->alias
-		      || gimple_has_body_p (decl));
+		      || gimple_has_body_p (decl)
+		      || cnode->native_rtl_p ());
 	  gcc_assert (cnode->analyzed == cnode->definition);
 	}
       node->aux = NULL;
@@ -1964,6 +1994,11 @@ cgraph_node::expand (void)
 
   /* We ought to not compile any inline clones.  */
   gcc_assert (!global.inlined_to);
+
+  /* __RTL functions are compiled as soon as they are parsed, so don't
+     do it again.  */
+  if (native_rtl_p ())
+    return;
 
   announce_function (decl);
   process = 0;
