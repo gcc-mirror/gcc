@@ -1560,7 +1560,7 @@ format_floating (const directive &dir, tree arg)
 	   rounding in either direction can result in longer output.  */
 	mpfr_t mpfrval;
 	mpfr_init2 (mpfrval, rfmt->p);
-	mpfr_from_real (mpfrval, rvp, i ? MPFR_RNDU : MPFR_RNDD);
+	mpfr_from_real (mpfrval, rvp, i ? GMP_RNDU : GMP_RNDD);
 
 	/* Use the MPFR rounding specifier to round down in the first
 	   iteration and then up.  In most but not all cases this will
