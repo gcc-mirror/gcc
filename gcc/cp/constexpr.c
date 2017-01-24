@@ -696,23 +696,21 @@ massage_constexpr_body (tree fun, tree body)
   return body;
 }
 
-/* FUN is a constexpr constructor with massaged body BODY.  Return true
-   if some bases/fields are uninitialized, and complain if COMPLAIN.  */
+/* CTYPE is a type constructed from BODY.  Return true if some
+   bases/fields are uninitialized, and complain if COMPLAIN.  */
 
 static bool
-cx_check_missing_mem_inits (tree fun, tree body, bool complain)
+cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 {
-  bool bad;
-  tree field;
-  unsigned i, nelts;
-  tree ctype;
-
-  if (TREE_CODE (body) != CONSTRUCTOR)
-    return false;
-
-  nelts = CONSTRUCTOR_NELTS (body);
-  ctype = DECL_CONTEXT (fun);
-  field = TYPE_FIELDS (ctype);
+  unsigned nelts = 0;
+  
+  if (body)
+    {
+      if (TREE_CODE (body) != CONSTRUCTOR)
+	return false;
+      nelts = CONSTRUCTOR_NELTS (body);
+    }
+  tree field = TYPE_FIELDS (ctype);
 
   if (TREE_CODE (ctype) == UNION_TYPE)
     {
@@ -726,13 +724,13 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
       return false;
     }
 
-  bad = false;
-  for (i = 0; i <= nelts; ++i)
+  /* Iterate over the CONSTRUCTOR, checking any missing fields don't
+     need an explicit initialization.  */
+  bool bad = false;
+  for (unsigned i = 0; i <= nelts; ++i)
     {
-      tree index;
-      if (i == nelts)
-	index = NULL_TREE;
-      else
+      tree index = NULL_TREE;
+      if (i < nelts)
 	{
 	  index = CONSTRUCTOR_ELT (body, i)->index;
 	  /* Skip base and vtable inits.  */
@@ -740,13 +738,25 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
 	      || DECL_ARTIFICIAL (index))
 	    continue;
 	}
+
       for (; field != index; field = DECL_CHAIN (field))
 	{
 	  tree ftype;
-	  if (TREE_CODE (field) != FIELD_DECL
-	      || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
-	      || DECL_ARTIFICIAL (field))
+	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+	  if (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
+	    continue;
+	  if (DECL_ARTIFICIAL (field))
+	    continue;
+	  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	    {
+	      /* Recurse to check the anonummous aggregate member.  */
+	      bad |= cx_check_missing_mem_inits
+		(TREE_TYPE (field), NULL_TREE, complain);
+	      if (bad && !complain)
+		return true;
+	      continue;
+	    }
 	  ftype = strip_array_types (TREE_TYPE (field));
 	  if (type_has_constexpr_default_constructor (ftype))
 	    {
@@ -766,6 +776,15 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
 	}
       if (field == NULL_TREE)
 	break;
+
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (index)))
+	{
+	  /* Check the anonymous aggregate initializer is valid.  */
+	  bad |= cx_check_missing_mem_inits
+	    (TREE_TYPE (index), CONSTRUCTOR_ELT (body, i)->value, complain);
+	  if (bad && !complain)
+	    return true;
+	}
       field = DECL_CHAIN (field);
     }
 
@@ -803,7 +822,8 @@ register_constexpr_fundef (tree fun, tree body)
     }
 
   if (DECL_CONSTRUCTOR_P (fun)
-      && cx_check_missing_mem_inits (fun, massaged, !DECL_GENERATED_P (fun)))
+      && cx_check_missing_mem_inits (DECL_CONTEXT (fun),
+				     massaged, !DECL_GENERATED_P (fun)))
     return NULL;
 
   /* Create the constexpr function table if necessary.  */
@@ -864,7 +884,7 @@ explain_invalid_constexpr_fn (tree fun)
 	  body = massage_constexpr_body (fun, DECL_SAVED_TREE (fun));
 	  require_potential_rvalue_constant_expression (body);
 	  if (DECL_CONSTRUCTOR_P (fun))
-	    cx_check_missing_mem_inits (fun, body, true);
+	    cx_check_missing_mem_inits (DECL_CONTEXT (fun), body, true);
 	}
     }
   input_location = save_loc;

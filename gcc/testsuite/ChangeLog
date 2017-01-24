@@ -1,3 +1,8 @@
+2017-01-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79118
+	* g++.dg/cpp0x/pr79118.C: New.
+
 2017-01-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/arm/vfp-longcall-apcs.c: New test.
@@ -305,7 +310,7 @@
 
 2017-01-20  Nathan Sidwell  <nathan@acm.org>
 
-	PR c++/79495
+	PR c++/78495
 	* g++.dg/cpp1z/inh-ctor38.C: New.
 
 2017-01-20  Marek Polacek  <polacek@redhat.com>
