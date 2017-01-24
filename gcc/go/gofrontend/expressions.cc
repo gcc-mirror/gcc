@@ -3639,8 +3639,12 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
       if (expr->numeric_constant_value(&nc))
 	{
 	  Numeric_constant result;
-	  if (Unary_expression::eval_constant(op, &nc, loc, &result))
+	  bool issued_error;
+	  if (Unary_expression::eval_constant(op, &nc, loc, &result,
+					      &issued_error))
 	    return result.expression(loc);
+	  else if (issued_error)
+	    return Expression::make_error(this->location());
 	}
     }
 
@@ -3747,12 +3751,15 @@ Unary_expression::do_is_constant() const
 }
 
 // Apply unary opcode OP to UNC, setting NC.  Return true if this
-// could be done, false if not.  Issue errors for overflow.
+// could be done, false if not.  On overflow, issues an error and sets
+// *ISSUED_ERROR.
 
 bool
 Unary_expression::eval_constant(Operator op, const Numeric_constant* unc,
-				Location location, Numeric_constant* nc)
+				Location location, Numeric_constant* nc,
+				bool* issued_error)
 {
+  *issued_error = false;
   switch (op)
     {
     case OPERATOR_PLUS:
@@ -3897,7 +3904,12 @@ Unary_expression::eval_constant(Operator op, const Numeric_constant* unc,
   mpz_clear(uval);
   mpz_clear(val);
 
-  return nc->set_type(unc->type(), true, location);
+  if (!nc->set_type(unc->type(), true, location))
+    {
+      *issued_error = true;
+      return false;
+    }
+  return true;
 }
 
 // Return the integral constant value of a unary expression, if it has one.
@@ -3908,8 +3920,9 @@ Unary_expression::do_numeric_constant_value(Numeric_constant* nc) const
   Numeric_constant unc;
   if (!this->expr_->numeric_constant_value(&unc))
     return false;
+  bool issued_error;
   return Unary_expression::eval_constant(this->op_, &unc, this->location(),
-					 nc);
+					 nc, &issued_error);
 }
 
 // Return the type of a unary expression.
@@ -4539,13 +4552,15 @@ Binary_expression::compare_complex(const Numeric_constant* left_nc,
 
 // Apply binary opcode OP to LEFT_NC and RIGHT_NC, setting NC.  Return
 // true if this could be done, false if not.  Issue errors at LOCATION
-// as appropriate.
+// as appropriate, and sets *ISSUED_ERROR if it did.
 
 bool
 Binary_expression::eval_constant(Operator op, Numeric_constant* left_nc,
 				 Numeric_constant* right_nc,
-				 Location location, Numeric_constant* nc)
+				 Location location, Numeric_constant* nc,
+				 bool* issued_error)
 {
+  *issued_error = false;
   switch (op)
     {
     case OPERATOR_OROR:
@@ -4594,7 +4609,11 @@ Binary_expression::eval_constant(Operator op, Numeric_constant* left_nc,
     r = Binary_expression::eval_integer(op, left_nc, right_nc, location, nc);
 
   if (r)
-    r = nc->set_type(type, true, location);
+    {
+      r = nc->set_type(type, true, location);
+      if (!r)
+	*issued_error = true;
+    }
 
   return r;
 }
@@ -4917,9 +4936,15 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	else
 	  {
 	    Numeric_constant nc;
+	    bool issued_error;
 	    if (!Binary_expression::eval_constant(op, &left_nc, &right_nc,
-						  location, &nc))
+						  location, &nc,
+						  &issued_error))
+	      {
+		if (issued_error)
+		  return Expression::make_error(location);
                 return this;
+	      }
 	    return nc.expression(location);
 	  }
       }
@@ -5254,8 +5279,9 @@ Binary_expression::do_numeric_constant_value(Numeric_constant* nc) const
   Numeric_constant right_nc;
   if (!this->right_->numeric_constant_value(&right_nc))
     return false;
+  bool issued_error;
   return Binary_expression::eval_constant(this->op_, &left_nc, &right_nc,
-					  this->location(), nc);
+					  this->location(), nc, &issued_error);
 }
 
 // Note that the value is being discarded.
@@ -5354,7 +5380,12 @@ Binary_expression::do_determine_type(const Type_context* context)
 
   Type_context subcontext(*context);
 
-  if (is_comparison)
+  if (is_constant_expr)
+    {
+      subcontext.type = NULL;
+      subcontext.may_be_abstract = true;
+    }
+  else if (is_comparison)
     {
       // In a comparison, the context does not determine the types of
       // the operands.
@@ -5396,8 +5427,7 @@ Binary_expression::do_determine_type(const Type_context* context)
 	subcontext.type = subcontext.type->make_non_abstract_type();
     }
 
-  if (!is_constant_expr)
-    this->left_->determine_type(&subcontext);
+  this->left_->determine_type(&subcontext);
 
   if (is_shift_op)
     {
@@ -5417,8 +5447,7 @@ Binary_expression::do_determine_type(const Type_context* context)
       subcontext.may_be_abstract = false;
     }
 
-  if (!is_constant_expr)
-    this->right_->determine_type(&subcontext);
+  this->right_->determine_type(&subcontext);
 
   if (is_comparison)
     {
