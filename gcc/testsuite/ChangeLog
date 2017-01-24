@@ -1,3 +1,9 @@
+2017-01-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/66669
+	* gcc.dg/loop-8.c: Modify dg-skip-if directive to exclude this
+	test on powerpc targets.
+
 2017-01-23  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf.c: Add test cases.
