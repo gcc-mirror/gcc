@@ -1,6 +1,18 @@
 2017-01-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78703
+	* gimple-ssa-sprintf.c (warn_level): New global.
+	(format_integer): Use it here and throughout the rest of the file.
+	Use the same switch to compute sign as base.
+	(maybe_warn): New function.
+	(format_directive): Factor out warnings into maybe_warn.
+	Add debugging output.  Use warn_level.
+	(add_bytes): Use warn_level.
+	(pass_sprintf_length::compute_format_length): Add debugging output.
+	(try_substitute_return_value): Same.
+	(pass_sprintf_length::handle_gimple_call): Set and use warn_level.
+
+	PR middle-end/78703
 	* gimple-ssa-sprintf.c (struct format_result): Remove constant member.
 	(struct fmtresult, format_integer, format_floating): Adjust.
 	(get_string_length, format_string,format_directive): Same.
