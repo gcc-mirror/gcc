@@ -1,5 +1,8 @@
 2017-01-24  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/78469
+	* g++.dg/cpp0x/pr78469.C: New.
+
 	PR c++/79118
 	* g++.dg/cpp0x/pr79118.C: New.
 

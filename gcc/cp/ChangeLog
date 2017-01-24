@@ -1,5 +1,10 @@
 2017-01-24  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/78469 - defaulted ctor and inaccessible dtor
+	* cp-tree.h (tsubst_flags): Add tf_no_cleanup.
+	* init.c (build_new_1): Pass tf_no_cleanup to build_value_init.
+	* tree.c (build_target_expr): Check tf_no_cleanup.
+
 	PR c++/79118 - anon-members and constexpr
 	* constexpr.c (cx_check_missing_mem_inits): Caller passes type not
 	ctor decl.  Recursively check anonymous members.

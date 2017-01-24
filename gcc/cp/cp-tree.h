@@ -4786,6 +4786,8 @@ enum tsubst_flags {
 				    substitution in fn_type_unification.  */
   tf_fndecl_type = 1 << 9,   /* Substituting the type of a function
 				declaration.  */
+  tf_no_cleanup = 1 << 10,   /* Do not build a cleanup
+				(build_target_expr and friends) */
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 };
