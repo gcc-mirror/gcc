@@ -1,4 +1,4 @@
-// { dg-do run { target { { i?86-*-linux* x86_64-*-linux* } && sse2_runtime } } }
+// { dg-do run { target { { *-*-linux* } && { { ! { i?86-*-linux* x86_64-*-linux* } } || sse2_runtime } } } }
 // { dg-skip-if "" { *-*-* } { "*" } { "-O2" } }
 // { dg-skip-if "" { *-*-* } { "-flto" } { "" } }
 // { dg-additional-sources "asan_globals_test-wrapper.cc" }
