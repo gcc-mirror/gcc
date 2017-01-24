@@ -1,3 +1,53 @@
+2017-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* cfg.c (original_copy_tables_initialized_p): New function.
+	* cfg.h (original_copy_tables_initialized_p): New decl.
+	* cfgrtl.c (relink_block_chain): Guard the call to
+	free_original_copy_tables with a call to
+	original_copy_tables_initialized_p.
+	* cgraph.h (symtab_node::native_rtl_p): New decl.
+	* cgraphunit.c (symtab_node::native_rtl_p): New function.
+	(symtab_node::needed_p): Don't assert for early assembly output
+	for __RTL functions.
+	(cgraph_node::finalize_function): Set "force_output" for __RTL
+	functions.
+	(cgraph_node::analyze): Bail out early for __RTL functions.
+	(analyze_functions): Update assertion to support __RTL functions.
+	(cgraph_node::expand): Bail out early for __RTL functions.
+	* final.c (rest_of_clean_state): Don't call delete_tree_ssa for
+	__RTL functions.
+	* function.h (struct function): Update comment for field
+	"pass_startwith".
+	* gimple-expr.c: Include "tree-pass.h".
+	(gimple_has_body_p): Return false for __RTL functions.
+	* Makefile.in (OBJS): Add run-rtl-passes.o.
+	* pass_manager.h (gcc::pass_manager::get_rest_of_compilation): New
+	accessor.
+	(gcc::pass_manager::get_clean_slate): New accessor.
+	* passes.c: Include "insn-addr.h".
+	(should_skip_pass_p): Add logging.  Update logic for running
+	"expand" to be compatible with both __GIMPLE and __RTL.  Guard
+	property-provider override so it is only done for gimple passes.
+	Don't skip dfinit.
+	(skip_pass): New function.
+	(execute_one_pass): Call skip_pass when skipping passes.
+	* read-md.c (md_reader::read_char): Support filtering
+	the input to a subset of line numbers.
+	(md_reader::md_reader): Initialize fields
+	m_first_line and m_last_line.
+	(md_reader::read_file_fragment): New function.
+	* read-md.h (md_reader::read_file_fragment): New decl.
+	(md_reader::m_first_line): New field.
+	(md_reader::m_last_line): New field.
+	* read-rtl-function.c (function_reader::create_function): Only
+	create cfun if it doesn't already exist.  Set PROP_rtl on cfun's
+	curr_properties.  Set DECL_INITIAL to a dummy block.
+	(read_rtl_function_body_from_file_range): New function.
+	* read-rtl-function.h (read_rtl_function_body_from_file_range):
+	New decl.
+	* run-rtl-passes.c: New file.
+	* run-rtl-passes.h: New file.
+
 2017-01-24 Jeff Law  <law@redhat.com>
 
 	* config/microblaze/microblaze.h (ASM_FORMAT_PRIVATE_NAME): Increase

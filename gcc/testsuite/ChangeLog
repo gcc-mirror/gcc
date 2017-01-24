@@ -1,3 +1,27 @@
+2017-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/rtl/aarch64/asr_div1.c: New test case.
+	* gcc.dg/rtl/aarch64/pr71779.c: New test case.
+	* gcc.dg/rtl/rtl.exp: New file.
+	* gcc.dg/rtl/test.c: New file.
+	* gcc.dg/rtl/truncated-rtl-file.c: New test case.
+	* gcc.dg/rtl/unknown-rtx-code.c: New test case.
+	* gcc.dg/rtl/x86_64/dfinit.c: New test case.
+	* gcc.dg/rtl/x86_64/different-structs.c: New test case.
+	* gcc.dg/rtl/x86_64/final.c: New test case.
+	* gcc.dg/rtl/x86_64/into-cfglayout.c: New test case.
+	* gcc.dg/rtl/x86_64/ira.c: New test case.
+	* gcc.dg/rtl/x86_64/pro_and_epilogue.c: New test case.
+	* gcc.dg/rtl/x86_64/test-multiple-fns.c: New test case.
+	* gcc.dg/rtl/x86_64/test-return-const.c.after-expand.c: New test case.
+	* gcc.dg/rtl/x86_64/test-return-const.c.before-fwprop.c: New test case.
+	* gcc.dg/rtl/x86_64/test-rtl.c: New test case.
+	* gcc.dg/rtl/x86_64/test_1.h: New file.
+	* gcc.dg/rtl/x86_64/times-two.c.after-expand.c: New test case.
+	* gcc.dg/rtl/x86_64/times-two.c.before-df.c: New test case.
+	* gcc.dg/rtl/x86_64/times-two.h: New file.
+	* gcc.dg/rtl/x86_64/vregs.c: New test case.
+
 2017-01-24  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/79159

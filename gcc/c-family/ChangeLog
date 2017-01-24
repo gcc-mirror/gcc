@@ -1,3 +1,8 @@
+2017-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_common_reswords): Add "__RTL".
+	* c-common.h (enum rid): Add RID_RTL.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64279

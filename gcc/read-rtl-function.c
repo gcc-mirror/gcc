@@ -475,22 +475,37 @@ function_reader::create_function ()
   /* We start in cfgrtl mode, rather than cfglayout mode.  */
   rtl_register_cfg_hooks ();
 
-  /* Create cfun.  */
-  tree fn_name = get_identifier (m_name ? m_name : "test_1");
-  tree int_type = integer_type_node;
-  tree return_type = int_type;
-  tree arg_types[3] = {int_type, int_type, int_type};
-  tree fn_type = build_function_type_array (return_type, 3, arg_types);
-  tree fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, fn_name, fn_type);
-  tree resdecl = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE,
-			     return_type);
-  DECL_ARTIFICIAL (resdecl) = 1;
-  DECL_IGNORED_P (resdecl) = 1;
-  DECL_RESULT (fndecl) = resdecl;
-  allocate_struct_function (fndecl, false);
-  /* This sets cfun.  */
+  /* When run from selftests or "rtl1", cfun is NULL.
+     When run from "cc1" for a C function tagged with __RTL, cfun is the
+     tagged function.  */
+  if (!cfun)
+    {
+      tree fn_name = get_identifier (m_name ? m_name : "test_1");
+      tree int_type = integer_type_node;
+      tree return_type = int_type;
+      tree arg_types[3] = {int_type, int_type, int_type};
+      tree fn_type = build_function_type_array (return_type, 3, arg_types);
+      tree fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, fn_name, fn_type);
+      tree resdecl = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE,
+				 return_type);
+      DECL_ARTIFICIAL (resdecl) = 1;
+      DECL_IGNORED_P (resdecl) = 1;
+      DECL_RESULT (fndecl) = resdecl;
+      allocate_struct_function (fndecl, false);
+      /* This sets cfun.  */
+      current_function_decl = fndecl;
+    }
 
-  current_function_decl = fndecl;
+  gcc_assert (cfun);
+  gcc_assert (current_function_decl);
+  tree fndecl = current_function_decl;
+
+  /* Mark this function as being specified as __RTL.  */
+  cfun->curr_properties |= PROP_rtl;
+
+  /* cc1 normally inits DECL_INITIAL (fndecl) to be error_mark_node.
+     Create a dummy block for it.  */
+  DECL_INITIAL (fndecl) = make_node (BLOCK);
 
   cfun->curr_properties = (PROP_cfg | PROP_rtl);
 
@@ -1577,6 +1592,40 @@ read_rtl_function_body (const char *path)
 
   function_reader reader;
   if (!reader.read_file (path))
+    return false;
+
+  return true;
+}
+
+/* Run the RTL dump parser on the range of lines between START_LOC and
+   END_LOC (including those lines).  */
+
+bool
+read_rtl_function_body_from_file_range (location_t start_loc,
+					location_t end_loc)
+{
+  expanded_location exploc_start = expand_location (start_loc);
+  expanded_location exploc_end = expand_location (end_loc);
+
+  if (exploc_start.file != exploc_end.file)
+    {
+      error_at (end_loc, "start/end of RTL fragment are in different files");
+      return false;
+    }
+  if (exploc_start.line >= exploc_end.line)
+    {
+      error_at (end_loc,
+		"start of RTL fragment must be on an earlier line than end");
+      return false;
+    }
+
+  initialize_rtl ();
+  init_emit ();
+  init_varasm_status ();
+
+  function_reader reader;
+  if (!reader.read_file_fragment (exploc_start.file, exploc_start.line,
+				  exploc_end.line - 1))
     return false;
 
   return true;

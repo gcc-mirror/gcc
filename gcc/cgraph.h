@@ -326,6 +326,10 @@ public:
      configury. This function is used just during symbol creation.  */
   bool needed_p (void);
 
+  /* Return true if this symbol is a function from the C frontend specified
+     directly in RTL form (with "__RTL").  */
+  bool native_rtl_p () const;
+
   /* Return true when there are references to the node.  */
   bool referred_to_p (bool include_self = true);
 

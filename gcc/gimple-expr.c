@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "hash-set.h"
 #include "rtl.h"
+#include "tree-pass.h"
 
 /* ----- Type related -----  */
 
@@ -323,7 +324,7 @@ bool
 gimple_has_body_p (tree fndecl)
 {
   struct function *fn = DECL_STRUCT_FUNCTION (fndecl);
-  return (gimple_body (fndecl) || (fn && fn->cfg));
+  return (gimple_body (fndecl) || (fn && fn->cfg && !(fn->curr_properties & PROP_rtl)));
 }
 
 /* Return a printable name for symbol DECL.  */
