@@ -2,7 +2,7 @@
 
 	PR tree-optimization/79159
 	* tree-ssa-loop-niter.c (get_cst_init_from_scev): New function.
-	(record_nonwrapping_iv): Imporve boundary using above function if no
+	(record_nonwrapping_iv): Improve boundary using above function if no
 	value range information.
 
 2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
