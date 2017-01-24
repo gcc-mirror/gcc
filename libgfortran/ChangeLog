@@ -1,3 +1,12 @@
+2017-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78478
+	* acinclude.m4: Include ../config/ax_check_define.m4
+	* configure.ac: Check if _SOFT_FLOAT is defined.
+	* configure.host (i?86 | x86_64): Use fpu-generic when
+	have_soft_float is set.
+	* configure: Regenerate.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
@@ -13,14 +22,14 @@
 
 	Backport from trunk
 	PR libgfortran/77707
-	io/transfer.c (next_record): Flush before calculating next_record.
+	* io/transfer.c (next_record): Flush before calculating next_record.
 	Correctly calculate.
 
 2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
 	PR fortran/77507
- 	* ieee/ieee_arithmetic.F90 (IEEE_VALUE_4,IEEE_VALUE_8,IEEE_VALULE_10,
+	* ieee/ieee_arithmetic.F90 (IEEE_VALUE_4,IEEE_VALUE_8,IEEE_VALULE_10,
 	IEEE_VALUE_16):  Use correct keyword.
 
 2016-08-22  Release Manager
@@ -82,9 +91,10 @@
 	(read_logical): If '!' bang encountered when not in namelist mode got
 	bad_logical to give an error. (read_integer): Likewise reject '!'.
 	(read_character): Remove condition testing c = '!' which is now inside
-	the is_separator macro. (parse_real): Reject '!' unless in namelist mode.
-	(read_complex): Reject '!' unless in namelist mode. (read_real): Likewise
-	reject '!'. 
+	the is_separator macro. (parse_real): Reject '!' unless in
+	namelist mode.
+	(read_complex): Reject '!' unless in namelist mode.
+	(read_real): Likewise reject '!'.
 
 2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
