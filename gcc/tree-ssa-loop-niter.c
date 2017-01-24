@@ -3059,6 +3059,43 @@ record_control_iv (struct loop *loop, struct tree_niter_desc *niter)
   return;
 }
 
+/* This function returns TRUE if below conditions are satisfied:
+     1) VAR is SSA variable.
+     2) VAR is an IV:{base, step} in its defining loop.
+     3) IV doesn't overflow.
+     4) Both base and step are integer constants.
+     5) Base is the MIN/MAX value depends on IS_MIN.
+   Store value of base to INIT correspondingly.  */
+
+static bool
+get_cst_init_from_scev (tree var, wide_int *init, bool is_min)
+{
+  if (TREE_CODE (var) != SSA_NAME)
+    return false;
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (var);
+  struct loop *loop = loop_containing_stmt (def_stmt);
+
+  if (loop == NULL)
+    return false;
+
+  affine_iv iv;
+  if (!simple_iv (loop, loop, var, &iv, false))
+    return false;
+
+  if (!iv.no_overflow)
+    return false;
+
+  if (TREE_CODE (iv.base) != INTEGER_CST || TREE_CODE (iv.step) != INTEGER_CST)
+    return false;
+
+  if (is_min == tree_int_cst_sign_bit (iv.step))
+    return false;
+
+  *init = iv.base;
+  return true;
+}
+
 /* Record the estimate on number of iterations of LOOP based on the fact that
    the induction variable BASE + STEP * i evaluated in STMT does not wrap and
    its values belong to the range <LOW, HIGH>.  REALISTIC is true if the
@@ -3100,7 +3137,8 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (high) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && get_range_info (orig_base, &min, &max) == VR_RANGE
+	  && (get_range_info (orig_base, &min, &max) == VR_RANGE
+	      || get_cst_init_from_scev (orig_base, &max, false))
 	  && wi::gts_p (high, max))
 	base = wide_int_to_tree (unsigned_type, max);
       else if (TREE_CODE (base) != INTEGER_CST
@@ -3117,7 +3155,8 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (low) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && get_range_info (orig_base, &min, &max) == VR_RANGE
+	  && (get_range_info (orig_base, &min, &max) == VR_RANGE
+	      || get_cst_init_from_scev (orig_base, &min, true))
 	  && wi::gts_p (min, low))
 	base = wide_int_to_tree (unsigned_type, min);
       else if (TREE_CODE (base) != INTEGER_CST
