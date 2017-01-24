@@ -1,0 +1,4 @@
+Run autoconf2.64 && automake-1.11  to regenerate the buildfiles.
+You might need to manually tweak the minor automake version number
+in configure.ac and aclocal.m4 (search for 1.11.6) in case your
+local 1.11 minor version doesn't match. 

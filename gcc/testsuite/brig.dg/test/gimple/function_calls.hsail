@@ -1,0 +1,59 @@
+module &module:1:0:$full:$large:$default;
+
+/* Function calls and argument passing. */
+
+/* { dg-do compile } */
+/* { dg-options "-fdump-tree-gimple" } */
+
+prog function &subfunction(arg_u32 %return_value)(arg_f32 %float_arg, arg_f64 %double_arg, arg_f16 %half_arg) {
+     ld_arg_f32 $s0, [%float_arg];
+     cvt_u32_f32 $s0, $s0;
+
+     ld_arg_f64 $d0, [%double_arg];
+     cvt_u32_f64 $s1, $d0;
+
+     ld_arg_f16 $s2, [%half_arg];
+     cvt_u32_f16 $s2, $s2;
+
+     add_u32 $s3, $s0, $s1;
+     add_u32 $s3, $s3, $s2;
+
+     st_arg_u32 $s3, [%return_value];
+     ret;
+};
+
+prog kernel &kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
+{
+        ld_kernarg_u64 $d0, [%input_ptr];
+        ld_global_u32 $s0, [$d0];
+	{
+		arg_f32 %float_arg;
+		arg_f64 %double_arg;
+		arg_f16 %half_arg;
+		arg_u32 %return_value;
+
+		st_arg_f32 12.0f, [%float_arg];
+		st_arg_f64 640.0d, [%double_arg];
+		st_arg_f16 12.0h, [%half_arg];
+
+		call &subfunction(%return_value)(%float_arg, %double_arg, %half_arg);
+
+		ld_arg_u32 $s1, [%return_value];
+	}	
+        ld_kernarg_u64 $d1, [%output_ptr];
+        st_global_u32 $s1, [$d0];
+};
+
+/* The generated function call should have the incoming arguments and three hidden arguments. */
+
+/* { dg-final { scan-tree-dump "_\[0-9\]+ = subfunction \\\(_kernel.float_arg.\[_0-9\]+, _kernel.double_arg.\[_0-9\]+, _kernel.half_arg.\[_0-9\]+, __context, __group_base_addr, __private_base_addr\\\);" "gimple"} } */
+
+/* The callee should refer directly to the scalar arguments when it reads them. */
+/* { dg-final { scan-tree-dump "= float_arg;" "gimple"} } */
+/* { dg-final { scan-tree-dump "= double_arg;" "gimple"} } */
+/* { dg-final { scan-tree-dump "= half_arg;" "gimple"} } */
+
+/* The return value is stored to a temporary before returned. */
+/* { dg-final { scan-tree-dump "_retvalue_temp = s3;" "gimple"} } */
+/* { dg-final { scan-tree-dump "D.\[0-9\]+ = _retvalue_temp;" "gimple"} } */
+/* { dg-final { scan-tree-dump "return D.\[0-9\]+;" "gimple"} } */

@@ -1,3 +1,14 @@
+2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+
+	* Makefile.def (target_modules): Added libhsail-rt.
+	(languages): Added language brig.
+	* Makefile.in: Regenerated.
+	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Added
+	tgarget-libhsail-rt.  Make brig unsupported on untested architectures.
+	* configure: Regenerated.
+
 2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78478

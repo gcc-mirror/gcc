@@ -1,3 +1,66 @@
+2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* brig-builtins.def: New file.
+	* builtins.def (DEF_HSAIL_BUILTIN): New macro.
+	(DEF_HSAIL_ATOMIC_BUILTIN): Likewise.
+	(DEF_HSAIL_SAT_BUILTIN): Likewise.
+	(DEF_HSAIL_INTR_BUILTIN): Likewise.
+	(DEF_HSAIL_CVT_ZEROI_SAT_BUILTIN): Likewise.
+	* builtin-types.def (BT_INT8): New.
+	(BT_INT16): Likewise.
+	(BT_UINT8): Likewise.
+	(BT_UINT16): Likewise.
+	(BT_FN_ULONG): Likewise.
+	(BT_FN_UINT_INT): Likewise.
+	(BT_FN_UINT_ULONG): Likewise.
+	(BT_FN_UINT_LONG): Likewise.
+	(BT_FN_UINT_PTR): Likewise.
+	(BT_FN_ULONG_PTR): Likewise.
+	(BT_FN_INT8_FLOAT): Likewise.
+	(BT_FN_INT16_FLOAT): Likewise.
+	(BT_FN_UINT32_FLOAT): Likewise.
+	(BT_FN_UINT16_FLOAT): Likewise.
+	(BT_FN_UINT8_FLOAT): Likewise.
+	(BT_FN_UINT64_FLOAT): Likewise.
+	(BT_FN_UINT16_UINT32): Likewise.
+	(BT_FN_UINT32_UINT16): Likewise.
+	(BT_FN_UINT16_UINT16_UINT16): Likewise.
+	(BT_FN_INT_PTR_INT): Likewise.
+	(BT_FN_UINT_PTR_UINT): Likewise.
+	(BT_FN_LONG_PTR_LONG): Likewise.
+	(BT_FN_ULONG_PTR_ULONG): Likewise.
+	(BT_FN_VOID_UINT64_UINT64): Likewise.
+	(BT_FN_UINT8_UINT8_UINT8): Likewise.
+	(BT_FN_INT8_INT8_INT8): Likewise.
+	(BT_FN_INT16_INT16_INT16): Likewise.
+	(BT_FN_INT_INT_INT): Likewise.
+	(BT_FN_UINT_FLOAT_UINT): Likewise.
+	(BT_FN_FLOAT_UINT_UINT): Likewise.
+	(BT_FN_ULONG_UINT_UINT): Likewise.
+	(BT_FN_ULONG_UINT_PTR): Likewise.
+	(BT_FN_ULONG_ULONG_ULONG): Likewise.
+	(BT_FN_UINT_UINT_UINT): Likewise.
+	(BT_FN_VOID_UINT_PTR): Likewise.
+	(BT_FN_UINT_UINT_PTR: Likewise.
+	(BT_FN_UINT32_UINT64_PTR): Likewise.
+	(BT_FN_INT_INT_UINT_UINT): Likewise.
+	(BT_FN_UINT_UINT_UINT_UINT): Likewise.
+	(BT_FN_UINT_UINT_UINT_PTR): Likewise.
+	(BT_FN_UINT_ULONG_ULONG_UINT): Likewise.
+	(BT_FN_ULONG_ULONG_ULONG_ULONG): Likewise.
+	(BT_FN_LONG_LONG_UINT_UINT): Likewise.
+	(BT_FN_ULONG_ULONG_UINT_UINT): Likewise.
+	(BT_FN_VOID_UINT32_UINT64_PTR): Likewise.
+	(BT_FN_VOID_UINT32_UINT32_PTR): Likewise.
+	(BT_FN_UINT_UINT_UINT_UINT_UINT): Likewise.
+	(BT_FN_UINT_FLOAT_FLOAT_FLOAT_FLOAT): Likewise.
+	(BT_FN_ULONG_ULONG_ULONG_UINT_UINT): Likewise.
+	* doc/frontends.texi: List BRIG FE.
+	* doc/install.texi (Testing): Add BRIG tesring requirements.
+	* doc/invoke.texi (Overall Options): Mention BRIG.
+	* doc/standards.texi (Standards): Doucment BRIG HSA version.
+
 2017-01-24  Richard Biener  <rguenther@suse.de>
 
 	PR translation/79208

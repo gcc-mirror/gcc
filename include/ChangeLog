@@ -1,3 +1,8 @@
+2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* hsa.h: Moved here from libgomp/plugin/hsa.h.
+
 2017-01-04  Richard Earnshaw  <rearnsha@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 

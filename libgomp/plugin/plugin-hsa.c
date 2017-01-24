@@ -34,7 +34,7 @@
 #include <pthread.h>
 #include <inttypes.h>
 #include <stdbool.h>
-#include <plugin/hsa.h>
+#include <hsa.h>
 #include <plugin/hsa_ext_finalize.h>
 #include <dlfcn.h>
 #include "libgomp-plugin.h"
