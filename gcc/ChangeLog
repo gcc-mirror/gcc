@@ -1,3 +1,8 @@
+2017-01-23  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (thunderx2t99_addrcost_table): Improve
+	cost table.
+
 2017-01-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78703
