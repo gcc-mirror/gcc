@@ -1,3 +1,7 @@
+2017-01-23  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Add test cases.
+
 2017-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79088

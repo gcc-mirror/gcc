@@ -773,6 +773,34 @@ test_s (int i)
   RNG (  3,   6,   7, "%-s", i ? "123" : "123456");
 }
 
+static void __attribute__ ((noinline, noclone))
+test_n (void)
+{
+  int n;
+  EQL (  0,   1, "%n", &n);
+  EQL (  1,   2, "1%n", &n);
+  EQL (  2,   3, "12%n", &n);
+  EQL (  3,   4, "12%n3", &n);
+  EQL (  4,   5, "12%n34", &n);
+  EQL (  4,   5, "12%n34%n", &n, &n);
+  EQL (  5,   6, "12%n34%n5", &n, &n);
+  EQL (  6,   7, "12%n34%n56", &n, &n);
+  EQL (  6,   7, "%s%n%s%n%s", "12", &n, "34", &n, "56");
+}
+
+static void __attribute__ ((noinline, noclone))
+test_percent (void)
+{
+  /* Provide extra arguments siunce the EQL macro needs at least one.  */
+  EQL (  1,   2, "%%", 0);         /* { dg-warning "too many arguments" } */
+  EQL (  2,   3, "%%%%", 0);       /* { dg-warning "too many arguments" } */
+  EQL (  3,   4, "%%%%%%", 0);     /* { dg-warning "too many arguments" } */
+  EQL (  3,   4, "%%%%%%%s", "");
+  EQL (  3,   4, "%%%%%s%%", "");
+  EQL (  3,   4, "%%%s%%%%", "");
+  EQL (  3,   4, "%s%%%%%%", "");
+}
+
 int main (void)
 {
   test_c ('?');
@@ -790,6 +818,10 @@ int main (void)
   test_g_long_double ();
 
   test_s (0);
+
+  test_n ();
+
+  test_percent ();
 
   if (nfails)
     {
