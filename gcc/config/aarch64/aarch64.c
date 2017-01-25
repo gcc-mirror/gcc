@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -64,6 +64,8 @@
 #include "sched-int.h"
 #include "target-globals.h"
 #include "common/common-target.h"
+#include "selftest.h"
+#include "selftest-rtl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -268,12 +270,12 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
   0 /* imm_offset  */
 };
 
-static const struct cpu_addrcost_table vulcan_addrcost_table =
+static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
 {
     {
-      0, /* hi  */
-      0, /* si  */
-      0, /* di  */
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
       2, /* ti  */
     },
   0, /* pre_modify  */
@@ -351,7 +353,7 @@ static const struct cpu_regmove_cost qdf24xx_regmove_cost =
   4 /* FP2FP  */
 };
 
-static const struct cpu_regmove_cost vulcan_regmove_cost =
+static const struct cpu_regmove_cost thunderx2t99_regmove_cost =
 {
   1, /* GP2GP  */
   /* Avoid the use of int<->fp moves for spilling.  */
@@ -450,7 +452,7 @@ static const struct cpu_vector_cost xgene1_vector_cost =
 };
 
 /* Costs for vector insn classes for Vulcan.  */
-static const struct cpu_vector_cost vulcan_vector_cost =
+static const struct cpu_vector_cost thunderx2t99_vector_cost =
 {
   6, /* scalar_stmt_cost  */
   4, /* scalar_load_cost  */
@@ -482,7 +484,7 @@ static const struct cpu_branch_cost cortexa57_branch_cost =
 };
 
 /* Branch costs for Vulcan.  */
-static const struct cpu_branch_cost vulcan_branch_cost =
+static const struct cpu_branch_cost thunderx2t99_branch_cost =
 {
   1,  /* Predictable.  */
   3   /* Unpredictable.  */
@@ -768,13 +770,13 @@ static const struct tune_params qdf24xx_tunings =
   (AARCH64_EXTRA_TUNE_NONE)		/* tune_flags.  */
 };
 
-static const struct tune_params vulcan_tunings =
+static const struct tune_params thunderx2t99_tunings =
 {
-  &vulcan_extra_costs,
-  &vulcan_addrcost_table,
-  &vulcan_regmove_cost,
-  &vulcan_vector_cost,
-  &vulcan_branch_cost,
+  &thunderx2t99_extra_costs,
+  &thunderx2t99_addrcost_table,
+  &thunderx2t99_regmove_cost,
+  &thunderx2t99_vector_cost,
+  &thunderx2t99_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
@@ -835,7 +837,7 @@ static const struct processor all_architectures[] =
 /* Processor cores implementing AArch64.  */
 static const struct processor all_cores[] =
 {
-#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
+#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH,				\
   all_architectures[AARCH64_ARCH_##ARCH].architecture_version,	\
   FLAGS, &COSTS##_tunings},
@@ -2760,6 +2762,10 @@ aarch64_frame_pointer_required (void)
       && (!crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM)))
     return true;
 
+  /* Force a frame pointer for EH returns so the return address is at FP+8.  */
+  if (crtl->calls_eh_return)
+    return true;
+
   return false;
 }
 
@@ -3115,6 +3121,22 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
     default:
       gcc_unreachable ();
     }
+}
+
+/* Return TRUE if return address signing should be enabled for the current
+   function, otherwise return FALSE.  */
+
+bool
+aarch64_return_address_signing_enabled (void)
+{
+  /* This function should only be called after frame laid out.   */
+  gcc_assert (cfun->machine->frame.laid_out);
+
+  /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
+     if it's LR is pushed onto stack.  */
+  return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
+	  || (aarch64_ra_sign_scope == AARCH64_FUNCTION_NON_LEAF
+	      && cfun->machine->frame.reg_offset[LR_REGNUM] >= 0));
 }
 
 /* Emit code to save the callee-saved registers from register number START
@@ -3535,6 +3557,14 @@ aarch64_expand_prologue (void)
   unsigned reg2 = cfun->machine->frame.wb_candidate2;
   rtx_insn *insn;
 
+  /* Sign return address for functions.  */
+  if (aarch64_return_address_signing_enabled ())
+    {
+      insn = emit_insn (gen_pacisp ());
+      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
   if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size;
 
@@ -3618,7 +3648,8 @@ aarch64_expand_epilogue (bool for_sibcall)
 			 + cfun->machine->frame.saved_varargs_size) != 0;
 
   /* Emit a barrier to prevent loads from a deallocated stack.  */
-  if (final_adjust > crtl->outgoing_args_size || cfun->calls_alloca)
+  if (final_adjust > crtl->outgoing_args_size || cfun->calls_alloca
+      || crtl->calls_eh_return)
     {
       emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
       need_barrier_p = false;
@@ -3670,6 +3701,29 @@ aarch64_expand_epilogue (bool for_sibcall)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
+  /* We prefer to emit the combined return/authenticate instruction RETAA,
+     however there are three cases in which we must instead emit an explicit
+     authentication instruction.
+
+	1) Sibcalls don't return in a normal way, so if we're about to call one
+	   we must authenticate.
+
+	2) The RETAA instruction is not available before ARMv8.3-A, so if we are
+	   generating code for !TARGET_ARMV8_3 we can't use it and must
+	   explicitly authenticate.
+
+	3) On an eh_return path we make extra stack adjustments to update the
+	   canonical frame address to be the exception handler's CFA.  We want
+	   to authenticate using the CFA of the function which calls eh_return.
+    */
+  if (aarch64_return_address_signing_enabled ()
+      && (for_sibcall || !TARGET_ARMV8_3 || crtl->calls_eh_return))
+    {
+      insn = emit_insn (gen_autisp ());
+      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
   /* Stack adjustment for exception handler.  */
   if (crtl->calls_eh_return)
     {
@@ -3686,52 +3740,40 @@ aarch64_expand_epilogue (bool for_sibcall)
     emit_jump_insn (ret_rtx);
 }
 
-/* Return the place to copy the exception unwinding return address to.
-   This will probably be a stack slot, but could (in theory be the
-   return register).  */
+/* Implement EH_RETURN_HANDLER_RTX.  EH returns need to either return
+   normally or return to a previous frame after unwinding.
+
+   An EH return uses a single shared return sequence.  The epilogue is
+   exactly like a normal epilogue except that it has an extra input
+   register (EH_RETURN_STACKADJ_RTX) which contains the stack adjustment
+   that must be applied after the frame has been destroyed.  An extra label
+   is inserted before the epilogue which initializes this register to zero,
+   and this is the entry point for a normal return.
+
+   An actual EH return updates the return address, initializes the stack
+   adjustment and jumps directly into the epilogue (bypassing the zeroing
+   of the adjustment).  Since the return address is typically saved on the
+   stack when a function makes a call, the saved LR must be updated outside
+   the epilogue.
+
+   This poses problems as the store is generated well before the epilogue,
+   so the offset of LR is not known yet.  Also optimizations will remove the
+   store as it appears dead, even after the epilogue is generated (as the
+   base or offset for loading LR is different in many cases).
+
+   To avoid these problems this implementation forces the frame pointer
+   in eh_return functions so that the location of LR is fixed and known early.
+   It also marks the store volatile, so no optimization is permitted to
+   remove the store.  */
 rtx
-aarch64_final_eh_return_addr (void)
+aarch64_eh_return_handler_rtx (void)
 {
-  HOST_WIDE_INT fp_offset;
+  rtx tmp = gen_frame_mem (Pmode,
+    plus_constant (Pmode, hard_frame_pointer_rtx, UNITS_PER_WORD));
 
-  aarch64_layout_frame ();
-
-  fp_offset = cfun->machine->frame.frame_size
-	      - cfun->machine->frame.hard_fp_offset;
-
-  if (cfun->machine->frame.reg_offset[LR_REGNUM] < 0)
-    return gen_rtx_REG (DImode, LR_REGNUM);
-
-  /* DSE and CSELIB do not detect an alias between sp+k1 and fp+k2.  This can
-     result in a store to save LR introduced by builtin_eh_return () being
-     incorrectly deleted because the alias is not detected.
-     So in the calculation of the address to copy the exception unwinding
-     return address to, we note 2 cases.
-     If FP is needed and the fp_offset is 0, it means that SP = FP and hence
-     we return a SP-relative location since all the addresses are SP-relative
-     in this case.  This prevents the store from being optimized away.
-     If the fp_offset is not 0, then the addresses will be FP-relative and
-     therefore we return a FP-relative location.  */
-
-  if (frame_pointer_needed)
-    {
-      if (fp_offset)
-        return gen_frame_mem (DImode,
-			      plus_constant (Pmode, hard_frame_pointer_rtx, UNITS_PER_WORD));
-      else
-        return gen_frame_mem (DImode,
-			      plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD));
-    }
-
-  /* If FP is not needed, we calculate the location of LR, which would be
-     at the top of the saved registers block.  */
-
-  return gen_frame_mem (DImode,
-			plus_constant (Pmode,
-				       stack_pointer_rtx,
-				       fp_offset
-				       + cfun->machine->frame.saved_regs_size
-				       - 2 * UNITS_PER_WORD));
+  /* Mark the store volatile, so no optimization is permitted to remove it.  */
+  MEM_VOLATILE_P (tmp) = true;
+  return tmp;
 }
 
 /* Output code to add DELTA to the first argument, and then jump
@@ -5745,7 +5787,10 @@ aarch64_elf_asm_constructor (rtx symbol, int priority)
   else
     {
       section *s;
-      char buf[18];
+      /* While priority is known to be in range [0, 65535], so 18 bytes
+         would be enough, the compiler might not know that.  To avoid
+         -Wformat-truncation false positive, use a larger size.  */
+      char buf[23];
       snprintf (buf, sizeof (buf), ".init_array.%.5u", priority);
       s = get_section (buf, SECTION_WRITE, NULL);
       switch_to_section (s);
@@ -5762,7 +5807,10 @@ aarch64_elf_asm_destructor (rtx symbol, int priority)
   else
     {
       section *s;
-      char buf[18];
+      /* While priority is known to be in range [0, 65535], so 18 bytes
+         would be enough, the compiler might not know that.  To avoid
+         -Wformat-truncation false positive, use a larger size.  */
+      char buf[23];
       snprintf (buf, sizeof (buf), ".fini_array.%.5u", priority);
       s = get_section (buf, SECTION_WRITE, NULL);
       switch_to_section (s);
@@ -8894,6 +8942,9 @@ aarch64_override_options (void)
     error ("Assembler does not support -mabi=ilp32");
 #endif
 
+  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
+    sorry ("Return address signing is only supported for -mabi=lp64");
+
   /* Make sure we properly set up the explicit options.  */
   if ((aarch64_cpu_string && valid_cpu)
        || (aarch64_tune_string && valid_tune))
@@ -9277,6 +9328,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
   { "cpu", aarch64_attr_custom, false, aarch64_handle_attr_cpu, OPT_mcpu_ },
   { "tune", aarch64_attr_custom, false, aarch64_handle_attr_tune,
      OPT_mtune_ },
+  { "sign-return-address", aarch64_attr_enum, false, NULL,
+     OPT_msign_return_address_ },
   { NULL, aarch64_attr_custom, false, NULL, OPT____ }
 };
 
@@ -11242,14 +11295,16 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
 
 /* Return a const_int vector of VAL.  */
 rtx
-aarch64_simd_gen_const_vector_dup (machine_mode mode, int val)
+aarch64_simd_gen_const_vector_dup (machine_mode mode, HOST_WIDE_INT val)
 {
   int nunits = GET_MODE_NUNITS (mode);
   rtvec v = rtvec_alloc (nunits);
   int i;
 
+  rtx cache = GEN_INT (val);
+
   for (i=0; i < nunits; i++)
-    RTVEC_ELT (v, i) = GEN_INT (val);
+    RTVEC_ELT (v, i) = cache;
 
   return gen_rtx_CONST_VECTOR (mode, v);
 }
@@ -14075,6 +14130,26 @@ aarch64_sched_fusion_priority (rtx_insn *insn, int max_pri,
   return;
 }
 
+/* Implement the TARGET_SCHED_ADJUST_PRIORITY hook.
+   Adjust priority of sha1h instructions so they are scheduled before
+   other SHA1 instructions.  */
+
+static int
+aarch64_sched_adjust_priority (rtx_insn *insn, int priority)
+{
+  rtx x = PATTERN (insn);
+
+  if (GET_CODE (x) == SET)
+    {
+      x = SET_SRC (x);
+
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_SHA1H)
+	return priority + 10;
+    }
+
+  return priority;
+}
+
 /* Given OPERANDS of consecutive load/store, check if we can merge
    them into ldp/stp.  LOAD is true if they are load instructions.
    MODE is the mode of memory operands.  */
@@ -14605,6 +14680,52 @@ aarch64_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Target-specific selftests.  */
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftest for the RTL loader.
+   Verify that the RTL loader copes with a dump from
+   print_rtx_function.  This is essentially just a test that class
+   function_reader can handle a real dump, but it also verifies
+   that lookup_reg_by_dump_name correctly handles hard regs.
+   The presence of hard reg names in the dump means that the test is
+   target-specific, hence it is in this file.  */
+
+static void
+aarch64_test_loading_full_dump ()
+{
+  rtl_dump_test t (SELFTEST_LOCATION, locate_file ("aarch64/times-two.rtl"));
+
+  ASSERT_STREQ ("times_two", IDENTIFIER_POINTER (DECL_NAME (cfun->decl)));
+
+  rtx_insn *insn_1 = get_insn_by_uid (1);
+  ASSERT_EQ (NOTE, GET_CODE (insn_1));
+
+  rtx_insn *insn_15 = get_insn_by_uid (15);
+  ASSERT_EQ (INSN, GET_CODE (insn_15));
+  ASSERT_EQ (USE, GET_CODE (PATTERN (insn_15)));
+
+  /* Verify crtl->return_rtx.  */
+  ASSERT_EQ (REG, GET_CODE (crtl->return_rtx));
+  ASSERT_EQ (0, REGNO (crtl->return_rtx));
+  ASSERT_EQ (SImode, GET_MODE (crtl->return_rtx));
+}
+
+/* Run all target-specific selftests.  */
+
+static void
+aarch64_run_selftests (void)
+{
+  aarch64_test_loading_full_dump ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -14950,6 +15071,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 
+#undef TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY aarch64_sched_adjust_priority
+
 #undef TARGET_SCHED_MACRO_FUSION_P
 #define TARGET_SCHED_MACRO_FUSION_P aarch64_macro_fusion_p
 
@@ -14976,6 +15100,15 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_OMIT_STRUCT_RETURN_REG
 #define TARGET_OMIT_STRUCT_RETURN_REG true
+
+/* The architecture reserves bits 0 and 1 so use bit 2 for descriptors.  */
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 4
+
+#if CHECKING_P
+#undef TARGET_RUN_TARGET_SELFTESTS
+#define TARGET_RUN_TARGET_SELFTESTS selftest::aarch64_run_selftests
+#endif /* #if CHECKING_P */
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

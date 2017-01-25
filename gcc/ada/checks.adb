@@ -337,6 +337,10 @@ package body Checks is
    --  Like Apply_Selected_Length_Checks, except it doesn't modify
    --  anything, just returns a list of nodes as described in the spec of
    --  this package for the Range_Check function.
+   --  ??? In fact it does construct the test and insert it into the tree,
+   --  and insert actions in various ways (calling Insert_Action directly
+   --  in particular) so we do not call it in GNATprove mode, contrary to
+   --  Selected_Range_Checks.
 
    function Selected_Range_Checks
      (Ck_Node    : Node_Id;
@@ -822,10 +826,10 @@ package body Checks is
    -- Apply_Arithmetic_Overflow_Strict --
    --------------------------------------
 
-   --  This routine is called only if the type is an integer type, and a
-   --  software arithmetic overflow check may be needed for op (add, subtract,
-   --  or multiply). This check is performed only if Software_Overflow_Checking
-   --  is enabled and Do_Overflow_Check is set. In this case we expand the
+   --  This routine is called only if the type is an integer type and an
+   --  arithmetic overflow check may be needed for op (add, subtract, or
+   --  multiply). This check is performed if Backend_Overflow_Checks_On_Target
+   --  is not enabled and Do_Overflow_Check is set. In this case we expand the
    --  operation into a more complex sequence of tests that ensures that
    --  overflow is properly caught.
 
@@ -1447,13 +1451,17 @@ package body Checks is
          T_Typ := Typ;
       end if;
 
-      --  Nothing to do if discriminant checks are suppressed or else no code
-      --  is to be generated
+      --  Only apply checks when generating code and discriminant checks are
+      --  not suppressed. In GNATprove mode, we do not apply the checks, but we
+      --  still analyze the expression to possibly issue errors on SPARK code
+      --  when a run-time error can be detected at compile time.
 
-      if not Expander_Active
-        or else Discriminant_Checks_Suppressed (T_Typ)
-      then
-         return;
+      if not GNATprove_Mode then
+         if not Expander_Active
+           or else Discriminant_Checks_Suppressed (T_Typ)
+         then
+            return;
+         end if;
       end if;
 
       --  No discriminant checks necessary for an access when expression is
@@ -1688,6 +1696,12 @@ package body Checks is
                return;
             end if;
          end;
+      end if;
+
+      --  In GNATprove mode, we do not apply the checks
+
+      if GNATprove_Mode then
+         return;
       end if;
 
       --  Here we need a discriminant check. First build the expression
@@ -2346,6 +2360,9 @@ package body Checks is
                  and then not Is_Elementary_Type (Etype (Orig_Act_2))
                  and then May_Cause_Aliasing (Formal_1, Formal_2)
                then
+                  Remove_Side_Effects (Actual_1);
+                  Remove_Side_Effects (Actual_2);
+
                   Overlap_Check
                     (Actual_1 => Actual_1,
                      Actual_2 => Actual_2,
@@ -2412,8 +2429,7 @@ package body Checks is
          begin
             Prag :=
               Make_Pragma (Loc,
-                Pragma_Identifier            =>
-                  Make_Identifier (Loc, Prag_Nam),
+                Chars                        => Prag_Nam,
                 Pragma_Argument_Associations => New_List (
                   Make_Pragma_Argument_Association (Loc,
                     Chars      => Name_Check,
@@ -2605,7 +2621,11 @@ package body Checks is
    -- Apply_Predicate_Check --
    ---------------------------
 
-   procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id) is
+   procedure Apply_Predicate_Check
+     (N   : Node_Id;
+      Typ : Entity_Id;
+      Fun : Entity_Id := Empty)
+   is
       S : Entity_Id;
 
    begin
@@ -2633,11 +2653,18 @@ package body Checks is
          --  is likely to be a common error, and thus deserves a warning.
 
          elsif Present (S) and then S = Predicate_Function (Typ) then
-            Error_Msg_N
-              ("predicate check includes a function call that "
-               & "requires a predicate check??", Parent (N));
+            Error_Msg_NE
+              ("predicate check includes a call to& that requires a "
+               & "predicate check??", Parent (N), Fun);
             Error_Msg_N
               ("\this will result in infinite recursion??", Parent (N));
+
+            if Is_First_Subtype (Typ) then
+               Error_Msg_NE
+                 ("\use an explicit subtype of& to carry the predicate",
+                  Parent (N), Typ);
+            end if;
+
             Insert_Action (N,
               Make_Raise_Storage_Error (Sloc (N),
                 Reason => SE_Infinite_Recursion));
@@ -3065,8 +3092,10 @@ package body Checks is
           or else (not Length_Checks_Suppressed (Target_Typ));
 
    begin
+      --  Only apply checks when generating code
+
       --  Note: this means that we lose some useful warnings if the expander
-      --  is not active, and we also lose these warnings in SPARK mode ???
+      --  is not active.
 
       if not Expander_Active then
          return;
@@ -3176,12 +3205,23 @@ package body Checks is
       R_Result : Check_Result;
 
    begin
-      if not Expander_Active or not Checks_On then
-         return;
+      --  Only apply checks when generating code. In GNATprove mode, we do not
+      --  apply the checks, but we still call Selected_Range_Checks to possibly
+      --  issue errors on SPARK code when a run-time error can be detected at
+      --  compile time.
+
+      if not GNATprove_Mode then
+         if not Expander_Active or not Checks_On then
+            return;
+         end if;
       end if;
 
       R_Result :=
         Selected_Range_Checks (Ck_Node, Target_Typ, Source_Typ, Empty);
+
+      if GNATprove_Mode then
+         return;
+      end if;
 
       for J in 1 .. 2 loop
          R_Cno := R_Result (J);
@@ -3353,7 +3393,57 @@ package body Checks is
                 In_Subrange_Of (Expr_Type, Target_Base, Fixed_Int => Conv_OK)
               and then not Float_To_Int
             then
-               Activate_Overflow_Check (N);
+               --  A small optimization: the attribute 'Pos applied to an
+               --  enumeration type has a known range, even though its type is
+               --  Universal_Integer. So in numeric conversions it is usually
+               --  within range of the target integer type. Use the static
+               --  bounds of the base types to check. Disable this optimization
+               --  in case of a generic formal discrete type, because we don't
+               --  necessarily know the upper bound yet.
+
+               if Nkind (Expr) = N_Attribute_Reference
+                 and then Attribute_Name (Expr) = Name_Pos
+                 and then Is_Enumeration_Type (Etype (Prefix (Expr)))
+                 and then not Is_Generic_Type (Etype (Prefix (Expr)))
+                 and then Is_Integer_Type (Target_Type)
+               then
+                  declare
+                     Enum_T : constant Entity_Id :=
+                                Root_Type (Etype (Prefix (Expr)));
+                     Int_T  : constant Entity_Id := Base_Type (Target_Type);
+                     Last_I : constant Uint      :=
+                                Intval (High_Bound (Scalar_Range (Int_T)));
+                     Last_E : Uint;
+
+                  begin
+                     --  Character types have no explicit literals, so we use
+                     --  the known number of characters in the type.
+
+                     if Root_Type (Enum_T) = Standard_Character then
+                        Last_E := UI_From_Int (255);
+
+                     elsif Enum_T = Standard_Wide_Character
+                       or else Enum_T = Standard_Wide_Wide_Character
+                     then
+                        Last_E := UI_From_Int (65535);
+
+                     else
+                        Last_E :=
+                          Enumeration_Pos
+                            (Entity (High_Bound (Scalar_Range (Enum_T))));
+                     end if;
+
+                     if Last_E <= Last_I then
+                        null;
+
+                     else
+                        Activate_Overflow_Check (N);
+                     end if;
+                  end;
+
+               else
+                  Activate_Overflow_Check (N);
+               end if;
             end if;
 
             if not Range_Checks_Suppressed (Target_Type)
@@ -4004,26 +4094,30 @@ package body Checks is
 
          if Present (Expr) and then Known_Null (Expr) then
             case K is
-               when N_Component_Declaration      |
-                    N_Discriminant_Specification =>
+               when N_Component_Declaration
+                  | N_Discriminant_Specification
+               =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding components??",
+                     Msg    =>
+                       "(Ada 2005) null not allowed in null-excluding "
+                       & "components??",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Object_Declaration =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding objects??",
+                     Msg    =>
+                       "(Ada 2005) null not allowed in null-excluding "
+                       & "objects??",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Parameter_Specification =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding formals??",
+                     Msg    =>
+                       "(Ada 2005) null not allowed in null-excluding "
+                       & "formals??",
                      Reason => CE_Null_Not_Allowed);
 
                when others =>
@@ -4462,9 +4556,7 @@ package body Checks is
 
          when N_Op_Rem =>
             if OK_Operands then
-               if Lo_Right = Hi_Right
-                 and then Lo_Right /= 0
-               then
+               if Lo_Right = Hi_Right and then Lo_Right /= 0 then
                   declare
                      Dval : constant Uint := (abs Lo_Right) - 1;
 
@@ -4499,7 +4591,9 @@ package body Checks is
                --  For Pos/Val attributes, we can refine the range using the
                --  possible range of values of the attribute expression.
 
-               when Name_Pos | Name_Val =>
+               when Name_Pos
+                  | Name_Val
+               =>
                   Determine_Range
                     (First (Expressions (N)), OK1, Lor, Hir, Assume_Valid);
 
@@ -5696,6 +5790,14 @@ package body Checks is
       --  No check required if expression is known to have valid value
 
       elsif Expr_Known_Valid (Expr) then
+         return;
+
+      --  No check needed within a generated predicate function. Validity
+      --  of input value will have been checked earlier.
+
+      elsif Ekind (Current_Scope) = E_Function
+        and then Is_Predicate_Function (Current_Scope)
+      then
          return;
 
       --  Ignore case of enumeration with holes where the flag is set not to
@@ -7107,12 +7209,18 @@ package body Checks is
             Force_Evaluation (Exp, Name_Req => False);
          end if;
 
-         --  Build the prefix for the 'Valid call
+         --  Build the prefix for the 'Valid call. If the expression denotes
+         --  a name, use a renaming to alias it, otherwise use a constant to
+         --  capture the value of the expression.
+
+         --    Temp : ... renames Expr;      --  reference to a name
+         --    Temp : constant ... := Expr;  --  all other cases
 
          PV :=
            Duplicate_Subexpr_No_Checks
              (Exp           => Exp,
               Name_Req      => False,
+              Renaming_Req  => Is_Name_Reference (Exp),
               Related_Id    => Related_Id,
               Is_Low_Bound  => Is_Low_Bound,
               Is_High_Bound => Is_High_Bound);
@@ -7201,12 +7309,22 @@ package body Checks is
    function Is_Signed_Integer_Arithmetic_Op (N : Node_Id) return Boolean is
    begin
       case Nkind (N) is
-         when N_Op_Abs   | N_Op_Add      | N_Op_Divide   | N_Op_Expon |
-              N_Op_Minus | N_Op_Mod      | N_Op_Multiply | N_Op_Plus  |
-              N_Op_Rem   | N_Op_Subtract =>
+         when N_Op_Abs
+            | N_Op_Add
+            | N_Op_Divide
+            | N_Op_Expon
+            | N_Op_Minus
+            | N_Op_Mod
+            | N_Op_Multiply
+            | N_Op_Plus
+            | N_Op_Rem
+            | N_Op_Subtract
+         =>
             return Is_Signed_Integer_Type (Etype (N));
 
-         when N_If_Expression | N_Case_Expression =>
+         when N_Case_Expression
+            | N_If_Expression
+         =>
             return Is_Signed_Integer_Type (Etype (N));
 
          when others =>
@@ -8423,28 +8541,28 @@ package body Checks is
 
             begin
                case Nkind (N) is
-                  when N_Op_Abs      =>
+                  when N_Op_Abs =>
                      Fent := RTE (RE_Big_Abs);
 
-                  when N_Op_Add      =>
+                  when N_Op_Add =>
                      Fent := RTE (RE_Big_Add);
 
-                  when N_Op_Divide   =>
+                  when N_Op_Divide =>
                      Fent := RTE (RE_Big_Div);
 
-                  when N_Op_Expon    =>
+                  when N_Op_Expon =>
                      Fent := RTE (RE_Big_Exp);
 
-                  when N_Op_Minus    =>
+                  when N_Op_Minus =>
                      Fent := RTE (RE_Big_Neg);
 
-                  when N_Op_Mod      =>
+                  when N_Op_Mod =>
                      Fent := RTE (RE_Big_Mod);
 
                   when N_Op_Multiply =>
                      Fent := RTE (RE_Big_Mul);
 
-                  when N_Op_Rem      =>
+                  when N_Op_Rem =>
                      Fent := RTE (RE_Big_Rem);
 
                   when N_Op_Subtract =>
@@ -9034,6 +9152,8 @@ package body Checks is
    --  Start of processing for Selected_Length_Checks
 
    begin
+      --  Checks will be applied only when generating code
+
       if not Expander_Active then
          return Ret_Result;
       end if;
@@ -9584,7 +9704,12 @@ package body Checks is
    --  Start of processing for Selected_Range_Checks
 
    begin
-      if not Expander_Active then
+      --  Checks will be applied only when generating code. In GNATprove mode,
+      --  we do not apply the checks, but we still call Selected_Range_Checks
+      --  to possibly issue errors on SPARK code when a run-time error can be
+      --  detected at compile time.
+
+      if not Expander_Active and not GNATprove_Mode then
          return Ret_Result;
       end if;
 

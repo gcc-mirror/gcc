@@ -1,6 +1,6 @@
 // <tuple> -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -951,7 +951,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         enable_if<_TMC::template
                     _MoveConstructibleTuple<_U1, _U2>()
                   && _TMC::template
-                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
+	          && !is_same<typename decay<_U1>::type,
+			      allocator_arg_t>::value,
 	bool>::type = true>
         constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
@@ -960,7 +962,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         enable_if<_TMC::template
                     _MoveConstructibleTuple<_U1, _U2>()
                   && !_TMC::template
-                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
+	          && !is_same<typename decay<_U1>::type,
+			      allocator_arg_t>::value,
 	bool>::type = false>
         explicit constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }

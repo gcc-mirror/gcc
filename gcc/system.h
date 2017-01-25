@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -840,7 +840,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #ifndef USES_ISL
 #undef calloc
 #undef strdup
- #pragma GCC poison calloc strdup
+#undef strndup
+ #pragma GCC poison calloc strdup strndup
 #endif
 
 #if !defined(FLEX_SCANNER) && !defined(YYBISON)
@@ -1138,6 +1139,18 @@ helper_const_non_const_cast (const char *p)
 #define VALGRIND_DISCARD(x)
 #define VALGRIND_MALLOCLIKE_BLOCK(w,x,y,z)
 #define VALGRIND_FREELIKE_BLOCK(x,y)
+#endif
+
+/* Macros to temporarily ignore some warnings.  */
+#if GCC_VERSION >= 6000
+#define GCC_DIAGNOSTIC_STRINGIFY(x) #x
+#define GCC_DIAGNOSTIC_PUSH_IGNORED(x) \
+  _Pragma ("GCC diagnostic push") \
+  _Pragma (GCC_DIAGNOSTIC_STRINGIFY (GCC diagnostic ignored #x))
+#define GCC_DIAGNOSTIC_POP _Pragma ("GCC diagnostic pop")
+#else
+#define GCC_DIAGNOSTIC_PUSH_IGNORED(x)
+#define GCC_DIAGNOSTIC_POP
 #endif
 
 /* In LTO -fwhole-program build we still want to keep the debug functions available

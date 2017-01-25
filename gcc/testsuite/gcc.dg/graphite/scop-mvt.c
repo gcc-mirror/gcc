@@ -1,3 +1,4 @@
+/* { dg-require-effective-target size32plus } */
 #define NMAX 2000
 
 static double x1[NMAX], x2[NMAX], a[NMAX][NMAX], y_1[NMAX], y_2[NMAX];

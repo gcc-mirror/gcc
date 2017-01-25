@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -465,6 +465,7 @@ fold_loop_vectorized_call (gimple *g, tree value)
       update_stmt (use_stmt);
     }
 }
+
 /* Set the uids of all the statements in basic blocks inside loop
    represented by LOOP_VINFO. LOOP_VECTORIZED_CALL is the internal
    call guarding the loop which has been if converted.  */
@@ -477,9 +478,22 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   struct loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
 
   LOOP_VINFO_SCALAR_LOOP (loop_vinfo) = scalar_loop;
-  gcc_checking_assert (vect_loop_vectorized_call
-		       (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))
+  gcc_checking_assert (vect_loop_vectorized_call (scalar_loop)
 		       == loop_vectorized_call);
+  /* If we are going to vectorize outer loop, prevent vectorization
+     of the inner loop in the scalar loop - either the scalar loop is
+     thrown away, so it is a wasted work, or is used only for
+     a few iterations.  */
+  if (scalar_loop->inner)
+    {
+      gimple *g = vect_loop_vectorized_call (scalar_loop->inner);
+      if (g)
+	{
+	  arg = gimple_call_arg (g, 0);
+	  get_loop (cfun, tree_to_shwi (arg))->dont_vectorize = true;
+	  fold_loop_vectorized_call (g, boolean_false_node);
+	}
+    }
   bbs = get_loop_body (scalar_loop);
   for (i = 0; i < scalar_loop->num_nodes; i++)
     {
@@ -534,14 +548,59 @@ vectorize_loops (void)
      only over initial loops skipping newly generated ones.  */
   FOR_EACH_LOOP (loop, 0)
     if (loop->dont_vectorize)
-      any_ifcvt_loops = true;
-    else if ((flag_tree_loop_vectorize
-	      && optimize_loop_nest_for_speed_p (loop))
-	     || loop->force_vectorize)
       {
-	loop_vec_info loop_vinfo, orig_loop_vinfo = NULL;
-	gimple *loop_vectorized_call = vect_loop_vectorized_call (loop);
-vectorize_epilogue:
+	any_ifcvt_loops = true;
+	/* If-conversion sometimes versions both the outer loop
+	   (for the case when outer loop vectorization might be
+	   desirable) as well as the inner loop in the scalar version
+	   of the loop.  So we have:
+	    if (LOOP_VECTORIZED (1, 3))
+	      {
+		loop1
+		  loop2
+	      }
+	    else
+	      loop3 (copy of loop1)
+		if (LOOP_VECTORIZED (4, 5))
+		  loop4 (copy of loop2)
+		else
+		  loop5 (copy of loop4)
+	   If FOR_EACH_LOOP gives us loop3 first (which has
+	   dont_vectorize set), make sure to process loop1 before loop4;
+	   so that we can prevent vectorization of loop4 if loop1
+	   is successfully vectorized.  */
+	if (loop->inner)
+	  {
+	    gimple *loop_vectorized_call
+	      = vect_loop_vectorized_call (loop);
+	    if (loop_vectorized_call
+		&& vect_loop_vectorized_call (loop->inner))
+	      {
+		tree arg = gimple_call_arg (loop_vectorized_call, 0);
+		struct loop *vector_loop
+		  = get_loop (cfun, tree_to_shwi (arg));
+		if (vector_loop && vector_loop != loop)
+		  {
+		    loop = vector_loop;
+		    /* Make sure we don't vectorize it twice.  */
+		    loop->dont_vectorize = true;
+		    goto try_vectorize;
+		  }
+	      }
+	  }
+      }
+    else
+      {
+	loop_vec_info loop_vinfo, orig_loop_vinfo;
+	gimple *loop_vectorized_call;
+       try_vectorize:
+	if (!((flag_tree_loop_vectorize
+	       && optimize_loop_nest_for_speed_p (loop))
+	      || loop->force_vectorize))
+	  continue;
+	orig_loop_vinfo = NULL;
+	loop_vectorized_call = vect_loop_vectorized_call (loop);
+       vectorize_epilogue:
 	vect_location = find_loop_location (loop);
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
 	    && dump_enabled_p ())
@@ -595,6 +654,12 @@ vectorize_epilogue:
 		    ret |= TODO_cleanup_cfg;
 		  }
 	      }
+	    /* If outer loop vectorization fails for LOOP_VECTORIZED guarded
+	       loop, don't vectorize its inner loop; we'll attempt to
+	       vectorize LOOP_VECTORIZED guarded inner loop of the scalar
+	       loop version.  */
+	    if (loop_vectorized_call && loop->inner)
+	      loop->inner->dont_vectorize = true;
 	    continue;
 	  }
 

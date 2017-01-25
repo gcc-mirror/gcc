@@ -1,6 +1,6 @@
 // unique_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -130,6 +130,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	};
 
     public:
+      using _DeleterConstraint = enable_if<
+        __and_<__not_<is_pointer<_Dp>>,
+	       is_default_constructible<_Dp>>::value>;
+
       using pointer = typename _Ptr<_Tp, _Dp>::type;
 
       __uniq_ptr_impl() = default;
@@ -152,6 +156,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Dp = default_delete<_Tp>>
     class unique_ptr
     {
+      template <class _Up>
+      using _DeleterConstraint =
+	typename __uniq_ptr_impl<_Tp, _Up>::_DeleterConstraint::type;
+
       __uniq_ptr_impl<_Tp, _Dp> _M_t;
 
     public:
@@ -175,10 +183,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constructors.
 
       /// Default constructor, creates a unique_ptr that owns nothing.
-      constexpr unique_ptr() noexcept
-      : _M_t()
-      { static_assert(!is_pointer<deleter_type>::value,
-		     "constructed with null function pointer deleter"); }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr() noexcept
+	: _M_t()
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -186,11 +195,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * The deleter will be value-initialized.
        */
-      explicit
-      unique_ptr(pointer __p) noexcept
-      : _M_t(__p)
-      { static_assert(!is_pointer<deleter_type>::value,
-		     "constructed with null function pointer deleter"); }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	explicit
+	unique_ptr(pointer __p) noexcept
+	: _M_t(__p)
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -218,7 +228,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      "rvalue deleter bound to reference"); }
 
       /// Creates a unique_ptr that owns nothing.
-      constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
 
       // Move constructors.
 
@@ -384,6 +396,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Dp>
     class unique_ptr<_Tp[], _Dp>
     {
+      template <typename _Up>
+      using _DeleterConstraint =
+	typename __uniq_ptr_impl<_Tp, _Up>::_DeleterConstraint::type;
+
       __uniq_ptr_impl<_Tp, _Dp> _M_t;
 
       template<typename _Up>
@@ -432,10 +448,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constructors.
 
       /// Default constructor, creates a unique_ptr that owns nothing.
-      constexpr unique_ptr() noexcept
-      : _M_t()
-      { static_assert(!std::is_pointer<deleter_type>::value,
-		      "constructed with null function pointer deleter"); }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr() noexcept
+	: _M_t()
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -445,13 +462,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * The deleter will be value-initialized.
        */
       template<typename _Up,
-               typename = typename enable_if<
+	       typename _Vp = _Dp,
+	       typename = _DeleterConstraint<_Vp>,
+	       typename = typename enable_if<
                  __safe_conversion_raw<_Up>::value, bool>::type>
-      explicit
-      unique_ptr(_Up __p) noexcept
-      : _M_t(__p)
-      { static_assert(!is_pointer<deleter_type>::value,
-		      "constructed with null function pointer deleter"); }
+	explicit
+	unique_ptr(_Up __p) noexcept
+	: _M_t(__p)
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -491,7 +509,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
       /// Creates a unique_ptr that owns nothing.
-      constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
 
       template<typename _Up, typename _Ep,
 	       typename = _Require<__safe_conversion_up<_Up, _Ep>>>

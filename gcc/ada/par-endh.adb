@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -576,7 +576,6 @@ package body Endh is
          --  Cases of normal tokens following an END
 
           (Token = Tok_Case   or else
-           Token = Tok_For    or else
            Token = Tok_If     or else
            Token = Tok_Loop   or else
            Token = Tok_Record or else

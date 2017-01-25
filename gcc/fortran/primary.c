@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -41,7 +41,6 @@ match_kind_param (int *kind, int *is_iso_c)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
-  const char *p;
   match m;
 
   *is_iso_c = 0;
@@ -68,8 +67,7 @@ match_kind_param (int *kind, int *is_iso_c)
   if (sym->value == NULL)
     return MATCH_NO;
 
-  p = gfc_extract_int (sym->value, kind);
-  if (p != NULL)
+  if (gfc_extract_int (sym->value, kind))
     return MATCH_NO;
 
   gfc_set_sym_referenced (sym);
@@ -257,7 +255,6 @@ match_hollerith_constant (gfc_expr **result)
 {
   locus old_loc;
   gfc_expr *e = NULL;
-  const char *msg;
   int num, pad;
   int i;
 
@@ -270,12 +267,8 @@ match_hollerith_constant (gfc_expr **result)
       if (!gfc_notify_std (GFC_STD_LEGACY, "Hollerith constant at %C"))
 	goto cleanup;
 
-      msg = gfc_extract_int (e, &num);
-      if (msg != NULL)
-	{
-	  gfc_error (msg);
-	  goto cleanup;
-	}
+      if (gfc_extract_int (e, &num, 1))
+	goto cleanup;
       if (num == 0)
 	{
 	  gfc_error ("Invalid Hollerith constant: %L must contain at least "
@@ -1017,7 +1010,6 @@ match_string_constant (gfc_expr **result)
   locus old_locus, start_locus;
   gfc_symbol *sym;
   gfc_expr *e;
-  const char *q;
   match m;
   gfc_char_t c, delimiter, *p;
 
@@ -1082,12 +1074,8 @@ match_string_constant (gfc_expr **result)
 
   if (kind == -1)
     {
-      q = gfc_extract_int (sym->value, &kind);
-      if (q != NULL)
-	{
-	  gfc_error (q);
-	  return MATCH_ERROR;
-	}
+      if (gfc_extract_int (sym->value, &kind, 1))
+	return MATCH_ERROR;
       gfc_set_sym_referenced (sym);
     }
 
@@ -1659,7 +1647,7 @@ match_keyword_arg (gfc_actual_arglist *actual, gfc_actual_arglist *base)
 	  }
     }
 
-  actual->name = gfc_get_string (name);
+  actual->name = gfc_get_string ("%s", name);
   return MATCH_YES;
 
 cleanup:
@@ -2436,8 +2424,7 @@ gfc_expr_attr (gfc_expr *e)
 static symbol_attribute
 caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
 {
-  int dimension, codimension, pointer, allocatable, target, coarray_comp,
-      alloc_comp;
+  int dimension, codimension, pointer, allocatable, target, coarray_comp;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
@@ -2450,7 +2437,7 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
   gfc_clear_attr (&attr);
 
   if (refs_comp)
-    *refs_comp = 0;
+    *refs_comp = false;
 
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
     {
@@ -2458,7 +2445,8 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
       codimension = CLASS_DATA (sym)->attr.codimension;
       pointer = CLASS_DATA (sym)->attr.class_pointer;
       allocatable = CLASS_DATA (sym)->attr.allocatable;
-      alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+      attr.alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+      attr.pointer_comp = CLASS_DATA (sym)->ts.u.derived->attr.pointer_comp;
     }
   else
     {
@@ -2466,8 +2454,10 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
       codimension = sym->attr.codimension;
       pointer = sym->attr.pointer;
       allocatable = sym->attr.allocatable;
-      alloc_comp = sym->ts.type == BT_DERIVED
+      attr.alloc_comp = sym->ts.type == BT_DERIVED
 	  ? sym->ts.u.derived->attr.alloc_comp : 0;
+      attr.pointer_comp = sym->ts.type == BT_DERIVED
+	  ? sym->ts.u.derived->attr.pointer_comp : 0;
     }
 
   target = coarray_comp = 0;
@@ -2525,8 +2515,10 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
 	    allocatable = comp->attr.allocatable;
 	  }
 
-	if (refs_comp && strcmp (comp->name, "_data") != 0)
-	  *refs_comp = 1;
+	if (refs_comp && strcmp (comp->name, "_data") != 0
+	    && (ref->next == NULL
+		|| (ref->next->type == REF_ARRAY && ref->next->next == NULL)))
+	  *refs_comp = true;
 
 	if (pointer || attr.proc_pointer)
 	  target = 1;
@@ -2545,7 +2537,6 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
   attr.target = target;
   attr.save = sym->attr.save;
   attr.coarray_comp = coarray_comp;
-  attr.alloc_comp = alloc_comp;
 
   return attr;
 }
@@ -2575,6 +2566,8 @@ gfc_caf_attr (gfc_expr *e, bool in_allocate, bool *refs_comp)
 	      attr.pointer = CLASS_DATA (sym)->attr.class_pointer;
 	      attr.allocatable = CLASS_DATA (sym)->attr.allocatable;
 	      attr.alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+	      attr.pointer_comp = CLASS_DATA (sym)->ts.u.derived
+		  ->attr.pointer_comp;
 	    }
 	}
       else if (e->symtree)

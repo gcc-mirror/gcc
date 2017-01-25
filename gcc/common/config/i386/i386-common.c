@@ -1,5 +1,5 @@
 /* IA-32 common hooks.
-   Copyright (C) 1988-2016 Free Software Foundation, Inc.
+   Copyright (C) 1988-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA_AVX512VBMI | OPTION_MASK_ISA_AVX512BW_SET)
 #define OPTION_MASK_ISA_AVX5124FMAPS_SET OPTION_MASK_ISA_AVX5124FMAPS
 #define OPTION_MASK_ISA_AVX5124VNNIW_SET OPTION_MASK_ISA_AVX5124VNNIW
+#define OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET OPTION_MASK_ISA_AVX512VPOPCNTDQ
 #define OPTION_MASK_ISA_RTM_SET OPTION_MASK_ISA_RTM
 #define OPTION_MASK_ISA_PRFCHW_SET OPTION_MASK_ISA_PRFCHW
 #define OPTION_MASK_ISA_RDSEED_SET OPTION_MASK_ISA_RDSEED
@@ -115,6 +116,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_ABM_SET \
   (OPTION_MASK_ISA_ABM | OPTION_MASK_ISA_POPCNT)
 
+#define OPTION_MASK_ISA_SGX_SET OPTION_MASK_ISA_SGX
 #define OPTION_MASK_ISA_BMI_SET OPTION_MASK_ISA_BMI
 #define OPTION_MASK_ISA_BMI2_SET OPTION_MASK_ISA_BMI2
 #define OPTION_MASK_ISA_LZCNT_SET OPTION_MASK_ISA_LZCNT
@@ -183,6 +185,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_AVX512VBMI_UNSET OPTION_MASK_ISA_AVX512VBMI
 #define OPTION_MASK_ISA_AVX5124FMAPS_UNSET OPTION_MASK_ISA_AVX5124FMAPS
 #define OPTION_MASK_ISA_AVX5124VNNIW_UNSET OPTION_MASK_ISA_AVX5124VNNIW
+#define OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET OPTION_MASK_ISA_AVX512VPOPCNTDQ
 #define OPTION_MASK_ISA_RTM_UNSET OPTION_MASK_ISA_RTM
 #define OPTION_MASK_ISA_PRFCHW_UNSET OPTION_MASK_ISA_PRFCHW
 #define OPTION_MASK_ISA_RDSEED_UNSET OPTION_MASK_ISA_RDSEED
@@ -212,6 +215,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_SHA_UNSET OPTION_MASK_ISA_SHA
 #define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
 #define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
+#define OPTION_MASK_ISA_SGX_UNSET OPTION_MASK_ISA_SGX
 #define OPTION_MASK_ISA_BMI_UNSET OPTION_MASK_ISA_BMI
 #define OPTION_MASK_ISA_BMI2_UNSET OPTION_MASK_ISA_BMI2
 #define OPTION_MASK_ISA_LZCNT_UNSET OPTION_MASK_ISA_LZCNT
@@ -409,6 +413,8 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX5124FMAPS_UNSET;
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX5124VNNIW_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX5124VNNIW_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
 	}
       return true;
 
@@ -478,6 +484,34 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX5124VNNIW_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX5124VNNIW_UNSET;
+	}
+      return true;
+
+    case OPT_mavx512vpopcntdq:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512F_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512F_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
+	}
+      return true;
+
+    case OPT_msgx:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_SGX_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_SGX_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_SGX_UNSET;
 	}
       return true;
 

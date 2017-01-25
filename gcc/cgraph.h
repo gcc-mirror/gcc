@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -131,11 +131,9 @@ public:
 			     enum ipa_ref_use use_type, gimple *stmt);
 
   /* If VAL is a reference to a function or a variable, add a reference from
-     this symtab_node to the corresponding symbol table node.  USE_TYPE specify
-     type of the use and STMT the statement (if it exists).  Return the new
+     this symtab_node to the corresponding symbol table node.  Return the new
      reference or NULL if none was created.  */
-  ipa_ref *maybe_create_reference (tree val, enum ipa_ref_use use_type,
-				   gimple *stmt);
+  ipa_ref *maybe_create_reference (tree val, gimple *stmt);
 
   /* Clone all references from symtab NODE to this symtab_node.  */
   void clone_references (symtab_node *node);
@@ -327,6 +325,10 @@ public:
      either outside this translation unit, something magic in the system
      configury. This function is used just during symbol creation.  */
   bool needed_p (void);
+
+  /* Return true if this symbol is a function from the C frontend specified
+     directly in RTL form (with "__RTL").  */
+  bool native_rtl_p () const;
 
   /* Return true when there are references to the node.  */
   bool referred_to_p (bool include_self = true);

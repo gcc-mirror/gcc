@@ -119,7 +119,7 @@ from which it generates a sequence of assembly language instructions.
 
 The examples in this chapter will illustrate several of the forms
 for invoking `Asm`; a complete specification of the syntax
-is found in the `Machine_Code_Insertions` section of the 
+is found in the `Machine_Code_Insertions` section of the
 :title:`GNAT Reference Manual`.
 
 Under the standard GNAT conventions, the `Nothing` procedure
@@ -129,7 +129,7 @@ You can build the executable in the usual way:
   ::
 
      $ gnatmake nothing
-  
+
 However, the interesting aspect of this example is not its run-time behavior
 but rather the generated assembly code.
 To see this output, invoke the compiler as follows:
@@ -137,7 +137,7 @@ To see this output, invoke the compiler as follows:
   ::
 
      $  gcc -c -S -fomit-frame-pointer -gnatp nothing.adb
-  
+
 where the options are:
 
 * :samp:`-c`
@@ -191,7 +191,7 @@ Assembling the file using the command
 
   ::
 
-     $ as nothing.s  
+     $ as nothing.s
 
 will give you error messages whose lines correspond to the assembler
 input file, so you can easily find and correct any mistakes you made.
@@ -224,7 +224,7 @@ statements.
              Outputs => Unsigned_32'Asm_Output ("=g", Flags));
         Put_Line ("Flags register:" & Flags'Img);
      end Get_Flags;
-  
+
 In order to have a nicely aligned assembly listing, we have separated
 multiple assembler statements in the Asm template string with linefeed
 (ASCII.LF) and horizontal tab (ASCII.HT) characters.
@@ -243,7 +243,7 @@ It would have been legal to write the Asm invocation as:
   .. code-block:: ada
 
      Asm ("pushfl popl %%eax movl %%eax, %0")
-  
+
 but in the generated assembler file, this would come out as:
 
   ::
@@ -251,7 +251,7 @@ but in the generated assembler file, this would come out as:
      #APP
         pushfl popl %eax movl %eax, -40(%ebp)
      #NO_APP
-  
+
 which is not so convenient for the human reader.
 
 We use Ada comments
@@ -273,7 +273,7 @@ the third statement in the Asm template string:
   ::
 
      movl %%eax, %0
-  
+
 The intent is to store the contents of the eax register in a variable that can
 be accessed in Ada.  Simply writing `movl %%eax, Flags` would not
 necessarily work, since the compiler might optimize by using a register
@@ -288,21 +288,21 @@ parameter to `Asm`:
   .. code-block:: ada
 
      Outputs => Unsigned_32'Asm_Output ("=g", Flags));
-  
+
 The output is defined by the `Asm_Output` attribute of the target type;
 the general format is
 
   .. code-block:: ada
 
      Type'Asm_Output (constraint_string, variable_name)
-  
+
 The constraint string directs the compiler how
 to store/access the associated variable.  In the example
 
   .. code-block:: ada
 
      Unsigned_32'Asm_Output ("=m", Flags);
-  
+
 the `"m"` (memory) constraint tells the compiler that the variable
 `Flags` should be stored in a memory variable, thus preventing
 the optimizer from keeping it in a register.  In contrast,
@@ -310,7 +310,7 @@ the optimizer from keeping it in a register.  In contrast,
   .. code-block:: ada
 
      Unsigned_32'Asm_Output ("=r", Flags);
-  
+
 uses the `"r"` (register) constraint, telling the compiler to
 store the variable in a register.
 
@@ -352,7 +352,7 @@ integer.  Thus in
           "popl %%eax"      & LF & HT & -- load eax with flags
           "movl %%eax, %0",             -- store flags in variable
           Outputs => Unsigned_32'Asm_Output ("=g", Flags));
-    
+
 
 `%0` will be replaced in the expanded code by the appropriate operand,
 whatever
@@ -375,7 +375,7 @@ For example:
           Outputs => (Unsigned_32'Asm_Output ("=g", Var_A),   --  %0 = Var_A
                       Unsigned_32'Asm_Output ("=g", Var_B),   --  %1 = Var_B
                       Unsigned_32'Asm_Output ("=g", Var_C))); --  %2 = Var_C
-  
+
 where `Var_A`, `Var_B`, and `Var_C` are variables
 in the Ada program.
 
@@ -398,7 +398,7 @@ variable, instead of including the store instruction explicitly in the
              Outputs => Unsigned_32'Asm_Output ("=a", Flags));
         Put_Line ("Flags register:" & Flags'Img);
      end Get_Flags_2;
-  
+
 The `"a"` constraint tells the compiler that the `Flags`
 variable will come from the eax register. Here is the resulting code:
 
@@ -409,7 +409,7 @@ variable will come from the eax register. Here is the resulting code:
         popl %eax
      #NO_APP
         movl %eax,-40(%ebp)
-  
+
 The compiler generated the store of eax into Flags after
 expanding the assembler code.
 
@@ -430,7 +430,7 @@ more simply, we could just pop the flags directly into the program variable:
              Outputs => Unsigned_32'Asm_Output ("=g", Flags));
         Put_Line ("Flags register:" & Flags'Img);
      end Get_Flags_3;
-  
+
 
 .. _Input_Variables_in_Inline_Assembler:
 
@@ -465,7 +465,7 @@ The program simply increments its input value by 1:
         Value := Incr (Value);
        Put_Line ("Value after is" & Value'Img);
      end Increment;
-  
+
 The `Outputs` parameter to `Asm` specifies
 that the result will be in the eax register and that it is to be stored
 in the `Result` variable.
@@ -505,7 +505,7 @@ The resulting assembler file (with *-O2* optimization) contains:
         movl %ecx,(%esp)
         addl $4,%esp
         ret
-  
+
 
 .. _Inlining_Inline_Assembler_Code:
 
@@ -545,7 +545,7 @@ Here is the resulting program:
         Value := Increment (Value);
         Put_Line ("Value after is" & Value'Img);
      end Increment_2;
- 
+
 Compile the program with both optimization (*-O2*) and inlining
 (*-gnatn*) enabled.
 
@@ -557,7 +557,7 @@ point in `Increment` where our function used to be called:
 
      pushl %edi
      call _increment__incr.1
-  
+
 the code for the function body directly appears:
 
 
@@ -607,7 +607,7 @@ assembly code; for example:
           "movl %%ebx, %1",
           Outputs => Unsigned_32'Asm_Output ("=g", Var_Out),
           Inputs  => Unsigned_32'Asm_Input  ("g", Var_In));
-  
+
 where the compiler (since it does not analyze the `Asm` template string)
 does not know you are using the ebx register.
 
@@ -622,7 +622,7 @@ to identify the registers that will be used by your assembly code:
           Outputs => Unsigned_32'Asm_Output ("=g", Var_Out),
           Inputs  => Unsigned_32'Asm_Input  ("g", Var_In),
           Clobber => "ebx");
-  
+
 The Clobber parameter is a static string expression specifying the
 register(s) you are using.  Note that register names are *not* prefixed
 by a percent sign. Also, if more than one register is used then their names
@@ -657,7 +657,7 @@ the `Volatile` parameter to `True`; for example:
           Inputs   => Unsigned_32'Asm_Input  ("g", Var_In),
           Clobber  => "ebx",
           Volatile => True);
-  
+
 By default, `Volatile` is set to `False` unless there is no
 `Outputs` parameter.
 

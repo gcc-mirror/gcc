@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010-2016 Free Software Foundation, Inc.
+   Copyright (C) 2010-2017 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -47,6 +47,10 @@ static int inline_matmul_assign (gfc_code **, int *, void *);
 static gfc_code * create_do_loop (gfc_expr *, gfc_expr *, gfc_expr *,
 				  locus *, gfc_namespace *,
 				  char *vname=NULL);
+
+#ifdef CHECKING_P
+static void check_locus (gfc_namespace *);
+#endif
 
 /* How deep we are inside an argument list.  */
 
@@ -127,6 +131,10 @@ gfc_run_passes (gfc_namespace *ns)
   doloop_list.release ();
   int w, e;
 
+#ifdef CHECKING_P
+  check_locus (ns);
+#endif
+
   if (flag_frontend_optimize)
     {
       optimize_namespace (ns);
@@ -144,6 +152,53 @@ gfc_run_passes (gfc_namespace *ns)
   if (flag_realloc_lhs)
     realloc_strings (ns);
 }
+
+#ifdef CHECKING_P
+
+/* Callback function: Warn if there is no location information in a
+   statement.  */
+
+static int
+check_locus_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data ATTRIBUTE_UNUSED)
+{
+  current_code = c;
+  if (c && *c && (((*c)->loc.nextc == NULL) || ((*c)->loc.lb == NULL)))
+    gfc_warning_internal (0, "No location in statement");
+
+  return 0;
+}
+
+
+/* Callback function: Warn if there is no location information in an
+   expression.  */
+
+static int
+check_locus_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data ATTRIBUTE_UNUSED)
+{
+
+  if (e && *e && (((*e)->where.nextc == NULL || (*e)->where.lb == NULL)))
+    gfc_warning_internal (0, "No location in expression near %L",
+			  &((*current_code)->loc));
+  return 0;
+}
+
+/* Run check for missing location information.  */
+
+static void
+check_locus (gfc_namespace *ns)
+{
+  gfc_code_walker (&ns->code, check_locus_code, check_locus_expr, NULL);
+
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	check_locus (ns);
+    }
+}
+
+#endif
 
 /* Callback for each gfc_code node invoked from check_realloc_strings.
    For an allocatable LHS string which also appears as a variable on
@@ -1856,7 +1911,7 @@ optimize_minmaxloc (gfc_expr **e)
   strcpy (name, fn->value.function.name);
   p = strstr (name, "loc0");
   p[3] = '1';
-  fn->value.function.name = gfc_get_string (name);
+  fn->value.function.name = gfc_get_string ("%s", name);
   if (fn->value.function.actual->next)
     {
       a = fn->value.function.actual->next;

@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -199,7 +199,8 @@ DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm",
 DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
 
 /* A using declaration.  USING_DECL_SCOPE contains the specified
-   scope.  In a member using decl, unless DECL_DEPENDENT_P is true,
+   scope.  In a variadic using-declaration, this is a TYPE_PACK_EXPANSION.
+   In a member using decl, unless DECL_DEPENDENT_P is true,
    USING_DECL_DECLS contains the _DECL or OVERLOAD so named.  This is
    not an alias, but is later expanded into multiple aliases.  */
 DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)

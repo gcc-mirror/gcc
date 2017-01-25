@@ -1,5 +1,5 @@
 // -*- C++ -*- Implement the members of exception_ptr.
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -23,9 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/c++config.h>
-#include <bits/atomic_lockfree_defines.h>
-
-#if ATOMIC_INT_LOCK_FREE > 1
+#include "eh_atomics.h"
 
 #define _GLIBCXX_EH_PTR_COMPAT
 
@@ -101,7 +99,7 @@ std::__exception_ptr::exception_ptr::_M_addref() noexcept
     {
       __cxa_refcounted_exception *eh =
 	__get_refcounted_exception_header_from_obj (_M_exception_object);
-      __atomic_add_fetch (&eh->referenceCount, 1, __ATOMIC_ACQ_REL);
+      __gnu_cxx::__eh_atomic_inc (&eh->referenceCount);
     }
 }
 
@@ -113,7 +111,7 @@ std::__exception_ptr::exception_ptr::_M_release() noexcept
     {
       __cxa_refcounted_exception *eh =
 	__get_refcounted_exception_header_from_obj (_M_exception_object);
-      if (__atomic_sub_fetch (&eh->referenceCount, 1, __ATOMIC_ACQ_REL) == 0)
+      if (__gnu_cxx::__eh_atomic_dec (&eh->referenceCount))
         {
 	  if (eh->exc.exceptionDestructor)
 	    eh->exc.exceptionDestructor (_M_exception_object);
@@ -211,7 +209,7 @@ __gxx_dependent_exception_cleanup(_Unwind_Reason_Code code,
 
   __cxa_free_dependent_exception (dep);
 
-  if (__atomic_sub_fetch (&header->referenceCount, 1, __ATOMIC_ACQ_REL) == 0)
+  if (__gnu_cxx::__eh_atomic_dec (&header->referenceCount))
     {
       if (header->exc.exceptionDestructor)
 	header->exc.exceptionDestructor (header + 1);
@@ -230,7 +228,7 @@ std::rethrow_exception(std::exception_ptr ep)
 
   __cxa_dependent_exception *dep = __cxa_allocate_dependent_exception ();
   dep->primaryException = obj;
-  __atomic_add_fetch (&eh->referenceCount, 1,  __ATOMIC_ACQ_REL);
+  __gnu_cxx::__eh_atomic_inc (&eh->referenceCount);
 
   dep->unexpectedHandler = get_unexpected ();
   dep->terminateHandler = get_terminate ();
@@ -252,5 +250,3 @@ std::rethrow_exception(std::exception_ptr ep)
 }
 
 #undef _GLIBCXX_EH_PTR_COMPAT
-
-#endif

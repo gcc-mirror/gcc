@@ -1,5 +1,5 @@
 /* Definitions for describing one tree-ssa optimization pass.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 
 This file is part of GCC.
@@ -422,6 +422,7 @@ extern gimple_opt_pass *make_pass_omp_device_lower (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_object_sizes (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strlen (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_fold_builtins (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_post_ipa_warn (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_stdarg (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_early_warn_uninitialized (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_late_warn_uninitialized (gcc::context *ctxt);

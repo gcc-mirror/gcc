@@ -106,7 +106,7 @@ package body Debug is
    --  d.m  For -gnatl, print full source only for main unit
    --  d.n  Print source file names
    --  d.o  Conservative elaboration order for indirect calls
-   --  d.p
+   --  d.p  Use original Ada 95 semantics for Bit_Order (disable AI95-0133)
    --  d.q
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
    --  d.s
@@ -127,8 +127,8 @@ package body Debug is
    --  d.G  Ignore calls through generic formal parameters for elaboration
    --  d.H  GNSA mode for ASIS
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
-   --  d.J  Disable parallel SCIL generation mode
-   --  d.K
+   --  d.J
+   --  d.K  Enable generation of contract-only procedures in CodePeer mode
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
@@ -160,7 +160,7 @@ package body Debug is
    --  d.3  Output debugging information from Exp_Unst
    --  d.4  Do not delete generated C file in case of errors
    --  d.5  Do not generate imported subprogram definitions in C code
-   --  d.6
+   --  d.6  Do not avoid declaring unreferenced itypes in C code
    --  d.7
    --  d.8
    --  d.9
@@ -181,14 +181,14 @@ package body Debug is
    --  dl
    --  dm
    --  dn  List details of manipulation of Num_Pred values
-   --  do  Use old preference for elaboration order
-   --  dp
+   --  do  Use older preference for elaboration order
+   --  dp  Use old preference for elaboration order
    --  dq
    --  dr
    --  ds
    --  dt
    --  du  List units as they are acquired
-   --  dv
+   --  dv  Verbose debugging printouts
    --  dw
    --  dx  Force binder to read xref information from ali files
    --  dy
@@ -376,8 +376,7 @@ package body Debug is
    --       general Elaborate_All is still required because of nested calls.
 
    --  dE   Apply compile time elaboration checking for with relations between
-   --       predefined units. Normally no checks are made (it seems that at
-   --       least on the SGI, such checks run into trouble).
+   --       predefined units. Normally no checks are made.
 
    --  dF   Front end data layout enabled. Normally front end data layout
    --       is only enabled if the target parameter Backend_Layout is False.
@@ -407,7 +406,7 @@ package body Debug is
    --  dL   Output trace information on elaboration checking. This debug
    --       switch causes output to be generated showing each call or
    --       instantiation as it is checked, and the progress of the recursive
-   --       trace through calls at elaboration time.
+   --       trace through elaboration calls at compile time.
 
    --  dM   Assume all variables have been modified, and ignore current value
    --       indications. This debug flag disconnects the tracking of constant
@@ -559,6 +558,10 @@ package body Debug is
    --  d.o  Conservative elaboration order for indirect calls. This causes
    --       P'Access to be treated as a call in more cases.
 
+   --  d.p  In Ada 95 (or 83) mode, use original Ada 95 behavior for the
+   --       interpretation of component clauses crossing byte boundaries when
+   --       using the non-default bit order (i.e. ignore AI95-0133).
+
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.
 
@@ -642,9 +645,12 @@ package body Debug is
    --       cases being able to change this default might be useful to remove
    --       some false positives.
 
-   --  d.J  Disable parallel SCIL generation. Normally SCIL file generation is
-   --       done in parallel to speed processing. This switch disables this
-   --       behavior.
+   --  d.K  Enable generation of contract-only procedures in CodePeer mode and
+   --       report a warning on subprograms for which the contract-only body
+   --       cannot be built. Currently reported on subprograms defined in
+   --       nested package specs that have some formal (or return type) whose
+   --       type is a private type defined in some enclosing package and that
+   --       have pre/postconditions.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special
@@ -775,6 +781,10 @@ package body Debug is
    --       This debug flag disables this generation when generating C code,
    --       assuming a proper #include will be used instead.
 
+   --  d.6  By default the C back-end avoids declaring itypes that are not
+   --       referenced by the generated C code. This debug flag restores the
+   --       output of all the itypes.
+
    ------------------------------------------
    -- Documentation for Binder Debug Flags --
    ------------------------------------------
@@ -807,13 +817,23 @@ package body Debug is
    --      the algorithm used to determine a correct order of elaboration. This
    --      is useful in diagnosing any problems in its behavior.
 
-   --  do  Use old elaboration order preference. The new preference rules
+   --  do  Use older elaboration order preference. The new preference rules
    --      prefer specs with no bodies to specs with bodies, and between two
    --      specs with bodies, prefers the one whose body is closer to being
    --      able to be elaborated. This is a clear improvement, but we provide
-   --      this debug flag in case of regressions.
+   --      this debug flag in case of regressions. Note: -do is even older than
+   --      -dp.
+
+   --  dp  Use old elaboration order preference. The new preference rules
+   --      elaborate all units within a strongly connected component together,
+   --      with no other units in between. In particular, if a spec/body pair
+   --      can be elaborated together, it will be. In the new order, the binder
+   --      behaves as if every pragma Elaborate_All that would be legal is
+   --      present, even if it does not appear in the source code.
 
    --  du  List unit name and file name for each unit as it is read in
+
+   --  dv  Verbose debugging printouts
 
    --  dx  Force the binder to read (and then ignore) the xref information
    --      in ali files (used to check that read circuit is working OK).

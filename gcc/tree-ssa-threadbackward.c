@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -865,6 +865,8 @@ pass_early_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
 unsigned int
 pass_early_thread_jumps::execute (function *fun)
 {
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
   /* Try to thread each block with more than one successor.  */
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
@@ -873,6 +875,8 @@ pass_early_thread_jumps::execute (function *fun)
 	find_jump_threads_backwards (bb, false);
     }
   thread_through_all_blocks (true);
+
+  loop_optimizer_finalize ();
   return 0;
 }
 

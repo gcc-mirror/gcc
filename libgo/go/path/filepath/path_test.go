@@ -6,6 +6,7 @@ package filepath_test
 
 import (
 	"errors"
+	"internal/testenv"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,8 +15,6 @@ import (
 	"strings"
 	"testing"
 )
-
-var supportsSymlinks = true
 
 type PathTest struct {
 	path, result string
@@ -532,7 +531,7 @@ func TestWalkSkipDirOnFile(t *testing.T) {
 	touch(t, filepath.Join(td, "dir/foo2"))
 
 	sawFoo2 := false
-	filepath.Walk(td, func(path string, info os.FileInfo, err error) error {
+	walker := func(path string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(path, "foo2") {
 			sawFoo2 = true
 		}
@@ -540,8 +539,20 @@ func TestWalkSkipDirOnFile(t *testing.T) {
 			return filepath.SkipDir
 		}
 		return nil
-	})
+	}
 
+	err = filepath.Walk(td, walker)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sawFoo2 {
+		t.Errorf("SkipDir on file foo1 did not block processing of foo2")
+	}
+
+	err = filepath.Walk(filepath.Join(td, "dir"), walker)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if sawFoo2 {
 		t.Errorf("SkipDir on file foo1 did not block processing of foo2")
 	}
@@ -779,13 +790,7 @@ func simpleJoin(dir, path string) string {
 }
 
 func TestEvalSymlinks(t *testing.T) {
-	switch runtime.GOOS {
-	case "android", "nacl", "plan9":
-		t.Skipf("skipping on %s", runtime.GOOS)
-	}
-	if !supportsSymlinks {
-		t.Skip("skipping because symlinks are not supported")
-	}
+	testenv.MustHaveSymlink(t)
 
 	tmpDir, err := ioutil.TempDir("", "evalsymlink")
 	if err != nil {
@@ -875,6 +880,40 @@ func TestEvalSymlinks(t *testing.T) {
 			t.Errorf(`EvalSymlinks(".") in %q directory returns %q, want "." or %q`, d.path, p, want)
 		}()
 
+		// test EvalSymlinks("C:.") on Windows
+		if runtime.GOOS == "windows" {
+			func() {
+				defer func() {
+					err := os.Chdir(wd)
+					if err != nil {
+						t.Fatal(err)
+					}
+				}()
+
+				err := os.Chdir(path)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				volDot := filepath.VolumeName(tmpDir) + "."
+
+				p, err := filepath.EvalSymlinks(volDot)
+				if err != nil {
+					t.Errorf(`EvalSymlinks("%s") in %q directory error: %v`, volDot, d.path, err)
+					return
+				}
+				if p == volDot {
+					return
+				}
+				want := filepath.Clean(findEvalSymlinksTestDirsDest(t, testdirs, d.path))
+				if p == want {
+					return
+				}
+				t.Errorf(`EvalSymlinks("%s") in %q directory returns %q, want %q or %q`, volDot, d.path, p, volDot, want)
+			}()
+		}
+
 		// test EvalSymlinks(".."+path)
 		func() {
 			defer func() {
@@ -926,14 +965,30 @@ func TestEvalSymlinks(t *testing.T) {
 	}
 }
 
+func TestEvalSymlinksIsNotExist(t *testing.T) {
+	testenv.MustHaveSymlink(t)
+
+	defer chtmpdir(t)()
+
+	_, err := filepath.EvalSymlinks("notexist")
+	if !os.IsNotExist(err) {
+		t.Errorf("expected the file is not found, got %v\n", err)
+	}
+
+	err = os.Symlink("notexist", "link")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove("link")
+
+	_, err = filepath.EvalSymlinks("link")
+	if !os.IsNotExist(err) {
+		t.Errorf("expected the file is not found, got %v\n", err)
+	}
+}
+
 func TestIssue13582(t *testing.T) {
-	switch runtime.GOOS {
-	case "android", "nacl", "plan9":
-		t.Skipf("skipping on %s", runtime.GOOS)
-	}
-	if !supportsSymlinks {
-		t.Skip("skipping because symlinks are not supported")
-	}
+	testenv.MustHaveSymlink(t)
 
 	tmpDir, err := ioutil.TempDir("", "issue13582")
 	if err != nil {
@@ -1009,13 +1064,16 @@ var absTestDirs = []string{
 var absTests = []string{
 	".",
 	"b",
+	"b/",
 	"../a",
 	"../a/b",
 	"../a/b/./c/../../.././a",
+	"../a/b/./c/../../.././a/",
 	"$",
 	"$/.",
 	"$/a/../a/b",
 	"$/a/b/c/../../.././a",
+	"$/a/b/c/../../.././a/",
 }
 
 func TestAbs(t *testing.T) {
@@ -1080,7 +1138,7 @@ func TestAbs(t *testing.T) {
 		if !filepath.IsAbs(abspath) {
 			t.Errorf("Abs(%q)=%q, not an absolute path", path, abspath)
 		}
-		if filepath.IsAbs(path) && abspath != filepath.Clean(path) {
+		if filepath.IsAbs(abspath) && abspath != filepath.Clean(abspath) {
 			t.Errorf("Abs(%q)=%q, isn't clean", path, abspath)
 		}
 	}
@@ -1244,11 +1302,11 @@ func TestBug3486(t *testing.T) { // https://golang.org/issue/3486
 	if err != nil {
 		t.Fatal(err)
 	}
-	bugs := filepath.Join(root, "bugs")
+	bugs := filepath.Join(root, "fixedbugs")
 	ken := filepath.Join(root, "ken")
 	seenBugs := false
 	seenKen := false
-	filepath.Walk(root, func(pth string, info os.FileInfo, err error) error {
+	err = filepath.Walk(root, func(pth string, info os.FileInfo, err error) error {
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1259,12 +1317,15 @@ func TestBug3486(t *testing.T) { // https://golang.org/issue/3486
 			return filepath.SkipDir
 		case ken:
 			if !seenBugs {
-				t.Fatal("filepath.Walk out of order - ken before bugs")
+				t.Fatal("filepath.Walk out of order - ken before fixedbugs")
 			}
 			seenKen = true
 		}
 		return nil
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !seenKen {
 		t.Fatalf("%q not seen", ken)
 	}

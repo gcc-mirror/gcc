@@ -59,7 +59,8 @@ DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs \
 	$(srcdir)/libmpx.spec.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/lead-dot.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
@@ -216,6 +217,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -255,7 +257,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 @LIBMPX_SUPPORTED_TRUE@SUBDIRS = mpxrt $(am__append_1)
 @LIBMPX_SUPPORTED_TRUE@nodist_toolexeclib_HEADERS = libmpx.spec
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

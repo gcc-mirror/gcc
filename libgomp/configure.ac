@@ -379,6 +379,9 @@ AC_SUBST(OMP_LOCK_25_KIND)
 AC_SUBST(OMP_NEST_LOCK_25_KIND)
 CFLAGS="$save_CFLAGS"
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_CONFIG_FILES(omp.h omp_lib.h omp_lib.f90 libgomp_f.h)
 AC_CONFIG_FILES(Makefile testsuite/Makefile libgomp.spec)
 AC_CONFIG_FILES([testsuite/libgomp-test-support.pt.exp:testsuite/libgomp-test-support.exp.in])

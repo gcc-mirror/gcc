@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of GCC.
@@ -71,7 +71,7 @@
 #endif
 
 #if !defined(inhibit_libc) && defined(HAVE_LD_EH_FRAME_HDR) \
-    && defined(__OpenBSD__)
+    && (defined(__OpenBSD__) || defined(__NetBSD__))
 # define ElfW(type) Elf_##type
 # define USE_PT_GNU_EH_FRAME
 #endif

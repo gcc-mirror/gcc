@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2016 Free Software Foundation, Inc.
+   Copyright (C) 1988-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1034,7 +1034,7 @@ more_const_call_expr_args_p (const const_call_expr_arg_iterator *iter)
 
 /* This function validates the types of a function call argument list
    against a specified list of tree_codes.  If the last specifier is a 0,
-   that represents an ellipses, otherwise the last specifier must be a
+   that represents an ellipsis, otherwise the last specifier must be a
    VOID_TYPE.  */
 
 static bool
@@ -1049,9 +1049,14 @@ validate_arglist (const_tree callexpr, ...)
   va_start (ap, callexpr);
   init_const_call_expr_arg_iterator (callexpr, &iter);
 
-  do
+  /* Get a bitmap of pointer argument numbers declared attribute nonnull.  */
+  tree fn = CALL_EXPR_FN (callexpr);
+  bitmap argmap = get_nonnull_args (TREE_TYPE (TREE_TYPE (fn)));
+
+  for (unsigned argno = 1; ; ++argno)
     {
       code = (enum tree_code) va_arg (ap, int);
+
       switch (code)
 	{
 	case 0:
@@ -1063,6 +1068,19 @@ validate_arglist (const_tree callexpr, ...)
 	     true, otherwise return false.  */
 	  res = !more_const_call_expr_args_p (&iter);
 	  goto end;
+	case POINTER_TYPE:
+	  /* The actual argument must be nonnull when either the whole
+	     called function has been declared nonnull, or when the formal
+	     argument corresponding to the actual argument has been.  */
+	  if (argmap
+	      && (bitmap_empty_p (argmap) || bitmap_bit_p (argmap, argno)))
+	    {
+	      arg = next_const_call_expr_arg (&iter);
+	      if (!validate_arg (arg, code) || integer_zerop (arg))
+		goto end;
+	      break;
+	    }
+	  /* FALLTHRU */
 	default:
 	  /* If no parameters remain or the parameter's code does not
 	     match the specified code, return false.  Otherwise continue
@@ -1073,12 +1091,13 @@ validate_arglist (const_tree callexpr, ...)
 	  break;
 	}
     }
-  while (1);
 
   /* We need gotos here since we can only have one VA_CLOSE in a
      function.  */
  end: ;
   va_end (ap);
+
+  BITMAP_FREE (argmap);
 
   return res;
 }
@@ -3012,42 +3031,6 @@ expand_builtin_memcpy_args (tree dest, tree src, tree len, rtx target, tree exp)
   return dest_addr;
 }
 
-/* Fill the 2-element RANGE array with the minimum and maximum values
-   EXP is known to have and return true, otherwise null and return
-   false.  */
-
-static bool
-get_size_range (tree exp, tree range[2])
-{
-  if (tree_fits_uhwi_p (exp))
-    {
-      range[0] = range[1] = exp;
-      return true;
-    }
-
-  if (TREE_CODE (exp) == SSA_NAME)
-    {
-      wide_int min, max;
-      enum value_range_type range_type = get_range_info (exp, &min, &max);
-
-      if (range_type == VR_RANGE)
-	{
-	  /* Interpret the bound in the variable's type.  */
-	  range[0] = wide_int_to_tree (TREE_TYPE (exp), min);
-	  range[1] = wide_int_to_tree (TREE_TYPE (exp), max);
-	  return true;
-	}
-      else if (range_type == VR_ANTI_RANGE)
-	{
-	  /* FIXME: Handle anti-ranges.  */
-	}
-    }
-
-  range[0] = NULL_TREE;
-  range[1] = NULL_TREE;
-  return false;
-}
-
 /* Try to verify that the sizes and lengths of the arguments to a string
    manipulation function given by EXP are within valid bounds and that
    the operation does not lead to buffer overflow.  Arguments other than
@@ -3091,7 +3074,7 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree str, tree objsize)
     {
       /* STR is normally a pointer to string but as a special case
 	 it can be an integer denoting the length of a string.  */
-      if (TREE_CODE (TREE_TYPE (str)) == POINTER_TYPE)
+      if (POINTER_TYPE_P (TREE_TYPE (str)))
 	{
 	  /* Try to determine the range of lengths the source string
 	     refers to.  If it can be determined add one to it for
@@ -4797,18 +4780,30 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
 {
   rtx op0;
   rtx result;
-  bool valid_arglist;
   unsigned int align;
-  bool alloca_with_align = (DECL_FUNCTION_CODE (get_callee_fndecl (exp))
+  tree fndecl = get_callee_fndecl (exp);
+  bool alloca_with_align = (DECL_FUNCTION_CODE (fndecl)
 			    == BUILT_IN_ALLOCA_WITH_ALIGN);
 
-  valid_arglist
+  bool valid_arglist
     = (alloca_with_align
        ? validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE)
        : validate_arglist (exp, INTEGER_TYPE, VOID_TYPE));
 
   if (!valid_arglist)
     return NULL_RTX;
+
+  if ((alloca_with_align && !warn_vla_limit)
+      || (!alloca_with_align && !warn_alloca_limit))
+    {
+      /* -Walloca-larger-than and -Wvla-larger-than settings override
+	 the more general -Walloc-size-larger-than so unless either of
+	 the former options is specified check the alloca arguments for
+	 overflow.  */
+      tree args[] = { CALL_EXPR_ARG (exp, 0), NULL_TREE };
+      int idx[] = { 0, -1 };
+      maybe_warn_alloc_args_overflow (fndecl, exp, args, idx);
+    }
 
   /* Compute the argument.  */
   op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
@@ -9109,7 +9104,7 @@ rewrite_call_expr (location_t loc, tree exp, int skip, tree fndecl, int n, ...)
 }
 
 /* Validate a single argument ARG against a tree code CODE representing
-   a type.  */
+   a type.  Return true when argument is valid.  */
 
 static bool
 validate_arg (const_tree arg, enum tree_code code)

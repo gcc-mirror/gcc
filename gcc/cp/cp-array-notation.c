@@ -1,7 +1,7 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    It contains routines to handle Array Notation expression
    handling routines in the C++ Compiler.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
                   Intel Corporation
 
@@ -1198,6 +1198,10 @@ expand_array_notation_exprs (tree t)
       }
 
     case OMP_PARALLEL:
+      OMP_PARALLEL_BODY (t)
+	= expand_array_notation_exprs (OMP_PARALLEL_BODY (t));
+      return t;
+
     case OMP_TASK:
     case OMP_FOR:
     case OMP_SINGLE:

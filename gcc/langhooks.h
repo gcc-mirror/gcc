@@ -1,5 +1,5 @@
 /* The lang_hooks data structure.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -166,6 +166,10 @@ struct lang_hooks_for_types
   /* Returns -1 if dwarf ATTR shouldn't be added for TYPE, or the attribute
      value otherwise.  */
   int (*type_dwarf_attribute) (const_tree, int);
+
+  /* Returns a tree for the unit size of T excluding tail padding that
+     might be used by objects inheriting from T.  */
+  tree (*unit_size_without_reusable_padding) (tree);
 };
 
 /* Language hooks related to decls and the symbol table.  */

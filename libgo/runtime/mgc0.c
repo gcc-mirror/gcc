@@ -7,7 +7,7 @@
 // GC is:
 // - mark&sweep
 // - mostly precise (with the exception of some C-allocated objects, assembly frames/arguments, etc)
-// - parallel (up to MaxGcproc threads)
+// - parallel (up to _MaxGcproc threads)
 // - partially concurrent (mark is stop-the-world, while sweep is concurrent)
 // - non-moving/non-compacting
 // - full (non-partial)
@@ -389,7 +389,7 @@ struct BufferList
 	uint32 busy;
 	byte pad[CacheLineSize];
 };
-static BufferList bufferList[MaxGcproc];
+static BufferList bufferList[_MaxGcproc];
 
 static void enqueue(Obj obj, Workbuf **_wbuf, Obj **_wp, uintptr *_nobj);
 
@@ -1279,11 +1279,8 @@ markroot(ParFor *desc, uint32 i)
 		// For gccgo we use this for all the other global roots.
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_m0, sizeof runtime_m0, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_g0, sizeof runtime_g0, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_allg, sizeof runtime_allg, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_allm, sizeof runtime_allm, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allp, sizeof runtime_allp, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&work, sizeof work, 0});
-		runtime_proc_scan(&wbuf, enqueue1);
 		break;
 
 	case RootFinalizers:
@@ -1335,9 +1332,9 @@ markroot(ParFor *desc, uint32 i)
 
 	default:
 		// the rest is scanning goroutine stacks
-		if(i - RootCount >= runtime_allglen)
+		if(i - RootCount >= runtime_getallglen())
 			runtime_throw("markroot: bad index");
-		gp = runtime_allg[i - RootCount];
+		gp = runtime_getallg(i - RootCount);
 		// remember when we've first observed the G blocked
 		// needed only to output in traceback
 		if((gp->atomicstatus == _Gwaiting || gp->atomicstatus == _Gsyscall) && gp->waitsince == 0)
@@ -2004,7 +2001,7 @@ runtime_updatememstats(GCStats *stats)
 	if(stats)
 		runtime_memclr((byte*)stats, sizeof(*stats));
 	stacks_inuse = 0;
-	for(mp=runtime_allm; mp; mp=mp->alllink) {
+	for(mp=runtime_getallm(); mp; mp=mp->alllink) {
 		//stacks_inuse += mp->stackinuse*FixedStack;
 		if(stats) {
 			src = (uint64*)&mp->gcstats;
@@ -2230,7 +2227,7 @@ gc(struct gc_args *args)
 
 	m->locks++;	// disable gc during mallocs in parforalloc
 	if(work.markfor == nil)
-		work.markfor = runtime_parforalloc(MaxGcproc);
+		work.markfor = runtime_parforalloc(_MaxGcproc);
 	m->locks--;
 
 	tm1 = 0;
@@ -2244,7 +2241,7 @@ gc(struct gc_args *args)
 	work.nwait = 0;
 	work.ndone = 0;
 	work.nproc = runtime_gcprocs();
-	runtime_parforsetup(work.markfor, work.nproc, RootCount + runtime_allglen, false, &markroot_funcval);
+	runtime_parforsetup(work.markfor, work.nproc, RootCount + runtime_getallglen(), false, &markroot_funcval);
 	if(work.nproc > 1) {
 		runtime_noteclear(&work.alldone);
 		runtime_helpgc(work.nproc);
@@ -2357,7 +2354,7 @@ gc(struct gc_args *args)
 			sweep.g = __go_go(bgsweep, nil);
 		else if(sweep.parked) {
 			sweep.parked = false;
-			runtime_ready(sweep.g);
+			runtime_ready(sweep.g, 0, true);
 		}
 		runtime_unlock(&gclock);
 	} else {
@@ -2431,7 +2428,7 @@ gchelperstart(void)
 	M *m;
 
 	m = runtime_m();
-	if(m->helpgc < 0 || m->helpgc >= MaxGcproc)
+	if(m->helpgc < 0 || m->helpgc >= _MaxGcproc)
 		runtime_throw("gchelperstart: bad m->helpgc");
 	if(runtime_xchg(&bufferList[m->helpgc].busy, 1))
 		runtime_throw("gchelperstart: already busy");
@@ -2541,6 +2538,20 @@ runtime_createfing(void)
 	if(fing == nil)
 		fing = __go_go(runfinq, nil);
 	runtime_unlock(&gclock);
+}
+
+bool getfingwait() __asm__(GOSYM_PREFIX "runtime.getfingwait");
+bool
+getfingwait()
+{
+	return runtime_fingwait;
+}
+
+bool getfingwake() __asm__(GOSYM_PREFIX "runtime.getfingwake");
+bool
+getfingwake()
+{
+	return runtime_fingwake;
 }
 
 G*
@@ -2718,39 +2729,4 @@ runtime_MHeap_MapBits(MHeap *h)
 
 	runtime_SysMap(h->arena_start - n, n - h->bitmap_mapped, h->arena_reserved, &mstats()->gc_sys);
 	h->bitmap_mapped = n;
-}
-
-// typedmemmove copies a value of type t to dst from src.
-
-extern void typedmemmove(const Type* td, void *dst, const void *src)
-  __asm__ (GOSYM_PREFIX "reflect.typedmemmove");
-
-void
-typedmemmove(const Type* td, void *dst, const void *src)
-{
-	runtime_memmove(dst, src, td->__size);
-}
-
-// typedslicecopy copies a slice of elemType values from src to dst,
-// returning the number of elements copied.
-
-extern intgo typedslicecopy(const Type* elem, Slice dst, Slice src)
-  __asm__ (GOSYM_PREFIX "reflect.typedslicecopy");
-
-intgo
-typedslicecopy(const Type* elem, Slice dst, Slice src)
-{
-	intgo n;
-	void *dstp;
-	void *srcp;
-
-	n = dst.__count;
-	if (n > src.__count)
-		n = src.__count;
-	if (n == 0)
-		return 0;
-	dstp = dst.__values;
-	srcp = src.__values;
-	memmove(dstp, srcp, (uintptr_t)n * elem->__size);
-	return n;
 }

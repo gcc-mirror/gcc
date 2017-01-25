@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with ALI;      use ALI;
-with Binde;    use Binde;
 with Casing;   use Casing;
 with Fname;    use Fname;
 with Gnatvsn;  use Gnatvsn;
@@ -47,12 +46,13 @@ with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
 with GNAT.HTable;
 
 package body Bindgen is
+   use Binde.Unit_Id_Tables;
 
    Statement_Buffer : String (1 .. 1000);
    --  Buffer used for constructing output statements
 
-   Last : Natural := 0;
-   --  Last location in Statement_Buffer currently set
+   Stm_Last : Natural := 0;
+   --  Stm_Last location in Statement_Buffer currently set
 
    With_GNARL : Boolean := False;
    --  Flag which indicates whether the program uses the GNARL library
@@ -113,13 +113,13 @@ package body Bindgen is
    --  that the information is consistent across units. The entries
    --  in this table are n/u/r/s for not set/user/runtime/system.
 
-   package IS_Pragma_Settings is new Table.Table (
-     Table_Component_Type => Character,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => 100,
-     Table_Increment      => 200,
-     Table_Name           => "IS_Pragma_Settings");
+   package IS_Pragma_Settings is new Table.Table
+     (Table_Component_Type => Character,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 0,
+      Table_Initial        => 100,
+      Table_Increment      => 200,
+      Table_Name           => "IS_Pragma_Settings");
 
    --  This table assembles the Priority_Specific_Dispatching pragma
    --  information from all the units in the partition. Note that Bcheck has
@@ -127,13 +127,13 @@ package body Bindgen is
    --  The entries in this table are the upper case first character of the
    --  policy name, e.g. 'F' for FIFO_Within_Priorities.
 
-   package PSD_Pragma_Settings is new Table.Table (
-     Table_Component_Type => Character,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => 100,
-     Table_Increment      => 200,
-     Table_Name           => "PSD_Pragma_Settings");
+   package PSD_Pragma_Settings is new Table.Table
+     (Table_Component_Type => Character,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 0,
+      Table_Initial        => 100,
+      Table_Increment      => 200,
+      Table_Name           => "PSD_Pragma_Settings");
 
    ----------------------------
    -- Bind_Environment Table --
@@ -271,7 +271,7 @@ package body Bindgen is
    -- Local Subprograms --
    -----------------------
 
-   procedure Gen_Adainit;
+   procedure Gen_Adainit (Elab_Order : Unit_Id_Array);
    --  Generates the Adainit procedure
 
    procedure Gen_Adafinal;
@@ -283,27 +283,29 @@ package body Bindgen is
    procedure Gen_CodePeer_Wrapper;
    --  For CodePeer, generate wrapper which calls user-defined main subprogram
 
-   procedure Gen_Elab_Calls;
+   procedure Gen_Elab_Calls (Elab_Order : Unit_Id_Array);
    --  Generate sequence of elaboration calls
 
-   procedure Gen_Elab_Externals;
+   procedure Gen_Elab_Externals (Elab_Order : Unit_Id_Array);
    --  Generate sequence of external declarations for elaboration
 
-   procedure Gen_Elab_Order;
+   procedure Gen_Elab_Order (Elab_Order : Unit_Id_Array);
    --  Generate comments showing elaboration order chosen
 
-   procedure Gen_Finalize_Library;
+   procedure Gen_Finalize_Library (Elab_Order : Unit_Id_Array);
    --  Generate a sequence of finalization calls to elaborated packages
 
    procedure Gen_Main;
    --  Generate procedure main
 
-   procedure Gen_Object_Files_Options;
+   procedure Gen_Object_Files_Options (Elab_Order : Unit_Id_Array);
    --  Output comments containing a list of the full names of the object
    --  files to be linked and the list of linker options supplied by
    --  Linker_Options pragmas in the source.
 
-   procedure Gen_Output_File_Ada (Filename : String);
+   procedure Gen_Output_File_Ada
+     (Filename   : String;
+      Elab_Order : Unit_Id_Array);
    --  Generate Ada output file
 
    procedure Gen_Restrictions;
@@ -335,11 +337,11 @@ package body Bindgen is
    --  the encoding method used for the main program source. If there is no
    --  main program source (-z switch used), returns brackets ('b').
 
-   function Has_Finalizer return Boolean;
+   function Has_Finalizer (Elab_Order : Unit_Id_Array) return Boolean;
    --  Determine whether the current unit has at least one library-level
    --  finalizer.
 
-   function Lt_Linker_Option (Op1, Op2 : Natural) return Boolean;
+   function Lt_Linker_Option (Op1 : Natural; Op2 : Natural) return Boolean;
    --  Compare linker options, when sorting, first according to
    --  Is_Internal_File (internal files come later) and then by
    --  elaboration order position (latest to earliest).
@@ -347,21 +349,21 @@ package body Bindgen is
    procedure Move_Linker_Option (From : Natural; To : Natural);
    --  Move routine for sorting linker options
 
-   procedure Resolve_Binder_Options;
+   procedure Resolve_Binder_Options (Elab_Order : Unit_Id_Array);
    --  Set the value of With_GNARL
 
    procedure Set_Char (C : Character);
-   --  Set given character in Statement_Buffer at the Last + 1 position
-   --  and increment Last by one to reflect the stored character.
+   --  Set given character in Statement_Buffer at the Stm_Last + 1 position
+   --  and increment Stm_Last by one to reflect the stored character.
 
    procedure Set_Int (N : Int);
    --  Set given value in decimal in Statement_Buffer with no spaces starting
-   --  at the Last + 1 position, and updating Last past the value. A minus sign
-   --  is output for a negative value.
+   --  at the Stm_Last + 1 position, and updating Stm_Last past the value. A
+   --  minus sign is output for a negative value.
 
    procedure Set_Boolean (B : Boolean);
-   --  Set given boolean value in Statement_Buffer at the Last + 1 position
-   --  and update Last past the value.
+   --  Set given boolean value in Statement_Buffer at the Stm_Last + 1 position
+   --  and update Stm_Last past the value.
 
    procedure Set_IS_Pragma_Table;
    --  Initializes contents of IS_Pragma_Settings table from ALI table
@@ -369,7 +371,7 @@ package body Bindgen is
    procedure Set_Main_Program_Name;
    --  Given the main program name in Name_Buffer (length in Name_Len) generate
    --  the name of the routine to be used in the call. The name is generated
-   --  starting at Last + 1, and Last is updated past it.
+   --  starting at Stm_Last + 1, and Stm_Last is updated past it.
 
    procedure Set_Name_Buffer;
    --  Set the value stored in positions 1 .. Name_Len of the Name_Buffer
@@ -379,7 +381,7 @@ package body Bindgen is
 
    procedure Set_String (S : String);
    --  Sets characters of given string in Statement_Buffer, starting at the
-   --  Last + 1 position, and updating last past the string value.
+   --  Stm_Last + 1 position, and updating last past the string value.
 
    procedure Set_String_Replace (S : String);
    --  Replaces the last S'Length characters in the Statement_Buffer with the
@@ -388,8 +390,8 @@ package body Bindgen is
 
    procedure Set_Unit_Name;
    --  Given a unit name in the Name_Buffer, copy it into Statement_Buffer,
-   --  starting at the Last + 1 position and update Last past the value.
-   --  Each dot (.) will be qualified into double underscores (__).
+   --  starting at the Stm_Last + 1 position and update Stm_Last past the
+   --  value. Each dot (.) will be qualified into double underscores (__).
 
    procedure Set_Unit_Number (U : Unit_Id);
    --  Sets unit number (first unit is 1, leading zeroes output to line up all
@@ -397,11 +399,12 @@ package body Bindgen is
    --  number of units.
 
    procedure Write_Statement_Buffer;
-   --  Write out contents of statement buffer up to Last, and reset Last to 0
+   --  Write out contents of statement buffer up to Stm_Last, and reset
+   --  Stm_Last to 0.
 
    procedure Write_Statement_Buffer (S : String);
    --  First writes its argument (using Set_String (S)), then writes out the
-   --  contents of statement buffer up to Last, and reset Last to 0
+   --  contents of statement buffer up to Stm_Last, and resets Stm_Last to 0.
 
    procedure Write_Bind_Line (S : String);
    --  Write S (an LF-terminated string) to the binder file (for use with
@@ -415,7 +418,13 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
-      if Bind_Main_Program and not CodePeer_Mode then
+      --  Call s_stalib_adafinal to await termination of tasks and so on. We
+      --  want to do this if there is a main program, either in Ada or in some
+      --  other language. (Note that Bind_Main_Program is True for Ada mains,
+      --  but False for mains in other languages.) We do not want to do this if
+      --  we're binding a library.
+
+      if not Bind_For_Library and not CodePeer_Mode then
          WBI ("      procedure s_stalib_adafinal;");
          Set_String ("      pragma Import (C, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
@@ -442,7 +451,7 @@ package body Bindgen is
       --  on whether this is the main program or a library.
 
       if not CodePeer_Mode then
-         if Bind_Main_Program then
+         if not Bind_For_Library then
             WBI ("      s_stalib_adafinal;");
          elsif Lib_Final_Built then
             WBI ("      finalize_library;");
@@ -466,7 +475,7 @@ package body Bindgen is
    -- Gen_Adainit --
    -----------------
 
-   procedure Gen_Adainit is
+   procedure Gen_Adainit (Elab_Order : Unit_Id_Array) is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
       Main_CPU      : Int renames ALIs.Table (ALIs.First).Main_CPU;
 
@@ -886,8 +895,8 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
-      --  Initialize stack limit variable of the environment task if the
-      --  stack check method is stack limit and stack check is enabled.
+      --  Initialize stack limit variable of the environment task if the stack
+      --  check method is stack limit and stack check is enabled.
 
       if Stack_Check_Limits_On_Target
         and then (Stack_Check_Default_On_Target or Stack_Check_Switch_Set)
@@ -906,7 +915,7 @@ package body Bindgen is
       --  tasks are non-terminating, so we do not want library-level
       --  finalization.
 
-      elsif Bind_Main_Program
+      elsif not Bind_For_Library
         and then not Configurable_Run_Time_On_Target
         and then not Suppress_Standard_Library_On_Target
       then
@@ -928,7 +937,7 @@ package body Bindgen is
          WBI ("");
       end if;
 
-      Gen_Elab_Calls;
+      Gen_Elab_Calls (Elab_Order);
 
       if not CodePeer_Mode then
 
@@ -974,9 +983,6 @@ package body Bindgen is
    -------------------------
 
    procedure Gen_Bind_Env_String is
-      KN, VN : Name_Id := No_Name;
-      Amp    : Character;
-
       procedure Write_Name_With_Len (Nam : Name_Id);
       --  Write Nam as a string literal, prefixed with one
       --  character encoding Nam's length.
@@ -996,10 +1002,17 @@ package body Bindgen is
          Write_String_Table_Entry (End_String);
       end Write_Name_With_Len;
 
+      --  Local variables
+
+      Amp : Character;
+      KN  : Name_Id := No_Name;
+      VN  : Name_Id := No_Name;
+
    --  Start of processing for Gen_Bind_Env_String
 
    begin
       Bind_Environment.Get_First (KN, VN);
+
       if VN = No_Name then
          return;
       end if;
@@ -1052,15 +1065,15 @@ package body Bindgen is
    -- Gen_Elab_Calls --
    --------------------
 
-   procedure Gen_Elab_Calls is
+   procedure Gen_Elab_Calls (Elab_Order : Unit_Id_Array) is
       Check_Elab_Flag : Boolean;
 
    begin
       --  Loop through elaboration order entries
 
-      for E in Elab_Order.First .. Elab_Order.Last loop
+      for E in Elab_Order'Range loop
          declare
-            Unum : constant Unit_Id := Elab_Order.Table (E);
+            Unum : constant Unit_Id := Elab_Order (E);
             U    : Unit_Record renames Units.Table (Unum);
 
             Unum_Spec : Unit_Id;
@@ -1235,15 +1248,15 @@ package body Bindgen is
    -- Gen_Elab_Externals --
    ------------------------
 
-   procedure Gen_Elab_Externals is
+   procedure Gen_Elab_Externals (Elab_Order : Unit_Id_Array) is
    begin
       if CodePeer_Mode then
          return;
       end if;
 
-      for E in Elab_Order.First .. Elab_Order.Last loop
+      for E in Elab_Order'Range loop
          declare
-            Unum : constant Unit_Id := Elab_Order.Table (E);
+            Unum : constant Unit_Id := Elab_Order (E);
             U    : Unit_Record renames Units.Table (Unum);
 
          begin
@@ -1283,13 +1296,13 @@ package body Bindgen is
    -- Gen_Elab_Order --
    --------------------
 
-   procedure Gen_Elab_Order is
+   procedure Gen_Elab_Order (Elab_Order : Unit_Id_Array) is
    begin
       WBI ("   --  BEGIN ELABORATION ORDER");
 
-      for J in Elab_Order.First .. Elab_Order.Last loop
+      for J in Elab_Order'Range loop
          Set_String ("   --  ");
-         Get_Name_String (Units.Table (Elab_Order.Table (J)).Uname);
+         Get_Name_String (Units.Table (Elab_Order (J)).Uname);
          Set_Name_Buffer;
          Write_Statement_Buffer;
       end loop;
@@ -1302,12 +1315,7 @@ package body Bindgen is
    -- Gen_Finalize_Library --
    --------------------------
 
-   procedure Gen_Finalize_Library is
-      Count : Int := 1;
-      U     : Unit_Record;
-      Uspec : Unit_Record;
-      Unum  : Unit_Id;
-
+   procedure Gen_Finalize_Library (Elab_Order : Unit_Id_Array) is
       procedure Gen_Header;
       --  Generate the header of the finalization routine
 
@@ -1321,6 +1329,13 @@ package body Bindgen is
          WBI ("   begin");
       end Gen_Header;
 
+      --  Local variables
+
+      Count : Int := 1;
+      U     : Unit_Record;
+      Uspec : Unit_Record;
+      Unum  : Unit_Id;
+
    --  Start of processing for Gen_Finalize_Library
 
    begin
@@ -1328,8 +1343,8 @@ package body Bindgen is
          return;
       end if;
 
-      for E in reverse Elab_Order.First .. Elab_Order.Last loop
-         Unum := Elab_Order.Table (E);
+      for E in reverse Elab_Order'Range loop
+         Unum := Elab_Order (E);
          U    := Units.Table (Unum);
 
          --  Dealing with package bodies is a little complicated. In such
@@ -1628,11 +1643,11 @@ package body Bindgen is
          end if;
       end if;
 
-      --  Generate a reference to Ada_Main_Program_Name. This symbol is
-      --  not referenced elsewhere in the generated program, but is needed
-      --  by the debugger (that's why it is generated in the first place).
-      --  The reference stops Ada_Main_Program_Name from being optimized
-      --  away by smart linkers, such as the AiX linker.
+      --  Generate a reference to Ada_Main_Program_Name. This symbol is not
+      --  referenced elsewhere in the generated program, but is needed by
+      --  the debugger (that's why it is generated in the first place). The
+      --  reference stops Ada_Main_Program_Name from being optimized away by
+      --  smart linkers, such as the AiX linker.
 
       --  Because this variable is unused, we make this variable "aliased"
       --  with a pragma Volatile in order to tell the compiler to preserve
@@ -1658,9 +1673,9 @@ package body Bindgen is
          WBI ("      gnat_envp := envp;");
          WBI ("");
 
-      --  If configurable run time and no command line args, then nothing
-      --  needs to be done since the gnat_argc/argv/envp variables are
-      --  suppressed in this case.
+      --  If configurable run time and no command line args, then nothing needs
+      --  to be done since the gnat_argc/argv/envp variables are suppressed in
+      --  this case.
 
       elsif Configurable_Run_Time_On_Target then
          null;
@@ -1761,11 +1776,11 @@ package body Bindgen is
    -- Gen_Object_Files_Options --
    ------------------------------
 
-   procedure Gen_Object_Files_Options is
+   procedure Gen_Object_Files_Options (Elab_Order : Unit_Id_Array) is
       Lgnat : Natural;
-      --  This keeps track of the position in the sorted set of entries
-      --  in the Linker_Options table of where the first entry from an
-      --  internal file appears.
+      --  This keeps track of the position in the sorted set of entries in the
+      --  Linker_Options table of where the first entry from an internal file
+      --  appears.
 
       Linker_Option_List_Started : Boolean := False;
       --  Set to True when "LINKER OPTION LIST" is displayed
@@ -1830,17 +1845,17 @@ package body Bindgen is
          Set_List_File (Object_List_Filename.all);
       end if;
 
-      for E in Elab_Order.First .. Elab_Order.Last loop
+      for E in Elab_Order'Range loop
 
          --  If not spec that has an associated body, then generate a comment
          --  giving the name of the corresponding object file.
 
-         if not Units.Table (Elab_Order.Table (E)).SAL_Interface
-           and then Units.Table (Elab_Order.Table (E)).Utype /= Is_Spec
+         if not Units.Table (Elab_Order (E)).SAL_Interface
+           and then Units.Table (Elab_Order (E)).Utype /= Is_Spec
          then
             Get_Name_String
               (ALIs.Table
-                (Units.Table (Elab_Order.Table (E)).My_ALI).Ofile_Full_Name);
+                (Units.Table (Elab_Order (E)).My_ALI).Ofile_Full_Name);
 
             --  If the presence of an object file is necessary or if it exists,
             --  then use it.
@@ -1868,6 +1883,7 @@ package body Bindgen is
       for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
          declare
             Dir : constant String_Ptr := Dir_In_Obj_Search_Path (J);
+
          begin
             Name_Len := 0;
             Add_Str_To_Name_Buffer ("-L");
@@ -1990,7 +2006,10 @@ package body Bindgen is
    -- Gen_Output_File --
    ---------------------
 
-   procedure Gen_Output_File (Filename : String) is
+   procedure Gen_Output_File
+     (Filename   : String;
+      Elab_Order : Unit_Id_Array)
+   is
    begin
       --  Acquire settings for Interrupt_State pragmas
 
@@ -2008,8 +2027,8 @@ package body Bindgen is
 
       --  Count number of elaboration calls
 
-      for E in Elab_Order.First .. Elab_Order.Last loop
-         if Units.Table (Elab_Order.Table (E)).No_Elab then
+      for E in Elab_Order'Range loop
+         if Units.Table (Elab_Order (E)).No_Elab then
             null;
          else
             Num_Elab_Calls := Num_Elab_Calls + 1;
@@ -2018,21 +2037,23 @@ package body Bindgen is
 
       --  Generate output file in appropriate language
 
-      Gen_Output_File_Ada (Filename);
+      Gen_Output_File_Ada (Filename, Elab_Order);
    end Gen_Output_File;
 
    -------------------------
    -- Gen_Output_File_Ada --
    -------------------------
 
-   procedure Gen_Output_File_Ada (Filename : String) is
-
+   procedure Gen_Output_File_Ada
+     (Filename : String; Elab_Order : Unit_Id_Array)
+   is
       Ada_Main : constant String := Get_Ada_Main_Name;
       --  Name to be used for generated Ada main program. See the body of
       --  function Get_Ada_Main_Name for details on the form of the name.
 
       Needs_Library_Finalization : constant Boolean :=
-        not Configurable_Run_Time_On_Target and then Has_Finalizer;
+        not Configurable_Run_Time_On_Target
+        and then Has_Finalizer (Elab_Order);
       --  For restricted run-time libraries (ZFP and Ravenscar) tasks are
       --  non-terminating, so we do not want finalization.
 
@@ -2090,7 +2111,7 @@ package body Bindgen is
          WBI ("with System.Secondary_Stack;");
       end if;
 
-      Resolve_Binder_Options;
+      Resolve_Binder_Options (Elab_Order);
 
       --  Generate standard with's
 
@@ -2234,7 +2255,7 @@ package body Bindgen is
       end if;
 
       Gen_Versions;
-      Gen_Elab_Order;
+      Gen_Elab_Order (Elab_Order);
 
       --  Spec is complete
 
@@ -2317,7 +2338,7 @@ package body Bindgen is
 
       --  Generate externals for elaboration entities
 
-      Gen_Elab_Externals;
+      Gen_Elab_Externals (Elab_Order);
 
       if not CodePeer_Mode then
          if not Suppress_Standard_Library_On_Target then
@@ -2369,13 +2390,13 @@ package body Bindgen is
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
          if Needs_Library_Finalization then
-            Gen_Finalize_Library;
+            Gen_Finalize_Library (Elab_Order);
          end if;
 
          Gen_Adafinal;
       end if;
 
-      Gen_Adainit;
+      Gen_Adainit (Elab_Order);
 
       if Bind_Main_Program then
          Gen_Main;
@@ -2383,7 +2404,7 @@ package body Bindgen is
 
       --  Output object file list and the Ada body is complete
 
-      Gen_Object_Files_Options;
+      Gen_Object_Files_Options (Elab_Order);
 
       WBI ("");
       WBI ("end " & Ada_Main & ";");
@@ -2513,8 +2534,8 @@ package body Bindgen is
       WBI ("   type Version_32 is mod 2 ** 32;");
       for U in Units.First .. Units.Last loop
          if not Units.Table (U).SAL_Interface
-           and then
-             (not Bind_For_Library or else Units.Table (U).Directly_Scanned)
+           and then (not Bind_For_Library
+                      or else Units.Table (U).Directly_Scanned)
          then
             Increment_Ubuf;
             WBI ("   " & Ubuf & " : constant Version_32 := 16#" &
@@ -2574,19 +2595,20 @@ package body Bindgen is
    function Get_Ada_Main_Name return String is
       Suffix : constant String := "_00";
       Name   : String (1 .. Opt.Ada_Main_Name.all'Length + Suffix'Length) :=
-        Opt.Ada_Main_Name.all & Suffix;
+                 Opt.Ada_Main_Name.all & Suffix;
       Nlen   : Natural;
 
    begin
-      --  For CodePeer, we want reproducible names (independent of other
-      --  mains that may or may not be present) that don't collide
-      --  when analyzing multiple mains and which are easily recognizable
-      --  as "ada_main" names.
+      --  For CodePeer, we want reproducible names (independent of other mains
+      --  that may or may not be present) that don't collide when analyzing
+      --  multiple mains and which are easily recognizable as "ada_main" names.
 
       if CodePeer_Mode then
          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-         return "ada_main_for_" &
-           Get_Main_Unit_Name (Name_Buffer (1 .. Name_Len - 2));
+
+         return
+           "ada_main_for_" &
+             Get_Main_Unit_Name (Name_Buffer (1 .. Name_Len - 2));
       end if;
 
       --  This loop tries the following possibilities in order
@@ -2707,13 +2729,13 @@ package body Bindgen is
    -- Has_Finalizer --
    -------------------
 
-   function Has_Finalizer return Boolean is
+   function Has_Finalizer (Elab_Order : Unit_Id_Array) return Boolean is
       U     : Unit_Record;
       Unum  : Unit_Id;
 
    begin
-      for E in reverse Elab_Order.First .. Elab_Order.Last loop
-         Unum := Elab_Order.Table (E);
+      for E in reverse Elab_Order'Range loop
+         Unum := Elab_Order (E);
          U    := Units.Table (Unum);
 
          --  We are only interested in non-generic packages
@@ -2743,7 +2765,7 @@ package body Bindgen is
    -- Lt_Linker_Option --
    ----------------------
 
-   function Lt_Linker_Option (Op1, Op2 : Natural) return Boolean is
+   function Lt_Linker_Option (Op1 : Natural; Op2 : Natural) return Boolean is
    begin
       --  Sort internal files last
 
@@ -2765,7 +2787,6 @@ package body Bindgen is
          return Units.Table (Linker_Options.Table (Op1).Unit).Elab_Position
                   >
                 Units.Table (Linker_Options.Table (Op2).Unit).Elab_Position;
-
       end if;
    end Lt_Linker_Option;
 
@@ -2782,8 +2803,7 @@ package body Bindgen is
    -- Resolve_Binder_Options --
    ----------------------------
 
-   procedure Resolve_Binder_Options is
-
+   procedure Resolve_Binder_Options (Elab_Order : Unit_Id_Array) is
       procedure Check_Package (Var : in out Boolean; Name : String);
       --  Set Var to true iff the current identifier in Namet is Name. Do
       --  nothing if it doesn't match. This procedure is just a helper to
@@ -2805,8 +2825,8 @@ package body Bindgen is
    --  Start of processing for Resolve_Binder_Options
 
    begin
-      for E in Elab_Order.First .. Elab_Order.Last loop
-         Get_Name_String (Units.Table (Elab_Order.Table (E)).Uname);
+      for E in Elab_Order'Range loop
+         Get_Name_String (Units.Table (Elab_Order (E)).Uname);
 
          --  This is not a perfect approach, but is the current protocol
          --  between the run-time and the binder to indicate that tasking is
@@ -2867,15 +2887,18 @@ package body Bindgen is
    -----------------
 
    procedure Set_Boolean (B : Boolean) is
-      True_Str  : constant String := "True";
       False_Str : constant String := "False";
+      True_Str  : constant String := "True";
+
    begin
       if B then
-         Statement_Buffer (Last + 1 .. Last + True_Str'Length) := True_Str;
-         Last := Last + True_Str'Length;
+         Statement_Buffer (Stm_Last + 1 .. Stm_Last + True_Str'Length) :=
+           True_Str;
+         Stm_Last := Stm_Last + True_Str'Length;
       else
-         Statement_Buffer (Last + 1 .. Last + False_Str'Length) := False_Str;
-         Last := Last + False_Str'Length;
+         Statement_Buffer (Stm_Last + 1 .. Stm_Last + False_Str'Length) :=
+           False_Str;
+         Stm_Last := Stm_Last + False_Str'Length;
       end if;
    end Set_Boolean;
 
@@ -2885,8 +2908,8 @@ package body Bindgen is
 
    procedure Set_Char (C : Character) is
    begin
-      Last := Last + 1;
-      Statement_Buffer (Last) := C;
+      Stm_Last := Stm_Last + 1;
+      Statement_Buffer (Stm_Last) := C;
    end Set_Char;
 
    -------------
@@ -2904,8 +2927,8 @@ package body Bindgen is
             Set_Int (N / 10);
          end if;
 
-         Last := Last + 1;
-         Statement_Buffer (Last) :=
+         Stm_Last := Stm_Last + 1;
+         Statement_Buffer (Stm_Last) :=
            Character'Val (N mod 10 + Character'Pos ('0'));
       end if;
    end Set_Int;
@@ -2922,9 +2945,9 @@ package body Bindgen is
          loop
             declare
                Inum : constant Int :=
-                 Interrupt_States.Table (K).Interrupt_Id;
+                        Interrupt_States.Table (K).Interrupt_Id;
                Stat : constant Character :=
-                 Interrupt_States.Table (K).Interrupt_State;
+                        Interrupt_States.Table (K).Interrupt_State;
 
             begin
                while IS_Pragma_Settings.Last < Inum loop
@@ -2945,8 +2968,8 @@ package body Bindgen is
    begin
       --  Note that name has %b on the end which we ignore
 
-      --  First we output the initial _ada_ since we know that the main
-      --  program is a library level subprogram.
+      --  First we output the initial _ada_ since we know that the main program
+      --  is a library level subprogram.
 
       Set_String ("_ada_");
 
@@ -3005,8 +3028,8 @@ package body Bindgen is
 
    procedure Set_String (S : String) is
    begin
-      Statement_Buffer (Last + 1 .. Last + S'Length) := S;
-      Last := Last + S'Length;
+      Statement_Buffer (Stm_Last + 1 .. Stm_Last + S'Length) := S;
+      Stm_Last := Stm_Last + S'Length;
    end Set_String;
 
    ------------------------
@@ -3015,7 +3038,7 @@ package body Bindgen is
 
    procedure Set_String_Replace (S : String) is
    begin
-      Statement_Buffer (Last - S'Length + 1 .. Last) := S;
+      Statement_Buffer (Stm_Last - S'Length + 1 .. Stm_Last) := S;
    end Set_String_Replace;
 
    -------------------
@@ -3070,8 +3093,8 @@ package body Bindgen is
 
    procedure Write_Statement_Buffer is
    begin
-      WBI (Statement_Buffer (1 .. Last));
-      Last := 0;
+      WBI (Statement_Buffer (1 .. Stm_Last));
+      Stm_Last := 0;
    end Write_Statement_Buffer;
 
    procedure Write_Statement_Buffer (S : String) is

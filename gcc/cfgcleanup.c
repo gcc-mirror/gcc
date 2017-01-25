@@ -1,5 +1,5 @@
 /* Control flow optimization code for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 static bool first_pass;
 
 /* Set to true if crossjumps occurred in the latest run of try_optimize_cfg.  */
-static bool crossjumps_occured;
+static bool crossjumps_occurred;
 
 /* Set to true if we couldn't run an optimization due to stale liveness
    information; we should run df_analyze to enable more opportunities.  */
@@ -2283,7 +2283,7 @@ try_crossjump_bb (int mode, basic_block bb)
     }
 
   if (changed)
-    crossjumps_occured = true;
+    crossjumps_occurred = true;
 
   return changed;
 }
@@ -2584,7 +2584,7 @@ try_head_merge_bb (basic_block bb)
   free (headptr);
   free (nextptr);
 
-  crossjumps_occured |= changed;
+  crossjumps_occurred |= changed;
 
   return changed;
 }
@@ -2650,7 +2650,7 @@ try_optimize_cfg (int mode)
   if (mode & (CLEANUP_CROSSJUMP | CLEANUP_THREADING))
     clear_bb_flags ();
 
-  crossjumps_occured = false;
+  crossjumps_occurred = false;
 
   FOR_EACH_BB_FN (bb, cfun)
     update_forwarder_flag (bb);
@@ -3169,7 +3169,7 @@ cleanup_cfg (int mode)
 	  if ((mode & CLEANUP_EXPENSIVE) && !reload_completed
 	      && !delete_trivially_dead_insns (get_insns (), max_reg_num ()))
 	    break;
-	  if ((mode & CLEANUP_CROSSJUMP) && crossjumps_occured)
+	  if ((mode & CLEANUP_CROSSJUMP) && crossjumps_occurred)
 	    run_fast_dce ();
 	}
       else

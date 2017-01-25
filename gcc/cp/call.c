@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -5302,6 +5302,13 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
  valid_operands:
   result = build3_loc (loc, COND_EXPR, result_type, arg1, arg2, arg3);
 
+  /* If the ARG2 and ARG3 are the same and don't have side-effects,
+     warn here, because the COND_EXPR will be turned into ARG2.  */
+  if (warn_duplicated_branches
+      && (arg2 == arg3 || operand_equal_p (arg2, arg3, 0)))
+    warning_at (EXPR_LOCATION (result), OPT_Wduplicated_branches,
+		"this condition has identical branches");
+
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
 
@@ -7881,6 +7888,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      nonnull are disabled.  Just in case that at least one of them is active
      the check_function_arguments function might warn about something.  */
 
+  bool warned_p = false;
   if (warn_nonnull || warn_format || warn_suggest_attribute_format)
     {
       tree *fargs = (!nargs ? argarray
@@ -7888,7 +7896,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       for (j = 0; j < nargs; j++)
 	fargs[j] = maybe_constant_value (argarray[j]);
 
-      check_function_arguments (input_location, TREE_TYPE (fn), nargs, fargs);
+      warned_p = check_function_arguments (input_location, TREE_TYPE (fn),
+					   nargs, fargs);
     }
 
   if (DECL_INHERITED_CTOR (fn))
@@ -7897,6 +7906,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 could handle this by open-coding the inherited constructor rather than
 	 defining it, but let's not bother now.  */
       if (!cp_unevaluated_operand
+	  && cand->num_convs
 	  && cand->convs[cand->num_convs-1]->ellipsis_p)
 	{
 	  if (complain & tf_error)
@@ -8106,6 +8116,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree c = extract_call_expr (call);
       /* build_new_op_1 will clear this when appropriate.  */
       CALL_EXPR_ORDERED_ARGS (c) = true;
+    }
+  if (warned_p)
+    {
+      tree c = extract_call_expr (call);
+      if (TREE_CODE (c) == CALL_EXPR)
+	TREE_NO_WARNING (c) = 1;
     }
   return call;
 }
@@ -9622,6 +9638,18 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       winner = compare_ics (cand1->second_conv, cand2->second_conv);
       if (winner)
 	return winner;
+    }
+
+  /* F1 is generated from a deduction-guide (13.3.1.8) and F2 is not */
+  if (deduction_guide_p (cand1->fn))
+    {
+      gcc_assert (deduction_guide_p (cand2->fn));
+      /* We distinguish between candidates from an explicit deduction guide and
+	 candidates built from a constructor based on DECL_ARTIFICIAL.  */
+      int art1 = DECL_ARTIFICIAL (cand1->fn);
+      int art2 = DECL_ARTIFICIAL (cand2->fn);
+      if (art1 != art2)
+	return art2 - art1;
     }
 
   /* or, if not that,

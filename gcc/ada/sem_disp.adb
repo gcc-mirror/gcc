@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -234,7 +234,13 @@ package body Sem_Disp is
                         Formal);
                   end if;
 
-               elsif not Subtypes_Statically_Match (Typ, Etype (Formal)) then
+               --  Within a predicate function, the formal may be a subtype
+               --  of a tagged type, given that the predicate is expressed
+               --  in terms of the subtype.
+
+               elsif not Subtypes_Statically_Match (Typ, Etype (Formal))
+                 and then not Is_Predicate_Function (Subp)
+               then
                   Error_Msg_N
                     ("parameter subtype does not match controlling type",
                      Formal);
@@ -926,13 +932,29 @@ package body Sem_Disp is
    ---------------------------------
 
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id) is
-      Tagged_Type            : Entity_Id;
-      Has_Dispatching_Parent : Boolean   := False;
       Body_Is_Last_Primitive : Boolean   := False;
+      Has_Dispatching_Parent : Boolean   := False;
       Ovr_Subp               : Entity_Id := Empty;
+      Tagged_Type            : Entity_Id;
 
    begin
-      if not Ekind_In (Subp, E_Procedure, E_Function) then
+      if not Ekind_In (Subp, E_Function, E_Procedure) then
+         return;
+
+      --  The Default_Initial_Condition procedure is not a primitive subprogram
+      --  even if it relates to a tagged type. This routine is not meant to be
+      --  inherited or overridden.
+
+      elsif Is_DIC_Procedure (Subp) then
+         return;
+
+      --  The "partial" and "full" type invariant procedures are not primitive
+      --  subprograms even if they relate to a tagged type. These routines are
+      --  not meant to be inherited or overridden.
+
+      elsif Is_Invariant_Procedure (Subp)
+        or else Is_Partial_Invariant_Procedure (Subp)
+      then
          return;
       end if;
 

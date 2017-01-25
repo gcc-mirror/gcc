@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -30,6 +30,8 @@ extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);
 extern bool asan_expand_check_ifn (gimple_stmt_iterator *, bool);
 extern bool asan_expand_mark_ifn (gimple_stmt_iterator *);
+extern bool asan_expand_poison_ifn (gimple_stmt_iterator *, bool *,
+				    hash_map<tree, tree> &);
 
 extern gimple_stmt_iterator create_cond_insert_point
      (gimple_stmt_iterator *, bool, bool, bool, basic_block *, basic_block *);
@@ -65,6 +67,8 @@ extern hash_set <tree> *asan_used_labels;
 #define ASAN_STACK_FRAME_MAGIC		0x41b58ab3
 #define ASAN_STACK_RETIRED_MAGIC	0x45e0360e
 
+#define ASAN_USE_AFTER_SCOPE_ATTRIBUTE	"use after scope memory"
+
 /* Various flags for Asan builtins.  */
 enum asan_check_flags
 {
@@ -75,12 +79,17 @@ enum asan_check_flags
 };
 
 /* Flags for Asan check builtins.  */
+#define IFN_ASAN_MARK_FLAGS DEF(POISON), DEF(UNPOISON)
+
 enum asan_mark_flags
 {
-  ASAN_MARK_CLOBBER = 1 << 0,
-  ASAN_MARK_UNCLOBBER = 1 << 1,
-  ASAN_MARK_LAST = 1 << 2
+#define DEF(X) ASAN_MARK_##X
+  IFN_ASAN_MARK_FLAGS
+#undef DEF
 };
+
+/* Return true if STMT is ASAN_MARK with FLAG as first argument.  */
+extern bool asan_mark_p (gimple *stmt, enum asan_mark_flags flag);
 
 /* Return the size of padding needed to insert after a protected
    decl of SIZE.  */

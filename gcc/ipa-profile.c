@@ -1,5 +1,5 @@
 /* Basic IPA optimizations based on profile.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -621,7 +621,8 @@ ipa_profile (void)
 				 "and can be discarded.\n");
 		    }
 		  else if (ipa_node_params_sum && ipa_edge_args_vector
-			   && !IPA_NODE_REF (n2)->descriptors.is_empty ()
+			   && (!vec_safe_is_empty
+			       (IPA_NODE_REF (n2)->descriptors))
 			   && ipa_get_param_count (IPA_NODE_REF (n2))
 			      != ipa_get_cs_argument_count (IPA_EDGE_REF (e))
 			    && (ipa_get_param_count (IPA_NODE_REF (n2))

@@ -1,5 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993-2016 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2017 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -858,7 +858,8 @@
 	 operands of the tstsi_t insn, which is generally the case.  */
       if (dump_file)
 	fprintf (dump_file, "cmpeqsi_t: replacing with tstsi_t\n");
-      emit_insn (gen_tstsi_t (XEXP (op.set_src, 0), XEXP (op.set_src, 1)));
+      emit_insn (gen_tstsi_t (copy_rtx (XEXP (op.set_src, 0)),
+			      copy_rtx (XEXP (op.set_src, 1))));
       DONE;
     }
 

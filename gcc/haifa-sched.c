@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -6495,7 +6495,7 @@ dump_insn_stream (rtx_insn *head, rtx_insn *tail)
 
       if (sched_verbose >= 4)
 	{
-	  if (NOTE_P (insn) || recog_memoized (insn) < 0)
+	  if (NOTE_P (insn) || LABEL_P (insn) || recog_memoized (insn) < 0)
 	    fprintf (sched_dump, "nothing");
 	  else
 	    print_reservation (sched_dump, insn);

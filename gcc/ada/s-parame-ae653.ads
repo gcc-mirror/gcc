@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,7 +70,7 @@ package System.Parameters is
    --  The special value of minus one indicates that the secondary
    --  stack is to be allocated from the heap instead.
 
-   Sec_Stack_Percentage : constant Percentage := 50;
+   Sec_Stack_Percentage : constant Percentage := 25;
    --  This constant defines the handling of the secondary stack
 
    Sec_Stack_Dynamic : constant Boolean := Sec_Stack_Percentage = Dynamic;

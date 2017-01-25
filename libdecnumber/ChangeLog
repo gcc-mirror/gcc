@@ -1,3 +1,22 @@
+2017-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/79003
+	* Makefile.in (CFLAGS, CPPFLAGS, LDFLAGS): Remove -fno-lto.
+	(NOLTO_FLAGS): New variable.
+	(ALL_CFLAGS): Use it.
+	* configure.ac (nolto_flags): New ACX_PROG_CC_WARNING_OPTS,
+	check for whether -fno-lto works.
+	* configure: Regenerated.
+
+2017-01-06  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/79003
+	* Makefile.in: Add -fno-lto to {C,CPP,LD}FLAGS.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.
@@ -642,7 +661,7 @@
 	* decDPD.h: Likewise.
 	* decLibrary.c, decRound.c: Likewise.
 
-Copyright (C) 2005-2016 Free Software Foundation, Inc.
+Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

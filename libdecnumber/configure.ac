@@ -1,7 +1,7 @@
 # configure.ac for libdecnumber			-*- Autoconf -*-
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 2005-2016 Free Software Foundation, Inc.
+# Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -42,6 +42,8 @@ ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wold-style-definition \
 			  -Wmissing-format-attribute -Wcast-qual])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([-Wno-long-long])
+
+ACX_PROG_CC_WARNING_OPTS([-fno-lto], [nolto_flags])
 
 # Only enable with --enable-werror-always until existing warnings are
 # corrected.

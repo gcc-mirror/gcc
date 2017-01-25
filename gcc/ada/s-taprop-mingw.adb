@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,10 +157,18 @@ package body System.Task_Primitives.Operations is
 
    package body Specific is
 
+      -------------------
+      -- Is_Valid_Task --
+      -------------------
+
       function Is_Valid_Task return Boolean is
       begin
          return TlsGetValue (TlsIndex) /= System.Null_Address;
       end Is_Valid_Task;
+
+      ---------
+      -- Set --
+      ---------
 
       procedure Set (Self_Id : Task_Id) is
          Succeeded : BOOL;
@@ -761,13 +769,9 @@ package body System.Task_Primitives.Operations is
    --  1) from System.Task_Primitives.Operations.Initialize
    --  2) from System.Tasking.Stages.Task_Wrapper
 
-   --  The thread initialisation has to be done only for the first case
-
-   --  This is because the GetCurrentThread NT call does not return the real
-   --  thread handler but only a "pseudo" one. It is not possible to release
-   --  the thread handle and free the system resources from this "pseudo"
-   --  handle. So we really want to keep the real thread handle set in
-   --  System.Task_Primitives.Operations.Create_Task during thread creation.
+   --  The pseudo handle (LL.Thread) need not be closed when it is no
+   --  longer needed. Calling the CloseHandle function with this handle
+   --  has no effect.
 
    procedure Enter_Task (Self_ID : Task_Id) is
       procedure Get_Stack_Bounds (Base : Address; Limit : Address);
@@ -787,6 +791,7 @@ package body System.Task_Primitives.Operations is
          raise Invalid_CPU_Number;
       end if;
 
+      Self_ID.Common.LL.Thread    := GetCurrentThread;
       Self_ID.Common.LL.Thread_Id := GetCurrentThreadId;
 
       Get_Stack_Bounds
@@ -887,8 +892,8 @@ package body System.Task_Primitives.Operations is
             DWORD (Stack_Size),
             Entry_Point,
             pTaskParameter,
-            DWORD (Create_Suspended) or
-              DWORD (Stack_Size_Param_Is_A_Reservation),
+            DWORD (Create_Suspended)
+              or DWORD (Stack_Size_Param_Is_A_Reservation),
             TaskId'Unchecked_Access);
       else
          hTask := CreateThread

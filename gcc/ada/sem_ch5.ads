@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ package Sem_Ch5 is
    procedure Analyze_Loop_Statement               (N : Node_Id);
    procedure Analyze_Null_Statement               (N : Node_Id);
    procedure Analyze_Statements                   (L : List_Id);
+   procedure Analyze_Target_Name                  (N : Node_Id);
 
    procedure Analyze_Label_Entity (E : Entity_Id);
    --  This procedure performs direct analysis of the label entity E. It

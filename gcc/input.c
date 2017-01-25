@@ -1,5 +1,5 @@
 /* Data and functions related to line maps and input files.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1688,6 +1688,33 @@ test_accessing_ordinary_linemaps (const line_table_case &case_)
   linemap_line_start (line_table, 3, 2000);
   location_t loc_e = linemap_position_for_column (line_table, 700);
 
+  /* Transitioning back to a short line.  */
+  linemap_line_start (line_table, 4, 0);
+  location_t loc_back_to_short = linemap_position_for_column (line_table, 100);
+
+  if (should_have_column_data_p (loc_back_to_short))
+    {
+      /* Verify that we switched to short lines in the linemap.  */
+      line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+      ASSERT_EQ (7, map->m_column_and_range_bits - map->m_range_bits);
+    }
+
+  /* Example of a line that will eventually be seen to be longer
+     than LINE_MAP_MAX_COLUMN_NUMBER; the initially seen width is
+     below that.  */
+  linemap_line_start (line_table, 5, 2000);
+
+  location_t loc_start_of_very_long_line
+    = linemap_position_for_column (line_table, 2000);
+  location_t loc_too_wide
+    = linemap_position_for_column (line_table, 4097);
+  location_t loc_too_wide_2
+    = linemap_position_for_column (line_table, 4098);
+
+  /* ...and back to a sane line length.  */
+  linemap_line_start (line_table, 6, 100);
+  location_t loc_sane_again = linemap_position_for_column (line_table, 10);
+
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 
   /* Multiple files.  */
@@ -1702,6 +1729,17 @@ test_accessing_ordinary_linemaps (const line_table_case &case_)
   assert_loceq ("foo.c", 2, 1, loc_c);
   assert_loceq ("foo.c", 2, 17, loc_d);
   assert_loceq ("foo.c", 3, 700, loc_e);
+  assert_loceq ("foo.c", 4, 100, loc_back_to_short);
+
+  /* In the very wide line, the initial location should be fully tracked.  */
+  assert_loceq ("foo.c", 5, 2000, loc_start_of_very_long_line);
+  /* ...but once we exceed LINE_MAP_MAX_COLUMN_NUMBER column-tracking should
+     be disabled.  */
+  assert_loceq ("foo.c", 5, 0, loc_too_wide);
+  assert_loceq ("foo.c", 5, 0, loc_too_wide_2);
+  /*...and column-tracking should be re-enabled for subsequent lines.  */
+  assert_loceq ("foo.c", 6, 10, loc_sane_again);
+
   assert_loceq ("bar.c", 1, 150, loc_f);
 
   ASSERT_FALSE (is_location_from_builtin_token (loc_a));
@@ -1985,6 +2023,7 @@ struct lexer_test
   cpp_reader_ptr m_parser;
   temp_source_file m_tempfile;
   string_concat_db m_concats;
+  bool m_implicitly_expect_EOF;
 };
 
 /* Use an EBCDIC encoding for the execution charset, specifically
@@ -2025,9 +2064,14 @@ class ebcdic_execution_charset : public lexer_test_options
     ATTRIBUTE_FPTR_PRINTF(5,0)
   {
     gcc_assert (s_singleton);
+    /* Avoid exgettext from picking this up, it is translated in libcpp.  */
+    const char *msg = "conversion from %s to %s not supported by iconv";
+#ifdef ENABLE_NLS
+    msg = dgettext ("cpplib", msg);
+#endif
     /* Detect and record errors emitted by libcpp/charset.c:init_iconv_desc
        when the local iconv build doesn't support the conversion.  */
-    if (strstr (msgid, "not supported by iconv"))
+    if (strcmp (msgid, msg) == 0)
       {
 	s_singleton->m_num_iconv_errors++;
 	return true;
@@ -2046,6 +2090,54 @@ class ebcdic_execution_charset : public lexer_test_options
 
 ebcdic_execution_charset *ebcdic_execution_charset::s_singleton;
 
+/* A lexer_test_options subclass that records a list of error
+   messages emitted by the lexer.  */
+
+class lexer_error_sink : public lexer_test_options
+{
+ public:
+  lexer_error_sink ()
+  {
+    gcc_assert (s_singleton == NULL);
+    s_singleton = this;
+  }
+  ~lexer_error_sink ()
+  {
+    gcc_assert (s_singleton == this);
+    s_singleton = NULL;
+
+    int i;
+    char *str;
+    FOR_EACH_VEC_ELT (m_errors, i, str)
+      free (str);
+  }
+
+  void apply (lexer_test &test) FINAL OVERRIDE
+  {
+    cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
+    callbacks->error = on_error;
+  }
+
+  static bool on_error (cpp_reader *pfile ATTRIBUTE_UNUSED,
+			int level ATTRIBUTE_UNUSED,
+			int reason ATTRIBUTE_UNUSED,
+			rich_location *richloc ATTRIBUTE_UNUSED,
+			const char *msgid, va_list *ap)
+    ATTRIBUTE_FPTR_PRINTF(5,0)
+  {
+    char *msg = xvasprintf (msgid, *ap);
+    s_singleton->m_errors.safe_push (msg);
+    return true;
+  }
+
+  auto_vec<char *> m_errors;
+
+ private:
+  static lexer_error_sink *s_singleton;
+};
+
+lexer_error_sink *lexer_error_sink::s_singleton;
+
 /* Constructor.  Override line_table with a new instance based on CASE_,
    and write CONTENT to a tempfile.  Create a cpp_reader, and use it to
    start parsing the tempfile.  */
@@ -2056,7 +2148,8 @@ lexer_test::lexer_test (const line_table_case &case_, const char *content,
   m_parser (cpp_create_reader (CLK_GNUC99, NULL, line_table)),
   /* Create a tempfile and write the text to it.  */
   m_tempfile (SELFTEST_LOCATION, ".c", content),
-  m_concats ()
+  m_concats (),
+  m_implicitly_expect_EOF (true)
 {
   if (options)
     options->apply (*this);
@@ -2069,16 +2162,19 @@ lexer_test::lexer_test (const line_table_case &case_, const char *content,
   ASSERT_NE (fname, NULL);
 }
 
-/* Destructor.  Verify that the next token in m_parser is EOF.  */
+/* Destructor.  By default, verify that the next token in m_parser is EOF.  */
 
 lexer_test::~lexer_test ()
 {
   location_t loc;
   const cpp_token *tok;
 
-  tok = cpp_get_token_with_location (m_parser, &loc);
-  ASSERT_NE (tok, NULL);
-  ASSERT_EQ (tok->type, CPP_EOF);
+  if (m_implicitly_expect_EOF)
+    {
+      tok = cpp_get_token_with_location (m_parser, &loc);
+      ASSERT_NE (tok, NULL);
+      ASSERT_EQ (tok->type, CPP_EOF);
+    }
 }
 
 /* Get the next token from m_parser.  */
@@ -2115,7 +2211,7 @@ assert_char_at_range (const location &loc,
   cpp_reader *pfile = test.m_parser;
   string_concat_db *concats = &test.m_concats;
 
-  source_range actual_range;
+  source_range actual_range = source_range();
   const char *err
     = get_source_range_for_char (pfile, concats, strloc, type, idx,
 				 &actual_range);
@@ -3247,6 +3343,31 @@ test_lexer_string_locations_raw_string_multiline (const line_table_case &case_)
 				  "range endpoints are on different lines");
 }
 
+/* Test of parsing an unterminated raw string.  */
+
+static void
+test_lexer_string_locations_raw_string_unterminated (const line_table_case &case_)
+{
+  const char *content = "R\"ouch()ouCh\" /* etc */";
+
+  lexer_error_sink errors;
+  lexer_test test (case_, content, &errors);
+  test.m_implicitly_expect_EOF = false;
+
+  /* Attempt to parse the raw string.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_EOF);
+
+  ASSERT_EQ (1, errors.m_errors.length ());
+  /* We expect the message "unterminated raw string"
+     in the "cpplib" translation domain.
+     It's not clear that dgettext is available on all supported hosts,
+     so this assertion is commented-out for now.
+       ASSERT_STREQ (dgettext ("cpplib", "unterminated raw string"),
+                     errors.m_errors[0]);
+  */
+}
+
 /* Test of lexing char constants.  */
 
 static void
@@ -3390,6 +3511,7 @@ input_c_tests ()
   for_each_line_table_case (test_lexer_string_locations_long_line);
   for_each_line_table_case (test_lexer_string_locations_raw_string_one_line);
   for_each_line_table_case (test_lexer_string_locations_raw_string_multiline);
+  for_each_line_table_case (test_lexer_string_locations_raw_string_unterminated);
   for_each_line_table_case (test_lexer_char_constants);
 
   test_reading_source_line ();

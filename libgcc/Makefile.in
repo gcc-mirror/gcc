@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005-2016 Free Software Foundation, Inc.
+# Copyright (C) 2005-2017 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -165,8 +165,13 @@ configure_deps = \
 	$(srcdir)/../config/tls.m4 \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/no-executables.m4 \
+	$(srcdir)/../config/lib-ld.m4 \
 	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/picflag.m4 \
 	$(srcdir)/../config/dfp.m4 \
+	$(srcdir)/../config/unwind_ipinfo.m4 \
+	$(srcdir)/../config/gthr.m4 \
+	$(srcdir)/../config/sjlj.m4
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
@@ -219,7 +224,7 @@ export slibdir
 export toolexecdir
 export toolexeclibdir
 
-version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 
 ifeq ($(decimal_float),yes)
 ifeq ($(enable_decimal_float),bid)

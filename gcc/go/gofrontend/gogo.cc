@@ -108,12 +108,14 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   uint8_type->integer_type()->set_is_byte();
   Named_object* byte_type = Named_object::make_type("byte", NULL, uint8_type,
 						    loc);
+  byte_type->type_value()->set_is_alias();
   this->add_named_type(byte_type->type_value());
 
   // "rune" is an alias for "int32".
   int32_type->integer_type()->set_is_rune();
   Named_object* rune_type = Named_object::make_type("rune", NULL, int32_type,
 						    loc);
+  rune_type->type_value()->set_is_alias();
   this->add_named_type(rune_type->type_value());
 
   this->add_named_type(Type::make_named_bool_type());
@@ -661,7 +663,7 @@ Gogo::recompute_init_priorities()
 // package.
 
 void
-Gogo::init_imports(std::vector<Bstatement*>& init_stmts)
+Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
 {
   go_assert(this->is_main_package());
 
@@ -703,7 +705,8 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts)
       Bexpression* pfunc_call =
 	this->backend()->call_expression(pfunc_code, empty_args,
 					 NULL, unknown_loc);
-      init_stmts.push_back(this->backend()->expression_statement(pfunc_call));
+      init_stmts.push_back(this->backend()->expression_statement(bfunction,
+                                                                 pfunc_call));
     }
 }
 
@@ -726,7 +729,8 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts)
 
 void
 Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
-		       std::vector<Bstatement*>& init_stmts)
+		       std::vector<Bstatement*>& init_stmts,
+                       Bfunction* init_bfn)
 {
   if (var_gc.empty())
     return;
@@ -738,10 +742,11 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
                                                           "__size", uint_type);
 
   Location builtin_loc = Linemap::predeclared_location();
-  Expression* length = Expression::make_integer_ul(var_gc.size(), NULL,
-						   builtin_loc);
-
+  unsigned roots_len = var_gc.size() + this->gc_roots_.size() + 1;
+  Expression* length = Expression::make_integer_ul(roots_len, NULL,
+                                                   builtin_loc);
   Array_type* root_array_type = Type::make_array_type(root_type, length);
+  root_array_type->set_is_array_incomparable();
   Type* ptdt = Type::make_type_descriptor_ptr_type();
   Struct_type* root_list_type =
       Type::make_builtin_struct_type(2,
@@ -830,7 +835,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   Translate_context context(this, NULL, NULL, NULL);
   Bexpression* bcall = register_roots->get_backend(&context);
-  init_stmts.push_back(this->backend()->expression_statement(bcall));
+  init_stmts.push_back(this->backend()->expression_statement(init_bfn, bcall));
 }
 
 // Get the name to use for the import control function.  If there is a
@@ -1253,14 +1258,19 @@ Gogo::write_globals()
   std::vector<Bexpression*> const_decls;
   std::vector<Bfunction*> func_decls;
 
-  // The init function declaration, if necessary.
+  // The init function declaration and associated Bfunction, if necessary.
   Named_object* init_fndecl = NULL;
+  Bfunction* init_bfn = NULL;
 
   std::vector<Bstatement*> init_stmts;
   std::vector<Bstatement*> var_init_stmts;
 
   if (this->is_main_package())
-    this->init_imports(init_stmts);
+    {
+      init_fndecl = this->initialization_function_decl();
+      init_bfn = init_fndecl->func_value()->get_or_make_decl(this, init_fndecl);
+      this->init_imports(init_stmts, init_bfn);
+    }
 
   // A list of variable initializations.
   Var_inits var_inits;
@@ -1345,7 +1355,11 @@ Gogo::write_globals()
 	      else
 		{
 		  if (init_fndecl == NULL)
-		    init_fndecl = this->initialization_function_decl();
+                    {
+                      init_fndecl = this->initialization_function_decl();
+                      Function* func = init_fndecl->func_value();
+                      init_bfn = func->get_or_make_decl(this, init_fndecl);
+                    }
 		  var_init_fn = init_fndecl;
 		}
               Bexpression* var_binit = var->get_init(this, var_init_fn);
@@ -1364,15 +1378,15 @@ Gogo::write_globals()
 		}
 	      else if (is_sink)
 	        var_init_stmt =
-                    this->backend()->expression_statement(var_binit);
+                    this->backend()->expression_statement(init_bfn, var_binit);
 	      else
                 {
                   Location loc = var->location();
                   Bexpression* var_expr =
                       this->backend()->var_expression(bvar, VE_lvalue, loc);
                   var_init_stmt =
-                      this->backend()->assignment_statement(var_expr, var_binit,
-                                                            loc);
+                      this->backend()->assignment_statement(init_bfn, var_expr,
+                                                            var_binit, loc);
                 }
 	    }
 	  else
@@ -1402,7 +1416,7 @@ Gogo::write_globals()
               Btype* btype = no->var_value()->type()->get_backend(this);
               Bexpression* zero = this->backend()->zero_expression(btype);
               Bstatement* zero_stmt =
-                  this->backend()->expression_statement(zero);
+                  this->backend()->expression_statement(init_bfn, zero);
 	      var_inits.push_back(Var_init(no, zero_stmt));
 	    }
 
@@ -1412,7 +1426,7 @@ Gogo::write_globals()
     }
 
   // Register global variables with the garbage collector.
-  this->register_gc_vars(var_gc, init_stmts);
+  this->register_gc_vars(var_gc, init_stmts, init_bfn);
 
   // Simple variable initializations, after all variables are
   // registered.
@@ -1446,7 +1460,8 @@ Gogo::write_globals()
       Bexpression* call = this->backend()->call_expression(func_code,
                                                            empty_args,
 							   NULL, func_loc);
-      init_stmts.push_back(this->backend()->expression_statement(call));
+      Bstatement* ist = this->backend()->expression_statement(initfn, call);
+      init_stmts.push_back(ist);
     }
 
   // Set up a magic function to do all the initialization actions.
@@ -1762,15 +1777,28 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	  if (rtype->classification() == Type::TYPE_POINTER)
 	    rtype = rtype->points_to();
 
+	  while (rtype->named_type() != NULL
+		 && rtype->named_type()->is_alias())
+	    rtype = rtype->named_type()->real_type()->forwarded();
+
 	  if (rtype->is_error_type())
 	    ret = Named_object::make_function(name, NULL, function);
 	  else if (rtype->named_type() != NULL)
 	    {
-	      ret = rtype->named_type()->add_method(name, function);
-	      if (!ret->is_function())
+	      if (rtype->named_type()->named_object()->package() != NULL)
 		{
-		  // Redefinition error.
+		  go_error_at(type->receiver()->location(),
+			      "may not define methods on non-local type");
 		  ret = Named_object::make_function(name, NULL, function);
+		}
+	      else
+		{
+		  ret = rtype->named_type()->add_method(name, function);
+		  if (!ret->is_function())
+		    {
+		      // Redefinition error.
+		      ret = Named_object::make_function(name, NULL, function);
+		    }
 		}
 	    }
 	  else if (rtype->forward_declaration_type() != NULL)
@@ -2228,8 +2256,14 @@ Gogo::define_global_names()
 	  if (global_no->is_type())
 	    {
 	      if (no->type_declaration_value()->has_methods())
-		go_error_at(no->location(),
-			    "may not define methods for global type");
+		{
+		  for (std::vector<Named_object*>::const_iterator p =
+			 no->type_declaration_value()->methods()->begin();
+		       p != no->type_declaration_value()->methods()->end();
+		       p++)
+		    go_error_at((*p)->location(),
+				"may not define methods on non-local type");
+		}
 	      no->set_type_value(global_no->type_value());
 	    }
 	  else
@@ -2331,7 +2365,7 @@ Gogo::clear_file_scope()
 // parse tree is lowered.
 
 void
-Gogo::queue_specific_type_function(Type* type, Named_type* name,
+Gogo::queue_specific_type_function(Type* type, Named_type* name, int64_t size,
 				   const std::string& hash_name,
 				   Function_type* hash_fntype,
 				   const std::string& equal_name,
@@ -2339,7 +2373,7 @@ Gogo::queue_specific_type_function(Type* type, Named_type* name,
 {
   go_assert(!this->specific_type_functions_are_written_);
   go_assert(!this->in_global_scope());
-  Specific_type_function* tsf = new Specific_type_function(type, name,
+  Specific_type_function* tsf = new Specific_type_function(type, name, size,
 							   hash_name,
 							   hash_fntype,
 							   equal_name,
@@ -2374,7 +2408,7 @@ Specific_type_functions::type(Type* t)
     case Type::TYPE_NAMED:
       {
 	Named_type* nt = t->named_type();
-	if (!t->compare_is_identity(this->gogo_) && t->is_comparable())
+	if (t->needs_specific_type_functions(this->gogo_))
 	  t->type_functions(this->gogo_, nt, NULL, NULL, &hash_fn, &equal_fn);
 
 	// If this is a struct type, we don't want to make functions
@@ -2408,7 +2442,7 @@ Specific_type_functions::type(Type* t)
 
     case Type::TYPE_STRUCT:
     case Type::TYPE_ARRAY:
-      if (!t->compare_is_identity(this->gogo_) && t->is_comparable())
+      if (t->needs_specific_type_functions(this->gogo_))
 	t->type_functions(this->gogo_, NULL, NULL, NULL, &hash_fn, &equal_fn);
       break;
 
@@ -2431,7 +2465,7 @@ Gogo::write_specific_type_functions()
     {
       Specific_type_function* tsf = this->specific_type_functions_.back();
       this->specific_type_functions_.pop_back();
-      tsf->type->write_specific_type_functions(this, tsf->name,
+      tsf->type->write_specific_type_functions(this, tsf->name, tsf->size,
 					       tsf->hash_name,
 					       tsf->hash_fntype,
 					       tsf->equal_name,
@@ -4821,7 +4855,8 @@ Function::closure_var()
       // we find them.
       Location loc = this->type_->location();
       Struct_field_list* sfl = new Struct_field_list;
-      Type* struct_type = Type::make_struct_type(sfl, loc);
+      Struct_type* struct_type = Type::make_struct_type(sfl, loc);
+      struct_type->set_is_struct_incomparable();
       Variable* var = new Variable(Type::make_pointer_type(struct_type),
 				   NULL, false, false, false, loc);
       var->set_is_used();
@@ -5594,7 +5629,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
       for (size_t i = 0; i < vars.size(); ++i)
 	{
           Bstatement* init_stmt =
-              gogo->backend()->init_statement(vars[i], var_inits[i]);
+              gogo->backend()->init_statement(this->fndecl_, vars[i],
+                                              var_inits[i]);
           init.push_back(init_stmt);
 	}
       if (defer_init != NULL)
@@ -5666,7 +5702,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
 					this->defer_stack(end_loc));
   Translate_context context(gogo, named_function, NULL, NULL);
   Bexpression* defer = call->get_backend(&context);
-  stmts.push_back(gogo->backend()->expression_statement(defer));
+  stmts.push_back(gogo->backend()->expression_statement(this->fndecl_, defer));
 
   Bstatement* ret_bstmt = this->return_value(gogo, named_function, end_loc);
   if (ret_bstmt != NULL)
@@ -5703,9 +5739,10 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
       Expression* ref =
 	Expression::make_temporary_reference(this->defer_stack_, end_loc);
       Bexpression* bref = ref->get_backend(&context);
-      ret = gogo->backend()->conditional_expression(NULL, bref, ret, NULL,
+      ret = gogo->backend()->conditional_expression(this->fndecl_,
+                                                    NULL, bref, ret, NULL,
                                                     end_loc);
-      stmts.push_back(gogo->backend()->expression_statement(ret));
+      stmts.push_back(gogo->backend()->expression_statement(this->fndecl_, ret));
     }
 
   go_assert(*fini == NULL);
@@ -6547,6 +6584,8 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
 
   Translate_context context(gogo, function, NULL, NULL);
   Bblock* bblock = this->preinit_->get_backend(&context);
+  Bfunction* bfunction =
+      function->func_value()->get_or_make_decl(gogo, function);
 
   // It's possible to have pre-init statements without an initializer
   // if the pre-init statements set the variable.
@@ -6556,7 +6595,8 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
       if (var_decl == NULL)
         {
           Bexpression* init_bexpr = this->init_->get_backend(&context);
-          decl_init = gogo->backend()->expression_statement(init_bexpr);
+          decl_init = gogo->backend()->expression_statement(bfunction,
+                                                            init_bexpr);
         }
       else
 	{
@@ -6566,7 +6606,8 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
           Bexpression* val = val_expr->get_backend(&context);
           Bexpression* var_ref =
               gogo->backend()->var_expression(var_decl, VE_lvalue, loc);
-          decl_init = gogo->backend()->assignment_statement(var_ref, val, loc);
+          decl_init = gogo->backend()->assignment_statement(bfunction, var_ref,
+                                                            val, loc);
 	}
     }
   Bstatement* block_stmt = gogo->backend()->block_statement(bblock);
@@ -6845,7 +6886,7 @@ Type_declaration::add_method_declaration(const std::string&  name,
   return ret;
 }
 
-// Return whether any methods ere defined.
+// Return whether any methods are defined.
 
 bool
 Type_declaration::has_methods() const
@@ -6858,6 +6899,36 @@ Type_declaration::has_methods() const
 void
 Type_declaration::define_methods(Named_type* nt)
 {
+  if (this->methods_.empty())
+    return;
+
+  while (nt->is_alias())
+    {
+      Type *t = nt->real_type()->forwarded();
+      if (t->named_type() != NULL)
+	nt = t->named_type();
+      else if (t->forward_declaration_type() != NULL)
+	{
+	  Named_object* no = t->forward_declaration_type()->named_object();
+	  Type_declaration* td = no->type_declaration_value();
+	  td->methods_.insert(td->methods_.end(), this->methods_.begin(),
+			      this->methods_.end());
+	  this->methods_.clear();
+	  return;
+	}
+      else
+	{
+	  for (std::vector<Named_object*>::const_iterator p =
+		 this->methods_.begin();
+	       p != this->methods_.end();
+	       ++p)
+	    go_error_at((*p)->location(),
+			("invalid receiver type "
+			 "(receiver must be a named type"));
+	  return;
+	}
+    }
+
   for (std::vector<Named_object*>::const_iterator p = this->methods_.begin();
        p != this->methods_.end();
        ++p)

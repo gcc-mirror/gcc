@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2015, AdaCore                     *
+ *                     Copyright (C) 2008-2016, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1410,7 +1410,8 @@ __gnat_setup_child_communication
 
 #ifdef TIOCSCTTY
   /* make the tty the controlling terminal */
-  status = ioctl (desc->slave_fd, TIOCSCTTY, 0);
+  if ((status = ioctl (desc->slave_fd, TIOCSCTTY, 0)) == -1)
+    return -1;
 #endif
 
   /* adjust tty settings */
@@ -1424,8 +1425,10 @@ __gnat_setup_child_communication
   if (desc->slave_fd > 2) close (desc->slave_fd);
 
   /* adjust process group settings */
-  status = setpgid (pid, pid);
-  status = tcsetpgrp (0, pid);
+  /* ignore failures of the following two commands as the context might not
+   * allow making those changes. */
+  setpgid (pid, pid);
+  tcsetpgrp (0, pid);
 
   /* launch the program */
   execvp (new_argv[0], new_argv);
@@ -1562,9 +1565,9 @@ pty_desc *
 __gnat_new_tty (void)
 {
   int status;
-  pty_desc* desc;
-  status = allocate_pty_desc (&desc);
-  child_setup_tty (desc->master_fd);
+  pty_desc* desc = NULL;
+  if ((status = allocate_pty_desc (&desc)))
+    child_setup_tty (desc->master_fd);
   return desc;
 }
 

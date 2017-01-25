@@ -420,7 +420,10 @@ begin
             Instantiate_Bodies;
          end if;
 
-         if Operating_Mode = Generate_Code then
+         --  Analyze inlined bodies and check elaboration rules in GNATprove
+         --  mode as well as during compilation.
+
+         if Operating_Mode = Generate_Code or else GNATprove_Mode then
             if Inline_Processing_Required then
                Analyze_Inlined_Bodies;
             end if;
@@ -460,7 +463,7 @@ begin
       end if;
    end if;
 
-   --  Qualify all entity names in inner packages, package bodies, etc.
+   --  Qualify all entity names in inner packages, package bodies, etc
 
    Exp_Dbug.Qualify_All_Entity_Names;
 

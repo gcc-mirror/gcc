@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2375,13 +2375,15 @@ package body Makeutl is
       begin
          case S.Format is
             when Format_Gprbuild =>
-               return not Busy_Obj_Dirs.Get
-                 (S.Id.Project.Object_Directory.Name);
+               return
+                 not Busy_Obj_Dirs.Get
+                       (S.Id.Project.Object_Directory.Name);
 
             when Format_Gnatmake =>
-               return S.Project = No_Project
-                 or else
-                   not Busy_Obj_Dirs.Get (S.Project.Object_Directory.Name);
+               return
+                 S.Project = No_Project
+                   or else not Busy_Obj_Dirs.Get
+                                 (S.Project.Object_Directory.Name);
          end case;
       end Available_Obj_Dir;
 
@@ -2522,10 +2524,11 @@ package body Makeutl is
 
             for J in 1 .. Q.Last loop
                case Q.Table (J).Info.Format is
-               when Format_Gprbuild =>
-                  Q.Table (J).Info.Id.In_The_Queue := False;
-               when Format_Gnatmake =>
-                  null;
+                  when Format_Gprbuild =>
+                     Q.Table (J).Info.Id.In_The_Queue := False;
+
+                  when Format_Gnatmake =>
+                     null;
                end case;
             end loop;
 
@@ -2739,14 +2742,15 @@ package body Makeutl is
 
                      if Root_Found then
                         case Root_Source.Kind is
-                        when Impl =>
-                           null;
+                           when Impl =>
+                              null;
 
-                        when Spec =>
-                           Root_Found := Other_Part (Root_Source) = No_Source;
+                           when Spec =>
+                              Root_Found :=
+                                Other_Part (Root_Source) = No_Source;
 
-                        when Sep =>
-                           Root_Found := False;
+                           when Sep =>
+                              Root_Found := False;
                         end case;
                      end if;
 
@@ -2886,6 +2890,7 @@ package body Makeutl is
             case Q.Table (Rank).Info.Format is
                when Format_Gprbuild =>
                   return Q.Table (Rank).Info.Id.File;
+
                when Format_Gnatmake =>
                   return Q.Table (Rank).Info.File;
             end case;

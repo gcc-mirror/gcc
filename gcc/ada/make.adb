@@ -675,9 +675,6 @@ package body Make is
    Gnatlink : String_Access := Program_Name ("gnatlink", "gnatmake");
    --  Default compiler, binder, linker programs
 
-   Globalizer : constant String := "codepeer_globalizer";
-   --  CodePeer globalizer executable name
-
    Saved_Gcc      : String_Access := null;
    Saved_Gnatbind : String_Access := null;
    Saved_Gnatlink : String_Access := null;
@@ -691,10 +688,6 @@ package body Make is
                      GNAT.OS_Lib.Locate_Exec_On_Path (Gnatlink.all);
    --  Path for compiler, binder, linker programs, defaulted now for gnatdist.
    --  Changed later if overridden on command line.
-
-   Globalizer_Path : constant String_Access :=
-                       GNAT.OS_Lib.Locate_Exec_On_Path (Globalizer);
-   --  Path for CodePeer globalizer
 
    Comp_Flag         : constant String_Access := new String'("-c");
    Output_Flag       : constant String_Access := new String'("-o");
@@ -1023,10 +1016,6 @@ package body Make is
    --  the main unit. Likewise the withed units in a generic body needed
    --  during a compilation are also transitively included in the W section
    --  of the originally compiled file.
-
-   procedure Globalize (Success : out Boolean);
-   --  Call the CodePeer globalizer on all the project's object directories,
-   --  or on the current directory if no projects.
 
    procedure Initialize
       (Project_Node_Tree : out Project_Node_Tree_Ref;
@@ -2174,15 +2163,15 @@ package body Make is
 
          for Ptr in Template'Range loop
             case Template (Ptr) is
-               when '*'    =>
+               when '*' =>
                   Add_Str_To_Name_Buffer (Name);
 
-               when ';'    =>
+               when ';' =>
                   File := Full_Lib_File_Name (Name_Find);
                   exit when File /= No_File;
                   Name_Len := 0;
 
-               when NUL    =>
+               when NUL =>
                   exit;
 
                when others =>
@@ -4086,55 +4075,6 @@ package body Make is
       Debug_Msg ("New entry in Obsoleted table:", F2);
       Obsoleted.Set (F2, True);
    end Enter_Into_Obsoleted;
-
-   ---------------
-   -- Globalize --
-   ---------------
-
-   procedure Globalize (Success : out Boolean) is
-      Quiet_Str       : aliased String := "-quiet";
-      Globalizer_Args : constant Argument_List :=
-                          (1 => Quiet_Str'Unchecked_Access);
-      Previous_Dir    : String_Access;
-
-      procedure Globalize_Dir (Dir : String);
-      --  Call CodePeer globalizer on Dir
-
-      -------------------
-      -- Globalize_Dir --
-      -------------------
-
-      procedure Globalize_Dir (Dir : String) is
-         Result : Boolean;
-      begin
-         if Previous_Dir = null or else Dir /= Previous_Dir.all then
-            Free (Previous_Dir);
-            Previous_Dir := new String'(Dir);
-            Change_Dir (Dir);
-            GNAT.OS_Lib.Spawn (Globalizer_Path.all, Globalizer_Args, Result);
-            Success := Success and Result;
-         end if;
-      end Globalize_Dir;
-
-      procedure Globalize_Dirs is new
-        Prj.Env.For_All_Object_Dirs (Globalize_Dir);
-
-   --  Start of processing for Globalize
-
-   begin
-      Success := True;
-      Display (Globalizer, Globalizer_Args);
-
-      if Globalizer_Path = null then
-         Make_Failed ("error, unable to locate " & Globalizer);
-      end if;
-
-      if Main_Project = No_Project then
-         GNAT.OS_Lib.Spawn (Globalizer_Path.all, Globalizer_Args, Success);
-      else
-         Globalize_Dirs (Main_Project, Project_Tree);
-      end if;
-   end Globalize;
 
    -------------------
    -- Linking_Phase --
@@ -6189,23 +6129,6 @@ package body Make is
             Main_Source_File := Next_Main_Source;  --  No directory information
          end if;
       end loop Multiple_Main_Loop;
-
-      if CodePeer_Mode then
-         declare
-            Success : Boolean := False;
-         begin
-            Globalize (Success);
-
-            if not Success then
-               Set_Standard_Error;
-               Write_Str ("*** globalize failed.");
-
-               if Commands_To_Stdout then
-                  Set_Standard_Output;
-               end if;
-            end if;
-         end;
-      end if;
 
       if Failed_Links.Last > 0 then
          for Index in 1 .. Successful_Links.Last loop

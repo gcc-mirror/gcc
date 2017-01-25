@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5767,7 +5767,9 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   if (single_succ_p (bb)
       && (single_succ_edge (bb)->flags & EDGE_FALLTHRU)
       && (last = get_last_insn ())
-      && JUMP_P (last))
+      && (JUMP_P (last)
+	  || (DEBUG_INSN_P (last)
+	      && JUMP_P (prev_nondebug_insn (last)))))
     {
       rtx dummy = gen_reg_rtx (SImode);
       emit_insn_after_noloc (gen_move_insn (dummy, dummy), last, NULL);

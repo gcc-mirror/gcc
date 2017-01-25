@@ -3,7 +3,6 @@
    function.  */
 /* { dg-do run } */
 /* { dg-options "(-mips16) (REQUIRES_STDLIB)" } */
-/* { dg-skip-if "" { *-*-* } { "-mmicromips" } { "" } } */
 
 #include <stdlib.h>
 

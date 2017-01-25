@@ -1,5 +1,5 @@
 # Makefile for libada.
-#   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+#   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ host_subdir = @host_subdir@
 GCC_DIR=$(MULTIBUILDTOP)../../$(host_subdir)/gcc
 
 target_noncanonical:=@target_noncanonical@
-version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)
 ADA_RTS_DIR=$(GCC_DIR)/ada/rts$(subst /,_,$(MULTISUBDIR))
 ADA_RTS_SUBDIR=./rts$(subst /,_,$(MULTISUBDIR))
@@ -189,8 +189,10 @@ AUTOCONF = autoconf
 configure_deps = \
 	$(srcdir)/configure.ac \
 	$(srcdir)/../config/acx.m4 \
+	$(srcdir)/../config/multi.m4 \
 	$(srcdir)/../config/override.m4 \
-	$(srcdir)/../config/multi.m4
+	$(srcdir)/../config/picflag.m4 \
+	$(srcdir)/../config/unwind_ipinfo.m4
 
 $(srcdir)/configure: @MAINT@ $(configure_deps)
 	cd $(srcdir) && $(AUTOCONF)

@@ -64,6 +64,11 @@ with Uintp;    use Uintp;
 
 package body Sem_Ch5 is
 
+   Current_LHS : Node_Id := Empty;
+   --  Holds the left-hand side of the assignment statement being analyzed.
+   --  Used to determine the type of a target_name appearing on the RHS, for
+   --  AI12-0125 and the use of '@' as an abbreviation for the LHS.
+
    Unblocked_Exit_Count : Nat := 0;
    --  This variable is used when processing if statements, case statements,
    --  and block statements. It counts the number of exit points that are not
@@ -87,6 +92,10 @@ package body Sem_Ch5 is
    ------------------------
    -- Analyze_Assignment --
    ------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Analyze_Assignment (N : Node_Id) is
       Lhs  : constant Node_Id := Name (N);
@@ -270,11 +279,15 @@ package body Sem_Ch5 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode : Ghost_Mode_Type;
 
    --  Start of processing for Analyze_Assignment
 
    begin
+      --  Save LHS for use in target names (AI12-125)
+
+      Current_LHS := Lhs;
+
       Mark_Coextensions (N, Rhs);
 
       --  Analyze the target of the assignment first in case the expression
@@ -287,7 +300,7 @@ package body Sem_Ch5 is
       --  Ghost entity. Set the mode now to ensure that any nodes generated
       --  during analysis and expansion are properly marked as Ghost.
 
-      Set_Ghost_Mode (N);
+      Mark_And_Set_Ghost_Assignment (N, Mode);
       Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as
@@ -326,6 +339,14 @@ package body Sem_Ch5 is
                then
                   null;
 
+               --  This may be a call to a parameterless function through an
+               --  implicit dereference, so discard interpretation as well.
+
+               elsif Is_Entity_Name (Lhs)
+                 and then Has_Implicit_Dereference (It.Typ)
+               then
+                  null;
+
                elsif Has_Compatible_Type (Rhs, It.Typ) then
                   if T1 /= Any_Type then
 
@@ -356,8 +377,8 @@ package body Sem_Ch5 is
 
                                     if PIt = No_Interp then
                                        Error_Msg_N
-                                         ("ambiguous left-hand side"
-                                            & " in assignment", Lhs);
+                                         ("ambiguous left-hand side in "
+                                          & "assignment", Lhs);
                                        exit;
                                     else
                                        Resolve (Prefix (Lhs), PIt.Typ);
@@ -392,8 +413,7 @@ package body Sem_Ch5 is
             Error_Msg_N
               ("no valid types for left-hand side for assignment", Lhs);
             Kill_Lhs;
-            Ghost_Mode := Save_Ghost_Mode;
-            return;
+            goto Leave;
          end if;
       end if;
 
@@ -464,21 +484,20 @@ package body Sem_Ch5 is
                   --  effect (AARM D.5.2 (5/2)).
 
                   if Locking_Policy /= 'C' then
-                     Error_Msg_N ("assignment to the attribute PRIORITY has " &
-                                  "no effect??", Lhs);
-                     Error_Msg_N ("\since no Locking_Policy has been " &
-                                  "specified??", Lhs);
+                     Error_Msg_N
+                       ("assignment to the attribute PRIORITY has no effect??",
+                        Lhs);
+                     Error_Msg_N
+                       ("\since no Locking_Policy has been specified??", Lhs);
                   end if;
 
-                  Ghost_Mode := Save_Ghost_Mode;
-                  return;
+                  goto Leave;
                end if;
             end if;
          end;
 
          Diagnose_Non_Variable_Lhs (Lhs);
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
 
       --  Error of assigning to limited type. We do however allow this in
       --  certain cases where the front end generates the assignments.
@@ -497,17 +516,14 @@ package body Sem_Ch5 is
             Explain_Limited_Type (T1, Lhs);
          end if;
 
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
 
       --  A class-wide type may be a limited view. This illegal case is not
       --  caught by previous checks.
 
-      elsif Ekind (T1) = E_Class_Wide_Type
-        and then From_Limited_With (T1)
-      then
+      elsif Ekind (T1) = E_Class_Wide_Type and then From_Limited_With (T1) then
          Error_Msg_NE ("invalid use of limited view of&", Lhs, T1);
-         return;
+         goto Leave;
 
       --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
       --  abstract. This is only checked when the assignment Comes_From_Source,
@@ -545,14 +561,23 @@ package body Sem_Ch5 is
       then
          Error_Msg_N ("invalid use of incomplete type", Lhs);
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       --  Now we can complete the resolution of the right hand side
 
       Set_Assignment_Type (Lhs, T1);
+
       Resolve (Rhs, T1);
+
+      --  If the right-hand side contains target names, expansion has been
+      --  disabled to prevent expansion that might move target names out of
+      --  the context of the assignment statement. Restore the expander mode
+      --  now so that assignment statement can be properly expanded.
+
+      if Nkind (N) = N_Assignment_Statement and then Has_Target_Names (N) then
+         Expander_Mode_Restore;
+      end if;
 
       --  This is the point at which we check for an unset reference
 
@@ -563,8 +588,7 @@ package body Sem_Ch5 is
 
       if Rhs = Error then
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       T2 := Etype (Rhs);
@@ -572,8 +596,7 @@ package body Sem_Ch5 is
       if not Covers (T1, T2) then
          Wrong_Type (Rhs, Etype (Lhs));
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       --  Ada 2005 (AI-326): In case of explicit dereference of incomplete
@@ -600,8 +623,7 @@ package body Sem_Ch5 is
 
       if T1 = Any_Type or else T2 = Any_Type then
          Kill_Lhs;
-         Ghost_Mode := Save_Ghost_Mode;
-         return;
+         goto Leave;
       end if;
 
       --  If the rhs is class-wide or dynamically tagged, then require the lhs
@@ -693,8 +715,7 @@ package body Sem_Ch5 is
             --  to reset Is_True_Constant, and desirable for xref purposes.
 
             Note_Possible_Modification (Lhs, Sure => True);
-            Ghost_Mode := Save_Ghost_Mode;
-            return;
+            goto Leave;
 
          --  If we know the right hand side is non-null, then we convert to the
          --  target type, since we don't need a run time check in that case.
@@ -914,7 +935,10 @@ package body Sem_Ch5 is
       end;
 
       Analyze_Dimension (N);
-      Ghost_Mode := Save_Ghost_Mode;
+
+   <<Leave>>
+      Current_LHS := Empty;
+      Restore_Ghost_Mode (Mode);
    end Analyze_Assignment;
 
    -----------------------------
@@ -3273,6 +3297,19 @@ package body Sem_Ch5 is
          Set_Has_Created_Identifier (N);
       end if;
 
+      --  If the iterator specification has a syntactic error, transform
+      --  construct into an infinite loop to prevent a crash and perform
+      --  some analysis.
+
+      if Present (Iter)
+        and then Present (Iterator_Specification (Iter))
+        and then Error_Posted (Iterator_Specification (Iter))
+      then
+         Set_Iteration_Scheme (N, Empty);
+         Analyze (N);
+         return;
+      end if;
+
       --  Iteration over a container in Ada 2012 involves the creation of a
       --  controlled iterator object. Wrap the loop in a block to ensure the
       --  timely finalization of the iterator and release of container locks.
@@ -3402,13 +3439,16 @@ package body Sem_Ch5 is
       --  expanded).
 
       --  In other cases in GNATprove mode then we want to analyze the loop
-      --  body now, since no rewriting will occur.
+      --  body now, since no rewriting will occur. Within a generic the
+      --  GNATprove mode is irrelevant, we must analyze the generic for
+      --  non-local name capture.
 
       if Present (Iter)
         and then Present (Iterator_Specification (Iter))
       then
          if GNATprove_Mode
            and then Is_Iterator_Over_Array (Iterator_Specification (Iter))
+           and then not Inside_A_Generic
          then
             null;
 
@@ -3492,6 +3532,31 @@ package body Sem_Ch5 is
    begin
       null;
    end Analyze_Null_Statement;
+
+   -------------------------
+   -- Analyze_Target_Name --
+   -------------------------
+
+   procedure Analyze_Target_Name (N : Node_Id) is
+   begin
+      if No (Current_LHS) then
+         Error_Msg_N ("target name can only appear within an assignment", N);
+         Set_Etype (N, Any_Type);
+
+      else
+         Set_Has_Target_Names (Parent (Current_LHS));
+         Set_Etype (N, Etype (Current_LHS));
+
+         --  Disable expansion for the rest of the analysis of the current
+         --  right-hand side. The enclosing assignment statement will be
+         --  rewritten during expansion, together with occurrences of the
+         --  target name.
+
+         if Expander_Active then
+            Expander_Mode_Save_And_Set (False);
+         end if;
+      end if;
+   end Analyze_Target_Name;
 
    ------------------------
    -- Analyze_Statements --

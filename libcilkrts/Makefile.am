@@ -62,7 +62,7 @@ AM_CPPFLAGS = $(GENERAL_FLAGS)
 AM_LDFLAGS = $(XLDFLAGS)
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Target list.
 nodist_toolexeclib_HEADERS = libcilkrts.spec

@@ -1,5 +1,5 @@
 /* params.def - Run-time parameters.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -51,7 +51,7 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 
 DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 	  "inline-min-speedup",
-	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-isnsns-auto.",
+	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-insns-auto.",
 	  10, 0, 0)
 
 /* The single function inlining limit. This is the maximum size
@@ -532,6 +532,11 @@ DEFPARAM(PARAM_AVG_LOOP_NITER,
 	 "Average number of iterations of a loop.",
 	 10, 1, 0)
 
+DEFPARAM(PARAM_DSE_MAX_OBJECT_SIZE,
+	 "dse-max-object-size",
+	 "Maximum size (in bytes) of objects tracked bytewise by dead store elimination.",
+	 256, 0, 0)
+
 DEFPARAM(PARAM_SCEV_MAX_EXPR_SIZE,
  	 "scev-max-expr-size",
 	 "Bound on size of expressions used in the scalar evolutions analyzer.",
@@ -1007,7 +1012,7 @@ DEFPARAM (PARAM_IPA_CP_RECURSION_PENALTY,
 
 DEFPARAM (PARAM_IPA_CP_SINGLE_CALL_PENALTY,
 	  "ipa-cp-single-call-penalty",
-	  "Percentage penalty functions containg a single call to another "
+	  "Percentage penalty functions containing a single call to another "
 	  "function will receive when they are evaluated for cloning..",
 	  15, 0, 100)
 
@@ -1102,7 +1107,7 @@ DEFPARAM (PARAM_STORE_MERGING_ALLOW_UNALIGNED,
 
 DEFPARAM (PARAM_MAX_STORES_TO_MERGE,
 	  "max-stores-to-merge",
-	  "Maximum number of constant stores to merge in the"
+	  "Maximum number of constant stores to merge in the "
 	  "store merging pass",
 	  64, 2, 0)
 
@@ -1170,7 +1175,7 @@ DEFPARAM (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD,
 
 DEFPARAM (PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD,
 	 "use-after-scope-direct-emission-threshold",
-	 "Use direct poisoning/unpoisoning intructions for variables "
+	 "Use direct poisoning/unpoisoning instructions for variables "
 	 "smaller or equal to this number.",
 	 256, 0, INT_MAX)
 

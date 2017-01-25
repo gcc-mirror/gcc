@@ -1,5 +1,5 @@
 /* __builtin_object_size (ptr, object_size_type) computation
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -138,13 +138,18 @@ compute_object_offset (const_tree expr, const_tree var)
 	return base;
 
       t = TREE_OPERAND (expr, 1);
+      tree low_bound, unit_size;
+      low_bound = array_ref_low_bound (CONST_CAST_TREE (expr));
+      unit_size = array_ref_element_size (CONST_CAST_TREE (expr));
+      if (! integer_zerop (low_bound))
+	t = fold_build2 (MINUS_EXPR, TREE_TYPE (t), t, low_bound);
       if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)
 	{
 	  code = MINUS_EXPR;
 	  t = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
 	}
       t = fold_convert (sizetype, t);
-      off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
+      off = size_binop (MULT_EXPR, unit_size, t);
       break;
 
     case MEM_REF:
@@ -533,7 +538,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	      tree offset = gimple_assign_rhs2 (def);
 	      ptr = gimple_assign_rhs1 (def);
 
-	      if (cst_and_fits_in_hwi (offset)
+	      if (tree_fits_shwi_p (offset)
 		  && compute_builtin_object_size (ptr, object_size_type, psize))
 		{
 		  /* Return zero when the offset is out of bounds.  */
@@ -1230,7 +1235,7 @@ init_object_sizes (void)
 
 /* Destroy data structures after the object size computation.  */
 
-static void
+void
 fini_object_sizes (void)
 {
   int object_size_type;

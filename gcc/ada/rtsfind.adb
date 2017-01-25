@@ -33,6 +33,7 @@ with Errout;   use Errout;
 with Exp_Dist; use Exp_Dist;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Namet;    use Namet;
@@ -938,7 +939,7 @@ package body Rtsfind is
 
       --  Provide a clean environment for the unit
 
-      Ghost_Mode := None;
+      Install_Ghost_Mode (None);
 
       --  Note if secondary stack is used
 
@@ -1041,7 +1042,7 @@ package body Rtsfind is
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Mode (Save_Ghost_Mode);
    end Load_RTU;
 
    --------------------
@@ -1351,7 +1352,7 @@ package body Rtsfind is
       --  is System. If so, return the value from the already compiled
       --  declaration and otherwise do a regular find.
 
-      --  Not pleasant, but these kinds of annoying recursion when
+      --  Not pleasant, but these kinds of annoying recursion scenarios when
       --  writing an Ada compiler in Ada have to be broken somewhere.
 
       if Present (Main_Unit_Entity)

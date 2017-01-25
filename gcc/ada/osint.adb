@@ -1977,7 +1977,6 @@ package body Osint is
       Dir_Name := new String'(File_Name (File_Name'First .. Fptr - 1));
 
       case Running_Program is
-
          when Compiler =>
             Src_Search_Directories.Table (Primary_Directory) := Dir_Name;
             Look_In_Primary_Directory_For_Current_Main := True;
@@ -1989,7 +1988,9 @@ package body Osint is
                Look_In_Primary_Directory_For_Current_Main := True;
             end if;
 
-         when Binder | Gnatls =>
+         when Binder
+            | Gnatls
+          =>
             Dir_Name := Normalize_Directory_Name (Dir_Name.all);
             Lib_Search_Directories.Table (Primary_Directory) := Dir_Name;
 

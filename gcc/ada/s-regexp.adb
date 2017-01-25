@@ -970,7 +970,10 @@ package body System.Regexp is
                         End_State := Current_State;
                      end if;
 
-                  when '*' | '+' | '?' | Close_Paren | Close_Bracket =>
+                  when Close_Bracket
+                     | Close_Paren
+                     | '*' | '+' | '?'
+                  =>
                      Raise_Exception
                        ("Incorrect character in regular expression :", J);
 
@@ -1020,7 +1023,6 @@ package body System.Regexp is
 
                         End_State := Current_State;
                      end if;
-
                end case;
 
                if Start_State = 0 then
@@ -1159,7 +1161,6 @@ package body System.Regexp is
             J := Start_Index;
             while J <= End_Index loop
                case S (J) is
-
                   when Open_Bracket =>
                      Current_State := Current_State + 1;
 
@@ -1344,7 +1345,6 @@ package body System.Regexp is
                      end if;
 
                      End_State := Current_State;
-
                end case;
 
                if Start_State = 0 then

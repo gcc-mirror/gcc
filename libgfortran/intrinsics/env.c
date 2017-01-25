@@ -1,6 +1,6 @@
 /* Implementation of the GETENV g77, and
    GET_ENVIRONMENT_VARIABLE F2003, intrinsics. 
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
 #include <string.h>
 
 

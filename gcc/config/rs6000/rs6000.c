@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2017 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -1558,6 +1558,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_CONST_NOT_OK_FOR_DEBUG_P
 #define TARGET_CONST_NOT_OK_FOR_DEBUG_P rs6000_const_not_ok_for_debug_p
 
+#undef TARGET_LEGITIMATE_COMBINED_INSN
+#define TARGET_LEGITIMATE_COMBINED_INSN rs6000_legitimate_combined_insn
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -1755,10 +1758,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION \
   rs6000_builtin_md_vectorized_function
 
-#ifdef TARGET_THREAD_SSP_OFFSET
 #undef TARGET_STACK_PROTECT_GUARD
-#define TARGET_STACK_PROTECT_GUARD hook_tree_void_null
-#endif
+#define TARGET_STACK_PROTECT_GUARD rs6000_init_stack_protect_guard
 
 #if !TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL
@@ -1806,6 +1807,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_LRA_P
 #define TARGET_LRA_P rs6000_lra_p
+
+#undef TARGET_COMPUTE_PRESSURE_CLASSES
+#define TARGET_COMPUTE_PRESSURE_CLASSES rs6000_compute_pressure_classes
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE rs6000_can_eliminate
@@ -3858,6 +3862,13 @@ rs6000_option_override_internal (bool global_init_p)
       && !global_options_set.x_flag_ira_loop_pressure)
     flag_ira_loop_pressure = 1;
 
+  /* -fsanitize=address needs to turn on -fasynchronous-unwind-tables in order
+     for tracebacks to be complete but not if any -fasynchronous-unwind-tables
+     options were already specified.  */
+  if (flag_sanitize & SANITIZE_USER_ADDRESS
+      && !global_options_set.x_flag_asynchronous_unwind_tables)
+    flag_asynchronous_unwind_tables = 1;
+
   /* Set the pointer size.  */
   if (TARGET_64BIT)
     {
@@ -3923,6 +3934,67 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   gcc_assert (cpu_index >= 0);
+
+  if (have_cpu)
+    {
+#ifndef HAVE_AS_POWER9
+      if (processor_target_table[rs6000_cpu_index].processor 
+	  == PROCESSOR_POWER9)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power9 instructions because "
+		   "assembler lacks power9 support");
+	}
+#endif
+#ifndef HAVE_AS_POWER8
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER8)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power8 instructions because "
+		   "assembler lacks power8 support");
+	}
+#endif
+#ifndef HAVE_AS_POPCNTD
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER7)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power7 instructions because "
+		   "assembler lacks power7 support");
+	}
+#endif
+#ifndef HAVE_AS_DFP
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER6)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power6 instructions because "
+		   "assembler lacks power6 support");
+	}
+#endif
+#ifndef HAVE_AS_POPCNTB
+      if (processor_target_table[rs6000_cpu_index].processor
+	  == PROCESSOR_POWER5)
+	{
+	  have_cpu = false;
+	  warning (0, "will not generate power5 instructions because "
+		   "assembler lacks power5 support");
+	}
+#endif
+
+      if (!have_cpu)
+	{
+	  /* PowerPC 64-bit LE requires at least ISA 2.07.  */
+	  const char *default_cpu = (!TARGET_POWERPC64
+				     ? "powerpc"
+				     : (BYTES_BIG_ENDIAN
+					? "powerpc64"
+					: "powerpc64le"));
+
+	  rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
+	}
+    }
 
   /* If we have a cpu, either through an explicit -mcpu=<xxx> or if the
      compiler was configured with --with-cpu=<xxx>, replace all of the ISA bits
@@ -4868,6 +4940,54 @@ rs6000_option_override_internal (bool global_init_p)
 				    atoi (rs6000_sched_insert_nops_str));
     }
 
+  /* Handle stack protector */
+  if (!global_options_set.x_rs6000_stack_protector_guard)
+#ifdef TARGET_THREAD_SSP_OFFSET
+    rs6000_stack_protector_guard = SSP_TLS;
+#else
+    rs6000_stack_protector_guard = SSP_GLOBAL;
+#endif
+
+#ifdef TARGET_THREAD_SSP_OFFSET
+  rs6000_stack_protector_guard_offset = TARGET_THREAD_SSP_OFFSET;
+  rs6000_stack_protector_guard_reg = TARGET_64BIT ? 13 : 2;
+#endif
+
+  if (global_options_set.x_rs6000_stack_protector_guard_offset_str)
+    {
+      char *endp;
+      const char *str = rs6000_stack_protector_guard_offset_str;
+
+      errno = 0;
+      long offset = strtol (str, &endp, 0);
+      if (!*str || *endp || errno)
+	error ("%qs is not a valid number "
+	       "in -mstack-protector-guard-offset=", str);
+
+      if (!IN_RANGE (offset, -0x8000, 0x7fff)
+	  || (TARGET_64BIT && (offset & 3)))
+	error ("%qs is not a valid offset "
+	       "in -mstack-protector-guard-offset=", str);
+
+      rs6000_stack_protector_guard_offset = offset;
+    }
+
+  if (global_options_set.x_rs6000_stack_protector_guard_reg_str)
+    {
+      const char *str = rs6000_stack_protector_guard_reg_str;
+      int reg = decode_reg_name (str);
+
+      if (!IN_RANGE (reg, 1, 31))
+	error ("%qs is not a valid base register "
+	       "in -mstack-protector-guard-reg=", str);
+
+      rs6000_stack_protector_guard_reg = reg;
+    }
+
+  if (rs6000_stack_protector_guard == SSP_TLS
+      && !IN_RANGE (rs6000_stack_protector_guard_reg, 1, 31))
+    error ("-mstack-protector-guard=tls needs a valid base register");
+
   if (global_init_p)
     {
 #ifdef TARGET_REGNAMES
@@ -5100,6 +5220,12 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
+      /* Use the 'model' -fsched-pressure algorithm by default.  */
+      maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM,
+			     SCHED_PRESSURE_MODEL,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
 	 ap = __builtin_next_arg (0).  */
@@ -5203,15 +5329,6 @@ static void
 rs6000_option_override (void)
 {
   (void) rs6000_option_override_internal (true);
-
-  /* Register machine-specific passes.  This needs to be done at start-up.
-     It's convenient to do it here (like i386 does).  */
-  opt_pass *pass_analyze_swaps = make_pass_analyze_swaps (g);
-
-  struct register_pass_info analyze_swaps_info
-    = { pass_analyze_swaps, "cse1", 1, PASS_POS_INSERT_BEFORE };
-
-  register_pass (&analyze_swaps_info);
 }
 
 
@@ -5367,6 +5484,9 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case unaligned_load:
+	if (TARGET_P9_VECTOR)
+	  return 3;
+
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
@@ -7528,8 +7648,52 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
     {
       int bit_shift = byte_shift + 3;
       rtx element2;
+      int dest_regno = regno_or_subregno (dest);
+      int src_regno = regno_or_subregno (src);
+      int element_regno = regno_or_subregno (element);
 
-      gcc_assert (REG_P (tmp_gpr) && REG_P (tmp_altivec));
+      gcc_assert (REG_P (tmp_gpr));
+
+      /* See if we want to generate VEXTU{B,H,W}{L,R}X if the destination is in
+	 a general purpose register.  */
+      if (TARGET_P9_VECTOR
+	  && (mode == V16QImode || mode == V8HImode || mode == V4SImode)
+	  && INT_REGNO_P (dest_regno)
+	  && ALTIVEC_REGNO_P (src_regno)
+	  && INT_REGNO_P (element_regno))
+	{
+	  rtx dest_si = gen_rtx_REG (SImode, dest_regno);
+	  rtx element_si = gen_rtx_REG (SImode, element_regno);
+
+	  if (mode == V16QImode)
+	    emit_insn (VECTOR_ELT_ORDER_BIG
+		       ? gen_vextublx (dest_si, element_si, src)
+		       : gen_vextubrx (dest_si, element_si, src));
+
+	  else if (mode == V8HImode)
+	    {
+	      rtx tmp_gpr_si = gen_rtx_REG (SImode, REGNO (tmp_gpr));
+	      emit_insn (gen_ashlsi3 (tmp_gpr_si, element_si, const1_rtx));
+	      emit_insn (VECTOR_ELT_ORDER_BIG
+			 ? gen_vextuhlx (dest_si, tmp_gpr_si, src)
+			 : gen_vextuhrx (dest_si, tmp_gpr_si, src));
+	    }
+
+
+	  else
+	    {
+	      rtx tmp_gpr_si = gen_rtx_REG (SImode, REGNO (tmp_gpr));
+	      emit_insn (gen_ashlsi3 (tmp_gpr_si, element_si, const2_rtx));
+	      emit_insn (VECTOR_ELT_ORDER_BIG
+			 ? gen_vextuwlx (dest_si, tmp_gpr_si, src)
+			 : gen_vextuwrx (dest_si, tmp_gpr_si, src));
+	    }
+
+	  return;
+	}
+
+
+      gcc_assert (REG_P (tmp_altivec));
 
       /* For little endian, adjust element ordering.  For V2DI/V2DF, we can use
 	 an XOR, otherwise we need to subtract.  The shift amount is so VSLO
@@ -8961,6 +9125,50 @@ rs6000_const_not_ok_for_debug_p (rtx x)
   return false;
 }
 
+
+/* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
+
+static bool
+rs6000_legitimate_combined_insn (rtx_insn *insn)
+{
+  int icode = INSN_CODE (insn);
+
+  /* Reject creating doloop insns.  Combine should not be allowed
+     to create these for a number of reasons:
+     1) In a nested loop, if combine creates one of these in an
+     outer loop and the register allocator happens to allocate ctr
+     to the outer loop insn, then the inner loop can't use ctr.
+     Inner loops ought to be more highly optimized.
+     2) Combine often wants to create one of these from what was
+     originally a three insn sequence, first combining the three
+     insns to two, then to ctrsi/ctrdi.  When ctrsi/ctrdi is not
+     allocated ctr, the splitter takes use back to the three insn
+     sequence.  It's better to stop combine at the two insn
+     sequence.
+     3) Faced with not being able to allocate ctr for ctrsi/crtdi
+     insns, the register allocator sometimes uses floating point
+     or vector registers for the pseudo.  Since ctrsi/ctrdi is a
+     jump insn and output reloads are not implemented for jumps,
+     the ctrsi/ctrdi splitters need to handle all possible cases.
+     That's a pain, and it gets to be seriously difficult when a
+     splitter that runs after reload needs memory to transfer from
+     a gpr to fpr.  See PR70098 and PR71763 which are not fixed
+     for the difficult case.  It's better to not create problems
+     in the first place.  */
+  if (icode != CODE_FOR_nothing
+      && (icode == CODE_FOR_ctrsi_internal1
+	  || icode == CODE_FOR_ctrdi_internal1
+	  || icode == CODE_FOR_ctrsi_internal2
+	  || icode == CODE_FOR_ctrdi_internal2
+	  || icode == CODE_FOR_ctrsi_internal3
+	  || icode == CODE_FOR_ctrdi_internal3
+	  || icode == CODE_FOR_ctrsi_internal4
+	  || icode == CODE_FOR_ctrdi_internal4))
+    return false;
+
+  return true;
+}
+
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
 
 static GTY(()) rtx rs6000_tls_symbol;
@@ -9267,6 +9475,17 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
     }
 
   return dest;
+}
+
+/* Only create the global variable for the stack protect guard if we are using
+   the global flavor of that guard.  */
+static tree
+rs6000_init_stack_protect_guard (void)
+{
+  if (rs6000_stack_protector_guard == SSP_GLOBAL)
+    return default_stack_protect_guard ();
+
+  return NULL_TREE;
 }
 
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
@@ -10287,6 +10506,78 @@ rs6000_emit_le_vsx_move (rtx dest, rtx source, machine_mode mode)
     }
 }
 
+/* Return whether a SFmode or SImode move can be done without converting one
+   mode to another.  This arrises when we have:
+
+	(SUBREG:SF (REG:SI ...))
+	(SUBREG:SI (REG:SF ...))
+
+   and one of the values is in a floating point/vector register, where SFmode
+   scalars are stored in DFmode format.  */
+
+bool
+valid_sf_si_move (rtx dest, rtx src, machine_mode mode)
+{
+  if (TARGET_ALLOW_SF_SUBREG)
+    return true;
+
+  if (mode != SFmode && GET_MODE_CLASS (mode) != MODE_INT)
+    return true;
+
+  if (!SUBREG_P (src) || !sf_subreg_operand (src, mode))
+    return true;
+
+  /*.  Allow (set (SUBREG:SI (REG:SF)) (SUBREG:SI (REG:SF))).  */
+  if (SUBREG_P (dest))
+    {
+      rtx dest_subreg = SUBREG_REG (dest);
+      rtx src_subreg = SUBREG_REG (src);
+      return GET_MODE (dest_subreg) == GET_MODE (src_subreg);
+    }
+
+  return false;
+}
+
+
+/* Helper function to change moves with:
+
+	(SUBREG:SF (REG:SI)) and
+	(SUBREG:SI (REG:SF))
+
+   into separate UNSPEC insns.  In the PowerPC architecture, scalar SFmode
+   values are stored as DFmode values in the VSX registers.  We need to convert
+   the bits before we can use a direct move or operate on the bits in the
+   vector register as an integer type.
+
+   Skip things like (set (SUBREG:SI (...) (SUBREG:SI (...)).  */
+
+static bool
+rs6000_emit_move_si_sf_subreg (rtx dest, rtx source, machine_mode mode)
+{
+  if (TARGET_DIRECT_MOVE_64BIT && !reload_in_progress && !reload_completed
+      && !lra_in_progress
+      && (!SUBREG_P (dest) || !sf_subreg_operand (dest, mode))
+      && SUBREG_P (source) && sf_subreg_operand (source, mode))
+    {
+      rtx inner_source = SUBREG_REG (source);
+      machine_mode inner_mode = GET_MODE (inner_source);
+
+      if (mode == SImode && inner_mode == SFmode)
+	{
+	  emit_insn (gen_movsi_from_sf (dest, inner_source));
+	  return true;
+	}
+
+      if (mode == SFmode && inner_mode == SImode)
+	{
+	  emit_insn (gen_movsf_from_si (dest, inner_source));
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* Emit a move from SOURCE to DEST in mode MODE.  */
 void
 rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
@@ -10316,6 +10607,11 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       /* This should be fixed with the introduction of CONST_WIDE_INT.  */
       gcc_unreachable ();
     }
+
+  /* See if we need to special case SImode/SFmode SUBREG moves.  */
+  if ((mode == SImode || mode == SFmode) && SUBREG_P (source)
+      && rs6000_emit_move_si_sf_subreg (dest, source, mode))
+    return;
 
   /* Check if GCC is setting up a block move that will end up using FP
      registers as temporaries.  We must make sure this is acceptable.  */
@@ -10741,10 +11037,7 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 
 	  if (TARGET_TOC
 	      && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
-	      && constant_pool_expr_p (XEXP (operands[1], 0))
-	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (
-			get_pool_constant (XEXP (operands[1], 0)),
-			get_pool_mode (XEXP (operands[1], 0))))
+	      && use_toc_relative_ref (XEXP (operands[1], 0), mode))
 	    {
 	      rtx tocref = create_TOC_reference (XEXP (operands[1], 0),
 						 operands[0]);
@@ -13391,6 +13684,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
   size = int_size_in_bytes (type);
   rsize = (size + 3) / 4;
+  int pad = 4 * rsize - size;
   align = 1;
 
   machine_mode mode = TYPE_MODE (type);
@@ -13472,6 +13766,10 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	  && mode == SDmode)
 	t = fold_build_pointer_plus_hwi (t, size);
 
+      /* Args are passed right-aligned.  */
+      if (BYTES_BIG_ENDIAN)
+	t = fold_build_pointer_plus_hwi (t, pad);
+
       gimplify_assign (addr, t, pre_p);
 
       gimple_seq_add_stmt (pre_p, gimple_build_goto (lab_over));
@@ -13497,6 +13795,11 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
 		  build_int_cst (TREE_TYPE (t), -align));
     }
+
+  /* Args are passed right-aligned.  */
+  if (BYTES_BIG_ENDIAN)
+    t = fold_build_pointer_plus_hwi (t, pad);
+
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
   gimplify_assign (unshare_expr (addr), t, pre_p);
@@ -15114,6 +15417,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
      with identical values.  We'd never reach here at runtime in
      this case.  */
   if (icode == CODE_FOR_altivec_vsldoi_v4sf
+      || icode == CODE_FOR_altivec_vsldoi_v2df
       || icode == CODE_FOR_altivec_vsldoi_v4si
       || icode == CODE_FOR_altivec_vsldoi_v8hi
       || icode == CODE_FOR_altivec_vsldoi_v16qi)
@@ -15555,7 +15859,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
   size_t i;
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  tree arg0;
+  tree arg0, arg1, arg2;
   rtx op0, pat;
   machine_mode tmode, mode0;
   enum rs6000_builtins fcode
@@ -15774,6 +16078,39 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case VSX_BUILTIN_VEC_EXT_V2DI:
     case VSX_BUILTIN_VEC_EXT_V1TI:
       return altivec_expand_vec_ext_builtin (exp, target);
+
+    case P9V_BUILTIN_VEXTRACT4B:
+    case P9V_BUILTIN_VEC_VEXTRACT4B:
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      STRIP_NOPS (arg1);
+
+      /* Generate a normal call if it is invalid.  */
+      if (arg1 == error_mark_node)
+	return expand_call (exp, target, false);
+
+      if (TREE_CODE (arg1) != INTEGER_CST || TREE_INT_CST_LOW (arg1) > 12)
+	{
+	  error ("second argument to vec_vextract4b must be 0..12");
+	  return expand_call (exp, target, false);
+	}
+      break;
+
+    case P9V_BUILTIN_VINSERT4B:
+    case P9V_BUILTIN_VINSERT4B_DI:
+    case P9V_BUILTIN_VEC_VINSERT4B:
+      arg2 = CALL_EXPR_ARG (exp, 2);
+      STRIP_NOPS (arg2);
+
+      /* Generate a normal call if it is invalid.  */
+      if (arg2 == error_mark_node)
+	return expand_call (exp, target, false);
+
+      if (TREE_CODE (arg2) != INTEGER_CST || TREE_INT_CST_LOW (arg2) > 12)
+	{
+	  error ("third argument to vec_vinsert4b must be 0..12");
+	  return expand_call (exp, target, false);
+	}
+      break;
 
     default:
       break;
@@ -16492,6 +16829,54 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    /* Flavors of vec_sub.  We deliberately don't expand
+       P8V_BUILTIN_VSUBUQM. */
+    case ALTIVEC_BUILTIN_VSUBUBM:
+    case ALTIVEC_BUILTIN_VSUBUHM:
+    case ALTIVEC_BUILTIN_VSUBUWM:
+    case P8V_BUILTIN_VSUBUDM:
+    case ALTIVEC_BUILTIN_VSUBFP:
+    case VSX_BUILTIN_XVSUBDP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, MINUS_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Even element flavors of vec_mul (signed). */
+    case ALTIVEC_BUILTIN_VMULESB:
+    case ALTIVEC_BUILTIN_VMULESH:
+    /* Even element flavors of vec_mul (unsigned).  */
+    case ALTIVEC_BUILTIN_VMULEUB:
+    case ALTIVEC_BUILTIN_VMULEUH:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, VEC_WIDEN_MULT_EVEN_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Odd element flavors of vec_mul (signed).  */
+    case ALTIVEC_BUILTIN_VMULOSB:
+    case ALTIVEC_BUILTIN_VMULOSH:
+    /* Odd element flavors of vec_mul (unsigned). */
+    case ALTIVEC_BUILTIN_VMULOUB:
+    case ALTIVEC_BUILTIN_VMULOUH:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, VEC_WIDEN_MULT_ODD_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
     default:
       break;
     }
@@ -17235,6 +17620,8 @@ spe_init_builtins (void)
 	  continue;
 	}
 
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
       switch (insn_data[d->icode].operand[1].mode)
 	{
 	case V2SImode:
@@ -17265,6 +17652,8 @@ spe_init_builtins (void)
 	  continue;
 	}
 
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
       switch (insn_data[d->icode].operand[1].mode)
 	{
 	case V2SImode:
@@ -17331,6 +17720,9 @@ paired_init_builtins (void)
 		     d->name);
 	  continue;
 	}
+
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
 
       if (TARGET_DEBUG_BUILTIN)
 	fprintf (stderr, "paired pred #%d, insn = %s [%d], mode = %s\n",
@@ -17701,6 +18093,8 @@ altivec_init_builtins (void)
     {
       HOST_WIDE_INT mask = d->mask;
 
+      /* It is expected that these dst built-in functions may have
+	 d->icode equal to CODE_FOR_nothing.  */
       if ((mask & builtin_mask) != mask)
 	{
 	  if (TARGET_DEBUG_BUILTIN)
@@ -17730,7 +18124,11 @@ altivec_init_builtins (void)
       if (rs6000_overloaded_builtin_p (d->code))
 	mode1 = VOIDmode;
       else
-	mode1 = insn_data[d->icode].operand[1].mode;
+	{
+	  /* Cannot define builtin if the instruction is disabled.  */
+	  gcc_assert (d->icode != CODE_FOR_nothing);
+	  mode1 = insn_data[d->icode].operand[1].mode;
+	}
 
       switch (mode1)
 	{
@@ -17778,6 +18176,8 @@ altivec_init_builtins (void)
 	  continue;
 	}
 
+      /* Cannot define builtin if the instruction is disabled.  */
+      gcc_assert (d->icode != CODE_FOR_nothing);
       mode0 = insn_data[d->icode].operand[0].mode;
 
       switch (mode0)
@@ -17964,6 +18364,9 @@ htm_init_builtins (void)
       tree gpr_type_node;
       tree rettype;
       tree argtype;
+
+      /* It is expected that these htm built-in functions may have
+	 d->icode equal to CODE_FOR_nothing.  */
 
       if (TARGET_32BIT && TARGET_POWERPC64)
 	gpr_type_node = long_long_unsigned_type_node;
@@ -18873,7 +19276,6 @@ rs6000_emit_dot_insn (rtx dst, rtx src, int dot, rtx ccreg)
     }
 }
 
-
 /* Figure out the correct instructions to generate to load data for
    block compare.  MODE is used for the read from memory, and
    data is zero extended if REG is wider than MODE.  If LE code
@@ -18972,8 +19374,9 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
    WORD_MODE_OK indicates using WORD_MODE is allowed, else SImode is
    the largest allowable mode.  */
 static machine_mode
-select_block_compare_mode (HOST_WIDE_INT offset, HOST_WIDE_INT bytes,
-			   HOST_WIDE_INT align, bool word_mode_ok)
+select_block_compare_mode (unsigned HOST_WIDE_INT offset,
+			   unsigned HOST_WIDE_INT bytes,
+			   unsigned HOST_WIDE_INT align, bool word_mode_ok)
 {
   /* First see if we can do a whole load unit
      as that will be more efficient than a larger load + shift.  */
@@ -18984,7 +19387,7 @@ select_block_compare_mode (HOST_WIDE_INT offset, HOST_WIDE_INT bytes,
      Do largest chunk possible without violating alignment rules.  */
 
   /* The most we can read without potential page crossing.  */
-  HOST_WIDE_INT maxread = ROUND_UP (bytes, align);
+  unsigned HOST_WIDE_INT maxread = ROUND_UP (bytes, align);
 
   if (word_mode_ok && bytes >= UNITS_PER_WORD)
     return word_mode;
@@ -19025,8 +19428,9 @@ select_block_compare_mode (HOST_WIDE_INT offset, HOST_WIDE_INT bytes,
 
 /* Compute the alignment of pointer+OFFSET where the original alignment
    of pointer was BASE_ALIGN.  */
-static HOST_WIDE_INT
-compute_current_alignment (HOST_WIDE_INT base_align, HOST_WIDE_INT offset)
+static unsigned HOST_WIDE_INT
+compute_current_alignment (unsigned HOST_WIDE_INT base_align,
+			   unsigned HOST_WIDE_INT offset)
 {
   if (offset == 0)
     return base_align;
@@ -19062,7 +19466,7 @@ expand_block_compare (rtx operands[])
   if (!CONST_INT_P (align_rtx))
     return false;
 
-  int base_align = INTVAL (align_rtx) / BITS_PER_UNIT;
+  unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
 
   /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff */
   if (SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src1))
@@ -19072,8 +19476,8 @@ expand_block_compare (rtx operands[])
   gcc_assert (GET_MODE (target) == SImode);
 
   /* Anything to move? */
-  HOST_WIDE_INT bytes = INTVAL (bytes_rtx);
-  if (bytes <= 0)
+  unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
+  if (bytes == 0)
     return true;
 
   /* The code generated for p7 and older is not faster than glibc
@@ -19094,14 +19498,14 @@ expand_block_compare (rtx operands[])
 
   /* Strategy phase.  How many ops will this take and should we expand it?  */
 
-  int offset = 0;
+  unsigned HOST_WIDE_INT offset = 0;
   machine_mode load_mode =
     select_block_compare_mode (offset, bytes, base_align, word_mode_ok);
-  int load_mode_size = GET_MODE_SIZE (load_mode);
+  unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
 
   /* We don't want to generate too much code.  */
   if (ROUND_UP (bytes, load_mode_size) / load_mode_size
-      > rs6000_block_compare_inline_limit)
+      > (unsigned HOST_WIDE_INT) rs6000_block_compare_inline_limit)
     return false;
 
   bool generate_6432_conversion = false;
@@ -19132,7 +19536,7 @@ expand_block_compare (rtx operands[])
 
   while (bytes > 0)
     {
-      int align = compute_current_alignment (base_align, offset);
+      unsigned int align = compute_current_alignment (base_align, offset);
       if (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED)
 	load_mode = select_block_compare_mode (offset, bytes, align,
 					       word_mode_ok);
@@ -19145,7 +19549,7 @@ expand_block_compare (rtx operands[])
 	{
 	  /* Move this load back so it doesn't go past the end.
 	     P8/P9 can do this efficiently.  */
-	  int extra_bytes = load_mode_size - bytes;
+	  unsigned int extra_bytes = load_mode_size - bytes;
 	  cmp_bytes = bytes;
 	  if (extra_bytes < offset)
 	    {
@@ -19159,7 +19563,7 @@ expand_block_compare (rtx operands[])
 	   so this forces a non-overlapping load and a shift to get
 	   rid of the extra bytes.  */
 	cmp_bytes = bytes;
-      
+
       src1 = adjust_address (orig_src1, load_mode, offset);
       src2 = adjust_address (orig_src2, load_mode, offset);
 
@@ -19310,7 +19714,545 @@ expand_block_compare (rtx operands[])
   return true;
 }
 
-
+/* Generate alignment check and branch code to set up for
+   strncmp when we don't have DI alignment.
+   STRNCMP_LABEL is the label to branch if there is a page crossing.
+   SRC is the string pointer to be examined.
+   BYTES is the max number of bytes to compare.  */
+static void
+expand_strncmp_align_check (rtx strncmp_label, rtx src, HOST_WIDE_INT bytes)
+{
+  rtx lab_ref = gen_rtx_LABEL_REF (VOIDmode, strncmp_label);
+  rtx src_check = copy_addr_to_reg (XEXP (src, 0));
+  if (GET_MODE (src_check) == SImode)
+    emit_insn (gen_andsi3 (src_check, src_check, GEN_INT (0xfff)));
+  else
+    emit_insn (gen_anddi3 (src_check, src_check, GEN_INT (0xfff)));
+  rtx cond = gen_reg_rtx (CCmode);
+  emit_move_insn (cond, gen_rtx_COMPARE (CCmode, src_check,
+					 GEN_INT (4096 - bytes)));
+
+  rtx cmp_rtx = gen_rtx_LT (VOIDmode, cond, const0_rtx);
+
+  rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
+				     pc_rtx, lab_ref);
+  rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+  JUMP_LABEL (j) = strncmp_label;
+  LABEL_NUSES (strncmp_label) += 1;
+}
+
+/* Expand a string compare operation with length, and return
+   true if successful. Return false if we should let the
+   compiler generate normal code, probably a strncmp call.
+
+   OPERANDS[0] is the target (result).
+   OPERANDS[1] is the first source.
+   OPERANDS[2] is the second source.
+   If NO_LENGTH is zero, then:
+   OPERANDS[3] is the length.
+   OPERANDS[4] is the alignment in bytes.
+   If NO_LENGTH is nonzero, then:
+   OPERANDS[3] is the alignment in bytes.  */
+bool
+expand_strn_compare (rtx operands[], int no_length)
+{
+  rtx target = operands[0];
+  rtx orig_src1 = operands[1];
+  rtx orig_src2 = operands[2];
+  rtx bytes_rtx, align_rtx;
+  if (no_length)
+    {
+      bytes_rtx = NULL;
+      align_rtx = operands[3];
+    }
+  else
+    {
+      bytes_rtx = operands[3];
+      align_rtx = operands[4];
+    }
+  unsigned HOST_WIDE_INT cmp_bytes = 0;
+  rtx src1 = orig_src1;
+  rtx src2 = orig_src2;
+
+  /* If we have a length, it must be constant. This simplifies things
+     a bit as we don't have to generate code to check if we've exceeded
+     the length. Later this could be expanded to handle this case.  */
+  if (!no_length && !CONST_INT_P (bytes_rtx))
+    return false;
+
+  /* This must be a fixed size alignment.  */
+  if (!CONST_INT_P (align_rtx))
+    return false;
+
+  unsigned int base_align = UINTVAL (align_rtx);
+  int align1 = MEM_ALIGN (orig_src1) / BITS_PER_UNIT;
+  int align2 = MEM_ALIGN (orig_src2) / BITS_PER_UNIT;
+
+  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
+  if (SLOW_UNALIGNED_ACCESS (word_mode, align1)
+      || SLOW_UNALIGNED_ACCESS (word_mode, align2))
+    return false;
+
+  gcc_assert (GET_MODE (target) == SImode);
+
+  /* If we have an LE target without ldbrx and word_mode is DImode,
+     then we must avoid using word_mode.  */
+  int word_mode_ok = !(!BYTES_BIG_ENDIAN && !TARGET_LDBRX
+		       && word_mode == DImode);
+
+  unsigned int word_mode_size = GET_MODE_SIZE (word_mode);
+
+  unsigned HOST_WIDE_INT offset = 0;
+  unsigned HOST_WIDE_INT bytes; /* N from the strncmp args if available.  */
+  unsigned HOST_WIDE_INT compare_length; /* How much to compare inline.  */
+  if (no_length)
+    /* Use this as a standin to determine the mode to use.  */
+    bytes = rs6000_string_compare_inline_limit * word_mode_size;
+  else
+    bytes = UINTVAL (bytes_rtx);
+
+  machine_mode load_mode =
+    select_block_compare_mode (offset, bytes, base_align, word_mode_ok);
+  unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
+  compare_length = rs6000_string_compare_inline_limit * load_mode_size;
+
+  /* If we have equality at the end of the last compare and we have not
+     found the end of the string, we need to call strcmp/strncmp to
+     compare the remainder.  */
+  bool equality_compare_rest = false;
+
+  if (no_length)
+    {
+      bytes = compare_length;
+      equality_compare_rest = true;
+    }
+  else
+    {
+      if (bytes <= compare_length)
+	compare_length = bytes;
+      else
+	equality_compare_rest = true;
+    }
+
+  rtx result_reg = gen_reg_rtx (word_mode);
+  rtx final_move_label = gen_label_rtx ();
+  rtx final_label = gen_label_rtx ();
+  rtx begin_compare_label = NULL;
+
+  if (base_align < 8)
+    {
+      /* Generate code that checks distance to 4k boundary for this case.  */
+      begin_compare_label = gen_label_rtx ();
+      rtx strncmp_label = gen_label_rtx ();
+      rtx jmp;
+
+      /* Strncmp for power8 in glibc does this:
+	 rldicl	r8,r3,0,52
+	 cmpldi	cr7,r8,4096-16
+	 bgt	cr7,L(pagecross) */
+
+      if (align1 < 8)
+	expand_strncmp_align_check (strncmp_label, src1, compare_length);
+      if (align2 < 8)
+	expand_strncmp_align_check (strncmp_label, src2, compare_length);
+
+      /* After the runtime alignment checks, we can use any alignment we
+	 like as we know there is no 4k boundary crossing.  */
+      base_align = 8;
+
+      /* Now generate the following sequence:
+	 - branch to begin_compare
+	 - strncmp_label
+	 - call to strncmp
+	 - branch to final_label
+	 - begin_compare_label */
+
+      rtx cmp_ref = gen_rtx_LABEL_REF (VOIDmode, begin_compare_label);
+      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, cmp_ref));
+      JUMP_LABEL (jmp) = begin_compare_label;
+      LABEL_NUSES (begin_compare_label) += 1;
+      emit_barrier ();
+
+      emit_label (strncmp_label);
+
+      if (!REG_P (XEXP (src1, 0)))
+	{
+	  rtx src1_reg = copy_addr_to_reg (XEXP (src1, 0));
+	  src1 = replace_equiv_address (src1, src1_reg);
+	}
+
+      if (!REG_P (XEXP (src2, 0)))
+	{
+	  rtx src2_reg = copy_addr_to_reg (XEXP (src2, 0));
+	  src2 = replace_equiv_address (src2, src2_reg);
+	}
+
+      if (no_length)
+	{
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
+				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
+	}
+      else
+	{
+	  /* -m32 -mpowerpc64 results in word_mode being DImode even
+	     though otherwise it is 32-bit. The length arg to strncmp
+	     is a size_t which will be the same size as pointers.  */
+	  rtx len_rtx;
+	  if (TARGET_64BIT)
+	    len_rtx = gen_reg_rtx (DImode);
+	  else
+	    len_rtx = gen_reg_rtx (SImode);
+
+	  emit_move_insn (len_rtx, bytes_rtx);
+
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
+				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
+				   len_rtx, GET_MODE (len_rtx));
+	}
+
+      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
+      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
+      JUMP_LABEL (jmp) = final_label;
+      LABEL_NUSES (final_label) += 1;
+      emit_barrier ();
+      emit_label (begin_compare_label);
+    }
+
+  rtx cleanup_label = NULL;
+  rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
+  rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
+
+  /* Generate sequence of ld/ldbrx, cmpb to compare out
+     to the length specified.  */
+  unsigned HOST_WIDE_INT bytes_to_compare = compare_length;
+  while (bytes_to_compare > 0)
+    {
+      /* Compare sequence:
+         check each 8B with: ld/ld cmpd bne
+	 If equal, use rldicr/cmpb to check for zero byte.
+         cleanup code at end:
+         cmpb          get byte that differs
+         cmpb          look for zero byte
+         orc           combine
+         cntlzd        get bit of first zero/diff byte
+         subfic        convert for rldcl use
+         rldcl rldcl   extract diff/zero byte
+         subf          subtract for final result
+
+         The last compare can branch around the cleanup code if the
+         result is zero because the strings are exactly equal.  */
+      unsigned int align = compute_current_alignment (base_align, offset);
+      if (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED)
+	load_mode = select_block_compare_mode (offset, bytes_to_compare, align,
+					       word_mode_ok);
+      else
+	load_mode = select_block_compare_mode (0, bytes_to_compare, align,
+					       word_mode_ok);
+      load_mode_size = GET_MODE_SIZE (load_mode);
+      if (bytes_to_compare >= load_mode_size)
+	cmp_bytes = load_mode_size;
+      else if (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED)
+	{
+	  /* Move this load back so it doesn't go past the end.
+	     P8/P9 can do this efficiently.  */
+	  unsigned int extra_bytes = load_mode_size - bytes_to_compare;
+	  cmp_bytes = bytes_to_compare;
+	  if (extra_bytes < offset)
+	    {
+	      offset -= extra_bytes;
+	      cmp_bytes = load_mode_size;
+	      bytes_to_compare = cmp_bytes;
+	    }
+	}
+      else
+	/* P7 and earlier can't do the overlapping load trick fast,
+	   so this forces a non-overlapping load and a shift to get
+	   rid of the extra bytes.  */
+	cmp_bytes = bytes_to_compare;
+
+      src1 = adjust_address (orig_src1, load_mode, offset);
+      src2 = adjust_address (orig_src2, load_mode, offset);
+
+      if (!REG_P (XEXP (src1, 0)))
+	{
+	  rtx src1_reg = copy_addr_to_reg (XEXP (src1, 0));
+	  src1 = replace_equiv_address (src1, src1_reg);
+	}
+      set_mem_size (src1, cmp_bytes);
+
+      if (!REG_P (XEXP (src2, 0)))
+	{
+	  rtx src2_reg = copy_addr_to_reg (XEXP (src2, 0));
+	  src2 = replace_equiv_address (src2, src2_reg);
+	}
+      set_mem_size (src2, cmp_bytes);
+
+      do_load_for_compare (tmp_reg_src1, src1, load_mode);
+      do_load_for_compare (tmp_reg_src2, src2, load_mode);
+
+      /* We must always left-align the data we read, and
+	 clear any bytes to the right that are beyond the string.
+	 Otherwise the cmpb sequence won't produce the correct
+	 results.  The beginning of the compare will be done
+	 with word_mode so will not have any extra shifts or
+	 clear rights.  */
+
+      if (load_mode_size < word_mode_size)
+	{
+	  /* Rotate left first. */
+	  rtx sh = GEN_INT (BITS_PER_UNIT * (word_mode_size - load_mode_size));
+	  if (word_mode == DImode)
+	    {
+	      emit_insn (gen_rotldi3 (tmp_reg_src1, tmp_reg_src1, sh));
+	      emit_insn (gen_rotldi3 (tmp_reg_src2, tmp_reg_src2, sh));
+	    }
+	  else
+	    {
+	      emit_insn (gen_rotlsi3 (tmp_reg_src1, tmp_reg_src1, sh));
+	      emit_insn (gen_rotlsi3 (tmp_reg_src2, tmp_reg_src2, sh));
+	    }
+	}
+
+      if (cmp_bytes < word_mode_size)
+	{
+	  /* Now clear right.  This plus the rotate can be
+	     turned into a rldicr instruction. */
+	  HOST_WIDE_INT mb = BITS_PER_UNIT * (word_mode_size - cmp_bytes);
+	  rtx mask = GEN_INT (HOST_WIDE_INT_M1U << mb);
+	  if (word_mode == DImode)
+	    {
+	      emit_insn (gen_anddi3_mask (tmp_reg_src1, tmp_reg_src1, mask));
+	      emit_insn (gen_anddi3_mask (tmp_reg_src2, tmp_reg_src2, mask));
+	    }
+	  else
+	    {
+	      emit_insn (gen_andsi3_mask (tmp_reg_src1, tmp_reg_src1, mask));
+	      emit_insn (gen_andsi3_mask (tmp_reg_src2, tmp_reg_src2, mask));
+	    }
+	}
+
+      /* Cases to handle.  A and B are chunks of the two strings.
+	 1: Not end of comparison:
+	 A != B: branch to cleanup code to compute result.
+	 A == B: check for 0 byte, next block if not found.
+	 2: End of the inline comparison:
+	 A != B: branch to cleanup code to compute result.
+	 A == B: check for 0 byte, call strcmp/strncmp
+	 3: compared requested N bytes:
+	 A == B: branch to result 0.
+	 A != B: cleanup code to compute result.  */
+
+      unsigned HOST_WIDE_INT remain = bytes_to_compare - cmp_bytes;
+
+      rtx dst_label;
+      if (remain > 0 || equality_compare_rest)
+	{
+	  /* Branch to cleanup code, otherwise fall through to do
+	     more compares.  */
+	  if (!cleanup_label)
+	    cleanup_label = gen_label_rtx ();
+	  dst_label = cleanup_label;
+	}
+      else
+	/* Branch to end and produce result of 0.  */
+	dst_label = final_move_label;
+
+      rtx lab_ref = gen_rtx_LABEL_REF (VOIDmode, dst_label);
+      rtx cond = gen_reg_rtx (CCmode);
+
+      /* Always produce the 0 result, it is needed if
+	 cmpb finds a 0 byte in this chunk.  */
+      rtx tmp = gen_rtx_MINUS (word_mode, tmp_reg_src1, tmp_reg_src2);
+      rs6000_emit_dot_insn (result_reg, tmp, 1, cond);
+
+      rtx cmp_rtx;
+      if (remain == 0 && !equality_compare_rest)
+	cmp_rtx = gen_rtx_EQ (VOIDmode, cond, const0_rtx);
+      else
+	cmp_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+
+      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
+					 lab_ref, pc_rtx);
+      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+      JUMP_LABEL (j) = dst_label;
+      LABEL_NUSES (dst_label) += 1;
+
+      if (remain > 0 || equality_compare_rest)
+	{
+	  /* Generate a cmpb to test for a 0 byte and branch
+	     to final result if found.  */
+	  rtx cmpb_zero = gen_reg_rtx (word_mode);
+	  rtx lab_ref_fin = gen_rtx_LABEL_REF (VOIDmode, final_move_label);
+	  rtx condz = gen_reg_rtx (CCmode);
+	  rtx zero_reg = gen_reg_rtx (word_mode);
+	  if (word_mode == SImode)
+	    {
+	      emit_insn (gen_movsi (zero_reg, GEN_INT (0)));
+	      emit_insn (gen_cmpbsi3 (cmpb_zero, tmp_reg_src1, zero_reg));
+	      if (cmp_bytes < word_mode_size)
+		{
+		  /* Don't want to look at zero bytes past end.  */
+		  HOST_WIDE_INT mb =
+		    BITS_PER_UNIT * (word_mode_size - cmp_bytes);
+		  rtx mask = GEN_INT (HOST_WIDE_INT_M1U << mb);
+		  emit_insn (gen_andsi3_mask (cmpb_zero, cmpb_zero, mask));
+		}
+	    }
+	  else
+	    {
+	      emit_insn (gen_movdi (zero_reg, GEN_INT (0)));
+	      emit_insn (gen_cmpbdi3 (cmpb_zero, tmp_reg_src1, zero_reg));
+	      if (cmp_bytes < word_mode_size)
+		{
+		  /* Don't want to look at zero bytes past end.  */
+		  HOST_WIDE_INT mb =
+		    BITS_PER_UNIT * (word_mode_size - cmp_bytes);
+		  rtx mask = GEN_INT (HOST_WIDE_INT_M1U << mb);
+		  emit_insn (gen_anddi3_mask (cmpb_zero, cmpb_zero, mask));
+		}
+	    }
+
+	  emit_move_insn (condz, gen_rtx_COMPARE (CCmode, cmpb_zero, zero_reg));
+	  rtx cmpnz_rtx = gen_rtx_NE (VOIDmode, condz, const0_rtx);
+	  rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmpnz_rtx,
+					     lab_ref_fin, pc_rtx);
+	  rtx j2 = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	  JUMP_LABEL (j2) = final_move_label;
+	  LABEL_NUSES (final_move_label) += 1;
+
+	}
+
+      offset += cmp_bytes;
+      bytes_to_compare -= cmp_bytes;
+    }
+
+  if (equality_compare_rest)
+    {
+      /* Update pointers past what has been compared already.  */
+      src1 = adjust_address (orig_src1, load_mode, offset);
+      src2 = adjust_address (orig_src2, load_mode, offset);
+
+      if (!REG_P (XEXP (src1, 0)))
+	{
+	  rtx src1_reg = copy_addr_to_reg (XEXP (src1, 0));
+	  src1 = replace_equiv_address (src1, src1_reg);
+	}
+      set_mem_size (src1, cmp_bytes);
+
+      if (!REG_P (XEXP (src2, 0)))
+	{
+	  rtx src2_reg = copy_addr_to_reg (XEXP (src2, 0));
+	  src2 = replace_equiv_address (src2, src2_reg);
+	}
+      set_mem_size (src2, cmp_bytes);
+
+      /* Construct call to strcmp/strncmp to compare the rest of the string.  */
+      if (no_length)
+	{
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
+				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
+	}
+      else
+	{
+	  rtx len_rtx;
+	  if (TARGET_64BIT)
+	    len_rtx = gen_reg_rtx (DImode);
+	  else
+	    len_rtx = gen_reg_rtx (SImode);
+
+	  emit_move_insn (len_rtx, GEN_INT (bytes - compare_length));
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
+				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
+				   len_rtx, GET_MODE (len_rtx));
+	}
+
+      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
+      rtx jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
+      JUMP_LABEL (jmp) = final_label;
+      LABEL_NUSES (final_label) += 1;
+      emit_barrier ();
+    }
+
+  if (cleanup_label)
+    emit_label (cleanup_label);
+
+  /* Generate the final sequence that identifies the differing
+     byte and generates the final result, taking into account
+     zero bytes:
+
+     cmpb              cmpb_result1, src1, src2
+     cmpb              cmpb_result2, src1, zero
+     orc               cmpb_result1, cmp_result1, cmpb_result2
+     cntlzd            get bit of first zero/diff byte
+     addi              convert for rldcl use
+     rldcl rldcl       extract diff/zero byte
+     subf              subtract for final result
+  */
+
+  rtx cmpb_diff = gen_reg_rtx (word_mode);
+  rtx cmpb_zero = gen_reg_rtx (word_mode);
+  rtx rot_amt = gen_reg_rtx (word_mode);
+  rtx zero_reg = gen_reg_rtx (word_mode);
+
+  rtx rot1_1 = gen_reg_rtx (word_mode);
+  rtx rot1_2 = gen_reg_rtx (word_mode);
+  rtx rot2_1 = gen_reg_rtx (word_mode);
+  rtx rot2_2 = gen_reg_rtx (word_mode);
+
+  if (word_mode == SImode)
+    {
+      emit_insn (gen_cmpbsi3 (cmpb_diff, tmp_reg_src1, tmp_reg_src2));
+      emit_insn (gen_movsi (zero_reg, GEN_INT (0)));
+      emit_insn (gen_cmpbsi3 (cmpb_zero, tmp_reg_src1, zero_reg));
+      emit_insn (gen_one_cmplsi2 (cmpb_diff,cmpb_diff));
+      emit_insn (gen_iorsi3 (cmpb_diff, cmpb_diff, cmpb_zero));
+      emit_insn (gen_clzsi2 (rot_amt, cmpb_diff));
+      emit_insn (gen_addsi3 (rot_amt, rot_amt, GEN_INT (8)));
+      emit_insn (gen_rotlsi3 (rot1_1, tmp_reg_src1,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_andsi3_mask (rot1_2, rot1_1, GEN_INT (0xff)));
+      emit_insn (gen_rotlsi3 (rot2_1, tmp_reg_src2,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_andsi3_mask (rot2_2, rot2_1, GEN_INT (0xff)));
+      emit_insn (gen_subsi3 (result_reg, rot1_2, rot2_2));
+    }
+  else
+    {
+      emit_insn (gen_cmpbdi3 (cmpb_diff, tmp_reg_src1, tmp_reg_src2));
+      emit_insn (gen_movdi (zero_reg, GEN_INT (0)));
+      emit_insn (gen_cmpbdi3 (cmpb_zero, tmp_reg_src1, zero_reg));
+      emit_insn (gen_one_cmpldi2 (cmpb_diff,cmpb_diff));
+      emit_insn (gen_iordi3 (cmpb_diff, cmpb_diff, cmpb_zero));
+      emit_insn (gen_clzdi2 (rot_amt, cmpb_diff));
+      emit_insn (gen_adddi3 (rot_amt, rot_amt, GEN_INT (8)));
+      emit_insn (gen_rotldi3 (rot1_1, tmp_reg_src1,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_anddi3_mask (rot1_2, rot1_1, GEN_INT (0xff)));
+      emit_insn (gen_rotldi3 (rot2_1, tmp_reg_src2,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_anddi3_mask (rot2_2, rot2_1, GEN_INT (0xff)));
+      emit_insn (gen_subdi3 (result_reg, rot1_2, rot2_2));
+    }
+
+  emit_label (final_move_label);
+  emit_insn (gen_movsi (target,
+			gen_lowpart (SImode, result_reg)));
+  emit_label (final_label);
+  return true;
+}
+
 /* Expand a block move operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
 
@@ -24655,9 +25597,7 @@ rs6000_split_signbit (rtx dest, rtx src)
   rtx dest_di = (d_mode == DImode) ? dest : gen_lowpart (DImode, dest);
   rtx shift_reg = dest_di;
 
-  gcc_assert (REG_P (dest));
-  gcc_assert (REG_P (src) || MEM_P (src));
-  gcc_assert (s_mode == KFmode || s_mode == TFmode);
+  gcc_assert (FLOAT128_IEEE_P (s_mode) && TARGET_POWERPC64);
 
   if (MEM_P (src))
     {
@@ -24669,17 +25609,20 @@ rs6000_split_signbit (rtx dest, rtx src)
 
   else
     {
-      unsigned int r = REGNO (src);
+      unsigned int r = reg_or_subregno (src);
 
-      /* If this is a VSX register, generate the special mfvsrd instruction
-	 to get it in a GPR.  Until we support SF and DF modes, that will
-	 always be true.  */
-      gcc_assert (VSX_REGNO_P (r));
+      if (INT_REGNO_P (r))
+	shift_reg = gen_rtx_REG (DImode, r + (BYTES_BIG_ENDIAN == 0));
 
-      if (s_mode == KFmode)
-	emit_insn (gen_signbitkf2_dm2 (dest_di, src));
       else
-	emit_insn (gen_signbittf2_dm2 (dest_di, src));
+	{
+	  /* Generate the special mfvsrd instruction to get it in a GPR.  */
+	  gcc_assert (VSX_REGNO_P (r));
+	  if (s_mode == KFmode)
+	    emit_insn (gen_signbitkf2_dm2 (dest_di, src));
+	  else
+	    emit_insn (gen_signbittf2_dm2 (dest_di, src));
+	}
     }
 
   emit_insn (gen_lshrdi3 (dest_di, shift_reg, GEN_INT (63)));
@@ -26950,7 +27893,8 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg, int copy_off)
 	}
       else if (GET_CODE (stack_limit_rtx) == SYMBOL_REF
 	       && TARGET_32BIT
-	       && DEFAULT_ABI == ABI_V4)
+	       && DEFAULT_ABI == ABI_V4
+	       && !flag_pic)
 	{
 	  rtx toload = gen_rtx_CONST (VOIDmode,
 				      gen_rtx_PLUS (Pmode,
@@ -32732,7 +33676,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 
 	     3  : 2 vector insns and a vector load have been issued and another
 		  vector load has been found and moved to the end of the ready
-		  list.	 */
+		  list.  */
       if (type == TYPE_VECLOAD)
 	{
 	  /* Issued a vecload.  */
@@ -37455,6 +38399,32 @@ rs6000_lra_p (void)
   return TARGET_LRA;
 }
 
+/* Compute register pressure classes.  We implement the target hook to avoid
+   IRA picking something like NON_SPECIAL_REGS as a pressure class, which can
+   lead to incorrect estimates of number of available registers and therefor
+   increased register pressure/spill.   */
+static int
+rs6000_compute_pressure_classes (enum reg_class *pressure_classes)
+{
+  int n;
+
+  n = 0;
+  pressure_classes[n++] = GENERAL_REGS;
+  if (TARGET_VSX)
+    pressure_classes[n++] = VSX_REGS;
+  else
+    {
+      if (TARGET_ALTIVEC)
+	pressure_classes[n++] = ALTIVEC_REGS;
+      if (TARGET_HARD_FLOAT && TARGET_FPRS)
+	pressure_classes[n++] = FLOAT_REGS;
+    }
+  pressure_classes[n++] = CR_REGS;
+  pressure_classes[n++] = SPECIAL_REGS;
+
+  return n;
+}
+
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
 
@@ -37827,7 +38797,7 @@ rs6000_asan_shadow_offset (void)
 
 /* Mask options that we want to support inside of attribute((target)) and
    #pragma GCC target operations.  Note, we do not include things like
-   64/32-bit, endianess, hard/soft floating point, etc. that would have
+   64/32-bit, endianness, hard/soft floating point, etc. that would have
    different calling sequences.  */
 
 struct rs6000_opt_mask {
@@ -40573,6 +41543,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VSX_VEC_INIT:
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
+	  case UNSPEC_VSX_XXSPLTD:
 	    *special = SH_SPLAT;
 	    return 1;
 	  case UNSPEC_REDUC_PLUS:
@@ -40646,7 +41617,10 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
       if (GET_CODE (body) == SET)
 	{
 	  rtx rhs = SET_SRC (body);
-	  gcc_assert (GET_CODE (rhs) == MEM);
+	  /* Even without a swap, the RHS might be a vec_select for, say,
+	     a byte-reversing load.  */
+	  if (GET_CODE (rhs) != MEM)
+	    return 0;
 	  if (GET_CODE (XEXP (rhs, 0)) == AND)
 	    return 0;
 
@@ -40663,7 +41637,10 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
 	  && GET_CODE (SET_SRC (body)) != UNSPEC)
 	{
 	  rtx lhs = SET_DEST (body);
-	  gcc_assert (GET_CODE (lhs) == MEM);
+	  /* Even without a swap, the LHS might be a vec_select for, say,
+	     a byte-reversing store.  */
+	  if (GET_CODE (lhs) != MEM)
+	    return 0;
 	  if (GET_CODE (XEXP (lhs, 0)) == AND)
 	    return 0;
 	  
@@ -41442,6 +42419,12 @@ find_alignment_op (rtx_insn *insn, rtx base_reg)
       if (!base_def_link || base_def_link->next)
 	break;
 
+      /* With stack-protector code enabled, and possibly in other
+	 circumstances, there may not be an associated insn for 
+	 the def.  */
+      if (DF_REF_IS_ARTIFICIAL (base_def_link->ref))
+	break;
+
       rtx_insn *and_insn = DF_REF_INSN (base_def_link->ref);
       and_operation = alignment_mask (and_insn);
       if (and_operation != 0)
@@ -41863,6 +42846,11 @@ public:
   virtual unsigned int execute (function *fun)
     {
       return rs6000_analyze_swaps (fun);
+    }
+
+  opt_pass *clone ()
+    {
+      return new pass_analyze_swaps (m_ctxt);
     }
 
 }; // class pass_analyze_swaps

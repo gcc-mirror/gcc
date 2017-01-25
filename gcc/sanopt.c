@@ -1,5 +1,5 @@
 /* Optimize and expand sanitizer functions.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "tree-pass.h"
 #include "tree-ssa-operands.h"
 #include "gimple-pretty-print.h"
@@ -36,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
-
 
 /* This is used to carry information about basic blocks.  It is
    attached to the AUX field of the standard CFG block.  */
@@ -160,8 +160,10 @@ struct sanopt_ctx
 
   /* Number of IFN_ASAN_CHECK statements.  */
   int asan_num_accesses;
-};
 
+  /* True when the current functions constains an ASAN_MARK.  */
+  bool contains_asan_mark;
+};
 
 /* Return true if there might be any call to free/munmap operation
    on any path in between DOM (which should be imm(BB)) and BB.  */
@@ -582,6 +584,9 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 	    if (!remove)
 	      ctx->asan_num_accesses++;
 	    break;
+	  case IFN_ASAN_MARK:
+	    ctx->contains_asan_mark = true;
+	    break;
 	  default:
 	    break;
 	  }
@@ -620,10 +625,11 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 /* Try to remove redundant sanitizer checks in function FUN.  */
 
 static int
-sanopt_optimize (function *fun)
+sanopt_optimize (function *fun, bool *contains_asan_mark)
 {
   struct sanopt_ctx ctx;
   ctx.asan_num_accesses = 0;
+  ctx.contains_asan_mark = false;
 
   /* Set up block info for each basic block.  */
   alloc_aux_for_blocks (sizeof (sanopt_info));
@@ -638,6 +644,7 @@ sanopt_optimize (function *fun)
 
   free_aux_for_blocks ();
 
+  *contains_asan_mark = ctx.contains_asan_mark;
   return ctx.asan_num_accesses;
 }
 
@@ -671,18 +678,199 @@ public:
 
 }; // class pass_sanopt
 
+/* Sanitize all ASAN_MARK unpoison calls that are not reachable by a BB
+   that contains an ASAN_MARK poison.  All these ASAN_MARK unpoison call
+   can be removed as all variables are unpoisoned in a function prologue.  */
+
+static void
+sanitize_asan_mark_unpoison (void)
+{
+  /* 1) Find all BBs that contain an ASAN_MARK poison call.  */
+  auto_sbitmap with_poison (last_basic_block_for_fn (cfun) + 1);
+  bitmap_clear (with_poison);
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      if (bitmap_bit_p (with_poison, bb->index))
+	continue;
+
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (asan_mark_p (stmt, ASAN_MARK_POISON))
+	    {
+	      bitmap_set_bit (with_poison, bb->index);
+	      break;
+	    }
+	}
+    }
+
+  auto_sbitmap poisoned (last_basic_block_for_fn (cfun) + 1);
+  bitmap_clear (poisoned);
+  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
+  bitmap_copy (worklist, with_poison);
+
+  /* 2) Propagate the information to all reachable blocks.  */
+  while (!bitmap_empty_p (worklist))
+    {
+      unsigned i = bitmap_first_set_bit (worklist);
+      bitmap_clear_bit (worklist, i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      gcc_assert (bb);
+
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (!bitmap_bit_p (poisoned, e->dest->index))
+	  {
+	    bitmap_set_bit (poisoned, e->dest->index);
+	    bitmap_set_bit (worklist, e->dest->index);
+	  }
+    }
+
+  /* 3) Iterate all BBs not included in POISONED BBs and remove unpoison
+	ASAN_MARK preceding an ASAN_MARK poison (which can still happen).  */
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      if (bitmap_bit_p (poisoned, bb->index))
+	continue;
+
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+	    {
+	      if (asan_mark_p (stmt, ASAN_MARK_POISON))
+		break;
+	      else
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "Removing ASAN_MARK unpoison\n");
+		  unlink_stmt_vdef (stmt);
+		  release_defs (stmt);
+		  gsi_remove (&gsi, true);
+		  continue;
+		}
+	    }
+
+	  gsi_next (&gsi);
+	}
+    }
+}
+
+/* Return true when STMT is either ASAN_CHECK call or a call of a function
+   that can contain an ASAN_CHECK.  */
+
+static bool
+maybe_contains_asan_check (gimple *stmt)
+{
+  if (is_gimple_call (stmt))
+    {
+      if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+	return false;
+      else
+	return !(gimple_call_flags (stmt) & ECF_CONST);
+    }
+  else if (is_a<gasm *> (stmt))
+    return true;
+
+  return false;
+}
+
+/* Sanitize all ASAN_MARK poison calls that are not followed by an ASAN_CHECK
+   call.  These calls can be removed.  */
+
+static void
+sanitize_asan_mark_poison (void)
+{
+  /* 1) Find all BBs that possibly contain an ASAN_CHECK.  */
+  auto_sbitmap with_check (last_basic_block_for_fn (cfun) + 1);
+  bitmap_clear (with_check);
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (maybe_contains_asan_check (stmt))
+	    {
+	      bitmap_set_bit (with_check, bb->index);
+	      break;
+	    }
+	}
+    }
+
+  auto_sbitmap can_reach_check (last_basic_block_for_fn (cfun) + 1);
+  bitmap_clear (can_reach_check);
+  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
+  bitmap_copy (worklist, with_check);
+
+  /* 2) Propagate the information to all definitions blocks.  */
+  while (!bitmap_empty_p (worklist))
+    {
+      unsigned i = bitmap_first_set_bit (worklist);
+      bitmap_clear_bit (worklist, i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      gcc_assert (bb);
+
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (!bitmap_bit_p (can_reach_check, e->src->index))
+	  {
+	    bitmap_set_bit (can_reach_check, e->src->index);
+	    bitmap_set_bit (worklist, e->src->index);
+	  }
+    }
+
+  /* 3) Iterate all BBs not included in CAN_REACH_CHECK BBs and remove poison
+	ASAN_MARK not followed by a call to function having an ASAN_CHECK.  */
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      if (bitmap_bit_p (can_reach_check, bb->index))
+	continue;
+
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (maybe_contains_asan_check (stmt))
+	    break;
+	  else if (asan_mark_p (stmt, ASAN_MARK_POISON))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Removing ASAN_MARK poison\n");
+	      unlink_stmt_vdef (stmt);
+	      release_defs (stmt);
+	      gimple_stmt_iterator gsi2 = gsi;
+	      gsi_prev (&gsi);
+	      gsi_remove (&gsi2, true);
+	      continue;
+	    }
+
+	  gsi_prev (&gsi);
+	}
+    }
+}
+
 unsigned int
 pass_sanopt::execute (function *fun)
 {
   basic_block bb;
   int asan_num_accesses = 0;
+  bool contains_asan_mark = false;
 
   /* Try to remove redundant checks.  */
   if (optimize
       && (flag_sanitize
 	  & (SANITIZE_NULL | SANITIZE_ALIGNMENT
 	     | SANITIZE_ADDRESS | SANITIZE_VPTR)))
-    asan_num_accesses = sanopt_optimize (fun);
+    asan_num_accesses = sanopt_optimize (fun, &contains_asan_mark);
   else if (flag_sanitize & SANITIZE_ADDRESS)
     {
       gimple_stmt_iterator gsi;
@@ -692,12 +880,22 @@ pass_sanopt::execute (function *fun)
 	    gimple *stmt = gsi_stmt (gsi);
 	    if (gimple_call_internal_p (stmt, IFN_ASAN_CHECK))
 	      ++asan_num_accesses;
+	    else if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+	      contains_asan_mark = true;
 	  }
+    }
+
+  if (contains_asan_mark)
+    {
+      sanitize_asan_mark_unpoison ();
+      sanitize_asan_mark_poison ();
     }
 
   bool use_calls = ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD < INT_MAX
     && asan_num_accesses >= ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD;
 
+  hash_map<tree, tree> shadow_vars_mapping;
+  bool need_commit_edge_insert = false;
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
@@ -735,6 +933,11 @@ pass_sanopt::execute (function *fun)
 		case IFN_ASAN_MARK:
 		  no_next = asan_expand_mark_ifn (&gsi);
 		  break;
+		case IFN_ASAN_POISON:
+		  no_next = asan_expand_poison_ifn (&gsi,
+						    &need_commit_edge_insert,
+						    shadow_vars_mapping);
+		  break;
 		default:
 		  break;
 		}
@@ -766,6 +969,10 @@ pass_sanopt::execute (function *fun)
 	    gsi_next (&gsi);
 	}
     }
+
+  if (need_commit_edge_insert)
+    gsi_commit_edge_inserts ();
+
   return 0;
 }
 

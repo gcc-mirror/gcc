@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -347,7 +348,11 @@ package body Sem_Eval is
 
       --  Here we have a static predicate (note that it could have arisen from
       --  an explicitly specified Dynamic_Predicate whose expression met the
-      --  rules for being predicate-static).
+      --  rules for being predicate-static). If the expression is known at
+      --  compile time and obeys the predicate, then it is static and must be
+      --  labeled as such, which matters e.g. for case statements. The original
+      --  expression may be a type conversion of a variable with a known value,
+      --  which might otherwise not be marked static.
 
       --  Case of real static predicate
 
@@ -356,6 +361,7 @@ package body Sem_Eval is
               (Val => Make_Real_Literal (Sloc (Expr), Expr_Value_R (Expr)),
                Typ => Typ)
          then
+            Set_Is_Static_Expression (Expr);
             return;
          end if;
 
@@ -365,6 +371,7 @@ package body Sem_Eval is
          if Real_Or_String_Static_Predicate_Matches
               (Val => Expr_Value_S (Expr), Typ => Typ)
          then
+            Set_Is_Static_Expression (Expr);
             return;
          end if;
 
@@ -376,6 +383,7 @@ package body Sem_Eval is
          --  If static predicate matches, nothing to do
 
          if Choices_Match (Expr, Static_Discrete_Predicate (Typ)) = Match then
+            Set_Is_Static_Expression (Expr);
             return;
          end if;
       end if;
@@ -1134,7 +1142,7 @@ package body Sem_Eval is
          return Unknown;
       end if;
 
-      --  We do not attempt comparisons for packed arrays arrays represented as
+      --  We do not attempt comparisons for packed arrays represented as
       --  modular types, where the semantics of comparison is quite different.
 
       if Is_Packed_Array_Impl_Type (Ltyp)
@@ -1334,12 +1342,22 @@ package body Sem_Eval is
             if Is_Same_Value (Lnode, Rnode) then
                if Loffs = Roffs then
                   return EQ;
-               elsif Loffs < Roffs then
-                  Diff.all := Roffs - Loffs;
-                  return LT;
-               else
-                  Diff.all := Loffs - Roffs;
-                  return GT;
+               end if;
+
+               --  When the offsets are not equal, we can go farther only if
+               --  the types are not modular (e.g. X < X + 1 is False if X is
+               --  the largest number).
+
+               if not Is_Modular_Integer_Type (Ltyp)
+                 and then not Is_Modular_Integer_Type (Rtyp)
+               then
+                  if Loffs < Roffs then
+                     Diff.all := Roffs - Loffs;
+                     return LT;
+                  else
+                     Diff.all := Loffs - Roffs;
+                     return GT;
+                  end if;
                end if;
             end if;
          end;
@@ -2664,9 +2682,12 @@ package body Sem_Eval is
       --  If the literal appears in a non-expression context, then it is
       --  certainly appearing in a non-static context, so check it. This is
       --  actually a redundant check, since Check_Non_Static_Context would
-      --  check it, but it seems worth while avoiding the call.
+      --  check it, but it seems worthwhile to optimize out the call.
 
-      if Nkind (Parent (N)) not in N_Subexpr
+      --  An exception is made for a literal in an if or case expression
+
+      if (Nkind_In (Parent (N), N_If_Expression, N_Case_Expression_Alternative)
+           or else Nkind (Parent (N)) not in N_Subexpr)
         and then not In_Any_Integer_Context
       then
          Check_Non_Static_Context (N);
@@ -3422,9 +3443,7 @@ package body Sem_Eval is
                   when N_Op_Le => Result := (Left_Real <= Right_Real);
                   when N_Op_Gt => Result := (Left_Real >  Right_Real);
                   when N_Op_Ge => Result := (Left_Real >= Right_Real);
-
-                  when others =>
-                     raise Program_Error;
+                  when others  => raise Program_Error;
                end case;
 
                Fold_Uint (N, Test (Result), True);
@@ -4982,7 +5001,13 @@ package body Sem_Eval is
       then
          return False;
 
-      elsif Has_Dynamic_Predicate_Aspect (Typ) then
+      --  If there is a dynamic predicate for the type (declared or inherited)
+      --  the expression is not static.
+
+      elsif Has_Dynamic_Predicate_Aspect (Typ)
+        or else (Is_Derived_Type (Typ)
+                  and then Has_Aspect (Typ, Aspect_Dynamic_Predicate))
+      then
          return False;
 
       --  String types
@@ -5452,6 +5477,40 @@ package body Sem_Eval is
             begin
                Set_Sloc (Nod, Sloc (N));
                Rewrite (N, Nod);
+               return Skip;
+            end;
+
+         --  The predicate function may contain string-comparison operations
+         --  that have been converted into calls to run-time array-comparison
+         --  routines. To evaluate the predicate statically, we recover the
+         --  original comparison operation and replace the occurrence of the
+         --  formal by the static string value. The actuals of the generated
+         --  call are of the form X'Address.
+
+         elsif Nkind (N) in N_Op_Compare
+           and then Nkind (Left_Opnd (N)) = N_Function_Call
+         then
+            declare
+               C : constant Node_Id := Left_Opnd (N);
+               F : constant Node_Id := First (Parameter_Associations (C));
+               L : constant Node_Id := Prefix (F);
+               R : constant Node_Id := Prefix (Next (F));
+
+            begin
+               --  If an operand is an entity name, it is the formal of the
+               --  predicate function, so replace it with the string value.
+               --  It may be either operand in the call. The other operand
+               --  is a static string from the original predicate.
+
+               if Is_Entity_Name (L) then
+                  Rewrite (Left_Opnd (N),  New_Copy (Val));
+                  Rewrite (Right_Opnd (N), New_Copy (R));
+
+               else
+                  Rewrite (Left_Opnd (N),  New_Copy (L));
+                  Rewrite (Right_Opnd (N), New_Copy (Val));
+               end if;
+
                return Skip;
             end;
 
@@ -6474,7 +6533,10 @@ package body Sem_Eval is
 
          --  Entity name
 
-         when N_Expanded_Name | N_Identifier | N_Operator_Symbol =>
+         when N_Expanded_Name
+            | N_Identifier
+            | N_Operator_Symbol
+         =>
             E := Entity (N);
 
             if Is_Named_Number (E) then
@@ -6548,10 +6610,13 @@ package body Sem_Eval is
 
          --  Binary operator
 
-         when N_Binary_Op | N_Short_Circuit | N_Membership_Test =>
+         when N_Binary_Op
+            | N_Membership_Test
+            | N_Short_Circuit
+         =>
             if Nkind (N) in N_Op_Shift then
                Error_Msg_N
-                ("!shift functions are never static (RM 4.9(6,18))", N);
+                 ("!shift functions are never static (RM 4.9(6,18))", N);
             else
                Why_Not_Static (Left_Opnd (N));
                Why_Not_Static (Right_Opnd (N));
@@ -6670,7 +6735,9 @@ package body Sem_Eval is
 
          --  Aggregate
 
-         when N_Aggregate | N_Extension_Aggregate =>
+         when N_Aggregate
+            | N_Extension_Aggregate
+         =>
             Error_Msg_N ("!an aggregate is never static (RM 4.9)", N);
 
          --  Range
@@ -6720,7 +6787,6 @@ package body Sem_Eval is
 
          when others =>
             null;
-
       end case;
    end Why_Not_Static;
 

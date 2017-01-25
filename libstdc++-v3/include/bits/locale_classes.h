@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -461,10 +461,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-    class __shim;
-
     const facet* _M_sso_shim(const id*) const;
     const facet* _M_cow_shim(const id*) const;
+
+  protected:
+    class __shim; // For internal use only.
   };
 
 

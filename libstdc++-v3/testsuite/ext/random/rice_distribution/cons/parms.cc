@@ -3,7 +3,7 @@
 //
 // 2012-01-28  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,9 +37,20 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type = __gnu_cxx::rice_distribution<>::param_type;
+  const param_type p(1.5, 3.0);
+  __gnu_cxx::rice_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef __gnu_cxx::rice_distribution<>::result_type result_type;
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

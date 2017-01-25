@@ -1,5 +1,5 @@
 /* Runtime conversion of strings from one character kind to another.
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -23,9 +23,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-
-#include <stdlib.h>
-#include <string.h>
 
 
 extern void convert_char1_to_char4 (gfc_char4_t **, gfc_charlen_type,

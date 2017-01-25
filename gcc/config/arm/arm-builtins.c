@@ -1,5 +1,5 @@
 /* Description of builtins used by the ARM backend.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -37,8 +37,9 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "case-cfn-macros.h"
+#include "sbitmap.h"
 
-#define SIMD_MAX_BUILTIN_ARGS 5
+#define SIMD_MAX_BUILTIN_ARGS 7
 
 enum arm_type_qualifiers
 {
@@ -50,9 +51,12 @@ enum arm_type_qualifiers
   qualifier_const = 0x2, /* 1 << 1  */
   /* T *foo.  */
   qualifier_pointer = 0x4, /* 1 << 2  */
+  /* const T * foo.  */
+  qualifier_const_pointer = 0x6,
   /* Used when expanding arguments if an operand could
      be an immediate.  */
   qualifier_immediate = 0x8, /* 1 << 3  */
+  qualifier_unsigned_immediate = 0x9,
   qualifier_maybe_immediate = 0x10, /* 1 << 4  */
   /* void foo (...).  */
   qualifier_void = 0x20, /* 1 << 5  */
@@ -157,6 +161,80 @@ arm_load1_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_none, qualifier_struct_load_store_lane_index };
 #define LOAD1LANE_QUALIFIERS (arm_load1_lane_qualifiers)
 
+/* unsigned T (unsigned T, unsigned T, unsigned T).  */
+static enum arm_type_qualifiers
+arm_unsigned_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned };
+#define UBINOP_QUALIFIERS (arm_unsigned_binop_qualifiers)
+
+/* void (unsigned immediate, unsigned immediate, unsigned immediate,
+	 unsigned immediate, unsigned immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_cdp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate };
+#define CDP_QUALIFIERS \
+  (arm_cdp_qualifiers)
+
+/* void (unsigned immediate, unsigned immediate,  const void *).  */
+static enum arm_type_qualifiers
+arm_ldc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_const_pointer };
+#define LDC_QUALIFIERS \
+  (arm_ldc_qualifiers)
+
+/* void (unsigned immediate, unsigned immediate,  void *).  */
+static enum arm_type_qualifiers
+arm_stc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_pointer };
+#define STC_QUALIFIERS \
+  (arm_stc_qualifiers)
+
+/* void (unsigned immediate, unsigned immediate,  T, unsigned immediate,
+	 unsigned immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_mcr_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_none,
+      qualifier_unsigned_immediate, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate };
+#define MCR_QUALIFIERS \
+  (arm_mcr_qualifiers)
+
+/* T (unsigned immediate, unsigned immediate, unsigned immediate,
+      unsigned immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_mrc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_unsigned_immediate };
+#define MRC_QUALIFIERS \
+  (arm_mrc_qualifiers)
+
+/* void (unsigned immediate, unsigned immediate,  T, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_mcrr_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_none,
+      qualifier_unsigned_immediate };
+#define MCRR_QUALIFIERS \
+  (arm_mcrr_qualifiers)
+
+/* T (unsigned immediate, unsigned immediate, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_mrrc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned_immediate,
+      qualifier_unsigned_immediate, qualifier_unsigned_immediate };
+#define MRRC_QUALIFIERS \
+  (arm_mrrc_qualifiers)
+
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
    a DImode pointer to the location to store to, so we must use
@@ -193,6 +271,7 @@ arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define oi_UP	 OImode
 #define hf_UP	 HFmode
 #define si_UP	 SImode
+#define void_UP	 VOIDmode
 
 #define UP(X) X##_UP
 
@@ -202,7 +281,7 @@ typedef struct {
   const enum insn_code code;
   unsigned int fcode;
   enum arm_type_qualifiers *qualifiers;
-} neon_builtin_datum;
+} arm_builtin_datum;
 
 #define CF(N,X) CODE_FOR_neon_##N##X
 
@@ -242,29 +321,37 @@ typedef struct {
   VAR11 (T, N, A, B, C, D, E, F, G, H, I, J, K) \
   VAR1 (T, N, L)
 
-/* The NEON builtin data can be found in arm_neon_builtins.def and
-   arm_vfp_builtins.def.  The entries in arm_neon_builtins.def require
-   TARGET_NEON to be true.  The feature tests are checked when the
-   builtins are expanded.
+/* The builtin data can be found in arm_neon_builtins.def, arm_vfp_builtins.def
+   and arm_acle_builtins.def.  The entries in arm_neon_builtins.def require
+   TARGET_NEON to be true.  The feature tests are checked when the builtins are
+   expanded.
 
-   The mode entries in the following table correspond to the "key"
-   type of the instruction variant, i.e. equivalent to that which
-   would be specified after the assembler mnemonic, which usually
-   refers to the last vector operand.  The modes listed per
-   instruction should be the same as those defined for that
-   instruction's pattern in neon.md.  */
+   The mode entries in the following table correspond to the "key" type of the
+   instruction variant, i.e. equivalent to that which would be specified after
+   the assembler mnemonic for neon instructions, which usually refers to the
+   last vector operand.  The modes listed per instruction should be the same as
+   those defined for that instruction's pattern, for instance in neon.md.  */
 
-static neon_builtin_datum vfp_builtin_data[] =
+static arm_builtin_datum vfp_builtin_data[] =
 {
 #include "arm_vfp_builtins.def"
 };
 
-static neon_builtin_datum neon_builtin_data[] =
+static arm_builtin_datum neon_builtin_data[] =
 {
 #include "arm_neon_builtins.def"
 };
 
 #undef CF
+#undef VAR1
+#define VAR1(T, N, A) \
+  {#N, UP (A), CODE_FOR_##N, 0, T##_QUALIFIERS},
+
+static arm_builtin_datum acle_builtin_data[] =
+{
+#include "arm_acle_builtins.def"
+};
+
 #undef VAR1
 
 #define VAR1(T, N, X) \
@@ -518,13 +605,6 @@ enum arm_builtins
 
   ARM_BUILTIN_WMERGE,
 
-  ARM_BUILTIN_CRC32B,
-  ARM_BUILTIN_CRC32H,
-  ARM_BUILTIN_CRC32W,
-  ARM_BUILTIN_CRC32CB,
-  ARM_BUILTIN_CRC32CH,
-  ARM_BUILTIN_CRC32CW,
-
   ARM_BUILTIN_GET_FPSCR,
   ARM_BUILTIN_SET_FPSCR,
 
@@ -558,6 +638,14 @@ enum arm_builtins
 
 #include "arm_neon_builtins.def"
 
+#undef VAR1
+#define VAR1(T, N, X) \
+  ARM_BUILTIN_##N,
+
+  ARM_BUILTIN_ACLE_BASE,
+
+#include "arm_acle_builtins.def"
+
   ARM_BUILTIN_MAX
 };
 
@@ -566,6 +654,9 @@ enum arm_builtins
 
 #define ARM_BUILTIN_NEON_PATTERN_START \
   (ARM_BUILTIN_NEON_BASE + 1)
+
+#define ARM_BUILTIN_ACLE_PATTERN_START \
+  (ARM_BUILTIN_ACLE_BASE + 1)
 
 #undef CF
 #undef VAR1
@@ -918,11 +1009,15 @@ arm_init_simd_builtin_scalar_types (void)
 					     "__builtin_neon_uti");
 }
 
-/* Set up a NEON builtin.  */
+/* Set up a builtin.  It will use information stored in the argument struct D to
+   derive the builtin's type signature and name.  It will append the name in D
+   to the PREFIX passed and use these to create a builtin declaration that is
+   then stored in 'arm_builtin_decls' under index FCODE.  This FCODE is also
+   written back to D for future use.  */
 
 static void
-arm_init_neon_builtin (unsigned int fcode,
-		       neon_builtin_datum *d)
+arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
+		  const char * prefix)
 {
   bool print_type_signature_p = false;
   char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
@@ -1010,16 +1105,34 @@ arm_init_neon_builtin (unsigned int fcode,
 
   gcc_assert (ftype != NULL);
 
-  if (print_type_signature_p)
-    snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s_%s",
-	      d->name, type_signature);
+  if (print_type_signature_p
+      && IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_ACLE_BASE - 1))
+    snprintf (namebuf, sizeof (namebuf), "%s_%s_%s",
+	      prefix, d->name, type_signature);
   else
-    snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s",
-	      d->name);
+    snprintf (namebuf, sizeof (namebuf), "%s_%s",
+	      prefix, d->name);
 
   fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
 				 NULL, NULL_TREE);
   arm_builtin_decls[fcode] = fndecl;
+}
+
+/* Set up ACLE builtins, even builtins for instructions that are not
+   in the current target ISA to allow the user to compile particular modules
+   with different target specific options that differ from the command line
+   options.  Such builtins will be rejected in arm_expand_builtin.  */
+
+static void
+arm_init_acle_builtins (void)
+{
+  unsigned int i, fcode = ARM_BUILTIN_ACLE_PATTERN_START;
+
+  for (i = 0; i < ARRAY_SIZE (acle_builtin_data); i++, fcode++)
+    {
+      arm_builtin_datum *d = &acle_builtin_data[i];
+      arm_init_builtin (fcode, d, "__builtin_arm");
+    }
 }
 
 /* Set up all the NEON builtins, even builtins for instructions that are not
@@ -1051,8 +1164,8 @@ arm_init_neon_builtins (void)
 
   for (i = 0; i < ARRAY_SIZE (neon_builtin_data); i++, fcode++)
     {
-      neon_builtin_datum *d = &neon_builtin_data[i];
-      arm_init_neon_builtin (fcode, d);
+      arm_builtin_datum *d = &neon_builtin_data[i];
+      arm_init_builtin (fcode, d, "__builtin_neon");
     }
 }
 
@@ -1065,8 +1178,8 @@ arm_init_vfp_builtins (void)
 
   for (i = 0; i < ARRAY_SIZE (vfp_builtin_data); i++, fcode++)
     {
-      neon_builtin_datum *d = &vfp_builtin_data[i];
-      arm_init_neon_builtin (fcode, d);
+      arm_builtin_datum *d = &vfp_builtin_data[i];
+      arm_init_builtin (fcode, d, "__builtin_neon");
     }
 }
 
@@ -1154,11 +1267,11 @@ arm_init_crypto_builtins (void)
 #undef NUM_DREG_TYPES
 #undef NUM_QREG_TYPES
 
-#define def_mbuiltin(FLAGS, NAME, TYPE, CODE)				\
+#define def_mbuiltin(FLAG, NAME, TYPE, CODE)				\
   do									\
     {									\
-      const arm_feature_set flags = FLAGS;				\
-      if (ARM_FSET_CPU_SUBSET (flags, insn_flags))			\
+      if (FLAG == isa_nobit						\
+	  || bitmap_bit_p (arm_active_target.isa, FLAG))		\
 	{								\
 	  tree bdecl;							\
 	  bdecl = add_builtin_function ((NAME), (TYPE), (CODE),		\
@@ -1170,7 +1283,7 @@ arm_init_crypto_builtins (void)
 
 struct builtin_description
 {
-  const arm_feature_set    features;
+  const enum isa_feature   feature;
   const enum insn_code     icode;
   const char * const       name;
   const enum arm_builtins  code;
@@ -1181,12 +1294,12 @@ struct builtin_description
 static const struct builtin_description bdesc_2arg[] =
 {
 #define IWMMXT_BUILTIN(code, string, builtin) \
-  { ARM_FSET_MAKE_CPU1 (FL_IWMMXT), CODE_FOR_##code, \
+  { isa_bit_iwmmxt, CODE_FOR_##code, \
     "__builtin_arm_" string,			     \
     ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
 #define IWMMXT2_BUILTIN(code, string, builtin) \
-  { ARM_FSET_MAKE_CPU1 (FL_IWMMXT2), CODE_FOR_##code, \
+  { isa_bit_iwmmxt2, CODE_FOR_##code, \
     "__builtin_arm_" string,			      \
     ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
@@ -1270,11 +1383,11 @@ static const struct builtin_description bdesc_2arg[] =
   IWMMXT_BUILTIN (iwmmxt_walignr3, "walignr3", WALIGNR3)
 
 #define IWMMXT_BUILTIN2(code, builtin) \
-  { ARM_FSET_MAKE_CPU1 (FL_IWMMXT), CODE_FOR_##code, NULL, \
+  { isa_bit_iwmmxt, CODE_FOR_##code, NULL, \
     ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
 #define IWMMXT2_BUILTIN2(code, builtin) \
-  { ARM_FSET_MAKE_CPU2 (FL_IWMMXT2), CODE_FOR_##code, NULL, \
+  { isa_bit_iwmmxt2, CODE_FOR_##code, NULL, \
     ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
   IWMMXT2_BUILTIN2 (iwmmxt_waddbhusm, WADDBHUSM)
@@ -1290,27 +1403,15 @@ static const struct builtin_description bdesc_2arg[] =
 
 
 #define FP_BUILTIN(L, U) \
-  {ARM_FSET_EMPTY, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
+  {isa_nobit, CODE_FOR_##L, "__builtin_arm_"#L, ARM_BUILTIN_##U, \
    UNKNOWN, 0},
 
   FP_BUILTIN (get_fpscr, GET_FPSCR)
   FP_BUILTIN (set_fpscr, SET_FPSCR)
 #undef FP_BUILTIN
 
-#define CRC32_BUILTIN(L, U) \
-  {ARM_FSET_EMPTY, CODE_FOR_##L, "__builtin_arm_"#L, \
-   ARM_BUILTIN_##U, UNKNOWN, 0},
-   CRC32_BUILTIN (crc32b, CRC32B)
-   CRC32_BUILTIN (crc32h, CRC32H)
-   CRC32_BUILTIN (crc32w, CRC32W)
-   CRC32_BUILTIN (crc32cb, CRC32CB)
-   CRC32_BUILTIN (crc32ch, CRC32CH)
-   CRC32_BUILTIN (crc32cw, CRC32CW)
-#undef CRC32_BUILTIN
-
-
 #define CRYPTO_BUILTIN(L, U)					   \
-  {ARM_FSET_EMPTY, CODE_FOR_crypto_##L,	"__builtin_arm_crypto_"#L, \
+  {isa_nobit, CODE_FOR_crypto_##L,	"__builtin_arm_crypto_"#L, \
    ARM_BUILTIN_CRYPTO_##U, UNKNOWN, 0},
 #undef CRYPTO1
 #undef CRYPTO2
@@ -1567,9 +1668,9 @@ arm_init_iwmmxt_builtins (void)
       machine_mode mode;
       tree type;
 
-      if (d->name == 0 ||
-	  !(ARM_FSET_HAS_CPU1 (d->features, FL_IWMMXT) ||
-	    ARM_FSET_HAS_CPU1 (d->features, FL_IWMMXT2)))
+      if (d->name == 0
+	  || !(d->feature == isa_bit_iwmmxt
+	       || d->feature == isa_bit_iwmmxt2))
 	continue;
 
       mode = insn_data[d->icode].operand[1].mode;
@@ -1593,16 +1694,16 @@ arm_init_iwmmxt_builtins (void)
 	  gcc_unreachable ();
 	}
 
-      def_mbuiltin (d->features, d->name, type, d->code);
+      def_mbuiltin (d->feature, d->name, type, d->code);
     }
 
   /* Add the remaining MMX insns with somewhat more complicated types.  */
 #define iwmmx_mbuiltin(NAME, TYPE, CODE)			\
-  def_mbuiltin (ARM_FSET_MAKE_CPU1 (FL_IWMMXT), "__builtin_arm_" NAME, \
+  def_mbuiltin (isa_bit_iwmmxt, "__builtin_arm_" NAME, \
 		(TYPE), ARM_BUILTIN_ ## CODE)
 
 #define iwmmx2_mbuiltin(NAME, TYPE, CODE)                      \
-  def_mbuiltin (ARM_FSET_MAKE_CPU1 (FL_IWMMXT2), "__builtin_arm_" NAME, \
+  def_mbuiltin (isa_bit_iwmmxt2, "__builtin_arm_" NAME, \
 		(TYPE),	ARM_BUILTIN_ ## CODE)
 
   iwmmx_mbuiltin ("wzero", di_ftype_void, WZERO);
@@ -1765,42 +1866,6 @@ arm_init_fp16_builtins (void)
 					       "__fp16");
 }
 
-static void
-arm_init_crc32_builtins ()
-{
-  tree si_ftype_si_qi
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intQI_type_node, NULL_TREE);
-  tree si_ftype_si_hi
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intHI_type_node, NULL_TREE);
-  tree si_ftype_si_si
-    = build_function_type_list (unsigned_intSI_type_node,
-                                unsigned_intSI_type_node,
-                                unsigned_intSI_type_node, NULL_TREE);
-
-  arm_builtin_decls[ARM_BUILTIN_CRC32B]
-    = add_builtin_function ("__builtin_arm_crc32b", si_ftype_si_qi,
-                            ARM_BUILTIN_CRC32B, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32H]
-    = add_builtin_function ("__builtin_arm_crc32h", si_ftype_si_hi,
-                            ARM_BUILTIN_CRC32H, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32W]
-    = add_builtin_function ("__builtin_arm_crc32w", si_ftype_si_si,
-                            ARM_BUILTIN_CRC32W, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CB]
-    = add_builtin_function ("__builtin_arm_crc32cb", si_ftype_si_qi,
-                            ARM_BUILTIN_CRC32CB, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CH]
-    = add_builtin_function ("__builtin_arm_crc32ch", si_ftype_si_hi,
-                            ARM_BUILTIN_CRC32CH, BUILT_IN_MD, NULL, NULL_TREE);
-  arm_builtin_decls[ARM_BUILTIN_CRC32CW]
-    = add_builtin_function ("__builtin_arm_crc32cw", si_ftype_si_si,
-                            ARM_BUILTIN_CRC32CW, BUILT_IN_MD, NULL, NULL_TREE);
-}
-
 void
 arm_init_builtins (void)
 {
@@ -1818,8 +1883,7 @@ arm_init_builtins (void)
       arm_init_crypto_builtins ();
     }
 
-  if (TARGET_CRC32)
-    arm_init_crc32_builtins ();
+  arm_init_acle_builtins ();
 
   if (TARGET_HARD_FLOAT)
     {
@@ -2030,15 +2094,15 @@ arm_expand_unop_builtin (enum insn_code icode,
 }
 
 typedef enum {
-  NEON_ARG_COPY_TO_REG,
-  NEON_ARG_CONSTANT,
-  NEON_ARG_LANE_INDEX,
-  NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX,
-  NEON_ARG_MEMORY,
-  NEON_ARG_STOP
+  ARG_BUILTIN_COPY_TO_REG,
+  ARG_BUILTIN_CONSTANT,
+  ARG_BUILTIN_LANE_INDEX,
+  ARG_BUILTIN_STRUCT_LOAD_STORE_LANE_INDEX,
+  ARG_BUILTIN_NEON_MEMORY,
+  ARG_BUILTIN_MEMORY,
+  ARG_BUILTIN_STOP
 } builtin_arg;
 
-#define NEON_MAX_BUILTIN_ARGS 5
 
 /* EXP is a pointer argument to a Neon load or store intrinsic.  Derive
    and return an expression for the accessed memory.
@@ -2088,9 +2152,9 @@ neon_dereference_pointer (tree exp, tree type, machine_mode mem_mode,
 		      build_int_cst (build_pointer_type (array_type), 0));
 }
 
-/* Expand a Neon builtin.  */
+/* Expand a builtin.  */
 static rtx
-arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
+arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
 		      int icode, int have_retval, tree exp,
 		      builtin_arg *args)
 {
@@ -2101,6 +2165,7 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
   machine_mode mode[SIMD_MAX_BUILTIN_ARGS];
   tree formals;
   int argc = 0;
+  rtx_insn * insn;
 
   if (have_retval
       && (!target
@@ -2114,14 +2179,14 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
     {
       builtin_arg thisarg = args[argc];
 
-      if (thisarg == NEON_ARG_STOP)
+      if (thisarg == ARG_BUILTIN_STOP)
 	break;
       else
 	{
 	  int opno = argc + have_retval;
 	  arg[argc] = CALL_EXPR_ARG (exp, argc);
 	  mode[argc] = insn_data[icode].operand[opno].mode;
-          if (thisarg == NEON_ARG_MEMORY)
+	  if (thisarg == ARG_BUILTIN_NEON_MEMORY)
             {
               machine_mode other_mode
 		= insn_data[icode].operand[1 - opno].mode;
@@ -2131,15 +2196,17 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 						    map_mode);
             }
 
-	  /* Use EXPAND_MEMORY for NEON_ARG_MEMORY to ensure a MEM_P
-	     be returned.  */
+	  /* Use EXPAND_MEMORY for ARG_BUILTIN_MEMORY and
+	     ARG_BUILTIN_NEON_MEMORY to ensure a MEM_P be returned.  */
 	  op[argc] = expand_expr (arg[argc], NULL_RTX, VOIDmode,
-				  (thisarg == NEON_ARG_MEMORY
+				  ((thisarg == ARG_BUILTIN_MEMORY
+				    || thisarg == ARG_BUILTIN_NEON_MEMORY)
 				   ? EXPAND_MEMORY : EXPAND_NORMAL));
 
 	  switch (thisarg)
 	    {
-	    case NEON_ARG_COPY_TO_REG:
+	    case ARG_BUILTIN_MEMORY:
+	    case ARG_BUILTIN_COPY_TO_REG:
 	      if (POINTER_TYPE_P (TREE_TYPE (arg[argc])))
 		op[argc] = convert_memory_address (Pmode, op[argc]);
 	      /*gcc_assert (GET_MODE (op[argc]) == mode[argc]); */
@@ -2148,7 +2215,7 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 		op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
 	      break;
 
-	    case NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX:
+	    case ARG_BUILTIN_STRUCT_LOAD_STORE_LANE_INDEX:
 	      gcc_assert (argc > 1);
 	      if (CONST_INT_P (op[argc]))
 		{
@@ -2160,7 +2227,7 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 		}
 	      goto constant_arg;
 
-	    case NEON_ARG_LANE_INDEX:
+	    case ARG_BUILTIN_LANE_INDEX:
 	      /* Previous argument must be a vector, which this indexes.  */
 	      gcc_assert (argc > 0);
 	      if (CONST_INT_P (op[argc]))
@@ -2171,7 +2238,7 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 	      /* If the lane index isn't a constant then the next
 		 case will error.  */
 	      /* Fall through.  */
-	    case NEON_ARG_CONSTANT:
+	    case ARG_BUILTIN_CONSTANT:
 constant_arg:
 	      if (!(*insn_data[icode].operand[opno].predicate)
 		  (op[argc], mode[argc]))
@@ -2182,7 +2249,7 @@ constant_arg:
 		}
 	      break;
 
-            case NEON_ARG_MEMORY:
+	      case ARG_BUILTIN_NEON_MEMORY:
 	      /* Check if expand failed.  */
 	      if (op[argc] == const0_rtx)
 		return 0;
@@ -2199,7 +2266,7 @@ constant_arg:
 			     copy_to_mode_reg (Pmode, XEXP (op[argc], 0))));
               break;
 
-	    case NEON_ARG_STOP:
+	    case ARG_BUILTIN_STOP:
 	      gcc_unreachable ();
 	    }
 
@@ -2230,6 +2297,10 @@ constant_arg:
 	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4]);
 	break;
 
+      case 6:
+	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4], op[5]);
+	break;
+
       default:
 	gcc_unreachable ();
       }
@@ -2256,6 +2327,10 @@ constant_arg:
 	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4]);
 	break;
 
+      case 6:
+	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4], op[5]);
+	break;
+
       default:
 	gcc_unreachable ();
       }
@@ -2263,26 +2338,39 @@ constant_arg:
   if (!pat)
     return 0;
 
+  /* Check whether our current target implements the pattern chosen for this
+     builtin and error out if not.  */
+  start_sequence ();
   emit_insn (pat);
+  insn = get_insns ();
+  end_sequence ();
+
+  if (recog_memoized (insn) < 0)
+    error ("this builtin is not supported for this target");
+  else
+    emit_insn (insn);
 
   return target;
 }
 
-/* Expand a neon builtin.  This is also used for vfp builtins, which behave in
-   the same way.  These builtins are "special" because they don't have symbolic
-   constants defined per-instruction or per instruction-variant.  Instead, the
-   required info is looked up in the NEON_BUILTIN_DATA record that is passed
-   into the function.  */
+/* Expand a builtin.  These builtins are "special" because they don't have
+   symbolic constants defined per-instruction or per instruction-variant.
+   Instead, the required info is looked up in the ARM_BUILTIN_DATA record that
+   is passed into the function.  */
 
 static rtx
-arm_expand_neon_builtin_1 (int fcode, tree exp, rtx target,
-			   neon_builtin_datum *d)
+arm_expand_builtin_1 (int fcode, tree exp, rtx target,
+			   arm_builtin_datum *d)
 {
   enum insn_code icode = d->code;
   builtin_arg args[SIMD_MAX_BUILTIN_ARGS + 1];
   int num_args = insn_data[d->code].n_operands;
   int is_void = 0;
   int k;
+  bool neon = false;
+
+  if (IN_RANGE (fcode, ARM_BUILTIN_VFP_BASE, ARM_BUILTIN_ACLE_BASE - 1))
+    neon = true;
 
   is_void = !!(d->qualifiers[0] & qualifier_void);
 
@@ -2302,11 +2390,11 @@ arm_expand_neon_builtin_1 (int fcode, tree exp, rtx target,
       int expr_args_k = k - 1;
 
       if (d->qualifiers[qualifiers_k] & qualifier_lane_index)
-	args[k] = NEON_ARG_LANE_INDEX;
+	args[k] = ARG_BUILTIN_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_struct_load_store_lane_index)
-	args[k] = NEON_ARG_STRUCT_LOAD_STORE_LANE_INDEX;
+	args[k] = ARG_BUILTIN_STRUCT_LOAD_STORE_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_immediate)
-	args[k] = NEON_ARG_CONSTANT;
+	args[k] = ARG_BUILTIN_CONSTANT;
       else if (d->qualifiers[qualifiers_k] & qualifier_maybe_immediate)
 	{
 	  rtx arg
@@ -2317,20 +2405,39 @@ arm_expand_neon_builtin_1 (int fcode, tree exp, rtx target,
 	    (CONST_INT_P (arg)
 	     && (*insn_data[icode].operand[operands_k].predicate)
 	     (arg, insn_data[icode].operand[operands_k].mode));
-	  args[k] = op_const_int_p ? NEON_ARG_CONSTANT : NEON_ARG_COPY_TO_REG;
+	  args[k] = op_const_int_p ? ARG_BUILTIN_CONSTANT : ARG_BUILTIN_COPY_TO_REG;
 	}
       else if (d->qualifiers[qualifiers_k] & qualifier_pointer)
-	args[k] = NEON_ARG_MEMORY;
+	{
+	  if (neon)
+	    args[k] = ARG_BUILTIN_NEON_MEMORY;
+	  else
+	    args[k] = ARG_BUILTIN_MEMORY;
+	}
       else
-	args[k] = NEON_ARG_COPY_TO_REG;
+	args[k] = ARG_BUILTIN_COPY_TO_REG;
     }
-  args[k] = NEON_ARG_STOP;
+  args[k] = ARG_BUILTIN_STOP;
 
-  /* The interface to arm_expand_neon_args expects a 0 if
+  /* The interface to arm_expand_builtin_args expects a 0 if
      the function is void, and a 1 if it is not.  */
-  return arm_expand_neon_args
+  return arm_expand_builtin_args
     (target, d->mode, fcode, icode, !is_void, exp,
      &args[1]);
+}
+
+/* Expand an ACLE builtin, i.e. those registered only if their respective
+   target constraints are met.  This check happens within
+   arm_expand_builtin_args.  */
+
+static rtx
+arm_expand_acle_builtin (int fcode, tree exp, rtx target)
+{
+
+  arm_builtin_datum *d
+    = &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START];
+
+  return arm_expand_builtin_1 (fcode, exp, target, d);
 }
 
 /* Expand a Neon builtin, i.e. those registered only if TARGET_NEON holds.
@@ -2366,10 +2473,10 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
       return const0_rtx;
     }
 
-  neon_builtin_datum *d
+  arm_builtin_datum *d
     = &neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
 
-  return arm_expand_neon_builtin_1 (fcode, exp, target, d);
+  return arm_expand_builtin_1 (fcode, exp, target, d);
 }
 
 /* Expand a VFP builtin.  These builtins are treated like
@@ -2387,10 +2494,10 @@ arm_expand_vfp_builtin (int fcode, tree exp, rtx target)
       return const0_rtx;
     }
 
-  neon_builtin_datum *d
+  arm_builtin_datum *d
     = &vfp_builtin_data[fcode - ARM_BUILTIN_VFP_PATTERN_START];
 
-  return arm_expand_neon_builtin_1 (fcode, exp, target, d);
+  return arm_expand_builtin_1 (fcode, exp, target, d);
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -2426,6 +2533,9 @@ arm_expand_builtin (tree exp,
   int selector;
   int mask;
   int imm;
+
+  if (fcode >= ARM_BUILTIN_ACLE_BASE)
+    return arm_expand_acle_builtin (fcode, exp, target);
 
   if (fcode >= ARM_BUILTIN_NEON_BASE)
     return arm_expand_neon_builtin (fcode, exp, target);

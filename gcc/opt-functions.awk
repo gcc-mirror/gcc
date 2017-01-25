@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2016 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2017 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -61,10 +61,10 @@ function opt_args(name, flags)
 	if (flags !~ " " name "\\(")
 		return ""
 	sub(".* " name "\\(", "", flags)
-	if (flags ~ "^{")
+	if (flags ~ "^[{]")
 	{
-		sub ("^{", "", flags)
-		sub("}\\).*", "", flags)
+		sub ("^[{]", "", flags)
+		sub ("}\\).*", "", flags)
 	}
 	else
 		sub("\\).*", "", flags)
@@ -105,7 +105,7 @@ function switch_flags (flags)
 	  test_flag("Undocumented", flags,  " | CL_UNDOCUMENTED") \
 	  test_flag("NoDWARFRecord", flags,  " | CL_NO_DWARF_RECORD") \
 	  test_flag("Warning", flags,  " | CL_WARNING") \
-	  test_flag("Optimization", flags,  " | CL_OPTIMIZATION")
+	  test_flag("(Optimization|PerFunction)", flags,  " | CL_OPTIMIZATION")
 	sub( "^0 \\| ", "", result )
 	return result
 }

@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::uniform_inside_sphere_distribution<2> u(1.5);
   VERIFY( u.radius() == 1.5 );
 
@@ -36,9 +34,19 @@ test01()
   VERIFY( v.radius() == 3.0 );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type
+    = __gnu_cxx::uniform_inside_sphere_distribution<2>::param_type;
+  const param_type p(1.5);
+  __gnu_cxx::uniform_inside_sphere_distribution<2> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

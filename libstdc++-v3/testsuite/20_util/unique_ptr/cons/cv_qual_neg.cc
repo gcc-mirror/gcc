@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ test07()
   std::unique_ptr<const A[]> cA3(p); // { dg-error "no matching function" }
   std::unique_ptr<volatile A[]> vA3(p); // { dg-error "no matching function" }
   std::unique_ptr<const volatile A[]> cvA3(p); // { dg-error "no matching function" }
-  // { dg-error "no type" "" { target *-*-* } 448 }
+  // { dg-error "no type" "" { target *-*-* } 467 }
 }
 
 template<typename T>

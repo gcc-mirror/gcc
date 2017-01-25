@@ -602,6 +602,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 WARN_FLAGS
 OPTIMIZE_CXXFLAGS
 TOPLEVEL_INCLUDES
@@ -642,7 +643,7 @@ ENABLE_FILESYSTEM_TS_FALSE
 ENABLE_FILESYSTEM_TS_TRUE
 baseline_subdir_switch
 baseline_dir
-HWCAP_FLAGS
+HWCAP_CFLAGS
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 LONG_DOUBLE_COMPAT_FLAGS
@@ -897,6 +898,7 @@ enable_libstdcxx_threads
 enable_libstdcxx_filesystem_ts
 with_gxx_include_dir
 enable_version_specific_runtime_libs
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1616,6 +1618,8 @@ Optional Packages:
                           set the std::string ABI to use by default
   --with-gxx-include-dir=DIR
                           installation directory for include files
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -11597,7 +11601,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11600 "configure"
+#line 11604 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11703,7 +11707,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11706 "configure"
+#line 11710 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15389,7 +15393,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15392 "configure"
+#line 15396 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15424,7 +15428,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15427 "configure"
+#line 15431 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15459,7 +15463,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15462 "configure"
+#line 15466 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15495,7 +15499,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15498 "configure"
+#line 15502 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15576,7 +15580,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15579 "configure"
+#line 15583 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15618,7 +15622,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15621 "configure"
+#line 15625 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15652,7 +15656,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15655 "configure"
+#line 15659 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -20079,12 +20083,14 @@ typedef double_t  my_double_t;
 		  lgamma(0.0);
 		  lgammaf(0.0f);
 		  lgammal(0.0l);
+		  #ifndef __APPLE__ /* see below */
 		  llrint(0.0);
 		  llrintf(0.0f);
 		  llrintl(0.0l);
 		  llround(0.0);
 		  llroundf(0.0f);
 		  llroundl(0.0l);
+		  #endif
 		  log1p(0.0);
 		  log1pf(0.0f);
 		  log1pl(0.0l);
@@ -20156,6 +20162,50 @@ $as_echo "$glibcxx_cv_c99_math_tr1" >&6; }
 
 $as_echo "#define _GLIBCXX_USE_C99_MATH_TR1 1" >>confdefs.h
 
+
+    case "${target_os}" in
+      darwin*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 rounding functions in <math.h>" >&5
+$as_echo_n "checking for ISO C99 rounding functions in <math.h>... " >&6; }
+        if test "${glibcxx_cv_c99_math_llround+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+int
+main ()
+{
+llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_math_llround=yes
+else
+  glibcxx_cv_c99_math_llround=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_llround" >&5
+$as_echo "$glibcxx_cv_c99_math_llround" >&6; }
+        ;;
+    esac
+    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+
+$as_echo "#define _GLIBCXX_NO_C99_ROUNDING_FUNCS 1" >>confdefs.h
+
+    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
@@ -28031,12 +28081,14 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
   fi
 
-  for ac_func in __cxa_thread_atexit_impl
+  for ac_func in __cxa_thread_atexit_impl __cxa_thread_atexit
 do :
-  ac_fn_c_check_func "$LINENO" "__cxa_thread_atexit_impl" "ac_cv_func___cxa_thread_atexit_impl"
-if test "x$ac_cv_func___cxa_thread_atexit_impl" = x""yes; then :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE___CXA_THREAD_ATEXIT_IMPL 1
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -53263,7 +53315,24 @@ $as_echo "$ac_ld_relro" >&6; }
       $as_echo "#define HAVE_ISNANL 1" >>confdefs.h
 
     fi
+    for ac_func in __cxa_thread_atexit
+do :
+  ac_fn_c_check_func "$LINENO" "__cxa_thread_atexit" "ac_cv_func___cxa_thread_atexit"
+if test "x$ac_cv_func___cxa_thread_atexit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE___CXA_THREAD_ATEXIT 1
+_ACEOF
+
+fi
+done
+
     ;;
+
+  *-fuchsia*)
+    SECTION_FLAGS='-ffunction-sections -fdata-sections'
+
+    ;;
+
   *-hpux*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
 
@@ -79517,7 +79586,7 @@ esac
 
 # Check if assembler supports disabling hardware capability support.
 
-  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
+  test -z "$HWCAP_CFLAGS" && HWCAP_CFLAGS=''
 
   # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
   # with a different meaning.
@@ -79546,7 +79615,7 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
       if test "$ac_hwcap_flags" = "yes"; then
-	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
+	HWCAP_CFLAGS="-Wa,-nH $HWCAP_CFLAGS"
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_flags" >&5
 $as_echo "$ac_hwcap_flags" >&6; }
@@ -80638,7 +80707,25 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   glibcxx_cv_size_t_mangling=t
 else
+
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern __int20 unsigned x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=u6uint20
+else
   glibcxx_cv_size_t_mangling=x
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -80662,6 +80749,55 @@ cat >>confdefs.h <<_ACEOF
 #define _GLIBCXX_MANGLE_SIZE_T $glibcxx_cv_size_t_mangling
 _ACEOF
 
+
+
+# Check which release added std::exception_ptr for the target
+
+  if test $enable_symvers != no; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for first version to support std::exception_ptr" >&5
+$as_echo_n "checking for first version to support std::exception_ptr... " >&6; }
+    case ${target} in
+      aarch64-*-* | alpha-*-* | hppa*-*-* | i?86-*-* | x86_64-*-* | \
+      m68k-*-* | powerpc*-*-* | s390*-*-* | *-*-solaris* )
+        ac_exception_ptr_since_gcc46=yes
+        ;;
+      *)
+        # If the value of this macro changes then we will need to hardcode
+        # yes/no here for additional targets based on the original value.
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+          #if __GCC_ATOMIC_INT_LOCK_FREE <= 1
+          # error atomic int not always lock free
+          #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_exception_ptr_since_gcc46=yes
+else
+  ac_exception_ptr_since_gcc46=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        ;;
+    esac
+    if test x"$ac_exception_ptr_since_gcc46" = x"yes" ; then
+
+$as_echo "#define HAVE_EXCEPTION_PTR_SINCE_GCC46 1" >>confdefs.h
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: 4.6.0" >&5
+$as_echo "4.6.0" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: 7.1.0" >&5
+$as_echo "7.1.0" >&6; }
+    fi
+  fi
 
 
 # Define documentation rules conditionally.
@@ -81510,6 +81646,21 @@ $as_echo "$gxx_include_dir" >&6; }
 
 
   WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
+
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
 
 
 

@@ -2060,7 +2060,7 @@ package body System.OS_Lib is
       function Readlink
         (Path   : System.Address;
          Buf    : System.Address;
-         Bufsiz : Integer) return Integer;
+         Bufsiz : size_t) return Integer;
       pragma Import (C, Readlink, "__gnat_readlink");
 
       function To_Canonical_File_Spec

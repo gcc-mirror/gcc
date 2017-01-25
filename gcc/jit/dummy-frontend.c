@@ -1,5 +1,5 @@
 /* jit.c -- Dummy "frontend" for use during JIT-compilation.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -207,14 +207,6 @@ jit_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
   return NULL;
 }
 
-static tree
-jit_langhook_type_for_size (unsigned int bits ATTRIBUTE_UNUSED,
-			    int unsignedp ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-  return NULL;
-}
-
 /* Record a builtin function.  We just ignore builtin functions.  */
 
 static tree
@@ -253,9 +245,6 @@ jit_langhook_getdecls (void)
 
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE	jit_langhook_type_for_mode
-
-#undef LANG_HOOKS_TYPE_FOR_SIZE
-#define LANG_HOOKS_TYPE_FOR_SIZE	jit_langhook_type_for_size
 
 #undef LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION	jit_langhook_builtin_function

@@ -334,6 +334,7 @@ package body Exp_Dbug is
 
       procedure Enable_If_Packed_Array (N : Node_Id) is
          T : constant Entity_Id := Underlying_Type (Etype (N));
+
       begin
          Enable :=
            Enable or else (Ekind (T) in Array_Kind
@@ -378,7 +379,6 @@ package body Exp_Dbug is
       Ren := Nam;
       loop
          case Nkind (Ren) is
-
             when N_Identifier =>
                exit;
 
@@ -392,14 +392,18 @@ package body Exp_Dbug is
             when N_Selected_Component =>
                declare
                   First_Bit : constant Uint :=
-                     Normalized_First_Bit (Entity (Selector_Name (Ren)));
+                                Normalized_First_Bit
+                                  (Entity (Selector_Name (Ren)));
+
                begin
                   Enable :=
-                    (Enable
-                     or else Is_Packed (Underlying_Type (Etype (Prefix (Ren))))
-                     or else (First_Bit /= No_Uint
-                              and then First_Bit /= Uint_0));
+                    Enable
+                      or else Is_Packed
+                                (Underlying_Type (Etype (Prefix (Ren))))
+                      or else (First_Bit /= No_Uint
+                                and then First_Bit /= Uint_0);
                end;
+
                Prepend_String_To_Buffer
                  (Get_Name_String (Chars (Selector_Name (Ren))));
                Prepend_String_To_Buffer ("XR");
@@ -1453,7 +1457,7 @@ package body Exp_Dbug is
       --  Qualification needed for enumeration literals when generating C code
       --  (to simplify their management in the backend).
 
-      elsif Generate_C_Code
+      elsif Modify_Tree_For_C
         and then Ekind (Ent) = E_Enumeration_Literal
         and then Scope (Ultimate_Alias (Ent)) /= Standard_Standard
       then

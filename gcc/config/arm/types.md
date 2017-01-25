@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2017 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -539,6 +539,10 @@
 ; crypto_sha1_slow
 ; crypto_sha256_fast
 ; crypto_sha256_slow
+;
+; The classification below is for coprocessor instructions
+;
+; coproc
 
 (define_attr "type"
  "adc_imm,\
@@ -1073,7 +1077,8 @@
   crypto_sha1_fast,\
   crypto_sha1_slow,\
   crypto_sha256_fast,\
-  crypto_sha256_slow"
+  crypto_sha256_slow,\
+  coproc"
    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?

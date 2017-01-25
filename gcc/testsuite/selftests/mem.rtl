@@ -1,0 +1,9 @@
+(function "test_mem"
+  (insn-chain
+    (block 2
+      ;; Various nonsensical values, to exercise the parser:
+      (cinsn 1 (set (mem:SI (reg:SI <10>) [42 i+17 S8 A128 AS5]) (reg:SI <1>)))
+      (cinsn 2 (set (mem:SI (reg:SI <11>) [43 i+18 S9 AS6]) (reg:SI <2>)))
+    ) ;; block 6
+  ) ;; insn-chain
+) ;; function

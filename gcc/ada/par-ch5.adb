@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -342,8 +342,9 @@ package body Ch5 is
 
                --  Case of end or EOF
 
-               when Tok_End | Tok_EOF =>
-
+               when Tok_End
+                  | Tok_EOF
+               =>
                   --  These tokens always terminate the statement sequence
 
                   Test_Statement_Required;
@@ -459,13 +460,14 @@ package body Ch5 is
 
                --  Case of WHEN (error because we are not in a case)
 
-               when Tok_When | Tok_Others =>
-
+               when Tok_Others
+                  | Tok_When
+               =>
                   --  Terminate if Whtm set or if the WHEN is to the left of
                   --  the expected column of the end for this sequence.
 
                   if SS_Flags.Whtm
-                     or else Start_Column < Scope.Table (Scope.Last).Ecol
+                    or else Start_Column < Scope.Table (Scope.Last).Ecol
                   then
                      Test_Statement_Required;
                      exit;
@@ -948,7 +950,6 @@ package body Ch5 is
                --  handling of a bad statement.
 
                when others =>
-
                   if Token in Token_Class_Declk then
                      Junk_Declaration;
 
@@ -972,11 +973,9 @@ package body Ch5 is
          end;
 
          exit when SS_Flags.Unco;
-
       end loop;
 
       return Statement_List;
-
    end P_Sequence_Of_Statements;
 
    --------------------

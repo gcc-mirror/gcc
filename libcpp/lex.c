@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -3089,18 +3089,27 @@ _cpp_lex_direct (cpp_reader *pfile)
       break;
     }
 
-  source_range tok_range;
-  tok_range.m_start = result->src_loc;
-  if (result->src_loc >= RESERVED_LOCATION_COUNT)
-    tok_range.m_finish
-      = linemap_position_for_column (pfile->line_table,
-				     CPP_BUF_COLUMN (buffer, buffer->cur));
-  else
-    tok_range.m_finish = tok_range.m_start;
+  /* Potentially convert the location of the token to a range.  */
+  if (result->src_loc >= RESERVED_LOCATION_COUNT
+      && result->type != CPP_EOF)
+    {
+      /* Ensure that any line notes are processed, so that we have the
+	 correct physical line/column for the end-point of the token even
+	 when a logical line is split via one or more backslashes.  */
+      if (buffer->cur >= buffer->notes[buffer->cur_note].pos
+	  && !pfile->overlaid_buffer)
+	_cpp_process_line_notes (pfile, false);
 
-  result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
-					   result->src_loc,
-					   tok_range, NULL);
+      source_range tok_range;
+      tok_range.m_start = result->src_loc;
+      tok_range.m_finish
+	= linemap_position_for_column (pfile->line_table,
+				       CPP_BUF_COLUMN (buffer, buffer->cur));
+
+      result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
+					       result->src_loc,
+					       tok_range, NULL);
+    }
 
   return result;
 }

@@ -1,5 +1,5 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -486,12 +486,13 @@ format_lex (void)
 		  if (c == delim)
 		    {
 		      c = next_char (NONSTRING);
-
 		      if (c == '\0')
 			{
 			  token = FMT_END;
 			  break;
 			}
+		      if (c == delim)
+			continue;
 		      unget_char ();
 		      break;
 		    }

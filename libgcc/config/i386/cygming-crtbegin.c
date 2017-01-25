@@ -1,5 +1,5 @@
 /* crtbegin object for windows32 targets.
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
    Contributed by Danny Smith <dannysmith@users.sourceforge.net>
 
@@ -40,10 +40,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef LIBGCC_SONAME
 #define LIBGCC_SONAME "libgcc_s.dll"
-#endif
-
-#ifndef LIBGCJ_SONAME
-#define LIBGCJ_SONAME "libgcj_s.dll"
 #endif
 
 #if DWARF2_UNWIND_INFO

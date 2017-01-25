@@ -6,7 +6,7 @@
 // Otherwise we may get *multiple* errors.
 #undef _GLIBCXX_PARALLEL
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,7 @@
 
 #include <vector>
 
-// { dg-error "multiple inlined namespaces" "" { target *-*-* } 350 }
+// { dg-error "multiple inlined namespaces" "" { target *-*-* } 0 }
 
 // "template argument 1 is invalid"
 // { dg-prune-output "tuple:993" }

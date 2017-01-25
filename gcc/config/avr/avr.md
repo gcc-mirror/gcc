@@ -1,6 +1,6 @@
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+;;   Copyright (C) 1998-2017 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 
 ;; This file is part of GCC.
@@ -6284,7 +6284,7 @@
   [(set_attr "length" "2")
    (set_attr "cc" "none")])
 
-;; Swap Bytes (change byte-endianess)
+;; Swap Bytes (change byte-endianness)
 
 (define_expand "bswapsi2"
   [(set (reg:SI 22)

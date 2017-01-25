@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2016 Free Software Foundation, Inc.
+// Copyright (C) 2002-2017 Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -30,6 +30,7 @@
 #include <new>
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
+#include <bits/atomic_lockfree_defines.h>
 #if defined(__GTHREADS) && defined(__GTHREAD_HAS_COND) \
   && (ATOMIC_INT_LOCK_FREE > 1) && defined(_GLIBCXX_HAVE_LINUX_FUTEX)
 # include <climits>

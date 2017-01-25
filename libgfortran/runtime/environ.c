@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -25,7 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 #include <string.h>
-#include <stdlib.h>
+#include <strings.h>
 #include <ctype.h>
 
 #ifdef HAVE_UNISTD_H

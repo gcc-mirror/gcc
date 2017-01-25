@@ -1,5 +1,5 @@
 ;; Unspec defintions.
-;; Copyright (C) 2012-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -150,6 +150,24 @@
   VUNSPEC_GET_FPSCR	; Represent fetch of FPSCR content.
   VUNSPEC_SET_FPSCR	; Represent assign of FPSCR content.
   VUNSPEC_PROBE_STACK_RANGE ; Represent stack range probing.
+  VUNSPEC_CDP		; Represent the coprocessor cdp instruction.
+  VUNSPEC_CDP2		; Represent the coprocessor cdp2 instruction.
+  VUNSPEC_LDC		; Represent the coprocessor ldc instruction.
+  VUNSPEC_LDC2		; Represent the coprocessor ldc2 instruction.
+  VUNSPEC_LDCL		; Represent the coprocessor ldcl instruction.
+  VUNSPEC_LDC2L		; Represent the coprocessor ldc2l instruction.
+  VUNSPEC_STC		; Represent the coprocessor stc instruction.
+  VUNSPEC_STC2		; Represent the coprocessor stc2 instruction.
+  VUNSPEC_STCL		; Represent the coprocessor stcl instruction.
+  VUNSPEC_STC2L		; Represent the coprocessor stc2l instruction.
+  VUNSPEC_MCR		; Represent the coprocessor mcr instruction.
+  VUNSPEC_MCR2		; Represent the coprocessor mcr2 instruction.
+  VUNSPEC_MRC		; Represent the coprocessor mrc instruction.
+  VUNSPEC_MRC2		; Represent the coprocessor mrc2 instruction.
+  VUNSPEC_MCRR		; Represent the coprocessor mcrr instruction.
+  VUNSPEC_MCRR2		; Represent the coprocessor mcrr2 instruction.
+  VUNSPEC_MRRC		; Represent the coprocessor mrrc instruction.
+  VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
 ])
 
 ;; Enumerators for NEON unspecs.

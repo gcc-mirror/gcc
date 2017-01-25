@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -250,6 +250,16 @@ cp_type_dwarf_attribute (const_tree type, int attr)
     }
 
   return -1;
+}
+
+/* Return the unit size of TYPE without reusable tail padding.  */
+
+tree
+cp_unit_size_without_reusable_padding (tree type)
+{
+  if (CLASS_TYPE_P (type))
+    return CLASSTYPE_SIZE_UNIT (type);
+  return TYPE_SIZE_UNIT (type);
 }
 
 /* Stubs to keep c-opts.c happy.  */

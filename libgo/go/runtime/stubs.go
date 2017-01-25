@@ -62,14 +62,24 @@ func badsystemstack() {
 	throw("systemstack called from unexpected goroutine")
 }
 
-// memclr clears n bytes starting at ptr.
+// memclrNoHeapPointers clears n bytes starting at ptr.
+//
+// Usually you should use typedmemclr. memclrNoHeapPointers should be
+// used only when the caller knows that *ptr contains no heap pointers
+// because either:
+//
+// 1. *ptr is initialized memory and its type is pointer-free.
+//
+// 2. *ptr is uninitialized memory (e.g., memory that's being reused
+//    for a new allocation) and hence contains only "junk".
+//
 // in memclr_*.s
 //go:noescape
-func memclr(ptr unsafe.Pointer, n uintptr)
+func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
-//go:linkname reflect_memclr reflect.memclr
-func reflect_memclr(ptr unsafe.Pointer, n uintptr) {
-	memclr(ptr, n)
+//go:linkname reflect_memclrNoHeapPointers reflect.memclrNoHeapPointers
+func reflect_memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr) {
+	memclrNoHeapPointers(ptr, n)
 }
 
 // memmove copies n bytes from "from" to "to".
@@ -89,7 +99,10 @@ func memcmp(a, b unsafe.Pointer, size uintptr) int32
 var hashLoad = loadFactor
 
 // in asm_*.s
-func fastrand1() uint32
+func fastrand() uint32
+
+//go:linkname sync_fastrand sync.fastrand
+func sync_fastrand() uint32 { return fastrand() }
 
 // in asm_*.s
 //go:noescape
@@ -98,7 +111,7 @@ func memequal(a, b unsafe.Pointer, size uintptr) bool
 // noescape hides a pointer from escape analysis.  noescape is
 // the identity function but escape analysis doesn't think the
 // output depends on the input.  noescape is inlined and currently
-// compiles down to a single xor instruction.
+// compiles down to zero instructions.
 // USE CAREFULLY!
 //go:nosplit
 func noescape(p unsafe.Pointer) unsafe.Pointer {
@@ -106,6 +119,7 @@ func noescape(p unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(x ^ 0)
 }
 
+//extern mincore
 func mincore(addr unsafe.Pointer, n uintptr, dst *byte) int32
 
 //go:noescape
@@ -219,6 +233,18 @@ func checkASM() bool {
 	return true
 }
 
+func eqstring(x, y string) bool {
+	a := stringStructOf(&x)
+	b := stringStructOf(&y)
+	if a.len != b.len {
+		return false
+	}
+	if a.str == b.str {
+		return true
+	}
+	return memequal(a.str, b.str, uintptr(a.len))
+}
+
 // For gccgo this is in the C code.
 func osyield()
 
@@ -234,18 +260,22 @@ func newobject(*_type) unsafe.Pointer
 // For gccgo unless and until we port malloc.go.
 func newarray(*_type, int) unsafe.Pointer
 
-// funcPC returns the entry PC of the function f.
-// It assumes that f is a func value. Otherwise the behavior is undefined.
-// For gccgo here unless and until we port proc.go.
-// Note that this differs from the gc implementation; the gc implementation
-// adds sys.PtrSize to the address of the interface value, but GCC's
-// alias analysis decides that that can not be a reference to the second
-// field of the interface, and in some cases it drops the initialization
-// of the second field as a dead store.
-//go:nosplit
-func funcPC(f interface{}) uintptr {
-	i := (*iface)(unsafe.Pointer(&f))
-	return **(**uintptr)(i.data)
+// For gccgo, to communicate from the C code to the Go code.
+//go:linkname setIsCgo runtime.setIsCgo
+func setIsCgo() {
+	iscgo = true
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname makeMainInitDone runtime.makeMainInitDone
+func makeMainInitDone() {
+	main_init_done = make(chan bool)
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname closeMainInitDone runtime.closeMainInitDone
+func closeMainInitDone() {
+	close(main_init_done)
 }
 
 // For gccgo, to communicate from the C code to the Go code.
@@ -254,11 +284,36 @@ func setCpuidECX(v uint32) {
 	cpuid_ecx = v
 }
 
+// For gccgo, to communicate from the C code to the Go code.
+//go:linkname setSupportAES runtime.setSupportAES
+func setSupportAES(v bool) {
+	support_aes = v
+}
+
 // typedmemmove copies a typed value.
 // For gccgo for now.
+//go:linkname typedmemmove runtime.typedmemmove
 //go:nosplit
 func typedmemmove(typ *_type, dst, src unsafe.Pointer) {
 	memmove(dst, src, typ.size)
+}
+
+// Temporary for gccgo until we port mbarrier.go.
+//go:linkname reflect_typedmemmove reflect.typedmemmove
+func reflect_typedmemmove(typ *_type, dst, src unsafe.Pointer) {
+	typedmemmove(typ, dst, src)
+}
+
+// Temporary for gccgo until we port mbarrier.go.
+//go:nosplit
+func typedmemclr(typ *_type, ptr unsafe.Pointer) {
+	memclrNoHeapPointers(ptr, typ.size)
+}
+
+// Temporary for gccgo until we port mbarrier.go.
+//go:nosplit
+func memclrHasPointers(ptr unsafe.Pointer, n uintptr) {
+	memclrNoHeapPointers(ptr, n)
 }
 
 // Temporary for gccgo until we port mbarrier.go.
@@ -275,11 +330,18 @@ func typedslicecopy(typ *_type, dst, src slice) int {
 	return n
 }
 
+// Temporary for gccgo until we port mbarrier.go.
+//go:linkname reflect_typedslicecopy reflect.typedslicecopy
+func reflect_typedslicecopy(elemType *_type, dst, src slice) int {
+	return typedslicecopy(elemType, dst, src)
+}
+
 // Here for gccgo until we port malloc.go.
 const (
 	_64bit              = 1 << (^uintptr(0) >> 63) / 2
 	_MHeapMap_TotalBits = (_64bit*sys.GoosWindows)*35 + (_64bit*(1-sys.GoosWindows)*(1-sys.GoosDarwin*sys.GoarchArm64))*39 + sys.GoosDarwin*sys.GoarchArm64*31 + (1-_64bit)*32
 	_MaxMem             = uintptr(1<<_MHeapMap_TotalBits - 1)
+	_MaxGcproc          = 32
 )
 
 // Here for gccgo until we port malloc.go.
@@ -299,6 +361,9 @@ var writeBarrier struct {
 	needed  bool   // whether we need a write barrier for current GC phase
 	cgo     bool   // whether we need a write barrier for a cgo check
 	alignme uint64 // guarantee alignment so that compiler can use a 32 or 64-bit load
+}
+
+func queueRescan(*g) {
 }
 
 // Here for gccgo until we port atomic_pointer.go and mgc.go.
@@ -323,60 +388,9 @@ func entersyscallblock(int32)
 func exitsyscall(int32)
 func gopark(func(*g, unsafe.Pointer) bool, unsafe.Pointer, string, byte, int)
 func goparkunlock(*mutex, string, byte, int)
-func goready(*g, int)
-
-// Temporary hack for gccgo until we port proc.go.
-//go:nosplit
-func acquireSudog() *sudog {
-	mp := acquirem()
-	pp := mp.p.ptr()
-	if len(pp.sudogcache) == 0 {
-		pp.sudogcache = append(pp.sudogcache, new(sudog))
-	}
-	n := len(pp.sudogcache)
-	s := pp.sudogcache[n-1]
-	pp.sudogcache[n-1] = nil
-	pp.sudogcache = pp.sudogcache[:n-1]
-	if s.elem != nil {
-		throw("acquireSudog: found s.elem != nil in cache")
-	}
-	releasem(mp)
-	return s
-}
-
-// Temporary hack for gccgo until we port proc.go.
-//go:nosplit
-func releaseSudog(s *sudog) {
-	if s.elem != nil {
-		throw("runtime: sudog with non-nil elem")
-	}
-	if s.selectdone != nil {
-		throw("runtime: sudog with non-nil selectdone")
-	}
-	if s.next != nil {
-		throw("runtime: sudog with non-nil next")
-	}
-	if s.prev != nil {
-		throw("runtime: sudog with non-nil prev")
-	}
-	if s.waitlink != nil {
-		throw("runtime: sudog with non-nil waitlink")
-	}
-	if s.c != nil {
-		throw("runtime: sudog with non-nil c")
-	}
-	gp := getg()
-	if gp.param != nil {
-		throw("runtime: releaseSudog with non-nil gp.param")
-	}
-	mp := acquirem() // avoid rescheduling to another P
-	pp := mp.p.ptr()
-	pp.sudogcache = append(pp.sudogcache, s)
-	releasem(mp)
-}
 
 // Temporary hack for gccgo until we port the garbage collector.
-func typeBitsBulkBarrier(typ *_type, p, size uintptr) {}
+func typeBitsBulkBarrier(typ *_type, dst, src, size uintptr) {}
 
 // Here for gccgo until we port msize.go.
 func roundupsize(uintptr) uintptr
@@ -384,42 +398,16 @@ func roundupsize(uintptr) uintptr
 // Here for gccgo until we port mgc.go.
 func GC()
 
-// Here for gccgo until we port proc.go.
-var worldsema uint32 = 1
-
-func stopTheWorldWithSema()
-func startTheWorldWithSema()
-
 // For gccgo to call from C code.
 //go:linkname acquireWorldsema runtime.acquireWorldsema
 func acquireWorldsema() {
-	semacquire(&worldsema, false)
+	semacquire(&worldsema, 0)
 }
 
 // For gccgo to call from C code.
 //go:linkname releaseWorldsema runtime.releaseWorldsema
 func releaseWorldsema() {
 	semrelease(&worldsema)
-}
-
-// Here for gccgo until we port proc.go.
-func stopTheWorld(reason string) {
-	semacquire(&worldsema, false)
-	getg().m.preemptoff = reason
-	getg().m.gcing = 1
-	systemstack(stopTheWorldWithSema)
-}
-
-// Here for gccgo until we port proc.go.
-func startTheWorld() {
-	getg().m.gcing = 0
-	getg().m.locks++
-	systemstack(startTheWorldWithSema)
-	// worldsema must be held over startTheWorldWithSema to ensure
-	// gomaxprocs cannot change while worldsema is held.
-	semrelease(&worldsema)
-	getg().m.preemptoff = ""
-	getg().m.locks--
 }
 
 // For gccgo to call from C code, so that the C code and the Go code
@@ -434,6 +422,7 @@ func setcpuprofilerate_m(hz int32)
 
 // Temporary for gccgo until we port mem_GOOS.go.
 func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer
+func sysFree(v unsafe.Pointer, n uintptr, sysStat *uint64)
 
 // Temporary for gccgo until we port proc.go, so that the C signal
 // handler can call into cpuprof.
@@ -446,13 +435,8 @@ func cpuprofAdd(stk []uintptr) {
 func Breakpoint()
 func LockOSThread()
 func UnlockOSThread()
-func allm() *m
-func allgs() []*g
-
-//go:nosplit
-func readgstatus(gp *g) uint32 {
-	return atomic.Load(&gp.atomicstatus)
-}
+func lockOSThread()
+func unlockOSThread()
 
 // Temporary for gccgo until we port malloc.go
 func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
@@ -460,23 +444,12 @@ func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
 // Temporary for gccgo until we port mheap.go
 func setprofilebucket(p unsafe.Pointer, b *bucket)
 
-// Currently in proc.c.
-func tracebackothers(*g)
-
 // Temporary for gccgo until we port mgc.go.
 func setgcpercent(int32) int32
 
 //go:linkname setGCPercent runtime_debug.setGCPercent
 func setGCPercent(in int32) (out int32) {
 	return setgcpercent(in)
-}
-
-// Temporary for gccgo until we port proc.go.
-func setmaxthreads(int) int
-
-//go:linkname setMaxThreads runtime_debug.setMaxThreads
-func setMaxThreads(in int) (out int) {
-	return setmaxthreads(in)
 }
 
 // Temporary for gccgo until we port atomic_pointer.go.
@@ -499,14 +472,8 @@ func getZerobase() *uintptr {
 }
 
 // Temporary for gccgo until we port proc.go.
-func needm()
-func dropm()
 func sigprof()
-func mcount() int32
-func gcount() int32
 func goexit1()
-func schedtrace(bool)
-func freezetheworld()
 
 // Get signal trampoline, written in C.
 func getSigtramp() uintptr
@@ -529,6 +496,42 @@ func getsched() *schedt {
 	return &sched
 }
 
+// Temporary for gccgo until we port proc.go.
+//go:linkname getCgoHasExtraM runtime.getCgoHasExtraM
+func getCgoHasExtraM() *bool {
+	return &cgoHasExtraM
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname getAllP runtime.getAllP
+func getAllP() **p {
+	return &allp[0]
+}
+
+// Temporary for gccgo until we port proc.go.
+//go:linkname allocg runtime.allocg
+func allocg() *g {
+	return new(g)
+}
+
+// Temporary for gccgo until we port the garbage collector.
+//go:linkname getallglen runtime.getallglen
+func getallglen() uintptr {
+	return allglen
+}
+
+// Temporary for gccgo until we port the garbage collector.
+//go:linkname getallg runtime.getallg
+func getallg(i int) *g {
+	return allgs[i]
+}
+
+// Temporary for gccgo until we port the garbage collector.
+//go:linkname getallm runtime.getallm
+func getallm() *m {
+	return allm
+}
+
 // Throw and rethrow an exception.
 func throwException()
 func rethrowException()
@@ -546,3 +549,94 @@ func getPanicking() uint32 {
 
 // Temporary for gccgo until we port mcache.go.
 func allocmcache() *mcache
+func freemcache(*mcache)
+
+// Temporary for gccgo until we port mgc.go.
+// This is just so that allgadd will compile.
+var work struct {
+	rescan struct {
+		lock mutex
+		list []guintptr
+	}
+}
+
+// Temporary for gccgo until we port mgc.go.
+var gcBlackenEnabled uint32
+
+// Temporary for gccgo until we port mgc.go.
+func gcMarkWorkAvailable(p *p) bool {
+	return false
+}
+
+// Temporary for gccgo until we port mgc.go.
+var gcController gcControllerState
+
+// Temporary for gccgo until we port mgc.go.
+type gcControllerState struct {
+}
+
+// Temporary for gccgo until we port mgc.go.
+func (c *gcControllerState) findRunnableGCWorker(_p_ *p) *g {
+	return nil
+}
+
+// Temporary for gccgo until we port mgc.go.
+var gcphase uint32
+
+// Temporary for gccgo until we port mgc.go.
+const (
+	_GCoff = iota
+	_GCmark
+	_GCmarktermination
+)
+
+// Temporary for gccgo until we port mgc.go.
+type gcMarkWorkerMode int
+
+// Temporary for gccgo until we port mgc.go.
+const (
+	gcMarkWorkerDedicatedMode gcMarkWorkerMode = iota
+	gcMarkWorkerFractionalMode
+	gcMarkWorkerIdleMode
+)
+
+// Temporary for gccgo until we port mheap.go.
+type mheap struct {
+}
+
+// Temporary for gccgo until we port mheap.go.
+var mheap_ mheap
+
+// Temporary for gccgo until we port mheap.go.
+func (h *mheap) scavenge(k int32, now, limit uint64) {
+}
+
+// Temporary for gccgo until we initialize ncpu in Go.
+//go:linkname setncpu runtime.setncpu
+func setncpu(n int32) {
+	ncpu = n
+}
+
+// Temporary for gccgo until we port malloc.go.
+var physPageSize uintptr
+
+// Temporary for gccgo until we reliably initialize physPageSize in Go.
+//go:linkname setpagesize runtime.setpagesize
+func setpagesize(s uintptr) {
+	if physPageSize == 0 {
+		physPageSize = s
+	}
+}
+
+// Temporary for gccgo until we port more of proc.go.
+func sigprofNonGoPC(pc uintptr) {
+}
+
+// Temporary for gccgo until we port mgc.go.
+// gcMarkWorkerModeStrings are the strings labels of gcMarkWorkerModes
+// to use in execution traces.
+var gcMarkWorkerModeStrings = [...]string{
+	"GC (dedicated)",
+	"GC (fractional)",
+	"GC (idle)",
+}

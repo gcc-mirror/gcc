@@ -298,10 +298,10 @@ package Atree is
    ------------------
 
    --  The following variables denote the count of errors of various kinds
-   --  detected in the tree. Note that these might be more logically located
-   --  in Err_Vars, but we put it to deal with licensing issues (we need this
-   --  to have the GPL exception licensing, since Check_Error_Detected can
-   --  be called from units with this licensing).
+   --  detected in the tree. Note that these might be more logically located in
+   --  Err_Vars, but we put it here to deal with licensing issues (we need this
+   --  to have the GPL exception licensing, since Check_Error_Detected can be
+   --  called from units with this licensing).
 
    Serious_Errors_Detected : Nat := 0;
    --  This is a count of errors that are serious enough to stop expansion,
@@ -405,8 +405,17 @@ package Atree is
    --  Called before the back end is invoked to lock the nodes table
    --  Also called after Unlock to relock???
 
+   procedure Lock_Nodes;
+   --  Called to lock node modifications when assertions are enabled; without
+   --  assertions calling this subprogram has no effect. The initial state of
+   --  the lock is unlocked.
+
    procedure Unlock;
    --  Unlocks nodes table, in cases where the back end needs to modify it
+
+   procedure Unlock_Nodes;
+   --  Called to unlock entity modifications when assertions are enabled; if
+   --  assertions are not enabled calling this subprogram has no effect.
 
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant

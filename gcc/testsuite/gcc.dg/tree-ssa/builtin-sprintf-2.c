@@ -25,6 +25,9 @@ char buf8k [8192];
 #define concat(a, b)   a ## b
 #define CAT(a, b)      concat (a, b)
 
+/* Calls to this function must not be eliminated.  */
+void must_not_eliminate (void);
+
 #define EQL(expect, size, fmt, ...)					\
   void __attribute__ ((noinline, noclone))				\
   CAT (test_on_line_, __LINE__)(void)					\
@@ -34,7 +37,7 @@ char buf8k [8192];
 	char *dst = size < 0 ? buf : buf8k + sizeof buf8k - size;	\
 	int result = __builtin_sprintf (dst, fmt, __VA_ARGS__);		\
 	if (result != expect)						\
-	  __builtin_abort ();						\
+	  must_not_eliminate ();					\
       }									\
   }
 
@@ -50,7 +53,7 @@ char buf8k [8192];
 	char *dst = size < 0 ? buf : buf8k + sizeof buf8k - size;	\
 	int result = __builtin_sprintf (dst, fmt, __VA_ARGS__);		\
 	if (result < min || max < result)				\
-	  __builtin_abort ();						\
+	  must_not_eliminate ();					\
       }									\
   }
 
@@ -74,6 +77,8 @@ EQL (0, 0, "%-s", "");
 
 EQL (1, 1, "%c",  'x');
 EQL (1, 1, "%-s", "x");
+
+EQL (1, 2, "%c",  'x');
 
 EQL (4, 4, "%4c", 'x');
 
@@ -179,7 +184,7 @@ RNG (4,  4, 32, "%zu", sz)
 
 /* Exercise bug 78586.  */
 RNG (4,  4, 32, "%lu", (unsigned long)i)
-RNG (4,  4, 32, "%lu", (unsigned)u)
+RNG (4,  4, 32, "%lu", (unsigned long)u)
 RNG (4,  4, 32, "%lu", (unsigned long)li)
 RNG (4,  4, 32, "%lu", (unsigned long)lu)
 RNG (4,  4, 32, "%lu", (unsigned long)sz)
@@ -259,21 +264,24 @@ RNG (0,  6,   8, "%s%ls", "1", L"2");
 /* Verify that no call to abort has been eliminated and that each call
    is at the beginning of a basic block (and thus the result of a branch).
    This latter test tries to verify that the test preceding the call to
-   abort has not been eliminated either.
+   the must_not_eliminate() function has not been eliminated either.
 
    The expected output looks something like this:
 
    <bb 2>:
    result_3 = __builtin_sprintf (&MEM[(void *)&buf8k + 8192B], "%c", 32);
    if (result_3 != 0)
-     goto <bb 3>;
+     goto <bb 3>; [50.0%]
    else
-     goto <bb 4>;
+     goto <bb 4>; [50.0%]
 
-   <bb 3>:
-   __builtin_abort ();
+   <bb 3>[50.0%]:
+   must_not_eliminate ();
 
 */
 
-/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 124 "optimized" { target { ilp32 || lp64 } } } } */
-/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 93 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */
+/*  Only conditional calls to abort should be made (with any probability):
+    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 124 "optimized" { target { ilp32 || lp64 } } } }
+    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 93 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } }
+    No unconditional calls to abort should be made:
+    { dg-final { scan-tree-dump-not ";\n *must_not_eliminate" "optimized" } } */

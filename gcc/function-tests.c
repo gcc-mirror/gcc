@@ -1,5 +1,5 @@
 /* Unit tests for function-handling.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -421,7 +421,7 @@ verify_three_block_gimple_cfg (function *fun)
 
 /* As above, but additionally verify the RTL insns are sane.  */
 
-static void
+void
 verify_three_block_rtl_cfg (function *fun)
 {
   verify_three_block_cfg (fun);

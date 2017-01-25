@@ -1,5 +1,5 @@
 /* Implementation of the CTIME and FDATE g77 intrinsics.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -27,7 +27,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "time_1.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 

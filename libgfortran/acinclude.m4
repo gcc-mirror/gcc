@@ -1,6 +1,7 @@
 m4_include(../config/acx.m4)
 m4_include(../config/no-executables.m4)
 m4_include(../config/math.m4)
+m4_include(../config/ax_check_define.m4)
 
 dnl Check that we have a working GNU Fortran compiler
 AC_DEFUN([LIBGFOR_WORKING_GFORTRAN], [
@@ -437,7 +438,14 @@ AC_DEFUN([LIBGFOR_CHECK_AVX512F], [
 	typedef double __m512d __attribute__ ((__vector_size__ (64)));
 	__m512d _mm512_add (__m512d a)
 	{
-	  return __builtin_ia32_addpd512_mask (a, a, a, 1, 4);
+	  __m512d b = __builtin_ia32_addpd512_mask (a, a, a, 1, 4);
+	  /* For -m64/-mx32 also verify that code will work even if
+	     the target uses call saved zmm16+ and needs to emit
+	     unwind info for them (e.g. on mingw).  See PR79127.  */
+#ifdef __x86_64__
+	  asm volatile ("" : : : "zmm16", "zmm17", "zmm18", "zmm19");
+#endif
+	  return b;
         }]], [[]])],
 	AC_DEFINE(HAVE_AVX512F, 1,
 	[Define if AVX512f instructions can be compiled.]),

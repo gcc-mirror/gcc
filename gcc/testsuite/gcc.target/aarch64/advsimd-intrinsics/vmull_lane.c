@@ -54,9 +54,9 @@ void exec_vmull_lane (void)
   TEST_VMULL_LANE(uint, u, 32, 64, 2, 1);
 
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, int, 64, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 64, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
 }
 
 int main (void)

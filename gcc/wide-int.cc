@@ -1,5 +1,5 @@
 /* Operations with very long integers.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -151,7 +151,7 @@ wi::from_array (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 }
 
 /* Construct a wide int from a buffer of length LEN.  BUFFER will be
-   read according to byte endianess and word endianess of the target.
+   read according to byte endianness and word endianness of the target.
    Only the lower BUFFER_LEN bytes of the result are set; the remaining
    high bytes are cleared.  */
 wide_int

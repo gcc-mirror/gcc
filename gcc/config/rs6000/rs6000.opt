@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+; Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -337,6 +337,10 @@ mblock-compare-inline-limit=
 Target Report Var(rs6000_block_compare_inline_limit) Init(5) RejectNegative Joined UInteger Save
 Specify the maximum number pairs of load instructions that should be generated inline for the compare.  If the number needed exceeds the limit, a call to memcmp will be generated instead.
 
+mstring-compare-inline-limit=
+Target Report Var(rs6000_string_compare_inline_limit) Init(8) RejectNegative Joined UInteger Save
+Specify the maximum number pairs of load instructions that should be generated inline for the compare.  If the number needed exceeds the limit, a call to strncmp will be generated instead.
+
 misel
 Target Report Mask(ISEL) Var(rs6000_isa_flags)
 Generate isel instructions.
@@ -668,3 +672,31 @@ Enable default conversions between __float128 & long double.
 mvsx-small-integer
 Target Report Mask(VSX_SMALL_INTEGER) Var(rs6000_isa_flags)
 Enable small integers to be in VSX registers.
+
+mstack-protector-guard=
+Target RejectNegative Joined Enum(stack_protector_guard) Var(rs6000_stack_protector_guard) Init(SSP_TLS)
+Use given stack-protector guard.
+
+Enum
+Name(stack_protector_guard) Type(enum stack_protector_guard)
+Valid arguments to -mstack-protector-guard=:
+
+EnumValue
+Enum(stack_protector_guard) String(tls) Value(SSP_TLS)
+
+EnumValue
+Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
+
+mstack-protector-guard-reg=
+Target RejectNegative Joined Var(rs6000_stack_protector_guard_reg_str)
+Use the given base register for addressing the stack-protector guard.
+
+TargetVariable
+int rs6000_stack_protector_guard_reg = 0
+
+mstack-protector-guard-offset=
+Target RejectNegative Joined Integer Var(rs6000_stack_protector_guard_offset_str)
+Use the given offset for addressing the stack-protector guard.
+
+TargetVariable
+long rs6000_stack_protector_guard_offset = 0

@@ -1,5 +1,5 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -611,28 +611,44 @@ gfc_replace_expr (gfc_expr *dest, gfc_expr *src)
 
 
 /* Try to extract an integer constant from the passed expression node.
-   Returns an error message or NULL if the result is set.  It is
-   tempting to generate an error and return true or false, but
-   failure is OK for some callers.  */
+   Return true if some error occurred, false on success.  If REPORT_ERROR
+   is non-zero, emit error, for positive REPORT_ERROR using gfc_error,
+   for negative using gfc_error_now.  */
 
-const char *
-gfc_extract_int (gfc_expr *expr, int *result)
+bool
+gfc_extract_int (gfc_expr *expr, int *result, int report_error)
 {
   if (expr->expr_type != EXPR_CONSTANT)
-    return _("Constant expression required at %C");
+    {
+      if (report_error > 0)
+	gfc_error ("Constant expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Constant expression required at %C");
+      return true;
+    }
 
   if (expr->ts.type != BT_INTEGER)
-    return _("Integer expression required at %C");
+    {
+      if (report_error > 0)
+	gfc_error ("Integer expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer expression required at %C");
+      return true;
+    }
 
   if ((mpz_cmp_si (expr->value.integer, INT_MAX) > 0)
       || (mpz_cmp_si (expr->value.integer, INT_MIN) < 0))
     {
-      return _("Integer value too large in expression at %C");
+      if (report_error > 0)
+	gfc_error ("Integer value too large in expression at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer value too large in expression at %C");
+      return true;
     }
 
   *result = (int) mpz_get_si (expr->value.integer);
 
-  return NULL;
+  return false;
 }
 
 
@@ -881,18 +897,17 @@ done:
 }
 
 
-/* Function to determine if an expression is constant or not.  This
-   function expects that the expression has already been simplified.  */
+/* Determine if an expression is constant in the sense of F08:7.1.12.
+ * This function expects that the expression has already been simplified.  */
 
-int
+bool
 gfc_is_constant_expr (gfc_expr *e)
 {
   gfc_constructor *c;
   gfc_actual_arglist *arg;
-  gfc_symbol *sym;
 
   if (e == NULL)
-    return 1;
+    return true;
 
   switch (e->expr_type)
     {
@@ -902,7 +917,7 @@ gfc_is_constant_expr (gfc_expr *e)
 		  || gfc_is_constant_expr (e->value.op.op2)));
 
     case EXPR_VARIABLE:
-      return 0;
+      return false;
 
     case EXPR_FUNCTION:
     case EXPR_PPC:
@@ -915,40 +930,21 @@ gfc_is_constant_expr (gfc_expr *e)
 	{
 	  for (arg = e->value.function.actual; arg; arg = arg->next)
 	    if (!gfc_is_constant_expr (arg->expr))
-	      return 0;
+	      return false;
 	}
-
-      /* Specification functions are constant.  */
-      /* F95, 7.1.6.2; F2003, 7.1.7  */
-      sym = NULL;
-      if (e->symtree)
-	sym = e->symtree->n.sym;
-      if (e->value.function.esym)
-	sym = e->value.function.esym;
-
-      if (sym
-	  && sym->attr.function
-	  && sym->attr.pure
-	  && !sym->attr.intrinsic
-	  && !sym->attr.recursive
-	  && sym->attr.proc != PROC_INTERNAL
-	  && sym->attr.proc != PROC_ST_FUNCTION
-	  && sym->attr.proc != PROC_UNKNOWN
-	  && gfc_sym_get_dummy_args (sym) == NULL)
-	return 1;
 
       if (e->value.function.isym
 	  && (e->value.function.isym->elemental
 	      || e->value.function.isym->pure
 	      || e->value.function.isym->inquiry
 	      || e->value.function.isym->transformational))
-	return 1;
+	return true;
 
-      return 0;
+      return false;
 
     case EXPR_CONSTANT:
     case EXPR_NULL:
-      return 1;
+      return true;
 
     case EXPR_SUBSTRING:
       return e->ref == NULL || (gfc_is_constant_expr (e->ref->u.ss.start)
@@ -962,14 +958,14 @@ gfc_is_constant_expr (gfc_expr *e)
 
       for (; c; c = gfc_constructor_next (c))
 	if (!gfc_is_constant_expr (c->expr))
-	  return 0;
+	  return false;
 
-      return 1;
+      return true;
 
 
     default:
       gfc_internal_error ("gfc_is_constant_expr(): Unknown expression type");
-      return 0;
+      return false;
     }
 }
 
@@ -2739,7 +2735,8 @@ restricted_args (gfc_actual_arglist *a)
 /************* Restricted/specification expressions *************/
 
 
-/* Make sure a non-intrinsic function is a specification function.  */
+/* Make sure a non-intrinsic function is a specification function,
+ * see F08:7.1.11.5.  */
 
 static bool
 external_spec_function (gfc_expr *e)
@@ -3727,9 +3724,20 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
   if (rvalue->expr_type == EXPR_FUNCTION && !attr.pointer)
     {
-      gfc_error ("Target expression in pointer assignment "
-		 "at %L must deliver a pointer result",
-		 &rvalue->where);
+      /* F2008, C725.  For PURE also C1283.  Sometimes rvalue is a function call
+	 to caf_get.  Map this to the same error message as below when it is
+	 still a variable expression.  */
+      if (rvalue->value.function.isym
+	  && rvalue->value.function.isym->id == GFC_ISYM_CAF_GET)
+	/* The test above might need to be extend when F08, Note 5.4 has to be
+	   interpreted in the way that target and pointer with the same coindex
+	   are allowed.  */
+	gfc_error ("Data target at %L shall not have a coindex",
+		   &rvalue->where);
+      else
+	gfc_error ("Target expression in pointer assignment "
+		   "at %L must deliver a pointer result",
+		   &rvalue->where);
       return false;
     }
 

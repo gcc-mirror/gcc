@@ -1,6 +1,6 @@
 # Plugin for offload execution on Intel MIC devices.
 #
-# Copyright (C) 2014 Free Software Foundation, Inc.
+# Copyright (C) 2014-2017 Free Software Foundation, Inc.
 #
 # Contributed by Ilya Verbin <ilya.verbin@intel.com> and
 # Andrey Turetskiy <andrey.turetskiy@intel.com>.
@@ -42,7 +42,7 @@ liboffload_src_dir = $(top_srcdir)/../runtime
 liboffload_dir = $(top_builddir)/..
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../../gcc/BASE-VER)
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
 # Search for main_target_image.h in these directories
 target_prefix_dir = $(libdir)/gcc/$(accel_target)/$(gcc_version)$(MULTISUBDIR)

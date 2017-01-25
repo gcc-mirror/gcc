@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2016 Free Software Foundation, Inc.
+   Copyright (C) 1988-2017 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -4461,6 +4461,8 @@ c_parse_final_cleanups (void)
 	  DECL_ASSEMBLER_NAME (node->decl);
       c_common_write_pch ();
       dump_tu ();
+      /* Ensure even the callers don't try to finalize the CU.  */
+      flag_syntax_only = 1;
       return;
     }
 
@@ -5112,7 +5114,7 @@ mark_used (tree decl, tsubst_flags_t complain)
     }
 
   /* If we don't need a value, then we don't need to synthesize DECL.  */
-  if (cp_unevaluated_operand != 0)
+  if (cp_unevaluated_operand || in_discarded_stmt)
     return true;
 
   DECL_ODR_USED (decl) = 1;

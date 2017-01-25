@@ -1459,7 +1459,6 @@ package body Sem_Ch12 is
             Kind := Nkind (Analyzed_Formal);
 
             case Nkind (Formal) is
-
                when N_Formal_Subprogram_Declaration =>
                   exit when Kind in N_Formal_Subprogram_Declaration
                     and then
@@ -1473,7 +1472,10 @@ package body Sem_Ch12 is
                                             N_Generic_Package_Declaration,
                                             N_Package_Declaration);
 
-               when N_Use_Package_Clause | N_Use_Type_Clause => exit;
+               when N_Use_Package_Clause
+                  | N_Use_Type_Clause
+               =>
+                  exit;
 
                when others =>
 
@@ -1855,8 +1857,9 @@ package body Sem_Ch12 is
                --  they belong (we mustn't recopy them since this would mess up
                --  the Sloc values).
 
-               when N_Use_Package_Clause |
-                    N_Use_Type_Clause    =>
+               when N_Use_Package_Clause
+                  | N_Use_Type_Clause
+               =>
                   if Nkind (Original_Node (I_Node)) =
                                      N_Formal_Package_Declaration
                   then
@@ -1868,7 +1871,6 @@ package body Sem_Ch12 is
 
                when others =>
                   raise Program_Error;
-
             end case;
 
             Formal := Saved_Formal;
@@ -2656,13 +2658,13 @@ package body Sem_Ch12 is
             --  continue analysis to minimize cascaded errors.
 
             Error_Msg_N
-              ("generic parent cannot be used as formal package "
-               & "of a child unit", Gen_Id);
+              ("generic parent cannot be used as formal package of a child "
+               & "unit", Gen_Id);
 
          else
             Error_Msg_N
-              ("generic package cannot be used as a formal package "
-               & "within itself", Gen_Id);
+              ("generic package cannot be used as a formal package within "
+               & "itself", Gen_Id);
             Restore_Env;
             goto Leave;
          end if;
@@ -3135,56 +3137,56 @@ package body Sem_Ch12 is
       --  Enter the new name, and branch to specific routine
 
       case Nkind (Def) is
-         when N_Formal_Private_Type_Definition         =>
+         when N_Formal_Private_Type_Definition =>
             Analyze_Formal_Private_Type (N, T, Def);
 
-         when N_Formal_Derived_Type_Definition         =>
+         when N_Formal_Derived_Type_Definition =>
             Analyze_Formal_Derived_Type (N, T, Def);
 
-         when N_Formal_Incomplete_Type_Definition         =>
+         when N_Formal_Incomplete_Type_Definition =>
             Analyze_Formal_Incomplete_Type (T, Def);
 
-         when N_Formal_Discrete_Type_Definition        =>
+         when N_Formal_Discrete_Type_Definition =>
             Analyze_Formal_Discrete_Type (T, Def);
 
-         when N_Formal_Signed_Integer_Type_Definition  =>
+         when N_Formal_Signed_Integer_Type_Definition =>
             Analyze_Formal_Signed_Integer_Type (T, Def);
 
-         when N_Formal_Modular_Type_Definition         =>
+         when N_Formal_Modular_Type_Definition =>
             Analyze_Formal_Modular_Type (T, Def);
 
-         when N_Formal_Floating_Point_Definition       =>
+         when N_Formal_Floating_Point_Definition =>
             Analyze_Formal_Floating_Type (T, Def);
 
          when N_Formal_Ordinary_Fixed_Point_Definition =>
             Analyze_Formal_Ordinary_Fixed_Point_Type (T, Def);
 
-         when N_Formal_Decimal_Fixed_Point_Definition  =>
+         when N_Formal_Decimal_Fixed_Point_Definition =>
             Analyze_Formal_Decimal_Fixed_Point_Type (T, Def);
 
          when N_Array_Type_Definition =>
             Analyze_Formal_Array_Type (T, Def);
 
-         when N_Access_To_Object_Definition            |
-              N_Access_Function_Definition             |
-              N_Access_Procedure_Definition            =>
+         when N_Access_Function_Definition
+            | N_Access_Procedure_Definition
+            | N_Access_To_Object_Definition
+         =>
             Analyze_Generic_Access_Type (T, Def);
 
          --  Ada 2005: a interface declaration is encoded as an abstract
          --  record declaration or a abstract type derivation.
 
-         when N_Record_Definition                      =>
+         when N_Record_Definition =>
             Analyze_Formal_Interface_Type (N, T, Def);
 
-         when N_Derived_Type_Definition                =>
+         when N_Derived_Type_Definition =>
             Analyze_Formal_Derived_Interface_Type (N, T, Def);
 
-         when N_Error                                  =>
+         when N_Error =>
             null;
 
-         when others                                   =>
+         when others =>
             raise Program_Error;
-
       end case;
 
       Set_Is_Generic_Type (T);
@@ -3330,13 +3332,6 @@ package body Sem_Ch12 is
       Enter_Name (Id);
       Set_Ekind  (Id, E_Generic_Package);
       Set_Etype  (Id, Standard_Void_Type);
-
-      --  A generic package declared within a Ghost region is rendered Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
 
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
@@ -3548,13 +3543,6 @@ package body Sem_Ch12 is
          Set_Etype (Id, Standard_Void_Type);
       end if;
 
-      --  A generic subprogram declared within a Ghost region is rendered Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
-
       --  For a library unit, we have reconstructed the entity for the unit,
       --  and must reset it in the library tables. We also make sure that
       --  Body_Required is set properly in the original compilation unit node.
@@ -3586,6 +3574,10 @@ package body Sem_Ch12 is
    -----------------------------------
    -- Analyze_Package_Instantiation --
    -----------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -3676,6 +3668,9 @@ package body Sem_Ch12 is
 
       --  Local declarations
 
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
+
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
@@ -3693,12 +3688,6 @@ package body Sem_Ch12 is
       --  Make node global for error reporting
 
       Instantiation_Node := N;
-
-      --  Turn off style checking in instances. If the check is enabled on the
-      --  generic unit, a warning in an instance would just be noise. If not
-      --  enabled on the generic, then a warning in an instance is just wrong.
-
-      Style_Check := False;
 
       --  Case of instantiation of a generic package
 
@@ -3732,6 +3721,12 @@ package body Sem_Ch12 is
 
       Preanalyze_Actuals (N, Act_Decl_Id);
 
+      --  Turn off style checking in instances. If the check is enabled on the
+      --  generic unit, a warning in an instance would just be noise. If not
+      --  enabled on the generic, then a warning in an instance is just wrong.
+
+      Style_Check := False;
+
       Init_Env;
       Env_Installed := True;
 
@@ -3745,6 +3740,14 @@ package body Sem_Ch12 is
 
       Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
       Gen_Unit := Entity (Gen_Id);
+
+      --  A package instantiation is Ghost when it is subject to pragma Ghost
+      --  or the generic template is Ghost. Set the mode now to ensure that
+      --  any nodes generated during analysis and expansion are marked as
+      --  Ghost.
+
+      Mark_And_Set_Ghost_Instantiation (N, Gen_Unit, Mode);
+      Mode_Set := True;
 
       --  Verify that it is the name of a generic package
 
@@ -4437,6 +4440,10 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
+
    exception
       when Instantiation_Error =>
          if Parent_Installed then
@@ -4451,6 +4458,10 @@ package body Sem_Ch12 is
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
          Style_Check              := Save_Style_Check;
+
+         if Mode_Set then
+            Restore_Ghost_Mode (Mode);
+         end if;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -4840,6 +4851,10 @@ package body Sem_Ch12 is
    -- Analyze_Subprogram_Instantiation --
    --------------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Subprogram_Instantiation
      (N : Node_Id;
       K : Entity_Kind)
@@ -5091,6 +5106,9 @@ package body Sem_Ch12 is
       Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK_Mode-related data for restore on exit
 
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
+
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
@@ -5126,6 +5144,14 @@ package body Sem_Ch12 is
       Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
       Gen_Unit := Entity (Gen_Id);
 
+      --  A subprogram instantiation is Ghost when it is subject to pragma
+      --  Ghost or the generic template is Ghost. Set the mode now to ensure
+      --  that any nodes generated during analysis and expansion are marked as
+      --  Ghost.
+
+      Mark_And_Set_Ghost_Instantiation (N, Gen_Unit, Mode);
+      Mode_Set := True;
+
       Generate_Reference (Gen_Unit, Gen_Id);
 
       if Nkind (Gen_Id) = N_Identifier
@@ -5137,7 +5163,7 @@ package body Sem_Ch12 is
 
       if Etype (Gen_Unit) = Any_Type then
          Restore_Env;
-         return;
+         goto Leave;
       end if;
 
       --  Verify that it is a generic subprogram of the right kind, and that
@@ -5322,8 +5348,8 @@ package body Sem_Ch12 is
                      Error_Msg_NE
                        ("access parameter& is controlling,", N, Formal);
                      Error_Msg_NE
-                       ("\corresponding parameter of & must be "
-                       & "explicitly null-excluding", N, Gen_Id);
+                       ("\corresponding parameter of & must be explicitly "
+                        & "null-excluding", N, Gen_Id);
                   end if;
 
                   Next_Formal (Formal);
@@ -5386,6 +5412,10 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
+
    exception
       when Instantiation_Error =>
          if Parent_Installed then
@@ -5399,6 +5429,10 @@ package body Sem_Ch12 is
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
          SPARK_Mode               := Save_SM;
          SPARK_Mode_Pragma        := Save_SMP;
+
+         if Mode_Set then
+            Restore_Ghost_Mode (Mode);
+         end if;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -6338,8 +6372,7 @@ package body Sem_Ch12 is
 
             Set_Is_Generic_Actual_Type (E, True);
             Set_Is_Hidden (E, False);
-            Set_Is_Potentially_Use_Visible (E,
-              In_Use (Instance));
+            Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
 
             --  We constructed the generic actual type as a subtype of the
             --  supplied type. This means that it normally would not inherit
@@ -7740,7 +7773,7 @@ package body Sem_Ch12 is
          --  Do not copy Comment or Ident pragmas their content is relevant to
          --  the generic unit, not to the instantiating unit.
 
-         if Nam_In (Pragma_Name (N), Name_Comment, Name_Ident) then
+         if Nam_In (Pragma_Name_Unmapped (N), Name_Comment, Name_Ident) then
             New_N := Make_Null_Statement (Sloc (N));
 
          --  Do not copy pragmas generated from aspects because the pragmas do
@@ -9641,18 +9674,20 @@ package body Sem_Ch12 is
 
       begin
          case Nkind (Original_Node (F)) is
-            when N_Formal_Object_Declaration |
-                 N_Formal_Type_Declaration   =>
+            when N_Formal_Object_Declaration
+               | N_Formal_Type_Declaration
+            =>
                Formal_Ent := Defining_Identifier (F);
 
                while Chars (Act) /= Chars (Formal_Ent) loop
                   Next_Entity (Act);
                end loop;
 
-            when N_Formal_Subprogram_Declaration |
-                 N_Formal_Package_Declaration    |
-                 N_Package_Declaration           |
-                 N_Generic_Package_Declaration   =>
+            when N_Formal_Package_Declaration
+               | N_Formal_Subprogram_Declaration
+               | N_Generic_Package_Declaration
+               | N_Package_Declaration
+            =>
                Formal_Ent := Defining_Entity (F);
 
                while Chars (Act) /= Chars (Formal_Ent) loop
@@ -9746,19 +9781,19 @@ package body Sem_Ch12 is
          Kind : constant Node_Kind := Nkind (Original_Node (N));
       begin
          case Kind is
-            when N_Formal_Object_Declaration     =>
+            when N_Formal_Object_Declaration =>
                return Defining_Identifier (N);
 
-            when N_Formal_Type_Declaration       =>
+            when N_Formal_Type_Declaration =>
                return Defining_Identifier (N);
 
             when N_Formal_Subprogram_Declaration =>
                return Defining_Unit_Name (Specification (N));
 
-            when N_Formal_Package_Declaration    =>
+            when N_Formal_Package_Declaration =>
                return Defining_Identifier (Original_Node (N));
 
-            when N_Generic_Package_Declaration   =>
+            when N_Generic_Package_Declaration =>
                return Defining_Identifier (Original_Node (N));
 
             --  All other declarations are introduced by semantic analysis and
@@ -10774,37 +10809,26 @@ package body Sem_Ch12 is
    -- Instantiate_Package_Body --
    ------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Instantiate_Package_Body
      (Body_Info     : Pending_Body_Info;
       Inlined_Body  : Boolean := False;
       Body_Optional : Boolean := False)
    is
       Act_Decl    : constant Node_Id    := Body_Info.Act_Decl;
+      Act_Decl_Id : constant Entity_Id  := Defining_Entity (Act_Decl);
+      Act_Spec    : constant Node_Id    := Specification (Act_Decl);
       Inst_Node   : constant Node_Id    := Body_Info.Inst_Node;
-      Loc         : constant Source_Ptr := Sloc (Inst_Node);
-
       Gen_Id      : constant Node_Id    := Name (Inst_Node);
       Gen_Unit    : constant Entity_Id  := Get_Generic_Entity (Inst_Node);
       Gen_Decl    : constant Node_Id    := Unit_Declaration_Node (Gen_Unit);
-      Act_Spec    : constant Node_Id    := Specification (Act_Decl);
-      Act_Decl_Id : constant Entity_Id  := Defining_Entity (Act_Spec);
+      Loc         : constant Source_Ptr := Sloc (Inst_Node);
 
       Save_IPSM        : constant Boolean := Ignore_Pragma_SPARK_Mode;
       Save_Style_Check : constant Boolean := Style_Check;
-
-      Act_Body      : Node_Id;
-      Act_Body_Id   : Entity_Id;
-      Act_Body_Name : Node_Id;
-      Gen_Body      : Node_Id;
-      Gen_Body_Id   : Node_Id;
-      Par_Ent       : Entity_Id := Empty;
-      Par_Vis       : Boolean   := False;
-
-      Parent_Installed : Boolean := False;
-
-      Vis_Prims_List : Elist_Id := No_Elist;
-      --  List of primitives made temporarily visible in the instantiation
-      --  to match the visibility of the formal type
 
       procedure Check_Initialized_Types;
       --  In a generic package body, an entity of a generic private type may
@@ -10874,6 +10898,23 @@ package body Sem_Ch12 is
          end loop;
       end Check_Initialized_Types;
 
+      --  Local variables
+
+      Act_Body      : Node_Id;
+      Act_Body_Id   : Entity_Id;
+      Act_Body_Name : Node_Id;
+      Gen_Body      : Node_Id;
+      Gen_Body_Id   : Node_Id;
+      Mode          : Ghost_Mode_Type;
+      Par_Ent       : Entity_Id := Empty;
+      Par_Vis       : Boolean   := False;
+
+      Parent_Installed : Boolean := False;
+
+      Vis_Prims_List : Elist_Id := No_Elist;
+      --  List of primitives made temporarily visible in the instantiation
+      --  to match the visibility of the formal type.
+
    --  Start of processing for Instantiate_Package_Body
 
    begin
@@ -10885,6 +10926,12 @@ package body Sem_Ch12 is
       if Present (Corresponding_Body (Instance_Spec (Inst_Node))) then
          return;
       end if;
+
+      --  The package being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id, Mode);
 
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
@@ -10911,7 +10958,7 @@ package body Sem_Ch12 is
          if not Unit_Requires_Body (Defining_Entity (Gen_Decl))
            and then Body_Optional
          then
-            return;
+            goto Leave;
          else
             Load_Parent_Of_Generic
               (Inst_Node, Specification (Gen_Decl), Body_Optional);
@@ -11175,24 +11222,30 @@ package body Sem_Ch12 is
       end if;
 
       Expander_Mode_Restore;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Instantiate_Package_Body;
 
    ---------------------------------
    -- Instantiate_Subprogram_Body --
    ---------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Instantiate_Subprogram_Body
      (Body_Info     : Pending_Body_Info;
       Body_Optional : Boolean := False)
    is
       Act_Decl    : constant Node_Id    := Body_Info.Act_Decl;
+      Act_Decl_Id : constant Entity_Id  := Defining_Entity (Act_Decl);
       Inst_Node   : constant Node_Id    := Body_Info.Inst_Node;
-      Loc         : constant Source_Ptr := Sloc (Inst_Node);
       Gen_Id      : constant Node_Id    := Name (Inst_Node);
       Gen_Unit    : constant Entity_Id  := Get_Generic_Entity (Inst_Node);
       Gen_Decl    : constant Node_Id    := Unit_Declaration_Node (Gen_Unit);
-      Act_Decl_Id : constant Entity_Id  :=
-                      Defining_Unit_Name (Specification (Act_Decl));
+      Loc         : constant Source_Ptr := Sloc (Inst_Node);
       Pack_Id     : constant Entity_Id  :=
                       Defining_Unit_Name (Parent (Act_Decl));
 
@@ -11204,6 +11257,7 @@ package body Sem_Ch12 is
       Act_Body_Id : Entity_Id;
       Gen_Body    : Node_Id;
       Gen_Body_Id : Node_Id;
+      Mode        : Ghost_Mode_Type;
       Pack_Body   : Node_Id;
       Par_Ent     : Entity_Id := Empty;
       Par_Vis     : Boolean   := False;
@@ -11221,6 +11275,12 @@ package body Sem_Ch12 is
       if Present (Corresponding_Body (Act_Decl)) then
          return;
       end if;
+
+      --  The subprogram being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id, Mode);
 
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
@@ -11248,7 +11308,7 @@ package body Sem_Ch12 is
             Set_Interface_Name (Act_Decl_Id, Interface_Name (Gen_Unit));
             Set_Convention     (Act_Decl_Id, Convention     (Gen_Unit));
             Set_Has_Completion (Act_Decl_Id);
-            return;
+            goto Leave;
 
          --  For other cases, compile the body
 
@@ -11273,12 +11333,11 @@ package body Sem_Ch12 is
             if Expander_Active
               and then Operating_Mode = Generate_Code
             then
-               Error_Msg_N
-                 ("missing proper body for instantiation", Gen_Body);
+               Error_Msg_N ("missing proper body for instantiation", Gen_Body);
             end if;
 
             Set_Has_Completion (Act_Decl_Id);
-            return;
+            goto Leave;
          end if;
 
          Save_Env (Gen_Unit, Act_Decl_Id);
@@ -11410,27 +11469,25 @@ package body Sem_Ch12 is
         and then Nkind (Parent (Inst_Node)) /= N_Compilation_Unit
       then
          if Body_Optional then
-            return;
+            goto Leave;
 
          elsif Ekind (Act_Decl_Id) = E_Procedure then
             Act_Body :=
               Make_Subprogram_Body (Loc,
-                 Specification              =>
-                   Make_Procedure_Specification (Loc,
-                     Defining_Unit_Name         =>
-                       Make_Defining_Identifier (Loc, Chars (Act_Decl_Id)),
-                       Parameter_Specifications =>
-                       New_Copy_List
-                         (Parameter_Specifications (Parent (Act_Decl_Id)))),
+                Specification              =>
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name       =>
+                      Make_Defining_Identifier (Loc, Chars (Act_Decl_Id)),
+                    Parameter_Specifications =>
+                      New_Copy_List
+                        (Parameter_Specifications (Parent (Act_Decl_Id)))),
 
-                 Declarations               => Empty_List,
-                 Handled_Statement_Sequence =>
-                   Make_Handled_Sequence_Of_Statements (Loc,
-                     Statements =>
-                       New_List (
-                         Make_Raise_Program_Error (Loc,
-                           Reason =>
-                             PE_Access_Before_Elaboration))));
+                Declarations               => Empty_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Raise_Program_Error (Loc,
+                        Reason => PE_Access_Before_Elaboration))));
 
          else
             Ret_Expr :=
@@ -11444,9 +11501,9 @@ package body Sem_Ch12 is
               Make_Subprogram_Body (Loc,
                 Specification =>
                   Make_Function_Specification (Loc,
-                     Defining_Unit_Name         =>
+                     Defining_Unit_Name       =>
                        Make_Defining_Identifier (Loc, Chars (Act_Decl_Id)),
-                       Parameter_Specifications =>
+                     Parameter_Specifications =>
                        New_Copy_List
                          (Parameter_Specifications (Parent (Act_Decl_Id))),
                      Result_Definition =>
@@ -11455,9 +11512,8 @@ package body Sem_Ch12 is
                   Declarations               => Empty_List,
                   Handled_Statement_Sequence =>
                     Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements =>
-                        New_List
-                          (Make_Simple_Return_Statement (Loc, Ret_Expr))));
+                      Statements => New_List (
+                        Make_Simple_Return_Statement (Loc, Ret_Expr))));
          end if;
 
          Pack_Body :=
@@ -11471,6 +11527,9 @@ package body Sem_Ch12 is
       end if;
 
       Expander_Mode_Restore;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Instantiate_Subprogram_Body;
 
    ----------------------
@@ -12771,19 +12830,19 @@ package body Sem_Ch12 is
             when N_Access_To_Object_Definition =>
                Validate_Access_Type_Instance;
 
-            when N_Access_Function_Definition |
-                 N_Access_Procedure_Definition =>
+            when N_Access_Function_Definition
+               | N_Access_Procedure_Definition
+            =>
                Validate_Access_Subprogram_Instance;
 
-            when N_Record_Definition           =>
+            when N_Record_Definition =>
                Validate_Interface_Type_Instance;
 
-            when N_Derived_Type_Definition     =>
+            when N_Derived_Type_Definition =>
                Validate_Derived_Interface_Type_Instance;
 
             when others =>
                raise Program_Error;
-
          end case;
       end if;
 
@@ -14479,14 +14538,16 @@ package body Sem_Ch12 is
             when N_Unary_Op =>
                Save_Global_Descendant (Union_Id (Right_Opnd (N)));
 
-            when N_Expanded_Name      |
-                 N_Selected_Component =>
+            when N_Expanded_Name
+               | N_Selected_Component
+            =>
                Save_Global_Descendant (Union_Id (Prefix (N)));
                Save_Global_Descendant (Union_Id (Selector_Name (N)));
 
-            when N_Identifier         |
-                 N_Character_Literal  |
-                 N_Operator_Symbol    =>
+            when N_Character_Literal
+               | N_Identifier
+               | N_Operator_Symbol
+            =>
                null;
 
             when others =>
@@ -15435,27 +15496,43 @@ package body Sem_Ch12 is
       end loop;
 
       case Attr_Id is
-         when Attribute_Adjacent |  Attribute_Ceiling   | Attribute_Copy_Sign |
-              Attribute_Floor    |  Attribute_Fraction  | Attribute_Machine   |
-              Attribute_Model    |  Attribute_Remainder | Attribute_Rounding  |
-              Attribute_Unbiased_Rounding  =>
+         when Attribute_Adjacent
+            | Attribute_Ceiling
+            | Attribute_Copy_Sign
+            | Attribute_Floor
+            | Attribute_Fraction
+            | Attribute_Machine
+            | Attribute_Model
+            | Attribute_Remainder
+            | Attribute_Rounding
+            | Attribute_Unbiased_Rounding
+         =>
             OK := Is_Fun
                     and then Num_F = 1
                     and then Is_Floating_Point_Type (T);
 
-         when Attribute_Image    | Attribute_Pred       | Attribute_Succ |
-              Attribute_Value    | Attribute_Wide_Image |
-              Attribute_Wide_Value  =>
-            OK := (Is_Fun and then Num_F = 1 and then Is_Scalar_Type (T));
+         when Attribute_Image
+            | Attribute_Pred
+            | Attribute_Succ
+            | Attribute_Value
+            | Attribute_Wide_Image
+            | Attribute_Wide_Value
+         =>
+            OK := Is_Fun and then Num_F = 1 and then Is_Scalar_Type (T);
 
-         when Attribute_Max      |  Attribute_Min  =>
-            OK := (Is_Fun and then Num_F = 2 and then Is_Scalar_Type (T));
+         when Attribute_Max
+            | Attribute_Min
+         =>
+            OK := Is_Fun and then Num_F = 2 and then Is_Scalar_Type (T);
 
          when Attribute_Input =>
             OK := (Is_Fun and then Num_F = 1);
 
-         when Attribute_Output | Attribute_Read | Attribute_Write =>
-            OK := (not Is_Fun and then Num_F = 2);
+         when Attribute_Output
+            | Attribute_Read
+            | Attribute_Write
+         =>
+            OK := not Is_Fun and then Num_F = 2;
 
          when others =>
             OK := False;

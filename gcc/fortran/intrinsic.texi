@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2016 Free Software Foundation, Inc.
+Copyright (C) 2005-2017 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
@@ -1850,8 +1850,8 @@ Inverse function: @ref{TANH}
 @table @asis
 @item @emph{Description}:
 @code{ATOMIC_ADD(ATOM, VALUE)} atomically adds the value of @var{VAR} to the
-variable @var{ATOM}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation
+variable @var{ATOM}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -1901,8 +1901,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
-and the invokation was successful, it is assigned the value 0. If it is present
-and the invokation has failed, it is assigned a positive value; in particular,
+and the invocation was successful, it is assigned the value 0. If it is present
+and the invocation has failed, it is assigned a positive value; in particular,
 for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -1951,8 +1951,8 @@ end program atomic
 @code{ATOMIC_CAS} compares the variable @var{ATOM} with the value of
 @var{COMPARE}; if the value is the same, @var{ATOM} is set to the value
 of @var{NEW}. Additionally, @var{OLD} is set to the value of @var{ATOM}
-that was used for the comparison.  When @var{STAT} is present and the invokation
-was successful, it is assigned the value 0. If it is present and the invokation
+that was used for the comparison.  When @var{STAT} is present and the invocation
+was successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2003,8 +2003,8 @@ end program atomic
 @table @asis
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} defines the variable @var{ATOM} with the value
-@var{VALUE} atomically. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation
+@var{VALUE} atomically. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2055,8 +2055,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_FETCH_ADD(ATOM, VALUE, OLD)} atomically stores the value of
 @var{ATOM} in @var{OLD} and adds the value of @var{VAR} to the
-variable @var{ATOM}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation
+variable @var{ATOM}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2108,8 +2108,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise AND between the values of
-@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation has
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation has
 failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2159,8 +2159,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_OR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise OR between the values of
-@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation has
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation has
 failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2210,8 +2210,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_XOR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise XOR between the values of
-@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
-successful, it is assigned the value 0. If it is present and the invokation has
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invocation was
+successful, it is assigned the value 0. If it is present and the invocation has
 failed, it is assigned a positive value; in particular, for a coindexed
 @var{ATOM}, if the remote image has stopped, it is assigned the value of
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
@@ -2261,8 +2261,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_OR(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
-and the invokation was successful, it is assigned the value 0. If it is present
-and the invokation has failed, it is assigned a positive value; in particular,
+and the invocation was successful, it is assigned the value 0. If it is present
+and the invocation has failed, it is assigned a positive value; in particular,
 for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -2310,8 +2310,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} atomically assigns the value of the
 variable @var{ATOM} to @var{VALUE}. When @var{STAT} is present and the
-invokation was successful, it is assigned the value 0. If it is present and the
-invokation has failed, it is assigned a positive value; in particular, for a
+invocation was successful, it is assigned the value 0. If it is present and the
+invocation has failed, it is assigned a positive value; in particular, for a
 coindexed @var{ATOM}, if the remote image has stopped, it is assigned the value
 of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image
 has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -2367,8 +2367,8 @@ end program atomic
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 XOR between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
-and the invokation was successful, it is assigned the value 0. If it is present
-and the invokation has failed, it is assigned a positive value; in particular,
+and the invocation was successful, it is assigned the value 0. If it is present
+and the invocation has failed, it is assigned a positive value; in particular,
 for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
@@ -4583,7 +4583,7 @@ end program test_cshift
 @table @asis
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
-@code{TIME8}, to a string. The output will be of the form @samp{Sat
+@ref{TIME8}, to a string. The output will be of the form @samp{Sat
 Aug 19 18:13:14 1995}.
 
 This intrinsic is provided in both subroutine and function forms; however,
@@ -5535,8 +5535,8 @@ end program test_etime
 @item @emph{Description}:
 @code{EVENT_QUERY} assignes the number of events to @var{COUNT} which have been
 posted to the @var{EVENT} variable and not yet been removed by calling
-@code{EVENT WAIT}. When @var{STAT} is present and the invokation was successful,
-it is assigned the value 0. If it is present and the invokation has failed,
+@code{EVENT WAIT}. When @var{STAT} is present and the invocation was successful,
+it is assigned the value 0. If it is present and the invocation has failed,
 it is assigned a positive value and @var{COUNT} is assigned the value @math{-1}.
 
 @item @emph{Standard}:
@@ -5843,7 +5843,7 @@ the dynamic type of A is an extension type of the dynamic type of MOLD.
 @table @asis
 @item @emph{Description}:
 @code{FDATE(DATE)} returns the current date (using the same format as
-@code{CTIME}) in @var{DATE}. It is equivalent to @code{CALL CTIME(DATE,
+@ref{CTIME}) in @var{DATE}. It is equivalent to @code{CALL CTIME(DATE,
 TIME())}.
 
 This intrinsic is provided in both subroutine and function forms; however,
@@ -7157,10 +7157,15 @@ See @code{GETPID} for an example.
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME8}
+Given a system time value @var{TIME} (as provided by the @ref{TIME}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the UTC time zone (Universal Coordinated Time, also known in some
 countries as GMT, Greenwich Mean Time), using @code{gmtime(3)}.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  In new code, programmers should consider the use of 
+the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
+standard.
 
 @item @emph{Standard}:
 GNU extension
@@ -7186,17 +7191,17 @@ The elements of @var{VALUES} are assigned as follows:
 seconds
 @item Minutes after the hour, range 0--59
 @item Hours past midnight, range 0--23
-@item Day of month, range 0--31
-@item Number of months since January, range 0--12
+@item Day of month, range 1--31
+@item Number of months since January, range 0--11
 @item Years since 1900
 @item Number of days since Sunday, range 0--6
-@item Days since January 1
+@item Days since January 1, range 0--365
 @item Daylight savings indicator: positive if daylight savings is in
 effect, zero if not, and negative if the information is not available.
 @end enumerate
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
 
 @end table
 
@@ -7841,6 +7846,11 @@ current local time. The day (in the range 1-31), month (in the range 1-12),
 and year appear in elements 1, 2, and 3 of @var{VALUES}, respectively. 
 The year has four significant digits.
 
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  In new code, programmers should consider the use of 
+the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
+standard.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -7869,8 +7879,10 @@ program test_idate
   print *, tarray(3)
 end program test_idate
 @end smallexample
-@end table
 
+@item @emph{See also}:
+@ref{DATE_AND_TIME}
+@end table
 
 
 @node IEOR
@@ -8650,10 +8662,15 @@ end program test_nan
 
 @table @asis
 @item @emph{Description}:
-@code{IDATE(VALUES)} Fills @var{VALUES} with the numerical values at the  
+@code{ITIME(VALUES)} Fills @var{VALUES} with the numerical values at the  
 current local time. The hour (in the range 1-24), minute (in the range 1-60), 
 and seconds (in the range 1-60) appear in elements 1, 2, and 3 of @var{VALUES}, 
 respectively.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  In new code, programmers should consider the use of 
+the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
+standard.
 
 @item @emph{Standard}:
 GNU extension
@@ -8684,6 +8701,9 @@ program test_itime
   print *, tarray(3)
 end program test_itime
 @end smallexample
+
+@item @emph{See also}:
+@ref{DATE_AND_TIME}
 @end table
 
 
@@ -9635,9 +9655,14 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME8}
+Given a system time value @var{TIME} (as provided by the @ref{TIME}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the local time zone using @code{localtime(3)}.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  In new code, programmers should consider the use of 
+the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
+standard.
 
 @item @emph{Standard}:
 GNU extension
@@ -9663,17 +9688,17 @@ The elements of @var{VALUES} are assigned as follows:
 seconds
 @item Minutes after the hour, range 0--59
 @item Hours past midnight, range 0--23
-@item Day of month, range 0--31
-@item Number of months since January, range 0--12
+@item Day of month, range 1--31
+@item Number of months since January, range 0--11
 @item Years since 1900
 @item Number of days since Sunday, range 0--6
-@item Days since January 1
+@item Days since January 1, range 0--365
 @item Daylight savings indicator: positive if daylight savings is in
 effect, zero if not, and negative if the information is not available.
 @end enumerate
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{TIME}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{TIME}, @ref{TIME8}
 
 @end table
 
@@ -13865,7 +13890,7 @@ IF (THIS_IMAGE(HUGE(1)) /= THIS_IMAGE())
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 function @code{time(3)} in the C standard library). This value is
-suitable for passing to @code{CTIME}, @code{GMTIME}, and @code{LTIME}.
+suitable for passing to @ref{CTIME}, @ref{GMTIME}, and @ref{LTIME}.
 
 This intrinsic is not fully portable, such as to systems with 32-bit
 @code{INTEGER} types but supporting times wider than 32 bits. Therefore,
@@ -13890,7 +13915,7 @@ Function
 The return value is a scalar of type @code{INTEGER(4)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
 
 @end table
 
@@ -13906,7 +13931,7 @@ The return value is a scalar of type @code{INTEGER(4)}.
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 function @code{time(3)} in the C standard library). This value is
-suitable for passing to @code{CTIME}, @code{GMTIME}, and @code{LTIME}.
+suitable for passing to @ref{CTIME}, @ref{GMTIME}, and @ref{LTIME}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{time(3)}. On a system with a 32-bit
@@ -13929,7 +13954,7 @@ Function
 The return value is a scalar of type @code{INTEGER(8)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK8}, @ref{TIME}
+@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK8}, @ref{TIME}
 
 @end table
 

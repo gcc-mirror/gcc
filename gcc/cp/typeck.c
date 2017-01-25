@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2730,19 +2730,9 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
     {
       bool is_template_id = false;
       tree template_args = NULL_TREE;
-      tree scope;
+      tree scope = NULL_TREE;
 
-      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-	{
-	  is_template_id = true;
-	  template_args = TREE_OPERAND (name, 1);
-	  name = TREE_OPERAND (name, 0);
-
-	  if (TREE_CODE (name) == OVERLOAD)
-	    name = DECL_NAME (get_first_fn (name));
-	  else if (DECL_P (name))
-	    name = DECL_NAME (name);
-	}
+      access_path = object_type;
 
       if (TREE_CODE (name) == SCOPE_REF)
 	{
@@ -2761,9 +2751,25 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 		       scope, name, object_type);
 	      return error_mark_node;
 	    }
+	}
+      
+      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	{
+	  is_template_id = true;
+	  template_args = TREE_OPERAND (name, 1);
+	  name = TREE_OPERAND (name, 0);
 
+	  if (TREE_CODE (name) == OVERLOAD)
+	    name = DECL_NAME (get_first_fn (name));
+	  else if (DECL_P (name))
+	    name = DECL_NAME (name);
+	}
+
+      if (scope)
+	{
 	  if (TREE_CODE (scope) == ENUMERAL_TYPE)
 	    {
+	      gcc_assert (!is_template_id);
 	      /* Looking up a member enumerator (c++/56793).  */
 	      if (!TYPE_CLASS_SCOPE_P (scope)
 		  || !DERIVED_FROM_P (TYPE_CONTEXT (scope), object_type))
@@ -2811,11 +2817,6 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 		error ("%qT is not a base of %qT", scope, object_type);
 	      return error_mark_node;
 	    }
-	}
-      else
-	{
-	  scope = NULL_TREE;
-	  access_path = object_type;
 	}
 
       if (TREE_CODE (name) == BIT_NOT_EXPR)
@@ -2875,7 +2876,10 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	  tree templ = member;
 
 	  if (BASELINK_P (templ))
-	    templ = lookup_template_function (templ, template_args);
+	    member = lookup_template_function (templ, template_args);
+	  else if (variable_template_p (templ))
+	    member = (lookup_and_finish_template_variable
+		      (templ, template_args, complain));
 	  else
 	    {
 	      if (complain & tf_error)
@@ -3654,9 +3658,17 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
 
   /* Check for errors in format strings and inappropriately
      null parameters.  */
-  check_function_arguments (input_location, fntype, nargs, argarray);
+  bool warned_p = check_function_arguments (input_location, fntype,
+					    nargs, argarray);
 
   ret = build_cxx_call (function, nargs, argarray, complain);
+
+  if (warned_p)
+    {
+      tree c = extract_call_expr (ret);
+      if (TREE_CODE (c) == CALL_EXPR)
+	TREE_NO_WARNING (c) = 1;
+    }
 
   if (allocated != NULL)
     release_tree_vector (allocated);
@@ -4596,6 +4608,12 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type0;
 
+	  if (char_type_p (TREE_TYPE (orig_op1))
+	      && warning (OPT_Wpointer_compare,
+			  "comparison between pointer and zero character "
+			  "constant"))
+	    inform (input_location,
+		    "did you mean to dereference the pointer?");
 	  warn_for_null_address (location, op0, complain);
 	}
       else if (((code1 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type1))
@@ -4610,6 +4628,12 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type1;
 
+	  if (char_type_p (TREE_TYPE (orig_op0))
+	      && warning (OPT_Wpointer_compare,
+			  "comparison between pointer and zero character "
+			  "constant"))
+	    inform (input_location,
+		    "did you mean to dereference the pointer?");
 	  warn_for_null_address (location, op1, complain);
 	}
       else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
@@ -5899,6 +5923,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	    inform (location, "did you mean to use logical not (%<!%>)?");
 	  arg = cp_perform_integral_promotions (arg, complain);
 	}
+      else if (!noconvert && VECTOR_TYPE_P (TREE_TYPE (arg)))
+	arg = mark_rvalue_use (arg);
       break;
 
     case ABS_EXPR:

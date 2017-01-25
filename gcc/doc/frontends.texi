@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2016 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -11,13 +11,12 @@
 @cindex Ada
 @cindex Fortran
 @cindex Go
-@cindex Java
 @cindex Objective-C
 @cindex Objective-C++
 GCC stands for ``GNU Compiler Collection''.  GCC is an integrated
 distribution of compilers for several major programming languages.  These
-languages currently include C, C++, Objective-C, Objective-C++, Java,
-Fortran, Ada, and Go.
+languages currently include C, C++, Objective-C, Objective-C++,
+Fortran, Ada, Go, and BRIG (HSAIL).
 
 The abbreviation @dfn{GCC} has multiple meanings in common use.  The
 current official meaning is ``GNU Compiler Collection'', which refers

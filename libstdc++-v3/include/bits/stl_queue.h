@@ -1,6 +1,6 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -124,14 +124,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef          _Sequence                            container_type;
 
     protected:
-      /**
-       *  'c' is the underlying container.  Maintainers wondering why
-       *  this isn't uglified as per style guidelines should note that
-       *  this name is specified in the standard, [23.2.3.1].  (Why?
-       *  Presumably for the same reason that it's protected instead
+      /*  Maintainers wondering why this isn't uglified as per style
+       *  guidelines should note that this name is specified in the standard,
+       *  C++98 [23.2.3.1].
+       *  (Why? Presumably for the same reason that it's protected instead
        *  of private: to allow derivation.  But none of the other
        *  containers allow for derivation.  Odd.)
        */
+       ///  @c c is the underlying container.
       _Sequence c;
 
     public:
@@ -143,12 +143,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       queue(const _Sequence& __c = _Sequence())
       : c(__c) { }
 #else
+      template<typename _Seq = _Sequence, typename _Requires = typename
+	       enable_if<is_default_constructible<_Seq>::value>::type>
+	queue()
+	: c() { }
+
       explicit
       queue(const _Sequence& __c)
       : c(__c) { }
 
       explicit
-      queue(_Sequence&& __c = _Sequence())
+      queue(_Sequence&& __c)
       : c(std::move(__c)) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
@@ -454,15 +459,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 #else
+      template<typename _Seq = _Sequence, typename _Requires = typename
+	       enable_if<__and_<is_default_constructible<_Compare>,
+                                is_default_constructible<_Seq>>::value>::type>
+	priority_queue()
+	: c(), comp() { }
+
       explicit
-      priority_queue(const _Compare& __x,
-		     const _Sequence& __s)
+      priority_queue(const _Compare& __x, const _Sequence& __s)
       : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 
       explicit
-      priority_queue(const _Compare& __x = _Compare(),
-		     _Sequence&& __s = _Sequence())
+      priority_queue(const _Compare& __x, _Sequence&& __s = _Sequence())
       : c(std::move(__s)), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 

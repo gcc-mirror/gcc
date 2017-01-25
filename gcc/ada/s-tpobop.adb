@@ -292,17 +292,17 @@ package body System.Tasking.Protected_Objects.Operations is
    is
       E             : constant Protected_Entry_Index :=
                         Protected_Entry_Index (Entry_Call.E);
+      Index         : constant Protected_Entry_Index :=
+                        Object.Find_Body_Index (Object.Compiler_Info, E);
       Barrier_Value : Boolean;
-
+      Queue_Length  : Natural;
    begin
       --  When the Action procedure for an entry body returns, it is either
       --  completed (having called [Exceptional_]Complete_Entry_Body) or it
       --  is queued, having executed a requeue statement.
 
       Barrier_Value :=
-        Object.Entry_Bodies (
-          Object.Find_Body_Index (Object.Compiler_Info, E)).
-            Barrier (Object.Compiler_Info, E);
+        Object.Entry_Bodies (Index).Barrier (Object.Compiler_Info, E);
 
       if Barrier_Value then
 
@@ -316,8 +316,7 @@ package body System.Tasking.Protected_Objects.Operations is
 
          pragma Debug
           (Debug.Trace (Self_ID, "PODOQ: start entry body", 'P'));
-         Object.Entry_Bodies (
-           Object.Find_Body_Index (Object.Compiler_Info, E)).Action (
+         Object.Entry_Bodies (Index).Action (
              Object.Compiler_Info, Entry_Call.Uninterpreted_Data, E);
 
          if Object.Call_In_Progress /= null then
@@ -346,29 +345,48 @@ package body System.Tasking.Protected_Objects.Operations is
         or else not Entry_Call.With_Abort
       then
          if Run_Time_Restrictions.Set (Max_Entry_Queue_Length)
-           and then Run_Time_Restrictions.Value (Max_Entry_Queue_Length) <=
-                      Queuing.Count_Waiting (Object.Entry_Queues (E))
+           or else Object.Entry_Queue_Maxes /= null
          then
-            --  This violates the Max_Entry_Queue_Length restriction, raise
-            --  Program_Error.
+            --  Need to check the queue length. Computing the length is an
+            --  unusual case and is slow (need to walk the queue).
 
-            Entry_Call.Exception_To_Raise := Program_Error'Identity;
+            Queue_Length := Queuing.Count_Waiting (Object.Entry_Queues (E));
 
-            if Single_Lock then
-               STPO.Lock_RTS;
+            if (Run_Time_Restrictions.Set (Max_Entry_Queue_Length)
+                 and then Queue_Length >=
+                   Run_Time_Restrictions.Value (Max_Entry_Queue_Length))
+              or else
+                (Object.Entry_Queue_Maxes /= null
+                  and then Object.Entry_Queue_Maxes (Index) /= 0
+                  and then Queue_Length >= Object.Entry_Queue_Maxes (Index))
+            then
+               --  This violates the Max_Entry_Queue_Length restriction or the
+               --  Max_Queue_Length bound, raise Program_Error.
+
+               Entry_Call.Exception_To_Raise := Program_Error'Identity;
+
+               if Single_Lock then
+                  STPO.Lock_RTS;
+               end if;
+
+               STPO.Write_Lock (Entry_Call.Self);
+               Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
+               STPO.Unlock (Entry_Call.Self);
+
+               if Single_Lock then
+                  STPO.Unlock_RTS;
+               end if;
+
+               return;
             end if;
-
-            STPO.Write_Lock (Entry_Call.Self);
-            Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
-            STPO.Unlock (Entry_Call.Self);
-
-            if Single_Lock then
-               STPO.Unlock_RTS;
-            end if;
-         else
-            Queuing.Enqueue (Object.Entry_Queues (E), Entry_Call);
-            Update_For_Queue_To_PO (Entry_Call, Entry_Call.With_Abort);
          end if;
+
+         --  Do the work: queue the call
+
+         Queuing.Enqueue (Object.Entry_Queues (E), Entry_Call);
+         Update_For_Queue_To_PO (Entry_Call, Entry_Call.With_Abort);
+
+         return;
       else
          --  Conditional_Call and With_Abort
 
@@ -653,7 +671,9 @@ package body System.Tasking.Protected_Objects.Operations is
 
       else
          case Mode is
-            when Simple_Call | Conditional_Call =>
+            when Conditional_Call
+               | Simple_Call
+            =>
                if Single_Lock then
                   STPO.Lock_RTS;
                   Entry_Calls.Wait_For_Completion (Entry_Call);
@@ -667,7 +687,9 @@ package body System.Tasking.Protected_Objects.Operations is
 
                Block.Cancelled := Entry_Call.State = Cancelled;
 
-            when Asynchronous_Call | Timed_Call =>
+            when Asynchronous_Call
+               | Timed_Call
+            =>
                pragma Assert (False);
                null;
          end case;

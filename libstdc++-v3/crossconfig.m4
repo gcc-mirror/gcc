@@ -132,7 +132,14 @@ case "${host}" in
       AC_DEFINE(HAVE_ISINFL)
       AC_DEFINE(HAVE_ISNANL)
     fi
+    AC_CHECK_FUNCS(__cxa_thread_atexit)
     ;;
+
+  *-fuchsia*)
+    SECTION_FLAGS='-ffunction-sections -fdata-sections'
+    AC_SUBST(SECTION_FLAGS)
+    ;;
+
   *-hpux*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
     AC_SUBST(SECTION_FLAGS)

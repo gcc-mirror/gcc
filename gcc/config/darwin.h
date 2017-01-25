@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -202,9 +202,9 @@ extern GTY(()) int darwin_ms_struct;
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{v} \
-    %{gdwarf-2:%{!gstabs*:%{!g0: -idsym}}}\
+    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm: \
-    %{gdwarf-2:%{!gstabs*:%{!g0: -dsym}}}}}}}}}}}"
+    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
 
@@ -424,7 +424,7 @@ extern GTY(()) int darwin_ms_struct;
 /* Default ASM_DEBUG_SPEC.  Darwin's as cannot currently produce dwarf
    debugging data.  */
 
-#define ASM_DEBUG_SPEC  "%{g*:%{!g0:%{!gdwarf*:--gstabs}}}"
+#define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{!gdwarf*:--gstabs}}}"
 
 /* We still allow output of STABS if the assembler supports it.  */
 #ifdef HAVE_AS_STABS_DIRECTIVE

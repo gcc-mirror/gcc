@@ -10,7 +10,6 @@ package runtime
 #include <stddef.h>
 #include <errno.h>
 #include <stdlib.h>
-#include "go-alloc.h"
 #include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
@@ -100,7 +99,8 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		flag |= FlagNoInvokeGC;
 	}
 
-	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC) && m->preemptoff.len == 0) {
+	if((g->preempt || runtime_gcwaiting()) && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC) && m->preemptoff.len == 0) {
+		g->preempt = false;
 		runtime_gosched();
 		m = runtime_m();
 	}
@@ -296,7 +296,7 @@ runtime_profilealloc(void *v, uintptr size)
 		// If you change this, also change allocmcache.
 		if(rate > 0x3fffffff)	// make 2*rate not overflow
 			rate = 0x3fffffff;
-		next = runtime_fastrand1() % (2*rate);
+		next = runtime_fastrand() % (2*rate);
 		// Subtract the "remainder" of the current allocation.
 		// Otherwise objects that are close in size to sampling rate
 		// will be under-sampled, because we consistently discard this remainder.
@@ -306,107 +306,6 @@ runtime_profilealloc(void *v, uintptr size)
 		c->next_sample = next;
 	}
 	runtime_MProf_Malloc(v, size);
-}
-
-void*
-__go_alloc(uintptr size)
-{
-	return runtime_mallocgc(size, 0, FlagNoInvokeGC);
-}
-
-// Free the object whose base pointer is v.
-void
-__go_free(void *v)
-{
-	M *m;
-	int32 sizeclass;
-	MSpan *s;
-	MCache *c;
-	uintptr size;
-
-	if(v == nil)
-		return;
-	
-	// If you change this also change mgc0.c:/^sweep,
-	// which has a copy of the guts of free.
-
-	m = runtime_m();
-	if(m->mallocing)
-		runtime_throw("malloc/free - deadlock");
-	m->mallocing = 1;
-
-	if(!runtime_mlookup(v, nil, nil, &s)) {
-		runtime_printf("free %p: not an allocated block\n", v);
-		runtime_throw("free runtime_mlookup");
-	}
-	size = s->elemsize;
-	sizeclass = s->sizeclass;
-	// Objects that are smaller than TinySize can be allocated using tiny alloc,
-	// if then such object is combined with an object with finalizer, we will crash.
-	if(size < TinySize)
-		runtime_throw("freeing too small block");
-
-	if(runtime_debug.allocfreetrace)
-		runtime_tracefree(v, size);
-
-	// Ensure that the span is swept.
-	// If we free into an unswept span, we will corrupt GC bitmaps.
-	runtime_MSpan_EnsureSwept(s);
-
-	if(s->specials != nil)
-		runtime_freeallspecials(s, v, size);
-
-	c = m->mcache;
-	if(sizeclass == 0) {
-		// Large object.
-		s->needzero = 1;
-		// Must mark v freed before calling unmarkspan and MHeap_Free:
-		// they might coalesce v into other spans and change the bitmap further.
-		runtime_markfreed(v);
-		runtime_unmarkspan(v, 1<<PageShift);
-		// NOTE(rsc,dvyukov): The original implementation of efence
-		// in CL 22060046 used SysFree instead of SysFault, so that
-		// the operating system would eventually give the memory
-		// back to us again, so that an efence program could run
-		// longer without running out of memory. Unfortunately,
-		// calling SysFree here without any kind of adjustment of the
-		// heap data structures means that when the memory does
-		// come back to us, we have the wrong metadata for it, either in
-		// the MSpan structures or in the garbage collection bitmap.
-		// Using SysFault here means that the program will run out of
-		// memory fairly quickly in efence mode, but at least it won't
-		// have mysterious crashes due to confused memory reuse.
-		// It should be possible to switch back to SysFree if we also 
-		// implement and then call some kind of MHeap_DeleteSpan.
-		if(runtime_debug.efence)
-			runtime_SysFault((void*)(s->start<<PageShift), size);
-		else
-			runtime_MHeap_Free(&runtime_mheap, s, 1);
-		c->local_nlargefree++;
-		c->local_largefree += size;
-	} else {
-		// Small object.
-		if(size > 2*sizeof(uintptr))
-			((uintptr*)v)[1] = (uintptr)0xfeedfeedfeedfeedll;	// mark as "needs to be zeroed"
-		else if(size > sizeof(uintptr))
-			((uintptr*)v)[1] = 0;
-		// Must mark v freed before calling MCache_Free:
-		// it might coalesce v and other blocks into a bigger span
-		// and change the bitmap further.
-		c->local_nsmallfree[sizeclass]++;
-		c->local_cachealloc -= size;
-		if(c->alloc[sizeclass] == s) {
-			// We own the span, so we can just add v to the freelist
-			runtime_markfreed(v);
-			((MLink*)v)->next = s->freelist;
-			s->freelist = v;
-			s->ref--;
-		} else {
-			// Someone else owns this span.  Add to free queue.
-			runtime_MCache_Free(c, v, sizeclass, size);
-		}
-	}
-	m->mallocing = 0;
 }
 
 int32
@@ -628,9 +527,6 @@ runtime_mallocinit(void)
 	// Initialize the rest of the allocator.	
 	runtime_MHeap_Init(&runtime_mheap);
 	runtime_m()->mcache = runtime_allocmcache();
-
-	// See if it works.
-	runtime_free(runtime_malloc(TinySize));
 }
 
 void*

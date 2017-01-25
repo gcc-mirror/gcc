@@ -152,6 +152,7 @@ target_libraries="target-libgcc \
 		target-libgomp \
 		target-libcilkrts \
 		target-liboffloadmic \
+		target-libhsail-rt \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
@@ -811,6 +812,19 @@ if test x$enable_libgo = x; then
 	;;
     esac
 fi
+
+# Disable the BRIG frontend and libhsail-rt on untested or known
+# broken systems. Currently it has been tested only on x86_64 Linux
+# of the upstream gcc targets. More targets shall be added after testing.
+case "${target}" in
+  x86_64-*-linux*)
+    ;;
+    *)
+    unsupported_languages="$unsupported_languages brig"
+    # This implicitly disables also target-libhsail-rt as it won't
+    # get added to the build without BRIG FE.
+    ;;
+esac
 
 # Default libgloss CPU subdirectory.
 libgloss_dir="$target_cpu"
@@ -2643,9 +2657,14 @@ if echo " ${target_configdirs} " | grep " libvtv " > /dev/null 2>&1 &&
   bootstrap_target_libs=${bootstrap_target_libs}target-libvtv,
 fi
 
-# If we are building libmpx, bootstrap it.
+# If we are building libmpx and $BUILD_CONFIG contains bootstrap-mpx,
+# bootstrap it.
 if echo " ${target_configdirs} " | grep " libmpx " > /dev/null 2>&1; then
-  bootstrap_target_libs=${bootstrap_target_libs}target-libmpx,
+  case "$BUILD_CONFIG" in
+    *bootstrap-mpx* )
+      bootstrap_target_libs=${bootstrap_target_libs}target-libmpx,
+      ;;
+  esac
 fi
 
 # Determine whether gdb needs tk/tcl or not.

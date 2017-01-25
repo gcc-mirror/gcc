@@ -1,5 +1,5 @@
 /* Symbol table.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -588,18 +588,25 @@ symtab_node::create_reference (symtab_node *referred_node,
   return ref;
 }
 
-/* If VAL is a reference to a function or a variable, add a reference from
-   this symtab_node to the corresponding symbol table node.  USE_TYPE specify
-   type of the use and STMT the statement (if it exists).  Return the new
-   reference or NULL if none was created.  */
-
 ipa_ref *
-symtab_node::maybe_create_reference (tree val, enum ipa_ref_use use_type,
-				     gimple *stmt)
+symtab_node::maybe_create_reference (tree val, gimple *stmt)
 {
   STRIP_NOPS (val);
-  if (TREE_CODE (val) != ADDR_EXPR)
-    return NULL;
+  ipa_ref_use use_type;
+
+  switch (TREE_CODE (val))
+    {
+    case VAR_DECL:
+      use_type = IPA_REF_LOAD;
+      break;
+    case ADDR_EXPR:
+      use_type = IPA_REF_ADDR;
+      break;
+    default:
+      gcc_assert (!handled_component_p (val));
+      return NULL;
+    }
+
   val = get_base_var (val);
   if (val && VAR_OR_FUNCTION_DECL_P (val))
     {
@@ -1029,7 +1036,7 @@ symtab_node::verify_base (void)
     }
   if (analyzed && !definition)
     {
-      error ("node is analyzed byt it is not a definition");
+      error ("node is analyzed but it is not a definition");
       error_found = true;
     }
   if (cpp_implicit_alias && !alias)
@@ -1259,7 +1266,8 @@ symtab_node::make_decl_local (void)
       TREE_ADDRESSABLE (decl) = 1;
       TREE_STATIC (decl) = 1;
     }
-  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  else
+    gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   DECL_COMDAT (decl) = 0;
   DECL_WEAK (decl) = 0;
@@ -1439,7 +1447,7 @@ symtab_node::fixup_same_cpp_alias_visibility (symtab_node *target)
 }
 
 /* Set section, do not recurse into aliases.
-   When one wants to change section of symbol and its aliases,
+   When one wants to change section of a symbol and its aliases,
    use set_section.  */
 
 void
@@ -1988,13 +1996,12 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
   if (rs1 != rs2 && avail1 >= AVAIL_AVAILABLE && avail2 >= AVAIL_AVAILABLE)
     binds_local1 = binds_local2 = true;
 
-  if ((binds_local1 ? rs1 : this)
-       == (binds_local2 ? rs2 : s2))
+  if (binds_local1 && binds_local2 && rs1 == rs2)
     {
       /* We made use of the fact that alias is not weak.  */
-      if (binds_local1 && rs1 != this)
+      if (rs1 != this)
         refuse_visibility_changes = true;
-      if (binds_local2 && rs2 != s2)
+      if (rs2 != s2)
         s2->refuse_visibility_changes = true;
       return 1;
     }
@@ -2214,6 +2221,9 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
 {
   if (!definition)
     return false;
+  if (transparent_alias)
+    return definition
+	   && get_alias_target()->binds_to_current_def_p (ref);
   if (decl_binds_to_current_def_p (decl))
     return true;
 
@@ -2225,8 +2235,6 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
   if (DECL_EXTERNAL (decl))
     return false;
 
-  if (!externally_visible)
-    debug ();
   gcc_assert (externally_visible);
 
   if (ref)

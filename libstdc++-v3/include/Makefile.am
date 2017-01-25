@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2016 Free Software Foundation, Inc.
+## Copyright (C) 2001-2017 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -1238,6 +1238,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-cxx11-abi \
 			      stamp-allocator-new
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
+	release=`sed 's/^\([0-9]*\).*$$/\1/' ${toplevel_srcdir}/gcc/BASE-VER` ;\
 	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
 	externtemplate=`cat stamp-extern-template` ;\
@@ -1249,6 +1250,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
+	-e "s,define _GLIBCXX_RELEASE,define _GLIBCXX_RELEASE $$release," \
 	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
 	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "s,define _GLIBCXX_EXTERN_TEMPLATE$$, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \

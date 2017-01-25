@@ -254,12 +254,63 @@ void test_macro (const char *msg)
                   ~^
                   %s
    { dg-end-multiline-output "" } */
+#undef INT_FMT
+}
+
+void test_macro_2 (const char *msg)
+{
+#define PRIu32 "u" /* { dg-message "17: format string is defined here" } */
+  printf("hello %" PRIu32 " world", msg);  /* { dg-warning "10: format '%u' expects argument of type 'unsigned int', but argument 2 has type 'const char \\*' " } */
+/* { dg-begin-multiline-output "" }
+   printf("hello %" PRIu32 " world", msg);
+          ^~~~~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define PRIu32 "u"
+                 ^
+   { dg-end-multiline-output "" } */
+#undef PRIu32
+}
+
+void test_macro_3 (const char *msg)
+{
+#define FMT_STRING "hello %i world" /* { dg-warning "20: format '%i' expects argument of type 'int', but argument 2 has type 'const char \\*' " } */
+  printf(FMT_STRING, msg);  /* { dg-message "10: in expansion of macro 'FMT_STRING" } */
+/* { dg-begin-multiline-output "" }
+ #define FMT_STRING "hello %i world"
+                    ^
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   printf(FMT_STRING, msg);
+          ^~~~~~~~~~
+   { dg-end-multiline-output "" } */
+#undef FMT_STRING
+}
+
+void test_macro_4 (const char *msg)
+{
+#define FMT_STRING "hello %i world" /* { dg-warning "20: format '%i' expects argument of type 'int', but argument 2 has type 'const char \\*' " } */
+  printf(FMT_STRING "\n", msg);  /* { dg-message "10: in expansion of macro 'FMT_STRING" } */
+/* { dg-begin-multiline-output "" }
+ #define FMT_STRING "hello %i world"
+                    ^
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   printf(FMT_STRING "\n", msg);
+          ^~~~~~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define FMT_STRING "hello %i world"
+                           ~^
+                           %s
+   { dg-end-multiline-output "" } */
+#undef FMT_STRING
 }
 
 void test_non_contiguous_strings (void)
 {
   __builtin_printf(" %" "d ", 0.5); /* { dg-warning "20: format .%d. expects argument of type .int., but argument 2 has type .double." } */
-                                    /* { dg-message "26: format string is defined here" "" { target *-*-* } 261 } */
+                                    /* { dg-message "26: format string is defined here" "" { target *-*-* } .-1 } */
   /* { dg-begin-multiline-output "" }
    __builtin_printf(" %" "d ", 0.5);
                     ^~~~

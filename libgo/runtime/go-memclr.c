@@ -6,11 +6,11 @@
 
 #include "runtime.h"
 
-void memclr(void *, uintptr)
-  __asm__ (GOSYM_PREFIX "runtime.memclr");
+void memclrNoHeapPointers(void *, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.memclrNoHeapPointers");
 
 void
-memclr (void *p1, uintptr len)
+memclrNoHeapPointers (void *p1, uintptr len)
 {
   __builtin_memset (p1, 0, len);
 }

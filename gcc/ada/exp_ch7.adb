@@ -3062,6 +3062,13 @@ package body Exp_Ch7 is
                 Obj_Ref => Obj_Ref,
                 Typ     => Obj_Typ);
 
+            --  Guard against a missing [Deep_]Finalize when the object type
+            --  was not properly frozen.
+
+            if No (Fin_Call) then
+               Fin_Call := Make_Null_Statement (Loc);
+            end if;
+
             --  For CodePeer, the exception handlers normally generated here
             --  generate complex flowgraphs which result in capacity problems.
             --  Omitting these handlers for CodePeer is justified as follows:
@@ -3448,6 +3455,10 @@ package body Exp_Ch7 is
    -- Build_Invariant_Procedure_Body --
    ------------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Build_Invariant_Procedure_Body
      (Typ               : Entity_Id;
       Partial_Invariant : Boolean := False)
@@ -3525,9 +3536,6 @@ package body Exp_Ch7 is
       --  inherited class-wide invariants. Priv_Item denotes the first rep
       --  item of the private type.
 
-      procedure Create_Append (L : in out List_Id; N : Node_Id);
-      --  Append arbitrary node N to list L. If there is no list, create one.
-
       function Is_Untagged_Private_Derivation
         (Priv_Typ : Entity_Id;
          Full_Typ : Entity_Id) return Boolean;
@@ -3573,84 +3581,41 @@ package body Exp_Ch7 is
 
          begin
             if Has_Invariants (Comp_Typ) then
-               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  The component type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
+               --  In GNATprove mode, the component invariants are checked by
+               --  other means. They should not be added to the array type
+               --  invariant procedure, so that the procedure can be used to
+               --  check the array type invariants if any.
 
-               pragma Assert (Present (Proc_Id));
+               if GNATprove_Mode then
+                  null;
 
-               --  Generate:
-               --    <Comp_Typ>Invariant (_object (<Indices>));
+               else
+                  Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
+                  --  The component type should have an invariant procedure
+                  --  if it has invariants of its own or inherits class-wide
+                  --  invariants from parent or interface types.
 
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Proc_Id, Loc),
-                      Parameter_Associations => New_List (
-                        Make_Indexed_Component (Loc,
-                          Prefix      => New_Occurrence_Of (Obj_Id, Loc),
-                          Expressions => New_Copy_List (Indices)))));
-               end if;
+                  pragma Assert (Present (Proc_Id));
 
-               Produced_Check := True;
-            end if;
+                  --  Generate:
+                  --    <Comp_Typ>Invariant (_object (<Indices>));
 
-            --  In a rare case the designated type of an access component may
-            --  have an invariant. In this case verify the dereference of the
-            --  component.
+                  --  Note that the invariant procedure may have a null body if
+                  --  assertions are disabled or Assertion_Policy Ignore is in
+                  --  effect.
 
-            if Is_Access_Type (Comp_Typ)
-              and then Has_Invariants (Designated_Type (Comp_Typ))
-            then
-               Proc_Id :=
-                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
-
-               --  The designated type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    if _object (<Indexes>) /= null then
-               --       <Desig_Comp_Typ>Invariant (_object (<Indices>).all);
-               --    end if;
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_If_Statement (Loc,
-                      Condition       =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            Make_Indexed_Component (Loc,
-                              Prefix      => New_Occurrence_Of (Obj_Id, Loc),
-                              Expressions => New_Copy_List (Indices)),
-                          Right_Opnd => Make_Null (Loc)),
-
-                      Then_Statements => New_List (
-                        Make_Procedure_Call_Statement (Loc,
-                          Name                   =>
-                            New_Occurrence_Of (Proc_Id, Loc),
-
-                          Parameter_Associations => New_List (
-                            Make_Explicit_Dereference (Loc,
-                              Prefix =>
-                                Make_Indexed_Component (Loc,
-                                  Prefix      =>
-                                    New_Occurrence_Of (Obj_Id, Loc),
-                                  Expressions =>
-                                    New_Copy_List (Indices))))))));
+                  if not Has_Null_Body (Proc_Id) then
+                     Append_New_To (Comp_Checks,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name                   =>
+                           New_Occurrence_Of (Proc_Id, Loc),
+                         Parameter_Associations => New_List (
+                           Make_Indexed_Component (Loc,
+                             Prefix      => New_Occurrence_Of (Obj_Id, Loc),
+                             Expressions => New_Copy_List (Indices)))));
+                  end if;
                end if;
 
                Produced_Check := True;
@@ -3699,11 +3664,11 @@ package body Exp_Ch7 is
                --    end loop;
 
                --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
+               --  assertions are disabled or Assertion_Policy Ignore is in
                --  effect.
 
                if Present (Comp_Checks) then
-                  Create_Append (Dim_Checks,
+                  Append_New_To (Dim_Checks,
                     Make_Implicit_Loop_Statement (T,
                       Identifier       => Empty,
                       Iteration_Scheme =>
@@ -3791,6 +3756,16 @@ package body Exp_Ch7 is
          --  The partial view of Par_Typ
 
       begin
+         --  Do not process array types because they cannot have true parent
+         --  types. This also prevents the generation of a duplicate invariant
+         --  check when the input type is an array base type because its Etype
+         --  denotes the first subtype, both of which share the same component
+         --  type.
+
+         if Is_Array_Type (T) then
+            return;
+         end if;
+
          --  Climb the parent type chain
 
          Curr_Typ := T;
@@ -3906,7 +3881,7 @@ package body Exp_Ch7 is
                      Var_Stmts := New_List (Make_Null_Statement (Loc));
                   end if;
 
-                  Create_Append (Var_Alts,
+                  Append_New_To (Var_Alts,
                     Make_Case_Statement_Alternative (Loc,
                       Discrete_Choices =>
                         New_Copy_List (Discrete_Choices (Var)),
@@ -3920,7 +3895,7 @@ package body Exp_Ch7 is
                --  values only when there is at least one real invariant check.
 
                if Produced_Variant_Check then
-                  Create_Append (CL_Checks,
+                  Append_New_To (CL_Checks,
                     Make_Case_Statement (Loc,
                       Expression   =>
                         Make_Selected_Component (Loc,
@@ -3964,92 +3939,44 @@ package body Exp_Ch7 is
             --  this case verify the access value itself.
 
             if Has_Invariants (Comp_Typ) then
-               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  The component type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
+               --  In GNATprove mode, the component invariants are checked by
+               --  other means. They should not be added to the record type
+               --  invariant procedure, so that the procedure can be used to
+               --  check the record type invariants if any.
 
-               pragma Assert (Present (Proc_Id));
+               if GNATprove_Mode then
+                  null;
 
-               --  Generate:
-               --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
+               else
+                  Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
 
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
+                  --  The component type should have an invariant procedure
+                  --  if it has invariants of its own or inherits class-wide
+                  --  invariants from parent or interface types.
 
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Proc_Id, Loc),
-                      Parameter_Associations => New_List (
-                        Make_Selected_Component (Loc,
-                          Prefix        =>
-                            Unchecked_Convert_To
-                              (T, New_Occurrence_Of (Obj_Id, Loc)),
-                          Selector_Name =>
-                            New_Occurrence_Of (Comp_Id, Loc)))));
-               end if;
+                  pragma Assert (Present (Proc_Id));
 
-               Produced_Check           := True;
-               Produced_Component_Check := True;
-            end if;
+                  --  Generate:
+                  --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
 
-            --  In a rare case the designated type of an access component may
-            --  have a invariant. In this case verify the dereference of the
-            --  component.
+                  --  Note that the invariant procedure may have a null body if
+                  --  assertions are disabled or Assertion_Policy Ignore is in
+                  --  effect.
 
-            if Is_Access_Type (Comp_Typ)
-              and then Has_Invariants (Designated_Type (Comp_Typ))
-            then
-               Proc_Id :=
-                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
-
-               --  The designated type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    if T (_object).<Comp_Id> /= null then
-               --       <Desig_Comp_Typ>Invariant (T (_object).<Comp_Id>.all);
-               --    end if;
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_If_Statement (Loc,
-                      Condition       =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            Make_Selected_Component (Loc,
-                              Prefix        =>
-                                Unchecked_Convert_To
-                                  (T, New_Occurrence_Of (Obj_Id, Loc)),
-                              Selector_Name =>
-                                New_Occurrence_Of (Comp_Id, Loc)),
-                          Right_Opnd => Make_Null (Loc)),
-
-                      Then_Statements => New_List (
-                        Make_Procedure_Call_Statement (Loc,
-                          Name                   =>
-                            New_Occurrence_Of (Proc_Id, Loc),
-
-                          Parameter_Associations => New_List (
-                            Make_Explicit_Dereference (Loc,
-                              Prefix =>
-                                Make_Selected_Component (Loc,
-                                  Prefix        =>
-                                    Unchecked_Convert_To
-                                      (T, New_Occurrence_Of (Obj_Id, Loc)),
-                                  Selector_Name =>
-                                    New_Occurrence_Of (Comp_Id, Loc))))))));
+                  if not Has_Null_Body (Proc_Id) then
+                     Append_New_To (Comp_Checks,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name                   =>
+                           New_Occurrence_Of (Proc_Id, Loc),
+                         Parameter_Associations => New_List (
+                           Make_Selected_Component (Loc,
+                             Prefix        =>
+                               Unchecked_Convert_To
+                                 (T, New_Occurrence_Of (Obj_Id, Loc)),
+                             Selector_Name =>
+                               New_Occurrence_Of (Comp_Id, Loc)))));
+                  end if;
                end if;
 
                Produced_Check           := True;
@@ -4356,10 +4283,9 @@ package body Exp_Ch7 is
                --  Generate:
                --    pragma Check (<Nam>, <Expr>, <Str>);
 
-               Create_Append (Checks,
+               Append_New_To (Checks,
                  Make_Pragma (Ploc,
-                   Pragma_Identifier            =>
-                     Make_Identifier (Ploc, Name_Check),
+                   Chars                        => Name_Check,
                    Pragma_Argument_Associations => Assoc));
             end if;
 
@@ -4444,19 +4370,6 @@ package body Exp_Ch7 is
          end if;
       end Add_Type_Invariants;
 
-      -------------------
-      -- Create_Append --
-      -------------------
-
-      procedure Create_Append (L : in out List_Id; N : Node_Id) is
-      begin
-         if No (L) then
-            L := New_List;
-         end if;
-
-         Append_To (L, N);
-      end Create_Append;
-
       ------------------------------------
       -- Is_Untagged_Private_Derivation --
       ------------------------------------
@@ -4476,9 +4389,8 @@ package body Exp_Ch7 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       Dummy        : Entity_Id;
+      Mode         : Ghost_Mode_Type;
       Priv_Item    : Node_Id;
       Proc_Body    : Node_Id;
       Proc_Body_Id : Entity_Id;
@@ -4494,11 +4406,6 @@ package body Exp_Ch7 is
 
       Full_Typ : Entity_Id;
       --  The full view of the working type
-
-      Freeze_Typ : Entity_Id;
-      --  The freeze type whose freeze node carries the invariant procedure
-      --  body. This is either the partial or the full view of the working
-      --  type.
 
       Obj_Id : Entity_Id;
       --  The _object formal parameter of the invariant procedure
@@ -4534,6 +4441,11 @@ package body Exp_Ch7 is
          Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
       end if;
 
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the invariant procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode (Work_Typ, Mode);
+
       --  The type must either have invariants of its own, inherit class-wide
       --  invariants from parent types or interfaces, or be an array or record
       --  type whose components have invariants.
@@ -4544,7 +4456,7 @@ package body Exp_Ch7 is
       --  inherited by implementing types.
 
       if Is_Interface (Work_Typ) then
-         return;
+         goto Leave;
       end if;
 
       --  Obtain both views of the type
@@ -4573,7 +4485,7 @@ package body Exp_Ch7 is
             --  Nothing to do because the processing of the underlying full
             --  view already checked the invariants of the partial view.
 
-            return;
+            goto Leave;
          end if;
 
          --  Create a declaration for the "partial" invariant procedure if it
@@ -4610,13 +4522,8 @@ package body Exp_Ch7 is
       --  Nothing to do if the invariant procedure already has a body
 
       if Present (Corresponding_Body (Proc_Decl)) then
-         return;
+         goto Leave;
       end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the invariant procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
 
       --  Emulate the environment of the invariant procedure by installing
       --  its scope and formal parameters. Note that this is not needed, but
@@ -4634,7 +4541,6 @@ package body Exp_Ch7 is
 
       if Partial_Invariant then
          pragma Assert (Present (Priv_Typ));
-         Freeze_Typ := Priv_Typ;
 
          Add_Type_Invariants
            (Priv_Typ => Priv_Typ,
@@ -4651,7 +4557,6 @@ package body Exp_Ch7 is
 
       else
          pragma Assert (Present (Full_Typ));
-         Freeze_Typ := Full_Typ;
 
          --  Check the invariants of the partial view by calling the "partial"
          --  invariant procedure. Generate:
@@ -4659,7 +4564,7 @@ package body Exp_Ch7 is
          --    <Work_Typ>Partial_Invariant (_object);
 
          if Present (Part_Proc) then
-            Create_Append (Stmts,
+            Append_New_To (Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name                   => New_Occurrence_Of (Part_Proc, Loc),
                 Parameter_Associations => New_List (
@@ -4784,25 +4689,36 @@ package body Exp_Ch7 is
       Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
       --  The body should not be inserted into the tree when the context is
-      --  ASIS, GNATprove or a generic unit because it is not part of the
-      --  template. Note that the body must still be generated in order to
-      --  resolve the invariants.
+      --  ASIS or a generic unit because it is not part of the template. Note
+      --  that the body must still be generated in order to resolve the
+      --  invariants.
 
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+      if ASIS_Mode or Inside_A_Generic then
          null;
+
+      --  Semi-insert the body into the tree for GNATprove by setting its
+      --  Parent field. This allows for proper upstream tree traversals.
+
+      elsif GNATprove_Mode then
+         Set_Parent (Proc_Body, Parent (Declaration_Node (Work_Typ)));
 
       --  Otherwise the body is part of the freezing actions of the type
 
       else
-         Append_Freeze_Action (Freeze_Typ, Proc_Body);
+         Append_Freeze_Action (Work_Typ, Proc_Body);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Build_Invariant_Procedure_Body;
 
    -------------------------------------------
    -- Build_Invariant_Procedure_Declaration --
    -------------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    procedure Build_Invariant_Procedure_Declaration
      (Typ               : Entity_Id;
@@ -4810,8 +4726,7 @@ package body Exp_Ch7 is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
+      Mode      : Ghost_Mode_Type;
       Proc_Decl : Node_Id;
       Proc_Id   : Entity_Id;
       Proc_Nam  : Name_Id;
@@ -4855,6 +4770,11 @@ package body Exp_Ch7 is
          Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
       end if;
 
+      --  The working type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the invariant procedure is properly marked as Ghost.
+
+      Set_Ghost_Mode (Work_Typ, Mode);
+
       --  The type must either have invariants of its own, inherit class-wide
       --  invariants from parent or interface types, or be an array or record
       --  type whose components have invariants.
@@ -4865,25 +4785,20 @@ package body Exp_Ch7 is
       --  inherited by implementing types.
 
       if Is_Interface (Work_Typ) then
-         return;
+         goto Leave;
 
       --  Nothing to do if the type already has a "partial" invariant procedure
 
       elsif Partial_Invariant then
          if Present (Partial_Invariant_Procedure (Work_Typ)) then
-            return;
+            goto Leave;
          end if;
 
       --  Nothing to do if the type already has a "full" invariant procedure
 
       elsif Present (Invariant_Procedure (Work_Typ)) then
-         return;
+         goto Leave;
       end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the invariant procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
 
       --  The caller requests the declaration of the "partial" invariant
       --  procedure.
@@ -4919,13 +4834,6 @@ package body Exp_Ch7 is
 
       if Opt.Generate_SCO then
          Set_Needs_Debug_Info (Proc_Id);
-      end if;
-
-      --  Mark the invariant procedure explicitly as Ghost because it does not
-      --  come from source.
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -4985,11 +4893,16 @@ package body Exp_Ch7 is
                     New_Occurrence_Of (Work_Typ, Loc)))));
 
       --  The declaration should not be inserted into the tree when the context
-      --  is ASIS, GNATprove or a generic unit because it is not part of the
-      --  template.
+      --  is ASIS or a generic unit because it is not part of the template.
 
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
+      if ASIS_Mode or Inside_A_Generic then
          null;
+
+      --  Semi-insert the declaration into the tree for GNATprove by setting
+      --  its Parent field. This allows for proper upstream tree traversals.
+
+      elsif GNATprove_Mode then
+         Set_Parent (Proc_Decl, Parent (Typ_Decl));
 
       --  Otherwise insert the declaration
 
@@ -4998,7 +4911,8 @@ package body Exp_Ch7 is
          Insert_After_And_Analyze (Typ_Decl, Proc_Decl);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Build_Invariant_Procedure_Declaration;
 
    ---------------------
@@ -5965,15 +5879,7 @@ package body Exp_Ch7 is
       Spec_Id : constant Entity_Id := Corresponding_Spec (N);
       Fin_Id  : Entity_Id;
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    begin
-      --  The package body is Ghost when the corresponding spec is Ghost. Set
-      --  the mode now to ensure that any nodes generated during expansion are
-      --  properly marked as Ghost.
-
-      Set_Ghost_Mode (N, Spec_Id);
-
       --  This is done only for non-generic packages
 
       if Ekind (Spec_Id) = E_Package then
@@ -6029,8 +5935,6 @@ package body Exp_Ch7 is
             end;
          end if;
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Package_Body;
 
    ----------------------------------
@@ -6200,8 +6104,9 @@ package body Exp_Ch7 is
             --  context of a Timed_Entry_Call. In this case we wrap the entire
             --  timed entry call.
 
-            when N_Entry_Call_Statement     |
-                 N_Procedure_Call_Statement =>
+            when N_Entry_Call_Statement
+               | N_Procedure_Call_Statement
+            =>
                if Nkind (Parent (The_Parent)) = N_Entry_Call_Alternative
                  and then Nkind_In (Parent (Parent (The_Parent)),
                                     N_Timed_Entry_Call,
@@ -6216,34 +6121,35 @@ package body Exp_Ch7 is
             --  even if they are not really wrapped. For further details, see
             --  Wrap_Transient_Declaration.
 
-            when N_Object_Declaration          |
-                 N_Object_Renaming_Declaration |
-                 N_Subtype_Declaration         =>
+            when N_Object_Declaration
+               | N_Object_Renaming_Declaration
+               | N_Subtype_Declaration
+            =>
                return The_Parent;
 
             --  The expression itself is to be wrapped if its parent is a
             --  compound statement or any other statement where the expression
             --  is known to be scalar.
 
-            when N_Accept_Alternative               |
-                 N_Attribute_Definition_Clause      |
-                 N_Case_Statement                   |
-                 N_Code_Statement                   |
-                 N_Delay_Alternative                |
-                 N_Delay_Until_Statement            |
-                 N_Delay_Relative_Statement         |
-                 N_Discriminant_Association         |
-                 N_Elsif_Part                       |
-                 N_Entry_Body_Formal_Part           |
-                 N_Exit_Statement                   |
-                 N_If_Statement                     |
-                 N_Iteration_Scheme                 |
-                 N_Terminate_Alternative            =>
+            when N_Accept_Alternative
+               | N_Attribute_Definition_Clause
+               | N_Case_Statement
+               | N_Code_Statement
+               | N_Delay_Alternative
+               | N_Delay_Until_Statement
+               | N_Delay_Relative_Statement
+               | N_Discriminant_Association
+               | N_Elsif_Part
+               | N_Entry_Body_Formal_Part
+               | N_Exit_Statement
+               | N_If_Statement
+               | N_Iteration_Scheme
+               | N_Terminate_Alternative
+            =>
                pragma Assert (Present (P));
                return P;
 
             when N_Attribute_Reference =>
-
                if Is_Procedure_Attribute_Name
                     (Attribute_Name (The_Parent))
                then
@@ -6267,9 +6173,10 @@ package body Exp_Ch7 is
             --  The following nodes contains "dummy calls" which don't need to
             --  be wrapped.
 
-            when N_Parameter_Specification     |
-                 N_Discriminant_Specification  |
-                 N_Component_Declaration       =>
+            when N_Component_Declaration
+               | N_Discriminant_Specification
+               | N_Parameter_Specification
+            =>
                return Empty;
 
             --  The return statement is not to be wrapped when the function
@@ -6294,10 +6201,11 @@ package body Exp_Ch7 is
             --  situation that are not detected yet (such as a dynamic string
             --  in a pragma export)
 
-            when N_Subprogram_Body     |
-                 N_Package_Declaration |
-                 N_Package_Body        |
-                 N_Block_Statement     =>
+            when N_Block_Statement
+               | N_Package_Body
+               | N_Package_Declaration
+               | N_Subprogram_Body
+            =>
                return Empty;
 
             --  Otherwise continue the search
@@ -6919,10 +6827,12 @@ package body Exp_Ch7 is
    is
       Loc    : constant Source_Ptr := Sloc (Obj_Ref);
       Adj_Id : Entity_Id := Empty;
-      Ref    : Node_Id   := Obj_Ref;
+      Ref    : Node_Id;
       Utyp   : Entity_Id;
 
    begin
+      Ref := Obj_Ref;
+
       --  Recover the proper type which contains Deep_Adjust
 
       if Is_Class_Wide_Type (Typ) then
@@ -6936,7 +6846,7 @@ package body Exp_Ch7 is
 
       --  Deal with untagged derivation of private views
 
-      if Is_Untagged_Derivation (Typ) then
+      if Present (Utyp) and then Is_Untagged_Derivation (Typ) then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
          Set_Assignment_OK (Ref);
@@ -6945,14 +6855,21 @@ package body Exp_Ch7 is
       --  When dealing with the completion of a private type, use the base
       --  type instead.
 
-      if Utyp /= Base_Type (Utyp) then
+      if Present (Utyp) and then Utyp /= Base_Type (Utyp) then
          pragma Assert (Is_Private_Type (Typ));
 
          Utyp := Base_Type (Utyp);
          Ref  := Unchecked_Convert_To (Utyp, Ref);
       end if;
 
-      if Skip_Self then
+      --  The underlying type may not be present due to a missing full view. In
+      --  this case freezing did not take place and there is no [Deep_]Adjust
+      --  primitive to call.
+
+      if No (Utyp) then
+         return Empty;
+
+      elsif Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
                Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
@@ -7012,7 +6929,7 @@ package body Exp_Ch7 is
          return
            Make_Call (Loc,
              Proc_Id   => Adj_Id,
-             Param     => New_Copy_Tree (Ref),
+             Param     => Ref,
              Skip_Self => Skip_Self);
       else
          return Empty;
@@ -7185,22 +7102,12 @@ package body Exp_Ch7 is
       function Build_Adjust_Or_Finalize_Statements
         (Typ : Entity_Id) return List_Id
       is
-         Comp_Typ       : constant Entity_Id  := Component_Type (Typ);
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Index_List     : constant List_Id    := New_List;
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Num_Dims       : constant Int        := Number_Dimensions (Typ);
-
-         Finalizer_Decls : List_Id := No_List;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Call            : Node_Id;
-         Comp_Ref        : Node_Id;
-         Core_Loop       : Node_Id;
-         Dim             : Int;
-         J               : Entity_Id;
-         Loop_Id         : Entity_Id;
-         Stmts           : List_Id;
+         Comp_Typ      : constant Entity_Id  := Component_Type (Typ);
+         Exceptions_OK : constant Boolean    :=
+                           not Restriction_Active (No_Exception_Propagation);
+         Index_List    : constant List_Id    := New_List;
+         Loc           : constant Source_Ptr := Sloc (Typ);
+         Num_Dims      : constant Int        := Number_Dimensions (Typ);
 
          procedure Build_Indexes;
          --  Generate the indexes used in the dimension loops
@@ -7220,13 +7127,26 @@ package body Exp_Ch7 is
             end loop;
          end Build_Indexes;
 
+         --  Local variables
+
+         Final_Decls : List_Id := No_List;
+         Final_Data  : Finalization_Exception_Data;
+         Block       : Node_Id;
+         Call        : Node_Id;
+         Comp_Ref    : Node_Id;
+         Core_Loop   : Node_Id;
+         Dim         : Int;
+         J           : Entity_Id;
+         Loop_Id     : Entity_Id;
+         Stmts       : List_Id;
+
       --  Start of processing for Build_Adjust_Or_Finalize_Statements
 
       begin
-         Finalizer_Decls := New_List;
+         Final_Decls := New_List;
 
          Build_Indexes;
-         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
+         Build_Object_Declarations (Final_Data, Final_Decls, Loc);
 
          Comp_Ref :=
            Make_Indexed_Component (Loc,
@@ -7247,99 +7167,111 @@ package body Exp_Ch7 is
             Call := Make_Final_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
          end if;
 
-         --  Generate the block which houses the adjust or finalize call:
+         if Present (Call) then
 
-         --    begin
-         --       <adjust or finalize call>
+            --  Generate the block which houses the adjust or finalize call:
 
-         --    exception
-         --       when others =>
-         --          if not Raised then
-         --             Raised := True;
-         --             Save_Occurrence (E, Get_Current_Excep.all.all);
-         --          end if;
-         --    end;
+            --    begin
+            --       <adjust or finalize call>
 
-         if Exceptions_OK then
-            Core_Loop :=
+            --    exception
+            --       when others =>
+            --          if not Raised then
+            --             Raised := True;
+            --             Save_Occurrence (E, Get_Current_Excep.all.all);
+            --          end if;
+            --    end;
+
+            if Exceptions_OK then
+               Core_Loop :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements         => New_List (Call),
+                       Exception_Handlers => New_List (
+                         Build_Exception_Handler (Final_Data))));
+            else
+               Core_Loop := Call;
+            end if;
+
+            --  Generate the dimension loops starting from the innermost one
+
+            --    for Jnn in [reverse] V'Range (Dim) loop
+            --       <core loop>
+            --    end loop;
+
+            J := Last (Index_List);
+            Dim := Num_Dims;
+            while Present (J) and then Dim > 0 loop
+               Loop_Id := J;
+               Prev (J);
+               Remove (Loop_Id);
+
+               Core_Loop :=
+                 Make_Loop_Statement (Loc,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier         => Loop_Id,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => Make_Identifier (Loc, Name_V),
+                               Attribute_Name => Name_Range,
+                               Expressions    => New_List (
+                                 Make_Integer_Literal (Loc, Dim))),
+
+                           Reverse_Present             =>
+                             Prim = Finalize_Case)),
+
+                   Statements       => New_List (Core_Loop),
+                   End_Label        => Empty);
+
+               Dim := Dim - 1;
+            end loop;
+
+            --  Generate the block which contains the core loop, declarations
+            --  of the abort flag, the exception occurrence, the raised flag
+            --  and the conditional raise:
+
+            --    declare
+            --       Abort  : constant Boolean := Triggered_By_Abort;
+            --         <or>
+            --       Abort  : constant Boolean := False;  --  no abort
+
+            --       E      : Exception_Occurrence;
+            --       Raised : Boolean := False;
+
+            --    begin
+            --       <core loop>
+
+            --       if Raised and then not Abort then
+            --          Raise_From_Controlled_Operation (E);
+            --       end if;
+            --    end;
+
+            Stmts := New_List (Core_Loop);
+
+            if Exceptions_OK then
+               Append_To (Stmts, Build_Raise_Statement (Final_Data));
+            end if;
+
+            Block :=
               Make_Block_Statement (Loc,
+                Declarations               => Final_Decls,
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements         => New_List (Call),
-                    Exception_Handlers => New_List (
-                      Build_Exception_Handler (Finalizer_Data))));
+                    Statements => Stmts));
+
+         --  Otherwise previous errors or a missing full view may prevent the
+         --  proper freezing of the component type. If this is the case, there
+         --  is no [Deep_]Adjust or [Deep_]Finalize primitive to call.
+
          else
-            Core_Loop := Call;
+            Block := Make_Null_Statement (Loc);
          end if;
 
-         --  Generate the dimension loops starting from the innermost one
-
-         --    for Jnn in [reverse] V'Range (Dim) loop
-         --       <core loop>
-         --    end loop;
-
-         J := Last (Index_List);
-         Dim := Num_Dims;
-         while Present (J) and then Dim > 0 loop
-            Loop_Id := J;
-            Prev (J);
-            Remove (Loop_Id);
-
-            Core_Loop :=
-              Make_Loop_Statement (Loc,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier         => Loop_Id,
-                        Discrete_Subtype_Definition =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_V),
-                            Attribute_Name => Name_Range,
-                            Expressions    => New_List (
-                              Make_Integer_Literal (Loc, Dim))),
-
-                        Reverse_Present => Prim = Finalize_Case)),
-
-                Statements => New_List (Core_Loop),
-                End_Label  => Empty);
-
-            Dim := Dim - 1;
-         end loop;
-
-         --  Generate the block which contains the core loop, the declarations
-         --  of the abort flag, the exception occurrence, the raised flag and
-         --  the conditional raise:
-
-         --    declare
-         --       Abort  : constant Boolean := Triggered_By_Abort;
-         --         <or>
-         --       Abort  : constant Boolean := False;  --  no abort
-
-         --       E      : Exception_Occurrence;
-         --       Raised : Boolean := False;
-
-         --    begin
-         --       <core loop>
-
-         --       if Raised and then not Abort then
-         --          Raise_From_Controlled_Operation (E);
-         --       end if;
-         --    end;
-
-         Stmts := New_List (Core_Loop);
-
-         if Exceptions_OK then
-            Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
-         end if;
-
-         return
-           New_List (
-             Make_Block_Statement (Loc,
-               Declarations               =>
-                 Finalizer_Decls,
-               Handled_Statement_Sequence =>
-                 Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
+         return New_List (Block);
       end Build_Adjust_Or_Finalize_Statements;
 
       ---------------------------------
@@ -7347,32 +7279,21 @@ package body Exp_Ch7 is
       ---------------------------------
 
       function Build_Initialize_Statements (Typ : Entity_Id) return List_Id is
-         Comp_Typ       : constant Entity_Id  := Component_Type (Typ);
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Final_List     : constant List_Id    := New_List;
-         Index_List     : constant List_Id    := New_List;
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Num_Dims       : constant Int        := Number_Dimensions (Typ);
+         Comp_Typ      : constant Entity_Id  := Component_Type (Typ);
+         Exceptions_OK : constant Boolean    :=
+                           not Restriction_Active (No_Exception_Propagation);
+         Final_List    : constant List_Id    := New_List;
+         Index_List    : constant List_Id    := New_List;
+         Loc           : constant Source_Ptr := Sloc (Typ);
+         Num_Dims      : constant Int        := Number_Dimensions (Typ);
 
-         Counter_Id      : Entity_Id;
-         Dim             : Int;
-         F               : Node_Id;
-         Fin_Stmt        : Node_Id;
-         Final_Block     : Node_Id;
-         Final_Loop      : Node_Id;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Finalizer_Decls : List_Id := No_List;
-         Init_Loop       : Node_Id;
-         J               : Node_Id;
-         Loop_Id         : Node_Id;
-         Stmts           : List_Id;
-
-         function Build_Counter_Assignment return Node_Id;
+         function Build_Assignment (Counter_Id : Entity_Id) return Node_Id;
          --  Generate the following assignment:
          --    Counter := V'Length (1) *
          --               ...
          --               V'Length (N) - Counter;
+         --
+         --  Counter_Id denotes the entity of the counter.
 
          function Build_Finalization_Call return Node_Id;
          --  Generate a deep finalization call for an array element
@@ -7384,11 +7305,11 @@ package body Exp_Ch7 is
          function Build_Initialization_Call return Node_Id;
          --  Generate a deep initialization call for an array element
 
-         ------------------------------
-         -- Build_Counter_Assignment --
-         ------------------------------
+         ----------------------
+         -- Build_Assignment --
+         ----------------------
 
-         function Build_Counter_Assignment return Node_Id is
+         function Build_Assignment (Counter_Id : Entity_Id) return Node_Id is
             Dim  : Int;
             Expr : Node_Id;
 
@@ -7431,7 +7352,7 @@ package body Exp_Ch7 is
                   Make_Op_Subtract (Loc,
                     Left_Opnd  => Expr,
                     Right_Opnd => New_Occurrence_Of (Counter_Id, Loc)));
-         end Build_Counter_Assignment;
+         end Build_Assignment;
 
          -----------------------------
          -- Build_Finalization_Call --
@@ -7490,14 +7411,31 @@ package body Exp_Ch7 is
             return Make_Init_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
          end Build_Initialization_Call;
 
+         --  Local variables
+
+         Counter_Id  : Entity_Id;
+         Dim         : Int;
+         F           : Node_Id;
+         Fin_Stmt    : Node_Id;
+         Final_Block : Node_Id;
+         Final_Data  : Finalization_Exception_Data;
+         Final_Decls : List_Id := No_List;
+         Final_Loop  : Node_Id;
+         Init_Block  : Node_Id;
+         Init_Call   : Node_Id;
+         Init_Loop   : Node_Id;
+         J           : Node_Id;
+         Loop_Id     : Node_Id;
+         Stmts       : List_Id;
+
       --  Start of processing for Build_Initialize_Statements
 
       begin
-         Counter_Id := Make_Temporary (Loc, 'C');
-         Finalizer_Decls := New_List;
+         Counter_Id  := Make_Temporary (Loc, 'C');
+         Final_Decls := New_List;
 
          Build_Indexes;
-         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
+         Build_Object_Declarations (Final_Data, Final_Decls, Loc);
 
          --  Generate the block which houses the finalization call, the index
          --  guard and the handler which triggers Program_Error later on.
@@ -7516,114 +7454,123 @@ package body Exp_Ch7 is
          --       end;
          --    end if;
 
-         if Exceptions_OK then
-            Fin_Stmt :=
-              Make_Block_Statement (Loc,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements         => New_List (Build_Finalization_Call),
-                    Exception_Handlers => New_List (
-                      Build_Exception_Handler (Finalizer_Data))));
-         else
-            Fin_Stmt := Build_Finalization_Call;
-         end if;
+         Fin_Stmt := Build_Finalization_Call;
 
-         --  This is the core of the loop, the dimension iterators are added
-         --  one by one in reverse.
+         if Present (Fin_Stmt) then
+            if Exceptions_OK then
+               Fin_Stmt :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements         => New_List (Fin_Stmt),
+                       Exception_Handlers => New_List (
+                         Build_Exception_Handler (Final_Data))));
+            end if;
 
-         Final_Loop :=
-           Make_If_Statement (Loc,
-             Condition =>
-               Make_Op_Gt (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
-                 Right_Opnd => Make_Integer_Literal (Loc, 0)),
-
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Occurrence_Of (Counter_Id, Loc),
-                 Expression =>
-                   Make_Op_Subtract (Loc,
-                     Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
-                     Right_Opnd => Make_Integer_Literal (Loc, 1)))),
-
-             Else_Statements => New_List (Fin_Stmt));
-
-         --  Generate all finalization loops starting from the innermost
-         --  dimension.
-
-         --    for Fnn in reverse V'Range (Dim) loop
-         --       <final loop>
-         --    end loop;
-
-         F := Last (Final_List);
-         Dim := Num_Dims;
-         while Present (F) and then Dim > 0 loop
-            Loop_Id := F;
-            Prev (F);
-            Remove (Loop_Id);
+            --  This is the core of the loop, the dimension iterators are added
+            --  one by one in reverse.
 
             Final_Loop :=
-              Make_Loop_Statement (Loc,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Loop_Id,
-                        Discrete_Subtype_Definition =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_V),
-                            Attribute_Name => Name_Range,
-                            Expressions    => New_List (
-                              Make_Integer_Literal (Loc, Dim))),
+              Make_If_Statement (Loc,
+                Condition =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 0)),
 
-                        Reverse_Present => True)),
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Loc,
+                    Name       => New_Occurrence_Of (Counter_Id, Loc),
+                    Expression =>
+                      Make_Op_Subtract (Loc,
+                        Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
+                        Right_Opnd => Make_Integer_Literal (Loc, 1)))),
 
-                Statements => New_List (Final_Loop),
-                End_Label => Empty);
+                Else_Statements => New_List (Fin_Stmt));
 
-            Dim := Dim - 1;
-         end loop;
+            --  Generate all finalization loops starting from the innermost
+            --  dimension.
 
-         --  Generate the block which contains the finalization loops, the
-         --  declarations of the abort flag, the exception occurrence, the
-         --  raised flag and the conditional raise.
+            --    for Fnn in reverse V'Range (Dim) loop
+            --       <final loop>
+            --    end loop;
 
-         --    declare
-         --       Abort  : constant Boolean := Triggered_By_Abort;
-         --         <or>
-         --       Abort  : constant Boolean := False;  --  no abort
+            F := Last (Final_List);
+            Dim := Num_Dims;
+            while Present (F) and then Dim > 0 loop
+               Loop_Id := F;
+               Prev (F);
+               Remove (Loop_Id);
 
-         --       E      : Exception_Occurrence;
-         --       Raised : Boolean := False;
+               Final_Loop :=
+                 Make_Loop_Statement (Loc,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier         => Loop_Id,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => Make_Identifier (Loc, Name_V),
+                               Attribute_Name => Name_Range,
+                               Expressions    => New_List (
+                                 Make_Integer_Literal (Loc, Dim))),
 
-         --    begin
-         --       Counter :=
-         --         V'Length (1) *
-         --         ...
-         --         V'Length (N) - Counter;
+                           Reverse_Present             => True)),
 
-         --       <final loop>
+                   Statements       => New_List (Final_Loop),
+                   End_Label        => Empty);
 
-         --       if Raised and then not Abort then
-         --          Raise_From_Controlled_Operation (E);
-         --       end if;
+               Dim := Dim - 1;
+            end loop;
 
-         --       raise;
-         --    end;
+            --  Generate the block which contains the finalization loops, the
+            --  declarations of the abort flag, the exception occurrence, the
+            --  raised flag and the conditional raise.
 
-         Stmts := New_List (Build_Counter_Assignment, Final_Loop);
+            --    declare
+            --       Abort  : constant Boolean := Triggered_By_Abort;
+            --         <or>
+            --       Abort  : constant Boolean := False;  --  no abort
 
-         if Exceptions_OK then
-            Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
-            Append_To (Stmts, Make_Raise_Statement (Loc));
+            --       E      : Exception_Occurrence;
+            --       Raised : Boolean := False;
+
+            --    begin
+            --       Counter :=
+            --         V'Length (1) *
+            --         ...
+            --         V'Length (N) - Counter;
+
+            --       <final loop>
+
+            --       if Raised and then not Abort then
+            --          Raise_From_Controlled_Operation (E);
+            --       end if;
+
+            --       raise;
+            --    end;
+
+            Stmts := New_List (Build_Assignment (Counter_Id), Final_Loop);
+
+            if Exceptions_OK then
+               Append_To (Stmts, Build_Raise_Statement (Final_Data));
+               Append_To (Stmts, Make_Raise_Statement (Loc));
+            end if;
+
+            Final_Block :=
+              Make_Block_Statement (Loc,
+                Declarations               => Final_Decls,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => Stmts));
+
+         --  Otherwise previous errors or a missing full view may prevent the
+         --  proper freezing of the component type. If this is the case, there
+         --  is no [Deep_]Finalize primitive to call.
+
+         else
+            Final_Block := Make_Null_Statement (Loc);
          end if;
-
-         Final_Block :=
-           Make_Block_Statement (Loc,
-             Declarations               =>
-               Finalizer_Decls,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
 
          --  Generate the block which contains the initialization call and
          --  the partial finalization code.
@@ -7638,70 +7585,73 @@ package body Exp_Ch7 is
          --          <finalization code>
          --    end;
 
-         Init_Loop :=
-           Make_Block_Statement (Loc,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements         => New_List (Build_Initialization_Call),
-                 Exception_Handlers => New_List (
-                   Make_Exception_Handler (Loc,
-                     Exception_Choices => New_List (Make_Others_Choice (Loc)),
-                     Statements        => New_List (Final_Block)))));
+         Init_Call := Build_Initialization_Call;
 
-         Append_To (Statements (Handled_Statement_Sequence (Init_Loop)),
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (Counter_Id, Loc),
-             Expression =>
-               Make_Op_Add (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
-                 Right_Opnd => Make_Integer_Literal (Loc, 1))));
-
-         --  Generate all initialization loops starting from the innermost
-         --  dimension.
-
-         --    for Jnn in V'Range (Dim) loop
-         --       <init loop>
-         --    end loop;
-
-         J := Last (Index_List);
-         Dim := Num_Dims;
-         while Present (J) and then Dim > 0 loop
-            Loop_Id := J;
-            Prev (J);
-            Remove (Loop_Id);
-
+         if Present (Init_Call) then
             Init_Loop :=
-              Make_Loop_Statement (Loc,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Loop_Id,
-                        Discrete_Subtype_Definition =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_V),
-                            Attribute_Name => Name_Range,
-                            Expressions    => New_List (
-                              Make_Integer_Literal (Loc, Dim))))),
+              Make_Block_Statement (Loc,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements         => New_List (Init_Call),
+                    Exception_Handlers => New_List (
+                      Make_Exception_Handler (Loc,
+                        Exception_Choices => New_List (
+                          Make_Others_Choice (Loc)),
+                        Statements        => New_List (Final_Block)))));
 
-                Statements => New_List (Init_Loop),
-                End_Label => Empty);
+            Append_To (Statements (Handled_Statement_Sequence (Init_Loop)),
+              Make_Assignment_Statement (Loc,
+                Name       => New_Occurrence_Of (Counter_Id, Loc),
+                Expression =>
+                  Make_Op_Add (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 1))));
 
-            Dim := Dim - 1;
-         end loop;
+            --  Generate all initialization loops starting from the innermost
+            --  dimension.
 
-         --  Generate the block which contains the counter variable and the
-         --  initialization loops.
+            --    for Jnn in V'Range (Dim) loop
+            --       <init loop>
+            --    end loop;
 
-         --    declare
-         --       Counter : Integer := 0;
-         --    begin
-         --       <init loop>
-         --    end;
+            J := Last (Index_List);
+            Dim := Num_Dims;
+            while Present (J) and then Dim > 0 loop
+               Loop_Id := J;
+               Prev (J);
+               Remove (Loop_Id);
 
-         return
-           New_List (
-             Make_Block_Statement (Loc,
+               Init_Loop :=
+                 Make_Loop_Statement (Loc,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier => Loop_Id,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => Make_Identifier (Loc, Name_V),
+                               Attribute_Name => Name_Range,
+                               Expressions    => New_List (
+                                 Make_Integer_Literal (Loc, Dim))))),
+
+                   Statements => New_List (Init_Loop),
+                   End_Label => Empty);
+
+               Dim := Dim - 1;
+            end loop;
+
+            --  Generate the block which contains the counter variable and the
+            --  initialization loops.
+
+            --    declare
+            --       Counter : Integer := 0;
+            --    begin
+            --       <init loop>
+            --    end;
+
+            Init_Block :=
+              Make_Block_Statement (Loc,
                Declarations               => New_List (
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Counter_Id,
@@ -7711,7 +7661,17 @@ package body Exp_Ch7 is
 
                Handled_Statement_Sequence =>
                  Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => New_List (Init_Loop))));
+                   Statements => New_List (Init_Loop)));
+
+         --  Otherwise previous errors or a missing full view may prevent the
+         --  proper freezing of the component type. If this is the case, there
+         --  is no [Deep_]Initialize primitive to call.
+
+         else
+            Init_Block := Make_Null_Statement (Loc);
+         end if;
+
+         return New_List (Init_Block);
       end Build_Initialize_Statements;
 
       -----------------------
@@ -7742,8 +7702,9 @@ package body Exp_Ch7 is
          when Address_Case =>
             return Make_Finalize_Address_Stmts (Typ);
 
-         when Adjust_Case   |
-              Finalize_Case =>
+         when Adjust_Case
+            | Finalize_Case
+         =>
             return Build_Adjust_Or_Finalize_Statements (Typ);
 
          when Initialize_Case =>
@@ -7997,7 +7958,8 @@ package body Exp_Ch7 is
          Exceptions_OK  : constant Boolean    :=
                             not Restriction_Active (No_Exception_Propagation);
          Loc            : constant Source_Ptr := Sloc (Typ);
-         Typ_Def        : constant Node_Id := Type_Definition (Parent (Typ));
+         Typ_Def        : constant Node_Id    :=
+                            Type_Definition (Parent (Typ));
 
          Bod_Stmts       : List_Id;
          Finalizer_Data  : Finalization_Exception_Data;
@@ -8016,12 +7978,7 @@ package body Exp_Ch7 is
          function Process_Component_List_For_Adjust
            (Comps : Node_Id) return List_Id
          is
-            Stmts     : constant List_Id := New_List;
-            Decl      : Node_Id;
-            Decl_Id   : Entity_Id;
-            Decl_Typ  : Entity_Id;
-            Has_POC   : Boolean;
-            Num_Comps : Nat;
+            Stmts : constant List_Id := New_List;
 
             procedure Process_Component_For_Adjust (Decl : Node_Id);
             --  Process the declaration of a single controlled component
@@ -8031,9 +7988,10 @@ package body Exp_Ch7 is
             ----------------------------------
 
             procedure Process_Component_For_Adjust (Decl : Node_Id) is
-               Id       : constant Entity_Id := Defining_Identifier (Decl);
-               Typ      : constant Entity_Id := Etype (Id);
-               Adj_Stmt : Node_Id;
+               Id  : constant Entity_Id := Defining_Identifier (Decl);
+               Typ : constant Entity_Id := Etype (Id);
+
+               Adj_Call : Node_Id;
 
             begin
                --    begin
@@ -8047,7 +8005,7 @@ package body Exp_Ch7 is
                --          end if;
                --    end;
 
-               Adj_Stmt :=
+               Adj_Call :=
                  Make_Adjust_Call (
                    Obj_Ref =>
                      Make_Selected_Component (Loc,
@@ -8055,18 +8013,31 @@ package body Exp_Ch7 is
                        Selector_Name => Make_Identifier (Loc, Chars (Id))),
                    Typ     => Typ);
 
-               if Exceptions_OK then
-                  Adj_Stmt :=
-                    Make_Block_Statement (Loc,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements         => New_List (Adj_Stmt),
-                          Exception_Handlers => New_List (
-                            Build_Exception_Handler (Finalizer_Data))));
-               end if;
+               --  Guard against a missing [Deep_]Adjust when the component
+               --  type was not properly frozen.
 
-               Append_To (Stmts, Adj_Stmt);
+               if Present (Adj_Call) then
+                  if Exceptions_OK then
+                     Adj_Call :=
+                       Make_Block_Statement (Loc,
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements (Loc,
+                             Statements         => New_List (Adj_Call),
+                             Exception_Handlers => New_List (
+                               Build_Exception_Handler (Finalizer_Data))));
+                  end if;
+
+                  Append_To (Stmts, Adj_Call);
+               end if;
             end Process_Component_For_Adjust;
+
+            --  Local variables
+
+            Decl      : Node_Id;
+            Decl_Id   : Entity_Id;
+            Decl_Typ  : Entity_Id;
+            Has_POC   : Boolean;
+            Num_Comps : Nat;
 
          --  Start of processing for Process_Component_List_For_Adjust
 
@@ -8403,7 +8374,8 @@ package body Exp_Ch7 is
          Exceptions_OK  : constant Boolean    :=
                             not Restriction_Active (No_Exception_Propagation);
          Loc            : constant Source_Ptr := Sloc (Typ);
-         Typ_Def        : constant Node_Id := Type_Definition (Parent (Typ));
+         Typ_Def        : constant Node_Id    :=
+                            Type_Definition (Parent (Typ));
 
          Bod_Stmts       : List_Id;
          Counter         : Int := 0;
@@ -8461,7 +8433,7 @@ package body Exp_Ch7 is
             is
                Id       : constant Entity_Id := Defining_Identifier (Decl);
                Typ      : constant Entity_Id := Etype (Id);
-               Fin_Stmt : Node_Id;
+               Fin_Call : Node_Id;
 
             begin
                if Is_Local then
@@ -8525,7 +8497,7 @@ package body Exp_Ch7 is
                --          end if;
                --    end;
 
-               Fin_Stmt :=
+               Fin_Call :=
                  Make_Final_Call
                    (Obj_Ref =>
                       Make_Selected_Component (Loc,
@@ -8533,17 +8505,22 @@ package body Exp_Ch7 is
                         Selector_Name => Make_Identifier (Loc, Chars (Id))),
                     Typ     => Typ);
 
-               if not Restriction_Active (No_Exception_Propagation) then
-                  Fin_Stmt :=
-                    Make_Block_Statement (Loc,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements         => New_List (Fin_Stmt),
-                          Exception_Handlers => New_List (
-                            Build_Exception_Handler (Finalizer_Data))));
-               end if;
+               --  Guard against a missing [Deep_]Finalize when the component
+               --  type was not properly frozen.
 
-               Append_To (Stmts, Fin_Stmt);
+               if Present (Fin_Call) then
+                  if Exceptions_OK then
+                     Fin_Call :=
+                       Make_Block_Statement (Loc,
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements (Loc,
+                             Statements         => New_List (Fin_Call),
+                             Exception_Handlers => New_List (
+                               Build_Exception_Handler (Finalizer_Data))));
+                  end if;
+
+                  Append_To (Stmts, Fin_Call);
+               end if;
             end Process_Component_For_Finalize;
 
          --  Start of processing for Process_Component_List_For_Finalize
@@ -9075,17 +9052,18 @@ package body Exp_Ch7 is
       Utyp   : Entity_Id;
 
    begin
+      Ref := Obj_Ref;
+
       --  Recover the proper type which contains [Deep_]Finalize
 
       if Is_Class_Wide_Type (Typ) then
          Utyp := Root_Type (Typ);
          Atyp := Utyp;
-         Ref  := Obj_Ref;
 
       elsif Is_Concurrent_Type (Typ) then
          Utyp := Corresponding_Record_Type (Typ);
          Atyp := Empty;
-         Ref  := Convert_Concurrent (Obj_Ref, Typ);
+         Ref  := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
         and then Present (Full_View (Typ))
@@ -9093,12 +9071,11 @@ package body Exp_Ch7 is
       then
          Utyp := Corresponding_Record_Type (Full_View (Typ));
          Atyp := Typ;
-         Ref  := Convert_Concurrent (Obj_Ref, Full_View (Typ));
+         Ref  := Convert_Concurrent (Ref, Full_View (Typ));
 
       else
          Utyp := Typ;
          Atyp := Typ;
-         Ref  := Obj_Ref;
       end if;
 
       Utyp := Underlying_Type (Base_Type (Utyp));
@@ -9127,7 +9104,8 @@ package body Exp_Ch7 is
       --  their parents. In this case, [Deep_]Finalize can be found in the full
       --  view of the parent type.
 
-      if Is_Tagged_Type (Utyp)
+      if Present (Utyp)
+        and then Is_Tagged_Type (Utyp)
         and then Is_Derived_Type (Utyp)
         and then Is_Empty_Elmt_List (Primitive_Operations (Utyp))
         and then Is_Private_Type (Etype (Utyp))
@@ -9141,7 +9119,7 @@ package body Exp_Ch7 is
       --  When dealing with the completion of a private type, use the base type
       --  instead.
 
-      if Utyp /= Base_Type (Utyp) then
+      if Present (Utyp) and then Utyp /= Base_Type (Utyp) then
          pragma Assert (Present (Atyp) and then Is_Private_Type (Atyp));
 
          Utyp := Base_Type (Utyp);
@@ -9149,7 +9127,14 @@ package body Exp_Ch7 is
          Set_Assignment_OK (Ref);
       end if;
 
-      if Skip_Self then
+      --  The underlying type may not be present due to a missing full view. In
+      --  this case freezing did not take place and there is no [Deep_]Finalize
+      --  primitive to call.
+
+      if No (Utyp) then
+         return Empty;
+
+      elsif Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
                Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
@@ -9229,7 +9214,7 @@ package body Exp_Ch7 is
          return
            Make_Call (Loc,
              Proc_Id   => Fin_Id,
-             Param     => New_Copy_Tree (Ref),
+             Param     => Ref,
              Skip_Self => Skip_Self);
       else
          return Empty;
@@ -9324,18 +9309,21 @@ package body Exp_Ch7 is
    ---------------------------------
 
    function Make_Finalize_Address_Stmts (Typ : Entity_Id) return List_Id is
-      Loc      : constant Source_Ptr := Sloc (Typ);
-      Ptr_Typ  : constant Entity_Id  := Make_Temporary (Loc, 'P');
-      Decls    : List_Id;
-      Desg_Typ : Entity_Id;
-      Obj_Expr : Node_Id;
+      Loc : constant Source_Ptr := Sloc (Typ);
+
+      Decls     : List_Id;
+      Desig_Typ : Entity_Id;
+      Fin_Block : Node_Id;
+      Fin_Call  : Node_Id;
+      Obj_Expr  : Node_Id;
+      Ptr_Typ   : Entity_Id;
 
    begin
       if Is_Array_Type (Typ) then
          if Is_Constrained (First_Subtype (Typ)) then
-            Desg_Typ := First_Subtype (Typ);
+            Desig_Typ := First_Subtype (Typ);
          else
-            Desg_Typ := Base_Type (Typ);
+            Desig_Typ := Base_Type (Typ);
          end if;
 
       --  Class-wide types of constrained root types
@@ -9367,18 +9355,20 @@ package body Exp_Ch7 is
                Parent_Typ := Underlying_Record_View (Parent_Typ);
             end if;
 
-            Desg_Typ := Class_Wide_Type (Underlying_Type (Parent_Typ));
+            Desig_Typ := Class_Wide_Type (Underlying_Type (Parent_Typ));
          end;
 
       --  General case
 
       else
-         Desg_Typ := Typ;
+         Desig_Typ := Typ;
       end if;
 
       --  Generate:
       --    type Ptr_Typ is access all Typ;
       --    for Ptr_Typ'Storage_Size use 0;
+
+      Ptr_Typ := Make_Temporary (Loc, 'P');
 
       Decls := New_List (
         Make_Full_Type_Declaration (Loc,
@@ -9386,7 +9376,7 @@ package body Exp_Ch7 is
           Type_Definition     =>
             Make_Access_To_Object_Definition (Loc,
               All_Present        => True,
-              Subtype_Indication => New_Occurrence_Of (Desg_Typ, Loc))),
+              Subtype_Indication => New_Occurrence_Of (Desig_Typ, Loc))),
 
         Make_Attribute_Definition_Clause (Loc,
           Name       => New_Occurrence_Of (Ptr_Typ, Loc),
@@ -9419,7 +9409,7 @@ package body Exp_Ch7 is
 
             --  Generate:
             --    Dnn : constant Storage_Offset :=
-            --            Desg_Typ'Descriptor_Size / Storage_Unit;
+            --            Desig_Typ'Descriptor_Size / Storage_Unit;
 
             Dope_Id := Make_Temporary (Loc, 'D');
 
@@ -9433,7 +9423,7 @@ package body Exp_Ch7 is
                   Make_Op_Divide (Loc,
                     Left_Opnd  =>
                       Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Desg_Typ, Loc),
+                        Prefix         => New_Occurrence_Of (Desig_Typ, Loc),
                         Attribute_Name => Name_Descriptor_Size),
                     Right_Opnd =>
                       Make_Integer_Literal (Loc, System_Storage_Unit))));
@@ -9456,20 +9446,30 @@ package body Exp_Ch7 is
          end;
       end if;
 
-      --  Create the block and the finalization call
+      Fin_Call :=
+        Make_Final_Call (
+          Obj_Ref =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => Unchecked_Convert_To (Ptr_Typ, Obj_Expr)),
+          Typ     => Desig_Typ);
 
-      return New_List (
-        Make_Block_Statement (Loc,
-          Declarations => Decls,
+      if Present (Fin_Call) then
+         Fin_Block :=
+           Make_Block_Statement (Loc,
+             Declarations               => Decls,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Fin_Call)));
 
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (
-                Make_Final_Call (
-                  Obj_Ref =>
-                    Make_Explicit_Dereference (Loc,
-                      Prefix => Unchecked_Convert_To (Ptr_Typ, Obj_Expr)),
-                  Typ => Desg_Typ)))));
+      --  Otherwise previous errors or a missing full view may prevent the
+      --  proper freezing of the designated type. If this is the case, there
+      --  is no [Deep_]Finalize primitive to call.
+
+      else
+         Fin_Block := Make_Null_Statement (Loc);
+      end if;
+
+      return New_List (Fin_Block);
    end Make_Finalize_Address_Stmts;
 
    -------------------------------------
@@ -9544,13 +9544,15 @@ package body Exp_Ch7 is
       Utyp    : Entity_Id;
 
    begin
+      Ref := Obj_Ref;
+
       --  Deal with the type and object reference. Depending on the context, an
       --  object reference may need several conversions.
 
       if Is_Concurrent_Type (Typ) then
          Is_Conc := True;
          Utyp    := Corresponding_Record_Type (Typ);
-         Ref     := Convert_Concurrent (Obj_Ref, Typ);
+         Ref     := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
         and then Present (Full_View (Typ))
@@ -9558,17 +9560,15 @@ package body Exp_Ch7 is
       then
          Is_Conc := True;
          Utyp    := Corresponding_Record_Type (Underlying_Type (Typ));
-         Ref     := Convert_Concurrent (Obj_Ref, Underlying_Type (Typ));
+         Ref     := Convert_Concurrent (Ref, Underlying_Type (Typ));
 
       else
          Is_Conc := False;
          Utyp    := Typ;
-         Ref     := Obj_Ref;
       end if;
 
-      Set_Assignment_OK (Ref);
-
       Utyp := Underlying_Type (Base_Type (Utyp));
+      Set_Assignment_OK (Ref);
 
       --  Deal with untagged derivation of private views
 
@@ -9585,10 +9585,18 @@ package body Exp_Ch7 is
       --  completion of a private type. We need to access the base type and
       --  generate a conversion to it.
 
-      if Utyp /= Base_Type (Utyp) then
+      if Present (Utyp) and then Utyp /= Base_Type (Utyp) then
          pragma Assert (Is_Private_Type (Typ));
          Utyp := Base_Type (Utyp);
          Ref  := Unchecked_Convert_To (Utyp, Ref);
+      end if;
+
+      --  The underlying type may not be present due to a missing full view.
+      --  In this case freezing did not take place and there is no suitable
+      --  [Deep_]Initialize primitive to call.
+
+      if No (Utyp) then
+         return Empty;
       end if;
 
       --  Select the appropriate version of initialize
@@ -9610,8 +9618,7 @@ package body Exp_Ch7 is
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
-            New_Occurrence_Of (Proc, Loc),
+          Name                   => New_Occurrence_Of (Proc, Loc),
           Parameter_Associations => New_List (Ref));
    end Make_Init_Call;
 

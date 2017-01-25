@@ -1,5 +1,5 @@
 /* softfp machine description for MIPS.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,10 +96,21 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 # define _FP_QNANNEGATEDP 1
 #endif
 
+#ifdef __mips_nan2008
+/* NaN payloads should be preserved for NAN2008.  */
+# define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)	\
+  do						\
+    {						\
+      R##_s = X##_s;				\
+      _FP_FRAC_COPY_##wc (R, X);		\
+      R##_c = FP_CLS_NAN;			\
+    }						\
+  while (0)
+#else
 /* Comment from glibc: */
 /* From my experiments it seems X is chosen unless one of the
    NaNs is sNaN,  in which case the result is NANSIGN/NANFRAC.  */
-#define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)			\
+# define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)			\
   do {								\
     if ((_FP_FRAC_HIGH_RAW_##fs(X) |				\
 	 _FP_FRAC_HIGH_RAW_##fs(Y)) & _FP_QNANBIT_##fs)		\
@@ -114,6 +125,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
       }								\
     R##_c = FP_CLS_NAN;						\
   } while (0)
+#endif
 
 #ifdef __mips_hard_float
 #define FP_EX_INVALID           0x40

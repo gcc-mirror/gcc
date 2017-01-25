@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -31,7 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "format.h"
 #include <ctype.h>
 #include <string.h>
-#include <stdlib.h>
 
 
 static const fnode colon_node = { FMT_COLON, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,

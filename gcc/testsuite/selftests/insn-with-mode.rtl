@@ -1,0 +1,7 @@
+(function "insn_with_mode"
+  (insn-chain
+    (block 2
+      (insn:TI 1 (set (reg:SI <0>) (reg:SI <1>)) (nil))
+    ) ;; block
+  ) ;; insn-chain
+) ;; function

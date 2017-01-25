@@ -1,5 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -2024,7 +2024,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  /* ???  We can't handle bitfield precision extracts without
 	     either using an alternate type for the BIT_FIELD_REF and
 	     then doing a conversion or possibly adjusting the offset
-	     according to endianess.  */
+	     according to endianness.  */
 	  && (! INTEGRAL_TYPE_P (vr->type)
 	      || ref->size == TYPE_PRECISION (vr->type))
 	  && ref->size % BITS_PER_UNIT == 0)
@@ -4844,6 +4844,7 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   if (walker.fail)
     {
+      scc_vn_restore_ssa_info ();
       free_scc_vn ();
       return false;
     }

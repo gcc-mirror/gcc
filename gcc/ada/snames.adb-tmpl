@@ -134,6 +134,8 @@ package body Snames is
          return Attribute_Dispatching_Domain;
       elsif N = Name_Interrupt_Priority then
          return Attribute_Interrupt_Priority;
+      elsif N = Name_Secondary_Stack_Size then
+         return Attribute_Secondary_Stack_Size;
       else
          return Attribute_Id'Val (N - First_Attribute_Name);
       end if;
@@ -229,6 +231,8 @@ package body Snames is
             return Pragma_Lock_Free;
          when Name_Priority                         =>
             return Pragma_Priority;
+         when Name_Secondary_Stack_Size             =>
+            return Pragma_Secondary_Stack_Size;
          when Name_Storage_Size                     =>
             return Pragma_Storage_Size;
          when Name_Storage_Unit                     =>
@@ -331,7 +335,7 @@ package body Snames is
 
    function Is_Configuration_Pragma_Name (N : Name_Id) return Boolean is
    begin
-      return N in First_Pragma_Name .. Last_Configuration_Pragma_Name
+      return N in Configuration_Pragma_Names
         or else N = Name_Default_Scalar_Storage_Order
         or else N = Name_Fast_Math;
    end Is_Configuration_Pragma_Name;
@@ -456,6 +460,7 @@ package body Snames is
         or else N = Name_Interrupt_Priority
         or else N = Name_Lock_Free
         or else N = Name_Priority
+        or else N = Name_Secondary_Stack_Size
         or else N = Name_Storage_Size
         or else N = Name_Storage_Unit;
    end Is_Pragma_Name;

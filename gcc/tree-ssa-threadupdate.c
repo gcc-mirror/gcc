@@ -1,5 +1,5 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "dbgcnt.h"
 #include "tree-cfg.h"
+#include "tree-vectorizer.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an
@@ -300,7 +301,11 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 	  remove_edge (e);
 	}
       else
-	ei_next (&ei);
+	{
+	  e->probability = REG_BR_PROB_BASE;
+	  e->count = bb->count;
+	  ei_next (&ei);
+	}
     }
 
   /* If the remaining edge is a loop exit, there must have
@@ -2081,54 +2086,6 @@ mark_threaded_blocks (bitmap threaded_blocks)
   else
     bitmap_copy (threaded_blocks, tmp);
 
-  /* Look for jump threading paths which cross multiple loop headers.
-
-     The code to thread through loop headers will change the CFG in ways
-     that break assumptions made by the loop optimization code.
-
-     We don't want to blindly cancel the requests.  We can instead do better
-     by trimming off the end of the jump thread path.  */
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
-    {
-      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  if (e->aux)
-	    {
-	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-
-	      for (unsigned int i = 0, crossed_headers = 0;
-		   i < path->length ();
-		   i++)
-		{
-		  basic_block dest = (*path)[i]->e->dest;
-		  crossed_headers += (dest == dest->loop_father->header);
-		  if (crossed_headers > 1)
-		    {
-		      /* Trim from entry I onwards.  */
-		      for (unsigned int j = i; j < path->length (); j++)
-			delete (*path)[j];
-		      path->truncate (i);
-
-		      /* Now that we've truncated the path, make sure
-			 what's left is still valid.   We need at least
-			 two edges on the path and the last edge can not
-			 be a joiner.  This should never happen, but let's
-			 be safe.  */
-		      if (path->length () < 2
-			  || (path->last ()->type
-			      == EDGE_COPY_SRC_JOINER_BLOCK))
-			{
-			  delete_jump_thread_path (path);
-			  e->aux = NULL;
-			}
-		      break;
-		    }
-		}
-	    }
-	}
-    }
-
   /* If we have a joiner block (J) which has two successors S1 and S2 and
      we are threading though S1 and the final destination of the thread
      is S2, then we must verify that any PHI nodes in S2 have the same
@@ -2167,6 +2124,46 @@ mark_threaded_blocks (bitmap threaded_blocks)
 		    {
 		      delete_jump_thread_path (path);
 		      e->aux = NULL;
+		    }
+		}
+	    }
+	}
+    }
+
+  /* Look for jump threading paths which cross multiple loop headers.
+
+     The code to thread through loop headers will change the CFG in ways
+     that invalidate the cached loop iteration information.  So we must
+     detect that case and wipe the cached information.  */
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (e->aux)
+	    {
+	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
+
+	      for (unsigned int i = 0, crossed_headers = 0;
+		   i < path->length ();
+		   i++)
+		{
+		  basic_block dest = (*path)[i]->e->dest;
+		  basic_block src = (*path)[i]->e->src;
+		  /* If we enter a loop.  */
+		  if (flow_loop_nested_p (src->loop_father, dest->loop_father))
+		    ++crossed_headers;
+		  /* If we step from a block outside an irreducible region
+		     to a block inside an irreducible region, then we have
+		     crossed into a loop.  */
+		  else if (! (src->flags & BB_IRREDUCIBLE_LOOP)
+			   && (dest->flags & BB_IRREDUCIBLE_LOOP))
+		      ++crossed_headers;
+		  if (crossed_headers > 1)
+		    {
+		      vect_free_loop_info_assumptions
+			((*path)[path->length () - 1]->e->dest->loop_father);
+		      break;
 		    }
 		}
 	    }
@@ -2223,8 +2220,8 @@ duplicate_thread_path (edge entry, edge exit,
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
   edge redirected;
-  int total_freq = 0, entry_freq = 0;
-  gcov_type total_count = 0, entry_count = 0;
+  int curr_freq;
+  gcov_type curr_count;
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
@@ -2251,27 +2248,6 @@ duplicate_thread_path (edge entry, edge exit,
       free_region_copy = true;
     }
 
-  if (entry->dest->count)
-    {
-      total_count = entry->dest->count;
-      entry_count = entry->count;
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (entry_count > total_count)
-	entry_count = total_count;
-    }
-  else
-    {
-      total_freq = entry->dest->frequency;
-      entry_freq = EDGE_FREQUENCY (entry);
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (total_freq == 0)
-	total_freq = 1;
-      else if (entry_freq > total_freq)
-	entry_freq = total_freq;
-    }
-
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), false);
 
@@ -2281,17 +2257,61 @@ duplicate_thread_path (edge entry, edge exit,
      invalidating the property that is propagated by executing all the blocks of
      the jump-thread path in order.  */
 
+  curr_count = entry->count;
+  curr_freq = EDGE_FREQUENCY (entry);
+
   for (i = 0; i < n_region; i++)
     {
       edge e;
       edge_iterator ei;
       basic_block bb = region_copy[i];
 
+      /* Watch inconsistent profile.  */
+      if (curr_count > region[i]->count)
+	curr_count = region[i]->count;
+      if (curr_freq > region[i]->frequency)
+	curr_freq = region[i]->frequency;
+      /* Scale current BB.  */
+      if (region[i]->count)
+	{
+	  /* In the middle of the path we only scale the frequencies.
+	     In last BB we need to update probabilities of outgoing edges
+	     because we know which one is taken at the threaded path.  */
+	  if (i + 1 != n_region)
+	    scale_bbs_frequencies_gcov_type (region + i, 1,
+					     region[i]->count - curr_count,
+					     region[i]->count);
+	  else
+	    update_bb_profile_for_threading (region[i],
+					     curr_freq, curr_count,
+					     exit);
+	  scale_bbs_frequencies_gcov_type (region_copy + i, 1, curr_count,
+					   region_copy[i]->count);
+	}
+      else if (region[i]->frequency)
+	{
+	  if (i + 1 != n_region)
+	    scale_bbs_frequencies_int (region + i, 1,
+				       region[i]->frequency - curr_freq,
+				       region[i]->frequency);
+	  else
+	    update_bb_profile_for_threading (region[i],
+					     curr_freq, curr_count,
+					     exit);
+	  scale_bbs_frequencies_int (region_copy + i, 1, curr_freq,
+				     region_copy[i]->frequency);
+	}
+
       if (single_succ_p (bb))
 	{
 	  /* Make sure the successor is the next node in the path.  */
 	  gcc_assert (i + 1 == n_region
 		      || region_copy[i + 1] == single_succ_edge (bb)->dest);
+	  if (i + 1 != n_region)
+	    {
+	      curr_freq = EDGE_FREQUENCY (single_succ_edge (bb));
+	      curr_count = single_succ_edge (bb)->count;
+	    }
 	  continue;
 	}
 
@@ -2318,22 +2338,13 @@ duplicate_thread_path (edge entry, edge exit,
 	    if (orig)
 	      redirect_edge_and_branch_force (e, orig);
 	  }
+	else
+	  {
+	    curr_freq = EDGE_FREQUENCY (e);
+	    curr_count = e->count;
+	  }
     }
 
-  if (total_count)
-    {
-      scale_bbs_frequencies_gcov_type (region, n_region,
-				       total_count - entry_count,
-				       total_count);
-      scale_bbs_frequencies_gcov_type (region_copy, n_region, entry_count,
-				       total_count);
-    }
-  else
-    {
-      scale_bbs_frequencies_int (region, n_region, total_freq - entry_freq,
-				 total_freq);
-      scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
-    }
 
   if (flag_checking)
     verify_jump_thread (region_copy, n_region);
@@ -2348,11 +2359,12 @@ duplicate_thread_path (edge entry, edge exit,
 
   edge e = make_edge (region_copy[n_region - 1], exit->dest, EDGE_FALLTHRU);
 
-  if (e) {
-    rescan_loop_exit (e, true, false);
-    e->probability = REG_BR_PROB_BASE;
-    e->count = region_copy[n_region - 1]->count;
-  }
+  if (e)
+    {
+      rescan_loop_exit (e, true, false);
+      e->probability = REG_BR_PROB_BASE;
+      e->count = region_copy[n_region - 1]->count;
+    }
 
   /* Redirect the entry and add the phi node arguments.  */
   if (entry->dest == loop->header)

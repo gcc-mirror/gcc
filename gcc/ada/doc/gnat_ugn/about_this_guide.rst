@@ -45,11 +45,11 @@ This guide contains the following chapters:
   with GNAT
 
 Appendices cover several additional topics:
-  
+
 * :ref:`Platform_Specific_Information` describes the different run-time
   library implementations and also presents information on how to use
   GNAT on several specific platforms
-  
+
 * :ref:`Example_of_Binder_Output_File` shows the source code for the binder
   output file for a sample program.
 
@@ -136,7 +136,7 @@ the new document structure.
 
 * :ref:`GNAT_Utility_Programs` is a new chapter consolidating the information about several
   GNAT tools:
-  
+
   .. only:: PRO or GPL
 
     - :ref:`The_File_Cleanup_Utility_gnatclean`
@@ -149,7 +149,7 @@ the new document structure.
     - :ref:`The_GNAT_Pretty-Printer_gnatpp`
     - :ref:`The_Body_Stub_Generator_gnatstub`
     - :ref:`The_Unit_Test_Generator_gnattest`
-  
+
   .. only:: FSF
 
     - :ref:`The_File_Cleanup_Utility_gnatclean`
@@ -206,7 +206,7 @@ in this guide:
   ::
 
     and then shown this way.
-    
+
 * Commands that are entered by the user are shown as preceded by a prompt string
   comprising the ``$`` character followed by a space.
 
@@ -214,4 +214,3 @@ in this guide:
   as the directory separator; e.g., :file:`parent-dir/subdir/myfile.adb`.
   If you are using GNAT on a Windows platform, please note that
   the '\\' character should be used instead.
-

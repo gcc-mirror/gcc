@@ -1,5 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright (C) 1997-2016 Free Software Foundation, Inc.
+# Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -240,7 +240,8 @@ case ${host} in
   extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
   ;;
 *-*-netbsd*)
-  tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
+  tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
+  tmake_file="$tmake_file t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
   # NetBSD 1.7 and later are set up to use GCC's crtstuff for
   # ELF configurations.  We will clear extra_parts in the
   # a.out configurations.
@@ -330,11 +331,13 @@ aarch64*-*-elf | aarch64*-*-rtems*)
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	md_unwind_header=aarch64/aarch64-unwind.h
 	;;
 aarch64*-*-freebsd*)
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	md_unwind_header=aarch64/aarch64-unwind.h
 	;;
 aarch64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
@@ -368,13 +371,13 @@ alpha*-dec-*vms*)
 	md_unwind_header=alpha/vms-unwind.h
 	;;
 arc*-*-elf*)
-	tmake_file="arc/t-arc-newlib arc/t-arc"
-	extra_parts="crti.o crtn.o crtend.o crtbegin.o crtendS.o crtbeginS.o libgmon.a crtg.o crtgend.o"
-	extra_parts="${extra_parts} crttls.o"
+	tmake_file="arc/t-arc"
+	extra_parts="crti.o crtn.o crtend.o crtbegin.o crtendS.o crtbeginS.o"
+	extra_parts="$extra_parts crttls.o"
 	;;
 arc*-*-linux-uclibc*)
-	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override arc/t-arc700-uClibc arc/t-arc"
-	extra_parts="$extra_parts crti.o crtn.o libgmon.a crtg.o crtgend.o"
+	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override arc/t-arc-uClibc arc/t-arc"
+	extra_parts="$extra_parts crti.o crtn.o"
 	extra_parts="$extra_parts crttls.o"
 	;;
 arm-wrs-vxworks)
@@ -599,6 +602,7 @@ x86_64-*-freebsd*)
 	md_unwind_header=i386/freebsd-unwind.h
 	;;
 i[34567]86-*-netbsdelf*)
+	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 x86_64-*-netbsd*)
 	tmake_file="${tmake_file} i386/t-crtstuff"

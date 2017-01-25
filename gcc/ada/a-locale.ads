@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2010, Free Software Foundation, Inc.            --
+--          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
@@ -19,8 +19,13 @@ package Ada.Locales is
    pragma Preelaborate (Locales);
    pragma Remote_Types (Locales);
 
-   type Language_Code is array (1 .. 3) of Character range 'a' .. 'z';
-   type Country_Code  is array (1 .. 2) of Character range 'A' .. 'Z';
+   type Language_Code is new String (1 .. 3)
+      with Dynamic_Predicate =>
+         (for all E of Language_Code => E in 'a' .. 'z');
+
+   type Country_Code is new String (1 .. 2)
+      with Dynamic_Predicate =>
+         (for all E of Country_Code => E in 'A' .. 'Z');
 
    Language_Unknown : constant Language_Code := "und";
    Country_Unknown  : constant Country_Code := "ZZ";

@@ -55,7 +55,8 @@ target_triplet = @target@
 subdir = mpxrt
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/lead-dot.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
@@ -210,6 +211,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -249,7 +251,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 # May be used by toolexeclibdir.
-@LIBMPX_SUPPORTED_TRUE@gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+@LIBMPX_SUPPORTED_TRUE@gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBMPX_SUPPORTED_TRUE@AM_CPPFLAGS = -I$(top_srcdir)/..
 @LIBMPX_SUPPORTED_TRUE@AM_CFLAGS = $(XCFLAGS)
 @LIBMPX_SUPPORTED_TRUE@toolexeclib_LTLIBRARIES = libmpx.la

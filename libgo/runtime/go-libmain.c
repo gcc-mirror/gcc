@@ -13,7 +13,6 @@
 #include <unistd.h>
 
 #include "runtime.h"
-#include "go-alloc.h"
 #include "array.h"
 #include "arch.h"
 #include "malloc.h"
@@ -61,6 +60,7 @@ initfn (int argc, char **argv, char** env __attribute__ ((unused)))
 
   runtime_isarchive = true;
 
+  setIsCgo ();
   runtime_cpuinit ();
   runtime_initsig(true);
 

@@ -1,5 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -127,7 +127,7 @@ get_kind (bt type, gfc_expr *k, const char *name, int default_kind)
       return -1;
     }
 
-  if (gfc_extract_int (k, &kind) != NULL
+  if (gfc_extract_int (k, &kind)
       || gfc_validate_kind (type, kind, true) < 0)
     {
       gfc_error ("Invalid KIND parameter of %s at %L", name, &k->where);
@@ -610,9 +610,17 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
 	  n++;
 	  if (n < result->rank)
 	    {
-	      count [n]++;
+	      /* If the nested loop is unrolled GFC_MAX_DIMENSIONS
+		 times, we'd warn for the last iteration, because the
+		 array index will have already been incremented to the
+		 array sizes, and we can't tell that this must make
+		 the test against result->rank false, because ranks
+		 must not exceed GFC_MAX_DIMENSIONS.  */
+	      GCC_DIAGNOSTIC_PUSH_IGNORED (-Warray-bounds)
+	      count[n]++;
 	      base += sstride[n];
 	      dest += dstride[n];
+	      GCC_DIAGNOSTIC_POP
 	    }
 	  else
 	    done = true;
@@ -1491,7 +1499,7 @@ gfc_simplify_btest (gfc_expr *e, gfc_expr *bit)
   if (e->expr_type != EXPR_CONSTANT || bit->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (gfc_extract_int (bit, &b) != NULL || b < 0)
+  if (gfc_extract_int (bit, &b) || b < 0)
     return gfc_get_logical_expr (gfc_default_logical_kind, &e->where, false);
 
   return gfc_get_logical_expr (gfc_default_logical_kind, &e->where,
@@ -4226,7 +4234,6 @@ gfc_simplify_maskr (gfc_expr *i, gfc_expr *kind_arg)
 {
   gfc_expr *result;
   int kind, arg, k;
-  const char *s;
 
   if (i->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -4236,8 +4243,8 @@ gfc_simplify_maskr (gfc_expr *i, gfc_expr *kind_arg)
     return &gfc_bad_expr;
   k = gfc_validate_kind (BT_INTEGER, kind, false);
 
-  s = gfc_extract_int (i, &arg);
-  gcc_assert (!s);
+  bool fail = gfc_extract_int (i, &arg);
+  gcc_assert (!fail);
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
 
@@ -4257,7 +4264,6 @@ gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
 {
   gfc_expr *result;
   int kind, arg, k;
-  const char *s;
   mpz_t z;
 
   if (i->expr_type != EXPR_CONSTANT)
@@ -4268,8 +4274,8 @@ gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
     return &gfc_bad_expr;
   k = gfc_validate_kind (BT_INTEGER, kind, false);
 
-  s = gfc_extract_int (i, &arg);
-  gcc_assert (!s);
+  bool fail = gfc_extract_int (i, &arg);
+  gcc_assert (!fail);
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
 
@@ -5052,7 +5058,6 @@ gfc_expr *
 gfc_simplify_poppar (gfc_expr *e)
 {
   gfc_expr *popcnt;
-  const char *s;
   int i;
 
   if (e->expr_type != EXPR_CONSTANT)
@@ -5061,8 +5066,8 @@ gfc_simplify_poppar (gfc_expr *e)
   popcnt = gfc_simplify_popcnt (e);
   gcc_assert (popcnt);
 
-  s = gfc_extract_int (popcnt, &i);
-  gcc_assert (!s);
+  bool fail = gfc_extract_int (popcnt, &i);
+  gcc_assert (!fail);
 
   return gfc_get_int_expr (gfc_default_integer_kind, &e->where, i % 2);
 }
@@ -5274,8 +5279,8 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
       (e->ts.u.cl->length &&
        mpz_sgn (e->ts.u.cl->length->value.integer) != 0))
     {
-      const char *res = gfc_extract_int (n, &ncop);
-      gcc_assert (res == NULL);
+      bool fail = gfc_extract_int (n, &ncop);
+      gcc_assert (!fail);
     }
   else
     ncop = 0;
@@ -5685,7 +5690,7 @@ gfc_simplify_selected_int_kind (gfc_expr *e)
 {
   int i, kind, range;
 
-  if (e->expr_type != EXPR_CONSTANT || gfc_extract_int (e, &range) != NULL)
+  if (e->expr_type != EXPR_CONSTANT || gfc_extract_int (e, &range))
     return NULL;
 
   kind = INT_MAX;
@@ -5714,7 +5719,7 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
   else
     {
       if (p->expr_type != EXPR_CONSTANT
-	  || gfc_extract_int (p, &precision) != NULL)
+	  || gfc_extract_int (p, &precision))
 	return NULL;
       loc = &p->where;
     }
@@ -5724,7 +5729,7 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
   else
     {
       if (q->expr_type != EXPR_CONSTANT
-	  || gfc_extract_int (q, &range) != NULL)
+	  || gfc_extract_int (q, &range))
 	return NULL;
 
       if (!loc)
@@ -5736,7 +5741,7 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
   else
     {
       if (rdx->expr_type != EXPR_CONSTANT
-	  || gfc_extract_int (rdx, &radix) != NULL)
+	  || gfc_extract_int (rdx, &radix))
 	return NULL;
 
       if (!loc)

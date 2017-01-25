@@ -1,7 +1,7 @@
 /* Generate pattern matching and transform code shared between
    GENERIC and GIMPLE folding code from match-and-simplify description.
 
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
    and Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
@@ -2913,6 +2913,20 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
 
       indent -= 6;
       fprintf_indent (f, indent, "    }\n");
+      /* See if there is SSA_NAME among generic_exprs and if yes, emit it
+	 here rather than in the next loop.  */
+      for (unsigned i = 0; i < generic_exprs.length (); ++i)
+	{
+	  expr *e = as_a <expr *>(generic_exprs[i]->op);
+	  id_base *op = e->operation;
+	  if (*op == SSA_NAME && (exprs_len || fns_len))
+	    {
+	      fprintf_indent (f, indent + 4, "{\n");
+	      generic_exprs[i]->gen (f, indent + 6, gimple);
+	      fprintf_indent (f, indent + 4, "}\n");
+	    }
+	}
+
       fprintf_indent (f, indent, "  break;\n");
     }
 
@@ -2922,6 +2936,9 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
       id_base *op = e->operation;
       if (*op == CONVERT_EXPR || *op == NOP_EXPR)
 	fprintf_indent (f, indent, "CASE_CONVERT:\n");
+      else if (*op == SSA_NAME && (exprs_len || fns_len))
+	/* Already handled above.  */
+	continue;
       else
 	fprintf_indent (f, indent, "case %s:\n", op->id);
       fprintf_indent (f, indent, "  {\n");

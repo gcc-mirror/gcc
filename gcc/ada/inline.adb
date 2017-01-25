@@ -958,6 +958,7 @@ package body Inline is
       -----------------------------------------
 
       function Has_Single_Return_In_GNATprove_Mode return Boolean is
+         Body_To_Inline : constant Node_Id := N;
          Last_Statement : Node_Id := Empty;
 
          function Check_Return (N : Node_Id) return Traverse_Result;
@@ -970,18 +971,29 @@ package body Inline is
 
          function Check_Return (N : Node_Id) return Traverse_Result is
          begin
-            if Nkind_In (N, N_Simple_Return_Statement,
-                            N_Extended_Return_Statement)
-            then
-               if N = Last_Statement then
-                  return OK;
-               else
-                  return Abandon;
-               end if;
+            case Nkind (N) is
+               when N_Extended_Return_Statement
+                  | N_Simple_Return_Statement
+               =>
+                  if N = Last_Statement then
+                     return OK;
+                  else
+                     return Abandon;
+                  end if;
 
-            else
-               return OK;
-            end if;
+               --  Skip locally declared subprogram bodies inside the body to
+               --  inline, as the return statements inside those do not count.
+
+               when N_Subprogram_Body =>
+                  if N = Body_To_Inline then
+                     return OK;
+                  else
+                     return Skip;
+                  end if;
+
+               when others =>
+                  return OK;
+            end case;
          end Check_Return;
 
          function Check_All_Returns is new Traverse_Func (Check_Return);
@@ -1149,7 +1161,7 @@ package body Inline is
          Make_Defining_Identifier (Sloc (N), Name_uParent));
       Set_Corresponding_Spec (Original_Body, Empty);
 
-      --  Remove all aspects/pragmas that have no meaining in an inlined body
+      --  Remove all aspects/pragmas that have no meaning in an inlined body
 
       Remove_Aspects_And_Pragmas (Original_Body);
 
@@ -1203,6 +1215,294 @@ package body Inline is
       Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
       Set_Is_Inlined (Spec_Id);
    end Build_Body_To_Inline;
+
+   -------------------------------------------
+   -- Call_Can_Be_Inlined_In_GNATprove_Mode --
+   -------------------------------------------
+
+   function Call_Can_Be_Inlined_In_GNATprove_Mode
+    (N    : Node_Id;
+     Subp : Entity_Id) return Boolean
+   is
+      F : Entity_Id;
+      A : Node_Id;
+
+   begin
+      F := First_Formal (Subp);
+      A := First_Actual (N);
+      while Present (F) loop
+         if Ekind (F) /= E_Out_Parameter
+           and then not Same_Type (Etype (F), Etype (A))
+           and then
+             (Is_By_Reference_Type (Etype (A))
+               or else Is_Limited_Type (Etype (A)))
+         then
+            return False;
+         end if;
+
+         Next_Formal (F);
+         Next_Actual (A);
+      end loop;
+
+      return True;
+   end Call_Can_Be_Inlined_In_GNATprove_Mode;
+
+   --------------------------------------
+   -- Can_Be_Inlined_In_GNATprove_Mode --
+   --------------------------------------
+
+   function Can_Be_Inlined_In_GNATprove_Mode
+     (Spec_Id : Entity_Id;
+      Body_Id : Entity_Id) return Boolean
+   is
+      function Has_Formal_With_Discriminant_Dependent_Fields
+        (Id : Entity_Id) return Boolean;
+      --  Returns true if the subprogram has at least one formal parameter of
+      --  an unconstrained record type with per-object constraints on component
+      --  types.
+
+      function Has_Some_Contract (Id : Entity_Id) return Boolean;
+      --  Returns True if subprogram Id has any contract (Pre, Post, Global,
+      --  Depends, etc.)
+
+      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
+      --  Returns True if subprogram Id defines a compilation unit
+      --  Shouldn't this be in Sem_Aux???
+
+      function In_Package_Visible_Spec (Id : Node_Id) return Boolean;
+      --  Returns True if subprogram Id is defined in the visible part of a
+      --  package specification.
+
+      ---------------------------------------------------
+      -- Has_Formal_With_Discriminant_Dependent_Fields --
+      ---------------------------------------------------
+
+      function Has_Formal_With_Discriminant_Dependent_Fields
+        (Id : Entity_Id) return Boolean is
+
+         function Has_Discriminant_Dependent_Component
+           (Typ : Entity_Id) return Boolean;
+         --  Determine whether unconstrained record type Typ has at least
+         --  one component that depends on a discriminant.
+
+         ------------------------------------------
+         -- Has_Discriminant_Dependent_Component --
+         ------------------------------------------
+
+         function Has_Discriminant_Dependent_Component
+           (Typ : Entity_Id) return Boolean
+         is
+            Comp : Entity_Id;
+
+         begin
+            --  Inspect all components of the record type looking for one
+            --  that depends on a discriminant.
+
+            Comp := First_Component (Typ);
+            while Present (Comp) loop
+               if Has_Discriminant_Dependent_Constraint (Comp) then
+                  return True;
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+
+            return False;
+         end Has_Discriminant_Dependent_Component;
+
+         --  Local variables
+
+         Subp_Id    : constant Entity_Id := Ultimate_Alias (Id);
+         Formal     : Entity_Id;
+         Formal_Typ : Entity_Id;
+
+      --  Start of processing for
+      --  Has_Formal_With_Discriminant_Dependent_Fields
+
+      begin
+         --  Inspect all parameters of the subprogram looking for a formal
+         --  of an unconstrained record type with at least one discriminant
+         --  dependent component.
+
+         Formal := First_Formal (Subp_Id);
+         while Present (Formal) loop
+            Formal_Typ := Etype (Formal);
+
+            if Is_Record_Type (Formal_Typ)
+              and then not Is_Constrained (Formal_Typ)
+              and then Has_Discriminant_Dependent_Component (Formal_Typ)
+            then
+               return True;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         return False;
+      end Has_Formal_With_Discriminant_Dependent_Fields;
+
+      -----------------------
+      -- Has_Some_Contract --
+      -----------------------
+
+      function Has_Some_Contract (Id : Entity_Id) return Boolean is
+         Items : Node_Id;
+
+      begin
+         --  A call to an expression function may precede the actual body which
+         --  is inserted at the end of the enclosing declarations. Ensure that
+         --  the related entity is decorated before inspecting the contract.
+
+         if Is_Subprogram_Or_Generic_Subprogram (Id) then
+            Items := Contract (Id);
+
+            return Present (Items)
+              and then (Present (Pre_Post_Conditions (Items)) or else
+                        Present (Contract_Test_Cases (Items)) or else
+                        Present (Classifications     (Items)));
+         end if;
+
+         return False;
+      end Has_Some_Contract;
+
+      -----------------------------
+      -- In_Package_Visible_Spec --
+      -----------------------------
+
+      function In_Package_Visible_Spec  (Id : Node_Id) return Boolean is
+         Decl : Node_Id := Parent (Parent (Id));
+         P    : Node_Id;
+
+      begin
+         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Decl);
+         end if;
+
+         P := Parent (Decl);
+
+         return Nkind (P) = N_Package_Specification
+           and then List_Containing (Decl) = Visible_Declarations (P);
+      end In_Package_Visible_Spec;
+
+      ------------------------
+      -- Is_Unit_Subprogram --
+      ------------------------
+
+      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean is
+         Decl : Node_Id := Parent (Parent (Id));
+      begin
+         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Decl);
+         end if;
+
+         return Nkind (Parent (Decl)) = N_Compilation_Unit;
+      end Is_Unit_Subprogram;
+
+      --  Local declarations
+
+      Id : Entity_Id;
+      --  Procedure or function entity for the subprogram
+
+   --  Start of processing for Can_Be_Inlined_In_GNATprove_Mode
+
+   begin
+      pragma Assert (Present (Spec_Id) or else Present (Body_Id));
+
+      if Present (Spec_Id) then
+         Id := Spec_Id;
+      else
+         Id := Body_Id;
+      end if;
+
+      --  Only local subprograms without contracts are inlined in GNATprove
+      --  mode, as these are the subprograms which a user is not interested in
+      --  analyzing in isolation, but rather in the context of their call. This
+      --  is a convenient convention, that could be changed for an explicit
+      --  pragma/aspect one day.
+
+      --  In a number of special cases, inlining is not desirable or not
+      --  possible, see below.
+
+      --  Do not inline unit-level subprograms
+
+      if Is_Unit_Subprogram (Id) then
+         return False;
+
+      --  Do not inline subprograms declared in the visible part of a package
+
+      elsif In_Package_Visible_Spec (Id) then
+         return False;
+
+      --  Do not inline subprograms marked No_Return, possibly used for
+      --  signaling errors, which GNATprove handles specially.
+
+      elsif No_Return (Id) then
+         return False;
+
+      --  Do not inline subprograms that have a contract on the spec or the
+      --  body. Use the contract(s) instead in GNATprove.
+
+      elsif (Present (Spec_Id) and then Has_Some_Contract (Spec_Id))
+               or else
+            (Present (Body_Id) and then Has_Some_Contract (Body_Id))
+      then
+         return False;
+
+      --  Do not inline expression functions, which are directly inlined at the
+      --  prover level.
+
+      elsif (Present (Spec_Id) and then Is_Expression_Function (Spec_Id))
+              or else
+            (Present (Body_Id) and then Is_Expression_Function (Body_Id))
+      then
+         return False;
+
+      --  Do not inline generic subprogram instances. The visibility rules of
+      --  generic instances plays badly with inlining.
+
+      elsif Is_Generic_Instance (Spec_Id) then
+         return False;
+
+      --  Only inline subprograms whose spec is marked SPARK_Mode On. For
+      --  the subprogram body, a similar check is performed after the body
+      --  is analyzed, as this is where a pragma SPARK_Mode might be inserted.
+
+      elsif Present (Spec_Id)
+        and then
+          (No (SPARK_Pragma (Spec_Id))
+            or else
+           Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Spec_Id)) /= On)
+      then
+         return False;
+
+      --  Subprograms in generic instances are currently not inlined, to avoid
+      --  problems with inlining of standard library subprograms.
+
+      elsif Instantiation_Location (Sloc (Id)) /= No_Location then
+         return False;
+
+      --  Do not inline predicate functions (treated specially by GNATprove)
+
+      elsif Is_Predicate_Function (Id) then
+         return False;
+
+      --  Do not inline subprograms with a parameter of an unconstrained
+      --  record type if it has discrimiant dependent fields. Indeed, with
+      --  such parameters, the frontend cannot always ensure type compliance
+      --  in record component accesses (in particular with records containing
+      --  packed arrays).
+
+      elsif Has_Formal_With_Discriminant_Dependent_Fields (Id) then
+         return False;
+
+      --  Otherwise, this is a subprogram declared inside the private part of a
+      --  package, or inside a package body, or locally in a subprogram, and it
+      --  does not have any contract. Inline it.
+
+      else
+         return True;
+      end if;
+   end Can_Be_Inlined_In_GNATprove_Mode;
 
    -------------------
    -- Cannot_Inline --
@@ -1336,262 +1636,6 @@ package body Inline is
          end if;
       end if;
    end Cannot_Inline;
-
-   --------------------------------------
-   -- Can_Be_Inlined_In_GNATprove_Mode --
-   --------------------------------------
-
-   function Can_Be_Inlined_In_GNATprove_Mode
-     (Spec_Id : Entity_Id;
-      Body_Id : Entity_Id) return Boolean
-   is
-      function Has_Formal_With_Discriminant_Dependent_Fields
-        (Id : Entity_Id) return Boolean;
-      --  Returns true if the subprogram has at least one formal parameter of
-      --  an unconstrained record type with per-object constraints on component
-      --  types.
-
-      function Has_Some_Contract (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id has any contract (Pre, Post, Global,
-      --  Depends, etc.)
-
-      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id defines a compilation unit
-      --  Shouldn't this be in Sem_Aux???
-
-      function In_Package_Visible_Spec (Id : Node_Id) return Boolean;
-      --  Returns True if subprogram Id is defined in the visible part of a
-      --  package specification.
-
-      ---------------------------------------------------
-      -- Has_Formal_With_Discriminant_Dependent_Fields --
-      ---------------------------------------------------
-
-      function Has_Formal_With_Discriminant_Dependent_Fields
-        (Id : Entity_Id) return Boolean is
-
-         function Has_Discriminant_Dependent_Component
-           (Typ : Entity_Id) return Boolean;
-         --  Determine whether unconstrained record type Typ has at least
-         --  one component that depends on a discriminant.
-
-         ------------------------------------------
-         -- Has_Discriminant_Dependent_Component --
-         ------------------------------------------
-
-         function Has_Discriminant_Dependent_Component
-           (Typ : Entity_Id) return Boolean
-         is
-            Comp : Entity_Id;
-
-         begin
-            --  Inspect all components of the record type looking for one
-            --  that depends on a discriminant.
-
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               if Has_Discriminant_Dependent_Constraint (Comp) then
-                  return True;
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-
-            return False;
-         end Has_Discriminant_Dependent_Component;
-
-         --  Local variables
-
-         Subp_Id    : constant Entity_Id := Ultimate_Alias (Id);
-         Formal     : Entity_Id;
-         Formal_Typ : Entity_Id;
-
-         --  Start of processing for
-         --  Has_Formal_With_Discriminant_Dependent_Component
-
-      begin
-         --  Inspect all parameters of the subprogram looking for a formal
-         --  of an unconstrained record type with at least one discriminant
-         --  dependent component.
-
-         Formal := First_Formal (Subp_Id);
-         while Present (Formal) loop
-            Formal_Typ := Etype (Formal);
-
-            if Is_Record_Type (Formal_Typ)
-              and then not Is_Constrained (Formal_Typ)
-              and then Has_Discriminant_Dependent_Component (Formal_Typ)
-            then
-               return True;
-            end if;
-
-            Next_Formal (Formal);
-         end loop;
-
-         return False;
-      end Has_Formal_With_Discriminant_Dependent_Fields;
-
-      -----------------------
-      -- Has_Some_Contract --
-      -----------------------
-
-      function Has_Some_Contract (Id : Entity_Id) return Boolean is
-         Items : Node_Id;
-
-      begin
-         --  A call to an expression function may precede the actual body which
-         --  is inserted at the end of the enclosing declarations. Ensure that
-         --  the related entity is decorated before inspecting the contract.
-
-         if Is_Subprogram_Or_Generic_Subprogram (Id) then
-            Items := Contract (Id);
-
-            return Present (Items)
-              and then (Present (Pre_Post_Conditions (Items)) or else
-                        Present (Contract_Test_Cases (Items)) or else
-                        Present (Classifications     (Items)));
-         end if;
-
-         return False;
-      end Has_Some_Contract;
-
-      -----------------------------
-      -- In_Package_Visible_Spec --
-      -----------------------------
-
-      function In_Package_Visible_Spec  (Id : Node_Id) return Boolean is
-         Decl : Node_Id := Parent (Parent (Id));
-         P    : Node_Id;
-
-      begin
-         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Decl);
-         end if;
-
-         P := Parent (Decl);
-
-         return Nkind (P) = N_Package_Specification
-           and then List_Containing (Decl) = Visible_Declarations (P);
-      end In_Package_Visible_Spec;
-
-      ------------------------
-      -- Is_Unit_Subprogram --
-      ------------------------
-
-      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean is
-         Decl : Node_Id := Parent (Parent (Id));
-      begin
-         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Decl);
-         end if;
-
-         return Nkind (Parent (Decl)) = N_Compilation_Unit;
-      end Is_Unit_Subprogram;
-
-      --  Local declarations
-
-      Id : Entity_Id;  --  Procedure or function entity for the subprogram
-
-   --  Start of processing for Can_Be_Inlined_In_GNATprove_Mode
-
-   begin
-      pragma Assert (Present (Spec_Id) or else Present (Body_Id));
-
-      if Present (Spec_Id) then
-         Id := Spec_Id;
-      else
-         Id := Body_Id;
-      end if;
-
-      --  Only local subprograms without contracts are inlined in GNATprove
-      --  mode, as these are the subprograms which a user is not interested in
-      --  analyzing in isolation, but rather in the context of their call. This
-      --  is a convenient convention, that could be changed for an explicit
-      --  pragma/aspect one day.
-
-      --  In a number of special cases, inlining is not desirable or not
-      --  possible, see below.
-
-      --  Do not inline unit-level subprograms
-
-      if Is_Unit_Subprogram (Id) then
-         return False;
-
-      --  Do not inline subprograms declared in the visible part of a package
-
-      elsif In_Package_Visible_Spec (Id) then
-         return False;
-
-      --  Do not inline subprograms marked No_Return, possibly used for
-      --  signaling errors, which GNATprove handles specially.
-
-      elsif No_Return (Id) then
-         return False;
-
-      --  Do not inline subprograms that have a contract on the spec or the
-      --  body. Use the contract(s) instead in GNATprove.
-
-      elsif (Present (Spec_Id) and then Has_Some_Contract (Spec_Id))
-               or else
-            (Present (Body_Id) and then Has_Some_Contract (Body_Id))
-      then
-         return False;
-
-      --  Do not inline expression functions, which are directly inlined at the
-      --  prover level.
-
-      elsif (Present (Spec_Id) and then Is_Expression_Function (Spec_Id))
-              or else
-            (Present (Body_Id) and then Is_Expression_Function (Body_Id))
-      then
-         return False;
-
-      --  Do not inline generic subprogram instances. The visibility rules of
-      --  generic instances plays badly with inlining.
-
-      elsif Is_Generic_Instance (Spec_Id) then
-         return False;
-
-      --  Only inline subprograms whose spec is marked SPARK_Mode On. For
-      --  the subprogram body, a similar check is performed after the body
-      --  is analyzed, as this is where a pragma SPARK_Mode might be inserted.
-
-      elsif Present (Spec_Id)
-        and then
-          (No (SPARK_Pragma (Spec_Id))
-            or else
-           Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Spec_Id)) /= On)
-      then
-         return False;
-
-      --  Subprograms in generic instances are currently not inlined, to avoid
-      --  problems with inlining of standard library subprograms.
-
-      elsif Instantiation_Location (Sloc (Id)) /= No_Location then
-         return False;
-
-      --  Do not inline predicate functions (treated specially by GNATprove)
-
-      elsif Is_Predicate_Function (Id) then
-         return False;
-
-      --  Do not inline subprograms with a parameter of an unconstrained
-      --  record type if it has discrimiant dependent fields. Indeed, with
-      --  such parameters, the frontend cannot always ensure type compliance
-      --  in record component accesses (in particular with records containing
-      --  packed arrays).
-
-      elsif Has_Formal_With_Discriminant_Dependent_Fields (Id) then
-         return False;
-
-      --  Otherwise, this is a subprogram declared inside the private part of a
-      --  package, or inside a package body, or locally in a subprogram, and it
-      --  does not have any contract. Inline it.
-
-      else
-         return True;
-      end if;
-   end Can_Be_Inlined_In_GNATprove_Mode;
 
    --------------------------------------------
    -- Check_And_Split_Unconstrained_Function --
@@ -2426,6 +2470,7 @@ package body Inline is
 
          elsif Nkind (N) = N_Simple_Return_Statement then
             if No (Expression (N)) then
+               Num_Ret := Num_Ret + 1;
                Make_Exit_Label;
                Rewrite (N,
                  Make_Goto_Statement (Loc, Name => New_Copy (Lab_Id)));
@@ -2450,13 +2495,12 @@ package body Inline is
                --  errors, e.g. when the expression is a numeric literal and
                --  the context is private. If the expression is an aggregate,
                --  use a qualified expression, because an aggregate is not a
-               --  legal argument of a conversion. Ditto for numeric literals,
-               --  which must be resolved to a specific type.
+               --  legal argument of a conversion. Ditto for numeric literals
+               --  and attributes that yield a universal type, because those
+               --  must be resolved to a specific type.
 
-               if Nkind_In (Expression (N), N_Aggregate,
-                                            N_Null,
-                                            N_Real_Literal,
-                                            N_Integer_Literal)
+               if Nkind_In (Expression (N), N_Aggregate, N_Null)
+                 or else Yields_Universal_Type (Expression (N))
                then
                   Ret :=
                     Make_Qualified_Expression (Sloc (N),
@@ -3054,8 +3098,10 @@ package body Inline is
 
          elsif Base_Type (Etype (F)) = Base_Type (Etype (A))
            and then Etype (F) /= Base_Type (Etype (F))
+           and then Is_Constrained (Etype (F))
          then
             Temp_Typ := Etype (F);
+
          else
             Temp_Typ := Etype (A);
          end if;
@@ -3065,19 +3111,26 @@ package body Inline is
 
          --  If the actual is a literal and the formal has its address taken,
          --  we cannot pass the literal itself as an argument, so its value
-         --  must be captured in a temporary.
+         --  must be captured in a temporary. Skip this optimization in
+         --  GNATprove mode, to make sure any check on a type conversion
+         --  will be issued.
 
          if (Is_Entity_Name (A)
               and then
-               (not Is_Scalar_Type (Etype (A))
-                 or else Ekind (Entity (A)) = E_Enumeration_Literal))
+                (not Is_Scalar_Type (Etype (A))
+                  or else Ekind (Entity (A)) = E_Enumeration_Literal)
+              and then not GNATprove_Mode)
 
          --  When the actual is an identifier and the corresponding formal is
          --  used only once in the original body, the formal can be substituted
-         --  directly with the actual parameter.
+         --  directly with the actual parameter. Skip this optimization in
+         --  GNATprove mode, to make sure any check on a type conversion
+         --  will be issued.
 
-           or else (Nkind (A) = N_Identifier
-             and then Formal_Is_Used_Once (F))
+           or else
+             (Nkind (A) = N_Identifier
+               and then Formal_Is_Used_Once (F)
+               and then not GNATprove_Mode)
 
            or else
              (Nkind_In (A, N_Real_Literal,
@@ -3110,8 +3163,17 @@ package body Inline is
                    Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
                    Expression   => Relocate_Node (Expression (A)));
 
-            elsif Etype (F) /= Etype (A) then
-               New_A := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
+            --  In GNATprove mode, keep the most precise type of the actual for
+            --  the temporary variable, when the formal type is unconstrained.
+            --  Otherwise, the AST may contain unexpected assignment statements
+            --  to a temporary variable of unconstrained type renaming a local
+            --  variable of constrained type, which is not expected by
+            --  GNATprove.
+
+            elsif Etype (F) /= Etype (A)
+              and then (not GNATprove_Mode or else Is_Constrained (Etype (F)))
+            then
+               New_A    := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
                Temp_Typ := Etype (F);
 
             else
@@ -3147,7 +3209,29 @@ package body Inline is
                    Constant_Present    => True,
                    Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
                    Expression          => New_A);
+
             else
+               --  In GNATprove mode, make an explicit copy of input
+               --  parameters when formal and actual types differ, to make
+               --  sure any check on the type conversion will be issued.
+               --  The legality of the copy is ensured by calling first
+               --  Call_Can_Be_Inlined_In_GNATprove_Mode.
+
+               if GNATprove_Mode
+                 and then Ekind (F) /= E_Out_Parameter
+                 and then not Same_Type (Etype (F), Etype (A))
+               then
+                  pragma Assert (not (Is_By_Reference_Type (Etype (A))));
+                  pragma Assert (not (Is_Limited_Type (Etype (A))));
+
+                  Append_To (Decls,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Make_Temporary (Loc, 'C'),
+                      Constant_Present    => True,
+                      Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
+                      Expression          => New_Copy_Tree (New_A)));
+               end if;
+
                Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Temp,
@@ -3336,8 +3420,9 @@ package body Inline is
 
       elsif Present (Exit_Lab) then
 
-         --  If the body was a single expression, the single return statement
-         --  and the corresponding label are useless.
+         --  If there's a single return statement at the end of the subprogram,
+         --  the corresponding goto statement and the corresponding label are
+         --  useless.
 
          if Num_Ret = 1
            and then
@@ -4147,7 +4232,8 @@ package body Inline is
                                                 Name_Refined_Post,
                                                 Name_Test_Case,
                                                 Name_Unmodified,
-                                                Name_Unreferenced)
+                                                Name_Unreferenced,
+                                                Name_Unused)
             then
                Remove (Item);
             end if;
@@ -4161,6 +4247,11 @@ package body Inline is
    begin
       Remove_Items (Aspect_Specifications (Body_Decl));
       Remove_Items (Declarations          (Body_Decl));
+
+      --  Pragmas Unmodified, Unreferenced, and Unused may additionally appear
+      --  in the body of the subprogram.
+
+      Remove_Items (Statements (Handled_Statement_Sequence (Body_Decl)));
    end Remove_Aspects_And_Pragmas;
 
    --------------------------

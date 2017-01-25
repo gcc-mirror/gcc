@@ -373,7 +373,7 @@ package body Eval_Fat is
                   Fraction := Fraction + 1;
                end if;
 
-            when Round   =>
+            when Round =>
 
                --  Do not round to even as is done with IEEE arithmetic, but
                --  instead round away from zero when the result is exactly
@@ -390,7 +390,7 @@ package body Eval_Fat is
                   Fraction := Fraction + 1;
                end if;
 
-            when Floor   =>
+            when Floor =>
                if N > Uint_0 and then UR_Is_Negative (X) then
                   Fraction := Fraction + 1;
                end if;

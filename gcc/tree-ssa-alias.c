@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -2326,9 +2326,13 @@ same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
 			 tree base2, HOST_WIDE_INT offset2, HOST_WIDE_INT size2,
 			 HOST_WIDE_INT max_size2)
 {
-  /* For now, just handle VAR_DECL.  */
-  bool base1_obj_p = VAR_P (base1);
-  bool base2_obj_p = VAR_P (base2);
+  /* Offsets need to be 0.  */
+  if (offset1 != 0
+      || offset2 != 0)
+    return false;
+
+  bool base1_obj_p = SSA_VAR_P (base1);
+  bool base2_obj_p = SSA_VAR_P (base2);
 
   /* We need one object.  */
   if (base1_obj_p == base2_obj_p)
@@ -2356,13 +2360,9 @@ same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
   if (size1 != size2)
     return false;
 
-  /* Offsets need to be 0.  */
-  if (offset1 != 0
-      || offset2 != 0)
-    return false;
 
   /* Check that memref is a store to pointer with singleton points-to info.  */
-  if (!tree_int_cst_equal (TREE_OPERAND (memref, 1), integer_zero_node))
+  if (!integer_zerop (TREE_OPERAND (memref, 1)))
     return false;
   tree ptr = TREE_OPERAND (memref, 0);
   if (TREE_CODE (ptr) != SSA_NAME)
@@ -2373,10 +2373,13 @@ same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
       || !pt_solution_singleton_or_null_p (&pi->pt, &pt_uid))
     return false;
 
+  /* Be conservative with non-call exceptions when the address might
+     be NULL.  */
+  if (flag_non_call_exceptions && pi->pt.null)
+    return false;
+
   /* Check that ptr points relative to obj.  */
-  unsigned int obj_uid = (DECL_PT_UID_SET_P (obj)
-			  ? DECL_PT_UID (obj)
-			  : DECL_UID (obj));
+  unsigned int obj_uid = DECL_PT_UID (obj);
   if (obj_uid != pt_uid)
     return false;
 

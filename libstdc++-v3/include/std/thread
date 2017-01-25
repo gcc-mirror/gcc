@@ -1,6 +1,6 @@
 // <thread> -*- C++ -*-
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -108,6 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // 2097.  packaged_task constructors should be constrained
     thread(thread&) = delete;
     thread(const thread&) = delete;
+    thread(const thread&&) = delete;
 
     thread(thread&& __t) noexcept
     { swap(__t); }

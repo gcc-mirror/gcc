@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -402,6 +402,7 @@ static const char *compare_debug_auxbase_opt_spec_function (int, const char **);
 static const char *pass_through_libs_spec_func (int, const char **);
 static const char *replace_extension_spec_func (int, const char **);
 static const char *greater_than_spec_func (int, const char **);
+static const char *debug_level_greater_than_spec_func (int, const char **);
 static char *convert_white_space (char *);
 
 /* The Specs Language
@@ -833,14 +834,16 @@ proper position among the other output files.  */
      && defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
 #  define ASM_DEBUG_SPEC						\
       (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG				\
-       ? "%{!g0:%{gdwarf*:--gdwarf2}%{!gdwarf*:%{g*:--gstabs}}}" ASM_MAP	\
-       : "%{!g0:%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}}" ASM_MAP)
+       ? "%{%:debug-level-gt(0):"					\
+	 "%{gdwarf*:--gdwarf2}%{!gdwarf*:%{g*:--gstabs}}}" ASM_MAP	\
+       : "%{%:debug-level-gt(0):"					\
+	 "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}}" ASM_MAP)
 # else
 #  if defined(DBX_DEBUGGING_INFO) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-#   define ASM_DEBUG_SPEC "%{g*:%{!g0:--gstabs}}" ASM_MAP
+#   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):--gstabs}}" ASM_MAP
 #  endif
 #  if defined(DWARF2_DEBUGGING_INFO) && defined(HAVE_AS_GDWARF2_DEBUG_FLAG)
-#   define ASM_DEBUG_SPEC "%{g*:%{!g0:--gdwarf2}}" ASM_MAP
+#   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):--gdwarf2}}" ASM_MAP
 #  endif
 # endif
 #endif
@@ -1119,7 +1122,8 @@ static const char *cpp_unique_options =
    in turn cause preprocessor symbols to be defined specially.  */
 static const char *cpp_options =
 "%(cpp_unique_options) %1 %{m*} %{std*&ansi&trigraphs} %{W*&pedantic*} %{w}\
- %{f*} %{g*:%{!g0:%{g*} %{!fno-working-directory:-fworking-directory}}} %{O*}\
+ %{f*} %{g*:%{%:debug-level-gt(0):%{g*}\
+ %{!fno-working-directory:-fworking-directory}}} %{O*}\
  %{undef} %{save-temps*:-fpch-preprocess}";
 
 /* This contains cpp options which are not passed when the preprocessor
@@ -1328,7 +1332,7 @@ static const struct compiler default_compilers[] =
 		%(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\
 		    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
 			%(cc1_options)\
-			%{!fsyntax-only:-o %g.s \
+			%{!fsyntax-only:%{!S:-o %g.s} \
 			    %{!fdump-ada-spec*:%{!o*:--output-pch=%i.gch}\
 					       %W{o*:--output-pch=%*}}%V}}\
 	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
@@ -1639,6 +1643,7 @@ static const struct spec_function static_spec_functions[] =
   { "pass-through-libs",	pass_through_libs_spec_func },
   { "replace-extension",	replace_extension_spec_func },
   { "gt",			greater_than_spec_func },
+  { "debug-level-gt",		debug_level_greater_than_spec_func },
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -1930,6 +1935,9 @@ static int have_c = 0;
 
 /* Was the option -o passed.  */
 static int have_o = 0;
+
+/* Was the option -E passed.  */
+static int have_E = 0;
 
 /* Pointer to output file name passed in with -o. */
 static const char *output_file = 0;
@@ -3770,6 +3778,10 @@ driver_handle_option (struct gcc_options *opts,
       printf ("%s\n", spec_machine);
       exit (0);
 
+    case OPT_dumpfullversion:
+      printf ("%s\n", BASEVER);
+      exit (0);
+
     case OPT__version:
       print_version = 1;
 
@@ -4065,6 +4077,10 @@ driver_handle_option (struct gcc_options *opts,
 		    PREFIX_PRIORITY_B_OPT, 0, 0);
       }
       validated = true;
+      break;
+
+    case OPT_E:
+      have_E = true;
       break;
 
     case OPT_x:
@@ -7733,6 +7749,17 @@ driver::build_option_suggestions (void)
 	  {
 	    for (int j = 0; sanitizer_opts[j].name != NULL; ++j)
 	      {
+		struct cl_option optb;
+		/* -fsanitize=all is not valid, only -fno-sanitize=all.
+		   So don't register the positive misspelling candidates
+		   for it.  */
+		if (sanitizer_opts[j].flag == ~0U && i == OPT_fsanitize_)
+		  {
+		    optb = *option;
+		    optb.opt_text = opt_text = "-fno-sanitize=";
+		    optb.cl_reject_negative = true;
+		    option = &optb;
+		  }
 		/* Get one arg at a time e.g. "-fsanitize=address".  */
 		char *with_arg = concat (opt_text,
 					 sanitizer_opts[j].name,
@@ -7939,7 +7966,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2016 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2017 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
@@ -8314,7 +8341,17 @@ lookup_compiler (const char *name, size_t length, const char *language)
     {
       for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
 	if (cp->suffix[0] == '@' && !strcmp (cp->suffix + 1, language))
-	  return cp;
+	  {
+	    if (name != NULL && strcmp (name, "-") == 0
+		&& (strcmp (cp->suffix, "@c-header") == 0
+		    || strcmp (cp->suffix, "@c++-header") == 0)
+		&& !have_E)
+	      fatal_error (input_location,
+			   "cannot use %<-%> as input filename for a "
+			   "precompiled header");
+
+	    return cp;
+	  }
 
       error ("language %s not recognized", language);
       return 0;
@@ -9830,6 +9867,27 @@ greater_than_spec_func (int argc, const char **argv)
   gcc_assert (converted != argv[argc - 1]);
 
   if (arg > lim)
+    return "";
+
+  return NULL;
+}
+
+/* Returns "" if debug_info_level is greater than ARGV[ARGC-1].
+   Otherwise, return NULL.  */
+
+static const char *
+debug_level_greater_than_spec_func (int argc, const char **argv)
+{
+  char *converted;
+
+  if (argc != 1)
+    fatal_error (input_location,
+		 "wrong number of arguments to %%:debug-level-gt");
+
+  long arg = strtol (argv[0], &converted, 10);
+  gcc_assert (converted != argv[0]);
+
+  if (debug_info_level > arg)
     return "";
 
   return NULL;

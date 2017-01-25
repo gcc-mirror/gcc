@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -496,14 +496,18 @@ forward_parm (tree parm)
    constructor from a (possibly indirect) base class.  */
 
 tree
-strip_inheriting_ctors (tree fn)
+strip_inheriting_ctors (tree dfn)
 {
   gcc_assert (flag_new_inheriting_ctors);
+  tree fn = dfn;
   while (tree inh = DECL_INHERITED_CTOR (fn))
     {
       inh = OVL_CURRENT (inh);
       fn = inh;
     }
+  if (TREE_CODE (fn) == TEMPLATE_DECL
+      && TREE_CODE (dfn) == FUNCTION_DECL)
+    fn = DECL_TEMPLATE_RESULT (fn);
   return fn;
 }
 

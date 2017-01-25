@@ -975,6 +975,10 @@ class Type
   bool
   is_backend_type_size_known(Gogo*);
 
+  // Return whether the type needs specially built type functions.
+  bool
+  needs_specific_type_functions(Gogo*);
+
   // Get the hash and equality functions for a type.
   void
   type_functions(Gogo*, Named_type* name, Function_type* hash_fntype,
@@ -983,7 +987,7 @@ class Type
 
   // Write the hash and equality type functions.
   void
-  write_specific_type_functions(Gogo*, Named_type*,
+  write_specific_type_functions(Gogo*, Named_type*, int64_t size,
 				const std::string& hash_name,
 				Function_type* hash_fntype,
 				const std::string& equal_name,
@@ -1206,9 +1210,16 @@ class Type
   // Build the hash and equality type functions for a type which needs
   // specific functions.
   void
-  specific_type_functions(Gogo*, Named_type*, Function_type* hash_fntype,
+  specific_type_functions(Gogo*, Named_type*, int64_t size,
+			  Function_type* hash_fntype,
 			  Function_type* equal_fntype, Named_object** hash_fn,
 			  Named_object** equal_fn);
+
+  void
+  write_identity_hash(Gogo*, int64_t size);
+
+  void
+  write_identity_equal(Gogo*, int64_t size);
 
   void
   write_named_hash(Gogo*, Named_type*, Function_type* hash_fntype,
@@ -3050,10 +3061,10 @@ class Named_type : public Type
       type_(type), local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
-      is_visible_(true), is_error_(false), is_placeholder_(false),
-      is_converted_(false), is_circular_(false), is_verified_(false),
-      seen_(false), seen_in_compare_is_identity_(false),
-      seen_in_get_backend_(false)
+      is_alias_(false), is_visible_(true), is_error_(false),
+      is_placeholder_(false), is_converted_(false), is_circular_(false),
+      is_verified_(false), seen_(false), seen_in_compare_is_identity_(false),
+      seen_in_get_backend_(false), seen_alias_(false)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -3070,6 +3081,17 @@ class Named_type : public Type
   void
   set_named_object(Named_object* no)
   { this->named_object_ = no; }
+
+  // Whether this is an alias (type T1 = T2) rather than an ordinary
+  // named type (type T1 T2).
+  bool
+  is_alias() const
+  { return this->is_alias_; }
+
+  // Record that this type is an alias.
+  void
+  set_is_alias()
+  { this->is_alias_ = true; }
 
   // Return the function in which this type is defined.  This will
   // return NULL for a type defined in global scope.
@@ -3132,11 +3154,6 @@ class Named_type : public Type
   is_builtin() const
   { return Linemap::is_predeclared_location(this->location_); }
 
-  // Whether this is an alias.  There are currently two aliases: byte
-  // and rune.
-  bool
-  is_alias() const;
-
   // Whether this named type is valid.  A recursive named type is invalid.
   bool
   is_valid() const
@@ -3184,8 +3201,7 @@ class Named_type : public Type
 
   // Return the list of local methods.
   const Bindings*
-  local_methods() const
-  { return this->local_methods_; }
+  local_methods() const;
 
   // Build the complete list of methods, including those from
   // anonymous fields, and build method stubs if needed.
@@ -3195,14 +3211,12 @@ class Named_type : public Type
   // Return whether this type has any methods.  This should only be
   // called after the finalize_methods pass.
   bool
-  has_any_methods() const
-  { return this->all_methods_ != NULL; }
+  has_any_methods() const;
 
   // Return the methods for this type.  This should only be called
   // after the finalized_methods pass.
   const Methods*
-  methods() const
-  { return this->all_methods_; }
+  methods() const;
 
   // Return the method to use for NAME.  This returns NULL if there is
   // no such method or if the method is ambiguous.  When it returns
@@ -3234,6 +3248,16 @@ class Named_type : public Type
   bool
   is_named_backend_type_size_known() const
   { return this->named_btype_ != NULL && !this->is_placeholder_; }
+
+  // Add to the reflection string as for Type::append_reflection, but
+  // if USE_ALIAS use the alias name rather than the alias target.
+  void
+  append_reflection_type_name(Gogo*, bool use_alias, std::string*) const;
+
+  // Append the mangled type name as for Type::append_mangled_name,
+  // but if USE_ALIAS use the alias name rather than the alias target.
+  void
+  append_mangled_type_name(Gogo*, bool use_alias, std::string*) const;
 
   // Export the type.
   void
@@ -3329,6 +3353,8 @@ class Named_type : public Type
   // where we can't convert S2 to the backend representation unless we
   // have converted S1.
   std::vector<Named_type*> dependencies_;
+  // Whether this is an alias type.
+  bool is_alias_;
   // Whether this type is visible.  This is false if this type was
   // created because it was referenced by an imported object, but the
   // type itself was not exported.  This will always be true for types
@@ -3356,6 +3382,8 @@ class Named_type : public Type
   bool seen_in_compare_is_identity_;
   // Like seen_, but used only by do_get_backend.
   bool seen_in_get_backend_;
+  // Like seen_, but used when resolving aliases.
+  mutable bool seen_alias_;
 };
 
 // A forward declaration.  This handles a type which has been declared

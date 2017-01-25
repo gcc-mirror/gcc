@@ -1,3 +1,142 @@
+2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* c-decl.c (pop_scope): Pass main_input_filename to
+	build_translation_unit_decl.
+
+2017-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c: Include "read-rtl-function.h" and
+	"run-rtl-passes.h".
+	(c_parser_declaration_or_fndef): Rename "gimple-pass-list" in
+	grammar to gimple-or-rtl-pass-list.  Add rtl-function-definition
+	production.  Update for renaming of field "gimple_pass" to
+	"gimple_or_rtl_pass".  If __RTL was seen, call
+	c_parser_parse_rtl_body.  Convert a timevar_push/pop pair
+	to an auto_timevar, to cope with early exit.
+	(c_parser_declspecs): Update RID_GIMPLE handling for renaming of
+	field "gimple_pass" to "gimple_or_rtl_pass", and for renaming of
+	c_parser_gimple_pass_list to c_parser_gimple_or_rtl_pass_list.
+	Handle RID_RTL.
+	(c_parser_parse_rtl_body): New function.
+	* c-tree.h (enum c_declspec_word): Add cdw_rtl.
+	(struct c_declspecs): Rename field "gimple_pass" to
+	"gimple_or_rtl_pass".  Add field "rtl_p".
+	* gimple-parser.c (c_parser_gimple_pass_list): Rename to...
+	(c_parser_gimple_or_rtl_pass_list): ...this, updating accordingly.
+	* gimple-parser.h (c_parser_gimple_pass_list): Rename to...
+	(c_parser_gimple_or_rtl_pass_list): ...this.
+
+2017-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64279
+	* c-typeck.c (build_conditional_expr): Warn about duplicated branches.
+
+2017-01-13  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_compound_statement): Handle
+	nops.
+
+2017-01-13  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Parse
+	_Literal ( type-name ) number.
+
+2017-01-12  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Parse
+	__MEM.
+
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/72813
+	* c-decl.c (pop_file_scope): Set flag_syntax_only to 1 after writing
+	PCH file.
+
+2017-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/79052
+	* gimple-parser.c (c_parser_gimple_switch_stmt): Add missing
+	returns on parse errors.
+
+2017-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64767
+	* c-parser.c (c_parser_postfix_expression): Mark zero character
+	constants by setting original_type in c_expr.
+	* c-typeck.c (parser_build_binary_op): Warn when a pointer is compared
+	with a zero character constant.
+	(char_type_p): New function.
+
+2017-01-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Create a
+	rich_location at init_loc and parse it to start_init.
+	(last_init_list_comma): New global.
+	(c_parser_braced_init): Update last_init_list_comma when parsing
+	commas.  Pass it to pop_init_level.  Pass location of closing
+	brace to pop_init_level.
+	(c_parser_postfix_expression_after_paren_type): Create a
+	rich_location at type_loc and parse it to start_init.
+	(c_parser_omp_declare_reduction): Likewise for loc.
+	* c-tree.h (start_init): Add rich_location * param.
+	(pop_init_level): Add location_t param.
+	* c-typeck.c (struct initializer_stack): Add field
+	"missing_brace_richloc".
+	(start_init): Add richloc param, use it to initialize
+	the stack node's missing_brace_richloc.
+	(last_init_list_comma): New decl.
+	(finish_implicit_inits): Pass last_init_list_comma to
+	pop_init_level.
+	(push_init_level): When finding missing open braces, add fix-it
+	hints to the richloc.
+	(pop_init_level): Add "insert_before" param and pass it
+	when calling pop_init_level.  Add fixits about missing
+	close braces to any richloc.  Use the richloc for the
+	-Wmissing-braces warning.
+	(set_designator): Pass last_init_list_comma to pop_init_level.
+	(process_init_element): Likewise.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/78817
+	* c-typeck.c (build_function_call_vec): If check_function_arguments
+	returns true, set TREE_NO_WARNING on CALL_EXPR.
+
+	PR c/77767
+	* c-decl.c (grokdeclarator): If *expr is non-NULL, append expression
+	to *expr instead of overwriting it.
+
+2016-12-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_compound_statement): Improve
+	error recovery.
+	(c_parser_gimple_statement): Only build assigns for non-error
+	stmts.
+	(c_parser_gimple_postfix_expression_after): Improve error recovery.
+
+2016-12-14  Martin Jambor  <mjambor@suse.cz>
+
+	* c-parser.c: Include omp-general.h and omp-offload.h instead of
+	omp-low.h.
+	(c_finish_oacc_routine): Adjusted call to
+	get_oacc_fn_attrib, build_oacc_routine_dims and replace_oacc_fn_attrib
+	to use their new names.
+	(c_parser_oacc_enter_exit_data): Adjusted call to find_omp_clause to
+	use its new name.
+	(c_parser_oacc_update): Likewise.
+	(c_parser_omp_simd): Likewise.
+	(c_parser_omp_target_update): Likewise.
+	* c-typeck.c: Include omp-general.h instead of omp-low.h.
+	(c_finish_omp_cancel): Adjusted call to find_omp_clause to use its new
+	name.
+	(c_finish_omp_cancellation_point): Likewise.
+	* gimple-parser.c: Do not include omp-low.h
+
 2016-12-02  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
@@ -4100,7 +4239,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2016 Free Software Foundation, Inc.
+Copyright (C) 2012-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

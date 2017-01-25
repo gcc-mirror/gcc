@@ -1,6 +1,6 @@
 // <experimental/random> -*- C++ -*-
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,8 +54,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_integral<_IntType>::value && sizeof(_IntType) > 1,
 		    "argument must be an integer type");
       using _Dist = std::uniform_int_distribution<_IntType>;
-      static thread_local _Dist __dist;
-      return __dist(_S_randint_engine(), typename _Dist::param_type{__a, __b});
+      // This relies on the fact our uniform_int_distribution is stateless,
+      // otherwise we'd need a static thread_local _Dist and pass it
+      // _Dist::param_type{__a, __b}.
+      return _Dist(__a, __b)(_S_randint_engine());
     }
 
   inline void

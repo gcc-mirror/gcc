@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,11 +16,12 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
+// COW strings don't support C++11 allocators:
+// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <testsuite_allocator.h>
  
-#if _GLIBCXX_USE_CXX11_ABI
 using C = char;
 const C c = 'a';
 using traits = std::char_traits<C>;
@@ -57,4 +58,3 @@ void test03()
   static_assert( noexcept( v1 = std::move(v2) ), "Move assign cannot throw" );
   static_assert( noexcept( v1.swap(v2) ), "Swap cannot throw" );
 }
-#endif

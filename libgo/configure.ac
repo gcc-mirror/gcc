@@ -11,7 +11,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=10:0:0
+libtool_VERSION=11:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -420,6 +420,9 @@ case "$target" in
 	;;
 esac
 AC_SUBST(OSCFLAGS)
+
+dnl Check if assembler supports disabling hardware capability support.
+GCC_CHECK_ASSEMBLER_HWCAP
 
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
@@ -929,6 +932,24 @@ CFLAGS=$CFLAGS_hold
 if test "x$libgo_cv_as_x86_64_unwind_section_type" = xyes; then
   AC_DEFINE(HAVE_AS_X86_64_UNWIND_SECTION_TYPE, 1,
 	    [Define if your assembler supports unwind section type.])
+fi
+
+AC_CACHE_CHECK([assembler supports AES instructions],
+libgo_cv_as_x86_aes, [
+libgo_cv_as_x86_aes=yes
+echo 'aesenc %xmm0, %xmm1' > conftest.s
+CFLAGS_hold=$CFLAGS
+if test "$libgo_cv_c_unused_arguments" = yes; then
+  CFLAGS="$CFLAGS -Qunused-arguments"
+fi
+if $CC $CFLAGS -c conftest.s 2>&1 | grep -i error > /dev/null; then
+    libgo_cv_as_x86_aes=no
+fi
+CFLAGS=$CFLAGS_hold
+])
+if test "x$libgo_cv_as_x86_aes" = xyes; then
+  AC_DEFINE(HAVE_AS_X86_AES, 1,
+	    [Define if your assembler supports AES instructions.])
 fi
 
 AC_CACHE_SAVE

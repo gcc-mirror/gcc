@@ -8,8 +8,8 @@
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
    mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
    tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h,
-   avx5124fmapsintrin.h, avx5124vnniwintrin.h and mm_malloc.h 
-   that reference the proper builtin functions.
+   avx5124fmapsintrin.h, avx5124vnniwintrin.h, avx512vpopcntdqintrin.h
+   and mm_malloc.h that reference the proper builtin functions.
 
    Defining away "extern" and "__inline" results in all of them being
    compiled as proper functions.  */
@@ -186,6 +186,8 @@
 #define __builtin_ia32_xabort(M) __builtin_ia32_xabort(1)
 
 /* avx512fintrin.h */
+#define __builtin_ia32_kshiftlihi(A, B) __builtin_ia32_kshiftlihi(A, 8)
+#define __builtin_ia32_kshiftrihi(A, B) __builtin_ia32_kshiftrihi(A, 8)
 #define __builtin_ia32_addpd512_mask(A, B, C, D, E) __builtin_ia32_addpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_addps512_mask(A, B, C, D, E) __builtin_ia32_addps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_addsd_round(A, B, C) __builtin_ia32_addsd_round(A, B, 8)
@@ -388,6 +390,10 @@
 #define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)
 
 /* avx512bwintrin.h */
+#define __builtin_ia32_kshiftlisi(A, B) __builtin_ia32_kshiftlisi(A, 8)
+#define __builtin_ia32_kshiftlidi(A, B) __builtin_ia32_kshiftlidi(A, 8)
+#define __builtin_ia32_kshiftrisi(A, B) __builtin_ia32_kshiftrisi(A, 8)
+#define __builtin_ia32_kshiftridi(A, B) __builtin_ia32_kshiftridi(A, 8)
 #define __builtin_ia32_ucmpw512_mask(A, B, E, D) __builtin_ia32_ucmpw512_mask(A, B, 1, D)
 #define __builtin_ia32_ucmpb512_mask(A, B, E, D) __builtin_ia32_ucmpb512_mask(A, B, 1, D)
 #define __builtin_ia32_psrlwi512_mask(A, E, C, D) __builtin_ia32_psrlwi512_mask(A, 1, C, D)
@@ -404,6 +410,8 @@
 #define __builtin_ia32_pslldq512(A, B) __builtin_ia32_pslldq512(A, 8)
 
 /* avx512dqintrin.h */
+#define __builtin_ia32_kshiftliqi(A, B) __builtin_ia32_kshiftliqi(A, 8)
+#define __builtin_ia32_kshiftriqi(A, B) __builtin_ia32_kshiftriqi(A, 8)
 #define __builtin_ia32_reducess(A, B, F) __builtin_ia32_reducess(A, B, 1)
 #define __builtin_ia32_reducesd(A, B, F) __builtin_ia32_reducesd(A, B, 1)
 #define __builtin_ia32_reduceps512_mask(A, E, C, D) __builtin_ia32_reduceps512_mask(A, 1, C, D)
@@ -595,6 +603,6 @@
 #define __builtin_ia32_extracti64x2_256_mask(A, E, C, D) __builtin_ia32_extracti64x2_256_mask(A, 1, C, D)
 #define __builtin_ia32_extractf64x2_256_mask(A, E, C, D) __builtin_ia32_extractf64x2_256_mask(A, 1, C, D)
 
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,clwb,mwaitx,clzero,pku")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,clwb,mwaitx,clzero,pku,sgx")
 
 #include <x86intrin.h>

@@ -1,5 +1,5 @@
 /* SLP - Basic Block Vectorization
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2017 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -2897,9 +2897,8 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
       tree cond = gimple_assign_rhs1 (stmt);
 
       if (TREE_CODE (cond) == SSA_NAME)
-	return false;
-
-      if (opnum)
+	op = cond;
+      else if (opnum)
 	op = TREE_OPERAND (cond, 1);
       else
 	op = TREE_OPERAND (cond, 0);

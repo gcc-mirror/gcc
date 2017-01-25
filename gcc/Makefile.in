@@ -1,7 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987-2016 Free Software Foundation, Inc.
+# Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -675,15 +675,6 @@ objext = .o
 exeext = @host_exeext@
 build_exeext = @build_exeext@
 
-
-# This allows overriding include paths in host specific Makefile
-# (config/i386/x-mingw32 overrides those variables and local_includedir).
-gplusplus_includedir = $(gcc_gxx_include_dir)
-gplusplus_tool_includedir = $(gcc_gxx_include_dir)/$(target_noncanonical)
-gplusplus_backward_includedir = $(gcc_gxx_include_dir)/backward
-native_system_includedir = $(NATIVE_SYSTEM_HEADER_DIR)
-
-
 # Directory in which to put man pages.
 mandir = @mandir@
 man1dir = $(mandir)/man1
@@ -865,7 +856,7 @@ else
 REVISION_c  := $(shell cat $(REVISION))
 endif
 
-version     := $(BASEVER_c)
+version     := $(shell @get_gcc_base_ver@ $(BASEVER))
 
 PATCHLEVEL_c := \
   $(shell echo $(BASEVER_c) | sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\)$$/\1/')
@@ -1329,7 +1320,7 @@ OBJS = \
 	haifa-sched.o \
 	hash-map-tests.o \
 	hash-set-tests.o \
-	hsa.o \
+	hsa-common.o \
 	hsa-gen.o \
 	hsa-regalloc.o \
 	hsa-brig.o \
@@ -1399,6 +1390,10 @@ OBJS = \
 	mode-switching.o \
 	modulo-sched.o \
 	multiple_target.o \
+	omp-offload.o \
+	omp-expand.o \
+	omp-general.o \
+	omp-grid.o \
 	omp-low.o \
 	omp-simd-clone.o \
 	optabs.o \
@@ -1416,6 +1411,9 @@ OBJS = \
 	print-rtl-function.o \
 	print-tree.o \
 	profile.o \
+	read-md.o \
+	read-rtl.o \
+	read-rtl-function.o \
 	real.o \
 	realmpfr.o \
 	recog.o \
@@ -1435,6 +1433,7 @@ OBJS = \
 	rtlhash.o \
 	rtlanal.o \
 	rtlhooks.o \
+	run-rtl-passes.o \
 	sbitmap.o \
 	sched-deps.o \
 	sched-ebb.o \
@@ -1443,6 +1442,7 @@ OBJS = \
 	sel-sched-ir.o \
 	sel-sched-dump.o \
 	sel-sched.o \
+	selftest-rtl.o \
 	selftest-run-tests.o \
 	sese.o \
 	shrink-wrap.o \
@@ -1795,21 +1795,23 @@ aclocal_deps = \
 	$(srcdir)/../lt~obsolete.m4 \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/codeset.m4 \
-	$(srcdir)/../config/extensions.m4 \
-	$(srcdir)/../config/gettext-sister.m4 \
+	$(srcdir)/../config/depstand.m4 \
+	$(srcdir)/../config/dfp.m4 \
 	$(srcdir)/../config/gcc-plugin.m4 \
+	$(srcdir)/../config/gettext-sister.m4 \
 	$(srcdir)/../config/iconv.m4 \
 	$(srcdir)/../config/lcmessage.m4 \
+	$(srcdir)/../config/lead-dot.m4 \
 	$(srcdir)/../config/lib-ld.m4 \
 	$(srcdir)/../config/lib-link.m4 \
 	$(srcdir)/../config/lib-prefix.m4 \
+	$(srcdir)/../config/mmap.m4 \
 	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/picflag.m4 \
 	$(srcdir)/../config/progtest.m4 \
         $(srcdir)/../config/stdint.m4 \
-	$(srcdir)/../config/unwind_ipinfo.m4 \
 	$(srcdir)/../config/warnings.m4 \
-	$(srcdir)/../config/dfp.m4 \
-	$(srcdir)/../config/mmap.m4 \
+	$(srcdir)/../config/zlib.m4 \
 	$(srcdir)/acinclude.m4
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4
@@ -1892,15 +1894,19 @@ rest.cross: specs
 # Specify -o /dev/null so the output of -S is discarded. More importantly
 # It does not try to create a file with the name "null.s" on POSIX and
 # "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
-SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -fself-test -o /dev/null
+# Specify the path to gcc/testsuite/selftests within the srcdir
+# as an argument to -fself-test.
+SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -o /dev/null \
+	-fself-test=$(srcdir)/testsuite/selftests
 
 # Run the selftests during the build once we have a driver and a cc1,
 # so that self-test failures are caught as early as possible.
 # Use "s-selftest" to ensure that we only run the selftests if the
-# driver or cc1 change.
+# driver, cc1, or selftest data change.
 .PHONY: selftest
 selftest: s-selftest
-s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
+s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs \
+  $(srcdir)/testsuite/selftests
 	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS)
 	$(STAMP) $@
 
@@ -2119,7 +2125,8 @@ DRIVER_DEFINES = \
   $(if $(SHLIB),$(if $(filter yes,@enable_shared@),-DENABLE_SHARED_LIBGCC)) \
   -DCONFIGURE_SPECS="\"@CONFIGURE_SPECS@\""
 
-CFLAGS-gcc.o += $(DRIVER_DEFINES)
+CFLAGS-gcc.o += $(DRIVER_DEFINES) -DBASEVER=$(BASEVER_s)
+gcc.o: $(BASEVER)
 
 specs.h : s-specs ; @true
 s-specs : Makefile
@@ -2479,8 +2486,10 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-scalar-evolution.c \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
+  $(srcdir)/omp-offload.h \
+  $(srcdir)/omp-offload.c \
+  $(srcdir)/omp-expand.c \
   $(srcdir)/omp-low.c \
-  $(srcdir)/omp-low.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   $(srcdir)/cgraphclones.c \
   $(srcdir)/tree-phinodes.c \
@@ -2500,7 +2509,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/sancov.c \
   $(srcdir)/ipa-devirt.c \
   $(srcdir)/internal-fn.h \
-  $(srcdir)/hsa.c \
+  $(srcdir)/hsa-common.c \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,
@@ -2777,14 +2786,14 @@ CFLAGS-intl.o += -DLOCALEDIR=\"$(localedir)\"
 PREPROCESSOR_DEFINES = \
   -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
   -DFIXED_INCLUDE_DIR=\"$(libsubdir)/include-fixed\" \
-  -DGPLUSPLUS_INCLUDE_DIR=\"$(gplusplus_includedir)\" \
+  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
   -DGPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT=$(gcc_gxx_include_dir_add_sysroot) \
-  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gplusplus_tool_includedir)\" \
-  -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gplusplus_backward_includedir)\" \
+  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/$(target_noncanonical)\" \
+  -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
   -DLOCAL_INCLUDE_DIR=\"$(local_includedir)\" \
   -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
-  -DNATIVE_SYSTEM_HEADER_DIR=\"$(native_system_includedir)\" \
+  -DNATIVE_SYSTEM_HEADER_DIR=\"$(NATIVE_SYSTEM_HEADER_DIR)\" \
   -DPREFIX=\"$(prefix)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
   @TARGET_SYSTEM_ROOT_DEFINE@

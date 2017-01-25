@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "intl.h"
 #include "tree-iterator.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "convert.h"
 #include "gomp-constants.h"
 
@@ -670,6 +670,7 @@ tree
 finish_expr_stmt (tree expr)
 {
   tree r = NULL_TREE;
+  location_t loc = EXPR_LOCATION (expr);
 
   if (expr != NULL_TREE)
     {
@@ -694,7 +695,7 @@ finish_expr_stmt (tree expr)
       if (TREE_CODE (expr) != CLEANUP_POINT_EXPR)
 	{
 	  if (TREE_CODE (expr) != EXPR_STMT)
-	    expr = build_stmt (input_location, EXPR_STMT, expr);
+	    expr = build_stmt (loc, EXPR_STMT, expr);
 	  expr = maybe_cleanup_point_expr_void (expr);
 	}
 
@@ -3278,6 +3279,8 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
        2. a non-lambda function, or
        3. a non-default capturing lambda function.  */
     while (context != containing_function
+	   /* containing_function can be null with invalid generic lambdas.  */
+	   && containing_function
 	   && LAMBDA_FUNCTION_P (containing_function))
       {
 	tree closure = DECL_CONTEXT (containing_function);
@@ -3365,10 +3368,13 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   else
     {
       if (complain & tf_error)
-	error (VAR_P (decl)
-	       ? G_("use of local variable with automatic storage from containing function")
-	       : G_("use of parameter from containing function"));
-      inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);
+	{
+	  error (VAR_P (decl)
+		 ? G_("use of local variable with automatic storage from "
+		      "containing function")
+		 : G_("use of parameter from containing function"));
+	  inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);
+	}
       return error_mark_node;
     }
   return decl;
@@ -6221,7 +6227,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  && t != integer_minus_one_node)
 			{
 			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "%<gang%> static value must be"
+				      "%<gang%> static value must be "
 				      "positive");
 			  t = integer_one_node;
 			}
@@ -6288,12 +6294,12 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  break;
 			case OMP_CLAUSE_VECTOR:
 			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "%<vector%> length value must be"
+				      "%<vector%> length value must be "
 				      "positive");
 			  break;
 			case OMP_CLAUSE_WORKER:
 			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "%<worker%> num value must be"
+				      "%<worker%> num value must be "
 				      "positive");
 			  break;
 			default:
@@ -7048,7 +7054,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  && TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%qs variable is neither a pointer, nor an array"
+			    "%qs variable is neither a pointer, nor an array "
 			    "nor reference to pointer or array",
 			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		  remove = true;
@@ -8001,7 +8007,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (incrv));
   if (TREE_VEC_LENGTH (declv) > 1)
     {
-      tree c = find_omp_clause (clauses, OMP_CLAUSE_COLLAPSE);
+      tree c = omp_find_clause (clauses, OMP_CLAUSE_COLLAPSE);
       if (c)
 	collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (c));
       if (collapse != TREE_VEC_LENGTH (declv))
@@ -8264,8 +8270,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
      step at this point, fill it in.  */
   if (code == OMP_SIMD && !processing_template_decl
       && TREE_VEC_LENGTH (OMP_FOR_INCR (omp_for)) == 1)
-    for (tree c = find_omp_clause (clauses, OMP_CLAUSE_LINEAR); c;
-	 c = find_omp_clause (OMP_CLAUSE_CHAIN (c), OMP_CLAUSE_LINEAR))
+    for (tree c = omp_find_clause (clauses, OMP_CLAUSE_LINEAR); c;
+	 c = omp_find_clause (OMP_CLAUSE_CHAIN (c), OMP_CLAUSE_LINEAR))
       if (OMP_CLAUSE_LINEAR_STEP (c) == NULL_TREE)
 	{
 	  decl = TREE_OPERAND (TREE_VEC_ELT (OMP_FOR_INIT (omp_for), 0), 0);
@@ -8586,13 +8592,13 @@ finish_omp_cancel (tree clauses)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);
   int mask = 0;
-  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+  if (omp_find_clause (clauses, OMP_CLAUSE_PARALLEL))
     mask = 1;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_FOR))
     mask = 2;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_SECTIONS))
     mask = 4;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_TASKGROUP))
     mask = 8;
   else
     {
@@ -8601,7 +8607,7 @@ finish_omp_cancel (tree clauses)
       return;
     }
   vec<tree, va_gc> *vec = make_tree_vector ();
-  tree ifc = find_omp_clause (clauses, OMP_CLAUSE_IF);
+  tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
       tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
@@ -8623,13 +8629,13 @@ finish_omp_cancellation_point (tree clauses)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCELLATION_POINT);
   int mask = 0;
-  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+  if (omp_find_clause (clauses, OMP_CLAUSE_PARALLEL))
     mask = 1;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_FOR))
     mask = 2;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_SECTIONS))
     mask = 4;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_TASKGROUP))
     mask = 8;
   else
     {

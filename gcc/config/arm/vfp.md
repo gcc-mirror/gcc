@@ -1,5 +1,5 @@
 ;; ARM VFP instruction patterns
-;; Copyright (C) 2003-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2017 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -1886,7 +1886,7 @@
   (float_truncate:HF (float:SF (match_dup 0))))]
  "TARGET_VFP_FP16INST"
 {
-  neon_const_bounds (operands[2], 1, 33);
+  arm_const_bounds (operands[2], 1, 33);
   return "vcvt.f16.<sup>32\t%0, %0, %2\;vmov.f32\t%3, %0";
 }
   [(set_attr "conds" "unconditional")
@@ -1903,7 +1903,7 @@
 {
   rtx op1 = gen_reg_rtx (SImode);
 
-  neon_const_bounds (operands[2], 1, 33);
+  arm_const_bounds (operands[2], 1, 33);
 
   emit_move_insn (op1, operands[1]);
   emit_insn (gen_neon_vcvth<sup>_nhf_unspec (op1, op1, operands[2],
@@ -1927,7 +1927,7 @@
     VCVT_SI_US_N))]
  "TARGET_VFP_FP16INST"
 {
-  neon_const_bounds (operands[2], 1, 33);
+  arm_const_bounds (operands[2], 1, 33);
   return "vmov.f32\t%0, %1\;vcvt.<sup>%#32.f16\t%0, %0, %2";
 }
   [(set_attr "conds" "unconditional")
@@ -1945,7 +1945,7 @@
 {
   rtx op1 = gen_reg_rtx (SImode);
 
-  neon_const_bounds (operands[2], 1, 33);
+  arm_const_bounds (operands[2], 1, 33);
   emit_insn (gen_neon_vcvth<sup>_nsi_unspec (op1, operands[1], operands[2]));
   emit_move_insn (operands[0], op1);
   DONE;

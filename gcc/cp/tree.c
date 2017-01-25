@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -404,9 +404,15 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 		       || useless_type_conversion_p (TREE_TYPE (decl),
 						     TREE_TYPE (value)));
 
-  t = cxx_maybe_build_cleanup (decl, complain);
-  if (t == error_mark_node)
-    return error_mark_node;
+  if (complain & tf_no_cleanup)
+    /* The caller is building a new-expr and does not need a cleanup.  */
+    t = NULL_TREE;
+  else
+    {
+      t = cxx_maybe_build_cleanup (decl, complain);
+      if (t == error_mark_node)
+	return error_mark_node;
+    }
   t = build4 (TARGET_EXPR, type, decl, value, t, NULL_TREE);
   if (EXPR_HAS_LOCATION (value))
     SET_EXPR_LOCATION (t, EXPR_LOCATION (value));

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1263,6 +1263,11 @@ CND(SO_RCVTIMEO, "Reception timeout")
 # define SO_ERROR -1
 #endif
 CND(SO_ERROR, "Get/clear error status")
+
+#ifndef SO_BUSY_POLL
+# define SO_BUSY_POLL -1
+#endif
+CND(SO_BUSY_POLL, "Busy polling")
 
 #ifndef IP_MULTICAST_IF
 # define IP_MULTICAST_IF -1

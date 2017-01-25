@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1794,6 +1794,10 @@ rtl_tidy_fallthru_edge (edge e)
 
       q = PREV_INSN (q);
     }
+  /* Unconditional jumps with side-effects (i.e. which we can't just delete
+     together with the barrier) should never have a fallthru edge.  */
+  else if (JUMP_P (q) && any_uncondjump_p (q))
+    return;
 
   /* Selectively unlink the sequence.  */
   if (q != PREV_INSN (BB_HEAD (c)))
@@ -1931,7 +1935,8 @@ rtl_split_edge (edge edge_in)
 	  if (last
 	      && JUMP_P (last)
 	      && edge_in->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	      && extract_asm_operands (PATTERN (last)) != NULL_RTX
+	      && (extract_asm_operands (PATTERN (last))
+		  || JUMP_LABEL (last) == before)
 	      && patch_jump_insn (last, before, bb))
 	    df_set_bb_dirty (edge_in->src);
 	}
@@ -3646,7 +3651,8 @@ relink_block_chain (bool stay_in_cfglayout_mode)
   /* Maybe reset the original copy tables, they are not valid anymore
      when we renumber the basic blocks in compact_blocks.  If we are
      are going out of cfglayout mode, don't re-allocate the tables.  */
-  free_original_copy_tables ();
+  if (original_copy_tables_initialized_p ())
+    free_original_copy_tables ();
   if (stay_in_cfglayout_mode)
     initialize_original_copy_tables ();
 

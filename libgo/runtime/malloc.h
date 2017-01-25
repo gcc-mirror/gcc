@@ -132,12 +132,6 @@ enum
 #else
 	MHeapMap_Bits = 32 - PageShift,
 #endif
-
-	// Max number of threads to run garbage collection.
-	// 2, 3, and 4 are all plausible maximums depending
-	// on the hardware details of the machine.  The garbage
-	// collector scales well to 8 cpus.
-	MaxGcproc = 8,
 };
 
 // Maximum memory allocation size, a hint for callers.
@@ -186,7 +180,8 @@ enum
 
 void*	runtime_SysAlloc(uintptr nbytes, uint64 *stat)
   __asm__ (GOSYM_PREFIX "runtime.sysAlloc");
-void	runtime_SysFree(void *v, uintptr nbytes, uint64 *stat);
+void	runtime_SysFree(void *v, uintptr nbytes, uint64 *stat)
+  __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_SysUnused(void *v, uintptr nbytes);
 void	runtime_SysUsed(void *v, uintptr nbytes);
 void	runtime_SysMap(void *v, uintptr nbytes, bool reserved, uint64 *stat);
@@ -467,11 +462,15 @@ void	runtime_MProf_GC(void)
   __asm__ (GOSYM_PREFIX "runtime.mProf_GC");
 void	runtime_iterate_memprof(FuncVal* callback)
   __asm__ (GOSYM_PREFIX "runtime.iterate_memprof");
-int32	runtime_gcprocs(void);
-void	runtime_helpgc(int32 nproc);
-void	runtime_gchelper(void);
+int32	runtime_gcprocs(void)
+  __asm__ (GOSYM_PREFIX "runtime.gcprocs");
+void	runtime_helpgc(int32 nproc)
+  __asm__ (GOSYM_PREFIX "runtime.helpgc");
+void	runtime_gchelper(void)
+  __asm__ (GOSYM_PREFIX "runtime.gchelper");
 void	runtime_createfing(void);
-G*	runtime_wakefing(void);
+G*	runtime_wakefing(void)
+  __asm__ (GOSYM_PREFIX "runtime.wakefing");
 extern bool	runtime_fingwait;
 extern bool	runtime_fingwake;
 
@@ -543,4 +542,3 @@ int32	runtime_setgcpercent(int32)
 #define PoisonStack ((uintptr)0x6868686868686868ULL)
 
 struct Workbuf;
-void	runtime_proc_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));

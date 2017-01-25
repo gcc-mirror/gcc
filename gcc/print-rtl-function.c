@@ -1,5 +1,5 @@
 /* Print RTL functions for GCC.
-   Copyright (C) 2016 Free Software Foundation, Inc.
+   Copyright (C) 2016-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -175,38 +175,36 @@ print_param (FILE *outfile, rtx_writer &w, tree arg)
    Example output (with COMPACT==true):
 
    (function "times_two"
+     (param "i"
+       (DECL_RTL (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+	   (const_int -4)) [1 i+0 S4 A32]))
+       (DECL_RTL_INCOMING (reg:SI di [ i ])))
      (insn-chain
-       (cnote NOTE_INSN_DELETED)
+       (cnote 1 NOTE_INSN_DELETED)
        (block 2
 	 (edge-from entry (flags "FALLTHRU"))
-	 (cnote [bb 2] NOTE_INSN_BASIC_BLOCK)
-	 (cinsn (set (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+	 (cnote 4 [bb 2] NOTE_INSN_BASIC_BLOCK)
+	 (cinsn 2 (set (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
 			       (const_int -4)) [1 i+0 S4 A32])
-		       (reg:SI di [ i ])) "t.c":2
-		   (nil))
-	 (cnote NOTE_INSN_FUNCTION_BEG)
-	 (cinsn (set (reg:SI %2)
+		       (reg:SI di [ i ])) "t.c":2)
+	 (cnote 3 NOTE_INSN_FUNCTION_BEG)
+	 (cinsn 6 (set (reg:SI <2>)
 		       (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
-			       (const_int -4)) [1 i+0 S4 A32])) "t.c":3
-		   (nil))
-	 (cinsn (parallel [
-			   (set (reg:SI %0 [ _2 ])
-			       (ashift:SI (reg:SI %2)
+			       (const_int -4)) [1 i+0 S4 A32])) "t.c":3)
+	 (cinsn 7 (parallel [
+			   (set (reg:SI <0> [ _2 ])
+			       (ashift:SI (reg:SI <2>)
 				   (const_int 1)))
 			   (clobber (reg:CC flags))
 		       ]) "t.c":3
-		   (expr_list:REG_EQUAL (ashift:SI (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+		    (expr_list:REG_EQUAL (ashift:SI (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
 				   (const_int -4)) [1 i+0 S4 A32])
-			   (const_int 1))
-		       (nil)))
-	 (cinsn (set (reg:SI %1 [ <retval> ])
-		       (reg:SI %0 [ _2 ])) "t.c":3
-		   (nil))
-	 (cinsn (set (reg/i:SI ax)
-		       (reg:SI %1 [ <retval> ])) "t.c":4
-		   (nil))
-	 (cinsn (use (reg/i:SI ax)) "t.c":4
-		   (nil))
+			   (const_int 1))))
+	 (cinsn 10 (set (reg:SI <1> [ <retval> ])
+		       (reg:SI <0> [ _2 ])) "t.c":3)
+	 (cinsn 14 (set (reg/i:SI ax)
+		       (reg:SI <1> [ <retval> ])) "t.c":4)
+	 (cinsn 15 (use (reg/i:SI ax)) "t.c":4)
 	 (edge-to exit (flags "FALLTHRU"))
        ) ;; block 2
      ) ;; insn-chain

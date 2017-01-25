@@ -168,6 +168,8 @@
 #define __builtin_ia32_xabort(I) __builtin_ia32_xabort(0)
 
 /* avx512fintrin.h */
+#define __builtin_ia32_kshiftlihi(A, B) __builtin_ia32_kshiftlihi(A, 8)
+#define __builtin_ia32_kshiftrihi(A, B) __builtin_ia32_kshiftrihi(A, 8)
 #define __builtin_ia32_addpd512_mask(A, B, C, D, E) __builtin_ia32_addpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_addps512_mask(A, B, C, D, E) __builtin_ia32_addps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_addsd_round(A, B, C) __builtin_ia32_addsd_round(A, B, 8)
@@ -372,6 +374,10 @@
 #define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)
 
 /* avx512bwintrin.h */
+#define __builtin_ia32_kshiftlisi(A, B) __builtin_ia32_kshiftlisi(A, 8)
+#define __builtin_ia32_kshiftlidi(A, B) __builtin_ia32_kshiftlidi(A, 8)
+#define __builtin_ia32_kshiftrisi(A, B) __builtin_ia32_kshiftrisi(A, 8)
+#define __builtin_ia32_kshiftridi(A, B) __builtin_ia32_kshiftridi(A, 8)
 #define __builtin_ia32_ucmpw512_mask(A, B, E, D) __builtin_ia32_ucmpw512_mask(A, B, 1, D)
 #define __builtin_ia32_ucmpb512_mask(A, B, E, D) __builtin_ia32_ucmpb512_mask(A, B, 1, D)
 #define __builtin_ia32_psrlwi512_mask(A, E, C, D) __builtin_ia32_psrlwi512_mask(A, 1, C, D)
@@ -388,6 +394,8 @@
 #define __builtin_ia32_pslldq512(A, B) __builtin_ia32_pslldq512(A, 8)
 
 /* avx512dqintrin.h */
+#define __builtin_ia32_kshiftliqi(A, B) __builtin_ia32_kshiftliqi(A, 8)
+#define __builtin_ia32_kshiftriqi(A, B) __builtin_ia32_kshiftriqi(A, 8)
 #define __builtin_ia32_reducess(A, B, F) __builtin_ia32_reducess(A, B, 1)
 #define __builtin_ia32_reducesd(A, B, F) __builtin_ia32_reducesd(A, B, 1)
 #define __builtin_ia32_reduceps512_mask(A, E, C, D) __builtin_ia32_reduceps512_mask(A, 1, C, D)

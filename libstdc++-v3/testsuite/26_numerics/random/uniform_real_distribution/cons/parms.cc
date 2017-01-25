@@ -3,7 +3,7 @@
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,20 @@ test01()
   VERIFY( u.max() == 5.0 );
 }
 
+void
+test02()
+{
+  using param_type = std::uniform_real_distribution<double>::param_type;
+  const param_type p(-5.0, 5.0);
+  std::uniform_real_distribution<double> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == -5.0 );
+  VERIFY( u.max() == 5.0 );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -215,6 +215,9 @@ static void
 get_available_features (unsigned int ecx, unsigned int edx,
 			int max_cpuid_level)
 {
+  unsigned int eax, ebx;
+  unsigned int ext_level;
+
   unsigned int features = 0;
 
   if (edx & bit_CMOV)
@@ -247,7 +250,6 @@ get_available_features (unsigned int ecx, unsigned int edx,
   /* Get Advanced Features at level 7 (eax = 7, ecx = 0). */
   if (max_cpuid_level >= 7)
     {
-      unsigned int eax, ebx, ecx, edx;
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
       if (ebx & bit_BMI)
         features |= (1 << FEATURE_BMI);
@@ -273,18 +275,18 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	features |= (1 << FEATURE_AVX512IFMA);
       if (ecx & bit_AVX512VBMI)
 	features |= (1 << FEATURE_AVX512VBMI);
+      if (ecx & bit_AVX512VPOPCNTDQ)
+	features |= (1 << FEATURE_AVX512VPOPCNTDQ);
       if (edx & bit_AVX5124VNNIW)
 	features |= (1 << FEATURE_AVX5124VNNIW);
       if (edx & bit_AVX5124FMAPS)
 	features |= (1 << FEATURE_AVX5124FMAPS);
     }
 
-  unsigned int ext_level;
-  unsigned int eax, ebx;
   /* Check cpuid level of extended features.  */
   __cpuid (0x80000000, ext_level, ebx, ecx, edx);
 
-  if (ext_level > 0x80000000)
+  if (ext_level >= 0x80000001)
     {
       __cpuid (0x80000001, eax, ebx, ecx, edx);
 

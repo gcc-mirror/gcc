@@ -1,5 +1,5 @@
 /* Backend support for Fortran 95 basic types and derived types.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -861,7 +861,7 @@ gfc_build_logical_type (gfc_logical_info *info)
 void
 gfc_init_types (void)
 {
-  char name_buf[18];
+  char name_buf[26];
   int index;
   tree type;
   unsigned n;
@@ -961,10 +961,6 @@ gfc_init_types (void)
 			wi::mask (n, UNSIGNED,
 				  TYPE_PRECISION (size_type_node)));
 
-  boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
-  boolean_true_node = build_int_cst (boolean_type_node, 1);
-  boolean_false_node = build_int_cst (boolean_type_node, 0);
-
   /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
   gfc_charlen_int_kind = 4;
   gfc_charlen_type_node = gfc_get_int_type (gfc_charlen_int_kind);
@@ -1054,7 +1050,7 @@ gfc_get_character_type (int kind, gfc_charlen * cl)
 /* Convert a basic type.  This will be an array for character types.  */
 
 tree
-gfc_typenode_for_spec (gfc_typespec * spec, bool in_coarray)
+gfc_typenode_for_spec (gfc_typespec * spec, int codim)
 {
   tree basetype;
 
@@ -1107,7 +1103,7 @@ gfc_typenode_for_spec (gfc_typespec * spec, bool in_coarray)
 
     case BT_DERIVED:
     case BT_CLASS:
-      basetype = gfc_get_derived_type (spec->u.derived, in_coarray);
+      basetype = gfc_get_derived_type (spec->u.derived, codim);
 
       if (spec->type == BT_CLASS)
 	GFC_CLASS_TYPE_P (basetype) = 1;
@@ -1311,7 +1307,7 @@ gfc_is_nodesc_array (gfc_symbol * sym)
 static tree
 gfc_build_array_type (tree type, gfc_array_spec * as,
 		      enum gfc_array_kind akind, bool restricted,
-		      bool contiguous, bool in_coarray)
+		      bool contiguous, int codim)
 {
   tree lbound[GFC_MAX_DIMENSIONS];
   tree ubound[GFC_MAX_DIMENSIONS];
@@ -1319,10 +1315,10 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 
   /* Assumed-shape arrays do not have codimension information stored in the
      descriptor.  */
-  corank = as->corank;
+  corank = MAX (as->corank, codim);
   if (as->type == AS_ASSUMED_SHAPE ||
       (as->type == AS_ASSUMED_RANK && akind == GFC_ARRAY_ALLOCATABLE))
-    corank = 0;
+    corank = codim;
 
   if (as->type == AS_ASSUMED_RANK)
     for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
@@ -1360,8 +1356,8 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 		       : GFC_ARRAY_ASSUMED_RANK;
   return gfc_get_array_type_bounds (type, as->rank == -1
 					  ? GFC_MAX_DIMENSIONS : as->rank,
-				    corank, lbound,
-				    ubound, 0, akind, restricted, in_coarray);
+				    corank, lbound, ubound, 0, akind,
+				    restricted);
 }
 
 /* Returns the struct descriptor_dimension type.  */
@@ -1723,8 +1719,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 /* Return or create the base type for an array descriptor.  */
 
 static tree
-gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
-			       enum gfc_array_kind akind, bool in_coarray)
+gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 {
   tree fat_type, decl, arraytype, *chain = NULL;
   char name[16 + 2*GFC_RANK_DIGITS + 1 + 1];
@@ -1786,8 +1781,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
       TREE_NO_WARNING (decl) = 1;
     }
 
-  if (flag_coarray == GFC_FCOARRAY_LIB && (codimen || in_coarray)
-      && akind == GFC_ARRAY_ALLOCATABLE)
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen)
     {
       decl = gfc_add_field_to_struct_1 (fat_type,
 					get_identifier ("token"),
@@ -1799,8 +1793,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
   gfc_finish_type (fat_type);
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (fat_type)) = 1;
 
-  if (flag_coarray == GFC_FCOARRAY_LIB && codimen
-      && akind == GFC_ARRAY_ALLOCATABLE)
+  if (flag_coarray == GFC_FCOARRAY_LIB && codimen)
     gfc_array_descriptor_base_caf[idx] = fat_type;
   else
     gfc_array_descriptor_base[idx] = fat_type;
@@ -1814,21 +1807,18 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted,
 tree
 gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
 			   tree * ubound, int packed,
-			   enum gfc_array_kind akind, bool restricted,
-			   bool in_coarray)
+			   enum gfc_array_kind akind, bool restricted)
 {
   char name[8 + 2*GFC_RANK_DIGITS + 1 + GFC_MAX_SYMBOL_LEN];
   tree fat_type, base_type, arraytype, lower, upper, stride, tmp, rtype;
   const char *type_name;
   int n;
 
-  base_type = gfc_get_array_descriptor_base (dimen, codimen, restricted, akind,
-					     in_coarray);
+  base_type = gfc_get_array_descriptor_base (dimen, codimen, restricted);
   fat_type = build_distinct_type_copy (base_type);
   /* Make sure that nontarget and target array type have the same canonical
      type (and same stub decl for debug info).  */
-  base_type = gfc_get_array_descriptor_base (dimen, codimen, false, akind,
-					     in_coarray);
+  base_type = gfc_get_array_descriptor_base (dimen, codimen, false);
   TYPE_CANONICAL (fat_type) = base_type;
   TYPE_STUB_DECL (fat_type) = TYPE_STUB_DECL (base_type);
 
@@ -2420,7 +2410,7 @@ gfc_get_union_type (gfc_symbol *un)
    in a parent namespace, this is used.  */
 
 tree
-gfc_get_derived_type (gfc_symbol * derived, bool in_coarray)
+gfc_get_derived_type (gfc_symbol * derived, int codimen)
 {
   tree typenode = NULL, field = NULL, field_type = NULL;
   tree canonical = NULL_TREE;
@@ -2572,9 +2562,11 @@ gfc_get_derived_type (gfc_symbol * derived, bool in_coarray)
       if ((!c->attr.pointer && !c->attr.proc_pointer
 	  && !same_alloc_type)
 	  || c->ts.u.derived->backend_decl == NULL)
-	c->ts.u.derived->backend_decl = gfc_get_derived_type (c->ts.u.derived,
-							      in_coarray
-							|| c->attr.codimension);
+	{
+	  int local_codim = c->attr.codimension ? c->as->corank: codimen;
+	  c->ts.u.derived->backend_decl = gfc_get_derived_type (c->ts.u.derived,
+								local_codim);
+	}
 
       if (c->ts.u.derived->attr.is_iso_c)
         {
@@ -2633,7 +2625,7 @@ gfc_get_derived_type (gfc_symbol * derived, bool in_coarray)
 	    c->ts.u.cl->backend_decl
 			= build_int_cst (gfc_charlen_type_node, 0);
 
-	  field_type = gfc_typenode_for_spec (&c->ts, in_coarray);
+	  field_type = gfc_typenode_for_spec (&c->ts, codimen);
 	}
 
       /* This returns an array descriptor type.  Initialization may be
@@ -2654,7 +2646,7 @@ gfc_get_derived_type (gfc_symbol * derived, bool in_coarray)
 						 !c->attr.target
 						 && !c->attr.pointer,
 						 c->attr.contiguous,
-						 in_coarray);
+						 codimen);
 	    }
 	  else
 	    field_type = gfc_get_nodesc_array_type (field_type, c->as,
@@ -2701,9 +2693,9 @@ gfc_get_derived_type (gfc_symbol * derived, bool in_coarray)
 	c->backend_decl = field;
 
       /* Do not add a caf_token field for classes' data components.  */
-      if (in_coarray && !c->attr.dimension && !c->attr.codimension
-	  && c->attr.allocatable && c->caf_token == NULL_TREE
-	  && strcmp ("_data", c->name) != 0)
+      if (codimen && !c->attr.dimension && !c->attr.codimension
+	  && (c->attr.allocatable || c->attr.pointer)
+	  && c->caf_token == NULL_TREE && strcmp ("_data", c->name) != 0)
 	{
 	  char caf_name[GFC_MAX_SYMBOL_LEN];
 	  snprintf (caf_name, GFC_MAX_SYMBOL_LEN, "_caf_%s", c->name);

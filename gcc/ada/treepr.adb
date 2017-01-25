@@ -603,13 +603,13 @@ package body Treepr is
 
             begin
                case M is
-                  when Default_Mechanism        =>
+                  when Default_Mechanism =>
                      Write_Str ("Default");
 
-                  when By_Copy                  =>
+                  when By_Copy =>
                      Write_Str ("By_Copy");
 
-                  when By_Reference             =>
+                  when By_Reference =>
                      Write_Str ("By_Reference");
 
                   when 1 .. Mechanism_Type'Last =>
@@ -1200,8 +1200,8 @@ package body Treepr is
          F := Pchars (P);
          P := P + 1;
 
-         --  Check for case of False flag, which we never print, or
-         --  an Empty field, which is also never printed
+         --  Check for case of False flag, which we never print, or an Empty
+         --  field, which is also never printed.
 
          case F is
             when F_Field1 =>
@@ -1268,24 +1268,24 @@ package body Treepr is
                      Print_Field (Field5 (N), Fmt);
                   end if;
 
-               when F_Flag1  => Print_Flag  (Flag1 (N));
-               when F_Flag2  => Print_Flag  (Flag2 (N));
-               when F_Flag3  => Print_Flag  (Flag3 (N));
-               when F_Flag4  => Print_Flag  (Flag4 (N));
-               when F_Flag5  => Print_Flag  (Flag5 (N));
-               when F_Flag6  => Print_Flag  (Flag6 (N));
-               when F_Flag7  => Print_Flag  (Flag7 (N));
-               when F_Flag8  => Print_Flag  (Flag8 (N));
-               when F_Flag9  => Print_Flag  (Flag9 (N));
-               when F_Flag10 => Print_Flag  (Flag10 (N));
-               when F_Flag11 => Print_Flag  (Flag11 (N));
-               when F_Flag12 => Print_Flag  (Flag12 (N));
-               when F_Flag13 => Print_Flag  (Flag13 (N));
-               when F_Flag14 => Print_Flag  (Flag14 (N));
-               when F_Flag15 => Print_Flag  (Flag15 (N));
-               when F_Flag16 => Print_Flag  (Flag16 (N));
-               when F_Flag17 => Print_Flag  (Flag17 (N));
-               when F_Flag18 => Print_Flag  (Flag18 (N));
+               when F_Flag1  => Print_Flag (Flag1 (N));
+               when F_Flag2  => Print_Flag (Flag2 (N));
+               when F_Flag3  => Print_Flag (Flag3 (N));
+               when F_Flag4  => Print_Flag (Flag4 (N));
+               when F_Flag5  => Print_Flag (Flag5 (N));
+               when F_Flag6  => Print_Flag (Flag6 (N));
+               when F_Flag7  => Print_Flag (Flag7 (N));
+               when F_Flag8  => Print_Flag (Flag8 (N));
+               when F_Flag9  => Print_Flag (Flag9 (N));
+               when F_Flag10 => Print_Flag (Flag10 (N));
+               when F_Flag11 => Print_Flag (Flag11 (N));
+               when F_Flag12 => Print_Flag (Flag12 (N));
+               when F_Flag13 => Print_Flag (Flag13 (N));
+               when F_Flag14 => Print_Flag (Flag14 (N));
+               when F_Flag15 => Print_Flag (Flag15 (N));
+               when F_Flag16 => Print_Flag (Flag16 (N));
+               when F_Flag17 => Print_Flag (Flag17 (N));
+               when F_Flag18 => Print_Flag (Flag18 (N));
             end case;
 
             Print_Eol;
@@ -1637,10 +1637,13 @@ package body Treepr is
       case N is
          when List_Low_Bound .. List_High_Bound - 1 =>
             Print_List_Subtree (List_Id (N));
+
          when Node_Range =>
             Print_Node_Subtree (Node_Id (N));
+
          when Elist_Range =>
             Print_Elist_Subtree (Elist_Id (N));
+
          when others =>
             pp (N);
       end case;
@@ -1684,7 +1687,6 @@ package body Treepr is
       Hash_Slot := H;
       Hash_Table (H).Id := Id;
       return 0;
-
    end Serial_Number;
 
    -----------------------

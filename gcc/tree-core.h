@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -814,7 +814,9 @@ enum operand_equal_flag {
   /* Internal within operand_equal_p:  */
   OEP_NO_HASH_CHECK = 16,
   /* Internal within inchash::add_expr:  */
-  OEP_HASH_CHECK = 32
+  OEP_HASH_CHECK = 32,
+  /* Makes operand_equal_p handle more expressions:  */
+  OEP_LEXICOGRAPHIC = 64
 };
 
 /* Enum and arrays used for tree allocation stats.
@@ -1090,6 +1092,9 @@ struct GTY(()) tree_base {
 
        FALLTHROUGH_LABEL_P in
 	   LABEL_DECL
+
+       SSA_NAME_IS_VIRTUAL_OPERAND in
+	   SSA_NAME
 
    private_flag:
 
@@ -1791,7 +1796,7 @@ struct GTY(()) tree_statement_list
 /* Optimization options used by a function.  */
 
 struct GTY(()) tree_optimization_option {
-  struct tree_common common;
+  struct tree_base base;
 
   /* The optimization options used by the user.  */
   struct cl_optimization *opts;
@@ -1812,7 +1817,7 @@ struct GTY(()) target_globals;
 /* Target options used by a function.  */
 
 struct GTY(()) tree_target_option {
-  struct tree_common common;
+  struct tree_base base;
 
   /* Target globals for the corresponding target option.  */
   struct target_globals *globals;

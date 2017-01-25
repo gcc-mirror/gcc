@@ -71,6 +71,7 @@ DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/../depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+	$(top_srcdir)/../config/hwcaps.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -145,6 +146,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgoruntimedir)" \
 	"$(DESTDIR)$(toolexeclibgosyncdir)" \
 	"$(DESTDIR)$(toolexeclibgotestingdir)" \
+	"$(DESTDIR)$(toolexeclibgotestinginternaldir)" \
 	"$(DESTDIR)$(toolexeclibgotextdir)" \
 	"$(DESTDIR)$(toolexeclibgotexttemplatedir)" \
 	"$(DESTDIR)$(toolexeclibgounicodedir)"
@@ -167,9 +169,9 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_2 = $(addsuffix .lo,$(PACKAGES)) bytes/index.lo \
 	reflect/makefunc_ffi_c.lo strings/index.lo \
 	$(am__DEPENDENCIES_1) syscall/errno.lo syscall/signame.lo \
-	syscall/wait.lo $(golang_org_x_net_route_lo) \
-	log/syslog/syslog_c.lo runtime/internal/atomic_c.lo \
-	sync/atomic_c.lo
+	syscall/wait.lo $(golang_org_x_net_lif_lo) \
+	$(golang_org_x_net_route_lo) log/syslog/syslog_c.lo \
+	runtime/internal/atomic_c.lo sync/atomic_c.lo
 am__DEPENDENCIES_3 =
 am__DEPENDENCIES_4 = $(am__DEPENDENCIES_2) \
 	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_3) \
@@ -195,13 +197,12 @@ am__objects_5 = aeshash.lo go-assert.lo go-breakpoint.lo go-caller.lo \
 	go-memcmp.lo go-memequal.lo go-memmove.lo go-nanotime.lo \
 	go-now.lo go-new.lo go-nosys.lo go-reflect-call.lo \
 	go-runtime-error.lo go-setenv.lo go-signal.lo go-strslice.lo \
-	go-type-complex.lo go-type-float.lo go-type-identity.lo \
-	go-type-string.lo go-typedesc-equal.lo go-unsafe-new.lo \
-	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unsetenv.lo \
-	go-unwind.lo go-varargs.lo env_posix.lo heapdump.lo mcache.lo \
-	mcentral.lo $(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo \
-	msize.lo panic.lo parfor.lo print.lo proc.lo runtime_c.lo \
-	thread.lo $(am__objects_2) yield.lo $(am__objects_3) malloc.lo \
+	go-typedesc-equal.lo go-unsafe-new.lo go-unsafe-newarray.lo \
+	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
+	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
+	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
+	panic.lo parfor.lo print.lo proc.lo runtime_c.lo thread.lo \
+	$(am__objects_2) yield.lo $(am__objects_3) malloc.lo \
 	$(am__objects_4)
 am_libgo_llgo_la_OBJECTS = $(am__objects_5)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
@@ -265,7 +266,8 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoos_DATA) \
 	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
 	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
+	$(toolexeclibgotesting_DATA) \
+	$(toolexeclibgotestinginternal_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
@@ -319,6 +321,7 @@ GO_SPLIT_STACK = @GO_SPLIT_STACK@
 GO_SYSCALL_OS_ARCH_FILE = @GO_SYSCALL_OS_ARCH_FILE@
 GO_SYSCALL_OS_FILE = @GO_SYSCALL_OS_FILE@
 GREP = @GREP@
+HWCAP_CFLAGS = @HWCAP_CFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -456,7 +459,7 @@ AM_CPPFLAGS = -I $(srcdir)/runtime $(LIBFFIINCS) $(PTHREAD_CFLAGS)
 ACLOCAL_AMFLAGS = -I ./config -I ../config
 AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
 	$(SPLIT_STACK) $(WARN_CFLAGS) \
-	$(STRINGOPS_FLAG) $(OSCFLAGS) \
+	$(STRINGOPS_FLAG) $(HWCAP_CFLAGS) $(OSCFLAGS) \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
 	-I $(MULTIBUILDTOP)../../gcc/include
 
@@ -727,7 +730,8 @@ toolexeclibgoregexp_DATA = \
 toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 toolexeclibgoruntime_DATA = \
 	runtime/debug.gox \
-	runtime/pprof.gox
+	runtime/pprof.gox \
+	runtime/trace.gox
 
 toolexeclibgosyncdir = $(toolexeclibgodir)/sync
 toolexeclibgosync_DATA = \
@@ -737,6 +741,10 @@ toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
 	testing/quick.gox
+
+toolexeclibgotestinginternaldir = $(toolexeclibgotestingdir)/internal
+toolexeclibgotestinginternal_DATA = \
+	testing/internal/testdeps.gox
 
 toolexeclibgotextdir = $(toolexeclibgodir)/text
 toolexeclibgotext_DATA = \
@@ -791,10 +799,6 @@ runtime_files = \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strslice.c \
-	runtime/go-type-complex.c \
-	runtime/go-type-float.c \
-	runtime/go-type-identity.c \
-	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
 	runtime/go-unsafe-new.c \
 	runtime/go-unsafe-newarray.c \
@@ -837,6 +841,7 @@ PACKAGES = \
 	archive/zip \
 	bufio \
 	bytes \
+	cmd/internal/browser \
 	compress/bzip2 \
 	compress/flate \
 	compress/gzip \
@@ -854,6 +859,7 @@ PACKAGES = \
 	crypto/ecdsa \
 	crypto/elliptic \
 	crypto/hmac \
+	crypto/internal/cipherhw \
 	crypto/md5 \
 	crypto/rand \
 	crypto/rc4 \
@@ -904,8 +910,16 @@ PACKAGES = \
 	go/scanner \
 	go/token \
 	go/types \
+	golang_org/x/crypto/chacha20poly1305 \
+	golang_org/x/crypto/chacha20poly1305/internal/chacha20 \
+	golang_org/x/crypto/curve25519 \
+	golang_org/x/crypto/poly1305 \
 	golang_org/x/net/http2/hpack \
+	golang_org/x/net/idna \
 	golang_org/x/net/lex/httplex \
+	golang_org/x/text/transform \
+	golang_org/x/text/unicode/norm \
+	golang_org/x/text/width \
 	hash \
 	hash/adler32 \
 	hash/crc32 \
@@ -923,6 +937,7 @@ PACKAGES = \
 	image/png \
 	index/suffixarray \
 	internal/nettrace \
+	internal/pprof/profile \
 	internal/race \
 	internal/singleflight \
 	internal/syscall/unix \
@@ -970,6 +985,8 @@ PACKAGES = \
 	runtime/internal/atomic \
 	runtime/internal/sys \
 	runtime/pprof \
+	runtime/pprof/internal/protopprof \
+	runtime/trace \
 	sort \
 	strconv \
 	strings \
@@ -977,6 +994,7 @@ PACKAGES = \
 	sync/atomic \
 	syscall \
 	testing \
+	testing/internal/testdeps \
 	testing/iotest \
 	testing/quick \
 	text/scanner \
@@ -997,6 +1015,7 @@ libgo_go_objs = \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
+	$(golang_org_x_net_lif_lo) \
 	$(golang_org_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
 	$(os_lib_inotify_lo) \
@@ -1159,10 +1178,16 @@ extra_go_files_runtime_internal_sys = version.go
 @HAVE_STAT_TIMESPEC_TRUE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = --tag=solaristag
 @LIBGO_IS_SOLARIS_FALSE@matchargs_os = 
 @LIBGO_IS_BSD_TRUE@golang_org_x_net_route_lo = \
-@LIBGO_IS_BSD_TRUE@	golang_org/x/net/route/route.lo
+@LIBGO_IS_BSD_TRUE@	golang_org/x/net/route.lo
 
 @LIBGO_IS_BSD_TRUE@golang_org_x_net_route_check = \
 @LIBGO_IS_BSD_TRUE@	golang_org/x/net/route/check
+
+@LIBGO_IS_SOLARIS_TRUE@golang_org_x_net_lif_lo = \
+@LIBGO_IS_SOLARIS_TRUE@	golang_org/x/net/lif.lo
+
+@LIBGO_IS_SOLARIS_TRUE@golang_org_x_net_lif_check = \
+@LIBGO_IS_SOLARIS_TRUE@	golang_org/x/net/lif/check
 
 TEST_PACKAGES = \
 	bufio/check \
@@ -1251,8 +1276,14 @@ TEST_PACKAGES = \
 	go/scanner/check \
 	go/token/check \
 	go/types/check \
+	golang_org/x/crypto/chacha20poly1305/check \
+	golang_org/x/crypto/chacha20poly1305/internal/chacha20/check \
+	golang_org/x/crypto/curve25519/check \
+	golang_org/x/crypto/poly1305/check \
 	golang_org/x/net/http2/hpack/check \
+	golang_org/x/net/idna/check \
 	golang_org/x/net/lex/httplex/check \
+	$(golang_org_x_net_lif_check) \
 	$(golang_org_x_net_route_check) \
 	hash/adler32/check \
 	hash/crc32/check \
@@ -1263,6 +1294,7 @@ TEST_PACKAGES = \
 	image/jpeg/check \
 	image/png/check \
 	index/suffixarray/check \
+	internal/pprof/profile/check \
 	internal/singleflight/check \
 	internal/trace/check \
 	io/ioutil/check \
@@ -1293,9 +1325,10 @@ TEST_PACKAGES = \
 	path/filepath/check \
 	regexp/syntax/check \
 	runtime/debug/check \
-	runtime/pprof/check \
 	runtime/internal/atomic/check \
 	runtime/internal/sys/check \
+	runtime/pprof/check \
+	runtime/pprof/internal/protopprof/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \
@@ -1477,10 +1510,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-setenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strslice.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-complex.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-float.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-identity.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-typedesc-equal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-new.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-newarray.Plo@am__quote@
@@ -1742,34 +1771,6 @@ go-strslice.lo: runtime/go-strslice.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-strslice.c' object='go-strslice.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-strslice.lo `test -f 'runtime/go-strslice.c' || echo '$(srcdir)/'`runtime/go-strslice.c
-
-go-type-complex.lo: runtime/go-type-complex.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-complex.lo -MD -MP -MF $(DEPDIR)/go-type-complex.Tpo -c -o go-type-complex.lo `test -f 'runtime/go-type-complex.c' || echo '$(srcdir)/'`runtime/go-type-complex.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-type-complex.Tpo $(DEPDIR)/go-type-complex.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-type-complex.c' object='go-type-complex.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-type-complex.lo `test -f 'runtime/go-type-complex.c' || echo '$(srcdir)/'`runtime/go-type-complex.c
-
-go-type-float.lo: runtime/go-type-float.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-float.lo -MD -MP -MF $(DEPDIR)/go-type-float.Tpo -c -o go-type-float.lo `test -f 'runtime/go-type-float.c' || echo '$(srcdir)/'`runtime/go-type-float.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-type-float.Tpo $(DEPDIR)/go-type-float.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-type-float.c' object='go-type-float.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-type-float.lo `test -f 'runtime/go-type-float.c' || echo '$(srcdir)/'`runtime/go-type-float.c
-
-go-type-identity.lo: runtime/go-type-identity.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-identity.lo -MD -MP -MF $(DEPDIR)/go-type-identity.Tpo -c -o go-type-identity.lo `test -f 'runtime/go-type-identity.c' || echo '$(srcdir)/'`runtime/go-type-identity.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-type-identity.Tpo $(DEPDIR)/go-type-identity.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-type-identity.c' object='go-type-identity.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-type-identity.lo `test -f 'runtime/go-type-identity.c' || echo '$(srcdir)/'`runtime/go-type-identity.c
-
-go-type-string.lo: runtime/go-type-string.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-string.lo -MD -MP -MF $(DEPDIR)/go-type-string.Tpo -c -o go-type-string.lo `test -f 'runtime/go-type-string.c' || echo '$(srcdir)/'`runtime/go-type-string.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-type-string.Tpo $(DEPDIR)/go-type-string.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-type-string.c' object='go-type-string.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-type-string.lo `test -f 'runtime/go-type-string.c' || echo '$(srcdir)/'`runtime/go-type-string.c
 
 go-typedesc-equal.lo: runtime/go-typedesc-equal.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-typedesc-equal.lo -MD -MP -MF $(DEPDIR)/go-typedesc-equal.Tpo -c -o go-typedesc-equal.lo `test -f 'runtime/go-typedesc-equal.c' || echo '$(srcdir)/'`runtime/go-typedesc-equal.c
@@ -2650,6 +2651,27 @@ uninstall-toolexeclibgotestingDATA:
 	@list='$(toolexeclibgotesting_DATA)'; test -n "$(toolexeclibgotestingdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgotestingdir)'; $(am__uninstall_files_from_dir)
+install-toolexeclibgotestinginternalDATA: $(toolexeclibgotestinginternal_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclibgotestinginternal_DATA)'; test -n "$(toolexeclibgotestinginternaldir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgotestinginternaldir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgotestinginternaldir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgotestinginternaldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgotestinginternaldir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgotestinginternalDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgotestinginternal_DATA)'; test -n "$(toolexeclibgotestinginternaldir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibgotestinginternaldir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgotextDATA: $(toolexeclibgotext_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgotext_DATA)'; test -n "$(toolexeclibgotextdir)" || list=; \
@@ -2854,7 +2876,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) all-multi $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2940,7 +2962,9 @@ install-exec-am: install-multi install-toolexeclibLIBRARIES \
 	install-toolexeclibgonetrpcDATA install-toolexeclibgoosDATA \
 	install-toolexeclibgopathDATA install-toolexeclibgoregexpDATA \
 	install-toolexeclibgoruntimeDATA install-toolexeclibgosyncDATA \
-	install-toolexeclibgotestingDATA install-toolexeclibgotextDATA \
+	install-toolexeclibgotestingDATA \
+	install-toolexeclibgotestinginternalDATA \
+	install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
 	install-toolexeclibgounicodeDATA
 
@@ -3010,6 +3034,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgoruntimeDATA \
 	uninstall-toolexeclibgosyncDATA \
 	uninstall-toolexeclibgotestingDATA \
+	uninstall-toolexeclibgotestinginternalDATA \
 	uninstall-toolexeclibgotextDATA \
 	uninstall-toolexeclibgotexttemplateDATA \
 	uninstall-toolexeclibgounicodeDATA
@@ -3051,7 +3076,9 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgonetrpcDATA install-toolexeclibgoosDATA \
 	install-toolexeclibgopathDATA install-toolexeclibgoregexpDATA \
 	install-toolexeclibgoruntimeDATA install-toolexeclibgosyncDATA \
-	install-toolexeclibgotestingDATA install-toolexeclibgotextDATA \
+	install-toolexeclibgotestingDATA \
+	install-toolexeclibgotestinginternalDATA \
+	install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
 	install-toolexeclibgounicodeDATA installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
@@ -3085,6 +3112,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgoruntimeDATA \
 	uninstall-toolexeclibgosyncDATA \
 	uninstall-toolexeclibgotestingDATA \
+	uninstall-toolexeclibgotestinginternalDATA \
 	uninstall-toolexeclibgotextDATA \
 	uninstall-toolexeclibgotexttemplateDATA \
 	uninstall-toolexeclibgounicodeDATA
@@ -3173,7 +3201,7 @@ s-sigtab: $(srcdir)/mksigtab.sh gen-sysinfo.go
 runtime.inc: s-runtime-inc; @true
 s-runtime-inc: runtime.lo Makefile
 	rm -f runtime.inc.tmp2
-	grep -v "#define _" runtime.inc.tmp | grep -v "#define c[01] " > runtime.inc.tmp2
+	grep -v "#define _" runtime.inc.tmp | grep -v "#define [cm][01234] " > runtime.inc.tmp2
 	for pattern in '_[GP][a-z]' _Max _Lock _Sig _Trace _MHeap _Num; do \
 	  grep "#define $$pattern" runtime.inc.tmp >> runtime.inc.tmp2; \
 	done
@@ -3351,7 +3379,11 @@ syscall/wait.lo: go/syscall/wait.c runtime.inc
 
 # Build golang_org/x/net/route only on BSD systems.
 
-@LIBGO_IS_BSD_TRUE@$(eval $(call PACKAGE_template,golang_org/x/net/route)
+@LIBGO_IS_BSD_TRUE@$(eval $(call PACKAGE_template,golang_org/x/net/route))
+
+# Build golang_org/x/net/lif only on Solaris systems.
+
+@LIBGO_IS_SOLARIS_TRUE@$(eval $(call PACKAGE_template,golang_org/x/net/lif))
 
 check: check-tail
 check-recursive: check-head

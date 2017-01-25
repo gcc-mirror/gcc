@@ -1,5 +1,5 @@
 /* Partial redundancy elimination / Hoisting for RTL.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1709,7 +1709,7 @@ prune_expressions (bool pre_p)
 	      continue;
 	    }
 
-	  if (!pre_p && MEM_P (expr->expr))
+	  if (!pre_p && contains_mem_rtx_p (expr->expr))
 	    /* Note memory references that can be clobbered by a call.
 	       We do not split abnormal edges in hoisting, so would
 	       a memory reference get hoisted along an abnormal edge,
@@ -1717,15 +1717,28 @@ prune_expressions (bool pre_p)
 	       constant memory references can be hoisted along abnormal
 	       edges.  */
 	    {
-	      if (GET_CODE (XEXP (expr->expr, 0)) == SYMBOL_REF
-		  && CONSTANT_POOL_ADDRESS_P (XEXP (expr->expr, 0)))
-		continue;
+	      rtx x = expr->expr;
 
-	      if (MEM_READONLY_P (expr->expr)
-		  && !MEM_VOLATILE_P (expr->expr)
-		  && MEM_NOTRAP_P (expr->expr))
-		/* Constant memory reference, e.g., a PIC address.  */
-		continue;
+	      /* Common cases where we might find the MEM which may allow us
+		 to avoid pruning the expression.  */
+	      while (GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
+		x = XEXP (x, 0);
+
+	      /* If we found the MEM, go ahead and look at it to see if it has
+		 properties that allow us to avoid pruning its expression out
+		 of the tables.  */
+	      if (MEM_P (x))
+		{
+		  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+		      && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
+		    continue;
+
+		  if (MEM_READONLY_P (x)
+		      && !MEM_VOLATILE_P (x)
+		      && MEM_NOTRAP_P (x))
+		    /* Constant memory reference, e.g., a PIC address.  */
+		    continue;
+		}
 
 	      /* ??? Optimally, we would use interprocedural alias
 		 analysis to determine if this mem is actually killed

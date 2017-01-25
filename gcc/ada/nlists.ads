@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -229,6 +229,16 @@ package Nlists is
    --  An attempt to append an error node is ignored without complaint and the
    --  list is unchanged.
 
+   procedure Append_New (Node : Node_Or_Entity_Id; To : in out List_Id);
+   pragma Inline (Append_New);
+   --  Appends Node at the end of node list To. If To is non-existent list, a
+   --  list is created. Node must be a non-empty node that is not already a
+   --  member of a node list, and To must be a node list.
+
+   procedure Append_New_To (To : in out List_Id; Node : Node_Or_Entity_Id);
+   pragma Inline (Append_New_To);
+   --  Like Append_New, but the arguments are in reverse order
+
    procedure Append_To (To : List_Id; Node : Node_Or_Entity_Id);
    pragma Inline (Append_To);
    --  Like Append, but arguments are the other way round
@@ -279,12 +289,6 @@ package Nlists is
    --  node list. An attempt to prepend an error node is ignored without
    --  complaint and the list is unchanged.
 
-   procedure Prepend_To
-     (To   : List_Id;
-      Node : Node_Or_Entity_Id);
-   pragma Inline (Prepend_To);
-   --  Like Prepend, but arguments are the other way round
-
    procedure Prepend_List
      (List : List_Id;
       To   : List_Id);
@@ -296,6 +300,22 @@ package Nlists is
       List : List_Id);
    pragma Inline (Prepend_List_To);
    --  Like Prepend_List, but arguments are the other way round
+
+   procedure Prepend_New (Node : Node_Or_Entity_Id; To : in out List_Id);
+   pragma Inline (Prepend_New);
+   --  Prepends Node at the end of node list To. If To is non-existent list, a
+   --  list is created. Node must be a non-empty node that is not already a
+   --  member of a node list, and To must be a node list.
+
+   procedure Prepend_New_To (To : in out List_Id; Node : Node_Or_Entity_Id);
+   pragma Inline (Prepend_New_To);
+   --  Like Prepend_New, but the arguments are in reverse order
+
+   procedure Prepend_To
+     (To   : List_Id;
+      Node : Node_Or_Entity_Id);
+   pragma Inline (Prepend_To);
+   --  Like Prepend, but arguments are the other way round
 
    procedure Remove (Node : Node_Or_Entity_Id);
    --  Removes Node, which must be a node that is a member of a node list,
@@ -320,8 +340,17 @@ package Nlists is
    procedure Lock;
    --  Called to lock tables before back end is called
 
+   procedure Lock_Lists;
+   --  Called to lock list contents when assertions are enabled. Without
+   --  assertions calling this subprogram has no effect. The initial state
+   --  of the lock is unlocked.
+
    procedure Unlock;
    --  Unlock tables, in cases where the back end needs to modify them
+
+   procedure Unlock_Lists;
+   --  Called to unlock list contents when assertions are enabled; if
+   --  assertions are not enabled calling this subprogram has no effect.
 
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant

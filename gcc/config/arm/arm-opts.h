@@ -1,5 +1,5 @@
 /* Definitions for option handling for ARM.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -26,18 +26,8 @@
 #define ARM_OPTS_H
 
 #include "arm-flags.h"
-
-/* The various ARM cores.  */
-enum processor_type
-{
-#undef ARM_CORE
-#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
-  TARGET_CPU_##INTERNAL_IDENT,
-#include "arm-cores.def"
-#undef ARM_CORE
-  /* Used to indicate that no processor has been specified.  */
-  TARGET_CPU_arm_none
-};
+#include "arm-isa.h"
+#include "arm-cpu.h"
 
 /* Which __fp16 format to use.
    The enumeration values correspond to the numbering for the
@@ -78,25 +68,5 @@ enum arm_tp_type {
 enum arm_tls_type {
   TLS_GNU,
   TLS_GNU2
-};
-
-struct arm_arch_core_flag
-{
-  const char *const name;
-  const arm_feature_set flags;
-};
-
-static const struct arm_arch_core_flag arm_arch_core_flags[] =
-{
-#undef ARM_CORE
-#define ARM_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
-  {NAME, FLAGS},
-#include "arm-cores.def"
-#undef ARM_CORE
-#undef ARM_ARCH
-#define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
-  {NAME, FLAGS},
-#include "arm-arches.def"
-#undef ARM_ARCH
 };
 #endif

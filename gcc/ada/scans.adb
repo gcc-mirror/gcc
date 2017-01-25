@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,8 +140,31 @@ package body Scans is
       --  Ada 2012 reserved words
 
       Set_Reserved (Name_Some, Tok_Some);
-
    end Initialize_Ada_Keywords;
+
+   ------------------
+   -- Keyword_Name --
+   ------------------
+
+   function Keyword_Name (Token : Token_Type) return Name_Id is
+      Tok : String := Token'Img;
+      pragma Assert (Tok (1 .. 4) = "TOK_");
+      Name : String renames Tok (5 .. Tok'Last);
+
+   begin
+      --  Convert to lower case. We don't want to add a dependence on a
+      --  general-purpose To_Lower routine, so we convert "by hand" here.
+      --  All keywords use 7-bit ASCII letters only, so this works.
+
+      for J in Name'Range loop
+         pragma Assert (Name (J) in 'A' .. 'Z');
+         Name (J) :=
+           Character'Val (Character'Pos (Name (J)) +
+             (Character'Pos ('a') - Character'Pos ('A')));
+      end loop;
+
+      return Name_Find (Name);
+   end Keyword_Name;
 
    ------------------------
    -- Restore_Scan_State --

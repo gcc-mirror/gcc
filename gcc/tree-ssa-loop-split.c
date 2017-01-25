@@ -1,5 +1,5 @@
 /* Loop splitting.
-   Copyright (C) 2015 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,10 +102,11 @@ split_at_bb_p (struct loop *loop, basic_block bb, tree *border, affine_iv *iv)
 
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
+  struct loop *useloop = loop_containing_stmt (stmt);
 
-  if (!simple_iv (loop, loop, op0, iv, false))
+  if (!simple_iv (loop, useloop, op0, iv, false))
     return NULL_TREE;
-  if (!simple_iv (loop, loop, op1, &iv2, false))
+  if (!simple_iv (loop, useloop, op1, &iv2, false))
     return NULL_TREE;
 
   /* Make it so that the first argument of the condition is
@@ -121,6 +122,8 @@ split_at_bb_p (struct loop *loop, basic_block bb, tree *border, affine_iv *iv)
   else if (integer_zerop (iv->step))
     return NULL_TREE;
   if (!integer_zerop (iv2.step))
+    return NULL_TREE;
+  if (!iv->no_overflow)
     return NULL_TREE;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -156,7 +159,7 @@ patch_loop_exit (struct loop *loop, gcond *guard, tree nextval, tree newbound,
 			     nextval, newbound);
   update_stmt (stmt);
 
-  edge stay = single_pred_edge (loop->latch);
+  edge stay = EDGE_SUCC (exit->src, EDGE_SUCC (exit->src, 0) == exit);
 
   exit->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
   stay->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
@@ -494,7 +497,7 @@ split_loop (struct loop *loop1, struct tree_niter_desc *niter)
   unsigned i;
   bool changed = false;
   tree guard_iv;
-  tree border;
+  tree border = NULL_TREE;
   affine_iv iv;
 
   bbs = get_loop_body (loop1);

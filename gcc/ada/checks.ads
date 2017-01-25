@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -255,9 +255,14 @@ package Checks is
    --  verify the proper initialization of scalars in parameters and function
    --  results.
 
-   procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);
-   --  N is an expression to which a predicate check may need to be applied
-   --  for Typ, if Typ has a predicate function.
+   procedure Apply_Predicate_Check
+     (N   : Node_Id;
+      Typ : Entity_Id;
+      Fun : Entity_Id := Empty);
+   --  N is an expression to which a predicate check may need to be applied for
+   --  Typ, if Typ has a predicate function. When N is an actual in a call, Fun
+   --  is the function being called, which is used to generate a better warning
+   --  if the call leads to an infinite recursion.
 
    procedure Apply_Type_Conversion_Checks (N : Node_Id);
    --  N is an N_Type_Conversion node. A type conversion actually involves

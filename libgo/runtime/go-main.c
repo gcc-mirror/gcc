@@ -15,7 +15,6 @@
 #endif
 
 #include "runtime.h"
-#include "go-alloc.h"
 #include "array.h"
 #include "arch.h"
 #include "malloc.h"
@@ -45,6 +44,9 @@ main (int argc, char **argv)
   if (runtime_isstarted)
     return 0;
   runtime_isstarted = true;
+
+  if (runtime_iscgo)
+    setIsCgo ();
 
   __go_end = (uintptr)_end;
   runtime_cpuinit ();

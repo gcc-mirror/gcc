@@ -1,5 +1,5 @@
 /* Memory address lowering and addressing mode selection.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -115,7 +115,7 @@ gen_addr_rtx (machine_mode address_mode,
   if (offset_p)
     *offset_p = NULL;
 
-  if (index)
+  if (index && index != const0_rtx)
     {
       act_elem = index;
       if (step)

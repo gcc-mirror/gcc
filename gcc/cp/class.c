@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3759,25 +3759,27 @@ check_field_decls (tree t, tree *access_decls,
       /* When this goes into scope, it will be a non-local reference.  */
       DECL_NONLOCAL (x) = 1;
 
-      if (TREE_CODE (t) == UNION_TYPE
-	  && cxx_dialect < cxx11)
+      if (TREE_CODE (t) == UNION_TYPE)
 	{
 	  /* [class.union] (C++98)
 
 	     If a union contains a static data member, or a member of
 	     reference type, the program is ill-formed.
 
-	     In C++11 this limitation doesn't exist anymore.  */
-	  if (VAR_P (x))
+	     In C++11 [class.union] says:
+	     If a union contains a non-static data member of reference type
+	     the program is ill-formed.  */
+	  if (VAR_P (x) && cxx_dialect < cxx11)
 	    {
 	      error ("in C++98 %q+D may not be static because it is "
 		     "a member of a union", x);
 	      continue;
 	    }
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TREE_CODE (type) == REFERENCE_TYPE
+	      && TREE_CODE (x) == FIELD_DECL)
 	    {
-	      error ("in C++98 %q+D may not have reference type %qT "
-		     "because it is a member of a union", x, type);
+	      error ("non-static data member %q+D in a union may not "
+		     "have reference type %qT", x, type);
 	      continue;
 	    }
 	}

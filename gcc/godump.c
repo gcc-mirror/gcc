@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -722,10 +722,6 @@ go_format_type (struct godump_container *container, tree type,
 
   switch (TREE_CODE (type))
     {
-    case ENUMERAL_TYPE:
-      obstack_grow (ob, "int", 3);
-      break;
-
     case TYPE_DECL:
       {
 	void **slot;
@@ -741,6 +737,7 @@ go_format_type (struct godump_container *container, tree type,
       }
       break;
 
+    case ENUMERAL_TYPE:
     case INTEGER_TYPE:
       {
 	const char *s;

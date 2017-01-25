@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for SPARC.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -1522,6 +1522,10 @@ sparc_option_override (void)
   /* Don't use stack biasing in 32 bit mode.  */
   if (TARGET_ARCH32)
     target_flags &= ~MASK_STACK_BIAS;
+
+  /* Use LRA instead of reload, unless otherwise instructed.  */
+  if (!(target_flags_explicit & MASK_LRA))
+    target_flags |= MASK_LRA;
 
   /* Supply a default value for align_functions.  */
   if (align_functions == 0

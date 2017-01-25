@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -166,6 +166,13 @@ package Inline is
    --  and calls are not inlined in the frontend. If proper warnings are
    --  enabled and the subprogram contains a construct that cannot be inlined,
    --  the problematic construct is flagged accordingly.
+
+   function Call_Can_Be_Inlined_In_GNATprove_Mode
+    (N    : Node_Id;
+     Subp : Entity_Id) return Boolean;
+   --  Returns False if the call in node N to subprogram Subp cannot be inlined
+   --  in GNATprove mode, because it may lead to missing a check on type
+   --  conversion of input parameters otherwise. Returns True otherwise.
 
    function Can_Be_Inlined_In_GNATprove_Mode
      (Spec_Id : Entity_Id;

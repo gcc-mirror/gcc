@@ -1,6 +1,6 @@
 // Class template uniform_int_distribution -*- C++ -*-
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -90,6 +90,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	_IntType _M_a;
@@ -362,6 +366,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  while (__f != __t)
 	    *__f++ = __uctype(__urng()) - __urngmin + __param.a();
       }
+
+  // operator!= and operator<< and operator>> are defined in <bits/random.h>
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

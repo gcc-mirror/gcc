@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -25,7 +25,7 @@
 /* The various cores that implement AArch64.  */
 enum aarch64_processor
 {
-#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
+#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   INTERNAL_IDENT,
 #include "aarch64-cores.def"
   /* Used to indicate that no processor has been specified.  */
@@ -69,6 +69,16 @@ enum aarch64_code_model {
   /* No assumptions about addresses of code and data.
      The PIC variant is not yet implemented.  */
   AARCH64_CMODEL_LARGE
+};
+
+/* Function types -msign-return-address should sign.  */
+enum aarch64_function_type {
+  /* Don't sign any function.  */
+  AARCH64_FUNCTION_NONE,
+  /* Non-leaf functions.  */
+  AARCH64_FUNCTION_NON_LEAF,
+  /* All functions.  */
+  AARCH64_FUNCTION_ALL
 };
 
 #endif

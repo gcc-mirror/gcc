@@ -221,8 +221,8 @@ package Table is
       --  Writes out contents of table using Tree_IO
 
       procedure Tree_Read;
-      --  Initializes table by reading contents previously written
-      --  with the Tree_Write call (also using Tree_IO)
+      --  Initializes table by reading contents previously written with the
+      --  Tree_Write call (also using Tree_IO).
 
    private
 

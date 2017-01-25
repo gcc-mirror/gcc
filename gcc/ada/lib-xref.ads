@@ -651,6 +651,15 @@ package Lib.Xref is
       --  the information collected in the tables in library package called
       --  SPARK_Xrefs, and using routines in Lib.Util.
 
+      generic
+         with procedure Process (N : Node_Id) is <>;
+      procedure Traverse_Compilation_Unit
+        (CU           : Node_Id;
+         Inside_Stubs : Boolean);
+      --  Call Process on all declarations within compilation unit CU. If
+      --  Inside_Stubs is True, then the body of stubs is also traversed.
+      --  Generic declarations are ignored.
+
    end SPARK_Specific;
 
    -----------------

@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -40,6 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "config.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stddef.h>
 #include <float.h>
 #include <stdarg.h>
@@ -649,9 +650,6 @@ iexport_proto(set_args);
 
 extern void get_args (int *, char ***);
 internal_proto(get_args);
-
-extern void store_exe_path (const char *);
-export_proto(store_exe_path);
 
 /* backtrace.c */
 

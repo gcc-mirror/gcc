@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -1123,7 +1123,8 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
   if (expr->symtree)
     {
       last_component_ref_tree = expr->symtree->n.sym->backend_decl;
-      ref_static_array = !expr->symtree->n.sym->attr.allocatable;
+      ref_static_array = !expr->symtree->n.sym->attr.allocatable
+	  && !expr->symtree->n.sym->attr.pointer;
     }
 
   /* Prevent uninit-warning.  */
@@ -1219,7 +1220,8 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 	  tmp = fold_build3_loc (input_location, COMPONENT_REF,
 				 TREE_TYPE (field), inner_struct, field,
 				 NULL_TREE);
-	  if (ref->u.c.component->attr.allocatable
+	  if ((ref->u.c.component->attr.allocatable
+	       || ref->u.c.component->attr.pointer)
 	      && ref->u.c.component->attr.dimension)
 	    {
 	      tree arr_desc_token_offset;
@@ -1243,7 +1245,8 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 
 	  /* Remember whether this ref was to a non-allocatable/non-pointer
 	     component so the next array ref can be tailored correctly.  */
-	  ref_static_array = !ref->u.c.component->attr.allocatable;
+	  ref_static_array = !ref->u.c.component->attr.allocatable
+	      && !ref->u.c.component->attr.pointer;
 	  last_component_ref_tree = ref_static_array
 	      ? ref->u.c.component->backend_decl : NULL_TREE;
 	  break;
@@ -1627,7 +1630,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 
   /* Only use the new get_by_ref () where it is necessary.  I.e., when the lhs
      is reallocatable or the right-hand side has allocatable components.  */
-  if (caf_attr->alloc_comp || may_realloc)
+  if (caf_attr->alloc_comp || caf_attr->pointer_comp || may_realloc)
     {
       /* Get using caf_get_by_ref.  */
       caf_reference = conv_expr_ref_to_caf_ref (&se->pre, array_expr);
@@ -1876,7 +1879,8 @@ conv_caf_send (gfc_code *code) {
       lhs_se.expr = gfc_conv_scalar_to_descriptor (&lhs_se, lhs_se.expr, attr);
       lhs_se.expr = gfc_build_addr_expr (NULL_TREE, lhs_se.expr);
     }
-  else if (lhs_caf_attr.alloc_comp && lhs_caf_attr.codimension)
+  else if ((lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp)
+	   && lhs_caf_attr.codimension)
     {
       lhs_se.want_pointer = 1;
       gfc_conv_expr_descriptor (&lhs_se, lhs_expr);
@@ -1930,12 +1934,13 @@ conv_caf_send (gfc_code *code) {
      temporary and a loop.  */
   if (!gfc_is_coindexed (lhs_expr)
       && (!lhs_caf_attr.codimension
-	  || !(lhs_expr->rank > 0 && lhs_caf_attr.allocatable)))
+	  || !(lhs_expr->rank > 0
+	       && (lhs_caf_attr.allocatable || lhs_caf_attr.pointer))))
     {
       bool lhs_may_realloc = lhs_expr->rank > 0 && lhs_caf_attr.allocatable;
       gcc_assert (gfc_is_coindexed (rhs_expr));
       gfc_init_se (&rhs_se, NULL);
-      if (lhs_expr->rank == 0 && gfc_expr_attr (lhs_expr).allocatable)
+      if (lhs_expr->rank == 0 && lhs_caf_attr.allocatable)
 	{
 	  gfc_se scal_se;
 	  gfc_init_se (&scal_se, NULL);
@@ -1997,7 +2002,8 @@ conv_caf_send (gfc_code *code) {
       rhs_se.expr = gfc_conv_scalar_to_descriptor (&rhs_se, rhs_se.expr, attr);
       rhs_se.expr = gfc_build_addr_expr (NULL_TREE, rhs_se.expr);
     }
-  else if (rhs_caf_attr.alloc_comp && rhs_caf_attr.codimension)
+  else if ((rhs_caf_attr.alloc_comp || rhs_caf_attr.pointer_comp)
+	   && rhs_caf_attr.codimension)
     {
       tree tmp2;
       rhs_se.want_pointer = 1;
@@ -2065,7 +2071,7 @@ conv_caf_send (gfc_code *code) {
 
   if (!gfc_is_coindexed (rhs_expr))
     {
-      if (lhs_caf_attr.alloc_comp)
+      if (lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp)
 	{
 	  tree reference, dst_realloc;
 	  reference = conv_expr_ref_to_caf_ref (&block, lhs_expr);
@@ -2100,7 +2106,7 @@ conv_caf_send (gfc_code *code) {
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
       rhs_image_index = gfc_caf_get_image_index (&block, rhs_expr, caf_decl);
       tmp = rhs_se.expr;
-      if (rhs_caf_attr.alloc_comp)
+      if (rhs_caf_attr.alloc_comp || rhs_caf_attr.pointer_comp)
 	{
 	  tmp_stat = gfc_find_stat_co (lhs_expr);
 

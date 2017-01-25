@@ -1,6 +1,5 @@
 /* Demangler for g++ V3 ABI.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -343,6 +342,9 @@ struct d_print_info
   struct d_print_mod *modifiers;
   /* Set to 1 if we saw a demangling error.  */
   int demangle_failure;
+  /* Non-zero if we're printing a lambda argument.  A template
+     parameter reference actually means 'auto'.  */
+  int is_lambda_arg;
   /* The current index into any template argument packs we are using
      for printing, or -1 to print the whole pack.  */
   int pack_index;
@@ -1592,6 +1594,8 @@ d_unqualified_name (struct d_info *di)
     ret = d_source_name (di);
   else if (IS_LOWER (peek))
     {
+      if (peek == 'o' && d_peek_next_char (di) == 'n')
+	d_advance (di, 2);
       ret = d_operator_name (di);
       if (ret != NULL && ret->type == DEMANGLE_COMPONENT_OPERATOR)
 	{
@@ -2590,7 +2594,11 @@ cplus_demangle_type (struct d_info *di)
 	  /* auto */
 	  ret = d_make_name (di, "auto", 4);
 	  break;
-	  
+	case 'c':
+	  /* decltype(auto) */
+	  ret = d_make_name (di, "decltype(auto)", 14);
+	  break;
+
 	case 'f':
 	  /* 32-bit decimal floating point */
 	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[26]);
@@ -3603,7 +3611,11 @@ d_local_name (struct d_info *di)
     }
 }
 
-/* <discriminator> ::= _ <(non-negative) number>
+/* <discriminator> ::= _ <number>    # when number < 10
+                   ::= __ <number> _ # when number >= 10
+
+   <discriminator> ::= _ <number>    # when number >=10
+   is also accepted to support gcc versions that wrongly mangled that way.
 
    We demangle the discriminator, but we don't print it out.  FIXME:
    We should print it out in verbose mode.  */
@@ -3611,14 +3623,28 @@ d_local_name (struct d_info *di)
 static int
 d_discriminator (struct d_info *di)
 {
-  int discrim;
+  int discrim, num_underscores = 1;
 
   if (d_peek_char (di) != '_')
     return 1;
   d_advance (di, 1);
+  if (d_peek_char (di) == '_')
+    {
+      ++num_underscores;
+      d_advance (di, 1);
+    }
+
   discrim = d_number (di);
   if (discrim < 0)
     return 0;
+  if (num_underscores > 1 && discrim >= 10)
+    {
+      if (d_peek_char (di) == '_')
+	d_advance (di, 1);
+      else
+	return 0;
+    }
+
   return 1;
 }
 
@@ -4126,6 +4152,7 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->opaque = opaque;
 
   dpi->demangle_failure = 0;
+  dpi->is_lambda_arg = 0;
 
   dpi->component_stack = NULL;
 
@@ -4783,33 +4810,41 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       }
 
     case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
-      {
-	struct d_print_template *hold_dpt;
-	struct demangle_component *a = d_lookup_template_argument (dpi, dc);
+      if (dpi->is_lambda_arg)
+	{
+	  /* Show the template parm index, as that's how g++ displays
+	     these, and future proofs us against potential
+	     '[]<typename T> (T *a, T *b) {...}'.  */
+	  d_append_buffer (dpi, "auto:", 5);
+	  d_append_num (dpi, dc->u.s_number.number + 1);
+	}
+      else
+	{
+	  struct d_print_template *hold_dpt;
+	  struct demangle_component *a = d_lookup_template_argument (dpi, dc);
 
-	if (a && a->type == DEMANGLE_COMPONENT_TEMPLATE_ARGLIST)
-	  a = d_index_template_argument (a, dpi->pack_index);
+	  if (a && a->type == DEMANGLE_COMPONENT_TEMPLATE_ARGLIST)
+	    a = d_index_template_argument (a, dpi->pack_index);
 
-	if (a == NULL)
-	  {
-	    d_print_error (dpi);
-	    return;
-	  }
+	  if (a == NULL)
+	    {
+	      d_print_error (dpi);
+	      return;
+	    }
 
-	/* While processing this parameter, we need to pop the list of
-	   templates.  This is because the template parameter may
-	   itself be a reference to a parameter of an outer
-	   template.  */
+	  /* While processing this parameter, we need to pop the list
+	     of templates.  This is because the template parameter may
+	     itself be a reference to a parameter of an outer
+	     template.  */
 
-	hold_dpt = dpi->templates;
-	dpi->templates = hold_dpt->next;
+	  hold_dpt = dpi->templates;
+	  dpi->templates = hold_dpt->next;
 
-	d_print_comp (dpi, options, a);
+	  d_print_comp (dpi, options, a);
 
-	dpi->templates = hold_dpt;
-
-	return;
-      }
+	  dpi->templates = hold_dpt;
+	}
+      return;
 
     case DEMANGLE_COMPONENT_CTOR:
       d_print_comp (dpi, options, dc->u.s_ctor.name);
@@ -4946,7 +4981,8 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       {
 	/* Handle reference smashing: & + && = &.  */
 	const struct demangle_component *sub = d_left (dc);
-	if (sub->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
+	if (!dpi->is_lambda_arg
+	    && sub->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
 	  {
 	    struct d_saved_scope *scope = d_get_saved_scope (dpi, sub);
 	    struct demangle_component *a;
@@ -5616,7 +5652,11 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 
     case DEMANGLE_COMPONENT_LAMBDA:
       d_append_string (dpi, "{lambda(");
+      /* Generic lambda auto parms are mangled as the template type
+	 parm they are.  */
+      dpi->is_lambda_arg++;
       d_print_comp (dpi, options, dc->u.s_unary_num.sub);
+      dpi->is_lambda_arg--;
       d_append_string (dpi, ")#");
       d_append_num (dpi, dc->u.s_unary_num.num + 1);
       d_append_char (dpi, '}');

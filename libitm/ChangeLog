@@ -1,3 +1,48 @@
+2017-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* testsuite/Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead
+	of cat to get version from BASE-VER file.
+	* testsuite/Makefile.in: Regenerated.
+
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (htm_available): Determine vendor from
+	__get_cpuid_max return.  Use signature_INTEL_ebx.  Cleanup.
+
+2017-01-18  Torvald Riegel  <triegel@redhat.com>
+
+	* config/x86/target.h (htm_available): Add check for some processors
+	on which TSX is broken.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* testsuite/Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (LIBITM_CHECK_LINKER_FEATURES): Remove.
+	* aclocal.m4: Regenerate.
+	* configure.ac: Call GCC_CHECK_LINKER_HWCAP instead of
+	LIBITM_CHECK_LINKER_HWCAP.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.
@@ -1987,7 +2032,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2016 Free Software Foundation, Inc.
+Copyright (C) 2008-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

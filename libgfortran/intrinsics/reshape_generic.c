@@ -1,5 +1,5 @@
 /* Generic implementation of the RESHAPE intrinsic
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,9 +24,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;

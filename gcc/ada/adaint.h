@@ -108,6 +108,7 @@ typedef long OS_Time;
 #endif
 
 #define __int64 long long
+GNAT_STRUCT_STAT;
 
 /* A lazy cache for the attributes of a file. On some systems, a single call to
    stat() will give all this information, so it is better than doing a system

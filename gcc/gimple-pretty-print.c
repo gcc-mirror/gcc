@@ -1,5 +1,5 @@
 /* Pretty formatting of GIMPLE statements and expressions.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Diego Novillo <dnovillo@google.com>
 
@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "trans-mem.h"
 #include "cfganal.h"
+#include "asan.h"
 
 #define INDENT(SPACE)							\
   do { int i; for (i = 0; i < SPACE; i++) pp_space (buffer); } while (0)
@@ -72,13 +73,35 @@ debug_gimple_stmt (gimple *gs)
   print_gimple_stmt (stderr, gs, 0, TDF_VOPS|TDF_MEMSYMS);
 }
 
+
+/* Return formatted string of a VALUE probability
+   (biased by REG_BR_PROB_BASE).  Returned string is allocated
+   by xstrdup_for_dump.  */
+
+static const char *
+dump_probability (int value)
+{
+  float minimum = 0.01f;
+
+  gcc_assert (0 <= value && value <= REG_BR_PROB_BASE);
+  float fvalue = value * 100.0f / REG_BR_PROB_BASE;
+  if (fvalue < minimum && value > 0)
+    return "[0.01%]";
+
+  char *buf;
+  asprintf (&buf, "[%.2f%%]", fvalue);
+  const char *ret = xstrdup_for_dump (buf);
+  free (buf);
+
+  return ret;
+}
+
 /* Dump E probability to BUFFER.  */
 
 static void
 dump_edge_probability (pretty_printer *buffer, edge e)
 {
-  pp_scalar (buffer, " [%.1f%%]",
-	     e->probability * 100.0 / REG_BR_PROB_BASE);
+  pp_scalar (buffer, " %s", dump_probability (e->probability));
 }
 
 /* Print GIMPLE statement G to FILE using SPC indentation spaces and
@@ -644,6 +667,14 @@ dump_gimple_call_args (pretty_printer *buffer, gcall *gs, int flags)
 	  limit = ARRAY_SIZE (reduction_args);
 	  break;
 
+	case IFN_ASAN_MARK:
+#define DEF(X) #X
+	  static const char *const asan_mark_args[] = {IFN_ASAN_MARK_FLAGS};
+#undef DEF
+	  enums = asan_mark_args;
+	  limit = ARRAY_SIZE (asan_mark_args);
+	  break;
+
 	default:
 	  break;
 	}
@@ -1023,8 +1054,7 @@ dump_gimple_label (pretty_printer *buffer, glabel *gs, int spc, int flags)
       dump_generic_node (buffer, label, spc, flags, false);
       basic_block bb = gimple_bb (gs);
       if (bb && !(flags & TDF_GIMPLE))
-	pp_scalar (buffer, " [%.1f%%]",
-		   bb->frequency * 100.0 / REG_BR_PROB_BASE);
+	pp_scalar (buffer, " %s", dump_probability (bb->frequency));
       pp_colon (buffer);
     }
   if (flags & TDF_GIMPLE)
@@ -2590,8 +2620,8 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
 	  if (flags & TDF_GIMPLE)
 	    fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
 	  else
-	    fprintf (outf, "%*s<bb %d> [%.1f%%]:\n", indent, "", bb->index,
-		     bb->frequency * 100.0 / REG_BR_PROB_BASE);
+	    fprintf (outf, "%*s<bb %d> %s:\n",
+		     indent, "", bb->index, dump_probability (bb->frequency));
 	}
     }
 }

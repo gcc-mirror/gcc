@@ -1,3 +1,4 @@
+/* { dg-require-effective-target size32plus } */
 #define SIZE 10000
 
 static double P[SIZE][SIZE];

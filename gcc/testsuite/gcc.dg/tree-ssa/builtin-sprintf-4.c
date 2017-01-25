@@ -1,7 +1,7 @@
 /* PR middle-end/78461 - [7 Regression] ICE: in operator+=, at
    gimple-ssa-sprintf.c:214
    Disable warnings to exercise code paths through the pass that may
-   not be exercised when the -Wformat-length option is in effect.  */
+   not be exercised when the -Wformat-overflow option is in effect.  */
 /* { dg-compile }
    { dg-options "-O2 -fdump-tree-optimized -w" } */
 

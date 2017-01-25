@@ -1,5 +1,5 @@
 /* Source locations within string literals.
-   Copyright (C) 2016 Free Software Foundation, Inc.
+   Copyright (C) 2016-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -118,6 +118,8 @@ format_warning_va (const substring_loc &fmt_loc,
   else
     {
       if (fmt_substring_range.m_start >= fmt_loc_range.m_start
+	  && fmt_substring_range.m_start <= fmt_loc_range.m_finish
+	  && fmt_substring_range.m_finish >= fmt_loc_range.m_start
 	  && fmt_substring_range.m_finish <= fmt_loc_range.m_finish)
 	/* Case 1.  */
 	{

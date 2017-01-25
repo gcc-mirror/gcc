@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -547,7 +547,6 @@ package body Prj.Proc is
               Kind_Of (The_Current_Term, From_Project_Node_Tree);
 
             case Current_Term_Kind is
-
             when N_Literal_String =>
                case Kind is
                   when Undefined =>
@@ -566,7 +565,6 @@ package body Prj.Proc is
                          (The_Current_Term, From_Project_Node_Tree);
 
                   when List =>
-
                      String_Element_Table.Increment_Last
                        (Shared.String_Elements);
 
@@ -695,7 +693,9 @@ package body Prj.Proc is
                   end if;
                end;
 
-            when N_Variable_Reference | N_Attribute_Reference =>
+            when N_Attribute_Reference
+               | N_Variable_Reference
+            =>
                declare
                   The_Project     : Project_Id  := Project;
                   The_Package     : Package_Id  := Pkg;
@@ -981,16 +981,17 @@ package body Prj.Proc is
                                  when Read_Only_Value  =>
                                     null;
 
-                                 when Empty_Value      =>
+                                 when Empty_Value =>
                                     The_Variable.Values := Nil_String;
 
-                                 when Dot_Value        =>
+                                 when Dot_Value =>
                                     The_Variable.Values :=
                                       Shared.Dot_String_List;
 
-                                 when Object_Dir_Value |
-                                      Target_Value     |
-                                      Runtime_Value    =>
+                                 when Object_Dir_Value
+                                    | Runtime_Value
+                                    | Target_Value
+                                 =>
                                     null;
                               end case;
                            end case;
@@ -1008,7 +1009,6 @@ package body Prj.Proc is
 
                      when Single =>
                         case The_Variable.Kind is
-
                            when Undefined =>
                               null;
 
@@ -1028,7 +1028,6 @@ package body Prj.Proc is
 
                      when List =>
                         case The_Variable.Kind is
-
                            when Undefined =>
                               null;
 
@@ -1066,7 +1065,6 @@ package body Prj.Proc is
                                  Index         => 0);
 
                            when List =>
-
                               declare
                                  The_List : String_List_Id :=
                                               The_Variable.Values;
@@ -1283,7 +1281,6 @@ package body Prj.Proc is
                   end if;
 
                   case Kind is
-
                      when Undefined =>
                         null;
 
@@ -1365,7 +1362,6 @@ package body Prj.Proc is
                  (False,
                   "illegal node kind in an expression");
                raise Program_Error;
-
             end case;
          end if;
 
@@ -2465,9 +2461,10 @@ package body Prj.Proc is
             when N_String_Type_Declaration =>
                null;
 
-            when N_Attribute_Declaration      |
-                 N_Typed_Variable_Declaration |
-                 N_Variable_Declaration       =>
+            when N_Attribute_Declaration
+               | N_Typed_Variable_Declaration
+               | N_Variable_Declaration
+            =>
                Process_Attribute_Declaration (Current);
 
             when N_Case_Construction =>

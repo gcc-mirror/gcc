@@ -364,6 +364,8 @@ AS_HELP_STRING([--enable-generated-files-in-srcdir],
 AC_MSG_RESULT($enable_generated_files_in_srcdir)
 AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT

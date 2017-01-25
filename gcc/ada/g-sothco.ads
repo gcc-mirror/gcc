@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2014, AdaCore                     --
+--                     Copyright (C) 2008-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,9 +40,6 @@ with Interfaces.C.Pointers;
 package GNAT.Sockets.Thin_Common is
 
    package C renames Interfaces.C;
-
-   use type C.int;
-   --  This is so we can declare the Failure constant below
 
    Success : constant C.int :=  0;
    Failure : constant C.int := -1;

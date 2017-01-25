@@ -202,6 +202,27 @@ class Gogo
   }
 
   // Given a name which may or may not have been hidden, return the
+  // name to use within a mangled symbol name.
+  static std::string
+  mangle_possibly_hidden_name(const std::string& name)
+  { 
+    // FIXME: This adds in pkgpath twice for hidden symbols, which is
+    // less than ideal.
+    std::string n;
+    if (!Gogo::is_hidden_name(name))
+      n = name;
+    else
+      {
+        n = ".";
+        std::string pkgpath = Gogo::hidden_name_pkgpath(name);
+        n.append(Gogo::pkgpath_for_symbol(pkgpath));
+        n.append(1, '.');
+        n.append(Gogo::unpack_hidden_name(name));
+      }
+    return n;
+  }
+
+  // Given a name which may or may not have been hidden, return the
   // name to use in an error message.
   static std::string
   message_name(const std::string& name);
@@ -542,7 +563,7 @@ class Gogo
   // used when a type-specific function is needed when not at the top
   // level.
   void
-  queue_specific_type_function(Type* type, Named_type* name,
+  queue_specific_type_function(Type* type, Named_type* name, int64_t size,
 			       const std::string& hash_name,
 			       Function_type* hash_fntype,
 			       const std::string& equal_name,
@@ -773,14 +794,16 @@ class Gogo
   Named_object*
   create_initialization_function(Named_object* fndecl, Bstatement* code_stmt);
 
-  // Initialize imported packages.
+  // Initialize imported packages. BFUNCTION is the function
+  // into which the package init calls will be placed.
   void
-  init_imports(std::vector<Bstatement*>&);
+  init_imports(std::vector<Bstatement*>&, Bfunction* bfunction);
 
   // Register variables with the garbage collector.
   void
   register_gc_vars(const std::vector<Named_object*>&,
-                   std::vector<Bstatement*>&);
+                   std::vector<Bstatement*>&,
+                   Bfunction* init_bfunction);
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
@@ -801,17 +824,18 @@ class Gogo
   {
     Type* type;
     Named_type* name;
+    int64_t size;
     std::string hash_name;
     Function_type* hash_fntype;
     std::string equal_name;
     Function_type* equal_fntype;
 
-    Specific_type_function(Type* atype, Named_type* aname,
+    Specific_type_function(Type* atype, Named_type* aname, int64_t asize,
 			   const std::string& ahash_name,
 			   Function_type* ahash_fntype,
 			   const std::string& aequal_name,
 			   Function_type* aequal_fntype)
-      : type(atype), name(aname), hash_name(ahash_name),
+      : type(atype), name(aname), size(asize), hash_name(ahash_name),
 	hash_fntype(ahash_fntype), equal_name(aequal_name),
 	equal_fntype(aequal_fntype)
     { }

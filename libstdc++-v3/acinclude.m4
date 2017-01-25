@@ -169,38 +169,6 @@ AC_DEFUN([GLIBCXX_CHECK_COMPILER_FEATURES], [
 
 
 dnl
-dnl Check if the assembler used supports disabling generation of hardware
-dnl capabilities.  This is only supported by Sun as at the moment.
-dnl
-dnl Defines:
-dnl  HWCAP_FLAGS='-Wa,-nH' if possible.
-dnl
-AC_DEFUN([GLIBCXX_CHECK_ASSEMBLER_HWCAP], [
-  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
-
-  # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
-  # with a different meaning.
-  case ${target_os} in
-    solaris2*)
-      ac_save_CFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -Wa,-nH"
-
-      AC_MSG_CHECKING([for as that supports -Wa,-nH])
-      AC_TRY_COMPILE([], [return 0;], [ac_hwcap_flags=yes],[ac_hwcap_flags=no])
-      if test "$ac_hwcap_flags" = "yes"; then
-	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
-      fi
-      AC_MSG_RESULT($ac_hwcap_flags)
-
-      CFLAGS="$ac_save_CFLAGS"
-      ;;
-  esac
-
-  AC_SUBST(HWCAP_FLAGS)
-])
-
-
-dnl
 dnl If GNU ld is in use, check to see if tricky linker opts can be used.  If
 dnl the native linker is in use, all variables will be defined to something
 dnl safe (like an empty string).
@@ -1922,12 +1890,14 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		  lgamma(0.0);
 		  lgammaf(0.0f);
 		  lgammal(0.0l);
+		  #ifndef __APPLE__ /* see below */
 		  llrint(0.0);
 		  llrintf(0.0f);
 		  llrintl(0.0l);
 		  llround(0.0);
 		  llroundf(0.0f);
 		  llroundl(0.0l);
+		  #endif
 		  log1p(0.0);
 		  log1pf(0.0f);
 		  log1pl(0.0l);
@@ -1986,6 +1956,29 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
     AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
 	      [Define if C99 functions or macros in <math.h> should be imported
 	      in <tr1/cmath> in namespace std::tr1.])
+
+    case "${target_os}" in
+      darwin*)
+        AC_MSG_CHECKING([for ISO C99 rounding functions in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_c99_math_llround, [
+          AC_TRY_COMPILE([#include <math.h>],
+		 [llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+		 ],
+		 [glibcxx_cv_c99_math_llround=yes],
+		 [glibcxx_cv_c99_math_llround=no])
+          ])
+	AC_MSG_RESULT($glibcxx_cv_c99_math_llround)
+        ;;
+    esac
+    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+      AC_DEFINE(_GLIBCXX_NO_C99_ROUNDING_FUNCS, 1,
+		[Define if C99 llrint and llround functions are missing from <math.h>.])
+    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
@@ -4467,8 +4460,12 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
                        [glibcxx_cv_size_t_mangling=y], [
           AC_TRY_COMPILE([],
                          [extern __SIZE_TYPE__ x; extern unsigned short x;],
-                         [glibcxx_cv_size_t_mangling=t],
-                         [glibcxx_cv_size_t_mangling=x])
+                         [glibcxx_cv_size_t_mangling=t], [
+            AC_TRY_COMPILE([],
+                           [extern __SIZE_TYPE__ x; extern __int20 unsigned x;],
+                           [glibcxx_cv_size_t_mangling=u6uint20],
+                           [glibcxx_cv_size_t_mangling=x])
+          ])
         ])
       ])
     ])
@@ -4478,6 +4475,43 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
   fi
   AC_DEFINE_UNQUOTED(_GLIBCXX_MANGLE_SIZE_T, [$glibcxx_cv_size_t_mangling],
     [Define to the letter to which size_t is mangled.])
+])
+
+dnl
+dnl Determine whether std::exception_ptr symbols should be exported with
+dnl the symbol versions from GCC 4.6.0 or GCC 7.1.0, depending on which
+dnl release first added support for std::exception_ptr. Originally it was
+dnl only supported for targets with always-lock-free atomics for int, but
+dnl since GCC 7.1 it is supported for all targets.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER], [
+  if test $enable_symvers != no; then
+    AC_MSG_CHECKING([for first version to support std::exception_ptr])
+    case ${target} in
+      aarch64-*-* | alpha-*-* | hppa*-*-* | i?86-*-* | x86_64-*-* | \
+      m68k-*-* | powerpc*-*-* | s390*-*-* | *-*-solaris* )
+        ac_exception_ptr_since_gcc46=yes
+        ;;
+      *)
+        # If the value of this macro changes then we will need to hardcode
+        # yes/no here for additional targets based on the original value.
+        AC_TRY_COMPILE([], [
+          #if __GCC_ATOMIC_INT_LOCK_FREE <= 1
+          # error atomic int not always lock free
+          #endif
+          ],
+          [ac_exception_ptr_since_gcc46=yes],
+          [ac_exception_ptr_since_gcc46=no])
+        ;;
+    esac
+    if test x"$ac_exception_ptr_since_gcc46" = x"yes" ; then
+      AC_DEFINE(HAVE_EXCEPTION_PTR_SINCE_GCC46, 1,
+        [Define to 1 if GCC 4.6 supported std::exception_ptr for the target])
+      AC_MSG_RESULT([4.6.0])
+    else
+      AC_MSG_RESULT([7.1.0])
+    fi
+  fi
 ])
 
 # Macros from the top-level gcc directory.

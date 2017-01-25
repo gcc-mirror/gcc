@@ -60,6 +60,9 @@
 #define MPX_RT_MODE "CHKP_RT_MODE"
 #define MPX_RT_MODE_DEFAULT MPX_RT_COUNT
 #define MPX_RT_MODE_DEFAULT_STR "count"
+#define MPX_RT_STOP_HANDLER "CHKP_RT_STOP_HANDLER"
+#define MPX_RT_STOP_HANDLER_DEFAULT MPX_RT_STOP_HANDLER_ABORT
+#define MPX_RT_STOP_HANDLER_DEFAULT_STR "abort"
 #define MPX_RT_HELP "CHKP_RT_HELP"
 #define MPX_RT_ADDPID "CHKP_RT_ADDPID"
 #define MPX_RT_BNDPRESERVE "CHKP_RT_BNDPRESERVE"
@@ -84,6 +87,7 @@ typedef struct {
 static int summary;
 static int add_pid;
 static mpx_rt_mode_t mode;
+static mpx_rt_stop_mode_handler_t stop_handler;
 static env_var_list_t env_var_list;
 static verbose_type verbose_val;
 static FILE *out;
@@ -226,6 +230,23 @@ set_mpx_rt_mode (const char *env)
   }
 }
 
+static mpx_rt_stop_mode_handler_t
+set_mpx_rt_stop_handler (const char *env)
+{
+  if (env == 0)
+    return MPX_RT_STOP_HANDLER_DEFAULT;
+  else if (strcmp (env, "abort") == 0)
+    return MPX_RT_STOP_HANDLER_ABORT;
+  else if (strcmp (env, "exit") == 0)
+    return MPX_RT_STOP_HANDLER_EXIT;
+  {
+    __mpxrt_print (VERB_ERROR, "Illegal value '%s' for %s. Legal values are"
+		   "[abort | exit]\nUsing default value %s\n",
+		   env, MPX_RT_STOP_HANDLER, MPX_RT_STOP_HANDLER_DEFAULT);
+    return MPX_RT_STOP_HANDLER_DEFAULT;
+  }
+}
+
 static void
 print_help (void)
 {
@@ -244,6 +265,11 @@ print_help (void)
   fprintf (out, "%s \t\t set MPX runtime behavior on #BR exception."
 	   " [stop | count]\n"
 	   "\t\t\t [default: %s]\n", MPX_RT_MODE, MPX_RT_MODE_DEFAULT_STR);
+  fprintf (out, "%s \t set the handler function MPX runtime will call\n"
+           "\t\t\t on #BR exception when %s is set to \'stop\'."
+	   " [abort | exit]\n"
+	   "\t\t\t [default: %s]\n", MPX_RT_STOP_HANDLER, MPX_RT_MODE,
+           MPX_RT_STOP_HANDLER_DEFAULT_STR);
   fprintf (out, "%s \t\t generate out,err file for each process.\n"
 	   "\t\t\t generated file will be MPX_RT_{OUT,ERR}_FILE.pid\n"
 	   "\t\t\t [default: no]\n", MPX_RT_ADDPID);
@@ -356,6 +382,10 @@ __mpxrt_init_env_vars (int* bndpreserve)
   env = secure_getenv (MPX_RT_MODE);
   env_var_list_add (MPX_RT_MODE, env);
   mode = set_mpx_rt_mode (env);
+
+  env = secure_getenv (MPX_RT_STOP_HANDLER);
+  env_var_list_add (MPX_RT_STOP_HANDLER, env);
+  stop_handler = set_mpx_rt_stop_handler (env);
 
   env = secure_getenv (MPX_RT_BNDPRESERVE);
   env_var_list_add (MPX_RT_BNDPRESERVE, env);
@@ -485,6 +515,22 @@ mpx_rt_mode_t
 __mpxrt_mode (void)
 {
   return mode;
+}
+
+mpx_rt_mode_t
+__mpxrt_stop_handler (void)
+{
+  return stop_handler;
+}
+
+void __attribute__ ((noreturn))
+__mpxrt_stop (void)
+{
+  if (__mpxrt_stop_handler () == MPX_RT_STOP_HANDLER_ABORT)
+    abort ();
+  else if (__mpxrt_stop_handler () == MPX_RT_STOP_HANDLER_EXIT)
+    exit (255);
+  __builtin_unreachable ();
 }
 
 void

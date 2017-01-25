@@ -1,5 +1,5 @@
 /* Target code for NVPTX.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -55,6 +55,7 @@
 #include "gimple.h"
 #include "stor-layout.h"
 #include "builtins.h"
+#include "omp-general.h"
 #include "omp-low.h"
 #include "gomp-constants.h"
 #include "dumpfile.h"
@@ -1047,9 +1048,10 @@ init_softstack_frame (FILE *file, unsigned alignment, HOST_WIDE_INT size)
 	   bits, reg_stack, reg_frame, size);
 
   /* Usually 'crtl->is_leaf' is computed during register allocator
-     initialization, which is not done on NVPTX.  Compute it now.  */
-  gcc_assert (!crtl->is_leaf);
-  crtl->is_leaf = leaf_function_p ();
+     initialization (which is not done on NVPTX) or for pressure-sensitive
+     optimizations.  Initialize it here, except if already set.  */
+  if (!crtl->is_leaf)
+    crtl->is_leaf = leaf_function_p ();
   if (!crtl->is_leaf)
     fprintf (file, "\t\tst.shared.u%d [%s], %s;\n",
 	     bits, reg_sspslot, reg_stack);
@@ -1389,7 +1391,7 @@ nvptx_expand_call (rtx retval, rtx address)
 	  if (DECL_STATIC_CHAIN (decl))
 	    cfun->machine->has_chain = true;
 
-	  tree attr = get_oacc_fn_attrib (decl);
+	  tree attr = oacc_get_fn_attrib (decl);
 	  if (attr)
 	    {
 	      tree dims = TREE_VALUE (attr);
@@ -4090,7 +4092,7 @@ nvptx_reorg (void)
   /* Determine launch dimensions of the function.  If it is not an
      offloaded function  (i.e. this is a regular compiler), the
      function has no neutering.  */
-  tree attr = get_oacc_fn_attrib (current_function_decl);
+  tree attr = oacc_get_fn_attrib (current_function_decl);
   if (attr)
     {
       /* If we determined this mask before RTL expansion, we could
@@ -4243,7 +4245,7 @@ nvptx_record_offload_symbol (tree decl)
 
     case FUNCTION_DECL:
       {
-	tree attr = get_oacc_fn_attrib (decl);
+	tree attr = oacc_get_fn_attrib (decl);
 	/* OpenMP offloading does not set this attribute.  */
 	tree dims = attr ? TREE_VALUE (attr) : NULL_TREE;
 

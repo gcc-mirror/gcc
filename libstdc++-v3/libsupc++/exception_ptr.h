@@ -1,6 +1,6 @@
 // Exception Handling support header (exception_ptr class) for -*- C++ -*-
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -38,10 +38,6 @@
 #include <bits/cxxabi_init_exception.h>
 #include <typeinfo>
 #include <new>
-
-#if ATOMIC_INT_LOCK_FREE < 2
-#  error This platform does not support exception propagation.
-#endif
 
 extern "C++" {
 

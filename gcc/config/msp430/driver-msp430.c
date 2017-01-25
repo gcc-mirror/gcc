@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay <avr@gjlay.de>
 
    This file is part of GCC.
@@ -27,8 +27,8 @@
 /* This is a copy of the same data structure found in gas/config/tc-msp430.c
    Also another (sort-of) copy can be found in gcc/config/msp430/msp430.c
    Keep these three structures in sync.
-   The data in this structure has been extracted from the devices.csv file
-   released by TI, updated as of 8 October 2015.  */
+   The data in this structure has been extracted from version 1.194 of the
+   devices.csv file released by TI in September 2016.  */
 
 struct msp430_mcu_data
 {
@@ -454,7 +454,15 @@ msp430_mcu_data [] =
   { "msp430fg6626",2,8 },
   { "msp430fr2032",2,0 },
   { "msp430fr2033",2,0 },
+  { "msp430fr2110",2,0 },
+  { "msp430fr2111",2,0 },
+  { "msp430fr2310",2,0 },
+  { "msp430fr2311",2,0 },
   { "msp430fr2433",2,8 },
+  { "msp430fr2532",2,8 },
+  { "msp430fr2533",2,8 },
+  { "msp430fr2632",2,8 },
+  { "msp430fr2633",2,8 },
   { "msp430fr2xx_4xxgeneric",2,8 },
   { "msp430fr4131",2,0 },
   { "msp430fr4132",2,0 },
@@ -507,6 +515,8 @@ msp430_mcu_data [] =
   { "msp430fr5957",2,8 },
   { "msp430fr5958",2,8 },
   { "msp430fr5959",2,8 },
+  { "msp430fr5962",2,8 },
+  { "msp430fr5964",2,8 },
   { "msp430fr5967",2,8 },
   { "msp430fr5968",2,8 },
   { "msp430fr5969",2,8 },
@@ -519,6 +529,9 @@ msp430_mcu_data [] =
   { "msp430fr5988",2,8 },
   { "msp430fr5989",2,8 },
   { "msp430fr59891",2,8 },
+  { "msp430fr5992",2,8 },
+  { "msp430fr5994",2,8 },
+  { "msp430fr59941",2,8 },
   { "msp430fr5xx_6xxgeneric",2,8 },
   { "msp430fr6820",2,8 },
   { "msp430fr6822",2,8 },
@@ -684,7 +697,7 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED, const char ** argv ATTRIBUT
 		case 4: return "-lmul_32";
 		case 8: return "-lmul_f5";
 		default:
-		  error ("unrecognised hwpy field in msp430_mcu_data[%d]: %d",
+		  error ("unrecognized hwpy field in msp430_mcu_data[%d]: %d",
 			 i, msp430_mcu_data[i].hwmpy);
 		  break;
 		}

@@ -4,9 +4,9 @@
 # repository, with an emphasis on treating generated files correctly, so
 # that autoconf, gperf et al are not required for the ``end'' user.
 #
-# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010,
-# 2011 Free Software Foundation
-# Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
+# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 
+# 2010, 2011, 2012, 2013, 2014, 2015, 2017 Free Software Foundation
+# Originally by Gerald Pfeifer <gerald@pfeifer.com>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
 # modified as defined in the GNU General Public License.  A copy of
@@ -80,8 +80,11 @@ gcc/cstamp-h.in: gcc/configure.ac
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/config/aarch64/aarch64-tune.md: gcc/config/aarch64/aarch64-cores.def gcc/config/aarch64/gentune.sh
-gcc/config/arm/arm-tune.md: gcc/config/arm/arm-cores.def gcc/config/arm/gentune.sh
-gcc/config/arm/arm-tables.opt: gcc/config/arm/arm-arches.def gcc/config/arm/arm-cores.def gcc/config/arm/arm-fpus.def gcc/config/arm/genopt.sh
+gcc/config/arm/arm-tune.md: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecpu.awk
+gcc/config/arm/arm-tables.opt: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecpu.awk
+gcc/config/arm/arm-cpu.h: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecpu.awk
+gcc/config/arm/arm-cpu-data.h: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecpu.awk
+gcc/config/arm/arm-cpu-cdata.h: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecpu.awk
 gcc/config/avr/avr-tables.opt: gcc/config/avr/avr-mcus.def gcc/config/avr/genopt.sh
 gcc/config/avr/t-multilib: gcc/config/avr/avr-mcus.def gcc/config/avr/genmultilib.awk
 gcc/config/c6x/c6x-tables.opt: gcc/config/c6x/c6x-isas.def gcc/config/c6x/genopt.sh
@@ -94,7 +97,6 @@ gcc/config/tilegx/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
 gcc/config/tilepro/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
 # And then, language-specific files
 gcc/cp/cfns.h: gcc/cp/cfns.gperf
-gcc/java/keyword.h: gcc/java/keyword.gperf
 # testsuite
 # Without this, _Pragma3.c can have a false negative.
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
@@ -128,13 +130,6 @@ libquadmath/configure: libquadmath/configure.ac libquadmath/aclocal.m4
 libquadmath/aclocal.m4: libquadmath/configure.ac libquadmath/acinclude.m4
 libquadmath/Makefile.in: libquadmath/Makefile.am libquadmath/configure.ac libgfortran/aclocal.m4
 libgfortran/configure: libgfortran/configure.ac libgfortran/aclocal.m4
-libjava/aclocal.m4: libjava/configure.ac
-libjava/Makefile.in: libjava/Makefile.am libjava/configure.ac libjava/aclocal.m4
-libjava/configure: libjava/configure.ac libjava/aclocal.m4
-libjava/libltdl/aclocal.m4: libjava/libltdl/configure.ac libjava/libltdl/acinclude.m4
-libjava/libltdl/Makefile.in: libjava/libltdl/Makefile.am libjava/libltdl/configure.ac libjava/libltdl/aclocal.m4
-libjava/libltdl/configure: libjava/libltdl/configure.ac libjava/libltdl/aclocal.m4
-libjava/libltdl/config-h.in: libjava/libltdl/configure.ac libjava/libltdl/aclocal.m4
 libcpp/aclocal.m4: libcpp/configure.ac
 libcpp/Makefile.in: libcpp/configure.ac libcpp/aclocal.m4
 libcpp/configure: libcpp/configure.ac libcpp/aclocal.m4
@@ -145,6 +140,10 @@ libgomp/testsuite/Makefile.in: libgomp/testsuite/Makefile.am libgomp/aclocal.m4
 libgomp/configure.ac: libgomp/plugin/configfrag.ac
 libgomp/configure: libgomp/configure.ac libgomp/aclocal.m4
 libgomp/config.h.in: libgomp/configure.ac libgomp/aclocal.m4
+libhsail-rt/aclocal.m4: libhsail-rt/configure.ac
+libhsail-rt/Makefile.in: libhsail-rt/Makefile.am libhsail-rt/aclocal.m4
+libhsail-rt/configure: libhsail-rt/configure.ac libhsail-rt/aclocal.m4
+libhsail-rt/target-config.h.in: libhsail-rt/configure.ac libhsail-rt/aclocal.m4
 libitm/aclocal.m4: libitm/configure.ac libitm/acinclude.m4
 libitm/Makefile.in: libitm/Makefile.am libitm/aclocal.m4
 libitm/testsuite/Makefile.in: libitm/testsuite/Makefile.am libitm/aclocal.m4

@@ -1,3 +1,54 @@
+2017-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Care for "libhsail-rt".
+
+2017-01-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* patch_tester.sh (TESTLOGS): Remove
+	$TARGET/libjava/testsuite/libjava.sum.
+
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* warn_summary: Remove the -java option.
+
+2017-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update-copyright.py (LibJavaFilter): Remove.
+
+2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>	
+	
+	* gcc_update: Remove entries related to GCJ and libgcj.
+	Complete copyright years and adjust my e-mail address.
+
+2017-01-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc_update: Adjust touch list for ARM.
+
+2017-01-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* download_ecj: Remove.
+
+2017-01-05  Martin Liska  <mliska@suse.cz>
+
+	* vimrc: Update indentation definition.
+
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GCCCmdLine): Add include, libcc1, libiberty,
+	libssp, libvtv and lto-plugin to default_dirs.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (TestsuiteFilter): Skip params/README.
+	(GCCCmdLine): Remove libjava and libjava/testsuite add_dir.
+
+2016-12-14  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add new column to output and new sorting
+	option. Fix coding style to not exceed 80 characters.
+	* analyze_brprob_spec.py: Add new sorting
+	option. Fix coding style to not exceed 80 characters.
+
 2016-10-24  Moritz Klammler  <moritz@glammler.eu>
 
 	PR other/61439

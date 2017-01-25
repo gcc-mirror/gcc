@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2013-2016 Free Software Foundation, Inc.
+# Copyright (C) 2013-2017 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@
 # all copyright notices (and possibly at other times to check whether
 # new files have been added with old years).  On the other hand:
 #
-#    update-copyright.pl --this-year libjava
+#    update-copyright.pl --this-year libitm
 #
-# would run the script on just libjava/.
+# would run the script on just libitm/.
 #
 # Note that things like --version output strings must be updated before
 # this script is run.  There's already a separate procedure for that.
@@ -585,6 +585,9 @@ class TestsuiteFilter (GenericFilter):
         # and isn't updated.
         if filename == 'README' and os.path.basename (dir) == 'g++.niklas':
             return True
+        # Similarly params/README.
+        if filename == 'README' and os.path.basename (dir) == 'params':
+            return True
         return GenericFilter.skip_file (self, dir, filename)
 
 class LibCppFilter (GenericFilter):
@@ -607,29 +610,6 @@ class LibGCCFilter (GenericFilter):
                 # Imported from GLIBC.
                 'soft-fp',
                 ])
-
-class LibJavaFilter (GenericFilter):
-    def __init__ (self):
-        GenericFilter.__init__ (self)
-
-        self.skip_dirs |= set ([
-                # Handled separately.
-                'testsuite',
-
-                # Not really part of the library
-                'contrib',
-
-                # Imported from upstream
-                'classpath',
-                'libltdl',
-                ])
-
-    def get_line_filter (self, dir, filename):
-        if filename == 'NameDecoder.h':
-            return re.compile ('.*NAME_COPYRIGHT')
-        if filename == 'ICC_Profile.h':
-            return re.compile ('.*icSigCopyrightTag')
-        return GenericFilter.get_line_filter (self, dir, filename)
 
 class LibStdCxxFilter (GenericFilter):
     def __init__ (self):
@@ -732,8 +712,6 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libgomp')
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
-        self.add_dir ('libjava', LibJavaFilter())
-        self.add_dir (os.path.join ('libjava', 'testsuite'), TestsuiteFilter())
         self.add_dir ('libobjc')
         # liboffloadmic is imported from upstream.
         self.add_dir ('libquadmath')
@@ -747,17 +725,23 @@ class GCCCmdLine (CmdLine):
 
         self.default_dirs = [
             'gcc',
+            'include',
             'libada',
             'libatomic',
             'libbacktrace',
+            'libcc1',
             'libcpp',
             'libdecnumber',
             'libgcc',
             'libgfortran',
             'libgomp',
+            'libiberty',
             'libitm',
             'libobjc',
+            'libssp',
             'libstdc++-v3',
+            'libvtv',
+            'lto-plugin',
             ]
 
 GCCCmdLine().main()

@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -243,6 +243,9 @@ arm_pragma_target_parse (tree args, tree pop_target)
       /* handle_pragma_pop_options and handle_pragma_reset_options will set
        target_option_current_node, but not handle_pragma_target.  */
       target_option_current_node = cur_tree;
+      arm_configure_build_target (&arm_active_target,
+				  TREE_TARGET_OPTION (cur_tree),
+				  &global_options_set, false);
     }
 
   /* Update macros if target_node changes. The global state will be restored

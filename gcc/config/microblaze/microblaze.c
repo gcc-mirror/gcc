@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -1926,6 +1926,10 @@ microblaze_must_save_register (int regno)
   if (frame_pointer_needed && (regno == HARD_FRAME_POINTER_REGNUM))
     return 1;
 
+  if (crtl->calls_eh_return
+      && regno == MB_ABI_SUB_RETURN_ADDR_REGNUM)
+    return 1;
+
   if (!crtl->is_leaf)
     {
       if (regno == MB_ABI_SUB_RETURN_ADDR_REGNUM)
@@ -1952,6 +1956,11 @@ microblaze_must_save_register (int regno)
 	  || regno == MB_ABI_EXCEPTION_RETURN_ADDR_REGNUM)
 	return 1;
     }
+
+  if (crtl->calls_eh_return
+      && (regno == EH_RETURN_DATA_REGNO (0)
+          || regno == EH_RETURN_DATA_REGNO (1)))
+    return 1;
 
   return 0;
 }
@@ -3029,6 +3038,12 @@ microblaze_expand_epilogue (void)
       emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, fsiz_rtx));
     }
 
+  if (crtl->calls_eh_return)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+                           stack_pointer_rtx,
+                           gen_raw_REG (SImode,
+					MB_EH_STACKADJ_REGNUM)));
+
   emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode, GP_REG_FIRST +
 						    MB_ABI_SUB_RETURN_ADDR_REGNUM)));
 }
@@ -3326,10 +3341,14 @@ microblaze_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
   if (count != 0)
     return NULL_RTX;
 
-  return gen_rtx_PLUS (Pmode,
-		       get_hard_reg_initial_val (Pmode,
-						 MB_ABI_SUB_RETURN_ADDR_REGNUM),
-		       GEN_INT (8));
+  return get_hard_reg_initial_val (Pmode,
+                                   MB_ABI_SUB_RETURN_ADDR_REGNUM);
+}
+
+void
+microblaze_eh_return (rtx op0)
+{
+  emit_insn (gen_movsi (gen_rtx_MEM (Pmode, stack_pointer_rtx), op0));
 }
 
 /* Queue an .ident string in the queue of top-level asm statements.

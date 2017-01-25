@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,8 @@ package body Ch11 is
 
    --  Local functions, used only in this chapter
 
-   function P_Exception_Handler  return Node_Id;
-   function P_Exception_Choice   return Node_Id;
+   function P_Exception_Handler return Node_Id;
+   function P_Exception_Choice  return Node_Id;
 
    ---------------------------------
    -- 11.1  Exception Declaration --

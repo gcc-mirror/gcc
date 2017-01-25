@@ -97,8 +97,13 @@ package body Sem is
    -- Analyze --
    -------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze (N : Node_Id) is
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode     : Ghost_Mode_Type;
+      Mode_Set : Boolean := False;
 
    begin
       Debug_A_Entry ("analyzing  ", N);
@@ -115,7 +120,8 @@ package body Sem is
       --  marked as Ghost.
 
       if Is_Declaration (N) then
-         Set_Ghost_Mode (N);
+         Mark_And_Set_Ghost_Declaration (N, Mode);
+         Mode_Set := True;
       end if;
 
       --  Otherwise processing depends on the node kind
@@ -192,6 +198,9 @@ package body Sem is
 
          when N_Delay_Until_Statement =>
             Analyze_Delay_Until (N);
+
+         when N_Delta_Aggregate =>
+            Analyze_Aggregate (N);
 
          when N_Entry_Body =>
             Analyze_Entry_Body (N);
@@ -557,6 +566,9 @@ package body Sem is
          when N_Subunit =>
             Analyze_Subunit (N);
 
+         when N_Target_Name =>
+            Analyze_Target_Name (N);
+
          when N_Task_Body =>
             Analyze_Task_Body (N);
 
@@ -637,9 +649,10 @@ package body Sem is
          --  the call to analyze them is generated when the full list is
          --  analyzed.
 
-         when N_SCIL_Dispatch_Table_Tag_Init |
-              N_SCIL_Dispatching_Call        |
-              N_SCIL_Membership_Test         =>
+         when N_SCIL_Dispatch_Table_Tag_Init
+            | N_SCIL_Dispatching_Call
+            | N_SCIL_Membership_Test
+         =>
             null;
 
          --  For the remaining node types, we generate compiler abort, because
@@ -649,63 +662,65 @@ package body Sem is
          --  node appears only in the context of a type declaration, and is
          --  processed by the analyze routine for type declarations.
 
-         when N_Abortable_Part                         |
-              N_Access_Definition                      |
-              N_Access_Function_Definition             |
-              N_Access_Procedure_Definition            |
-              N_Access_To_Object_Definition            |
-              N_Aspect_Specification                   |
-              N_Case_Expression_Alternative            |
-              N_Case_Statement_Alternative             |
-              N_Compilation_Unit_Aux                   |
-              N_Component_Association                  |
-              N_Component_Clause                       |
-              N_Component_Definition                   |
-              N_Component_List                         |
-              N_Constrained_Array_Definition           |
-              N_Contract                               |
-              N_Decimal_Fixed_Point_Definition         |
-              N_Defining_Character_Literal             |
-              N_Defining_Identifier                    |
-              N_Defining_Operator_Symbol               |
-              N_Defining_Program_Unit_Name             |
-              N_Delta_Constraint                       |
-              N_Derived_Type_Definition                |
-              N_Designator                             |
-              N_Digits_Constraint                      |
-              N_Discriminant_Association               |
-              N_Discriminant_Specification             |
-              N_Elsif_Part                             |
-              N_Entry_Call_Statement                   |
-              N_Enumeration_Type_Definition            |
-              N_Exception_Handler                      |
-              N_Floating_Point_Definition              |
-              N_Formal_Decimal_Fixed_Point_Definition  |
-              N_Formal_Derived_Type_Definition         |
-              N_Formal_Discrete_Type_Definition        |
-              N_Formal_Floating_Point_Definition       |
-              N_Formal_Modular_Type_Definition         |
-              N_Formal_Ordinary_Fixed_Point_Definition |
-              N_Formal_Private_Type_Definition         |
-              N_Formal_Incomplete_Type_Definition      |
-              N_Formal_Signed_Integer_Type_Definition  |
-              N_Function_Specification                 |
-              N_Generic_Association                    |
-              N_Index_Or_Discriminant_Constraint       |
-              N_Iteration_Scheme                       |
-              N_Mod_Clause                             |
-              N_Modular_Type_Definition                |
-              N_Ordinary_Fixed_Point_Definition        |
-              N_Parameter_Specification                |
-              N_Pragma_Argument_Association            |
-              N_Procedure_Specification                |
-              N_Real_Range_Specification               |
-              N_Record_Definition                      |
-              N_Signed_Integer_Type_Definition         |
-              N_Unconstrained_Array_Definition         |
-              N_Unused_At_Start                        |
-              N_Unused_At_End                          |
-              N_Variant                                =>
+         when N_Abortable_Part
+            | N_Access_Definition
+            | N_Access_Function_Definition
+            | N_Access_Procedure_Definition
+            | N_Access_To_Object_Definition
+            | N_Aspect_Specification
+            | N_Case_Expression_Alternative
+            | N_Case_Statement_Alternative
+            | N_Compilation_Unit_Aux
+            | N_Component_Association
+            | N_Component_Clause
+            | N_Component_Definition
+            | N_Component_List
+            | N_Constrained_Array_Definition
+            | N_Contract
+            | N_Decimal_Fixed_Point_Definition
+            | N_Defining_Character_Literal
+            | N_Defining_Identifier
+            | N_Defining_Operator_Symbol
+            | N_Defining_Program_Unit_Name
+            | N_Delta_Constraint
+            | N_Derived_Type_Definition
+            | N_Designator
+            | N_Digits_Constraint
+            | N_Discriminant_Association
+            | N_Discriminant_Specification
+            | N_Elsif_Part
+            | N_Entry_Call_Statement
+            | N_Enumeration_Type_Definition
+            | N_Exception_Handler
+            | N_Floating_Point_Definition
+            | N_Formal_Decimal_Fixed_Point_Definition
+            | N_Formal_Derived_Type_Definition
+            | N_Formal_Discrete_Type_Definition
+            | N_Formal_Floating_Point_Definition
+            | N_Formal_Modular_Type_Definition
+            | N_Formal_Ordinary_Fixed_Point_Definition
+            | N_Formal_Private_Type_Definition
+            | N_Formal_Incomplete_Type_Definition
+            | N_Formal_Signed_Integer_Type_Definition
+            | N_Function_Specification
+            | N_Generic_Association
+            | N_Index_Or_Discriminant_Constraint
+            | N_Iterated_Component_Association
+            | N_Iteration_Scheme
+            | N_Mod_Clause
+            | N_Modular_Type_Definition
+            | N_Ordinary_Fixed_Point_Definition
+            | N_Parameter_Specification
+            | N_Pragma_Argument_Association
+            | N_Procedure_Specification
+            | N_Real_Range_Specification
+            | N_Record_Definition
+            | N_Signed_Integer_Type_Definition
+            | N_Unconstrained_Array_Definition
+            | N_Unused_At_End
+            | N_Unused_At_Start
+            | N_Variant
+         =>
             raise Program_Error;
       end case;
 
@@ -747,7 +762,9 @@ package body Sem is
          Expand_SPARK_Potential_Renaming (N);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      if Mode_Set then
+         Restore_Ghost_Mode (Mode);
+      end if;
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1333,6 +1350,10 @@ package body Sem is
       -- Do_Analyze --
       ----------------
 
+      --  WARNING: This routine manages Ghost regions. Return statements must
+      --  be replaced by gotos which jump to the end of the routine and restore
+      --  the Ghost mode.
+
       procedure Do_Analyze is
          Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
@@ -1351,7 +1372,7 @@ package body Sem is
 
          --  Set up a clean environment before analyzing
 
-         Ghost_Mode          := None;
+         Install_Ghost_Mode (None);
          Outer_Generic_Scope := Empty;
          Scope_Suppress      := Suppress_Options;
          Scope_Stack.Table
@@ -1373,7 +1394,7 @@ package body Sem is
 
          Pop_Scope;
          Restore_Scope_Stack (List);
-         Ghost_Mode := Save_Ghost_Mode;
+         Restore_Ghost_Mode (Save_Ghost_Mode);
          Style_Max_Line_Length := Save_Max_Line;
       end Do_Analyze;
 
@@ -1483,9 +1504,10 @@ package body Sem is
              --  compiling a separate unit (this is to handle a situation
              --  where this new processing causes trouble).
 
-             or else ((Configurable_Run_Time_Mode or No_Run_Time_Mode)
-                       and not Debug_Flag_Dot_ZZ
-                       and Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit));
+             or else
+               ((Configurable_Run_Time_Mode or No_Run_Time_Mode)
+                  and then not Debug_Flag_Dot_ZZ
+                  and then Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit));
       end if;
 
       Full_Analysis      := True;
@@ -1732,16 +1754,16 @@ package body Sem is
          pragma Assert (No (CU) or else Nkind (CU) = N_Compilation_Unit);
 
          case Nkind (Item) is
-            when N_Generic_Subprogram_Declaration        |
-                 N_Generic_Package_Declaration           |
-                 N_Package_Declaration                   |
-                 N_Subprogram_Declaration                |
-                 N_Subprogram_Renaming_Declaration       |
-                 N_Package_Renaming_Declaration          |
-                 N_Generic_Function_Renaming_Declaration |
-                 N_Generic_Package_Renaming_Declaration  |
-                 N_Generic_Procedure_Renaming_Declaration =>
-
+            when N_Generic_Function_Renaming_Declaration
+               | N_Generic_Package_Declaration
+               | N_Generic_Package_Renaming_Declaration
+               | N_Generic_Procedure_Renaming_Declaration
+               | N_Generic_Subprogram_Declaration
+               | N_Package_Declaration
+               | N_Package_Renaming_Declaration
+               | N_Subprogram_Declaration
+               | N_Subprogram_Renaming_Declaration
+            =>
                --  Specs are OK
 
                null;
@@ -1761,10 +1783,10 @@ package body Sem is
                                or else CU = Cunit (Main_Unit));
                null;
 
-            when N_Function_Instantiation  |
-                 N_Procedure_Instantiation |
-                 N_Package_Instantiation   =>
-
+            when N_Function_Instantiation
+               | N_Package_Instantiation
+               | N_Procedure_Instantiation
+            =>
                --  Can only happen if some generic body (needed for gnat2scil
                --  traversal, but not by GNAT) is not available, ignore.
 

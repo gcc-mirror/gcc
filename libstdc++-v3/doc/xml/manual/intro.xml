@@ -1116,6 +1116,15 @@ requirements of the license of GCC.
       only use it if valid.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2781">2781</link>:
+       <emphasis>Contradictory requirements for <code>std::function</code>
+         and <code>std::reference_wrapper</code>
+       </emphasis>
+    </term>
+    <listitem><para>Remove special handling for <code>reference_wrapper</code>
+      arguments and store them directly as the target object.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>

@@ -32,7 +32,6 @@ with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
-with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -174,53 +173,48 @@ package body Exp_Prag is
          return;
       end if;
 
-      --  Note: we may have a pragma whose Pragma_Identifier field is not a
-      --  recognized pragma, and we must ignore it at this stage.
+      case Get_Pragma_Id (Pname) is
 
-      if Is_Pragma_Name (Pname) then
-         case Get_Pragma_Id (Pname) is
+         --  Pragmas requiring special expander action
 
-            --  Pragmas requiring special expander action
+         when Pragma_Abort_Defer =>
+            Expand_Pragma_Abort_Defer (N);
 
-            when Pragma_Abort_Defer =>
-               Expand_Pragma_Abort_Defer (N);
+         when Pragma_Check =>
+            Expand_Pragma_Check (N);
 
-            when Pragma_Check =>
-               Expand_Pragma_Check (N);
+         when Pragma_Common_Object =>
+            Expand_Pragma_Common_Object (N);
 
-            when Pragma_Common_Object =>
-               Expand_Pragma_Common_Object (N);
+         when Pragma_Import =>
+            Expand_Pragma_Import_Or_Interface (N);
 
-            when Pragma_Import =>
-               Expand_Pragma_Import_Or_Interface (N);
+         when Pragma_Inspection_Point =>
+            Expand_Pragma_Inspection_Point (N);
 
-            when Pragma_Inspection_Point =>
-               Expand_Pragma_Inspection_Point (N);
+         when Pragma_Interface =>
+            Expand_Pragma_Import_Or_Interface (N);
 
-            when Pragma_Interface =>
-               Expand_Pragma_Import_Or_Interface (N);
+         when Pragma_Interrupt_Priority =>
+            Expand_Pragma_Interrupt_Priority (N);
 
-            when Pragma_Interrupt_Priority =>
-               Expand_Pragma_Interrupt_Priority (N);
+         when Pragma_Loop_Variant =>
+            Expand_Pragma_Loop_Variant (N);
 
-            when Pragma_Loop_Variant =>
-               Expand_Pragma_Loop_Variant (N);
+         when Pragma_Psect_Object =>
+            Expand_Pragma_Psect_Object (N);
 
-            when Pragma_Psect_Object =>
-               Expand_Pragma_Psect_Object (N);
+         when Pragma_Relative_Deadline =>
+            Expand_Pragma_Relative_Deadline (N);
 
-            when Pragma_Relative_Deadline =>
-               Expand_Pragma_Relative_Deadline (N);
+         when Pragma_Suppress_Initialization =>
+            Expand_Pragma_Suppress_Initialization (N);
 
-            when Pragma_Suppress_Initialization =>
-               Expand_Pragma_Suppress_Initialization (N);
+         --  All other pragmas need no expander action (includes
+         --  Unknown_Pragma).
 
-            --  All other pragmas need no expander action
-
-            when others => null;
-         end case;
-      end if;
-
+         when others => null;
+      end case;
    end Expand_N_Pragma;
 
    -------------------------------
@@ -321,8 +315,6 @@ package body Exp_Prag is
       --  Assert_Failure, so that coverage analysis tools can relate the
       --  call to the failed check.
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    begin
       --  Nothing to do if pragma is ignored
 
@@ -330,15 +322,8 @@ package body Exp_Prag is
          return;
       end if;
 
-      --  Pragmas Assert, Assert_And_Cut, Assume, Check and Loop_Invariant are
-      --  Ghost when they apply to a Ghost entity. Set the mode now to ensure
-      --  that any nodes generated during expansion are properly flagged as
-      --  Ghost.
-
-      Set_Ghost_Mode (N);
-
-      --  Since this check is active, we rewrite the pragma into a
-      --  corresponding if statement, and then analyze the statement.
+      --  Since this check is active, rewrite the pragma into a corresponding
+      --  if statement, and then analyze the statement.
 
       --  The normal case expansion transforms:
 
@@ -496,12 +481,9 @@ package body Exp_Prag is
          elsif Nam = Name_Assert then
             Error_Msg_N ("?A?assertion will fail at run time", N);
          else
-
             Error_Msg_N ("?A?check will fail at run time", N);
          end if;
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Check;
 
    ---------------------------------
@@ -1001,8 +983,6 @@ package body Exp_Prag is
       Aggr : constant Node_Id :=
                Expression (First (Pragma_Argument_Associations (CCs)));
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       Case_Guard    : Node_Id;
       CG_Checks     : Node_Id;
       CG_Stmts      : List_Id;
@@ -1035,12 +1015,6 @@ package body Exp_Prag is
       elsif Nkind (Aggr) /= N_Aggregate then
          return;
       end if;
-
-      --  The contract cases is Ghost when it applies to a Ghost entity. Set
-      --  the mode now to ensure that any nodes generated during expansion are
-      --  properly flagged as Ghost.
-
-      Set_Ghost_Mode (CCs);
 
       --  The expansion of contract cases is quite distributed as it produces
       --  various statements to evaluate the case guards and consequences. To
@@ -1276,7 +1250,6 @@ package body Exp_Prag is
       Append_To (Stmts, Conseq_Checks);
 
       In_Assertion_Expr := In_Assertion_Expr - 1;
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Contract_Cases;
 
    ---------------------------------------
@@ -1292,7 +1265,7 @@ package body Exp_Prag is
 
       if Relaxed_RM_Semantics
         and then List_Length (Pragma_Argument_Associations (N)) = 2
-        and then Chars (Pragma_Identifier (N)) = Name_Import
+        and then Pragma_Name (N) = Name_Import
         and then Nkind (Arg2 (N)) = N_String_Literal
       then
          Def_Id := Entity (Arg1 (N));
@@ -1376,14 +1349,13 @@ package body Exp_Prag is
    -------------------------------------
 
    procedure Expand_Pragma_Initial_Condition (Spec_Or_Body : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (Spec_Or_Body);
+      Loc : constant Source_Ptr := Sloc (Spec_Or_Body);
+
       Check     : Node_Id;
       Expr      : Node_Id;
       Init_Cond : Node_Id;
       List      : List_Id;
       Pack_Id   : Entity_Id;
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
    begin
       if Nkind (Spec_Or_Body) = N_Package_Body then
@@ -1423,12 +1395,6 @@ package body Exp_Prag is
 
       Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
 
-      --  The initial condition is Ghost when it applies to a Ghost entity. Set
-      --  the mode now to ensure that any nodes generated during expansion are
-      --  properly flagged as Ghost.
-
-      Set_Ghost_Mode (Init_Cond);
-
       --  The caller should check whether the package is subject to pragma
       --  Initial_Condition.
 
@@ -1441,7 +1407,6 @@ package body Exp_Prag is
       --  runtime check as it will repeat the illegality.
 
       if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -1459,8 +1424,6 @@ package body Exp_Prag is
 
       Append_To (List, Check);
       Analyze (Check);
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Initial_Condition;
 
    ------------------------------------
@@ -1636,8 +1599,8 @@ package body Exp_Prag is
 
          --  Local variables
 
-         Expr     : constant Node_Id := Expression (Variant);
-         Expr_Typ : constant Entity_Id := Etype (Expr);
+         Expr     : constant Node_Id    := Expression (Variant);
+         Expr_Typ : constant Entity_Id  := Etype (Expr);
          Loc      : constant Source_Ptr := Sloc (Expr);
          Loop_Loc : constant Source_Ptr := Sloc (Loop_Stmt);
          Curr_Id  : Entity_Id;
@@ -1808,10 +1771,6 @@ package body Exp_Prag is
          end if;
       end Process_Variant;
 
-      --  Local variables
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    --  Start of processing for Expand_Pragma_Loop_Variant
 
    begin
@@ -1823,12 +1782,6 @@ package body Exp_Prag is
          Analyze (N);
          return;
       end if;
-
-      --  The loop variant is Ghost when it applies to a Ghost entity. Set
-      --  the mode now to ensure that any nodes generated during expansion
-      --  are properly flagged as Ghost.
-
-      Set_Ghost_Mode (N);
 
       --  The expansion of Loop_Variant is quite distributed as it produces
       --  various statements to capture and compare the arguments. To preserve
@@ -1900,7 +1853,6 @@ package body Exp_Prag is
       --  for documentation purposes. It will be ignored by the backend.
 
       In_Assertion_Expr := In_Assertion_Expr - 1;
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_Pragma_Loop_Variant;
 
    --------------------------------

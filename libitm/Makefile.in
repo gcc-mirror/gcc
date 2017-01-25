@@ -67,6 +67,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
+	$(top_srcdir)/../config/hwcaps.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/mmap.m4 \
 	$(top_srcdir)/../config/multi.m4 \
@@ -292,6 +293,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -331,7 +333,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 abi_version = -fabi-version=4
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir)
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude

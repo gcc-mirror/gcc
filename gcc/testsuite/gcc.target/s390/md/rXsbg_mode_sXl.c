@@ -7,8 +7,8 @@
    always wins, even if the condition is false.  If this test is run on hardware
    older than z10 with a buggy dejagnu release, the execution part will fail.
 
-    { dg-do assemble { target { ! z10_instructions } } }
-    { dg-do run { target { z10_instructions } } }
+    { dg-do assemble }
+    { dg-do run { target { s390_useable_hw } } }
 
    Skip test if -O0, -march=z900, -march=z9-109 or -march=z9-ec is present on
    the command line:

@@ -362,24 +362,4 @@ extern _Bool
 __go_type_descriptors_equal(const struct __go_type_descriptor*,
 			    const struct __go_type_descriptor*);
 
-extern const FuncVal __go_type_hash_identity_descriptor;
-extern _Bool __go_type_equal_identity (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_identity_descriptor;
-extern uintptr_t __go_type_hash_string (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_string_descriptor;
-extern _Bool __go_type_equal_string (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_string_descriptor;
-extern uintptr_t __go_type_hash_float (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_float_descriptor;
-extern _Bool __go_type_equal_float (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_float_descriptor;
-extern uintptr_t __go_type_hash_complex (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_complex_descriptor;
-extern _Bool __go_type_equal_complex (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_complex_descriptor;
-extern uintptr_t __go_type_hash_interface (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_interface_descriptor;
-extern _Bool __go_type_equal_interface (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_interface_descriptor;
-
 #endif /* !defined(LIBGO_GO_TYPE_H) */

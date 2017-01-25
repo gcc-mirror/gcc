@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-cddce1" } */
+/* { dg-options "-O -fdump-tree-cddce1 -Wno-psabi" } */
 /* { dg-additional-options "-msse2" { target { i?86-*-* x86_64-*-* } } } */
 
 typedef int v4si __attribute__((vector_size(16)));

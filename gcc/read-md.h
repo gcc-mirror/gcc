@@ -1,5 +1,5 @@
 /* MD reader definitions.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,10 +106,14 @@ struct enum_type {
 class md_reader
 {
  public:
-  md_reader ();
+  md_reader (bool compact);
   virtual ~md_reader ();
 
   bool read_md_files (int, const char **, bool (*) (const char *));
+  bool read_file (const char *filename);
+  bool read_file_fragment (const char *filename,
+			   int first_line,
+			   int last_line);
 
   /* A hook that handles a single .md-file directive, up to but not
      including the closing ')'.  It takes two arguments: the file position
@@ -119,10 +123,13 @@ class md_reader
 
   file_location get_current_location () const;
 
+  bool is_compact () const { return m_compact; }
+
   /* Defined in read-md.c.  */
   int read_char (void);
   void unread_char (int ch);
-  void read_name (struct md_name *name);
+  file_location read_name (struct md_name *name);
+  file_location read_name_or_nil (struct md_name *);
   void read_escape ();
   char *read_quoted_string ();
   char *read_braced_string ();
@@ -179,7 +186,12 @@ class md_reader
   void handle_include (file_location loc);
   void add_include_path (const char *arg);
 
+  bool read_name_1 (struct md_name *name, file_location *out_loc);
+
  private:
+  /* Are we reading a compact dump?  */
+  bool m_compact;
+
   /* The name of the toplevel file that indirectly included
      m_read_md_file.  */
   const char *m_toplevel_fname;
@@ -236,6 +248,10 @@ class md_reader
 
   /* A table of enum_type structures, hashed by name.  */
   htab_t m_enum_types;
+
+  /* If non-zero, filter the input to just this subset of lines.  */
+  int m_first_line;
+  int m_last_line;
 };
 
 /* Global singleton; constrast with rtx_reader_ptr below.  */
@@ -247,7 +263,7 @@ extern md_reader *md_reader_ptr;
 class noop_reader : public md_reader
 {
  public:
-  noop_reader () : md_reader () {}
+  noop_reader () : md_reader (false) {}
 
   /* A dummy implementation which skips unknown directives.  */
   void handle_unknown_directive (file_location, const char *);
@@ -261,14 +277,30 @@ class noop_reader : public md_reader
 class rtx_reader : public md_reader
 {
  public:
-  rtx_reader ();
+  rtx_reader (bool compact);
   ~rtx_reader ();
 
   bool read_rtx (const char *rtx_name, vec<rtx> *rtxen);
   rtx read_rtx_code (const char *code_name);
-  void read_rtx_operand (rtx return_rtx, int idx);
+  virtual rtx read_rtx_operand (rtx return_rtx, int idx);
   rtx read_nested_rtx ();
   rtx read_rtx_variadic (rtx form);
+  char *read_until (const char *terminator_chars, bool consume_terminator);
+
+  virtual void handle_any_trailing_information (rtx) {}
+  virtual rtx postprocess (rtx x) { return x; }
+
+  /* Hook to allow function_reader subclass to put STRINGBUF into gc-managed
+     memory, rather than within an obstack.
+     This base class implementation is a no-op.  */
+  virtual const char *finalize_string (char *stringbuf) { return stringbuf; }
+
+ protected:
+  /* Analogous to rtx_writer's m_in_call_function_usage.  */
+  bool m_in_call_function_usage;
+
+  /* Support for "reuse_rtx" directives.  */
+  auto_vec<rtx> m_reuse_rtx_by_id;
 };
 
 /* Global singleton; constrast with md_reader_ptr above.  */

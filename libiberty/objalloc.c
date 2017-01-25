@@ -1,5 +1,5 @@
 /* objalloc.c -- routines to allocate memory for objects
-   Copyright 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Cygnus Solutions.
 
 This program is free software; you can redistribute it and/or modify it

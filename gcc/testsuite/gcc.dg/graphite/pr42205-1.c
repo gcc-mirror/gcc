@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-O1 -ffast-math -floop-interchange" } */
 
 int adler32(int adler, char *buf, int n)

@@ -556,19 +556,14 @@ func nonleaf(stop chan int) bool {
 	}
 }
 
-/*
 func TestSchedLocalQueue(t *testing.T) {
-	runtime.TestSchedLocalQueue1()
+	runtime.RunSchedLocalQueueTest()
 }
-*/
 
-/*
 func TestSchedLocalQueueSteal(t *testing.T) {
-	runtime.TestSchedLocalQueueSteal1()
+	runtime.RunSchedLocalQueueStealTest()
 }
-*/
 
-/*
 func TestSchedLocalQueueEmpty(t *testing.T) {
 	if runtime.NumCPU() == 1 {
 		// Takes too long and does not trigger the race.
@@ -586,7 +581,6 @@ func TestSchedLocalQueueEmpty(t *testing.T) {
 	}
 	runtime.RunSchedLocalQueueEmptyTest(iters)
 }
-*/
 
 func benchmarkStackGrowth(b *testing.B, rec int) {
 	b.RunParallel(func(pb *testing.PB) {

@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4699,7 +4699,8 @@ rest_of_clean_state (void)
 
   free_bb_for_insn ();
 
-  delete_tree_ssa (cfun);
+  if (cfun->gimple_df)
+    delete_tree_ssa (cfun);
 
   /* We can reduce stack alignment on call site only when we are sure that
      the function body just produced will be actually used in the final

@@ -1,7 +1,6 @@
 ## Makefile for the toplevel directory of the libssp library.
 ##
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
-## Free Software Foundation, Inc.
+## Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ##
 
 AUTOMAKE_OPTIONS = 1.9.5 foreign
@@ -9,7 +8,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 MAINT_CHARSET = latin1
 
 # May be used by various substitution variables.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 if LIBSSP_USE_SYMVER
 if LIBSSP_USE_SYMVER_GNU

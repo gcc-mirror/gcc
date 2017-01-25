@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling routines for throwing.
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -24,6 +24,7 @@
 
 #include <bits/c++config.h>
 #include "unwind-cxx.h"
+#include "eh_atomics.h"
 
 using namespace __cxxabiv1;
 
@@ -42,17 +43,13 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
   if (code != _URC_FOREIGN_EXCEPTION_CAUGHT && code != _URC_NO_REASON)
     __terminate (header->exc.terminateHandler);
 
-#if ATOMIC_INT_LOCK_FREE > 1
-  if (__atomic_sub_fetch (&header->referenceCount, 1, __ATOMIC_ACQ_REL) == 0)
+  if (__gnu_cxx::__eh_atomic_dec (&header->referenceCount))
     {
-#endif
       if (header->exc.exceptionDestructor)
 	header->exc.exceptionDestructor (header + 1);
 
       __cxa_free_exception (header + 1);
-#if ATOMIC_INT_LOCK_FREE > 1
     }
-#endif
 }
 
 extern "C" __cxa_refcounted_exception*

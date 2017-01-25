@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -52,6 +52,7 @@ extern void lhd_print_error_function (diagnostic_context *,
 				      const char *, struct diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree);
 extern bool lhd_warn_unused_global_decl (const_tree);
+extern tree lhd_type_for_size (unsigned precision, int unsignedp);
 extern void lhd_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree lhd_type_promotes_to (tree);
 extern void lhd_register_builtin_type (tree, const char *);
@@ -161,8 +162,11 @@ extern tree lhd_make_node (enum tree_code);
 
 /* Types hooks.  There are no reasonable defaults for most of them,
    so we create a compile-time error instead.  */
+extern tree lhd_unit_size_without_reusable_padding (tree);
+
 #define LANG_HOOKS_MAKE_TYPE lhd_make_node
 #define LANG_HOOKS_CLASSIFY_RECORD	NULL
+#define LANG_HOOKS_TYPE_FOR_SIZE	lhd_type_for_size
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
 #define LANG_HOOKS_GENERIC_TYPE_P	hook_bool_const_tree_false
 #define LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS hook_tree_const_tree_null
@@ -189,6 +193,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_GET_DEBUG_TYPE	NULL
 #define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO NULL
 #define LANG_HOOKS_TYPE_DWARF_ATTRIBUTE	lhd_type_dwarf_attribute
+#define LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING lhd_unit_size_without_reusable_padding
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -212,7 +217,8 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE, \
   LANG_HOOKS_GET_DEBUG_TYPE, \
   LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO, \
-  LANG_HOOKS_TYPE_DWARF_ATTRIBUTE \
+  LANG_HOOKS_TYPE_DWARF_ATTRIBUTE, \
+  LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING \
 }
 
 /* Declaration hooks.  */

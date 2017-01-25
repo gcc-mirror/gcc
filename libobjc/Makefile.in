@@ -1,5 +1,5 @@
 # Makefile for GNU Objective C runtime library.
-# Copyright (C) 1993-2016 Free Software Foundation, Inc.
+# Copyright (C) 1993-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -31,7 +31,7 @@ VPATH = @glibcpp_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 target_noncanonical = @target_noncanonical@
-gcc_version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 host_subdir = @host_subdir@
 top_srcdir = @top_srcdir@
 multi_basedir = @multi_basedir@

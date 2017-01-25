@@ -1,5 +1,5 @@
 /* Register note definitions.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -176,6 +176,11 @@ REG_NOTE (CFA_WINDOW_SAVE)
    This is normally used for a call instruction which is not exposed to
    the rest of the compiler as a CALL_INSN.  */
 REG_NOTE (CFA_FLUSH_QUEUE)
+
+/* Attached to insns that are RTX_FRAME_RELATED_P, toggling the mangling status
+   of return address.  Currently it's only used by AArch64.  The argument is
+   ignored.  */
+REG_NOTE (CFA_TOGGLE_RA_MANGLE)
 
 /* Indicates what exception region an INSN belongs in.  This is used
    to indicate what region to which a call may throw.  REGION 0

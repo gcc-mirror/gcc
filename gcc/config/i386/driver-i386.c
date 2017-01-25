@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -404,7 +404,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
   unsigned int has_fma = 0, has_fma4 = 0, has_xop = 0;
   unsigned int has_bmi = 0, has_bmi2 = 0, has_tbm = 0, has_lzcnt = 0;
-  unsigned int has_hle = 0, has_rtm = 0;
+  unsigned int has_hle = 0, has_rtm = 0, has_sgx = 0;
   unsigned int has_rdrnd = 0, has_f16c = 0, has_fsgsbase = 0;
   unsigned int has_rdseed = 0, has_prfchw = 0, has_adx = 0;
   unsigned int has_osxsave = 0, has_fxsr = 0, has_xsave = 0, has_xsaveopt = 0;
@@ -480,6 +480,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
       has_bmi = ebx & bit_BMI;
+      has_sgx = ebx & bit_SGX;
       has_hle = ebx & bit_HLE;
       has_rtm = ebx & bit_RTM;
       has_avx2 = ebx & bit_AVX2;
@@ -993,6 +994,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *fma4 = has_fma4 ? " -mfma4" : " -mno-fma4";
       const char *xop = has_xop ? " -mxop" : " -mno-xop";
       const char *bmi = has_bmi ? " -mbmi" : " -mno-bmi";
+      const char *sgx = has_sgx ? " -msgx" : " -mno-sgx";
       const char *bmi2 = has_bmi2 ? " -mbmi2" : " -mno-bmi2";
       const char *tbm = has_tbm ? " -mtbm" : " -mno-tbm";
       const char *avx = has_avx ? " -mavx" : " -mno-avx";
@@ -1032,7 +1034,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *pku = has_pku ? " -mpku" : " -mno-pku";
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
-			popcnt, abm, lwp, fma, fma4, xop, bmi, bmi2,
+			popcnt, abm, lwp, fma, fma4, xop, bmi, sgx, bmi2,
 			tbm, avx, avx2, sse4_2, sse4_1, lzcnt, rtm,
 			hle, rdrnd, f16c, fsgsbase, rdseed, prfchw, adx,
 			fxsr, xsave, xsaveopt, avx512f, avx512er,

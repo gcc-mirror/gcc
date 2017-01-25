@@ -1,6 +1,6 @@
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #
-# Copyright (C) 2014-2016 Free Software Foundation, Inc.
+# Copyright (C) 2014-2017 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -58,10 +58,12 @@ AC_ARG_WITH(cuda-driver-include,
 AC_ARG_WITH(cuda-driver-lib,
 	[AS_HELP_STRING([--with-cuda-driver-lib=PATH],
 		[specify directory for the installed CUDA driver library])])
-if test "x$with_cuda_driver" != x; then
-  CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
-  CUDA_DRIVER_LIB=$with_cuda_driver/lib
-fi
+case "x$with_cuda_driver" in
+  x | xno) ;;
+  *) CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
+     CUDA_DRIVER_LIB=$with_cuda_driver/lib
+     ;;
+esac
 if test "x$with_cuda_driver_include" != x; then
   CUDA_DRIVER_INCLUDE=$with_cuda_driver_include
 fi
@@ -79,6 +81,7 @@ PLUGIN_NVPTX=0
 PLUGIN_NVPTX_CPPFLAGS=
 PLUGIN_NVPTX_LDFLAGS=
 PLUGIN_NVPTX_LIBS=
+PLUGIN_NVPTX_DYNAMIC=0
 AC_SUBST(PLUGIN_NVPTX)
 AC_SUBST(PLUGIN_NVPTX_CPPFLAGS)
 AC_SUBST(PLUGIN_NVPTX_LDFLAGS)
@@ -167,9 +170,17 @@ if test x"$enable_offload_targets" != x; then
 	LIBS=$PLUGIN_NVPTX_save_LIBS
 	case $PLUGIN_NVPTX in
 	  nvptx*)
-	    PLUGIN_NVPTX=0
-	    AC_MSG_ERROR([CUDA driver package required for nvptx support])
-	    ;;
+	    if test "x$CUDA_DRIVER_INCLUDE" = x \
+	       && test "x$CUDA_DRIVER_LIB" = x; then
+	      PLUGIN_NVPTX=1
+	      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
+	      PLUGIN_NVPTX_LIBS='-ldl'
+	      PLUGIN_NVPTX_DYNAMIC=1
+	    else
+	      PLUGIN_NVPTX=0
+	      AC_MSG_ERROR([CUDA driver package required for nvptx support])
+	    fi
+	  ;;
 	esac
 	;;
       hsa*)
@@ -241,6 +252,8 @@ AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
 AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
   [Define to 1 if the NVIDIA plugin is built, 0 if not.])
+AC_DEFINE_UNQUOTED([PLUGIN_NVPTX_DYNAMIC], [$PLUGIN_NVPTX_DYNAMIC],
+  [Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should be linked against it.])
 AM_CONDITIONAL([PLUGIN_HSA], [test $PLUGIN_HSA = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_HSA], [$PLUGIN_HSA],
   [Define to 1 if the HSA plugin is built, 0 if not.])

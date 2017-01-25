@@ -1,3 +1,37 @@
+2017-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* lto-lang.c (builtin_type_for_size): Convert call to
+	lto_type_for_size to one through the langhook.
+	(lto_type_for_size): Move to langhooks.c and rename to
+	lhd_type_for_size.
+	(LANG_HOOKS_TYPE_FOR_SIZE): Don't redefine.
+
+2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50199
+	* lto-lang.c (lto_post_options): Force flag_merge_constants = 1
+	if it was 0.
+
+2017-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/79019
+	PR translation/79020
+	* lto-symtab.c (lto_symtab_merge_symbols): Fix comment typo.
+
+2017-01-06  Nathan Sidwell  <nathan@acm.org>
+
+	* lto-partition.c (promote_symbol): Write to dump file sooner,
+	include alias promoting too.
+
+	* lto-partition.c (lto_balanced_map): Reformat/respell comment.
+	(may_need_named_section_p): Likewise.
+	(rename_statics): Likewise.
+	(lto_promote_cross_file_statics): Likewise.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2016-11-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR lto/78562
@@ -5556,7 +5590,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2016 Free Software Foundation, Inc.
+Copyright (C) 2006-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

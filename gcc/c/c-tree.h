@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -268,6 +268,7 @@ enum c_declspec_word {
   cdw_alignas,
   cdw_address_space,
   cdw_gimple,
+  cdw_rtl,
   cdw_number_of_elements /* This one must always be the last
 			    enumerator.  */
 };
@@ -291,8 +292,8 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
-  /* The pass to start compiling a __GIMPLE function with.  */
-  char *gimple_pass;
+  /* The pass to start compiling a __GIMPLE or __RTL function with.  */
+  char *gimple_or_rtl_pass;
   /* The base-2 log of the greatest alignment required by an _Alignas
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
@@ -367,6 +368,8 @@ struct c_declspecs {
   BOOL_BITFIELD alignas_p : 1;
   /* Whether any __GIMPLE specifier was specified.  */
   BOOL_BITFIELD gimple_p : 1;
+  /* Whether any __RTL specifier was specified.  */
+  BOOL_BITFIELD rtl_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -642,12 +645,13 @@ extern tree c_cast_expr (location_t, struct c_type_name *, tree);
 extern tree build_c_cast (location_t, tree, tree);
 extern void store_init_value (location_t, tree, tree, tree);
 extern void maybe_warn_string_init (location_t, tree, struct c_expr);
-extern void start_init (tree, tree, int);
+extern void start_init (tree, tree, int, rich_location *);
 extern void finish_init (void);
 extern void really_start_incremental_init (tree);
 extern void finish_implicit_inits (location_t, struct obstack *);
 extern void push_init_level (location_t, int, struct obstack *);
-extern struct c_expr pop_init_level (location_t, int, struct obstack *);
+extern struct c_expr pop_init_level (location_t, int, struct obstack *,
+				     location_t);
 extern void set_init_index (location_t, tree, tree, struct obstack *);
 extern void set_init_label (location_t, tree, location_t, struct obstack *);
 extern void process_init_element (location_t, struct c_expr, bool,

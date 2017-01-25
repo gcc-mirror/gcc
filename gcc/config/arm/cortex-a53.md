@@ -1,5 +1,5 @@
 ;; ARM Cortex-A53 pipeline description
-;; Copyright (C) 2013-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2017 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;;
@@ -260,8 +260,17 @@
 		 "cortex_a53_r2f")
 
 (define_bypass 1 "cortex_a53_mul,
-		  cortex_a53_load*"
+		  cortex_a53_load1,
+		  cortex_a53_load2"
 		 "cortex_a53_r2f")
+
+(define_bypass 2 "cortex_a53_alu*"
+		 "cortex_a53_r2f_cvt")
+
+(define_bypass 3 "cortex_a53_mul,
+		  cortex_a53_load1,
+		  cortex_a53_load2"
+		 "cortex_a53_r2f_cvt")
 
 ;; Model flag forwarding to branches.
 
@@ -522,19 +531,25 @@
 ;; Floating-point to/from core transfers.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn_reservation "cortex_a53_r2f" 6
+(define_insn_reservation "cortex_a53_r2f" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "f_mcr,f_mcrr,f_cvti2f,
-			neon_from_gp, neon_from_gp_q"))
-  "cortex_a53_slot_any,cortex_a53_store,
-   nothing,cortex_a53_fp_alu")
+       (eq_attr "type" "f_mcr,f_mcrr"))
+  "cortex_a53_slot_any,cortex_a53_fp_alu")
 
-(define_insn_reservation "cortex_a53_f2r" 6
+(define_insn_reservation "cortex_a53_f2r" 4
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "f_mrc,f_mrrc,f_cvtf2i,
-			neon_to_gp, neon_to_gp_q"))
-  "cortex_a53_slot_any,cortex_a53_fp_alu,
-   nothing,cortex_a53_store")
+       (eq_attr "type" "f_mrc,f_mrrc"))
+  "cortex_a53_slot_any,cortex_a53_fp_alu")
+
+(define_insn_reservation "cortex_a53_r2f_cvt" 4
+  (and (eq_attr "tune" "cortexa53")
+       (eq_attr "type" "f_cvti2f, neon_from_gp, neon_from_gp_q"))
+  "cortex_a53_slot_any,cortex_a53_fp_alu")
+
+(define_insn_reservation "cortex_a53_f2r_cvt" 5
+  (and (eq_attr "tune" "cortexa53")
+       (eq_attr "type" "f_cvtf2i, neon_to_gp, neon_to_gp_q"))
+  "cortex_a53_slot_any,cortex_a53_fp_alu")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Floating-point flag transfer.

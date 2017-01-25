@@ -1,3 +1,45 @@
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR PR c++/70182
+	* cp-demangle.c (d_unqualified_name): Handle "on" for
+	operator names.
+	* testsuite/demangle-expected: Add tests.
+
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/77489
+	* cp-demangle.c (d_discriminator): Handle discriminator >= 10.
+	* testsuite/demangle-expected: Add tests for discriminator.
+
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.in (configure_deps): Update.
+	* configure: Regenerate.
+
+2016-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78761
+	* cp-demangle.c (cplus_demangle_type): Demangle Dc as decltype(auto).
+	* testsuite/demangle-expected: Add test for decltype(auto).
+
+2016-12-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78252
+	* cp-demangle.c (struct d_print_info): Add is_lambda_arg field.
+	(d_print_init): Initialize it.
+	(d_print_comp_inner) <DEMANGLE_COMPONENT_TEMPLATE_PARAM>: Check
+	is_lambda_arg for auto.
+	<DEMANGLE_COMPONENT_REFERENCE,
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE>: Skip smashing check when
+	is_lambda_arg.
+	<DEMANGLE_COMPONENT_LAMBDA>: Increment is_lambda_arg around arg
+	printing.
+	* testsuite/demangle-expected: Add lambda auto mangling cases. 
+
 2016-12-06  DJ Delorie  <dj@redhat.com>
 
 	* argv.c (expandargv): Check for directories passed as @-files.

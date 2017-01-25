@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -508,6 +508,8 @@ initialize_tree_contains_struct (void)
 	{
 	case TS_TYPED:
 	case TS_BLOCK:
+	case TS_OPTIMIZATION:
+	case TS_TARGET_OPTION:
 	  MARK_TS_BASE (code);
 	  break;
 
@@ -532,8 +534,6 @@ initialize_tree_contains_struct (void)
 	case TS_VEC:
 	case TS_BINFO:
 	case TS_OMP_CLAUSE:
-	case TS_OPTIMIZATION:
-	case TS_TARGET_OPTION:
 	  MARK_TS_COMMON (code);
 	  break;
 
@@ -1677,7 +1677,7 @@ bool
 cst_and_fits_in_hwi (const_tree x)
 {
   return (TREE_CODE (x) == INTEGER_CST
-	  && TYPE_PRECISION (TREE_TYPE (x)) <= HOST_BITS_PER_WIDE_INT);
+	  && (tree_fits_shwi_p (x) || tree_fits_uhwi_p (x)));
 }
 
 /* Build a newly constructed VECTOR_CST node of length LEN.  */
@@ -5899,7 +5899,7 @@ find_decls_types_in_var (varpool_node *v, struct free_lang_data_d *fld)
 /* If T needs an assembler name, have one created for it.  */
 
 void
-assign_assembler_name_if_neeeded (tree t)
+assign_assembler_name_if_needed (tree t)
 {
   if (need_assembler_name_p (t))
     {
@@ -5966,7 +5966,7 @@ free_lang_data_in_cgraph (void)
      now because free_lang_data_in_decl will invalidate data needed
      for mangling.  This breaks mangling on interdependent decls.  */
   FOR_EACH_VEC_ELT (fld.decls, i, t)
-    assign_assembler_name_if_neeeded (t);
+    assign_assembler_name_if_needed (t);
 
   /* Traverse every decl found freeing its language data.  */
   FOR_EACH_VEC_ELT (fld.decls, i, t)
@@ -7773,7 +7773,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
   enum tree_code code;
   enum tree_code_class tclass;
 
-  if (t == NULL_TREE)
+  if (t == NULL_TREE || t == error_mark_node)
     {
       hstate.merge_hash (0);
       return;
@@ -9746,10 +9746,10 @@ get_file_function_name (const char *type)
 	file = LOCATION_FILE (input_location);
 
       len = strlen (file);
-      q = (char *) alloca (9 + 17 + len + 1);
+      q = (char *) alloca (9 + 19 + len + 1);
       memcpy (q, file, len + 1);
 
-      snprintf (q + len, 9 + 17 + 1, "_%08X_" HOST_WIDE_INT_PRINT_HEX, 
+      snprintf (q + len, 9 + 19 + 1, "_%08X_" HOST_WIDE_INT_PRINT_HEX,
 		crc32_string (0, name), get_random_seed (false));
 
       p = q;
@@ -13320,7 +13320,7 @@ verify_type_variant (const_tree t, tree tv)
      - aggregates may have new TYPE_FIELDS list that list variants of
        the main variant TYPE_FIELDS.
      - vector types may differ by TYPE_VECTOR_OPAQUE
-     - TYPE_METHODS is always NULL for vairant types and maintained for
+     - TYPE_METHODS is always NULL for variant types and maintained for
        main variant only.
    */
 
@@ -13523,7 +13523,7 @@ verify_type_variant (const_tree t, tree tv)
   if (type_with_alias_set_p (t)
       && !gimple_canonical_types_compatible_p (t, tv, false))
     {
-      error ("type is not compatible with its vairant");
+      error ("type is not compatible with its variant");
       debug_tree (tv);
       error ("type variant's TREE_TYPE");
       debug_tree (TREE_TYPE (tv));
@@ -14311,6 +14311,56 @@ combined_fn_name (combined_fn fn)
     }
   else
     return internal_fn_name (as_internal_fn (fn));
+}
+
+/* Return a bitmap with a bit set corresponding to each argument in
+   a function call type FNTYPE declared with attribute nonnull,
+   or null if none of the function's argument are nonnull.  The caller
+   must free the bitmap.  */
+
+bitmap
+get_nonnull_args (const_tree fntype)
+{
+  if (fntype == NULL_TREE)
+    return NULL;
+
+  tree attrs = TYPE_ATTRIBUTES (fntype);
+  if (!attrs)
+    return NULL;
+
+  bitmap argmap = NULL;
+
+  /* A function declaration can specify multiple attribute nonnull,
+     each with zero or more arguments.  The loop below creates a bitmap
+     representing a union of all the arguments.  An empty (but non-null)
+     bitmap means that all arguments have been declaraed nonnull.  */
+  for ( ; attrs; attrs = TREE_CHAIN (attrs))
+    {
+      attrs = lookup_attribute ("nonnull", attrs);
+      if (!attrs)
+	break;
+
+      if (!argmap)
+	argmap = BITMAP_ALLOC (NULL);
+
+      if (!TREE_VALUE (attrs))
+	{
+	  /* Clear the bitmap in case a previous attribute nonnull
+	     set it and this one overrides it for all arguments.  */
+	  bitmap_clear (argmap);
+	  return argmap;
+	}
+
+      /* Iterate over the indices of the format arguments declared nonnull
+	 and set a bit for each.  */
+      for (tree idx = TREE_VALUE (attrs); idx; idx = TREE_CHAIN (idx))
+	{
+	  unsigned int val = TREE_INT_CST_LOW (TREE_VALUE (idx)) - 1;
+	  bitmap_set_bit (argmap, val);
+	}
+    }
+
+  return argmap;
 }
 
 #if CHECKING_P

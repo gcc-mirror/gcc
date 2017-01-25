@@ -1,5 +1,5 @@
 /* Print RTL for GCC.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -481,11 +481,11 @@ rtx_writer::print_rtx_operand_code_r (const_rtx in_rtx)
       fputc ('#', m_outfile);
     else if (m_compact)
       {
-	/* In compact mode, print pseudos with a '%' sigil following
-	   by the regno, offset by (LAST_VIRTUAL_REGISTER + 1), so that the
-	   first non-virtual pseudo is dumped as "%0".  */
+	/* In compact mode, print pseudos with '< and '>' wrapping the regno,
+	   offseting it by (LAST_VIRTUAL_REGISTER + 1), so that the
+	   first non-virtual pseudo is dumped as "<0>".  */
 	gcc_assert (regno > LAST_VIRTUAL_REGISTER);
-	fprintf (m_outfile, " %%%d", regno - (LAST_VIRTUAL_REGISTER + 1));
+	fprintf (m_outfile, " <%d>", regno - (LAST_VIRTUAL_REGISTER + 1));
       }
     else
       fprintf (m_outfile, " %d", regno);
@@ -577,7 +577,7 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
     string:
 
       if (str == 0)
-	fputs (" \"\"", m_outfile);
+	fputs (" (nil)", m_outfile);
       else
 	fprintf (m_outfile, " (\"%s\")", str);
       m_sawclose = 1;

@@ -1,5 +1,5 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>,
    Steve Kargl and Janne Blomqvist.
 
@@ -30,12 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <gthr.h>
 #include <string.h>
-#include <stdlib.h>
 
-/* For getosrandom.  */
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

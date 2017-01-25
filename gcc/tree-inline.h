@@ -1,5 +1,5 @@
 /* Tree inlining hooks and declarations.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -218,6 +218,7 @@ extern gimple_seq copy_gimple_seq_and_replace_locals (gimple_seq seq);
 extern bool debug_find_tree (tree, tree);
 extern tree copy_fn (tree, tree&, tree&);
 extern const char *copy_forbidden (struct function *fun);
+extern tree copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy);
 
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */

@@ -1,5 +1,5 @@
 ;; Constraint definitions for IA-32 and x86-64.
-;; Copyright (C) 2006-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -168,6 +168,8 @@
 ;;  f  FLAGS_REG
 ;;  g  GOT memory operand.
 ;;  m  Vector memory operand
+;;  c  Constant memory operand
+;;  n  Memory operand without REX prefix
 ;;  s  Sibcall memory operand, not valid for TARGET_X32
 ;;  w  Call memory operand, not valid for TARGET_X32
 ;;  z  Constant call address operand.
@@ -184,6 +186,15 @@
 (define_special_memory_constraint "Bm"
   "@internal Vector memory operand."
   (match_operand 0 "vector_memory_operand"))
+
+(define_special_memory_constraint "Bc"
+  "@internal Constant memory operand."
+  (and (match_operand 0 "memory_operand")
+       (match_test "constant_address_p (XEXP (op, 0))")))
+
+(define_special_memory_constraint "Bn"
+  "@internal Memory operand without REX prefix."
+  (match_operand 0 "norex_memory_operand"))
 
 (define_constraint "Bs"
   "@internal Sibcall memory operand."

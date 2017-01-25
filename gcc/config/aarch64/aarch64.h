@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -138,6 +138,8 @@ extern unsigned aarch64_architecture_version;
 /* ARMv8.2-A architecture extensions.  */
 #define AARCH64_FL_V8_2	      (1 << 8)  /* Has ARMv8.2-A features.  */
 #define AARCH64_FL_F16	      (1 << 9)  /* Has ARMv8.2-A FP16 extensions.  */
+/* ARMv8.3-A architecture extensions.  */
+#define AARCH64_FL_V8_3	      (1 << 10)  /* Has ARMv8.3-A features.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -151,6 +153,8 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8 | AARCH64_FL_LSE | AARCH64_FL_CRC | AARCH64_FL_V8_1)
 #define AARCH64_FL_FOR_ARCH8_2			\
   (AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_V8_2)
+#define AARCH64_FL_FOR_ARCH8_3			\
+  (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
 
 /* Macros to test ISA flags.  */
 
@@ -162,6 +166,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_V8_1)
 #define AARCH64_ISA_V8_2	   (aarch64_isa_flags & AARCH64_FL_V8_2)
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
+#define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -175,6 +180,9 @@ extern unsigned aarch64_architecture_version;
 /* ARMv8.2-A FP16 support that can be enabled through the +fp16 extension.  */
 #define TARGET_FP_F16INST (TARGET_FLOAT && AARCH64_ISA_F16)
 #define TARGET_SIMD_F16INST (TARGET_SIMD && AARCH64_ISA_F16)
+
+/* ARMv8.3-A features.  */
+#define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -400,9 +408,9 @@ extern unsigned aarch64_architecture_version;
 #define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)	\
   aarch64_declare_function_name (STR, NAME, DECL)
 
-/* The register that holds the return address in exception handlers.  */
-#define AARCH64_EH_STACKADJ_REGNUM	(R0_REGNUM + 4)
-#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, AARCH64_EH_STACKADJ_REGNUM)
+/* For EH returns X4 contains the stack adjustment.  */
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, R4_REGNUM)
+#define EH_RETURN_HANDLER_RTX  aarch64_eh_return_handler_rtx ()
 
 /* Don't use __builtin_setjmp until we've defined it.  */
 #undef DONT_USE_BUILTIN_SETJMP
@@ -490,7 +498,7 @@ enum reg_class
 
 enum target_cpus
 {
-#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
+#define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   TARGET_CPU_##INTERNAL_IDENT,
 #include "aarch64-cores.def"
   TARGET_CPU_generic

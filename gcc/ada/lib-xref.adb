@@ -525,9 +525,10 @@ package body Lib.Xref is
                P := Parent (P);
 
                if Nkind (P) = N_Pragma then
-                  if Nam_In (Pragma_Name (P), Name_Warnings,
-                                              Name_Unmodified,
-                                              Name_Unreferenced)
+                  if Nam_In (Pragma_Name_Unmapped (P),
+                             Name_Warnings,
+                             Name_Unmodified,
+                             Name_Unreferenced)
                   then
                      return False;
                   end if;
@@ -860,6 +861,14 @@ package body Lib.Xref is
             --  of an assignment.
 
             elsif Is_On_LHS (N) then
+               null;
+
+            --  No warning if the reference is in a call that does not come
+            --  from source (e.g. a call to a controlled type primitive).
+
+            elsif not Comes_From_Source (Parent (N))
+              and then Nkind (Parent (N)) = N_Procedure_Call_Statement
+            then
                null;
 
             --  For entry formals, we want to place the warning message on the

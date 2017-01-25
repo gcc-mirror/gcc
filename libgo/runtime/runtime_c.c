@@ -25,7 +25,8 @@ extern volatile intgo runtime_MemProfileRate
 
 struct gotraceback_ret {
 	int32 level;
-	bool crash;
+	bool  all;
+	bool  crash;
 };
 
 extern struct gotraceback_ret gotraceback(void)
@@ -57,7 +58,7 @@ runtime_atoi(const byte *p, intgo len)
 }
 
 uint32
-runtime_fastrand1(void)
+runtime_fastrand(void)
 {
 	M *m;
 	uint32 x;
@@ -87,55 +88,15 @@ runtime_cputicks(void)
   asm volatile(".insn s,0xb27c0000,%0" /* stckf */ : "+Q" (clock) : : "cc" );
   return (int64)clock;
 #else
-  // Currently cputicks() is used in blocking profiler and to seed runtime·fastrand1().
+  // Currently cputicks() is used in blocking profiler and to seed runtime·fastrand().
   // runtime·nanotime() is a poor approximation of CPU ticks that is enough for the profiler.
-  // TODO: need more entropy to better seed fastrand1.
+  // TODO: need more entropy to better seed fastrand.
   return runtime_nanotime();
 #endif
 }
 
-// Called to initialize a new m (including the bootstrap m).
-// Called on the parent thread (main thread in case of bootstrap), can allocate memory.
 void
-runtime_mpreinit(M *mp)
-{
-	int32 stacksize = 32 * 1024;	// OS X wants >=8K, Linux >=2K
-
-#ifdef SIGSTKSZ
-	if(stacksize < SIGSTKSZ)
-		stacksize = SIGSTKSZ;
-#endif
-
-	mp->gsignal = runtime_malg(stacksize, (byte**)&mp->gsignalstack, &mp->gsignalstacksize);
-	mp->gsignal->m = mp;
-}
-
-// Called to initialize a new m (including the bootstrap m).
-// Called on the new thread, can not allocate memory.
-void
-runtime_minit(void)
-{
-	M* m;
-	sigset_t sigs;
-
-	// Initialize signal handling.
-	m = runtime_m();
-	runtime_signalstack(m->gsignalstack, m->gsignalstacksize);
-	if (sigemptyset(&sigs) != 0)
-		runtime_throw("sigemptyset");
-	pthread_sigmask(SIG_SETMASK, &sigs, nil);
-}
-
-// Called from dropm to undo the effect of an minit.
-void
-runtime_unminit(void)
-{
-	runtime_signalstack(nil, 0);
-}
-
-
-void
-runtime_signalstack(byte *p, int32 n)
+runtime_signalstack(byte *p, uintptr n)
 {
 	stack_t st;
 
@@ -221,5 +182,9 @@ runtime_cpuinit()
 	if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
 		setCpuidECX(ecx);
 	}
+
+#if defined(HAVE_AS_X86_AES)
+	setSupportAES(true);
+#endif
 #endif
 }

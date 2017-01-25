@@ -1,5 +1,5 @@
 /* Common hooks for Texas Instruments MSP430.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -54,7 +54,7 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 	}
       else
 	{
-	  error ("unrecognised argument of -mcpu: %s", decoded->arg);
+	  error ("unrecognized argument of -mcpu: %s", decoded->arg);
 	  return false;
 	}
       break;

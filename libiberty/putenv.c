@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1994, 1995, 1996, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2017 Free Software Foundation, Inc.
    This file based on putenv.c in the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or

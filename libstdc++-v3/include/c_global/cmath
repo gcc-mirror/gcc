@@ -1,6 +1,6 @@
 // -*- C++ -*- C forwarding header.
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1012,12 +1012,14 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #undef lgamma
 #undef lgammaf
 #undef lgammal
+#ifndef _GLIBCXX_NO_C99_ROUNDING_FUNCS
 #undef llrint
 #undef llrintf
 #undef llrintl
 #undef llround
 #undef llroundf
 #undef llroundl
+#endif
 #undef log1p
 #undef log1pf
 #undef log1pl
@@ -1143,6 +1145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::lgammaf;
   using ::lgammal;
 
+#ifndef _GLIBCXX_NO_C99_ROUNDING_FUNCS
   using ::llrint;
   using ::llrintf;
   using ::llrintl;
@@ -1150,6 +1153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::llround;
   using ::llroundf;
   using ::llroundl;
+#endif
 
   using ::log1p;
   using ::log1pf;

@@ -1,5 +1,5 @@
 /* Single-image implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -141,9 +141,12 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
   caf_single_token_t single_token;
 
   if (type == CAF_REGTYPE_LOCK_STATIC || type == CAF_REGTYPE_LOCK_ALLOC
-      || type == CAF_REGTYPE_CRITICAL || type == CAF_REGTYPE_EVENT_STATIC
-      || type == CAF_REGTYPE_EVENT_ALLOC)
+      || type == CAF_REGTYPE_CRITICAL)
     local = calloc (size, sizeof (bool));
+  else if (type == CAF_REGTYPE_EVENT_STATIC || type == CAF_REGTYPE_EVENT_ALLOC)
+    /* In the event_(wait|post) function the counter for events is a uint32,
+       so better allocate enough memory here.  */
+    local = calloc (size, sizeof (uint32_t));
   else if (type == CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY)
     local = NULL;
   else
@@ -1953,11 +1956,24 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 		}
 	      else
 		{
-		  ds = GFC_DESCRIPTOR_DATA (dst);
-		  dst_type = GFC_DESCRIPTOR_TYPE (dst);
+		  single_token = *(caf_single_token_t *)
+					       (ds + ref->u.c.caf_token_offset);
+		  dst = single_token->desc;
+		  if (dst)
+		    {
+		      ds = GFC_DESCRIPTOR_DATA (dst);
+		      dst_type = GFC_DESCRIPTOR_TYPE (dst);
+		    }
+		  else
+		    {
+		      /* When no destination descriptor is present, assume that
+			 source and dest type are identical.  */
+		      dst_type = GFC_DESCRIPTOR_TYPE (src);
+		      ds = *(void **)(ds + ref->u.c.offset);
+		    }
 		}
 	      copy_data (ds, sr, dst_type, GFC_DESCRIPTOR_TYPE (src),
-		  dst_kind, src_kind, ref->item_size, src_size, 1, stat);
+			 dst_kind, src_kind, ref->item_size, src_size, 1, stat);
 	    }
 	  else
 	    copy_data (ds + ref->u.c.offset, sr,
@@ -2055,7 +2071,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	  return;
 	}
       /* Only when on the left most index switch the data pointer to
-	     the array's data pointer.  And only for non-static arrays.  */
+	 the array's data pointer.  And only for non-static arrays.  */
       if (dst_dim == 0 && ref->type != CAF_REF_STATIC_ARRAY)
 	ds = GFC_DESCRIPTOR_DATA (dst);
       switch (ref->u.a.mode[dst_dim])

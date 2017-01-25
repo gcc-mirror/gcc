@@ -1,7 +1,8 @@
 %language=C++
 %define class-name libc_name
+%struct-type
 %{
-/* Copyright (C) 2000-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 %}
+struct libc_name_struct { const char *name; int c_ver; };
 %%
 # The standard C library functions, for feeding to gperf; the result is used
 # by nothrow_libfn_p.
@@ -30,212 +32,505 @@ along with GCC; see the file COPYING3.  If not see
 #
 # Specific functions are commented out for the reason noted in each case.
 #
-# abort			-- synchronous exception from SIGABRT handler
-abs
-acos
-asctime
-asin
-atan
-atan2
-atexit
-atof
-atoi
-atol
-#bsearch		-- calls user function which may throw exception
-btowc
-calloc
-ceil
-clearerr
-clock
-cos
-cosh
-ctime
-difftime
-div
-exit
-exp
-fabs
-#fclose			-- POSIX thread cancellation point
-feof
-ferror
-#fflush			-- POSIX thread cancellation point
-#fgetc			-- POSIX thread cancellation point
-#fgetpos		-- POSIX thread cancellation point
-#fgets			-- POSIX thread cancellation point
-#fgetwc			-- POSIX thread cancellation point
-#fgetws			-- POSIX thread cancellation point
-floor
-fmod
-#fopen			-- POSIX thread cancellation point
-#fprintf		-- POSIX thread cancellation point
-#fputc			-- POSIX thread cancellation point
-#fputs			-- POSIX thread cancellation point
-#fputwc			-- POSIX thread cancellation point
-#fputws			-- POSIX thread cancellation point
-#fread			-- POSIX thread cancellation point
-free
-#freopen		-- POSIX thread cancellation point
-frexp
-#fscanf			-- POSIX thread cancellation point
-fseek
-#fsetpos		-- POSIX thread cancellation point
-#ftell			-- POSIX thread cancellation point
-fwide
-#fwprintf		-- POSIX thread cancellation point
-#fwrite			-- POSIX thread cancellation point
-#fwscanf		-- POSIX thread cancellation point
-#getc			-- POSIX thread cancellation point
-#getchar		-- POSIX thread cancellation point
-getenv
-#gets			-- POSIX thread cancellation point
-#getwc			-- POSIX thread cancellation point
-#getwchar		-- POSIX thread cancellation point
-gmtime
-isalnum
-isalpha
-iscntrl
-isdigit
-isgraph
-islower
-isprint
-ispunct
-isspace
-isupper
-iswalnum
-iswalpha
-iswcntrl
-iswctype
-iswdigit
-iswgraph
-iswlower
-iswprint
-iswpunct
-iswspace
-iswupper
-iswxdigit
-isxdigit
-labs
-ldexp
-ldiv
-localeconv
-localtime
-log
-log10
-longjmp
-malloc
-mblen
-mbrlen
-mbrtowc
-mbsinit
-mbsrtowcs
-mbstowcs
-mbtowc
-memchr
-memcmp
-memcpy
-memmove
-memset
-mktime
-modf
-#perror			-- POSIX thread cancellation point
-pow
-#printf			-- POSIX thread cancellation point
-#putc			-- POSIX thread cancellation point
-#putchar		-- POSIX thread cancellation point
-#puts			-- POSIX thread cancellation point
-#putwc			-- POSIX thread cancellation point
-#putwchar		-- POSIX thread cancellation point
-#qsort			-- calls user function which may throw exception
-#raise			-- synchronous exception from signal handler
-rand
-realloc
-#remove			-- POSIX thread cancellation point
-#rename			-- POSIX thread cancellation point
-#rewind			-- POSIX thread cancellation point
-#scanf			-- POSIX thread cancellation point
-setbuf
-setlocale
-setvbuf
-signal
-sin
-sinh
-sprintf
-sqrt
-srand
-sscanf
-strcat
-strchr
-strcmp
-strcoll
-strcpy
-strcspn
-#strerror		-- POSIX thread cancellation point
-strftime
-strlen
-strncat
-strncmp
-strncpy
-strpbrk
-strrchr
-strspn
-strstr
-strtod
-strtok
-strtol
-strtoul
-strxfrm
-swprintf
-swscanf
-#system			-- POSIX thread cancellation point
-tan
-tanh
-time
-#tmpfile		-- POSIX thread cancellation point
-#tmpnam			-- POSIX thread cancellation point
-tolower
-toupper
-towctrans
-towlower
-towupper
-#ungetc			-- POSIX thread cancellation point
-#ungetwc		-- POSIX thread cancellation point
-#vfprintf		-- POSIX thread cancellation point
-#vfwprintf		-- POSIX thread cancellation point
-#vprintf		-- POSIX thread cancellation point
-vsprintf
-vswprintf
-#vwprintf		-- POSIX thread cancellation point
-wcrtomb
-wcscat
-wcschr
-wcscmp
-wcscoll
-wcscpy
-wcscspn
-wcsftime
-wcslen
-wcsncat
-wcsncmp
-wcsncpy
-wcspbrk
-wcsrchr
-wcsrtombs
-wcsspn
-wcsstr
-wcstod
-wcstok
-wcstol
-wcstombs
-wcstoul
-wcsxfrm
-wctob
-wctomb
-wctrans
-wctype
-wmemchr
-wmemcmp
-wmemcpy
-wmemmove
-wmemset
-#wprintf		-- POSIX thread cancellation point
-#wscanf			-- POSIX thread cancellation point
+#abort, 89		-- synchronous exception from SIGABRT handler
+abs, 89
+acos, 89
+asctime, 89
+asin, 89
+atan, 89
+atan2, 89
+atexit, 89
+atof, 89
+atoi, 89
+atol, 89
+#bsearch, 89		-- calls user function which may throw exception
+btowc, 89
+calloc, 89
+ceil, 89
+clearerr, 89
+clock, 89
+cos, 89
+cosh, 89
+ctime, 89
+difftime, 89
+div, 89
+exit, 89
+exp, 89
+fabs, 89
+#fclose, 89		-- POSIX thread cancellation point
+feof, 89
+ferror, 89
+#fflush, 89		-- POSIX thread cancellation point
+#fgetc, 89		-- POSIX thread cancellation point
+#fgetpos, 89		-- POSIX thread cancellation point
+#fgets, 89		-- POSIX thread cancellation point
+#fgetwc, 89		-- POSIX thread cancellation point
+#fgetws, 89		-- POSIX thread cancellation point
+floor, 89
+fmod, 89
+#fopen, 89		-- POSIX thread cancellation point
+#fprintf, 89		-- POSIX thread cancellation point
+#fputc, 89		-- POSIX thread cancellation point
+#fputs, 89		-- POSIX thread cancellation point
+#fputwc, 89		-- POSIX thread cancellation point
+#fputws, 89		-- POSIX thread cancellation point
+#fread, 89		-- POSIX thread cancellation point
+free, 89
+#freopen, 89		-- POSIX thread cancellation point
+frexp, 89
+#fscanf, 89		-- POSIX thread cancellation point
+fseek, 89
+#fsetpos, 89		-- POSIX thread cancellation point
+#ftell, 89		-- POSIX thread cancellation point
+fwide, 89
+#fwprintf, 89		-- POSIX thread cancellation point
+#fwrite, 89		-- POSIX thread cancellation point
+#fwscanf, 89		-- POSIX thread cancellation point
+#getc, 89		-- POSIX thread cancellation point
+#getchar, 89		-- POSIX thread cancellation point
+getenv, 89
+#gets, 89		-- POSIX thread cancellation point
+#getwc, 89		-- POSIX thread cancellation point
+#getwchar, 89		-- POSIX thread cancellation point
+gmtime, 89
+isalnum, 89
+isalpha, 89
+iscntrl, 89
+isdigit, 89
+isgraph, 89
+islower, 89
+isprint, 89
+ispunct, 89
+isspace, 89
+isupper, 89
+iswalnum, 89
+iswalpha, 89
+iswcntrl, 89
+iswctype, 89
+iswdigit, 89
+iswgraph, 89
+iswlower, 89
+iswprint, 89
+iswpunct, 89
+iswspace, 89
+iswupper, 89
+iswxdigit, 89
+isxdigit, 89
+labs, 89
+ldexp, 89
+ldiv, 89
+localeconv, 89
+localtime, 89
+log, 89
+log10, 89
+longjmp, 89
+malloc, 89
+mblen, 89
+mbrlen, 89
+mbrtowc, 89
+mbsinit, 89
+mbsrtowcs, 89
+mbstowcs, 89
+mbtowc, 89
+memchr, 89
+memcmp, 89
+memcpy, 89
+memmove, 89
+memset, 89
+mktime, 89
+modf, 89
+#perror, 89		-- POSIX thread cancellation point
+pow, 89
+#printf, 89		-- POSIX thread cancellation point
+#putc, 89		-- POSIX thread cancellation point
+#putchar, 89		-- POSIX thread cancellation point
+#puts, 89		-- POSIX thread cancellation point
+#putwc, 89		-- POSIX thread cancellation point
+#putwchar, 89		-- POSIX thread cancellation point
+#qsort, 89		-- calls user function which may throw exception
+#raise, 89		-- synchronous exception from signal handler
+rand, 89
+realloc, 89
+#remove, 89		-- POSIX thread cancellation point
+#rename, 89		-- POSIX thread cancellation point
+#rewind, 89		-- POSIX thread cancellation point
+#scanf, 89		-- POSIX thread cancellation point
+setbuf, 89
+setlocale, 89
+setvbuf, 89
+signal, 89
+sin, 89
+sinh, 89
+sprintf, 89
+sqrt, 89
+srand, 89
+sscanf, 89
+strcat, 89
+strchr, 89
+strcmp, 89
+strcoll, 89
+strcpy, 89
+strcspn, 89
+#strerror, 89		-- POSIX thread cancellation point
+strftime, 89
+strlen, 89
+strncat, 89
+strncmp, 89
+strncpy, 89
+strpbrk, 89
+strrchr, 89
+strspn, 89
+strstr, 89
+strtod, 89
+strtok, 89
+strtol, 89
+strtoul, 89
+strxfrm, 89
+swprintf, 89
+swscanf, 89
+#system, 89		-- POSIX thread cancellation point
+tan, 89
+tanh, 89
+time, 89
+#tmpfile, 89		-- POSIX thread cancellation point
+#tmpnam, 89		-- POSIX thread cancellation point
+tolower, 89
+toupper, 89
+towctrans, 89
+towlower, 89
+towupper, 89
+#ungetc, 89		-- POSIX thread cancellation point
+#ungetwc, 89		-- POSIX thread cancellation point
+#vfprintf, 89		-- POSIX thread cancellation point
+#vfwprintf, 89		-- POSIX thread cancellation point
+#vprintf, 89		-- POSIX thread cancellation point
+vsprintf, 89
+vswprintf, 89
+#vwprintf, 89		-- POSIX thread cancellation point
+wcrtomb, 89
+wcscat, 89
+wcschr, 89
+wcscmp, 89
+wcscoll, 89
+wcscpy, 89
+wcscspn, 89
+wcsftime, 89
+wcslen, 89
+wcsncat, 89
+wcsncmp, 89
+wcsncpy, 89
+wcspbrk, 89
+wcsrchr, 89
+wcsrtombs, 89
+wcsspn, 89
+wcsstr, 89
+wcstod, 89
+wcstok, 89
+wcstol, 89
+wcstombs, 89
+wcstoul, 89
+wcsxfrm, 89
+wctob, 89
+wctomb, 89
+wctrans, 89
+wctype, 89
+wmemchr, 89
+wmemcmp, 89
+wmemcpy, 89
+wmemmove, 89
+wmemset, 89
+#wprintf, 89		-- POSIX thread cancellation point
+#wscanf, 89		-- POSIX thread cancellation point
+cacos, 99
+cacosf, 99
+cacosl, 99
+casin, 99
+casinf, 99
+casinl, 99
+catan, 99
+catanf, 99
+catanl, 99
+ccos, 99
+ccosf, 99
+ccosl, 99
+csin, 99
+csinf, 99
+csinl, 99
+ctan, 99
+ctanf, 99
+ctanl, 99
+cacosh, 99
+cacoshf, 99
+cacoshl, 99
+casinh, 99
+casinhf, 99
+casinhl, 99
+catanh, 99
+catanhf, 99
+catanhl, 99
+ccosh, 99
+ccoshf, 99
+ccoshl, 99
+csinh, 99
+csinhf, 99
+csinhl, 99
+ctanh, 99
+ctanhf, 99
+ctanhl, 99
+cexp, 99
+cexpf, 99
+cexpl, 99
+clog, 99
+clogf, 99
+clogl, 99
+cabs, 99
+cabsf, 99
+cabsl, 99
+cpow, 99
+cpowf, 99
+cpowl, 99
+csqrt, 99
+csqrtf, 99
+csqrtl, 99
+carg, 99
+cargf, 99
+cargl, 99
+cimag, 99
+cimagf, 99
+cimagl, 99
+conj, 99
+conjf, 99
+conjl, 99
+cproj, 99
+cprojf, 99
+cprojl, 99
+creal, 99
+crealf, 99
+creall, 99
+isblank, 99
+feclearexcept, 99
+fegetexceptflag, 99
+feraiseexcept, 99
+fesetexceptflag, 99
+fetestexcept, 99
+fegetround, 99
+fesetround, 99
+fegetenv, 99
+feholdexcept, 99
+fesetenv, 99
+feupdateenv, 99
+imaxabs, 99
+imaxdiv, 99
+strtoimax, 99
+strtoumax, 99
+wcstoimax, 99
+wcstoumax, 99
+acosf, 99
+acosl, 99
+asinf, 99
+asinl, 99
+atanf, 99
+atanl, 99
+atan2f, 99
+atan2l, 99
+cosf, 99
+cosl, 99
+sinf, 99
+sinl, 99
+tanf, 99
+tanl, 99
+acosh, 99
+acoshf, 99
+acoshl, 99
+asinh, 99
+asinhf, 99
+asinhl, 99
+atanh, 99
+atanhf, 99
+atanhl, 99
+coshf, 99
+coshl, 99
+sinhf, 99
+sinhl, 99
+tanhf, 99
+tanhl, 99
+expf, 99
+expl, 99
+exp2, 99
+exp2f, 99
+exp2l, 99
+expm1, 99
+expm1f, 99
+expm1l, 99
+frexpf, 99
+frexpl, 99
+ilogb, 99
+ilogbf, 99
+ilogbl, 99
+ldexpf, 99
+ldexpl, 99
+logf, 99
+logl, 99
+log10f, 99
+log10l, 99
+log1p, 99
+log1pf, 99
+log1pl, 99
+log2, 99
+log2f, 99
+log2l, 99
+logb, 99
+logbf, 99
+logbl, 99
+modff, 99
+modfl, 99
+scalbn, 99
+scalbnf, 99
+scalbnl, 99
+scalbln, 99
+scalblnf, 99
+scalblnl, 99
+cbrt, 99
+cbrtf, 99
+cbrtl, 99
+fabsf, 99
+fabsl, 99
+hypot, 99
+hypotf, 99
+hypotl, 99
+powf, 99
+powl, 99
+sqrtf, 99
+sqrtl, 99
+erf, 99
+erff, 99
+erfl, 99
+erfc, 99
+erfcf, 99
+erfcl, 99
+lgamma, 99
+lgammaf, 99
+lgammal, 99
+tgamma, 99
+tgammaf, 99
+tgammal, 99
+ceilf, 99
+ceill, 99
+floorf, 99
+floorl, 99
+nearbyint, 99
+nearbyintf, 99
+nearbyintl, 99
+rint, 99
+rintf, 99
+rintl, 99
+lrint, 99
+lrintf, 99
+lrintl, 99
+llrint, 99
+llrintf, 99
+llrintl, 99
+round, 99
+roundf, 99
+roundl, 99
+lround, 99
+lroundf, 99
+lroundl, 99
+llround, 99
+llroundf, 99
+llroundl, 99
+trunc, 99
+truncf, 99
+truncl, 99
+fmodf, 99
+fmodl, 99
+remainder, 99
+remainderf, 99
+remainderl, 99
+remquo, 99
+remquof, 99
+remquol, 99
+copysign, 99
+copysignf, 99
+copysignl, 99
+nan, 99
+nanf, 99
+nanl, 99
+nextafter, 99
+nextafterf, 99
+nextafterl, 99
+nexttoward, 99
+nexttowardf, 99
+nexttowardl, 99
+fdim, 99
+fdimf, 99
+fdiml, 99
+fmax, 99
+fmaxf, 99
+fmaxl, 99
+fmin, 99
+fminf, 99
+fminl, 99
+fma, 99
+fmaf, 99
+fmal, 99
+snprintf, 99
+#vfscanf, 99		-- POSIX thread cancellation point
+#vscanf, 99		-- POSIX thread cancellation point
+vsnprintf, 99
+vsscanf, 99
+atoll, 99
+strtof, 99
+strtold, 99
+strtoll, 99
+strtoull, 99
+_Exit, 99
+llabs, 99
+lldiv, 99
+#vfwscanf, 99		-- POSIX thread cancellation point
+vswscanf, 99
+#vwscanf, 99		-- POSIX thread cancellation point
+wcstof, 99
+wcstold, 99
+wcstoll, 99
+wcstoull, 99
+iswblank, 99
+#atomic_thread_fence, 11	-- usually implemented as a macro
+#atomic_signal_fence, 11	-- usually implemented as a macro
+#atomic_flag_test_and_set, 11	-- usually implemented as a macro
+#atomic_flag_test_and_set_explicit, 11	-- usually implemented as a macro
+#atomic_flag_clear, 11		-- usually implemented as a macro
+#atomic_flag_clear_explicit, 11	-- usually implemented as a macro
+aligned_alloc, 11
+at_quick_exit, 11
+quick_exit, 11
+#call_once, 11		-- C11 threads
+#cnd_broadcast, 11	-- C11 threads
+#cnd_destroy, 11	-- C11 threads
+#cnd_init, 11		-- C11 threads
+#cnd_signal, 11		-- C11 threads
+#cnd_timedwait, 11	-- C11 threads
+#cnd_wait, 11		-- C11 threads
+#mtx_destroy, 11	-- C11 threads
+#mtx_init, 11		-- C11 threads
+#mtx_lock, 11		-- C11 threads
+#mtx_timedlock, 11	-- C11 threads
+#mtx_trylock, 11	-- C11 threads
+#mtx_unlock, 11		-- C11 threads
+#thrd_create, 11	-- C11 threads
+#thrd_current, 11	-- C11 threads
+#thrd_detach, 11	-- C11 threads
+#thrd_equal, 11		-- C11 threads
+#thrd_exit, 11		-- C11 threads
+#thrd_join, 11		-- C11 threads
+#thrd_sleep, 11		-- C11 threads
+#thrd_yield, 11		-- C11 threads
+#tss_create, 11		-- C11 threads
+#tss_delete, 11		-- C11 threads
+#tss_get, 11		-- C11 threads
+#tss_set, 11		-- C11 threads
+timespec_get, 11
+mbrtoc16, 11
+c16rtomb, 11
+mbrtoc32, 11
+c32rtomb, 11

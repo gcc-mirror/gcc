@@ -1,6 +1,8 @@
 /* Test builtins for MIPS MSA ASE instructions */
 /* { dg-do compile } */
-/* { dg-options "-mfp64 -mhard-float -mmsa" } */
+/* { dg-options "-mfp64 -mhard-float -mmsa -ffat-lto-objects" } */
+/* Because this test only uses dg-error, we need to guarantee assembly
+   generation ourselves by using -ffat-lto-objects. */
 
 #include <msa.h>
 

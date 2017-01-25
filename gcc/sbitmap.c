@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -202,6 +202,170 @@ bitmap_empty_p (const_sbitmap bmap)
   return true;
 }
 
+/* Clear COUNT bits from START in BMAP.  */
+
+void
+bitmap_clear_range (sbitmap bmap, unsigned int start, unsigned int count)
+{
+  if (count == 0)
+    return;
+
+  unsigned int start_word = start / SBITMAP_ELT_BITS;
+  unsigned int start_bitno = start % SBITMAP_ELT_BITS;
+
+  /* Clearing less than a full word, starting at the beginning of a word.  */
+  if (start_bitno == 0 && count < SBITMAP_ELT_BITS)
+    {
+      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << count) - 1;
+      bmap->elms[start_word] &= ~mask;
+      return;
+    }
+
+  unsigned int end_word = (start + count) / SBITMAP_ELT_BITS;
+  unsigned int end_bitno = (start + count) % SBITMAP_ELT_BITS;
+
+  /* Clearing starts somewhere in the middle of the first word.  Clear up to
+     the end of the first word or the end of the requested region, whichever
+     comes first.  */
+  if (start_bitno != 0)
+    {
+      unsigned int nbits = ((start_word == end_word)
+			    ? end_bitno - start_bitno
+			    : SBITMAP_ELT_BITS - start_bitno);
+      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << nbits) - 1;
+      mask <<= start_bitno;
+      bmap->elms[start_word] &= ~mask;
+      start_word++;
+      count -= nbits;
+    }
+
+  if (count == 0)
+    return;
+
+  /* Now clear words at a time until we hit a partial word.  */
+  unsigned int nwords = (end_word - start_word);
+  if (nwords)
+    {
+      memset (&bmap->elms[start_word], 0, nwords * sizeof (SBITMAP_ELT_TYPE));
+      count -= nwords * sizeof (SBITMAP_ELT_TYPE) * BITS_PER_UNIT;
+      start_word += nwords;
+    }
+
+  if (count == 0)
+    return;
+
+  /* Now handle residuals in the last word.  */
+  SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << count) - 1;
+  bmap->elms[start_word] &= ~mask;
+}
+
+/* Set COUNT bits from START in BMAP.  */
+void
+bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
+{
+  if (count == 0)
+    return;
+
+  unsigned int start_word = start / SBITMAP_ELT_BITS;
+  unsigned int start_bitno = start % SBITMAP_ELT_BITS;
+
+  /* Setting less than a full word, starting at the beginning of a word.  */
+  if (start_bitno == 0 && count < SBITMAP_ELT_BITS)
+    {
+      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << count) - 1;
+      bmap->elms[start_word] |= mask;
+      return;
+    }
+
+  unsigned int end_word = (start + count) / SBITMAP_ELT_BITS;
+  unsigned int end_bitno = (start + count) % SBITMAP_ELT_BITS;
+
+  /* Setting starts somewhere in the middle of the first word.  Set up to
+     the end of the first word or the end of the requested region, whichever
+     comes first.  */
+  if (start_bitno != 0)
+    {
+      unsigned int nbits = ((start_word == end_word)
+			    ? end_bitno - start_bitno
+			    : SBITMAP_ELT_BITS - start_bitno);
+      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << nbits) - 1;
+      mask <<= start_bitno;
+      bmap->elms[start_word] |= mask;
+      start_word++;
+      count -= nbits;
+    }
+
+  if (count == 0)
+    return;
+
+  /* Now set words at a time until we hit a partial word.  */
+  unsigned int nwords = (end_word - start_word);
+  if (nwords)
+    {
+      memset (&bmap->elms[start_word], 0xff,
+	      nwords * sizeof (SBITMAP_ELT_TYPE));
+      count -= nwords * sizeof (SBITMAP_ELT_TYPE) * BITS_PER_UNIT;
+      start_word += nwords;
+    }
+
+  if (count == 0)
+    return;
+
+  /* Now handle residuals in the last word.  */
+  SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << count) - 1;
+  bmap->elms[start_word] |= mask;
+}
+
+#if GCC_VERSION < 3400
+/* Table of number of set bits in a character, indexed by value of char.  */
+static const unsigned char popcount_table[] =
+{
+    0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8,
+};
+
+static unsigned long
+sbitmap_popcount (SBITMAP_ELT_TYPE a)
+{
+  unsigned long ret = 0;
+  unsigned i;
+
+  /* Just do this the table way for now  */
+  for (i = 0; i < HOST_BITS_PER_WIDEST_FAST_INT; i += 8)
+    ret += popcount_table[(a >> i) & 0xff];
+  return ret;
+}
+#endif
+
+/* Count and return the number of bits set in the bitmap BMAP.  */
+
+unsigned int
+bitmap_count_bits (const_sbitmap bmap)
+{
+  unsigned int count = 0;
+  for (unsigned int i = 0; i < bmap->size; i++)
+    if (bmap->elms[i])
+      {
+#if GCC_VERSION < 3400
+	count += sbitmap_popcount (bmap->elms[i]);
+#else
+# if HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG
+	count += __builtin_popcountl (bmap->elms[i]);
+# elif HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONGLONG
+	count += __builtin_popcountll (bmap->elms[i]);
+# else
+	count += __builtin_popcount (bmap->elms[i]);
+# endif
+#endif
+      }
+  return count;
+}
 
 /* Zero all elements in a bitmap.  */
 

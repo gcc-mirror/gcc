@@ -1,5 +1,5 @@
 /* Dwarf2 Call Frame Information helper routines.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2098,7 +2098,9 @@ dwarf2out_frame_debug (rtx_insn *insn)
 	handled_one = true;
 	break;
 
+      case REG_CFA_TOGGLE_RA_MANGLE:
       case REG_CFA_WINDOW_SAVE:
+	/* We overload both of these operations onto the same DWARF opcode.  */
 	dwarf2out_frame_debug_cfa_window_save ();
 	handled_one = true;
 	break;

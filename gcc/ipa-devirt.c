@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1628,7 +1628,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		      if (DECL_VIRTUAL_P (f1) != DECL_VIRTUAL_P (f2))
 			{
 			  warn_odr (t1, t2, f1, f2, warn, warned,
-				    G_("s definition that differs by virtual "
+				    G_("a definition that differs by virtual "
 				       "keyword in another translation unit"));
 			  return false;
 			}

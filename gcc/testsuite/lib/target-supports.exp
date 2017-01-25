@@ -1,4 +1,4 @@
-#   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -250,6 +250,20 @@ proc check_runtime {prop args} {
     return [check_cached_effective_target $prop {
 	eval [list check_runtime_nocache $prop] $args
     }]
+}
+
+# Return 1 if GCC was configured with $pattern.
+proc check_configured_with { pattern } {
+    global tool
+
+    set gcc_output [${tool}_target_compile "-v" "" "none" ""]
+    if { [ regexp "Configured with: \[^\n\]*$pattern" $gcc_output ] } {
+        verbose "Matched: $pattern" 2
+        return 1
+    }
+
+    verbose "Failed to match: $pattern" 2
+    return 0
 }
 
 ###############################
@@ -2746,6 +2760,26 @@ proc check_effective_target_dfprt { } {
     }]
 }
 
+proc check_effective_target_powerpc_popcntb_ok { } {
+    return [check_cached_effective_target powerpc_popcntb_ok {
+
+	# Disable on Darwin.
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    check_runtime_nocache powerpc_popcntb_ok {
+		volatile int r;
+		volatile int a = 0x12345678;
+		int main()
+		{
+		    asm volatile ("popcntb %0,%1" : "=r" (r) : "r" (a));
+		    return 0;
+		}
+	    } "-mcpu=power5"
+	}
+    }]
+}
+
 # Return 1 if the target supports executing DFP hardware instructions,
 # 0 otherwise.  Cache the result.
 
@@ -3795,6 +3829,12 @@ proc check_effective_target_arm_arch_v7ve_ok { } {
 
 proc add_options_for_arm_arch_v7ve { flags } {
     return "$flags -march=armv7ve"
+}
+
+# Return 1 if GCC was configured with --with-mode=
+proc check_effective_target_default_mode { } {
+
+    return [check_configured_with "with-mode="]
 }
 
 # Return 1 if this is an ARM target where -marm causes ARM to be
@@ -5712,6 +5752,9 @@ proc check_effective_target_vect_hw_misalign { } {
 	     || ([istarget mips*-*-*] && [et-is-effective-target mips_msa]) } {
 	  set et_vect_hw_misalign_saved($et_index) 1
 	}
+	if { [istarget arm*-*-*] } {
+	    set et_vect_hw_misalign_saved($et_index) [check_effective_target_arm_vect_no_misalign]
+	}
     }
     verbose "check_effective_target_vect_hw_misalign:\
 	     returning $et_vect_hw_misalign_saved($et_index)" 2
@@ -6138,7 +6181,8 @@ proc check_effective_target_vect_call_copysignf { } {
     } else {
 	set et_vect_call_copysignf_saved($et_index) 0
 	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
-	     || [istarget powerpc*-*-*] } {
+	     || [istarget powerpc*-*-*]
+	     || [istarget aarch64*-*-*] } {
 	   set et_vect_call_copysignf_saved($et_index) 1
 	}
     }
@@ -6765,6 +6809,17 @@ proc check_effective_target_newlib {} {
     }]
 }
 
+# Some newlib versions don't provide a frexpl and instead depend
+# on frexp to implement long double conversions in their printf-like
+# functions.  This leads to broken results.  Detect such versions here.
+
+proc check_effective_target_newlib_broken_long_double_io {} {
+  if { [is-effective-target newlib] && ![is-effective-target frexpl] } {
+	return 1
+  }
+  return 0
+}
+
 # Return true if this is NOT a Bionic target.
 
 proc check_effective_target_non_bionic {} {
@@ -7379,6 +7434,21 @@ proc check_effective_target_pow10 { } {
 	}
     } "-lm" ]
 }
+
+# Return 1 if frexpl function exists.
+
+proc check_effective_target_frexpl { } {
+    return [check_runtime frexpl {
+	#include <math.h>
+	int main () {
+	long double x;
+	int y;
+	x = frexpl (5.0, &y);
+	return 0;
+	}
+    } "-lm" ]
+}
+
 
 # Return 1 if issignaling function exists.
 proc check_effective_target_issignaling {} {
@@ -8192,4 +8262,79 @@ proc check_effective_target_store_merge { } {
     }
 
     return 0
+}
+
+# Return 1 if the target supports coprocessor instructions: cdp, ldc, stc, mcr and
+# mrc.
+proc check_effective_target_arm_coproc1_ok_nocache { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc1_ok assembly {
+	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 4
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc1_ok { } {
+    return [check_cached_effective_target arm_coproc1_ok \
+		check_effective_target_arm_coproc1_ok_nocache]
+}
+
+# Return 1 if the target supports all coprocessor instructions checked by
+# check_effective_target_arm_coproc1_ok in addition to the following: cdp2,
+# ldc2, ldc2l, stc2, stc2l, mcr2 and mrc2.
+proc check_effective_target_arm_coproc2_ok_nocache { } {
+    if { ![check_effective_target_arm_coproc1_ok] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc2_ok assembly {
+	#if __ARM_ARCH < 5
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc2_ok { } {
+    return [check_cached_effective_target arm_coproc2_ok \
+		check_effective_target_arm_coproc2_ok_nocache]
+}
+
+# Return 1 if the target supports all coprocessor instructions checked by
+# check_effective_target_arm_coproc2_ok in addition the following: mcrr and
+# mrrc.
+proc check_effective_target_arm_coproc3_ok_nocache { } {
+    if { ![check_effective_target_arm_coproc2_ok] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc3_ok assembly {
+	#if __ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__)
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc3_ok { } {
+    return [check_cached_effective_target arm_coproc3_ok \
+		check_effective_target_arm_coproc3_ok_nocache]
+}
+
+# Return 1 if the target supports all coprocessor instructions checked by
+# check_effective_target_arm_coproc3_ok in addition the following: mcrr2 and
+# mrcc2.
+proc check_effective_target_arm_coproc4_ok_nocache { } {
+    if { ![check_effective_target_arm_coproc3_ok] } {
+	return 0
+    }
+    return [check_no_compiler_messages_nocache arm_coproc4_ok assembly {
+	#if __ARM_ARCH < 6
+	#error FOO
+	#endif
+    }]
+}
+
+proc check_effective_target_arm_coproc4_ok { } {
+    return [check_cached_effective_target arm_coproc4_ok \
+		check_effective_target_arm_coproc4_ok_nocache]
 }

@@ -1,5 +1,5 @@
 /* Statement Analysis and Transformation for Vectorization
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -7731,7 +7731,8 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 {
   tree scalar_dest = NULL_TREE;
   tree vec_dest = NULL_TREE;
-  tree cond_expr, then_clause, else_clause;
+  tree cond_expr, cond_expr0 = NULL_TREE, cond_expr1 = NULL_TREE;
+  tree then_clause, else_clause;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree comp_vectype = NULL_TREE;
   tree vec_cond_lhs = NULL_TREE, vec_cond_rhs = NULL_TREE;
@@ -7741,7 +7742,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum vect_def_type dt, dts[4];
   int ncopies;
-  enum tree_code code;
+  enum tree_code code, cond_code, bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   stmt_vec_info prev_stmt_info = NULL;
   int i, j;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
@@ -7825,11 +7826,76 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   if (vec_cmp_type == NULL_TREE)
     return false;
 
+  cond_code = TREE_CODE (cond_expr);
+  if (!masked)
+    {
+      cond_expr0 = TREE_OPERAND (cond_expr, 0);
+      cond_expr1 = TREE_OPERAND (cond_expr, 1);
+    }
+
+  if (!masked && VECTOR_BOOLEAN_TYPE_P (comp_vectype))
+    {
+      /* Boolean values may have another representation in vectors
+	 and therefore we prefer bit operations over comparison for
+	 them (which also works for scalar masks).  We store opcodes
+	 to use in bitop1 and bitop2.  Statement is vectorized as
+	 BITOP2 (rhs1 BITOP1 rhs2) or rhs1 BITOP2 (BITOP1 rhs2)
+	 depending on bitop1 and bitop2 arity.  */
+      switch (cond_code)
+	{
+	case GT_EXPR:
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_AND_EXPR;
+	  break;
+	case GE_EXPR:
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_IOR_EXPR;
+	  break;
+	case LT_EXPR:
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_AND_EXPR;
+	  std::swap (cond_expr0, cond_expr1);
+	  break;
+	case LE_EXPR:
+	  bitop1 = BIT_NOT_EXPR;
+	  bitop2 = BIT_IOR_EXPR;
+	  std::swap (cond_expr0, cond_expr1);
+	  break;
+	case NE_EXPR:
+	  bitop1 = BIT_XOR_EXPR;
+	  break;
+	case EQ_EXPR:
+	  bitop1 = BIT_XOR_EXPR;
+	  bitop2 = BIT_NOT_EXPR;
+	  break;
+	default:
+	  return false;
+	}
+      cond_code = SSA_NAME;
+    }
+
   if (!vec_stmt)
     {
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
+      if (bitop1 != NOP_EXPR)
+	{
+	  machine_mode mode = TYPE_MODE (comp_vectype);
+	  optab optab;
+
+	  optab = optab_for_tree_code (bitop1, comp_vectype, optab_default);
+	  if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+	    return false;
+
+	  if (bitop2 != NOP_EXPR)
+	    {
+	      optab = optab_for_tree_code (bitop2, comp_vectype,
+					   optab_default);
+	      if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+		return false;
+	    }
+	}
       return expand_vec_cond_expr_p (vectype, comp_vectype,
-				     TREE_CODE (cond_expr));
+				     cond_code);
     }
 
   /* Transform.  */
@@ -7858,11 +7924,11 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 	      auto_vec<vec<tree>, 4> vec_defs;
 
 	      if (masked)
-		  ops.safe_push (cond_expr);
+		ops.safe_push (cond_expr);
 	      else
 		{
-		  ops.safe_push (TREE_OPERAND (cond_expr, 0));
-		  ops.safe_push (TREE_OPERAND (cond_expr, 1));
+		  ops.safe_push (cond_expr0);
+		  ops.safe_push (cond_expr1);
 		}
               ops.safe_push (then_clause);
               ops.safe_push (else_clause);
@@ -7886,17 +7952,15 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 		}
 	      else
 		{
-		  vec_cond_lhs =
-		    vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 0),
-						  stmt, comp_vectype);
-		  vect_is_simple_use (TREE_OPERAND (cond_expr, 0),
-				      loop_vinfo, &gtemp, &dts[0]);
+		  vec_cond_lhs
+		    = vect_get_vec_def_for_operand (cond_expr0,
+						    stmt, comp_vectype);
+		  vect_is_simple_use (cond_expr0, loop_vinfo, &gtemp, &dts[0]);
 
-		  vec_cond_rhs =
-		    vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 1),
-						  stmt, comp_vectype);
-		  vect_is_simple_use (TREE_OPERAND (cond_expr, 1),
-				      loop_vinfo, &gtemp, &dts[1]);
+		  vec_cond_rhs
+		    = vect_get_vec_def_for_operand (cond_expr1,
+						    stmt, comp_vectype);
+		  vect_is_simple_use (cond_expr1, loop_vinfo, &gtemp, &dts[1]);
 		}
 	      if (reduc_index == 1)
 		vec_then_clause = reduc_def;
@@ -7953,8 +8017,37 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 	  else
 	    {
 	      vec_cond_rhs = vec_oprnds1[i];
-	      vec_compare = build2 (TREE_CODE (cond_expr), vec_cmp_type,
-				    vec_cond_lhs, vec_cond_rhs);
+	      if (bitop1 == NOP_EXPR)
+		vec_compare = build2 (cond_code, vec_cmp_type,
+				      vec_cond_lhs, vec_cond_rhs);
+	      else
+		{
+		  new_temp = make_ssa_name (vec_cmp_type);
+		  if (bitop1 == BIT_NOT_EXPR)
+		    new_stmt = gimple_build_assign (new_temp, bitop1,
+						    vec_cond_rhs);
+		  else
+		    new_stmt
+		      = gimple_build_assign (new_temp, bitop1, vec_cond_lhs,
+					     vec_cond_rhs);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  if (bitop2 == NOP_EXPR)
+		    vec_compare = new_temp;
+		  else if (bitop2 == BIT_NOT_EXPR)
+		    {
+		      /* Instead of doing ~x ? y : z do x ? z : y.  */
+		      vec_compare = new_temp;
+		      std::swap (vec_then_clause, vec_else_clause);
+		    }
+		  else
+		    {
+		      vec_compare = make_ssa_name (vec_cmp_type);
+		      new_stmt
+			= gimple_build_assign (vec_compare, bitop2,
+					       vec_cond_lhs, new_temp);
+		      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		    }
+		}
 	    }
           new_temp = make_ssa_name (vec_dest);
           new_stmt = gimple_build_assign (new_temp, VEC_COND_EXPR,

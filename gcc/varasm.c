@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3295,6 +3295,10 @@ build_constant_desc (tree exp)
   rtl = gen_const_mem (TYPE_MODE (TREE_TYPE (exp)), symbol);
   set_mem_attributes (rtl, exp, 1);
   set_mem_alias_set (rtl, 0);
+
+  /* Putting EXP into the literal pool might have imposed a different
+     alignment which should be visible in the RTX as well.  */
+  set_mem_align (rtl, DECL_ALIGN (decl));
 
   /* We cannot share RTX'es in pool entries.
      Mark this piece of RTL as required for unsharing.  */

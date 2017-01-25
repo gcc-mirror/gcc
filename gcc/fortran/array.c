@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2563,7 +2563,7 @@ cleanup:
    characterizes the reference.  */
 
 gfc_array_ref *
-gfc_find_array_ref (gfc_expr *e)
+gfc_find_array_ref (gfc_expr *e, bool allow_null)
 {
   gfc_ref *ref;
 
@@ -2573,7 +2573,12 @@ gfc_find_array_ref (gfc_expr *e)
       break;
 
   if (ref == NULL)
-    gfc_internal_error ("gfc_find_array_ref(): No ref found");
+    {
+      if (allow_null)
+	return NULL;
+      else
+	gfc_internal_error ("gfc_find_array_ref(): No ref found");
+    }
 
   return &ref->u.ar;
 }
@@ -2581,18 +2586,16 @@ gfc_find_array_ref (gfc_expr *e)
 
 /* Find out if an array shape is known at compile time.  */
 
-int
+bool
 gfc_is_compile_time_shape (gfc_array_spec *as)
 {
-  int i;
-
   if (as->type != AS_EXPLICIT)
-    return 0;
+    return false;
 
-  for (i = 0; i < as->rank; i++)
+  for (int i = 0; i < as->rank; i++)
     if (!gfc_is_constant_expr (as->lower[i])
 	|| !gfc_is_constant_expr (as->upper[i]))
-      return 0;
+      return false;
 
-  return 1;
+  return true;
 }

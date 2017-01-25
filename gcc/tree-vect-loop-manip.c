@@ -1,5 +1,5 @@
 /* Vectorizer Specific Loop Manipulations
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -71,7 +71,7 @@ rename_use_op (use_operand_p op_p)
 }
 
 
-/* Renames the variables in basic block BB.  Allow renaming  of PHI argumnets
+/* Renames the variables in basic block BB.  Allow renaming  of PHI arguments
    on edges incoming from outer-block header if RENAME_FROM_OUTER_LOOP is
    true.  */
 
@@ -102,9 +102,25 @@ rename_variables_in_bb (basic_block bb, bool rename_from_outer_loop)
 
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      if (!flow_bb_inside_loop_p (loop, e->src)
-	  && (!rename_from_outer_loop || e->src != outer_loop->header))
-	continue;
+      if (!flow_bb_inside_loop_p (loop, e->src))
+	{
+	  if (!rename_from_outer_loop)
+	    continue;
+	  if (e->src != outer_loop->header)
+	    {
+	      if (outer_loop->inner->next)
+		{
+		  /* If outer_loop has 2 inner loops, allow there to
+		     be an extra basic block which decides which of the
+		     two loops to use using LOOP_VECTORIZED.  */
+		  if (!single_pred_p (e->src)
+		      || single_pred (e->src) != outer_loop->header)
+		    continue;
+		}
+	      else
+		continue;
+	    }
+	}
       for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
         rename_use_op (PHI_ARG_DEF_PTR_FROM_EDGE (gsi.phi (), e));

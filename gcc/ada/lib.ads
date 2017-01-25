@@ -302,7 +302,7 @@ package Lib is
    --      No_Name for the main unit.
 
    --    Fatal_Error
-   --      A flag that is initialized to None and gets set to Errorif a fatal
+   --      A flag that is initialized to None and gets set to Error if a fatal
    --      error occurs during the processing of a unit. A fatal error is one
    --      defined as serious enough to stop the next phase of the compiler
    --      from running (i.e. fatal error during parsing stops semantics,

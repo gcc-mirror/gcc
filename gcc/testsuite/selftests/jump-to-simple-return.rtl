@@ -1,0 +1,11 @@
+(function "jump_to_simple_return"
+  (insn-chain
+    (block 4
+      (edge-from entry (flags "FALLTHRU"))
+      (cjump_insn 1 (simple_return)
+        "../../src/gcc/testsuite/rtl.dg/test.c":4
+        (nil))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 4
+  ) ;; insn-chain
+) ;; function

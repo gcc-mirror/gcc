@@ -1,6 +1,6 @@
 ## Makefile for the VTV library.
 ##
-## Copyright (C) 2013-2015 Free Software Foundation, Inc.
+## Copyright (C) 2013-2017 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -28,7 +28,7 @@ endif
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = @DEFS@
 AM_CPPFLAGS = -I$(top_srcdir)/../include

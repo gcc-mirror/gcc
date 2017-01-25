@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2016 Free Software Foundation, Inc.
+ * Copyright (C) 2007-2017 Free Software Foundation, Inc.
  *
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -47,7 +47,7 @@
 #define bit_SSE		(1 << 25)
 #define bit_SSE2	(1 << 26)
 
-/* Extended Features */
+/* Extended Features (%eax == 0x80000001) */
 /* %ecx */
 #define bit_LAHF_LM	(1 << 0)
 #define bit_ABM		(1 << 5)
@@ -60,19 +60,18 @@
 #define bit_MWAITX      (1 << 29)
 
 /* %edx */
-#define bit_AVX5124VNNIW (1 << 2)
-#define bit_AVX5124FMAPS (1 << 3)
 #define bit_MMXEXT	(1 << 22)
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)
 #define bit_3DNOW	(1 << 31)
 
-/* %ebx.  */
+/* %ebx  */
 #define bit_CLZERO	(1 << 0)
 
 /* Extended Features (%eax == 7) */
 /* %ebx */
 #define bit_FSGSBASE	(1 << 0)
+#define bit_SGX (1 << 2)
 #define bit_BMI	(1 << 3)
 #define bit_HLE	(1 << 4)
 #define bit_AVX2	(1 << 5)
@@ -91,13 +90,18 @@
 #define bit_AVX512CD	(1 << 28)
 #define bit_SHA		(1 << 29)
 #define bit_AVX512BW	(1 << 30)
-#define bit_AVX512VL	(1 << 31)
+#define bit_AVX512VL	(1u << 31)
 
 /* %ecx */
 #define bit_PREFETCHWT1	  (1 << 0)
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
+#define bit_AVX512VPOPCNTDQ	(1 << 14)
+
+/* %edx */
+#define bit_AVX5124VNNIW (1 << 2)
+#define bit_AVX5124FMAPS (1 << 3)
 
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)

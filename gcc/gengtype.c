@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1607,7 +1607,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004-2016 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2017 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
@@ -1719,7 +1719,7 @@ open_base_files (void)
       "tree-dfa.h", "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
       "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
-      "ipa-prop.h", "ipa-inline.h", "dwarf2out.h", "omp-low.h", NULL
+      "ipa-prop.h", "ipa-inline.h", "dwarf2out.h", "omp-offload.h", NULL
     };
     const char *const *ifp;
     outf_p gtype_desc_c;

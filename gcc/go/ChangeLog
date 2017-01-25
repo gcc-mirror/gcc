@@ -1,3 +1,21 @@
+2017-01-11  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (conditional_expression): Add Bfunction parameter.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2016-12-16  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::expression_statement): Add Bfunction*
+	parameter.
+	(Gcc_backend::init_statement): Likewise.
+	(Gcc_backend::assignment_statement): Likewise.
+	(Gcc_backend::if_statement): Likewise.
+
 2016-12-06  Than McIntosh  <thanm@google.com>
 
 	* go-gcc.cc (Gcc_backend::var_expression): Add Varexpr_context
@@ -1332,7 +1350,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2016 Free Software Foundation, Inc.
+Copyright (C) 2010-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 ; Options for the Fortran 95 front end.
-; Copyright (C) 2003-2016 Free Software Foundation, Inc.
+; Copyright (C) 2003-2017 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -359,7 +359,7 @@ Fortran Joined
 
 faggressive-function-elimination
 Fortran Var(flag_aggressive_function_elimination)
-Eliminate multiple function invokations also for impure functions.
+Eliminate multiple function invocations also for impure functions.
 
 falign-commons
 Fortran Var(flag_align_commons) Init(1)
@@ -398,7 +398,7 @@ Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_
 -fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files.
 
 Enum
-Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianess value: %qs)
+Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianness value: %qs)
 
 EnumValue
 Enum(gfc_convert) String(big-endian) Value(GFC_FLAG_CONVERT_BIG)
@@ -487,6 +487,10 @@ Use f2c calling convention.
 ffixed-form
 Fortran RejectNegative
 Assume that the source file is fixed form.
+
+ftest-forall-temp
+Fortran Var(flag_test_forall_temp) Init(0)
+Force creation of temporary to test infrequently-executed forall code.
 
 finteger-4-integer-8
 Fortran RejectNegative Var(flag_integer4_kind,8)

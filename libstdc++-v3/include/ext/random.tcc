@@ -1,6 +1,6 @@
 // Random number extensions -*- C++ -*-
 
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -440,7 +440,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __param)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	  __aurng(__urng);
@@ -725,7 +726,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __p)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	while (__f != __t)
 	  {
@@ -799,7 +801,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __p)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	typename std::gamma_distribution<result_type>::param_type
 	  __pg(__p.mu(), __p.omega() / __p.mu());
@@ -863,7 +866,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __p)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	result_type __mu_val = __p.mu();
 	result_type __malphinv = -result_type(1) / __p.alpha();
@@ -953,7 +957,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __p)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	typename std::gamma_distribution<result_type>::param_type
 	  __p1(__p.lambda(), result_type(1) / __p.lambda()),
@@ -1024,7 +1029,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __p)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	result_type __dif = __p.b() - __p.a();
 	result_type __sum = __p.a() + __p.b();
@@ -1121,7 +1127,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __p)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	result_type __2q = result_type(2) * __p.q();
 	result_type __q2 = __p.q() * __p.q();
@@ -1196,7 +1203,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __param)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	while (__f != __t)
 	  *__f++ = this->operator()(__urng, __param);
@@ -1297,7 +1305,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __param)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	while (__f != __t)
 	  *__f++ = this->operator()(__urng, __param);
@@ -1403,7 +1412,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __param)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	while (__f != __t)
 	  *__f++ = this->operator()(__urng);
@@ -1481,7 +1491,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __p)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
+
 	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	  __aurng(__urng);
 
@@ -1643,7 +1655,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __param)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	while (__f != __t)
 	  *__f++ = this->operator()(__urng, __param);
@@ -1773,7 +1786,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _UniformRandomNumberGenerator& __urng,
 		      const param_type& __param)
       {
-	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    result_type>)
 
 	while (__f != __t)
 	  *__f++ = this->operator()(__urng, __param);

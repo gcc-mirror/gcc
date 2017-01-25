@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2016 Free Software Foundation, Inc.
+   Copyright (C) 2010-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -335,10 +335,6 @@ struct GTY(()) cp_parser {
   /* TRUE if we are presently parsing the body of a function, but not
      a local class.  */
   bool in_function_body;
-
-  /* TRUE if we are parsing a C++17 discarded statement (the non-taken branch
-     of an if constexpr).  */
-  bool in_discarded_stmt;
 
   /* Nonzero if we're processing a __transaction_atomic or
      __transaction_relaxed statement.  */

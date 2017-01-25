@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,8 +48,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "rtl-iter.h"
 #include "tree-chkp.h"
+#include "tree-vrp.h"
+#include "tree-ssanames.h"
 #include "rtl-chkp.h"
-
+#include "intl.h"
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
@@ -1181,6 +1183,315 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
       }
 }
 
+/* The limit set by -Walloc-larger-than=.  */
+static GTY(()) tree alloc_object_size_limit;
+
+/* Initialize ALLOC_OBJECT_SIZE_LIMIT based on the -Walloc-size-larger-than=
+   setting if the option is specified, or to the maximum object size if it
+   is not.  Return the initialized value.  */
+
+static tree
+alloc_max_size (void)
+{
+  if (!alloc_object_size_limit)
+    {
+      alloc_object_size_limit = TYPE_MAX_VALUE (ssizetype);
+
+      if (warn_alloc_size_limit)
+	{
+	  char *end = NULL;
+	  errno = 0;
+	  unsigned HOST_WIDE_INT unit = 1;
+	  unsigned HOST_WIDE_INT limit
+	    = strtoull (warn_alloc_size_limit, &end, 10);
+
+	  if (!errno)
+	    {
+	      if (end && *end)
+		{
+		  /* Numeric option arguments are at most INT_MAX.  Make it
+		     possible to specify a larger value by accepting common
+		     suffixes.  */
+		  if (!strcmp (end, "kB"))
+		    unit = 1000;
+		  else if (!strcasecmp (end, "KiB") || strcmp (end, "KB"))
+		    unit = 1024;
+		  else if (!strcmp (end, "MB"))
+		    unit = 1000LU * 1000;
+		  else if (!strcasecmp (end, "MiB"))
+		    unit = 1024LU * 1024;
+		  else if (!strcasecmp (end, "GB"))
+		    unit = 1000LU * 1000 * 1000;
+		  else if (!strcasecmp (end, "GiB"))
+		    unit = 1024LU * 1024 * 1024;
+		  else if (!strcasecmp (end, "TB"))
+		    unit = 1000LU * 1000 * 1000 * 1000;
+		  else if (!strcasecmp (end, "TiB"))
+		    unit = 1024LU * 1024 * 1024 * 1024;
+		  else if (!strcasecmp (end, "PB"))
+		    unit = 1000LU * 1000 * 1000 * 1000 * 1000;
+		  else if (!strcasecmp (end, "PiB"))
+		    unit = 1024LU * 1024 * 1024 * 1024 * 1024;
+		  else if (!strcasecmp (end, "EB"))
+		    unit = 1000LU * 1000 * 1000 * 1000 * 1000 * 1000;
+		  else if (!strcasecmp (end, "EiB"))
+		    unit = 1024LU * 1024 * 1024 * 1024 * 1024 * 1024;
+		  else
+		    unit = 0;
+		}
+
+	      if (unit)
+		alloc_object_size_limit
+		  = build_int_cst (ssizetype, limit * unit);
+	    }
+	}
+    }
+  return alloc_object_size_limit;
+}
+
+/* Return true when EXP's range can be determined and set RANGE[] to it
+   after adjusting it if necessary to make EXP a valid size argument to
+   an allocation function declared with attribute alloc_size (whose
+   argument may be signed), or to a string manipulation function like
+   memset.  */
+
+bool
+get_size_range (tree exp, tree range[2])
+{
+  if (tree_fits_uhwi_p (exp))
+    {
+      /* EXP is a constant.  */
+      range[0] = range[1] = exp;
+      return true;
+    }
+
+  wide_int min, max;
+  enum value_range_type range_type
+    = (TREE_CODE (exp) == SSA_NAME
+       ? get_range_info (exp, &min, &max) : VR_VARYING);
+
+  if (range_type == VR_VARYING)
+    {
+      /* No range information available.  */
+      range[0] = NULL_TREE;
+      range[1] = NULL_TREE;
+      return false;
+    }
+
+  tree exptype = TREE_TYPE (exp);
+  unsigned expprec = TYPE_PRECISION (exptype);
+  wide_int wzero = wi::zero (expprec);
+  wide_int wmaxval = wide_int (TYPE_MAX_VALUE (exptype));
+
+  bool signed_p = !TYPE_UNSIGNED (exptype);
+
+  if (range_type == VR_ANTI_RANGE)
+    {
+      if (signed_p)
+	{
+	  if (wi::les_p (max, wzero))
+	    {
+	      /* EXP is not in a strictly negative range.  That means
+		 it must be in some (not necessarily strictly) positive
+		 range which includes zero.  Since in signed to unsigned
+		 conversions negative values end up converted to large
+		 positive values, and otherwise they are not valid sizes,
+		 the resulting range is in both cases [0, TYPE_MAX].  */
+	      min = wzero;
+	      max = wmaxval;
+	    }
+	  else if (wi::les_p (min - 1, wzero))
+	    {
+	      /* EXP is not in a negative-positive range.  That means EXP
+		 is either negative, or greater than max.  Since negative
+		 sizes are invalid make the range [MAX + 1, TYPE_MAX].  */
+	      min = max + 1;
+	      max = wmaxval;
+	    }
+	  else
+	    {
+	      max = min - 1;
+	      min = wzero;
+	    }
+	}
+      else if (wi::eq_p (wzero, min - 1))
+	{
+	  /* EXP is unsigned and not in the range [1, MAX].  That means
+	     it's either zero or greater than MAX.  Even though 0 would
+	     normally be detected by -Walloc-zero set the range to
+	     [MAX, TYPE_MAX] so that when MAX is greater than the limit
+	     the whole range is diagnosed.  */
+	  min = max + 1;
+	  max = wmaxval;
+	}
+      else
+	{
+	  max = min - 1;
+	  min = wzero;
+	}
+    }
+
+  range[0] = wide_int_to_tree (exptype, min);
+  range[1] = wide_int_to_tree (exptype, max);
+
+  return true;
+}
+
+/* Diagnose a call EXP to function FN decorated with attribute alloc_size
+   whose argument numbers given by IDX with values given by ARGS exceed
+   the maximum object size or cause an unsigned oveflow (wrapping) when
+   multiplied.  When ARGS[0] is null the function does nothing.  ARGS[1]
+   may be null for functions like malloc, and non-null for those like
+   calloc that are decorated with a two-argument attribute alloc_size.  */
+
+void
+maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
+{
+  /* The range each of the (up to) two arguments is known to be in.  */
+  tree argrange[2][2] = { { NULL_TREE, NULL_TREE }, { NULL_TREE, NULL_TREE } };
+
+  /* Maximum object size set by -Walloc-size-larger-than= or SIZE_MAX / 2.  */
+  tree maxobjsize = alloc_max_size ();
+
+  location_t loc = EXPR_LOCATION (exp);
+
+  bool warned = false;
+
+  /* Validate each argument individually.  */
+  for (unsigned i = 0; i != 2 && args[i]; ++i)
+    {
+      if (TREE_CODE (args[i]) == INTEGER_CST)
+	{
+	  argrange[i][0] = args[i];
+	  argrange[i][1] = args[i];
+
+	  if (tree_int_cst_lt (args[i], integer_zero_node))
+	    {
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "%Kargument %i value %qE is negative",
+				   exp, idx[i] + 1, args[i]);
+	    }
+	  else if (integer_zerop (args[i]))
+	    {
+	      /* Avoid issuing -Walloc-zero for allocation functions other
+		 than __builtin_alloca that are declared with attribute
+		 returns_nonnull because there's no portability risk.  This
+		 avoids warning for such calls to libiberty's xmalloc and
+		 friends.
+		 Also avoid issuing the warning for calls to function named
+		 "alloca".  */
+	      if ((DECL_FUNCTION_CODE (fn) == BUILT_IN_ALLOCA
+		   && IDENTIFIER_LENGTH (DECL_NAME (fn)) != 6)
+		  || (DECL_FUNCTION_CODE (fn) != BUILT_IN_ALLOCA
+		      && !lookup_attribute ("returns_nonnull",
+					    TYPE_ATTRIBUTES (TREE_TYPE (fn)))))
+		warned = warning_at (loc, OPT_Walloc_zero,
+				     "%Kargument %i value is zero",
+				     exp, idx[i] + 1);
+	    }
+	  else if (tree_int_cst_lt (maxobjsize, args[i]))
+	    {
+	      /* G++ emits calls to ::operator new[](SIZE_MAX) in C++98
+		 mode and with -fno-exceptions as a way to indicate array
+		 size overflow.  There's no good way to detect C++98 here
+		 so avoid diagnosing these calls for all C++ modes.  */
+	      if (i == 0
+		  && !args[1]
+		  && lang_GNU_CXX ()
+		  && DECL_IS_OPERATOR_NEW (fn)
+		  && integer_all_onesp (args[i]))
+		continue;
+
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "%Kargument %i value %qE exceeds "
+				   "maximum object size %E",
+				   exp, idx[i] + 1, args[i], maxobjsize);
+	    }
+	}
+      else if (TREE_CODE (args[i]) == SSA_NAME
+	       && get_size_range (args[i], argrange[i]))
+	{
+	  /* Verify that the argument's range is not negative (including
+	     upper bound of zero).  */
+	  if (tree_int_cst_lt (argrange[i][0], integer_zero_node)
+	      && tree_int_cst_le (argrange[i][1], integer_zero_node))
+	    {
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "%Kargument %i range [%E, %E] is negative",
+				   exp, idx[i] + 1,
+				   argrange[i][0], argrange[i][1]);
+	    }
+	  else if (tree_int_cst_lt (maxobjsize, argrange[i][0]))
+	    {
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "%Kargument %i range [%E, %E] exceeds "
+				   "maximum object size %E",
+				   exp, idx[i] + 1,
+				   argrange[i][0], argrange[i][1],
+				   maxobjsize);
+	    }
+	}
+    }
+
+  if (!argrange[0])
+    return;
+
+  /* For a two-argument alloc_size, validate the product of the two
+     arguments if both of their values or ranges are known.  */
+  if (!warned && tree_fits_uhwi_p (argrange[0][0])
+      && argrange[1][0] && tree_fits_uhwi_p (argrange[1][0])
+      && !integer_onep (argrange[0][0])
+      && !integer_onep (argrange[1][0]))
+    {
+      /* Check for overflow in the product of a function decorated with
+	 attribute alloc_size (X, Y).  */
+      unsigned szprec = TYPE_PRECISION (size_type_node);
+      wide_int x = wi::to_wide (argrange[0][0], szprec);
+      wide_int y = wi::to_wide (argrange[1][0], szprec);
+
+      bool vflow;
+      wide_int prod = wi::umul (x, y, &vflow);
+
+      if (vflow)
+	warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+			     "%Kproduct %<%E * %E%> of arguments %i and %i "
+			     "exceeds %<SIZE_MAX%>",
+			     exp, argrange[0][0], argrange[1][0],
+			     idx[0] + 1, idx[1] + 1);
+      else if (wi::ltu_p (wi::to_wide (maxobjsize, szprec), prod))
+	warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+			     "%Kproduct %<%E * %E%> of arguments %i and %i "
+			     "exceeds maximum object size %E",
+			     exp, argrange[0][0], argrange[1][0],
+			     idx[0] + 1, idx[1] + 1,
+			     maxobjsize);
+
+      if (warned)
+	{
+	  /* Print the full range of each of the two arguments to make
+	     it clear when it is, in fact, in a range and not constant.  */
+	  if (argrange[0][0] != argrange [0][1])
+	    inform (loc, "argument %i in the range [%E, %E]",
+		    idx[0] + 1, argrange[0][0], argrange[0][1]);
+	  if (argrange[1][0] != argrange [1][1])
+	    inform (loc, "argument %i in the range [%E, %E]",
+		    idx[1] + 1, argrange[1][0], argrange[1][1]);
+	}
+    }
+
+  if (warned)
+    {
+      location_t fnloc = DECL_SOURCE_LOCATION (fn);
+
+      if (DECL_IS_BUILTIN (fn))
+	inform (loc,
+		"in a call to built-in allocation function %qD", fn);
+      else
+	inform (fnloc,
+		"in a call to allocation function %qD declared here", fn);
+    }
+}
+
 /* Issue an error if CALL_EXPR was flagged as requiring
    tall-call optimization.  */
 
@@ -1358,6 +1669,24 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   }
 
   bitmap_obstack_release (NULL);
+
+  /* Extract attribute alloc_size and if set, store the indices of
+     the corresponding arguments in ALLOC_IDX, and then the actual
+     argument(s) at those indices in ALLOC_ARGS.  */
+  int alloc_idx[2] = { -1, -1 };
+  if (tree alloc_size
+      = (fndecl ? lookup_attribute ("alloc_size",
+				    TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
+	 : NULL_TREE))
+    {
+      tree args = TREE_VALUE (alloc_size);
+      alloc_idx[0] = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+      if (TREE_CHAIN (args))
+	alloc_idx[1] = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+    }
+
+  /* Array for up to the two attribute alloc_size arguments.  */
+  tree alloc_args[] = { NULL_TREE, NULL_TREE };
 
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (argpos = 0; argpos < num_actuals; i--, argpos++)
@@ -1595,6 +1924,20 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
       targetm.calls.function_arg_advance (args_so_far, TYPE_MODE (type),
 					  type, argpos < n_named_args);
+
+      /* Store argument values for functions decorated with attribute
+	 alloc_size.  */
+      if (argpos == alloc_idx[0])
+	alloc_args[0] = args[i].tree_value;
+      else if (argpos == alloc_idx[1])
+	alloc_args[1] = args[i].tree_value;
+    }
+
+  if (alloc_args[0])
+    {
+      /* Check the arguments of functions decorated with attribute
+	 alloc_size.  */
+      maybe_warn_alloc_args_overflow (fndecl, exp, alloc_args, alloc_idx);
     }
 }
 

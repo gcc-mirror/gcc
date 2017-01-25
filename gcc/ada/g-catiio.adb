@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2014, AdaCore                     --
+--                     Copyright (C) 1999-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -500,7 +500,6 @@ package body GNAT.Calendar.Time_IO is
                when others =>
                   raise Picture_Error with
                     "unknown format character in picture string";
-
             end case;
 
             --  Skip past % and format character

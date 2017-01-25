@@ -1,8 +1,9 @@
-// { dg-options "-O2 -D_GLIBCXX_USE_CXX11_ABI" }
+// { dg-options "-O2" }
 // { dg-do run { target c++11 } }
 // { dg-require-normal-mode "" }
+// { dg-require-effective-target cxx11-abi }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -245,7 +245,9 @@ package body Prj.Dect is
 
    begin
       case Qualif is
-         when Aggregate | Aggregate_Library =>
+         when Aggregate
+            | Aggregate_Library
+         =>
             if        Name = Snames.Name_Languages
               or else Name = Snames.Name_Source_Files
               or else Name = Snames.Name_Source_List_File
@@ -449,38 +451,39 @@ package body Prj.Dect is
 
                if Token = Tok_At then
                   case Attribute_Kind_Of (Current_Attribute) is
-                  when Optional_Index_Associative_Array |
-                       Optional_Index_Case_Insensitive_Associative_Array =>
-                     Scan (In_Tree);
-                     Expect (Tok_Integer_Literal, "integer literal");
-
-                     if Token = Tok_Integer_Literal then
-
-                        --  Set the source index value from given literal
-
-                        declare
-                           Index : constant Int :=
-                                     UI_To_Int (Int_Literal_Value);
-                        begin
-                           if Index = 0 then
-                              Error_Msg
-                                (Flags, "index cannot be zero", Token_Ptr);
-                           else
-                              Set_Source_Index_Of
-                                (Attribute, In_Tree, To => Index);
-                           end if;
-                        end;
-
+                     when Optional_Index_Associative_Array
+                        | Optional_Index_Case_Insensitive_Associative_Array
+                     =>
                         Scan (In_Tree);
-                     end if;
+                        Expect (Tok_Integer_Literal, "integer literal");
 
-                  when others =>
-                     Error_Msg (Flags, "index not allowed here", Token_Ptr);
-                     Scan (In_Tree);
+                        if Token = Tok_Integer_Literal then
 
-                     if Token = Tok_Integer_Literal then
+                           --  Set the source index value from given literal
+
+                           declare
+                              Index : constant Int :=
+                                        UI_To_Int (Int_Literal_Value);
+                           begin
+                              if Index = 0 then
+                                 Error_Msg
+                                   (Flags, "index cannot be zero", Token_Ptr);
+                              else
+                                 Set_Source_Index_Of
+                                   (Attribute, In_Tree, To => Index);
+                              end if;
+                           end;
+
+                           Scan (In_Tree);
+                        end if;
+
+                     when others =>
+                        Error_Msg (Flags, "index not allowed here", Token_Ptr);
                         Scan (In_Tree);
-                     end if;
+
+                        if Token = Tok_Integer_Literal then
+                           Scan (In_Tree);
+                        end if;
                   end case;
                end if;
             end if;
@@ -1022,7 +1025,7 @@ package body Prj.Dect is
 
                      while Present (The_Variable)
                        and then Name_Of (The_Variable, In_Tree) /=
-                                Token_Name
+                                  Token_Name
                      loop
                         The_Variable := Next_Variable (The_Variable, In_Tree);
                      end loop;
@@ -1032,10 +1035,8 @@ package body Prj.Dect is
 
                      if No (The_Variable) then
                         Error_Msg
-                          (Flags,
-                           "a variable cannot be declared " &
-                           "for the first time here",
-                           Token_Ptr);
+                          (Flags, "a variable cannot be declared for the "
+                           & "first time here", Token_Ptr);
                      end if;
                   end;
                end if;
@@ -1051,7 +1052,6 @@ package body Prj.Dect is
                Set_Previous_Line_Node (Current_Declaration);
 
             when Tok_For =>
-
                Parse_Attribute_Declaration
                  (In_Tree           => In_Tree,
                   Attribute         => Current_Declaration,
@@ -1065,7 +1065,6 @@ package body Prj.Dect is
                Set_Previous_Line_Node (Current_Declaration);
 
             when Tok_Null =>
-
                Scan (In_Tree); --  past "null"
 
             when Tok_Package =>

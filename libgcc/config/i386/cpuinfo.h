@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -104,7 +104,8 @@ enum processor_features
   FEATURE_AVX512VBMI,
   FEATURE_AVX512IFMA,
   FEATURE_AVX5124VNNIW,
-  FEATURE_AVX5124FMAPS
+  FEATURE_AVX5124FMAPS,
+  FEATURE_AVX512VPOPCNTDQ
 };
 
 extern struct __processor_model

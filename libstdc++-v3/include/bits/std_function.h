@@ -1,6 +1,6 @@
 // Implementation of std::function -*- C++ -*-
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -268,41 +268,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ __functor._M_access<_Functor*>() = new _Functor(std::move(__f)); }
       };
 
-    template<typename _Functor>
-      class _Ref_manager : public _Base_manager<_Functor*>
-      {
-	typedef _Function_base::_Base_manager<_Functor*> _Base;
-
-      public:
-	static bool
-	_M_manager(_Any_data& __dest, const _Any_data& __source,
-		   _Manager_operation __op)
-	{
-	  switch (__op)
-	    {
-#if __cpp_rtti
-	    case __get_type_info:
-	      __dest._M_access<const type_info*>() = &typeid(_Functor);
-	      break;
-#endif
-	    case __get_functor_ptr:
-	      __dest._M_access<_Functor*>() = *_Base::_M_get_pointer(__source);
-	      return is_const<_Functor>::value;
-	      break;
-
-	    default:
-	      _Base::_M_manager(__dest, __source, __op);
-	    }
-	  return false;
-	}
-
-	static void
-	_M_init_functor(_Any_data& __functor, reference_wrapper<_Functor> __f)
-	{
-	  _Base::_M_init_functor(__functor, std::__addressof(__f.get()));
-	}
-      };
-
     _Function_base() : _M_manager(nullptr) { }
 
     ~_Function_base()
@@ -310,7 +275,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_manager)
 	_M_manager(_M_functor, _M_functor, __destroy_functor);
     }
-
 
     bool _M_empty() const { return !_M_manager; }
 
@@ -351,36 +315,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	(*_Base::_M_get_pointer(__functor))(
 	    std::forward<_ArgTypes>(__args)...);
-      }
-    };
-
-  template<typename _Res, typename _Functor, typename... _ArgTypes>
-    class _Function_handler<_Res(_ArgTypes...), reference_wrapper<_Functor> >
-    : public _Function_base::_Ref_manager<_Functor>
-    {
-      typedef _Function_base::_Ref_manager<_Functor> _Base;
-
-     public:
-      static _Res
-      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
-      {
-	return std::__invoke(**_Base::_M_get_pointer(__functor),
-			     std::forward<_ArgTypes>(__args)...);
-      }
-    };
-
-  template<typename _Functor, typename... _ArgTypes>
-    class _Function_handler<void(_ArgTypes...), reference_wrapper<_Functor> >
-    : public _Function_base::_Ref_manager<_Functor>
-    {
-      typedef _Function_base::_Ref_manager<_Functor> _Base;
-
-     public:
-      static void
-      _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
-      {
-	std::__invoke(**_Base::_M_get_pointer(__functor),
-		      std::forward<_ArgTypes>(__args)...);
       }
     };
 
@@ -456,8 +390,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
       private _Function_base
     {
-      typedef _Res _Signature_type(_ArgTypes...);
-
       template<typename _Func,
 	       typename _Res2 = typename result_of<_Func&(_ArgTypes...)>::type>
 	struct _Callable : __check_func_return_type<_Res2, _Res> { };
@@ -679,15 +611,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief Access the stored target function object.
        *
        *  @return Returns a pointer to the stored target function object,
-       *  if @c typeid(Functor).equals(target_type()); otherwise, a NULL
+       *  if @c typeid(_Functor).equals(target_type()); otherwise, a NULL
        *  pointer.
        *
-       * This function will not throw an %exception.
+       * This function does not throw exceptions.
+       *
+       * @{
        */
       template<typename _Functor>       _Functor* target() noexcept;
 
-      /// @overload
       template<typename _Functor> const _Functor* target() const noexcept;
+      // @}
 #endif
 
     private:
@@ -715,7 +649,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       function(_Functor __f)
       : _Function_base()
       {
-	typedef _Function_handler<_Signature_type, _Functor> _My_handler;
+	typedef _Function_handler<_Res(_ArgTypes...), _Functor> _My_handler;
 
 	if (_My_handler::_M_not_empty_function(__f))
 	  {
@@ -757,17 +691,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       function<_Res(_ArgTypes...)>::
       target() noexcept
       {
-	if (typeid(_Functor) == target_type() && _M_manager)
-	  {
-	    _Any_data __ptr;
-	    if (_M_manager(__ptr, _M_functor, __get_functor_ptr)
-		&& !is_const<_Functor>::value)
-	      return 0;
-	    else
-	      return __ptr._M_access<_Functor*>();
-	  }
-	else
-	  return 0;
+	const function* __const_this = this;
+	const _Functor* __func = __const_this->template target<_Functor>();
+	return const_cast<_Functor*>(__func);
       }
 
   template<typename _Res, typename... _ArgTypes>
@@ -783,7 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __ptr._M_access<const _Functor*>();
 	  }
 	else
-	  return 0;
+	  return nullptr;
       }
 #endif
 

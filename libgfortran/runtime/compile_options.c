@@ -1,5 +1,5 @@
 /* Handling of compile-time options that influence the library.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -151,21 +151,14 @@ set_options (int num, int options[])
     compile_options.allow_std = options[1];
   if (num >= 3)
     compile_options.pedantic = options[2];
-  /* options[3] is the removed -fdump-core option. Its place in the
-     options array is retained due to ABI compatibility. Remove when
-     bumping the library ABI.  */
+  if (num >= 4)
+    compile_options.backtrace = options[3];
   if (num >= 5)
-    compile_options.backtrace = options[4];
+    compile_options.sign_zero = options[4];
   if (num >= 6)
-    compile_options.sign_zero = options[5];
+    compile_options.bounds_check = options[5];
   if (num >= 7)
-    compile_options.bounds_check = options[6];
-  /* options[7] is the -frange-check option, which no longer affects
-     the library behavior; range checking is now always done when
-     parsing integers. Its place in the options array is retained due
-     to ABI compatibility. Remove when bumping the library ABI.  */
-  if (num >= 9)
-    compile_options.fpe_summary = options[8];
+    compile_options.fpe_summary = options[6];
 
 #ifndef LIBGFOR_MINIMAL
   /* If backtrace is required, we set signal handlers on the POSIX

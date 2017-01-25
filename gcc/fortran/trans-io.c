@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -2180,19 +2180,39 @@ get_dtio_proc (gfc_typespec * ts, gfc_code * code, gfc_symbol **dtio_sub)
       formatted = true;
     }
 
-  if (ts->type == BT_DERIVED)
-    derived = ts->u.derived;
-  else
+  if (ts->type == BT_CLASS)
     derived = ts->u.derived->components->ts.u.derived;
+  else
+    derived = ts->u.derived;
 
-  *dtio_sub = gfc_find_specific_dtio_proc (derived, last_dt == WRITE,
-					   formatted);
+  gfc_symtree *tb_io_st = gfc_find_typebound_dtio_proc (derived,
+						  last_dt == WRITE, formatted);
+  if (ts->type == BT_CLASS && tb_io_st)
+    {
+      // polymorphic DTIO call  (based on the dynamic type)
+      gfc_se se;
+      gfc_expr *expr = gfc_find_and_cut_at_last_class_ref (code->expr1);
+      gfc_add_vptr_component (expr);
+      gfc_add_component_ref (expr,
+			     tb_io_st->n.tb->u.generic->specific_st->name);
+      *dtio_sub = tb_io_st->n.tb->u.generic->specific->u.specific->n.sym;
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      gfc_conv_expr (&se, expr);
+      gfc_free_expr (expr);
+      return se.expr;
+    }
+  else
+    {
+      // non-polymorphic DTIO call (based on the declared type)
+      *dtio_sub = gfc_find_specific_dtio_proc (derived, last_dt == WRITE,
+					      formatted);
 
-  if (*dtio_sub)
-    return gfc_build_addr_expr (NULL, gfc_get_symbol_decl (*dtio_sub));
+      if (*dtio_sub)
+	return gfc_build_addr_expr (NULL, gfc_get_symbol_decl (*dtio_sub));
+    }
 
   return NULL_TREE;
-
 }
 
 /* Generate the call for a scalar transfer node.  */

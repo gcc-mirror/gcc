@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -637,6 +637,10 @@ struct mips_cpu_info {
 									\
       if (TARGET_CACHE_BUILTIN)						\
 	builtin_define ("__GCC_HAVE_BUILTIN_MIPS_CACHE");		\
+      if (!ISA_HAS_LXC1_SXC1)						\
+	builtin_define ("__mips_no_lxc1_sxc1");				\
+      if (!ISA_HAS_UNFUSED_MADD4 && !ISA_HAS_FUSED_MADD4)		\
+	builtin_define ("__mips_no_madd4");				\
     }									\
   while (0)
 
@@ -866,7 +870,9 @@ struct mips_cpu_info {
   {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}" }, \
   {"llsc", "%{!mllsc:%{!mno-llsc:-m%(VALUE)}}" }, \
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
-  {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" }
+  {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" },			\
+  {"lxc1-sxc1", "%{!mlxc1-sxc1:%{!mno-lxc1-sxc1:-m%(VALUE)}}" }, \
+  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" } \
 
 /* A spec that infers the:
    -mnan=2008 setting from a -mips argument,
@@ -967,19 +973,25 @@ struct mips_cpu_info {
 /* ISA supports instructions DMUL, DMULU, DMUH, DMUHU.  */
 #define ISA_HAS_R6DMUL		(TARGET_64BIT && mips_isa_rev >= 6)
 
+/* For Loongson, it is preferable to use the Loongson-specific division and
+   modulo instructions instead of the regular (D)DIV(U) instruction,
+   because the former are faster and can also have the effect of reducing
+   code size.  */
+#define ISA_AVOID_DIV_HILO	((TARGET_LOONGSON_2EF			\
+				  || TARGET_LOONGSON_3A)		\
+				 && !TARGET_MIPS16)
+
 /* ISA supports instructions DDIV and DDIVU. */
 #define ISA_HAS_DDIV		(TARGET_64BIT				\
 				 && !TARGET_MIPS5900			\
+				 && !ISA_AVOID_DIV_HILO			\
 				 && mips_isa_rev <= 5)
 
 /* ISA supports instructions DIV and DIVU.
    This is always true, but the macro is needed for ISA_HAS_<D>DIV
    in mips.md.  */
-#define ISA_HAS_DIV		(mips_isa_rev <= 5)
-
-#define ISA_HAS_DIV3		((TARGET_LOONGSON_2EF			\
-				  || TARGET_LOONGSON_3A)		\
-				 && !TARGET_MIPS16)
+#define ISA_HAS_DIV		(!ISA_AVOID_DIV_HILO			\
+				 && mips_isa_rev <= 5)
 
 /* ISA supports instructions DIV, DIVU, MOD and MODU.  */
 #define ISA_HAS_R6DIV		(mips_isa_rev >= 6)
@@ -1030,7 +1042,8 @@ struct mips_cpu_info {
 
 /* ISA has floating-point indexed load and store instructions
    (LWXC1, LDXC1, SWXC1 and SDXC1).  */
-#define ISA_HAS_LXC1_SXC1	ISA_HAS_FP4
+#define ISA_HAS_LXC1_SXC1	(ISA_HAS_FP4				\
+				 && mips_lxc1_sxc1)
 
 /* ISA has paired-single instructions.  */
 #define ISA_HAS_PAIRED_SINGLE	((ISA_MIPS64				\
@@ -1056,11 +1069,16 @@ struct mips_cpu_info {
 
 /* ISA has 4 operand fused madd instructions of the form
    'd = [+-] (a * b [+-] c)'.  */
-#define ISA_HAS_FUSED_MADD4	TARGET_MIPS8000
+#define ISA_HAS_FUSED_MADD4	(mips_madd4				\
+				 && (TARGET_MIPS8000			\
+				     || TARGET_LOONGSON_3A))
 
 /* ISA has 4 operand unfused madd instructions of the form
    'd = [+-] (a * b [+-] c)'.  */
-#define ISA_HAS_UNFUSED_MADD4	(ISA_HAS_FP4 && !TARGET_MIPS8000)
+#define ISA_HAS_UNFUSED_MADD4	(mips_madd4				\
+				 && ISA_HAS_FP4				\
+				 && !TARGET_MIPS8000			\
+				 && !TARGET_LOONGSON_3A)
 
 /* ISA has 3 operand r6 fused madd instructions of the form
    'c = c [+-] (a * b)'.  */

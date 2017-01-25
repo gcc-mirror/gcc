@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1678,6 +1678,25 @@ div instruction.
 ARM target supports ARMv8-M Security Extensions, enabled by the @code{-mcmse}
 option.
 
+@item arm_coproc1_ok
+@anchor{arm_coproc1_ok}
+ARM target supports the following coprocessor instructions: @code{CDP},
+@code{LDC}, @code{STC}, @code{MCR} and @code{MRC}.
+
+@item arm_coproc2_ok
+@anchor{arm_coproc2_ok}
+ARM target supports all the coprocessor instructions also listed as supported
+in @ref{arm_coproc1_ok} in addition to the following: @code{CDP2}, @code{LDC2},
+@code{LDC2l}, @code{STC2}, @code{STC2l}, @code{MCR2} and @code{MRC2}.
+
+@item arm_coproc3_ok
+@anchor{arm_coproc3_ok}
+ARM target supports all the coprocessor instructions also listed as supported
+in @ref{arm_coproc2_ok} in addition the following: @code{MCRR} and @code{MRRC}.
+
+@item arm_coproc4_ok
+ARM target supports all the coprocessor instructions also listed as supported
+in @ref{arm_coproc3_ok} in addition the following: @code{MCRR2} and @code{MRRC2}.
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -1765,6 +1784,10 @@ PowerPC target supports @code{-mhtm}
 
 @item powerpc_p8vector_ok
 PowerPC target supports @code{-mpower8-vector}
+
+@item powerpc_popcntb_ok
+PowerPC target supports the @code{popcntb} instruction, indicating
+that this target supports @code{-mcpu=power5}.
 
 @item powerpc_ppu_ok
 PowerPC target supports @code{-mcpu=cell}.

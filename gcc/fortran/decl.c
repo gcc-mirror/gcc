@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -922,7 +922,8 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
       if (!t && e->ts.type == BT_UNKNOWN
 	  && e->symtree->n.sym->attr.untyped == 1
-	  && (e->symtree->n.sym->ns->seen_implicit_none == 1
+	  && (flag_implicit_none
+	      || e->symtree->n.sym->ns->seen_implicit_none == 1
 	      || e->symtree->n.sym->ns->parent->seen_implicit_none == 1))
 	{
 	  gfc_free_expr (e);
@@ -1119,12 +1120,12 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
     {
       /* Create a partially populated interface symbol to carry the
 	 characteristics of the procedure and the result.  */
-      sym->ts.interface = gfc_new_symbol (name, sym->ns);
-      gfc_add_type (sym->ts.interface, &(sym->ts),
+      sym->tlink = gfc_new_symbol (name, sym->ns);
+      gfc_add_type (sym->tlink, &(sym->ts),
 		    &gfc_current_locus);
-      gfc_copy_attr (&sym->ts.interface->attr, &sym->attr, NULL);
+      gfc_copy_attr (&sym->tlink->attr, &sym->attr, NULL);
       if (sym->attr.dimension)
-	sym->ts.interface->as = gfc_copy_array_spec (sym->as);
+	sym->tlink->as = gfc_copy_array_spec (sym->as);
 
       /* Ideally, at this point, a copy would be made of the formal
 	 arguments and their namespace. However, this does not appear
@@ -1133,12 +1134,12 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 
       if (sym->result && sym->result != sym)
 	{
-	  sym->ts.interface->result = sym->result;
+	  sym->tlink->result = sym->result;
 	  sym->result = NULL;
 	}
       else if (sym->result)
 	{
-	  sym->ts.interface->result = sym->ts.interface;
+	  sym->tlink->result = sym->tlink;
 	}
     }
   else if (sym && !sym->gfc_new
@@ -2539,7 +2540,6 @@ gfc_match_kind_spec (gfc_typespec *ts, bool kind_expr_only)
   gfc_expr *e;
   match m, n;
   char c;
-  const char *msg;
 
   m = MATCH_NO;
   n = MATCH_YES;
@@ -2597,11 +2597,8 @@ kind_expr:
       goto no_match;
     }
 
-  msg = gfc_extract_int (e, &ts->kind);
-
-  if (msg != NULL)
+  if (gfc_extract_int (e, &ts->kind, 1))
     {
-      gfc_error (msg);
       m = MATCH_ERROR;
       goto no_match;
     }
@@ -2699,7 +2696,7 @@ match_char_kind (int * kind, int * is_iso_c)
   locus where;
   gfc_expr *e;
   match m, n;
-  const char *msg;
+  bool fail;
 
   m = MATCH_NO;
   e = NULL;
@@ -2729,11 +2726,10 @@ match_char_kind (int * kind, int * is_iso_c)
       goto no_match;
     }
 
-  msg = gfc_extract_int (e, kind);
+  fail = gfc_extract_int (e, kind, 1);
   *is_iso_c = e->ts.is_iso_c;
-  if (msg != NULL)
+  if (fail)
     {
-      gfc_error (msg);
       m = MATCH_ERROR;
       goto no_match;
     }
@@ -3301,7 +3297,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 
       /* Use upper case to save the actual derived-type symbol.  */
       gfc_get_symbol (dt_name, NULL, &dt_sym);
-      dt_sym->name = gfc_get_string (sym->name);
+      dt_sym->name = gfc_get_string ("%s", sym->name);
       head = sym->generic;
       intr = gfc_get_interface ();
       intr->sym = dt_sym;
@@ -6063,7 +6059,6 @@ gfc_match_function_decl (void)
 	  sym->result = result;
 	}
 
-
       /* Warn if this procedure has the same name as an intrinsic.  */
       do_warn_intrinsic_shadow (sym, true);
 
@@ -7127,7 +7122,7 @@ attr_decl1 (void)
       if (current_attr.dimension && sym->value)
 	{
 	  gfc_error ("Dimensions specified for %s at %L after its "
-		     "initialisation", sym->name, &var_locus);
+		     "initialization", sym->name, &var_locus);
 	  m = MATCH_ERROR;
 	  goto cleanup;
 	}
@@ -8254,11 +8249,11 @@ gfc_match_submod_proc (void)
 
   /* Make sure that the result field is appropriately filled, even though
      the result symbol will be replaced later on.  */
-  if (sym->ts.interface && sym->ts.interface->attr.function)
+  if (sym->tlink && sym->tlink->attr.function)
     {
-      if (sym->ts.interface->result
-	  && sym->ts.interface->result != sym->ts.interface)
-	sym->result= sym->ts.interface->result;
+      if (sym->tlink->result
+	  && sym->tlink->result != sym->tlink)
+	sym->result= sym->tlink->result;
       else
 	sym->result = sym;
     }
@@ -8743,8 +8738,7 @@ gfc_match_structure_decl (void)
   /* Store the actual type symbol for the structure with an upper-case first
      letter (an invalid Fortran identifier).  */
 
-  sprintf (name, gfc_dt_upper_string (name));
-  if (!get_struct_decl (name, FL_STRUCT, &where, &sym))
+  if (!get_struct_decl (gfc_dt_upper_string (name), FL_STRUCT, &where, &sym))
     return MATCH_ERROR;
 
   gfc_new_block = sym;
@@ -8937,7 +8931,7 @@ gfc_match_derived_decl (void)
     {
       /* Use upper case to save the actual derived-type symbol.  */
       gfc_get_symbol (gfc_dt_upper_string (gensym->name), NULL, &sym);
-      sym->name = gfc_get_string (gensym->name);
+      sym->name = gfc_get_string ("%s", gensym->name);
       head = gensym->generic;
       intr = gfc_get_interface ();
       intr->sym = sym;
@@ -9357,7 +9351,7 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
 	      if (m == MATCH_ERROR)
 		goto error;
 	      if (m == MATCH_YES)
-		ba->pass_arg = gfc_get_string (arg);
+		ba->pass_arg = gfc_get_string ("%s", arg);
 	      gcc_assert ((m == MATCH_YES) == (ba->pass_arg != NULL));
 
 	      found_passing = true;

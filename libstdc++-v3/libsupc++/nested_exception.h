@@ -1,6 +1,6 @@
 // Nested Exception support header (nested_exception class) for -*- C++ -*-
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,10 +38,6 @@
 
 #include <bits/c++config.h>
 #include <bits/move.h>
-
-#if ATOMIC_INT_LOCK_FREE < 2
-#  error This platform does not support exception propagation.
-#endif
 
 extern "C++" {
 
@@ -115,7 +111,7 @@ namespace std
     inline void
     throw_with_nested(_Tp&& __t)
     {
-      using _Up = typename remove_reference<_Tp>::type;
+      using _Up = typename decay<_Tp>::type;
       using _CopyConstructible
 	= __and_<is_copy_constructible<_Up>, is_move_constructible<_Up>>;
       static_assert(_CopyConstructible::value,

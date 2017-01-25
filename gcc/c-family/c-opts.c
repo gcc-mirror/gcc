@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -744,7 +744,12 @@ c_common_post_options (const char **pfilename)
       in_fnames[0] = "";
     }
   else if (strcmp (in_fnames[0], "-") == 0)
-    in_fnames[0] = "";
+    {
+      if (pch_file)
+	error ("cannot use %<-%> as input filename for a precompiled header");
+
+      in_fnames[0] = "";
+    }
 
   if (out_fname == NULL || !strcmp (out_fname, "-"))
     out_fname = "";
@@ -919,6 +924,10 @@ c_common_post_options (const char **pfilename)
      artificial symbols are generated.  */
   if (!global_options_set.x_flag_new_inheriting_ctors)
     flag_new_inheriting_ctors = abi_version_at_least (11);
+
+  /* For GCC 7, only enable DR150 resolution by default if -std=c++1z.  */
+  if (!global_options_set.x_flag_new_ttp)
+    flag_new_ttp = (cxx_dialect >= cxx1z);
 
   if (cxx_dialect >= cxx11)
     {

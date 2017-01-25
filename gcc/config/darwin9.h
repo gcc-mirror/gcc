@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Apple Inc.
 
 This file is part of GCC.
@@ -28,9 +28,9 @@ along with GCC; see the file COPYING3.  If not see
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{v} \
-    %{g*:%{!gstabs*:%{!g0: -idsym}}}\
+    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|.f95|.f03|.f77|.for|.F|.F90|.F95|.F03: \
-    %{g*:%{!gstabs*:%{!g0: -dsym}}}}}}}}}}}"
+    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
 
 /* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
    yet generate dwarf.)  */
 
 #undef  ASM_DEBUG_SPEC
-#define ASM_DEBUG_SPEC  "%{g*:%{!g0:%{gstabs:--gstabs}}}"
+#define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{gstabs:--gstabs}}}"
 
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\

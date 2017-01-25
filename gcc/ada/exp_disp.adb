@@ -3448,9 +3448,9 @@ package body Exp_Disp is
                               (RTE (RE_Protected_Entry_Index), Loc),
                           Expression   => Make_Identifier (Loc, Name_uI)),
 
-                        Make_Identifier (Loc, Name_uP),   --  parameter block
-                        Make_Identifier (Loc, Name_uD),   --  delay
-                        Make_Identifier (Loc, Name_uM),   --  delay mode
+                        Make_Identifier (Loc, Name_uP),    --  parameter block
+                        Make_Identifier (Loc, Name_uD),    --  delay
+                        Make_Identifier (Loc, Name_uM),    --  delay mode
                         Make_Identifier (Loc, Name_uF)))); --  status flag
 
                when others =>
@@ -3612,6 +3612,10 @@ package body Exp_Disp is
    --           ...
    --     ...
    --     end;
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
 
    function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id is
       Loc : constant Source_Ptr := Sloc (Typ);
@@ -4367,34 +4371,9 @@ package body Exp_Disp is
 
       --  Local variables
 
-      Elab_Code          : constant List_Id := New_List;
-      Result             : constant List_Id := New_List;
-      Tname              : constant Name_Id := Chars (Typ);
-      AI                 : Elmt_Id;
-      AI_Tag_Elmt        : Elmt_Id;
-      AI_Tag_Comp        : Elmt_Id;
-      DT_Aggr_List       : List_Id;
-      DT_Constr_List     : List_Id;
-      DT_Ptr             : Entity_Id;
-      ITable             : Node_Id;
-      I_Depth            : Nat := 0;
-      Iface_Table_Node   : Node_Id;
-      Name_ITable        : Name_Id;
-      Nb_Predef_Prims    : Nat := 0;
-      Nb_Prim            : Nat := 0;
-      New_Node           : Node_Id;
-      Num_Ifaces         : Nat := 0;
-      Parent_Typ         : Entity_Id;
-      Prim               : Entity_Id;
-      Prim_Elmt          : Elmt_Id;
-      Prim_Ops_Aggr_List : List_Id;
-      Suffix_Index       : Int;
-      Typ_Comps          : Elist_Id;
-      Typ_Ifaces         : Elist_Id;
-      TSD_Aggr_List      : List_Id;
-      TSD_Tags_List      : List_Id;
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Elab_Code : constant List_Id := New_List;
+      Result    : constant List_Id := New_List;
+      Tname     : constant Name_Id := Chars (Typ);
 
       --  The following name entries are used by Make_DT to generate a number
       --  of entities related to a tagged type. These entities may be generated
@@ -4417,20 +4396,36 @@ package body Exp_Disp is
       Name_TSD          : constant Name_Id :=
                             New_External_Name (Tname, 'B', Suffix_Index => -1);
 
-      --  Entities built with above names
-
-      DT           : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, Name_DT);
-      Exname       : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, Name_Exname);
-      HT_Link      : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, Name_HT_Link);
-      Predef_Prims : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, Name_Predef_Prims);
-      SSD          : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, Name_SSD);
-      TSD          : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, Name_TSD);
+      AI                 : Elmt_Id;
+      AI_Tag_Elmt        : Elmt_Id;
+      AI_Tag_Comp        : Elmt_Id;
+      DT                 : Entity_Id;
+      DT_Aggr_List       : List_Id;
+      DT_Constr_List     : List_Id;
+      DT_Ptr             : Entity_Id;
+      Exname             : Entity_Id;
+      HT_Link            : Entity_Id;
+      ITable             : Node_Id;
+      I_Depth            : Nat := 0;
+      Iface_Table_Node   : Node_Id;
+      Mode               : Ghost_Mode_Type;
+      Name_ITable        : Name_Id;
+      Nb_Predef_Prims    : Nat := 0;
+      Nb_Prim            : Nat := 0;
+      New_Node           : Node_Id;
+      Num_Ifaces         : Nat := 0;
+      Parent_Typ         : Entity_Id;
+      Predef_Prims       : Entity_Id;
+      Prim               : Entity_Id;
+      Prim_Elmt          : Elmt_Id;
+      Prim_Ops_Aggr_List : List_Id;
+      SSD                : Entity_Id;
+      Suffix_Index       : Int;
+      Typ_Comps          : Elist_Id;
+      Typ_Ifaces         : Elist_Id;
+      TSD                : Entity_Id;
+      TSD_Aggr_List      : List_Id;
+      TSD_Tags_List      : List_Id;
 
    --  Start of processing for Make_DT
 
@@ -4441,7 +4436,7 @@ package body Exp_Disp is
       --  the mode now to ensure that any nodes generated during dispatch table
       --  creation are properly marked as Ghost.
 
-      Set_Ghost_Mode (Declaration_Node (Typ), Typ);
+      Set_Ghost_Mode (Typ, Mode);
 
       --  Handle cases in which there is no need to build the dispatch table
 
@@ -4449,19 +4444,17 @@ package body Exp_Disp is
         or else No (Access_Disp_Table (Typ))
         or else Is_CPP_Class (Typ)
       then
-         Ghost_Mode := Save_Ghost_Mode;
-         return Result;
+         goto Leave;
 
       elsif No_Run_Time_Mode then
          Error_Msg_CRT ("tagged types", Typ);
-         Ghost_Mode := Save_Ghost_Mode;
-         return Result;
+         goto Leave;
 
       elsif not RTE_Available (RE_Tag) then
          Append_To (Result,
            Make_Object_Declaration (Loc,
-             Defining_Identifier => Node (First_Elmt
-                                           (Access_Disp_Table (Typ))),
+             Defining_Identifier =>
+               Node (First_Elmt (Access_Disp_Table (Typ))),
              Object_Definition   => New_Occurrence_Of (RTE (RE_Tag), Loc),
              Constant_Present    => True,
              Expression =>
@@ -4470,8 +4463,7 @@ package body Exp_Disp is
 
          Analyze_List (Result, Suppress => All_Checks);
          Error_Msg_CRT ("tagged types", Typ);
-         Ghost_Mode := Save_Ghost_Mode;
-         return Result;
+         goto Leave;
       end if;
 
       --  Ensure that the value of Max_Predef_Prims defined in a-tags is
@@ -4481,17 +4473,22 @@ package body Exp_Disp is
       if RTE_Available (RE_Interface_Data) then
          if Max_Predef_Prims /= 15 then
             Error_Msg_N ("run-time library configuration error", Typ);
-            Ghost_Mode := Save_Ghost_Mode;
-            return Result;
+            goto Leave;
          end if;
       else
          if Max_Predef_Prims /= 9 then
             Error_Msg_N ("run-time library configuration error", Typ);
             Error_Msg_CRT ("tagged types", Typ);
-            Ghost_Mode := Save_Ghost_Mode;
-            return Result;
+            goto Leave;
          end if;
       end if;
+
+      DT           := Make_Defining_Identifier (Loc, Name_DT);
+      Exname       := Make_Defining_Identifier (Loc, Name_Exname);
+      HT_Link      := Make_Defining_Identifier (Loc, Name_HT_Link);
+      Predef_Prims := Make_Defining_Identifier (Loc, Name_Predef_Prims);
+      SSD          := Make_Defining_Identifier (Loc, Name_SSD);
+      TSD          := Make_Defining_Identifier (Loc, Name_TSD);
 
       --  Initialize Parent_Typ handling private types
 
@@ -4695,7 +4692,7 @@ package body Exp_Disp is
                Set_SCIL_Entity (New_Node, Typ);
                Set_SCIL_Node (Last (Result), New_Node);
 
-               goto Early_Exit_For_SCIL;
+               goto Leave_SCIL;
 
                --  Gnat2scil has its own implementation of dispatch tables,
                --  different than what is being implemented here. Generating
@@ -4772,7 +4769,7 @@ package body Exp_Disp is
                Set_SCIL_Entity (New_Node, Typ);
                Set_SCIL_Node (Last (Result), New_Node);
 
-               goto Early_Exit_For_SCIL;
+               goto Leave_SCIL;
 
                --  Gnat2scil has its own implementation of dispatch tables,
                --  different than what is being implemented here. Generating
@@ -6238,13 +6235,15 @@ package body Exp_Disp is
          end;
       end if;
 
-      <<Early_Exit_For_SCIL>>
+   <<Leave_SCIL>>
 
       --  Register the tagged type in the call graph nodes table
 
       Register_CG_Node (Typ);
 
-      Ghost_Mode := Save_Ghost_Mode;
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
+
       return Result;
    end Make_DT;
 

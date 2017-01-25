@@ -1,5 +1,5 @@
 /* Pointer Bounds Checker insrumentation pass.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich (ilya.enkovich@intel.com)
 
 This file is part of GCC.
@@ -3272,6 +3272,9 @@ chkp_may_narrow_to_field (tree field)
 {
   return DECL_SIZE (field) && TREE_CODE (DECL_SIZE (field)) == INTEGER_CST
     && tree_to_uhwi (DECL_SIZE (field)) != 0
+    && !(flag_chkp_flexible_struct_trailing_arrays
+	 && TREE_CODE(TREE_TYPE(field)) == ARRAY_TYPE
+	 && !DECL_CHAIN (field))
     && (!DECL_FIELD_OFFSET (field)
 	|| TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST)
     && (!DECL_FIELD_BIT_OFFSET (field)

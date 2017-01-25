@@ -628,9 +628,11 @@ package body Sem_Case is
 
          --  Otherwise the expression is not static, even if the bounds of the
          --  type are, or else there are missing alternatives. If both, the
-         --  additional information may be redundant but harmless.
+         --  additional information may be redundant but harmless. Examine
+         --  whether original node is an entity, because it may have been
+         --  constant-folded to a literal if value is known.
 
-         elsif not Is_Entity_Name (Expr) then
+         elsif not Is_Entity_Name (Original_Node (Expr)) then
             Error_Msg_N
               ("subtype of expression is not static, "
                & "alternatives must cover base type!", Expr);
@@ -1362,6 +1364,15 @@ package body Sem_Case is
          --  later entry into the choices table so that they can be sorted
          --  later on.
 
+         procedure Handle_Static_Predicate
+           (Typ : Entity_Id;
+            Lo  : Node_Id;
+            Hi  : Node_Id);
+         --  If the type of the alternative has predicates, we must examine
+         --  each subset of the predicate rather than the bounds of the type
+         --  itself. This is relevant when the choice is a subtype mark or a
+         --  subtype indication.
+
          -----------
          -- Check --
          -----------
@@ -1474,6 +1485,56 @@ package body Sem_Case is
             Num_Choices := Num_Choices + 1;
          end Check;
 
+         -----------------------------
+         -- Handle_Static_Predicate --
+         -----------------------------
+
+         procedure Handle_Static_Predicate
+           (Typ : Entity_Id;
+            Lo  : Node_Id;
+            Hi  : Node_Id)
+         is
+            P : Node_Id;
+            C : Node_Id;
+
+         begin
+            --  Loop through entries in predicate list, checking each entry.
+            --  Note that if the list is empty, corresponding to a False
+            --  predicate, then no choices are checked. If the choice comes
+            --  from a subtype indication, the given range may have bounds
+            --  that narrow the predicate choices themselves, so we must
+            --  consider only those entries within the range of the given
+            --  subtype indication..
+
+            P := First (Static_Discrete_Predicate (Typ));
+            while Present (P) loop
+
+               --  Check that part of the predicate choice is included in the
+               --  given bounds.
+
+               if Expr_Value (High_Bound (P)) >= Expr_Value (Lo)
+                 and then Expr_Value (Low_Bound (P)) <= Expr_Value (Hi)
+               then
+                  C := New_Copy (P);
+                  Set_Sloc (C, Sloc (Choice));
+
+                  if Expr_Value (Low_Bound (C)) < Expr_Value (Lo) then
+                     Set_Low_Bound (C, Lo);
+                  end if;
+
+                  if Expr_Value (High_Bound (C)) > Expr_Value (Hi) then
+                     Set_High_Bound (C, Hi);
+                  end if;
+
+                  Check (C, Low_Bound (C), High_Bound (C));
+               end if;
+
+               Next (P);
+            end loop;
+
+            Set_Has_SP_Choice (Alt);
+         end Handle_Static_Predicate;
+
       --  Start of processing for Check_Choices
 
       begin
@@ -1582,29 +1643,12 @@ package body Sem_Case is
                                  & "predicate as case alternative",
                                  Choice, E, Suggest_Static => True);
 
-                           --  Static predicate case
+                           --  Static predicate case. The bounds are those of
+                           --  the given subtype.
 
                            else
-                              declare
-                                 P : Node_Id;
-                                 C : Node_Id;
-
-                              begin
-                                 --  Loop through entries in predicate list,
-                                 --  checking each entry. Note that if the
-                                 --  list is empty, corresponding to a False
-                                 --  predicate, then no choices are checked.
-
-                                 P := First (Static_Discrete_Predicate (E));
-                                 while Present (P) loop
-                                    C := New_Copy (P);
-                                    Set_Sloc (C, Sloc (Choice));
-                                    Check (C, Low_Bound (C), High_Bound (C));
-                                    Next (P);
-                                 end loop;
-                              end;
-
-                              Set_Has_SP_Choice (Alt);
+                              Handle_Static_Predicate (E,
+                                Type_Low_Bound (E), Type_High_Bound (E));
                            end if;
 
                         --  Not predicated subtype case
@@ -1658,7 +1702,15 @@ package body Sem_Case is
                                  end if;
                               end if;
 
-                              Check (Choice, L, H);
+                              --  Check applicable predicate values within the
+                              --  bounds of the given range.
+
+                              if Has_Static_Predicate (E) then
+                                 Handle_Static_Predicate (E, L, H);
+
+                              else
+                                 Check (Choice, L, H);
+                              end if;
                            end if;
                         end;
                      end if;

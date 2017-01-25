@@ -1,4 +1,4 @@
-;; Copyright (C) 2012-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -120,7 +120,7 @@
 			      (eq_attr "type" "leave"))
 			 "znver1-double,znver1-ieu, znver1-store")
 
-;; Integer Instructions or General intructions
+;; Integer Instructions or General instructions
 ;; Multiplications
 ;; Reg operands
 (define_insn_reservation "znver1_imul" 3

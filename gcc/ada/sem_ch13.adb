@@ -59,10 +59,10 @@ with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
+with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Sinfo;    use Sinfo;
 with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
@@ -79,6 +79,10 @@ package body Sem_Ch13 is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Adjust_Record_For_Reverse_Bit_Order_Ada_95 (R : Entity_Id);
+   --  Helper routine providing the original (pre-AI95-0133) behavior for
+   --  Adjust_Record_For_Reverse_Bit_Order.
 
    procedure Alignment_Check_For_Size_Change (Typ : Entity_Id; Size : Uint);
    --  This routine is called after setting one of the sizes of type entity
@@ -348,375 +352,402 @@ package body Sem_Ch13 is
    -----------------------------------------
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id) is
-      Comp : Node_Id;
-      CC   : Node_Id;
+      Max_Machine_Scalar_Size : constant Uint :=
+                                  UI_From_Int
+                                    (Standard_Long_Long_Integer_Size);
+      --  We use this as the maximum machine scalar size
+
+      SSU : constant Uint := UI_From_Int (System_Storage_Unit);
+
+      CC     : Node_Id;
+      Comp   : Node_Id;
+      Num_CC : Natural;
 
    begin
-      --  Processing depends on version of Ada
+      --  Processing here used to depend on Ada version: the behavior was
+      --  changed by AI95-0133. However this AI is a Binding interpretation,
+      --  so we now implement it even in Ada 95 mode. The original behavior
+      --  from unamended Ada 95 is still available for compatibility under
+      --  debugging switch -gnatd.
 
-      --  For Ada 95, we just renumber bits within a storage unit. We do the
-      --  same for Ada 83 mode, since we recognize the Bit_Order attribute in
-      --  Ada 83, and are free to add this extension.
-
-      if Ada_Version < Ada_2005 then
-         Comp := First_Component_Or_Discriminant (R);
-         while Present (Comp) loop
-            CC := Component_Clause (Comp);
-
-            --  If component clause is present, then deal with the non-default
-            --  bit order case for Ada 95 mode.
-
-            --  We only do this processing for the base type, and in fact that
-            --  is important, since otherwise if there are record subtypes, we
-            --  could reverse the bits once for each subtype, which is wrong.
-
-            if Present (CC) and then Ekind (R) = E_Record_Type then
-               declare
-                  CFB : constant Uint    := Component_Bit_Offset (Comp);
-                  CSZ : constant Uint    := Esize (Comp);
-                  CLC : constant Node_Id := Component_Clause (Comp);
-                  Pos : constant Node_Id := Position (CLC);
-                  FB  : constant Node_Id := First_Bit (CLC);
-
-                  Storage_Unit_Offset : constant Uint :=
-                                          CFB / System_Storage_Unit;
-
-                  Start_Bit : constant Uint :=
-                                CFB mod System_Storage_Unit;
-
-               begin
-                  --  Cases where field goes over storage unit boundary
-
-                  if Start_Bit + CSZ > System_Storage_Unit then
-
-                     --  Allow multi-byte field but generate warning
-
-                     if Start_Bit mod System_Storage_Unit = 0
-                       and then CSZ mod System_Storage_Unit = 0
-                     then
-                        Error_Msg_N
-                          ("info: multi-byte field specified with "
-                           & "non-standard Bit_Order?V?", CLC);
-
-                        if Bytes_Big_Endian then
-                           Error_Msg_N
-                             ("\bytes are not reversed "
-                              & "(component is big-endian)?V?", CLC);
-                        else
-                           Error_Msg_N
-                             ("\bytes are not reversed "
-                              & "(component is little-endian)?V?", CLC);
-                        end if;
-
-                     --  Do not allow non-contiguous field
-
-                     else
-                        Error_Msg_N
-                          ("attempt to specify non-contiguous field "
-                           & "not permitted", CLC);
-                        Error_Msg_N
-                          ("\caused by non-standard Bit_Order "
-                           & "specified", CLC);
-                        Error_Msg_N
-                          ("\consider possibility of using "
-                           & "Ada 2005 mode here", CLC);
-                     end if;
-
-                  --  Case where field fits in one storage unit
-
-                  else
-                     --  Give warning if suspicious component clause
-
-                     if Intval (FB) >= System_Storage_Unit
-                       and then Warn_On_Reverse_Bit_Order
-                     then
-                        Error_Msg_N
-                          ("info: Bit_Order clause does not affect " &
-                           "byte ordering?V?", Pos);
-                        Error_Msg_Uint_1 :=
-                          Intval (Pos) + Intval (FB) /
-                          System_Storage_Unit;
-                        Error_Msg_N
-                          ("info: position normalized to ^ before bit " &
-                           "order interpreted?V?", Pos);
-                     end if;
-
-                     --  Here is where we fix up the Component_Bit_Offset value
-                     --  to account for the reverse bit order. Some examples of
-                     --  what needs to be done are:
-
-                     --    First_Bit .. Last_Bit     Component_Bit_Offset
-                     --      old          new          old       new
-
-                     --     0 .. 0       7 .. 7         0         7
-                     --     0 .. 1       6 .. 7         0         6
-                     --     0 .. 2       5 .. 7         0         5
-                     --     0 .. 7       0 .. 7         0         4
-
-                     --     1 .. 1       6 .. 6         1         6
-                     --     1 .. 4       3 .. 6         1         3
-                     --     4 .. 7       0 .. 3         4         0
-
-                     --  The rule is that the first bit is is obtained by
-                     --  subtracting the old ending bit from storage_unit - 1.
-
-                     Set_Component_Bit_Offset
-                       (Comp,
-                        (Storage_Unit_Offset * System_Storage_Unit) +
-                          (System_Storage_Unit - 1) -
-                          (Start_Bit + CSZ - 1));
-
-                     Set_Normalized_First_Bit
-                       (Comp,
-                        Component_Bit_Offset (Comp) mod
-                          System_Storage_Unit);
-                  end if;
-               end;
-            end if;
-
-            Next_Component_Or_Discriminant (Comp);
-         end loop;
+      if Ada_Version < Ada_2005 and then Debug_Flag_Dot_P then
+         Adjust_Record_For_Reverse_Bit_Order_Ada_95 (R);
+         return;
+      end if;
 
       --  For Ada 2005, we do machine scalar processing, as fully described In
       --  AI-133. This involves gathering all components which start at the
       --  same byte offset and processing them together. Same approach is still
       --  valid in later versions including Ada 2012.
 
-      else
-         declare
-            Max_Machine_Scalar_Size : constant Uint :=
-                                        UI_From_Int
-                                          (Standard_Long_Long_Integer_Size);
-            --  We use this as the maximum machine scalar size
+      --  This first loop through components does two things. First it deals
+      --  with the case of components with component clauses whose length is
+      --  greater than the maximum machine scalar size (either accepting them
+      --  or rejecting as needed). Second, it counts the number of components
+      --  with component clauses whose length does not exceed this maximum for
+      --  later processing.
 
-            Num_CC : Natural;
-            SSU    : constant Uint := UI_From_Int (System_Storage_Unit);
+      Num_CC := 0;
+      Comp   := First_Component_Or_Discriminant (R);
+      while Present (Comp) loop
+         CC := Component_Clause (Comp);
 
-         begin
-            --  This first loop through components does two things. First it
-            --  deals with the case of components with component clauses whose
-            --  length is greater than the maximum machine scalar size (either
-            --  accepting them or rejecting as needed). Second, it counts the
-            --  number of components with component clauses whose length does
-            --  not exceed this maximum for later processing.
-
-            Num_CC := 0;
-            Comp   := First_Component_Or_Discriminant (R);
-            while Present (Comp) loop
-               CC := Component_Clause (Comp);
-
-               if Present (CC) then
-                  declare
-                     Fbit : constant Uint := Static_Integer (First_Bit (CC));
-                     Lbit : constant Uint := Static_Integer (Last_Bit (CC));
-
-                  begin
-                     --  Case of component with last bit >= max machine scalar
-
-                     if Lbit >= Max_Machine_Scalar_Size then
-
-                        --  This is allowed only if first bit is zero, and
-                        --  last bit + 1 is a multiple of storage unit size.
-
-                        if Fbit = 0 and then (Lbit + 1) mod SSU = 0 then
-
-                           --  This is the case to give a warning if enabled
-
-                           if Warn_On_Reverse_Bit_Order then
-                              Error_Msg_N
-                                ("info: multi-byte field specified with "
-                                 & "non-standard Bit_Order?V?", CC);
-
-                              if Bytes_Big_Endian then
-                                 Error_Msg_N
-                                   ("\bytes are not reversed "
-                                    & "(component is big-endian)?V?", CC);
-                              else
-                                 Error_Msg_N
-                                   ("\bytes are not reversed "
-                                    & "(component is little-endian)?V?", CC);
-                              end if;
-                           end if;
-
-                        --  Give error message for RM 13.5.1(10) violation
-
-                        else
-                           Error_Msg_FE
-                             ("machine scalar rules not followed for&",
-                              First_Bit (CC), Comp);
-
-                           Error_Msg_Uint_1 := Lbit + 1;
-                           Error_Msg_Uint_2 := Max_Machine_Scalar_Size;
-                           Error_Msg_F
-                             ("\last bit + 1 (^) exceeds maximum machine "
-                              & "scalar size (^)",
-                              First_Bit (CC));
-
-                           if (Lbit + 1) mod SSU /= 0 then
-                              Error_Msg_Uint_1 := SSU;
-                              Error_Msg_F
-                                ("\and is not a multiple of Storage_Unit (^) "
-                                 & "(RM 13.5.1(10))",
-                                 First_Bit (CC));
-
-                           else
-                              Error_Msg_Uint_1 := Fbit;
-                              Error_Msg_F
-                                ("\and first bit (^) is non-zero "
-                                 & "(RM 13.4.1(10))",
-                                 First_Bit (CC));
-                           end if;
-                        end if;
-
-                     --  OK case of machine scalar related component clause,
-                     --  For now, just count them.
-
-                     else
-                        Num_CC := Num_CC + 1;
-                     end if;
-                  end;
-               end if;
-
-               Next_Component_Or_Discriminant (Comp);
-            end loop;
-
-            --  We need to sort the component clauses on the basis of the
-            --  Position values in the clause, so we can group clauses with
-            --  the same Position together to determine the relevant machine
-            --  scalar size.
-
-            Sort_CC : declare
-               Comps : array (0 .. Num_CC) of Entity_Id;
-               --  Array to collect component and discriminant entities. The
-               --  data starts at index 1, the 0'th entry is for the sort
-               --  routine.
-
-               function CP_Lt (Op1, Op2 : Natural) return Boolean;
-               --  Compare routine for Sort
-
-               procedure CP_Move (From : Natural; To : Natural);
-               --  Move routine for Sort
-
-               package Sorting is new GNAT.Heap_Sort_G (CP_Move, CP_Lt);
-
-               Start : Natural;
-               Stop  : Natural;
-               --  Start and stop positions in the component list of the set of
-               --  components with the same starting position (that constitute
-               --  components in a single machine scalar).
-
-               MaxL  : Uint;
-               --  Maximum last bit value of any component in this set
-
-               MSS   : Uint;
-               --  Corresponding machine scalar size
-
-               -----------
-               -- CP_Lt --
-               -----------
-
-               function CP_Lt (Op1, Op2 : Natural) return Boolean is
-               begin
-                  return Position (Component_Clause (Comps (Op1))) <
-                    Position (Component_Clause (Comps (Op2)));
-               end CP_Lt;
-
-               -------------
-               -- CP_Move --
-               -------------
-
-               procedure CP_Move (From : Natural; To : Natural) is
-               begin
-                  Comps (To) := Comps (From);
-               end CP_Move;
-
-            --  Start of processing for Sort_CC
+         if Present (CC) then
+            declare
+               Fbit : constant Uint := Static_Integer (First_Bit (CC));
+               Lbit : constant Uint := Static_Integer (Last_Bit (CC));
 
             begin
-               --  Collect the machine scalar relevant component clauses
+               --  Case of component with last bit >= max machine scalar
 
-               Num_CC := 0;
-               Comp   := First_Component_Or_Discriminant (R);
-               while Present (Comp) loop
-                  declare
-                     CC   : constant Node_Id := Component_Clause (Comp);
+               if Lbit >= Max_Machine_Scalar_Size then
 
-                  begin
-                     --  Collect only component clauses whose last bit is less
-                     --  than machine scalar size. Any component clause whose
-                     --  last bit exceeds this value does not take part in
-                     --  machine scalar layout considerations. The test for
-                     --  Error_Posted makes sure we exclude component clauses
-                     --  for which we already posted an error.
+                  --  This is allowed only if first bit is zero, and last bit
+                  --  + 1 is a multiple of storage unit size.
 
-                     if Present (CC)
-                       and then not Error_Posted (Last_Bit (CC))
-                       and then Static_Integer (Last_Bit (CC)) <
-                                                    Max_Machine_Scalar_Size
-                     then
-                        Num_CC := Num_CC + 1;
-                        Comps (Num_CC) := Comp;
+                  if Fbit = 0 and then (Lbit + 1) mod SSU = 0 then
+
+                     --  This is the case to give a warning if enabled
+
+                     if Warn_On_Reverse_Bit_Order then
+                        Error_Msg_N
+                          ("info: multi-byte field specified with "
+                           & "non-standard Bit_Order?V?", CC);
+
+                        if Bytes_Big_Endian then
+                           Error_Msg_N
+                             ("\bytes are not reversed "
+                              & "(component is big-endian)?V?", CC);
+                        else
+                           Error_Msg_N
+                             ("\bytes are not reversed "
+                              & "(component is little-endian)?V?", CC);
+                        end if;
                      end if;
-                  end;
 
-                  Next_Component_Or_Discriminant (Comp);
-               end loop;
+                  --  Give error message for RM 13.5.1(10) violation
 
-               --  Sort by ascending position number
+                  else
+                     Error_Msg_FE
+                       ("machine scalar rules not followed for&",
+                        First_Bit (CC), Comp);
 
-               Sorting.Sort (Num_CC);
+                     Error_Msg_Uint_1 := Lbit + 1;
+                     Error_Msg_Uint_2 := Max_Machine_Scalar_Size;
+                     Error_Msg_F
+                       ("\last bit + 1 (^) exceeds maximum machine scalar "
+                        & "size (^)", First_Bit (CC));
 
-               --  We now have all the components whose size does not exceed
-               --  the max machine scalar value, sorted by starting position.
-               --  In this loop we gather groups of clauses starting at the
-               --  same position, to process them in accordance with AI-133.
+                     if (Lbit + 1) mod SSU /= 0 then
+                        Error_Msg_Uint_1 := SSU;
+                        Error_Msg_F
+                          ("\and is not a multiple of Storage_Unit (^) "
+                           & "(RM 13.5.1(10))", First_Bit (CC));
 
-               Stop := 0;
-               while Stop < Num_CC loop
-                  Start := Stop + 1;
-                  Stop  := Start;
-                  MaxL  :=
-                    Static_Integer
-                      (Last_Bit (Component_Clause (Comps (Start))));
-                  while Stop < Num_CC loop
-                     if Static_Integer
-                          (Position (Component_Clause (Comps (Stop + 1)))) =
-                        Static_Integer
-                          (Position (Component_Clause (Comps (Stop))))
-                     then
-                        Stop := Stop + 1;
-                        MaxL :=
-                          UI_Max
-                            (MaxL,
-                             Static_Integer
-                               (Last_Bit
-                                  (Component_Clause (Comps (Stop)))));
                      else
-                        exit;
+                        Error_Msg_Uint_1 := Fbit;
+                        Error_Msg_F
+                          ("\and first bit (^) is non-zero "
+                           & "(RM 13.4.1(10))", First_Bit (CC));
                      end if;
-                  end loop;
+                  end if;
 
-                  --  Now we have a group of component clauses from Start to
-                  --  Stop whose positions are identical, and MaxL is the
-                  --  maximum last bit value of any of these components.
+               --  OK case of machine scalar related component clause. For now,
+               --  just count them.
 
-                  --  We need to determine the corresponding machine scalar
-                  --  size. This loop assumes that machine scalar sizes are
-                  --  even, and that each possible machine scalar has twice
-                  --  as many bits as the next smaller one.
+               else
+                  Num_CC := Num_CC + 1;
+               end if;
+            end;
+         end if;
 
-                  MSS := Max_Machine_Scalar_Size;
-                  while MSS mod 2 = 0
-                    and then (MSS / 2) >= SSU
-                    and then (MSS / 2) > MaxL
-                  loop
-                     MSS := MSS / 2;
-                  end loop;
+         Next_Component_Or_Discriminant (Comp);
+      end loop;
+
+      --  We need to sort the component clauses on the basis of the Position
+      --  values in the clause, so we can group clauses with the same Position
+      --  together to determine the relevant machine scalar size.
+
+      Sort_CC : declare
+         Comps : array (0 .. Num_CC) of Entity_Id;
+         --  Array to collect component and discriminant entities. The data
+         --  starts at index 1, the 0'th entry is for the sort routine.
+
+         function CP_Lt (Op1, Op2 : Natural) return Boolean;
+         --  Compare routine for Sort
+
+         procedure CP_Move (From : Natural; To : Natural);
+         --  Move routine for Sort
+
+         package Sorting is new GNAT.Heap_Sort_G (CP_Move, CP_Lt);
+
+         MaxL : Uint;
+         --  Maximum last bit value of any component in this set
+
+         MSS : Uint;
+         --  Corresponding machine scalar size
+
+         Start : Natural;
+         Stop  : Natural;
+         --  Start and stop positions in the component list of the set of
+         --  components with the same starting position (that constitute
+         --  components in a single machine scalar).
+
+         -----------
+         -- CP_Lt --
+         -----------
+
+         function CP_Lt (Op1, Op2 : Natural) return Boolean is
+         begin
+            return
+              Position (Component_Clause (Comps (Op1))) <
+              Position (Component_Clause (Comps (Op2)));
+         end CP_Lt;
+
+         -------------
+         -- CP_Move --
+         -------------
+
+         procedure CP_Move (From : Natural; To : Natural) is
+         begin
+            Comps (To) := Comps (From);
+         end CP_Move;
+
+      --  Start of processing for Sort_CC
+
+      begin
+         --  Collect the machine scalar relevant component clauses
+
+         Num_CC := 0;
+         Comp   := First_Component_Or_Discriminant (R);
+         while Present (Comp) loop
+            declare
+               CC   : constant Node_Id := Component_Clause (Comp);
+
+            begin
+               --  Collect only component clauses whose last bit is less than
+               --  machine scalar size. Any component clause whose last bit
+               --  exceeds this value does not take part in machine scalar
+               --  layout considerations. The test for Error_Posted makes sure
+               --  we exclude component clauses for which we already posted an
+               --  error.
+
+               if Present (CC)
+                 and then not Error_Posted (Last_Bit (CC))
+                 and then Static_Integer (Last_Bit (CC)) <
+                                              Max_Machine_Scalar_Size
+               then
+                  Num_CC := Num_CC + 1;
+                  Comps (Num_CC) := Comp;
+               end if;
+            end;
+
+            Next_Component_Or_Discriminant (Comp);
+         end loop;
+
+         --  Sort by ascending position number
+
+         Sorting.Sort (Num_CC);
+
+         --  We now have all the components whose size does not exceed the max
+         --  machine scalar value, sorted by starting position. In this loop we
+         --  gather groups of clauses starting at the same position, to process
+         --  them in accordance with AI-133.
+
+         Stop := 0;
+         while Stop < Num_CC loop
+            Start := Stop + 1;
+            Stop  := Start;
+            MaxL  :=
+              Static_Integer
+                (Last_Bit (Component_Clause (Comps (Start))));
+            while Stop < Num_CC loop
+               if Static_Integer
+                    (Position (Component_Clause (Comps (Stop + 1)))) =
+                  Static_Integer
+                    (Position (Component_Clause (Comps (Stop))))
+               then
+                  Stop := Stop + 1;
+                  MaxL :=
+                    UI_Max
+                      (MaxL,
+                       Static_Integer
+                         (Last_Bit
+                            (Component_Clause (Comps (Stop)))));
+               else
+                  exit;
+               end if;
+            end loop;
+
+            --  Now we have a group of component clauses from Start to Stop
+            --  whose positions are identical, and MaxL is the maximum last
+            --  bit value of any of these components.
+
+            --  We need to determine the corresponding machine scalar size.
+            --  This loop assumes that machine scalar sizes are even, and that
+            --  each possible machine scalar has twice as many bits as the next
+            --  smaller one.
+
+            MSS := Max_Machine_Scalar_Size;
+            while MSS mod 2 = 0
+              and then (MSS / 2) >= SSU
+              and then (MSS / 2) > MaxL
+            loop
+               MSS := MSS / 2;
+            end loop;
+
+            --  Here is where we fix up the Component_Bit_Offset value to
+            --  account for the reverse bit order. Some examples of what needs
+            --  to be done for the case of a machine scalar size of 8 are:
+
+            --    First_Bit .. Last_Bit     Component_Bit_Offset
+            --      old          new          old       new
+
+            --     0 .. 0       7 .. 7         0         7
+            --     0 .. 1       6 .. 7         0         6
+            --     0 .. 2       5 .. 7         0         5
+            --     0 .. 7       0 .. 7         0         4
+
+            --     1 .. 1       6 .. 6         1         6
+            --     1 .. 4       3 .. 6         1         3
+            --     4 .. 7       0 .. 3         4         0
+
+            --  The rule is that the first bit is obtained by subtracting the
+            --  old ending bit from machine scalar size - 1.
+
+            for C in Start .. Stop loop
+               declare
+                  Comp : constant Entity_Id := Comps (C);
+                  CC   : constant Node_Id   := Component_Clause (Comp);
+
+                  LB   : constant Uint := Static_Integer (Last_Bit (CC));
+                  NFB  : constant Uint := MSS - Uint_1 - LB;
+                  NLB  : constant Uint := NFB + Esize (Comp) - 1;
+                  Pos  : constant Uint := Static_Integer (Position (CC));
+
+               begin
+                  if Warn_On_Reverse_Bit_Order then
+                     Error_Msg_Uint_1 := MSS;
+                     Error_Msg_N
+                       ("info: reverse bit order in machine scalar of "
+                        & "length^?V?", First_Bit (CC));
+                     Error_Msg_Uint_1 := NFB;
+                     Error_Msg_Uint_2 := NLB;
+
+                     if Bytes_Big_Endian then
+                        Error_Msg_NE
+                          ("\big-endian range for component & is ^ .. ^?V?",
+                           First_Bit (CC), Comp);
+                     else
+                        Error_Msg_NE
+                          ("\little-endian range for component & is ^ .. ^?V?",
+                           First_Bit (CC), Comp);
+                     end if;
+                  end if;
+
+                  Set_Component_Bit_Offset (Comp, Pos * SSU + NFB);
+                  Set_Normalized_First_Bit (Comp, NFB mod SSU);
+               end;
+            end loop;
+         end loop;
+      end Sort_CC;
+   end Adjust_Record_For_Reverse_Bit_Order;
+
+   ------------------------------------------------
+   -- Adjust_Record_For_Reverse_Bit_Order_Ada_95 --
+   ------------------------------------------------
+
+   procedure Adjust_Record_For_Reverse_Bit_Order_Ada_95 (R : Entity_Id) is
+      CC   : Node_Id;
+      Comp : Node_Id;
+
+   begin
+      --  For Ada 95, we just renumber bits within a storage unit. We do the
+      --  same for Ada 83 mode, since we recognize the Bit_Order attribute in
+      --  Ada 83, and are free to add this extension.
+
+      Comp := First_Component_Or_Discriminant (R);
+      while Present (Comp) loop
+         CC := Component_Clause (Comp);
+
+         --  If component clause is present, then deal with the non-default
+         --  bit order case for Ada 95 mode.
+
+         --  We only do this processing for the base type, and in fact that
+         --  is important, since otherwise if there are record subtypes, we
+         --  could reverse the bits once for each subtype, which is wrong.
+
+         if Present (CC) and then Ekind (R) = E_Record_Type then
+            declare
+               CFB : constant Uint    := Component_Bit_Offset (Comp);
+               CSZ : constant Uint    := Esize (Comp);
+               CLC : constant Node_Id := Component_Clause (Comp);
+               Pos : constant Node_Id := Position (CLC);
+               FB  : constant Node_Id := First_Bit (CLC);
+
+               Storage_Unit_Offset : constant Uint :=
+                                       CFB / System_Storage_Unit;
+
+               Start_Bit : constant Uint :=
+                             CFB mod System_Storage_Unit;
+
+            begin
+               --  Cases where field goes over storage unit boundary
+
+               if Start_Bit + CSZ > System_Storage_Unit then
+
+                  --  Allow multi-byte field but generate warning
+
+                  if Start_Bit mod System_Storage_Unit = 0
+                    and then CSZ mod System_Storage_Unit = 0
+                  then
+                     Error_Msg_N
+                       ("info: multi-byte field specified with non-standard "
+                        & "Bit_Order?V?", CLC);
+
+                     if Bytes_Big_Endian then
+                        Error_Msg_N
+                          ("\bytes are not reversed "
+                           & "(component is big-endian)?V?", CLC);
+                     else
+                        Error_Msg_N
+                          ("\bytes are not reversed "
+                           & "(component is little-endian)?V?", CLC);
+                     end if;
+
+                  --  Do not allow non-contiguous field
+
+                  else
+                     Error_Msg_N
+                       ("attempt to specify non-contiguous field not "
+                        & "permitted", CLC);
+                     Error_Msg_N
+                       ("\caused by non-standard Bit_Order specified in "
+                        & "legacy Ada 95 mode", CLC);
+                  end if;
+
+               --  Case where field fits in one storage unit
+
+               else
+                  --  Give warning if suspicious component clause
+
+                  if Intval (FB) >= System_Storage_Unit
+                    and then Warn_On_Reverse_Bit_Order
+                  then
+                     Error_Msg_N
+                       ("info: Bit_Order clause does not affect byte "
+                        & "ordering?V?", Pos);
+                     Error_Msg_Uint_1 :=
+                       Intval (Pos) + Intval (FB) /
+                       System_Storage_Unit;
+                     Error_Msg_N
+                       ("info: position normalized to ^ before bit order "
+                        & "interpreted?V?", Pos);
+                  end if;
 
                   --  Here is where we fix up the Component_Bit_Offset value
                   --  to account for the reverse bit order. Some examples of
-                  --  what needs to be done for the case of a machine scalar
-                  --  size of 8 are:
+                  --  what needs to be done are:
 
                   --    First_Bit .. Last_Bit     Component_Bit_Offset
                   --      old          new          old       new
@@ -730,48 +761,23 @@ package body Sem_Ch13 is
                   --     1 .. 4       3 .. 6         1         3
                   --     4 .. 7       0 .. 3         4         0
 
-                  --  The rule is that the first bit is obtained by subtracting
-                  --  the old ending bit from machine scalar size - 1.
+                  --  The rule is that the first bit is is obtained by
+                  --  subtracting the old ending bit from storage_unit - 1.
 
-                  for C in Start .. Stop loop
-                     declare
-                        Comp : constant Entity_Id := Comps (C);
-                        CC   : constant Node_Id   := Component_Clause (Comp);
+                  Set_Component_Bit_Offset (Comp,
+                    (Storage_Unit_Offset * System_Storage_Unit) +
+                      (System_Storage_Unit - 1) -
+                      (Start_Bit + CSZ - 1));
 
-                        LB   : constant Uint := Static_Integer (Last_Bit (CC));
-                        NFB  : constant Uint := MSS - Uint_1 - LB;
-                        NLB  : constant Uint := NFB + Esize (Comp) - 1;
-                        Pos  : constant Uint := Static_Integer (Position (CC));
+                  Set_Normalized_First_Bit (Comp,
+                    Component_Bit_Offset (Comp) mod System_Storage_Unit);
+               end if;
+            end;
+         end if;
 
-                     begin
-                        if Warn_On_Reverse_Bit_Order then
-                           Error_Msg_Uint_1 := MSS;
-                           Error_Msg_N
-                             ("info: reverse bit order in machine " &
-                              "scalar of length^?V?", First_Bit (CC));
-                           Error_Msg_Uint_1 := NFB;
-                           Error_Msg_Uint_2 := NLB;
-
-                           if Bytes_Big_Endian then
-                              Error_Msg_NE
-                                ("\big-endian range for component "
-                                 & "& is ^ .. ^?V?", First_Bit (CC), Comp);
-                           else
-                              Error_Msg_NE
-                                ("\little-endian range for component"
-                                 & "& is ^ .. ^?V?", First_Bit (CC), Comp);
-                           end if;
-                        end if;
-
-                        Set_Component_Bit_Offset (Comp, Pos * SSU + NFB);
-                        Set_Normalized_First_Bit (Comp, NFB mod SSU);
-                     end;
-                  end loop;
-               end loop;
-            end Sort_CC;
-         end;
-      end if;
-   end Adjust_Record_For_Reverse_Bit_Order;
+         Next_Component_Or_Discriminant (Comp);
+      end loop;
+   end Adjust_Record_For_Reverse_Bit_Order_Ada_95;
 
    -------------------------------------
    -- Alignment_Check_For_Size_Change --
@@ -963,7 +969,9 @@ package body Sem_Ch13 is
 
                      --  Object_Size (also Size which also sets Object_Size)
 
-                     when Aspect_Object_Size | Aspect_Size =>
+                     when Aspect_Object_Size
+                        | Aspect_Size
+                     =>
                         if not Has_Size_Clause (E)
                           and then
                             No (Get_Attribute_Definition_Clause
@@ -1057,7 +1065,6 @@ package body Sem_Ch13 is
                      when others =>
                         pragma Assert (Aspect_Delay (A_Id) /= Rep_Aspect);
                         null;
-
                   end case;
                end if;
             end if;
@@ -1100,7 +1107,9 @@ package body Sem_Ch13 is
             Par := Nearest_Ancestor (E);
 
             case A_Id is
-               when Aspect_Atomic | Aspect_Shared =>
+               when Aspect_Atomic
+                  | Aspect_Shared
+               =>
                   if not Is_Atomic (Par) then
                      return;
                   end if;
@@ -1212,9 +1221,9 @@ package body Sem_Ch13 is
                   --  For aspects whose expression is an optional Boolean, make
                   --  the corresponding pragma at the freeze point.
 
-                  when Boolean_Aspects      |
-                       Library_Unit_Aspects =>
-
+                  when Boolean_Aspects
+                     | Library_Unit_Aspects
+                  =>
                      --  Aspects Export and Import require special handling.
                      --  Both are by definition Boolean and may benefit from
                      --  forward references, however their expressions are
@@ -1237,9 +1246,9 @@ package body Sem_Ch13 is
                   --  Special handling for aspects that don't correspond to
                   --  pragmas/attributes.
 
-                  when Aspect_Default_Value           |
-                       Aspect_Default_Component_Value =>
-
+                  when Aspect_Default_Value
+                     | Aspect_Default_Component_Value
+                  =>
                      --  Do not inherit aspect for anonymous base type of a
                      --  scalar or array type, because they apply to the first
                      --  subtype of the type, and will be processed when that
@@ -1257,10 +1266,11 @@ package body Sem_Ch13 is
                   --  Ditto for iterator aspects, because the corresponding
                   --  attributes may not have been analyzed yet.
 
-                  when Aspect_Constant_Indexing |
-                       Aspect_Variable_Indexing |
-                       Aspect_Default_Iterator  |
-                       Aspect_Iterator_Element  =>
+                  when Aspect_Constant_Indexing
+                     | Aspect_Default_Iterator
+                     | Aspect_Iterator_Element
+                     | Aspect_Variable_Indexing
+                  =>
                      Analyze (Expression (ASN));
 
                      if Etype (Expression (ASN)) = Any_Type then
@@ -1804,11 +1814,17 @@ package body Sem_Ch13 is
                     ("aspect must name a discriminant of current type", Expr);
 
                else
+                  --  Discriminant type be an anonymous access type or an
+                  --  anonymous access to subprogram.
+
+                  --  Missing synchronized types???
+
                   Disc := First_Discriminant (E);
                   while Present (Disc) loop
                      if Chars (Expr) = Chars (Disc)
-                       and then Ekind (Etype (Disc)) =
-                                  E_Anonymous_Access_Type
+                       and then Ekind_In (Etype (Disc),
+                                          E_Anonymous_Access_Subprogram_Type,
+                                          E_Anonymous_Access_Type)
                      then
                         Set_Has_Implicit_Dereference (E);
                         Set_Has_Implicit_Dereference (Disc);
@@ -1888,7 +1904,7 @@ package body Sem_Ch13 is
                Set_From_Aspect_Specification (Aitem);
             end Make_Aitem_Pragma;
 
-         --  Start of processing for Analyze_Aspect_Specifications
+         --  Start of processing for Analyze_One_Aspect
 
          begin
             --  Skip aspect if already analyzed, to avoid looping in some cases
@@ -1934,7 +1950,24 @@ package body Sem_Ch13 is
 
             Set_Analyzed (Aspect);
             Set_Entity (Aspect, E);
+
+            --  Build the reference to E that will be used in the built pragmas
+
             Ent := New_Occurrence_Of (E, Sloc (Id));
+
+            if A_Id = Aspect_Attach_Handler
+              or else A_Id = Aspect_Interrupt_Handler
+            then
+               --  Decorate the reference as comming from the sources and force
+               --  its reanalysis to generate the reference to E; required to
+               --  avoid reporting spurious warning on E as unreferenced entity
+               --  (because aspects are not fully analyzed).
+
+               Set_Comes_From_Source (Ent, Comes_From_Source (Id));
+               Set_Entity (Ent, Empty);
+
+               Analyze (Ent);
+            end if;
 
             --  Check for duplicate aspect. Note that the Comes_From_Source
             --  test allows duplicate Pre/Post's that we generate internally
@@ -2017,9 +2050,12 @@ package body Sem_Ch13 is
                   if A_Id in Boolean_Aspects and then No (Expr) then
                      Delay_Required := False;
 
-                  --  For non-Boolean aspects, don't delay if integer literal
+                  --  For non-Boolean aspects, don't delay if integer literal,
+                  --  unless the aspect is Alignment, which affects the
+                  --  freezing of an initialized object.
 
                   elsif A_Id not in Boolean_Aspects
+                    and then A_Id /= Aspect_Alignment
                     and then Present (Expr)
                     and then Nkind (Expr) = N_Integer_Literal
                   then
@@ -2047,31 +2083,32 @@ package body Sem_Ch13 is
                --  Case 1: Aspects corresponding to attribute definition
                --  clauses.
 
-               when Aspect_Address              |
-                    Aspect_Alignment            |
-                    Aspect_Bit_Order            |
-                    Aspect_Component_Size       |
-                    Aspect_Constant_Indexing    |
-                    Aspect_Default_Iterator     |
-                    Aspect_Dispatching_Domain   |
-                    Aspect_External_Tag         |
-                    Aspect_Input                |
-                    Aspect_Iterable             |
-                    Aspect_Iterator_Element     |
-                    Aspect_Machine_Radix        |
-                    Aspect_Object_Size          |
-                    Aspect_Output               |
-                    Aspect_Read                 |
-                    Aspect_Scalar_Storage_Order |
-                    Aspect_Size                 |
-                    Aspect_Small                |
-                    Aspect_Simple_Storage_Pool  |
-                    Aspect_Storage_Pool         |
-                    Aspect_Stream_Size          |
-                    Aspect_Value_Size           |
-                    Aspect_Variable_Indexing    |
-                    Aspect_Write                =>
-
+               when Aspect_Address
+                  | Aspect_Alignment
+                  | Aspect_Bit_Order
+                  | Aspect_Component_Size
+                  | Aspect_Constant_Indexing
+                  | Aspect_Default_Iterator
+                  | Aspect_Dispatching_Domain
+                  | Aspect_External_Tag
+                  | Aspect_Input
+                  | Aspect_Iterable
+                  | Aspect_Iterator_Element
+                  | Aspect_Machine_Radix
+                  | Aspect_Object_Size
+                  | Aspect_Output
+                  | Aspect_Read
+                  | Aspect_Scalar_Storage_Order
+                  | Aspect_Secondary_Stack_Size
+                  | Aspect_Simple_Storage_Pool
+                  | Aspect_Size
+                  | Aspect_Small
+                  | Aspect_Storage_Pool
+                  | Aspect_Stream_Size
+                  | Aspect_Value_Size
+                  | Aspect_Variable_Indexing
+                  | Aspect_Write
+               =>
                   --  Indexing aspects apply only to tagged type
 
                   if (A_Id = Aspect_Constant_Indexing
@@ -2152,10 +2189,10 @@ package body Sem_Ch13 is
 
                --  Linker_Section/Suppress/Unsuppress
 
-               when Aspect_Linker_Section |
-                    Aspect_Suppress       |
-                    Aspect_Unsuppress     =>
-
+               when Aspect_Linker_Section
+                  | Aspect_Suppress
+                  | Aspect_Unsuppress
+               =>
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
@@ -2196,10 +2233,10 @@ package body Sem_Ch13 is
 
                --  Dynamic_Predicate, Predicate, Static_Predicate
 
-               when Aspect_Dynamic_Predicate |
-                    Aspect_Predicate         |
-                    Aspect_Static_Predicate  =>
-
+               when Aspect_Dynamic_Predicate
+                  | Aspect_Predicate
+                  | Aspect_Static_Predicate
+               =>
                   --  These aspects apply only to subtypes
 
                   if not Is_Type (E) then
@@ -2234,6 +2271,13 @@ package body Sem_Ch13 is
 
                   if A_Id = Aspect_Dynamic_Predicate then
                      Set_Has_Dynamic_Predicate_Aspect (E);
+
+                     --  If the entity has a dynamic predicate, any inherited
+                     --  static predicate becomes dynamic as well, and the
+                     --  predicate function includes the conjunction of both.
+
+                     Set_Has_Static_Predicate_Aspect (E, False);
+
                   elsif A_Id = Aspect_Static_Predicate then
                      Set_Has_Static_Predicate_Aspect (E);
                   end if;
@@ -2308,8 +2352,9 @@ package body Sem_Ch13 is
 
                --  External_Name, Link_Name
 
-               when Aspect_External_Name |
-                    Aspect_Link_Name     =>
+               when Aspect_External_Name
+                  | Aspect_Link_Name
+               =>
                   Analyze_Aspect_External_Link_Name;
                   goto Continue;
 
@@ -2328,10 +2373,10 @@ package body Sem_Ch13 is
                --  to duplicate than to translate the aspect in the spec into
                --  a pragma in the declarative part of the body.
 
-               when Aspect_CPU                |
-                    Aspect_Interrupt_Priority |
-                    Aspect_Priority           =>
-
+               when Aspect_CPU
+                  | Aspect_Interrupt_Priority
+                  | Aspect_Priority
+               =>
                   if Nkind_In (N, N_Subprogram_Body,
                                   N_Subprogram_Declaration)
                   then
@@ -2428,7 +2473,7 @@ package body Sem_Ch13 is
                         end if;
                      end;
 
-                     --  Handling for these Aspects in subprograms is complete
+                     --  Handling for these aspects in subprograms is complete
 
                      goto Continue;
 
@@ -2466,9 +2511,9 @@ package body Sem_Ch13 is
 
                --  Invariant, Type_Invariant
 
-               when Aspect_Invariant      |
-                    Aspect_Type_Invariant =>
-
+               when Aspect_Invariant
+                  | Aspect_Type_Invariant
+               =>
                   --  Analysis of the pragma will verify placement legality:
                   --  an invariant must apply to a private type, or appear in
                   --  the private part of a spec and apply to a completion.
@@ -2822,6 +2867,19 @@ package body Sem_Ch13 is
 
                   goto Continue;
                end Initializes;
+
+               --  Max_Queue_Length
+
+               when Aspect_Max_Queue_Length =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Max_Queue_Length);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Obsolescent
 
@@ -3345,9 +3403,9 @@ package body Sem_Ch13 is
                --  generated yet because the evaluation of the boolean needs
                --  to be delayed till the freeze point.
 
-               when Boolean_Aspects      |
-                    Library_Unit_Aspects =>
-
+               when Boolean_Aspects
+                  | Library_Unit_Aspects
+               =>
                   Set_Is_Boolean_Aspect (Aspect);
 
                   --  Lock_Free aspect only apply to protected objects
@@ -4593,15 +4651,16 @@ package body Sem_Ch13 is
             --  affect legality (except possibly to be rejected because they
             --  are incompatible with the compilation target).
 
-            when Attribute_Alignment      |
-                 Attribute_Bit_Order      |
-                 Attribute_Component_Size |
-                 Attribute_Machine_Radix  |
-                 Attribute_Object_Size    |
-                 Attribute_Size           |
-                 Attribute_Small          |
-                 Attribute_Stream_Size    |
-                 Attribute_Value_Size     =>
+            when Attribute_Alignment
+               | Attribute_Bit_Order
+               | Attribute_Component_Size
+               | Attribute_Machine_Radix
+               | Attribute_Object_Size
+               | Attribute_Size
+               | Attribute_Small
+               | Attribute_Stream_Size
+               | Attribute_Value_Size
+            =>
                Kill_Rep_Clause (N);
                return;
 
@@ -4611,14 +4670,15 @@ package body Sem_Ch13 is
             --  legality, e.g. failing to provide a stream attribute for a type
             --  may make a program illegal.
 
-            when Attribute_External_Tag        |
-                 Attribute_Input               |
-                 Attribute_Output              |
-                 Attribute_Read                |
-                 Attribute_Simple_Storage_Pool |
-                 Attribute_Storage_Pool        |
-                 Attribute_Storage_Size        |
-                 Attribute_Write               =>
+            when Attribute_External_Tag
+               | Attribute_Input
+               | Attribute_Output
+               | Attribute_Read
+               | Attribute_Simple_Storage_Pool
+               | Attribute_Storage_Pool
+               | Attribute_Storage_Size
+               | Attribute_Write
+            =>
                null;
 
             --  We do not do anything here with address clauses, they will be
@@ -4848,14 +4908,27 @@ package body Sem_Ch13 is
                     ("\?j?use interrupt procedure instead", N);
                end if;
 
-            --  Case of an address clause for a controlled object which we
+            --  Case of an address clause for a controlled object, which we
             --  consider to be erroneous.
 
             elsif Is_Controlled (Etype (U_Ent))
               or else Has_Controlled_Component (Etype (U_Ent))
             then
                Error_Msg_NE
-                 ("??controlled object& must not be overlaid", Nam, U_Ent);
+                 ("??controlled object & must not be overlaid", Nam, U_Ent);
+               Error_Msg_N
+                 ("\??Program_Error will be raised at run time", Nam);
+               Insert_Action (Declaration_Node (U_Ent),
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Overlaid_Controlled_Object));
+               return;
+
+            --  Case of an address clause for a class-wide object, which is
+            --  considered erroneous.
+
+            elsif Is_Class_Wide_Type (Etype (U_Ent)) then
+               Error_Msg_NE
+                 ("??class-wide object & must not be overlaid", Nam, U_Ent);
                Error_Msg_N
                  ("\??Program_Error will be raised at run time", Nam);
                Insert_Action (Declaration_Node (U_Ent),
@@ -5111,8 +5184,7 @@ package body Sem_Ch13 is
 
          --  Bit_Order attribute definition clause
 
-         when Attribute_Bit_Order => Bit_Order : declare
-         begin
+         when Attribute_Bit_Order =>
             if not Is_Record_Type (U_Ent) then
                Error_Msg_N
                  ("Bit_Order can only be defined for record type", Nam);
@@ -5136,7 +5208,6 @@ package body Sem_Ch13 is
                   end if;
                end if;
             end if;
-         end Bit_Order;
 
          --------------------
          -- Component_Size --
@@ -5230,8 +5301,8 @@ package body Sem_Ch13 is
          -- CPU --
          ---------
 
-         when Attribute_CPU => CPU :
-         begin
+         when Attribute_CPU =>
+
             --  CPU attribute definition clause not allowed except from aspect
             --  specification.
 
@@ -5262,7 +5333,6 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end CPU;
 
          ----------------------
          -- Default_Iterator --
@@ -5324,8 +5394,8 @@ package body Sem_Ch13 is
          -- Dispatching_Domain --
          ------------------------
 
-         when Attribute_Dispatching_Domain => Dispatching_Domain :
-         begin
+         when Attribute_Dispatching_Domain =>
+
             --  Dispatching_Domain attribute definition clause not allowed
             --  except from aspect specification.
 
@@ -5356,14 +5426,12 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end Dispatching_Domain;
 
          ------------------
          -- External_Tag --
          ------------------
 
-         when Attribute_External_Tag => External_Tag :
-         begin
+         when Attribute_External_Tag =>
             if not Is_Tagged_Type (U_Ent) then
                Error_Msg_N ("should be a tagged type", Nam);
             end if;
@@ -5389,7 +5457,6 @@ package body Sem_Ch13 is
                     ("\??corresponding internal tag cannot be obtained", N);
                end if;
             end if;
-         end External_Tag;
 
          --------------------------
          -- Implicit_Dereference --
@@ -5414,8 +5481,8 @@ package body Sem_Ch13 is
          -- Interrupt_Priority --
          ------------------------
 
-         when Attribute_Interrupt_Priority => Interrupt_Priority :
-         begin
+         when Attribute_Interrupt_Priority =>
+
             --  Interrupt_Priority attribute definition clause not allowed
             --  except from aspect specification.
 
@@ -5453,7 +5520,6 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end Interrupt_Priority;
 
          --------------
          -- Iterable --
@@ -5589,8 +5655,8 @@ package body Sem_Ch13 is
          -- Priority --
          --------------
 
-         when Attribute_Priority => Priority :
-         begin
+         when Attribute_Priority =>
+
             --  Priority attribute definition clause not allowed except from
             --  aspect specification.
 
@@ -5625,7 +5691,6 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("attribute& cannot be set with definition clause", N);
             end if;
-         end Priority;
 
          ----------
          -- Read --
@@ -5641,8 +5706,7 @@ package body Sem_Ch13 is
 
          --  Scalar_Storage_Order attribute definition clause
 
-         when Attribute_Scalar_Storage_Order => Scalar_Storage_Order : declare
-         begin
+         when Attribute_Scalar_Storage_Order =>
             if not (Is_Record_Type (U_Ent) or else Is_Array_Type (U_Ent)) then
                Error_Msg_N
                  ("Scalar_Storage_Order can only be defined for record or "
@@ -5681,7 +5745,46 @@ package body Sem_Ch13 is
                Set_SSO_Set_Low_By_Default  (Base_Type (U_Ent), False);
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
-         end Scalar_Storage_Order;
+
+         --------------------------
+         -- Secondary_Stack_Size --
+         --------------------------
+
+         when Attribute_Secondary_Stack_Size =>
+
+            --  Secondary_Stack_Size attribute definition clause not allowed
+            --  except from aspect specification.
+
+            if From_Aspect_Specification (N) then
+               if not Is_Task_Type (U_Ent) then
+                  Error_Msg_N
+                    ("Secondary Stack Size can only be defined for task", Nam);
+
+               elsif Duplicate_Clause then
+                  null;
+
+               else
+                  Check_Restriction (No_Secondary_Stack, Expr);
+
+                  --  The expression must be analyzed in the special manner
+                  --  described in "Handling of Default and Per-Object
+                  --  Expressions" in sem.ads.
+
+                  --  The visibility to the discriminants must be restored
+
+                  Push_Scope_And_Install_Discriminants (U_Ent);
+                  Preanalyze_Spec_Expression (Expr, Any_Integer);
+                  Uninstall_Discriminants_And_Pop_Scope (U_Ent);
+
+                  if not Is_OK_Static_Expression (Expr) then
+                     Check_Restriction (Static_Storage_Size, Expr);
+                  end if;
+               end if;
+
+            else
+               Error_Msg_N
+                 ("attribute& cannot be set with definition clause", N);
+            end if;
 
          ----------
          -- Size --
@@ -5850,7 +5953,10 @@ package body Sem_Ch13 is
 
          --  Storage_Pool attribute definition clause
 
-         when Attribute_Storage_Pool | Attribute_Simple_Storage_Pool => declare
+         when Attribute_Simple_Storage_Pool
+            | Attribute_Storage_Pool
+         =>
+         Storage_Pool : declare
             Pool : Entity_Id;
             T    : Entity_Id;
 
@@ -5861,8 +5967,7 @@ package body Sem_Ch13 is
                   Nam);
                return;
 
-            elsif not
-              Ekind_In (U_Ent, E_Access_Type, E_General_Access_Type)
+            elsif not Ekind_In (U_Ent, E_Access_Type, E_General_Access_Type)
             then
                Error_Msg_N
                  ("storage pool can only be given for access types", Nam);
@@ -6007,7 +6112,7 @@ package body Sem_Ch13 is
                Error_Msg_N ("incorrect reference to a Storage Pool", Expr);
                return;
             end if;
-         end;
+         end Storage_Pool;
 
          ------------------
          -- Storage_Size --
@@ -7529,14 +7634,18 @@ package body Sem_Ch13 is
 
             --  And
 
-            when N_Op_And | N_And_Then =>
+            when N_And_Then
+               | N_Op_And
+            =>
                return Get_RList (Left_Opnd (Exp))
                         and
                       Get_RList (Right_Opnd (Exp));
 
             --  Or
 
-            when N_Op_Or | N_Or_Else =>
+            when N_Op_Or
+               | N_Or_Else
+            =>
                return Get_RList (Left_Opnd (Exp))
                         or
                       Get_RList (Right_Opnd (Exp));
@@ -8172,6 +8281,10 @@ package body Sem_Ch13 is
    --  the typPredicateM version of the function, in which any occurrence of a
    --  Raise_Expression is converted to "return False".
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
@@ -8452,7 +8565,7 @@ package body Sem_Ch13 is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Mode : Ghost_Mode_Type;
 
    --  Start of processing for Build_Predicate_Functions
 
@@ -8469,7 +8582,7 @@ package body Sem_Ch13 is
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the predicate functions are properly marked as Ghost.
 
-      Set_Ghost_Mode_From_Entity (Typ);
+      Set_Ghost_Mode (Typ, Mode);
 
       --  Prepare to construct predicate expression
 
@@ -8575,18 +8688,10 @@ package body Sem_Ch13 is
             FBody : Node_Id;
 
          begin
-
             --  The predicate function is shared between views of a type
 
             if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
                Set_Predicate_Function (Full_View (Typ), SId);
-            end if;
-
-            --  Mark the predicate function explicitly as Ghost because it does
-            --  not come from source.
-
-            if Ghost_Mode > None then
-               Set_Is_Ghost_Entity (SId);
             end if;
 
             --  Build function body
@@ -8614,7 +8719,7 @@ package body Sem_Ch13 is
                         Expression => Expr))));
 
             --  If declaration has not been analyzed yet, Insert declaration
-            --  before freeze node.  Insert body itself after freeze node.
+            --  before freeze node. Insert body itself after freeze node.
 
             if not Analyzed (FDecl) then
                Insert_Before_And_Analyze (N, FDecl);
@@ -8669,13 +8774,6 @@ package body Sem_Ch13 is
 
                if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
                   Set_Predicate_Function_M (Full_View (Typ), SId);
-               end if;
-
-               --  Mark the predicate function explicitly as Ghost because it
-               --  does not come from source.
-
-               if Ghost_Mode > None then
-                  Set_Is_Ghost_Entity (SId);
                end if;
 
                Spec :=
@@ -8830,57 +8928,61 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Mode (Mode);
    end Build_Predicate_Functions;
 
    ------------------------------------------
    -- Build_Predicate_Function_Declaration --
    ------------------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    function Build_Predicate_Function_Declaration
      (Typ : Entity_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Object_Entity : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('I'));
-
-      --  The formal parameter of the function
-
-      SId : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_External_Name (Chars (Typ), "Predicate"));
-
-      --  The entity for the function spec
-
-      FDecl : Node_Id;
-      Spec  : Node_Id;
+      Func_Decl : Node_Id;
+      Func_Id   : Entity_Id;
+      Mode      : Ghost_Mode_Type;
+      Spec      : Node_Id;
 
    begin
+      --  The related type may be subject to pragma Ghost. Set the mode now to
+      --  ensure that the predicate functions are properly marked as Ghost.
+
+      Set_Ghost_Mode (Typ, Mode);
+
+      Func_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Typ), "Predicate"));
+
       Spec :=
         Make_Function_Specification (Loc,
-          Defining_Unit_Name       => SId,
+          Defining_Unit_Name       => Func_Id,
           Parameter_Specifications => New_List (
             Make_Parameter_Specification (Loc,
-              Defining_Identifier => Object_Entity,
+              Defining_Identifier => Make_Temporary (Loc, 'I'),
               Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
           Result_Definition        =>
             New_Occurrence_Of (Standard_Boolean, Loc));
 
-      FDecl := Make_Subprogram_Declaration (Loc, Specification => Spec);
+      Func_Decl := Make_Subprogram_Declaration (Loc, Specification => Spec);
 
-      Set_Ekind (SId, E_Function);
-      Set_Etype (SId, Standard_Boolean);
-      Set_Is_Internal (SId);
-      Set_Is_Predicate_Function (SId);
-      Set_Predicate_Function (Typ, SId);
+      Set_Ekind (Func_Id, E_Function);
+      Set_Etype (Func_Id, Standard_Boolean);
+      Set_Is_Internal (Func_Id);
+      Set_Is_Predicate_Function (Func_Id);
+      Set_Predicate_Function (Typ, Func_Id);
 
-      Insert_After (Parent (Typ), FDecl);
+      Insert_After (Parent (Typ), Func_Decl);
+      Analyze (Func_Decl);
 
-      Analyze (FDecl);
+      Restore_Ghost_Mode (Mode);
 
-      return FDecl;
+      return Func_Decl;
    end Build_Predicate_Function_Declaration;
 
    -----------------------------------------
@@ -8896,10 +8998,12 @@ package body Sem_Ch13 is
       --  Expression to be analyzed at end of declarations
 
       Freeze_Expr : constant Node_Id := Expression (ASN);
-      --  Expression from call to Check_Aspect_At_Freeze_Point
+      --  Expression from call to Check_Aspect_At_Freeze_Point.
 
-      T : constant Entity_Id := Etype (Freeze_Expr);
-      --  Type required for preanalyze call
+      T : constant Entity_Id := Etype (Original_Node (Freeze_Expr));
+      --  Type required for preanalyze call. We use the original expression to
+      --  get the proper type, to prevent cascaded errors when the expression
+      --  is constant-folded.
 
       Err : Boolean;
       --  Set False if error
@@ -9083,9 +9187,9 @@ package body Sem_Ch13 is
 
          --  Aspects taking an optional boolean argument
 
-         when Boolean_Aspects      |
-              Library_Unit_Aspects =>
-
+         when Boolean_Aspects
+            | Library_Unit_Aspects
+         =>
             T := Standard_Boolean;
 
          --  Aspects corresponding to attribute definition clauses
@@ -9096,7 +9200,9 @@ package body Sem_Ch13 is
          when Aspect_Attach_Handler =>
             T := RTE (RE_Interrupt_ID);
 
-         when Aspect_Bit_Order | Aspect_Scalar_Storage_Order =>
+         when Aspect_Bit_Order
+            | Aspect_Scalar_Storage_Order
+         =>
             T := RTE (RE_Bit_Order);
 
          when Aspect_Convention =>
@@ -9130,11 +9236,16 @@ package body Sem_Ch13 is
          when Aspect_Link_Name =>
             T := Standard_String;
 
-         when Aspect_Priority | Aspect_Interrupt_Priority =>
+         when Aspect_Interrupt_Priority
+            | Aspect_Priority
+         =>
             T := Standard_Integer;
 
          when Aspect_Relative_Deadline =>
             T := RTE (RE_Time_Span);
+
+         when Aspect_Secondary_Stack_Size =>
+            T := Standard_Integer;
 
          when Aspect_Small =>
             T := Universal_Real;
@@ -9149,14 +9260,15 @@ package body Sem_Ch13 is
          when Aspect_Storage_Pool =>
             T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
 
-         when Aspect_Alignment      |
-              Aspect_Component_Size |
-              Aspect_Machine_Radix  |
-              Aspect_Object_Size    |
-              Aspect_Size           |
-              Aspect_Storage_Size   |
-              Aspect_Stream_Size    |
-              Aspect_Value_Size     =>
+         when Aspect_Alignment
+            | Aspect_Component_Size
+            | Aspect_Machine_Radix
+            | Aspect_Object_Size
+            | Aspect_Size
+            | Aspect_Storage_Size
+            | Aspect_Stream_Size
+            | Aspect_Value_Size
+         =>
             T := Any_Integer;
 
          when Aspect_Linker_Section =>
@@ -9168,23 +9280,25 @@ package body Sem_Ch13 is
          --  Special case, the expression of these aspects is just an entity
          --  that does not need any resolution, so just analyze.
 
-         when Aspect_Input      |
-              Aspect_Output     |
-              Aspect_Read       |
-              Aspect_Suppress   |
-              Aspect_Unsuppress |
-              Aspect_Warnings   |
-              Aspect_Write      =>
+         when Aspect_Input
+            | Aspect_Output
+            | Aspect_Read
+            | Aspect_Suppress
+            | Aspect_Unsuppress
+            | Aspect_Warnings
+            | Aspect_Write
+         =>
             Analyze (Expression (ASN));
             return;
 
          --  Same for Iterator aspects, where the expression is a function
          --  name. Legality rules are checked separately.
 
-         when Aspect_Constant_Indexing |
-              Aspect_Default_Iterator  |
-              Aspect_Iterator_Element  |
-              Aspect_Variable_Indexing =>
+         when Aspect_Constant_Indexing
+            | Aspect_Default_Iterator
+            | Aspect_Iterator_Element
+            | Aspect_Variable_Indexing
+         =>
             Analyze (Expression (ASN));
             return;
 
@@ -9221,11 +9335,12 @@ package body Sem_Ch13 is
 
          --  Invariant/Predicate take boolean expressions
 
-         when Aspect_Dynamic_Predicate |
-              Aspect_Invariant         |
-              Aspect_Predicate         |
-              Aspect_Static_Predicate  |
-              Aspect_Type_Invariant    =>
+         when Aspect_Dynamic_Predicate
+            | Aspect_Invariant
+            | Aspect_Predicate
+            | Aspect_Static_Predicate
+            | Aspect_Type_Invariant
+         =>
             T := Standard_Boolean;
 
          when Aspect_Predicate_Failure =>
@@ -9233,38 +9348,40 @@ package body Sem_Ch13 is
 
          --  Here is the list of aspects that don't require delay analysis
 
-         when Aspect_Abstract_State             |
-              Aspect_Annotate                   |
-              Aspect_Async_Readers              |
-              Aspect_Async_Writers              |
-              Aspect_Constant_After_Elaboration |
-              Aspect_Contract_Cases             |
-              Aspect_Default_Initial_Condition  |
-              Aspect_Depends                    |
-              Aspect_Dimension                  |
-              Aspect_Dimension_System           |
-              Aspect_Effective_Reads            |
-              Aspect_Effective_Writes           |
-              Aspect_Extensions_Visible         |
-              Aspect_Ghost                      |
-              Aspect_Global                     |
-              Aspect_Implicit_Dereference       |
-              Aspect_Initial_Condition          |
-              Aspect_Initializes                |
-              Aspect_Obsolescent                |
-              Aspect_Part_Of                    |
-              Aspect_Post                       |
-              Aspect_Postcondition              |
-              Aspect_Pre                        |
-              Aspect_Precondition               |
-              Aspect_Refined_Depends            |
-              Aspect_Refined_Global             |
-              Aspect_Refined_Post               |
-              Aspect_Refined_State              |
-              Aspect_SPARK_Mode                 |
-              Aspect_Test_Case                  |
-              Aspect_Unimplemented              |
-              Aspect_Volatile_Function          =>
+         when Aspect_Abstract_State
+            | Aspect_Annotate
+            | Aspect_Async_Readers
+            | Aspect_Async_Writers
+            | Aspect_Constant_After_Elaboration
+            | Aspect_Contract_Cases
+            | Aspect_Default_Initial_Condition
+            | Aspect_Depends
+            | Aspect_Dimension
+            | Aspect_Dimension_System
+            | Aspect_Effective_Reads
+            | Aspect_Effective_Writes
+            | Aspect_Extensions_Visible
+            | Aspect_Ghost
+            | Aspect_Global
+            | Aspect_Implicit_Dereference
+            | Aspect_Initial_Condition
+            | Aspect_Initializes
+            | Aspect_Max_Queue_Length
+            | Aspect_Obsolescent
+            | Aspect_Part_Of
+            | Aspect_Post
+            | Aspect_Postcondition
+            | Aspect_Pre
+            | Aspect_Precondition
+            | Aspect_Refined_Depends
+            | Aspect_Refined_Global
+            | Aspect_Refined_Post
+            | Aspect_Refined_State
+            | Aspect_SPARK_Mode
+            | Aspect_Test_Case
+            | Aspect_Unimplemented
+            | Aspect_Volatile_Function
+         =>
             raise Program_Error;
 
       end case;
@@ -9306,11 +9423,10 @@ package body Sem_Ch13 is
             if Present (Address_Clause (Entity ((Nod)))) then
                Error_Msg_NE
                  ("invalid address clause for initialized object &!",
-                           Nod, U_Ent);
-               Error_Msg_NE
-                 ("address for& cannot" &
-                    " depend on another address clause! (RM 13.1(22))!",
                   Nod, U_Ent);
+               Error_Msg_NE
+                 ("address for& cannot depend on another address clause! "
+                  & "(RM 13.1(22))!", Nod, U_Ent);
 
             elsif In_Same_Source_Unit (Entity (Nod), U_Ent)
               and then Sloc (U_Ent) < Sloc (Entity (Nod))
@@ -9340,9 +9456,8 @@ package body Sem_Ch13 is
                     ("invalid address clause for initialized object &!",
                      Nod, U_Ent);
                   Error_Msg_N
-                    ("\address cannot depend on component" &
-                     " of discriminated record (RM 13.1(22))!",
-                     Nod);
+                    ("\address cannot depend on component of discriminated "
+                     & "record (RM 13.1(22))!", Nod);
                else
                   Check_At_Constant_Address (Prefix (Nod));
                end if;
@@ -9373,10 +9488,14 @@ package body Sem_Ch13 is
          end if;
 
          case Nkind (Nod) is
-            when N_Empty | N_Error =>
+            when N_Empty
+               | N_Error
+            =>
                return;
 
-            when N_Identifier | N_Expanded_Name =>
+            when N_Expanded_Name
+               | N_Identifier
+            =>
                Ent := Entity (Nod);
 
                --  We need to look at the original node if it is different
@@ -9482,9 +9601,10 @@ package body Sem_Ch13 is
                   Set_Etype (Nod, Base_Type (Etype (Nod)));
                end if;
 
-            when N_Real_Literal      |
-                 N_String_Literal    |
-                 N_Character_Literal =>
+            when N_Character_Literal
+               | N_Real_Literal
+               | N_String_Literal
+            =>
                return;
 
             when N_Range =>
@@ -9533,17 +9653,21 @@ package body Sem_Ch13 is
             when N_Null =>
                return;
 
-            when N_Binary_Op | N_Short_Circuit | N_Membership_Test =>
+            when N_Binary_Op
+               | N_Membership_Test
+               | N_Short_Circuit
+            =>
                Check_Expr_Constants (Left_Opnd (Nod));
                Check_Expr_Constants (Right_Opnd (Nod));
 
             when N_Unary_Op =>
                Check_Expr_Constants (Right_Opnd (Nod));
 
-            when N_Type_Conversion           |
-                 N_Qualified_Expression      |
-                 N_Allocator                 |
-                 N_Unchecked_Type_Conversion =>
+            when N_Allocator
+               | N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
                Check_Expr_Constants (Expression (Nod));
 
             when N_Function_Call =>
@@ -10285,15 +10409,26 @@ package body Sem_Ch13 is
                   Nbit := Sbit;
                   for J in 1 .. Ncomps loop
                      CEnt := Comps (J);
-                     Error_Msg_Uint_1 := Component_Bit_Offset (CEnt) - Nbit;
 
-                     if Error_Msg_Uint_1 > 0 then
-                        Error_Msg_NE
-                          ("?H?^-bit gap before component&",
-                           Component_Name (Component_Clause (CEnt)), CEnt);
-                     end if;
+                     declare
+                        CBO : constant Uint := Component_Bit_Offset (CEnt);
 
-                     Nbit := Component_Bit_Offset (CEnt) + Esize (CEnt);
+                     begin
+                        --  Skip components with unknown offsets
+
+                        if CBO /= No_Uint and then CBO >= 0 then
+                           Error_Msg_Uint_1 := CBO - Nbit;
+
+                           if Error_Msg_Uint_1 > 0 then
+                              Error_Msg_NE
+                                ("?H?^-bit gap before component&",
+                                 Component_Name (Component_Clause (CEnt)),
+                                 CEnt);
+                           end if;
+
+                           Nbit := CBO + Esize (CEnt);
+                        end if;
+                     end;
                   end loop;
 
                   --  Process variant parts recursively if present
@@ -11538,6 +11673,12 @@ package body Sem_Ch13 is
       --  expression (i.e. if it is an identifier whose Chars field matches the
       --  Nam given in the call). N must not be parenthesized, if the type name
       --  appears in parens, this routine will return False.
+      --
+      --  The routine also returns True for function calls generated during the
+      --  expansion of comparison operators on strings, which are intended to
+      --  be legal in static predicates, and are converted into calls to array
+      --  comparison routines in the body of the corresponding predicate
+      --  function.
 
       ----------------------------------
       -- All_Static_Case_Alternatives --
@@ -11602,9 +11743,10 @@ package body Sem_Ch13 is
 
       function Is_Type_Ref (N : Node_Id) return Boolean is
       begin
-         return Nkind (N) = N_Identifier
-           and then Chars (N) = Nam
-           and then Paren_Count (N) = 0;
+         return (Nkind (N) = N_Identifier
+                  and then Chars (N) = Nam
+                  and then Paren_Count (N) = 0)
+           or else Nkind (N) = N_Function_Call;
       end Is_Type_Ref;
 
    --  Start of processing for Is_Predicate_Static
@@ -11654,10 +11796,12 @@ package body Sem_Ch13 is
       --  and inequality operations to be valid on strings (this helps deal
       --  with cases where we transform A in "ABC" to A = "ABC).
 
+      --  In fact, it appears that the intent of the ARG is to extend static
+      --  predicates to strings, and that the extension should probably apply
+      --  to static expressions themselves. The code below accepts comparison
+      --  operators that apply to static strings.
+
       elsif Nkind (Expr) in N_Op_Compare
-        and then ((not Is_String_Type (Etype (Left_Opnd (Expr))))
-                    or else (Nkind_In (Expr, N_Op_Eq, N_Op_Ne)
-                              and then not Comes_From_Source (Expr)))
         and then ((Is_Type_Ref (Left_Opnd (Expr))
                     and then Is_OK_Static_Expression (Right_Opnd (Expr)))
                   or else
@@ -12254,7 +12398,7 @@ package body Sem_Ch13 is
            and then From_Aspect_Specification (N)
          then
             Error_Msg_NE
-              ("aspect specification causes premature freezing of&", T, N);
+              ("aspect specification causes premature freezing of&", N, T);
             Set_Has_Delayed_Freeze (T, False);
             return True;
          end if;
@@ -12544,10 +12688,13 @@ package body Sem_Ch13 is
          E : Entity_Id;
 
       begin
-         if Ekind (T) /= E_Record_Type then
-            return Empty;
 
-         else
+         --  Types with nameable components are records and discriminated
+         --  private types.
+
+         if Ekind (T) = E_Record_Type
+           or else (Is_Private_Type (T) and then Has_Discriminants (T))
+         then
             E := First_Entity (T);
             while Present (E) loop
                if Comes_From_Source (E) and then Chars (E) = Comp then
@@ -12556,9 +12703,11 @@ package body Sem_Ch13 is
 
                Next_Entity (E);
             end loop;
-
-            return Empty;
          end if;
+
+         --  Nothing by that name, or type has no components.
+
+         return Empty;
       end Visible_Component;
 
    --  Start of processing for Replace_Type_References_Generic
@@ -12585,6 +12734,9 @@ package body Sem_Ch13 is
       --  introduce a local identifier that would require proper expansion to
       --  handle properly.
 
+      --  In ASIS_Mode we preserve the entity in the source because there is
+      --  no subsequent expansion to decorate the tree.
+
       ------------------
       -- Resolve_Name --
       ------------------
@@ -12602,7 +12754,10 @@ package body Sem_Ch13 is
 
          elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
-            Set_Entity (N, Empty);
+
+            if True or else not ASIS_Mode then -- ????
+               Set_Entity (N, Empty);
+            end if;
 
          elsif Nkind (N) = N_Quantified_Expression then
             return Skip;
@@ -12628,14 +12783,15 @@ package body Sem_Ch13 is
                --  subprograms, or that may mention current instances of
                --  types. These will require special handling (???TBD).
 
-               when Aspect_Predicate         |
-                    Aspect_Predicate_Failure |
-                    Aspect_Invariant         =>
+               when Aspect_Invariant
+                  | Aspect_Predicate
+                  | Aspect_Predicate_Failure
+               =>
                   null;
 
-               when Aspect_Dynamic_Predicate |
-                    Aspect_Static_Predicate  =>
-
+               when Aspect_Dynamic_Predicate
+                  | Aspect_Static_Predicate
+               =>
                   --  Build predicate function specification and preanalyze
                   --  expression after type replacement.
 
@@ -12669,18 +12825,19 @@ package body Sem_Ch13 is
                when others =>
                   if Present (Expr) then
                      case Aspect_Argument (A_Id) is
-                        when Expression | Optional_Expression  =>
+                        when Expression
+                           | Optional_Expression
+                        =>
                            Analyze_And_Resolve (Expression (ASN));
 
-                        when Name | Optional_Name =>
+                        when Name
+                           | Optional_Name
+                        =>
                            if Nkind (Expr) = N_Identifier then
                               Find_Direct_Name (Expr);
 
                            elsif Nkind (Expr) = N_Selected_Component then
                               Find_Selected_Component (Expr);
-
-                           else
-                              null;
                            end if;
                      end case;
                   end if;

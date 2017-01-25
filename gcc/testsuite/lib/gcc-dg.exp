@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -533,6 +533,8 @@ proc gcc-dg-runtest { testcases flags default-extra-flags } {
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
 	foreach flags_t $option_list {
+	    global torture_current_flags
+	    set torture_current_flags "$flags_t"
 	    verbose "Testing $nshort, $flags $flags_t" 1
 	    dg-test $test "$flags $flags_t" ${default-extra-flags}
 	}
@@ -988,7 +990,7 @@ proc process-message { msgproc msgprefix dgargs } {
 
     # Handle relative line specification, .+1 or .-1 etc.
     if { [llength $dgargs] == 5
-	 && [regsub "^\.\[+-\](\[0-9\])$" [lindex $dgargs 4] "\\1" num] } {
+	 && [regsub "^\.\[+-\](\[0-9\]+)$" [lindex $dgargs 4] "\\1" num] } {
 	set num [expr [lindex $dgargs 0] [string index [lindex $dgargs 4] 1] $num]
 	set dgargs [lreplace $dgargs 4 4 $num]
     }

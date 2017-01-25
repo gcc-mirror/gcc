@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988-2016 Free Software Foundation, Inc.
+   Copyright (C) 1988-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1177,7 +1177,8 @@ pop_scope (void)
     context = current_function_decl;
   else if (scope == file_scope)
     {
-      tree file_decl = build_translation_unit_decl (NULL_TREE);
+      tree file_decl
+	= build_translation_unit_decl (get_identifier (main_input_filename));
       context = file_decl;
       debug_hooks->register_main_translation_unit (file_decl);
     }
@@ -1420,6 +1421,8 @@ pop_file_scope (void)
   if (pch_file)
     {
       c_common_write_pch ();
+      /* Ensure even the callers don't try to finalize the CU.  */
+      flag_syntax_only = 1;
       return;
     }
 
@@ -5580,11 +5583,21 @@ grokdeclarator (const struct c_declarator *declarator,
   if (TREE_CODE (type) == ERROR_MARK)
     return error_mark_node;
   if (expr == NULL)
-    expr = &expr_dummy;
+    {
+      expr = &expr_dummy;
+      expr_dummy = NULL_TREE;
+    }
   if (expr_const_operands == NULL)
     expr_const_operands = &expr_const_operands_dummy;
 
-  *expr = declspecs->expr;
+  if (declspecs->expr)
+    {
+      if (*expr)
+	*expr = build2 (COMPOUND_EXPR, TREE_TYPE (declspecs->expr), *expr,
+			declspecs->expr);
+      else
+	*expr = declspecs->expr;
+    }
   *expr_const_operands = declspecs->expr_const_operands;
 
   if (decl_context == FUNCDEF)

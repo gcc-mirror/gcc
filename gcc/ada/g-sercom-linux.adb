@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2015, AdaCore                      --
+--                    Copyright (C) 2007-2016, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -239,10 +239,12 @@ package body GNAT.Serial_Communications is
       end if;
 
       case Flow is
-         when None     =>
+         when None =>
             null;
-         when RTS_CTS  =>
+
+         when RTS_CTS =>
             Current.c_cflag := Current.c_cflag or CRTSCTS;
+
          when Xon_Xoff =>
             Current.c_iflag := Current.c_iflag or IXON;
       end case;

@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -366,17 +366,19 @@ write_exception_spec (tree spec)
       return;
     }
 
-  if (nothrow_spec_p (spec))
+  if (spec == noexcept_true_spec || spec == empty_except_spec)
     write_string ("Do");
-  else if (TREE_PURPOSE (spec))
+  else if (tree expr = TREE_PURPOSE (spec))
     {
-      gcc_assert (uses_template_parms (TREE_PURPOSE (spec)));
+      /* noexcept (expr)  */
+      gcc_assert (uses_template_parms (expr));
       write_string ("DO");
-      write_expression (TREE_PURPOSE (spec));
+      write_expression (expr);
       write_char ('E');
     }
   else
     {
+      /* throw (type-list) */
       write_string ("Dw");
       for (tree t = spec; t; t = TREE_CHAIN (t))
 	write_type (TREE_VALUE (t));
@@ -829,7 +831,6 @@ write_encoding (const tree decl)
 
       if (tmpl)
 	{
-	  ++processing_template_decl;
 	  fn_type = get_mostly_instantiated_function_type (decl);
 	  /* FN_TYPE will not have parameter types for in-charge or
 	     VTT parameters.  Therefore, we pass NULL_TREE to
@@ -846,9 +847,6 @@ write_encoding (const tree decl)
       write_bare_function_type (fn_type,
 				mangle_return_type_p (decl),
 				d);
-
-      if (tmpl)
-	--processing_template_decl;
     }
 }
 
@@ -1952,7 +1950,8 @@ discriminator_for_string_literal (tree /*function*/,
   return 0;
 }
 
-/*   <discriminator> := _ <number>
+/*   <discriminator> := _ <number>    # when number < 10
+                     := __ <number> _ # when number >= 10
 
    The discriminator is used only for the second and later occurrences
    of the same name within a single function. In this case <number> is
@@ -1965,7 +1964,16 @@ write_discriminator (const int discriminator)
   if (discriminator > 0)
     {
       write_char ('_');
+      if (discriminator - 1 >= 10)
+	{
+	  if (abi_warn_or_compat_version_crosses (11))
+	    G.need_abi_warning = 1;
+	  if (abi_version_at_least (11))
+	    write_char ('_');
+	}
       write_unsigned_number (discriminator - 1);
+      if (abi_version_at_least (11) && discriminator - 1 >= 10)
+	write_char ('_');
     }
 }
 
@@ -2808,6 +2816,12 @@ write_template_args (tree args)
 static void
 write_member_name (tree member)
 {
+  if (abi_version_at_least (11) && IDENTIFIER_OPNAME_P (member))
+    {
+      write_string ("on");
+      if (abi_warn_or_compat_version_crosses (11))
+	G.need_abi_warning = 1;
+    }
   if (identifier_p (member))
     write_unqualified_id (member);
   else if (DECL_P (member))

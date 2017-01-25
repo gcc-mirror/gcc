@@ -5,8 +5,8 @@
 
 #include <altivec.h>
 
-__vector int
-get_data_class_flags (__vector float *p, unsigned int condition_flag)
+__vector bool int
+get_data_class_flags (__vector float *p, int condition_flag)
 {
   __vector float source = *p;
 

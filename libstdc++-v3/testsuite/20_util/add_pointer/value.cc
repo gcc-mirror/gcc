@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,4 +33,19 @@ void test01()
   static_assert(is_same<add_pointer<ClassType*>::type,
 		ClassType**>::value, "");
   static_assert(is_same<add_pointer<ClassType>::type, ClassType*>::value, "");
+}
+
+void test02()
+{
+  using std::add_pointer;
+  using std::is_same;
+
+  void f1();
+  using f1_type = decltype(f1);
+  using pf1_type = decltype(&f1);
+  static_assert(is_same<add_pointer<f1_type>::type, pf1_type>::value, "");
+  void f2() noexcept; // PR libstdc++/78361
+  using f2_type = decltype(f2);
+  using pf2_type = decltype(&f2);
+  static_assert(is_same<add_pointer<f2_type>::type, pf2_type>::value, "");
 }

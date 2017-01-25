@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -795,7 +795,7 @@ set_even_probabilities (basic_block bb,
 			hash_set<edge> *unlikely_edges = NULL)
 {
   unsigned nedges = 0;
-  edge e;
+  edge e = NULL;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
@@ -2786,7 +2786,12 @@ tree_estimate_probability_bb (basic_block bb)
 		     something exceptional.  */
 		  && gimple_has_side_effects (stmt))
 		{
-		  predict_edge_def (e, PRED_CALL, NOT_TAKEN);
+		  if (gimple_call_fndecl (stmt))
+		    predict_edge_def (e, PRED_CALL, NOT_TAKEN);
+		  else if (virtual_method_call_p (gimple_call_fn (stmt)))
+		    predict_edge_def (e, PRED_POLYMORPHIC_CALL, NOT_TAKEN);
+		  else
+		    predict_edge_def (e, PRED_INDIR_CALL, TAKEN);
 		  break;
 		}
 	    }

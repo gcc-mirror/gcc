@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002-2016 Free Software Foundation, Inc.
+## Copyright (C) 2002-2017 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -1503,6 +1503,9 @@ GLIBCXX_3.4.15 {
     _ZNSt14error_categoryC*;
     _ZNSt14error_categoryD*;
 
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
+    # std::future symbols are only present in this version when
+    # atomic operations on int are always lock-free.
     _ZNSt13__future_base12_Result_baseC*;
     _ZNSt13__future_base12_Result_baseD*;
     _ZTINSt13__future_base12_Result_baseE;
@@ -1511,6 +1514,7 @@ GLIBCXX_3.4.15 {
     _ZNSt13__future_base11_State_baseD*;
     _ZTINSt13__future_base11_State_baseE;
     _ZTVNSt13__future_base11_State_baseE;
+#endif
 
 } GLIBCXX_3.4.14;
 
@@ -1687,8 +1691,10 @@ GLIBCXX_3.4.21 {
 
     # std::notify_all_at_thread_exit
     _ZSt25notify_all_at_thread_exitRSt18condition_variableSt11unique_lockISt5mutexE;
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # std::__future_base::_State_baseV2::_Make_ready::_M_set()
     _ZNSt13__future_base13_State_baseV211_Make_ready6_M_setEv;
+#endif
 
     # ABI-tagged std::basic_string
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[01]**;
@@ -1947,6 +1953,16 @@ GLIBCXX_3.4.23 {
     _ZNSsC[12]ERKSs[jmy]RKSaIcE;
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
 
+#ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
+    # std::future symbols are exported in the first version to support
+    # std::exception_ptr
+    _ZNSt13__future_base12_Result_baseC*;
+    _ZNSt13__future_base12_Result_baseD*;
+    _ZTINSt13__future_base12_Result_baseE;
+    _ZTVNSt13__future_base12_Result_baseE;
+    _ZNSt13__future_base13_State_baseV211_Make_ready6_M_setEv;
+#endif
+
 } GLIBCXX_3.4.22;
 
 # Symbols in the support library (libsupc++) have their own tag.
@@ -2080,6 +2096,7 @@ CXXABI_1.3.3 {
     _ZTIPDi;
     _ZTIPKDi;
 
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # exception_ptr
     _ZNSt15__exception_ptr13exception_ptrC1Ev;
     _ZNSt15__exception_ptr13exception_ptrC2Ev;
@@ -2099,6 +2116,7 @@ CXXABI_1.3.3 {
 
     _ZSt17current_exceptionv;
     _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
+#endif
 
 } CXXABI_1.3.2;
 
@@ -2129,10 +2147,12 @@ CXXABI_1.3.5 {
     # FNV hash.
     _ZSt15_Fnv_hash_bytesPKv*;
 
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # std::nested_exception
     _ZNSt16nested_exceptionD*;
     _ZTISt16nested_exception;
     _ZTVSt16nested_exception;
+#endif
 
 } CXXABI_1.3.4;
 
@@ -2208,6 +2228,33 @@ CXXABI_1.3.11 {
     _ZdaPvSt11align_val_t;
     _ZdaPvSt11align_val_tRKSt9nothrow_t;
     _ZdaPv[jmy]St11align_val_t;
+
+#ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
+    # exception_ptr
+    _ZNSt15__exception_ptr13exception_ptrC1Ev;
+    _ZNSt15__exception_ptr13exception_ptrC2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrD1Ev;
+    _ZNSt15__exception_ptr13exception_ptrD2Ev;
+    _ZNSt15__exception_ptr13exception_ptraSERKS0_;
+    _ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv;
+    _ZNKSt15__exception_ptr13exception_ptrntEv;
+    _ZNKSt15__exception_ptr13exception_ptr20__cxa_exception_typeEv;
+    _ZNSt15__exception_ptr13exception_ptr4swapERS0_;
+    _ZNSt15__exception_ptreqERKNS_13exception_ptrES2_;
+    _ZNSt15__exception_ptrneERKNS_13exception_ptrES2_;
+
+    _ZSt17current_exceptionv;
+    _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
+
+    # std::nested_exception
+    _ZNSt16nested_exceptionD*;
+    _ZTISt16nested_exception;
+    _ZTVSt16nested_exception;
+#endif
 
 } CXXABI_1.3.10;
 

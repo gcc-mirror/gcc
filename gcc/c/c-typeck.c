@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "gimplify.h"
 #include "tree-inline.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
@@ -3110,15 +3110,15 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */
-  check_function_arguments (loc, fntype, nargs, argarray);
+  bool warned_p = check_function_arguments (loc, fntype, nargs, argarray);
 
   if (name != NULL_TREE
       && !strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10))
     {
       if (require_constant_value)
-	result =
-	  fold_build_call_array_initializer_loc (loc, TREE_TYPE (fntype),
-						 function, nargs, argarray);
+	result
+	  = fold_build_call_array_initializer_loc (loc, TREE_TYPE (fntype),
+						   function, nargs, argarray);
       else
 	result = fold_build_call_array_loc (loc, TREE_TYPE (fntype),
 					    function, nargs, argarray);
@@ -3129,6 +3129,10 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   else
     result = build_call_array_loc (loc, TREE_TYPE (fntype),
 				   function, nargs, argarray);
+  /* If -Wnonnull warning has been diagnosed, avoid diagnosing it again
+     later.  */
+  if (warned_p && TREE_CODE (result) == CALL_EXPR)
+    TREE_NO_WARNING (result) = 1;
 
   /* In this improbable scenario, a nested function returns a VM type.
      Create a TARGET_EXPR so that the call always has a LHS, much as
@@ -3591,6 +3595,18 @@ parser_build_unary_op (location_t loc, enum tree_code code, struct c_expr arg)
   return result;
 }
 
+/* Returns true if TYPE is a character type, *not* including wchar_t.  */
+
+static bool
+char_type_p (tree type)
+{
+  return (type == char_type_node
+	  || type == unsigned_char_type_node
+	  || type == signed_char_type_node
+	  || type == char16_type_node
+	  || type == char32_type_node);
+}
+
 /* This is the entry point used by the parser to build binary operators
    in the input.  CODE, a tree_code, specifies the binary operator, and
    ARG1 and ARG2 are the operands.  In addition to constructing the
@@ -3710,6 +3726,21 @@ parser_build_binary_op (location_t location, enum tree_code code,
 	      && !integer_zerop (tree_strip_nop_conversions (arg1.value))))
 	warning_at (location, OPT_Waddress,
 		    "comparison with string literal results in unspecified behavior");
+      /* Warn for ptr == '\0', it's likely that it should've been ptr[0].  */
+      if (POINTER_TYPE_P (type1)
+	   && null_pointer_constant_p (arg2.value)
+	   && char_type_p (type2)
+	   && warning_at (location, OPT_Wpointer_compare,
+			  "comparison between pointer and zero character "
+			  "constant"))
+	inform (arg1.get_start (), "did you mean to dereference the pointer?");
+      else if (POINTER_TYPE_P (type2)
+	       && null_pointer_constant_p (arg1.value)
+	       && char_type_p (type1)
+	       && warning_at (location, OPT_Wpointer_compare,
+			      "comparison between pointer and zero character "
+			      "constant"))
+	inform (arg2.get_start (), "did you mean to dereference the pointer?");
     }
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
@@ -5162,6 +5193,15 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
     ret = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, ret);
 
   protected_set_expr_location (ret, colon_loc);
+
+  /* If the OP1 and OP2 are the same and don't have side-effects,
+     warn here, because the COND_EXPR will be turned into OP1.  */
+  if (warn_duplicated_branches
+      && TREE_CODE (ret) == COND_EXPR
+      && (op1 == op2 || operand_equal_p (op1, op2, 0)))
+    warning_at (EXPR_LOCATION (ret), OPT_Wduplicated_branches,
+		"this condition has identical branches");
+
   return ret;
 }
 
@@ -7490,6 +7530,7 @@ struct initializer_stack
   char top_level;
   char require_constant_value;
   char require_constant_elements;
+  rich_location *missing_brace_richloc;
 };
 
 static struct initializer_stack *initializer_stack;
@@ -7497,7 +7538,8 @@ static struct initializer_stack *initializer_stack;
 /* Prepare to parse and output the initializer for variable DECL.  */
 
 void
-start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
+start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level,
+	    rich_location *richloc)
 {
   const char *locus;
   struct initializer_stack *p = XNEW (struct initializer_stack);
@@ -7513,6 +7555,7 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
   p->spelling_size = spelling_size;
   p->top_level = constructor_top_level;
   p->next = initializer_stack;
+  p->missing_brace_richloc = richloc;
   initializer_stack = p;
 
   constructor_decl = decl;
@@ -7697,6 +7740,8 @@ really_start_incremental_init (tree type)
     }
 }
 
+extern location_t last_init_list_comma;
+
 /* Called when we see an open brace for a nested initializer.  Finish
    off any pending levels with implicit braces.  */
 void
@@ -7707,14 +7752,16 @@ finish_implicit_inits (location_t loc, struct obstack *braced_init_obstack)
       if (RECORD_OR_UNION_TYPE_P (constructor_type)
 	  && constructor_fields == 0)
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE
 	       && constructor_max_index
 	       && tree_int_cst_lt (constructor_max_index,
 				   constructor_index))
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else
 	break;
@@ -7833,7 +7880,12 @@ push_init_level (location_t loc, int implicit,
     }
 
   if (implicit == 1)
-    found_missing_braces = 1;
+    {
+      found_missing_braces = 1;
+      if (initializer_stack->missing_brace_richloc)
+	initializer_stack->missing_brace_richloc->add_fixit_insert_before
+	  (loc, "{");
+    }
 
   if (RECORD_OR_UNION_TYPE_P (constructor_type))
     {
@@ -7911,7 +7963,8 @@ push_init_level (location_t loc, int implicit,
 
 struct c_expr
 pop_init_level (location_t loc, int implicit,
-		struct obstack *braced_init_obstack)
+		struct obstack *braced_init_obstack,
+		location_t insert_before)
 {
   struct constructor_stack *p;
   struct c_expr ret;
@@ -7925,10 +7978,15 @@ pop_init_level (location_t loc, int implicit,
 	 pop any inner levels that didn't have explicit braces.  */
       while (constructor_stack->implicit)
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      insert_before),
 			      true, braced_init_obstack);
       gcc_assert (!constructor_range_stack);
     }
+  else
+    if (initializer_stack->missing_brace_richloc)
+      initializer_stack->missing_brace_richloc->add_fixit_insert_before
+	(insert_before, "}");
 
   /* Now output all pending elements.  */
   constructor_incremental = 1;
@@ -7985,8 +8043,12 @@ pop_init_level (location_t loc, int implicit,
   /* Warn when some structs are initialized with direct aggregation.  */
   if (!implicit && found_missing_braces && warn_missing_braces
       && !constructor_zeroinit)
-    warning_init (loc, OPT_Wmissing_braces,
-		  "missing braces around initializer");
+    {
+      gcc_assert (initializer_stack->missing_brace_richloc);
+      warning_at_rich_loc (initializer_stack->missing_brace_richloc,
+			   OPT_Wmissing_braces,
+			   "missing braces around initializer");
+    }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
   if (warn_missing_field_initializers
@@ -8125,7 +8187,8 @@ set_designator (location_t loc, int array,
 	 braces.  */
       while (constructor_stack->implicit)
 	process_init_element (input_location,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       constructor_designated = 1;
       return 0;
@@ -9194,7 +9257,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       if (RECORD_OR_UNION_TYPE_P (constructor_type)
 	  && constructor_fields == 0)
 	process_init_element (loc,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else if ((TREE_CODE (constructor_type) == ARRAY_TYPE
 		|| VECTOR_TYPE_P (constructor_type))
@@ -9202,7 +9266,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	       && tree_int_cst_lt (constructor_max_index,
 				   constructor_index))
 	process_init_element (loc,
-			      pop_init_level (loc, 1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack,
+					      last_init_list_comma),
 			      true, braced_init_obstack);
       else
 	break;
@@ -9535,7 +9600,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      gcc_assert (constructor_stack->implicit);
 	      process_init_element (loc,
 				    pop_init_level (loc, 1,
-						    braced_init_obstack),
+						    braced_init_obstack,
+						    last_init_list_comma),
 				    true, braced_init_obstack);
 	    }
 	  for (p = range_stack;
@@ -9545,7 +9611,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      gcc_assert (constructor_stack->implicit);
 	      process_init_element (loc,
 				    pop_init_level (loc, 1,
-						    braced_init_obstack),
+						    braced_init_obstack,
+						    last_init_list_comma),
 				    true, braced_init_obstack);
 	    }
 
@@ -12012,13 +12079,13 @@ c_finish_omp_cancel (location_t loc, tree clauses)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);
   int mask = 0;
-  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+  if (omp_find_clause (clauses, OMP_CLAUSE_PARALLEL))
     mask = 1;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_FOR))
     mask = 2;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_SECTIONS))
     mask = 4;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_TASKGROUP))
     mask = 8;
   else
     {
@@ -12027,7 +12094,7 @@ c_finish_omp_cancel (location_t loc, tree clauses)
 		     "clauses");
       return;
     }
-  tree ifc = find_omp_clause (clauses, OMP_CLAUSE_IF);
+  tree ifc = omp_find_clause (clauses, OMP_CLAUSE_IF);
   if (ifc != NULL_TREE)
     {
       tree type = TREE_TYPE (OMP_CLAUSE_IF_EXPR (ifc));
@@ -12051,13 +12118,13 @@ c_finish_omp_cancellation_point (location_t loc, tree clauses)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCELLATION_POINT);
   int mask = 0;
-  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+  if (omp_find_clause (clauses, OMP_CLAUSE_PARALLEL))
     mask = 1;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_FOR))
     mask = 2;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_SECTIONS))
     mask = 4;
-  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+  else if (omp_find_clause (clauses, OMP_CLAUSE_TASKGROUP))
     mask = 8;
   else
     {

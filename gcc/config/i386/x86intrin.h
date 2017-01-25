@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -74,6 +74,8 @@
 #include <xsaveintrin.h>
 
 #include <xsaveoptintrin.h>
+
+#include <sgxintrin.h>
 
 #endif /* __iamcu__ */
 

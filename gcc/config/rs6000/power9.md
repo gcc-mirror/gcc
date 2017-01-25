@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM POWER9 processor.
-;; Copyright (C) 2016 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2017 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Pat Haugen (pthaugen@us.ibm.com).
 
@@ -243,11 +243,14 @@
 
 ; Most ALU insns are simple 2 cycle, including record form
 (define_insn_reservation "power9-alu" 2
-  (and (ior (eq_attr "type" "add,cmp,exts,integer,logical,isel")
+  (and (ior (eq_attr "type" "add,exts,integer,logical,isel")
 	    (and (eq_attr "type" "insert,shift")
 		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power9"))
   "DU_any_power9,VSU_power9")
+; 5 cycle CR latency
+(define_bypass 5 "power9-alu"
+		 "power9-crlogical,power9-mfcr,power9-mfcrf")
 
 ; Record form rotate/shift are cracked
 (define_insn_reservation "power9-cracked-alu" 2
@@ -255,14 +258,23 @@
        (eq_attr "dot" "yes")
        (eq_attr "cpu" "power9"))
   "DU_C2_power9,VSU_power9")
-; 4 cycle CR latency
-(define_bypass 4 "power9-cracked-alu"
-		 "power9-crlogical,power9-mfcr,power9-mfcrf,power9-branch")
+; 7 cycle CR latency
+(define_bypass 7 "power9-cracked-alu"
+		 "power9-crlogical,power9-mfcr,power9-mfcrf")
 
 (define_insn_reservation "power9-alu2" 3
   (and (eq_attr "type" "cntlz,popcnt,trap")
        (eq_attr "cpu" "power9"))
   "DU_any_power9,VSU_power9")
+; 6 cycle CR latency
+(define_bypass 6 "power9-alu2"
+		 "power9-crlogical,power9-mfcr,power9-mfcrf")
+
+(define_insn_reservation "power9-cmp" 2
+  (and (eq_attr "type" "cmp")
+       (eq_attr "cpu" "power9"))
+  "DU_any_power9,VSU_power9")
+
 
 ; Treat 'two' and 'three' types as 2 or 3 way cracked
 (define_insn_reservation "power9-two" 4
@@ -275,20 +287,20 @@
        (eq_attr "cpu" "power9"))
   "DU_C3_power9,VSU_power9")
 
-(define_insn_reservation "power9-mul" 4
+(define_insn_reservation "power9-mul" 5
   (and (eq_attr "type" "mul")
        (eq_attr "dot" "no")
        (eq_attr "cpu" "power9"))
   "DU_any_power9,VSU_power9")
 
-(define_insn_reservation "power9-mul-compare" 4
+(define_insn_reservation "power9-mul-compare" 5
   (and (eq_attr "type" "mul")
        (eq_attr "dot" "yes")
        (eq_attr "cpu" "power9"))
   "DU_C2_power9,VSU_power9")
-; 6 cycle CR latency
-(define_bypass 6 "power9-mul-compare"
-		 "power9-crlogical,power9-mfcr,power9-mfcrf,power9-branch")
+; 10 cycle CR latency
+(define_bypass 10 "power9-mul-compare"
+		 "power9-crlogical,power9-mfcr,power9-mfcrf")
 
 ; Fixed point divides reserve the divide units for a minimum of 8 cycles
 (define_insn_reservation "power9-idiv" 16

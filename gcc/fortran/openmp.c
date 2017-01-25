@@ -1,5 +1,5 @@
 /* OpenMP directive matching and resolving.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek
 
 This file is part of GCC.
@@ -1025,12 +1025,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (m == MATCH_YES)
 		{
 		  int collapse;
-		  const char *p = gfc_extract_int (cexpr, &collapse);
-		  if (p)
-		    {
-		      gfc_error_now (p);
-		      collapse = 1;
-		    }
+		  if (gfc_extract_int (cexpr, &collapse, -1))
+		    collapse = 1;
 		  else if (collapse <= 0)
 		    {
 		      gfc_error_now ("COLLAPSE clause argument not"
@@ -1485,12 +1481,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (m == MATCH_YES)
 		{
 		  int ordered = 0;
-		  const char *p = gfc_extract_int (cexpr, &ordered);
-		  if (p)
-		    {
-		      gfc_error_now (p);
-		      ordered = 0;
-		    }
+		  if (gfc_extract_int (cexpr, &ordered, -1))
+		    ordered = 0;
 		  else if (ordered <= 0)
 		    {
 		      gfc_error_now ("ORDERED clause argument not"
@@ -2866,7 +2858,7 @@ gfc_match_omp_declare_reduction (void)
       const char *predef_name = NULL;
 
       omp_udr = gfc_get_omp_udr ();
-      omp_udr->name = gfc_get_string (name);
+      omp_udr->name = gfc_get_string ("%s", name);
       omp_udr->rop = rop;
       omp_udr->ts = tss[i];
       omp_udr->where = where;
@@ -3967,7 +3959,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		     &expr->where);
 	else if (if_without_mod)
 	  {
-	    gfc_error ("IF clause without modifier at %L used together with"
+	    gfc_error ("IF clause without modifier at %L used together with "
 		       "IF clauses with modifiers",
 		       &omp_clauses->if_expr->where);
 	    if_without_mod = false;
@@ -4316,7 +4308,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			    if (!gfc_resolve_expr (n->expr)
 				|| n->expr->ts.type != BT_INTEGER
 				|| n->expr->rank != 0)
-			      gfc_error ("SINK addend not a constant integer"
+			      gfc_error ("SINK addend not a constant integer "
 					 "at %L", &n->where);
 			  }
 			continue;
@@ -4382,6 +4374,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    else
 		      resolve_oacc_data_clauses (n->sym, n->where, name);
 		  }
+		else if (list != OMP_CLAUSE_DEPEND
+			 && n->sym->as
+			 && n->sym->as->type == AS_ASSUMED_SIZE)
+		  gfc_error ("Assumed size array %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
 		if (list == OMP_LIST_MAP && !openacc)
 		  switch (code->op)
 		    {
@@ -4622,7 +4619,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			linear_op = n->u.linear_op;
 		      }
 		    else if (omp_clauses->orderedc)
-		      gfc_error ("LINEAR clause specified together with"
+		      gfc_error ("LINEAR clause specified together with "
 				 "ORDERED clause with argument at %L",
 				 &n->where);
 		    else if (n->u.linear_op != OMP_LINEAR_REF

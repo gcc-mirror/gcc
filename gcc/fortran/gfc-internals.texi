@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfc-internals.info
-@set copyrights-gfortran 2007-2016
+@set copyrights-gfortran 2007-2017
 
 @include gcc-common.texi
 
@@ -761,11 +761,11 @@ Some relevant references:
 GNU @command{ld} manual}
 
 @item
-@uref{http://www.akkadia.org/drepper/symbol-versioning, ELF Symbol
+@uref{https://www.akkadia.org/drepper/symbol-versioning, ELF Symbol
 Versioning - Ulrich Depper}
 
 @item
-@uref{http://www.akkadia.org/drepper/dsohowto.pdf, How to Write Shared
+@uref{https://www.akkadia.org/drepper/dsohowto.pdf, How to Write Shared
 Libraries - Ulrich Drepper (see Chapter 3)}
 
 @end itemize

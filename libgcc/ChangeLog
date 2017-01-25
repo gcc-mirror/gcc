@@ -1,3 +1,126 @@
+2017-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* soft-fp/op-common.h (_FP_MUL, _FP_FMA, _FP_DIV): Add
+	/* FALLTHRU */ comments.
+
+2017-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/cygming-crtbegin.c (LIBGCJ_SONAME): No longer #define.
+
+2017-01-20  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-unwind.h: Empty this file on ILP32.
+	* unwind-dw2.c (execute_cfa_program):  Only multiplexing
+	DW_CFA_GNU_window_save for AArch64 and LP64.
+
+2017-01-20  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/linux-unwind.h: Always include aarch64-unwind.h.
+
+2017-01-19  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-unwind.h: New file.
+	(DWARF_REGNUM_AARCH64_RA_STATE): Define.
+	(MD_POST_EXTRACT_ROOT_ADDR): New target marcro and define it on AArch64.
+	(MD_POST_EXTRACT_FRAME_ADDR): Likewise.
+	(MD_POST_FROB_EH_HANDLER_ADDR): Likewise.
+	(MD_FROB_UPDATE_CONTEXT): Define it on AArch64.
+	(aarch64_post_extract_frame_addr): New function.
+	(aarch64_post_frob_eh_handler_addr): New function.
+	(aarch64_frob_update_context): New function.
+	* config/aarch64/linux-unwind.h: Include aarch64-unwind.h
+	* config.host (aarch64*-*-elf, aarch64*-*-rtems*,
+	aarch64*-*-freebsd*):
+	Initialize md_unwind_header to include aarch64-unwind.h.
+	* unwind-dw2.c (struct _Unwind_Context): Define "RA_A_SIGNED_BIT".
+	(execute_cfa_program): Multiplex DW_CFA_GNU_window_save for
+	__aarch64__.
+	(uw_update_context): Honor MD_POST_EXTRACT_FRAME_ADDR.
+	(uw_init_context_1): Honor MD_POST_EXTRACT_ROOT_ADDR.
+	(uw_frob_return_addr): New function.
+	(uw_install_context): Use uw_frob_return_addr.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.in (version): Use @get_gcc_base_ver@ instead of cat to get
+	version from BASE-VER file.
+	* configure: Regenerated.
+
+2017-01-13  Joe Seymour  <joe.s@somniumtech.com>
+
+	* config/msp430/t-msp430 (libmul_none.a, libmul_16.a, libmul_32.a,
+	libmul_f5.a): Filter archived prerequisites.
+
+2017-01-10  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* config/i386/cpuinfo.h (processor_features): Add
+	FEATURE_AVX512VPOPCNTDQ.
+	* config/i386/cpuinfo.c (get_available_features): Habdle new
+	feature.
+
+2017-01-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/sfp-machine.h (_FP_CHOOSENAN): Always preserve NaN
+	payload if [__mips_nan2008].
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.in (configure_deps): Update.
+	* configure: Regenerate.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2016-12-19  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.host (*-*-netbsd*): Add t-eh-dw2-dip to tmake_file.
+	* crtstuff.c (BSD_DL_ITERATE_PHDR_AVAILABLE): Define for NetBSD.
+	* unwind-dw2-fde-dip.c (USE_PT_GNU_EH_FRAME, ElfW): Likewise.
+
+2016-12-17  Matthias Klose  <doko@ubuntu.com>
+
+	* config/arc/gmon: Remove empty directory.
+
+2016-12-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config.host (arc*-*-linux-uclibc*): Remove libgmon, crtg, and
+	crtgend.
+	(arc*-*-elf*): Likewise.
+	* config/arc/t-arc: Remove old gmon lib targets.
+	* config/arc/crtg.S: Remove.
+	* config/arc/crtgend.S: Likewise.
+	* config/arc/gmon/atomic.h: Likewise.
+	* config/arc/gmon/auxreg.h: Likewise.
+	* config/arc/gmon/dcache_linesz.S: Likewise.
+	* config/arc/gmon/gmon.c: Likewise.
+	* config/arc/gmon/machine-gmon.h: Likewise.
+	* config/arc/gmon/mcount.c: Likewise.
+	* config/arc/gmon/prof-freq-stub.S: Likewise.
+	* config/arc/gmon/prof-freq.c: Likewise.
+	* config/arc/gmon/profil.S: Likewise.
+	* config/arc/gmon/sys/gmon.h: Likewise.
+	* config/arc/gmon/sys/gmon_out.h: Likewise.
+	* config/arc/t-arc-newlib: Likewise.
+	* config/arc/t-arc700-uClibc: Renamed to t-arc-uClibc.
+
+2016-12-12  George Spelvin  <linux@sciencehorizons.net>
+
+	* config/avr/lib1funcs.S (__ashrdi3): Fix typo from r243545.
+
+2016-12-12  George Spelvin  <linux@sciencehorizons.net>
+
+	* config/avr/lib1funcs.S (__ashldi3): Use __tmp_reg__ to restore
+	R16 instead of push + pop.
+	(__ashrdi3, __lshrdi3): Same. And use __zero_reg__ for signs.
+
+2016-12-10  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.host (i[34567]86-*-netbsdelf*): Add i386/t-crtstuff to
+	tmake_file.
+
 2016-12-05  Cupertino Miranda  <cmiranda@synopsys.com>
 
 	* config.host (arc*-*-linux-uclibc*): Use default extra
@@ -8208,7 +8331,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2016 Free Software Foundation, Inc.
+Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

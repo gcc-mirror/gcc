@@ -42,7 +42,7 @@ ACLOCAL_AMFLAGS = -I ./config -I ../config
 
 AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
 	$(SPLIT_STACK) $(WARN_CFLAGS) \
-	$(STRINGOPS_FLAG) $(OSCFLAGS) \
+	$(STRINGOPS_FLAG) $(HWCAP_CFLAGS) $(OSCFLAGS) \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
 	-I $(MULTIBUILDTOP)../../gcc/include
 
@@ -346,7 +346,8 @@ toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 
 toolexeclibgoruntime_DATA = \
 	runtime/debug.gox \
-	runtime/pprof.gox
+	runtime/pprof.gox \
+	runtime/trace.gox
 
 toolexeclibgosyncdir = $(toolexeclibgodir)/sync
 
@@ -358,6 +359,11 @@ toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
 	testing/quick.gox
+
+toolexeclibgotestinginternaldir = $(toolexeclibgotestingdir)/internal
+
+toolexeclibgotestinginternal_DATA = \
+	testing/internal/testdeps.gox
 
 toolexeclibgotextdir = $(toolexeclibgodir)/text
 
@@ -446,10 +452,6 @@ runtime_files = \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strslice.c \
-	runtime/go-type-complex.c \
-	runtime/go-type-float.c \
-	runtime/go-type-identity.c \
-	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
 	runtime/go-unsafe-new.c \
 	runtime/go-unsafe-newarray.c \
@@ -561,7 +563,7 @@ s-sigtab: $(srcdir)/mksigtab.sh gen-sysinfo.go
 runtime.inc: s-runtime-inc; @true
 s-runtime-inc: runtime.lo Makefile
 	rm -f runtime.inc.tmp2
-	grep -v "#define _" runtime.inc.tmp | grep -v "#define c[01] " > runtime.inc.tmp2
+	grep -v "#define _" runtime.inc.tmp | grep -v "#define [cm][01234] " > runtime.inc.tmp2
 	for pattern in '_[GP][a-z]' _Max _Lock _Sig _Trace _MHeap _Num; do \
 	  grep "#define $$pattern" runtime.inc.tmp >> runtime.inc.tmp2; \
 	done
@@ -673,6 +675,7 @@ PACKAGES = \
 	archive/zip \
 	bufio \
 	bytes \
+	cmd/internal/browser \
 	compress/bzip2 \
 	compress/flate \
 	compress/gzip \
@@ -690,6 +693,7 @@ PACKAGES = \
 	crypto/ecdsa \
 	crypto/elliptic \
 	crypto/hmac \
+	crypto/internal/cipherhw \
 	crypto/md5 \
 	crypto/rand \
 	crypto/rc4 \
@@ -740,8 +744,16 @@ PACKAGES = \
 	go/scanner \
 	go/token \
 	go/types \
+	golang_org/x/crypto/chacha20poly1305 \
+	golang_org/x/crypto/chacha20poly1305/internal/chacha20 \
+	golang_org/x/crypto/curve25519 \
+	golang_org/x/crypto/poly1305 \
 	golang_org/x/net/http2/hpack \
+	golang_org/x/net/idna \
 	golang_org/x/net/lex/httplex \
+	golang_org/x/text/transform \
+	golang_org/x/text/unicode/norm \
+	golang_org/x/text/width \
 	hash \
 	hash/adler32 \
 	hash/crc32 \
@@ -759,6 +771,7 @@ PACKAGES = \
 	image/png \
 	index/suffixarray \
 	internal/nettrace \
+	internal/pprof/profile \
 	internal/race \
 	internal/singleflight \
 	internal/syscall/unix \
@@ -806,6 +819,8 @@ PACKAGES = \
 	runtime/internal/atomic \
 	runtime/internal/sys \
 	runtime/pprof \
+	runtime/pprof/internal/protopprof \
+	runtime/trace \
 	sort \
 	strconv \
 	strings \
@@ -813,6 +828,7 @@ PACKAGES = \
 	sync/atomic \
 	syscall \
 	testing \
+	testing/internal/testdeps \
 	testing/iotest \
 	testing/quick \
 	text/scanner \
@@ -833,6 +849,7 @@ libgo_go_objs = \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
+	$(golang_org_x_net_lif_lo) \
 	$(golang_org_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
 	$(os_lib_inotify_lo) \
@@ -1117,12 +1134,25 @@ if LIBGO_IS_BSD
 
 # Build golang_org/x/net/route only on BSD systems.
 
-$(eval $(call PACKAGE_template,golang_org/x/net/route)
+$(eval $(call PACKAGE_template,golang_org/x/net/route))
 
 golang_org_x_net_route_lo = \
-	golang_org/x/net/route/route.lo
+	golang_org/x/net/route.lo
 golang_org_x_net_route_check = \
 	golang_org/x/net/route/check
+
+endif
+
+if LIBGO_IS_SOLARIS
+
+# Build golang_org/x/net/lif only on Solaris systems.
+
+$(eval $(call PACKAGE_template,golang_org/x/net/lif))
+
+golang_org_x_net_lif_lo = \
+	golang_org/x/net/lif.lo
+golang_org_x_net_lif_check = \
+	golang_org/x/net/lif/check
 
 endif
 
@@ -1213,8 +1243,14 @@ TEST_PACKAGES = \
 	go/scanner/check \
 	go/token/check \
 	go/types/check \
+	golang_org/x/crypto/chacha20poly1305/check \
+	golang_org/x/crypto/chacha20poly1305/internal/chacha20/check \
+	golang_org/x/crypto/curve25519/check \
+	golang_org/x/crypto/poly1305/check \
 	golang_org/x/net/http2/hpack/check \
+	golang_org/x/net/idna/check \
 	golang_org/x/net/lex/httplex/check \
+	$(golang_org_x_net_lif_check) \
 	$(golang_org_x_net_route_check) \
 	hash/adler32/check \
 	hash/crc32/check \
@@ -1225,6 +1261,7 @@ TEST_PACKAGES = \
 	image/jpeg/check \
 	image/png/check \
 	index/suffixarray/check \
+	internal/pprof/profile/check \
 	internal/singleflight/check \
 	internal/trace/check \
 	io/ioutil/check \
@@ -1255,9 +1292,10 @@ TEST_PACKAGES = \
 	path/filepath/check \
 	regexp/syntax/check \
 	runtime/debug/check \
-	runtime/pprof/check \
 	runtime/internal/atomic/check \
 	runtime/internal/sys/check \
+	runtime/pprof/check \
+	runtime/pprof/internal/protopprof/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \

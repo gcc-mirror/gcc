@@ -75,7 +75,7 @@ as the command prompt in the examples in this document):
 .. code-block:: sh
 
   $ gcc -c hello.adb
-  
+
 
 *gcc* is the command used to run the compiler. This compiler is
 capable of compiling programs in several languages, including Ada and
@@ -273,4 +273,3 @@ Ada make tools, *gnatmake* does not rely on the dependencies that were
 found by the compiler on a previous compilation, which may possibly
 be wrong when sources change. *gnatmake* determines the exact set of
 dependencies from scratch each time it is run.
-

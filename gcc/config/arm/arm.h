@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2017 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -131,7 +131,7 @@ extern tree arm_fp16_type_node;
 #define TARGET_IWMMXT_ABI (TARGET_32BIT && arm_abi == ARM_ABI_IWMMXT)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
-#define TARGET_BACKTRACE	        (leaf_function_p () \
+#define TARGET_BACKTRACE	        (crtl->is_leaf \
 				         ? TARGET_TPCS_LEAF_FRAME \
 				         : TARGET_TPCS_FRAME)
 #define TARGET_AAPCS_BASED \
@@ -161,28 +161,27 @@ extern tree arm_fp16_type_node;
    to be more careful with TARGET_NEON as noted below.  */
 
 /* FPU is has the full VFPv3/NEON register file of 32 D registers.  */
-#define TARGET_VFPD32 (TARGET_FPU_REGS == VFP_REG_D32)
+#define TARGET_VFPD32 (bitmap_bit_p (arm_active_target.isa, isa_bit_fp_d32))
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (TARGET_FPU_REV >= 3)
+#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv3))
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (TARGET_FPU_REV >= 5)
+#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_FPv5))
 
 /* FPU only supports VFP single-precision instructions.  */
-#define TARGET_VFP_SINGLE (TARGET_FPU_REGS == VFP_REG_SINGLE)
+#define TARGET_VFP_SINGLE (!TARGET_VFP_DOUBLE)
 
 /* FPU supports VFP double-precision instructions.  */
-#define TARGET_VFP_DOUBLE (TARGET_FPU_REGS != VFP_REG_SINGLE)
+#define TARGET_VFP_DOUBLE (bitmap_bit_p (arm_active_target.isa, isa_bit_fp_dbl))
 
 /* FPU supports half-precision floating-point with NEON element load/store.  */
 #define TARGET_NEON_FP16					\
-  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON)		\
-   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
+  (bitmap_bit_p (arm_active_target.isa, isa_bit_neon)		\
+   && bitmap_bit_p (arm_active_target.isa, isa_bit_fp16conv))
 
-/* FPU supports VFP half-precision floating-point.  */
-#define TARGET_FP16							\
-  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
+/* FPU supports VFP half-precision floating-point conversions.  */
+#define TARGET_FP16 (bitmap_bit_p (arm_active_target.isa, isa_bit_fp16conv))
 
 /* FPU supports converting between HFmode and DFmode in a single hardware
    step.  */
@@ -190,14 +189,14 @@ extern tree arm_fp16_type_node;
   (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (TARGET_FPU_REV >= 4)
+#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv4))
 
 /* FPU is ARMv8 compatible.  */
-#define TARGET_FPU_ARMV8 (TARGET_FPU_REV >= 8)
+#define TARGET_FPU_ARMV8					\
+  (bitmap_bit_p (arm_active_target.isa, isa_bit_FP_ARMv8))
 
 /* FPU supports Crypto extensions.  */
-#define TARGET_CRYPTO							\
-  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_CRYPTO))
+#define TARGET_CRYPTO (bitmap_bit_p (arm_active_target.isa, isa_bit_crypto))
 
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
@@ -205,7 +204,7 @@ extern tree arm_fp16_type_node;
    available.  */
 #define TARGET_NEON							\
   (TARGET_32BIT && TARGET_HARD_FLOAT					\
-   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON))
+   && bitmap_bit_p (arm_active_target.isa, isa_bit_neon))
 
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
@@ -252,8 +251,7 @@ extern tree arm_fp16_type_node;
 				  || (arm_arch8 && !arm_arch_notm))
 
 /* Nonzero if this chip supports LPAE.  */
-#define TARGET_HAVE_LPAE						\
-  (arm_arch7 && ARM_FSET_HAS_CPU1 (insn_flags, FL_FOR_ARCH7VE))
+#define TARGET_HAVE_LPAE (arm_arch7ve)
 
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
 #define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM)		\
@@ -328,49 +326,11 @@ extern tree arm_fp16_type_node;
   {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
-/* FPU feature sets.  */
-
-typedef unsigned long arm_fpu_feature_set;
-
-/* Test for an FPU feature.  */
-#define ARM_FPU_FSET_HAS(S,F) (((S) & (F)) == (F))
-
-/* FPU Features.  */
-#define FPU_FL_NONE	(0)
-#define FPU_FL_NEON	(1 << 0)	/* NEON instructions.  */
-#define FPU_FL_FP16	(1 << 1)	/* Half-precision.  */
-#define FPU_FL_CRYPTO	(1 << 2)	/* Crypto extensions.  */
-
-/* Which floating point model to use.  */
-enum arm_fp_model
-{
-  ARM_FP_MODEL_UNKNOWN,
-  /* VFP floating point model.  */
-  ARM_FP_MODEL_VFP
-};
-
-enum vfp_reg_type
-{
-  VFP_NONE = 0,
-  VFP_REG_D16,
-  VFP_REG_D32,
-  VFP_REG_SINGLE
-};
-
 extern const struct arm_fpu_desc
 {
   const char *name;
-  int rev;
-  enum vfp_reg_type regs;
-  arm_fpu_feature_set features;
+  enum isa_feature isa_bits[isa_num_bits];
 } all_fpus[];
-
-/* Accessors.  */
-
-#define TARGET_FPU_NAME     (all_fpus[arm_fpu_index].name)
-#define TARGET_FPU_REV      (all_fpus[arm_fpu_index].rev)
-#define TARGET_FPU_REGS     (all_fpus[arm_fpu_index].regs)
-#define TARGET_FPU_FEATURES (all_fpus[arm_fpu_index].features)
 
 /* Which floating point hardware to schedule for.  */
 extern int arm_fpu_attr;

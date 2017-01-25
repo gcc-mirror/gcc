@@ -35,7 +35,6 @@ with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Elists;    use Elists;
 with Errout;    use Errout;
-with Exp_Ch7;   use Exp_Ch7;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
@@ -192,6 +191,10 @@ package body Sem_Ch7 is
    -- Analyze_Package_Body_Helper --
    ---------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Package_Body_Helper (N : Node_Id) is
       procedure Hide_Public_Entities (Decls : List_Id);
       --  Attempt to hide all public entities found in declarative list Decls
@@ -211,9 +214,9 @@ package body Sem_Ch7 is
       --------------------------
 
       procedure Hide_Public_Entities (Decls : List_Id) is
-         function Contains_Subp_Or_Const_Refs (N : Node_Id) return Boolean;
+         function Contains_Subprograms_Refs (N : Node_Id) return Boolean;
          --  Subsidiary to routine Has_Referencer. Determine whether a node
-         --  contains a reference to a subprogram or a non-static constant.
+         --  contains a reference to a subprogram.
          --  WARNING: this is a very expensive routine as it performs a full
          --  tree traversal.
 
@@ -226,23 +229,21 @@ package body Sem_Ch7 is
          --  in the range Last (Decls) .. Referencer are hidden from external
          --  visibility.
 
-         ---------------------------------
-         -- Contains_Subp_Or_Const_Refs --
-         ---------------------------------
+         -------------------------------
+         -- Contains_Subprograms_Refs --
+         -------------------------------
 
-         function Contains_Subp_Or_Const_Refs (N : Node_Id) return Boolean is
+         function Contains_Subprograms_Refs (N : Node_Id) return Boolean is
             Reference_Seen : Boolean := False;
 
-            function Is_Subp_Or_Const_Ref
-              (N : Node_Id) return Traverse_Result;
-            --  Determine whether a node denotes a reference to a subprogram or
-            --  a non-static constant.
+            function Is_Subprogram_Ref (N : Node_Id) return Traverse_Result;
+            --  Determine whether a node denotes a reference to a subprogram
 
-            --------------------------
-            -- Is_Subp_Or_Const_Ref --
-            --------------------------
+            -----------------------
+            -- Is_Subprogram_Ref --
+            -----------------------
 
-            function Is_Subp_Or_Const_Ref
+            function Is_Subprogram_Ref
               (N : Node_Id) return Traverse_Result
             is
                Val : Node_Id;
@@ -268,7 +269,8 @@ package body Sem_Ch7 is
                   Reference_Seen := True;
                   return Abandon;
 
-               --  Detect the use of a non-static constant
+               --  Constants can be substituted by their value in gigi, which
+               --  may contain a reference, so be conservative for them.
 
                elsif Is_Entity_Name (N)
                  and then Present (Entity (N))
@@ -285,18 +287,18 @@ package body Sem_Ch7 is
                end if;
 
                return OK;
-            end Is_Subp_Or_Const_Ref;
+            end Is_Subprogram_Ref;
 
-            procedure Find_Subp_Or_Const_Ref is
-              new Traverse_Proc (Is_Subp_Or_Const_Ref);
+            procedure Find_Subprograms_Ref is
+              new Traverse_Proc (Is_Subprogram_Ref);
 
-         --  Start of processing for Contains_Subp_Or_Const_Refs
+         --  Start of processing for Contains_Subprograms_Refs
 
          begin
-            Find_Subp_Or_Const_Ref (N);
+            Find_Subprograms_Ref (N);
 
             return Reference_Seen;
-         end Contains_Subp_Or_Const_Refs;
+         end Contains_Subprograms_Refs;
 
          --------------------
          -- Has_Referencer --
@@ -310,9 +312,11 @@ package body Sem_Ch7 is
             Decl_Id : Entity_Id;
             Spec    : Node_Id;
 
-            Has_Non_Subp_Const_Referencer : Boolean := False;
-            --  Flag set for inlined subprogram bodies that do not contain
-            --  references to other subprograms or non-static constants.
+            Has_Non_Subprograms_Referencer : Boolean := False;
+            --  Flag set if a subprogram body was detected as a referencer but
+            --  does not contain references to other subprograms. In this case,
+            --  if we still are top level, we do not return True immediately,
+            --  but keep hiding subprograms from external visibility.
 
          begin
             if No (Decls) then
@@ -333,9 +337,7 @@ package body Sem_Ch7 is
 
                --  Package declaration
 
-               elsif Nkind (Decl) = N_Package_Declaration
-                 and then not Has_Non_Subp_Const_Referencer
-               then
+               elsif Nkind (Decl) = N_Package_Declaration then
                   Spec := Specification (Decl);
 
                   --  Inspect the declarations of a non-generic package to try
@@ -372,9 +374,7 @@ package body Sem_Ch7 is
                   --  Inspect the declarations of a non-generic package body to
                   --  try and hide more entities from external visibility.
 
-                  elsif not Has_Non_Subp_Const_Referencer
-                    and then Has_Referencer (Declarations (Decl))
-                  then
+                  elsif Has_Referencer (Declarations (Decl)) then
                      return True;
                   end if;
 
@@ -397,12 +397,12 @@ package body Sem_Ch7 is
                      then
                         --  Inspect the statements of the subprogram body
                         --  to determine whether the body references other
-                        --  subprograms and/or non-static constants.
+                        --  subprograms.
 
                         if Top_Level
-                          and then not Contains_Subp_Or_Const_Refs (Decl)
+                          and then not Contains_Subprograms_Refs (Decl)
                         then
-                           Has_Non_Subp_Const_Referencer := True;
+                           Has_Non_Subprograms_Referencer := True;
                         else
                            return True;
                         end if;
@@ -426,9 +426,9 @@ package body Sem_Ch7 is
 
                      if Has_Pragma_Inline (Decl_Id) then
                         if Top_Level
-                          and then not Contains_Subp_Or_Const_Refs (Decl)
+                          and then not Contains_Subprograms_Refs (Decl)
                         then
-                           Has_Non_Subp_Const_Referencer := True;
+                           Has_Non_Subprograms_Referencer := True;
                         else
                            return True;
                         end if;
@@ -441,6 +441,9 @@ package body Sem_Ch7 is
                --  if they are not followed by a construct which can reference
                --  and export them. The Is_Public flag is reset on top level
                --  entities only as anything nested is local to its context.
+               --  Likewise for subprograms, but we work harder for them as
+               --  their visibility can have a significant impact on inlining
+               --  decisions in the back end.
 
                elsif Nkind_In (Decl, N_Exception_Declaration,
                                      N_Object_Declaration,
@@ -455,7 +458,7 @@ package body Sem_Ch7 is
                     and then not Is_Exported (Decl_Id)
                     and then No (Interface_Name (Decl_Id))
                     and then
-                      (not Has_Non_Subp_Const_Referencer
+                      (not Has_Non_Subprograms_Referencer
                         or else Nkind (Decl) = N_Subprogram_Declaration)
                   then
                      Set_Is_Public (Decl_Id, False);
@@ -465,7 +468,7 @@ package body Sem_Ch7 is
                Prev (Decl);
             end loop;
 
-            return Has_Non_Subp_Const_Referencer;
+            return Has_Non_Subprograms_Referencer;
          end Has_Referencer;
 
          --  Local variables
@@ -536,10 +539,10 @@ package body Sem_Ch7 is
 
       --  Local variables
 
-      Save_Ghost_Mode  : constant Ghost_Mode_Type := Ghost_Mode;
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
+      Mode             : Ghost_Mode_Type;
       New_N            : Node_Id;
       Pack_Decl        : Node_Id;
       Spec_Id          : Entity_Id;
@@ -642,7 +645,7 @@ package body Sem_Ch7 is
       --  the mode now to ensure that any nodes generated during analysis and
       --  expansion are properly flagged as ignored Ghost.
 
-      Set_Ghost_Mode (N, Spec_Id);
+      Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
 
       Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
       Style.Check_Identifier (Body_Id, Spec_Id);
@@ -735,19 +738,6 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma           (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited     (Body_Id);
          Set_SPARK_Aux_Pragma_Inherited (Body_Id);
-      end if;
-
-      --  Inherit the "ghostness" of the package spec. Note that this property
-      --  is not directly inherited as the body may be subject to a different
-      --  Ghost assertion policy.
-
-      if Ghost_Mode > None or else Is_Ghost_Entity (Spec_Id) then
-         Set_Is_Ghost_Entity (Body_Id);
-
-         --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(14)).
-
-         Check_Ghost_Completion (Spec_Id, Body_Id);
       end if;
 
       Set_Categorization_From_Pragmas (N);
@@ -941,7 +931,7 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Mode (Mode);
    end Analyze_Package_Body_Helper;
 
    ---------------------------------
@@ -950,7 +940,6 @@ package body Sem_Ch7 is
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
       Id  : constant Node_Id := Defining_Entity (N);
-      Par : constant Node_Id := Parent_Spec (N);
 
       Is_Comp_Unit : constant Boolean :=
                        Nkind (Parent (N)) = N_Compilation_Unit;
@@ -980,16 +969,6 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited     (Id);
          Set_SPARK_Aux_Pragma_Inherited (Id);
-      end if;
-
-      --  A package declared within a Ghost refion is automatically Ghost. A
-      --  child package is Ghost when its parent is Ghost (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None
-        or else (Present (Par)
-                  and then Is_Ghost_Entity (Defining_Entity (Unit (Par))))
-      then
-         Set_Is_Ghost_Entity (Id);
       end if;
 
       --  Analyze aspect specifications immediately, since we need to recognize
@@ -1451,37 +1430,6 @@ package body Sem_Ch7 is
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
          end if;
 
-         if Is_Type (E) then
-
-            --  Each private type subject to pragma Default_Initial_Condition
-            --  declares a specialized procedure which verifies the assumption
-            --  of the pragma. The declaration appears in the visible part of
-            --  the package to allow for being called from the outside.
-
-            if Has_Default_Init_Cond (E) then
-               Build_Default_Init_Cond_Procedure_Declaration (E);
-
-            --  A private extension inherits the default initial condition
-            --  procedure from its parent type.
-
-            elsif Has_Inherited_Default_Init_Cond (E) then
-               Inherit_Default_Init_Cond_Procedure (E);
-            end if;
-
-            --  Preanalyze and resolve the invariants of a private type at the
-            --  end of the visible declarations to catch potential errors. Note
-            --  that inherited class-wide invariants are not considered because
-            --  they have already been resolved.
-
-            if Ekind_In (E, E_Limited_Private_Type,
-                            E_Private_Type,
-                            E_Record_Type_With_Private)
-              and then Has_Own_Invariants (E)
-            then
-               Build_Invariant_Procedure_Body (E, Partial_Invariant => True);
-            end if;
-         end if;
-
          Next_Entity (E);
       end loop;
 
@@ -1661,20 +1609,6 @@ package body Sem_Ch7 is
               ("full view of & does not have preelaborable initialization", E);
          end if;
 
-         --  Preanalyze and resolve the invariants of a private type's full
-         --  view at the end of the private declarations in case freezing did
-         --  not take place either due to errors or because the context is a
-         --  generic unit.
-
-         if Is_Type (E)
-           and then not Is_Private_Type (E)
-           and then Has_Private_Declaration (E)
-           and then Has_Invariants (E)
-           and then Serious_Errors_Detected > 0
-         then
-            Build_Invariant_Procedure_Body (E);
-         end if;
-
          Next_Entity (E);
       end loop;
 
@@ -1788,13 +1722,6 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
-
-      --  A type declared within a Ghost region is automatically Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
@@ -2251,6 +2178,7 @@ package body Sem_Ch7 is
                then
                   Set_Full_View (Id, Underlying_Full_View (Full));
                   Set_Underlying_Full_View (Id, Full);
+                  Set_Is_Underlying_Full_View (Full);
 
                   Set_Underlying_Full_View (Full, Empty);
                   Set_Is_Frozen (Full_View (Id));
@@ -2629,6 +2557,16 @@ package body Sem_Ch7 is
          end if;
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
+
+         --  Propagate Default_Initial_Condition-related attributes from the
+         --  base type of the full view to the full view and vice versa. This
+         --  may seem strange, but is necessary depending on which type
+         --  triggered the generation of the DIC procedure body. As a result,
+         --  both the full view and its base type carry the same DIC-related
+         --  information.
+
+         Propagate_DIC_Attributes (Full, From_Typ => Full_Base);
+         Propagate_DIC_Attributes (Full_Base, From_Typ => Full);
 
          --  Propagate invariant-related attributes from the base type of the
          --  full view to the full view and vice versa. This may seem strange,

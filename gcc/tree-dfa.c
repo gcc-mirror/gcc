@@ -1,5 +1,5 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -305,6 +305,11 @@ ssa_default_def (struct function *fn, tree var)
   gcc_assert (VAR_P (var)
 	      || TREE_CODE (var) == PARM_DECL
 	      || TREE_CODE (var) == RESULT_DECL);
+
+  /* Always NULL_TREE for rtl function dumps.  */
+  if (!fn->gimple_df)
+    return NULL_TREE;
+
   in.var = (tree)&ind;
   ind.uid = DECL_UID (var);
   return DEFAULT_DEFS (fn)->find_with_hash ((tree)&in, DECL_UID (var));

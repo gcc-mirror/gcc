@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -685,6 +685,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { }
 #else
 	  _Rb_tree_impl() = default;
+	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
 #endif
 
 	  _Rb_tree_impl(const _Rb_tree_impl& __x)
@@ -692,8 +693,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  , _Base_key_compare(__x._M_key_compare)
 	  { }
 
-#if __cplusplus >= 201103L
-	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
+#if __cplusplus < 201103L
+	  _Rb_tree_impl(const _Key_compare& __comp, const _Node_allocator& __a)
+	  : _Node_allocator(__a), _Base_key_compare(__comp)
+	  { }
+#else
 	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
 	  : _Node_allocator(std::move(__a)), _Base_key_compare(__comp)
 	  { }
@@ -1100,6 +1104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       erase(const_iterator __position)
       {
+	__glibcxx_assert(__position != end());
 	const_iterator __result = __position;
 	++__result;
 	_M_erase_aux(__position);
@@ -1111,6 +1116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       erase(iterator __position)
       {
+	__glibcxx_assert(__position != end());
 	iterator __result = __position;
 	++__result;
 	_M_erase_aux(__position);
@@ -1119,11 +1125,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
       void
       erase(iterator __position)
-      { _M_erase_aux(__position); }
+      {
+	__glibcxx_assert(__position != end());
+	_M_erase_aux(__position);
+      }
 
       void
       erase(const_iterator __position)
-      { _M_erase_aux(__position); }
+      {
+	__glibcxx_assert(__position != end());
+	_M_erase_aux(__position);
+      }
 #endif
       size_type
       erase(const key_type& __x);
@@ -2473,7 +2485,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	clear();
       else
 	while (__first != __last)
-	  erase(__first++);
+	  _M_erase_aux(__first++);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -2484,7 +2496,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       pair<iterator, iterator> __p = equal_range(__x);
       const size_type __old_size = size();
-      erase(__p.first, __p.second);
+      _M_erase_aux(__p.first, __p.second);
       return __old_size - size();
     }
 

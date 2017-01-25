@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -85,32 +85,13 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == FLAGS_REG")))
 
-;; Match an SI or HImode register for a zero_extract.
+;; Match a DI, SI or HImode register for a zero_extract.
 (define_special_predicate "ext_register_operand"
-  (match_operand 0 "register_operand")
-{
-  if ((!TARGET_64BIT || GET_MODE (op) != DImode)
-      && GET_MODE (op) != SImode && GET_MODE (op) != HImode)
-    return false;
-  if (SUBREG_P (op))
-    op = SUBREG_REG (op);
-
-  /* Be careful to accept only registers having upper parts.  */
-  return (REG_P (op)
-	  && (REGNO (op) > LAST_VIRTUAL_REGISTER || QI_REGNO_P (REGNO (op))));
-})
-
-;; Match nonimmediate operands, but exclude memory operands on 64bit targets.
-(define_predicate "nonimmediate_x64nomem_operand"
-  (if_then_else (match_test "TARGET_64BIT")
-    (match_operand 0 "register_operand")
-    (match_operand 0 "nonimmediate_operand")))
-
-;; Match general operands, but exclude memory operands on 64bit targets.
-(define_predicate "general_x64nomem_operand"
-  (if_then_else (match_test "TARGET_64BIT")
-    (match_operand 0 "nonmemory_operand")
-    (match_operand 0 "general_operand")))
+  (and (match_operand 0 "register_operand")
+       (ior (and (match_test "TARGET_64BIT")
+		 (match_test "GET_MODE (op) == DImode"))
+	    (match_test "GET_MODE (op) == SImode")
+	    (match_test "GET_MODE (op) == HImode"))))
 
 ;; Match register operands, but include memory operands for TARGET_SSE_MATH.
 (define_predicate "register_ssemem_operand"
@@ -765,6 +746,14 @@
   return i == 2 || i == 4 || i == 8;
 })
 
+;; Match 1, 2, or 3.  Used for lea shift amounts.
+(define_predicate "const123_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT i = INTVAL (op);
+  return i == 1 || i == 2 || i == 3;
+})
+
 ;; Match 2, 3, 6, or 7
 (define_predicate "const2367_operand"
   (match_code "const_int")
@@ -1040,6 +1029,10 @@
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const0_operand")))
+
+(define_predicate "norex_memory_operand"
+  (and (match_operand 0 "memory_operand")
+       (not (match_test "x86_extended_reg_mentioned_p (op)"))))
 
 ;; Return true for RTX codes that force SImode address.
 (define_predicate "SImode_address_operand"

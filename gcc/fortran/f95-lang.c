@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gfortran.h"
 #include "trans.h"
+#include "stringpool.h"
 #include "diagnostic.h" /* For errorcount/warningcount */
 #include "langhooks.h"
 #include "langhooks-def.h"
@@ -190,7 +191,8 @@ gfc_create_decls (void)
   gfc_init_constants ();
 
   /* Build our translation-unit decl.  */
-  current_translation_unit = build_translation_unit_decl (NULL_TREE);
+  current_translation_unit
+    = build_translation_unit_decl (get_identifier (main_input_filename));
   debug_hooks->register_main_translation_unit (current_translation_unit);
 }
 

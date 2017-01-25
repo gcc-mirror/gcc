@@ -1,5 +1,5 @@
 /* Header for Fortran 95 types backend support.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -70,7 +70,7 @@ tree gfc_get_character_type_len (int, tree);
 tree gfc_get_character_type_len_for_eltype (tree, tree);
 
 tree gfc_sym_type (gfc_symbol *);
-tree gfc_typenode_for_spec (gfc_typespec *, bool in_coarray = false);
+tree gfc_typenode_for_spec (gfc_typespec *, int c = 0);
 int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
 tree gfc_get_function_type (gfc_symbol *);
@@ -81,8 +81,7 @@ tree gfc_build_uint_type (int);
 
 tree gfc_get_element_type (tree);
 tree gfc_get_array_type_bounds (tree, int, int, tree *, tree *, int,
-				enum gfc_array_kind, bool,
-				bool in_coarray = false);
+				enum gfc_array_kind, bool);
 tree gfc_get_nodesc_array_type (tree, gfc_array_spec *, gfc_packed, bool);
 
 /* Add a field of given name and type to a UNION_TYPE or RECORD_TYPE.  */

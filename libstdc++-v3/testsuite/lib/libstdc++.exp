@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001-2016 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1968,7 +1968,7 @@ proc check_v3_target_filesystem_ts { } {
 	close $f
 
 	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
 	set lines [v3_target_compile $src /dev/null preprocess ""]
 	set cxxflags $cxxflags_saved
@@ -1981,6 +1981,34 @@ proc check_v3_target_filesystem_ts { } {
     }
     verbose "check_v3_target_filesystem_ts: $et_filesystem_ts" 2
     return $et_filesystem_ts
+}
+
+# Return 1 if the "cxx11" ABI is in use using the current flags, 0 otherwise.
+proc check_effective_target_cxx11-abi { } {
+    global cxxflags
+
+    # Set up and preprocess a C++ test program that depends
+    # on the new ABI being enabled.
+    set src cxx11_abi[pid].cc
+
+    set f [open $src "w"]
+    puts $f "#include <bits/c++config.h>"
+    puts $f "#if ! _GLIBCXX_USE_CXX11_ABI"
+    puts $f "#  error old ABI in use"
+    puts $f "#endif"
+    close $f
+
+    set lines [v3_target_compile $src /dev/null preprocess ""]
+    file delete $src
+
+    if [string match "" $lines] {
+        # No error message, preprocessing succeeded.
+        verbose "check_v3_cxx11_abi: `1'" 2
+        return 1
+    }
+
+    verbose "check_v3_cxx11_abi: `0'" 2
+    return 0
 }
 
 set additional_prunes ""

@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -2118,8 +2118,6 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      gcc_assert (TREE_CODE (CHREC_RIGHT (chrec)) == INTEGER_CST);
-
       A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
       return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
 
@@ -2166,7 +2164,9 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
    constructed as evolutions in dimension DIM.  */
 
 static void
-compute_overlap_steps_for_affine_univar (int niter, int step_a, int step_b,
+compute_overlap_steps_for_affine_univar (HOST_WIDE_INT niter,
+					 HOST_WIDE_INT step_a,
+					 HOST_WIDE_INT step_b,
 					 affine_fn *overlaps_a,
 					 affine_fn *overlaps_b,
 					 tree *last_conflicts, int dim)
@@ -2174,8 +2174,8 @@ compute_overlap_steps_for_affine_univar (int niter, int step_a, int step_b,
   if (((step_a > 0 && step_b > 0)
        || (step_a < 0 && step_b < 0)))
     {
-      int step_overlaps_a, step_overlaps_b;
-      int gcd_steps_a_b, last_conflict, tau2;
+      HOST_WIDE_INT step_overlaps_a, step_overlaps_b;
+      HOST_WIDE_INT gcd_steps_a_b, last_conflict, tau2;
 
       gcd_steps_a_b = gcd (step_a, step_b);
       step_overlaps_a = step_b / gcd_steps_a_b;
@@ -2229,7 +2229,7 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
 				      tree *last_conflicts)
 {
   bool xz_p, yz_p, xyz_p;
-  int step_x, step_y, step_z;
+  HOST_WIDE_INT step_x, step_y, step_z;
   HOST_WIDE_INT niter_x, niter_y, niter_z, niter;
   affine_fn overlaps_a_xz, overlaps_b_xz;
   affine_fn overlaps_a_yz, overlaps_b_yz;
@@ -3194,7 +3194,8 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
       if (TREE_CODE (access_fn_a) == POLYNOMIAL_CHREC
 	  && TREE_CODE (access_fn_b) == POLYNOMIAL_CHREC)
 	{
-	  int dist, index;
+	  HOST_WIDE_INT dist;
+	  int index;
 	  int var_a = CHREC_VARIABLE (access_fn_a);
 	  int var_b = CHREC_VARIABLE (access_fn_b);
 
@@ -3268,7 +3269,7 @@ add_multivariate_self_dist (struct data_dependence_relation *ddr, tree c_2)
   tree c_1 = CHREC_LEFT (c_2);
   tree c_0 = CHREC_LEFT (c_1);
   lambda_vector dist_v;
-  int v1, v2, cd;
+  HOST_WIDE_INT v1, v2, cd;
 
   /* Polynomials with more than 2 variables are not handled yet.  When
      the evolution steps are parameters, it is not possible to

@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3241,7 +3241,7 @@ This tree has one field that holds the name of the spawning function.
 @end smallexample
 
 Detailed description for usage and functionality of @code{_Cilk_spawn} can be 
-found at http://www.cilkplus.org
+found at @uref{https://www.cilkplus.org}.
 
 @item CILK_SYNC_STMT
 

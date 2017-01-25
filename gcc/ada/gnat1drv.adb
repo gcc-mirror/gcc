@@ -36,7 +36,7 @@ with Fmap;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Frontend;
-with Ghost;
+with Ghost;    use Ghost;
 with Gnatvsn;  use Gnatvsn;
 with Inline;
 with Lib;      use Lib;
@@ -286,6 +286,11 @@ procedure Gnat1drv is
 
          Debug_Generated_Code := False;
 
+         --  Disable Exception_Extra_Info (-gnateE) which generates more
+         --  complex trees with no added value, and may confuse CodePeer.
+
+         Exception_Extra_Info := False;
+
          --  Turn cross-referencing on in case it was disabled (e.g. by -gnatD)
          --  to support source navigation.
 
@@ -521,28 +526,37 @@ procedure Gnat1drv is
          Targparm.Frontend_Layout_On_Target := True;
       end if;
 
-      --  Set and check exception mechanism
+      --  Set and check exception mechanism. This is only meaningful when
+      --  compiling, and in particular not meaningful for special modes used
+      --  for program analysis rather than compilation: ASIS mode, CodePeer
+      --  mode and GNATprove mode.
 
-      case Targparm.Frontend_Exceptions_On_Target is
-         when True =>
-            case Targparm.ZCX_By_Default_On_Target is
-               when True =>
-                  Write_Line
-                    ("Run-time library configured incorrectly");
-                  Write_Line
-                    ("(requesting support for Frontend ZCX exceptions)");
-                  raise Unrecoverable_Error;
-               when False =>
-                  Exception_Mechanism := Front_End_SJLJ;
-            end case;
-         when False =>
-            case Targparm.ZCX_By_Default_On_Target is
-               when True =>
-                  Exception_Mechanism := Back_End_ZCX;
-               when False =>
-                  Exception_Mechanism := Back_End_SJLJ;
-            end case;
-      end case;
+      if Operating_Mode = Generate_Code
+        and then not (ASIS_Mode or CodePeer_Mode or GNATprove_Mode)
+      then
+         case Targparm.Frontend_Exceptions_On_Target is
+            when True =>
+               case Targparm.ZCX_By_Default_On_Target is
+                  when True =>
+                     Write_Line
+                       ("Run-time library configured incorrectly");
+                     Write_Line
+                       ("(requesting support for Frontend ZCX exceptions)");
+                     raise Unrecoverable_Error;
+
+                  when False =>
+                     Exception_Mechanism := Front_End_SJLJ;
+               end case;
+
+            when False =>
+               case Targparm.ZCX_By_Default_On_Target is
+                  when True =>
+                     Exception_Mechanism := Back_End_ZCX;
+                  when False =>
+                     Exception_Mechanism := Back_End_SJLJ;
+               end case;
+         end case;
+      end if;
 
       --  Set proper status for overflow check mechanism
 
@@ -905,6 +919,7 @@ procedure Gnat1drv is
    --  Local variables
 
    Back_End_Mode : Back_End.Back_End_Mode_Type;
+   Ecode         : Exit_Code_Type;
 
    Main_Unit_Kind : Node_Kind;
    --  Kind of main compilation unit node
@@ -1058,19 +1073,6 @@ begin
 
       Original_Operating_Mode := Operating_Mode;
       Frontend;
-
-      --  In GNATprove mode, force loading of System unit to ensure that
-      --  System.Interrupt_Priority is available to GNATprove for the
-      --  generation of VCs related to ceiling priority.
-
-      if GNATprove_Mode then
-         declare
-            Unused_E : constant Entity_Id :=
-                         Rtsfind.RTE (Rtsfind.RE_Interrupt_Priority);
-         begin
-            null;
-         end;
-      end if;
 
       --  Exit with errors if the main source could not be parsed
 
@@ -1264,16 +1266,21 @@ begin
          --  it must not produce an ALI or object file. Do not emit any errors
          --  related to code generation because the unit does not exist.
 
-         if Main_Unit_Kind = N_Null_Statement
-           and then Is_Ignored_Ghost_Node
-                      (Original_Node (Unit (Main_Unit_Node)))
-         then
-            null;
+         if Is_Ignored_Ghost_Unit (Main_Unit_Node) then
+
+            --  Exit the gnat driver with success, otherwise external builders
+            --  such as gnatmake and gprbuild will treat the compilation of an
+            --  ignored Ghost unit as a failure. Note that this will produce
+            --  an empty object file for the unit.
+
+            Ecode := E_Success;
 
          --  Otherwise the unit is missing a crucial piece that prevents code
          --  generation.
 
          else
+            Ecode := E_No_Code;
+
             Set_Standard_Error;
             Write_Str ("cannot generate code for file ");
             Write_Name (Unit_File_Name (Main_Unit));
@@ -1334,9 +1341,11 @@ begin
          Namet.Finalize;
          Check_Rep_Info;
 
-         --  Exit program with error indication, to kill object file
+         --  Exit the driver with an appropriate status indicator. This will
+         --  generate an empty object file for ignored Ghost units, otherwise
+         --  no object file will be generated.
 
-         Exit_Program (E_No_Code);
+         Exit_Program (Ecode);
       end if;
 
       --  In -gnatc mode, we only do annotation if -gnatt or -gnatR is also set
@@ -1438,7 +1447,7 @@ begin
       --  are delayed till now, since it is perfectly possible for gigi to
       --  generate errors, modify the tree (in particular by setting flags
       --  indicating that elaboration is required, and also to back annotate
-      --  representation information for List_Rep_Info.
+      --  representation information for List_Rep_Info).
 
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;

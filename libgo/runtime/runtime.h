@@ -7,6 +7,7 @@
 #include "go-assert.h"
 #include <complex.h>
 #include <signal.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,8 +22,6 @@
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
 #endif
-
-#include "go-alloc.h"
 
 #define _STRINGIFY2_(x) #x
 #define _STRINGIFY_(x) _STRINGIFY2_(x)
@@ -52,7 +51,7 @@ typedef uintptr		uintreg;
 
 /* Defined types.  */
 
-typedef	uint8			bool;
+typedef	_Bool			bool;
 typedef	uint8			byte;
 typedef	struct	g		G;
 typedef	struct	mutex		Lock;
@@ -192,7 +191,7 @@ struct ParFor
 					// otherwise parfor may return while other threads are still working
 	ParForThread *thr;		// array of thread descriptors
 	// stats
-	uint64 nsteal;
+	uint64 nsteal __attribute__((aligned(8))); // force alignment for m68k
 	uint64 nstealcnt;
 	uint64 nprocyield;
 	uint64 nosyield;
@@ -233,14 +232,15 @@ enum
  */
 extern	uintptr* runtime_getZerobase(void)
   __asm__(GOSYM_PREFIX "runtime.getZerobase");
-extern	G**	runtime_allg;
-extern	uintptr runtime_allglen;
+extern G* runtime_getallg(intgo)
+  __asm__(GOSYM_PREFIX "runtime.getallg");
+extern uintptr runtime_getallglen(void)
+  __asm__(GOSYM_PREFIX "runtime.getallglen");
 extern	G*	runtime_lastg;
-extern	M*	runtime_allm;
+extern	M*	runtime_getallm(void)
+  __asm__(GOSYM_PREFIX "runtime.getallm");
 extern	P**	runtime_allp;
 extern	Sched*  runtime_sched;
-extern	int32	runtime_gomaxprocs;
-extern	uint32	runtime_needextram;
 extern	uint32	runtime_panicking(void)
   __asm__ (GOSYM_PREFIX "runtime.getPanicking");
 extern	int8*	runtime_goos;
@@ -260,7 +260,8 @@ extern	bool	runtime_isarchive;
 intgo	runtime_findnull(const byte*)
   __asm__ (GOSYM_PREFIX "runtime.findnull");
 
-void	runtime_gogo(G*);
+void	runtime_gogo(G*)
+  __asm__ (GOSYM_PREFIX "runtime.gogo");
 struct __go_func_type;
 void	runtime_args(int32, byte**)
   __asm__ (GOSYM_PREFIX "runtime.args");
@@ -294,33 +295,26 @@ void	runtime_printtrace(Slice, G*)
 #define runtime_read(d, v, n) read((d), (v), (n))
 #define runtime_write(d, v, n) write((d), (v), (n))
 #define runtime_close(d) close(d)
-void	runtime_ready(G*);
+void	runtime_ready(G*, intgo, bool)
+  __asm__ (GOSYM_PREFIX "runtime.ready");
 String	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*, intgo);
 void*	runtime_mstart(void*);
-G*	runtime_malg(int32, byte**, uintptr*);
-void	runtime_mpreinit(M*);
-void	runtime_minit(void);
-void	runtime_unminit(void);
-void	runtime_needm(void)
-  __asm__ (GOSYM_PREFIX "runtime.needm");
-void	runtime_dropm(void)
-  __asm__ (GOSYM_PREFIX "runtime.dropm");
-void	runtime_signalstack(byte*, int32);
+G*	runtime_malg(bool, bool, byte**, uintptr*)
+	__asm__(GOSYM_PREFIX "runtime.malg");
+void	runtime_minit(void)
+  __asm__ (GOSYM_PREFIX "runtime.minit");
+void	runtime_signalstack(byte*, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.signalstack");
 MCache*	runtime_allocmcache(void)
   __asm__ (GOSYM_PREFIX "runtime.allocmcache");
-void	runtime_freemcache(MCache*);
+void	runtime_freemcache(MCache*)
+  __asm__ (GOSYM_PREFIX "runtime.freemcache");
 void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
-#define runtime_malloc(s) __go_alloc(s)
-#define runtime_free(p) __go_free(p)
 #define runtime_getcallersp(p) __builtin_frame_address(0)
-int32	runtime_mcount(void)
-  __asm__ (GOSYM_PREFIX "runtime.mcount");
-int32	runtime_gcount(void)
-  __asm__ (GOSYM_PREFIX "runtime.gcount");
 void	runtime_mcall(void(*)(G*));
-uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
+uint32	runtime_fastrand(void) __asm__ (GOSYM_PREFIX "runtime.fastrand");
 int32	runtime_timediv(int64, int32, int32*)
   __asm__ (GOSYM_PREFIX "runtime.timediv");
 int32	runtime_round2(int32 x); // round x up to a power of 2.
@@ -345,7 +339,8 @@ int32	runtime_round2(int32 x); // round x up to a power of 2.
 
 void runtime_setg(G*)
   __asm__ (GOSYM_PREFIX "runtime.setg");
-void runtime_newextram(void);
+void runtime_newextram(void)
+  __asm__ (GOSYM_PREFIX "runtime.newextram");
 #define runtime_exit(s) exit(s)
 #define runtime_breakpoint() __builtin_trap()
 void	runtime_gosched(void);
@@ -373,8 +368,6 @@ int64	runtime_unixnanotime(void) // real time, can skip
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void)
   __asm__ (GOSYM_PREFIX "runtime.startpanic");
-void	runtime_freezetheworld(void)
-  __asm__ (GOSYM_PREFIX "runtime.freezetheworld");
 void	runtime_unwindstack(G*, byte*);
 void	runtime_sigprof()
   __asm__ (GOSYM_PREFIX "runtime.sigprof");
@@ -399,8 +392,6 @@ void	runtime_crash(void)
 void	runtime_parsedebugvars(void)
   __asm__(GOSYM_PREFIX "runtime.parsedebugvars");
 void	_rt0_go(void);
-intgo	runtime_setmaxthreads(intgo)
-  __asm__ (GOSYM_PREFIX "runtime.setmaxthreads");
 G*	runtime_timejump(void);
 void	runtime_iterate_finq(void (*callback)(FuncVal*, void*, const FuncType*, const PtrType*));
 
@@ -515,17 +506,14 @@ void	runtime_newErrorCString(const char*, Eface*)
 /*
  * wrapped for go users
  */
-void	runtime_semacquire(uint32 volatile *, bool)
-     __asm__ (GOSYM_PREFIX "runtime.semacquire");
-void	runtime_semrelease(uint32 volatile *)
-     __asm__ (GOSYM_PREFIX "runtime.semrelease");
 void	runtime_procyield(uint32)
   __asm__(GOSYM_PREFIX "runtime.procyield");
 void	runtime_osyield(void)
   __asm__(GOSYM_PREFIX "runtime.osyield");
-void	runtime_lockOSThread(void);
-void	runtime_unlockOSThread(void);
-bool	runtime_lockedOSThread(void);
+void	runtime_lockOSThread(void)
+  __asm__(GOSYM_PREFIX "runtime.lockOSThread");
+void	runtime_unlockOSThread(void)
+  __asm__(GOSYM_PREFIX "runtime.unlockOSThread");
 
 void	runtime_printcreatedby(G*)
   __asm__(GOSYM_PREFIX "runtime.printcreatedby");
@@ -587,8 +575,6 @@ struct time_now_ret now() __asm__ (GOSYM_PREFIX "time.now")
 extern void _cgo_wait_runtime_init_done (void);
 extern void _cgo_notify_runtime_init_done (void);
 extern _Bool runtime_iscgo;
-extern _Bool runtime_cgoHasExtraM;
-extern Hchan *runtime_main_init_done;
 extern uintptr __go_end __attribute__ ((weak));
 extern void *getitab(const struct __go_type_descriptor *,
 		     const struct __go_type_descriptor *,
@@ -596,5 +582,15 @@ extern void *getitab(const struct __go_type_descriptor *,
   __asm__ (GOSYM_PREFIX "runtime.getitab");
 
 extern void runtime_cpuinit(void);
+extern void setIsCgo(void)
+  __asm__ (GOSYM_PREFIX "runtime.setIsCgo");
 extern void setCpuidECX(uint32)
   __asm__ (GOSYM_PREFIX "runtime.setCpuidECX");
+extern void setSupportAES(bool)
+  __asm__ (GOSYM_PREFIX "runtime.setSupportAES");
+extern void makeMainInitDone(void)
+  __asm__ (GOSYM_PREFIX "runtime.makeMainInitDone");
+extern void closeMainInitDone(void)
+  __asm__ (GOSYM_PREFIX "runtime.closeMainInitDone");
+extern void typedmemmove(const Type *, void *, const void *)
+  __asm__ (GOSYM_PREFIX "runtime.typedmemmove");

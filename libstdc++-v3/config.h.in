@@ -123,6 +123,9 @@
 /* Define if EWOULDBLOCK exists. */
 #undef HAVE_EWOULDBLOCK
 
+/* Define to 1 if GCC 4.6 supported std::exception_ptr for the target */
+#undef HAVE_EXCEPTION_PTR_SINCE_GCC46
+
 /* Define to 1 if you have the <execinfo.h> header file. */
 #undef HAVE_EXECINFO_H
 
@@ -697,6 +700,9 @@
 /* Define to 1 if you have the `_tanl' function. */
 #undef HAVE__TANL
 
+/* Define to 1 if you have the `__cxa_thread_atexit' function. */
+#undef HAVE___CXA_THREAD_ATEXIT
+
 /* Define to 1 if you have the `__cxa_thread_atexit_impl' function. */
 #undef HAVE___CXA_THREAD_ATEXIT_IMPL
 
@@ -812,6 +818,9 @@
 
 /* Define to the letter to which size_t is mangled. */
 #undef _GLIBCXX_MANGLE_SIZE_T
+
+/* Define if C99 llrint and llround functions are missing from <math.h>. */
+#undef _GLIBCXX_NO_C99_ROUNDING_FUNCS
 
 /* Define if ptrdiff_t is int. */
 #undef _GLIBCXX_PTRDIFF_T_IS_INT

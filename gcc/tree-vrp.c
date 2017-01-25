@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadupdate.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "target.h"
 #include "case-cfn-macros.h"
 #include "params.h"
@@ -365,10 +365,6 @@ set_value_range (value_range *vr, enum value_range_type t, tree min,
 
       cmp = compare_values (min, max);
       gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
-
-      if (needs_overflow_infinity (TREE_TYPE (min)))
-	gcc_assert (!is_overflow_infinity (min)
-		    || !is_overflow_infinity (max));
     }
 
   if (flag_checking
@@ -506,14 +502,9 @@ set_and_canonicalize_value_range (value_range *vr, enum value_range_type t,
         }
     }
 
-  /* Drop [-INF(OVF), +INF(OVF)] to varying.  */
-  if (needs_overflow_infinity (TREE_TYPE (min))
-      && is_overflow_infinity (min)
-      && is_overflow_infinity (max))
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
+  /* Do not drop [-INF(OVF), +INF(OVF)] to varying.  (OVF) has to be sticky
+     to make sure VRP iteration terminates, otherwise we can get into
+     oscillations.  */
 
   set_value_range (vr, t, min, max, equiv);
 }
@@ -4012,8 +4003,8 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	     and pos is [0,N-1].  */
 	  {
 	    bool is_pos = cfn == CFN_GOACC_DIM_POS;
-	    int axis = get_oacc_ifn_dim_arg (stmt);
-	    int size = get_oacc_fn_dim_size (current_function_decl, axis);
+	    int axis = oacc_get_ifn_dim_arg (stmt);
+	    int size = oacc_get_fn_dim_size (current_function_decl, axis);
 
 	    if (!size)
 	      /* If it's dynamic, the backend might know a hardware
@@ -5041,6 +5032,18 @@ register_new_assert_for (tree name, tree expr,
 	      loc->si = si;
 	      return;
 	    }
+	  /* If we have the same assertion on all incoming edges of a BB
+	     instead insert it at the beginning of it.  */
+	  if (e && loc->e
+	      && e != loc->e
+	      && dest_bb == loc->e->dest
+	      && EDGE_COUNT (dest_bb->preds) == 2)
+	    {
+	      loc->bb = dest_bb;
+	      loc->e = NULL;
+	      loc->si = gsi_none ();
+	      return;
+	    }
 	}
 
       /* Update the last node of the list and move to the next one.  */
@@ -6060,10 +6063,17 @@ find_switch_asserts (basic_block bb, gswitch *last)
   /* Now register along the default label assertions that correspond to the
      anti-range of each label.  */
   int insertion_limit = PARAM_VALUE (PARAM_MAX_VRP_SWITCH_ASSERTIONS);
+  if (insertion_limit == 0)
+    return;
+
+  /* We can't do this if the default case shares a label with another case.  */
+  tree default_cl = gimple_switch_default_label (last);
   for (idx = 1; idx < n; idx++)
     {
       tree min, max;
       tree cl = gimple_switch_label (last, idx);
+      if (CASE_LABEL (cl) == CASE_LABEL (default_cl))
+	continue;
 
       min = CASE_LOW (cl);
       max = CASE_HIGH (cl);
@@ -6074,6 +6084,8 @@ find_switch_asserts (basic_block bb, gswitch *last)
 	{
 	  tree next_min, next_max;
 	  tree next_cl = gimple_switch_label (last, idx);
+	  if (CASE_LABEL (next_cl) == CASE_LABEL (default_cl))
+	    break;
 
 	  next_min = CASE_LOW (next_cl);
 	  next_max = CASE_HIGH (next_cl);
@@ -6429,6 +6441,15 @@ process_assert_insertions_for (tree name, assert_locus *loc)
       return true;
     }
 
+  /* If the stmt iterator points at the end then this is an insertion
+     at the beginning of a block.  */
+  if (gsi_end_p (loc->si))
+    {
+      gimple_stmt_iterator si = gsi_after_labels (loc->bb);
+      gsi_insert_before (&si, assert_stmt, GSI_SAME_STMT);
+      return false;
+
+    }
   /* Otherwise, we can insert right after LOC->SI iff the
      statement must not be the last statement in the block.  */
   stmt = gsi_stmt (loc->si);
@@ -10862,7 +10883,29 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       /* Mark PHIs whose lhs we fully propagate for removal.  */
       tree val = op_with_constant_singleton_value_range (lhs);
       if (val && may_propagate_copy (lhs, val))
-	stmts_to_remove.safe_push (phi);
+	{
+	  stmts_to_remove.safe_push (phi);
+	  continue;
+	}
+
+      /* Set the SSA with the value range.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+	{
+	  if ((vr_result.type == VR_RANGE
+	       || vr_result.type == VR_ANTI_RANGE)
+	      && (TREE_CODE (vr_result.min) == INTEGER_CST)
+	      && (TREE_CODE (vr_result.max) == INTEGER_CST))
+	    set_range_info (lhs,
+			    vr_result.type, vr_result.min, vr_result.max);
+	}
+      else if (POINTER_TYPE_P (TREE_TYPE (lhs))
+	       && ((vr_result.type == VR_RANGE
+		    && range_includes_zero_p (vr_result.min,
+					      vr_result.max) == 0)
+		   || (vr_result.type == VR_ANTI_RANGE
+		       && range_includes_zero_p (vr_result.min,
+						 vr_result.max) == 1)))
+	set_ptr_nonnull (lhs);
     }
 
   edge taken_edge = NULL;
@@ -10908,6 +10951,17 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	      update_value_range (output, &vr);
 	      vr = *get_value_range (output);
 
+	      /* Mark stmts whose output we fully propagate for removal.  */
+	      tree val;
+	      if ((val = op_with_constant_singleton_value_range (output))
+		  && may_propagate_copy (output, val)
+		  && !stmt_could_throw_p (stmt)
+		  && !gimple_has_side_effects (stmt))
+		{
+		  stmts_to_remove.safe_push (stmt);
+		  continue;
+		}
+
 	      /* Set the SSA with the value range.  */
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
 		{
@@ -10925,17 +10979,6 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 			       && range_includes_zero_p (vr.min,
 							 vr.max) == 1)))
 		set_ptr_nonnull (output);
-
-	      /* Mark stmts whose output we fully propagate for removal.  */
-	      tree val;
-	      if ((val = op_with_constant_singleton_value_range (output))
-		  && may_propagate_copy (output, val)
-		  && !stmt_could_throw_p (stmt)
-		  && !gimple_has_side_effects (stmt))
-		{
-		  stmts_to_remove.safe_push (stmt);
-		  continue;
-		}
 	    }
 	  else
 	    set_defs_to_varying (stmt);

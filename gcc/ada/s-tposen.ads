@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,11 +182,14 @@ package System.Tasking.Protected_Objects.Single_Entry is
 
    type Protection_Entry_Access is access all Protection_Entry;
 
+   type Entry_Body_Access is access constant Entry_Body;
+   --  Access to barrier and action function of an entry
+
    procedure Initialize_Protection_Entry
-     (Object            : Protection_Entry_Access;
-      Ceiling_Priority  : Integer;
-      Compiler_Info     : System.Address;
-      Entry_Body        : Entry_Body_Access);
+     (Object           : Protection_Entry_Access;
+      Ceiling_Priority : Integer;
+      Compiler_Info    : System.Address;
+      Entry_Body       : Entry_Body_Access);
    --  Initialize the Object parameter so that it can be used by the run time
    --  to keep track of the runtime state of a protected object.
 

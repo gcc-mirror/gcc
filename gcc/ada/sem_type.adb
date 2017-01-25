@@ -307,7 +307,6 @@ package body Sem_Type is
             else
                Get_Next_Interp (I, It);
             end if;
-
          end loop;
 
          All_Interp.Table (All_Interp.Last) := (Name, Typ, Abstr_Op);
@@ -2579,7 +2578,6 @@ package body Sem_Type is
 
          loop
             if Present (Interfaces (E))
-              and then Present (Interfaces (E))
               and then not Is_Empty_Elmt_List (Interfaces (E))
             then
                Elmt := First_Elmt (Interfaces (E));

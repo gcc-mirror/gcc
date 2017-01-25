@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,18 +86,19 @@ package body System.Tasking is
    ---------------------
 
    procedure Initialize_ATCB
-     (Self_ID          : Task_Id;
-      Task_Entry_Point : Task_Procedure_Access;
-      Task_Arg         : System.Address;
-      Parent           : Task_Id;
-      Elaborated       : Access_Boolean;
-      Base_Priority    : System.Any_Priority;
-      Base_CPU         : System.Multiprocessors.CPU_Range;
-      Domain           : Dispatching_Domain_Access;
-      Task_Info        : System.Task_Info.Task_Info_Type;
-      Stack_Size       : System.Parameters.Size_Type;
-      T                : Task_Id;
-      Success          : out Boolean)
+     (Self_ID              : Task_Id;
+      Task_Entry_Point     : Task_Procedure_Access;
+      Task_Arg             : System.Address;
+      Parent               : Task_Id;
+      Elaborated           : Access_Boolean;
+      Base_Priority        : System.Any_Priority;
+      Base_CPU             : System.Multiprocessors.CPU_Range;
+      Domain               : Dispatching_Domain_Access;
+      Task_Info            : System.Task_Info.Task_Info_Type;
+      Stack_Size           : System.Parameters.Size_Type;
+      Secondary_Stack_Size : System.Parameters.Size_Type;
+      T                    : Task_Id;
+      Success              : out Boolean)
    is
    begin
       T.Common.State := Unactivated;
@@ -146,6 +147,7 @@ package body System.Tasking is
       T.Common.Specific_Handler         := null;
       T.Common.Debug_Events             := (others => False);
       T.Common.Task_Image_Len           := 0;
+      T.Common.Secondary_Stack_Size     := Secondary_Stack_Size;
 
       if T.Common.Parent = null then
 
@@ -232,18 +234,19 @@ package body System.Tasking is
 
       T := STPO.New_ATCB (0);
       Initialize_ATCB
-        (Self_ID          => null,
-         Task_Entry_Point => null,
-         Task_Arg         => Null_Address,
-         Parent           => Null_Task,
-         Elaborated       => null,
-         Base_Priority    => Base_Priority,
-         Base_CPU         => Base_CPU,
-         Domain           => System_Domain,
-         Task_Info        => Task_Info.Unspecified_Task_Info,
-         Stack_Size       => 0,
-         T                => T,
-         Success          => Success);
+        (Self_ID              => null,
+         Task_Entry_Point     => null,
+         Task_Arg             => Null_Address,
+         Parent               => Null_Task,
+         Elaborated           => null,
+         Base_Priority        => Base_Priority,
+         Base_CPU             => Base_CPU,
+         Domain               => System_Domain,
+         Task_Info            => Task_Info.Unspecified_Task_Info,
+         Stack_Size           => 0,
+         Secondary_Stack_Size => Parameters.Unspecified_Size,
+         T                    => T,
+         Success              => Success);
       pragma Assert (Success);
 
       STPO.Initialize (T);
@@ -272,17 +275,4 @@ package body System.Tasking is
 
       T.Entry_Calls (1).Self := T;
    end Initialize;
-
-   ---------------------
-   -- Set_Entry_Names --
-   ---------------------
-
-   procedure Set_Entry_Names
-     (Self_Id : Task_Id;
-      Names   : Task_Entry_Names_Access)
-   is
-   begin
-      Self_Id.Entry_Names := Names;
-   end Set_Entry_Names;
-
 end System.Tasking;

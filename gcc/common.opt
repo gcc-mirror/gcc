@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2016 Free Software Foundation, Inc.
+; Copyright (C) 2003-2017 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -849,6 +849,9 @@ Driver
 dumpversion
 Driver
 
+dumpfullversion
+Driver
+
 e
 Driver Joined Separate
 
@@ -1262,7 +1265,7 @@ Suppress output of addresses in debugging dumps.
 freport-bug
 Common Driver Var(flag_report_bug)
 Collect and dump debug information into temporary file if ICE in C/C++
-compiler occured.
+compiler occurred.
 
 fdump-internal-locations
 Common Var(flag_dump_locations) Init(0)
@@ -1317,7 +1320,7 @@ Common Report Var(flag_expensive_optimizations) Optimization
 Perform a number of minor, expensive optimizations.
 
 fexcess-precision=
-Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision_cmdline) Init(EXCESS_PRECISION_DEFAULT)
+Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision_cmdline) Init(EXCESS_PRECISION_DEFAULT) SetByCombined
 -fexcess-precision=[fast|standard]	Specify handling of excess floating-point precision.
 
 Enum
@@ -2152,9 +2155,9 @@ fselective-scheduling2
 Common Report Var(flag_selective_scheduling2) Optimization
 Run selective scheduling after reload.
 
-fself-test
-Common Undocumented Var(flag_self_test)
-Run self-tests.
+fself-test=
+Common Undocumented Joined Var(flag_self_test)
+Run self-tests, using the given path to locate test files.
 
 fsel-sched-pipelining
 Common Report Var(flag_sel_sched_pipelining) Init(0) Optimization
@@ -2644,7 +2647,7 @@ Common Undocumented Var(flag_use_linker_plugin)
 ; will be set according to optimize, debug_info_level and debug_hooks
 ; in process_options ().
 fvar-tracking
-Common Report Var(flag_var_tracking) Init(2) Optimization
+Common Report Var(flag_var_tracking) Init(2) PerFunction
 Perform variable tracking.
 
 ; Positive if we should track variables at assignments, negative if
@@ -2652,13 +2655,13 @@ Perform variable tracking.
 ; annotations.  When flag_var_tracking_assignments ==
 ; AUTODETECT_VALUE it will be set according to flag_var_tracking.
 fvar-tracking-assignments
-Common Report Var(flag_var_tracking_assignments) Init(2) Optimization
+Common Report Var(flag_var_tracking_assignments) Init(2) PerFunction
 Perform variable tracking by annotating assignments.
 
 ; Nonzero if we should toggle flag_var_tracking_assignments after
 ; processing options and computing its default.  */
 fvar-tracking-assignments-toggle
-Common Report Var(flag_var_tracking_assignments_toggle) Optimization
+Common Report Var(flag_var_tracking_assignments_toggle) PerFunction
 Toggle -fvar-tracking-assignments.
 
 ; Positive if we should track uninitialized variables, negative if
@@ -2666,7 +2669,7 @@ Toggle -fvar-tracking-assignments.
 ; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
 ; will be set according to flag_var_tracking.
 fvar-tracking-uninit
-Common Report Var(flag_var_tracking_uninit) Optimization
+Common Report Var(flag_var_tracking_uninit) PerFunction
 Perform variable tracking and also tag variables that are uninitialized.
 
 ftree-vectorize
@@ -2706,12 +2709,8 @@ EnumValue
 Enum(vect_cost_model) String(cheap) Value(VECT_COST_MODEL_CHEAP)
 
 fvect-cost-model
-Common RejectNegative Alias(fvect-cost-model=,dynamic)
+Common Alias(fvect-cost-model=,dynamic,unlimited)
 Enables the dynamic vectorizer cost model.  Preserved for backward compatibility.
-
-fno-vect-cost-model
-Common RejectNegative Alias(fvect-cost-model=,unlimited)
-Enables the unlimited vectorizer cost model.  Preserved for backward compatibility.
 
 ftree-vect-loop-version
 Common Ignore
@@ -2799,43 +2798,43 @@ Common Report Var(flag_zero_initialized_in_bss) Init(1)
 Put zero initialized data in the bss section.
 
 g
-Common JoinedOrMissing
+Common Driver JoinedOrMissing
 Generate debug information in default format.
 
 gcoff
-Common JoinedOrMissing Negative(gdwarf)
+Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in COFF format.
 
 gdwarf
-Common JoinedOrMissing Negative(gdwarf-)
+Common Driver JoinedOrMissing Negative(gdwarf-)
 Generate debug information in default version of DWARF format.
 
 gdwarf-
-Common Joined UInteger Var(dwarf_version) Init(4) Negative(gstabs)
+Common Driver Joined UInteger Var(dwarf_version) Init(4) Negative(gstabs)
 Generate debug information in DWARF v2 (or later) format.
 
 ggdb
-Common JoinedOrMissing
+Common Driver JoinedOrMissing
 Generate debug information in default extended format.
 
 gno-pubnames
-Common Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
+Common Driver Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
 Don't generate DWARF pubnames and pubtypes sections.
 
 gpubnames
-Common Negative(ggnu-pubnames) Var(debug_generate_pub_sections, 1)
+Common Driver Negative(ggnu-pubnames) Var(debug_generate_pub_sections, 1)
 Generate DWARF pubnames and pubtypes sections.
 
 ggnu-pubnames
-Common Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
+Common Driver Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
 Generate DWARF pubnames and pubtypes sections with GNU extensions.
 
 gno-record-gcc-switches
-Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)
+Common Driver RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)
 Don't record gcc command line switches in DWARF DW_AT_producer.
 
 grecord-gcc-switches
-Common RejectNegative Var(dwarf_record_gcc_switches,1)
+Common Driver RejectNegative Var(dwarf_record_gcc_switches,1)
 Record gcc command line switches in DWARF DW_AT_producer.
 
 gno-split-dwarf
@@ -2847,35 +2846,35 @@ Common Driver RejectNegative Var(dwarf_split_debug_info,1)
 Generate debug information in separate .dwo files.
 
 gstabs
-Common JoinedOrMissing Negative(gstabs+)
+Common Driver JoinedOrMissing Negative(gstabs+)
 Generate debug information in STABS format.
 
 gstabs+
-Common JoinedOrMissing Negative(gvms)
+Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
 gno-strict-dwarf
-Common RejectNegative Var(dwarf_strict,0) Init(0)
+Common Driver RejectNegative Var(dwarf_strict,0) Init(0)
 Emit DWARF additions beyond selected version.
 
 gstrict-dwarf
-Common Report RejectNegative Var(dwarf_strict,1)
+Common Driver Report RejectNegative Var(dwarf_strict,1)
 Don't emit DWARF additions beyond selected version.
 
 gtoggle
-Common Report Var(flag_gtoggle)
+Common Driver Report Var(flag_gtoggle)
 Toggle debug information generation.
 
 gvms
-Common JoinedOrMissing Negative(gxcoff)
+Common Driver JoinedOrMissing Negative(gxcoff)
 Generate debug information in VMS format.
 
 gxcoff
-Common JoinedOrMissing Negative(gxcoff+)
+Common Driver JoinedOrMissing Negative(gxcoff+)
 Generate debug information in XCOFF format.
 
 gxcoff+
-Common JoinedOrMissing Negative(gcoff)
+Common Driver JoinedOrMissing Negative(gcoff)
 Generate debug information in extended XCOFF format.
 
 Enum

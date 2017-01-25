@@ -78,10 +78,6 @@ func panicmem() {
 	panic(memoryError)
 }
 
-func throwreturn() {
-	throw("no return at end of a typed function - compiler is broken")
-}
-
 func throwinit() {
 	throw("recursive call during initialization - linker skew")
 }
@@ -108,17 +104,19 @@ func deferproc(frame *bool, pfn uintptr, arg unsafe.Pointer) {
 // Each defer must be released with freedefer.
 func newdefer() *_defer {
 	var d *_defer
-	mp := acquirem()
-	pp := mp.p.ptr()
+	gp := getg()
+	pp := gp.m.p.ptr()
 	if len(pp.deferpool) == 0 && sched.deferpool != nil {
-		lock(&sched.deferlock)
-		for len(pp.deferpool) < cap(pp.deferpool)/2 && sched.deferpool != nil {
-			d := sched.deferpool
-			sched.deferpool = d.link
-			d.link = nil
-			pp.deferpool = append(pp.deferpool, d)
-		}
-		unlock(&sched.deferlock)
+		systemstack(func() {
+			lock(&sched.deferlock)
+			for len(pp.deferpool) < cap(pp.deferpool)/2 && sched.deferpool != nil {
+				d := sched.deferpool
+				sched.deferpool = d.link
+				d.link = nil
+				pp.deferpool = append(pp.deferpool, d)
+			}
+			unlock(&sched.deferlock)
+		})
 	}
 	if n := len(pp.deferpool); n > 0 {
 		d = pp.deferpool[n-1]
@@ -126,17 +124,22 @@ func newdefer() *_defer {
 		pp.deferpool = pp.deferpool[:n-1]
 	}
 	if d == nil {
-		d = new(_defer)
+		systemstack(func() {
+			d = new(_defer)
+		})
 	}
-	gp := mp.curg
 	d.link = gp._defer
 	gp._defer = d
-	releasem(mp)
 	return d
 }
 
 // Free the given defer.
 // The defer cannot be used after this call.
+//
+// This must not grow the stack because there may be a frame without a
+// stack map when this is called.
+//
+//go:nosplit
 func freedefer(d *_defer) {
 	if d.special {
 		return
@@ -150,31 +153,34 @@ func freedefer(d *_defer) {
 		return
 	}
 
-	mp := acquirem()
-	pp := mp.p.ptr()
+	pp := getg().m.p.ptr()
 	if len(pp.deferpool) == cap(pp.deferpool) {
 		// Transfer half of local cache to the central cache.
-		var first, last *_defer
-		for len(pp.deferpool) > cap(pp.deferpool)/2 {
-			n := len(pp.deferpool)
-			d := pp.deferpool[n-1]
-			pp.deferpool[n-1] = nil
-			pp.deferpool = pp.deferpool[:n-1]
-			if first == nil {
-				first = d
-			} else {
-				last.link = d
+		//
+		// Take this slow path on the system stack so
+		// we don't grow freedefer's stack.
+		systemstack(func() {
+			var first, last *_defer
+			for len(pp.deferpool) > cap(pp.deferpool)/2 {
+				n := len(pp.deferpool)
+				d := pp.deferpool[n-1]
+				pp.deferpool[n-1] = nil
+				pp.deferpool = pp.deferpool[:n-1]
+				if first == nil {
+					first = d
+				} else {
+					last.link = d
+				}
+				last = d
 			}
-			last = d
-		}
-		lock(&sched.deferlock)
-		last.link = sched.deferpool
-		sched.deferpool = first
-		unlock(&sched.deferlock)
+			lock(&sched.deferlock)
+			last.link = sched.deferpool
+			sched.deferpool = first
+			unlock(&sched.deferlock)
+		})
 	}
 	*d = _defer{}
 	pp.deferpool = append(pp.deferpool, d)
-	releasem(mp)
 }
 
 // deferreturn is called to undefer the stack.
@@ -358,6 +364,11 @@ func Goexit() {
 // Used when crashing with panicking.
 // This must match types handled by printany.
 func preprintpanics(p *_panic) {
+	defer func() {
+		if recover() != nil {
+			throw("panic while printing panic value")
+		}
+	}()
 	for p != nil {
 		switch v := p.arg.(type) {
 		case error:
@@ -731,6 +742,11 @@ func deferredrecover() interface{} {
 	return gorecover()
 }
 
+//go:linkname sync_throw sync.throw
+func sync_throw(s string) {
+	throw(s)
+}
+
 //go:nosplit
 func throw(s string) {
 	print("fatal error: ", s, "\n")
@@ -769,7 +785,7 @@ func startpanic() {
 		freezetheworld()
 		return
 	case 1:
-		// Something failed while panicing, probably the print of the
+		// Something failed while panicking, probably the print of the
 		// argument to panic().  Just print a stack trace and exit.
 		_g_.m.dying = 2
 		print("panic during panic\n")

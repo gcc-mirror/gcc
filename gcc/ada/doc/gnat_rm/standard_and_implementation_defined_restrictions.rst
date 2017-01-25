@@ -584,7 +584,8 @@ No_Secondary_Stack
 [GNAT] This restriction ensures at compile time that the generated code
 does not contain any reference to the secondary stack.  The secondary
 stack is used to implement functions returning unconstrained objects
-(arrays or records) on some targets.
+(arrays or records) on some targets. Suppresses the allocation of 
+secondary stacks for tasks (excluding the environment task) at run time.
 
 No_Select_Statements
 --------------------

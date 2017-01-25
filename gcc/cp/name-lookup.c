@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -48,6 +48,10 @@ static bool lookup_using_namespace (tree, struct scope_binding *, tree,
 				    tree, int);
 static bool qualified_lookup_using_namespace (tree, tree,
 					      struct scope_binding *, int);
+static void consider_binding_level (tree name, best_match <tree, tree> &bm,
+				    cp_binding_level *lvl,
+				    bool look_within_fields,
+				    enum lookup_name_fuzzy_kind kind);
 static tree lookup_type_current_level (tree);
 static tree push_using_directive (tree);
 static tree lookup_extern_c_fun_in_all_ns (tree);
@@ -1111,8 +1115,10 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
                                || TREE_CODE (x) == TYPE_DECL)))
                    /* Don't check for internally generated vars unless
                       it's an implicit typedef (see create_implicit_typedef
-                      in decl.c).  */
-		   && (!DECL_ARTIFICIAL (x) || DECL_IMPLICIT_TYPEDEF_P (x)))
+                      in decl.c) or anonymous union variable.  */
+		   && (!DECL_ARTIFICIAL (x)
+		       || DECL_IMPLICIT_TYPEDEF_P (x)
+		       || (VAR_P (x) && DECL_ANON_UNION_VAR_P (x))))
 	    {
 	      bool nowarn = false;
 
@@ -2452,9 +2458,11 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
       || (flags & PUSH_USING))
     {
       if (old && TREE_CODE (old) != OVERLOAD)
-	new_binding = ovl_cons (decl, ovl_cons (old, NULL_TREE));
+	/* Wrap the existing single decl in an overload.  */
+	new_binding = ovl_cons (old, NULL_TREE);
       else
-	new_binding = ovl_cons (decl, old);
+	new_binding = old;
+      new_binding = ovl_cons (decl, new_binding);
       if (flags & PUSH_USING)
 	OVL_USED (new_binding) = 1;
     }
@@ -3492,7 +3500,12 @@ set_namespace_binding_1 (tree name, tree scope, tree val)
   if (scope == NULL_TREE)
     scope = global_namespace;
   b = binding_for_name (NAMESPACE_LEVEL (scope), name);
-  if (!b->value || TREE_CODE (val) == OVERLOAD || val == error_mark_node)
+  if (!b->value
+      /* For templates and using we create a single element OVERLOAD.
+	 Look for the chain to know whether this is really augmenting
+	 an existing overload.  */
+      || (TREE_CODE (val) == OVERLOAD && OVL_CHAIN (val))
+      || val == error_mark_node)
     b->value = val;
   else
     supplement_binding (b, val);
@@ -4422,10 +4435,13 @@ remove_hidden_names (tree fns)
 
 /* Suggest alternatives for NAME, an IDENTIFIER_NODE for which name
    lookup failed.  Search through all available namespaces and print out
-   possible candidates.  */
+   possible candidates.  If no exact matches are found, and
+   SUGGEST_MISSPELLINGS is true, then also look for near-matches and
+   suggest the best near-match, if there is one.  */
 
 void
-suggest_alternatives_for (location_t location, tree name)
+suggest_alternatives_for (location_t location, tree name,
+			  bool suggest_misspellings)
 {
   vec<tree> candidates = vNULL;
   vec<tree> namespaces_to_search = vNULL;
@@ -4472,13 +4488,16 @@ suggest_alternatives_for (location_t location, tree name)
      or do nothing.  */
   if (candidates.is_empty ())
     {
-      const char *fuzzy_name = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME);
-      if (fuzzy_name)
+      if (suggest_misspellings)
 	{
-	  gcc_rich_location richloc (location);
-	  richloc.add_fixit_replace (fuzzy_name);
-	  inform_at_rich_loc (&richloc, "suggested alternative: %qs",
-			      fuzzy_name);
+	  const char *fuzzy_name = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME);
+	  if (fuzzy_name)
+	    {
+	      gcc_rich_location richloc (location);
+	      richloc.add_fixit_replace (fuzzy_name);
+	      inform_at_rich_loc (&richloc, "suggested alternative: %qs",
+				  fuzzy_name);
+	    }
 	}
       return;
     }
@@ -4491,6 +4510,35 @@ suggest_alternatives_for (location_t location, tree name)
     inform (location_of (t), "  %qE", t);
 
   candidates.release ();
+}
+
+/* Look for alternatives for NAME, an IDENTIFIER_NODE for which name
+   lookup failed within the explicitly provided SCOPE.  Suggest the
+   the best meaningful candidates (if any) as a fix-it hint.
+   Return true iff a suggestion was provided.  */
+
+bool
+suggest_alternative_in_explicit_scope (location_t location, tree name,
+				       tree scope)
+{
+  cp_binding_level *level = NAMESPACE_LEVEL (scope);
+
+  best_match <tree, tree> bm (name);
+  consider_binding_level (name, bm, level, false, FUZZY_LOOKUP_NAME);
+
+  /* See if we have a good suggesion for the user.  */
+  tree best_id = bm.get_best_meaningful_candidate ();
+  if (best_id)
+    {
+      const char *fuzzy_name = IDENTIFIER_POINTER (best_id);
+      gcc_rich_location richloc (location);
+      richloc.add_fixit_replace (fuzzy_name);
+      inform_at_rich_loc (&richloc, "suggested alternative: %qs",
+			  fuzzy_name);
+      return true;
+    }
+
+  return false;
 }
 
 /* Unscoped lookup of a global: iterate over current namespaces,
@@ -4758,8 +4806,10 @@ consider_binding_level (tree name, best_match <tree, tree> &bm,
 	  && DECL_ANTICIPATED (d))
 	continue;
 
-      if (DECL_NAME (d))
-	bm.consider (DECL_NAME (d));
+      if (tree name = DECL_NAME (d))
+	/* Ignore internal names with spaces in them.  */
+	if (!strchr (IDENTIFIER_POINTER (name), ' '))
+	  bm.consider (DECL_NAME (d));
     }
 }
 

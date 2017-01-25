@@ -553,6 +553,7 @@ PACKAGE_URL=
 ac_unique_file="Makefile.in"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 have_getipinfo
 default_gnatlib_target
 LN_S
@@ -633,6 +634,7 @@ enable_maintainer_mode
 enable_multilib
 enable_shared
 with_system_libunwind
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1261,6 +1263,8 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
   --with-system-libunwind use installed libunwind
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -2829,7 +2833,7 @@ case "${host}" in
 	  # If we are using a compiler supporting mdynamic-no-pic
 	  # and the option has been tested as safe to add, then cancel
 	  # it here, since the code generated is incompatible with shared
-	  # libs.
+	  # libs.
 	  *-mdynamic-no-pic*) PICFLAG='-fno-common -mno-dynamic-no-pic' ;;
 	  *) PICFLAG=-fno-common ;;
 	esac
@@ -2843,6 +2847,10 @@ case "${host}" in
     i[34567]86-*-cygwin* | x86_64-*-cygwin*)
 	;;
     i[34567]86-*-mingw* | x86_64-*-mingw*)
+	;;
+    i[34567]86-*-interix[3-9]*)
+	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
+	# Instead, we relocate shared libraries at runtime.
 	;;
     i[34567]86-*-nto-qnx*)
 	# QNX uses GNU C++, but need to define -shared option too, otherwise
@@ -2874,7 +2882,8 @@ case "${host}" in
 	PICFLAG=-fpic
 	;;
     # FIXME: Simplify to sh*-*-netbsd*?
-    sh-*-netbsdelf* | shl*-*-netbsdelf*)
+    sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+      sh64-*-netbsd* | sh64l*-*-netbsd*)
 	PICFLAG=-fpic
 	;;
     # Default to -fPIC unless specified otherwise.
@@ -3001,6 +3010,21 @@ have_getipinfo=
 if test x$have_unwind_getipinfo = xyes; then
   have_getipinfo=-DHAVE_GETIPINFO
 fi
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
+
 
 
 # Output: create a Makefile.

@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -72,9 +72,9 @@ static bool first_actual_arg = false;
 
 static int omp_workshare_flag;
 
-/* Nonzero if we are processing a formal arglist. The corresponding function
+/* True if we are processing a formal arglist. The corresponding function
    resets the flag each time that it is read.  */
-static int formal_arg_flag = 0;
+static bool formal_arg_flag = false;
 
 /* True if we are resolving a specification expression.  */
 static bool specification_expr = false;
@@ -89,7 +89,7 @@ static bitmap_obstack labels_obstack;
 static bool inquiry_argument = false;
 
 
-int
+bool
 gfc_is_formal_arg (void)
 {
   return formal_arg_flag;
@@ -285,7 +285,7 @@ resolve_formal_arglist (gfc_symbol *proc)
       sym->attr.always_explicit = 1;
     }
 
-  formal_arg_flag = 1;
+  formal_arg_flag = true;
 
   for (f = proc->formal; f; f = f->next)
     {
@@ -530,7 +530,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 	    }
 	}
     }
-  formal_arg_flag = 0;
+  formal_arg_flag = false;
 }
 
 
@@ -565,6 +565,14 @@ static void
 resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 {
   bool t;
+
+  if (sym && sym->attr.flavor == FL_PROCEDURE
+      && sym->ns->parent
+      && sym->ns->parent->proc_name
+      && sym->ns->parent->proc_name->attr.flavor == FL_PROCEDURE
+      && !strcmp (sym->name, sym->ns->parent->proc_name->name))
+    gfc_error ("Contained procedure %qs at %L has the same name as its "
+	       "encompassing procedure", sym->name, &sym->declared_at);
 
   /* If this namespace is not a function or an entry master function,
      ignore it.  */
@@ -1249,31 +1257,12 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	      gfc_constructor_append_expr (&cons->expr->value.constructor,
 					   para, &cons->expr->where);
 	    }
+
 	  if (cons->expr->expr_type == EXPR_ARRAY)
 	    {
-	      gfc_constructor *p;
-	      p = gfc_constructor_first (cons->expr->value.constructor);
-	      if (cons->expr->ts.u.cl != p->expr->ts.u.cl)
-		{
-		  gfc_charlen *cl, *cl2;
-
-		  cl2 = NULL;
-		  for (cl = gfc_current_ns->cl_list; cl; cl = cl->next)
-		    {
-		      if (cl == cons->expr->ts.u.cl)
-			break;
-		      cl2 = cl;
-		    }
-
-		  gcc_assert (cl);
-
-		  if (cl2)
-		    cl2->next = cl->next;
-
-		  gfc_free_expr (cl->length);
-		  free (cl);
-		}
-
+	      /* Rely on the cleanup of the namespace to deal correctly with
+		 the old charlen.  (There was a block here that attempted to
+		 remove the charlen but broke the chain in so doing.)  */
 	      cons->expr->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 	      cons->expr->ts.u.cl->length_from_typespec = true;
 	      cons->expr->ts.u.cl->length = gfc_copy_expr (comp->ts.u.cl->length);
@@ -1323,10 +1312,10 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  if (s2 && !gfc_compare_interfaces (comp->ts.interface, s2, name, 0, 1,
 					     err, sizeof (err), NULL, NULL))
 	    {
-	      gfc_error (OPT_Wargument_mismatch,
-			 "Interface mismatch for procedure-pointer component "
-			 "%qs in structure constructor at %L: %s",
-			 comp->name, &cons->expr->where, err);
+	      gfc_error_opt (OPT_Wargument_mismatch,
+			     "Interface mismatch for procedure-pointer "
+			     "component %qs in structure constructor at %L:"
+			     " %s", comp->name, &cons->expr->where, err);
 	      return false;
 	    }
 	}
@@ -2477,9 +2466,9 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
 				   reason, sizeof(reason), NULL, NULL))
 	{
-	  gfc_error (OPT_Wargument_mismatch,
-		     "Interface mismatch in global procedure %qs at %L: %s ",
-		    sym->name, &sym->declared_at, reason);
+	  gfc_error_opt (OPT_Wargument_mismatch,
+			 "Interface mismatch in global procedure %qs at %L:"
+			 " %s ", sym->name, &sym->declared_at, reason);
 	  goto done;
 	}
 
@@ -9169,10 +9158,13 @@ resolve_lock_unlock_event (gfc_code *code)
     return;
 
   /* Check for EVENT WAIT the UNTIL_COUNT.  */
-  if (code->op == EXEC_EVENT_WAIT && code->expr4
-      && (code->expr4->ts.type != BT_INTEGER || code->expr4->rank != 0))
-    gfc_error ("UNTIL_COUNT= argument at %L must be a scalar INTEGER "
-	       "expression", &code->expr4->where);
+  if (code->op == EXEC_EVENT_WAIT && code->expr4)
+    {
+      if (!gfc_resolve_expr (code->expr4) || code->expr4->ts.type != BT_INTEGER
+	  || code->expr4->rank != 0)
+	gfc_error ("UNTIL_COUNT= argument at %L must be a scalar INTEGER "
+		   "expression", &code->expr4->where);
+    }
 }
 
 
@@ -11836,8 +11828,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       && !sym->attr.pointer
       && is_non_constant_shape_array (sym))
     {
-      /* The shape of a main program or module array needs to be
-	 constant.  */
+      /* F08:C541. The shape of an array defined in a main program or module
+       * needs to be constant.  */
       gfc_error ("The module or main program array %qs at %L must "
 		 "have constant shape", sym->name, &sym->declared_at);
       specification_expr = saved_specification_expr;
@@ -12274,10 +12266,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       module_name = strtok (name, ".");
       submodule_name = strtok (NULL, ".");
 
-      /* Stop the dummy characteristics test from using the interface
-	 symbol instead of 'sym'.  */
-      iface = sym->ts.interface;
-      sym->ts.interface = NULL;
+      iface = sym->tlink;
+      sym->tlink = NULL;
 
       /* Make sure that the result uses the correct charlen for deferred
 	 length results.  */
@@ -12325,7 +12315,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
 
 check_formal:
-      /* Check the charcateristics of the formal arguments.  */
+      /* Check the characteristics of the formal arguments.  */
       if (sym->formal && sym->formal_ns)
 	{
 	  for (arg = sym->formal; arg && arg->sym; arg = arg->next)
@@ -12334,8 +12324,6 @@ check_formal:
 	      gfc_traverse_ns (sym->formal_ns, compare_fsyms);
 	    }
 	}
-
-      sym->ts.interface = iface;
     }
   return true;
 }
@@ -14059,8 +14047,8 @@ resolve_symbol (gfc_symbol *sym)
   if (flag_coarray == GFC_FCOARRAY_LIB && sym->ts.type == BT_CLASS
       && sym->ts.u.derived && CLASS_DATA (sym)
       && CLASS_DATA (sym)->attr.codimension
-      && (sym->ts.u.derived->attr.alloc_comp
-	  || sym->ts.u.derived->attr.pointer_comp))
+      && (CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp
+	  || CLASS_DATA (sym)->ts.u.derived->attr.pointer_comp))
     {
       gfc_error ("Sorry, allocatable/pointer components in polymorphic (CLASS) "
 		 "type coarrays at %L are unsupported", &sym->declared_at);
@@ -14737,14 +14725,14 @@ resolve_symbol (gfc_symbol *sym)
      an error for host associated variables in the specification
      expression for an array_valued function.  */
   if (sym->attr.function && sym->as)
-    formal_arg_flag = 1;
+    formal_arg_flag = true;
 
   saved_specification_expr = specification_expr;
   specification_expr = true;
   gfc_resolve_array_spec (sym->as, check_constant);
   specification_expr = saved_specification_expr;
 
-  formal_arg_flag = 0;
+  formal_arg_flag = false;
 
   /* Resolve formal namespaces.  */
   if (sym->formal_ns && sym->formal_ns != gfc_current_ns
@@ -15747,6 +15735,54 @@ resolve_equivalence (gfc_equiv *eq)
 }
 
 
+/* Function called by resolve_fntype to flag other symbol used in the
+   length type parameter specification of function resuls.  */
+
+static bool
+flag_fn_result_spec (gfc_expr *expr,
+                     gfc_symbol *sym ATTRIBUTE_UNUSED,
+                     int *f ATTRIBUTE_UNUSED)
+{
+  gfc_namespace *ns;
+  gfc_symbol *s;
+
+  if (expr->expr_type == EXPR_VARIABLE)
+    {
+      s = expr->symtree->n.sym;
+      for (ns = s->ns; ns; ns = ns->parent)
+	if (!ns->parent)
+	  break;
+
+      if (!s->fn_result_spec
+	  && s->attr.flavor == FL_PARAMETER)
+	{
+	  /* Function contained in a module.... */
+	  if (ns->proc_name && ns->proc_name->attr.flavor == FL_MODULE)
+	    {
+	      gfc_symtree *st;
+	      s->fn_result_spec = 1;
+	      /* Make sure that this symbol is translated as a module
+		 variable.  */
+	      st = gfc_get_unique_symtree (ns);
+	      st->n.sym = s;
+	      s->refs++;
+	    }
+	  /* ... which is use associated and called.  */
+	  else if (s->attr.use_assoc || s->attr.used_in_submodule
+			||
+		  /* External function matched with an interface.  */
+		  (s->ns->proc_name
+		   && ((s->ns == ns
+			 && s->ns->proc_name->attr.if_source == IFSRC_DECL)
+		       || s->ns->proc_name->attr.if_source == IFSRC_IFBODY)
+		   && s->ns->proc_name->attr.function))
+	    s->fn_result_spec = 1;
+	}
+    }
+  return false;
+}
+
+
 /* Resolve function and ENTRY types, issue diagnostics if needed.  */
 
 static void
@@ -15797,6 +15833,9 @@ resolve_fntype (gfc_namespace *ns)
 	    el->sym->attr.untyped = 1;
 	  }
       }
+
+  if (sym->ts.type == BT_CHARACTER)
+    gfc_traverse_expr (sym->ts.u.cl->length, NULL, flag_fn_result_spec, 0);
 }
 
 

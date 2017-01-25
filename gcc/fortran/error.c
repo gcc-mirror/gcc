@@ -1,5 +1,5 @@
 /* Handle errors.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -67,7 +67,7 @@ gfc_push_suppress_errors (void)
 }
 
 static void
-gfc_error (int opt, const char *gmsgid, va_list ap)  ATTRIBUTE_GCC_GFC(2,0);
+gfc_error_opt (int opt, const char *gmsgid, va_list ap)  ATTRIBUTE_GCC_GFC(2,0);
 
 static bool
 gfc_warning (int opt, const char *gmsgid, va_list ap) ATTRIBUTE_GCC_GFC(2,0);
@@ -902,7 +902,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
   if (warning)
     gfc_warning (0, buffer, argp);
   else
-    gfc_error (0, buffer, argp);
+    gfc_error_opt (0, buffer, argp);
   va_end (argp);
 
   return (warning && !warnings_are_errors) ? true : false;
@@ -1089,7 +1089,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
     }
   else
     {
-      pp_verbatim (context->printer, locus_prefix);
+      pp_verbatim (context->printer, "%s", locus_prefix);
       free (locus_prefix);
       /* Fortran uses an empty line between locus and caret line.  */
       pp_newline (context->printer);
@@ -1106,7 +1106,7 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 {
   char *locus_prefix;
   locus_prefix = gfc_diagnostic_build_locus_prefix (context, exploc);
-  pp_verbatim (context->printer, locus_prefix);
+  pp_verbatim (context->printer, "%s", locus_prefix);
   free (locus_prefix);
   pp_newline (context->printer);
   /* Fortran uses an empty line between locus and caret line.  */
@@ -1160,6 +1160,24 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   return ret;
 }
 
+/* Internal warning, do not buffer.  */
+
+bool
+gfc_warning_internal (int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+  bool ret;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
+		       DK_WARNING);
+  diagnostic.option_index = opt;
+  ret = report_diagnostic (&diagnostic);
+  va_end (argp);
+  return ret;
+}
 
 /* Immediate error (i.e. do not buffer).  */
 
@@ -1234,7 +1252,7 @@ gfc_warning_check (void)
 /* Issue an error.  */
 
 static void
-gfc_error (int opt, const char *gmsgid, va_list ap)
+gfc_error_opt (int opt, const char *gmsgid, va_list ap)
 {
   va_list argp;
   va_copy (argp, ap);
@@ -1290,11 +1308,11 @@ gfc_error (int opt, const char *gmsgid, va_list ap)
 
 
 void
-gfc_error (int opt, const char *gmsgid, ...)
+gfc_error_opt (int opt, const char *gmsgid, ...)
 {
   va_list argp;
   va_start (argp, gmsgid);
-  gfc_error (opt, gmsgid, argp);
+  gfc_error_opt (opt, gmsgid, argp);
   va_end (argp);
 }
 
@@ -1304,7 +1322,7 @@ gfc_error (const char *gmsgid, ...)
 {
   va_list argp;
   va_start (argp, gmsgid);
-  gfc_error (0, gmsgid, argp);
+  gfc_error_opt (0, gmsgid, argp);
   va_end (argp);
 }
 

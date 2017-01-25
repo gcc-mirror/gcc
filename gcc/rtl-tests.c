@@ -1,5 +1,5 @@
 /* Unit tests for RTL-handling.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -104,9 +104,9 @@ test_dumping_regs ()
     }
 
   /* Test dumping of non-virtual pseudos.  */
-  ASSERT_RTL_DUMP_EQ ("(reg:SI %0)",
+  ASSERT_RTL_DUMP_EQ ("(reg:SI <0>)",
     gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 1));
-  ASSERT_RTL_DUMP_EQ ("(reg:SI %1)",
+  ASSERT_RTL_DUMP_EQ ("(reg:SI <1>)",
     gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 2));
 }
 
@@ -200,6 +200,7 @@ test_single_set ()
 static void
 test_uncond_jump ()
 {
+  set_new_first_and_last_insn (NULL, NULL);
   rtx_insn *label = gen_label_rtx ();
   rtx jump_pat = gen_rtx_SET (pc_rtx,
 			      gen_rtx_LABEL_REF (VOIDmode,

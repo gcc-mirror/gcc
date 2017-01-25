@@ -44,7 +44,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2016 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -69,7 +69,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2016 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2017 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -894,6 +894,10 @@ ideas of what it is for.  People use it as if it specified where to
 install part of GCC@.  Perhaps they make this assumption because
 installing GCC creates the directory.
 
+@item --with-gcc-major-version-only
+Specifies that GCC should use only the major number rather than
+@var{major}.@var{minor}.@var{patchlevel} in filesystem paths.
+
 @item --with-native-system-header-dir=@var{dirname}
 Specifies that @var{dirname} is the directory that contains native system
 header files, rather than @file{/usr/include}.  This option is most useful
@@ -1370,6 +1374,39 @@ On MIPS targets, make @option{-msynci} the default when no
 @item --without-synci
 On MIPS targets, make @option{-mno-synci} the default when no
 @option{-msynci} option is passed.  This is the default.
+
+@item --with-lxc1-sxc1
+On MIPS targets, make @option{-mlxc1-sxc1} the default when no
+@option{-mno-lxc1-sxc1} option is passed.  This is the default.
+
+@item --without-lxc1-sxc1
+On MIPS targets, make @option{-mno-lxc1-sxc1} the default when no
+@option{-mlxc1-sxc1} option is passed.  The indexed load/store
+instructions are not directly a problem but can lead to unexpected
+behaviour when deployed in an application intended for a 32-bit address
+space but run on a 64-bit processor.  The issue is seen because all
+known MIPS 64-bit Linux kernels execute o32 and n32 applications
+with 64-bit addressing enabled which affects the overflow behaviour
+of the indexed addressing mode.  GCC will assume that ordinary
+32-bit arithmetic overflow behaviour is the same whether performed
+as an @code{addu} instruction or as part of the address calculation
+in @code{lwxc1} type instructions.  This assumption holds true in a
+pure 32-bit environment and can hold true in a 64-bit environment if
+the address space is accurately set to be 32-bit for o32 and n32.
+
+@item --with-madd4
+On MIPS targets, make @option{-mmadd4} the default when no
+@option{-mno-madd4} option is passed.  This is the default.
+
+@item --without-madd4
+On MIPS targets, make @option{-mno-madd4} the default when no
+@option{-mmadd4} option is passed.  The @code{madd4} instruction
+family can be problematic when targeting a combination of cores that
+implement these instructions differently.  There are two known cores
+that implement these as fused operations instead of unfused (where
+unfused is normally expected).  Disabling these instructions is the
+only way to ensure compatible code is generated; this will incur
+a performance penalty.
 
 @item --with-mips-plt
 On MIPS targets, make use of copy relocations and PLTs.
@@ -2203,8 +2240,12 @@ is named as @samp{.} (dot), or is omitted (e.g.
 The options @option{--with-target-bdw-gc-include} and
 @option{--with-target-bdw-gc-lib} must always be specified together
 for each multilib variant and they take precedence over
-@option{--with-target-bdw-gc}.  If none of these options are
-specified, the library is assumed in default locations.
+@option{--with-target-bdw-gc}.  If @option{--with-target-bdw-gc-include}
+is missing values for a multilib, then the value for the default
+multilib is used (e.g. @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
+@samp{--with-target-bdw-gc-lib=/opt/bdw-gc/lib64,32=/opt-bdw-gc/lib32}).
+If none of these options are specified, the library is assumed in
+default locations.
 @end table
 
 @html
@@ -2624,7 +2665,10 @@ separately.
 
 Second, you must have the testing tools installed.  This includes
 @uref{http://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
-the DejaGnu site has links to these.
+the DejaGnu site has links to these. For running the BRIG frontend
+tests, a tool to assemble the binary BRIGs from HSAIL text,
+@uref{https://github.com/HSAFoundation/HSAIL-Tools/,,HSAILasm} must
+be installed.
 
 If the directories where @command{runtest} and @command{expect} were
 installed are not in the @env{PATH}, you may need to set the following
@@ -4177,7 +4221,7 @@ PowerPC running Darwin (Mac OS X kernel).
 Pre-installed versions of Mac OS X may not include any developer tools,
 meaning that you will not be able to build GCC from source.  Tool
 binaries are available at
-@uref{http://opensource.apple.com/}.
+@uref{https://opensource.apple.com}.
 
 This version of GCC requires at least cctools-590.36.  The
 cctools-590.36 package referenced from

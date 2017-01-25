@@ -1,6 +1,6 @@
 ; Options for the ATMEL AVR port of the compiler.
 
-; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+; Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -76,7 +76,7 @@ Make the linker relaxation machine assume that a program counter wrap-around occ
 
 maccumulate-args
 Target Report Mask(ACCUMULATE_OUTGOING_ARGS)
-Accumulate outgoing function arguments and acquire/release the needed stack space for outpoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
+Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
 
 mstrict-X
 Target Report Var(avr_strict_X) Init(0)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,10 +81,10 @@ procedure Send_Trace (Id : Trace_T; Info : String) is
       --  We need comments here ???
 
       case Param is
-         when Name_Param     =>
+         when Name_Param =>
             Match ("/N:([\w]+)", Input, Matches);
 
-         when Caller_Param   =>
+         when Caller_Param =>
             Match ("/C:([\w]+)", Input, Matches);
 
          when Entry_Param =>
@@ -96,7 +96,7 @@ procedure Send_Trace (Id : Trace_T; Info : String) is
          when Acceptor_Param =>
             Match ("/A:([\w]+)", Input, Matches);
 
-         when Parent_Param   =>
+         when Parent_Param =>
             Match ("/P:([\w]+)", Input, Matches);
 
          when Number_Param =>
@@ -108,7 +108,10 @@ procedure Send_Trace (Id : Trace_T; Info : String) is
       end if;
 
       case Param is
-         when Timeout_Param | Entry_Param | Number_Param =>
+         when Entry_Param
+            | Number_Param
+            | Timeout_Param
+         =>
             return Input (Matches (2).First .. Matches (2).Last);
 
          when others =>

@@ -255,7 +255,7 @@ if $GLIBCXX_IS_NATIVE; then
   # For TLS support.
   GCC_CHECK_TLS
 
-  AC_CHECK_FUNCS(__cxa_thread_atexit_impl)
+  AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
 
   # For iconv support.
@@ -400,7 +400,7 @@ AC_SUBST(LONG_DOUBLE_COMPAT_FLAGS)
 GLIBCXX_CONDITIONAL(GLIBCXX_LDBL_COMPAT, test $ac_ldbl_compat = yes)
 
 # Check if assembler supports disabling hardware capability support.
-GLIBCXX_CHECK_ASSEMBLER_HWCAP
+GCC_CHECK_ASSEMBLER_HWCAP
 
 # Check if assembler supports rdrand opcode.
 GLIBCXX_CHECK_X86_RDRAND
@@ -418,6 +418,9 @@ GLIBCXX_CHECK_FILESYSTEM_DEPS
 
 # For Transactional Memory TS
 GLIBCXX_CHECK_SIZE_T_MANGLING
+
+# Check which release added std::exception_ptr for the target
+GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER
 
 # Define documentation rules conditionally.
 
@@ -505,6 +508,9 @@ GLIBCXX_EXPORT_INSTALL_INFO
 # Export all the include and flag information to Makefiles.
 GLIBCXX_EXPORT_INCLUDES
 GLIBCXX_EXPORT_FLAGS
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 dnl In autoconf 2.5x, AC_OUTPUT is replaced by four AC_CONFIG_* macros,
 dnl which can all be called multiple times as needed, plus one (different)

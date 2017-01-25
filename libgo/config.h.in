@@ -21,6 +21,9 @@
 /* Define if your assembler supports unwind section type. */
 #undef HAVE_AS_X86_64_UNWIND_SECTION_TYPE
 
+/* Define if your assembler supports AES instructions. */
+#undef HAVE_AS_X86_AES
+
 /* Define if your assembler supports PC relative relocs. */
 #undef HAVE_AS_X86_PCREL
 

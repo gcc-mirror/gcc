@@ -1,6 +1,7 @@
 
 /* PR tree-optimization/77862 */
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fPIC -w" } */
 
 struct paramed_type

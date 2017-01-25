@@ -190,4 +190,7 @@ AM_CONDITIONAL(VTV_CYGMIN, test $vtv_cygmin = yes)
 AC_CHECK_FUNCS([_obstack_begin])
 AM_CONDITIONAL(VTV_NO_OBSTACK, test $ac_cv_func__obstack_begin = no)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_OUTPUT

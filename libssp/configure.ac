@@ -195,5 +195,8 @@ else
   multilib_arg=
 fi
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_CONFIG_FILES([Makefile ssp/ssp.h])
 AC_OUTPUT

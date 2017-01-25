@@ -55,7 +55,8 @@ target_triplet = @target@
 subdir = mpxwrap
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/lead-dot.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
@@ -209,6 +210,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -249,7 +251,7 @@ ALCLOCAL_AMFLAGS = -I .. -I ../config
 AM_CPPFLAGS = -I $(top_srcdir)
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 libmpxwrappers_la_CFLAGS = -fcheck-pointer-bounds -mmpx -fno-chkp-check-read \
 			   -fno-chkp-check-write -fno-chkp-use-wrappers -fPIC
 

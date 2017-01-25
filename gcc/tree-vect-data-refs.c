@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -1098,12 +1098,9 @@ vector_alignment_reachable_p (struct data_reference *dr)
       bool is_packed = not_size_aligned (DR_REF (dr));
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                 "Unknown misalignment, is_packed = %d\n",is_packed);
-      if ((TYPE_USER_ALIGN (type) && !is_packed)
-	  || targetm.vectorize.vector_alignment_reachable (type, is_packed))
-	return true;
-      else
-	return false;
+	                 "Unknown misalignment, %snaturally aligned\n",
+			 is_packed ? "not " : "");
+      return targetm.vectorize.vector_alignment_reachable (type, is_packed);
     }
 
   return true;
@@ -2390,7 +2387,9 @@ vect_analyze_group_access_1 (struct data_reference *dr)
       if (groupsize == 0)
         groupsize = count + gaps;
 
-      if (groupsize > UINT_MAX)
+      /* This could be UINT_MAX but as we are generating code in a very
+         inefficient way we have to cap earlier.  See PR78699 for example.  */
+      if (groupsize > 4096)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6151,10 +6150,8 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       if (!known_alignment_for_access_p (dr))
 	is_packed = not_size_aligned (DR_REF (dr));
 
-      if ((TYPE_USER_ALIGN (type) && !is_packed)
-	  || targetm.vectorize.
-	       support_vector_misalignment (mode, type,
-					    DR_MISALIGNMENT (dr), is_packed))
+      if (targetm.vectorize.support_vector_misalignment
+	    (mode, type, DR_MISALIGNMENT (dr), is_packed))
 	/* Can't software pipeline the loads, but can at least do them.  */
 	return dr_unaligned_supported;
     }
@@ -6166,10 +6163,8 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       if (!known_alignment_for_access_p (dr))
 	is_packed = not_size_aligned (DR_REF (dr));
 
-     if ((TYPE_USER_ALIGN (type) && !is_packed)
-	 || targetm.vectorize.
-	      support_vector_misalignment (mode, type,
-					   DR_MISALIGNMENT (dr), is_packed))
+     if (targetm.vectorize.support_vector_misalignment
+	   (mode, type, DR_MISALIGNMENT (dr), is_packed))
        return dr_unaligned_supported;
     }
 

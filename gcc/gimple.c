@@ -1,6 +1,6 @@
 /* Gimple IR support functions.
 
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2017 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -2631,7 +2631,7 @@ nonfreeing_call_p (gimple *call)
       case IFN_ABNORMAL_DISPATCHER:
         return true;
       case IFN_ASAN_MARK:
-	return tree_to_uhwi (gimple_call_arg (call, 0)) == ASAN_MARK_UNCLOBBER;
+	return tree_to_uhwi (gimple_call_arg (call, 0)) == ASAN_MARK_UNPOISON;
       default:
 	if (gimple_call_flags (call) & ECF_LEAF)
 	  return true;

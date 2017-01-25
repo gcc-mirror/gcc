@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2016 Free Software Foundation, Inc.
+   Copyright (C) 1993-2017 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -365,15 +365,13 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 static void
 dump_alias_template_specialization (cxx_pretty_printer *pp, tree t, int flags)
 {
-  tree name;
-
   gcc_assert (alias_template_specialization_p (t));
 
+  tree decl = TYPE_NAME (t);
   if (!(flags & TFF_UNQUALIFIED_NAME))
-    dump_scope (pp, CP_DECL_CONTEXT (TYPE_NAME (t)), flags);
-  name = TYPE_IDENTIFIER (t);
-  pp_cxx_tree_identifier (pp, name);
-  dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
+    dump_scope (pp, CP_DECL_CONTEXT (decl), flags);
+  pp_cxx_tree_identifier (pp, DECL_NAME (decl));
+  dump_template_parms (pp, DECL_TEMPLATE_INFO (decl),
 		       /*primary=*/false,
 		       flags & ~TFF_TEMPLATE_HEADER);
 }
@@ -1270,10 +1268,21 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case USING_DECL:
-      pp_cxx_ws_string (pp, "using");
-      dump_type (pp, USING_DECL_SCOPE (t), flags);
-      pp_cxx_colon_colon (pp);
-      dump_decl (pp, DECL_NAME (t), flags);
+      {
+	pp_cxx_ws_string (pp, "using");
+	tree scope = USING_DECL_SCOPE (t);
+	bool variadic = false;
+	if (PACK_EXPANSION_P (scope))
+	  {
+	    scope = PACK_EXPANSION_PATTERN (scope);
+	    variadic = true;
+	  }
+	dump_type (pp, scope, flags);
+	pp_cxx_colon_colon (pp);
+	dump_decl (pp, DECL_NAME (t), flags);
+	if (variadic)
+	  pp_cxx_ws_string (pp, "...");
+      }
       break;
 
     case STATIC_ASSERT:
@@ -3768,11 +3777,12 @@ qualified_name_lookup_error (tree scope, tree name,
   else if (scope != global_namespace)
     {
       error_at (location, "%qD is not a member of %qD", name, scope);
-      suggest_alternatives_for (location, name);
+      if (!suggest_alternative_in_explicit_scope (location, name, scope))
+	suggest_alternatives_for (location, name, false);
     }
   else
     {
       error_at (location, "%<::%D%> has not been declared", name);
-      suggest_alternatives_for (location, name);
+      suggest_alternatives_for (location, name, true);
     }
 }

@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
    Contributed by Martin Liska <mliska@suse.cz>
 
 This file is part of GCC.
@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "print-tree.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 
 namespace {
 
@@ -100,7 +100,10 @@ process_hsa_functions (void)
 		     clone->name (),
 		     s->m_kind == HSA_KERNEL ? "kernel" : "function");
 	}
-      else if (hsa_callable_function_p (node->decl))
+      else if (hsa_callable_function_p (node->decl)
+	       /* At this point, this is enough to identify clones for
+		  parallel, which for HSA would need to be kernels anyway.  */
+	       && !DECL_ARTIFICIAL (node->decl))
 	{
 	  if (!check_warn_node_versionable (node))
 	    continue;

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2016-08-19 21:01+0000\n"
+"POT-Creation-Date: 2017-01-01 00:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,7 +37,7 @@ msgid "character 0x%lx is not in the basic source character set\n"
 msgstr ""
 
 #: charset.c:798
-#: charset.c:1659
+#: charset.c:1677
 msgid "converting to execution character set"
 msgstr ""
 
@@ -74,7 +74,7 @@ msgid "%.*s is not a valid universal character"
 msgstr ""
 
 #: charset.c:1121
-#: lex.c:1237
+#: lex.c:1333
 msgid "'$' in identifier or number"
 msgstr ""
 
@@ -89,7 +89,7 @@ msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr ""
 
 #: charset.c:1181
-#: charset.c:1982
+#: charset.c:2000
 msgid "converting UCN to source character set"
 msgstr ""
 
@@ -136,24 +136,24 @@ msgstr ""
 msgid "converting escape sequence to execution character set"
 msgstr ""
 
-#: charset.c:1603
+#: charset.c:1614
 msgid "missing open quote"
 msgstr ""
 
-#: charset.c:1809
-#: charset.c:1873
+#: charset.c:1827
+#: charset.c:1891
 msgid "character constant too long for its type"
 msgstr ""
 
-#: charset.c:1812
+#: charset.c:1830
 msgid "multi-character character constant"
 msgstr ""
 
-#: charset.c:1913
+#: charset.c:1931
 msgid "empty character constant"
 msgstr ""
 
-#: charset.c:2029
+#: charset.c:2047
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr ""
@@ -428,7 +428,7 @@ msgid "unterminated #%s"
 msgstr ""
 
 #: directives-only.c:221
-#: lex.c:2461
+#: lex.c:2819
 #: traditional.c:167
 msgid "unterminated comment"
 msgstr ""
@@ -529,88 +529,88 @@ msgstr ""
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr ""
 
-#: expr.c:1036
+#: expr.c:1038
 msgid "this use of \"defined\" may not be portable"
 msgstr ""
 
-#: expr.c:1096
+#: expr.c:1098
 msgid "user-defined literal in preprocessor expression"
 msgstr ""
 
-#: expr.c:1101
+#: expr.c:1103
 msgid "floating constant in preprocessor expression"
 msgstr ""
 
-#: expr.c:1107
+#: expr.c:1109
 msgid "imaginary number in preprocessor expression"
 msgstr ""
 
-#: expr.c:1160
+#: expr.c:1162
 #, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr ""
 
-#: expr.c:1173
+#: expr.c:1175
 msgid "assertions are a GCC extension"
 msgstr ""
 
-#: expr.c:1176
+#: expr.c:1178
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:1422
+#: expr.c:1424
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr ""
 
-#: expr.c:1442
+#: expr.c:1444
 #, c-format
 msgid "impossible operator '%u'"
 msgstr ""
 
-#: expr.c:1543
+#: expr.c:1545
 msgid "missing ')' in expression"
 msgstr ""
 
-#: expr.c:1572
+#: expr.c:1574
 msgid "'?' without following ':'"
 msgstr ""
 
-#: expr.c:1582
+#: expr.c:1584
 msgid "integer overflow in preprocessor expression"
 msgstr ""
 
-#: expr.c:1587
+#: expr.c:1589
 msgid "missing '(' in expression"
 msgstr ""
 
-#: expr.c:1619
+#: expr.c:1621
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1624
+#: expr.c:1626
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1883
+#: expr.c:1885
 msgid "traditional C rejects the unary plus operator"
 msgstr ""
 
-#: expr.c:1981
+#: expr.c:1983
 msgid "comma operator in operand of #if"
 msgstr ""
 
-#: expr.c:2117
+#: expr.c:2119
 msgid "division by zero in #if"
 msgstr ""
 
-#: expr.c:2214
+#: expr.c:2216
 msgid "operator \"__has_include__\" requires a header string"
 msgstr ""
 
-#: expr.c:2230
+#: expr.c:2232
 msgid "missing ')' after \"__has_include__\""
 msgstr ""
 
@@ -627,169 +627,169 @@ msgstr ""
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.c:1440
+#: files.c:1441
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
-#: init.c:552
+#: init.c:553
 msgid "cppchar_t must be an unsigned type"
 msgstr ""
 
-#: init.c:556
+#: init.c:557
 #, c-format
 msgid ""
 "preprocessor arithmetic has maximum precision of %lu bits; target requires "
 "%lu bits"
 msgstr ""
 
-#: init.c:563
+#: init.c:564
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr ""
 
-#: init.c:566
+#: init.c:567
 msgid "target char is less than 8 bits wide"
 msgstr ""
 
-#: init.c:570
+#: init.c:571
 msgid "target wchar_t is narrower than target char"
 msgstr ""
 
-#: init.c:574
+#: init.c:575
 msgid "target int is narrower than target char"
 msgstr ""
 
-#: init.c:579
+#: init.c:580
 msgid "CPP half-integer narrower than CPP character"
 msgstr ""
 
-#: init.c:583
+#: init.c:584
 #, c-format
 msgid ""
 "CPP on this host cannot handle wide character constants over %lu bits, but "
 "the target requires %lu bits"
 msgstr ""
 
-#: lex.c:1030
+#: lex.c:1126
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:1035
+#: lex.c:1131
 msgid "backslash-newline at end of file"
 msgstr ""
 
-#: lex.c:1051
+#: lex.c:1147
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:1059
+#: lex.c:1155
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:1108
+#: lex.c:1204
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:1166
+#: lex.c:1262
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:1175
+#: lex.c:1271
 msgid "null character(s) ignored"
 msgstr ""
 
-#: lex.c:1212
+#: lex.c:1308
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr ""
 
-#: lex.c:1215
+#: lex.c:1311
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr ""
 
-#: lex.c:1285
-#: lex.c:1374
+#: lex.c:1381
+#: lex.c:1470
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:1295
-#: lex.c:1384
+#: lex.c:1391
+#: lex.c:1480
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr ""
 
-#: lex.c:1299
-#: lex.c:1388
+#: lex.c:1395
+#: lex.c:1484
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:1306
-#: lex.c:1395
+#: lex.c:1402
+#: lex.c:1491
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1685
+#: lex.c:1781
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1689
+#: lex.c:1785
 msgid "invalid new-line in raw string delimiter"
 msgstr ""
 
-#: lex.c:1693
+#: lex.c:1789
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr ""
 
-#: lex.c:1742
-#: lex.c:1764
+#: lex.c:1838
+#: lex.c:1860
 msgid "unterminated raw string"
 msgstr ""
 
-#: lex.c:1785
-#: lex.c:1915
+#: lex.c:1881
+#: lex.c:2011
 msgid ""
 "invalid suffix on literal; C++11 requires a space between literal and string "
 "macro"
 msgstr ""
 
-#: lex.c:1897
+#: lex.c:1993
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:1900
+#: lex.c:1996
 #, c-format
 msgid "missing terminating %c character"
 msgstr ""
 
-#: lex.c:1933
+#: lex.c:2029
 msgid "C++11 requires a space between string literal and macro"
 msgstr ""
 
-#: lex.c:2475
-#: lex.c:2509
+#: lex.c:2833
+#: lex.c:2867
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:2477
-#: lex.c:2488
-#: lex.c:2511
+#: lex.c:2835
+#: lex.c:2846
+#: lex.c:2869
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:2486
+#: lex.c:2844
 msgid "C++ style comments are incompatible with C90"
 msgstr ""
 
-#: lex.c:2517
+#: lex.c:2875
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:2875
+#: lex.c:3248
 #, c-format
 msgid "unspellable token %s"
 msgstr ""

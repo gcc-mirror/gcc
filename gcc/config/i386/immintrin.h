@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -71,6 +71,8 @@
 #include <avx5124fmapsintrin.h>
 
 #include <avx5124vnniwintrin.h>
+
+#include <avx512vpopcntdqintrin.h>
 
 #include <shaintrin.h>
 

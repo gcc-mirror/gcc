@@ -14,33 +14,42 @@ import (
 // these are written in OS-specific files and in assembler.
 
 //extern sigaction
-func sigaction(signum int32, act *_sigaction, oact *_sigaction) int32
+func sigaction(signum uint32, act *_sigaction, oact *_sigaction) int32
 
 //extern sigprocmask
-func sigprocmask(how int32, set *_sigset_t, oldset *_sigset_t) int32
+func sigprocmask(how int32, set *sigset, oldset *sigset) int32
 
-// The argument should be simply *_sigset_t, but that fails on GNU/Linux
-// which sometimes uses _sigset_t and sometimes uses ___sigset_t.
 //extern sigfillset
-func sigfillset(set unsafe.Pointer) int32
+func sigfillset(set *sigset) int32
 
 //extern sigemptyset
-func sigemptyset(set *_sigset_t) int32
+func sigemptyset(set *sigset) int32
 
 //extern sigaddset
-func sigaddset(set *_sigset_t, signum int32) int32
+func c_sigaddset(set *sigset, signum uint32) int32
+
+//extern sigdelset
+func c_sigdelset(set *sigset, signum uint32) int32
 
 //extern sigaltstack
 func sigaltstack(ss *_stack_t, oss *_stack_t) int32
 
 //extern raise
-func raise(sig int32) int32
+func raise(sig uint32) int32
 
 //extern getpid
 func getpid() _pid_t
 
 //extern kill
-func kill(pid _pid_t, sig int32) int32
+func kill(pid _pid_t, sig uint32) int32
+
+//extern setitimer
+func setitimer(which int32, new *_itimerval, old *_itimerval) int32
+
+type sigTabT struct {
+	flags int32
+	name  string
+}
 
 type sigctxt struct {
 	info *_siginfo_t
@@ -57,17 +66,10 @@ func (c *sigctxt) sigcode() uint64 {
 }
 
 //go:nosplit
-func sigblock() {
-	var set _sigset_t
-	sigfillset(unsafe.Pointer(&set))
-	sigprocmask(_SIG_SETMASK, &set, nil)
-}
-
-//go:nosplit
 //go:nowritebarrierrec
-func setsig(i int32, fn uintptr, restart bool) {
+func setsig(i uint32, fn uintptr) {
 	var sa _sigaction
-	sa.sa_flags = _SA_SIGINFO
+	sa.sa_flags = _SA_SIGINFO | _SA_RESTART
 
 	// For gccgo we do not set SA_ONSTACK for a signal that can
 	// cause a panic.  Instead, we trust that the split stack has
@@ -78,17 +80,14 @@ func setsig(i int32, fn uintptr, restart bool) {
 		sa.sa_flags |= _SA_ONSTACK
 	}
 
-	if restart {
-		sa.sa_flags |= _SA_RESTART
-	}
-	sigfillset(unsafe.Pointer(&sa.sa_mask))
+	sigfillset((*sigset)(unsafe.Pointer(&sa.sa_mask)))
 	setSigactionHandler(&sa, fn)
 	sigaction(i, &sa, nil)
 }
 
 //go:nosplit
 //go:nowritebarrierrec
-func setsigstack(i int32) {
+func setsigstack(i uint32) {
 	var sa _sigaction
 	sigaction(i, nil, &sa)
 	handler := getSigactionHandler(&sa)
@@ -104,7 +103,7 @@ func setsigstack(i int32) {
 
 //go:nosplit
 //go:nowritebarrierrec
-func getsig(i int32) uintptr {
+func getsig(i uint32) uintptr {
 	var sa _sigaction
 	if sigaction(i, nil, &sa) < 0 {
 		// On GNU/Linux glibc rejects attempts to call
@@ -117,29 +116,11 @@ func getsig(i int32) uintptr {
 	return getSigactionHandler(&sa)
 }
 
-//go:nosplit
-//go:nowritebarrierrec
-func updatesigmask(m sigmask) {
-	var mask _sigset_t
-	sigemptyset(&mask)
-	for i := int32(0); i < _NSIG; i++ {
-		if m[(i-1)/32]&(1<<((uint(i)-1)&31)) != 0 {
-			sigaddset(&mask, i)
-		}
-	}
-	sigprocmask(_SIG_SETMASK, &mask, nil)
-}
-
-func unblocksig(sig int32) {
-	var mask _sigset_t
-	sigemptyset(&mask)
-	sigaddset(&mask, sig)
-	sigprocmask(_SIG_UNBLOCK, &mask, nil)
-}
+func signalstack(p unsafe.Pointer, n uintptr)
 
 //go:nosplit
 //go:nowritebarrierrec
-func raiseproc(sig int32) {
+func raiseproc(sig uint32) {
 	kill(getpid(), sig)
 }
 
@@ -149,4 +130,14 @@ func sigfwd(fn uintptr, sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 	f1 := &[1]uintptr{fn}
 	f2 := *(*func(uint32, *_siginfo_t, unsafe.Pointer))(unsafe.Pointer(&f1))
 	f2(sig, info, ctx)
+}
+
+//go:nosplit
+//go:nowritebarrierrec
+func sigaddset(mask *sigset, i int) {
+	c_sigaddset(mask, uint32(i))
+}
+
+func sigdelset(mask *sigset, i int) {
+	c_sigdelset(mask, uint32(i))
 }

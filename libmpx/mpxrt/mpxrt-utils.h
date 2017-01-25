@@ -54,6 +54,11 @@ typedef enum {
   MPX_RT_STOP
 } mpx_rt_mode_t;
 
+typedef enum {
+  MPX_RT_STOP_HANDLER_ABORT,
+  MPX_RT_STOP_HANDLER_EXIT
+} mpx_rt_stop_mode_handler_t;
+
 void __mpxrt_init_env_vars (int* bndpreserve);
 void __mpxrt_write_uint (verbose_type vt, uint64_t val, unsigned base);
 void __mpxrt_write (verbose_type vt, const char* str);

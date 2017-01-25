@@ -1,5 +1,5 @@
 /* Infrastructure to dump our HSAIL IL
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "print-tree.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 
 /* Return textual name of TYPE.  */
 

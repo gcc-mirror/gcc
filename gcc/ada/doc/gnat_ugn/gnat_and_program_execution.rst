@@ -1740,10 +1740,9 @@ following conditions are met:
   .. index:: Inline
 
 * Any one of the following applies: `pragma Inline` is applied to the
-  subprogram and the *-gnatn* switch is specified; the
-  subprogram is local to the unit and called once from within it; the
-  subprogram is small and optimization level *-O2* is specified;
-  optimization level *-O3* is specified.
+  subprogram; the subprogram is local to the unit and called once from
+  within it; the subprogram is small and optimization level *-O2* is
+  specified; optimization level *-O3* is specified.
 
 Calls to subprograms in |withed| units are normally not inlined.
 To achieve actual inlining (that is, replacement of the call by the code
@@ -1754,8 +1753,6 @@ in the body of the subprogram), the following conditions must all be true:
 * The called subprogram is suitable for inlining: It must be small enough
   and not contain something that *gcc* cannot support in inlined
   subprograms.
-
-* The call appears in a body (not in a package spec).
 
 * There is a `pragma Inline` for the subprogram.
 
@@ -1806,7 +1803,7 @@ additional dependencies.
 .. index:: -fno-inline (gcc)
 
 Note: The *-fno-inline* switch overrides all other conditions and ensures that
-no inlining occurs, unless requested with pragma Inline_Always for gcc
+no inlining occurs, unless requested with pragma Inline_Always for *gcc*
 back-ends. The extra dependences resulting from *-gnatn* will still be active,
 even if this switch is used to suppress the resulting inlining actions.
 

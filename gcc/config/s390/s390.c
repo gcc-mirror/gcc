@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -820,13 +820,13 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       bflags = bflags_for_builtin (fcode);
       if ((bflags & B_HTM) && !TARGET_HTM)
 	{
-	  error ("Builtin %qF is not supported without -mhtm "
+	  error ("builtin %qF is not supported without -mhtm "
 		 "(default with -march=zEC12 and higher).", fndecl);
 	  return const0_rtx;
 	}
       if ((bflags & B_VX) && !TARGET_VX)
 	{
-	  error ("Builtin %qF is not supported without -mvx "
+	  error ("builtin %qF is not supported without -mvx "
 		 "(default with -march=z13 and higher).", fndecl);
 	  return const0_rtx;
 	}
@@ -846,7 +846,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     }
   else if (fcode < S390_OVERLOADED_BUILTIN_VAR_OFFSET)
     {
-      error ("Unresolved overloaded builtin");
+      error ("unresolved overloaded builtin");
       return const0_rtx;
     }
   else
@@ -981,7 +981,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       if (!insn_op->predicate (op[arity], insn_op->mode))
 	{
-	  error ("Invalid argument %d for builtin %qF", arity + 1, fndecl);
+	  error ("invalid argument %d for builtin %qF", arity + 1, fndecl);
 	  return const0_rtx;
 	}
       arity++;
@@ -5246,10 +5246,25 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
       && (GET_CODE (len) != CONST_INT || INTVAL (len) > (1<<16)))
     return false;
 
-  if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
+  /* Expand memcpy for constant length operands without a loop if it
+     is shorter that way.
+
+     With a constant length argument a
+     memcpy loop (without pfd) is 36 bytes -> 6 * mvc  */
+  if (GET_CODE (len) == CONST_INT
+      && INTVAL (len) >= 0
+      && INTVAL (len) <= 256 * 6
+      && (!TARGET_MVCLE || INTVAL (len) <= 256))
     {
-      if (INTVAL (len) > 0)
-        emit_insn (gen_movmem_short (dst, src, GEN_INT (INTVAL (len) - 1)));
+      HOST_WIDE_INT o, l;
+
+      for (l = INTVAL (len), o = 0; l > 0; l -= 256, o += 256)
+	{
+	  rtx newdst = adjust_address (dst, BLKmode, o);
+	  rtx newsrc = adjust_address (src, BLKmode, o);
+	  emit_insn (gen_movmem_short (newdst, newsrc,
+				       GEN_INT (l > 256 ? 255 : l - 1)));
+	}
     }
 
   else if (TARGET_MVCLE)
@@ -5346,34 +5361,48 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 void
 s390_expand_setmem (rtx dst, rtx len, rtx val)
 {
-  if (GET_CODE (len) == CONST_INT && INTVAL (len) == 0)
+  const int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
+
+  if (GET_CODE (len) == CONST_INT && INTVAL (len) <= 0)
     return;
 
   gcc_assert (GET_CODE (val) == CONST_INT || GET_MODE (val) == QImode);
 
-  if (GET_CODE (len) == CONST_INT && INTVAL (len) > 0 && INTVAL (len) <= 257)
+  /* Expand setmem/clrmem for a constant length operand without a
+     loop if it will be shorter that way.
+     With a constant length and without pfd argument a
+     clrmem loop is 32 bytes -> 5.3 * xc
+     setmem loop is 36 bytes -> 3.6 * (mvi/stc + mvc) */
+  if (GET_CODE (len) == CONST_INT
+      && ((INTVAL (len) <= 256 * 5 && val == const0_rtx)
+	  || INTVAL (len) <= 257 * 3)
+      && (!TARGET_MVCLE || INTVAL (len) <= 256))
     {
-      if (val == const0_rtx && INTVAL (len) <= 256)
-        emit_insn (gen_clrmem_short (dst, GEN_INT (INTVAL (len) - 1)));
+      HOST_WIDE_INT o, l;
+
+      if (val == const0_rtx)
+	/* clrmem: emit 256 byte blockwise XCs.  */
+	for (l = INTVAL (len), o = 0; l > 0; l -= 256, o += 256)
+	  {
+	    rtx newdst = adjust_address (dst, BLKmode, o);
+	    emit_insn (gen_clrmem_short (newdst,
+					 GEN_INT (l > 256 ? 255 : l - 1)));
+	  }
       else
-	{
-	  /* Initialize memory by storing the first byte.  */
-	  emit_move_insn (adjust_address (dst, QImode, 0), val);
-
-	  if (INTVAL (len) > 1)
-	    {
-	      /* Initiate 1 byte overlap move.
-	         The first byte of DST is propagated through DSTP1.
-		 Prepare a movmem for:  DST+1 = DST (length = LEN - 1).
-		 DST is set to size 1 so the rest of the memory location
-		 does not count as source operand.  */
-	      rtx dstp1 = adjust_address (dst, VOIDmode, 1);
-	      set_mem_size (dst, 1);
-
-	      emit_insn (gen_movmem_short (dstp1, dst,
-					   GEN_INT (INTVAL (len) - 2)));
-	    }
-	}
+	/* setmem: emit 1(mvi) + 256(mvc) byte blockwise memsets by
+	   setting first byte to val and using a 256 byte mvc with one
+	   byte overlap to propagate the byte.  */
+	for (l = INTVAL (len), o = 0; l > 0; l -= 257, o += 257)
+	  {
+	    rtx newdst = adjust_address (dst, BLKmode, o);
+	    emit_move_insn (adjust_address (dst, QImode, o), val);
+	    if (l > 1)
+	      {
+		rtx newdstp1 = adjust_address (dst, BLKmode, o + 1);
+		emit_insn (gen_movmem_short (newdstp1, newdst,
+					     GEN_INT (l > 257 ? 255 : l - 2)));
+	      }
+	  }
     }
 
   else if (TARGET_MVCLE)
@@ -5391,13 +5420,14 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
     {
       rtx dst_addr, count, blocks, temp, dstp1 = NULL_RTX;
       rtx_code_label *loop_start_label = gen_label_rtx ();
-      rtx_code_label *loop_end_label = gen_label_rtx ();
-      rtx_code_label *end_label = gen_label_rtx ();
+      rtx_code_label *onebyte_end_label = gen_label_rtx ();
+      rtx_code_label *zerobyte_end_label = gen_label_rtx ();
+      rtx_code_label *restbyte_end_label = gen_label_rtx ();
       machine_mode mode;
 
       mode = GET_MODE (len);
       if (mode == VOIDmode)
-        mode = Pmode;
+	mode = Pmode;
 
       dst_addr = gen_reg_rtx (Pmode);
       count = gen_reg_rtx (mode);
@@ -5405,39 +5435,56 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 
       convert_move (count, len, 1);
       emit_cmp_and_jump_insns (count, const0_rtx,
-			       EQ, NULL_RTX, mode, 1, end_label);
+			       EQ, NULL_RTX, mode, 1, zerobyte_end_label,
+			       very_unlikely);
 
+      /* We need to make a copy of the target address since memset is
+	 supposed to return it unmodified.  We have to make it here
+	 already since the new reg is used at onebyte_end_label.  */
       emit_move_insn (dst_addr, force_operand (XEXP (dst, 0), NULL_RTX));
       dst = change_address (dst, VOIDmode, dst_addr);
 
-      if (val == const0_rtx)
-        temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1,
-			     OPTAB_DIRECT);
-      else
+      if (val != const0_rtx)
 	{
-	  dstp1 = adjust_address (dst, VOIDmode, 1);
+	  /* When using the overlapping mvc the original target
+	     address is only accessed as single byte entity (even by
+	     the mvc reading this value).  */
 	  set_mem_size (dst, 1);
-
-	  /* Initialize memory by storing the first byte.  */
-	  emit_move_insn (adjust_address (dst, QImode, 0), val);
-
-	  /* If count is 1 we are done.  */
-	  emit_cmp_and_jump_insns (count, const1_rtx,
-				   EQ, NULL_RTX, mode, 1, end_label);
-
-	  temp = expand_binop (mode, add_optab, count, GEN_INT (-2), count, 1,
-			       OPTAB_DIRECT);
+	  dstp1 = adjust_address (dst, VOIDmode, 1);
+	  emit_cmp_and_jump_insns (count,
+				   const1_rtx, EQ, NULL_RTX, mode, 1,
+				   onebyte_end_label, very_unlikely);
 	}
+
+      /* There is one unconditional (mvi+mvc)/xc after the loop
+	 dealing with the rest of the bytes, subtracting two (mvi+mvc)
+	 or one (xc) here leaves this number of bytes to be handled by
+	 it.  */
+      temp = expand_binop (mode, add_optab, count,
+			   val == const0_rtx ? constm1_rtx : GEN_INT (-2),
+			   count, 1, OPTAB_DIRECT);
       if (temp != count)
-        emit_move_insn (count, temp);
+	emit_move_insn (count, temp);
 
       temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1,
 			   OPTAB_DIRECT);
       if (temp != blocks)
-        emit_move_insn (blocks, temp);
+	emit_move_insn (blocks, temp);
 
       emit_cmp_and_jump_insns (blocks, const0_rtx,
-			       EQ, NULL_RTX, mode, 1, loop_end_label);
+			       EQ, NULL_RTX, mode, 1, restbyte_end_label);
+
+      emit_jump (loop_start_label);
+
+      if (val != const0_rtx)
+	{
+	  /* The 1 byte != 0 special case.  Not handled efficiently
+	     since we require two jumps for that.  However, this
+	     should be very rare.  */
+	  emit_label (onebyte_end_label);
+	  emit_move_insn (adjust_address (dst, QImode, 0), val);
+	  emit_jump (zerobyte_end_label);
+	}
 
       emit_label (loop_start_label);
 
@@ -5455,26 +5502,39 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
       if (val == const0_rtx)
 	emit_insn (gen_clrmem_short (dst, GEN_INT (255)));
       else
-	emit_insn (gen_movmem_short (dstp1, dst, GEN_INT (255)));
+	{
+	  /* Set the first byte in the block to the value and use an
+	     overlapping mvc for the block.  */
+	  emit_move_insn (adjust_address (dst, QImode, 0), val);
+	  emit_insn (gen_movmem_short (dstp1, dst, GEN_INT (254)));
+	}
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
 
       temp = expand_binop (mode, add_optab, blocks, constm1_rtx, blocks, 1,
 			   OPTAB_DIRECT);
       if (temp != blocks)
-        emit_move_insn (blocks, temp);
+	emit_move_insn (blocks, temp);
 
       emit_cmp_and_jump_insns (blocks, const0_rtx,
-			       EQ, NULL_RTX, mode, 1, loop_end_label);
+			       NE, NULL_RTX, mode, 1, loop_start_label);
 
-      emit_jump (loop_start_label);
-      emit_label (loop_end_label);
+      emit_label (restbyte_end_label);
 
       if (val == const0_rtx)
-        emit_insn (gen_clrmem_short (dst, convert_to_mode (Pmode, count, 1)));
+	emit_insn (gen_clrmem_short (dst, convert_to_mode (Pmode, count, 1)));
       else
-        emit_insn (gen_movmem_short (dstp1, dst, convert_to_mode (Pmode, count, 1)));
-      emit_label (end_label);
+	{
+	  /* Set the first byte in the block to the value and use an
+	     overlapping mvc for the block.  */
+	  emit_move_insn (adjust_address (dst, QImode, 0), val);
+	  /* execute only uses the lowest 8 bits of count that's
+	     exactly what we need here.  */
+	  emit_insn (gen_movmem_short (dstp1, dst,
+				       convert_to_mode (Pmode, count, 1)));
+	}
+
+      emit_label (zerobyte_end_label);
     }
 }
 
@@ -11498,7 +11558,7 @@ s390_invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, 
 	   && (funcdecl == NULL_TREE
 	       || (TREE_CODE (funcdecl) == FUNCTION_DECL
 		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
-	  ? N_("Vector argument passed to unprototyped function")
+	  ? N_("vector argument passed to unprototyped function")
 	  : NULL);
 }
 
@@ -14878,7 +14938,7 @@ s390_valid_target_attribute_inner_p (tree args,
       else if (attrs[i].only_as_pragma && !force_pragma)
 	{
 	  /* Value is not allowed for the target attribute.  */
-	  error ("Value %qs is not supported by attribute %<target%>",
+	  error ("value %qs is not supported by attribute %<target%>",
 		 attrs[i].string);
 	  return false;
 	}
@@ -15311,7 +15371,7 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
      operators.  */
   if (!bool1_p && !bool2_p
       && TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
-    return N_("types differ in signess");
+    return N_("types differ in signedness");
 
   plusminus_p = (op == PLUS_EXPR || op == MINUS_EXPR);
   muldiv_p = (op == MULT_EXPR || op == RDIV_EXPR || op == TRUNC_DIV_EXPR

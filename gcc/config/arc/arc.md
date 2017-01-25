@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 1994-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2017 Free Software Foundation, Inc.
 
 ;; Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
 ;; behalf of Synopsys Inc.
@@ -9,13 +9,9 @@
 ;;    Saurabh Verma (saurabh.verma@codito.com)
 ;;    Ramana Radhakrishnan(ramana.radhakrishnan@codito.com)
 ;;
-;;    Profiling support and performance improvements by
+;;    Performance improvements by
 ;;    Joern Rennecke (joern.rennecke@embecosm.com)
 ;;
-;;    Support for DSP multiply instructions and mul64
-;;    instructions for ARC600; and improvements in flag setting
-;;    instructions by
-;;    Muhammad Khurram Riaz (Khurram.Riaz@arc.com)
 
 ;; This file is part of GCC.
 
@@ -169,9 +165,7 @@
   ])
 
 (define_constants
-  [(UNSPEC_PROF 18) ; profile callgraph counter
-
-   (R0_REG 0)
+  [(R0_REG 0)
    (R1_REG 1)
    (R2_REG 2)
    (R3_REG 3)
@@ -2054,14 +2048,26 @@
   [(set_attr "is_sfunc" "yes")
    (set_attr "predicable" "yes")])
 
-(define_insn "mulsidi_600"
+(define_insn_and_split "mulsidi_600"
+  [(set (match_operand:DI 0 "register_operand"                               "=c, c,c,  c")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"  "%Rcq#q, c,c,  c"))
+		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "Rcq#q,cL,L,C32"))))
+   (clobber (reg:DI MUL64_OUT_REG))]
+  "TARGET_MUL64_SET"
+  "#"
+  "TARGET_MUL64_SET"
+  [(const_int 0)]
+  "emit_insn (gen_mul64 (operands[1], operands[2]));
+   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+   DONE;"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "mul64"
   [(set (reg:DI MUL64_OUT_REG)
-	(mult:DI (sign_extend:DI
-		   (match_operand:SI 0 "register_operand"  "%Rcq#q,c,c,c"))
-		 (sign_extend:DI
-; assembler issue for "I", see mulsi_600
-;		   (match_operand:SI 1 "register_operand" "Rcq#q,cL,I,Cal"))))]
-		   (match_operand:SI 1 "register_operand" "Rcq#q,cL,L,C32"))))]
+	(mult:DI
+	 (sign_extend:DI (match_operand:SI 0 "register_operand" "%Rcq#q, c,c,  c"))
+	 (sign_extend:DI (match_operand:SI 1 "nonmemory_operand" "Rcq#q,cL,L,C32"))))]
   "TARGET_MUL64_SET"
   "mul64%? \t0, %0, %1%&"
   [(set_attr "length" "*,4,4,8")
@@ -2070,14 +2076,26 @@
    (set_attr "predicable" "yes,yes,no,yes")
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
 
-(define_insn "umulsidi_600"
+(define_insn_and_split "umulsidi_600"
+  [(set (match_operand:DI 0 "register_operand"                            "=c,c, c")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"   "%c,c, c"))
+		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand"  "cL,L,C32"))))
+   (clobber (reg:DI MUL64_OUT_REG))]
+  "TARGET_MUL64_SET"
+  "#"
+  "TARGET_MUL64_SET"
+  [(const_int 0)]
+  "emit_insn (gen_mulu64 (operands[1], operands[2]));
+   emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+   DONE;"
+  [(set_attr "type" "umulti")
+   (set_attr "length" "8")])
+
+(define_insn "mulu64"
   [(set (reg:DI MUL64_OUT_REG)
-	(mult:DI (zero_extend:DI
-		   (match_operand:SI 0 "register_operand"  "%c,c,c"))
-		 (sign_extend:DI
-; assembler issue for "I", see mulsi_600
-;		   (match_operand:SI 1 "register_operand" "cL,I,Cal"))))]
-		   (match_operand:SI 1 "register_operand" "cL,L,C32"))))]
+	(mult:DI
+	 (zero_extend:DI (match_operand:SI 0 "register_operand"  "%c,c,c"))
+	 (zero_extend:DI (match_operand:SI 1 "nonmemory_operand" "cL,L,C32"))))]
   "TARGET_MUL64_SET"
   "mulu64%? \t0, %0, %1%&"
   [(set_attr "length" "4,4,8")
@@ -2141,9 +2159,7 @@
     }
   else if (TARGET_MUL64_SET)
     {
-      operands[2] = force_reg (SImode, operands[2]);
-      emit_insn (gen_mulsidi_600 (operands[1], operands[2]));
-      emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+      emit_insn (gen_mulsidi_600 (operands[0], operands[1], operands[2]));
       DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
@@ -2375,9 +2391,7 @@
     }
   else if (TARGET_MUL64_SET)
     {
-      operands[2] = force_reg (SImode, operands[2]);
-      emit_insn (gen_umulsidi_600 (operands[1], operands[2]));
-      emit_move_insn (operands[0], gen_rtx_REG (DImode, MUL64_OUT_REG));
+      emit_insn (gen_umulsidi_600 (operands[0], operands[1], operands[2]));
       DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
@@ -4092,13 +4106,6 @@
 
     gcc_assert (MEM_P (operands[0]));
     callee  = XEXP (operands[0], 0);
-    if (crtl->profile && arc_profile_call (callee))
-      {
-	emit_call_insn (gen_call_prof (gen_rtx_SYMBOL_REF (Pmode,
-							   \"_mcount_call\"),
-				       operands[1]));
-	DONE;
-      }
     /* This is to decide if we should generate indirect calls by loading the
        32 bit address of the callee into a register before performing the
        branch and link - this exposes cse opportunities.
@@ -4133,20 +4140,6 @@
    (set_attr "predicable" "no,no,yes,yes,no,yes,no,yes")
    (set_attr "length" "*,*,4,4,4,4,4,8")])
 
-(define_insn "call_prof"
-  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "Cbr,Cal"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:SI 31))
-   (use (reg:SI 8))
-   (use (reg:SI 9))]
-   ""
-  "@
-   bl%!%* %P0;2
-   jl%! %^%S0"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes,yes")
-   (set_attr "length" "4,8")])
-
 (define_expand "call_value"
   ;; operand 2 is stack_size_rtx
   ;; operand 3 is next_arg_register
@@ -4161,14 +4154,6 @@
 
     gcc_assert (MEM_P (operands[1]));
     callee = XEXP (operands[1], 0);
-    if (crtl->profile && arc_profile_call (callee))
-      {
-	emit_call_insn (gen_call_value_prof (operands[0],
-					     gen_rtx_SYMBOL_REF (Pmode,
-							    \"_mcount_call\"),
-					     operands[2]));
-	DONE;
-      }
      /* See the comment in define_expand \"call\".  */
     if (GET_CODE (callee) != REG
 	&& (GET_CODE (callee) == PLUS || arc_is_longcall_p (callee)))
@@ -4203,22 +4188,6 @@
 ; There is a bl_s instruction (16 bit opcode branch-and-link), but we can't
 ; use it for lack of inter-procedural branch shortening.
 ; Link-time relaxation would help...
-
-
-(define_insn "call_value_prof"
-  [(set (match_operand 0 "dest_reg_operand" "=r,r")
-	(call (mem:SI (match_operand:SI 1 "symbolic_operand" "Cbr,Cal"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:SI 31))
-   (use (reg:SI 8))
-   (use (reg:SI 9))]
-   ""
-  "@
-   bl%!%* %P1;1
-   jl%! %^%S1"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes,yes")
-   (set_attr "length" "4,8")])
 
 (define_insn "nop"
   [(const_int 0)]
@@ -4651,13 +4620,6 @@
 
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
-    if (crtl->profile && arc_profile_call (callee))
-      {
-	emit_insn (gen_sibcall_prof
-		    (gen_rtx_SYMBOL_REF (Pmode, \"_mcount_call\"),
-		     operands[1], operands[2]));
-	DONE;
-      }
     if (GET_CODE (callee) != REG
 	&& (GET_CODE (callee) == PLUS || arc_is_longcall_p (callee)))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
@@ -4677,13 +4639,6 @@
 
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
-    if (crtl->profile && arc_profile_call (XEXP (operands[1], 0)))
-      {
-	emit_insn (gen_sibcall_value_prof
-		    (operands[0], gen_rtx_SYMBOL_REF (Pmode, \"_mcount_call\"),
-		     operands[2], operands[3]));
-	DONE;
-      }
     if (GET_CODE (callee) != REG && arc_is_longcall_p (callee))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
   }"
@@ -4725,39 +4680,6 @@
   [(set_attr "type" "call,call,call,call,call_no_delay_slot")
    (set_attr "predicable" "yes,no,no,yes,yes")
    (set_attr "iscompact" "false,false,maybe,false,false")
-   (set_attr "is_SIBCALL" "yes")]
-)
-
-(define_insn "sibcall_prof"
- [(call (mem:SI (match_operand:SI 0 "call_address_operand" "Cbr,Cal"))
-	(match_operand 1 "" ""))
-  (simple_return)
-  (use (match_operand 2 "" ""))
-  (use (reg:SI 8))
-  (use (reg:SI 9))]
-  ""
-  "@
-   b%!%* %P0;2
-   j%! %^%S0;2"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes")
-   (set_attr "is_SIBCALL" "yes")]
-)
-
-(define_insn "sibcall_value_prof"
- [(set (match_operand 0 "dest_reg_operand" "")
-       (call (mem:SI (match_operand:SI 1 "call_address_operand" "Cbr,Cal"))
-	     (match_operand 2 "" "")))
-  (simple_return)
-  (use (match_operand 3 "" ""))
-  (use (reg:SI 8))
-  (use (reg:SI 9))]
-  ""
-  "@
-   b%!%* %P1;1
-   j%! %^%S1;1"
-  [(set_attr "type" "call,call_no_delay_slot")
-   (set_attr "predicable" "yes")
    (set_attr "is_SIBCALL" "yes")]
 )
 

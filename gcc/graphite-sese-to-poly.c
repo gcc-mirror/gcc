@@ -1,5 +1,5 @@
 /* Conversion of SESE regions to Polyhedra.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -72,7 +72,7 @@ tree_int_to_gmp (tree t, mpz_t res)
 static isl_id *
 isl_id_for_pbb (scop_p s, poly_bb_p pbb)
 {
-  char name[10];
+  char name[14];
   snprintf (name, sizeof (name), "S_%d", pbb_index (pbb));
   return isl_id_alloc (s->isl_context, name, pbb);
 }
@@ -271,7 +271,7 @@ extract_affine_mul (scop_p s, tree e, __isl_take isl_space *space)
 static isl_id *
 isl_id_for_ssa_name (scop_p s, tree e)
 {
-  char name1[10];
+  char name1[14];
   snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
   return isl_id_alloc (s->isl_context, name1, e);
 }

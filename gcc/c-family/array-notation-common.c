@@ -1,7 +1,7 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains the builtin functions for Array
    notations.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
                   Intel Corporation
 
@@ -628,7 +628,9 @@ cilkplus_extract_an_triplets (vec<tree, va_gc> *list, size_t size, size_t rank,
 	  tree ii_tree = array_exprs[ii][jj];
 	  (*node)[ii][jj].is_vector = true;
 	  (*node)[ii][jj].value = ARRAY_NOTATION_ARRAY (ii_tree);
-	  (*node)[ii][jj].start = ARRAY_NOTATION_START (ii_tree);
+	  (*node)[ii][jj].start
+	    = fold_build1 (CONVERT_EXPR, integer_type_node,
+			   ARRAY_NOTATION_START (ii_tree));
 	  (*node)[ii][jj].length
 	    = fold_build1 (CONVERT_EXPR, integer_type_node,
 			   ARRAY_NOTATION_LENGTH (ii_tree));

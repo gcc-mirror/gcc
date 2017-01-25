@@ -1,6 +1,6 @@
 // Stack implementation -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -141,12 +141,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       stack(const _Sequence& __c = _Sequence())
       : c(__c) { }
 #else
+      template<typename _Seq = _Sequence, typename _Requires = typename
+	       enable_if<is_default_constructible<_Seq>::value>::type>
+	stack()
+	: c() { }
+
       explicit
       stack(const _Sequence& __c)
       : c(__c) { }
 
       explicit
-      stack(_Sequence&& __c = _Sequence())
+      stack(_Sequence&& __c)
       : c(std::move(__c)) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>

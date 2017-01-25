@@ -668,13 +668,12 @@ package body Layout is
 
       type Val_Status_Type is (Const, Dynamic);
 
-      type Val_Type (Status : Val_Status_Type := Const) is
-         record
-            case Status is
-               when Const   => Val : Uint;
-               when Dynamic => Nod : Node_Id;
-            end case;
-         end record;
+      type Val_Type (Status : Val_Status_Type := Const) is record
+         case Status is
+            when Const   => Val : Uint;
+            when Dynamic => Nod : Node_Id;
+         end case;
+      end record;
       --  Shows the status of the value so far. Const means that the value is
       --  constant, and Val is the current constant value. Dynamic means that
       --  the value is dynamic, and in this case Nod is the Node_Id of the
@@ -932,19 +931,19 @@ package body Layout is
 
       type Val_Status_Type is (Const, Dynamic, Discrim);
 
-      type Val_Type (Status : Val_Status_Type := Const) is
-         record
-            case Status is
-               when Const =>
-                  Val : Uint;
-                  --  Calculated value so far if Val_Status = Const
+      type Val_Type (Status : Val_Status_Type := Const) is record
+         case Status is
+            when Const =>
+               Val : Uint;
+               --  Calculated value so far if Val_Status = Const
 
-               when Dynamic | Discrim =>
-                  Nod : Node_Id;
-                  --  Expression value so far if Val_Status /= Const
-
-            end case;
-         end record;
+            when Discrim
+               | Dynamic
+            =>
+               Nod : Node_Id;
+               --  Expression value so far if Val_Status /= Const
+         end case;
+      end record;
       --  Records the value or expression computed so far. Const means that
       --  the value is constant, and Val is the current constant value.
       --  Dynamic means that the value is dynamic, and in this case Nod is

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -608,6 +608,12 @@ extern int rs6000_vector_align[];
 				 && TARGET_POWERPC64)
 #define TARGET_VEXTRACTUB	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
 				 && TARGET_UPPER_REGS_DI && TARGET_POWERPC64)
+
+
+/* Whether we should avoid (SUBREG:SI (REG:SF) and (SUBREG:SF (REG:SI).  */
+#define TARGET_NO_SF_SUBREG	TARGET_DIRECT_MOVE_64BIT
+#define TARGET_ALLOW_SF_SUBREG	(!TARGET_DIRECT_MOVE_64BIT)
+
 /* This wants to be set for p8 and newer.  On p7, overlapping unaligned
    loads are slow. */
 #define TARGET_EFFICIENT_OVERLAPPING_UNALIGNED TARGET_EFFICIENT_UNALIGNED_VSX
@@ -2199,14 +2205,15 @@ do {									     \
 
 /* The cntlzw and cntlzd instructions return 32 and 64 for input of zero.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = ((MODE) == SImode ? 32 : 64), 1)
+  ((VALUE) = GET_MODE_BITSIZE (MODE), 2)
 
 /* The CTZ patterns that are implemented in terms of CLZ return -1 for input of
-   zero.  The hardware instructions added in Power9 return 32 or 64.  */
+   zero.  The hardware instructions added in Power9 and the sequences using
+   popcount return 32 or 64.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)				\
-  ((!TARGET_CTZ)							\
-   ? ((VALUE) = -1, 1)							\
-   : ((VALUE) = ((MODE) == SImode ? 32 : 64), 1))
+  (TARGET_CTZ || TARGET_POPCNTD						\
+   ? ((VALUE) = GET_MODE_BITSIZE (MODE), 2)				\
+   : ((VALUE) = -1, 2))
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

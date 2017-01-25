@@ -1,4 +1,4 @@
-Copyright (C) 2000-2016 Free Software Foundation, Inc.
+Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 This file is intended to contain a few notes about writing C code
 within GCC so that it compiles without error on the full range of
@@ -20,14 +20,6 @@ http://gcc.gnu.org/codingconventions.html
 
 String literals
 ---------------
-
-Irix6 "cc -n32" and OSF4 "cc" have problems with constant string
-initializers with parens around it, e.g.
-
-const char string[] = ("A string");
-
-This is unfortunate since this is what the GNU gettext macro N_
-produces.  You need to find a different way to code it.
 
 Some compilers like MSVC++ have fairly low limits on the maximum
 length of a string literal; 509 is the lowest we've come across.  You

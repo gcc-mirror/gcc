@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing utilities for the tr1 testsuite.
 //
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,17 +45,6 @@ namespace __gnu_test
 	      && Category<const volatile Type>::type::value == value);
     }
 
-  template<template<typename> class Property, typename Type>
-#if __cplusplus >= 201103L
-    constexpr
-#endif
-    bool
-    test_property(typename Property<Type>::value_type value)
-    {
-      return (Property<Type>::value == value
-	      && Property<Type>::type::value == value);
-    }
-
   // For testing tr1/type_traits/extent, which has a second template
   // parameter.
   template<template<typename, unsigned> class Property,
@@ -78,6 +67,14 @@ namespace __gnu_test
     {
       return (Property<Type1, Types...>::value == value
 	      && Property<Type1, Types...>::type::value == value);
+    }
+#else
+  template<template<typename> class Property, typename Type>
+    bool
+    test_property(typename Property<Type>::value_type value)
+    {
+      return (Property<Type>::value == value
+	      && Property<Type>::type::value == value);
     }
 #endif
 

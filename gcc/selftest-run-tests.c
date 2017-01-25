@@ -1,5 +1,5 @@
 /* Implementation of selftests.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "target.h"
 #include "langhooks.h"
+#include "options.h"
 
 /* This function needed to be split out from selftest.c as it references
    tests from the whole source tree, and so is within
@@ -38,6 +39,13 @@ along with GCC; see the file COPYING3.  If not see
 void
 selftest::run_tests ()
 {
+  /* Makefile.in has -fself-test=$(srcdir)/testsuite/selftests, so that
+     flag_self_test contains the path to the selftest subdirectory of the
+     source tree (without a trailing slash).  Copy it up to
+     path_to_selftest_files, to avoid selftest.c depending on
+     option-handling.  */
+  path_to_selftest_files = flag_self_test;
+
   long start_time = get_run_time ();
 
   /* Run all the tests, in hand-coded order of (approximate) dependencies:
@@ -64,6 +72,7 @@ selftest::run_tests ()
   tree_c_tests ();
   gimple_c_tests ();
   rtl_tests_c_tests ();
+  read_rtl_function_c_tests ();
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */

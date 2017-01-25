@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,11 +253,6 @@ package System.Tasking is
    --  family members.
 
    type String_Access is access all String;
-
-   type Task_Entry_Names_Array is
-     array (Entry_Index range <>) of String_Access;
-
-   type Task_Entry_Names_Access is access all Task_Entry_Names_Array;
 
    ----------------------------------
    -- Entry_Call_Record definition --
@@ -707,6 +702,13 @@ package System.Tasking is
       --  need to do different things depending on the situation.
       --
       --  Protection: Self.L
+
+      Secondary_Stack_Size : System.Parameters.Size_Type;
+      --  Secondary_Stack_Size is the size of the secondary stack for the
+      --  task. Defined here since it is the responsibility of the task to
+      --  creates its own secondary stack.
+      --
+      --  Protected: Only accessed by Self
    end record;
 
    ---------------------------------------
@@ -965,14 +967,6 @@ package System.Tasking is
       --  associated with protected objects or task entries, and are protected
       --  by the protected object lock or Acceptor.L, respectively.
 
-      Entry_Names : Task_Entry_Names_Access := null;
-      --  An array of string names which denotes entry [family member] names.
-      --  The structure is indexed by task entry index and contains Entry_Num
-      --  components.
-      --
-      --  Protection: The array is populated during task initialization, before
-      --  the task has been activated. No protection is required in this case.
-
       New_Base_Priority : System.Any_Priority;
       --  New value for Base_Priority (for dynamic priorities package)
       --
@@ -1169,18 +1163,19 @@ package System.Tasking is
    --  System.Tasking.Initialization being present, as was done before.
 
    procedure Initialize_ATCB
-     (Self_ID          : Task_Id;
-      Task_Entry_Point : Task_Procedure_Access;
-      Task_Arg         : System.Address;
-      Parent           : Task_Id;
-      Elaborated       : Access_Boolean;
-      Base_Priority    : System.Any_Priority;
-      Base_CPU         : System.Multiprocessors.CPU_Range;
-      Domain           : Dispatching_Domain_Access;
-      Task_Info        : System.Task_Info.Task_Info_Type;
-      Stack_Size       : System.Parameters.Size_Type;
-      T                : Task_Id;
-      Success          : out Boolean);
+     (Self_ID              : Task_Id;
+      Task_Entry_Point     : Task_Procedure_Access;
+      Task_Arg             : System.Address;
+      Parent               : Task_Id;
+      Elaborated           : Access_Boolean;
+      Base_Priority        : System.Any_Priority;
+      Base_CPU             : System.Multiprocessors.CPU_Range;
+      Domain               : Dispatching_Domain_Access;
+      Task_Info            : System.Task_Info.Task_Info_Type;
+      Stack_Size           : System.Parameters.Size_Type;
+      Secondary_Stack_Size : System.Parameters.Size_Type;
+      T                    : Task_Id;
+      Success              : out Boolean);
    --  Initialize fields of the TCB for task T, and link into global TCB
    --  structures. Call this only with abort deferred and holding RTS_Lock.
    --  Self_ID is the calling task (normally the activator of T). Success is
@@ -1202,10 +1197,4 @@ private
 
    function Number_Of_Entries (Self_Id : Task_Id) return Entry_Index;
    --  Given a task, return the number of entries it contains
-
-   procedure Set_Entry_Names
-     (Self_Id : Task_Id;
-      Names   : Task_Entry_Names_Access);
-   --  Associate an array of strings denotinge entry [family] names with a task
-
 end System.Tasking;

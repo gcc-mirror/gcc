@@ -272,3 +272,23 @@ test_terminator_location (void)
                                            ^
    { dg-end-multiline-output "" } */
 }
+
+/* Verify that we fail gracefully when a string literal token is split
+   across multiple physical lines.  */
+
+void
+test_backslash_continued_logical_lines (void)
+{
+  __emit_string_literal_range ("\
+01234\
+56789", 6, 6, 7);
+  /* { dg-error "unable to read substring location: range endpoints are on different lines" "" { target *-*-* } .-3 } */
+  /* { dg-begin-multiline-output "" }
+   __emit_string_literal_range ("\
+                                ^~
+ 01234\
+ ~~~~~~                          
+ 56789", 6, 6, 7);
+ ~~~~~~                          
+   { dg-end-multiline-output "" } */
+}

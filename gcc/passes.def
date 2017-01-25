@@ -1,5 +1,5 @@
 /* Description of pass structure
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -193,6 +193,7 @@ along with GCC; see the file COPYING3.  If not see
 	 They ensure memory accesses are not indirect wherever possible.  */
       NEXT_PASS (pass_strip_predict_hints);
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
+      NEXT_PASS (pass_post_ipa_warn);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_complete_unrolli);
@@ -360,6 +361,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_lower_vector_ssa);
       /* Perform simple scalar cleanup which is constant/copy propagation.  */
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
+      NEXT_PASS (pass_post_ipa_warn);
       NEXT_PASS (pass_object_sizes);
       /* Fold remaining builtins.  */
       NEXT_PASS (pass_fold_builtins);

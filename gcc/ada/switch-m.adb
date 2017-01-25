@@ -150,7 +150,6 @@ package body Switch.M is
          --  Processing for a switch
 
          case Switch_Starts_With_Gnat is
-
             when False =>
 
                --  All switches that don't start with -gnat stay as is,
@@ -218,15 +217,15 @@ package body Switch.M is
                return;
 
             when True =>
-
                case C is
 
                   --  One-letter switches
 
-                  when 'a' | 'A' | 'b' | 'B' | 'c' | 'C' | 'E' | 'f' |
-                       'F' | 'g' | 'h' | 'H' | 'I' | 'L' | 'N' | 'p' |
-                       'P' | 'q' | 'Q' | 'r' | 's' | 'S' | 't' | 'u' |
-                       'U' | 'v' | 'x' | 'X' | 'Z' =>
+                  when 'a' | 'A' | 'b' | 'B' | 'c' | 'C' | 'E' | 'f' | 'F'
+                     | 'g' | 'h' | 'H' | 'I' | 'L' | 'N' | 'p' | 'P' | 'q'
+                     | 'Q' | 'r' | 's' | 'S' | 't' | 'u' | 'U' | 'v' | 'x'
+                     | 'X' | 'Z'
+                  =>
                      Storing (First_Stored) := C;
                      Add_Switch_Component
                        (Storing (Storing'First .. First_Stored));
@@ -291,7 +290,6 @@ package body Switch.M is
 
                      else
                         case Switch_Chars (Ptr) is
-
                            when 'A' =>
                               Ptr := Ptr + 1;
                               Add_Switch_Component ("-gnateA");
@@ -687,9 +685,7 @@ package body Switch.M is
                   when others =>
                      Last := 0;
                      return;
-
                end case;
-
          end case;
       end loop;
    end Normalize_Compiler_Switches;
@@ -793,17 +789,10 @@ package body Switch.M is
             Verbose_Mode := True;
 
             case Switch_Chars (Ptr) is
-               when 'l' =>
-                  Verbosity_Level := Opt.Low;
-
-               when 'm' =>
-                  Verbosity_Level := Opt.Medium;
-
-               when 'h' =>
-                  Verbosity_Level := Opt.High;
-
-               when others =>
-                  Success := False;
+               when 'l'    => Verbosity_Level := Opt.Low;
+               when 'm'    => Verbosity_Level := Opt.Medium;
+               when 'h'    => Verbosity_Level := Opt.High;
+               when others => Success := False;
             end case;
 
          elsif C = 'd' then
@@ -916,9 +905,7 @@ package body Switch.M is
 
       else
          Check_Switch : begin
-
             case C is
-
                when 'a' =>
                   Check_Readonly_Files := True;
 
@@ -1058,7 +1045,6 @@ package body Switch.M is
                   else
                      Success := False;
                   end if;
-
             end case;
          end Check_Switch;
       end if;

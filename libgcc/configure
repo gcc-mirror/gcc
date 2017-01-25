@@ -561,6 +561,7 @@ enable_execute_stack
 asm_hidden_op
 extra_parts
 cpu_type
+get_gcc_base_ver
 thread_header
 tm_defines
 tm_file
@@ -676,6 +677,7 @@ with_system_libunwind
 enable_explicit_exception_frame_registration
 with_glibc_version
 enable_tls
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1330,6 +1332,8 @@ Optional Packages:
   --with-system-libunwind use installed libunwind
   --with-glibc-version=M.N
                           assume GCC used with glibc version M.N or later
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -2309,7 +2313,7 @@ case "${host}" in
 	  # If we are using a compiler supporting mdynamic-no-pic
 	  # and the option has been tested as safe to add, then cancel
 	  # it here, since the code generated is incompatible with shared
-	  # libs.
+	  # libs.
 	  *-mdynamic-no-pic*) PICFLAG='-fno-common -mno-dynamic-no-pic' ;;
 	  *) PICFLAG=-fno-common ;;
 	esac
@@ -2323,6 +2327,10 @@ case "${host}" in
     i[34567]86-*-cygwin* | x86_64-*-cygwin*)
 	;;
     i[34567]86-*-mingw* | x86_64-*-mingw*)
+	;;
+    i[34567]86-*-interix[3-9]*)
+	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
+	# Instead, we relocate shared libraries at runtime.
 	;;
     i[34567]86-*-nto-qnx*)
 	# QNX uses GNU C++, but need to define -shared option too, otherwise
@@ -2354,7 +2362,8 @@ case "${host}" in
 	PICFLAG=-fpic
 	;;
     # FIXME: Simplify to sh*-*-netbsd*?
-    sh-*-netbsdelf* | shl*-*-netbsdelf*)
+    sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+      sh64-*-netbsd* | sh64l*-*-netbsd*)
 	PICFLAG=-fpic
 	;;
     # Default to -fPIC unless specified otherwise.
@@ -5076,6 +5085,21 @@ case $target_thread_file in
     vxworks)	thread_header=config/gthr-vxworks.h ;;
     win32)	thread_header=config/i386/gthr-win32.h ;;
 esac
+
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
 
 
 

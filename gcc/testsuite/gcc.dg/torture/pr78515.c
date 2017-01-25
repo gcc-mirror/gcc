@@ -1,6 +1,6 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-psabi" } */
 /* { dg-additional-options "-mavx512bw" { target x86_64-*-* i?86-*-* } } */
-/* { dg-prune-output "non-standard ABI extension" } */
 
 typedef unsigned V __attribute__ ((vector_size (64)));
 

@@ -1,0 +1,17 @@
+(function "jump_to_label_ref"
+  (insn-chain
+    (block 4
+      (edge-from entry (flags "FALLTHRU"))
+      (cjump_insn 1 (set (pc) (label_ref 100))
+        "../../src/gcc/testsuite/rtl.dg/test.c":4)
+      (edge-to 5)
+    ) ;; block 4
+    (cbarrier 2)
+    (block 5   
+      (edge-from 4)
+      (clabel 100 2 (nil) [1 uses])
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 5
+  ) ;; insn-chain
+) ;; function
+

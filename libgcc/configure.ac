@@ -544,6 +544,9 @@ AC_SUBST(tm_defines)
 # Map from thread model to thread header.
 GCC_AC_THREAD_HEADER([$target_thread_file])
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 # Substitute configuration variables
 AC_SUBST(cpu_type)
 AC_SUBST(extra_parts)

@@ -323,18 +323,6 @@ package body Sem_Ch4 is
    --  subprogram, and the call F (X) interpreted as F.all (X). In this case
    --  the call may be overloaded with both interpretations.
 
-   function Try_Object_Operation
-     (N            : Node_Id;
-      CW_Test_Only : Boolean := False) return Boolean;
-   --  Ada 2005 (AI-252): Support the object.operation notation. If node N
-   --  is a call in this notation, it is transformed into a normal subprogram
-   --  call where the prefix is a parameter, and True is returned. If node
-   --  N is not of this form, it is unchanged, and False is returned. If
-   --  CW_Test_Only is true then N is an N_Selected_Component node which
-   --  is part of a call to an entry or procedure of a tagged concurrent
-   --  type and this routine is invoked to search for class-wide subprograms
-   --  conflicting with the target entity.
-
    procedure wpo (T : Entity_Id);
    pragma Warnings (Off, wpo);
    --  Used for debugging: obtain list of primitive operations even if
@@ -728,6 +716,23 @@ package body Sem_Ch4 is
                then
                   null;
 
+               --  An unusual case arises when the parent of a derived type is
+               --  a limited record extension  with unknown discriminants, and
+               --  its full view has no discriminants.
+               --
+               --  A more general fix might be to create the proper underlying
+               --  type for such a derived type, but it is a record type with
+               --  no private attributes, so this required extending the
+               --  meaning of this attribute. ???
+
+               elsif Ekind (Etype (Type_Id)) = E_Record_Type_With_Private
+                 and then Present (Underlying_Type (Etype (Type_Id)))
+                 and then
+                   not Has_Discriminants (Underlying_Type (Etype (Type_Id)))
+                 and then not Comes_From_Source (Parent (N))
+               then
+                  null;
+
                elsif Is_Class_Wide_Type (Type_Id) then
                   Error_Msg_N
                     ("initialization required in class-wide allocation", N);
@@ -925,7 +930,8 @@ package body Sem_Ch4 is
    --  the type-checking is similar to that of other calls.
 
    procedure Analyze_Call (N : Node_Id) is
-      Actuals : constant List_Id := Parameter_Associations (N);
+      Actuals : constant List_Id    := Parameter_Associations (N);
+      Loc     : constant Source_Ptr := Sloc (N);
       Nam     : Node_Id;
       X       : Interp_Index;
       It      : Interp;
@@ -1322,24 +1328,41 @@ package body Sem_Ch4 is
 
             --  If the interpretation succeeds, mark the proper type of the
             --  prefix (any valid candidate will do). If not, remove the
-            --  candidate interpretation. This only needs to be done for
-            --  overloaded protected operations, for other entities disambi-
-            --  guation is done directly in Resolve.
+            --  candidate interpretation. If this is a parameterless call
+            --  on an anonymous access to subprogram, X is a variable with
+            --  an access discriminant D, the entity in the interpretation is
+            --  D, so rewrite X as X.D.all.
 
             if Success then
                if Deref
                  and then Nkind (Parent (N)) /= N_Explicit_Dereference
                then
-                  Set_Entity (Nam, It.Nam);
-                  Insert_Explicit_Dereference (Nam);
-                  Set_Etype (Nam, Nam_Ent);
+                  if Ekind (It.Nam) = E_Discriminant
+                    and then Has_Implicit_Dereference (It.Nam)
+                  then
+                     Rewrite (Name (N),
+                       Make_Explicit_Dereference (Loc,
+                         Prefix =>
+                           Make_Selected_Component (Loc,
+                             Prefix        =>
+                               New_Occurrence_Of (Entity (Nam), Loc),
+                             Selector_Name =>
+                               New_Occurrence_Of (It.Nam, Loc))));
+
+                     Analyze (N);
+                     return;
+
+                  else
+                     Set_Entity (Nam, It.Nam);
+                     Insert_Explicit_Dereference (Nam);
+                     Set_Etype (Nam, Nam_Ent);
+                  end if;
 
                else
                   Set_Etype (Nam, It.Typ);
                end if;
 
-            elsif Nkind_In (Name (N), N_Selected_Component,
-                                      N_Function_Call)
+            elsif Nkind_In (Name (N), N_Function_Call, N_Selected_Component)
             then
                Remove_Interp (X);
             end if;
@@ -2384,15 +2407,19 @@ package body Sem_Ch4 is
             end if;
 
             if Is_Array_Type (Array_Type) then
-               null;
+
+               --  In order to correctly access First_Index component later,
+               --  replace string literal subtype by its parent type.
+
+               if Ekind (Array_Type) = E_String_Literal_Subtype then
+                  Array_Type := Etype (Array_Type);
+               end if;
 
             elsif Present (Pent) and then Ekind (Pent) = E_Entry_Family then
                Analyze (Exp);
                Set_Etype (N, Any_Type);
 
-               if not Has_Compatible_Type
-                 (Exp, Entry_Index_Type (Pent))
-               then
+               if not Has_Compatible_Type (Exp, Entry_Index_Type (Pent)) then
                   Error_Msg_N ("invalid index type in entry name", N);
 
                elsif Present (Next (Exp)) then
@@ -3656,36 +3683,40 @@ package body Sem_Ch4 is
          --  Otherwise action depends on operator
 
          case Op_Name is
-            when Name_Op_Add      |
-                 Name_Op_Subtract |
-                 Name_Op_Multiply |
-                 Name_Op_Divide   |
-                 Name_Op_Mod      |
-                 Name_Op_Rem      |
-                 Name_Op_Expon    =>
+            when Name_Op_Add
+               | Name_Op_Divide
+               | Name_Op_Expon
+               | Name_Op_Mod
+               | Name_Op_Multiply
+               | Name_Op_Rem
+               | Name_Op_Subtract
+            =>
                Find_Arithmetic_Types (Act1, Act2, Op_Id, N);
 
-            when Name_Op_And      |
-                 Name_Op_Or       |
-                 Name_Op_Xor      =>
+            when Name_Op_And
+               | Name_Op_Or
+               | Name_Op_Xor
+            =>
                Find_Boolean_Types (Act1, Act2, Op_Id, N);
 
-            when Name_Op_Lt       |
-                 Name_Op_Le       |
-                 Name_Op_Gt       |
-                 Name_Op_Ge       =>
+            when Name_Op_Ge
+               | Name_Op_Gt
+               | Name_Op_Le
+               | Name_Op_Lt
+            =>
                Find_Comparison_Types (Act1, Act2, Op_Id,  N);
 
-            when Name_Op_Eq       |
-                 Name_Op_Ne       =>
+            when Name_Op_Eq
+               | Name_Op_Ne
+            =>
                Find_Equality_Types (Act1, Act2, Op_Id,  N);
 
-            when Name_Op_Concat   =>
+            when Name_Op_Concat =>
                Find_Concatenation_Types (Act1, Act2, Op_Id, N);
 
             --  Is this when others, or should it be an abort???
 
-            when others           =>
+            when others =>
                null;
          end case;
 
@@ -3693,17 +3724,18 @@ package body Sem_Ch4 is
 
       else
          case Op_Name is
-            when Name_Op_Subtract |
-                 Name_Op_Add      |
-                 Name_Op_Abs      =>
+            when Name_Op_Abs
+               | Name_Op_Add
+               | Name_Op_Subtract
+            =>
                Find_Unary_Types (Act1, Op_Id, N);
 
-            when Name_Op_Not      =>
+            when Name_Op_Not =>
                Find_Negation_Types (Act1, Op_Id, N);
 
             --  Is this when others correct, or should it be an abort???
 
-            when others           =>
+            when others =>
                null;
          end case;
       end if;
@@ -5876,8 +5908,41 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
-      --   Analyze each candidate call again, with full error reporting
-      --   for each.
+      --  Before listing the possible candidates, check whether this is
+      --  a prefix of a selected component that has been rewritten as a
+      --  parameterless function call because there is a callable candidate
+      --  interpretation. If there is a hidden package in the list of homonyms
+      --  of the function name (bad programming style in any case) suggest that
+      --  this is the intended entity.
+
+      if No (Parameter_Associations (N))
+        and then Nkind (Parent (N)) = N_Selected_Component
+        and then Nkind (Parent (Parent (N))) in N_Declaration
+        and then Is_Overloaded (Nam)
+      then
+         declare
+            Ent : Entity_Id;
+
+         begin
+            Ent := Current_Entity (Nam);
+            while Present (Ent) loop
+               if Ekind (Ent) = E_Package then
+                  Error_Msg_N
+                    ("no legal interpretations as function call,!", Nam);
+                  Error_Msg_NE ("\package& is not visible", N, Ent);
+
+                  Rewrite (Parent (N),
+                    New_Occurrence_Of (Any_Type, Sloc (N)));
+                  return;
+               end if;
+
+               Ent := Homonym (Ent);
+            end loop;
+         end;
+      end if;
+
+      --  Analyze each candidate call again, with full error reporting for
+      --  each.
 
       Error_Msg_N
         ("no candidate interpretations match the actuals:!", Nam);
@@ -6688,7 +6753,6 @@ package body Sem_Ch4 is
       --  Now test the entity we got to see if it is a bad case
 
       case Ekind (Entity (Enode)) is
-
          when E_Package =>
             Error_Msg_N
               ("package name cannot be used as operand", Enode);
@@ -6713,13 +6777,15 @@ package body Sem_Ch4 is
             Error_Msg_N
               ("exception name cannot be used as operand", Enode);
 
-         when E_Block | E_Label | E_Loop =>
+         when E_Block
+            | E_Label
+            | E_Loop
+         =>
             Error_Msg_N
               ("label name cannot be used as operand", Enode);
 
          when others =>
             return False;
-
       end case;
 
       return True;
@@ -7798,7 +7864,16 @@ package body Sem_Ch4 is
          Ref := Empty;
          Typ := Underlying_Type (Base_Type (Typ));
 
-         Inspect_Primitives   (Typ, Ref);
+         Inspect_Primitives (Typ, Ref);
+
+         --  Now look for explicit declarations of an indexing operation.
+         --  If the type is private the operation may be declared in the
+         --  visible part that contains the partial view.
+
+         if Is_Private_Type (T) then
+            Inspect_Declarations (T, Ref);
+         end if;
+
          Inspect_Declarations (Typ, Ref);
 
          return Ref;
@@ -7945,10 +8020,12 @@ package body Sem_Ch4 is
 
       if not Is_Overloaded (Func_Name) then
          Func := Entity (Func_Name);
+
          Indexing :=
            Make_Function_Call (Loc,
              Name                   => New_Occurrence_Of (Func, Loc),
              Parameter_Associations => Assoc);
+
          Set_Parent (Indexing, Parent (N));
          Set_Generalized_Indexing (N, Indexing);
          Analyze (Indexing);
@@ -7973,7 +8050,6 @@ package body Sem_Ch4 is
              Name                   =>
                Make_Identifier (Loc, Chars (Func_Name)),
              Parameter_Associations => Assoc);
-
          Set_Parent (Indexing, Parent (N));
          Set_Generalized_Indexing (N, Indexing);
          Set_Etype (N, Any_Type);
@@ -7988,7 +8064,7 @@ package body Sem_Ch4 is
             Get_First_Interp (Func_Name, I, It);
             Set_Etype (Indexing, Any_Type);
 
-            --  Analyze eacn candidae function with the given actuals
+            --  Analyze each candidate function with the given actuals
 
             while Present (It.Nam) loop
                Analyze_One_Call (Indexing, It.Nam, False, Success);
@@ -9215,12 +9291,20 @@ package body Sem_Ch4 is
                Typ := Corresponding_Record_Type (Typ);
             end if;
 
-            --  Simple case. Object may be a subtype of the tagged type or
-            --  may be the corresponding record of a synchronized type.
+            --  Simple case. Object may be a subtype of the tagged type or may
+            --  be the corresponding record of a synchronized type.
 
             return Obj_Type = Typ
               or else Base_Type (Obj_Type) = Typ
               or else Corr_Type = Typ
+
+              --  Object may be of a derived type whose parent has unknown
+              --  discriminants, in which case the type matches the underlying
+              --  record view of its base.
+
+              or else
+                (Has_Unknown_Discriminants (Typ)
+                  and then Typ = Underlying_Record_View (Base_Type (Obj_Type)))
 
                --  Prefix can be dereferenced
 
@@ -9228,8 +9312,8 @@ package body Sem_Ch4 is
                 (Is_Access_Type (Corr_Type)
                   and then Designated_Type (Corr_Type) = Typ)
 
-               --  Formal is an access parameter, for which the object
-               --  can provide an access.
+               --  Formal is an access parameter, for which the object can
+               --  provide an access.
 
               or else
                 (Ekind (Typ) = E_Anonymous_Access_Type

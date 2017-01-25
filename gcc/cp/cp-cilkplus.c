@@ -1,7 +1,7 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains routines to handle Cilk Plus specific
    routines for the C++ Compiler.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
    This file is part of GCC.
@@ -137,7 +137,7 @@ cilk_cp_detect_spawn_and_unwrap (tree *exp0)
    This function is passed in as a function pointer to walk_tree.  *TP is
    the current tree pointer, *WALK_SUBTREES is set to 0 by this function if
    recursing into TP's subtrees is unnecessary. *DATA is a bool variable that
-   is set to false if an error has occured.  */
+   is set to false if an error has occurred.  */
 
 static tree
 cpp_validate_cilk_plus_loop_aux (tree *tp, int *walk_subtrees, void *data)

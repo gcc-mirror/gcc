@@ -7,6 +7,8 @@ typedef uint8_t footype __attribute__((vector_size(4)));
 void test(uint8_t *ptr, uint8_t *mask)
 {
   footype mv;
+  ptr = __builtin_assume_aligned (ptr, __alignof__ (footype));
+  mask = __builtin_assume_aligned (mask, __alignof__ (footype));
   __builtin_memcpy(&mv, mask, sizeof(mv));
   for (unsigned i = 0; i < 16; i += 4)
     {

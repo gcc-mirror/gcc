@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -2334,7 +2334,8 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 	    from = nios2_legitimize_constant_address (from);
 	  if (CONSTANT_P (from))
 	    {
-	      emit_insn (gen_rtx_SET (to, gen_rtx_HIGH (Pmode, from)));
+	      emit_insn (gen_rtx_SET (to,
+				      gen_rtx_HIGH (Pmode, copy_rtx (from))));
 	      emit_insn (gen_rtx_SET (to, gen_rtx_LO_SUM (Pmode, to, from)));
 	      set_unique_reg_note (get_last_insn (), REG_EQUAL,
 				   copy_rtx (operands[1]));
@@ -3817,7 +3818,7 @@ nios2_valid_target_attribute_rec (tree args)
 		}
 	      else
 		{
-		  error ("%<custom-%s=%> is not recognised as FPU instruction",
+		  error ("%<custom-%s=%> is not recognized as FPU instruction",
 			 argstr + 7);
 		  return false;
 		}		

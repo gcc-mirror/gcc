@@ -1,5 +1,5 @@
 /* Common hooks for ARM.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -98,6 +98,28 @@ arm_rewrite_mcpu (int argc, const char **argv)
   return arm_rewrite_selected_cpu (argv[argc - 1]);
 }
 
+struct arm_arch_core_flag
+{
+  const char *const name;
+  const enum isa_feature isa_bits[isa_num_bits];
+};
+
+#include "config/arm/arm-cpu-cdata.h"
+
+/* Scan over a raw feature array BITS checking for BIT being present.
+   This is slower than the normal bitmask checks, but we would spend longer
+   initializing that than doing the check this way.  Returns true iff
+   BIT is found.  */
+static bool
+check_isa_bits_for (const enum isa_feature* bits, enum isa_feature bit)
+{
+  while (*bits != isa_nobit)
+    if (*bits++ == bit)
+      return true;
+
+  return false;
+}
+
 /* Called by the driver to check whether the target denoted by current
    command line options is a Thumb-only target.  ARGV is an array of
    -march and -mcpu values (ie. it contains the rhs after the equal
@@ -112,7 +134,8 @@ arm_target_thumb_only (int argc, const char **argv)
     {
       for (opt = 0; opt < (ARRAY_SIZE (arm_arch_core_flags)); opt++)
 	if ((strcmp (argv[argc - 1], arm_arch_core_flags[opt].name) == 0)
-	    && !ARM_FSET_HAS_CPU1(arm_arch_core_flags[opt].flags, FL_NOTM))
+	    && !check_isa_bits_for (arm_arch_core_flags[opt].isa_bits,
+				    isa_bit_notm))
 	  return "-mthumb";
 
       return NULL;

@@ -1,6 +1,6 @@
 // future -*- C++ -*-
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -78,8 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const char*
   future_error::what() const noexcept { return logic_error::what(); }
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
-  && (ATOMIC_INT_LOCK_FREE > 1)
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
   __future_base::_Result_base::_Result_base() = default;
 
   __future_base::_Result_base::~_Result_base() = default;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1116,23 +1116,28 @@ package body Exp_Strm is
    --  an elementary type, then no Cn constants are defined.
 
    procedure Build_Record_Or_Elementary_Input_Function
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
-      Decl : out Node_Id;
-      Fnam : out Entity_Id)
+     (Loc            : Source_Ptr;
+      Typ            : Entity_Id;
+      Decl           : out Node_Id;
+      Fnam           : out Entity_Id;
+      Use_Underlying : Boolean := True)
    is
-      B_Typ      : constant Entity_Id := Underlying_Type (Base_Type (Typ));
+      B_Typ      : Entity_Id := Base_Type (Typ);
       Cn         : Name_Id;
       Constr     : List_Id;
       Decls      : List_Id;
       Discr      : Entity_Id;
-      Discr_Elmt : Elmt_Id            := No_Elmt;
+      Discr_Elmt : Elmt_Id   := No_Elmt;
       J          : Pos;
       Obj_Decl   : Node_Id;
       Odef       : Node_Id;
       Stms       : List_Id;
 
    begin
+      if Use_Underlying then
+         B_Typ := Underlying_Type (B_Typ);
+      end if;
+
       Decls  := New_List;
       Constr := New_List;
 

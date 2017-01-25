@@ -132,10 +132,10 @@ void exec_vrev (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vrev16, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vrev16, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vrev16, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vrev16, "");
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vrev16, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vrev16, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vrev16, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vrev16, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VREV32"
@@ -156,14 +156,14 @@ void exec_vrev (void)
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_vrev32, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vrev32, "");
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_vrev32, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vrev32, "");
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_vrev32, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vrev32, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_vrev32, "");
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vrev32, "");
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_vrev32, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vrev32, "");
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_vrev32, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vrev32, "");
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_vrev32, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vrev32, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_vrev32, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VREV64"
@@ -190,16 +190,16 @@ void exec_vrev (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vrev64, "");
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_vrev64, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_vrev64, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vrev64, "");
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_vrev64, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vrev64, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_vrev64, "");
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vrev64, "");
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_vrev64, "");
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_vrev64, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vrev64, "");
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_vrev64, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_vrev64, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vrev64, "");
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_vrev64, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vrev64, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_vrev64, "");
 
 #if defined (FP16_SUPPORTED)
   TEST_VREV (, float, f, 16, 4, 64);

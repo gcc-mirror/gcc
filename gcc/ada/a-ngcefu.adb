@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,10 +37,10 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       Ada.Numerics.Generic_Elementary_Functions (Real'Base);
    use Elementary_Functions;
 
-   PI      : constant := 3.14159_26535_89793_23846_26433_83279_50288_41971;
-   PI_2    : constant := PI / 2.0;
+   PI       : constant := 3.14159_26535_89793_23846_26433_83279_50288_41971;
+   PI_2     : constant := PI / 2.0;
    Sqrt_Two : constant := 1.41421_35623_73095_04880_16887_24209_69807_85696;
-   Log_Two : constant := 0.69314_71805_59945_30941_72321_21458_17656_80755;
+   Log_Two  : constant := 0.69314_71805_59945_30941_72321_21458_17656_80755;
 
    subtype T is Real'Base;
 

@@ -689,3 +689,22 @@ void test_multiple_ordinary_maps (void)
         ~~                      
    { dg-end-multiline-output "" } */
 }
+
+/* Verify that we correctly handle a token that spans multiple
+   physical lines.  */
+
+const char *test_multiline_token (void)
+{
+  __emit_expression_range (0, "foo\
+bar\
+baz");
+/* { dg-warning "range" "" { target *-*-* } .-3 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, "foo\
+                               ^~~~~
+ bar\
+ ~~~~                           
+ baz");
+ ~~~~                           
+   { dg-end-multiline-output "" } */
+}

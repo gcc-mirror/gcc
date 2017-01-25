@@ -50,8 +50,9 @@ package Sem_Ch13 is
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id);
    --  Called from Freeze where R is a record entity for which reverse bit
-   --  order is specified and there is at least one component clause. Adjusts
-   --  component positions according to either Ada 95 or Ada 2005 (AI-133).
+   --  order is specified and there is at least one component clause. Note:
+   --  component positions are normally adjusted as per AI95-0133, unless
+   --  -gnatd.p is used to restore original Ada 95 mode.
 
    procedure Check_Record_Representation_Clause (N : Node_Id);
    --  This procedure completes the analysis of a record representation clause

@@ -1,6 +1,6 @@
 // <variant> -*- C++ -*-
 
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,10 +43,10 @@
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
 #include <ext/aligned_buffer.h>
+#include <bits/parse_numbers.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace __detail
 {
 namespace __variant
@@ -315,6 +315,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool __trivially_destructible, typename... _Types>
     struct _Variant_storage;
 
+  template <typename... _Types>
+  using __select_index =
+    typename __select_int::_Select_int_base<sizeof...(_Types)+1,
+					    unsigned char,
+					    unsigned short>
+    ::type::value_type;
+
   template<typename... _Types>
     struct _Variant_storage<false, _Types...>
     {
@@ -333,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<size_t... __indices>
 	constexpr void _M_reset_impl(std::index_sequence<__indices...>)
 	{
-	  if (_M_index != variant_npos)
+	  if (_M_index != __index_type(variant_npos))
 	    _S_vtable<__indices...>[_M_index](*this);
 	}
 
@@ -347,7 +354,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_reset(); }
 
       _Variadic_union<_Types...> _M_u;
-      size_t _M_index;
+      using __index_type = __select_index<_Types...>;
+      __index_type _M_index;
     };
 
   template<typename... _Types>
@@ -365,7 +373,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_index = variant_npos; }
 
       _Variadic_union<_Types...> _M_u;
-      size_t _M_index;
+      using __index_type = __select_index<_Types...>;
+      __index_type _M_index;
     };
 
   // Helps SFINAE on special member functions. Otherwise it can live in variant
@@ -397,7 +406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _Variant_base(_Variant_base&& __rhs)
-      noexcept(__and_<is_nothrow_move_constructible<_Types>...>::value)
+      noexcept((is_nothrow_move_constructible_v<_Types> && ...))
       {
 	if (__rhs._M_valid())
 	  {
@@ -460,8 +469,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Variant_base&
       operator=(_Variant_base&& __rhs)
-      noexcept(__and_<is_nothrow_move_constructible<_Types>...,
-		      is_nothrow_move_assignable<_Types>...>::value)
+      noexcept((is_nothrow_move_constructible_v<_Types> && ...)
+	  && (is_nothrow_move_assignable_v<_Types> && ...))
       {
 	if (this->_M_index == __rhs._M_index)
 	  {
@@ -488,7 +497,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr bool
       _M_valid() const noexcept
-      { return this->_M_index != variant_npos; }
+      {
+	return this->_M_index !=
+	  typename _Storage::__index_type(variant_npos);
+      }
     };
 
   // For how many times does _Tp appear in _Tuple?
@@ -605,17 +617,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Array_type, typename _Variant_tuple, typename _Index_seq>
     struct __gen_vtable_impl;
 
-  template<typename _Result_type, typename _Visitor, size_t... __unused,
+  template<typename _Result_type, typename _Visitor, size_t... __dimensions,
 	   typename... _Variants, size_t... __indices>
     struct __gen_vtable_impl<
-	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __unused...>,
+	_Multi_array<_Result_type (*)(_Visitor, _Variants...), __dimensions...>,
 	tuple<_Variants...>, std::index_sequence<__indices...>>
     {
       using _Next =
 	  remove_reference_t<typename _Nth_type<sizeof...(__indices),
 			     _Variants...>::type>;
       using _Array_type =
-	  _Multi_array<_Result_type (*)(_Visitor, _Variants...), __unused...>;
+	  _Multi_array<_Result_type (*)(_Visitor, _Variants...),
+		       __dimensions...>;
 
       static constexpr _Array_type
       _S_apply()
@@ -865,8 +878,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __lhs.swap(__rhs); }
 
   template<typename... _Types>
-    enable_if_t<!__and_<is_move_constructible<_Types>...,
-			is_swappable<_Types>...>::value>
+    enable_if_t<!((is_move_constructible_v<_Types> && ...)
+		   && (is_swappable_v<_Types> && ...))>
     swap(variant<_Types...>&, variant<_Types...>&) = delete;
 
   class bad_variant_access : public exception
@@ -895,13 +908,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	is_default_constructible_v<
 	  variant_alternative_t<0, variant<_Types...>>>, variant<_Types...>>,
       private _Enable_copy_move<
-	__and_<is_copy_constructible<_Types>...>::value,
-	__and_<is_copy_constructible<_Types>...,
-	       is_move_constructible<_Types>...,
-	       is_copy_assignable<_Types>...>::value,
-	__and_<is_move_constructible<_Types>...>::value,
-	__and_<is_move_constructible<_Types>...,
-	       is_move_assignable<_Types>...>::value,
+	(is_copy_constructible_v<_Types> && ...),
+	(is_copy_constructible_v<_Types> && ...)
+	     && (is_move_constructible_v<_Types> && ...)
+	     && (is_copy_assignable_v<_Types> && ...),
+	(is_move_constructible_v<_Types> && ...),
+	(is_move_constructible_v<_Types> && ...)
+	     && (is_move_assignable_v<_Types> && ...),
 	variant<_Types...>>
     {
     private:
@@ -948,8 +961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept(is_nothrow_default_constructible_v<__to_type<0>>) = default;
       variant(const variant&) = default;
       variant(variant&&)
-      noexcept(__and_<
-	is_nothrow_move_constructible<_Types>...>::value) = default;
+      noexcept((is_nothrow_move_constructible_v<_Types> && ...)) = default;
 
       template<typename _Tp,
 	       typename = enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
@@ -1003,8 +1015,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       variant& operator=(const variant&) = default;
       variant& operator=(variant&&)
-      noexcept(__and_<is_nothrow_move_constructible<_Types>...,
-		      is_nothrow_move_assignable<_Types>...>::value) = default;
+      noexcept((is_nothrow_move_constructible_v<_Types> && ...)
+	  && (is_nothrow_move_assignable_v<_Types> && ...)) = default;
 
       template<typename _Tp>
 	enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
@@ -1087,11 +1099,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return !this->_M_valid(); }
 
       constexpr size_t index() const noexcept
-      { return this->_M_index; }
+      {
+	if (this->_M_index ==
+	    typename _Base::_Storage::__index_type(variant_npos))
+	  return variant_npos;
+	return this->_M_index;
+      }
 
       void
       swap(variant& __rhs)
-      noexcept(__and_<__is_nothrow_swappable<_Types>...>::value
+      noexcept((__is_nothrow_swappable<_Types>::value && ...)
 	       && is_nothrow_move_constructible_v<variant>)
       {
 	if (this->index() == __rhs.index())
@@ -1256,14 +1273,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   std::forward<_Variants>(__variants)...);
     }
 
-  template<typename... _Types>
-    struct hash<variant<_Types...>>
-    : private __detail::__variant::_Variant_hash_base<
-	variant<_Types...>, std::index_sequence_for<_Types...>>
+  template<bool, typename... _Types>
+    struct __variant_hash_call_base_impl
     {
-      using result_type = size_t;
-      using argument_type = variant<_Types...>;
-
       size_t
       operator()(const variant<_Types...>& __t) const
       noexcept((is_nothrow_callable_v<hash<decay_t<_Types>>(_Types)> && ...))
@@ -1278,6 +1290,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	return hash<size_t>{}(__t.index());
       }
+    };
+
+  template<typename... _Types>
+    struct __variant_hash_call_base_impl<false, _Types...> {};
+
+  template<typename... _Types>
+    using __variant_hash_call_base =
+    __variant_hash_call_base_impl<(__poison_hash<remove_const_t<_Types>>::
+				   __enable_hash_call &&...), _Types...>;
+
+  template<typename... _Types>
+    struct hash<variant<_Types...>>
+    : private __detail::__variant::_Variant_hash_base<
+        variant<_Types...>, std::index_sequence_for<_Types...>>,
+      public __variant_hash_call_base<_Types...>
+    {
+      using result_type = size_t;
+      using argument_type = variant<_Types...>;
     };
 
   template<>

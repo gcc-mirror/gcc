@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -892,8 +892,17 @@ nothrow_libfn_p (const_tree fn)
      unless the system headers are playing rename tricks, and if
      they are, we don't want to be confused by them.  */
   id = DECL_NAME (fn);
-  return !!libc_name::libc_name_p (IDENTIFIER_POINTER (id),
-				   IDENTIFIER_LENGTH (id));
+  const struct libc_name_struct *s
+    = libc_name::libc_name_p (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
+  if (s == NULL)
+    return 0;
+  switch (s->c_ver)
+    {
+    case 89: return 1;
+    case 99: return !flag_iso || flag_isoc99;
+    case 11: return !flag_iso || flag_isoc11;
+    default: gcc_unreachable ();
+    }
 }
 
 /* Returns nonzero if an exception of type FROM will be caught by a
@@ -1134,15 +1143,17 @@ bool
 nothrow_spec_p (const_tree spec)
 {
   gcc_assert (!DEFERRED_NOEXCEPT_SPEC_P (spec));
-  if (spec == NULL_TREE
-      || TREE_VALUE (spec) != NULL_TREE
-      || spec == noexcept_false_spec)
-    return false;
-  if (TREE_PURPOSE (spec) == NULL_TREE
+
+  if (spec == empty_except_spec
       || spec == noexcept_true_spec)
     return true;
-  gcc_assert (processing_template_decl
-	      || TREE_PURPOSE (spec) == error_mark_node);
+
+  gcc_assert (!spec
+	      || TREE_VALUE (spec)
+	      || spec == noexcept_false_spec
+	      || TREE_PURPOSE (spec) == error_mark_node
+	      || processing_template_decl);
+
   return false;
 }
 

@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -583,6 +583,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   _Predicate __pred)
     {
       __first = std::find_if_not(__first, __last, __pred);
+      if (__first == __last)
+	return true;
+      ++__first;
       return std::none_of(__first, __last, __pred);
     }
 

@@ -1,5 +1,5 @@
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1665,6 +1665,11 @@ extern void protected_set_expr_location (tree, location_t);
 
 /* SSA_NAME accessors.  */
 
+/* Whether SSA_NAME NODE is a virtual operand.  This simply caches the
+   information in the underlying SSA_NAME_VAR for efficiency.  */
+#define SSA_NAME_IS_VIRTUAL_OPERAND(NODE) \
+  SSA_NAME_CHECK (NODE)->base.public_flag
+
 /* Returns the IDENTIFIER_NODE giving the SSA name a name or NULL_TREE
    if there is no name associated with it.  */
 #define SSA_NAME_IDENTIFIER(NODE)				\
@@ -1683,7 +1688,16 @@ extern void protected_set_expr_location (tree, location_t);
    ? NULL_TREE : (NODE)->ssa_name.var)
 
 #define SET_SSA_NAME_VAR_OR_IDENTIFIER(NODE,VAR) \
-  do { SSA_NAME_CHECK (NODE)->ssa_name.var = (VAR); } while (0)
+  do \
+    { \
+      tree var_ = (VAR); \
+      SSA_NAME_CHECK (NODE)->ssa_name.var = var_; \
+      SSA_NAME_IS_VIRTUAL_OPERAND (NODE) \
+	= (var_ \
+	   && TREE_CODE (var_) == VAR_DECL \
+	   && VAR_DECL_IS_VIRTUAL_OPERAND (var_)); \
+    } \
+  while (0)
 
 /* Returns the statement which defines this SSA name.  */
 #define SSA_NAME_DEF_STMT(NODE)	SSA_NAME_CHECK (NODE)->ssa_name.def_stmt
@@ -4692,7 +4706,7 @@ extern tree tree_strip_nop_conversions (tree);
 extern tree tree_strip_sign_nop_conversions (tree);
 extern const_tree strip_invariant_refs (const_tree);
 extern tree lhd_gcc_personality (void);
-extern void assign_assembler_name_if_neeeded (tree);
+extern void assign_assembler_name_if_needed (tree);
 extern void warn_deprecated_use (tree, tree);
 extern void cache_integer_cst (tree);
 extern const char *combined_fn_name (combined_fn);
@@ -4855,6 +4869,7 @@ extern void DEBUG_FUNCTION verify_type (const_tree t);
 extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
 						 bool trust_type_canonical = true);
 extern bool type_with_interoperable_signedness (const_tree);
+extern bitmap get_nonnull_args (const_tree);
 
 /* Return simplified tree code of type that is used for canonical type
    merging.  */

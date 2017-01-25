@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -242,6 +242,16 @@ package Sem_Attr is
       --  enumeration value. Constraint_Error is raised if no value of the
       --  enumeration type corresponds to the given integer value.
 
+      -----------------------
+      -- Finalization_Size --
+      -----------------------
+
+      Attribute_Finalization_Size => True,
+      --  For every object or non-class-wide-type, Finalization_Size returns
+      --  the size of the hidden header used for finalization purposes as if
+      --  the object or type was allocated on the heap. The size of the header
+      --  does take into account any extra padding due to alignment issues.
+
       -----------------
       -- Fixed_Value --
       -----------------
@@ -392,7 +402,7 @@ package Sem_Attr is
       --  fixed-point types and discrete types. For fixed-point types and
       --  discrete types, this attribute gives the size used for default
       --  allocation of objects and components of the size. See section in
-      --  Einfo ("Handling of type'Size values") for further details.
+      --  Einfo ("Handling of Type'Size values") for further details.
 
       -------------------------
       -- Passed_By_Reference --

@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -378,8 +378,12 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVX512IFMA__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX5124VNNIW)
     def_or_undef (parse_in, "__AVX5124VNNIW__");
+  if (isa_flag2 & OPTION_MASK_ISA_SGX)
+    def_or_undef (parse_in, "__SGX__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX5124FMAPS)
     def_or_undef (parse_in, "__AVX5124FMAPS__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512VPOPCNTDQ)
+    def_or_undef (parse_in, "__AVX512VPOPCNTDQ__");
   if (isa_flag & OPTION_MASK_ISA_FMA)
     def_or_undef (parse_in, "__FMA__");
   if (isa_flag & OPTION_MASK_ISA_RTM)
