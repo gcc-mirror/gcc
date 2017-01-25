@@ -1,3 +1,9 @@
+2016-01-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/lto/pr54709_0.c: Require 'shared' effective target.
+	* gcc.dg/lto/pr61526_0.c: Likewise.
+	* gcc.dg/lto/pr64415_0.c: Likewise.
+
 2017-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79205
