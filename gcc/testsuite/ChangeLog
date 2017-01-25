@@ -1,5 +1,11 @@
 2017-01-25  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/72850
+	* gcc.dg/tree-ssa/pr69270-3.c: Change back expected outcome
+	to what we had before adding the threading passes.
+
+2017-01-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69264
 	* g++.dg/torture/pr69264.C: New testcase.
 
