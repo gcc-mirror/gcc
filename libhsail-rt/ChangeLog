@@ -1,4 +1,15 @@
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	(ACLOCAL_AMFLAGS): Set to -I .. -I ../config .
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* Makefile.am: New file.
