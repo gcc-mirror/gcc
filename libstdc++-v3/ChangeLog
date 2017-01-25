@@ -1,3 +1,15 @@
+2017-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61791
+	PR libstdc++/70607
+	* include/std/complex (real(T), imag(T)): Add _GLIBCXX_CONSTEXPR.
+	(proj(T), conj(T)): Change return types per DR 1522.
+	* include/tr1/complex (conj): Remove overloads and use std::conj.
+	* testsuite/26_numerics/complex/dr781_dr1137.cc: Rename to...
+	* testsuite/26_numerics/complex/dr781.cc: ... this, and update.
+	* testsuite/26_numerics/complex/value_operations/constexpr2.cc: Test
+	real(T) and imag(T). Allow testing for C++11 too.
+
 2017-01-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79206
