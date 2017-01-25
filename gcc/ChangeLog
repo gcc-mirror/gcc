@@ -1,3 +1,14 @@
+2017-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69264
+	* target.def (vector_alignment_reachable): Improve documentation.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_builtin_vector_alignment_reachable): Simplify
+	and add a comment.
+	* tree-vect-data-refs.c (vect_supportable_dr_alignment): Revert
+	earlier changes with respect to TYPE_USER_ALIGN.
+	(vector_alignment_reachable_p): Likewise.  Improve dumping.
+
 2016-01-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/79145
