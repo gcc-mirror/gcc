@@ -1,5 +1,11 @@
 2016-01-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR target/79145
+	* config/arm/arm.md (xordi3): Force constant operand into a register
+	for TARGET_IWMMXT.
+
+2016-01-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* doc/invoke.texi (-fstore-merging): Correct default optimization
 	levels at which it is enabled.
 	(-O): Move -fstore-merging from list to...
