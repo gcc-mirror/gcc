@@ -3084,7 +3084,7 @@ classes that indirectly use multiple inheritance.
 
 @item -Wvirtual-inheritance
 @opindex Wvirtual-inheritance
-Warn when a class is defined with a virtual direct base classe.  Some
+Warn when a class is defined with a virtual direct base class.  Some
 coding rules disallow multiple inheritance, and this may be used to
 enforce that rule.  The warning is inactive inside a system header file,
 such as the STL, so one can still use the STL.  One may also define
