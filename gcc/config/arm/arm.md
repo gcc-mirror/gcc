@@ -3313,7 +3313,14 @@
 	(xor:DI (match_operand:DI 1 "s_register_operand" "")
 		(match_operand:DI 2 "arm_xordi_operand" "")))]
   "TARGET_32BIT"
-  ""
+  {
+    /* The iWMMXt pattern for xordi3 accepts only register operands but we want
+       to reuse this expander for all TARGET_32BIT targets so just force the
+       constants into a register.  Unlike for the anddi3 and iordi3 there are
+       no NEON instructions that take an immediate.  */
+    if (TARGET_IWMMXT && !REG_P (operands[2]))
+      operands[2] = force_reg (DImode, operands[2]);
+  }
 )
 
 (define_insn_and_split "*xordi3_insn"
