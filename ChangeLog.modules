@@ -1,3 +1,18 @@
+2017-01-25  Nathan Sidwell  <nathan@acm.org>
+
+	New flag & keywords, etc
+	gcc/c-family/
+	* c-common.c (c_common_reswords): Add 'module', 'import'.
+	* c-common.h (enum rid): Add RID_MODULE, RID_IMPORT.
+	(D_CXX_MODULES, D_CXX_MODULES_FLAGS) New.
+	* c-cppbuiltins.c (c_cpp_builtins): Add _cpp_modules define.
+	* c.opt: Add fmodules flag.
+	gcc/cp/
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add module.o.
+	* module.c: New file.
+	gcc/
+	* doc/invoke.texi (-fmodules): Document it.
+
 2017-01-24  Nathan Sidwell  <nathan@acm.org>
 
 	Free up TREE_LANG_FLAG_3.  DECL_CONSTRUCTION_VTABLE_P is useless.

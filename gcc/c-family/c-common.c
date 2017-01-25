@@ -523,6 +523,10 @@ const struct c_common_resword c_common_reswords[] =
   { "concept",		RID_CONCEPT,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
   { "requires", 	RID_REQUIRES,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
 
+  /* Modules-related keywords */
+  { "module",		RID_MODULE,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+  { "import", 		RID_IMPORT,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+
   /* These Objective-C keywords are recognized only immediately after
      an '@'.  */
   { "compatibility_alias", RID_AT_ALIAS,	D_OBJC },

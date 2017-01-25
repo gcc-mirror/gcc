@@ -165,6 +165,8 @@ init_reswords (void)
     mask |= D_CXX11;
   if (!flag_concepts)
     mask |= D_CXX_CONCEPTS;
+  if (!flag_modules)
+    mask |= D_CXX_MODULES;
   if (!flag_tm)
     mask |= D_TRANSMEM;
   if (flag_no_asm)

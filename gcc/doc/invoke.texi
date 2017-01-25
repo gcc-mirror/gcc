@@ -2446,6 +2446,10 @@ To save space, do not emit out-of-line copies of inline functions
 controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
 
+@item -fmodules
+@opindex fmodules
+Enable experimental support for the Extensions to C++ for Modules extension.
+
 @item -fms-extensions
 @opindex fms-extensions
 Disable Wpedantic warnings about constructs used in MFC, such as implicit
