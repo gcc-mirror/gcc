@@ -6102,6 +6102,10 @@ extern bool ctor_omit_inherited_parms		(tree);
 extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
+/* In module.c  */
+/* Module names are gc'd vectors of trees.  */
+typedef vec<tree, va_gc> GTY(()) module_name_t;
+extern void declare_module_name (location_t, module_name_t *);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);

@@ -1,5 +1,19 @@
 2017-01-25  Nathan Sidwell  <nathan@acm.org>
 
+	Parse module-declaration.
+	gcc/cp
+	* cp-tree.h (module_name_t): Typedef.
+	(declare_module_name): Declare.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Explain
+	fmodules.
+	(cp_parser_module_name, cp_parser_module_declaration): New.
+	(cp_parser_declaration): Add module-declaration.
+	* module.c (declared_module, module_location): New.
+	(declare_module_name): Define.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-0.C: New.
+	* g++.dg/modules/mod-decl-1.C: New.
+
 	New flag & keywords, etc
 	gcc/c-family/
 	* c-common.c (c_common_reswords): Add 'module', 'import'.

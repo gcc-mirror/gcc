@@ -3209,6 +3209,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		"-std=c++11 or -std=gnu++11");
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
 	inform (location, "%<concept%> only available with -fconcepts");
+      else if (!flag_modules && (id == ridpointers[(int)RID_MODULE]
+				 || id == ridpointers[(int)RID_IMPORT]))
+	inform (location, "%qE only available with -fmodules", id);
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{
@@ -12307,6 +12310,57 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
     }
 }
 
+/* Modules */
+
+/* Parse a module-name,
+   identifier
+   module-name . identifier
+
+   Returns a moudule_name pointer or NULL.  */
+
+static module_name_t *
+cp_parser_module_name (cp_parser *parser)
+{
+  module_name_t *name = make_tree_vector ();
+
+  for (;;)
+    {
+      cp_token *token = cp_parser_require (parser, CPP_NAME, RT_NAME);
+      if (!token)
+	return NULL;
+      vec_safe_push (name, token->u.value);
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_DOT))
+	break;
+      cp_lexer_consume_token (parser->lexer);
+    }
+  return name;
+}
+
+/* Module-declaration:
+   module module-name attr-spec-seq-opt ;  */
+
+static void
+cp_parser_module_declaration (cp_parser *parser)
+{
+  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE));
+
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  module_name_t *name = cp_parser_module_name (parser);
+  tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
+
+  if (!name)
+    ;
+  else if (current_scope () != global_namespace)
+    error_at (token->location,
+	      "module-declaration may only appear at global scope");
+  else
+    {
+      (void)std_attrs; // FIXME: process attributes?
+      declare_module_name (token->location, name);
+    }
+}
+
 /* Declarations [gram.dcl.dcl] */
 
 /* Parse an optional declaration-sequence.
@@ -12381,6 +12435,11 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
    C++17:
      deduction-guide
 
+   modules:
+     (all these are only allowed at the outermost level, check
+   	that semantically, for better diagnostics)
+     module-declaration
+
    GNU extension:
 
    declaration:
@@ -12420,9 +12479,11 @@ cp_parser_declaration (cp_parser* parser)
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
   p = obstack_alloc (&declarator_obstack, 0);
 
+  if (flag_modules && token1.keyword == RID_MODULE)
+    cp_parser_module_declaration (parser);
   /* If the next token is `extern' and the following token is a string
      literal, then we have a linkage specification.  */
-  if (token1.keyword == RID_EXTERN
+  else if (token1.keyword == RID_EXTERN
       && cp_parser_is_pure_string_literal (&token2))
     cp_parser_linkage_specification (parser);
   /* If the next token is `template', then we have either a template
