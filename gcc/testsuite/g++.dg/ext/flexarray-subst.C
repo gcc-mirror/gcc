@@ -1,8 +1,12 @@
 // PR c++/69251 - [6 Regression] ICE (segmentation fault) in unify_array_domain
 // on i686-linux-gnu
 // { dg-do compile }
+// { dg-additional-options "-Wno-error=pedantic" }
 
-struct A { int n; char a[]; };
+struct A {
+  int n;
+  char a[];   // { dg-warning "forbids flexible array member" }
+};
 
 template <class>
 struct B;

@@ -1,3 +1,8 @@
+2017-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71290
+	* decl.c (grokdeclarator): Warn on flexible array members.
+
 2017-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78896
