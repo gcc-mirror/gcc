@@ -1,3 +1,12 @@
+2017-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/78363
+	* omp-expand.c: Include debug.h.
+	(expand_omp_taskreg): Make sure to generate early debug before
+	outlining anything from a function.
+	(expand_omp_target): Likewise.
+	(grid_expand_target_grid_body): Likewise.
+
 2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061

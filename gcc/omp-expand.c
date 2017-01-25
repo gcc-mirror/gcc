@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"
 #include "hsa-common.h"
+#include "debug.h"
 
 
 /* OMP region information.  Every parallel and workshare
@@ -1304,6 +1305,11 @@ expand_omp_taskreg (struct omp_region *region)
 	}
       else
 	block = gimple_block (entry_stmt);
+
+      /* Make sure to generate early debug for the function before
+         outlining anything.  */
+      if (! gimple_in_ssa_p (cfun))
+	(*debug_hooks->early_global_decl) (cfun->decl);
 
       new_bb = move_sese_region_to_fn (child_cfun, entry_bb, exit_bb, block);
       if (exit_bb)
@@ -7016,6 +7022,11 @@ expand_omp_target (struct omp_region *region)
 	  gsi_remove (&gsi, true);
 	}
 
+      /* Make sure to generate early debug for the function before
+         outlining anything.  */
+      if (! gimple_in_ssa_p (cfun))
+	(*debug_hooks->early_global_decl) (cfun->decl);
+
       /* Move the offloading region into CHILD_CFUN.  */
 
       block = gimple_block (entry_stmt);
@@ -7588,6 +7599,11 @@ grid_expand_target_grid_body (struct omp_region *target)
   cfun->function_end_locus = gimple_location (tgt_stmt);
   init_tree_ssa (cfun);
   pop_cfun ();
+
+  /* Make sure to generate early debug for the function before
+     outlining anything.  */
+  if (! gimple_in_ssa_p (cfun))
+    (*debug_hooks->early_global_decl) (cfun->decl);
 
   tree old_parm_decl = DECL_ARGUMENTS (kern_fndecl);
   gcc_assert (!DECL_CHAIN (old_parm_decl));
