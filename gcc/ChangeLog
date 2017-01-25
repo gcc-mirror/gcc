@@ -1,3 +1,10 @@
+2016-01-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (-fstore-merging): Correct default optimization
+	levels at which it is enabled.
+	(-O): Move -fstore-merging from list to...
+	(-O2): ... Here.
+
 2017-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR debug/78363
