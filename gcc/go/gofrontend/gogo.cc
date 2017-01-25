@@ -1779,17 +1779,26 @@ Gogo::start_function(const std::string& name, Function_type* type,
 
 	  while (rtype->named_type() != NULL
 		 && rtype->named_type()->is_alias())
-	    rtype = rtype->named_type()->real_type();
+	    rtype = rtype->named_type()->real_type()->forwarded();
 
 	  if (rtype->is_error_type())
 	    ret = Named_object::make_function(name, NULL, function);
 	  else if (rtype->named_type() != NULL)
 	    {
-	      ret = rtype->named_type()->add_method(name, function);
-	      if (!ret->is_function())
+	      if (rtype->named_type()->named_object()->package() != NULL)
 		{
-		  // Redefinition error.
+		  go_error_at(type->receiver()->location(),
+			      "may not define methods on non-local type");
 		  ret = Named_object::make_function(name, NULL, function);
+		}
+	      else
+		{
+		  ret = rtype->named_type()->add_method(name, function);
+		  if (!ret->is_function())
+		    {
+		      // Redefinition error.
+		      ret = Named_object::make_function(name, NULL, function);
+		    }
 		}
 	    }
 	  else if (rtype->forward_declaration_type() != NULL)
@@ -2247,8 +2256,14 @@ Gogo::define_global_names()
 	  if (global_no->is_type())
 	    {
 	      if (no->type_declaration_value()->has_methods())
-		go_error_at(no->location(),
-			    "may not define methods for global type");
+		{
+		  for (std::vector<Named_object*>::const_iterator p =
+			 no->type_declaration_value()->methods()->begin();
+		       p != no->type_declaration_value()->methods()->end();
+		       p++)
+		    go_error_at((*p)->location(),
+				"may not define methods on non-local type");
+		}
 	      no->set_type_value(global_no->type_value());
 	    }
 	  else
