@@ -1,3 +1,9 @@
+2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* c-decl.c (pop_scope): Pass main_input_filename to
+	build_translation_unit_decl.
+
 2017-01-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c: Include "read-rtl-function.h" and

@@ -1,3 +1,10 @@
+2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* asan.c (get_translation_unit_decl): New function.
+	(asan_add_global): Extract modules file name from globals
+	TRANSLATION_UNIT_DECL name.
+
 2017-01-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/77439
