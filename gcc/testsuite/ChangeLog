@@ -1,3 +1,10 @@
+2017-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/78363
+	* g++.dg/gomp/pr78363-1.C: New testcase.
+	* g++.dg/gomp/pr78363-2.C: Likewise.
+	* g++.dg/gomp/pr78363-3.C: Likewise.
+
 2016-01-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/lto/pr54709_0.c: Require 'shared' effective target.
