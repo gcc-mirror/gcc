@@ -666,7 +666,8 @@ get_global_context (void)
 {
   if (!global_context)
     {
-      global_context = build_translation_unit_decl (NULL_TREE);
+      global_context
+	= build_translation_unit_decl (get_identifier (main_input_filename));
       debug_hooks->register_main_translation_unit (global_context);
     }
 

@@ -1177,7 +1177,8 @@ pop_scope (void)
     context = current_function_decl;
   else if (scope == file_scope)
     {
-      tree file_decl = build_translation_unit_decl (NULL_TREE);
+      tree file_decl
+	= build_translation_unit_decl (get_identifier (main_input_filename));
       context = file_decl;
       debug_hooks->register_main_translation_unit (file_decl);
     }

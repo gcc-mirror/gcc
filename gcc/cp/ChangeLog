@@ -1,3 +1,9 @@
+2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* decl.c (cxx_init_decl_processing): Pass main_input_filename
+	to build_translation_unit_decl.
+
 2017-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79205

@@ -1,3 +1,9 @@
+2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* f95-lang.c (gfc_create_decls): Include stringpool.h.
+	Pass main_input_filename to build_translation_unit_decl.
+
 2017-01-23  Thomas Koenig  <tkoenig@netcologne.de>
 
 	* arith.c (arith_power):  If simplifying integer power expression
