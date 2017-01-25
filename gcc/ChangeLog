@@ -1,3 +1,7 @@
+2017-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Fix typo.
+
 2017-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69264
