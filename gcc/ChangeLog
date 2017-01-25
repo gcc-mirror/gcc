@@ -1,3 +1,8 @@
+2017-01-25  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c (altivec_overloaded_builtins): Fix order
+	of entries for ALTIVEC_BUILTIN_VEC_PACKS and P8V_BUILTIN_VEC_VGBBD.
+
 2017-01-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Fix typo.
