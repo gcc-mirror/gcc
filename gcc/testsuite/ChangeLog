@@ -1,3 +1,20 @@
+2017-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71290
+	* g++.dg/ext/flexarray-mangle-2.C: Adjust.
+	* g++.dg/ext/flexarray-mangle.C: Same.
+	* g++.dg/ext/flexarray-subst.C: Same.
+	* g++.dg/ext/flexary10.C: Same.
+	* g++.dg/ext/flexary11.C: Same.
+	* g++.dg/ext/flexary14.C: Same.
+	* g++.dg/ext/flexary16.C: Same.
+	* g++.dg/ext/flexary18.C: Same.
+	* g++.dg/ext/flexary19.C: Same.
+	* g++.dg/ext/flexary7.C: Same.
+	* gcc/testsuite/g++.dg/cpp1z/has-unique-obj-representations1.C: Same.
+	* gcc/testsuite/g++.dg/ubsan/object-size-1.C: Same.
+	* gcc/testsuite/obj-c++.dg/property/at-property-23.mm: Same.
+
 2017-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78896
