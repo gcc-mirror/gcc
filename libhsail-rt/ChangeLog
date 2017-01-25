@@ -1,3 +1,10 @@
+2017-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.h.in: Remove stale file.
+
+	* configure.ac: Don't instantiate AC_CONFIG_MACRO_DIR.
+	* configure: Regenerate.
+
 2017-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
@@ -36,3 +43,9 @@
 	* rt/sat_arithmetic.c: Likewise.
 	* rt/segment.c: Likewise.
 	* rt/workitems.c: Likewise.
+
+Copyright (C) 2017 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
