@@ -24,6 +24,7 @@
 
 // DR 781. std::complex should add missing C99 functions.
 // DR 1137. Return type of conj and proj.
+// 1522. conj specification is now nonsense
 void test01()
 {
   using __gnu_test::check_ret_type;
@@ -45,21 +46,32 @@ void test01()
   check_ret_type<cmplx_d_type>(std::proj(c_d1));
   check_ret_type<cmplx_ld_type>(std::proj(c_ld1));
 
-  check_ret_type<float>(std::proj(f1));
-  check_ret_type<double>(std::proj(d1));
-  check_ret_type<double>(std::proj(i1));
+  check_ret_type<cmplx_f_type>(std::proj(f1));
+  check_ret_type<cmplx_d_type>(std::proj(d1));
+  check_ret_type<cmplx_d_type>(std::proj(i1));
+  check_ret_type<cmplx_ld_type>(std::proj(ld1));
+
+  VERIFY( std::proj(f1) == std::proj(cmplx_f_type(f1)) );
+  VERIFY( std::proj(d1) == std::proj(cmplx_d_type(d1)) );
+  VERIFY( std::proj(ld1) == std::proj(cmplx_ld_type(ld1)) );
   VERIFY( std::proj(i1) == std::proj(double(i1)) );
-  check_ret_type<long double>(std::proj(ld1));
 
   check_ret_type<cmplx_f_type>(std::conj(c_f1));
   check_ret_type<cmplx_d_type>(std::conj(c_d1));
   check_ret_type<cmplx_ld_type>(std::conj(c_ld1));
 
-  check_ret_type<float>(std::conj(f1));
-  check_ret_type<double>(std::conj(d1));
-  check_ret_type<double>(std::conj(i1));
+  check_ret_type<cmplx_f_type>(std::conj(f1));
+  check_ret_type<cmplx_d_type>(std::conj(d1));
+  check_ret_type<cmplx_d_type>(std::conj(i1));
+  check_ret_type<cmplx_ld_type>(std::conj(ld1));
+
+  VERIFY( std::conj(f1) == std::conj(cmplx_f_type(f1)) );
+  VERIFY( std::conj(d1) == std::conj(cmplx_d_type(d1)) );
+  VERIFY( std::conj(ld1) == std::conj(cmplx_ld_type(ld1)) );
   VERIFY( std::conj(i1) == std::conj(double(i1)) );
-  check_ret_type<long double>(std::conj(ld1));
+  VERIFY( std::signbit(std::conj(f1).imag()) );
+  VERIFY( std::signbit(std::conj(d1).imag()) );
+  VERIFY( std::signbit(std::conj(ld1).imag()) );
 }
 
 int main()
