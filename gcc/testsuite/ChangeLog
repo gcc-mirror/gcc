@@ -1,5 +1,8 @@
 2017-01-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78896
+	* g++.dg/cpp1z/decomp24.C: New test.
+
 	PR c++/77914
 	* g++.dg/cpp1y/lambda-generic-77914.C: New test.
 	* g++.dg/cpp1y/lambda-generic-dep.C: Add -pedantic to dg-options,

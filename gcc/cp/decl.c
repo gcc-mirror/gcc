@@ -7562,6 +7562,11 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       error_at (loc, "cannot decompose non-array non-class type %qT", type);
       goto error_out;
     }
+  else if (LAMBDA_TYPE_P (type))
+    {
+      error_at (loc, "cannot decompose lambda closure type %qT", type);
+      goto error_out;
+    }
   else
     {
       tree btype = find_decomp_class_base (loc, type, NULL_TREE);
