@@ -1,3 +1,15 @@
+2017-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77914
+	* g++.dg/cpp1y/lambda-generic-77914.C: New test.
+	* g++.dg/cpp1y/lambda-generic-dep.C: Add -pedantic to dg-options,
+	expect a warning.
+	* g++.dg/cpp1y/lambda-generic-x.C: Add -Wpedantic to dg-options,
+	expect warnings.
+	* g++.dg/cpp1y/lambda-generic-mixed.C: Add empty dg-options.
+	* g++.dg/cpp1y/pr59636.C: Likewise.
+	* g++.dg/cpp1y/pr60190.C: Likewise.
+
 2017-01-25  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/vect/vect-24.c: Remove xfail on ARM targets.
