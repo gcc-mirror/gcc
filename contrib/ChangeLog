@@ -1,3 +1,7 @@
+2017-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Care for "libhsail-rt".
+
 2017-01-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* patch_tester.sh (TESTLOGS): Remove
