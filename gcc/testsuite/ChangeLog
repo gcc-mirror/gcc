@@ -1,3 +1,7 @@
+2017-01-25  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/vect/vect-24.c: Remove xfail on ARM targets.
+
 2017-01-25  Carl Love  <cel@us.ibm.com>
 	* gcc.target/powerpc/builtins-3-p8.c:  Add missing tests for the
 	vec_packs built-ins
