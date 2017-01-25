@@ -1,3 +1,9 @@
+2017-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77914
+	* parser.c (cp_parser_lambda_declarator_opt): Pedwarn with
+	OPT_Wpedantic on lambda templates for -std=c++14 and higher.
+
 2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061
