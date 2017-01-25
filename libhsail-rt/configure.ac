@@ -147,5 +147,8 @@ AC_CONFIG_HEADER(target-config.h)
 AC_CHECK_SIZEOF([int])
 AC_CHECK_SIZEOF([void*])
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 # Must be last
 AC_OUTPUT

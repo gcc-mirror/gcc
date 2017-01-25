@@ -44,13 +44,13 @@
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 MAINT_CHARSET = latin1
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 WARN_CFLAGS = $(WARN_FLAGS) $(WERROR)
 
@@ -120,5 +120,3 @@ AM_MAKEFLAGS = \
        "DESTDIR=$(DESTDIR)"
 
 MAKEOVERRIDES=
-
-
