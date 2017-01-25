@@ -1,3 +1,7 @@
+2017-01-25  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/builtins-3-p8.c:  Add missing tests for the
+	vec_packs built-ins
+
 2017-01-25  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/vseleqdf.c: Require arm_arch_v8a_ok, add
