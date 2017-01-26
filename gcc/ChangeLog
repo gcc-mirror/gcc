@@ -1,3 +1,16 @@
+2017-01-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79131
+	* lra-assigns.c (setup_live_pseudos_and_spill_after_risky): Take
+	endianess for subregs into account.
+	* lra-constraints.c (lra_constraints): Do risky transformations
+	always on the first iteration.
+	* lra-lives.c (check_pseudos_live_through_calls): Add arg
+	last_call_used_reg_set.
+	(process_bb_lives): Define and use last_call_used_reg_set.
+	* lra.c (lra): Always continue after lra_constraints on the first
+	iteration.
+
 2017-01-26  Kirill Yukhin  <kirill.yukhin@gmail.com>
 
 	* gcc.target/i386/avx512bw-kshiftlq-2.c: Use unsigned long long
