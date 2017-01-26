@@ -1,3 +1,9 @@
+2017-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79176 - lambda ICE with -flto -Os
+	* decl2.c (vague_linkage_p): Handle decloned 'tors.
+	* tree.c (decl_linkage): Likewise.
+
 2017-01-20  Marek Polacek  <polacek@redhat.com>
 	
 	Backported from mainline
