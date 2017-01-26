@@ -4,6 +4,9 @@
 typedef struct
 {
   char a0[0];
+  /* Separate a0 from a1 to prevent the former from being substituted
+     for the latter and causing false positives.  */
+  int: 8;
   char a1[1];
   char a2[2];
   char a3[3];
@@ -39,7 +42,9 @@ void test_int_retval_unused (void)
 
 void test_string_retval_unused (const Arrays *ar)
 {
-  T (1, "%-s", ar->a0);
+  /* At level 2 strings of unknown length are assumed to be 1 character
+     long, so the following is diagnosed.  */
+  T (1, "%-s", ar->a0);   /* { dg-warning "output may be truncated" } */
   T (1, "%-s", ar->a1);
   T (1, "%-s", ar->a2);   /* { dg-warning "output may be truncated" } */
 }
@@ -64,7 +69,7 @@ void test_int_retval_used (void)
 
 void test_string_retval_used (const Arrays *ar)
 {
-  T (1, "%-s", ar->a0);
+  T (1, "%-s", ar->a0);   /* { dg-warning "output may be truncated" } */
   T (1, "%-s", ar->a1);
   T (1, "%-s", ar->a2);   /* { dg-warning "output may be truncated" } */
 }

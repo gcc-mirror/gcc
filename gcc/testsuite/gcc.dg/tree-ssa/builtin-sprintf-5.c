@@ -136,7 +136,6 @@ void test_arg_string (const char *s)
 
 void test_arg_multiarg (int i, double d)
 {
-  EQL (16, "%i %f %s", 123, 3.14, "abc");
   EQL (16, "%12i %s", i, "abc");
   EQL (16, "%*i %s", 12, i, "abc");
 }
