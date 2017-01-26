@@ -631,7 +631,7 @@ void getTraceback(G* me, G* gp)
 #ifdef USING_SPLIT_STACK
 	__splitstack_getcontext(&me->stackcontext[0]);
 #endif
-	getcontext(ucontext_arg(&me->stackcontext[0]));
+	getcontext(ucontext_arg(&me->context[0]));
 
 	if (gp->traceback != nil) {
 		runtime_gogo(gp);
