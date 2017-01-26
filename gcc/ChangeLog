@@ -1,5 +1,9 @@
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70465
+	* reg-stack.c (emit_swap_insn): Instead of fld a; fld b; fxchg %st(1);
+	emit fld b; fld a; if possible.
+
 	* brig-builtins.def: Update copyright years.
 	* config/arm/arm_acle_builtins.def: Update copyright years.
 
