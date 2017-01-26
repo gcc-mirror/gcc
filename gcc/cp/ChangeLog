@@ -1,5 +1,7 @@
 2017-01-26  Jason Merrill  <jason@redhat.com>
 
+	* name-lookup.c (parse_using_directive): Deprecate strong using.
+
 	PR c++/79176 - lambda ICE with -flto -Os
 	* decl2.c (vague_linkage_p): Handle decloned 'tors.
 	* tree.c (decl_linkage): Likewise.
