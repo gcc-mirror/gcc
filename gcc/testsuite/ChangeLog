@@ -1,3 +1,8 @@
+2017-01-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79131
+	* gcc.target/arm/pr79131.c: New.
+
 2017-01-26  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.target/aarch64/ldp_vec_64_1.c: Xfail.
