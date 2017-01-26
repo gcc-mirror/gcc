@@ -1,3 +1,16 @@
+2017-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77745
+	* g++.dg/torture/pr77745.C: New testcase.
+
+	2016-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77768
+	* gcc.dg/torture/pr77768.c: New testcase.
+
 2017-01-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backport from mainline

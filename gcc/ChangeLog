@@ -1,3 +1,28 @@
+2017-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77745
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	When removing redundant stores make sure to check compatibility
+	of the TBAA state for downstream accesses.
+	* tree-ssa-sccvn.c (visit_reference_op_store): Likewise for when
+	value-numbering virtual operands for store matches.
+
+	2016-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77768
+	* tree-ssa-sccvn.c (visit_reference_op_store): Properly deal
+	with stores to a place we know has a constant value.
+	* tree-vrp.c (set_defs_to_varying): New helper avoiding
+	writing to vr_const_varying.
+	(vrp_initialize): Call it.
+	(vrp_visit_stmt): Likewise.
+	(evrp_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Handle stores to readonly memory when removing redundant stores.
+
 2017-01-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backport from mainline
