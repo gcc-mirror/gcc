@@ -1,3 +1,9 @@
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/68727
+	* g++.dg/other/offsetof8.C: Add expected error.
+	* g++.dg/other/offsetof9.C: New test.
+
 2017-01-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/opt/declone3.C: Require LTO.

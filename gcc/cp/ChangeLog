@@ -1,3 +1,18 @@
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/68727
+	* cp-tree.def (OFFSETOF_EXPR): Bump number of operands to 2.
+	* cp-tree.h (finish_offsetof): Add OBJECT_PTR argument.
+	* parser.c (cp_parser_builtin_offsetof): Pass result of
+	build_static_cast of null_pointer_node to finish_offsetof.
+	* semantics.c (finish_offsetof): Add OBJECT_PTR argument, use
+	it for -Winvalid-offsetof pedwarn instead of trying to guess
+	original offsetof type from EXPR.  Save OBJECT_PTR as a new
+	second operand to OFFSETOF_EXPR.
+	* pt.c (tsubst_copy_and_build) <case OFFSETOF_EXPR>: Adjust
+	finish_offsetof caller, pass the second operand of OFFSETOF_EXPR
+	as OBJECT_PTR.
+
 2017-01-26  Jason Merrill  <jason@redhat.com>
 
 	* name-lookup.c (parse_using_directive): Deprecate strong using.

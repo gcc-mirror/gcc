@@ -333,7 +333,7 @@ DEFTREECODE (EXPR_STMT, "expr_stmt", tcc_expression, 1)
 DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 
 /* Represents an 'offsetof' expression during template expansion.  */
-DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", tcc_expression, 1)
+DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", tcc_expression, 2)
 
 /* Represents an '__builtin_addressof' expression during template
    expansion.  This is similar to ADDR_EXPR, but it doesn't invoke

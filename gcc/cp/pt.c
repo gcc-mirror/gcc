@@ -17707,8 +17707,15 @@ tsubst_copy_and_build (tree t,
       }
 
     case OFFSETOF_EXPR:
-      RETURN (finish_offsetof (RECUR (TREE_OPERAND (t, 0)),
-			       EXPR_LOCATION (t)));
+      {
+	tree object_ptr
+	  = tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain,
+				   in_decl, /*function_p=*/false,
+				   /*integral_constant_expression_p=*/false);
+	RETURN (finish_offsetof (object_ptr,
+				 RECUR (TREE_OPERAND (t, 0)),
+				 EXPR_LOCATION (t)));
+      }
 
     case ADDRESSOF_EXPR:
       RETURN (cp_build_addressof (EXPR_LOCATION (t),

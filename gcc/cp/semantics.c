@@ -3995,13 +3995,13 @@ finish_bases (tree type, bool direct)
    fold_offsetof.  */
 
 tree
-finish_offsetof (tree expr, location_t loc)
+finish_offsetof (tree object_ptr, tree expr, location_t loc)
 {
   /* If we're processing a template, we can't finish the semantics yet.
      Otherwise we can fold the entire expression now.  */
   if (processing_template_decl)
     {
-      expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
+      expr = build2 (OFFSETOF_EXPR, size_type_node, expr, object_ptr);
       SET_EXPR_LOCATION (expr, loc);
       return expr;
     }
@@ -4031,19 +4031,15 @@ finish_offsetof (tree expr, location_t loc)
     }
   if (REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
-  if (TREE_CODE (expr) == COMPONENT_REF)
-    {
-      tree object = TREE_OPERAND (expr, 0);
-      if (!complete_type_or_else (TREE_TYPE (object), object))
-	return error_mark_node;
-      if (warn_invalid_offsetof
-	  && CLASS_TYPE_P (TREE_TYPE (object))
-	  && CLASSTYPE_NON_STD_LAYOUT (TREE_TYPE (object))
-	  && cp_unevaluated_operand == 0)
-	pedwarn (loc, OPT_Winvalid_offsetof,
-		 "offsetof within non-standard-layout type %qT is undefined",
-		 TREE_TYPE (object));
-    }
+  if (!complete_type_or_else (TREE_TYPE (TREE_TYPE (object_ptr)), object_ptr))
+    return error_mark_node;
+  if (warn_invalid_offsetof
+      && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (object_ptr)))
+      && CLASSTYPE_NON_STD_LAYOUT (TREE_TYPE (TREE_TYPE (object_ptr)))
+      && cp_unevaluated_operand == 0)
+    pedwarn (loc, OPT_Winvalid_offsetof,
+	     "offsetof within non-standard-layout type %qT is undefined",
+	     TREE_TYPE (TREE_TYPE (object_ptr)));
   return fold_offsetof (expr);
 }
 
