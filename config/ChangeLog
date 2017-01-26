@@ -1,3 +1,8 @@
+2017-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78478
+	* ax_check_define.m4: New file.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
