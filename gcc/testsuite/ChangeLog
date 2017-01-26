@@ -1,3 +1,15 @@
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512f-kaddw-1.c: Renamed to ...
+	* gcc.target/i386/avx512dq-kaddw-1.c: ... this.  New test.  Replace
+	avx512f with avx512dq.
+	* gcc.target/i386/avx512f-ktestw-1.c: Renamed to ...
+	* gcc.target/i386/avx512dq-ktestw-1.c: ... this.  New test.  Replace
+	avx512f with avx512dq.
+	* gcc.target/i386/avx512f-ktestw-2.c: Renamed to ...
+	* gcc.target/i386/avx512dq-ktestw-2.c: ... this.  New test.  Replace
+	avx512f with avx512dq.
+
 2017-01-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79199
