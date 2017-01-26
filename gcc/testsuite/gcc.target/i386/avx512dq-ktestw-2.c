@@ -1,11 +1,11 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512f" } */
-/* { dg-require-effective-target avx512f } */
+/* { dg-options "-O2 -mavx512dq" } */
+/* { dg-require-effective-target avx512dq } */
 
-#include "avx512f-check.h"
+#include "avx512dq-check.h"
 
 void
-avx512f_test ()
+avx512dq_test ()
 {
   volatile __mmask16 k1, k2;
   unsigned char r1, r2;
