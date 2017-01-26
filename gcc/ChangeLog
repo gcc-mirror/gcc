@@ -1,5 +1,10 @@
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/79129
+	* dwarf2out.c (generate_skeleton_bottom_up): For children with
+	comdat_type_p set, just clone them, but keep the children in the
+	original DIE.
+
 	PR debug/78835
 	* dwarf2out.c (prune_unused_types): Mark all functions with DIEs
 	which have direct callers with -fvar-tracking-assignments enabled
