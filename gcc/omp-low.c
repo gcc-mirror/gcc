@@ -108,6 +108,10 @@ struct omp_context
      barriers should jump to during omplower pass.  */
   tree cancel_label;
 
+  /* The sibling GIMPLE_OMP_FOR simd with _simt_ clause or NULL
+     otherwise.  */
+  gimple *simt_stmt;
+
   /* What to do with variables with implicitly determined sharing
      attributes.  */
   enum omp_clause_default_kind default_kind;
@@ -2127,7 +2131,7 @@ check_oacc_kernel_gwv (gomp_for *stmt, omp_context *ctx)
 
 /* Scan a GIMPLE_OMP_FOR.  */
 
-static void
+static omp_context *
 scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 {
   omp_context *ctx;
@@ -2200,6 +2204,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
       scan_omp_op (gimple_omp_for_incr_ptr (stmt, i), ctx);
     }
   scan_omp (gimple_omp_body_ptr (stmt), ctx);
+  return ctx;
 }
 
 /* Duplicate #pragma omp simd, one for SIMT, another one for SIMD.  */
@@ -2241,7 +2246,7 @@ scan_omp_simd (gimple_stmt_iterator *gsi, gomp_for *stmt,
   gimple_bind_set_body (bind, seq);
   update_stmt (bind);
   scan_omp_for (new_stmt, outer_ctx);
-  scan_omp_for (stmt, outer_ctx);
+  scan_omp_for (stmt, outer_ctx)->simt_stmt = new_stmt;
 }
 
 /* Scan an OpenMP sections directive.  */
@@ -6750,11 +6755,15 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	= (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_FOR
 	   || gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_TASKLOOP);
       tree outerc = NULL, *pc = gimple_omp_for_clauses_ptr (stmt);
+      tree simtc = NULL;
       tree clauses = *pc;
       if (taskreg_for)
 	outerc
 	  = omp_find_clause (gimple_omp_taskreg_clauses (ctx->outer->stmt),
 			     OMP_CLAUSE__LOOPTEMP_);
+      if (ctx->simt_stmt)
+	simtc = omp_find_clause (gimple_omp_for_clauses (ctx->simt_stmt),
+				 OMP_CLAUSE__LOOPTEMP_);
       for (i = 0; i < count; i++)
 	{
 	  tree temp;
@@ -6767,12 +6776,22 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    }
 	  else
 	    {
-	      temp = create_tmp_var (type);
+	      /* If there are 2 adjacent SIMD stmts, one with _simt_
+		 clause, another without, make sure they have the same
+		 decls in _looptemp_ clauses, because the outer stmt
+		 they are combined into will look up just one inner_stmt.  */
+	      if (ctx->simt_stmt)
+		temp = OMP_CLAUSE_DECL (simtc);
+	      else
+		temp = create_tmp_var (type);
 	      insert_decl_map (&ctx->outer->cb, temp, temp);
 	    }
 	  *pc = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__LOOPTEMP_);
 	  OMP_CLAUSE_DECL (*pc) = temp;
 	  pc = &OMP_CLAUSE_CHAIN (*pc);
+	  if (ctx->simt_stmt)
+	    simtc = omp_find_clause (OMP_CLAUSE_CHAIN (simtc),
+				     OMP_CLAUSE__LOOPTEMP_);
 	}
       *pc = clauses;
     }

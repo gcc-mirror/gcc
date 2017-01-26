@@ -1,3 +1,14 @@
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79236
+	* omp-low.c (struct omp_context): Add simt_stmt field.
+	(scan_omp_for): Return omp_context *.
+	(scan_omp_simd): Set simt_stmt on the non-_simt_ SIMD
+	context to the _simt_ SIMD stmt.
+	(lower_omp_for): For combined SIMD with sibling _simt_
+	SIMD, make sure to use the same decls in _looptemp_
+	clauses as in the sibling.
+
 2017-01-26  David Sherwood  <david.sherwood@arm.com>
 
 	PR middle-end/79212
