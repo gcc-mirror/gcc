@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-pass.h"
 #include "flags.h"
+#include "tree-phinodes.h"
 
 
 /* Conditional dead call elimination
@@ -766,13 +767,30 @@ shrink_wrap_one_built_in_call (gcall *bi_call)
       join_tgt_in_edge_from_call = find_fallthru_edge (bi_call_bb->succs);
       if (join_tgt_in_edge_from_call == NULL)
         return false;
+      /* We don't want to handle PHIs.  */
+      if (EDGE_COUNT (join_tgt_in_edge_from_call->dest->preds) > 1)
+	join_tgt_bb = split_edge (join_tgt_in_edge_from_call);
+      else
+	{
+	  join_tgt_bb = join_tgt_in_edge_from_call->dest;
+	  /* We may have degenerate PHIs in the destination.  Propagate
+	     those out.  */
+	  for (gphi_iterator i = gsi_start_phis (join_tgt_bb); !gsi_end_p (i);)
+	    {
+	      gphi *phi = i.phi ();
+	      replace_uses_by (gimple_phi_result (phi),
+			       gimple_phi_arg_def (phi, 0));
+	      remove_phi_node (&i, true);
+	    }
+	}
     }
   else
-    join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
+    {
+      join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
+      join_tgt_bb = join_tgt_in_edge_from_call->dest;
+    }
 
   bi_call_bsi = gsi_for_stmt (bi_call);
-
-  join_tgt_bb = join_tgt_in_edge_from_call->dest;
 
   /* Now it is time to insert the first conditional expression
      into bi_call_bb and split this bb so that bi_call is
