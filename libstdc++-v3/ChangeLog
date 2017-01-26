@@ -1,5 +1,21 @@
 2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79243
+	* include/bits/c++config (literals::string_view_literals::__7): Add.
+	Only declare versioned namespaces for the relevant C++ dialects.
+	* include/experimental/bits/erase_if.h (fundamentals_v2::__detail):
+	Add versioning macros.
+	* include/experimental/bits/lfts_config.h:
+	(fundamentals_v1::__detail::__7, fundamentals_v2::__detail::__7): Add.
+	* include/experimental/string_view (fundamentals_v2::__detail):
+	Add versioning macros.
+	(fundamentals_v2::__detail::__identity): Remove.
+	(fundamentals_v2::__detail::__idt): Use common_type instead of
+	__detail::__identity.
+	* include/std/string_view (__detail::__identity, __detail::__idt):
+	Likewise.
+	(literals::string_view_literals): Fix nesting of versioning macros.
+
 	PR libstdc++/79190
 	* libsupc++/del_opa.cc (operator delete(void*, std::align_val_t))
 	[!_GLIBCXX_HAVE_ALIGNED_ALLOC && !_GLIBCXX_HAVE_POSIX_MEMALIGN
