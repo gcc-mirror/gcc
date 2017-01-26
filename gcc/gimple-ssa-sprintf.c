@@ -1686,11 +1686,19 @@ format_floating (const directive &dir, tree arg)
 	prec[0] = -1;
       if (prec[1] < 0)
 	{
+#ifdef HAVE_XFmode
+	  /* When L is specified use long double, otherwise double.  */
 	  unsigned fmtprec
 	    = (dir.modifier == FMT_LEN_L
 	       ? REAL_MODE_FORMAT (XFmode)->p
 	       : REAL_MODE_FORMAT (DFmode)->p);
-
+#elif defined HAVE_DFmode
+	  /* No long double support, use double precision for both.  */
+	  unsigned fmtprec = REAL_MODE_FORMAT (DFmode)->p;
+#else
+	  /* No long double or double support.  */
+	  unsigned fmtprec = 0;
+#endif
 	  /* The precision of the IEEE 754 double format is 53.
 	     The precision of all other GCC binary double formats
 	     is 56 or less.  */
@@ -2706,10 +2714,11 @@ parse_directive (pass_sprintf_length::call_info &info,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "  Directive %u at offset %zu: \"%.*s\", "
-		   "length = %zu\n",
-		   dir.dirno, (size_t)(dir.beg - info.fmtstr),
-		   (int)dir.len, dir.beg, dir.len);
+	  fprintf (dump_file, "  Directive %u at offset %llu: \"%.*s\", "
+		   "length = %llu\n",
+		   dir.dirno,
+		   (unsigned long long)(size_t)(dir.beg - info.fmtstr),
+		   (int)dir.len, dir.beg, (unsigned long long)dir.len);
 	}
 
       return len - !*str;
@@ -3029,8 +3038,8 @@ parse_directive (pass_sprintf_length::call_info &info,
 
   if (dump_file)
     {
-      fprintf (dump_file, "  Directive %u at offset %zu: \"%.*s\"",
-	       dir.dirno, (size_t)(dir.beg - info.fmtstr),
+      fprintf (dump_file, "  Directive %u at offset %llu: \"%.*s\"",
+	       dir.dirno, (unsigned long long)(size_t)(dir.beg - info.fmtstr),
 	       (int)dir.len, dir.beg);
       if (star_width)
 	{

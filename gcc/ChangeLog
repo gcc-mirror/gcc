@@ -1,5 +1,10 @@
 2017-01-26  Martin Sebor  <msebor@redhat.com>
 
+	* gimple-ssa-sprintf.c (format_floating): Test HAVE_XFmode and
+	HAVE_DFmode before using XFmode or DFmode.
+	(parse_directive): Avoid using the z length modifier to avoid
+	the ISO C++98 does not support the ‘z’ gnu_printf length modifier.
+
 	PR middle-end/78703
 	* gimple-ssa-sprintf.c (adjust_for_width_or_precision): Change
 	to accept adjustment as an array.
