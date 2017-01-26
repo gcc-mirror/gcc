@@ -1,3 +1,8 @@
+2017-01-26  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c (altivec_overloaded_builtins): Remove
+	bogus entries for the P8V_BUILTIN_VEC_VGBBD built-ins
+
 2017-01-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/79131
