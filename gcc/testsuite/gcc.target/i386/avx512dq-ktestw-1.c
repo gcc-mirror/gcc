@@ -1,11 +1,11 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -mavx512f" } */
+/* { dg-options "-O0 -mavx512dq" } */
 /* { dg-final { scan-assembler-times "ktestw\[ \\t\]+\[^\{\n\]*%k\[0-7\](?:\n|\[ \\t\]+#)" 2 } } */
 
 #include <immintrin.h>
 
 void
-avx512f_test () {
+avx512dq_test () {
   volatile __mmask16 k1;
   __mmask16 k2;
 

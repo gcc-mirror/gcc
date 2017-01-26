@@ -1,3 +1,95 @@
+2017-01-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/opt/declone3.C: Require LTO.
+
+2017-01-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79131
+	* gcc.target/arm/pr79131.c: New.
+
+2017-01-26  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/aarch64/ldp_vec_64_1.c: Xfail.
+
+2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79190
+	* g++.dg/cpp1z/aligned-new3.C: Replace operator new so behaviour
+	matches replaced operator delete.
+
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512f-kaddw-1.c: Renamed to ...
+	* gcc.target/i386/avx512dq-kaddw-1.c: ... this.  New test.  Replace
+	avx512f with avx512dq.
+	* gcc.target/i386/avx512f-ktestw-1.c: Renamed to ...
+	* gcc.target/i386/avx512dq-ktestw-1.c: ... this.  New test.  Replace
+	avx512f with avx512dq.
+	* gcc.target/i386/avx512f-ktestw-2.c: Renamed to ...
+	* gcc.target/i386/avx512dq-ktestw-2.c: ... this.  New test.  Replace
+	avx512f with avx512dq.
+
+2017-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79199
+	* c-c++-common/Wduplicated-branches-13.c: New test.
+
+2017-01-26  David Sherwood  <david.sherwood@arm.com>
+
+	PR middle-end/79212
+	* gfortran.dg/gomp/sharing-4.f90: New test.
+
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70465
+	* gcc.target/i386/pr70465.c: New test.
+
+	* brig.dg/dg.exp: Update copyright years.
+	* lib/brig-dg.exp: Update copyright years.
+	* lib/brig.exp: Update copyright years.
+
+2017-01-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79179
+	* gcc.target/powerpc/pr79179.c: New test.
+
+2017-01-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-elemrev-4.c: Change expected code
+	generation to accept D-mode memory accesses.
+
+2017-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71290
+	* g++.dg/ext/flexarray-mangle-2.C: Adjust.
+	* g++.dg/ext/flexarray-mangle.C: Same.
+	* g++.dg/ext/flexarray-subst.C: Same.
+	* g++.dg/ext/flexary10.C: Same.
+	* g++.dg/ext/flexary11.C: Same.
+	* g++.dg/ext/flexary14.C: Same.
+	* g++.dg/ext/flexary16.C: Same.
+	* g++.dg/ext/flexary18.C: Same.
+	* g++.dg/ext/flexary19.C: Same.
+	* g++.dg/ext/flexary7.C: Same.
+	* gcc/testsuite/g++.dg/cpp1z/has-unique-obj-representations1.C: Same.
+	* gcc/testsuite/g++.dg/ubsan/object-size-1.C: Same.
+	* gcc/testsuite/obj-c++.dg/property/at-property-23.mm: Same.
+
+2017-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78896
+	* g++.dg/cpp1z/decomp24.C: New test.
+
+	PR c++/77914
+	* g++.dg/cpp1y/lambda-generic-77914.C: New test.
+	* g++.dg/cpp1y/lambda-generic-dep.C: Add -pedantic to dg-options,
+	expect a warning.
+	* g++.dg/cpp1y/lambda-generic-x.C: Add -Wpedantic to dg-options,
+	expect warnings.
+	* g++.dg/cpp1y/lambda-generic-mixed.C: Add empty dg-options.
+	* g++.dg/cpp1y/pr59636.C: Likewise.
+	* g++.dg/cpp1y/pr60190.C: Likewise.
+
 2017-01-25  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/vect/vect-24.c: Remove xfail on ARM targets.

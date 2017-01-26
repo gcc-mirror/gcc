@@ -663,6 +663,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Florida State University')
         self.add_external_author ('Greg Colvin and Beman Dawes.')
         self.add_external_author ('Hewlett-Packard Company')
+        self.add_external_author ('Intel Corporation')
         self.add_external_author ('Information Technology Industry Council.')
         self.add_external_author ('James Theiler, Brian Gough')
         self.add_external_author ('Makoto Matsumoto and Takuji Nishimura,')
@@ -710,6 +711,7 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libgfortran')
         # libgo is imported from upstream.
         self.add_dir ('libgomp')
+        self.add_dir ('libhsail-rt')
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
@@ -735,6 +737,7 @@ class GCCCmdLine (CmdLine):
             'libgcc',
             'libgfortran',
             'libgomp',
+            'libhsail-rt',
             'libiberty',
             'libitm',
             'libobjc',

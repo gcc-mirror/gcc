@@ -1,4 +1,9 @@
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/declare-simd-4.f90: Add cleanup-modules
+	directive.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* plugin/hsa.h: Moved to top level include.

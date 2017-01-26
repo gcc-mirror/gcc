@@ -1302,6 +1302,11 @@
 (define_mode_iterator SWI1248_AVX512BW
   [QI HI (SI "TARGET_AVX512BW") (DI "TARGET_AVX512BW")])
 
+;; All integer modes with AVX512BW/DQ, even HImode requires DQ.
+(define_mode_iterator SWI1248_AVX512BWDQ2
+  [(QI "TARGET_AVX512DQ") (HI "TARGET_AVX512DQ")
+   (SI "TARGET_AVX512BW") (DI "TARGET_AVX512BW")])
+
 (define_expand "kmov<mskmodesuffix>"
   [(set (match_operand:SWI1248_AVX512BWDQ 0 "nonimmediate_operand")
 	(match_operand:SWI1248_AVX512BWDQ 1 "nonimmediate_operand"))]
@@ -1398,10 +1403,10 @@
 	   (const_string "<MODE>")))])
 
 (define_insn "kadd<mode>"
-  [(set (match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "=k")
-	(plus:SWI1248_AVX512BWDQ
-	  (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")
-	  (match_operand:SWI1248_AVX512BWDQ 2 "register_operand" "k")))
+  [(set (match_operand:SWI1248_AVX512BWDQ2 0 "register_operand" "=k")
+	(plus:SWI1248_AVX512BWDQ2
+	  (match_operand:SWI1248_AVX512BWDQ2 1 "register_operand" "k")
+	  (match_operand:SWI1248_AVX512BWDQ2 2 "register_operand" "k")))
    (unspec [(const_int 0)] UNSPEC_MASKOP)]
   "TARGET_AVX512F"
   "kadd<mskmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
@@ -1427,8 +1432,8 @@
 (define_insn "ktest<mode>"
   [(set (reg:CC FLAGS_REG)
 	(unspec:CC
-	  [(match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "k")
-	   (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")]
+	  [(match_operand:SWI1248_AVX512BWDQ2 0 "register_operand" "k")
+	   (match_operand:SWI1248_AVX512BWDQ2 1 "register_operand" "k")]
 	  UNSPEC_KTEST))]
   "TARGET_AVX512F"
   "ktest<mskmodesuffix>\t{%1, %0|%0, %1}"

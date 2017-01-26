@@ -560,10 +560,11 @@ lra_setup_reload_pseudo_preferenced_hard_reg (int regno,
 }
 
 /* Check that REGNO living through calls and setjumps, set up conflict
-   regs, and clear corresponding bits in PSEUDOS_LIVE_THROUGH_CALLS and
-   PSEUDOS_LIVE_THROUGH_SETJUMPS.  */
+   regs using LAST_CALL_USED_REG_SET, and clear corresponding bits in
+   PSEUDOS_LIVE_THROUGH_CALLS and PSEUDOS_LIVE_THROUGH_SETJUMPS.  */
 static inline void
-check_pseudos_live_through_calls (int regno)
+check_pseudos_live_through_calls (int regno,
+				  HARD_REG_SET last_call_used_reg_set)
 {
   int hr;
 
@@ -571,7 +572,7 @@ check_pseudos_live_through_calls (int regno)
     return;
   sparseset_clear_bit (pseudos_live_through_calls, regno);
   IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs,
-		    call_used_reg_set);
+		    last_call_used_reg_set);
 
   for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
     if (HARD_REGNO_CALL_PART_CLOBBERED (hr, PSEUDO_REGNO_MODE (regno)))
@@ -604,11 +605,13 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   rtx_insn *next;
   rtx link, *link_loc;
   bool need_curr_point_incr;
-
+  HARD_REG_SET last_call_used_reg_set;
+  
   reg_live_out = df_get_live_out (bb);
   sparseset_clear (pseudos_live);
   sparseset_clear (pseudos_live_through_calls);
   sparseset_clear (pseudos_live_through_setjumps);
+  CLEAR_HARD_REG_SET (last_call_used_reg_set);
   REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
   AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
   EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
@@ -795,7 +798,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    need_curr_point_incr
 	      |= mark_regno_live (reg->regno, reg->biggest_mode,
 				  curr_point);
-	    check_pseudos_live_through_calls (reg->regno);
+	    check_pseudos_live_through_calls (reg->regno,
+					      last_call_used_reg_set);
 	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
@@ -831,15 +835,27 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       if (call_p)
 	{
-	  if (flag_ipa_ra)
+	  if (! flag_ipa_ra)
+	    COPY_HARD_REG_SET(last_call_used_reg_set, call_used_reg_set);
+	  else
 	    {
 	      HARD_REG_SET this_call_used_reg_set;
 	      get_call_reg_set_usage (curr_insn, &this_call_used_reg_set,
 				      call_used_reg_set);
 
+	      bool flush = (! hard_reg_set_empty_p (last_call_used_reg_set)
+			    && ! hard_reg_set_equal_p (last_call_used_reg_set,
+						       this_call_used_reg_set));
+
 	      EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
-		IOR_HARD_REG_SET (lra_reg_info[j].actual_call_used_reg_set,
-				  this_call_used_reg_set);
+		{
+		  IOR_HARD_REG_SET (lra_reg_info[j].actual_call_used_reg_set,
+				    this_call_used_reg_set);
+		  if (flush)
+		    check_pseudos_live_through_calls
+		      (j, last_call_used_reg_set);
+		}
+	      COPY_HARD_REG_SET(last_call_used_reg_set, this_call_used_reg_set);
 	    }
 
 	  sparseset_ior (pseudos_live_through_calls,
@@ -866,7 +882,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    need_curr_point_incr
 	      |= mark_regno_live (reg->regno, reg->biggest_mode,
 				  curr_point);
-	    check_pseudos_live_through_calls (reg->regno);
+	    check_pseudos_live_through_calls (reg->regno,
+					      last_call_used_reg_set);
 	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
@@ -1009,7 +1026,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       if (sparseset_cardinality (pseudos_live_through_calls) == 0)
 	break;
       if (sparseset_bit_p (pseudos_live_through_calls, j))
-	check_pseudos_live_through_calls (j);
+	check_pseudos_live_through_calls (j, last_call_used_reg_set);
     }
 
   if (need_curr_point_incr)

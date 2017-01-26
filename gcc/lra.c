@@ -2295,7 +2295,7 @@ void
 lra (FILE *f)
 {
   int i;
-  bool live_p, scratch_p, inserted_p;
+  bool live_p, inserted_p;
 
   lra_dump_file = f;
 
@@ -2332,7 +2332,6 @@ lra (FILE *f)
   lra_constraint_new_regno_start = lra_new_regno_start = max_reg_num ();
   lra_bad_spill_regno_start = INT_MAX;
   remove_scratches ();
-  scratch_p = lra_constraint_new_regno_start != max_reg_num ();
 
   /* A function that has a non-local label that can reach the exit
      block via non-exceptional paths must save all call-saved
@@ -2372,11 +2371,12 @@ lra (FILE *f)
       for (;;)
 	{
 	  /* We should try to assign hard registers to scratches even
-	     if there were no RTL transformations in
-	     lra_constraints.  */
+	     if there were no RTL transformations in lra_constraints.
+	     Also we should check IRA assignments on the first
+	     iteration as they can be wrong because of early clobbers
+	     operands which are ignored in IRA.  */
 	  if (! lra_constraints (lra_constraint_iter == 0)
-	      && (lra_constraint_iter > 1
-		  || (! scratch_p && ! caller_save_needed)))
+	      && lra_constraint_iter > 1)
 	    break;
 	  /* Constraint transformations may result in that eliminable
 	     hard regs become uneliminable and pseudos which use them

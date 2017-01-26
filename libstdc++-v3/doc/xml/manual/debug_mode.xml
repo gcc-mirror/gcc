@@ -656,7 +656,6 @@ namespace std
       };
   } // namespace __cxx1998
 
-  // namespace __debug __attribute__ ((strong));
   inline namespace __debug { }
 }
 </programlisting>

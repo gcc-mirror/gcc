@@ -887,6 +887,77 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 	  && REG_P (i1src) && REGNO (i1src) == FIRST_STACK_REG
 	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
 	return;
+
+      /* Instead of
+	   fld a
+	   fld b
+	   fxch %st(1)
+	 just use
+	   fld b
+	   fld a
+         if possible.  */
+
+      if (REG_P (i1dest)
+	  && REGNO (i1dest) == FIRST_STACK_REG
+	  && MEM_P (SET_SRC (i1set))
+	  && !side_effects_p (SET_SRC (i1set))
+	  && hard_regno == FIRST_STACK_REG + 1
+	  && i1 != BB_HEAD (current_block))
+	{
+	  /* i1 is the last insn that involves stack regs before insn, and
+	     is known to be a load without other side-effects, i.e. fld b
+	     in the above comment.  */
+	  rtx_insn *i2 = NULL;
+	  rtx i2set;
+	  rtx_insn *tmp = PREV_INSN (i1);
+	  rtx_insn *limit = PREV_INSN (BB_HEAD (current_block));
+	  /* Find the previous insn involving stack regs, but don't pass a
+	     block boundary.  */
+	  while (tmp != limit)
+	    {
+	      if (LABEL_P (tmp)
+		  || CALL_P (tmp)
+		  || NOTE_INSN_BASIC_BLOCK_P (tmp)
+		  || (NONJUMP_INSN_P (tmp)
+		      && stack_regs_mentioned (tmp)))
+		{
+		  i2 = tmp;
+		  break;
+		}
+	      tmp = PREV_INSN (tmp);
+	    }
+	  if (i2 != NULL_RTX
+	      && (i2set = single_set (i2)) != NULL_RTX)
+	    {
+	      rtx i2dest = *get_true_reg (&SET_DEST (i2set));
+	      /* If the last two insns before insn that involve
+		 stack regs are loads, where the latter (i1)
+		 pushes onto the register stack and thus
+		 moves the value from the first load (i2) from
+		 %st to %st(1), consider swapping them.  */
+	      if (REG_P (i2dest)
+		  && REGNO (i2dest) == FIRST_STACK_REG
+		  && MEM_P (SET_SRC (i2set))
+		  /* Ensure i2 doesn't have other side-effects.  */
+		  && !side_effects_p (SET_SRC (i2set))
+		  /* And that the two instructions can actually be
+		     swapped, i.e. there shouldn't be any stores
+		     in between i2 and i1 that might alias with
+		     the i1 memory, and the memory address can't
+		     use registers set in between i2 and i1.  */
+		  && !modified_between_p (SET_SRC (i1set), i2, i1))
+		{
+		  /* Move i1 (fld b above) right before i2 (fld a
+		     above.  */
+		  remove_insn (i1);
+		  SET_PREV_INSN (i1) = NULL_RTX;
+		  SET_NEXT_INSN (i1) = NULL_RTX;
+		  set_block_for_insn (i1, NULL);
+		  emit_insn_before (i1, i2);
+		  return;
+		}
+	    }
+	}
     }
 
   /* Avoid emitting the swap if this is the first register stack insn

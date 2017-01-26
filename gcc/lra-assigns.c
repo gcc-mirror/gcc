@@ -1179,9 +1179,19 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	    /* If it is multi-register pseudos they should start on
 	       the same hard register.	*/
 	    || hard_regno != reg_renumber[conflict_regno])
-	  add_to_hard_reg_set (&conflict_set,
-			       lra_reg_info[conflict_regno].biggest_mode,
-			       reg_renumber[conflict_regno]);
+	  {
+	    int conflict_hard_regno = reg_renumber[conflict_regno];
+	    machine_mode biggest_mode = lra_reg_info[conflict_regno].biggest_mode;
+	    int biggest_nregs = hard_regno_nregs[conflict_hard_regno][biggest_mode];
+	    int nregs_diff = (biggest_nregs
+			      - (hard_regno_nregs
+				 [conflict_hard_regno]
+				 [PSEUDO_REGNO_MODE (conflict_regno)]));
+	    add_to_hard_reg_set (&conflict_set,
+				 biggest_mode,
+				 conflict_hard_regno
+				 - (WORDS_BIG_ENDIAN ? nregs_diff : 0));
+	  }
       if (! overlaps_hard_reg_set_p (conflict_set, mode, hard_regno))
 	{
 	  update_lives (regno, false);
