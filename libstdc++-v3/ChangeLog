@@ -1,5 +1,15 @@
 2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/list/operations/78389.cc: Fix for C++11
+	mode.
+	* testsuite/23_containers/priority_queue/requirements/constructible.cc:
+	Mark as unsupported in C++98 mode.
+	* testsuite/23_containers/queue/requirements/constructible.cc:
+	Likewise.
+	* testsuite/23_containers/stack/requirements/constructible.cc:
+	Likewise.
+	* testsuite/25_algorithms/make_heap/movable.cc: Fix for C++11 mode.
+
 	PR libstdc++/79243
 	* include/bits/c++config (literals::string_view_literals::__7): Add.
 	Only declare versioned namespaces for the relevant C++ dialects.

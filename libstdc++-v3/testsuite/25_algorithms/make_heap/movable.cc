@@ -25,7 +25,7 @@ void
 test01()
 {
   int i[] = { 1, 2, 3, 4 };
-  std::function<bool(int, int)> f = std::less<>{};
+  std::function<bool(int, int)> f = std::less<int>{};
   // If this uses a moved-from std::function we'll get an exception:
   std::make_heap(std::begin(i), std::end(i), f);
   std::sort_heap(std::begin(i), std::end(i), f);
