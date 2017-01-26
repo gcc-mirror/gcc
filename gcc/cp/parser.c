@@ -9498,11 +9498,12 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   token = cp_lexer_peek_token (parser->lexer);
 
   /* Build the (type *)null that begins the traditional offsetof macro.  */
-  expr = build_static_cast (build_pointer_type (type), null_pointer_node,
-                            tf_warning_or_error);
+  tree object_ptr
+    = build_static_cast (build_pointer_type (type), null_pointer_node,
+			 tf_warning_or_error);
 
   /* Parse the offsetof-member-designator.  We begin as if we saw "expr->".  */
-  expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DEREF, expr,
+  expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DEREF, object_ptr,
 						 true, &dummy, token->location);
   while (true)
     {
@@ -9554,7 +9555,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   loc = make_location (loc, start_loc, finish_loc);
   /* The result will be an INTEGER_CST, so we need to explicitly
      preserve the location.  */
-  expr = cp_expr (finish_offsetof (expr, loc), loc);
+  expr = cp_expr (finish_offsetof (object_ptr, expr, loc), loc);
 
  failure:
   parser->integral_constant_expression_p = save_ice_p;
