@@ -4125,6 +4125,8 @@ parse_using_directive (tree name_space, tree attribs)
       tree name = get_attribute_name (a);
       if (is_attribute_p ("strong", name))
 	{
+	  warning (OPT_Wdeprecated, "strong using is deprecated; use inline "
+		   "namespaces instead");
 	  if (!toplevel_bindings_p ())
 	    error ("strong using only meaningful at namespace scope");
 	  else if (name_space != error_mark_node)

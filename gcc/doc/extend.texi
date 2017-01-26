@@ -21802,7 +21802,6 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
                         method denoted by a @samp{->*} or @samp{.*} expression.
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
 * Function Multiversioning::   Declaring multiple function versions.
-* Namespace Association:: Strong using-directives for namespace association.
 * Type Traits::         Compiler support for type traits.
 * C++ Concepts::        Improved support for generic programming.
 * Deprecated Features:: Things will disappear from G++.
@@ -22368,8 +22367,6 @@ does not have constructors or destructors.
 
 @end table
 
-See also @ref{Namespace Association}.
-
 @node Function Multiversioning
 @section Function Multiversioning
 @cindex function versions
@@ -22427,51 +22424,6 @@ taken just like a regular function.  GCC takes care of doing the
 dispatching to call the right version at runtime.  Refer to the
 @uref{http://gcc.gnu.org/wiki/FunctionMultiVersioning, GCC wiki on
 Function Multiversioning} for more details.
-
-@node Namespace Association
-@section Namespace Association
-
-@strong{Caution:} The semantics of this extension are equivalent
-to C++ 2011 inline namespaces.  Users should use inline namespaces
-instead as this extension will be removed in future versions of G++.
-
-A using-directive with @code{__attribute ((strong))} is stronger
-than a normal using-directive in two ways:
-
-@itemize @bullet
-@item
-Templates from the used namespace can be specialized and explicitly
-instantiated as though they were members of the using namespace.
-
-@item
-The using namespace is considered an associated namespace of all
-templates in the used namespace for purposes of argument-dependent
-name lookup.
-@end itemize
-
-The used namespace must be nested within the using namespace so that
-normal unqualified lookup works properly.
-
-This is useful for composing a namespace transparently from
-implementation namespaces.  For example:
-
-@smallexample
-namespace std @{
-  namespace debug @{
-    template <class T> struct A @{ @};
-  @}
-  using namespace debug __attribute ((__strong__));
-  template <> struct A<int> @{ @};   // @r{OK to specialize}
-
-  template <class T> void f (A<T>);
-@}
-
-int main()
-@{
-  f (std::A<float>());             // @r{lookup finds} std::f
-  f (std::A<int>());
-@}
-@end smallexample
 
 @node Type Traits
 @section Type Traits
