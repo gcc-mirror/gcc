@@ -1,3 +1,19 @@
+2017-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2017-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): In the bitfield case, fetch the return value
+	from the registers before applying a single big-endian adjustment.
+	Always do a final load for a BLKmode value not larger than a word.
+
+	2017-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): In the bitfield case, if the value comes from
+	a function call and is of an aggregate type returned in registers, do
+	not modify the field mode; extract the value in all cases if the mode
+	is BLKmode and the size is not larger than a word.
+
 2017-01-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_visit_assignment_or_call): Use set_defs_to_varying.
