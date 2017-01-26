@@ -1,3 +1,8 @@
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* brig-builtins.def: Update copyright years.
+	* config/arm/arm_acle_builtins.def: Update copyright years.
+
 2017-01-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/79179
@@ -121,7 +126,7 @@
 	(record_nonwrapping_iv): Improve boundary using above function if no
 	value range information.
 
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* brig-builtins.def: New file.

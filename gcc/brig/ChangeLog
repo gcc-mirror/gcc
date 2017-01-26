@@ -1,4 +1,8 @@
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* Make-lang.in: New file.
