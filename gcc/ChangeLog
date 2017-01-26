@@ -1,3 +1,10 @@
+2017-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-09-03  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* ubsan.c (ubsan_use_new_style_p): Fix check for empty string.
+
 2017-01-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/77439
