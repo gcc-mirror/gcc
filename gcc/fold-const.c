@@ -3147,7 +3147,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 				      TREE_OPERAND (arg1, 0), flags));
 
 	case COND_EXPR:
-	  if (! OP_SAME (1) || ! OP_SAME (2))
+	  if (! OP_SAME (1) || ! OP_SAME_WITH_NULL (2))
 	    return 0;
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
