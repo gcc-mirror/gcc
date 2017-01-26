@@ -1,3 +1,9 @@
+2017-01-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79179
+	* config/rs6000/vsx.md (vsx_extract_<mode>_store): Use wY
+	constraint instead of o for the stxsd instruction.
+
 2017-01-25  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c (altivec_overloaded_builtins): Fix order

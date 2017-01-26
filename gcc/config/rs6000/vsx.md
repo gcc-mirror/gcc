@@ -2323,7 +2323,7 @@
 ;; Optimize storing a single scalar element that is the right location to
 ;; memory
 (define_insn "*vsx_extract_<mode>_store"
-  [(set (match_operand:<VS_scalar> 0 "memory_operand" "=m,Z,o")
+  [(set (match_operand:<VS_scalar> 0 "memory_operand" "=m,Z,wY")
 	(vec_select:<VS_scalar>
 	 (match_operand:VSX_D 1 "register_operand" "d,wv,wb")
 	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
