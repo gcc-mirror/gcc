@@ -1,3 +1,9 @@
+2017-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79199
+	* fold-const.c (operand_equal_p) [COND_EXPR]: Use OP_SAME_WITH_NULL
+	for the third operand.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79236

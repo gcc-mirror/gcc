@@ -1,3 +1,8 @@
+2017-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79199
+	* c-c++-common/Wduplicated-branches-13.c: New test.
+
 2017-01-26  David Sherwood  <david.sherwood@arm.com>
 
 	PR middle-end/79212
