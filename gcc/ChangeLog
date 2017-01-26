@@ -1,3 +1,9 @@
+2017-01-26  David Sherwood  <david.sherwood@arm.com>
+
+	PR middle-end/79212
+	* gimplify.c (omp_notice_variable): Add GOVD_SEEN flag to variables in
+	all contexts.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70465
