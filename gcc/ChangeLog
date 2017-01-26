@@ -1,3 +1,14 @@
+2017-01-26  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78703
+	* gimple-ssa-sprintf.c (adjust_for_width_or_precision): Change
+	to accept adjustment as an array.
+	(get_int_range): New function.
+	(struct directive): Make width and prec arrays.
+	(directive::set_width, directive::set_precision): Call get_int_range.
+	(format_integer, format_floating): Handle width and precision ranges.
+	(format_string, parse_directive): Same.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/79129
