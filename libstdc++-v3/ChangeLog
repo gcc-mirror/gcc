@@ -1,3 +1,16 @@
+2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79190
+	* libsupc++/del_opa.cc (operator delete(void*, std::align_val_t))
+	[!_GLIBCXX_HAVE_ALIGNED_ALLOC && !_GLIBCXX_HAVE_POSIX_MEMALIGN
+	&& !_GLIBCXX_HAVE_MEMALIGN && !_GLIBCXX_HAVE__ALIGNED_MALLOC]:
+	Retrieve original pointer value allocated by malloc.
+	* libsupc++/new_opa.cc [!_GLIBCXX_HAVE_ALIGNED_ALLOC
+	&& !_GLIBCXX_HAVE_POSIX_MEMALIGN && !_GLIBCXX_HAVE_MEMALIGN
+	&& !_GLIBCXX_HAVE__ALIGNED_MALLOC] (aligned_alloc(size_t, size_t)):
+	Define, adjusting pointer value allocated by malloc and storing for
+	retrieval by operator delete.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* libsupc++/eh_atomics.h: Update copyright years.

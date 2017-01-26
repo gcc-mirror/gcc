@@ -1,3 +1,9 @@
+2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79190
+	* g++.dg/cpp1z/aligned-new3.C: Replace operator new so behaviour
+	matches replaced operator delete.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512f-kaddw-1.c: Renamed to ...
