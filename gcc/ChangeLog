@@ -1,3 +1,12 @@
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/78835
+	* dwarf2out.c (prune_unused_types): Mark all functions with DIEs
+	which have direct callers with -fvar-tracking-assignments enabled
+	in the current TU.
+	(resolve_addr): Avoid adding skeleton DIEs for DW_AT_call_origin
+	inside of type units.
+
 2017-01-26  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78703

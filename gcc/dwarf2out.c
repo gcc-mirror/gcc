@@ -27793,6 +27793,25 @@ prune_unused_types (void)
   for (i = 0; base_types.iterate (i, &base_type); i++)
     prune_unused_types_mark (base_type, 1);
 
+  /* For -fvar-tracking-assignments, also set the mark on nodes that could be
+     referenced by DW_TAG_call_site DW_AT_call_origin (i.e. direct call
+     callees).  */
+  cgraph_node *cnode;
+  FOR_EACH_FUNCTION (cnode)
+    if (cnode->referred_to_p (false))
+      {
+	dw_die_ref die = lookup_decl_die (cnode->decl);
+	if (die == NULL || die->die_mark)
+	  continue;
+	for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
+	  if (e->caller != cnode
+	      && opt_for_fn (e->caller->decl, flag_var_tracking_assignments))
+	    {
+	      prune_unused_types_mark (die, 1);
+	      break;
+	    }
+      }
+
   if (debug_str_hash)
     debug_str_hash->empty ();
   if (skeleton_debug_str_hash)
@@ -28694,16 +28713,27 @@ resolve_addr (dw_die_ref die)
 		&& DECL_ABSTRACT_ORIGIN (tdecl) == NULL_TREE
 		&& (cdie = lookup_context_die (DECL_CONTEXT (tdecl))))
 	      {
-		/* Creating a full DIE for tdecl is overly expensive and
-		   at this point even wrong when in the LTO phase
-		   as it can end up generating new type DIEs we didn't
-		   output and thus optimize_external_refs will crash.  */
-		tdie = new_die (DW_TAG_subprogram, cdie, NULL_TREE);
-		add_AT_flag (tdie, DW_AT_external, 1);
-		add_AT_flag (tdie, DW_AT_declaration, 1);
-		add_linkage_attr (tdie, tdecl);
-		add_name_and_src_coords_attributes (tdie, tdecl);
-		equate_decl_number_to_die (tdecl, tdie);
+		dw_die_ref pdie = cdie;
+		/* Make sure we don't add these DIEs into type units.
+		   We could emit skeleton DIEs for context (namespaces,
+		   outer structs/classes) and a skeleton DIE for the
+		   innermost context with DW_AT_signature pointing to the
+		   type unit.  See PR78835.  */
+		while (pdie && pdie->die_tag != DW_TAG_type_unit)
+		  pdie = pdie->die_parent;
+		if (pdie == NULL)
+		  {
+		    /* Creating a full DIE for tdecl is overly expensive and
+		       at this point even wrong when in the LTO phase
+		       as it can end up generating new type DIEs we didn't
+		       output and thus optimize_external_refs will crash.  */
+		    tdie = new_die (DW_TAG_subprogram, cdie, NULL_TREE);
+		    add_AT_flag (tdie, DW_AT_external, 1);
+		    add_AT_flag (tdie, DW_AT_declaration, 1);
+		    add_linkage_attr (tdie, tdecl);
+		    add_name_and_src_coords_attributes (tdie, tdecl);
+		    equate_decl_number_to_die (tdecl, tdie);
+		  }
 	      }
 	    if (tdie)
 	      {

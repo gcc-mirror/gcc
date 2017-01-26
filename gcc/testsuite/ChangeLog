@@ -1,3 +1,8 @@
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/78835
+	* g++.dg/debug/dwarf2/pr78835.C: New test.
+
 2017-01-26  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78703
