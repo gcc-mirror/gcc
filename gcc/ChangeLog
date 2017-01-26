@@ -1,3 +1,31 @@
+2017-01-26  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78703
+	* gimple-ssa-sprintf.c (struct result_range): Add likely and
+	unlikely counters.
+	(struct format_result): Replace number_chars, number_chars_min,
+	and number_chars_max with a single member of struct result_range.
+	Remove bounded.
+	(format_result::operator+=): Adjust.
+	(struct fmtresult): Remove bounded.  Handle likely and unlikely
+	counters.
+	(fmtresult::adjust_for_width_or_precision): New function.
+	(fmtresult:type_max_digits): New function.
+	(bytes_remaining): Handle likely and unlikely counters.
+	(min_bytes_remaining): Remove.
+	(format_percent): Simplify.
+	(format_integer, format_floating): Set likely and unlikely counters.
+	(get_string_length, format_character, format_string): Same.
+	(format_plain, should_warn_p): New function.
+	(maybe_warn): Call should_warn_p.  Update diagnostic messages
+	and handle those for all directives, including plain strings.
+	(format_directive): Handle likely and unlikely counters.
+	Remove unnecessary quoting from diagnostics.  Add an informational
+	note.
+	(add_bytes): Remove.
+	(pass_sprintf_length::compute_format_length): Simplify.
+	(try_substitute_return_value): Handle likely and unlikely counters.
+
 2017-01-26  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c (altivec_overloaded_builtins): Remove

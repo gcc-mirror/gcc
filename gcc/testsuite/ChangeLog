@@ -1,3 +1,19 @@
+2017-01-26  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78703
+	* gcc.dg/format/pr78569.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-5.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-4.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-6.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-7.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-9.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Same.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/68727
