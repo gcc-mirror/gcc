@@ -179,7 +179,9 @@
     namespace __profile { }
     namespace __cxx1998 { }
 
-    namespace __detail { }
+    namespace __detail {
+      namespace __variant { }				// C++17
+    }
 
     namespace rel_ops { }
 
@@ -194,14 +196,15 @@
     
     namespace decimal { }
 
-    namespace chrono { }
-    namespace placeholders { }
-    namespace regex_constants { }
-    namespace this_thread { }
-    inline namespace literals {
-      inline namespace chrono_literals { }
-      inline namespace complex_literals { }
-      inline namespace string_literals { }
+    namespace chrono { }				// C++11
+    namespace placeholders { }				// C++11
+    namespace regex_constants { }			// C++11
+    namespace this_thread { }				// C++11
+    inline namespace literals {				// C++14
+      inline namespace chrono_literals { }		// C++14
+      inline namespace complex_literals { }		// C++14
+      inline namespace string_literals { }		// C++14
+      inline namespace string_view_literals { }		// C++17
     }
   }
 
@@ -282,20 +285,29 @@ namespace std
 
   namespace decimal { inline namespace __7 { } }
 
+#if __cplusplus >= 201103L
   namespace chrono { inline namespace __7 { } }
   namespace placeholders { inline namespace __7 { } }
   namespace regex_constants { inline namespace __7 { } }
   namespace this_thread { inline namespace __7 { } }
 
+#if __cplusplus >= 201402L
   inline namespace literals {
     inline namespace chrono_literals { inline namespace __7 { } }
     inline namespace complex_literals { inline namespace __7 { } }
     inline namespace string_literals { inline namespace __7 { } }
+#if __cplusplus > 201402L
+    inline namespace string_view_literals { inline namespace __7 { } }
+#endif // C++17
   }
+#endif // C++14
+#endif // C++11
 
   namespace __detail {
     inline namespace __7 { }
+#if __cplusplus > 201402L
     namespace __variant { inline namespace __7 { } }
+#endif
   }
 }
 
