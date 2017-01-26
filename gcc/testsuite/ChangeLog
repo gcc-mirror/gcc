@@ -1,5 +1,8 @@
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70465
+	* gcc.target/i386/pr70465.c: New test.
+
 	* brig.dg/dg.exp: Update copyright years.
 	* lib/brig-dg.exp: Update copyright years.
 	* lib/brig.exp: Update copyright years.
