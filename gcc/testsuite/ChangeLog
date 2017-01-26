@@ -1,5 +1,8 @@
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/79129
+	* g++.dg/debug/dwarf2/pr79129.C: New test.
+
 	PR debug/78835
 	* g++.dg/debug/dwarf2/pr78835.C: New test.
 
