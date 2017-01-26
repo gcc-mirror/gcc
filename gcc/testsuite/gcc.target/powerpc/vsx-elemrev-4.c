@@ -3,8 +3,11 @@
 /* { dg-options "-mcpu=power9 -O0" } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
-/* { dg-final { scan-assembler-times "lxvx" 40 } } */
-/* { dg-final { scan-assembler-times "stxvx" 40 } } */
+
+/* Following will match either lxv or lxvx, either stxv or stxvx.
+   This is purposeful as either is fine.  */
+/* { dg-final { scan-assembler-times "lxv" 40 } } */
+/* { dg-final { scan-assembler-times "stxv" 40 } } */
 
 #include <altivec.h>
 
