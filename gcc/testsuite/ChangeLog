@@ -1,3 +1,9 @@
+2017-01-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71290
+	* obj-c++.dg/property/at-property-23.mm: Remove an escaped newline from
+	a dg-error directive.
+
 2017-01-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/79131
