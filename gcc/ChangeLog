@@ -1,3 +1,9 @@
+2017-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79244
+	* tree-vrp.c (remove_range_assertions): Forcefully propagate
+	out SSA names even if abnormal.
+
 2017-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* realmpfr.h: Poison MPFR_RND{N,Z,U,D}.
