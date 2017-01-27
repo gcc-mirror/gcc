@@ -1,3 +1,10 @@
+2017-01-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65484
+	* g++.dg/vect/pr36648.cc: Modify to reflect that the loop is not
+	vectorized on POWER unless hardware misaligned loads are
+	available.
+
 2017-01-27  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/78559
