@@ -1,3 +1,8 @@
+2017-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cilk-plus/CK/fib-opr-overload.cc (main): Change
+	all occurrences of 40 to 32.
+
 2017-01-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/79239
