@@ -1,5 +1,11 @@
 2017-01-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79245
+	* tree-loop-distribution.c (distribute_loop): Apply cost
+	modeling also to detected patterns.
+
+2017-01-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/71433
 	* tree-vrp.c (register_new_assert_for): Revert earlier changes.
 	(compare_assert_loc): New function.

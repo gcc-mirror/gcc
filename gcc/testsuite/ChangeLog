@@ -1,3 +1,9 @@
+2017-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79245
+	* gcc.dg/tree-ssa/ldist-23.c: XFAIL.
+	* gcc.dg/tree-ssa/ldist-25.c: New testcase.
+
 2017-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79199
