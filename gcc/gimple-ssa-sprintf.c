@@ -1498,7 +1498,7 @@ format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
      round-to-nearest mode.  */
   mpfr_t x;
   mpfr_init2 (x, rfmt->p);
-  mpfr_from_real (x, &rv, MPFR_RNDN);
+  mpfr_from_real (x, &rv, GMP_RNDN);
 
   /* Return a value one greater to account for the leading minus sign.  */
   return 1 + get_mpfr_format_length (x, "", prec, spec, 'D');
