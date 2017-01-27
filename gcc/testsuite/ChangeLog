@@ -1,3 +1,8 @@
+2017-01-27  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/79194
+	* gcc.dg/torture/pr79194.c: New test.
+
 2017-01-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR tree-optimization/71374
