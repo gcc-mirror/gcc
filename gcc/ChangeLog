@@ -1,3 +1,9 @@
+2017-01-27  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/78559
+	* combine.c (try_combine): Discard REG_EQUAL and REG_EQUIV for
+	other_insn in combine.
+
 2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* builtin-types.def: Use unsigned_char_type_node for BT_UINT8.  Use
