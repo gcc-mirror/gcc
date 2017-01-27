@@ -564,32 +564,45 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   offset = lra_reg_info[regno].offset;
   CLEAR_HARD_REG_SET (impossible_start_hard_regs);
   EXECUTE_IF_SET_IN_SPARSESET (live_range_hard_reg_pseudos, conflict_regno)
-    if (lra_reg_val_equal_p (conflict_regno, val, offset))
-      {
-	conflict_hr = live_pseudos_reg_renumber[conflict_regno];
-	nregs = (hard_regno_nregs[conflict_hr]
-		 [lra_reg_info[conflict_regno].biggest_mode]);
-	/* Remember about multi-register pseudos.  For example, 2 hard
-	   register pseudos can start on the same hard register but can
-	   not start on HR and HR+1/HR-1.  */
-	for (hr = conflict_hr + 1;
-	     hr < FIRST_PSEUDO_REGISTER && hr < conflict_hr + nregs;
-	     hr++)
-	  SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
-	for (hr = conflict_hr - 1;
-	     hr >= 0 && hr + hard_regno_nregs[hr][biggest_mode] > conflict_hr;
-	     hr--)
-	  SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
-      }
-    else
-      {
-	add_to_hard_reg_set (&conflict_set,
-			     lra_reg_info[conflict_regno].biggest_mode,
-			     live_pseudos_reg_renumber[conflict_regno]);
-	if (hard_reg_set_subset_p (reg_class_contents[rclass],
-				   conflict_set))
-	  return -1;
-      }
+    {
+      conflict_hr = live_pseudos_reg_renumber[conflict_regno];
+      if (lra_reg_val_equal_p (conflict_regno, val, offset))
+	{
+	  conflict_hr = live_pseudos_reg_renumber[conflict_regno];
+	  nregs = (hard_regno_nregs[conflict_hr]
+		   [lra_reg_info[conflict_regno].biggest_mode]);
+	  /* Remember about multi-register pseudos.  For example, 2
+	     hard register pseudos can start on the same hard register
+	     but can not start on HR and HR+1/HR-1.  */
+	  for (hr = conflict_hr + 1;
+	       hr < FIRST_PSEUDO_REGISTER && hr < conflict_hr + nregs;
+	       hr++)
+	    SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
+	  for (hr = conflict_hr - 1;
+	       hr >= 0 && hr + hard_regno_nregs[hr][biggest_mode] > conflict_hr;
+	       hr--)
+	    SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
+	}
+      else
+	{
+	  enum machine_mode biggest_conflict_mode
+	    = lra_reg_info[conflict_regno].biggest_mode;
+	  int biggest_conflict_nregs
+	    = hard_regno_nregs[conflict_hr][biggest_conflict_mode];
+	  
+	  nregs_diff = (biggest_conflict_nregs
+			- (hard_regno_nregs
+			   [conflict_hr]
+			   [PSEUDO_REGNO_MODE (conflict_regno)]));
+	  add_to_hard_reg_set (&conflict_set,
+			       biggest_conflict_mode,
+			       conflict_hr
+			       - (WORDS_BIG_ENDIAN ? nregs_diff : 0));
+	  if (hard_reg_set_subset_p (reg_class_contents[rclass],
+				     conflict_set))
+	    return -1;
+	}
+    }
   EXECUTE_IF_SET_IN_SPARSESET (conflict_reload_and_inheritance_pseudos,
 			       conflict_regno)
     if (!lra_reg_val_equal_p (conflict_regno, val, offset))
