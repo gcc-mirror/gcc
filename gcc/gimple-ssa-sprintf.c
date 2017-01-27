@@ -1686,20 +1686,10 @@ format_floating (const directive &dir, tree arg)
 	prec[0] = -1;
       if (prec[1] < 0)
 	{
-#ifdef HAVE_XFmode
-	  /* When L is specified use long double, otherwise double.  */
-	  unsigned fmtprec
-	    = (dir.modifier == FMT_LEN_L
-	       ? REAL_MODE_FORMAT (XFmode)->p
-	       : REAL_MODE_FORMAT (DFmode)->p);
-#elif defined HAVE_DFmode
-	  /* No long double support, use double precision for both.  */
-	  unsigned fmtprec = REAL_MODE_FORMAT (DFmode)->p;
-#else
-	  /* No long double or double support.  */
-	  unsigned fmtprec = 0;
-#endif
-	  /* The precision of the IEEE 754 double format is 53.
+          unsigned fmtprec
+	    = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)))->p;
+
+	       /* The precision of the IEEE 754 double format is 53.
 	     The precision of all other GCC binary double formats
 	     is 56 or less.  */
 	  prec[1] = fmtprec <= 56 ? 13 : 15;

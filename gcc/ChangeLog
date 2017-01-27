@@ -1,5 +1,10 @@
 2017-01-26  Martin Sebor  <msebor@redhat.com>
 
+	* gimple-ssa-sprintf.c (format_floating): Simplify the computation
+	of precision.
+
+2017-01-26  Martin Sebor  <msebor@redhat.com>
+
 	* gimple-ssa-sprintf.c (format_floating): Test HAVE_XFmode and
 	HAVE_DFmode before using XFmode or DFmode.
 	(parse_directive): Avoid using the z length modifier to avoid
