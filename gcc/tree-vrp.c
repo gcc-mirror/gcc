@@ -6974,8 +6974,20 @@ remove_range_assertions (void)
 		  }
 	      }
 
-	    /* Propagate the RHS into every use of the LHS.  */
-	    replace_uses_by (lhs, var);
+	    /* Propagate the RHS into every use of the LHS.  For SSA names
+	       also propagate abnormals as it merely restores the original
+	       IL in this case (an replace_uses_by would assert).  */
+	    if (TREE_CODE (var) == SSA_NAME)
+	      {
+		imm_use_iterator iter;
+		use_operand_p use_p;
+		gimple *use_stmt;
+		FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		    SET_USE (use_p, var);
+	      }
+	    else
+	      replace_uses_by (lhs, var);
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    gsi_remove (&si, true);

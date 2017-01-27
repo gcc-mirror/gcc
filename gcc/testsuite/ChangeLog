@@ -1,3 +1,8 @@
+2017-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79244
+	* gcc.dg/torture/pr79244.c: New testcase.
+
 2017-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cilk-plus/CK/fib-opr-overload.cc (main): Change
