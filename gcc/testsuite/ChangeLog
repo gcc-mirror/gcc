@@ -1,3 +1,8 @@
+2017-01-27  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/64382
+	* g++.dg/cpp1y/pr64382.C: New test.
+
 2017-01-26  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78703
