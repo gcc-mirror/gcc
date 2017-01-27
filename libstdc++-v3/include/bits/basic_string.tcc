@@ -275,6 +275,70 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+#if __cplusplus >= 201103L
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    void
+    basic_string<_CharT, _Traits, _Alloc>::
+    _M_copy_assign(const basic_string& __str, true_type)
+    {
+      struct _Guard // RAII type for strong exception-safety guarantee.
+      {
+	// Takes ownership of string's original state.
+	_Guard(basic_string* __self)
+	: _M_self(__self), _M_alloc(std::move(__self->_M_get_allocator())),
+	  _M_ptr(__self->_M_data()),
+	  _M_capacity(__self->_M_allocated_capacity), _M_len(__self->length())
+	{
+	  __self->_M_data(__self->_M_local_data());
+	  __self->_M_length(0);
+	}
+
+	// Restores string's original state if _M_release() was not called.
+	~_Guard()
+	{
+	  if (_M_ptr)
+	    {
+	      _M_self->_M_get_allocator() = std::move(_M_alloc);
+	      _M_self->_M_data(_M_ptr);
+	      _M_self->_M_capacity(_M_capacity);
+	      _M_self->_M_length(_M_len);
+	    }
+	}
+
+	_Guard(const _Guard&) = delete;
+	_Guard& operator=(const _Guard&) = delete;
+
+	void _M_release()
+	{
+	  // Original state can be freed now.
+	  _Alloc_traits::deallocate(_M_alloc, _M_ptr, _M_capacity + 1);
+	  _M_ptr = nullptr;
+	}
+
+	basic_string*	_M_self;
+	allocator_type	_M_alloc;
+	pointer		_M_ptr;
+	size_type	_M_capacity;
+	size_type	_M_len;
+      };
+
+      if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
+	  && _M_get_allocator() != __str._M_get_allocator())
+	{
+	  // The propagating allocator cannot free existing storage.
+	  _Guard __guard(this);
+	  _M_get_allocator() = __str._M_get_allocator();
+	  this->_M_assign(__str);
+	  __guard._M_release();
+	}
+      else
+	{
+	  _M_get_allocator() = __str._M_get_allocator();
+	  this->_M_assign(__str);
+	}
+    }
+#endif
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     basic_string<_CharT, _Traits, _Alloc>::
