@@ -3563,9 +3563,13 @@ finish_id_expression (tree id_expression,
 		    ? CP_ID_KIND_UNQUALIFIED_DEPENDENT
 		    : CP_ID_KIND_UNQUALIFIED)));
 
-      /* If the name was dependent on a template parameter, we will
-	 resolve the name at instantiation time.  */
-      if (dependent_p)
+      /* If the name was dependent on a template parameter and we're not in a
+	 default capturing generic lambda within a template, we will resolve the
+	 name at instantiation time.  FIXME: For lambdas, we should defer
+	 building the closure type until instantiation time then we won't need
+	 the extra test here.  */
+      if (dependent_p
+	  && !parsing_default_capturing_generic_lambda_in_template ())
 	{
 	  if (DECL_P (decl)
 	      && any_dependent_type_attributes_p (DECL_ATTRIBUTES (decl)))
