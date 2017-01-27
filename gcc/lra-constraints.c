@@ -878,6 +878,29 @@ regno_val_use_in (unsigned int regno, rtx x)
   return NULL_RTX;
 }
 
+/* Return true if all current insn non-output operands except INS (it
+   has a negaitve end marker) do not use pseudos with the same value
+   as REGNO.  */
+static bool
+check_conflict_input_operands (int regno, signed char *ins)
+{
+  int in;
+  int n_operands = curr_static_id->n_operands;
+
+  for (int nop = 0; nop < n_operands; nop++)
+    if (! curr_static_id->operand[nop].is_operator
+	&& curr_static_id->operand[nop].type != OP_OUT)
+      {
+	for (int i = 0; (in = ins[i]) >= 0; i++)
+	  if (in == nop)
+	    break;
+	if (in < 0
+	    && regno_val_use_in (regno, *curr_id->operand_loc[nop]) != NULL_RTX)
+	  return false;
+      }
+  return true;
+}
+
 /* Generate reloads for matching OUT and INS (array of input operand
    numbers with end marker -1) with reg class GOAL_CLASS, considering
    output operands OUTS (similar array to INS) needing to be in different
@@ -917,7 +940,9 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	     pseudos as reload pseudos can die although original
 	     pseudos still live where reload pseudos dies.  */
 	  if (REG_P (in_rtx) && (int) REGNO (in_rtx) < lra_new_regno_start
-	      && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx)))
+	      && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx))
+	      && (!early_clobber_p
+		  || check_conflict_input_operands(REGNO (in_rtx), ins)))
 	    lra_assign_reg_val (REGNO (in_rtx), REGNO (reg));
 	}
       else
@@ -947,7 +972,10 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 		  && (int) REGNO (subreg_reg) < lra_new_regno_start
 		  && GET_MODE (subreg_reg) == outmode
 		  && SUBREG_BYTE (in_rtx) == SUBREG_BYTE (new_in_reg)
-		  && find_regno_note (curr_insn, REG_DEAD, REGNO (subreg_reg)))
+		  && find_regno_note (curr_insn, REG_DEAD, REGNO (subreg_reg))
+		  && (! early_clobber_p
+		      || check_conflict_input_operands (REGNO (subreg_reg),
+							ins)))
 		lra_assign_reg_val (REGNO (subreg_reg), REGNO (reg));
 	    }
 	}
@@ -1002,6 +1030,8 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	= (! early_clobber_p && ins[1] < 0 && REG_P (in_rtx)
 	   && (int) REGNO (in_rtx) < lra_new_regno_start
 	   && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx))
+	   && (! early_clobber_p
+	       || check_conflict_input_operands (REGNO (in_rtx), ins))
 	   && (out < 0
 	       || regno_val_use_in (REGNO (in_rtx), out_rtx) == NULL_RTX)
 	   && !out_conflict
