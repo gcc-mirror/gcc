@@ -10584,7 +10584,12 @@ linking.
 @opindex fprofile-arcs
 Add code so that program flow @dfn{arcs} are instrumented.  During
 execution the program records how many times each branch and call is
-executed and how many times it is taken or returns.  When the compiled
+executed and how many times it is taken or returns.  On targets that support
+constructors with priority support, profiling properly handles constructors,
+destructors and C++ constructors (and destructors) of classes which are used
+as a type of a global variable.
+
+When the compiled
 program exits it saves this data to a file called
 @file{@var{auxname}.gcda} for each source file.  The data may be used for
 profile-directed optimizations (@option{-fbranch-probabilities}), or for
