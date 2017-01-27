@@ -1,3 +1,9 @@
+2017-01-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79131
+	* lra-assigns.c (find_hard_regno_for_1): Take endianess for into
+	account to calculate conflict_set.
+
 2017-01-27  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/78559

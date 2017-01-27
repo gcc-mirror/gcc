@@ -1,3 +1,9 @@
+2017-01-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79131
+	* gcc.target/arm/pr79131.c: Rename to gcc.target/arm/pr79131-1.c.
+	* gcc.target/arm/pr79131-2.c: New.
+
 2017-01-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/65484
