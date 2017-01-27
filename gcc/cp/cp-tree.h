@@ -6106,6 +6106,8 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 /* Module names are gc'd vectors of trees.  */
 typedef vec<tree, va_gc> GTY(()) module_name_t;
 extern bool module_purview_p ();
+extern bool module_exporting_p ();
+extern void module_proclaim (module_name_t *);
 extern bool push_module_export ();
 extern void pop_module_export ();
 extern void declare_module (location_t, module_name_t *);

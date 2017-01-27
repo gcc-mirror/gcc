@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 
 static module_name_t GTY(()) *declared_module;
+static module_name_t GTY(()) *proclaimer;
 static location_t module_location;
 static int export_depth;
 
@@ -42,6 +43,27 @@ void
 pop_module_export ()
 {
   export_depth--;
+}
+
+bool
+module_exporting_p ()
+{
+  return export_depth != 0;
+}
+
+void
+module_proclaim (module_name_t *owner)
+{
+  if (owner)
+    {
+      push_module_export ();
+      proclaimer = owner;
+    }
+  else
+    {
+      proclaimer = NULL;
+      pop_module_export ();
+    }
 }
 
 /* Return true if we're in the purview of a named module.  */

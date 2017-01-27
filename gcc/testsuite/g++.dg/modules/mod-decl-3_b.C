@@ -1,5 +1,5 @@
 
 namespace Bink
 {
-  import bob; // { dg-error "appear at global scope" }
+  import bob; // { dg-error "only occur" }
 }

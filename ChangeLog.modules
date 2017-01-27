@@ -1,5 +1,17 @@
 2017-01-27  Nathan Sidwell  <nathan@acm.org>
 
+	Parse proclaimed ownership.
+	gcc/cp/
+	* cp-tree.h (module_exporting_p, module_proclaim): Declare.
+	* module.c (proclaimer): New.
+	(module_exporting_p, module_proclaim): New.
+	* parser.c (check_module_outermost): New.
+	(cp_parser_module_declaration, cp_parser_module_export): Call it.
+	(cp_parser_module_proclamation): New.
+	(cp_parser_declaration): Add proclaimed-ownership.
+	gcc/testsuite/
+	* g++.dg/modules/proclaim-1.C: New.
+
 	Parse import & export.  Test infra.
 	gcc/cp/
 	* cp-tree.h (module_purview_p, push_module_export,

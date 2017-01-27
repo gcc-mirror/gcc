@@ -12336,6 +12336,22 @@ cp_parser_module_name (cp_parser *parser)
   return name;
 }
 
+/* Emit an error if we're not at the outermost level.  */
+
+static bool
+check_module_outermost (const cp_token *token, const char *msg)
+{
+  if (current_scope () == global_namespace
+      && !module_exporting_p ()
+      && !current_lang_depth ())
+    return true;
+
+  error_at (token->location,
+	    "%qs may only occur at outermost scope", msg);
+
+  return false;
+}
+
 /* Module-declaration, import-declaration
    module module-name attr-spec-seq-opt ;
    import module-name attr-spec-seq-opt ; */
@@ -12355,9 +12371,11 @@ cp_parser_module_declaration (cp_parser *parser, bool is_export)
 
   if (!name)
     ;
-  else if (current_scope () != global_namespace)
-    error_at (token->location,
-	      "%qE may only appear at global scope", token->u.value);
+  else if (!check_module_outermost (token,
+				    is_import ? "module-import"
+				    : is_export ? "module-export"
+				    : "module-declaration"))
+    ;
   else if (is_import)
     import_module (token->location, name);
   else if (is_export)
@@ -12380,12 +12398,12 @@ cp_parser_module_export (cp_parser *parser)
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   if (!module_purview_p ())
     error_at (token->location,
-	      "%qE may only be used after a module declaration",
+	      "%qE may only occur after a module declaration",
 	      token->u.value);
 
   if (push_module_export ())
     error_at (token->location,
-	      "%qE may only appear once in an export declaration",
+	      "%qE may only occur once in an export declaration",
 	      token->u.value);
 
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
@@ -12403,6 +12421,28 @@ cp_parser_module_export (cp_parser *parser)
     cp_parser_declaration (parser);
 
   pop_module_export ();
+}
+
+/* Proclaimed ownership declaration:
+     extern module module-name : declaration  */
+
+static void
+cp_parser_module_proclamation (cp_parser *parser)
+{
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  cp_lexer_consume_token (parser->lexer);
+
+  module_name_t *name = cp_parser_module_name (parser);
+  
+  if (!cp_parser_require (parser, CPP_COLON, RT_COLON)
+      || !check_module_outermost (token, "proclaimed-ownership"))
+    name = NULL;
+
+  if (name)
+    module_proclaim (name);
+  cp_parser_declaration (parser);
+  if (name)
+    module_proclaim (NULL);
 }
 
 /* Declarations [gram.dcl.dcl] */
@@ -12533,6 +12573,9 @@ cp_parser_declaration (cp_parser* parser)
   else if (token1.keyword == RID_EXTERN
       && cp_parser_is_pure_string_literal (&token2))
     cp_parser_linkage_specification (parser);
+  else if (token1.keyword == RID_EXTERN
+	   && token2.keyword == RID_MODULE)
+    cp_parser_module_proclamation (parser);
   /* If the next token is `template', then we have either a template
      declaration, an explicit instantiation, or an explicit
      specialization.  */
