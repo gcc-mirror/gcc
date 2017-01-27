@@ -1,3 +1,8 @@
+2017-01-27  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi (-fprofile-arcs): Document profiling support
+	for {cd}tors and C++ {cd}tors.
+
 2017-01-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("*setmem_long_and")
