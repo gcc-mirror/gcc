@@ -1,3 +1,9 @@
+2017-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79199
+	* c-c++-common/Wduplicated-branches-13.c: Require int32plus effective
+	target.  Use 4294967293U instead of 4294967293.
+
 2017-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71433
