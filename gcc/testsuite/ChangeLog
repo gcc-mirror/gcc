@@ -1,3 +1,7 @@
+2017-01-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/md/setmem_long-1.c: Remove xfail, skip with -O0.
+
 2017-01-27  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/64382
