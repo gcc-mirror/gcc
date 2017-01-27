@@ -1,5 +1,11 @@
 2017-01-27  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR tree-optimization/71374
+	* lra-constraints.c (check_conflict_input_operands): New.
+	(match_reload): Use it.
+
+2017-01-27  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR target/79131
 	* lra-assigns.c (find_hard_regno_for_1): Take endianess for into
 	account to calculate conflict_set.
