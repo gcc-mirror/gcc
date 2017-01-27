@@ -1,4 +1,11 @@
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* configure.ac: Moved the white list of enabling BRIG FE to
+	libhsail-rt/configure.tgt.
+	* configure: Regenerated.
+	* MAINTAINERS: Updated maintainers for BRIG FE and libhsail-rt.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* Makefile.def (target_modules): Added libhsail-rt.

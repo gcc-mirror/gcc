@@ -1,4 +1,4 @@
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* hsa.h: Moved here from libgomp/plugin/hsa.h.

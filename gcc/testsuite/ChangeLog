@@ -273,7 +273,7 @@
 	PR tree-optimization/79159
 	* g++.dg/tree-ssa/pr79159.C: New test.
 
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* lib/brig-dg.exp: New file.

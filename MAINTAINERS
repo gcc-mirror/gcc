@@ -143,6 +143,8 @@ C front end/ISO C99	Joseph Myers		<joseph@codesourcery.com>
 C front end/ISO C99	Richard Henderson	<rth@redhat.com>
 Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
+BRIG (HSAIL) front end	Pekka Jääskeläinen	<pekka.jaaskelainen@parmance.com>
+BRIG (HSAIL) front end 	Martin Jambor		<mjambor@suse.cz>
 c++			Jason Merrill		<jason@redhat.com>
 c++			Nathan Sidwell		<nathan@acm.org>
 go			Ian Lance Taylor	<ian@airs.com>
@@ -170,6 +172,8 @@ libobjc			Andrew Pinski		<pinskia@gmail.com>
 libquadmath		Tobias Burnus		<burnus@net-b.de>
 libquadmath		Jakub Jelinek		<jakub@redhat.com>
 libvtv			Caroline Tice		<cmtice@google.com>
+libhsail-rt		Pekka Jääskeläinen	<pekka.jaaskelainen@parmance.com>
+libhsail-rt		Martin Jambor		<mjambor@suse.cz>
 line map		Dodji Seketeli		<dodji@redhat.com>
 soft-fp			Joseph Myers		<joseph@codesourcery.com>
 scheduler (+ haifa)	Jim Wilson		<wilson@tuliptree.org>
