@@ -1,3 +1,8 @@
+2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* builtin-types.def: Use unsigned_char_type_node for BT_UINT8.  Use
+	uint16_type_node for BT_UINT16.
+
 2017-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/sourcebuild.texi (Testsuites): Add "GIMPLE Tests" and
