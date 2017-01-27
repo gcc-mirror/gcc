@@ -1863,8 +1863,6 @@ one_cprop_pass (void)
 	      }
 	}
 
-      changed |= bypass_conditional_jumps ();
-
       while (!uncond_traps.is_empty ())
 	{
 	  rtx_insn *insn = uncond_traps.pop ();
@@ -1872,6 +1870,8 @@ one_cprop_pass (void)
 	  remove_edge (split_block (to_split, insn));
 	  emit_barrier_after_bb (to_split);
 	}
+
+      changed |= bypass_conditional_jumps ();
 
       FREE_REG_SET (reg_set_bitmap);
       free_cprop_mem ();
