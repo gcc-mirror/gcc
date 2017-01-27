@@ -863,6 +863,8 @@ here; FIXME: document the others.
 * profopt Testing:: Support for testing profile-directed optimizations.
 * compat Testing::  Support for testing binary compatibility.
 * Torture Tests::   Support for torture testing using multiple options.
+* GIMPLE Tests::    Support for testing GIMPLE passes.
+* RTL Tests::       Support for testing RTL passes.
 @end menu
 
 @node Test Idioms
@@ -2931,3 +2933,94 @@ set ADDITIONAL_TORTURE_OPTIONS  [list \
   @{ -O2 -ftree-loop-linear @} \
   @{ -O2 -fpeel-loops @} ]
 @end smallexample
+
+@node GIMPLE Tests
+@section Support for testing GIMPLE passes
+
+As of gcc 7, C functions can be tagged with @code{__GIMPLE} to indicate
+that the function body will be GIMPLE, rather than C.  The compiler requires
+the option @option{-fgimple} to enable this functionality.  For example:
+
+@smallexample
+/* @{ dg-do compile @} */
+/* @{ dg-options "-O -fgimple" @} */
+
+void __GIMPLE (startwith ("dse2")) foo ()
+@{
+  int a;
+
+bb_2:
+  if (a > 4)
+    goto bb_3;
+  else
+    goto bb_4;
+
+bb_3:
+  a_2 = 10;
+  goto bb_5;
+
+bb_4:
+  a_3 = 20;
+
+bb_5:
+  a_1 = __PHI (bb_3: a_2, bb_4: a_3);
+  a_4 = a_1 + 4;
+
+  return;
+@}
+@end smallexample
+
+The @code{startwith} argument indicates at which pass to begin.
+
+Use the dump modifier @code{-gimple} (e.g. @option{-fdump-tree-all-gimple})
+to make tree dumps more closely follow the format accepted by the GIMPLE
+parser.
+
+Example DejaGnu tests of GIMPLE can be seen in the source tree at
+@file{gcc/testsuite/gcc.dg/gimplefe-*.c}.
+
+The @code{__GIMPLE} parser is integrated with the C tokenizer and
+preprocessor, so it should be possible to use macros to build out
+test coverage.
+
+@node RTL Tests
+@section Support for testing RTL passes
+
+As of gcc 7, C functions can be tagged with @code{__RTL} to indicate that the
+function body will be RTL, rather than C.  For example:
+
+@smallexample
+double __RTL (startwith ("ira")) test (struct foo *f, const struct bar *b)
+@{
+  (function "test"
+     [...snip; various directives go in here...]
+  ) ;; function "test"
+@}
+@end smallexample
+
+The @code{startwith} argument indicates at which pass to begin.
+
+The parser expects the RTL body to be in the format emitted by this
+dumping function:
+
+@smallexample
+DEBUG_FUNCTION void
+print_rtx_function (FILE *outfile, function *fn, bool compact);
+@end smallexample
+
+when "compact" is true.  So you can capture RTL in the correct format
+from the debugger using:
+
+@smallexample
+(gdb) print_rtx_function (stderr, cfun, true);
+@end smallexample
+
+and copy and paste the output into the body of the C function.
+
+Example DejaGnu tests of RTL can be seen in the source tree under
+@file{gcc/testsuite/gcc.dg/rtl}.
+
+The @code{__RTL} parser is not integrated with the C tokenizer or
+preprocessor, and works simply by reading the relevant lines within
+the braces.  In particular, the RTL body must be on separate lines from
+the enclosing braces, and the preprocessor is not usable within it.

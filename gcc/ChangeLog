@@ -1,3 +1,10 @@
+2017-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/sourcebuild.texi (Testsuites): Add "GIMPLE Tests" and
+	"RTL Tests" to menu.
+	(GIMPLE Tests): New node.
+	(RTL Tests): New node.
+
 2017-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79245
