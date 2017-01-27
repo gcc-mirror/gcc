@@ -5032,18 +5032,6 @@ register_new_assert_for (tree name, tree expr,
 	      loc->si = si;
 	      return;
 	    }
-	  /* If we have the same assertion on all incoming edges of a BB
-	     instead insert it at the beginning of it.  */
-	  if (e && loc->e
-	      && e != loc->e
-	      && dest_bb == loc->e->dest
-	      && EDGE_COUNT (dest_bb->preds) == 2)
-	    {
-	      loc->bb = dest_bb;
-	      loc->e = NULL;
-	      loc->si = gsi_none ();
-	      return;
-	    }
 	}
 
       /* Update the last node of the list and move to the next one.  */
@@ -6473,6 +6461,41 @@ process_assert_insertions_for (tree name, assert_locus *loc)
   gcc_unreachable ();
 }
 
+/* Qsort helper for sorting assert locations.  */
+
+static int
+compare_assert_loc (const void *pa, const void *pb)
+{
+  assert_locus * const a = *(assert_locus * const *)pa;
+  assert_locus * const b = *(assert_locus * const *)pb;
+  if (! a->e && b->e)
+    return 1;
+  else if (a->e && ! b->e)
+    return -1;
+
+  /* Sort after destination index.  */
+  if (! a->e && ! b->e)
+    ;
+  else if (a->e->dest->index > b->e->dest->index)
+    return 1;
+  else if (a->e->dest->index < b->e->dest->index)
+    return -1;
+
+  /* Sort after comp_code.  */
+  if (a->comp_code > b->comp_code)
+    return 1;
+  else if (a->comp_code < b->comp_code)
+    return -1;
+
+  /* Break the tie using hashing and source/bb index.  */
+  hashval_t ha = iterative_hash_expr (a->expr, iterative_hash_expr (a->val, 0));
+  hashval_t hb = iterative_hash_expr (b->expr, iterative_hash_expr (b->val, 0));
+  if (ha == hb)
+    return (a->e && b->e
+	    ? a->e->src->index - b->e->src->index
+	    : a->bb->index - b->bb->index);
+  return ha - hb;
+}
 
 /* Process all the insertions registered for every name N_i registered
    in NEED_ASSERT_FOR.  The list of assertions to be inserted are
@@ -6494,13 +6517,66 @@ process_assert_insertions (void)
       assert_locus *loc = asserts_for[i];
       gcc_assert (loc);
 
-      while (loc)
+      auto_vec<assert_locus *, 16> asserts;
+      for (; loc; loc = loc->next)
+	asserts.safe_push (loc);
+      asserts.qsort (compare_assert_loc);
+
+      /* Push down common asserts to successors and remove redundant ones.  */
+      unsigned ecnt = 0;
+      assert_locus *common = NULL;
+      unsigned commonj = 0;
+      for (unsigned j = 0; j < asserts.length (); ++j)
 	{
-	  assert_locus *next = loc->next;
+	  loc = asserts[j];
+	  if (! loc->e)
+	    common = NULL;
+	  else if (! common
+		   || loc->e->dest != common->e->dest
+		   || loc->comp_code != common->comp_code
+		   || ! operand_equal_p (loc->val, common->val, 0)
+		   || ! operand_equal_p (loc->expr, common->expr, 0))
+	    {
+	      commonj = j;
+	      common = loc;
+	      ecnt = 1;
+	    }
+	  else if (loc->e == asserts[j-1]->e)
+	    {
+	      /* Remove duplicate asserts.  */
+	      free (asserts[j-1]);
+	      asserts[j-1] = NULL;
+	    }
+	  else
+	    {
+	      ecnt++;
+	      if (EDGE_COUNT (common->e->dest->preds) == ecnt)
+		{
+		  /* We have the same assertion on all incoming edges of a BB.
+		     Insert it at the beginning of that block.  */
+		  loc->bb = loc->e->dest;
+		  loc->e = NULL;
+		  loc->si = gsi_none ();
+		  common = NULL;
+		  /* Clear asserts commoned.  */
+		  for (; commonj != j; ++commonj)
+		    if (asserts[commonj])
+		      {
+			free (asserts[commonj]);
+			asserts[commonj] = NULL;
+		      }
+		}
+	    }
+	}
+
+      for (unsigned j = 0; j < asserts.length (); ++j)
+	{
+	  loc = asserts[j];
+	  if (! loc)
+	    continue;
 	  update_edges_p |= process_assert_insertions_for (ssa_name (i), loc);
-	  free (loc);
-	  loc = next;
 	  num_asserts++;
+	  free (loc);
 	}
     }
 

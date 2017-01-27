@@ -1,5 +1,14 @@
 2017-01-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71433
+	* tree-vrp.c (register_new_assert_for): Revert earlier changes.
+	(compare_assert_loc): New function.
+	(process_assert_insertions): Sort and optimize assert locations
+	to remove duplicates and push down identical assertions on
+	edges to their destination block.
+
+2017-01-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79244
 	* tree-vrp.c (remove_range_assertions): Forcefully propagate
 	out SSA names even if abnormal.
