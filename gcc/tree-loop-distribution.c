@@ -1548,8 +1548,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       for (int j = i + 1;
 	   partitions.iterate (j, &partition); ++j)
 	{
-	  if (!partition_builtin_p (partition)
-	      && similar_memory_accesses (rdg, into, partition))
+	  if (similar_memory_accesses (rdg, into, partition))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
