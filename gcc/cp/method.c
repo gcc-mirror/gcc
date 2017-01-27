@@ -1855,6 +1855,7 @@ explain_implicit_non_constexpr (tree decl)
 void
 deduce_inheriting_ctor (tree decl)
 {
+  decl = DECL_ORIGIN (decl);
   gcc_assert (DECL_INHERITED_CTOR (decl));
   tree spec;
   bool trivial, constexpr_, deleted;
@@ -1868,6 +1869,13 @@ deduce_inheriting_ctor (tree decl)
     deleted = true;
   DECL_DELETED_FN (decl) = deleted;
   TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl), spec);
+
+  tree clone;
+  FOR_EACH_CLONE (clone, decl)
+    {
+      DECL_DELETED_FN (clone) = deleted;
+      TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
+    }
 }
 
 /* Implicitly declare the special function indicated by KIND, as a
@@ -1968,10 +1976,10 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 
   bool trivial_p = false;
 
-  if (inherited_ctor && TREE_CODE (inherited_ctor) == TEMPLATE_DECL)
+  if (inherited_ctor)
     {
-      /* For an inheriting constructor template, just copy these flags from
-	 the inherited constructor template for now.  */
+      /* For an inheriting constructor, just copy these flags from the
+	 inherited constructor until deduce_inheriting_ctor.  */
       raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (inherited_ctor));
       deleted_p = DECL_DELETED_FN (inherited_ctor);
       constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);

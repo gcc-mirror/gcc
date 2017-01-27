@@ -1197,8 +1197,6 @@ add_method (tree type, tree method, tree using_decl)
 			  SET_DECL_INHERITED_CTOR
 			    (fn, ovl_cons (DECL_INHERITED_CTOR (method),
 					   DECL_INHERITED_CTOR (fn)));
-			  /* Adjust deletedness and such.  */
-			  deduce_inheriting_ctor (fn);
 			  /* And discard the new one.  */
 			  return false;
 			}
