@@ -1,3 +1,12 @@
+2017-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78771 - ICE with inherited constructor.
+	* call.c (build_over_call): Call deduce_inheriting_ctor here.
+	* pt.c (tsubst_decl): Not here.
+	* class.c (add_method): Or here.
+	* method.c (deduce_inheriting_ctor): Handle clones.
+	(implicitly_declare_fn): Don't deduce inheriting ctors yet.
+
 2017-01-27  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/64382
