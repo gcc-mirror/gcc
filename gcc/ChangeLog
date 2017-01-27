@@ -1,3 +1,9 @@
+2017-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* realmpfr.h: Poison MPFR_RND{N,Z,U,D}.
+	* gimple-ssa-sprintf.c (format_floating_max): Use GMP_RNDN
+	instead of MPFR_RNDN.
+
 2017-01-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/79239
