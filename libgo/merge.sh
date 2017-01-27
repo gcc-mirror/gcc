@@ -71,7 +71,9 @@ merge() {
   elif test -f ${old}; then
     # The file exists in the old version.
     if ! test -f ${libgo}; then
-      echo "merge.sh: $name: skipping: exists in old and new git, but not in libgo"
+      if ! cmp -s ${old} ${new}; then
+        echo "merge.sh: $name: skipping: exists in old and new git, but not in libgo"
+      fi
       continue
     fi
     if cmp -s ${old} ${libgo}; then
