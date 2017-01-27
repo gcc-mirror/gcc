@@ -3878,33 +3878,52 @@ Unary_expression::do_is_static_initializer() const
   if (this->op_ == OPERATOR_MULT)
     return false;
   else if (this->op_ == OPERATOR_AND)
-    {
-      // The address of a global variable can used as a static
-      // initializer.
-      Var_expression* ve = this->expr_->var_expression();
-      if (ve != NULL)
-	{
-	  Named_object* no = ve->named_object();
-	  return no->is_variable() && no->var_value()->is_global();
-	}
-
-      // The address of a composite literal can be used as a static
-      // initializer if the composite literal is itself usable as a
-      // static initializer.
-      if (this->expr_->is_composite_literal()
-	  && this->expr_->is_static_initializer())
-	return true;
-
-      // The address of a string constant can be used as a static
-      // initializer.  This can not be written in Go itself but this
-      // is used when building a type descriptor.
-      if (this->expr_->string_expression() != NULL)
-	return true;
-
-      return false;
-    }
+    return Unary_expression::base_is_static_initializer(this->expr_);
   else
     return this->expr_->is_static_initializer();
+}
+
+// Return whether the address of EXPR can be used as a static
+// initializer.
+
+bool
+Unary_expression::base_is_static_initializer(Expression* expr)
+{
+  // The address of a field reference can be a static initializer if
+  // the base can be a static initializer.
+  Field_reference_expression* fre = expr->field_reference_expression();
+  if (fre != NULL)
+    return Unary_expression::base_is_static_initializer(fre->expr());
+
+  // The address of an index expression can be a static initializer if
+  // the base can be a static initializer and the index is constant.
+  Array_index_expression* aind = expr->array_index_expression();
+  if (aind != NULL)
+    return (aind->end() == NULL
+	    && aind->start()->is_constant()
+	    && Unary_expression::base_is_static_initializer(aind->array()));
+
+  // The address of a global variable can be a static initializer.
+  Var_expression* ve = expr->var_expression();
+  if (ve != NULL)
+    {
+      Named_object* no = ve->named_object();
+      return no->is_variable() && no->var_value()->is_global();
+    }
+
+  // The address of a composite literal can be used as a static
+  // initializer if the composite literal is itself usable as a
+  // static initializer.
+  if (expr->is_composite_literal() && expr->is_static_initializer())
+    return true;
+
+  // The address of a string constant can be used as a static
+  // initializer.  This can not be written in Go itself but this is
+  // used when building a type descriptor.
+  if (expr->string_expression() != NULL)
+    return true;
+
+  return false;
 }
 
 // Apply unary opcode OP to UNC, setting NC.  Return true if this
@@ -12460,6 +12479,17 @@ Struct_construction_expression::do_is_static_initializer() const
       if (*pv != NULL && !(*pv)->is_static_initializer())
 	return false;
     }
+
+  const Struct_field_list* fields = this->type_->struct_type()->fields();
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf)
+    {
+      // There are no constant constructors for interfaces.
+      if (pf->type()->interface_type() != NULL)
+	return false;
+    }
+
   return true;
 }
 
@@ -12550,7 +12580,7 @@ Struct_construction_expression::do_flatten(Gogo*, Named_object*,
     return this;
 
   // If this is a constant struct, we don't need temporaries.
-  if (this->is_constant_struct())
+  if (this->is_constant_struct() || this->is_static_initializer())
     return this;
 
   Location loc = this->location();
@@ -12701,6 +12731,11 @@ Array_construction_expression::do_is_static_initializer() const
 {
   if (this->vals() == NULL)
     return true;
+
+  // There are no constant constructors for interfaces.
+  if (this->type_->array_type()->element_type()->interface_type() != NULL)
+    return false;
+
   for (Expression_list::const_iterator pv = this->vals()->begin();
        pv != this->vals()->end();
        ++pv)
@@ -12765,7 +12800,7 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
     return this;
 
   // If this is a constant array, we don't need temporaries.
-  if (this->is_constant_array())
+  if (this->is_constant_array() || this->is_static_initializer())
     return this;
 
   Location loc = this->location();
