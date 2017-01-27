@@ -1700,7 +1700,9 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[01]**;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_Alloc_hiderC[12]EP[cw]RKS3_;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_M*;
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[3-9]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE13*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE14_M_replace_aux*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[5-9]*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[2-9]*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EPK*;
@@ -1952,6 +1954,9 @@ GLIBCXX_3.4.23 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_[jmy]RKS3_;
     _ZNSsC[12]ERKSs[jmy]RKSaIcE;
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
+
+    # basic_string<C, T, A>::_M_copy_assign(const basic_string&, {true,false}_type)
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE14_M_copy_assign*;
 
 #ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # std::future symbols are exported in the first version to support

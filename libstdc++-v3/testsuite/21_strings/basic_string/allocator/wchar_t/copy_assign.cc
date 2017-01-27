@@ -22,6 +22,7 @@
 #include <string>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
+#include <ext/throw_allocator.h>
  
 using C = wchar_t;
 const C c = L'a';
@@ -99,9 +100,33 @@ void test02()
   VERIFY(1 == v5.get_allocator().get_personality());
 }
 
+void test03()
+{
+  // PR libstdc++/79254
+  using throw_alloc = __gnu_cxx::throw_allocator_limit<C>;
+  typedef propagating_allocator<C, true, throw_alloc> alloc_type;
+  typedef std::basic_string<C, traits, alloc_type> test_type;
+  alloc_type a1(1), a2(2);
+  throw_alloc::set_limit(2); // Throw on third allocation (during assignment).
+  const C* s1 = L"a string that is longer than a small string";
+  const C* s2 = L"another string that is longer than a small string";
+  test_type v1(s1, a1);
+  test_type v2(s2, a2);
+  bool caught = false;
+  try {
+    v1 = v2;
+  } catch (__gnu_cxx::forced_error&) {
+    caught = true;
+  }
+  VERIFY( caught );
+  VERIFY( v1 == s1 );
+  VERIFY( v1.get_allocator() == a1 );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }

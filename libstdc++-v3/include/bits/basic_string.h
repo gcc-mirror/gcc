@@ -384,7 +384,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
       void
-      _M_assign(const basic_string& __rcs);
+      _M_assign(const basic_string&);
 
       void
       _M_mutate(size_type __pos, size_type __len1, const _CharT* __s,
@@ -392,6 +392,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       void
       _M_erase(size_type __pos, size_type __n);
+
+#if __cplusplus >= 201103L
+      void
+      _M_copy_assign(const basic_string& __str, /* pocca = */ true_type);
+
+      void
+      _M_copy_assign(const basic_string& __str, /* pocca = */ false_type)
+      { this->_M_assign(__str); }
+#endif
 
     public:
       // Construct/copy/destroy:
@@ -627,20 +636,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       operator=(const basic_string& __str)
       {
 #if __cplusplus >= 201103L
-	if (_Alloc_traits::_S_propagate_on_copy_assign())
-	  {
-	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
-		&& _M_get_allocator() != __str._M_get_allocator())
-	      {
-		// replacement allocator cannot free existing storage
-		_M_destroy(_M_allocated_capacity);
-		_M_data(_M_local_data());
-		_M_set_length(0);
-	      }
-	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
-	  }
+	_M_copy_assign(__str,
+	    typename _Alloc_traits::propagate_on_container_copy_assignment());
+#else
+	this->_M_assign(__str);
 #endif
-	return this->assign(__str);
+	return *this;
       }
 
       /**

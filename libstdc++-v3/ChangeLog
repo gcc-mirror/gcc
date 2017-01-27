@@ -1,3 +1,22 @@
+2017-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79254
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign): New overloaded functions to perform
+	copy assignment.
+	(basic_string::operator=(const basic_string&)): Dispatch to
+	_M_copy_assign.
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign(const basic_string&, true_type)):
+	Define, performing rollback on exception.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Test exception-safety guarantee.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Likewise.
+	* testsuite/util/testsuite_allocator.h (uneq_allocator::swap): Make
+	std::swap visible.
+
 2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70607
