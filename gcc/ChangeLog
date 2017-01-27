@@ -1,3 +1,10 @@
+2017-01-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/79239
+        * arm.c (arm_option_override): Don't call build_target_option_node
+        until after doing all option overrides.
+        (arm_valid_target_attribute_tree): Likewise.
+
 2017-01-27  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi (-fprofile-arcs): Document profiling support

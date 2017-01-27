@@ -3256,6 +3256,7 @@ arm_option_override (void)
 {
   static const enum isa_feature fpu_bitlist[] = { ISA_ALL_FPU, isa_nobit };
   static const enum isa_feature quirk_bitlist[] = { ISA_ALL_QUIRKS, isa_nobit};
+  cl_target_option opts;
 
   isa_quirkbits = sbitmap_alloc (isa_num_bits);
   arm_initialize_isa (isa_quirkbits, quirk_bitlist);
@@ -3283,14 +3284,9 @@ arm_option_override (void)
       arm_fpu_index = (enum fpu_type) fpu_index;
     }
 
-  /* Create the default target_options structure.  We need this early
-     to configure the overall build target.  */
-  target_option_default_node = target_option_current_node
-    = build_target_option_node (&global_options);
-
-  arm_configure_build_target (&arm_active_target,
-			      TREE_TARGET_OPTION (target_option_default_node),
-			      &global_options_set, true);
+  cl_target_option_save (&opts, &global_options);
+  arm_configure_build_target (&arm_active_target, &opts, &global_options_set,
+			      true);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -3646,9 +3642,10 @@ arm_option_override (void)
   arm_option_check_internal (&global_options);
   arm_option_params_internal ();
 
-  /* Resynchronize the saved target options.  */
-  cl_target_option_save (TREE_TARGET_OPTION (target_option_default_node),
-			 &global_options);
+  /* Create the default target_options structure.  */
+  target_option_default_node = target_option_current_node
+    = build_target_option_node (&global_options);
+
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
 
@@ -30347,22 +30344,18 @@ tree
 arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
 				 struct gcc_options *opts_set)
 {
-  tree t;
+  struct cl_target_option cl_opts;
 
   if (!arm_valid_target_attribute_rec (args, opts))
     return NULL_TREE;
 
-  t = build_target_option_node (opts);
-  arm_configure_build_target (&arm_active_target, TREE_TARGET_OPTION (t),
-			      opts_set, false);
+  cl_target_option_save (&cl_opts, opts);
+  arm_configure_build_target (&arm_active_target, &cl_opts, opts_set, false);
   arm_option_check_internal (opts);
   /* Do any overrides, such as global options arch=xxx.  */
   arm_option_override_internal (opts, opts_set);
 
-  /* Resynchronize the saved target options.  */
-  cl_target_option_save (TREE_TARGET_OPTION (t), opts);
-
-  return t;
+  return build_target_option_node (opts);
 }
 
 static void 
