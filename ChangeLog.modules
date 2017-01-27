@@ -1,3 +1,25 @@
+2017-01-27  Nathan Sidwell  <nathan@acm.org>
+
+	Parse import & export.  Test infra.
+	gcc/cp/
+	* cp-tree.h (module_purview_p, push_module_export,
+	pop_module_export, declare_module, import_module,
+	export_module): Declare.
+	* module.c (export_depth): New.
+	(module_purview_p, push_module_export, pop_module_export): New
+	(declare_module_name): Renme to ...
+	(declare_module): ... here.
+	(import_module, export_module): Stubs.
+	* parser.c (cp_parser_module_declaration): Add IS_EXPORT
+	parm. Deal with imports & exports.
+	(cp_parser_module_export): New.
+	(cp_parser_declaration): Allow module import, export.
+	gcc/testsuite/
+	* g++.dg/dg.exp: Prune module tests.
+	* g++.dg/modules/modules.exp: New.
+	* g++.dg/modules/mod-decl-2_[ab].C: New.
+	* g++.dg/modules/mod-decl-3_[ab].C: New.
+
 2017-01-25  Nathan Sidwell  <nathan@acm.org>
 
 	Parse module-declaration.

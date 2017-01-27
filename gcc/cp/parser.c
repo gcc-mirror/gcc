@@ -12336,13 +12336,17 @@ cp_parser_module_name (cp_parser *parser)
   return name;
 }
 
-/* Module-declaration:
-   module module-name attr-spec-seq-opt ;  */
+/* Module-declaration, import-declaration
+   module module-name attr-spec-seq-opt ;
+   import module-name attr-spec-seq-opt ; */
 
 static void
-cp_parser_module_declaration (cp_parser *parser)
+cp_parser_module_declaration (cp_parser *parser, bool is_export)
 {
-  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE));
+  bool is_import = cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT);
+  
+  gcc_assert (is_import
+	      || cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE));
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   module_name_t *name = cp_parser_module_name (parser);
@@ -12353,12 +12357,52 @@ cp_parser_module_declaration (cp_parser *parser)
     ;
   else if (current_scope () != global_namespace)
     error_at (token->location,
-	      "module-declaration may only appear at global scope");
+	      "%qE may only appear at global scope", token->u.value);
+  else if (is_import)
+    import_module (token->location, name);
+  else if (is_export)
+    export_module (token->location, name);
   else
+    declare_module (token->location, name);
+  (void)std_attrs; // FIXME: process attributes?
+}
+
+/*  export-declaration.
+
+    export module-declaration
+    export declaration
+    export { declaration-seq-opt }  */
+
+static void
+cp_parser_module_export (cp_parser *parser)
+{
+  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT));
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  if (!module_purview_p ())
+    error_at (token->location,
+	      "%qE may only be used after a module declaration",
+	      token->u.value);
+
+  if (push_module_export ())
+    error_at (token->location,
+	      "%qE may only appear once in an export declaration",
+	      token->u.value);
+
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
+    cp_parser_module_declaration (parser, true);
+  else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
-      (void)std_attrs; // FIXME: process attributes?
-      declare_module_name (token->location, name);
+      cp_ensure_no_omp_declare_simd (parser);
+      cp_ensure_no_oacc_routine (parser);
+
+      cp_lexer_consume_token (parser->lexer);
+      cp_parser_declaration_seq_opt (parser);
+      cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
     }
+  else
+    cp_parser_declaration (parser);
+
+  pop_module_export ();
 }
 
 /* Declarations [gram.dcl.dcl] */
@@ -12439,6 +12483,9 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
      (all these are only allowed at the outermost level, check
    	that semantically, for better diagnostics)
      module-declaration
+     module-export-declaration
+     module-import-declaration
+     export-declaration
 
    GNU extension:
 
@@ -12480,7 +12527,7 @@ cp_parser_declaration (cp_parser* parser)
   p = obstack_alloc (&declarator_obstack, 0);
 
   if (flag_modules && token1.keyword == RID_MODULE)
-    cp_parser_module_declaration (parser);
+    cp_parser_module_declaration (parser, false);
   /* If the next token is `extern' and the following token is a string
      literal, then we have a linkage specification.  */
   else if (token1.keyword == RID_EXTERN
@@ -12502,10 +12549,17 @@ cp_parser_declaration (cp_parser* parser)
       else
 	cp_parser_explicit_instantiation (parser);
     }
-  /* If the next token is `export', then we have a template
-     declaration.  */
+  else if (token1.keyword == RID_IMPORT)
+    cp_parser_module_declaration (parser, false);
+  /* If the next token is `export', it's new-style modules or
+     old-style template.  */
   else if (token1.keyword == RID_EXPORT)
-    cp_parser_template_declaration (parser, /*member_p=*/false);
+    {
+      if (!flag_modules)
+	cp_parser_template_declaration (parser, /*member_p=*/false);
+      else
+	cp_parser_module_export (parser);
+    }
   /* If the next token is `extern', 'static' or 'inline' and the one
      after that is `template', we have a GNU extended explicit
      instantiation directive.  */

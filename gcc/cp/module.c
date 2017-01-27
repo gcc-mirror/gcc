@@ -1,6 +1,6 @@
-/* C++ modules.  Experimental!
-
+/* -*- C++ -*- modules.  Experimental!
    Copyright (C) 2017 Free Software Foundation, Inc.
+   Written by Nathan Sidwell <nathan@acm.org>
 
    This file is part of GCC.
 
@@ -25,13 +25,39 @@ along with GCC; see the file COPYING3.  If not see
 
 static module_name_t GTY(()) *declared_module;
 static location_t module_location;
+static int export_depth;
+
+/* Nest a module export level.  Return true if we were already in a
+   level.  */
+
+bool
+push_module_export ()
+{
+  return export_depth++;
+}
+
+/* Unnest a module export level.  */
+
+void
+pop_module_export ()
+{
+  export_depth--;
+}
+
+/* Return true if we're in the purview of a named module.  */
+
+bool
+module_purview_p ()
+{
+  return declared_module;
+}
 
 /* Declare the name of the current module to be NAME.  We do not know
    at this point whether we're the interface TU or just one of the
    regular members of the module.  */
 
 void
-declare_module_name (location_t loc, module_name_t *name)
+declare_module (location_t loc, module_name_t *name)
 {
   if (declared_module)
     {
@@ -43,4 +69,20 @@ declare_module_name (location_t loc, module_name_t *name)
       declared_module = name;
       module_location = loc;
     }
+}
+
+/* Import the module NAME into the current TU.  */
+
+void
+import_module (location_t loc, module_name_t *name)
+{
+  // FIXME: some code needed here
+}
+
+/* Import the module NAME into the current TU and re-export it.  */
+
+void
+export_module (location_t loc, module_name_t *name)
+{
+  // FIXME: some code needed here
 }

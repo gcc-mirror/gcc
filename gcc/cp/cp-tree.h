@@ -6105,7 +6105,12 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 /* In module.c  */
 /* Module names are gc'd vectors of trees.  */
 typedef vec<tree, va_gc> GTY(()) module_name_t;
-extern void declare_module_name (location_t, module_name_t *);
+extern bool module_purview_p ();
+extern bool push_module_export ();
+extern void pop_module_export ();
+extern void declare_module (location_t, module_name_t *);
+extern void import_module (location_t, module_name_t *);
+extern void export_module (location_t, module_name_t *);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
