@@ -1,3 +1,7 @@
+2017-01-27  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Add test cases.
+
 2017-01-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/79194

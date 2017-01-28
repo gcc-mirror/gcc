@@ -76,9 +76,23 @@ int dummy___vsnprintf_chk (char*, size_t, int, size_t, const char*, va_list);
 /* Macro to verify that calls to __builtin_sprintf (i.e., with no size
    argument) issue diagnostics by correctly determining the size of
    the destination buffer.  */
-#define T(size, fmt, ...)						\
-  (FUNC (sprintf) (buffer (size), fmt, __VA_ARGS__),			\
+#define T(size, ...)						\
+  (FUNC (sprintf) (buffer (size),  __VA_ARGS__),		\
    sink (buffer, ptr))
+
+/* Exercise the "%%" directive.  */
+
+void test_sprintf_percent (void)
+{
+  T (-1, "%%");
+  T ( 0, "%%");                 /* { dg-warning ".%%. directive writing 1 byte into a region of size 0" } */
+  T ( 1, "%%");                 /* { dg-warning "writing a terminating nul past the end" } */
+  T ( 2, "%%");
+  T ( 2, "%%%%");               /* { dg-warning "writing a terminating nul past the end" } */
+  T ( 3, "%%%%");
+  T ( 3, "%%X%%");              /* { dg-warning "writing a terminating nul past the end" } */
+  T ( 4, "%%X%%");
+}
 
 /* Exercise the "%c" and "%lc" directive with constant arguments.  */
 
