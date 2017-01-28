@@ -1,3 +1,12 @@
+2017-01-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/coarray_41.f90: Add "-latomic" option if
+	libatomic_available.
+	* gfortran.dg/coarray_42.f90: Likewise.
+	* gfortran.dg/coarray_alloc_comp_3.f08: Likewise.
+	* gfortran.dg/coarray_alloc_comp_4.f08: Likewise.
+	* gfortran.dg/coarray_lib_alloc_4.f90: Likewise.
+
 2017-01-27  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Add test cases.
