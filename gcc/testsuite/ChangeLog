@@ -1,3 +1,8 @@
+2017-01-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/70583
+	* g++.old-deja/g++.abi/vtable2.C: Adjust CMP_VPTR define on hppa.
+
 2017-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	2017-01-09  Eric Botcazou  <ebotcazou@adacore.com>
