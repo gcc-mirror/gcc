@@ -1,5 +1,7 @@
 2017-01-28  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/torture/pr78515.c: Add -fno-common option on hppa*-*-hpux*.
+
 	* gfortran.dg/coarray_41.f90: Add "-latomic" option if
 	libatomic_available.
 	* gfortran.dg/coarray_42.f90: Likewise.
