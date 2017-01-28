@@ -1,5 +1,8 @@
 2017-01-28  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/70583
+	* g++.old-deja/g++.abi/vtable2.C: Adjust CMP_VPTR define on hppa.
+
 	* gnat.dg/debug7.adb: Skip on hppa*-*-hpux*.
 	* gnat.dg/debug9.adb: Likewise.
 
