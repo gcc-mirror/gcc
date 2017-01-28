@@ -1,5 +1,7 @@
 2017-01-28  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gnat.dg/trampoline4.adb: Skip on hppa*-*-*.
+
 	PR testsuite/70583
 	* g++.old-deja/g++.abi/vtable2.C: Adjust CMP_VPTR define on hppa.
 
