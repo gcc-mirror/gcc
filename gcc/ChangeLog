@@ -1,3 +1,7 @@
+2017-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (print_reg): Use REGNO instead of true_regnum.
+
 2017-01-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/79194
