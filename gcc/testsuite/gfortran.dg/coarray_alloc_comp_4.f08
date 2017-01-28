@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fcoarray=lib -fdump-tree-original" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 !
 ! Contributed by Andre Vehreschild
 ! Check that sub-components are caf_deregistered and not freed.
