@@ -1,5 +1,8 @@
 2017-01-28  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gnat.dg/debug7.adb: Skip on hppa*-*-hpux*.
+	* gnat.dg/debug9.adb: Likewise.
+
 	* gcc.dg/torture/pr78515.c: Add -fno-common option on hppa*-*-hpux*.
 
 	* gfortran.dg/coarray_41.f90: Add "-latomic" option if
