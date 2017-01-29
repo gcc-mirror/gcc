@@ -1,6 +1,14 @@
 2017-01-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk
+	2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70697
+	* gfortran.dg/coarray/event_4.f08: New test.
+
+2017-01-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backport from trunk
 	2017-01-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70696
