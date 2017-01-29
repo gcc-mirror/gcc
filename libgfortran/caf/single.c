@@ -101,9 +101,12 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
   void *local;
 
   if (type == CAF_REGTYPE_LOCK_STATIC || type == CAF_REGTYPE_LOCK_ALLOC
-      || type == CAF_REGTYPE_CRITICAL || type == CAF_REGTYPE_EVENT_STATIC
-      || type == CAF_REGTYPE_EVENT_ALLOC)
-    local = calloc (size, sizeof (bool));
+      || type == CAF_REGTYPE_CRITICAL)
+     local = calloc (size, sizeof (bool));
+  else if (type == CAF_REGTYPE_EVENT_STATIC || type == CAF_REGTYPE_EVENT_ALLOC)
+    /* In the event_(wait|post) function the counter for events is a uint32,
+       so better allocate enough memory here.  */
+    local = calloc (size, sizeof (uint32_t));
   else
     local = malloc (size);
   *token = malloc (sizeof (single_token_t));
