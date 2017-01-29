@@ -1,3 +1,7 @@
+2017-01-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update-copyright.py: Fix the name of this script in examples.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py: Add libhsail-rt to self.default_dirs

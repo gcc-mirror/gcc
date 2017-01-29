@@ -28,13 +28,13 @@
 # output has been vetted.  You can instead pass the names of individual
 # directories, including those that haven't been approved.  So:
 #
-#    update-copyright.pl --this-year
+#    update-copyright.py --this-year
 #
 # is the command that would be used at the beginning of a year to update
 # all copyright notices (and possibly at other times to check whether
 # new files have been added with old years).  On the other hand:
 #
-#    update-copyright.pl --this-year libitm
+#    update-copyright.py --this-year libitm
 #
 # would run the script on just libitm/.
 #
