@@ -1,3 +1,10 @@
+2017-01-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2825, LWG 2756 breaks class template argument
+	deduction for optional.
+	* include/std/optional: Add a deduction guide.
+	* testsuite/20_util/optional/cons/deduction_guide.cc: New.
+
 2017-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79254
