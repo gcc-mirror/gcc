@@ -1,3 +1,11 @@
+2017-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79256
+	* targhooks.c (default_builtin_vector_alignment_reachable): Honor
+	BIGGEST_FIELD_ALIGNMENT and ADJUST_FIELD_ALIGN to fix up bogus
+	alignment on TYPE.
+	* tree.c (build_aligned_type): Set TYPE_USER_ALIGN.
+
 2017-01-30  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/79240
