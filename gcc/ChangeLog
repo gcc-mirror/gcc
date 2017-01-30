@@ -6,6 +6,11 @@
 
 2017-01-30  Martin Sebor  <msebor@redhat.com>
 
+	* gimple-ssa-sprintf.c (fmtresult::adjust_for_width_or_precision):
+	Move constant to the right of a relational operator.
+	(get_mpfr_format_length, format_character, format_string): Ditto.
+	(should_warn_p, maybe_warn): Same.
+
 	* doc/invoke.texi (-Wformat-truncation=1): Fix typo.
 
 2017-01-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
