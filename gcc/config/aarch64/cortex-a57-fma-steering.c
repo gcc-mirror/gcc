@@ -923,10 +923,10 @@ func_fma_steering::analyze ()
       FOR_BB_INSNS (bb, insn)
 	{
 	  operand_rr_info *dest_op_info;
-	  struct du_chain *chain;
+	  struct du_chain *chain = NULL;
 	  unsigned dest_regno;
-	  fma_forest *forest;
-	  du_head_p head;
+	  fma_forest *forest = NULL;
+	  du_head_p head = NULL;
 	  int i;
 
 	  if (!is_fmul_fmac_insn (insn, true))
