@@ -606,8 +606,9 @@ brig_code_entry_handler::get_tree_cst_for_hsa_operand
 	  if (bytes_left < scalar_element_size * element_count)
 	    fatal_error (UNKNOWN_LOCATION,
 			 "Not enough bytes left for the initializer "
-			 "(%lu need %lu).",
-			 bytes_left, scalar_element_size * element_count);
+			 "(%lu need %lu).", (unsigned long) bytes_left,
+			 (unsigned long) (scalar_element_size
+					  * element_count));
 
 	  vec<constructor_elt, va_gc> *vec_els = NULL;
 	  for (size_t i = 0; i < element_count; ++i)
@@ -625,8 +626,8 @@ brig_code_entry_handler::get_tree_cst_for_hsa_operand
 	  if (bytes_left < scalar_element_size)
 	    fatal_error (UNKNOWN_LOCATION,
 			 "Not enough bytes left for the initializer "
-			 "(%lu need %lu).",
-			 bytes_left, scalar_element_size);
+			 "(%lu need %lu).", (unsigned long) bytes_left,
+			 (unsigned long) scalar_element_size);
 	  cst = build_tree_cst_element (scalar_element_type, next_data);
 	  bytes_left -= scalar_element_size;
 	  next_data += scalar_element_size;
