@@ -520,7 +520,7 @@ fmtresult::adjust_for_width_or_precision (const HOST_WIDE_INT adjust[2],
   bool minadjusted = false;
 
   /* Adjust the minimum and likely counters.  */
-  if (0 <= adjust[0])
+  if (adjust[0] >= 0)
     {
       if (range.min < (unsigned HOST_WIDE_INT)adjust[0])
 	{
@@ -537,7 +537,7 @@ fmtresult::adjust_for_width_or_precision (const HOST_WIDE_INT adjust[2],
     knownrange = false;
 
   /* Adjust the maximum counter.  */
-  if (0 < adjust[1])
+  if (adjust[1] > 0)
     {
       if (range.max < (unsigned HOST_WIDE_INT)adjust[1])
 	{
@@ -1456,7 +1456,7 @@ get_mpfr_format_length (mpfr_ptr x, const char *flags, HOST_WIDE_INT prec,
     {
       /* Cap precision arbitrarily at 1KB and add the difference
 	 (if any) to the MPFR result.  */
-      if (1024 < prec)
+      if (prec > 1024)
 	p = 1024;
     }
 
@@ -1873,7 +1873,7 @@ format_character (const directive &dir, tree arg)
 	      res.range.likely = 0;
 	      res.range.unlikely = 0;
 	    }
-	  else if (0 < min && min < 128)
+	  else if (min > 0 && min < 128)
 	    {
 	      /* A wide character in the ASCII range most likely results
 		 in a single byte, and only unlikely in up to MB_LEN_MAX.  */
@@ -1942,7 +1942,7 @@ format_string (const directive &dir, tree arg)
 	     2 * wcslen (S).*/
 	  res.range.likely = res.range.min * 2;
 
-	  if (0 <= dir.prec[1]
+	  if (dir.prec[1] >= 0
 	      && (unsigned HOST_WIDE_INT)dir.prec[1] < res.range.max)
 	    {
 	      res.range.max = dir.prec[1];
@@ -1952,7 +1952,7 @@ format_string (const directive &dir, tree arg)
 
 	  if (dir.prec[0] < 0 && dir.prec[1] > -1)
 	    res.range.min = 0;
-	  else if (0 <= dir.prec[0])
+	  else if (dir.prec[0] >= 0)
 	    res.range.likely = dir.prec[0];
 
 	  /* Even a non-empty wide character string need not convert into
@@ -1992,7 +1992,7 @@ format_string (const directive &dir, tree arg)
 	 in mode 2, and the maximum is PRECISION or -1 to disable
 	 tracking.  */
 
-      if (0 <= dir.prec[0])
+      if (dir.prec[0] >= 0)
 	{
 	  if (slen.range.min >= target_int_max ())
 	    slen.range.min = 0;
@@ -2054,7 +2054,7 @@ should_warn_p (const pass_sprintf_length::call_info &info,
 
   if (info.bounded)
     {
-      if (1 == warn_format_trunc && result.min <= avail.max
+      if (warn_format_trunc == 1 && result.min <= avail.max
 	  && info.retval_used ())
 	{
 	  /* The likely amount of space remaining in the destination is big
@@ -2062,7 +2062,7 @@ should_warn_p (const pass_sprintf_length::call_info &info,
 	  return false;
 	}
 
-      if (1 == warn_format_trunc && result.likely <= avail.likely
+      if (warn_format_trunc == 1 && result.likely <= avail.likely
 	  && !info.retval_used ())
 	{
 	  /* The likely amount of space remaining in the destination is big
@@ -2082,7 +2082,7 @@ should_warn_p (const pass_sprintf_length::call_info &info,
     }
   else
     {
-      if (1 == warn_level && result.likely <= avail.likely)
+      if (warn_level == 1 && result.likely <= avail.likely)
 	{
 	  /* The likely amount of space remaining in the destination is big
 	     enough for the likely output.  */
@@ -2196,7 +2196,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 			  navail);
 	}
 
-      if (0 == res.min && res.max < maxbytes)
+      if (res.min == 0 && res.max < maxbytes)
 	{
 	  const char* fmtstr
 	    = (info.bounded
@@ -2213,7 +2213,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 			  res.max, navail);
 	}
 
-      if (0 == res.min && maxbytes <= res.max)
+      if (res.min == 0 && maxbytes <= res.max)
 	{
 	  /* This is a special case to avoid issuing the potentially
 	     confusing warning:
@@ -2325,7 +2325,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		      avail_range.min, avail_range.max);
     }
 
-  if (0 == res.min && res.max < maxbytes)
+  if (res.min == 0 && res.max < maxbytes)
     {
       const char* fmtstr
 	= (info.bounded
@@ -2344,7 +2344,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		      avail_range.min, avail_range.max);
     }
 
-  if (0 == res.min && maxbytes <= res.max)
+  if (res.min == 0 && maxbytes <= res.max)
     {
       /* This is a special case to avoid issuing the potentially confusing
 	 warning:
