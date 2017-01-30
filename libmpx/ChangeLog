@@ -1,3 +1,7 @@
+2017-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* mpxrt/mpxrt-utils.h (__mpxrt_stop): New prototype.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
