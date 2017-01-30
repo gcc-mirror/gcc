@@ -4105,7 +4105,7 @@ logic @option{-Wformat-overflow}.
 Level @var{1} of @option{-Wformat-truncation} enabled by @option{-Wformat}
 employs a conservative approach that warns only about calls to bounded
 functions whose return value is unused and that will most likely result
-in output truncatation.
+in output truncation.
 
 @item -Wformat-truncation=2
 Level @var{2} warns also about calls to bounded functions whose return
