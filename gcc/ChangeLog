@@ -1,3 +1,9 @@
+2017-01-30  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/78985
+	* config/aarch64/cortex-a57-fma-steering.c (func_fma_steering::analyze):
+	Initialize variables with NULL value.
+
 2017-01-30  Richard Earnshaw  <rearnsh@arm.com>
 
 	PR target/79260
