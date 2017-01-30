@@ -1,5 +1,11 @@
 2017-01-30  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/79259
+	* opts.c (common_handle_option): Enable flag_ipa_bit_cp w/
+	-fprofile-generate.
+
+2017-01-30  Martin Liska  <mliska@suse.cz>
+
 	PR bootstrap/78985
 	* config/aarch64/cortex-a57-fma-steering.c (func_fma_steering::analyze):
 	Initialize variables with NULL value.
