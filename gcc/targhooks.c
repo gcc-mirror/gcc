@@ -1130,9 +1130,14 @@ default_vector_alignment (const_tree type)
 /* By default assume vectors of element TYPE require a multiple of the natural
    alignment of TYPE.  TYPE is naturally aligned if IS_PACKED is false.  */
 bool
-default_builtin_vector_alignment_reachable (const_tree /*type*/, bool is_packed)
+default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
 {
-  return ! is_packed;
+  if (is_packed)
+    return false;
+
+  /* If TYPE can be differently aligned in field context we have to punt
+     as TYPE may have wrong TYPE_ALIGN here (PR79278).  */
+  return min_align_of_type (CONST_CAST_TREE (type)) == TYPE_ALIGN_UNIT (type);
 }
 
 /* By default, assume that a target supports any factor of misalignment
