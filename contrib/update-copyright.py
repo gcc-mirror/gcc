@@ -393,8 +393,10 @@ class Copyright:
         lines = []
         changed = False
         line_filter = filter.get_line_filter (dir, filename)
+        mode = None
         with open (pathname, 'r') as file:
             prev = None
+            mode = os.fstat (file.fileno()).st_mode
             for line in file:
                 while line:
                     next_line = None
@@ -421,6 +423,7 @@ class Copyright:
             with open (tmp_pathname, 'w') as file:
                 for line in lines:
                     file.write (line)
+                os.fchmod (file.fileno(), mode)
             if self.use_quilt:
                 subprocess.call (['quilt', 'add', pathname])
             os.rename (tmp_pathname, pathname)
