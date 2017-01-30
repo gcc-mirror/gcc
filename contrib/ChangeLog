@@ -1,3 +1,8 @@
+2017-01-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* update-copyright.py (Copyright.process_file): Retain original
+	file mode.
+
 2017-01-29  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update-copyright.py: Fix the name of this script in examples.
