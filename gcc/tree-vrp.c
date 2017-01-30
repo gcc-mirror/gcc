@@ -6544,6 +6544,11 @@ process_assert_insertions (void)
 	  else if (loc->e == asserts[j-1]->e)
 	    {
 	      /* Remove duplicate asserts.  */
+	      if (commonj == j - 1)
+		{
+		  commonj = j;
+		  common = loc;
+		}
 	      free (asserts[j-1]);
 	      asserts[j-1] = NULL;
 	    }
