@@ -721,7 +721,12 @@ test_g_long_double (void)
   RNG ( 10,  15, 16, "%Lg", 1.0L / 512);
 
   /* Numbers that are not exactly representable.  */
-  RNG ( 3, 13, 14, "%Lg", 0.1L);
+
+  /* The following test case results in up to 14 bytes on powerpc*-*-*
+     but only in 13 bytes on x86_64 (see PR testsuite/79293).  Test just
+     for the former for simplicity.  */
+  RNG ( 3, 14, 15, "%Lg", 0.1L);
+
   RNG ( 4, 13, 14, "%Lg", 0.12L);
   RNG ( 5, 13, 14, "%Lg", 0.123L);
   RNG ( 6, 13, 14, "%Lg", 0.1234L);
