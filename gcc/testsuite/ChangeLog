@@ -1,3 +1,8 @@
+2017-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79276
+	* gcc.dg/torture/pr79276.c: New testcase.
+
 2017-01-30  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/79240

@@ -1,5 +1,13 @@
 2017-01-30  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79276
+	* tree-vrp.c (process_assert_insertions): Properly adjust common
+	when removing a duplicate.
+
+	* gcc.dg/torture/pr79276.c: New testcase.
+
+2017-01-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79256
 	* targhooks.c (default_builtin_vector_alignment_reachable): Honor
 	BIGGEST_FIELD_ALIGNMENT and ADJUST_FIELD_ALIGN to fix up bogus
