@@ -1,3 +1,8 @@
+2017-01-30  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/79259
+	* g++.dg/tree-prof/pr79259.C: New test.
+
 2017-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79276
