@@ -29,7 +29,7 @@
 /* When using STREX to implement sub-word exchange, we can do much better
    than the compiler by using the APSR.GE and APSR.C flags.  */
 
-#if !DONE && HAVE_STREX && !HAVE_STREXBH && N == 2
+#if !DONE && __ARM_FEATURE_SIMD32 && HAVE_STREX && !HAVE_STREXBH && N == 2
 UTYPE
 SIZE(libat_exchange) (UTYPE *mptr, UTYPE newval, int smodel)
 {
@@ -79,7 +79,7 @@ SIZE(libat_exchange) (UTYPE *mptr, UTYPE newval, int smodel)
 #endif /* !HAVE_STREXBH && N == 2 */
 
 
-#if !DONE && HAVE_STREX && !HAVE_STREXBH && N == 1
+#if !DONE && __ARM_FEATURE_SIMD32 && HAVE_STREX && !HAVE_STREXBH && N == 1
 UTYPE
 SIZE(libat_exchange) (UTYPE *mptr, UTYPE newval, int smodel)
 {

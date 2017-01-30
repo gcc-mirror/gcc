@@ -1,3 +1,8 @@
+2017-01-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/78945
+	* config/arm/exch_n.c (libat_exchange): Check __ARM_FEATURE_SIMD32.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
