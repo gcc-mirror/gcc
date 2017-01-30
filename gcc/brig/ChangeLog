@@ -1,3 +1,9 @@
+2017-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* brigfrontend/brig-code-entry-handler.cc
+	(brig_code_entry_handler::get_tree_cst_for_hsa_operand): For %lu
+	cast size_t arguments to unsigned long.
+
 2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* config-lang.in: Removed stale target-libbrig reference.
