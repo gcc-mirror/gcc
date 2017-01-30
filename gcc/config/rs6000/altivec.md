@@ -3838,12 +3838,25 @@
 ;; Otherwise, set operand 0 to 0.  Note that the result stored into
 ;; register operand 0 is non-zero iff either the LT or GT bits are on
 ;; within condition register operand 1.
-(define_insn "*setb_internal"
+(define_insn "setb_signed"
    [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
 	 (if_then_else:SI (lt (match_operand:CC 1 "cc_reg_operand" "y")
 			      (const_int 0))
 			  (const_int -1)
 			  (if_then_else (gt (match_dup 1)
+					    (const_int 0))
+					(const_int 1)
+					(const_int 0))))]
+  "TARGET_P9_MISC"
+  "setb %0,%1"
+  [(set_attr "type" "logical")])
+
+(define_insn "setb_unsigned"
+   [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
+	 (if_then_else:SI (ltu (match_operand:CCUNS 1 "cc_reg_operand" "y")
+			      (const_int 0))
+			  (const_int -1)
+			  (if_then_else (gtu (match_dup 1)
 					    (const_int 0))
 					(const_int 1)
 					(const_int 0))))]

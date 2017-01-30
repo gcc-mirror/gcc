@@ -1,3 +1,16 @@
+2017-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/79170
+	* config/rs6000/altivec.md (*setb_internal): Rename to setb_signed.
+	(setb_unsigned) New pattern for setb with CCUNS.
+	* config/rs6000/rs6000.c (expand_block_compare): Use a different
+	subfc./subfe sequence to avoid overflow problems.  Generate a
+	shorter sequence with cmpld/setb for power9.
+	* config/rs6000/rs6000.md (subf<mode>3_carry_dot2): Add a new pattern
+	for generating subfc. instruction.
+	(cmpstrsi): Add TARGET_POPCNTD predicate as the generate sequence
+	now uses this instruction.
+
 2017-01-30  Ian Lance Taylor  <iant@google.com>
 
 	PR debug/79289

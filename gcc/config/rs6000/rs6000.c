@@ -17292,7 +17292,7 @@ rs6000_init_builtins (void)
   TYPE_NAME (V16QI_type_node) = tdecl;
 
   tdecl = add_builtin_type ("__vector __bool char", bool_V16QI_type_node);
-  TYPE_NAME ( bool_V16QI_type_node) = tdecl;
+  TYPE_NAME (bool_V16QI_type_node) = tdecl;
 
   tdecl = add_builtin_type ("__vector unsigned short", unsigned_V8HI_type_node);
   TYPE_NAME (unsigned_V8HI_type_node) = tdecl;
@@ -19458,24 +19458,31 @@ expand_block_compare (rtx operands[])
   rtx src1 = orig_src1;
   rtx src2 = orig_src2;
 
-  /* If this is not a fixed size compare, just call memcmp */
+  /* This case is complicated to handle because the subtract
+     with carry instructions do not generate the 64-bit
+     carry and so we must emit code to calculate it ourselves.
+     We choose not to implement this yet.  */
+  if (TARGET_32BIT && TARGET_POWERPC64)
+    return false;
+
+  /* If this is not a fixed size compare, just call memcmp.  */
   if (!CONST_INT_P (bytes_rtx))
     return false;
 
-  /* This must be a fixed size alignment */
+  /* This must be a fixed size alignment.  */
   if (!CONST_INT_P (align_rtx))
     return false;
 
   unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff */
+  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
   if (SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src1))
       || SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src2)))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);
 
-  /* Anything to move? */
+  /* Anything to move?  */
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   if (bytes == 0)
     return true;
@@ -19490,6 +19497,13 @@ expand_block_compare (rtx operands[])
 
   rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
   rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
+  /* P7/P8 code uses cond for subfc. but P9 uses
+     it for cmpld which needs CCUNSmode. */
+  rtx cond;
+  if (TARGET_P9_MISC)
+    cond = gen_reg_rtx (CCUNSmode);
+  else
+    cond = gen_reg_rtx (CCmode);
 
   /* If we have an LE target without ldbrx and word_mode is DImode,
      then we must avoid using word_mode.  */
@@ -19512,27 +19526,35 @@ expand_block_compare (rtx operands[])
   rtx convert_label = NULL;
   rtx final_label = NULL;
 
-  /* Example of generated code for 11 bytes aligned 1 byte:
-     .L10:
-             ldbrx 10,6,9
-             ldbrx 9,7,9
-             subf. 9,9,10
-             bne 0,.L8
-             addi 9,4,7
-             lwbrx 10,0,9
-             addi 9,5,7
-             lwbrx 9,0,9
+  /* Example of generated code for 18 bytes aligned 1 byte.
+     Compiled with -fno-reorder-blocks for clarity.
+             ldbrx 10,31,8
+             ldbrx 9,7,8
+             subfc. 9,9,10
+             bne 0,.L6487
+             addi 9,12,8
+             addi 5,11,8
+             ldbrx 10,0,9
+             ldbrx 9,0,5
+             subfc. 9,9,10
+             bne 0,.L6487
+             addi 9,12,16
+             lhbrx 10,0,9
+             addi 9,11,16
+             lhbrx 9,0,9
              subf 9,9,10
-             b .L9
-     .L8: # convert_label
-             cntlzd 9,9
-             addi 9,9,-1
-             xori 9,9,0x3f
-     .L9: # final_label
+             b .L6488
+             .p2align 4,,15
+     .L6487: #convert_label
+             popcntd 9,9
+             subfe 10,10,10
+             or 9,9,10
+     .L6488: #final_label
+             extsw 10,9
 
-     We start off with DImode and have a compare/branch to something
-     with a smaller mode then we will need a block with the DI->SI conversion
-     that may or may not be executed.  */
+     We start off with DImode for two blocks that jump to the DI->SI conversion
+     if the difference is found there, then a final block of HImode that skips
+     the DI->SI conversion.  */
 
   while (bytes > 0)
     {
@@ -19600,26 +19622,18 @@ expand_block_compare (rtx operands[])
 	    }
 	}
 
-      /* We previously did a block that need 64->32 conversion but
-	 the current block does not, so a label is needed to jump
-	 to the end.  */
-      if (generate_6432_conversion && !final_label
-	  && GET_MODE_SIZE (GET_MODE (target)) >= load_mode_size)
-	final_label = gen_label_rtx ();
-
-      /* Do we need a 64->32 conversion block?  */
       int remain = bytes - cmp_bytes;
-      if (GET_MODE_SIZE (GET_MODE (target)) < GET_MODE_SIZE (load_mode))
-	{
-	  generate_6432_conversion = true;
-	  if (remain > 0 && !convert_label)
-	    convert_label = gen_label_rtx ();
-	}
-
-      if (GET_MODE_SIZE (GET_MODE (target)) >= GET_MODE_SIZE (load_mode))
+      if (GET_MODE_SIZE (GET_MODE (target)) > GET_MODE_SIZE (load_mode))
 	{
 	  /* Target is larger than load size so we don't need to
 	     reduce result size.  */
+
+	  /* We previously did a block that need 64->32 conversion but
+	     the current block does not, so a label is needed to jump
+	     to the end.  */
+	  if (generate_6432_conversion && !final_label)
+	    final_label = gen_label_rtx ();
+
 	  if (remain > 0)
 	    {
 	      /* This is not the last block, branch to the end if the result
@@ -19627,11 +19641,12 @@ expand_block_compare (rtx operands[])
 	      if (!final_label)
 		final_label = gen_label_rtx ();
 	      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
-	      rtx cond = gen_reg_rtx (CCmode);
 	      rtx tmp = gen_rtx_MINUS (word_mode, tmp_reg_src1, tmp_reg_src2);
-	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cond);
-	      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
-	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+	      rtx cr = gen_reg_rtx (CCmode);
+	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cr);
+	      emit_insn (gen_movsi (target,
+				    gen_lowpart (SImode, tmp_reg_src2)));
+	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cr, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 fin_ref, pc_rtx);
 	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
@@ -19662,7 +19677,11 @@ expand_block_compare (rtx operands[])
 	}
       else
 	{
+	  /* Do we need a 64->32 conversion block? We need the 64->32
+	     conversion even if target size == load_mode size because
+	     the subtract generates one extra bit.  */
 	  generate_6432_conversion = true;
+
 	  if (remain > 0)
 	    {
 	      if (!convert_label)
@@ -19670,9 +19689,22 @@ expand_block_compare (rtx operands[])
 
 	      /* Compare to zero and branch to convert_label if not zero.  */
 	      rtx cvt_ref = gen_rtx_LABEL_REF (VOIDmode, convert_label);
-	      rtx cond = gen_reg_rtx (CCmode);
-	      rtx tmp = gen_rtx_MINUS (DImode, tmp_reg_src1, tmp_reg_src2);
-	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cond);
+	      if (TARGET_P9_MISC)
+		{
+		/* Generate a compare, and convert with a setb later.  */
+		  rtx cmp = gen_rtx_COMPARE (CCUNSmode, tmp_reg_src1,
+					     tmp_reg_src2);
+		  emit_insn (gen_rtx_SET (cond, cmp));
+		}
+	      else
+		/* Generate a subfc. and use the longer
+		   sequence for conversion.  */
+		if (TARGET_64BIT)
+		  emit_insn (gen_subfdi3_carry_dot2 (tmp_reg_src2, tmp_reg_src2,
+						     tmp_reg_src1, cond));
+		else
+		  emit_insn (gen_subfsi3_carry_dot2 (tmp_reg_src2, tmp_reg_src2,
+						     tmp_reg_src1, cond));
 	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 cvt_ref, pc_rtx);
@@ -19682,10 +19714,21 @@ expand_block_compare (rtx operands[])
 	    }
 	  else
 	    {
-	      /* Just do the subtract.  Since this is the last block the
-		 convert code will be generated immediately following.  */
-	      emit_insn (gen_subdi3 (tmp_reg_src2, tmp_reg_src1,
-				     tmp_reg_src2));
+	      /* Just do the subtract/compare.  Since this is the last block
+		 the convert code will be generated immediately following.  */
+	      if (TARGET_P9_MISC)
+		{
+		  rtx cmp = gen_rtx_COMPARE (CCUNSmode, tmp_reg_src1,
+					     tmp_reg_src2);
+		  emit_insn (gen_rtx_SET (cond, cmp));
+		}
+	      else
+		if (TARGET_64BIT)
+		  emit_insn (gen_subfdi3_carry (tmp_reg_src2, tmp_reg_src2,
+						tmp_reg_src1));
+		else
+		  emit_insn (gen_subfsi3_carry (tmp_reg_src2, tmp_reg_src2,
+						tmp_reg_src1));
 	    }
 	}
 
@@ -19699,12 +19742,46 @@ expand_block_compare (rtx operands[])
 	emit_label (convert_label);
 
       /* We need to produce DI result from sub, then convert to target SI
-	 while maintaining <0 / ==0 / >0 properties.
-	 Segher's sequence: cntlzd 3,3 ; addi 3,3,-1 ; xori 3,3,63 */
-      emit_insn (gen_clzdi2 (tmp_reg_src2, tmp_reg_src2));
-      emit_insn (gen_adddi3 (tmp_reg_src2, tmp_reg_src2, GEN_INT (-1)));
-      emit_insn (gen_xordi3 (tmp_reg_src2, tmp_reg_src2, GEN_INT (63)));
-      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
+	 while maintaining <0 / ==0 / >0 properties. This sequence works:
+	 subfc L,A,B
+	 subfe H,H,H
+	 popcntd L,L
+	 rldimi L,H,6,0
+
+	 This is an alternate one Segher cooked up if somebody
+	 wants to expand this for something that doesn't have popcntd:
+	 subfc L,a,b
+	 subfe H,x,x
+	 addic t,L,-1
+	 subfe v,t,L
+	 or z,v,H
+
+	 And finally, p9 can just do this:
+	 cmpld A,B
+	 setb r */
+
+      if (TARGET_P9_MISC)
+	{
+	  emit_insn (gen_setb_unsigned (target, cond));
+	}
+      else
+	{
+	  if (TARGET_64BIT)
+	    {
+	      rtx tmp_reg_ca = gen_reg_rtx (DImode);
+	      emit_insn (gen_subfdi3_carry_in_xx (tmp_reg_ca));
+	      emit_insn (gen_popcntddi2 (tmp_reg_src2, tmp_reg_src2));
+	      emit_insn (gen_iordi3 (tmp_reg_src2, tmp_reg_src2, tmp_reg_ca));
+	      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
+	    }
+	  else
+	    {
+	      rtx tmp_reg_ca = gen_reg_rtx (SImode);
+	      emit_insn (gen_subfsi3_carry_in_xx (tmp_reg_ca));
+	      emit_insn (gen_popcntdsi2 (tmp_reg_src2, tmp_reg_src2));
+	      emit_insn (gen_iorsi3 (target, tmp_reg_src2, tmp_reg_ca));
+	    }
+	}
     }
 
   if (final_label)
@@ -21246,7 +21323,7 @@ register_to_reg_type (rtx reg, bool *is_altivec)
       regno = true_regnum (reg);
       if (regno < 0 || regno >= FIRST_PSEUDO_REGISTER)
 	return PSEUDO_REG_TYPE;
-    }	
+    }
 
   gcc_assert (regno >= 0);
 
