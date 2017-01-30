@@ -24453,8 +24453,13 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	 but try to canonicalize.  */
       tree main = TYPE_MAIN_VARIANT (type);
       for (tree t = main; t; t = TYPE_NEXT_VARIANT (t))
-	if (check_base_type (t, main) && check_lang_type (t, type))
-	  type = t;
+	{
+	  if (check_base_type (t, main) && check_lang_type (t, type))
+	    {
+	      type = t;
+	      break;
+	    }
+	}
     }
   else if (TREE_CODE (type) != VECTOR_TYPE
 	   && TREE_CODE (type) != ARRAY_TYPE)

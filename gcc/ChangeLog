@@ -1,3 +1,9 @@
+2017-01-30  Ian Lance Taylor  <iant@google.com>
+
+	PR debug/79289
+	* dwarf2out.c (gen_type_die_with_usage): When picking a variant
+	for FUNCTION_TYPE/METHOD_TYPE, use the first matching one.
+
 2017-01-30  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (-Wformat-truncation=1): Fix typo.
