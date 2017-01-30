@@ -1,3 +1,9 @@
+2017-01-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* asan.c (get_translation_unit_decl): Remove function.
+	(asan_add_global): Force has_dynamic_init to zero in LTO mode.
+
 2017-01-30  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/79259
