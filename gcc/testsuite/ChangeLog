@@ -1,3 +1,8 @@
+2017-01-30  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/79240
+	* gcc.target/s390/pr79240.c: New test.
+
 2017-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/79268
