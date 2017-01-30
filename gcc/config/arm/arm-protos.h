@@ -22,8 +22,6 @@
 #ifndef GCC_ARM_PROTOS_H
 #define GCC_ARM_PROTOS_H
 
-#include "arm-flags.h"
-#include "arm-isa.h"
 #include "sbitmap.h"
 
 extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
