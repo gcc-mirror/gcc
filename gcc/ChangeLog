@@ -1,3 +1,12 @@
+2017-01-30  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/79240
+	* config/s390/s390.md ("*r<noxa>sbg_<mode>_srl_bitmask")
+	("*r<noxa>sbg_<mode>_sll_bitmask")
+	("*extzv_<mode>_srl<clobbercc_or_nocc>")
+	("*extzv_<mode>_sll<clobbercc_or_nocc>"):
+	Use contiguous_bitmask_nowrap_operand.
+
 2017-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/79268
