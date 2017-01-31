@@ -1,3 +1,8 @@
+2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
+
+	* gcc-interface.h (enum gcc_base_api_version): Add
+	GCC_FE_VERSION_1.
+
 2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 

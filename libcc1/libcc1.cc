@@ -504,7 +504,7 @@ libcc1_destroy (struct gcc_base_context *s)
 
 static const struct gcc_base_vtable vtable =
 {
-  GCC_FE_VERSION_0,
+  GCC_FE_VERSION_1,
   libcc1_set_arguments,
   libcc1_set_source_file,
   libcc1_set_print_callback,
@@ -523,7 +523,8 @@ struct gcc_c_context *
 gcc_c_fe_context (enum gcc_base_api_version base_version,
 		  enum gcc_c_api_version c_version)
 {
-  if (base_version != GCC_FE_VERSION_0 || c_version != GCC_C_FE_VERSION_0)
+  if ((base_version != GCC_FE_VERSION_0 && base_version != GCC_FE_VERSION_1)
+      || c_version != GCC_C_FE_VERSION_0)
     return NULL;
 
   return new libcc1 (&vtable, &c_vtable);
