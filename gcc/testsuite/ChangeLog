@@ -1,3 +1,20 @@
+2017-01-30  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/63238
+	* gcc.dg/debug/dwarf2/align-1.c: New.
+	* gcc.dg/debug/dwarf2/align-2.c: New.
+	* gcc.dg/debug/dwarf2/align-3.c: New.
+	* gcc.dg/debug/dwarf2/align-4.c: New.
+	* gcc.dg/debug/dwarf2/align-5.c: New.
+	* gcc.dg/debug/dwarf2/align-6.c: New.
+	* gcc.dg/debug/dwarf2/align-as-1.c: New.
+	* g++.dg/debug/dwarf2/align-1.C: New.
+	* g++.dg/debug/dwarf2/align-2.C: New.
+	* g++.dg/debug/dwarf2/align-3.C: New.
+	* g++.dg/debug/dwarf2/align-4.C: New.
+	* g++.dg/debug/dwarf2/align-5.C: New.
+	* g++.dg/debug/dwarf2/align-6.C: New.
+
 2017-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/79170
