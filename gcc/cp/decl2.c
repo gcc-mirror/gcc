@@ -4386,7 +4386,7 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (ansi_opname (code));
+  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (cp_operator_id (code));
        ovl; ovl = OVL_NEXT (ovl))
     {
       tree fn = OVL_CURRENT (ovl);

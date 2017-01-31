@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define CC1_PLUGIN_MARSHALL_HH
 
 #include "status.hh"
-#include "gcc-c-interface.h"
+#include "gcc-interface.h"
 
 namespace cc1_plugin
 {
@@ -43,6 +43,12 @@ namespace cc1_plugin
   // integer type marker.  If not, return FAIL.  If so, read an
   // integer store it in the out argument.
   status unmarshall_intlike (connection *, protocol_int *);
+
+  status marshall_array_start (connection *, char, size_t);
+  status marshall_array_elmts (connection *, size_t, void *);
+
+  status unmarshall_array_start (connection *, char, size_t *);
+  status unmarshall_array_elmts (connection *, size_t, void *);
 
   // A template function that can handle marshalling various integer
   // objects to the connection.
@@ -66,13 +72,6 @@ namespace cc1_plugin
     *scalar = result;
     return OK;
   }
-
-  // Unmarshallers for some specific enum types.  With C++11 we
-  // wouldn't need these, as we could add type traits to the scalar
-  // unmarshaller.
-  status unmarshall (connection *, enum gcc_c_symbol_kind *);
-  status unmarshall (connection *, enum gcc_qualifiers *);
-  status unmarshall (connection *, enum gcc_c_oracle_request *);
 
   // Send a string type marker followed by a string.
   status marshall (connection *, const char *);

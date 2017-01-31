@@ -125,16 +125,18 @@ GCC_METHOD3 (gcc_type, build_function_type,
 	     const struct gcc_type_array *, /* Argument ARGUMENT_TYPES.  */
 	     int /* bool */)               /* Argument IS_VARARGS.  */
 
-/* Return an integer type with the given properties.  */
+/* Return an integer type with the given properties.
+   Deprecated in v1, use int_type instead.  */
 
-GCC_METHOD2 (gcc_type, int_type,
+GCC_METHOD2 (gcc_type, int_type_v0,
 	     int /* bool */,               /* Argument IS_UNSIGNED.  */
 	     unsigned long)                /* Argument SIZE_IN_BYTES.  */
 
-/* Return a floating point type with the given properties.  */
+/* Return a floating point type with the given properties.
+   Deprecated in v1, use float_type instead.  */
 
-GCC_METHOD1 (gcc_type, float_type,
-	     unsigned long)			/* Argument SIZE_IN_BYTES.  */
+GCC_METHOD1 (gcc_type, float_type_v0,
+	     unsigned long)                /* Argument SIZE_IN_BYTES.  */
 
 /* Return the 'void' type.  */
 
@@ -195,3 +197,26 @@ GCC_METHOD5 (int /* bool */, build_constant,
 
 GCC_METHOD1 (gcc_type, error,
 	     const char *)		 /* Argument MESSAGE.  */
+
+/* Return an integer type with the given properties.  If BUILTIN_NAME
+   is non-NULL, it must name a builtin integral type with the given
+   signedness and size, and that is the type that will be returned.  */
+
+GCC_METHOD3 (gcc_type, int_type,
+	     int /* bool */,               /* Argument IS_UNSIGNED.  */
+	     unsigned long,                /* Argument SIZE_IN_BYTES.  */
+	     const char *)		   /* Argument BUILTIN_NAME.  */
+
+/* Return the 'char' type, a distinct type from both 'signed char' and
+   'unsigned char' returned by int_type.  */
+
+GCC_METHOD0 (gcc_type, char_type)
+
+/* Return a floating point type with the given properties.  If BUILTIN_NAME
+   is non-NULL, it must name a builtin integral type with the given
+   signedness and size, and that is the type that will be returned.  */
+
+GCC_METHOD2 (gcc_type, float_type,
+	     unsigned long,                /* Argument SIZE_IN_BYTES.  */
+	     const char *)		   /* Argument BUILTIN_NAME.  */
+

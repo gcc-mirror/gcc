@@ -812,7 +812,7 @@ do_build_copy_assign (tree fndecl)
 	  parmvec = make_tree_vector_single (converted_parm);
 	  finish_expr_stmt
 	    (build_special_member_call (current_class_ref,
-					ansi_assopname (NOP_EXPR),
+					cp_assignment_operator_id (NOP_EXPR),
 					&parmvec,
 					base_binfo,
 					flags,
@@ -1105,7 +1105,7 @@ get_copy_assign (tree type)
   int quals = (TYPE_HAS_CONST_COPY_ASSIGN (type)
 	       ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
   tree argtype = build_stub_type (type, quals, false);
-  tree fn = locate_fn_flags (type, ansi_assopname (NOP_EXPR), argtype,
+  tree fn = locate_fn_flags (type, cp_assignment_operator_id (NOP_EXPR), argtype,
 			     LOOKUP_NORMAL, tf_warning_or_error);
   if (fn == error_mark_node)
     return NULL_TREE;
@@ -1463,7 +1463,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     case sfk_move_assignment:
     case sfk_copy_assignment:
       assign_p = true;
-      fnname = ansi_assopname (NOP_EXPR);
+      fnname = cp_assignment_operator_id (NOP_EXPR);
       break;
 
     case sfk_destructor:
@@ -1622,7 +1622,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
       if (check_vdtor && type_has_virtual_destructor (basetype))
 	{
-	  rval = locate_fn_flags (ctype, ansi_opname (DELETE_EXPR),
+	  rval = locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
 				  ptr_type_node, flags, complain);
 	  /* Unlike for base ctor/op=/dtor, for operator delete it's fine
 	     to have a null rval (no class-specific op delete).  */
@@ -1949,7 +1949,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 	  || kind == sfk_move_assignment)
 	{
 	  return_type = build_reference_type (type);
-	  name = ansi_assopname (NOP_EXPR);
+	  name = cp_assignment_operator_id (NOP_EXPR);
 	}
       else
 	name = constructor_name (type);

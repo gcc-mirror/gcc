@@ -63,6 +63,7 @@
 
 #include "callbacks.hh"
 #include "connection.hh"
+#include "marshall-c.hh"
 #include "rpc.hh"
 
 #ifdef __GNUC__
@@ -298,18 +299,7 @@ address_rewriter (tree *in, int *walk_subtrees, void *arg)
   value.decl = *in;
   decl_addr_value *found_value = ctx->address_map.find (&value);
   if (found_value != NULL)
-    {
-      // At this point we don't need VLA sizes for gdb-supplied
-      // variables, and having them here confuses later passes, so we
-      // drop them.
-      if (C_TYPE_VARIABLE_SIZE (TREE_TYPE (*in)))
-	{
-	  TREE_TYPE (*in)
-	    = build_array_type_nelts (TREE_TYPE (TREE_TYPE (*in)), 1);
-	  DECL_SIZE (*in) = TYPE_SIZE (TREE_TYPE (*in));
-	  DECL_SIZE_UNIT (*in) = TYPE_SIZE_UNIT (TREE_TYPE (*in));
-	}
-    }
+    ;
   else if (DECL_IS_BUILTIN (*in))
     {
       gcc_address address;
@@ -417,6 +407,7 @@ plugin_build_decl (cc1_plugin::connection *self,
     {
       decl_addr_value value;
 
+      DECL_EXTERNAL (decl) = 1;
       value.decl = decl;
       if (substitution_name != NULL)
 	{
@@ -456,8 +447,15 @@ plugin_tagbind (cc1_plugin::connection *self,
 		const char *filename, unsigned int line_number)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
+  tree t = convert_in (tagged_type), x;
   c_pushtag (ctx->get_source_location (filename, line_number),
-	     get_identifier (name), convert_in (tagged_type));
+	     get_identifier (name), t);
+
+  /* Propagate the newly-added type name so that previously-created
+     variant types are not disconnected from their main variants.  */
+  for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
+    TYPE_NAME (x) = TYPE_NAME (t);
+
   return 1;
 }
 
@@ -469,18 +467,30 @@ plugin_build_pointer_type (cc1_plugin::connection *,
   return convert_out (build_pointer_type (convert_in (base_type)));
 }
 
+// TYPE_NAME needs to be a valid pointer, even if there is no name available.
+
+static tree
+build_anonymous_node (enum tree_code code)
+{
+  tree node = make_node (code);
+  tree type_decl = build_decl (input_location, TYPE_DECL, NULL_TREE, node);
+  TYPE_NAME (node) = type_decl;
+  TYPE_STUB_DECL (node) = type_decl;
+  return node;
+}
+
 gcc_type
 plugin_build_record_type (cc1_plugin::connection *self)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  return convert_out (ctx->preserve (make_node (RECORD_TYPE)));
+  return convert_out (ctx->preserve (build_anonymous_node (RECORD_TYPE)));
 }
 
 gcc_type
 plugin_build_union_type (cc1_plugin::connection *self)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  return convert_out (ctx->preserve (make_node (UNION_TYPE)));
+  return convert_out (ctx->preserve (build_anonymous_node (UNION_TYPE)));
 }
 
 int
@@ -565,6 +575,23 @@ plugin_finish_record_or_union (cc1_plugin::connection *,
       // FIXME we have no idea about TYPE_PACKED
     }
 
+  tree t = record_or_union_type, x;
+  for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
+    {
+      /* Like finish_struct, update the qualified variant types.  */
+      TYPE_FIELDS (x) = TYPE_FIELDS (t);
+      TYPE_LANG_SPECIFIC (x) = TYPE_LANG_SPECIFIC (t);
+      C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
+      C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
+      C_TYPE_VARIABLE_SIZE (x) = C_TYPE_VARIABLE_SIZE (t);
+      /* We copy these fields too.  */
+      SET_TYPE_ALIGN (x, TYPE_ALIGN (t));
+      TYPE_SIZE (x) = TYPE_SIZE (t);
+      TYPE_SIZE_UNIT (x) = TYPE_SIZE_UNIT (t);
+      if (x != record_or_union_type)
+	compute_record_mode (x);
+    }
+
   return 1;
 }
 
@@ -577,7 +604,7 @@ plugin_build_enum_type (cc1_plugin::connection *self,
   if (underlying_int_type == error_mark_node)
     return convert_out (error_mark_node);
 
-  tree result = make_node (ENUMERAL_TYPE);
+  tree result = build_anonymous_node (ENUMERAL_TYPE);
 
   TYPE_PRECISION (result) = TYPE_PRECISION (underlying_int_type);
   TYPE_UNSIGNED (result) = TYPE_UNSIGNED (underlying_int_type);
@@ -667,16 +694,39 @@ plugin_build_function_type (cc1_plugin::connection *self,
   return convert_out (ctx->preserve (result));
 }
 
-gcc_type
-plugin_int_type (cc1_plugin::connection *self,
-		 int is_unsigned, unsigned long size_in_bytes)
+/* Return a builtin type associated with BUILTIN_NAME.  */
+
+static tree
+safe_lookup_builtin_type (const char *builtin_name)
 {
-  tree result = c_common_type_for_size (BITS_PER_UNIT * size_in_bytes,
-					is_unsigned);
+  tree result = NULL_TREE;
+
+  if (!builtin_name)
+    return result;
+
+  result = identifier_global_value (get_identifier (builtin_name));
+
+  if (!result)
+    return result;
+
+  gcc_assert (TREE_CODE (result) == TYPE_DECL);
+  result = TREE_TYPE (result);
+  return result;
+}
+
+static gcc_type
+plugin_int_check (cc1_plugin::connection *self,
+		  int is_unsigned, unsigned long size_in_bytes,
+		  tree result)
+{
   if (result == NULL_TREE)
     result = error_mark_node;
   else
     {
+      gcc_assert (!TYPE_UNSIGNED (result) == !is_unsigned);
+      gcc_assert (TREE_CODE (TYPE_SIZE (result)) == INTEGER_CST);
+      gcc_assert (TYPE_PRECISION (result) == BITS_PER_UNIT * size_in_bytes);
+
       plugin_context *ctx = static_cast<plugin_context *> (self);
       ctx->preserve (result);
     }
@@ -684,7 +734,37 @@ plugin_int_type (cc1_plugin::connection *self,
 }
 
 gcc_type
-plugin_float_type (cc1_plugin::connection *,
+plugin_int_type_v0 (cc1_plugin::connection *self,
+		    int is_unsigned, unsigned long size_in_bytes)
+{
+  tree result = c_common_type_for_size (BITS_PER_UNIT * size_in_bytes,
+					is_unsigned);
+
+  return plugin_int_check (self, is_unsigned, size_in_bytes, result);
+}
+
+gcc_type
+plugin_int_type (cc1_plugin::connection *self,
+		 int is_unsigned, unsigned long size_in_bytes,
+		 const char *builtin_name)
+{
+  if (!builtin_name)
+    return plugin_int_type_v0 (self, is_unsigned, size_in_bytes);
+
+  tree result = safe_lookup_builtin_type (builtin_name);
+  gcc_assert (!result || TREE_CODE (result) == INTEGER_TYPE);
+
+  return plugin_int_check (self, is_unsigned, size_in_bytes, result);
+}
+
+gcc_type
+plugin_char_type (cc1_plugin::connection *)
+{
+  return convert_out (char_type_node);
+}
+
+gcc_type
+plugin_float_type_v0 (cc1_plugin::connection *,
 		   unsigned long size_in_bytes)
 {
   if (BITS_PER_UNIT * size_in_bytes == TYPE_PRECISION (float_type_node))
@@ -694,6 +774,25 @@ plugin_float_type (cc1_plugin::connection *,
   if (BITS_PER_UNIT * size_in_bytes == TYPE_PRECISION (long_double_type_node))
     return convert_out (long_double_type_node);
   return convert_out (error_mark_node);
+}
+
+gcc_type
+plugin_float_type (cc1_plugin::connection *self,
+		   unsigned long size_in_bytes,
+		   const char *builtin_name)
+{
+  if (!builtin_name)
+    return plugin_float_type_v0 (self, size_in_bytes);
+
+  tree result = safe_lookup_builtin_type (builtin_name);
+
+  if (!result)
+    return convert_out (error_mark_node);
+
+  gcc_assert (TREE_CODE (result) == REAL_TYPE);
+  gcc_assert (BITS_PER_UNIT * size_in_bytes == TYPE_PRECISION (result));
+
+  return convert_out (result);
 }
 
 gcc_type
@@ -848,7 +947,7 @@ plugin_init (struct plugin_name_args *plugin_info,
       || ! ::cc1_plugin::unmarshall (current_context, &version))
     fatal_error (input_location,
 		 "%s: handshake failed", plugin_info->base_name);
-  if (version != GCC_C_FE_VERSION_0)
+  if (version != GCC_C_FE_VERSION_1)
     fatal_error (input_location,
 		 "%s: unknown version in handshake", plugin_info->base_name);
 

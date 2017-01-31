@@ -1,3 +1,31 @@
+2017-01-30  Alexandre Oliva <aoliva@redhat.com>
+
+	Introduce C++ support in libcc1.
+	* cp-tree.h (struct lang_identifier): Add oracle_looked_up.
+	(ansi_opname): Rename to...
+	(cp_operator_id): ... this.  Adjust all callers.
+	(ansi_assopname): Rename to...
+	(cp_assignment_operator_id): ... this.  Adjust all callers.
+	(cp_literal_operator_id): Declare.
+	(set_global_friend): Declare.
+	(is_global_friend): Declare.
+	(enum cp_oracle_request): New type.
+	(cp_binding_oracle_function): New type.
+	(cp_binding_oracle): Declare.
+	(cp_finish_injected_record_type): Declare.
+	* friend.c (global_friend): New var.
+	(set_global_friend): New fn.
+	(is_global_friend): New fn.
+	(is_friend): Call is_global_friend.
+	* name-lookup.c (cp_binding_oracle): New var.
+	(query_oracle): New fn.
+	(qualified_lookup_using_namespace): Call query_oracle.
+	(lookup_name_real_1): Likewise.
+	* parser.c (cp_literal_operator_id): Drop static.
+	* search.c (friend_accessible_p): Call is_global_friend.
+	* semantics.c (is_this_parameter): Accept a variable if the
+	binding oracle is enabled.
+
 2017-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78771 - ICE with inherited constructor.
