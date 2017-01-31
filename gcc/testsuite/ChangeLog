@@ -1,3 +1,15 @@
+2017-01-31  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79268
+	* gcc.target/powerpc/pr79268.c: New file.
+	* gcc.target/powerpc/vsx-elemrev-1.c: Delete file.
+	* gcc.target/powerpc/vsx-elemrev-2.c: Likewise.
+	* gcc.target/powerpc/vsx-elemrev-3.c: Likewise.
+	* gcc.target/powerpc/vsx-elemrev-4.c: Likewise.
+
 2017-01-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk
