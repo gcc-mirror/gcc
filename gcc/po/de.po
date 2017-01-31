@@ -4,15 +4,15 @@
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012, 2013.
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2015.
-# Roland Illig <roland.illig@gmx.de>, 2015.
 # Philipp Thomas <pth@suse.de>, 1999, 2000, 2001, 2011, 2016.
+# Roland Illig <roland.illig@gmx.de>, 2015, 2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 6.1-b20160131\n"
+"Project-Id-Version: gcc 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:52+0000\n"
-"PO-Revision-Date: 2016-02-09 09:39+0100\n"
-"Last-Translator: Philipp Thomas <pth@suse.de>\n"
+"PO-Revision-Date: 2017-01-29 23:40+0100\n"
+"Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.2\n"
+"X-Generator: Poedit 2.0beta2\n"
 
 #: cfgrtl.c:2656
 msgid "flow control insn inside a basic block"
@@ -663,10 +663,9 @@ msgid "    -s, --scale <float or simple-frac>  Scale the profile counters\n"
 msgstr "    -s, --scale <Gleitkomma oder einfacher Bruch>  Profilzähler skalieren\n"
 
 #: gcov-tool.c:264
-#, fuzzy, c-format
-#| msgid "    -n, --normalize <long long>         Normalize the profile\n"
+#, c-format
 msgid "    -n, --normalize <int64_t>           Normalize the profile\n"
-msgstr "    -n, --normalize <long long>         Profil normalisieren\n"
+msgstr "    -n, --normalize <int64_t>           Profil normalisieren\n"
 
 #: gcov-tool.c:281
 #, c-format
@@ -4986,10 +4985,8 @@ msgid "Nonnegative width required"
 msgstr "Nicht-negative Breite benötigt"
 
 #: fortran/io.c:587
-#, fuzzy
-#| msgid "Unexpected element '%c' in format string at %L"
 msgid "Unexpected element %qc in format string at %L"
-msgstr "Unerwartetes Element »%c« in Formatzeichenkette bei %L"
+msgstr "Unerwartetes Element %qc in Formatzeichenkette bei %L"
 
 #: fortran/io.c:589
 msgid "Unexpected end of format string"
@@ -5004,10 +5001,8 @@ msgid "Missing leading left parenthesis"
 msgstr "Führende linke Klammer fehlt"
 
 #: fortran/io.c:639
-#, fuzzy
-#| msgid "Left parenthesis required after '*'"
 msgid "Left parenthesis required after %<*%>"
-msgstr "Linke Klammer benötigt nach »*«"
+msgstr "Linke Klammer benötigt nach %<*%>"
 
 #: fortran/io.c:670
 msgid "Expected P edit descriptor"
@@ -5019,10 +5014,9 @@ msgid "P descriptor requires leading scale factor"
 msgstr "P-Deskriptor benötigt führenden Skalierungsfaktor"
 
 #: fortran/io.c:726
-#, fuzzy, c-format
-#| msgid "Missing right parenthesis at %C"
+#, c-format
 msgid "Right parenthesis expected at %C"
-msgstr "Fehlende rechte Klammer bei %C"
+msgstr "Schließende Klammer erwartet bei %C"
 
 #: fortran/io.c:819 fortran/io.c:833
 msgid "Comma required after P descriptor"
@@ -5186,76 +5180,52 @@ msgid "elemental procedure"
 msgstr "Elementares Unterprogramm"
 
 #: fortran/resolve.c:2257
-#, fuzzy
-#| msgid "invalid type argument"
 msgid "allocatable argument"
-msgstr "ungültiges Typargument"
+msgstr ""
 
 #: fortran/resolve.c:2262
-#, fuzzy
-#| msgid "not enough arguments"
 msgid "asynchronous argument"
-msgstr "Nicht genug Argumente"
+msgstr "asynchrones Argument"
 
 #: fortran/resolve.c:2267
-#, fuzzy
-#| msgid "invalid PHI argument"
 msgid "optional argument"
-msgstr "ungültiges PHI-Argument"
+msgstr "optionales Argument"
 
 #: fortran/resolve.c:2272
-#, fuzzy
-#| msgid "pointer assignment"
 msgid "pointer argument"
-msgstr "Zeigerzuweisung"
+msgstr "Zeigerargument"
 
 #: fortran/resolve.c:2277
-#, fuzzy
-#| msgid "too many arguments"
 msgid "target argument"
-msgstr "zu viele Argumente"
+msgstr "Zielargument"
 
 #: fortran/resolve.c:2282
-#, fuzzy
-#| msgid "invalid type argument"
 msgid "value argument"
-msgstr "ungültiges Typargument"
+msgstr "Wertargument"
 
 #: fortran/resolve.c:2287
-#, fuzzy
-#| msgid "no arguments"
 msgid "volatile argument"
-msgstr "Keine Argumente"
+msgstr "flüchtiges Argument"
 
 #: fortran/resolve.c:2292
-#, fuzzy
-#| msgid "mismatched arguments"
 msgid "assumed-shape argument"
-msgstr "unpassende Argumente"
+msgstr ""
 
 #: fortran/resolve.c:2297
-#, fuzzy
-#| msgid "Assumed-rank array at %C"
 msgid "assumed-rank argument"
-msgstr "Feld mit vermutetem Rang bei %C"
+msgstr ""
 
 #: fortran/resolve.c:2302
-#, fuzzy
-#| msgid "array assignment"
 msgid "coarray argument"
-msgstr "Feld-Zuweisung"
+msgstr ""
 
 #: fortran/resolve.c:2307
-#, fuzzy
-#| msgid "invalid type argument"
 msgid "parametrized derived type argument"
-msgstr "ungültiges Typargument"
+msgstr "parametrisiertes abgeleitetes Typargument"
 
 #: fortran/resolve.c:2312
-#, fuzzy
-#| msgid "no arguments"
 msgid "polymorphic argument"
-msgstr "Keine Argumente"
+msgstr "polymorphes Argument"
 
 #: fortran/resolve.c:2317
 msgid "NO_ARG_CHECK attribute"
@@ -5271,25 +5241,19 @@ msgstr "ungültiges Typargument"
 
 #: fortran/resolve.c:2335
 msgid "array result"
-msgstr ""
+msgstr "Feldresultat"
 
 #: fortran/resolve.c:2340
-#, fuzzy
-#| msgid "Coindexed allocatable object at %L"
 msgid "pointer or allocatable result"
-msgstr "Koindiziertes reservierbares Objekt bei %L"
+msgstr "Zeiger oder allozierbares Resultat"
 
 #: fortran/resolve.c:2347
-#, fuzzy
-#| msgid "COMMON variable '%s' at %L must have constant character length"
 msgid "result with non-constant character length"
-msgstr "COMMON-Variable »%s« bei %L muss konstante Zeichenlänge haben"
+msgstr "Resultat mit nicht konstanter Zeichenlänge"
 
 #: fortran/resolve.c:2359
-#, fuzzy
-#| msgid "module procedure"
 msgid "bind(c) procedure"
-msgstr "Modulprozedur"
+msgstr "bind(c)-Prozedur"
 
 #: fortran/resolve.c:3651
 #, c-format
@@ -5297,16 +5261,14 @@ msgid "Invalid context for NULL() pointer at %%L"
 msgstr "Ungültiger Kontext für NULL()-Zeiger bei %%L"
 
 #: fortran/resolve.c:3667
-#, fuzzy, c-format
-#| msgid "Operand of unary numeric operator '%s' at %%L is %s"
+#, c-format
 msgid "Operand of unary numeric operator %%<%s%%> at %%L is %s"
-msgstr "Operand des unären numerischen Operators »%s« bei %%L ist %s"
+msgstr "Operand des unären numerischen Operators %%<%s%%> bei %%L ist %s"
 
 #: fortran/resolve.c:3683
-#, fuzzy, c-format
-#| msgid "Operands of binary numeric operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operanden des binären numerischen Operators »%s« bei %%L sind %s/%s"
+msgstr "Operanden des binären numerischen Operators %%<%s%%> bei %%L sind %s/%s"
 
 #: fortran/resolve.c:3698
 #, c-format
@@ -5314,10 +5276,9 @@ msgid "Operands of string concatenation operator at %%L are %s/%s"
 msgstr "Operanden des Zeichenkettenverkettungsoperators bei %%L sind %s/%s"
 
 #: fortran/resolve.c:3731
-#, fuzzy, c-format
-#| msgid "Operands of logical operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of logical operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operanden des logischen Operators »%s« bei %%L sind %s/%s"
+msgstr "Operanden des logischen Operators %%<%s%%> bei %%L sind %s/%s"
 
 #: fortran/resolve.c:3754
 #, c-format
@@ -5334,28 +5295,24 @@ msgid "Logicals at %%L must be compared with %s instead of %s"
 msgstr "Logische Werte bei %%L müssen mit %s statt mit %s verglichen werden"
 
 #: fortran/resolve.c:3826
-#, fuzzy, c-format
-#| msgid "Operands of comparison operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of comparison operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operanden des Vergleichsoperators »%s« bei %%L sind %s/%s"
+msgstr "Operanden des Vergleichsoperators %%<%s%%> bei %%L sind %s/%s"
 
 #: fortran/resolve.c:3834
-#, fuzzy, c-format
-#| msgid "Unknown operator '%s' at %%L"
+#, c-format
 msgid "Unknown operator %%<%s%%> at %%L"
-msgstr "Unbekannter Operator »%s« bei %%L"
+msgstr "Unbekannter Operator %%<%s%%> bei %%L"
 
 #: fortran/resolve.c:3837
-#, fuzzy, c-format
-#| msgid "Operand of user operator '%s' at %%L is %s"
+#, c-format
 msgid "Operand of user operator %%<%s%%> at %%L is %s"
-msgstr "Operand des Benutzeroperators »%s« bei %%L ist %s"
+msgstr "Operand des Benutzeroperators %%<%s%%> bei %%L ist %s"
 
 #: fortran/resolve.c:3841
-#, fuzzy, c-format
-#| msgid "Operands of user operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of user operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operanden des Benutzeroperators »%s« bei %%L sind %s/%s"
+msgstr "Operanden des Benutzeroperators %%<%s%%> bei %%L sind %s/%s"
 
 #: fortran/resolve.c:3929
 #, c-format
@@ -5467,7 +5424,7 @@ msgstr "Ungültige Bildanzahl %d in SYNC IMAGES"
 
 #: fortran/trans-stmt.c:1920
 msgid "Loop iterates infinitely"
-msgstr ""
+msgstr "Schleife läuft endlos"
 
 #: fortran/trans-stmt.c:1940 fortran/trans-stmt.c:2196
 msgid "Loop variable has been modified"
@@ -5509,76 +5466,54 @@ msgstr "Versuch, nicht reserviertes »%s« freizugeben"
 
 #. The remainder are real diagnostic types.
 #: fortran/gfc-diagnostic.def:33
-#, fuzzy
-#| msgid "Fatal Error:"
 msgid "Fatal Error"
-msgstr "Schwerwiegender Fehler:"
+msgstr "Schwerwiegender Fehler"
 
 #. This is like DK_ICE, but backtrace is not printed.  Used in the driver
 #. when reporting fatal signal in the compiler.
 #: fortran/gfc-diagnostic.def:34 fortran/gfc-diagnostic.def:50
-#, fuzzy
-#| msgid "internal compiler error: "
 msgid "internal compiler error"
-msgstr "interner Compiler-Fehler: "
+msgstr "interner Compiler-Fehler"
 
 #: fortran/gfc-diagnostic.def:35
-#, fuzzy
-#| msgid "Error:"
 msgid "Error"
-msgstr "Fehler:"
+msgstr "Fehler"
 
 #: fortran/gfc-diagnostic.def:36
-#, fuzzy
-#| msgid "sorry, unimplemented: "
 msgid "sorry, unimplemented"
-msgstr "nicht implementiert: "
+msgstr "nicht implementiert"
 
 #: fortran/gfc-diagnostic.def:37
-#, fuzzy
-#| msgid "Warning:"
 msgid "Warning"
-msgstr "Warnung:"
+msgstr "Warnung"
 
 #: fortran/gfc-diagnostic.def:38
-#, fuzzy
-#| msgid "anachronism: "
 msgid "anachronism"
-msgstr "Anachronismus: "
+msgstr "Anachronismus"
 
 #: fortran/gfc-diagnostic.def:39
-#, fuzzy
-#| msgid "note:"
 msgid "note"
-msgstr "beachte:"
+msgstr "Hinweis"
 
 #: fortran/gfc-diagnostic.def:40
-#, fuzzy
-#| msgid "debug: "
 msgid "debug"
-msgstr "zur Fehlersuche: "
+msgstr "Fehlersuche"
 
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
 #: fortran/gfc-diagnostic.def:43
-#, fuzzy
-#| msgid "pedwarn: "
 msgid "pedwarn"
-msgstr "Ped. Warnung: "
+msgstr "Ped. Warnung"
 
 #: fortran/gfc-diagnostic.def:44
-#, fuzzy
-#| msgid "permerror: "
 msgid "permerror"
-msgstr "Perm. Fehler: "
+msgstr "Perm. Fehler"
 
 #. This one is just for counting DK_WARNING promoted to DK_ERROR
 #. due to -Werror and -Werror=warning.
 #: fortran/gfc-diagnostic.def:47
-#, fuzzy
-#| msgid "error: "
 msgid "error"
-msgstr "Fehler: "
+msgstr "Fehler"
 
 #: go/go-backend.c:163
 msgid "lseek failed while reading export data"
@@ -5597,16 +5532,12 @@ msgid "short read while reading export data"
 msgstr "zu wenig Export-Daten gelesen"
 
 #: gcc.c:747 gcc.c:751 gcc.c:806
-#, fuzzy
-#| msgid "-m%s not supported in this configuration"
 msgid "-gz is not supported in this configuration"
-msgstr "-m%s wird in dieser Konfiguration nicht unterstützt"
+msgstr "-gz wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.c:757 gcc.c:817
-#, fuzzy
-#| msgid "ifunc is not supported in this configuration"
 msgid "-gz=zlib is not supported in this configuration"
-msgstr "ifunc wird in dieser Konfiguration nicht unterstützt"
+msgstr "-gz=zlib wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.c:961
 msgid "-fuse-linker-plugin is not supported in this configuration"
@@ -5617,22 +5548,16 @@ msgid "cannot specify -static with -fsanitize=address"
 msgstr "-static kann nicht mit -fsanitize=Adresse angegeben werden"
 
 #: gcc.c:978
-#, fuzzy
-#| msgid "cannot specify -static with -fsanitize=address"
 msgid "cannot specify -static with -fsanitize=thread"
-msgstr "-static kann nicht mit -fsanitize=Adresse angegeben werden"
+msgstr "-static kann nicht mit -fsanitize=thread angegeben werden"
 
 #: gcc.c:1000
-#, fuzzy
-#| msgid "weakref is not supported in this configuration"
 msgid "-fvtable-verify=std is not supported in this configuration"
-msgstr "weakref wird in dieser Konfiguration nicht unterstützt"
+msgstr "-fvtable-verify=std wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.c:1002
-#, fuzzy
-#| msgid "weakref is not supported in this configuration"
 msgid "-fvtable-verify=preinit is not supported in this configuration"
-msgstr "weakref wird in dieser Konfiguration nicht unterstützt"
+msgstr "-fvtable-verify=preinit wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.c:1131 ada/gcc-interface/lang-specs.h:33
 msgid "-pg and -fomit-frame-pointer are incompatible"
@@ -5647,10 +5572,8 @@ msgid "-E or -x required when input is from standard input"
 msgstr "-E oder -x benötigt, wenn die Eingabe von der Standardeingabe kommt"
 
 #: config/darwin.h:171
-#, fuzzy
-#| msgid "-fpic is not supported"
 msgid "rdynamic is not supported"
-msgstr "-fpic wird nicht unterstützt"
+msgstr "rdynamic wird nicht unterstützt"
 
 #: config/darwin.h:260
 msgid "-current_version only allowed with -dynamiclib"
@@ -5703,18 +5626,14 @@ msgid "does not support multilib"
 msgstr "unterstützt nicht multilib"
 
 #: config/sol2.h:370
-#, fuzzy
-#| msgid "-m%s not supported in this configuration"
 msgid "-pie is not supported in this configuration"
-msgstr "-m%s wird in dieser Konfiguration nicht unterstützt"
+msgstr "-pie wird in dieser Konfiguration nicht unterstützt"
 
 #: config/vxworks.h:70
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
 msgstr "-Xbind-now und -Xbind-lazy sind unverträglich"
 
 #: config/aarch64/aarch64-freebsd.h:37 config/arm/freebsd.h:49
-#, fuzzy
-#| msgid "consider using `-pg' instead of `-p' with gprof(1)"
 msgid "consider using `-pg' instead of `-p' with gprof (1) "
 msgstr "evtl. »-pg« statt »-p« mit gprof(1) verwenden"
 
@@ -5731,10 +5650,8 @@ msgid "-mbig-endian and -mlittle-endian may not be used together"
 msgstr "-mbig-endian und -mlittle-endian dürfen nicht zusammen verwendet werden"
 
 #: config/avr/specs.h:70
-#, fuzzy
-#| msgid "-fpic is not supported"
 msgid "shared is not supported"
-msgstr "-fpic wird nicht unterstützt"
+msgstr "shared wird nicht unterstützt"
 
 #: config/bfin/elf.h:55
 msgid "no processor type specified for linking"
@@ -5804,10 +5721,8 @@ msgid "-mas100-syntax is incompatible with -gdwarf"
 msgstr "-mas100-syntax ist unverträglich mit -gdwarf"
 
 #: config/rx/rx.h:81
-#, fuzzy
-#| msgid "rx200 cpu does not have FPU hardware"
 msgid "rx100 cpu does not have FPU hardware"
-msgstr "CPU RX200 hat keine FPU-Hardware"
+msgstr "CPU rx100 hat keine FPU-Hardware"
 
 #: config/rx/rx.h:82
 msgid "rx200 cpu does not have FPU hardware"
@@ -5864,34 +5779,24 @@ msgid "objc++-cpp-output is deprecated; please use objective-c++-cpp-output inst
 msgstr "objc++-cpp-output ist veraltet; bitte stattdessen objective-c++-cpp-output verwenden"
 
 #: fortran/lang.opt:146
-#, fuzzy
-#| msgid "-J<directory>\tPut MODULE files in 'directory'"
 msgid "-J<directory>\tPut MODULE files in 'directory'."
-msgstr "-J<Verzeichnis>\tMODULE-Dateien in »Verzeichnis« ablegen"
+msgstr "-J<Verzeichnis>\tMODULE-Dateien in »Verzeichnis« ablegen."
 
 #: fortran/lang.opt:198
-#, fuzzy
-#| msgid "Warn about possible aliasing of dummy arguments"
 msgid "Warn about possible aliasing of dummy arguments."
-msgstr "Bei möglichem Aliasing von Dummy-Argumenten warnen"
+msgstr "Bei möglichem Aliasing von Dummy-Argumenten warnen."
 
 #: fortran/lang.opt:202
-#, fuzzy
-#| msgid "Warn about alignment of COMMON blocks"
 msgid "Warn about alignment of COMMON blocks."
-msgstr "Bei Ausrichtung von COMMON-Blöcken warnen"
+msgstr "Bei Ausrichtung von COMMON-Blöcken warnen."
 
 #: fortran/lang.opt:206
-#, fuzzy
-#| msgid "Warn about missing ampersand in continued character constants"
 msgid "Warn about missing ampersand in continued character constants."
-msgstr "Bei fehlendem kaufmännischen Und in fortgesetzten Zeichenkonstanten warnen"
+msgstr "Bei fehlendem »&« in fortgesetzten Zeichenkonstanten warnen."
 
 #: fortran/lang.opt:210
-#, fuzzy
-#| msgid "Warn about creation of array temporaries"
 msgid "Warn about creation of array temporaries."
-msgstr "Bei Erzeugung temporärer Felder warnen"
+msgstr "Bei Erzeugung temporärer Felder warnen."
 
 #: fortran/lang.opt:214
 msgid "Warn about type and rank mismatches between arguments and parameters."
@@ -6104,10 +6009,8 @@ msgid "Use the Cray Pointer extension."
 msgstr "Die Cray-Zeiger-Erweiterung verwenden"
 
 #: fortran/lang.opt:421
-#, fuzzy
-#| msgid "Ignore 'D' in column one in fixed form"
 msgid "Ignore 'D' in column one in fixed form."
-msgstr "»D« in Spalte eins in statischer Form ignorieren"
+msgstr "»D« in Spalte eins in statischer Form ignorieren."
 
 #: fortran/lang.opt:425
 #, fuzzy
@@ -6116,10 +6019,8 @@ msgid "Treat lines with 'D' in column one as comments."
 msgstr "Zeilen mit »D« in Spalte eins als Kommentar behandeln"
 
 #: fortran/lang.opt:429
-#, fuzzy
-#| msgid "Enable Plan 9 language extensions"
 msgid "Enable all DEC language extensions."
-msgstr "Plan 9 Spracherweiterungen zulassen"
+msgstr "Alle DEC-Spracherweiterungen zulassen."
 
 #: fortran/lang.opt:433
 msgid "Enable kind-specific variants of integer intrinsic functions."
@@ -6369,40 +6270,28 @@ msgid "Enable range checking during compilation."
 msgstr "Bereichsprüfung während Kompilierung einschalten"
 
 #: fortran/lang.opt:643
-#, fuzzy
-#| msgid "Interpret any REAL(4) as a REAL(8)"
 msgid "Interpret any REAL(4) as a REAL(8)."
-msgstr "Jeden REAL(4) als REAL(8) interpretieren"
+msgstr "Jeden REAL(4) als REAL(8) interpretieren."
 
 #: fortran/lang.opt:647
-#, fuzzy
-#| msgid "Interpret any REAL(4) as a REAL(10)"
 msgid "Interpret any REAL(4) as a REAL(10)."
-msgstr "Jeden REAL(4) als REAL(10) interpretieren"
+msgstr "Jeden REAL(4) als REAL(10) interpretieren."
 
 #: fortran/lang.opt:651
-#, fuzzy
-#| msgid "Interpret any REAL(4) as a REAL(16)"
 msgid "Interpret any REAL(4) as a REAL(16)."
-msgstr "Jeden REAL(4) als REAL(16) interpretieren"
+msgstr "Jeden REAL(4) als REAL(16) interpretieren."
 
 #: fortran/lang.opt:655
-#, fuzzy
-#| msgid "Interpret any REAL(8) as a REAL(4)"
 msgid "Interpret any REAL(8) as a REAL(4)."
-msgstr "Jeden REAL(8) als REAL(4) interpretieren"
+msgstr "Jeden REAL(8) als REAL(4) interpretieren."
 
 #: fortran/lang.opt:659
-#, fuzzy
-#| msgid "Interpret any REAL(8) as a REAL(10)"
 msgid "Interpret any REAL(8) as a REAL(10)."
-msgstr "Jeden REAL(8) als REAL(10) interpretieren"
+msgstr "Jeden REAL(8) als REAL(10) interpretieren."
 
 #: fortran/lang.opt:663
-#, fuzzy
-#| msgid "Interpret any REAL(8) as a REAL(16)"
 msgid "Interpret any REAL(8) as a REAL(16)."
-msgstr "Jeden REAL(8) als REAL(16) interpretieren"
+msgstr "Jeden REAL(8) als REAL(16) interpretieren."
 
 #: fortran/lang.opt:667
 #, fuzzy
@@ -6480,46 +6369,32 @@ msgid "Does nothing.  Preserved for backward compatibility."
 msgstr "Tut nichts. Für Rückwärtskompatibilität erhalten."
 
 #: fortran/lang.opt:763
-#, fuzzy
-#| msgid "Statically link the GNU Fortran helper library (libgfortran)"
 msgid "Statically link the GNU Fortran helper library (libgfortran)."
-msgstr "GNU Fortran Hilfsbibliothek (libgfortran) statisch binden"
+msgstr "GNU Fortran Hilfsbibliothek (libgfortran) statisch binden."
 
 #: fortran/lang.opt:767
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 2003 standard"
 msgid "Conform to the ISO Fortran 2003 standard."
-msgstr "Mit dem Standard ISO Fortran 2003 übereinstimmen"
+msgstr "Mit dem Standard ISO Fortran 2003 übereinstimmen."
 
 #: fortran/lang.opt:771
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 2008 standard"
 msgid "Conform to the ISO Fortran 2008 standard."
-msgstr "Mit dem Standard ISO Fortran 2008 übereinstimmen"
+msgstr "Mit dem Standard ISO Fortran 2008 übereinstimmen."
 
 #: fortran/lang.opt:775
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 2008 standard including TS 29113"
 msgid "Conform to the ISO Fortran 2008 standard including TS 29113."
-msgstr "Mit dem Standard ISO Fortran 2008 inkl. TS 29113 übereinstimmen"
+msgstr "Mit dem Standard ISO Fortran 2008 inkl. TS 29113 übereinstimmen."
 
 #: fortran/lang.opt:779
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 95 standard"
 msgid "Conform to the ISO Fortran 95 standard."
-msgstr "Mit dem Standard ISO Fortran 95 übereinstimmen"
+msgstr "Mit dem Standard ISO Fortran 95 übereinstimmen."
 
 #: fortran/lang.opt:783
-#, fuzzy
-#| msgid "Conform to nothing in particular"
 msgid "Conform to nothing in particular."
-msgstr "Mit nichts besonderem übereinstimmen"
+msgstr "Mit nichts besonderem übereinstimmen."
 
 #: fortran/lang.opt:787
-#, fuzzy
-#| msgid "Accept extensions to support legacy code"
 msgid "Accept extensions to support legacy code."
-msgstr "Erweiterungen akzeptieren, um alten Code zu unterstützen"
+msgstr "Erweiterungen akzeptieren, um alten Code zu unterstützen."
 
 #: c-family/c.opt:43 c-family/c.opt:46 c-family/c.opt:181
 #, c-format
@@ -6554,88 +6429,60 @@ msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' be
 msgstr "-A<Frage>=<Antwort>\tDie <Antwort> auf eine <Frage> annehmen. Angabe von »-« vor <Frage> schaltet die <Antwort> auf <Frage> aus"
 
 #: c-family/c.opt:186
-#, fuzzy
-#| msgid "Do not discard comments"
 msgid "Do not discard comments."
-msgstr "Kommentare nicht verwerfen"
+msgstr "Kommentare nicht verwerfen."
 
 #: c-family/c.opt:190
-#, fuzzy
-#| msgid "Do not discard comments in macro expansions"
 msgid "Do not discard comments in macro expansions."
-msgstr "Kommentare in Makroexpansionen nicht verwerfen"
+msgstr "Kommentare in Makroexpansionen nicht verwerfen."
 
 #: c-family/c.opt:194
-#, fuzzy
-#| msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1."
-msgstr "-D<Makro>[=<Wert>]\tEin <Makro> mit <Wert> definieren. Wenn nur <Makro> angegeben wird, wird <Wert> auf 1 gesetzt"
+msgstr "-D<Makro>[=<Wert>]\tEin <Makro> mit <Wert> definieren. Wenn nur <Makro> angegeben wird, wird <Wert> auf 1 gesetzt."
 
 #: c-family/c.opt:201
-#, fuzzy
-#| msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path."
-msgstr "-F <Verz>\t<Verz> an das Ende des Einfügepfades des Haupt-Frameworks anfügen"
+msgstr "-F <Verz>\t<Verz> an das Ende des Haupt-Einfügepfades des Frameworks anfügen."
 
 #: c-family/c.opt:205
-#, fuzzy
-#| msgid "Enable preprocessing"
 msgid "Enable parsing GIMPLE."
-msgstr "Vorverarbeitung einschalten"
+msgstr ""
 
 #: c-family/c.opt:209
-#, fuzzy
-#| msgid "Print the name of header files as they are used"
 msgid "Print the name of header files as they are used."
-msgstr "Namen der Header-Dateien ausgeben, wie sie verwendet werden"
+msgstr "Namen der Header-Dateien ausgeben, wie sie verwendet werden."
 
 #: c-family/c.opt:213
-#, fuzzy
-#| msgid "-I <dir>\tAdd <dir> to the end of the main include path"
 msgid "-I <dir>\tAdd <dir> to the end of the main include path."
-msgstr "-I <Verz>\t<Verz> an das Ende des Haupteinfügepfades anfügen"
+msgstr "-I <Verz>\t<Verz> an das Ende des Haupteinfügepfades anfügen."
 
 #: c-family/c.opt:217
-#, fuzzy
-#| msgid "Generate make dependencies"
 msgid "Generate make dependencies."
-msgstr "Make-Abhängigkeiten werden erstellt"
+msgstr "Make-Abhängigkeiten erzeugen."
 
 #: c-family/c.opt:221
-#, fuzzy
-#| msgid "Generate make dependencies and compile"
 msgid "Generate make dependencies and compile."
-msgstr "Make-Abhängigkeiten erzeugen und übersetzen"
+msgstr "Make-Abhängigkeiten erzeugen und Code übersetzen."
 
 #: c-family/c.opt:225
-#, fuzzy
-#| msgid "-MF <file>\tWrite dependency output to the given file"
 msgid "-MF <file>\tWrite dependency output to the given file."
-msgstr "-MF <file>\tAbhängigkeiten-Ausgabe in angegebene Datei schreiben"
+msgstr "-MF <Datei>\tAbhängigkeiten in angegebene Datei schreiben."
 
 #: c-family/c.opt:229
-#, fuzzy
-#| msgid "Treat missing header files as generated files"
 msgid "Treat missing header files as generated files."
-msgstr "Fehlende Header-Dateien als generierte Dateien behandeln"
+msgstr "Fehlende Header-Dateien als generierte Dateien behandeln."
 
 #: c-family/c.opt:233
-#, fuzzy
-#| msgid "Like -M but ignore system header files"
 msgid "Like -M but ignore system header files."
-msgstr "Wie -M, aber System-Header-Dateien ignorieren"
+msgstr "Wie -M, aber System-Header-Dateien ignorieren."
 
 #: c-family/c.opt:237
-#, fuzzy
-#| msgid "Like -MD but ignore system header files"
 msgid "Like -MD but ignore system header files."
-msgstr "Wie -MD, aber System-Header-Dateien ignorieren"
+msgstr "Wie -MD, aber System-Header-Dateien ignorieren."
 
 #: c-family/c.opt:241
-#, fuzzy
-#| msgid "Generate phony targets for all headers"
 msgid "Generate phony targets for all headers."
-msgstr "Unechte Ziele für alle Headers erzeugen"
+msgstr "Unechte Ziele für alle Header erzeugen."
 
 #: c-family/c.opt:244 c-family/c.opt:248
 #, c-format
@@ -6649,28 +6496,20 @@ msgid "-MQ <target>\tAdd a MAKE-quoted target."
 msgstr "-MQ <target>\tMAKE-zitiertes Ziel hinzufügen"
 
 #: c-family/c.opt:249
-#, fuzzy
-#| msgid "-MT <target>\tAdd an unquoted target"
 msgid "-MT <target>\tAdd an unquoted target."
-msgstr "-MT <target>\tEin Ziel ohne Anführungszeichen hinzufügen"
+msgstr "-MT <Ziel>\tEin Ziel ohne Anführungszeichen hinzufügen."
 
 #: c-family/c.opt:253
-#, fuzzy
-#| msgid "Do not generate #line directives"
 msgid "Do not generate #line directives."
-msgstr "Keine #line-Direktiven erzeugen"
+msgstr "Keine #line-Direktiven erzeugen."
 
 #: c-family/c.opt:257
-#, fuzzy
-#| msgid "-U<macro>\tUndefine <macro>"
 msgid "-U<macro>\tUndefine <macro>."
-msgstr "-U<Makro>\t<Makro>-Definition aufheben"
+msgstr "-U<Makro>\t<Makro>-Definition aufheben."
 
 #: c-family/c.opt:261
-#, fuzzy
-#| msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler."
-msgstr "Bei Dingen, die sich bei der Übersetzung mit einem ABI-konformen Compiler ändern werden, warnen"
+msgstr "Bei Dingen, die sich bei der Übersetzung mit einem ABI-konformen Compiler ändern werden, warnen."
 
 #: c-family/c.opt:265
 msgid "Warn about things that change between the current -fabi-version and the specified version."
@@ -6689,10 +6528,8 @@ msgid "Warn about suspicious uses of memory addresses."
 msgstr "Vor verdächtigem Gebrauch von Speicheradressen warnen"
 
 #: c-family/c.opt:279
-#, fuzzy
-#| msgid "argument %qs to %<-Wnormalized%> not recognized"
 msgid "argument %qs to %<-Waligned-new%> not recognized"
-msgstr "Argument %qs für  %<-Wnormalized%> nicht erkannt"
+msgstr "Argument %qs für %<-Waligned-new%> nicht bekannt"
 
 #: c-family/c.opt:292
 msgid "Warn about 'new' of type with extended alignment without -faligned-new."
@@ -6703,16 +6540,12 @@ msgid "-Waligned-new=all Warn even if 'new' uses a class member allocation funct
 msgstr ""
 
 #: c-family/c.opt:300 ada/gcc-interface/lang.opt:57
-#, fuzzy
-#| msgid "Enable most warning messages"
 msgid "Enable most warning messages."
-msgstr "Die meisten Warnungen einschalten"
+msgstr "Die meisten Warnungen einschalten."
 
 #: c-family/c.opt:304
-#, fuzzy
-#| msgid "Warn about misuses of pragmas"
 msgid "Warn on any use of alloca."
-msgstr "Bei Missbrauch von Pragmas warnen"
+msgstr "Bei jeglicher Benutzung von alloca warnen."
 
 #: c-family/c.opt:308
 msgid "-Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that attempt to allocate objects larger than the specified number of bytes."
@@ -7045,16 +6878,12 @@ msgid "Warn about variables which are initialized to themselves."
 msgstr "Bei Variablen, die mit sich selbst initialisiert werden, warnen"
 
 #: c-family/c.opt:575
-#, fuzzy
-#| msgid "Warn about implicit declarations"
 msgid "Warn about implicit declarations."
-msgstr "Bei impliziten Deklarationen warnen"
+msgstr "Bei impliziten Deklarationen warnen."
 
 #: c-family/c.opt:583
-#, fuzzy
-#| msgid "Warn about implicit conversions from \"float\" to \"double\""
 msgid "Warn about implicit conversions from \"float\" to \"double\"."
-msgstr "Bei impliziten Umwandlungen von \"float\" nach \"double\" warnen"
+msgstr "Bei impliziten Umwandlungen von \"float\" nach \"double\" warnen."
 
 #: c-family/c.opt:587
 #, fuzzy
@@ -7063,44 +6892,32 @@ msgid "Warn if \"defined\" is used outside #if."
 msgstr "Warnen, wenn ein undefiniertes Makro in einer #if-Anweisung verwendet wird"
 
 #: c-family/c.opt:591
-#, fuzzy
-#| msgid "Warn about implicit function declarations"
 msgid "Warn about implicit function declarations."
-msgstr "Bei impliziten Funktionsdeklarationen warnen"
+msgstr "Bei impliziten Funktionsdeklarationen warnen."
 
 #: c-family/c.opt:595
-#, fuzzy
-#| msgid "Warn when a declaration does not specify a type"
 msgid "Warn when a declaration does not specify a type."
-msgstr "Warnen, wenn eine Deklaration keinen Typ angibt"
+msgstr "Warnen, wenn eine Deklaration keinen Typ angibt."
 
 #: c-family/c.opt:602
-#, fuzzy
-#| msgid "Warn about C++11 inheriting constructors when the base has a variadic constructor"
 msgid "Warn about C++11 inheriting constructors when the base has a variadic constructor."
-msgstr "Bei vererbten Konstruktoren in C++11 warnen, wenn die Basisklasse variadischen Konstruktor hat"
+msgstr "Bei vererbten Konstruktoren in C++11 warnen, wenn die Basisklasse variadischen Konstruktor hat."
 
 #: c-family/c.opt:606
-#, fuzzy
-#| msgid "Warn about incompatible integer to pointer and pointer to integer conversions"
 msgid "Warn about incompatible integer to pointer and pointer to integer conversions."
-msgstr "Bei inkompatiblen Umwandlungen zwischen Zahlen und Zeigern (in beide Richtungen) warnen"
+msgstr "Bei inkompatiblen Umwandlungen zwischen Zahlen und Zeigern (in beide Richtungen) warnen."
 
 #: c-family/c.opt:610
 msgid "Warn for suspicious integer expressions in boolean context."
-msgstr ""
+msgstr "Bei verdächtigen Ganzzahl-Ausdrücken im Boolean-Kontext warnen."
 
 #: c-family/c.opt:614
-#, fuzzy
-#| msgid "Warn when there is a cast to a pointer from an integer of a different size"
 msgid "Warn when there is a cast to a pointer from an integer of a different size."
-msgstr "Bei Typumwandlung in Zeiger von Ganzzahl anderer Breite warnen"
+msgstr "Bei Typumwandlung in Zeiger von Ganzzahl anderer Größe warnen."
 
 #: c-family/c.opt:618
-#, fuzzy
-#| msgid "Warn about invalid uses of the \"offsetof\" macro"
 msgid "Warn about invalid uses of the \"offsetof\" macro."
-msgstr "Bei ungültigen Benutzungen des Makros »offsetof« warnen"
+msgstr "Bei ungültigen Benutzungen des Makros »offsetof« warnen."
 
 #: c-family/c.opt:622
 #, fuzzy
@@ -7109,166 +6926,120 @@ msgid "Warn about PCH files that are found but not used."
 msgstr "Bei PCH-Dateien, die gefunden, aber nicht benutzt werden, warnen"
 
 #: c-family/c.opt:626
-#, fuzzy
-#| msgid "Warn when a jump misses a variable initialization"
 msgid "Warn when a jump misses a variable initialization."
-msgstr "Warnen, wenn ein Sprung die Initialisierung einer Variable überspringt"
+msgstr "Warnen, wenn ein Sprung die Initialisierung einer Variable überspringt."
 
 #: c-family/c.opt:630
 msgid "Warn when a string or character literal is followed by a ud-suffix which does not begin with an underscore."
-msgstr "Warnen, wenn Zeichenkette oder Zeichenliteral gefolgt von UD-Suffix auftritt, der nicht mit Unterstrich anfängt"
+msgstr "Warnen, wenn Zeichenkette oder Zeichenliteral gefolgt von UD-Suffix auftritt, der nicht mit Unterstrich anfängt."
 
 #: c-family/c.opt:634
-#, fuzzy
-#| msgid "Warn when a logical operator is suspiciously always evaluating to true or false"
 msgid "Warn when a logical operator is suspiciously always evaluating to true or false."
-msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »wahr« oder »falsch« auswertet"
+msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »wahr« oder »falsch« auswertet."
 
 #: c-family/c.opt:638
-#, fuzzy
-#| msgid "Warn when logical not is used on the left hand side operand of a comparison"
 msgid "Warn when logical not is used on the left hand side operand of a comparison."
-msgstr "Warnen, wenn ein logisches Nicht im linken Operanden eines Vergleichs benutzt wird"
+msgstr "Warnen, wenn ein logisches Nicht im linken Operanden eines Vergleichs benutzt wird."
 
 #: c-family/c.opt:642
-#, fuzzy
-#| msgid "Do not warn about using \"long long\" when -pedantic"
 msgid "Do not warn about using \"long long\" when -pedantic."
-msgstr "Nicht bei Verwendung von »long long« mit -pedantic warnen"
+msgstr "Nicht bei Verwendung von »long long« mit -pedantic warnen."
 
 #: c-family/c.opt:646
-#, fuzzy
-#| msgid "Warn about suspicious declarations of \"main\""
 msgid "Warn about suspicious declarations of \"main\"."
-msgstr "Vor verdächtigen Deklarationen von »main« warnen"
+msgstr "Vor verdächtigen Deklarationen von »main« warnen."
 
 #: c-family/c.opt:654
-#, fuzzy
-#| msgid "Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not"
 msgid "Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not."
-msgstr "Bei verdächtigen Aufrufen von memset warnen, wenn das dritte Argument eine Null ist, das zweite jedoch nicht"
+msgstr "Bei verdächtigen Aufrufen von memset warnen, wenn das dritte Argument eine Null ist, das zweite jedoch nicht."
 
 #: c-family/c.opt:658
-#, fuzzy
-#| msgid "Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not"
 msgid "Warn about suspicious calls to memset where the third argument contains the number of elements not multiplied by the element size."
-msgstr "Bei verdächtigen Aufrufen von memset warnen, wenn das dritte Argument eine Null ist, das zweite jedoch nicht"
+msgstr "Bei verdächtigen Aufrufen von memset warnen, wenn das dritte Argument die Anzahl der Elemente enthält, aber nicht mit der Elementgröße multipliziert."
 
 #: c-family/c.opt:662
-#, fuzzy
-#| msgid "Warn when the packed attribute has no effect on struct layout"
 msgid "Warn when the indentation of the code does not reflect the block structure."
-msgstr "Warnen, wenn das »packed«-Attribut keine Auswirkung auf Strukturanordnung hat"
+msgstr "Warnen, wenn die Einrückung des Codes nicht der Blockstruktur entspricht."
 
 #: c-family/c.opt:666
-#, fuzzy
-#| msgid "Warn about possibly missing braces around initializers"
 msgid "Warn about possibly missing braces around initializers."
-msgstr "Bei möglicherweise fehlenden Klammern um Initialisierungen warnen"
+msgstr "Bei möglicherweise fehlenden Klammern um Initialisierungen warnen."
 
 #: c-family/c.opt:670
-#, fuzzy
-#| msgid "Warn about global functions without previous declarations"
 msgid "Warn about global functions without previous declarations."
-msgstr "Vor globalen Funktionen ohne vorherige Deklaration warnen"
+msgstr "Vor globalen Funktionen ohne vorherige Deklaration warnen."
 
 #: c-family/c.opt:674
-#, fuzzy
-#| msgid "Warn about missing fields in struct initializers"
 msgid "Warn about missing fields in struct initializers."
-msgstr "Bei fehlenden Feldern in struct-Initialisierungen warnen"
+msgstr "Bei fehlenden Feldern in struct-Initialisierungen warnen."
 
 #: c-family/c.opt:678
 msgid "Warn on direct multiple inheritance."
-msgstr ""
+msgstr "Bei direkter Mehrfachvererbung warnen."
 
 #: c-family/c.opt:682
 msgid "Warn on namespace definition."
-msgstr ""
+msgstr "Bei Namensraum-Definition warnen."
 
 #: c-family/c.opt:686
-#, fuzzy
-#| msgid "Warn about missing fields in struct initializers"
 msgid "Warn about missing sized deallocation functions."
-msgstr "Bei fehlenden Feldern in struct-Initialisierungen warnen"
+msgstr ""
 
 #: c-family/c.opt:690
-#, fuzzy
-#| msgid "Warn about suspicious length parameters to certain string functions if the argument uses sizeof"
 msgid "Warn about suspicious length parameters to certain string functions if the argument uses sizeof."
-msgstr "Bei verdächtigen Aufrufen bestimmter Zeichenkettenfunktionen warnen, wenn im Argument sizeof vorkommt"
+msgstr "Bei verdächtigen Aufrufen bestimmter Zeichenkettenfunktionen warnen, wenn im Argument sizeof vorkommt."
 
 #: c-family/c.opt:694
-#, fuzzy
-#| msgid "Warn when sizeof is applied on a parameter declared as an array"
 msgid "Warn when sizeof is applied on a parameter declared as an array."
-msgstr "Warnen, wenn sizeof auf einen Funktionsparameter angewendet wird, der als Feld deklariert ist"
+msgstr "Warnen, wenn sizeof auf einen Funktionsparameter angewendet wird, der als Feld deklariert ist."
 
 #: c-family/c.opt:698
 msgid "Warn about buffer overflow in string manipulation functions like memcpy and strcpy."
-msgstr ""
+msgstr "Bei Pufferüberlauf in Stringfunktionen wie memcpy und strcpy warnen."
 
 #: c-family/c.opt:703
 msgid "Under the control of Object Size type, warn about buffer overflow in string manipulation functions like memcpy and strcpy."
 msgstr ""
 
 #: c-family/c.opt:708
-#, fuzzy
-#| msgid "Warn about functions which might be candidates for format attributes"
 msgid "Warn about functions which might be candidates for format attributes."
-msgstr "Bei Funktionen, die Kandidaten für Formatattribute sein könnten, warnen"
+msgstr "Bei Funktionen, die Kandidaten für Formatattribute sein könnten, warnen."
 
 #: c-family/c.opt:712
 msgid "Suggest that the override keyword be used when the declaration of a virtual function overrides another."
 msgstr ""
 
 #: c-family/c.opt:717
-#, fuzzy
-#| msgid "Warn about enumerated switches, with no default, missing a case"
 msgid "Warn about enumerated switches, with no default, missing a case."
-msgstr "Bei aufgezählten »switch«-Anweisungen ohne »default«, denen ein Fall fehlt, warnen"
+msgstr "Bei »switch«-Anweisungen auf Aufzählungen, denen ein Fall fehlt und die kein »default:« haben, warnen."
 
 #: c-family/c.opt:721
-#, fuzzy
-#| msgid "Warn about enumerated switches missing a \"default:\" statement"
 msgid "Warn about enumerated switches missing a \"default:\" statement."
-msgstr "Bei aufgezählten »switch«-Anweisungen ohne »default«-Anweisung warnen"
+msgstr "Bei »switch«-Anweisungen auf Aufzählungen ohne »default:«-Fall warnen."
 
 #: c-family/c.opt:725
-#, fuzzy
-#| msgid "Warn about all enumerated switches missing a specific case"
 msgid "Warn about all enumerated switches missing a specific case."
-msgstr "Bei aufgezählten »switch«-Anweisungen, denen ein bestimmter Fall fehlt, warnen"
+msgstr "Bei »switch«-Anweisungen auf Aufzählungen, denen ein Fall fehlt, warnen."
 
 #: c-family/c.opt:729
-#, fuzzy
-#| msgid "Warn about truncated character expressions"
 msgid "Warn about switches with boolean controlling expression."
-msgstr "Bei abgeschnittenen Zeichenausdrücken warnen"
+msgstr ""
 
 #: c-family/c.opt:733
-#, fuzzy
-#| msgid "for template declaration %q+D"
 msgid "Warn on primary template declaration."
-msgstr "Für Template-Deklaration %q+D"
+msgstr ""
 
 #: c-family/c.opt:741
-#, fuzzy
-#| msgid "Warn about user-specified include directories that do not exist"
 msgid "Warn about user-specified include directories that do not exist."
-msgstr "Bei durch den Benutzer angegebenen Einfügepfaden, die nicht vorhanden sind, warnen"
+msgstr "Bei durch den Benutzer angegebenen Einfügepfaden, die nicht vorhanden sind, warnen."
 
 #: c-family/c.opt:745
-#, fuzzy
-#| msgid "Warn about function parameters declared without a type specifier in K&R-style functions"
 msgid "Warn about function parameters declared without a type specifier in K&R-style functions."
-msgstr "Bei ohne Typspezifizierung in Funktionen im K&R-Stil deklarierten Funktionsparametern warnen"
+msgstr "Bei Funktionen im K&R-Stil, die Parameter ohne Typangabe haben, warnen."
 
 #: c-family/c.opt:749
-#, fuzzy
-#| msgid "Warn about global functions without prototypes"
 msgid "Warn about global functions without prototypes."
-msgstr "Bei globalen Funktionen ohne Prototypen warnen"
+msgstr "Bei globalen Funktionen ohne Prototypen warnen."
 
 #: c-family/c.opt:752 c-family/c.opt:1153 c-family/c.opt:1160
 #: c-family/c.opt:1344 c-family/c.opt:1363 c-family/c.opt:1386
@@ -7283,10 +7054,8 @@ msgid "switch %qs is no longer supported"
 msgstr "Schalter %qs wird nicht mehr unterstützt"
 
 #: c-family/c.opt:756
-#, fuzzy
-#| msgid "Warn about use of multi-character character constants"
 msgid "Warn about use of multi-character character constants."
-msgstr "Bei Verwendung von Zeichenkonstanten mit mehreren Zeichen warnen"
+msgstr "Bei Verwendung von Zeichenkonstanten mit mehreren Zeichen warnen."
 
 #: c-family/c.opt:760
 #, fuzzy
@@ -7335,144 +7104,100 @@ msgid "argument %qs to %<-Wnormalized%> not recognized"
 msgstr "Argument %qs für  %<-Wnormalized%> nicht erkannt"
 
 #: c-family/c.opt:819
-#, fuzzy
-#| msgid "Warn if a C-style cast is used in a program"
 msgid "Warn if a C-style cast is used in a program."
-msgstr "Warnen, wenn eine Typumwandlung im C-Stil im Programm verwendet wird"
+msgstr "Warnen, wenn eine Typumwandlung im C-Stil im Programm verwendet wird."
 
 #: c-family/c.opt:823
-#, fuzzy
-#| msgid "Warn for obsolescent usage in a declaration"
 msgid "Warn for obsolescent usage in a declaration."
-msgstr "Bei veralteter Verwendung in einer Deklaration warnen"
+msgstr "Bei veralteter Verwendung in einer Deklaration warnen."
 
 #: c-family/c.opt:827
-#, fuzzy
-#| msgid "Warn if an old-style parameter definition is used"
 msgid "Warn if an old-style parameter definition is used."
-msgstr "Warnen, wenn eine Parameterdefinition im alten Stil verwendet wird"
+msgstr "Warnen, wenn eine Parameterdefinition im alten Stil verwendet wird."
 
 #: c-family/c.opt:831
 msgid "Warn if a simd directive is overridden by the vectorizer cost model."
 msgstr ""
 
 #: c-family/c.opt:835
-#, fuzzy
-#| msgid "Warn if a string is longer than the maximum portable length specified by the standard"
 msgid "Warn if a string is longer than the maximum portable length specified by the standard."
-msgstr "Warnen, wenn Zeichenkette länger als größte vom Standard angegebene portable Länge ist"
+msgstr "Warnen, wenn Zeichenkette länger als die größte vom Standard angegebene portable Länge ist."
 
 #: c-family/c.opt:839
-#, fuzzy
-#| msgid "Warn about overloaded virtual function names"
 msgid "Warn about overloaded virtual function names."
-msgstr "Bei überladenen virtuellen Funktionsnamen warnen"
+msgstr "Bei überladenen virtuellen Funktionsnamen warnen."
 
 #: c-family/c.opt:843
-#, fuzzy
-#| msgid "Warn about overriding initializers without side effects"
 msgid "Warn about overriding initializers without side effects."
-msgstr "Beim Überschreiben von Initialisierungen ohne Seiteneffekte warnen"
+msgstr "Beim Überschreiben von Initialisierungen ohne Seiteneffekte warnen."
 
 #: c-family/c.opt:847
-#, fuzzy
-#| msgid "Warn about overriding initializers without side effects"
 msgid "Warn about overriding initializers with side effects."
-msgstr "Beim Überschreiben von Initialisierungen ohne Seiteneffekte warnen"
+msgstr "Beim Überschreiben von Initialisierungen mit Seiteneffekten warnen."
 
 #: c-family/c.opt:851
-#, fuzzy
-#| msgid "Warn about packed bit-fields whose offset changed in GCC 4.4"
 msgid "Warn about packed bit-fields whose offset changed in GCC 4.4."
-msgstr "Bei gepackten Bitfeldern, deren Offset sich in GCC 4.4 geändert hat, warnen"
+msgstr "Bei gepackten Bitfeldern, deren Offset sich in GCC 4.4 geändert hat, warnen."
 
 #: c-family/c.opt:855
-#, fuzzy
-#| msgid "Warn about possibly missing parentheses"
 msgid "Warn about possibly missing parentheses."
-msgstr "Bei möglicherweise fehlenden Klammern warnen"
+msgstr "Bei möglicherweise fehlenden Klammern warnen."
 
 #: c-family/c.opt:863
-#, fuzzy
-#| msgid "Warn when converting the type of pointers to member functions"
 msgid "Warn when converting the type of pointers to member functions."
-msgstr "Bei Umwandlung des Typs von Zeigern auf Elementfunktionen warnen"
+msgstr "Bei Umwandlung des Typs von Zeigern auf Elementfunktionen warnen."
 
 #: c-family/c.opt:867
-#, fuzzy
-#| msgid "Warn about function pointer arithmetic"
 msgid "Warn about function pointer arithmetic."
-msgstr "Bei Arithmetik mit Funktionszeigern warnen"
+msgstr "Bei Arithmetik mit Funktionszeigern warnen."
 
 #: c-family/c.opt:871
-#, fuzzy
-#| msgid "Warn when a pointer differs in signedness in an assignment"
 msgid "Warn when a pointer differs in signedness in an assignment."
-msgstr "Warnen, wenn sich ein Zeiger im Vorzeichenbesitz in einer Zuweisung unterscheidet"
+msgstr "Warnen, wenn sich ein Zeiger im Vorzeichenbesitz in einer Zuweisung unterscheidet."
 
 #: c-family/c.opt:875
-#, fuzzy
-#| msgid "Warn when a pointer is cast to an integer of a different size"
 msgid "Warn when a pointer is cast to an integer of a different size."
-msgstr "Bei Typkonvertierung von Zeiger auf Ganzzahl anderer Breite warnen"
+msgstr "Bei Typkonvertierung von Zeiger auf Ganzzahl anderer Breite warnen."
 
 #: c-family/c.opt:879
-#, fuzzy
-#| msgid "Warn about misuses of pragmas"
 msgid "Warn about misuses of pragmas."
-msgstr "Bei Missbrauch von Pragmas warnen"
+msgstr "Bei Missbrauch von Pragmas warnen."
 
 #: c-family/c.opt:883
-#, fuzzy
-#| msgid "Warn if a property for an Objective-C object has no assign semantics specified"
 msgid "Warn if a property for an Objective-C object has no assign semantics specified."
-msgstr "Warnen, wenn für eine Eigenschaft eines Objective-C-Objektes keine Zuweisungssemantik spezifiert ist"
+msgstr "Warnen, wenn für eine Eigenschaft eines Objective-C-Objektes keine Zuweisungssemantik spezifiert ist."
 
 #: c-family/c.opt:887
-#, fuzzy
-#| msgid "Warn if inherited methods are unimplemented"
 msgid "Warn if inherited methods are unimplemented."
-msgstr "Warnen, wenn geerbte Methoden nicht implementiert sind"
+msgstr "Warnen, wenn geerbte Methoden nicht implementiert sind."
 
 #: c-family/c.opt:891 c-family/c.opt:895
-#, fuzzy
-#| msgid "Warn if a loop with constant number of iterations triggers undefined behavior"
 msgid "Warn for placement new expressions with undefined behavior."
-msgstr "Warnen, wenn Schleife mit konstanter Anzahl von Durchläufen zu undefiniertem Verhalten führt"
+msgstr ""
 
 #: c-family/c.opt:899
-#, fuzzy
-#| msgid "Warn about multiple declarations of the same object"
 msgid "Warn about multiple declarations of the same object."
-msgstr "Bei mehreren Deklarationen des gleichen Objektes warnen"
+msgstr "Bei mehreren Deklarationen desselben Objektes warnen."
 
 #: c-family/c.opt:903
-#, fuzzy
-#| msgid "Warn about misuses of pragmas"
 msgid "Warn about uses of register storage specifier."
-msgstr "Bei Missbrauch von Pragmas warnen"
+msgstr ""
 
 #: c-family/c.opt:907
-#, fuzzy
-#| msgid "Warn when the compiler reorders code"
 msgid "Warn when the compiler reorders code."
-msgstr "Warnen, wenn der Compiler Code umsortiert"
+msgstr "Warnen, wenn der Compiler Code umsortiert."
 
 #: c-family/c.opt:911
-#, fuzzy
-#| msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)"
 msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)."
-msgstr "Bei Standardrückgabetyp »int« für Funktionen (C) und inkonsistenten Rückgabetypen (C++) warnen"
+msgstr "Bei Standardrückgabetyp »int« für Funktionen (C) und inkonsistenten Rückgabetypen (C++) warnen."
 
 #: c-family/c.opt:915
 msgid "Warn on suspicious constructs involving reverse scalar storage order."
 msgstr ""
 
 #: c-family/c.opt:919
-#, fuzzy
-#| msgid "Warn if a selector has multiple methods"
 msgid "Warn if a selector has multiple methods."
-msgstr "Warnen, wenn ein Selektor mehrere Methoden hat"
+msgstr "Warnen, wenn ein Selektor mehrere Methoden hat."
 
 #: c-family/c.opt:923
 #, fuzzy
@@ -7481,96 +7206,68 @@ msgid "Warn about possible violations of sequence point rules."
 msgstr "Bei möglichen Verstößen gegen Sequenzpunktregeln warnen"
 
 #: c-family/c.opt:927
-#, fuzzy
-#| msgid "local declaration of %qE hides instance variable"
 msgid "Warn if a local declaration hides an instance variable."
-msgstr "lokale Deklaration von %qE verdeckt Instanzvariable"
+msgstr "Warnen, wenn eine lokale Deklaration von %qE eine Instanzvariable verdeckt."
 
 #: c-family/c.opt:931 c-family/c.opt:935
 msgid "Warn if left shift of a signed value overflows."
 msgstr ""
 
 #: c-family/c.opt:939
-#, fuzzy
-#| msgid "right shift count is negative"
 msgid "Warn if shift count is negative."
-msgstr "Rechts-Schiebe-Weite ist negativ"
+msgstr "Warnen, wenn Schiebe-Anzahl negativ ist."
 
 #: c-family/c.opt:943
-#, fuzzy
-#| msgid "right shift count >= width of type"
 msgid "Warn if shift count >= width of type."
-msgstr "Rechts-Schiebe-Weite >= Breite des Typs"
+msgstr "Warnen, wenn Rechts-Schiebe-Anzahl >= Breite des Typs ist."
 
 #: c-family/c.opt:947
-#, fuzzy
-#| msgid "right shift count is negative"
 msgid "Warn if left shifting a negative value."
-msgstr "Rechts-Schiebe-Weite ist negativ"
+msgstr "Warnen, wenn eine negative Zahl nach links geschoben wird."
 
 #: c-family/c.opt:951
-#, fuzzy
-#| msgid "Warn about signed-unsigned comparisons"
 msgid "Warn about signed-unsigned comparisons."
-msgstr "Bei Vergleichen von vorzeichenbehaftet mit vorzeichenlos warnen"
+msgstr "Bei Vergleichen von vorzeichenbehaftet mit vorzeichenlos warnen."
 
 #: c-family/c.opt:959
-#, fuzzy
-#| msgid "Warn for implicit type conversions between signed and unsigned integers"
 msgid "Warn for implicit type conversions between signed and unsigned integers."
-msgstr "Bei impliziten Typumwandlungen zwischen vorzeichenbehafteten und vorzeichenlosen Ganzzahlen warnen"
+msgstr "Bei impliziten Typumwandlungen zwischen vorzeichenbehafteten und vorzeichenlosen Ganzzahlen warnen."
 
 #: c-family/c.opt:963
-#, fuzzy
-#| msgid "Warn when overload promotes from unsigned to signed"
 msgid "Warn when overload promotes from unsigned to signed."
-msgstr "Warnen, wenn Überladung von vorzeichenbehaftet zu vorzeichenlos führt"
+msgstr "Warnen, wenn Überladung zur Umwandlung von vorzeichenbehaftet zu vorzeichenlos führt."
 
 #: c-family/c.opt:967
-#, fuzzy
-#| msgid "Warn about uncasted NULL used as sentinel"
 msgid "Warn about uncasted NULL used as sentinel."
-msgstr "Bei als Wächter verwendetem, nicht umgewandeltem NULL warnen"
+msgstr "Bei als Wächter verwendetem, nicht umgewandeltem NULL warnen."
 
 #: c-family/c.opt:971
-#, fuzzy
-#| msgid "Warn about unprototyped function declarations"
 msgid "Warn about unprototyped function declarations."
-msgstr "Bei Funktionsdeklarationen ohne Prototyp warnen"
+msgstr "Bei Funktionsdeklarationen ohne Prototyp warnen."
 
 #: c-family/c.opt:983
-#, fuzzy
-#| msgid "Warn if type signatures of candidate methods do not match exactly"
 msgid "Warn if type signatures of candidate methods do not match exactly."
-msgstr "Wenn Typsignaturen der Kandidatenmethoden nicht exakt passen, warnen"
+msgstr "Wenn Typsignaturen der Kandidatenmethoden nicht exakt passen, warnen."
 
 #: c-family/c.opt:987
-#, fuzzy
-#| msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used"
 msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used."
-msgstr "Warnen, wenn die eingebauten Funktionen __sync_fetch_and_nand und __sync_nand_and_fetch verwendet werden"
+msgstr "Warnen, wenn die eingebauten Funktionen __sync_fetch_and_nand und __sync_nand_and_fetch verwendet werden."
 
 #: c-family/c.opt:991
-#, fuzzy
-#| msgid "Deprecated.  This switch has no effect"
 msgid "Deprecated.  This switch has no effect."
-msgstr "Veraltet. Dieser Schalter hat keine Auswirkung"
+msgstr "Veraltet. Dieser Schalter hat keine Auswirkung."
 
 #: c-family/c.opt:999
-#, fuzzy
-#| msgid "Warn when a logical operator is suspiciously always evaluating to true or false"
 msgid "Warn if a comparison always evaluates to true or false."
-msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »wahr« oder »falsch« auswertet"
+msgstr "Warnen, wenn ein Vergleich immer zu »wahr« oder »falsch« auswertet."
 
 #: c-family/c.opt:1003
 msgid "Warn if a throw expression will always result in a call to terminate()."
 msgstr ""
 
 #: c-family/c.opt:1007
-#, fuzzy
-#| msgid "Warn about features not present in traditional C"
 msgid "Warn about features not present in traditional C."
-msgstr "Bei Merkmalen, die in traditionellem C nicht verfügbar sind, warnen"
+msgstr "Bei Merkmalen, die in traditionellem C nicht verfügbar sind, warnen."
 
 #: c-family/c.opt:1011
 #, fuzzy
@@ -7585,126 +7282,92 @@ msgid "Warn if trigraphs are encountered that might affect the meaning of the pr
 msgstr "Warnen, wenn Trigraphen auftreten, die die Bedeutung des Programmes beeinflussen könnten"
 
 #: c-family/c.opt:1019
-#, fuzzy
-#| msgid "Warn about @selector()s without previously declared methods"
 msgid "Warn about @selector()s without previously declared methods."
-msgstr "Bei @selector() ohne vorher deklarierte Methoden warnen"
+msgstr "Bei @selector() ohne vorher deklarierte Methoden warnen."
 
 #: c-family/c.opt:1023
-#, fuzzy
-#| msgid "Warn if an undefined macro is used in an #if directive"
 msgid "Warn if an undefined macro is used in an #if directive."
-msgstr "Warnen, wenn ein undefiniertes Makro in einer #if-Anweisung verwendet wird"
+msgstr "Warnen, wenn ein undefiniertes Makro in einer #if-Anweisung verwendet wird."
 
 #: c-family/c.opt:1035
-#, fuzzy
-#| msgid "Warn about unrecognized pragmas"
 msgid "Warn about unrecognized pragmas."
-msgstr "Bei nicht erkannten Pragmas warnen"
+msgstr "Bei nicht erkannten Pragmas warnen."
 
 #: c-family/c.opt:1039
-#, fuzzy
-#| msgid "Warn about unsuffixed float constants"
 msgid "Warn about unsuffixed float constants."
-msgstr "Bei Gleitkommakonstanten ohne Suffix warnen"
+msgstr "Bei Gleitkommakonstanten ohne Suffix warnen."
 
 #: c-family/c.opt:1047
-#, fuzzy
-#| msgid "Warn when typedefs locally defined in a function are not used"
 msgid "Warn when typedefs locally defined in a function are not used."
-msgstr "Bei lokal in Funktionen definierten, aber nicht verwendeten Typedefs warnen"
+msgstr "Bei lokal in Funktionen definierten, aber nicht verwendeten Typedefs warnen."
 
 #: c-family/c.opt:1051
-#, fuzzy
-#| msgid "Warn about macros defined in the main file that are not used"
 msgid "Warn about macros defined in the main file that are not used."
-msgstr "Bei in der Hauptdatei definierten, ungenutzten Makros warnen"
+msgstr "Bei in der Hauptdatei definierten, ungenutzten Makros warnen."
 
 #: c-family/c.opt:1055
-#, fuzzy
-#| msgid "Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value"
 msgid "Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value."
-msgstr "Warnen, wenn der Rückgabewert der mit dem Attribut warn_unused_result definierten Funktion ignoriert wird"
+msgstr "Warnen, wenn der Rückgabewert der mit dem Attribut warn_unused_result definierten Funktion ignoriert wird."
 
 #: c-family/c.opt:1063 c-family/c.opt:1067
-#, fuzzy
-#| msgid "Warn when a variable is unused"
 msgid "Warn when a const variable is unused."
-msgstr "Warnen, wenn eine Variable nicht verwendet wird"
+msgstr "Warnen, wenn eine konstante Variable nicht verwendet wird."
 
 #: c-family/c.opt:1071
-#, fuzzy
-#| msgid "Warn about using variadic macros"
 msgid "Warn about using variadic macros."
-msgstr "Bei Verwendung variadischer Makros warnen"
+msgstr "Bei Verwendung variadischer Makros warnen."
 
 #: c-family/c.opt:1075
-#, fuzzy
-#| msgid "Warn about questionable usage of the macros used to retrieve variable arguments"
 msgid "Warn about questionable usage of the macros used to retrieve variable arguments."
-msgstr "Bei fraglicher Verwendung der Makros, die variable Argumente ermitteln, warnen"
+msgstr "Bei fragwürdiger Verwendung der Makros, die variable Argumente ermitteln, warnen."
 
 #: c-family/c.opt:1079
-#, fuzzy
-#| msgid "Warn if a variable length array is used"
 msgid "Warn if a variable length array is used."
-msgstr "Warnen, wenn ein Feld veränderbarer Länge verwendet wird"
+msgstr "Warnen, wenn ein Feld veränderbarer Länge verwendet wird."
 
 #: c-family/c.opt:1083
 msgid "-Wvla-larger-than=<number> Warn on unbounded uses of variable-length arrays, and on bounded uses of variable-length arrays whose bound can be larger than <number> bytes."
 msgstr ""
 
 #: c-family/c.opt:1089
-#, fuzzy
-#| msgid "Warn when a register variable is declared volatile"
 msgid "Warn when a register variable is declared volatile."
-msgstr "Warnen, wenn Registervariable als »volatile« deklariert ist"
+msgstr "Warnen, wenn eine Registervariable als »volatile« deklariert ist."
 
 #: c-family/c.opt:1093
 msgid "Warn on direct virtual inheritance."
 msgstr ""
 
 #: c-family/c.opt:1097
-#, fuzzy
-#| msgid "Warn if a virtual base has a non-trivial move assignment operator"
 msgid "Warn if a virtual base has a non-trivial move assignment operator."
-msgstr "Warnen, wenn virtuelle Basis einen nicht trivialen Zuweisungsoperator (move) hat"
+msgstr "Warnen, wenn virtuelle Basis einen nicht trivialen Zuweisungsoperator (move) hat."
 
 #: c-family/c.opt:1101
 msgid "In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard."
 msgstr "In C++ bedeutet ungleich Null die Warnung vor veralteter Umwandlung von Zeichenkettenliteralen in »char *«. In C erfolgt eine ähnliche Warnung, nur ist die Umwandlung nat. laut ISO-C-Standard nicht veraltet."
 
 #: c-family/c.opt:1105
-#, fuzzy
-#| msgid "Warn when a literal '0' is used as null pointer"
 msgid "Warn when a literal '0' is used as null pointer."
-msgstr "Warnen, wenn ein Literal '0' als NULL-Zeiger verwendet wird"
+msgstr "Warnen, wenn ein Literal 0 als NULL-Zeiger verwendet wird."
 
 #: c-family/c.opt:1109
-#, fuzzy
-#| msgid "Warn about useless casts"
 msgid "Warn about useless casts."
-msgstr "Bei unnützen Umwandlungen warnen"
+msgstr "Bei unnützen Typumwandlungen warnen."
 
 #: c-family/c.opt:1113
 msgid "Warn if a class type has a base or a field whose type uses the anonymous namespace or depends on a type with no linkage."
 msgstr ""
 
 #: c-family/c.opt:1117
-#, fuzzy
-#| msgid "Warn when a declaration does not specify a type"
 msgid "Warn when a declaration has duplicate const, volatile, restrict or _Atomic specifier."
-msgstr "Warnen, wenn eine Deklaration keinen Typ angibt"
+msgstr ""
 
 #: c-family/c.opt:1121
 msgid "Warn when an argument passed to a restrict-qualified parameter aliases with another argument."
 msgstr ""
 
 #: c-family/c.opt:1126
-#, fuzzy
-#| msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)"
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)."
-msgstr "Ein Synonym für -std=c89 (für C) oder -std=c++98 (für C++)"
+msgstr "Ein Synonym für -std=c89 (für C) oder -std=c++98 (für C++)."
 
 #: c-family/c.opt:1134
 msgid "The version of the C++ ABI used for -Wabi warnings and link compatibility aliases."
@@ -7731,33 +7394,25 @@ msgid "-faligned-new=<N> Use C++17 over-aligned type allocation for alignments g
 msgstr ""
 
 #: c-family/c.opt:1157
-#, fuzzy
-#| msgid "Allow variadic functions without named parameter"
 msgid "Allow variadic functions without named parameter."
-msgstr "Variadische Funktionen ohne benannte Parameter erlauben"
+msgstr "Variadische Funktionen ohne benannte Parameter erlauben."
 
 #: c-family/c.opt:1161 c-family/c.opt:1400 c-family/c.opt:1722
 #: c-family/c.opt:1726 c-family/c.opt:1742
-#, fuzzy
-#| msgid "No longer supported"
 msgid "No longer supported."
-msgstr "Wird nicht mehr unterstützt"
+msgstr "Wird nicht mehr unterstützt."
 
 #: c-family/c.opt:1165
-#, fuzzy
-#| msgid "Recognize the \"asm\" keyword"
 msgid "Recognize the \"asm\" keyword."
-msgstr "Das »asm«-Schlüsselwort erkennen"
+msgstr "Das »asm«-Schlüsselwort erkennen."
 
 #: c-family/c.opt:1173
-#, fuzzy
-#| msgid "Recognize built-in functions"
 msgid "Recognize built-in functions."
-msgstr "Eingebaute Funktionen erkennen"
+msgstr "Eingebaute Funktionen erkennen."
 
 #: c-family/c.opt:1180
 msgid "Where shorter, use canonicalized paths to systems headers."
-msgstr "Falls kürzer, offizielle Pfade zu System-Headers verwenden"
+msgstr "Falls kürzer, kanonische Pfade zu System-Headern verwenden."
 
 #: c-family/c.opt:1184
 msgid "Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to control instrumentation.  Currently available for C, C++ and ObjC."
@@ -7812,34 +7467,24 @@ msgid "With this option zero size obtained dynamically for objects with incomple
 msgstr ""
 
 #: c-family/c.opt:1248
-#, fuzzy
-#| msgid "Generate checks for references to NULL"
 msgid "Generate checks for all read accesses to memory."
-msgstr "Prüfungen auf Referenzen auf NULL erzeugen"
+msgstr "Prüfungen für alle Lesezugriffe im Speicher erzeugen."
 
 #: c-family/c.opt:1252
-#, fuzzy
-#| msgid "Generate checks for references to NULL"
 msgid "Generate checks for all write accesses to memory."
-msgstr "Prüfungen auf Referenzen auf NULL erzeugen"
+msgstr "Prüfungen für alle Schreibzugriffe im Speicher erzeugen."
 
 #: c-family/c.opt:1256
-#, fuzzy
-#| msgid "Generate code for near jumps"
 msgid "Generate bounds stores for pointer writes."
-msgstr "Code für nahe Sprünge erzeugen"
+msgstr ""
 
 #: c-family/c.opt:1260
-#, fuzzy
-#| msgid "Generate call insns as indirect calls"
 msgid "Generate bounds passing for calls."
-msgstr "Sprungbefehle als indirekte Sprünge erzeugen"
+msgstr ""
 
 #: c-family/c.opt:1264
-#, fuzzy
-#| msgid "argument of function call might be a candidate for a format attribute"
 msgid "Instrument only functions marked with bnd_instrument attribute."
-msgstr "Argument des Funktionsaufrufs könnte Kandidat für Formatattribut sein"
+msgstr ""
 
 #: c-family/c.opt:1268
 msgid "Transform instrumented builtin calls into calls to wrappers."
@@ -7850,16 +7495,12 @@ msgid "Enable Cilk Plus."
 msgstr ""
 
 #: c-family/c.opt:1282
-#, fuzzy
-#| msgid "Enable support for GNU transactional memory"
 msgid "Enable support for C++ concepts."
-msgstr "Unterstützung für GNU-Transaktionsspeicher einschalten"
+msgstr "Unterstützung für C++-Konzepte einschalten."
 
 #: c-family/c.opt:1286
-#, fuzzy
-#| msgid "Allow the arguments of the '?' operator to have different types"
 msgid "Allow the arguments of the '?' operator to have different types."
-msgstr "Verschiedene Typen für die Argumente des »?«-Operators erlauben"
+msgstr "Verschiedene Typen für die Argumente des »?«-Operators erlauben."
 
 #: c-family/c.opt:1293
 #, c-format
@@ -7867,22 +7508,16 @@ msgid "no class name specified with %qs"
 msgstr "kein Klassenname mit %qs angegeben"
 
 #: c-family/c.opt:1294
-#, fuzzy
-#| msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings."
-msgstr "-fconst-string-class=<Name>\tKlasse <Name> für konstante Zeichenketten verwenden"
+msgstr "-fconst-string-class=<Name>\tKlasse <Name> für konstante Zeichenketten verwenden."
 
 #: c-family/c.opt:1298
-#, fuzzy
-#| msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth"
 msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth."
-msgstr "-fconstexpr-depth=<Zahl>\tGrößte Rekursionstiefe für konstante Ausdrücke angeben"
+msgstr "-fconstexpr-depth=<Zahl>\tGrößte Rekursionstiefe für konstante Ausdrücke angeben."
 
 #: c-family/c.opt:1302
-#, fuzzy
-#| msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth"
 msgid "-fconstexpr-loop-limit=<number>\tSpecify maximum constexpr loop iteration count."
-msgstr "-fconstexpr-depth=<Zahl>\tGrößte Rekursionstiefe für konstante Ausdrücke angeben"
+msgstr ""
 
 #: c-family/c.opt:1306
 #, fuzzy
@@ -7967,76 +7602,56 @@ msgid "Do not assume that standard C libraries and \"main\" exist."
 msgstr "Nicht annehmen, dass Standard-C-Bibliotheken und »main« vorhanden sind"
 
 #: c-family/c.opt:1375
-#, fuzzy
-#| msgid "Recognize GNU-defined keywords"
 msgid "Recognize GNU-defined keywords."
-msgstr "GNU-definierte Schlüsselworte erkennen"
+msgstr "GNU-definierte Schlüsselworte erkennen."
 
 #: c-family/c.opt:1379
-#, fuzzy
-#| msgid "Generate code for GNU runtime environment"
 msgid "Generate code for GNU runtime environment."
-msgstr "Code für die GNU-Laufzeitumgebung erzeugen"
+msgstr "Code für die GNU-Laufzeitumgebung erzeugen."
 
 #: c-family/c.opt:1383
-#, fuzzy
-#| msgid "Use traditional GNU semantics for inline functions"
 msgid "Use traditional GNU semantics for inline functions."
-msgstr "Traditionelle GNU-Semantik für Inline-Funktionen verwenden"
+msgstr "Traditionelle GNU-Semantik für Inline-Funktionen verwenden."
 
 #: c-family/c.opt:1389
 msgid "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)"
 msgstr "-fhandle-exceptions wurde in -fexceptions umbenannt (und ist nun voreingestellt)"
 
 #: c-family/c.opt:1396
-#, fuzzy
-#| msgid "Assume normal C execution environment"
 msgid "Assume normal C execution environment."
-msgstr "Normale C-Ausführungsumgebung vermuten"
+msgstr "Normale C-Ausführungsumgebung vermuten."
 
 #: c-family/c.opt:1404
-#, fuzzy
-#| msgid "Export functions even if they can be inlined"
 msgid "Export functions even if they can be inlined."
-msgstr "Funktionen exportieren, auch wenn sie »inline« sein können"
+msgstr "Funktionen exportieren, auch wenn sie »inline« sein können."
 
 #: c-family/c.opt:1408
-#, fuzzy
-#| msgid "Emit implicit instantiations of inline templates"
 msgid "Emit implicit instantiations of inline templates."
-msgstr "Implizite Instanziierungen von »inline«-Templates ausgeben"
+msgstr "Implizite Instanziierungen von »inline«-Templates ausgeben."
 
 #: c-family/c.opt:1412
-#, fuzzy
-#| msgid "Emit implicit instantiations of templates"
 msgid "Emit implicit instantiations of templates."
-msgstr "Implizite Instanziierungen von Templates ausgeben"
+msgstr "Implizite Instanziierungen von Templates ausgeben."
 
 #: c-family/c.opt:1416
 msgid "Implement C++17 inheriting constructor semantics."
 msgstr ""
 
 #: c-family/c.opt:1420
-#, fuzzy
-#| msgid "Inject friend functions into enclosing namespace"
 msgid "Inject friend functions into enclosing namespace."
-msgstr "Friend-Funktionen in umgebenden Namensraum einfügen"
+msgstr "Friend-Funktionen in umgebenden Namensraum einfügen."
 
 #: c-family/c.opt:1424
-#, fuzzy
-#| msgid "Don't emit dllexported inline functions unless needed"
 msgid "Don't emit dllexported inline functions unless needed."
-msgstr "Keine DLL-exportierten Inline-Funktionen erzeugen, außer wenn nötig"
+msgstr "Keine DLL-exportierten Inline-Funktionen erzeugen, außer wenn nötig."
 
 #: c-family/c.opt:1431
 msgid "Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types."
 msgstr "Implizite Umwandlungen zwischen Vektoren mit unterschiedlicher Anzahl der Teile und/oder abweichenden Elementtypen erlauben."
 
 #: c-family/c.opt:1435
-#, fuzzy
-#| msgid "Don't warn about uses of Microsoft extensions"
 msgid "Don't warn about uses of Microsoft extensions."
-msgstr "Nicht bei Verwendung von Microsoft-Erweiterungen warnen"
+msgstr "Nicht bei Verwendung von Microsoft-Erweiterungen warnen."
 
 #: c-family/c.opt:1454
 msgid "Implement resolution of DR 150 for matching of template template arguments."
@@ -8065,10 +7680,9 @@ msgid "-fvisibility=[private|protected|public|package]\tSet the default symbol v
 msgstr "-fvisibility=[default|internal|hidden|protected]\tStandard-Symbolsichtbarkeit setzen"
 
 #: c-family/c.opt:1473
-#, fuzzy, c-format
-#| msgid "unrecognized visibility value %qs"
+#, c-format
 msgid "unrecognized ivar visibility value %qs"
-msgstr "unbekannter Sichtbarkeitswert %qs"
+msgstr ""
 
 #: c-family/c.opt:1495
 #, fuzzy
@@ -8143,40 +7757,28 @@ msgid "Enable OpenMP's SIMD directives."
 msgstr "Nicht klassifizierbare OpenMP-Anweisung bei %C"
 
 #: c-family/c.opt:1552
-#, fuzzy
-#| msgid "Recognize C++ keywords like \"compl\" and \"xor\""
 msgid "Recognize C++ keywords like \"compl\" and \"xor\"."
-msgstr "C++-Schlüsselworte wie »compl« und »xor« erkennen"
+msgstr "C++-Schlüsselworte wie »compl« und »xor« erkennen."
 
 #: c-family/c.opt:1563
-#, fuzzy
-#| msgid "Look for and use PCH files even when preprocessing"
 msgid "Look for and use PCH files even when preprocessing."
-msgstr "PCH-Dateien suchen und verwenden, sogar bei Vorverarbeitung"
+msgstr "PCH-Dateien suchen und verwenden, sogar bei Vorverarbeitung."
 
 #: c-family/c.opt:1567
-#, fuzzy
-#| msgid "Downgrade conformance errors to warnings"
 msgid "Downgrade conformance errors to warnings."
-msgstr "Übereinstimmungsfehler zu Warnungen degradieren"
+msgstr "Übereinstimmungsfehler zu Warnungen degradieren."
 
 #: c-family/c.opt:1571
-#, fuzzy
-#| msgid "Enable Plan 9 language extensions"
 msgid "Enable Plan 9 language extensions."
-msgstr "Plan 9 Spracherweiterungen zulassen"
+msgstr "Plan-9-Spracherweiterungen aktivieren."
 
 #: c-family/c.opt:1575
-#, fuzzy
-#| msgid "Treat the input file as already preprocessed"
 msgid "Treat the input file as already preprocessed."
-msgstr "Die Eingabedatei als bereits vorverarbeitet behandeln"
+msgstr "Die Eingabedatei als bereits vorverarbeitet behandeln."
 
 #: c-family/c.opt:1583
-#, fuzzy
-#| msgid "-ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages"
 msgid "-ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages."
-msgstr "-ftrack-macro-expansion=<0|1|2>  Orte der aus Makroersetzung entstehenden Zeichen verfolgen und in Fehlermeldungen anzeigen"
+msgstr "-ftrack-macro-expansion=<0|1|2>  Orte der aus Makroersetzung entstehenden Zeichen verfolgen und in Fehlermeldungen anzeigen."
 
 #: c-family/c.opt:1587
 #, fuzzy
@@ -8186,25 +7788,19 @@ msgstr "-fno-pretty-templates Template-Spezialisierungen nicht für die Ausgabe 
 
 #: c-family/c.opt:1591
 msgid "Treat known sprintf return values as constants."
-msgstr ""
+msgstr "Bekannte sprintf-Rückgabewerte als Konstanten behandeln."
 
 #: c-family/c.opt:1595
-#, fuzzy
-#| msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime"
 msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime."
-msgstr "Im Fix-and-Continue-Modus verwendet, um anzuzeigen, dass Objektdateien zur Laufzeit eingetauscht werden können (»swap«)"
+msgstr "Im Fix-and-Continue-Modus verwendet, um anzuzeigen, dass Objektdateien zur Laufzeit eingetauscht werden können (»swap«)."
 
 #: c-family/c.opt:1599
-#, fuzzy
-#| msgid "Enable automatic template instantiation"
 msgid "Enable automatic template instantiation."
-msgstr "Automatische Template-Instanziierung einschalten"
+msgstr "Automatische Template-Instanziierung einschalten."
 
 #: c-family/c.opt:1603
-#, fuzzy
-#| msgid "Generate run time type descriptor information"
 msgid "Generate run time type descriptor information."
-msgstr "Informationen zur Typbeschreibung zur Laufzeit erzeugen"
+msgstr "Informationen zur Typbeschreibung zur Laufzeit erzeugen."
 
 #: c-family/c.opt:1607 ada/gcc-interface/lang.opt:77
 #, fuzzy
@@ -8213,38 +7809,29 @@ msgid "Use the narrowest integer type possible for enumeration types."
 msgstr "Den schmalstmöglichen Ganzzahltyp für Aufzählungstypen verwenden"
 
 #: c-family/c.opt:1611
-#, fuzzy
-#| msgid "Force the underlying type for \"wchar_t\" to be \"unsigned short\""
 msgid "Force the underlying type for \"wchar_t\" to be \"unsigned short\"."
-msgstr "Den für »wchar_t« zugrundeliegenden Typen auf »unsigned short« zwingen"
+msgstr "Den für »wchar_t« zugrundeliegenden Typen auf »unsigned short« zwingen."
 
 #: c-family/c.opt:1615
-#, fuzzy
-#| msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed"
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed."
-msgstr "Wenn weder »signed« noch »unsigned« angegeben wurden, das Bitfeld vorzeichenbehaftet machen"
+msgstr "Wenn weder »signed« noch »unsigned« angegeben wurden, das Bitfeld vorzeichenbehaftet machen."
 
 #: c-family/c.opt:1619 ada/gcc-interface/lang.opt:81
-#, fuzzy
-#| msgid "Make \"char\" signed by default"
 msgid "Make \"char\" signed by default."
-msgstr "Macht »char« standardmäßig vorzeichenbehaftet"
+msgstr "Macht »char« standardmäßig vorzeichenbehaftet."
 
 #: c-family/c.opt:1623
-#, fuzzy
-#| msgid "Enable decimal floating point hardware support"
 msgid "Enable C++14 sized deallocation support."
-msgstr "Hardwareunterstützung für dezimales Gleitkomma einschalten"
+msgstr ""
 
 #: c-family/c.opt:1630
 msgid "-fsso-struct=[big-endian|little-endian]\tSet the default scalar storage order."
 msgstr ""
 
 #: c-family/c.opt:1633
-#, fuzzy, c-format
-#| msgid "unrecognized visibility value %qs"
+#, c-format
 msgid "unrecognized scalar storage order value %qs"
-msgstr "unbekannter Sichtbarkeitswert %qs"
+msgstr ""
 
 #: c-family/c.opt:1643
 #, fuzzy
@@ -8293,52 +7880,36 @@ msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned."
 msgstr "Wenn weder »signed« noch »unsigned« gegeben sind, das Bitfeld vorzeichenlos machen"
 
 #: c-family/c.opt:1702
-#, fuzzy
-#| msgid "Make \"char\" unsigned by default"
 msgid "Make \"char\" unsigned by default."
-msgstr "»char« standardmäßig vorzeichenlos machen"
+msgstr "»char« standardmäßig vorzeichenlos machen."
 
 #: c-family/c.opt:1706
-#, fuzzy
-#| msgid "Use __cxa_atexit to register destructors"
 msgid "Use __cxa_atexit to register destructors."
-msgstr "__cxa_atexit verwenden, um Destruktoren zu registrieren"
+msgstr "__cxa_atexit verwenden, um Destruktoren zu registrieren."
 
 #: c-family/c.opt:1710
-#, fuzzy
-#| msgid "Use __cxa_get_exception_ptr in exception handling"
 msgid "Use __cxa_get_exception_ptr in exception handling."
-msgstr "__cxa_get_exception_ptr in Ausnahmebehandlung verwenden"
+msgstr "__cxa_get_exception_ptr in Ausnahmebehandlung verwenden."
 
 #: c-family/c.opt:1714
-#, fuzzy
-#| msgid "Marks all inlined functions and methods as having hidden visibility"
 msgid "Marks all inlined functions and methods as having hidden visibility."
-msgstr "Alle inline-Funktionen und -Methoden mit versteckter Sichtbarkeit markieren"
+msgstr "Alle inline-Funktionen und -Methoden mit versteckter Sichtbarkeit markieren."
 
 #: c-family/c.opt:1718
-#, fuzzy
-#| msgid "Changes visibility to match Microsoft Visual Studio by default"
 msgid "Changes visibility to match Microsoft Visual Studio by default."
-msgstr "Sichtbarkeit wird geändert, um standardmäßig zu Microsoft Visual Studio zu passen"
+msgstr "Sichtbarkeit wird geändert, um standardmäßig zu Microsoft Visual Studio zu passen."
 
 #: c-family/c.opt:1730
-#, fuzzy
-#| msgid "Emit common-like symbols as weak symbols"
 msgid "Emit common-like symbols as weak symbols."
-msgstr "Common-ähnliche Symbole als schwache Symbole ausgeben"
+msgstr "Common-ähnliche Symbole als schwache Symbole ausgeben."
 
 #: c-family/c.opt:1734
-#, fuzzy
-#| msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>."
-msgstr "-fwide-exec-charset=<Zeichensatz>\tAlle Wide-Zeichenketten und -konstanten in Zeichenmenge <Zeichensatz> umwandeln"
+msgstr "-fwide-exec-charset=<Zeichensatz>\tAlle Wide-Zeichenketten und -konstanten in Zeichensatz <Zeichensatz> umwandeln."
 
 #: c-family/c.opt:1738
-#, fuzzy
-#| msgid "Generate a #line directive pointing at the current working directory"
 msgid "Generate a #line directive pointing at the current working directory."
-msgstr "Eine auf das aktuelle Verzeichnis verweisende #line-Anweisung erzeugen"
+msgstr "Eine auf das aktuelle Verzeichnis verweisende #line-Anweisung erzeugen."
 
 #: c-family/c.opt:1746
 #, fuzzy
@@ -8347,22 +7918,16 @@ msgid "Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mod
 msgstr "Lockeres Nachschlagen von Klassen (mit objc_getClass()) für Verwendung im Null-Verknüpfungs-Modus erzeugen"
 
 #: c-family/c.opt:1750
-#, fuzzy
-#| msgid "Dump declarations to a .decl file"
 msgid "Dump declarations to a .decl file."
-msgstr "Deklaration in .decl-Datei ausgeben"
+msgstr "Deklaration in .decl-Datei ausgeben."
 
 #: c-family/c.opt:1754
-#, fuzzy
-#| msgid "-femit-struct-debug-baseonly\tAggressive reduced debug info for structs"
 msgid "-femit-struct-debug-baseonly\tAggressive reduced debug info for structs."
-msgstr "-femit-struct-debug-baseonly\tAggressiv reduzierte Debuginfo für Strukturen"
+msgstr "-femit-struct-debug-baseonly\tAggressiv reduzierte Debuginfo für Strukturen."
 
 #: c-family/c.opt:1758
-#, fuzzy
-#| msgid "-femit-struct-debug-reduced\tConservative reduced debug info for structs"
 msgid "-femit-struct-debug-reduced\tConservative reduced debug info for structs."
-msgstr "-femit-struct-debug-reduced\tKonservativ reduzierte Debuginfo für Strukturen"
+msgstr "-femit-struct-debug-reduced\tKonservativ reduzierte Debuginfo für Strukturen."
 
 #: c-family/c.opt:1762
 #, fuzzy
