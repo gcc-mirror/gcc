@@ -4426,7 +4426,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
   if (TYPE_BINFO (type))
     {
-      fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname (CALL_EXPR), 1);
+      fns = lookup_fnfields (TYPE_BINFO (type), cp_operator_id (CALL_EXPR), 1);
       if (fns == error_mark_node)
 	return error_mark_node;
     }
@@ -5136,7 +5136,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       add_builtin_candidates (&candidates,
 			      COND_EXPR,
 			      NOP_EXPR,
-			      ansi_opname (COND_EXPR),
+			      cp_operator_id (COND_EXPR),
 			      args,
 			      LOOKUP_NORMAL, complain);
 
@@ -5559,10 +5559,10 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     {
       code2 = TREE_CODE (arg3);
       arg3 = NULL_TREE;
-      fnname = ansi_assopname (code2);
+      fnname = cp_assignment_operator_id (code2);
     }
   else
-    fnname = ansi_opname (code);
+    fnname = cp_operator_id (code);
 
   arg1 = prep_operand (arg1);
 
@@ -6167,7 +6167,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   type = strip_array_types (TREE_TYPE (TREE_TYPE (addr)));
 
-  fnname = ansi_opname (code);
+  fnname = cp_operator_id (code);
 
   if (CLASS_TYPE_P (type)
       && COMPLETE_TYPE_P (complete_type (type))
@@ -8283,7 +8283,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	      || name == complete_dtor_identifier
 	      || name == base_dtor_identifier
 	      || name == deleting_dtor_identifier
-	      || name == ansi_assopname (NOP_EXPR));
+	      || name == cp_assignment_operator_id (NOP_EXPR));
   if (TYPE_P (binfo))
     {
       /* Resolve the name.  */
@@ -8311,7 +8311,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
       if (!same_type_ignoring_top_level_qualifiers_p
 	  (TREE_TYPE (instance), BINFO_TYPE (binfo)))
 	{
-	  if (name != ansi_assopname (NOP_EXPR))
+	  if (name != cp_assignment_operator_id (NOP_EXPR))
 	    /* For constructors and destructors, either the base is
 	       non-virtual, or it is virtual but we are doing the
 	       conversion from a constructor or destructor for the

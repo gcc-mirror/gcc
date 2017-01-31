@@ -22,10 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace cc1_plugin
 {
-  // This code defines global string constants, one for each method in
-  // gcc-c-fe.def.  This is needed so that they can be used as
-  // template arguments elsewhere.
-
 #define GCC_METHOD0(R, N) \
   extern const char *N;
 #define GCC_METHOD1(R, N, A) \
@@ -41,7 +37,21 @@ namespace cc1_plugin
 #define GCC_METHOD7(R, N, A, B, C, D, E, F, G) \
   extern const char *N;
 
+  namespace c
+  {
+  // This code defines global string constants, one for each method in
+  // gcc-c-fe.def.  This is needed so that they can be used as
+  // template arguments elsewhere.
 #include "gcc-c-fe.def"
+  }
+
+  namespace cp
+  {
+  // This code defines global string constants, one for each method in
+  // gcc-cp-fe.def.  This is needed so that they can be used as
+  // template arguments elsewhere.
+#include "gcc-cp-fe.def"
+  }
 
 #undef GCC_METHOD0
 #undef GCC_METHOD1

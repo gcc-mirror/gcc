@@ -8881,7 +8881,7 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Effective C++ rule 15.  See also start_function.  */
   if (warn_ecpp
-      && DECL_NAME (current_function_decl) == ansi_assopname(NOP_EXPR))
+      && DECL_NAME (current_function_decl) == cp_assignment_operator_id (NOP_EXPR))
     {
       bool warn = true;
 

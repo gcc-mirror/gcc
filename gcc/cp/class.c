@@ -3254,7 +3254,7 @@ static tree
 dfs_declare_virt_assop_and_dtor (tree binfo, void *data)
 {
   tree bv, fn, t = (tree)data;
-  tree opname = ansi_assopname (NOP_EXPR);
+  tree opname = cp_assignment_operator_id (NOP_EXPR);
 
   gcc_assert (t && CLASS_TYPE_P (t));
   gcc_assert (binfo && TREE_CODE (binfo) == TREE_BINFO);
@@ -5349,7 +5349,7 @@ vbase_has_user_provided_move_assign (tree type)
 {
   /* Does the type itself have a user-provided move assignment operator?  */
   for (tree fns
-	 = lookup_fnfields_slot_nolazy (type, ansi_assopname (NOP_EXPR));
+	 = lookup_fnfields_slot_nolazy (type, cp_assignment_operator_id (NOP_EXPR));
        fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
@@ -5513,7 +5513,7 @@ type_has_move_assign (tree t)
       lazily_declare_fn (sfk_move_assignment, t);
     }
 
-  for (fns = lookup_fnfields_slot_nolazy (t, ansi_assopname (NOP_EXPR));
+  for (fns = lookup_fnfields_slot_nolazy (t, cp_assignment_operator_id (NOP_EXPR));
        fns; fns = OVL_NEXT (fns))
     if (move_fn_p (OVL_CURRENT (fns)))
       return true;
@@ -5558,7 +5558,7 @@ type_has_user_declared_move_assign (tree t)
   if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     return false;
 
-  for (fns = lookup_fnfields_slot_nolazy (t, ansi_assopname (NOP_EXPR));
+  for (fns = lookup_fnfields_slot_nolazy (t, cp_assignment_operator_id (NOP_EXPR));
        fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
@@ -5679,7 +5679,7 @@ type_requires_array_cookie (tree type)
      the array to the deallocation function, so we will need to store
      a cookie.  */
   fns = lookup_fnfields (TYPE_BINFO (type),
-			 ansi_opname (VEC_DELETE_EXPR),
+			 cp_operator_id (VEC_DELETE_EXPR),
 			 /*protect=*/0);
   /* If there are no `operator []' members, or the lookup is
      ambiguous, then we don't need a cookie.  */

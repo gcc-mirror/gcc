@@ -1,3 +1,17 @@
+2017-01-30  Alexandre Oliva <aoliva@redhat.com>
+
+	Introduce C++ support in libcc1.
+	* gcc-c-fe.def (int_type_v0): Rename from...
+	(int_type): ... this.  Introduce new version.
+	(float_type_v0): Rename from...
+	(float_type): ... this.  Introduce new version.
+	(char_type): New.
+	* gcc-c-interface.h (gcc_c_api_version): Add GCC_C_FE_VERSION_1.
+	(gcc_type_array): Move...
+	* gcc-interface.h: ... here.
+	* gcc-cp-fe.def: New.
+	* gcc-cp-interface.h: New.
+
 2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
 
 	* gcc-interface.h (enum gcc_base_api_version): Update comment
