@@ -22666,20 +22666,21 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	goto out;
     }
 
-  bool nested;
+  bool push_to_top, nested;
   tree fn_context;
   fn_context = decl_function_context (d);
-  nested = (current_function_decl != NULL_TREE);
+  nested = current_function_decl != NULL_TREE;
+  push_to_top = !(nested && fn_context == current_function_decl);
+
   vec<tree> omp_privatization_save;
   if (nested)
     save_omp_privatization_clauses (omp_privatization_save);
 
-  if (!fn_context)
+  if (push_to_top)
     push_to_top_level ();
   else
     {
-      if (nested)
-	push_function_context ();
+      push_function_context ();
       cp_unevaluated_operand = 0;
       c_inhibit_evaluation_warnings = 0;
     }
@@ -22756,7 +22757,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	block = push_stmt_list ();
       else
 	{
-	  if (LAMBDA_FUNCTION_P (d))
+	  if (push_to_top && LAMBDA_FUNCTION_P (d))
 	    {
 	      /* When instantiating a lambda's templated function
 		 operator, we need to push the non-lambda class scope
@@ -22849,9 +22850,9 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   /* We're not deferring instantiation any more.  */
   TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
 
-  if (!fn_context)
+  if (push_to_top)
     pop_from_top_level ();
-  else if (nested)
+  else
     pop_function_context ();
 
   if (nested)
