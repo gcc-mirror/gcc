@@ -1,5 +1,11 @@
 2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
 
+	* gcc-interface.h (enum gcc_base_api_version): Update comment
+	for GCC_FE_VERSION_1.
+	(struct gcc_base_vtable): Rename set_arguments to
+	set_arguments_v0.  Add set_arguments, set_triplet_regexp and
+	set_driver_filename.
+
 	* gcc-interface.h (enum gcc_base_api_version): Add comment to
 	GCC_FE_VERSION_1.
 	(struct gcc_base_vtable): Rename compile to compile_v0.
