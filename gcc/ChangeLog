@@ -1,3 +1,8 @@
+2017-01-31  Ian Lance Taylor  <iant@golang.org>
+
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Add
+	REG_ARGS_SIZE note to 32-bit push insns and call insn.
+
 2017-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/79210
