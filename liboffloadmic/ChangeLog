@@ -1,3 +1,9 @@
+2017-01-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_type): Fix
+	return type.
+	(GOMP_OFFLOAD_load_image): Fix argument types.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
@@ -630,3 +636,9 @@
 	* runtime/orsl-lite/lib/orsl-lite.c: Ditto.
 	* runtime/orsl-lite/version.txt: Ditto.
 	* runtime/use_mpss2.txt: Ditto.
+
+Copyright (C) 2014-2017 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
