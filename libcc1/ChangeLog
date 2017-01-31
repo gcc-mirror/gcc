@@ -1,5 +1,8 @@
 2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
 
+	* findcomp.cc: Include system.h.
+	(search_dir): Return absolute filename.
+
 	* libcc1.cc (libcc1): Add class compiler with field compilerp,
 	class compiler_triplet_regexp and class
 	compiler_driver_filename.
