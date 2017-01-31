@@ -28,12 +28,12 @@ static void test_driver_memcmp (void (test_memcmp)(const char *, const char *, i
   for(l=0;l<sz;l++) {
     for(i=0;i<NRAND/sz;i++) {
       for(j=0;j<l;j++) {
-	buf1[j] = random() & 0xff;
+	buf1[j] = rand() & 0xff;
 	buf2[j] = buf1[j];
       }
       for(j=l;j<sz;j++) {
-	buf1[j] = random() & 0xff;
-	buf2[j] = random() & 0xff;
+	buf1[j] = rand() & 0xff;
+	buf2[j] = rand() & 0xff;
       }
     }
     e = lib_memcmp(buf1,buf2,sz);
