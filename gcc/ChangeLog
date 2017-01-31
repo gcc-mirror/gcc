@@ -1,3 +1,9 @@
+2017-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/79210
+	* input.c (get_substring_ranges_for_loc): Replace line_width
+	assertion with error-handling.
+
 2017-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77318

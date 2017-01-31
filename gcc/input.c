@@ -1395,7 +1395,10 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
       const char *literal = line + start.column - 1;
       int literal_length = finish.column - start.column + 1;
 
-      gcc_assert (line_width >= (start.column - 1 + literal_length));
+      /* Ensure that we don't crash if we got the wrong location.  */
+      if (line_width < (start.column - 1 + literal_length))
+	return "line is not wide enough";
+
       cpp_string from;
       from.len = literal_length;
       /* Make a copy of the literal, to avoid having to rely on
