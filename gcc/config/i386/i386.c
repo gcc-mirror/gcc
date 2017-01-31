@@ -14944,6 +14944,7 @@ ix86_expand_split_stack_prologue (void)
   allocate_rtx = GEN_INT (allocate);
   args_size = crtl->args.size >= 0 ? crtl->args.size : 0;
   call_fusage = NULL_RTX;
+  rtx pop = NULL_RTX;
   if (TARGET_64BIT)
     {
       rtx reg10, reg11;
@@ -15021,13 +15022,18 @@ ix86_expand_split_stack_prologue (void)
     }
   else
     {
-      emit_insn (gen_push (GEN_INT (args_size)));
-      emit_insn (gen_push (allocate_rtx));
+      rtx_insn *insn = emit_insn (gen_push (GEN_INT (args_size)));
+      add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (UNITS_PER_WORD));
+      insn = emit_insn (gen_push (allocate_rtx));
+      add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (2 * UNITS_PER_WORD));
+      pop = GEN_INT (2 * UNITS_PER_WORD);
     }
   call_insn = ix86_expand_call (NULL_RTX, gen_rtx_MEM (QImode, fn),
 				GEN_INT (UNITS_PER_WORD), constm1_rtx,
-				NULL_RTX, false);
+				pop, false);
   add_function_usage_to (call_insn, call_fusage);
+  if (!TARGET_64BIT)
+    add_reg_note (call_insn, REG_ARGS_SIZE, GEN_INT (0));
 
   /* In order to make call/return prediction work right, we now need
      to execute a return instruction.  See
