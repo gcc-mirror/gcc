@@ -1,3 +1,8 @@
+2017-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79304
+	* g++.dg/diagnostic/pr79304.C: New test.
+
 2017-01-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/79298

@@ -2247,7 +2247,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	else
 	  {
 	    dump_expr (pp, ob, flags | TFF_EXPR_IN_PARENS);
-	    pp_cxx_dot (pp);
+	    if (TREE_CODE (ob) != ARROW_EXPR)
+	      pp_cxx_dot (pp);
 	  }
 	dump_expr (pp, TREE_OPERAND (t, 1), flags & ~TFF_EXPR_IN_PARENS);
       }
