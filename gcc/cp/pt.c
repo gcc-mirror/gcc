@@ -10676,7 +10676,7 @@ instantiate_class_template_1 (tree type)
 	    {
 	      /* Set function_depth to avoid garbage collection.  */
 	      ++function_depth;
-	      instantiate_decl (decl, false, false);
+	      instantiate_decl (decl, /*defer_ok=*/false, false);
 	      --function_depth;
 	    }
 
@@ -16022,7 +16022,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  complete_type (tmp);
 	  for (fn = TYPE_METHODS (tmp); fn; fn = DECL_CHAIN (fn))
 	    if (!DECL_ARTIFICIAL (fn))
-	      instantiate_decl (fn, /*defer_ok*/0, /*expl_inst_class*/false);
+	      instantiate_decl (fn, /*defer_ok=*/false,
+				/*expl_inst_class=*/false);
 	}
       break;
 
@@ -21946,7 +21947,7 @@ do_decl_instantiation (tree decl, tree storage)
   check_explicit_instantiation_namespace (result);
   mark_decl_instantiated (result, extern_p);
   if (! extern_p)
-    instantiate_decl (result, /*defer_ok=*/1,
+    instantiate_decl (result, /*defer_ok=*/true,
 		      /*expl_inst_class_mem_p=*/false);
 }
 
@@ -21984,7 +21985,7 @@ instantiate_class_member (tree decl, int extern_p)
 {
   mark_decl_instantiated (decl, extern_p);
   if (! extern_p)
-    instantiate_decl (decl, /*defer_ok=*/1,
+    instantiate_decl (decl, /*defer_ok=*/true,
 		      /*expl_inst_class_mem_p=*/true);
 }
 
@@ -22405,15 +22406,14 @@ maybe_instantiate_noexcept (tree fn)
 }
 
 /* Produce the definition of D, a _DECL generated from a template.  If
-   DEFER_OK is nonzero, then we don't have to actually do the
+   DEFER_OK is true, then we don't have to actually do the
    instantiation now; we just have to do it sometime.  Normally it is
    an error if this is an explicit instantiation but D is undefined.
-   EXPL_INST_CLASS_MEM_P is true iff D is a member of an
-   explicitly instantiated class template.  */
+   EXPL_INST_CLASS_MEM_P is true iff D is a member of an explicitly
+   instantiated class template.  */
 
 tree
-instantiate_decl (tree d, int defer_ok,
-		  bool expl_inst_class_mem_p)
+instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 {
   tree tmpl = DECL_TI_TEMPLATE (d);
   tree gen_args;
@@ -22428,8 +22428,6 @@ instantiate_decl (tree d, int defer_ok,
   int saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
   bool external_p;
   bool deleted_p;
-  tree fn_context;
-  bool nested = false;
 
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */
@@ -22444,7 +22442,7 @@ instantiate_decl (tree d, int defer_ok,
      if the variable has a constant value the referring expression can
      take advantage of that fact.  */
   if (VAR_P (d))
-    defer_ok = 0;
+    defer_ok = false;
 
   /* Don't instantiate cloned functions.  Instead, instantiate the
      functions they cloned.  */
@@ -22668,6 +22666,8 @@ instantiate_decl (tree d, int defer_ok,
 	goto out;
     }
 
+  bool nested;
+  tree fn_context;
   fn_context = decl_function_context (d);
   nested = (current_function_decl != NULL_TREE);
   vec<tree> omp_privatization_save;
@@ -22854,16 +22854,16 @@ instantiate_decl (tree d, int defer_ok,
   else if (nested)
     pop_function_context ();
 
-out:
-  input_location = saved_loc;
-  cp_unevaluated_operand = saved_unevaluated_operand;
-  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
-  pop_deferring_access_checks ();
-  pop_tinst_level ();
   if (nested)
     restore_omp_privatization_clauses (omp_privatization_save);
 
+out:
+  pop_deferring_access_checks ();
   timevar_pop (TV_TEMPLATE_INST);
+  pop_tinst_level ();
+  input_location = saved_loc;
+  cp_unevaluated_operand = saved_unevaluated_operand;
+  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
 
   return d;
 }
@@ -22919,7 +22919,7 @@ instantiate_pending_templates (int retries)
 			 fn = TREE_CHAIN (fn))
 		      if (! DECL_ARTIFICIAL (fn))
 			instantiate_decl (fn,
-					  /*defer_ok=*/0,
+					  /*defer_ok=*/false,
 					  /*expl_inst_class_mem_p=*/false);
 		  if (COMPLETE_TYPE_P (instantiation))
 		    reconsider = 1;
@@ -22934,7 +22934,7 @@ instantiate_pending_templates (int retries)
 		{
 		  instantiation
 		    = instantiate_decl (instantiation,
-					/*defer_ok=*/0,
+					/*defer_ok=*/false,
 					/*expl_inst_class_mem_p=*/false);
 		  if (DECL_TEMPLATE_INSTANTIATED (instantiation))
 		    reconsider = 1;

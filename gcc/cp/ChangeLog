@@ -1,5 +1,9 @@
 2017-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (instantiate_decl): Make defer_ok bool.
+	* pt.c: Fix instantiate_decl calls to pass true/false not 0/1
+	(instantiate_decl): Simplify and reorder state saving and restoration.
+
 	PR c++/79264
 	* lambda.c (maybe_generic_this_capture): Deal with template-id-exprs.
 	* semantics.c (finish_member_declaration): Assert class is being
