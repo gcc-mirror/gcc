@@ -1,3 +1,10 @@
+2017-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/79210
+	* gcc.dg/format/pr79210.c: New test case.
+	* gcc.dg/plugin/diagnostic-test-string-literals-2.c (test_pr79210):
+	New function.
+
 2017-01-31  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79290

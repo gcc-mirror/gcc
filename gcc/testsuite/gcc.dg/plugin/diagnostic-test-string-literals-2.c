@@ -51,3 +51,26 @@ test_stringified_token_3 (int x)
 #undef FOO
 }
 
+/* Test of a stringified macro argument within a concatenation.  */
+
+void
+test_pr79210 (void)
+{
+#define lpfc_vport_param_init(attr)    \
+       __emit_string_literal_range ( \
+                  "0423 lpfc_"#attr" attribute cannot be set to %d, "\
+                  "allowed range is [0, 1]\n", 54, 53, 54) \
+
+#define LPFC_VPORT_ATTR_R(name, decc)		\
+  unsigned int lpfc_##name;			\
+  lpfc_vport_param_init(name) \
+
+  LPFC_VPORT_ATTR_R(peer_port_login,
+  "some multiline blurb with a short final line "
+  "here");
+
+  /* { dg-error "19: unable to read substring location: line is not wide enough" "" { target *-*-* } .-11 } */
+
+#undef LPFC_VPORT_ATTR_R
+#undef lpfc_vport_param_init
+}
