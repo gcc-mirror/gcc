@@ -1,3 +1,10 @@
+2017-01-31  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/79285
+	* ipa-prop.c (ipa_free_all_node_params): Call release method
+	instead of ~sumbol_summary to not to trigger double times
+	dtor of hash_map.
+
 2017-01-31  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/71691

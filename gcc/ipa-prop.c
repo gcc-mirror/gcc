@@ -3574,7 +3574,7 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_all_node_params (void)
 {
-  ipa_node_params_sum->~ipa_node_params_t ();
+  ipa_node_params_sum->release ();
   ipa_node_params_sum = NULL;
 }
 
