@@ -4545,6 +4545,9 @@ bool
 suggest_alternative_in_explicit_scope (location_t location, tree name,
 				       tree scope)
 {
+  /* Resolve any namespace aliases.  */
+  scope = ORIGINAL_NAMESPACE (scope);
+
   cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
   best_match <tree, tree> bm (name);
