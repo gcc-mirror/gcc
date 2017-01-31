@@ -1,5 +1,11 @@
 2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
 
+	* gcc-interface.h (enum gcc_base_api_version): Add comment to
+	GCC_FE_VERSION_1.
+	(struct gcc_base_vtable): Rename compile to compile_v0.
+	Update comment for compile.  New methods set_verbose and
+	compile.
+
 	* gcc-interface.h (enum gcc_base_api_version): Add
 	GCC_FE_VERSION_1.
 
