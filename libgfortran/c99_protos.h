@@ -332,7 +332,7 @@ extern float complex cexpf (float complex);
 extern double complex cexp (double complex);
 #endif
 
-#if !defined(HAVE_CEXPL) && defined(HAVE_COSL) && defined(HAVE_SINL) && defined(EXPL)
+#if !defined(HAVE_CEXPL) && defined(HAVE_COSL) && defined(HAVE_SINL) && defined(HAVE_EXPL)
 #define HAVE_CEXPL 1
 extern long double complex cexpl (long double complex);
 #endif
