@@ -1,3 +1,8 @@
+2017-01-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79264
+	* g++.dg/cpp1y/pr61636-1.C: Augment.
+
 2017-01-31  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.dg/memcmp-1.c (static void test_driver_memcmp): Call
