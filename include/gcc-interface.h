@@ -46,7 +46,9 @@ enum gcc_base_api_version
 {
   GCC_FE_VERSION_0 = 0,
 
-  /* Deprecated method compile_v0.  Added method set_verbose and compile.  */
+  /* Deprecated methods set_arguments_v0 and compile_v0.  Added methods
+     set_arguments, set_triplet_regexp, set_driver_filename, set_verbose and
+     compile.  */
   GCC_FE_VERSION_1 = 1,
 };
 
@@ -67,20 +69,12 @@ struct gcc_base_vtable
 
   unsigned int version;
 
-  /* Set the compiler's command-line options for the next compilation.
-     TRIPLET_REGEXP is a regular expression that is used to match the
-     configury triplet prefix to the compiler.
-     The arguments are copied by GCC.  ARGV need not be
-     NULL-terminated.  The arguments must be set separately for each
-     compilation; that is, after a compile is requested, the
-     previously-set arguments cannot be reused.
+  /* Deprecated GCC_FE_VERSION_0 variant of the GCC_FE_VERSION_1
+     methods set_triplet_regexp and set_arguments.  */
 
-     This returns NULL on success.  On failure, returns a malloc()d
-     error message.  The caller is responsible for freeing it.  */
-
-  char *(*set_arguments) (struct gcc_base_context *self,
-			  const char *triplet_regexp,
-			  int argc, char **argv);
+  char *(*set_arguments_v0) (struct gcc_base_context *self,
+			     const char *triplet_regexp,
+			     int argc, char **argv);
 
   /* Set the file name of the program to compile.  The string is
      copied by the method implementation, but the caller must
@@ -125,6 +119,45 @@ struct gcc_base_vtable
 
   int /* bool */ (*compile) (struct gcc_base_context *self,
 			     const char *filename);
+
+  /* Set the compiler's command-line options for the next compilation.
+     The arguments are copied by GCC.  ARGV need not be
+     NULL-terminated.  The arguments must be set separately for each
+     compilation; that is, after a compile is requested, the
+     previously-set arguments cannot be reused.
+
+     This returns NULL on success.  On failure, returns a malloc()d
+     error message.  The caller is responsible for freeing it.
+
+     This method is only available since GCC_FE_VERSION_1.  */
+
+  char *(*set_arguments) (struct gcc_base_context *self,
+			  int argc, char **argv);
+
+  /* Set TRIPLET_REGEXP as a regular expression that is used to match
+     the configury triplet prefix to the compiler.  Calling this method
+     overrides possible previous call of itself or set_driver_filename.
+
+     This returns NULL on success.  On failure, returns a malloc()d
+     error message.  The caller is responsible for freeing it.
+
+     This method is only available since GCC_FE_VERSION_1.  */
+
+  char *(*set_triplet_regexp) (struct gcc_base_context *self,
+			       const char *triplet_regexp);
+
+  /* DRIVER_FILENAME should be filename of the gcc compiler driver
+     program.  It will be searched in PATH components like
+     TRIPLET_REGEXP.  Calling this method overrides possible previous
+     call of itself or set_triplet_regexp.
+
+     This returns NULL on success.  On failure, returns a malloc()d
+     error message.  The caller is responsible for freeing it.
+
+     This method is only available since GCC_FE_VERSION_1.  */
+
+  char *(*set_driver_filename) (struct gcc_base_context *self,
+				const char *driver_filename);
 };
 
 /* The GCC object.  */
