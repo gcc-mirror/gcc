@@ -1,3 +1,23 @@
+2017-01-30  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/63238
+	* dwarf2out.c (clone_as_declaration): Drop DW_AT_alignment.
+	(add_alignment_attribute): New.
+	(base_type_die): Add alignment attribute.
+	(subrange_type_die): Likewise.
+	(modified_type_die): Likewise.
+	(gen_array_type_die): Likewise.
+	(gen_descr_array_type_die: Likewise.
+	(gen_enumeration_type_die): Likewise.
+	(gen_subprogram_die): Likewise.
+	(gen_variable_die): Likewise.
+	(gen_field_die): Likewise.
+	(gen_ptr_to_mbr_type_die): Likewise.
+	(gen_struct_or_union_type_die): Likewise.
+	(gen_subroutine_type_die): Likewise.
+	(gen_typedef_die): Likewise.
+	(base_type_cmp): Compare alignment attribute.
+
 2017-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/79170
