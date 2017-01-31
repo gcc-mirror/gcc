@@ -44,7 +44,8 @@ struct gcc_base_context;
 
 enum gcc_base_api_version
 {
-  GCC_FE_VERSION_0 = 0
+  GCC_FE_VERSION_0 = 0,
+  GCC_FE_VERSION_1 = 1,
 };
 
 /* The operations defined by the GCC base API.  This is the vtable for

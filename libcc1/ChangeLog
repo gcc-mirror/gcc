@@ -1,3 +1,8 @@
+2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
+
+	* libcc1.cc (vtable): Update to GCC_FE_VERSION_1.
+	(gcc_c_fe_context): Accept also GCC_FE_VERSION_1.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
