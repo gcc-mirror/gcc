@@ -1,3 +1,43 @@
+2017-01-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78597
+	PR target/79038
+	* config/rs6000/rs6000-protos.h (convert_float128_to_int): Delete,
+	no longer used.
+	(convert_int_to_float128): Likewise.
+	* config/rs6000/rs6000.c (convert_float128_to_int): Likewise.
+	(convert_int_to_float128): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_IEEE128_MOVE): Likewise.
+	(UNSPEC_IEEE128_CONVERT): Likewise.
+	(floatsi<mode>2, FLOAT128 iterator): Bypass calling
+	rs6000_expand_float128_convert if we have IEEE 128-bit hardware.
+	Use local variables for IBM extended format.
+	(fix_trunc<mode>si2, FLOAT128 iterator): Likewise.
+	(fix_trunc<mode>si2_fprs): Likewise.
+	(fixuns_trunc<IEEE128:mode><SDI:mode>2): Likewise.
+	(floatuns<IEEE128:mode>2, IEEE128 iterator): Likewise.
+	(fix<uns>_<mode>si2_hw): Rework the IEEE 128-bt hardware support
+	to know that we can now have integers of all sizes in vector
+	registers.
+	(fix<uns>_<mode>di2_hw): Likewise.
+	(float<uns>_<mode>si2_hw): Likewise.
+	(fix_<mode>si2_hw): Likewise.
+	(fixuns_<mode>si2_hw): Likewise.
+	(float<uns>_<mode>di2_hw): Likewise.
+	(float_<mode>di2_hw): Likewise.
+	(float_<mode>si2_hw): Likewise.
+	(floatuns_<mode>di2_hw): Likewise.
+	(floatuns_<mode>si2_hw): Likewise.
+	(xscvqp<su>wz_<mode>): Delete, no longer used.
+	(xscvqp<su>dz_<mode>): Likewise.
+	(xscv<su>dqp_<mode>): Likewise.
+	(ieee128_mfvsrd_64bit): Likewise.
+	(ieee128_mfvsrd_32bit): Likewise.
+	(ieee128_mfvsrwz): Likewise.
+	(ieee128_mtvsrw): Likewise.
+	(ieee128_mtvsrd_64bit): Likewise.
+	(ieee128_mtvsrd_32bit): Likewise.
+
 2017-01-31  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/79285
