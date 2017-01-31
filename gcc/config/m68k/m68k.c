@@ -1139,9 +1139,9 @@ m68k_expand_prologue (void)
 			    current_frame.reg_mask, true, true));
     }
 
-//  if (!TARGET_SEP_DATA
-//      && crtl->uses_pic_offset_table)
-//    emit_insn (gen_load_got (pic_offset_table_rtx));
+  if (!TARGET_SEP_DATA
+      && crtl->uses_pic_offset_table)
+    emit_insn (gen_load_got (pic_offset_table_rtx));
 }
 
 /* Return true if a simple (return) instruction is sufficient for this
@@ -4496,7 +4496,10 @@ print_operand (FILE *file, rtx op, int letter)
 	  && !(GET_CODE (XEXP (op, 0)) == CONST_INT
 	       && INTVAL (XEXP (op, 0)) < 0x8000
 	       && INTVAL (XEXP (op, 0)) >= -0x8000))
-	fprintf (file, MOTOROLA ? ".l" : ":l");
+#ifdef TARGET_AMIGA
+	if (!flag_mybaserel)
+#endif
+		fprintf (file, MOTOROLA ? ".l" : ":l");
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
     {
@@ -4693,10 +4696,8 @@ print_operand_address (FILE *file, rtx addr)
 {
   struct m68k_address address;
 
-  if (!m68k_decompose_address (QImode, addr, true, &address)) {
-	debug_rtx(addr);
+  if (!m68k_decompose_address (QImode, addr, true, &address))
     gcc_unreachable ();
-  }
 
   if (address.code == PRE_DEC)
     fprintf (file, MOTOROLA ? "-(%s)" : "%s@-",
@@ -4721,7 +4722,7 @@ print_operand_address (FILE *file, rtx addr)
 	  /* (d16,PC) or (bd,PC,Xn) (with suppressed index register).  */
 	  fputc ('(', file);
 	  output_addr_const (file, addr);
-	  asm_fprintf (file, flag_pic == 1 || flag_pic == 3 ? ":w,%Rpc)" : ":l,%Rpc)");
+	  asm_fprintf (file, flag_pic == 1 ? ":w,%Rpc)" : ":l,%Rpc)");
 	}
       else
 	{
@@ -4738,6 +4739,15 @@ print_operand_address (FILE *file, rtx addr)
 	    }
 	  else
 	    output_addr_const (file, addr);
+
+	  if (!RTX_FLAG (addr, frame_related))
+	    {
+//	      debug_rtx(addr);
+	      if (flag_mybaserel == 1)
+		  asm_fprintf (file, ".w(a4)");
+	      else if (flag_mybaserel == 2)
+		  asm_fprintf (file, "(a4)");
+	    }
 	}
     }
   else
@@ -5126,8 +5136,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  /* Use the static chain register as a temporary (call-clobbered)
 	     GOT pointer for this function.  We can use the static chain
 	     register because it isn't live on entry to the thunk.  */
-//	  SET_REGNO (pic_offset_table_rtx, STATIC_CHAIN_REGNUM);
-//	  emit_insn (gen_load_got (pic_offset_table_rtx));
+	  SET_REGNO (pic_offset_table_rtx, STATIC_CHAIN_REGNUM);
+	  emit_insn (gen_load_got (pic_offset_table_rtx));
 	}
       legitimize_pic_address (XEXP (mem, 0), Pmode, tmp);
       mem = replace_equiv_address (mem, tmp);

@@ -41,6 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #include "config/m68k/amigaos.h"
 
 
+//int amiga_declare_object;
+
 #if 0
 static int amigaos_put_in_text (tree);
 static rtx gen_stack_management_call (rtx, rtx, const char *);
@@ -776,6 +778,9 @@ amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 extern void
 amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_UNUSED)
 {
-  fprintf (asm_out_file, "\t.section\t%s\n", name);
+  if (0 == strncmp(".text", name, 5))
+    name = ".text";
+//  fprintf (asm_out_file, "\t.section\t%s\n", name);
+  fprintf (asm_out_file, "\t%s\n", name);
 }
 

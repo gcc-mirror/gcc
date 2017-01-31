@@ -12,9 +12,21 @@ Target RejectNegative
 small code model
 
 fbaserel
-Target Common Report Var(flag_pic,3) Init(-1)
-Backward compatibility, use -fpic now
+Target Common Report Var(flag_mybaserel,1)
+data is adressed relativ to a4
 
 fbaserel32
-Target Common Report Var(flag_pic,4) Init(-1)
-Backward compatibility, use -fPIC now
+Target Common Report Var(flag_mybaserel,2)
+data is adressed relativ to a4 with 32 bit offsets
+
+resident
+Target Common Report Var(flag_mybaserel,1)
+data is adressed relativ to a4, linked as resident
+
+resident32
+Target Common Report Var(flag_mybaserel,2)
+data is adressed relativ to a4 with 32 bit offsets, linked as resident
+
+mcrt=
+Target RejectNegative Var(amigaos_crt) Joined
+Specify startup binary

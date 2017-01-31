@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_AMIGA 1
 #endif
 
+#define HAS_INIT_SECTION
+
 #ifndef SWBEG_ASM_OP
 #define SWBEG_ASM_OP "\t.swbeg\t"
 #endif
@@ -88,6 +90,28 @@ do {								\
     fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
 } while (0)
 
+#if 0
+extern int amiga_declare_object;
+
+#define ASM_DECLARE_OBJECT_NAME(FILE,NAME,DECL)			\
+if (!DECL_INITIAL (DECL) ||					\
+    initializer_zerop (DECL_INITIAL (decl))) 			\
+  {								\
+    amiga_declare_object = 1;					\
+    fprintf ((FILE), ".comm\t%s,", NAME);			\
+  }								\
+else								\
+ASM_OUTPUT_LABEL (FILE, NAME)
+
+#undef ASM_OUTPUT_SKIP
+#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
+if (amiga_declare_object)					\
+  fprintf (FILE, "%u\n", (int)(SIZE));				\
+else								\
+  fprintf (FILE, "\t.skip %u\n", (int)(SIZE));			\
+amiga_declare_object = 0
+#endif
+
 /* Register in which address to store a structure value is passed to a
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0.  */
 
@@ -145,14 +169,8 @@ do {								\
   fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
 /* end of stuff from m68kv4.h */
 
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s"
-
-#undef	STARTFILE_SPEC
-#define STARTFILE_SPEC "crtbegin.o%s"
-
 #ifndef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
+#define BSS_SECTION_ASM_OP	"\t.bss"
 #endif
 
 #ifndef ASM_OUTPUT_ALIGNED_BSS
@@ -168,8 +186,6 @@ do {								\
    provided for compatibility reasons.
    When creating shared libraries, use different 'errno'.  */
 
-
-
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
@@ -178,8 +194,8 @@ do {								\
       builtin_define ("__saveds=__attribute__((__saveds__))");		\
       builtin_define ("__interrupt=__attribute__((__interrupt__))");	\
       builtin_define ("__stackext=__attribute__((__stackext__))");	\
-      builtin_define ("__regargs_x=__attribute__((regparm))");	\
-      builtin_define ("__stdargs_x=__attribute__((stkparm))");	\
+      builtin_define ("__regargs=__attribute__((regparm))");	\
+      builtin_define ("__stdargs=__attribute__((stkparm))");	\
       builtin_define ("__aligned=__attribute__((__aligned__(4)))");	\
       builtin_define_std ("amiga");					\
       builtin_define_std ("amigaos");					\
@@ -194,6 +210,11 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   builtin_define ("errno=(*ixemul_errno)");			\
 
 #endif
+
+/* put return values in FPU build in FP0 Reg */
+#undef FUNCTION_VALUE_REGNO_P
+#define FUNCTION_VALUE_REGNO_P(N) \
+  ((N) == D0_REG || (N) == A0_REG || (TARGET_68881 && (N) == FP0_REG))
 
 /* Inform the program which CPU we compile for.  */
 
@@ -229,14 +250,27 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
     }									\
   while (0)
 */
+
+/* When creating shared libraries, use different 'errno'. */
+#define CPP_IXEMUL_SPEC                             \
+  "%{!ansi:-Dixemul} -D__ixemul__ -D__ixemul "      \
+  "%{malways-restore-a4:-Derrno=(*ixemul_errno)} "  \
+  "%{mrestore-a4:-Derrno=(*ixemul_errno)}"
+#define CPP_LIBNIX_SPEC                             \
+  "-isystem %(sdk_root)libnix/include "             \
+  "%{!ansi:-Dlibnix} -D__libnix__ -D__libnix"
+#define CPP_CLIB2_SPEC                              \
+  "-isystem %(sdk_root)clib2/include "              \
+  "%{!ansi:-DCLIB2} -D__CLIB2__ -D__CLIB2"
+
 /* Define __HAVE_68881__ in preprocessor according to the -m flags.
    This will control the use of inline 68881 insns in certain macros.
    Note: it should be set in TARGET_CPU_CPP_BUILTINS but TARGET_68881
          isn't the same -m68881 since its also true for -m680[46]0 ...
    Differentiate between libnix and ixemul.  */
 
-#define CPP_SPEC							\
-  "%{m68881:-D__HAVE_68881__} "						\
+#define CPP_SPEC                                    \
+  "%{m68881:-D__HAVE_68881__} "                     \
   "%{!ansi:"                                        \
     "%{m68020:-Dmc68020} "                          \
     "%{mc68020:-Dmc68020} "                         \
@@ -252,16 +286,10 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{m68030:-D__mc68030__ -D__mc68030} "            \
   "%{m68040:-D__mc68040__ -D__mc68040} "            \
   "%{m68060:-D__mc68060__ -D__mc68060} "            \
-  "%{noixemul:%{!ansi:%{!std=*:-Dlibnix}%{std=gnu*:-Dlibnix}} -D__libnix -D__libnix__} " \
-  "%{!noixemul:%{!ansi:%{!std=*:-Dixemul}%{std=gnu*:-Dixemul}} -D__ixemul -D__ixemul__}"
-
-/* Translate '-resident' to '-fbaserel' (they differ in linking stage only).
-   Don't put function addresses in registers for PC-relative code.  */
-
-#define CC1_SPEC							\
-  "%{resident:-fbaserel} "						\
-  "%{resident32:-fbaserel32} "						\
-  "%{msmall-code:-fno-function-cse}"
+  "%{noixemul:%(cpp_libnix)} "                      \
+  "%{mcrt=nix*:%(cpp_libnix)} "                     \
+  "%{mcrt=ixemul:%(cpp_ixemul)} "                   \
+  "%{mcrt=clib2:%(cpp_clib2)}"
 
 /* Various -m flags require special flags to the assembler.  */
 
@@ -280,48 +308,56 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
 #define ASM_CPU_DEFAULT_SPEC						\
   "%{!m680*:%{!mc680*:-m68040}}"
 
-/* If debugging, tell the linker to output amiga-hunk symbols *and* a BSD
-   compatible debug hunk.
-   Also, pass appropriate linker flavours depending on user-supplied
-   commandline options.  */
-
-#define LINK_SPEC							\
-  "%{noixemul:-fl libnix} "						\
-  "%{resident*:-amiga-datadata-reloc} "					\
-  "%{resident|fbaserel:-m amiga_bss -fl libb} "				\
-  "%{resident32|fbaserel32:-m amiga_bss -fl libb32} "			\
-  "%{g:-amiga-debug-hunk} "						\
-  "%(link_cpu)"
-
-#define LINK_CPU_SPEC							\
-  "%{m6802*|mc68020|m68030|m68040|m68060:-fl libm020} "			\
-  "%{m68881:-fl libm881}"
-
 /* Choose the right startup file, depending on whether we use base relative
    code, base relative code with automatic relocation (-resident), their
    32-bit versions, libnix, profiling or plain crt0.o.  */
 
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC							\
-  "%{!noixemul:"							\
-    "%{fbaserel:%{!resident:bcrt0.o%s}}"				\
-    "%{resident:rcrt0.o%s}"						\
-    "%{fbaserel32:%{!resident32:lcrt0.o%s}}"				\
-    "%{resident32:scrt0.o%s}"						\
-    "%{!resident:%{!fbaserel:%{!resident32:%{!fbaserel32:"		\
-      "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}}}}"		\
-  "%{noixemul:"								\
-    "%{resident:libnix/nrcrt0.o%s} "					\
-    "%{!resident:%{fbaserel:libnix/nbcrt0.o%s}%{!fbaserel:libnix/ncrt0.o%s}}}"
+#define STARTFILE_IXEMUL_SPEC                                     \
+  "%{fbaserel:%{!resident:bcrt0.o%s}}"                            \
+  "%{resident:rcrt0.o%s}"                                         \
+  "%{fbaserel32:%{!resident32:lcrt0.o%s}}"                        \
+  "%{resident32:scrt0.o%s}"                                       \
+  "%{!resident:%{!fbaserel:%{!resident32:%{!fbaserel32:"          \
+    "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}}}"
+#define STARTFILE_LIBNIX_SPEC                                     \
+  "%(sdk_root)lib/libnix/"                                 \
+  "%{ramiga-*:"                                                   \
+    "%{ramiga-lib:libinit.o%s}"                                   \
+    "%{ramiga-libr:libinitr.o%s}"                                 \
+    "%{ramiga-dev:devinit.o%s}}"                                  \
+  "%{!ramiga-*:"                                                  \
+    "%{resident:nrcrt0.o%s}"                                      \
+    "%{!resident:"                                                \
+      "%{fbaserel:nbcrt0.o%s}"                                    \
+      "%{!fbaserel:ncrt0.o%s}}}"
+#define STARTFILE_CLIB2_SPEC                                      \
+  "%(sdk_root)clib2/lib/"                                         \
+  "%{resident32:nr32crt0.o%s}"                                    \
+  "%{!resident32:"                                                \
+    "%{fbaserel32:nb32crt0.o%s}"                                  \
+    "%{!fbaserel32:"                                              \
+      "%{resident:nrcrt0.o%s}"                                    \
+      "%{!resident:"                                              \
+        "%{fbaserel:nbcrt0.o%s}"                                  \
+        "%{!fbaserel:ncrt0.o%s}}}}"
+
+#undef	STARTFILE_SPEC
+#define STARTFILE_SPEC                                            \
+  "%{noixemul:%(startfile_libnix)} "                              \
+  "%{mcrt=nix*:%(startfile_libnix)} "                             \
+  "%{mcrt=ixemul:%(startfile_ixemul)} "                           \
+  "%{mcrt=clib2:%(startfile_clib2)}"
+
+#define ENDFILE_IXEMUL_SPEC ""
+#define ENDFILE_LIBNIX_SPEC "-lstubs"
+#define ENDFILE_CLIB2_SPEC ""
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC							\
-  "%{noixemul:-lstubs}"
-
-/* put return values in FPU build in FP0 Reg */
-#undef FUNCTION_VALUE_REGNO_P
-#define FUNCTION_VALUE_REGNO_P(N) \
-  ((N) == D0_REG || (N) == A0_REG || (TARGET_68881 && (N) == FP0_REG))
+#define ENDFILE_SPEC                                              \
+  "%{noixemul:%(endfile_libnix)} "                                \
+  "%{mcrt=nix*:%(endfile_libnix)} "                               \
+  "%{mcrt=ixemul:%(endfile_ixemul)} "                             \
+  "%{mcrt=clib2:%(endfile_clib2)}"
 
 
 /* Automatically search libamiga.a for AmigaOS specific functions.  Note
@@ -337,13 +373,106 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
    to put in a -lamiga himself and get it in the wrong place, so that (for
    example) calls like sprintf come from -lamiga rather than -lc. */
 
-#undef LIB_SPEC
-#define LIB_SPEC							\
-  "%{!noixemul:"							\
-    "%{p|pg:-lc_p}"							\
-    "%{!p:%{!pg:-lc -lamiga -lc}}}"					\
-  "%{noixemul:"								\
-    "-lnixmain -lnix -lamiga %{mstackcheck|mstackextend:-lstack}}"
+#define LIB_IXEMUL_SPEC                                           \
+  "%{!p:%{!pg:-lc -lamiga -lc}} "                                 \
+  "%{p:-lc_p} %{pg:-lc_p}"
+#define LIB_LIBNIX_SPEC                                           \
+  "-lnixmain -lnix -lstubs "                                              \
+  "%{mcrt=*:-l%*} "                                               \
+  "%{!mcrt=*:-lnix20} "                                           \
+  "-lamiga "                                                      \
+  "%{mstackcheck:-lstack} "                                       \
+  "%{mstackextend:-lstack}"
+#define LIB_CLIB2_SPEC                                            \
+  "-lc -lamiga -ldebug "                                          \
+  "%{mstackcheck:-lstack} "                                       \
+  "%{mstackextend:-lstack}"
+
+#define LIB_SPEC                                                  \
+  "%{noixemul:%(lib_libnix)} "                                    \
+  "%{mcrt=nix*:%(lib_libnix)} "                                   \
+  "%{mcrt=ixemul:%(lib_ixemul)} "                                 \
+  "%{mcrt=clib2:%(lib_clib2)}"
+
+#define LIBGCC_IXEMUL_SPEC ""
+#define LIBGCC_LIBNIX_SPEC "-lnix "                               \
+  "%{mcrt=*:-l%*} "                                               \
+  "%{!mcrt=*:-lnix20}"
+#define LIBGCC_CLIB2_SPEC "-lc"
+//#define LIBGCC_SPEC "-lgcc "
+#define LIBGCC_SPEC " "                                      \
+  "%{noixemul:%(libgcc_libnix)} "                                 \
+  "%{mcrt=nix*:%(libgcc_libnix)} "                                \
+  "%{mcrt=ixemul:%(libgcc_ixemul)} "                              \
+  "%{mcrt=clib2:%(libgcc_clib2)}"
+
+/* If debugging, tell the linker to output amiga-hunk symbols *and* a BSD
+   compatible debug hunk.
+   Also, pass appropriate linker flavours depending on user-supplied
+   commandline options.  */
+
+#define LINK_IXEMUL_SPEC ""
+#define LINK_LIBNIX_SPEC "-L%(sdk_root)libnix/lib -fl libnix"
+#define LINK_CLIB2_SPEC "-L%(sdk_root)clib2/lib"
+
+/* If debugging, tell the linker to output amiga-hunk symbols *and* a BSD
+   compatible debug hunk.
+   Also, pass appropriate linker flavours depending on user-supplied
+   commandline options.  */
+
+#define LINK_SPEC                                                 \
+  "%{noixemul:%(link_libnix)} "                                   \
+  "%{mcrt=nix*:%(link_libnix)} "                                  \
+  "%{mcrt=ixemul:%(link_ixemul)} "                                \
+  "%{mcrt=clib2:%(link_clib2)} "                                  \
+  "%{fbaserel:%{!resident:-m amiga_bss -fl libb}} "               \
+  "%{resident:-m amiga_bss -amiga-datadata-reloc -fl libb} "      \
+  "%{fbaserel32:%{!resident32:-m amiga_bss -fl libb32}} "         \
+  "%{resident32:-m amiga_bss -amiga-datadata-reloc -fl libb32} "  \
+  "%{g:-amiga-debug-hunk} "                                       \
+  "%{m68020:-fl libm020} "                                        \
+  "%{mc68020:-fl libm020} "                                       \
+  "%{m68030:-fl libm020} "                                        \
+  "%{m68040:-fl libm020} "                                        \
+  "%{m68060:-fl libm020} "                                        \
+  "%{m68020-40:-fl libm020} "                                     \
+  "%{m68020-60:-fl libm020} "                                     \
+  "%{m68881:-fl libm881}"
+
+/* Translate '-resident' to '-fbaserel' (they differ in linking stage only).
+   Don't put function addresses in registers for PC-relative code.  */
+
+#define CC1_SPEC							\
+  "%{resident:-fbaserel} "						\
+  "%{resident32:-fbaserel32} "						\
+  "%{msmall-code:-fno-function-cse}"
+
+#define LINK_CPU_SPEC							\
+  "%{m6802*|mc68020|m68030|m68040|m68060:-fl libm020} "			\
+  "%{m68881:-fl libm881}"
+
+/* [cahirwpz] A modified copy of LINK_COMMAND_SPEC from gcc/gcc.c file.
+   Don't prepend libgcc.a to link libraries and make sure the options is
+   at the end of command line. Otherwise linker chooses generic functions
+   from libgcc.a instead AmigaOS-specific counterparts from libnix.a. */
+
+#define LINK_COMMAND_SPEC                                           \
+  "%{!fsyntax-only:"                                                \
+    "%{!c:"                                                         \
+      "%{!M:"                                                       \
+	"%{!MM:"                                                    \
+	  "%{!E:"                                                   \
+	    "%{!S:"                                                 \
+	      "%(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} "         \
+	      "%{N} %{n} %{r} %{s} %{t} %{u*} %{x} %{z} %{Z} "      \
+	      "%{!A:%{!nostdlib:%{!nostartfiles:%S}}} "             \
+	      "%{static:} %{L*} %D %o "                             \
+	      "%{!nostdlib:%{!nodefaultlibs:%L}} "                  \
+	      "%{!A:%{!nostdlib:%{!nostartfiles:%E}}} "             \
+	      "%{!nostdlib:%{!nodefaultlibs:%G}} "                  \
+	      "%{T*} }}}}}} "                                       \
+
+
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -358,8 +487,26 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
 #define EXTRA_SPECS							\
   { "asm_cpu",		ASM_CPU_SPEC },					\
   { "asm_cpu_default",	ASM_CPU_DEFAULT_SPEC },				\
-  { "link_cpu",		LINK_CPU_SPEC }
-
+  { "link_cpu",		LINK_CPU_SPEC },                                \
+  {"sdk_root", TOOLDIR_BASE_PREFIX "m68k-amigaos/"},                \
+  {"cpp_ixemul", CPP_IXEMUL_SPEC},                                  \
+  {"cpp_libnix", CPP_LIBNIX_SPEC},                                  \
+  {"cpp_clib2", CPP_CLIB2_SPEC},                                    \
+  {"lib_ixemul", LIB_IXEMUL_SPEC},                                  \
+  {"lib_libnix", LIB_LIBNIX_SPEC},                                  \
+  {"lib_clib2", LIB_CLIB2_SPEC},                                    \
+  {"link_ixemul", LINK_IXEMUL_SPEC},                                \
+  {"link_libnix", LINK_LIBNIX_SPEC},                                \
+  {"link_clib2", LINK_CLIB2_SPEC},                                  \
+  {"startfile_ixemul", STARTFILE_IXEMUL_SPEC},                      \
+  {"startfile_libnix", STARTFILE_LIBNIX_SPEC},                      \
+  {"startfile_clib2", STARTFILE_CLIB2_SPEC},                        \
+  {"endfile_ixemul", ENDFILE_IXEMUL_SPEC},                          \
+  {"endfile_libnix", ENDFILE_LIBNIX_SPEC},                          \
+  {"endfile_clib2", ENDFILE_CLIB2_SPEC},                            \
+  {"libgcc_ixemul", LIBGCC_IXEMUL_SPEC},                            \
+  {"libgcc_libnix", LIBGCC_LIBNIX_SPEC},                            \
+  {"libgcc_clib2", LIBGCC_CLIB2_SPEC}
 
 /* begin-GG-local: dynamic libraries */
 
