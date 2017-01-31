@@ -1,3 +1,10 @@
+2017-01-31  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/71691
+	* bitmap.h (class auto_bitmap): New.
+	* tree-ssa-loop-unswitch.c (tree_may_unswitch_on): Call
+	is_maybe_undefined instead of ssa_undefined_value_p.
+
 2017-01-31  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Rename

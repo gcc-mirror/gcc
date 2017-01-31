@@ -1,3 +1,8 @@
+2017-01-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/71691
+	* gcc.dg/loop-unswitch-5.c: Test that we actually unswitch a loop.
+
 2017-01-31  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/s390.exp: Rename __S390_ARCH_LEVEL__ to
