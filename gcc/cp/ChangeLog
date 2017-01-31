@@ -1,3 +1,9 @@
+2017-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79298
+	* name-lookup.c (suggest_alternative_in_explicit_scope): Resolve
+	any namespace aliases.
+
 2017-01-31  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79290
