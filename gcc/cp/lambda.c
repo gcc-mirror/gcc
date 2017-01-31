@@ -849,13 +849,21 @@ maybe_generic_this_capture (tree object, tree fns)
 	   interest.  */
 	if (BASELINK_P (fns))
 	  fns = BASELINK_FUNCTIONS (fns);
+	bool id_expr = TREE_CODE (fns) == TEMPLATE_ID_EXPR;
+	if (id_expr)
+	  fns = TREE_OPERAND (fns, 0);
 	for (; fns; fns = OVL_NEXT (fns))
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (OVL_CURRENT (fns)))
-	    {
-	      /* Found a non-static member.  Capture this.  */
-	      lambda_expr_this_capture (lam, true);
-	      break;
-	    }
+	  {
+	    tree fn = OVL_CURRENT (fns);
+
+	    if ((!id_expr || TREE_CODE (fn) == TEMPLATE_DECL)
+		&& DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	      {
+		/* Found a non-static member.  Capture this.  */
+		lambda_expr_this_capture (lam, true);
+		break;
+	      }
+	  }
       }
 }
 

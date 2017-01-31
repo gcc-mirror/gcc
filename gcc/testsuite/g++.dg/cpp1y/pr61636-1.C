@@ -1,4 +1,5 @@
 // PR c++/61636
+// PR c++/79264
 // { dg-do compile { target c++14 } }
 
 // ICE because we figure this capture too late.
@@ -28,4 +29,8 @@ void A::b() {
   auto lam2 = [&](auto asdf) { Baz (asdf); };
 
   lam2 (0);
+
+  auto lam3 = [&](auto asdf) { Baz<int> (asdf); };
+
+  lam3 (0);
 }
