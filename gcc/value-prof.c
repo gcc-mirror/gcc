@@ -1358,7 +1358,8 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   dcall_stmt = as_a <gcall *> (gimple_copy (icall_stmt));
   gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
   dflags = flags_from_decl_or_type (direct_call->decl);
-  if ((dflags & ECF_NORETURN) != 0)
+  if ((dflags & ECF_NORETURN) != 0
+      && should_remove_lhs_p (gimple_call_lhs (dcall_stmt)))
     gimple_call_set_lhs (dcall_stmt, NULL_TREE);
   gsi_insert_before (&gsi, dcall_stmt, GSI_SAME_STMT);
 
