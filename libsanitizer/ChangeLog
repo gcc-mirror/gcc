@@ -1,3 +1,7 @@
+2017-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Enable asan and ubsan on 64-bit s390*-*-linux*.
+
 2017-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.tgt: Enable tsan and lsan on powerpc64{,le}-*-linux*.
