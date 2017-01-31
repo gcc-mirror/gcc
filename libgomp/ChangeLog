@@ -1,3 +1,33 @@
+2017-01-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.h: #include <stdbool.h>.
+	(GOMP_OFFLOAD_get_name, GOMP_OFFLOAD_get_caps)
+	(GOMP_OFFLOAD_get_type, GOMP_OFFLOAD_get_num_devices)
+	(GOMP_OFFLOAD_init_device, GOMP_OFFLOAD_fini_device)
+	(GOMP_OFFLOAD_version, GOMP_OFFLOAD_load_image)
+	(GOMP_OFFLOAD_unload_image, GOMP_OFFLOAD_alloc, GOMP_OFFLOAD_free)
+	(GOMP_OFFLOAD_dev2host, GOMP_OFFLOAD_host2dev)
+	(GOMP_OFFLOAD_dev2dev, GOMP_OFFLOAD_can_run, GOMP_OFFLOAD_run)
+	(GOMP_OFFLOAD_async_run, GOMP_OFFLOAD_openacc_parallel)
+	(GOMP_OFFLOAD_openacc_register_async_cleanup)
+	(GOMP_OFFLOAD_openacc_async_test)
+	(GOMP_OFFLOAD_openacc_async_test_all)
+	(GOMP_OFFLOAD_openacc_async_wait)
+	(GOMP_OFFLOAD_openacc_async_wait_async)
+	(GOMP_OFFLOAD_openacc_async_wait_all)
+	(GOMP_OFFLOAD_openacc_async_wait_all_async)
+	(GOMP_OFFLOAD_openacc_async_set_async)
+	(GOMP_OFFLOAD_openacc_create_thread_data)
+	(GOMP_OFFLOAD_openacc_destroy_thread_data)
+	(GOMP_OFFLOAD_openacc_get_current_cuda_device)
+	(GOMP_OFFLOAD_openacc_get_current_cuda_context)
+	(GOMP_OFFLOAD_openacc_get_cuda_stream)
+	(GOMP_OFFLOAD_openacc_set_cuda_stream): New prototypes.
+	* libgomp.h (struct acc_dispatch_t, struct gomp_device_descr): Use
+	these.
+	* plugin/plugin-hsa.c (GOMP_OFFLOAD_load_image)
+	(GOMP_OFFLOAD_unload_image): Fix argument types.
+
 2017-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/lib/libgomp.exp
