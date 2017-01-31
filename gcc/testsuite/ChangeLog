@@ -1,5 +1,12 @@
 2017-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/67273
+	PR c++/79253
+	* g++.dg/cpp1y/pr67273.C: New.
+	* g++.dg/cpp1y/pr79253.C: New.
+
+2017-01-31  Nathan Sidwell  <nathan@acm.org>
+
 	PR c++/79264
 	* g++.dg/cpp1y/pr61636-1.C: Augment.
 
