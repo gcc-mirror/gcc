@@ -109,6 +109,82 @@ tree_ssa_unswitch_loops (void)
   return 0;
 }
 
+/* Return TRUE if an SSA_NAME maybe undefined and is therefore
+   unsuitable for unswitching.  STMT is the statement we are
+   considering for unswitching and LOOP is the loop it appears in.  */
+
+static bool
+is_maybe_undefined (const tree name, gimple *stmt, struct loop *loop)
+{
+  /* The loop header is the only block we can trivially determine that
+     will always be executed.  If the comparison is in the loop
+     header, we know it's OK to unswitch on it.  */
+  if (gimple_bb (stmt) == loop->header)
+    return false;
+
+  auto_bitmap visited_ssa;
+  auto_vec<tree> worklist;
+  worklist.safe_push (name);
+  bitmap_set_bit (visited_ssa, SSA_NAME_VERSION (name));
+  while (!worklist.is_empty ())
+    {
+      tree t = worklist.pop ();
+
+      /* If it's obviously undefined, avoid further computations.  */
+      if (ssa_undefined_value_p (t, true))
+	return true;
+
+      /* A PARM_DECL will not have an SSA_NAME_DEF_STMT.  Parameters
+	 get their initial value from function entry.  */
+      if (SSA_NAME_VAR (t) && TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL)
+	continue;
+
+      gimple *def = SSA_NAME_DEF_STMT (t);
+
+      /* Check that all the PHI args are fully defined.  */
+      if (gphi *phi = dyn_cast <gphi *> (def))
+	{
+	  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      tree t = gimple_phi_arg_def (phi, i);
+	      /* If an SSA has already been seen, it may be a loop,
+		 but we can continue and ignore this use.  Otherwise,
+		 add the SSA_NAME to the queue and visit it later.  */
+	      if (TREE_CODE (t) == SSA_NAME
+		  && bitmap_set_bit (visited_ssa, SSA_NAME_VERSION (t)))
+		worklist.safe_push (t);
+	    }
+	  continue;
+	}
+
+      /* Uses in stmts always executed when the region header executes
+	 are fine.  */
+      if (dominated_by_p (CDI_DOMINATORS, loop->header, gimple_bb (def)))
+	continue;
+
+      /* Handle calls and memory loads conservatively.  */
+      if (!is_gimple_assign (def)
+	  || (gimple_assign_single_p (def)
+	      && gimple_vuse (def)))
+	return true;
+
+      /* Check that any SSA names used to define NAME are also fully
+	 defined.  */
+      use_operand_p use_p;
+      ssa_op_iter iter;
+      FOR_EACH_SSA_USE_OPERAND (use_p, def, iter, SSA_OP_USE)
+	{
+	  tree t = USE_FROM_PTR (use_p);
+	  /* If an SSA has already been seen, it may be a loop,
+	     but we can continue and ignore this use.  Otherwise,
+	     add the SSA_NAME to the queue and visit it later.  */
+	  if (bitmap_set_bit (visited_ssa, SSA_NAME_VERSION (t)))
+	    worklist.safe_push (t);
+	}
+    }
+  return false;
+}
+
 /* Checks whether we can unswitch LOOP on condition at end of BB -- one of its
    basic blocks (for what it means see comments below).  */
 
@@ -136,14 +212,14 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
   /* Condition must be invariant.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      /* Unswitching on undefined values would introduce undefined
-	 behavior that the original program might never exercise.  */
-      if (ssa_undefined_value_p (use, true))
-	return NULL_TREE;
       def = SSA_NAME_DEF_STMT (use);
       def_bb = gimple_bb (def);
       if (def_bb
 	  && flow_bb_inside_loop_p (loop, def_bb))
+	return NULL_TREE;
+      /* Unswitching on undefined values would introduce undefined
+	 behavior that the original program might never exercise.  */
+      if (is_maybe_undefined (use, stmt, loop))
 	return NULL_TREE;
     }
 
