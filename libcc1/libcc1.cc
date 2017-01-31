@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "xregex.h"
 #include "findcomp.hh"
 #include "compiler-name.h"
+#include "intl.h"
 
 struct libcc1;
 
@@ -66,6 +67,9 @@ struct libcc1 : public gcc_c_context
 
   std::vector<std::string> args;
   std::string source_file;
+
+  /* Non-zero as an equivalent to gcc driver option "-v".  */
+  bool verbose;
 };
 
 // A local subclass of connection that holds a back-pointer to the
@@ -97,7 +101,8 @@ libcc1::libcc1 (const gcc_base_vtable *v,
     print_function (NULL),
     print_datum (NULL),
     args (),
-    source_file ()
+    source_file (),
+    verbose (false)
 {
   base.ops = v;
   c_ops = cv;
@@ -306,6 +311,14 @@ make_regexp (const char *triplet_regexp, const char *compiler)
   return buf.str ();
 }
 
+static void
+libcc1_set_verbose (struct gcc_base_context *s, int /* bool */ verbose)
+{
+  libcc1 *self = (libcc1 *) s;
+
+  self->verbose = verbose != 0;
+}
+
 static char *
 libcc1_set_arguments (struct gcc_base_context *s,
 		      const char *triplet_regexp,
@@ -316,6 +329,10 @@ libcc1_set_arguments (struct gcc_base_context *s,
   int code;
 
   std::string rx = make_regexp (triplet_regexp, COMPILER_NAME);
+  // Simulate fnotice by fprintf.
+  if (self->verbose)
+    fprintf (stderr, _("searching for compiler matching regex %s\n"),
+	     rx.c_str());
   code = regcomp (&triplet, rx.c_str (), REG_EXTENDED | REG_NOSUB);
   if (code != 0)
     {
@@ -341,6 +358,8 @@ libcc1_set_arguments (struct gcc_base_context *s,
 		     (char *) NULL);
     }
   regfree (&triplet);
+  if (self->verbose)
+    fprintf (stderr, _("found compiler %s\n"), compiler.c_str());
 
   self->args.push_back (compiler);
 
@@ -434,8 +453,7 @@ fork_exec (libcc1 *self, char **argv, int spair_fds[2], int stderr_fds[2])
 
 static int
 libcc1_compile (struct gcc_base_context *s,
-		const char *filename,
-		int verbose)
+		const char *filename)
 {
   libcc1 *self = (libcc1 *) s;
 
@@ -466,7 +484,7 @@ libcc1_compile (struct gcc_base_context *s,
   self->args.push_back ("-c");
   self->args.push_back ("-o");
   self->args.push_back (filename);
-  if (verbose)
+  if (self->verbose)
     self->args.push_back ("-v");
 
   self->connection = new libcc1_connection (fds[0], stderr_fds[0], self);
@@ -494,6 +512,14 @@ libcc1_compile (struct gcc_base_context *s,
   return fork_exec (self, argv, fds, stderr_fds);
 }
 
+static int
+libcc1_compile_v0 (struct gcc_base_context *s, const char *filename,
+		   int verbose)
+{
+  libcc1_set_verbose (s, verbose);
+  return libcc1_compile (s, filename);
+}
+
 static void
 libcc1_destroy (struct gcc_base_context *s)
 {
@@ -508,8 +534,10 @@ static const struct gcc_base_vtable vtable =
   libcc1_set_arguments,
   libcc1_set_source_file,
   libcc1_set_print_callback,
+  libcc1_compile_v0,
+  libcc1_destroy,
+  libcc1_set_verbose,
   libcc1_compile,
-  libcc1_destroy
 };
 
 extern "C" gcc_c_fe_context_function gcc_c_fe_context;

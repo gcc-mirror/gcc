@@ -45,6 +45,8 @@ struct gcc_base_context;
 enum gcc_base_api_version
 {
   GCC_FE_VERSION_0 = 0,
+
+  /* Deprecated method compile_v0.  Added method set_verbose and compile.  */
   GCC_FE_VERSION_1 = 1,
 };
 
@@ -94,18 +96,35 @@ struct gcc_base_vtable
 						      const char *message),
 			      void *datum);
 
-  /* Perform the compilation.  FILENAME is the name of the resulting
-     object file.  VERBOSE can be set to cause GCC to print some
-     information as it works.  Returns true on success, false on
-     error.  */
+  /* Deprecated GCC_FE_VERSION_0 variant of the GCC_FE_VERSION_1
+     compile method.  GCC_FE_VERSION_0 version verbose parameter has
+     been replaced by the set_verbose method.  */
 
-  int /* bool */ (*compile) (struct gcc_base_context *self,
-			     const char *filename,
-			     int /* bool */ verbose);
+  int /* bool */ (*compile_v0) (struct gcc_base_context *self,
+				const char *filename,
+				int /* bool */ verbose);
 
   /* Destroy this object.  */
 
   void (*destroy) (struct gcc_base_context *self);
+
+  /* VERBOSE can be set to non-zero to cause GCC to print some
+     information as it works.  Calling this method overrides its
+     possible previous calls.
+
+     This method is only available since GCC_FE_VERSION_1.  */
+
+  void (*set_verbose) (struct gcc_base_context *self,
+		       int /* bool */ verbose);
+
+  /* Perform the compilation.  FILENAME is the name of the resulting
+     object file.  Either set_triplet_regexp or set_driver_filename must
+     be called before.  Returns true on success, false on error.
+
+     This method is only available since GCC_FE_VERSION_1.  */
+
+  int /* bool */ (*compile) (struct gcc_base_context *self,
+			     const char *filename);
 };
 
 /* The GCC object.  */

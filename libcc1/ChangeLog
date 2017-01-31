@@ -1,5 +1,16 @@
 2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
 
+	* libcc1.cc: Include intl.h.
+	(struct libcc1): Add field verbose.
+	(libcc1::libcc1): Initialize it.
+	(libcc1_set_verbose): New function.
+	(libcc1_set_arguments): Print messages for VERBOSE.
+	(libcc1_compile): Remove parameter verbose.  Use VERBOSE from
+	SELF.
+	(libcc1_compile_v0): New function.
+	(vtable): Use libcc1_compile_v0 and add libcc1_compile and
+	libcc1_set_verbose.
+
 	* libcc1.cc (vtable): Update to GCC_FE_VERSION_1.
 	(gcc_c_fe_context): Accept also GCC_FE_VERSION_1.
 
