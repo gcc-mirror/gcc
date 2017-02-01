@@ -365,10 +365,12 @@ static const struct cpu_regmove_cost thunderx2t99_regmove_cost =
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost generic_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   1, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  1, /* vec_stmt_cost  */
+  1, /* vec_int_stmt_cost  */
+  1, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
@@ -383,10 +385,12 @@ static const struct cpu_vector_cost generic_vector_cost =
 /* ThunderX costs for vector insn classes.  */
 static const struct cpu_vector_cost thunderx_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   3, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  4, /* vec_stmt_cost  */
+  4, /* vec_int_stmt_cost  */
+  4, /* vec_fp_stmt_cost  */
   4, /* vec_permute_cost  */
   2, /* vec_to_scalar_cost  */
   2, /* scalar_to_vec_cost  */
@@ -401,10 +405,12 @@ static const struct cpu_vector_cost thunderx_vector_cost =
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost cortexa57_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  2, /* vec_stmt_cost  */
+  2, /* vec_int_stmt_cost  */
+  2, /* vec_fp_stmt_cost  */
   3, /* vec_permute_cost  */
   8, /* vec_to_scalar_cost  */
   8, /* scalar_to_vec_cost  */
@@ -418,10 +424,12 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
 
 static const struct cpu_vector_cost exynosm1_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  3, /* vec_stmt_cost  */
+  3, /* vec_int_stmt_cost  */
+  3, /* vec_fp_stmt_cost  */
   3, /* vec_permute_cost  */
   3, /* vec_to_scalar_cost  */
   3, /* scalar_to_vec_cost  */
@@ -436,10 +444,12 @@ static const struct cpu_vector_cost exynosm1_vector_cost =
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost xgene1_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  2, /* vec_stmt_cost  */
+  2, /* vec_int_stmt_cost  */
+  2, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
   4, /* vec_to_scalar_cost  */
   4, /* scalar_to_vec_cost  */
@@ -454,10 +464,12 @@ static const struct cpu_vector_cost xgene1_vector_cost =
 /* Costs for vector insn classes for Vulcan.  */
 static const struct cpu_vector_cost thunderx2t99_vector_cost =
 {
-  6, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  6, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  6, /* vec_stmt_cost  */
+  5, /* vec_int_stmt_cost  */
+  6, /* vec_fp_stmt_cost  */
   3, /* vec_permute_cost  */
   6, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
@@ -8119,50 +8131,55 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 				    int misalign ATTRIBUTE_UNUSED)
 {
   unsigned elements;
+  const cpu_vector_cost *costs = aarch64_tune_params.vec_costs;
+  bool fp = false;
+
+  if (vectype != NULL)
+    fp = FLOAT_TYPE_P (vectype);
 
   switch (type_of_cost)
     {
       case scalar_stmt:
-	return aarch64_tune_params.vec_costs->scalar_stmt_cost;
+	return fp ? costs->scalar_fp_stmt_cost : costs->scalar_int_stmt_cost;
 
       case scalar_load:
-	return aarch64_tune_params.vec_costs->scalar_load_cost;
+	return costs->scalar_load_cost;
 
       case scalar_store:
-	return aarch64_tune_params.vec_costs->scalar_store_cost;
+	return costs->scalar_store_cost;
 
       case vector_stmt:
-	return aarch64_tune_params.vec_costs->vec_stmt_cost;
+	return fp ? costs->vec_fp_stmt_cost : costs->vec_int_stmt_cost;
 
       case vector_load:
-	return aarch64_tune_params.vec_costs->vec_align_load_cost;
+	return costs->vec_align_load_cost;
 
       case vector_store:
-	return aarch64_tune_params.vec_costs->vec_store_cost;
+	return costs->vec_store_cost;
 
       case vec_to_scalar:
-	return aarch64_tune_params.vec_costs->vec_to_scalar_cost;
+	return costs->vec_to_scalar_cost;
 
       case scalar_to_vec:
-	return aarch64_tune_params.vec_costs->scalar_to_vec_cost;
+	return costs->scalar_to_vec_cost;
 
       case unaligned_load:
-	return aarch64_tune_params.vec_costs->vec_unalign_load_cost;
+	return costs->vec_unalign_load_cost;
 
       case unaligned_store:
-	return aarch64_tune_params.vec_costs->vec_unalign_store_cost;
+	return costs->vec_unalign_store_cost;
 
       case cond_branch_taken:
-	return aarch64_tune_params.vec_costs->cond_taken_branch_cost;
+	return costs->cond_taken_branch_cost;
 
       case cond_branch_not_taken:
-	return aarch64_tune_params.vec_costs->cond_not_taken_branch_cost;
+	return costs->cond_not_taken_branch_cost;
 
       case vec_perm:
-	return aarch64_tune_params.vec_costs->vec_permute_cost;
+	return costs->vec_permute_cost;
 
       case vec_promote_demote:
-	return aarch64_tune_params.vec_costs->vec_stmt_cost;
+	return fp ? costs->vec_fp_stmt_cost : costs->vec_int_stmt_cost;
 
       case vec_construct:
         elements = TYPE_VECTOR_SUBPARTS (vectype);

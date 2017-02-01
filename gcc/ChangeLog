@@ -1,3 +1,24 @@
+2017-02-01  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost): Pass
+	stmt_info to record_stmt_cost.
+	(vect_get_known_peeling_cost): Pass stmt_info if known to
+	record_stmt_cost.
+	* config/aarch64/aarch64-protos.h (cpu_vector_cost): Split
+	cpu_vector_cost field into
+	scalar_int_stmt_cost and scalar_fp_stmt_cost.  Split vec_stmt_cost
+	field into vec_int_stmt_cost and vec_fp_stmt_cost.
+	* config/aarch64/aarch64.c (generic_vector_cost): Update for the
+	splitting of scalar_stmt_cost and vec_stmt_cost.
+	(thunderx_vector_cost): Likewise.
+	(cortexa57_vector_cost): LIkewise.
+	(exynosm1_vector_cost): Likewise.
+	(xgene1_vector_cost): Likewise.
+	(thunderx2t99_vector_cost): Improve after the splitting of the two
+	fields.
+	(aarch64_builtin_vectorization_cost): Update for the splitting of
+	scalar_stmt_cost and vec_stmt_cost.
+
 2017-02-01  Torvald Riegel  <triegel@redhat.com>
             Richard Henderson  <rth@redhat.com>
 
