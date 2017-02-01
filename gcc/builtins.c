@@ -6157,8 +6157,9 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
 
   /* Check if a compare_and_swap pattern exists for the mode which represents
      the required size.  The pattern is not allowed to fail, so the existence
-     of the pattern indicates support is present.  */
-  if (can_compare_and_swap_p (mode, true))
+     of the pattern indicates support is present.  Also require that an
+     atomic load exists for the required size.  */
+  if (can_compare_and_swap_p (mode, true) && can_atomic_load_p (mode))
     return boolean_true_node;
   else
     return boolean_false_node;

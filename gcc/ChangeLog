@@ -1,3 +1,21 @@
+2017-02-01  Torvald Riegel  <triegel@redhat.com>
+            Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (fold_builtin_atomic_always_lock_free): Make "lock-free"
+	conditional on existance of a fast atomic load.
+	* optabs-query.c (can_atomic_load_p): New function.
+	* optabs-query.h (can_atomic_load_p): Declare it.
+	* optabs.c (expand_atomic_exchange): Always delegate to libatomic if
+	no fast atomic load is available for the particular size of access.
+	(expand_atomic_compare_and_swap): Likewise.
+	(expand_atomic_load): Likewise.
+	(expand_atomic_store): Likewise.
+	(expand_atomic_fetch_op): Likewise.
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_sync_int_128): Remove x86 because it provides
+	no fast atomic load.
+	(check_effective_target_sync_int_128_runtime): Likewise.
+
 2017-02-01  Richard Biener  <rguenther@suse.de>
 
 	* graphite.c: Include tree-vectorizer.h for find_loop_location.
