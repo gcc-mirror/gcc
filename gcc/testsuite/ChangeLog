@@ -1,5 +1,13 @@
 2017-02-01  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/76957
+	* gcc.dg/graphite/scop-dsyr2k-2.c: New testcase.
+	* gcc.dg/graphite/scop-dsyrk-2.c: Likewise.
+	* gcc.dg/graphite/scop-dsyr2k.c: XFAIL.
+	* gcc.dg/graphite/scop-dsyrk.c: Likewise.
+
+2017-02-01  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/79315
 	* gfortran.dg/pr79315.f90: New testcase.
 
