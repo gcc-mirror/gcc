@@ -68,8 +68,8 @@ __hsail_debugtrap (uint32_t src, PHSAWorkItem *wi)
 uint32_t
 __hsail_groupbaseptr (PHSAWorkItem *wi)
 {
-  return (uint32_t) (uint64_t) (wi->wg->group_base_ptr
-				- wi->launch_data->group_segment_start_addr);
+  return (uint32_t) (uintptr_t) (wi->wg->group_base_ptr
+				 - wi->launch_data->group_segment_start_addr);
 }
 
 uint64_t
@@ -77,7 +77,7 @@ __hsail_kernargbaseptr_u64 (PHSAWorkItem *wi)
 {
   /* For now assume only a single kernarg allocation at a time.
      Proper kernarg memory management to do.  */
-  return (uint64_t) wi->launch_data->kernarg_addr;
+  return (uint64_t) (uintptr_t) wi->launch_data->kernarg_addr;
 }
 
 uint32_t

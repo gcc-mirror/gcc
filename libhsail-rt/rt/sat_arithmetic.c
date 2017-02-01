@@ -49,21 +49,19 @@ __hsail_sat_add_u16 (uint16_t a, uint16_t b)
 uint32_t
 __hsail_sat_add_u32 (uint32_t a, uint32_t b)
 {
-  uint64_t c = (uint64_t) a + (uint64_t) b;
-  if (c > UINT32_MAX)
+  uint32_t c;
+  if (__builtin_add_overflow (a, b, &c))
     return UINT32_MAX;
-  else
-    return c;
+  return c;
 }
 
 uint64_t
 __hsail_sat_add_u64 (uint64_t a, uint64_t b)
 {
-  __uint128_t c = (__uint128_t) a + (__uint128_t) b;
-  if (c > UINT64_MAX)
+  uint64_t c;
+  if (__builtin_add_overflow (a, b, &c))
     return UINT64_MAX;
-  else
-    return c;
+  return c;
 }
 
 int8_t
@@ -93,25 +91,19 @@ __hsail_sat_add_s16 (int16_t a, int16_t b)
 int32_t
 __hsail_sat_add_s32 (int32_t a, int32_t b)
 {
-  int64_t c = (int64_t) a + (int64_t) b;
-  if (c > INT32_MAX)
-    return INT32_MAX;
-  else if (c < INT32_MIN)
-    return INT32_MIN;
-  else
-    return c;
+  int32_t c;
+  if (__builtin_add_overflow (a, b, &c))
+    return b < 0 ? INT32_MIN : INT32_MAX;
+  return c;
 }
 
 int64_t
 __hsail_sat_add_s64 (int64_t a, int64_t b)
 {
-  __int128_t c = (__int128_t) a + (__int128_t) b;
-  if (c > INT64_MAX)
-    return INT64_MAX;
-  else if (c < INT64_MIN)
-    return INT64_MIN;
-  else
-    return c;
+  int64_t c;
+  if (__builtin_add_overflow (a, b, &c))
+    return b < 0 ? INT64_MIN : INT64_MAX;
+  return c;
 }
 
 uint8_t
@@ -120,8 +112,6 @@ __hsail_sat_sub_u8 (uint8_t a, uint8_t b)
   int16_t c = (uint16_t) a - (uint16_t) b;
   if (c < 0)
     return 0;
-  else if (c > UINT8_MAX)
-    return UINT8_MAX;
   else
     return c;
 }
@@ -132,8 +122,6 @@ __hsail_sat_sub_u16 (uint16_t a, uint16_t b)
   int32_t c = (uint32_t) a - (uint32_t) b;
   if (c < 0)
     return 0;
-  else if (c > UINT16_MAX)
-    return UINT16_MAX;
   else
     return c;
 }
@@ -141,25 +129,19 @@ __hsail_sat_sub_u16 (uint16_t a, uint16_t b)
 uint32_t
 __hsail_sat_sub_u32 (uint32_t a, uint32_t b)
 {
-  int64_t c = (uint64_t) a - (uint64_t) b;
-  if (c < 0)
+  uint32_t c;
+  if (__builtin_sub_overflow (a, b, &c))
     return 0;
-  else if (c > UINT32_MAX)
-    return UINT32_MAX;
-  else
-    return c;
+  return c;
 }
 
 uint64_t
 __hsail_sat_sub_u64 (uint64_t a, uint64_t b)
 {
-  __int128_t c = (__uint128_t) a - (__uint128_t) b;
-  if (c < 0)
+  uint64_t c;
+  if (__builtin_sub_overflow (a, b, &c))
     return 0;
-  else if (c > UINT64_MAX)
-    return UINT64_MAX;
-  else
-    return c;
+  return c;
 }
 
 int8_t
@@ -189,25 +171,19 @@ __hsail_sat_sub_s16 (int16_t a, int16_t b)
 int32_t
 __hsail_sat_sub_s32 (int32_t a, int32_t b)
 {
-  int64_t c = (int64_t) a - (int64_t) b;
-  if (c > INT32_MAX)
-    return INT32_MAX;
-  else if (c < INT32_MIN)
-    return INT32_MIN;
-  else
-    return c;
+  int32_t c;
+  if (__builtin_sub_overflow (a, b, &c))
+    return b < 0 ? INT32_MAX : INT32_MIN;
+  return c;
 }
 
 int64_t
 __hsail_sat_sub_s64 (int64_t a, int64_t b)
 {
-  __int128_t c = (__int128_t) a - (__int128_t) b;
-  if (c > INT64_MAX)
-    return INT64_MAX;
-  else if (c < INT64_MIN)
-    return INT64_MIN;
-  else
-    return c;
+  int64_t c;
+  if (__builtin_sub_overflow (a, b, &c))
+    return b < 0 ? INT64_MAX : INT64_MIN;
+  return c;
 }
 
 uint8_t
@@ -233,21 +209,19 @@ __hsail_sat_mul_u16 (uint16_t a, uint16_t b)
 uint32_t
 __hsail_sat_mul_u32 (uint32_t a, uint32_t b)
 {
-  uint64_t c = (uint64_t) a * (uint64_t) b;
-  if (c > UINT32_MAX)
+  uint32_t c;
+  if (__builtin_mul_overflow (a, b, &c))
     return UINT32_MAX;
-  else
-    return c;
+  return c;
 }
 
 uint64_t
 __hsail_sat_mul_u64 (uint64_t a, uint64_t b)
 {
-  __uint128_t c = (__uint128_t) a * (__uint128_t) b;
-  if (c > UINT64_MAX)
+  uint64_t c;
+  if (__builtin_mul_overflow (a, b, &c))
     return UINT64_MAX;
-  else
-    return c;
+  return c;
 }
 
 int8_t
@@ -277,23 +251,17 @@ __hsail_sat_mul_s16 (int16_t a, int16_t b)
 int32_t
 __hsail_sat_mul_s32 (int32_t a, int32_t b)
 {
-  int64_t c = (int64_t) a * (int64_t) b;
-  if (c > INT32_MAX)
-    return INT32_MAX;
-  else if (c < INT32_MIN)
-    return INT32_MIN;
-  else
-    return c;
+  int32_t c;
+  if (__builtin_mul_overflow (a, b, &c))
+    return ((a > 0) ^ (b > 0)) ? INT32_MIN : INT32_MAX;
+  return c;
 }
 
 int64_t
 __hsail_sat_mul_s64 (int64_t a, int64_t b)
 {
-  __int128_t c = (__int128_t) a * (__int128_t) b;
-  if (c > INT64_MAX)
-    return INT64_MAX;
-  else if (c < INT64_MIN)
-    return INT64_MIN;
-  else
-    return c;
+  int64_t c;
+  if (__builtin_mul_overflow (a, b, &c))
+    return ((a > 0) ^ (b > 0)) ? INT64_MIN : INT64_MAX;
+  return c;
 }
