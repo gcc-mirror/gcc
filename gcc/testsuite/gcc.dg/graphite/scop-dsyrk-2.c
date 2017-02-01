@@ -4,9 +4,12 @@
 
 static double a[NMAX][NMAX], c[NMAX][NMAX];
 
-void dsyrk(int N) 
+typedef __INT32_TYPE__ int32_t;
+typedef __INT64_TYPE__ int64_t;
+
+void dsyrk(int64_t N) 
 {
-  int i,j,k;
+  int32_t i,j,k;
 
 #pragma scop
   for (i=0; i<N; i++) {
@@ -19,4 +22,4 @@ void dsyrk(int N)
 #pragma endscop
 }
 
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" } } */
