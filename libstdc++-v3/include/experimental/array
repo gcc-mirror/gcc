@@ -69,9 +69,9 @@ template <typename _Up>
 template <typename _Dest = void, typename... _Types>
   constexpr auto
   make_array(_Types&&... __t)
-    -> array<conditional_t<is_void_v<_Dest>,
-                           common_type_t<_Types...>,
-                           _Dest>,
+    -> array<typename conditional_t<is_void_v<_Dest>,
+				    common_type<_Types...>,
+				    common_type<_Dest>>::type,
              sizeof...(_Types)>
   {
     static_assert(__or_<
@@ -80,13 +80,12 @@ template <typename _Dest = void, typename... _Types>
                   ::value,
                   "make_array cannot be used without an explicit target type "
                   "if any of the types given is a reference_wrapper");
-    return {{forward<_Types>(__t)...}};
+    return {{ std::forward<_Types>(__t)... }};
   }
 
 template <typename _Tp, size_t _Nm, size_t... _Idx>
   constexpr array<remove_cv_t<_Tp>, _Nm>
-  __to_array(_Tp (&__a)[_Nm],
-             index_sequence<_Idx...>)
+  __to_array(_Tp (&__a)[_Nm], index_sequence<_Idx...>)
   {
     return {{__a[_Idx]...}};
   }
@@ -94,6 +93,7 @@ template <typename _Tp, size_t _Nm, size_t... _Idx>
 template <typename _Tp, size_t _Nm>
   constexpr array<remove_cv_t<_Tp>, _Nm>
   to_array(_Tp (&__a)[_Nm])
+  noexcept(is_nothrow_constructible<remove_cv_t<_Tp>, _Tp&>::value)
   {
     return __to_array(__a, make_index_sequence<_Nm>{});
   }

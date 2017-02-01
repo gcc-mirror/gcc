@@ -1,5 +1,13 @@
 2017-02-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79195
+	* include/experimental/array (make_array): Use common_type<_Dest>
+	and delay instantiation of common_type until after conditional_t.
+	Qualify std::forward call.
+	(to_array): Add exception specification.
+	* testsuite/experimental/array/make_array.cc: Test argument types
+	without a common type.
+
 	PR libstdc++/79254
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
 	(basic_string::operator=(const basic_string&)): If source object is
