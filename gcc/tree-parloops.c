@@ -3322,17 +3322,14 @@ parallelize_loops (bool oacc_kernels_p)
 
       changed = true;
       skip_loop = loop->inner;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-      {
-	if (loop->inner)
-	  fprintf (dump_file, "parallelizing outer loop %d\n",loop->header->index);
-	else
-	  fprintf (dump_file, "parallelizing inner loop %d\n",loop->header->index);
-	loop_loc = find_loop_location (loop);
-	if (loop_loc != UNKNOWN_LOCATION)
-	  fprintf (dump_file, "\nloop at %s:%d: ",
-		   LOCATION_FILE (loop_loc), LOCATION_LINE (loop_loc));
-      }
+
+      loop_loc = find_loop_location (loop);
+      if (loop->inner)
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			 "parallelizing outer loop %d\n", loop->num);
+      else
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			 "parallelizing inner loop %d\n", loop->num);
 
       gen_parallel_loop (loop, &reduction_list,
 			 n_threads, &niter_desc, oacc_kernels_p);
