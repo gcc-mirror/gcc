@@ -121,6 +121,16 @@ void test03()
   VERIFY( caught );
   VERIFY( v1 == s1 );
   VERIFY( v1.get_allocator() == a1 );
+
+  throw_alloc::set_limit(1); // Allow one more allocation (and no more).
+  test_type v3(s1, a1);
+  // No allocation when allocators are equal and capacity is sufficient:
+  VERIFY( v1.capacity() >= v3.size() );
+  v1 = v3;
+  // No allocation when the contents fit in the small-string buffer:
+  v2 = "sso";
+  v1 = v2;
+  VERIFY( v1.get_allocator() == a2 );
 }
 
 int main()

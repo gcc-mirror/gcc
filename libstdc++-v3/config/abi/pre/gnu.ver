@@ -1955,9 +1955,6 @@ GLIBCXX_3.4.23 {
     _ZNSsC[12]ERKSs[jmy]RKSaIcE;
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
 
-    # basic_string<C, T, A>::_M_copy_assign(const basic_string&, {true,false}_type)
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE14_M_copy_assign*;
-
 #ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # std::future symbols are exported in the first version to support
     # std::exception_ptr
