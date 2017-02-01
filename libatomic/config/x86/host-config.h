@@ -47,6 +47,9 @@ extern unsigned int libat_feat1_edx HIDDEN;
 # define MAYBE_HAVE_ATOMIC_EXCHANGE_16	IFUNC_COND_1
 # undef MAYBE_HAVE_ATOMIC_LDST_16
 # define MAYBE_HAVE_ATOMIC_LDST_16	IFUNC_COND_1
+/* Since load and store are implemented with CAS, they are not fast.  */
+# undef FAST_ATOMIC_LDST_16
+# define FAST_ATOMIC_LDST_16		0
 # if IFUNC_ALT == 1
 #  undef HAVE_ATOMIC_CAS_16
 #  define HAVE_ATOMIC_CAS_16 1
@@ -63,6 +66,21 @@ extern unsigned int libat_feat1_edx HIDDEN;
 #  define HAVE_ATOMIC_CAS_8 1
 # endif
 #endif
+
+#if defined(__x86_64__) && N == 16 && IFUNC_ALT == 1
+static inline bool
+atomic_compare_exchange_n (UTYPE *mptr, UTYPE *eptr, UTYPE newval,
+                           bool weak_p UNUSED, int sm UNUSED, int fm UNUSED)
+{
+  UTYPE cmpval = *eptr;
+  UTYPE oldval = __sync_val_compare_and_swap_16 (mptr, cmpval, newval);
+  if (oldval == cmpval)
+    return true;
+  *eptr = oldval;
+  return false;
+}
+# define atomic_compare_exchange_n atomic_compare_exchange_n
+#endif /* Have CAS 16 */
 
 #endif /* HAVE_IFUNC */
 
