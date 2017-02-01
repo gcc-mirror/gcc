@@ -1,3 +1,20 @@
+2017-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/79324
+	* gcc.dg/debug/dwarf2/align-1.c: Add -gno-strict-dwarf to dg-options.
+	* gcc.dg/debug/dwarf2/align-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/align-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/align-4.c: Likewise.
+	* gcc.dg/debug/dwarf2/align-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/align-6.c: Likewise.
+	* gcc.dg/debug/dwarf2/align-as-1.c: Likewise.
+	* g++.dg/debug/dwarf2/align-1.C: Likewise.
+	* g++.dg/debug/dwarf2/align-2.C: Likewise.
+	* g++.dg/debug/dwarf2/align-3.C: Likewise.
+	* g++.dg/debug/dwarf2/align-4.C: Likewise.
+	* g++.dg/debug/dwarf2/align-5.C: Likewise.
+	* g++.dg/debug/dwarf2/align-6.C: Likewise.
+
 2017-02-01  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/79272
