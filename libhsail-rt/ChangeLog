@@ -1,3 +1,28 @@
+2017-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Fix i?86-*-linux* entry.
+	* rt/sat_arithmetic.c (__hsail_sat_add_u32, __hsail_sat_add_u64,
+	__hsail_sat_add_s32, __hsail_sat_add_s64): Use __builtin_add_overflow.
+	(__hsail_sat_sub_u8, __hsail_sat_sub_u16): Remove pointless for overflow
+	over maximum.
+	(__hsail_sat_sub_u32, __hsail_sat_sub_u64, __hsail_sat_sub_s32,
+	__hsail_sat_sub_s64): Use __builtin_sub_overflow.
+	(__hsail_sat_mul_u32, __hsail_sat_mul_u64, __hsail_sat_mul_s32,
+	__hsail_sat_mul_s64): Use __builtin_mul_overflow.
+	* rt/arithmetic.c (__hsail_borrow_u32, __hsail_borrow_u64): Use
+	__builtin_sub_overflow_p.
+	(__hsail_carry_u32, __hsail_carry_u64): Use __builtin_add_overflow_p.
+	* rt/misc.c (__hsail_groupbaseptr, __hsail_kernargbaseptr_u64):
+	Cast pointers to uintptr_t first before casting to some other integral
+	type.
+	* rt/segment.c (__hsail_segmentp_private, __hsail_segmentp_group): Likewise.
+	* rt/queue.c (__hsail_ldqueuereadindex, __hsail_ldqueuewriteindex,
+	__hsail_addqueuewriteindex, __hsail_casqueuewriteindex,
+	__hsail_stqueuereadindex, __hsail_stqueuewriteindex): Cast integral value
+	to uintptr_t first before casting to pointer.
+	* rt/workitems.c (__hsail_alloca_pop_frame): Cast memcpy first argument to
+	void * to avoid warning.
+
 2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* configure.tgt: Moved the white list of supported targets here

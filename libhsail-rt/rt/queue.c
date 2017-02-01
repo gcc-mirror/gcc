@@ -29,21 +29,21 @@
 uint64_t
 __hsail_ldqueuereadindex (uint64_t queue_addr)
 {
-  phsa_queue_t *queue = (phsa_queue_t *) queue_addr;
+  phsa_queue_t *queue = (phsa_queue_t *) (uintptr_t) queue_addr;
   return queue->read_index;
 }
 
 uint64_t
 __hsail_ldqueuewriteindex (uint64_t queue_addr)
 {
-  phsa_queue_t *queue = (phsa_queue_t *) queue_addr;
+  phsa_queue_t *queue = (phsa_queue_t *) (uintptr_t) queue_addr;
   return queue->write_index;
 }
 
 uint64_t
 __hsail_addqueuewriteindex (uint64_t queue_addr, uint64_t value)
 {
-  phsa_queue_t *queue = (phsa_queue_t *) queue_addr;
+  phsa_queue_t *queue = (phsa_queue_t *) (uintptr_t) queue_addr;
   return __sync_fetch_and_add (&queue->write_index, value);
 }
 
@@ -51,7 +51,7 @@ uint64_t
 __hsail_casqueuewriteindex (uint64_t queue_addr, uint64_t cmp_value,
 				   uint64_t new_value)
 {
-  phsa_queue_t *queue = (phsa_queue_t *) queue_addr;
+  phsa_queue_t *queue = (phsa_queue_t *) (uintptr_t) queue_addr;
   return __sync_val_compare_and_swap (&queue->write_index, cmp_value,
 				      new_value);
 }
@@ -59,13 +59,13 @@ __hsail_casqueuewriteindex (uint64_t queue_addr, uint64_t cmp_value,
 void
 __hsail_stqueuereadindex (uint64_t queue_addr, uint64_t value)
 {
-  phsa_queue_t *queue = (phsa_queue_t *) queue_addr;
+  phsa_queue_t *queue = (phsa_queue_t *) (uintptr_t) queue_addr;
   queue->read_index = value;
 }
 
 void
 __hsail_stqueuewriteindex (uint64_t queue_addr, uint64_t value)
 {
-  phsa_queue_t *queue = (phsa_queue_t *) queue_addr;
+  phsa_queue_t *queue = (phsa_queue_t *) (uintptr_t) queue_addr;
   queue->write_index = value;
 }
