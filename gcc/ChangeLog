@@ -1,5 +1,12 @@
 2017-02-01  Richard Biener  <rguenther@suse.de>
 
+	* graphite.c: Include tree-vectorizer.h for find_loop_location.
+	(graphite_transform_loops): Provide opt-info for optimized nests.
+	* tree-parloop.c (parallelize_loops): Provide opt-info for
+	parallelized loops.
+
+2017-02-01  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/79315
 	* tree-cfg.c (move_stmt_op): Never set TREE_BLOCK when it
 	was not set before.

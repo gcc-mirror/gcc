@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-parloops.h"
 #include "tree-cfgcleanup.h"
+#include "tree-vectorizer.h"
 #include "graphite.h"
 
 /* Print global statistics to FILE.  */
@@ -328,6 +329,11 @@ graphite_transform_loops (void)
 	   and could be in an inconsistent state.  */
 	if (!graphite_regenerate_ast_isl (scop))
 	  break;
+
+	location_t loc = find_loop_location
+			   (scop->scop_info->region.entry->dest->loop_father);
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			 "loop nest optimized\n");
       }
 
   free_scops (scops);
