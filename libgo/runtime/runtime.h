@@ -154,14 +154,14 @@ struct	Lock
 	// Futex-based impl treats it as uint32 key,
 	// while sema-based impl as M* waitm.
 	// Used to be a union, but unions break precise GC.
-	uintptr	key;
+	uintptr	key __attribute__((aligned(4)));
 };
 struct	Note
 {
 	// Futex-based impl treats it as uint32 key,
 	// while sema-based impl as M* waitm.
 	// Used to be a union, but unions break precise GC.
-	uintptr	key;
+	uintptr	key __attribute__((aligned(4)));
 };
 struct String
 {
