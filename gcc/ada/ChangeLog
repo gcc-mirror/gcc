@@ -1,3 +1,9 @@
+2017-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	PR ada/79309
+	* adaint.c (__gnat_killprocesstree): Fix broken string handling.
+
 2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061
