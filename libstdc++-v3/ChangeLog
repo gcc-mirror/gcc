@@ -1,3 +1,17 @@
+2017-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79254
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::operator=(const basic_string&)): If source object is
+	small just deallocate, otherwise perform new allocation before
+	making any changes.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Test exception-safety of copy assignment when allocator propagates.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Likewise.
+	* testsuite/util/testsuite_allocator.h (uneq_allocator::swap): Make
+	std::swap visible.
+
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	Merge from mainline
