@@ -456,9 +456,13 @@ brig_code_entry_handler::build_address_operand
 
   /* We might have two const offsets in case of group or private arrays
      which have the first offset to the incoming group/private pointer
-     arg, and the second one an offset to it.  */
+     arg, and the second one an offset to it. It's also legal to have
+     a reference with a zero constant offset but no symbol.  I've seen
+     codes that reference kernarg segment like this.  Thus, if at this
+     point there is no address expression at all we assume it's an
+     access to offset 0. */
   uint64_t offs = gccbrig_to_uint64_t (addr_operand.offset);
-  if (offs > 0)
+  if (offs > 0 || addr == NULL_TREE)
     {
       tree const_offset_2 = build_int_cst (size_type_node, offs);
       if (addr == NULL_TREE)
