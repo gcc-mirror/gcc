@@ -1,5 +1,10 @@
 2017-02-01  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/79315
+	* gfortran.dg/pr79315.f90: New testcase.
+
+2017-02-01  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/71824
 	* gcc.dg/graphite/pr71824.c: New testcase.
 
