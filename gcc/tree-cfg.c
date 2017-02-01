@@ -6636,11 +6636,12 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
   if (EXPR_P (t))
     {
       tree block = TREE_BLOCK (t);
-      if (block == p->orig_block
-	  || (p->orig_block == NULL_TREE
-	      && block != NULL_TREE))
+      if (block == NULL_TREE)
+	;
+      else if (block == p->orig_block
+	       || p->orig_block == NULL_TREE)
 	TREE_SET_BLOCK (t, p->new_block);
-      else if (flag_checking && block != NULL_TREE)
+      else if (flag_checking)
 	{
 	  while (block && TREE_CODE (block) == BLOCK && block != p->orig_block)
 	    block = BLOCK_SUPERCONTEXT (block);
