@@ -1,5 +1,11 @@
 2017-02-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/78346
+	* include/bits/predefined_ops.h (_Iter_equals_iter): Store iterator
+	not its referent.
+	(_Iter_comp_to_iter): Likewise.
+	* testsuite/25_algorithms/search/78346.cc: New test.
+
 	PR libstdc++/79254
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
 	(basic_string::operator=(const basic_string&)): If source object is

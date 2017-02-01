@@ -24,7 +24,7 @@
 
 /** @file predefined_ops.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  You should not attempt to use it directly. @headername{algorithm}
  */
 
 #ifndef _GLIBCXX_PREDEFINED_OPS_H
@@ -207,17 +207,17 @@ namespace __ops
   template<typename _Iterator1>
     struct _Iter_equals_iter
     {
-      typename std::iterator_traits<_Iterator1>::reference _M_ref;
+      _Iterator1 _M_it1;
 
       explicit
       _Iter_equals_iter(_Iterator1 __it1)
-	: _M_ref(*__it1)
+	: _M_it1(__it1)
       { }
 
       template<typename _Iterator2>
 	bool
 	operator()(_Iterator2 __it2)
-	{ return *__it2 == _M_ref; }
+	{ return *__it2 == *_M_it1; }
     };
 
   template<typename _Iterator>
@@ -271,16 +271,16 @@ namespace __ops
     struct _Iter_comp_to_iter
     {
       _Compare _M_comp;
-      typename std::iterator_traits<_Iterator1>::reference _M_ref;
+      _Iterator1 _M_it1;
 
       _Iter_comp_to_iter(_Compare __comp, _Iterator1 __it1)
-	: _M_comp(__comp), _M_ref(*__it1)
+	: _M_comp(__comp), _M_it1(__it1)
       { }
 
       template<typename _Iterator2>
 	bool
 	operator()(_Iterator2 __it2)
-	{ return bool(_M_comp(*__it2, _M_ref)); }
+	{ return bool(_M_comp(*__it2, *_M_it1)); }
     };
 
   template<typename _Compare, typename _Iterator>
