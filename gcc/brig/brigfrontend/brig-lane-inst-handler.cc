@@ -71,7 +71,8 @@ brig_lane_inst_handler::operator () (const BrigBase *base)
 	 itself or 'identity' in case use_identity is 1.  */
 
       tree cmp = build2 (EQ_EXPR, uint32_type_node,
-			 build_int_cstu (uint32_type_node, 1), use_identity);
+			 build_int_cstu (TREE_TYPE (use_identity), 1),
+			 use_identity);
 
       expr = build3 (COND_EXPR, TREE_TYPE (src), cmp, identity, src);
     }

@@ -351,7 +351,7 @@ brig_to_generic::add_global_variable (const std::string &name, tree var_decl)
 
   std::string host_def_var_name
     = std::string (PHSA_HOST_DEF_PTR_PREFIX) + name;
-  tree host_def_var = global_variable (host_def_var_name.c_str ());
+  tree host_def_var = global_variable (host_def_var_name);
   if (host_def_var == NULL_TREE)
     return;
 
@@ -681,6 +681,7 @@ call_builtin (tree pdecl, int nargs, tree rettype, ...)
 	{
 	  delete[] types;
 	  delete[] args;
+	  va_end (ap);
 	  return error_mark_node;
 	}
     }
