@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:52+0000\n"
-"PO-Revision-Date: 2017-01-29 23:40+0100\n"
+"PO-Revision-Date: 2017-02-01 23:59+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0beta2\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: cfgrtl.c:2656
 msgid "flow control insn inside a basic block"
@@ -765,7 +765,7 @@ msgstr ""
 #: gcov-tool.c:520
 #, c-format
 msgid "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2014–2015 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2014–2016 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:523 gcov.c:691
 #, c-format
@@ -888,10 +888,9 @@ msgid "  -v, --version                   Print version number, then exit\n"
 msgstr "  -v, --version                   Versionsnummer anzeigen\n"
 
 #: gcov.c:676
-#, fuzzy, c-format
-#| msgid "  -m, --demangled-names           Output demangled function names\n"
+#, c-format
 msgid "  -x, --hash-filenames            Hash long pathnames\n"
-msgstr "  -m, --demangled-names           Entmangelte Funktionsnamen ausgeben\n"
+msgstr "  -x, --hash-filenames            lange Dateinamen hashen\n"
 
 #: gcov.c:687
 #, c-format
@@ -1416,10 +1415,8 @@ msgid "<anonymous>"
 msgstr "<anonym>"
 
 #: tree-ssa-loop-niter.c:2368
-#, fuzzy
-#| msgid "cannot optimize loop, the loop counter may overflow"
 msgid "missed loop optimization, the loop counter may overflow"
-msgstr "Schleife kann nicht optimiert werden, Schleifen-Zählvariable könnte überlaufen"
+msgstr "Schleifenoptimierung übersprungen, die Schleifen-Zählvariable könnte überlaufen"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -1486,10 +1483,8 @@ msgid "mismatched arguments"
 msgstr "unpassende Argumente"
 
 #: cif-code.def:96
-#, fuzzy
-#| msgid "expected iteration declaration or initialization"
 msgid "mismatched declarations during linktime optimization"
-msgstr "Schleifendeklaration oder Initialisierung erwartet"
+msgstr "Unpassende Deklarationen während Linkzeit-Optimierung"
 
 #: cif-code.def:100
 msgid "originally indirect function call not considered for inlining"
@@ -1533,7 +1528,7 @@ msgstr "Nicht erreichbar"
 
 #: cif-code.def:141
 msgid "caller is instrumetnation thunk"
-msgstr ""
+msgstr "Aufrufer ist Instrumentierungs-Thunk"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -1658,386 +1653,324 @@ msgid "The maximum number of instructions to consider to fill a delay slot."
 msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um einen Verzögerungsschlitz zu füllen."
 
 #: params.def:163
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to find accurate live register information"
+#, no-c-format
 msgid "The maximum number of instructions to consider to find accurate live register information."
-msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um richtige aktive Registerinformationen zu finden"
+msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um richtige aktive Registerinformationen zu finden."
 
 #: params.def:173
-#, fuzzy, no-c-format
-#| msgid "The maximum length of scheduling's pending operations list"
+#, no-c-format
 msgid "The maximum length of scheduling's pending operations list."
-msgstr "Die Maximallänge der Liste der anhängigen geplanten Operationen"
+msgstr "Die Maximallänge der Liste der anhängigen geplanten Operationen."
 
 #: params.def:180
-#, fuzzy, no-c-format
-#| msgid "The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop"
+#, no-c-format
 msgid "The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop."
-msgstr "Die Höchstzahl der Versuche zur Rückverfolgung bei Modulo-Planung von Schleifen"
+msgstr "Die Höchstzahl der Versuche zur Rückverfolgung bei Modulo-Planung von Schleifen."
 
 #: params.def:185
-#, fuzzy, no-c-format
-#| msgid "The size of function body to be considered large"
+#, no-c-format
 msgid "The size of function body to be considered large."
-msgstr "Die Größe eines als groß angesehenen Funktionskörpers"
+msgstr "Die Größe eines als groß angesehenen Funktionskörpers."
 
 #: params.def:189
-#, fuzzy, no-c-format
-#| msgid "Maximal growth due to inlining of large function (in percent)"
+#, no-c-format
 msgid "Maximal growth due to inlining of large function (in percent)."
-msgstr "Maximales Wachstum durch »inline« einer großen Funktion (in Prozent)"
+msgstr "Maximales Wachstum durch »inline« einer großen Funktion (in Prozent)."
 
 #: params.def:193
-#, fuzzy, no-c-format
-#| msgid "The size of translation unit to be considered large"
+#, no-c-format
 msgid "The size of translation unit to be considered large."
-msgstr "Die Größe einer als groß angesehenen Übersetzungseinheit"
+msgstr "Die Größe einer als groß angesehenen Übersetzungseinheit."
 
 #: params.def:197
-#, fuzzy, no-c-format
-#| msgid "How much can given compilation unit grow because of the inlining (in percent)"
+#, no-c-format
 msgid "How much can given compilation unit grow because of the inlining (in percent)."
-msgstr "Wie viel die gegebene Kompilationseinheit durch das »inline« wachsen kann (in Prozent)"
+msgstr "Wie viel die gegebene Übersetzungseinheit durch das »inline« wachsen kann (in Prozent)."
 
 #: params.def:201
-#, fuzzy, no-c-format
-#| msgid "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)"
+#, no-c-format
 msgid "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)."
-msgstr "Wie viel die gegebene Kompilationseinheit durch die interprozedurale Konstantenweitergabe wachsen kann (in Prozent)"
+msgstr "Wie viel die gegebene Übersetzungseinheit durch die interprozedurale Konstantenweitergabe wachsen kann (in Prozent)."
 
 #: params.def:205
-#, fuzzy, no-c-format
-#| msgid "Maximal estimated growth of function body caused by early inlining of single call"
+#, no-c-format
 msgid "Maximal estimated growth of function body caused by early inlining of single call."
-msgstr "Größtes durch frühes »inline« eines einzelnen Aufrufs abgeschätztes Wachstum des Funktionskörpers"
+msgstr "Größtes durch frühes »inline« eines einzelnen Aufrufs abgeschätztes Wachstum des Funktionskörpers."
 
 #: params.def:209
-#, fuzzy, no-c-format
-#| msgid "The size of stack frame to be considered large"
+#, no-c-format
 msgid "The size of stack frame to be considered large."
-msgstr "Die Größe eines als groß angesehenen Stapelrahmens"
+msgstr "Die Größe eines als groß angesehenen Stapelrahmens."
 
 #: params.def:213
-#, fuzzy, no-c-format
-#| msgid "Maximal stack frame growth due to inlining (in percent)"
+#, no-c-format
 msgid "Maximal stack frame growth due to inlining (in percent)."
-msgstr "Maximales Stapelrahmen-Wachstum durch »inline« (in Prozent)"
+msgstr "Maximales Stapelrahmen-Wachstum durch »inline« (in Prozent)."
 
 #: params.def:220
-#, fuzzy, no-c-format
-#| msgid "The maximum amount of memory to be allocated by GCSE"
+#, no-c-format
 msgid "The maximum amount of memory to be allocated by GCSE."
-msgstr "Maximalbetrag des von GCSE zu belegenden Speichers"
+msgstr "Höchstmenge des von GCSE zu belegenden Speichers."
 
 #: params.def:227
-#, fuzzy, no-c-format
-#| msgid "The maximum ratio of insertions to deletions of expressions in GCSE"
+#, no-c-format
 msgid "The maximum ratio of insertions to deletions of expressions in GCSE."
-msgstr "Das größte Verhältnis von Einfügungen zu Löschungen von Ausdrücken in GCSE"
+msgstr "Das maximale Verhältnis von Einfügungen zu Löschungen von Ausdrücken in GCSE."
 
 #: params.def:238
-#, fuzzy, no-c-format
-#| msgid "The threshold ratio for performing partial redundancy elimination after reload"
+#, no-c-format
 msgid "The threshold ratio for performing partial redundancy elimination after reload."
-msgstr "Der Anteil-Schwellwert für die Ausführung partieller Redundanzbeseitigung nach dem Neuladen"
+msgstr "Der Schwellwert-Anteil für die Ausführung partieller Redundanzbeseitigung nach dem Neuladen."
 
 #: params.def:245
-#, fuzzy, no-c-format
-#| msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload"
+#, no-c-format
 msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload."
-msgstr "Der Anteil-Schwellwert des Ausführungszählers kritischer Kanten, die Redundanzbeseitigung nach dem Neuladen erlauben"
+msgstr "Der Schwellwert-Anteil des Ausführungszählers kritischer Kanten, die Redundanzbeseitigung nach dem Neuladen erlauben."
 
 #: params.def:253
-#, fuzzy, no-c-format
-#| msgid "Scaling factor in calculation of maximum distance an expression can be moved by GCSE optimizations"
+#, no-c-format
 msgid "Scaling factor in calculation of maximum distance an expression can be moved by GCSE optimizations."
-msgstr "Skalierungsfaktor bei Berechnung der größten Entfernung, um die ein Ausdruck durch GCSE-Optimierungen verschoben werden kann"
+msgstr "Skalierungsfaktor bei Berechnung der größten Entfernung, um die ein Ausdruck durch GCSE-Optimierungen verschoben werden kann."
 
 #: params.def:259
-#, fuzzy, no-c-format
-#| msgid "Cost at which GCSE optimizations will not constraint the distance an expression can travel"
+#, no-c-format
 msgid "Cost at which GCSE optimizations will not constraint the distance an expression can travel."
-msgstr "Kosten, zu denen GCSE-Optimierungen nicht die Entfernung beeinträchtigen werden, um die ein Ausdruck verschoben werden kann"
+msgstr "Kosten, zu denen GCSE-Optimierungen nicht die Entfernung beeinträchtigen werden, um die ein Ausdruck verschoben werden kann."
 
 #: params.def:267
-#, fuzzy, no-c-format
-#| msgid "Maximum depth of search in the dominator tree for expressions to hoist"
+#, no-c-format
 msgid "Maximum depth of search in the dominator tree for expressions to hoist."
-msgstr "Größte Tiefe der Suche im Nenner-Baum für anzuhebende Ausdrücke"
+msgstr "Größte Tiefe der Suche im Dominator-Baum für anzuhebende Ausdrücke."
 
 #: params.def:275
 #, no-c-format
 msgid "Maximum depth of sqrt chains to use when synthesizing exponentiation by a real constant."
-msgstr ""
+msgstr "Maximale Verschachtelung von Quadratwurzeln, um Potenzierung mit Gleitkommakonstanten abzubilden."
 
 #: params.def:287
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop"
+#, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop."
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen zu betrachtenden Anweisungen"
+msgstr "Die Höchstzahl der zum Abrollen von Schleifen zu betrachtenden Anweisungen."
 
 #: params.def:293
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop on average"
+#, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop on average."
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen im Mittel zu betrachtenden Anweisungen"
+msgstr "Die Höchstzahl der zum Abrollen von Schleifen im Mittel zu betrachtenden Anweisungen."
 
 #: params.def:298
-#, fuzzy, no-c-format
-#| msgid "The maximum number of unrollings of a single loop"
+#, no-c-format
 msgid "The maximum number of unrollings of a single loop."
-msgstr "Die Höchstzahl der Iterationen zum Abrollen in einzelner Schleife"
+msgstr "Die Höchstzahl der Iterationen zum Abrollen in einzelner Schleife."
 
 #: params.def:303
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a peeled loop"
+#, no-c-format
 msgid "The maximum number of insns of a peeled loop."
-msgstr "Die Höchstzahl der Befehle einer geschälten Schleife"
+msgstr "Die Höchstzahl der Befehle einer geschälten Schleife."
 
 #: params.def:308
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop"
+#, no-c-format
 msgid "The maximum number of peelings of a single loop."
-msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife"
+msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife."
 
 #: params.def:313
-#, fuzzy, no-c-format
-#| msgid "The maximum number of branches on the path through the peeled sequence"
+#, no-c-format
 msgid "The maximum number of branches on the path through the peeled sequence."
-msgstr "Höchstzahl der Zweige auf dem Pfad durch die geschälte Sequenz"
+msgstr "Höchstzahl der Zweige auf dem Pfad durch die geschälte Sequenz."
 
 #: params.def:318
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a completely peeled loop"
+#, no-c-format
 msgid "The maximum number of insns of a completely peeled loop."
-msgstr "Die Höchstzahl der Befehle einer vollständig geschälten Schleife"
+msgstr "Die Höchstzahl der Befehle einer vollständig geschälten Schleife."
 
 #: params.def:323
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop that is peeled completely"
+#, no-c-format
 msgid "The maximum number of peelings of a single loop that is peeled completely."
-msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife, die vollständig geschält wird"
+msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife, die vollständig geschält wird."
 
 #: params.def:328
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a peeled loop that rolls only once"
+#, no-c-format
 msgid "The maximum number of insns of a peeled loop that rolls only once."
-msgstr "Die Höchstzahl der Befehle einer geschälten Schleife, die nur einmal rollt"
+msgstr "Die Höchstzahl der Befehle einer geschälten Schleife, die nur einmal rollt."
 
 #: params.def:333
-#, fuzzy, no-c-format
-#| msgid "The maximum depth of a loop nest we completely peel"
+#, no-c-format
 msgid "The maximum depth of a loop nest we completely peel."
-msgstr "Die maximale Tiefe einer Schleifenschachtelung, die vollständig geschält wird"
+msgstr "Die maximale Tiefe einer Schleifenschachtelung, die vollständig geschält wird."
 
 #: params.def:339
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of an unswitched loop"
+#, no-c-format
 msgid "The maximum number of insns of an unswitched loop."
-msgstr "Die Höchstzahl der Befehle einer ungeschalteten Schleife"
+msgstr "Die Höchstzahl der Befehle einer ungeschalteten Schleife."
 
 #: params.def:344
-#, fuzzy, no-c-format
-#| msgid "The maximum number of unswitchings in a single loop"
+#, no-c-format
 msgid "The maximum number of unswitchings in a single loop."
-msgstr "Die Höchstzahl der Abschaltungen in einer einzelnen Schleife"
+msgstr "Die Höchstzahl der Abschaltungen in einer einzelnen Schleife."
 
 #: params.def:351
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns to duplicate when unfactoring computed gotos"
+#, no-c-format
 msgid "The maximum number of insns in loop header duplicated by he copy loop headers pass."
-msgstr "Die Höchstzahl der zu vervielfältigenden Anweisungen, wenn berechnete Gotos expandiert werden"
+msgstr "Die Höchstzahl der Befehle im Schleifenkopf, die während der Schleifenkopfkopier-Phase dupliziert werden."
 
 #: params.def:358
-#, fuzzy, no-c-format
-#| msgid "Bound on the number of iterations the brute force # of iterations analysis algorithm evaluates"
+#, no-c-format
 msgid "Bound on the number of iterations the brute force # of iterations analysis algorithm evaluates."
-msgstr "Schranke für die Anzahl der Iterationen, die der Brute-Force-Algorithmus zur Auswertung der Anzahl von Iterationen auswertet"
+msgstr "Schranke für die Anzahl der Iterationen, die der Brute-Force-Algorithmus zur Auswertung der Anzahl von Iterationen auswertet."
 
 #: params.def:364
-#, fuzzy, no-c-format
-#| msgid "Bound on the cost of an expression to compute the number of iterations"
+#, no-c-format
 msgid "Bound on the cost of an expression to compute the number of iterations."
-msgstr "Schranke für die Kosten eines Ausdrucks, um die Anzahl der Durchläufe zu berechnen"
+msgstr "Schranke für die Kosten eines Ausdrucks, um die Anzahl der Durchläufe zu berechnen."
 
 #: params.def:370
-#, fuzzy, no-c-format
-#| msgid "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop"
+#, no-c-format
 msgid "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop."
-msgstr "Ein Faktor, um die obere Schranke des Swing-Modulo-Schedulers für Schleifenplanung einzustellen"
+msgstr "Ein Faktor, um die obere Schranke des Swing-Modulo-Schedulers für Schleifenplanung einzustellen."
 
 #: params.def:375
 #, no-c-format
 msgid "The minimum value of stage count that swing modulo scheduler will generate."
-msgstr "Kleinster Wert der Stufenzahl, den der Swing-Modulo-Scheduler erzeugen wird"
+msgstr "Kleinster Wert der Stufenzahl, den der Swing-Modulo-Scheduler erzeugen wird."
 
 #: params.def:379
-#, fuzzy, no-c-format
-#| msgid "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA"
+#, no-c-format
 msgid "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA."
-msgstr "Anzahl der Zyklen, die der Swing-Modulo-Scheduler bei Konfliktprüfung mit DFA betrachtet"
+msgstr "Anzahl der Zyklen, die der Swing-Modulo-Scheduler bei Konfliktprüfung mit DFA betrachtet."
 
 #: params.def:383
-#, fuzzy, no-c-format
-#| msgid "A threshold on the average loop count considered by the swing modulo scheduler"
+#, no-c-format
 msgid "A threshold on the average loop count considered by the swing modulo scheduler."
-msgstr "Schwellwert für vom Swing-Modulo-Scheduler betrachteten Durchschnitts-Schleifen-Zähler"
+msgstr "Schwellwert für vom Swing-Modulo-Scheduler betrachteten Durchschnitts-Schleifen-Zähler."
 
 #: params.def:388
-#, fuzzy, no-c-format
-#| msgid "A basic block profile count is considered hot if it contributes to the given permillage of the entire profiled execution"
+#, no-c-format
 msgid "A basic block profile count is considered hot if it contributes to the given permillage of the entire profiled execution."
-msgstr "Ein Basisblock-Profilzähler wird als heiß betrachtet, wenn es zum angegebenen Promilleanteil zum Gesamtprofil beiträgt"
+msgstr "Ein Basisblock-Profilzähler wird als heiß betrachtet, wenn es zum angegebenen Promilleanteil zum Gesamtprofil beiträgt."
 
 #: params.def:393
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
+#, no-c-format
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot."
-msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks in Funktion, vorausgesetzt, der Basisblock muss als »heiß« angesehen werden"
+msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks in Funktion, vorausgesetzt, der Basisblock muss als »heiß« angesehen werden."
 
 #: params.def:398
-#, fuzzy, no-c-format
-#| msgid "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely"
+#, no-c-format
 msgid "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely."
-msgstr "Der minimale Anteil von Profilingdurchläufen für einen Basisblock, um nicht als »unwahrscheinlich« gewertet zu werden"
+msgstr "Der minimale Anteil von Profilingdurchläufen für einen Basisblock, um nicht als »unwahrscheinlich« gewertet zu werden."
 
 #: params.def:403
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment"
+#, no-c-format
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment."
-msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks in Funktion, vorausgesetzt, der Basisblock wird ausgerichtet"
+msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks in Funktion, vorausgesetzt, der Basisblock wird ausgerichtet."
 
 #: params.def:408
-#, fuzzy, no-c-format
-#| msgid "Loops iterating at least selected number of iterations will get loop alignement."
+#, no-c-format
 msgid "Loops iterating at least selected number of iterations will get loop alignment.."
 msgstr "Schleifen mit mindestens der angegebenen Durchlaufzahl erhalten Schleifenausrichtung."
 
 #: params.def:424
-#, fuzzy, no-c-format
-#| msgid "The maximum number of loop iterations we predict statically"
+#, no-c-format
 msgid "The maximum number of loop iterations we predict statically."
-msgstr "Die Höchstzahl der Schleifendurchläufe, die statisch vorhergesagt werden"
+msgstr "Die Höchstzahl der Schleifendurchläufe, die statisch vorhergesagt werden."
 
 #: params.def:437
-#, fuzzy, no-c-format
-#| msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
+#, no-c-format
 msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
 msgstr "Wahrscheinlichkeit in Prozent für das eingebaute »expect«. Vorgabewert ist 90 % Wahrscheinlichkeit."
 
 #: params.def:441
-#, fuzzy, no-c-format
-#| msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
+#, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available."
-msgstr "Prozentsatz der Funktion, gewichtet nach Ausführungsfrequenz, die bei Verfolgungsentwurf abgedeckt werden muss. Verwendet, wenn Profil-Rückmeldung verfügbar ist"
+msgstr "Prozentsatz der Funktion, gewichtet nach Ausführungshäufigkeit, die bei Verfolgungsentwurf abgedeckt werden muss. Verwendet, wenn Profil-Rückmeldung verfügbar ist."
 
 #: params.def:445
-#, fuzzy, no-c-format
-#| msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available"
+#, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available."
-msgstr "Prozentsatz der Funktion, gewichtet nach Ausführungsfrequenz, die bei Verfolgungsentwurf abgedeckt werden muss. Verwendet, wenn Profil-Rückmeldung nicht verfügbar ist"
+msgstr "Prozentsatz der Funktion, gewichtet nach Ausführungshäufigkeit, die bei Verfolgungsentwurf abgedeckt werden muss. Verwendet, wenn Profil-Rückmeldung nicht verfügbar ist."
 
 #: params.def:449
-#, fuzzy, no-c-format
-#| msgid "Maximal code growth caused by tail duplication (in percent)"
+#, no-c-format
 msgid "Maximal code growth caused by tail duplication (in percent)."
-msgstr "Maximaler Code-Zuwachs durch Ende-Vervielfältigung (in Prozent)"
+msgstr "Maximaler Code-Zuwachs durch Ende-Vervielfältigung (in Prozent)."
 
 #: params.def:453
-#, fuzzy, no-c-format
-#| msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)"
+#, no-c-format
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)."
-msgstr "Umgekehrtes Wachstum anhalten, wenn die umgekehrte Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist (in Prozent)"
+msgstr "Umgekehrtes Wachstum anhalten, wenn die umgekehrte Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist (in Prozent)."
 
 #: params.def:457
-#, fuzzy, no-c-format
-#| msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available"
+#, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available."
-msgstr "Vorwärtswachstum anhalten, wenn die Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist. Verwendet, wenn Profil-Rückmeldung verfügbar ist"
+msgstr "Vorwärtswachstum anhalten, wenn die Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist. Verwendet, wenn Profil-Rückmeldung verfügbar ist."
 
 #: params.def:461
-#, fuzzy, no-c-format
-#| msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available"
+#, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available."
-msgstr "Vorwärtswachstum anhalten, wenn die Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist. Verwendet, wenn Profil-Rückmeldung nicht verfügbar ist"
+msgstr "Vorwärtswachstum anhalten, wenn die Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist. Verwendet, wenn Profil-Rückmeldung nicht verfügbar ist."
 
 #: params.def:467
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum number of incoming edges to consider for crossjumping."
-msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung"
+msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung."
 
 #: params.def:473
-#, fuzzy, no-c-format
-#| msgid "The minimum number of matching instructions to consider for crossjumping"
+#, no-c-format
 msgid "The minimum number of matching instructions to consider for crossjumping."
-msgstr "Mindestanzahl der passenden zu betrachtenden Anweisungen für Kreuzsprung"
+msgstr "Mindestanzahl der passenden zu betrachtenden Anweisungen für Kreuzsprung."
 
 #: params.def:479
-#, fuzzy, no-c-format
-#| msgid "The maximum expansion factor when copying basic blocks"
+#, no-c-format
 msgid "The maximum expansion factor when copying basic blocks."
-msgstr "Der höchste Erweiterungsfaktor beim Kopieren von Basisblöcken"
+msgstr "Der höchste Erweiterungsfaktor beim Kopieren von Basisblöcken."
 
 #: params.def:485
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns to duplicate when unfactoring computed gotos"
+#, no-c-format
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos."
-msgstr "Die Höchstzahl der zu vervielfältigenden Anweisungen, wenn berechnete Gotos expandiert werden"
+msgstr "Die Höchstzahl der zu vervielfältigenden Anweisungen, wenn berechnete Gotos expandiert werden."
 
 #: params.def:491
-#, fuzzy, no-c-format
-#| msgid "The maximum length of path considered in cse"
+#, no-c-format
 msgid "The maximum length of path considered in cse."
-msgstr "Größte Länge des betrachteten Pfades in cse"
+msgstr "Größte Länge des betrachteten Pfades in CSE."
 
 #: params.def:495
-#, fuzzy, no-c-format
-#| msgid "The maximum instructions CSE process before flushing"
+#, no-c-format
 msgid "The maximum instructions CSE process before flushing."
-msgstr "Die Höchstzahl der von CSE verarbeiteten Anweisungen vor dem Rücksetzen"
+msgstr "Die Höchstzahl der von CSE verarbeiteten Anweisungen vor dem Rücksetzen."
 
 #: params.def:502
-#, fuzzy, no-c-format
-#| msgid "The minimum cost of an expensive expression in the loop invariant motion"
+#, no-c-format
 msgid "The minimum cost of an expensive expression in the loop invariant motion."
-msgstr "Die Mindestkosten eines teuren Ausdrucks in der Schleifeninvariantenbewegung"
+msgstr "Die Mindestkosten eines teuren Ausdrucks in der Schleifeninvariantenbewegung."
 
 #: params.def:511
-#, fuzzy, no-c-format
-#| msgid "Bound on number of candidates below that all candidates are considered in iv optimizations"
+#, no-c-format
 msgid "Bound on number of candidates below that all candidates are considered in iv optimizations."
-msgstr "Schranke für Anzahl der Kandidaten, unter der alle Kandidaten in IV-Optimierungen betrachtet werden"
+msgstr "Schranke für Anzahl der Kandidaten, unter der alle Kandidaten in IV-Optimierungen betrachtet werden."
 
 #: params.def:519
-#, fuzzy, no-c-format
-#| msgid "Bound on number of iv uses in loop optimized in iv optimizations"
+#, no-c-format
 msgid "Bound on number of iv uses in loop optimized in iv optimizations."
-msgstr "Schranke für Anzahl der IV-Verwendungen in bei IV-Optimierungen optimierter Schleife"
+msgstr "Schranke für Anzahl der IV-Verwendungen in bei IV-Optimierungen optimierter Schleife."
 
 #: params.def:527
-#, fuzzy, no-c-format
-#| msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization"
+#, no-c-format
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization."
-msgstr "Wenn die Anzahl der Kandidaten in der Menge kleiner ist, wird immer versucht, ungenutzte IVs während ihrer Optimierung zu entfernen"
+msgstr "Wenn die Anzahl der Kandidaten in der Menge kleiner ist, wird immer versucht, ungenutzte IVs während ihrer Optimierung zu entfernen."
 
 #: params.def:532
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop"
+#, no-c-format
 msgid "Average number of iterations of a loop."
-msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife"
+msgstr "Durchschnittliche Anzahl der Iterationen einer Schleife."
 
 #: params.def:537
-#, fuzzy, no-c-format
-#| msgid "Bound on size of expressions used in the scalar evolutions analyzer"
+#, no-c-format
 msgid "Bound on size of expressions used in the scalar evolutions analyzer."
-msgstr "Schranke für Größe von Ausdrücken im skalaren Evolutions-Analysierer verwendet"
+msgstr "Schranke für Größe von Ausdrücken, die im skalaren Evolutions-Analysierer verwendet werden."
 
 #: params.def:542
-#, fuzzy, no-c-format
-#| msgid "Bound on the complexity of the expressions in the scalar evolutions analyzer"
+#, no-c-format
 msgid "Bound on the complexity of the expressions in the scalar evolutions analyzer."
-msgstr "Schranke für die Komplexität von Ausdrücken im skalaren Evolutions-Analysierer"
+msgstr "Schranke für die Komplexität von Ausdrücken im skalaren Evolutions-Analysierer."
 
 #: params.def:547
 #, no-c-format
@@ -2045,16 +1978,14 @@ msgid "Maximum number of arguments in a PHI supported by TREE if-conversion unle
 msgstr ""
 
 #: params.def:553
-#, fuzzy, no-c-format
-#| msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check"
+#, no-c-format
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check."
-msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers für Ausrichtungsprüfung eingefügt werden"
+msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers für Ausrichtungsprüfung eingefügt werden."
 
 #: params.def:558
-#, fuzzy, no-c-format
-#| msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check"
+#, no-c-format
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check."
-msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers für Aliasprüfung eingefügt werden"
+msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers für Aliasprüfung eingefügt werden."
 
 #: params.def:563
 #, no-c-format
@@ -2062,69 +1993,59 @@ msgid "Max number of loop peels to enhancement alignment of data references in a
 msgstr ""
 
 #: params.def:568
-#, fuzzy, no-c-format
-#| msgid "The maximum memory locations recorded by cselib"
+#, no-c-format
 msgid "The maximum memory locations recorded by cselib."
-msgstr "Höchstzahl der Speicherstellen, die von cselib aufgezeichnet werden"
+msgstr "Höchstzahl der Speicherstellen, die von cselib aufgezeichnet werden."
 
 #: params.def:581
-#, fuzzy, no-c-format
-#| msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap"
+#, no-c-format
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap."
-msgstr "Minimale Heaperweiterung, die Speicherbereinigung anstößt, als Prozentsatz der Gesamtgröße des Heap"
+msgstr "Minimale Heaperweiterung, die Speicherbereinigung anstößt, als Prozentsatz der Gesamtgröße des Heap."
 
 #: params.def:586
-#, fuzzy, no-c-format
-#| msgid "Minimum heap size before we start collecting garbage, in kilobytes"
+#, no-c-format
 msgid "Minimum heap size before we start collecting garbage, in kilobytes."
-msgstr "Kleinste Heapgröße vor Speicherbereinigungsbeginn, in Kilobytes"
+msgstr "Kleinste Heapgröße vor Speicherbereinigungsbeginn, in Kilobytes."
 
 #: params.def:594
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to search backward when looking for equivalent reload"
+#, no-c-format
 msgid "The maximum number of instructions to search backward when looking for equivalent reload."
-msgstr "Höchstzahl der rückwärts zu suchenden Anweisungen, wenn nach äquivalentem Neuladen gesucht wird"
+msgstr "Höchstzahl der rückwärts zu suchenden Anweisungen, wenn nach äquivalentem Neuladen gesucht wird."
 
 #: params.def:599
-#, fuzzy, no-c-format
-#| msgid "Target block's relative execution frequency (as a percentage) required to sink a statement"
+#, no-c-format
 msgid "Target block's relative execution frequency (as a percentage) required to sink a statement."
-msgstr "Zum Absenken einer Anweisung nötige relative Ausführungsfrequenz des Ziel-Blocks (in Prozent)"
+msgstr "Zum Absenken einer Anweisung nötige relative Ausführungsfrequenz des Ziel-Blocks (in Prozent)."
 
 #: params.def:604 params.def:614
-#, fuzzy, no-c-format
-#| msgid "The maximum number of blocks in a region to be considered for interblock scheduling"
+#, no-c-format
 msgid "The maximum number of blocks in a region to be considered for interblock scheduling."
-msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Blöcke in einer Region"
+msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Blöcke in einer Region."
 
 #: params.def:609 params.def:619
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns in a region to be considered for interblock scheduling"
+#, no-c-format
 msgid "The maximum number of insns in a region to be considered for interblock scheduling."
-msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Anweisungen in einer Region"
+msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Anweisungen in einer Region."
 
 #: params.def:624
-#, fuzzy, no-c-format
-#| msgid "The minimum probability of reaching a source block for interblock speculative scheduling"
+#, no-c-format
 msgid "The minimum probability of reaching a source block for interblock speculative scheduling."
-msgstr "Die Mindestwahrscheinlichkeit für das Erreichen eines Quellblockes für spekulatives Zwischen-Block-Scheduling"
+msgstr "Die Mindestwahrscheinlichkeit für das Erreichen eines Quellblockes für spekulatives Zwischen-Block-Scheduling."
 
 #: params.def:629
-#, fuzzy, no-c-format
-#| msgid "The maximum number of iterations through CFG to extend regions"
+#, no-c-format
 msgid "The maximum number of iterations through CFG to extend regions."
-msgstr "Höchstzahl der Iterationen durch CFG zur Regionserweiterung"
+msgstr "Höchstzahl der Iterationen durch CFG zur Regionserweiterung."
 
 #: params.def:634
-#, fuzzy, no-c-format
-#| msgid "The maximum conflict delay for an insn to be considered for speculative motion"
+#, no-c-format
 msgid "The maximum conflict delay for an insn to be considered for speculative motion."
-msgstr "Höchste Verzögerung bei Konflikt, sodass Befehl für spekulative Bewegung in Betracht kommt"
+msgstr "Höchste Verzögerung bei Konflikt, sodass Befehl für spekulative Bewegung in Betracht kommt."
 
 #: params.def:639
 #, no-c-format
 msgid "The minimal probability of speculation success (in percents), so that speculative insn will be scheduled."
-msgstr "Die Mindestwahrscheinlichkeit für spekulativen Erfolg (in Prozent), sodass spekulativer Befehl eingeplant wird"
+msgstr "Die Mindestwahrscheinlichkeit für spekulativen Erfolg (in Prozent), sodass spekulativer Befehl eingeplant wird."
 
 #: params.def:644
 #, no-c-format
@@ -2132,28 +2053,24 @@ msgid "The minimum probability an edge must have for the scheduler to save its s
 msgstr "Kleinste Wahrscheinlichkeit einer Kante, sodass bei der Planung ihr Zustand gesichert wird"
 
 #: params.def:649
-#, fuzzy, no-c-format
-#| msgid "The maximum size of the lookahead window of selective scheduling"
+#, no-c-format
 msgid "The maximum size of the lookahead window of selective scheduling."
-msgstr "Maximale Größe des Vorgriffsfensters der wählbaren Planung"
+msgstr "Maximale Größe des Vorgriffsfensters der wählbaren Planung."
 
 #: params.def:654
-#, fuzzy, no-c-format
-#| msgid "Maximum number of times that an insn could be scheduled"
+#, no-c-format
 msgid "Maximum number of times that an insn could be scheduled."
-msgstr "Höchstzahl, wie oft ein Befehl geplant werden könnte"
+msgstr "Höchstzahl, wie oft ein Befehl geplant werden könnte."
 
 #: params.def:659
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions in the ready list that are considered eligible for renaming"
+#, no-c-format
 msgid "Maximum number of instructions in the ready list that are considered eligible for renaming."
-msgstr "Die Höchstzahl der Anweisungen in der fertigen Liste, die zur Umbenennung in Frage kommen"
+msgstr "Die Höchstzahl der Anweisungen in der ausführungsbereiten Liste, die zur Umbenennung in Frage kommen."
 
 #: params.def:664
-#, fuzzy, no-c-format
-#| msgid "Minimal distance between possibly conflicting store and load"
+#, no-c-format
 msgid "Minimal distance between possibly conflicting store and load."
-msgstr "Kleinster Abstand zwischen möglicherweise in Konflikt stehendem Speichern und Laden"
+msgstr "Kleinster Abstand zwischen möglicherweise in Konflikt stehendem Speichern und Laden."
 
 #: params.def:669
 #, no-c-format
@@ -2161,130 +2078,109 @@ msgid "Hardware autoprefetcher scheduler model control flag.  Number of lookahea
 msgstr ""
 
 #: params.def:674
-#, fuzzy, no-c-format
-#| msgid "The maximum number of RTL nodes that can be recorded as combiner's last value"
+#, no-c-format
 msgid "The maximum number of RTL nodes that can be recorded as combiner's last value."
-msgstr "Höchstzahl der RTL-Knoten, die als letzte Werte des Kombinierers aufgezeichnet werden können"
+msgstr "Höchstzahl der RTL-Knoten, die als letzte Werte des Kombinierers aufgezeichnet werden können."
 
 #: params.def:679
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns combine tries to combine"
+#, no-c-format
 msgid "The maximum number of insns combine tries to combine."
-msgstr "Maximale Anzahl von Befehlen, die »combine« zu kombinieren versucht"
+msgstr "Maximale Anzahl von Befehlen, die »combine« zu kombinieren versucht."
 
 #: params.def:688
-#, fuzzy, no-c-format
-#| msgid "The upper bound for sharing integer constants"
+#, no-c-format
 msgid "The upper bound for sharing integer constants."
-msgstr "Obere Schranke zum gemeinsamen Verwenden von Ganzzahlkonstanten"
+msgstr "Obere Schranke zum gemeinsamen Verwenden von Ganzzahlkonstanten."
 
 #: params.def:693
-#, fuzzy, no-c-format
-#| msgid "The lower bound for a buffer to be considered for stack smashing protection"
+#, no-c-format
 msgid "The lower bound for a buffer to be considered for stack smashing protection."
-msgstr "Untere Schranke für einen für Stack-Smashing-Protection betrachteten Puffer"
+msgstr "Untere Schranke für einen für Stack-Smashing-Protection betrachteten Puffer."
 
 #: params.def:698
-#, fuzzy, no-c-format
-#| msgid "The minimum size of variables taking part in stack slot sharing when not optimizing"
+#, no-c-format
 msgid "The minimum size of variables taking part in stack slot sharing when not optimizing."
-msgstr "Mindestgröße von Variablen, die sich Stapelspeicher teilen, wenn nicht optimiert wird"
+msgstr "Mindestgröße von Variablen, die sich Stapelspeicher teilen, wenn nicht optimiert wird."
 
 #: params.def:717
-#, fuzzy, no-c-format
-#| msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps"
+#, no-c-format
 msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps."
-msgstr "Höchstzahl der in einem Block erlaubten Anweisungen, die für Sprungbehandlung vervielfältigt werden müssen"
+msgstr "Höchstzahl der in einem Block erlaubten Anweisungen, die für Sprungbehandlung vervielfältigt werden müssen."
 
 #: params.def:726
-#, fuzzy, no-c-format
-#| msgid "Maximum number of fields in a structure before pointer analysis treats the structure as a single variable"
+#, no-c-format
 msgid "Maximum number of fields in a structure before pointer analysis treats the structure as a single variable."
-msgstr "Die Höchstzahl der Felder in einer Struktur, bevor Zeigeranalyse sie als einzelne Variable behandelt"
+msgstr "Die Höchstzahl der Felder in einer Struktur, bevor Zeigeranalyse sie als einzelne Variable behandelt."
 
 #: params.def:731
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass"
+#, no-c-format
 msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass."
-msgstr "Höchstzahl der vom Scheduler während der ersten Planphase fertig zur Ausführung zu betrachtenden Anweisungen"
+msgstr "Höchstzahl der vom Scheduler während der ersten Planphase fertig zur Ausführung zu betrachtenden Anweisungen."
 
 #: params.def:737
-#, fuzzy, no-c-format
-#| msgid "Maximum number of active local stores in RTL dead store elimination"
+#, no-c-format
 msgid "Maximum number of active local stores in RTL dead store elimination."
-msgstr "Höchstzahl der aktiven lokalen Speicherungen bei RTL-Eliminierung toter Speicherungen"
+msgstr "Höchstzahl der aktiven lokalen Speicherungen bei RTL-Eliminierung toter Speicherungen."
 
 #: params.def:747
-#, fuzzy, no-c-format
-#| msgid "The number of insns executed before prefetch is completed"
+#, no-c-format
 msgid "The number of insns executed before prefetch is completed."
-msgstr "Die Anzahl der ausgeführten Befehle bevor Prefetch abgeschlossen ist"
+msgstr "Die Anzahl der ausgeführten Befehle, bevor Prefetch abgeschlossen ist."
 
 #: params.def:754
-#, fuzzy, no-c-format
-#| msgid "The number of prefetches that can run at the same time"
+#, no-c-format
 msgid "The number of prefetches that can run at the same time."
-msgstr "Die Anzahl der Prefetches, die gleichzeitig laufen können"
+msgstr "Die Anzahl der Prefetches, die gleichzeitig laufen können."
 
 #: params.def:761
-#, fuzzy, no-c-format
-#| msgid "The size of L1 cache"
+#, no-c-format
 msgid "The size of L1 cache."
-msgstr "Die Größe des L1-Caches"
+msgstr "Die Größe des L1-Caches."
 
 #: params.def:768
-#, fuzzy, no-c-format
-#| msgid "The size of L1 cache line"
+#, no-c-format
 msgid "The size of L1 cache line."
-msgstr "Die Größe einer L1-Cacheline"
+msgstr "Die Größe einer L1-Cacheline."
 
 #: params.def:775
-#, fuzzy, no-c-format
-#| msgid "The size of L2 cache"
+#, no-c-format
 msgid "The size of L2 cache."
-msgstr "Die Größe des L2-Caches"
+msgstr "Die Größe des L2-Caches."
 
 #: params.def:786
-#, fuzzy, no-c-format
-#| msgid "Whether to use canonical types"
+#, no-c-format
 msgid "Whether to use canonical types."
-msgstr "Ob kanonische Typen zu verwenden sind"
+msgstr "Ob kanonische Typen zu verwenden sind."
 
 #: params.def:791
-#, fuzzy, no-c-format
-#| msgid "Maximum length of partial antic set when performing tree pre optimization"
+#, no-c-format
 msgid "Maximum length of partial antic set when performing tree pre optimization."
-msgstr "Maximalgröße der partiellen Aufwandsmenge, wenn Baumvoroptimierung ausgeführt wird"
+msgstr "Maximalgröße der partiellen Aufwandsmenge, wenn Baumvoroptimierung ausgeführt wird."
 
 #: params.def:801
-#, fuzzy, no-c-format
-#| msgid "Maximum size of a SCC before SCCVN stops processing a function"
+#, no-c-format
 msgid "Maximum size of a SCC before SCCVN stops processing a function."
-msgstr "Maximalgröße eines SCC bevor SCCVN zur Bearbeitung einer Funktion anhält"
+msgstr "Maximalgröße eines SCC bevor SCCVN zur Bearbeitung einer Funktion anhält."
 
 #: params.def:812
-#, fuzzy, no-c-format
-#| msgid "Maximum number of disambiguations to perform per memory access"
+#, no-c-format
 msgid "Maximum number of disambiguations to perform per memory access."
-msgstr "Höchstzahl der Auflösungen von Mehrdeutigkeiten, um Speicherzugriff durchzuführen"
+msgstr "Höchstzahl der Auflösungen von Mehrdeutigkeiten pro Speicherzugriff."
 
 #: params.def:817
-#, fuzzy, no-c-format
-#| msgid "Max loops number for regional RA"
+#, no-c-format
 msgid "Max loops number for regional RA."
-msgstr "Maximale Schleifenanzahl für regionales RA"
+msgstr "Maximale Schleifenanzahl für regionale Registerzuweisung (RA)."
 
 #: params.def:822
-#, fuzzy, no-c-format
-#| msgid "Max size of conflict table in MB"
+#, no-c-format
 msgid "Max size of conflict table in MB."
-msgstr "Maximale Größe der Konflikttabelle in MB"
+msgstr "Maximale Größe der Konflikttabelle in MB."
 
 #: params.def:827
-#, fuzzy, no-c-format
-#| msgid "The number of registers in each class kept unused by loop invariant motion"
+#, no-c-format
 msgid "The number of registers in each class kept unused by loop invariant motion."
-msgstr "Die Anzahl der Register in jeder Klasse, die von Schleifeninvariantenbewegung freigehalten werden"
+msgstr "Die Anzahl der Register in jeder Klasse, die von Schleifeninvariantenbewegung freigehalten werden."
 
 #: params.def:832
 #, no-c-format
@@ -2297,64 +2193,54 @@ msgid "Minimal fall-through edge probability in percentage used to add BB to inh
 msgstr ""
 
 #: params.def:845
-#, fuzzy, no-c-format
-#| msgid "The maximum ratio between array size and switch branches for a switch conversion to take place"
+#, no-c-format
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place."
-msgstr "Maximales Verhältnis zwischen Feldgröße und Switch-Zweigen, wobei Switch-Umwandlung erfolgt"
+msgstr "Maximales Verhältnis zwischen Feldgröße und Switch-Zweigen, bei dem eine Switch-Umwandlung erfolgt."
 
 #: params.def:853
-#, fuzzy, no-c-format
-#| msgid "size of tiles for loop blocking"
+#, no-c-format
 msgid "size of tiles for loop blocking."
-msgstr "Größe der Kacheln für Schleifenblockierung"
+msgstr "Größe der Kacheln für Schleifenblockierung."
 
 #: params.def:860
-#, fuzzy, no-c-format
-#| msgid "maximum number of parameters in a SCoP"
+#, no-c-format
 msgid "maximum number of parameters in a SCoP."
-msgstr "Höchstzahl der Parameter in einem SCoP"
+msgstr "Höchstzahl der Parameter in einem SCoP."
 
 #: params.def:867
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite"
+#, no-c-format
 msgid "maximum number of basic blocks per function to be analyzed by Graphite."
-msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden"
+msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden."
 
 #: params.def:874
-#, fuzzy, no-c-format
-#| msgid "maximum number of parameters in a SCoP"
+#, no-c-format
 msgid "maximum number of arrays per scop."
-msgstr "Höchstzahl der Parameter in einem SCoP"
+msgstr "Höchstzahl der Parameter in einem SCoP."
 
 #: params.def:881
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite"
+#, no-c-format
 msgid "minimal number of loops per function to be analyzed by Graphite."
-msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden"
+msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden."
 
 #: params.def:886
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of an unswitched loop"
+#, no-c-format
 msgid "maximum number of isl operations, 0 means unlimited"
-msgstr "Die Höchstzahl der Befehle einer ungeschalteten Schleife"
+msgstr ""
 
 #: params.def:892
-#, fuzzy, no-c-format
-#| msgid "Maximum number of datarefs in loop for building loop data dependencies"
+#, no-c-format
 msgid "Maximum number of datarefs in loop for building loop data dependencies."
-msgstr "Höchstzahl der Datenreferenzen in Schleife zum Aufbau der Abhängigkeiten der Schleifendaten"
+msgstr "Höchstzahl der Datenreferenzen in Schleife zum Aufbau der Abhängigkeiten der Schleifendaten."
 
 #: params.def:899
-#, fuzzy, no-c-format
-#| msgid "Max basic blocks number in loop for loop invariant motion"
+#, no-c-format
 msgid "Max basic blocks number in loop for loop invariant motion."
-msgstr "Höchstzahl der Basis-Blöcke in Schleife für Schleifeninvariantenbewegung"
+msgstr "Höchstzahl der Basis-Blöcke in Schleife für Schleifeninvariantenbewegung."
 
 #: params.def:907
-#, fuzzy, no-c-format
-#| msgid "invalid function in gimple call"
+#, no-c-format
 msgid "use internal function id in profile lookup."
-msgstr "ungültige Funktion in GIMPLE-Aufruf"
+msgstr "Interne Funktions-ID bei Profilnachschlagen benutzen."
 
 #: params.def:915
 #, no-c-format
@@ -2362,80 +2248,69 @@ msgid "track topn target addresses in indirect-call profile."
 msgstr ""
 
 #: params.def:921
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
+#, no-c-format
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization."
-msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für SLP-Vektorisierung"
+msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für SLP-Vektorisierung."
 
 #: params.def:926
-#, fuzzy, no-c-format
-#| msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count"
+#, no-c-format
 msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count."
-msgstr "Kleinstes Verhältnis von Befehlen zu Prefetches um Prefetching für eine Schleife mit unbekannter Frequentierung zu aktivieren"
+msgstr "Kleinstes Verhältnis von Befehlen zu Prefetches, um Prefetching für eine Schleife mit unbekannter Frequentierung zu aktivieren."
 
 #: params.def:932
-#, fuzzy, no-c-format
-#| msgid "Min. ratio of insns to mem ops to enable prefetching in a loop"
+#, no-c-format
 msgid "Min. ratio of insns to mem ops to enable prefetching in a loop."
-msgstr "Kleinstes Verhältnis von Befehlen zu Speicheroperationen, um Prefetching in einer Schleife zu aktivieren"
+msgstr "Kleinstes Verhältnis von Befehlen zu Speicheroperationen, um Prefetching in einer Schleife zu aktivieren."
 
 #: params.def:939
-#, fuzzy, no-c-format
-#| msgid "Max. size of var tracking hash tables"
+#, no-c-format
 msgid "Max. size of var tracking hash tables."
-msgstr "Maximale Größe variablenverfolgender Hash-Tabellen"
+msgstr "Maximale Größe variablenverfolgender Hash-Tabellen."
 
 #: params.def:947
-#, fuzzy, no-c-format
-#| msgid "Max. recursion depth for expanding var tracking expressions"
+#, no-c-format
 msgid "Max. recursion depth for expanding var tracking expressions."
-msgstr "Größte Rekursionstiefe für Ersetzung von variablenverfolgenden Ausdrücken"
+msgstr "Größte Rekursionstiefe für das Expandieren von variablenverfolgenden Ausdrücken."
 
 #: params.def:955
-#, fuzzy, no-c-format
-#| msgid "Max. size of loc list for which reverse ops should be added"
+#, no-c-format
 msgid "Max. size of loc list for which reverse ops should be added."
-msgstr "Maximalgröße der Loc-List, bei der Umkehrungsoperationen hinzugefügt werden sollen"
+msgstr "Maximalgröße der Speicherort-Liste, bei der Umkehrungsoperationen hinzugefügt werden sollen."
 
 #: params.def:962
-#, fuzzy, no-c-format
-#| msgid "The minimum UID to be used for a nondebug insn"
+#, no-c-format
 msgid "The minimum UID to be used for a nondebug insn."
-msgstr "Kleinste UID für Nicht-Debug-Befehl"
+msgstr "Kleinste UID für Nicht-Debug-Befehl."
 
 #: params.def:967
-#, fuzzy, no-c-format
-#| msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with"
+#, no-c-format
 msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with."
-msgstr "Maximales Größenwachstum neuer von ipa-sra durch Ersetzen von Zeigern auf Aggregate erzeugter Parameter"
+msgstr ""
 
 #: params.def:973
-#, fuzzy, no-c-format
-#| msgid "Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs"
+#, no-c-format
 msgid "Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs."
-msgstr "Größe in Bytes nach der thread-lokale Zusammenfassungen mit Logging-Funktionen statt mit Save/Restore-Paaren instrumentiert werden sollten"
+msgstr "Größe in Bytes, über der thread-lokale Zusammenfassungen mit Logging-Funktionen statt mit Save/Restore-Paaren instrumentiert werden sollten."
 
 #: params.def:980
 #, no-c-format
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for speed."
-msgstr ""
+msgstr "Maximale Größe (in Speichereinheiten) von Aggregaten, die für Skalarisierung erwägt werden, wenn auf Geschwindigkeit optimiert wird."
 
 #: params.def:986
 #, no-c-format
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for size."
-msgstr ""
+msgstr "Maximale Größe (in Speichereinheiten) von Aggregaten, die für Skalarisierung erwägt werden, wenn auf Codegröße optimiert wird."
 
 #: params.def:992
-#, fuzzy, no-c-format
-#| msgid "Maximum size of a list of values associated with each parameter for interprocedural constant propagation"
+#, no-c-format
 msgid "Maximum size of a list of values associated with each parameter for interprocedural constant propagation."
-msgstr "Maximale Größe einer jedem Parameter zugeordneten Liste von Werten für interprozedurale Konstantenweitergabe"
+msgstr "Maximale Größe einer jedem Parameter zugeordneten Liste von Werten für interprozedurale Konstantenweitergabe."
 
 #: params.def:998
-#, fuzzy, no-c-format
-#| msgid "Threshold ipa-cp opportunity evaluation that is still considered beneficial to clone."
+#, no-c-format
 msgid "Threshold ipa-cp opportunity evaluation that is still considered beneficial to clone.."
-msgstr "Schwellwert für Auswertung der Möglichkeit von IPA-CP, der noch als vorteilhaft zum Kopieren betrachtet wird"
+msgstr "Schwellwert für Auswertung der Möglichkeit von IPA-CP, der noch als vorteilhaft zum Kopieren betrachtet wird."
 
 #: params.def:1004
 #, no-c-format
@@ -2448,22 +2323,19 @@ msgid "Percentage penalty functions containg a single call to another function w
 msgstr ""
 
 #: params.def:1016
-#, fuzzy, no-c-format
-#| msgid "Maximum number of aggregate content items for a parameter in jump functions and lattices"
+#, no-c-format
 msgid "Maximum number of aggregate content items for a parameter in jump functions and lattices."
-msgstr "Höchstzahl der zusammengesetzten enthaltenen Elemente für einen Parameter in Sprungfunktionen und Gittern"
+msgstr "Höchstzahl der zusammengesetzten Elemente für einen Parameter in Sprungfunktionen und Gittern."
 
 #: params.def:1022
-#, fuzzy, no-c-format
-#| msgid "Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known."
+#, no-c-format
 msgid "Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known.."
-msgstr "Bonus-IPA-CP-Zuweisungen zur Laufzeit an Kandidaten, die Schleifengrenzen oder Schritte bekannt machen"
+msgstr "Übersetzungszeit-Bonus, den IPA-CP an Kandidaten vergibt, die Schleifengrenzen oder Schrittweiten bekannt machen."
 
 #: params.def:1028
-#, fuzzy, no-c-format
-#| msgid "Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known."
+#, no-c-format
 msgid "Compile-time bonus IPA-CP assigns to candidates which make an array index known.."
-msgstr "Bonus-IPA-CP-Zuweisungen zur Laufzeit an Kandidaten, die Schleifengrenzen oder Schritte bekannt machen"
+msgstr "Übersetzungszeit-Bonus, den IPA-CP an Kandidaten vergibt, die einen Feldindex bekannt machen."
 
 #: params.def:1034
 #, no-c-format
@@ -2471,58 +2343,49 @@ msgid "Maximum number of statements that will be visited by IPA formal parameter
 msgstr ""
 
 #: params.def:1042
-#, fuzzy, no-c-format
-#| msgid "Number of partitions the program should be split to"
+#, no-c-format
 msgid "Number of partitions the program should be split to."
-msgstr "Anzahl der Partitionen, in die das Programm aufgeteilt werden soll"
+msgstr "Anzahl der Partitionen, in die das Programm aufgeteilt werden soll."
 
 #: params.def:1047
-#, fuzzy, no-c-format
-#| msgid "Minimal size of a partition for LTO (in estimated instructions)"
+#, no-c-format
 msgid "Minimal size of a partition for LTO (in estimated instructions)."
-msgstr "Kleinste Größe einer Partition für LTO (in voraussichtlichen Befehlen)"
+msgstr "Kleinste Größe einer Partition für Linkzeitoptimierung (in geschätzten Befehlen)."
 
 #: params.def:1052
-#, fuzzy, no-c-format
-#| msgid "Minimal size of a partition for LTO (in estimated instructions)"
+#, no-c-format
 msgid "Maximal size of a partition for LTO (in estimated instructions)."
-msgstr "Kleinste Größe einer Partition für LTO (in voraussichtlichen Befehlen)"
+msgstr "Kleinste Größe einer Partition für LTO (in geschätzten Befehlen)"
 
 #: params.def:1059
-#, fuzzy, no-c-format
-#| msgid "Maximum number of namespaces to search for alternatives when name lookup fails"
+#, no-c-format
 msgid "Maximum number of namespaces to search for alternatives when name lookup fails."
-msgstr "Höchstzahl der nach Alternativen zu durchsuchenden Namensräume wenn Nachschlagen des Namens fehlschlägt"
+msgstr "Höchstzahl der Namensräume, in denen alternativ gesucht wird, wenn Nachschlagen eines Namens fehlschlägt."
 
 #: params.def:1066
-#, fuzzy, no-c-format
-#| msgid "Maximum number of conditional store pairs that can be sunk"
+#, no-c-format
 msgid "Maximum number of conditional store pairs that can be sunk."
-msgstr "Höchstzahl von bedingten Speicherpaaren, die ausgegeben werden können"
+msgstr "Höchstzahl von bedingten Speicherpaaren, die ausgegeben werden können."
 
 #: params.def:1074
-#, fuzzy, no-c-format
-#| msgid "The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine"
+#, no-c-format
 msgid "The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine."
-msgstr "Kleinste Zahl unterschiedlicher Werte für die eine Sprungtabelle besser als ein Baum bedingter Sprünge ist; bei 0 wird der Standard für diese Maschine verwendet"
+msgstr "Kleinste Zahl unterschiedlicher Werte, für die eine Sprungtabelle besser als ein Baum bedingter Sprünge ist; bei 0 wird der Standard für die Zielarchitektur verwendet."
 
 #: params.def:1082
-#, fuzzy, no-c-format
-#| msgid "Allow new data races on stores to be introduced"
+#, no-c-format
 msgid "Allow new data races on stores to be introduced."
-msgstr "Neue Daten-Races bei Speicheroperationen zulassen"
+msgstr "Zulassen, dass neue Daten-Races bei Schreibzugriffen entstehen."
 
 #: params.def:1088
-#, fuzzy, no-c-format
-#| msgid "Set the maximum number of instructions executed in parallel in reassociated tree. If 0, use the target dependent heuristic."
+#, no-c-format
 msgid "Set the maximum number of instructions executed in parallel in reassociated tree. If 0, use the target dependent heuristic.."
-msgstr "Höchstzahl der parallel ausgeführten Befehle im neuverbundenen Baum setzen. Bei 0 die zielabhängige Heuristik verwenden."
+msgstr "Höchstzahl der parallel ausgeführten Befehle im neuverbundenen Baum festlegen. Bei 0 die zielabhängige Heuristik verwenden."
 
 #: params.def:1094
-#, fuzzy, no-c-format
-#| msgid "Maximum amount of similar bbs to compare a bb with"
+#, no-c-format
 msgid "Maximum amount of similar bbs to compare a bb with."
-msgstr "Höchstzahl der ähnlichen BBs, mit denen ein BB verglichen wird"
+msgstr "Höchstzahl der ähnlichen Basisblöcke, mit denen ein Basisblock verglichen wird."
 
 #: params.def:1099
 #, no-c-format
@@ -2530,64 +2393,54 @@ msgid "Allow the store merging pass to introduce unaligned stores if it is legal
 msgstr ""
 
 #: params.def:1105
-#, fuzzy, no-c-format
-#| msgid "Maximum number of active local stores in RTL dead store elimination"
+#, no-c-format
 msgid "Maximum number of constant stores to merge in thestore merging pass"
-msgstr "Höchstzahl der aktiven lokalen Speicherungen bei RTL-Eliminierung toter Speicherungen"
+msgstr "Höchstzahl der konstanten Speicherungen, die im Speicherzusammenfassungs-Durchgang zusammengefasst werden."
 
 #: params.def:1111
-#, fuzzy, no-c-format
-#| msgid "Maximum amount of iterations of the pass over a function"
+#, no-c-format
 msgid "Maximum amount of iterations of the pass over a function."
-msgstr "Höchstzahl der Iterationen des Durchgangs über eine Funktion"
+msgstr "Höchstzahl der Iterationen des Durchgangs über eine Funktion."
 
 #: params.def:1118
-#, fuzzy, no-c-format
-#| msgid "Maximum number of strings for which strlen optimization pass will track string lengths"
+#, no-c-format
 msgid "Maximum number of strings for which strlen optimization pass will track string lengths."
-msgstr "Höchstzahl der Zeichenketten, für die der Strlen-Optimierungsdurchgang Zeichenkettenlängen aufzeichnet"
+msgstr "Höchstzahl der Zeichenketten, für die der strlen-Optimierungsdurchgang Zeichenkettenlängen aufzeichnet."
 
 #: params.def:1125
-#, fuzzy, no-c-format
-#| msgid "Which -fsched-pressure algorithm to apply"
+#, no-c-format
 msgid "Which -fsched-pressure algorithm to apply."
-msgstr "Anzuwendender Algorithmus für -fsched-pressure"
+msgstr "Anzuwendender Algorithmus für -fsched-pressure."
 
 #: params.def:1131
-#, fuzzy, no-c-format
-#| msgid "Maximum length of candidate scans for straight-line strength reduction"
+#, no-c-format
 msgid "Maximum length of candidate scans for straight-line strength reduction."
-msgstr "Maximallänge von Kandidatenprüfungen für Stärkereduktion in geraden Linien"
+msgstr "Maximallänge von Kandidatenprüfungen für geradlinige Stärkereduktion."
 
 #: params.def:1137
-#, fuzzy, no-c-format
-#| msgid "Enable stack probing"
+#, no-c-format
 msgid "Enable asan stack protection."
-msgstr "Stapelsondierung einschalten"
+msgstr ""
 
 #: params.def:1142
-#, fuzzy, no-c-format
-#| msgid "Enable all optional instructions"
+#, no-c-format
 msgid "Enable asan globals protection."
-msgstr "Alle optionalen Befehle einschalten"
+msgstr ""
 
 #: params.def:1147
-#, fuzzy, no-c-format
-#| msgid "Enable saturation instructions"
+#, no-c-format
 msgid "Enable asan store operations protection."
-msgstr "Sättigungsbefehle einschalten"
+msgstr ""
 
 #: params.def:1152
-#, fuzzy, no-c-format
-#| msgid "Enable all optional instructions"
+#, no-c-format
 msgid "Enable asan load operations protection."
-msgstr "Alle optionalen Befehle einschalten"
+msgstr ""
 
 #: params.def:1157
-#, fuzzy, no-c-format
-#| msgid "Enable saturation instructions"
+#, no-c-format
 msgid "Enable asan builtin functions protection."
-msgstr "Sättigungsbefehle einschalten"
+msgstr ""
 
 #: params.def:1162
 #, no-c-format
@@ -2597,7 +2450,7 @@ msgstr ""
 #: params.def:1167
 #, no-c-format
 msgid "Use callbacks instead of inline code if number of accesses in function becomes greater or equal to this number."
-msgstr ""
+msgstr "Rückruffunktionen statt inline-Code generieren, wenn innerhalb der Funktion mindestens diese Anzahl an Zugriffen stattfindet."
 
 #: params.def:1173
 #, no-c-format
@@ -2605,10 +2458,9 @@ msgid "Use direct poisoning/unpoisoning intructions for variables smaller or equ
 msgstr ""
 
 #: params.def:1179
-#, fuzzy, no-c-format
-#| msgid "Maximum number of namespaces to search for alternatives when name lookup fails"
+#, no-c-format
 msgid "Maximum number of nested calls to search for control dependencies during uninitialized variable analysis."
-msgstr "Höchstzahl der nach Alternativen zu durchsuchenden Namensräume wenn Nachschlagen des Namens fehlschlägt"
+msgstr ""
 
 #: params.def:1185
 #, no-c-format
@@ -2631,22 +2483,19 @@ msgid "Scale factor to apply to the number of blocks in a threading path when co
 msgstr ""
 
 #: params.def:1206
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite"
+#, no-c-format
 msgid "Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path."
-msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden"
+msgstr ""
 
 #: params.def:1211
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite"
+#, no-c-format
 msgid "Maximum number of basic blocks on a finite state automaton jump thread path."
-msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden"
+msgstr "Höchstzahl der Basis-Blöcke in einem Mehrfachsprung in einem endlichen Automaten."
 
 #: params.def:1216
-#, fuzzy, no-c-format
-#| msgid "Maximum number of nops to insert for a hint (Default 2)"
+#, no-c-format
 msgid "Maximum number of new jump thread paths to create for a finite state automaton."
-msgstr "Höchstzahl der für einen Hinweis einzufügenden NOPs (Standard: 2)"
+msgstr "Höchstzahl der neuen Sprungpfade, die für einen endlichen Automaten erzeugt werden."
 
 #: params.def:1221
 #, no-c-format
@@ -2664,10 +2513,9 @@ msgid "Maximum recursion depth allowed when querying a property of an SSA name."
 msgstr ""
 
 #: params.def:1239
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
+#, no-c-format
 msgid "Maximum number of insns in a basic block to consider for RTL if-conversion."
-msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für SLP-Vektorisierung"
+msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für RTL-if-Umwandlung."
 
 #: params.def:1245
 #, no-c-format
@@ -2695,10 +2543,9 @@ msgid "Maximum number of assertions to add along the default edge of a switch st
 msgstr ""
 
 #: params.def:1275
-#, fuzzy, no-c-format
-#| msgid "Enable loop vectorization on trees"
+#, no-c-format
 msgid "Enable loop epilogue vectorization using smaller vector size."
-msgstr "Schleifenvektorisierung auf Bäumen einschalten"
+msgstr ""
 
 #: c-family/c-format.c:376
 msgid "format"
@@ -3099,28 +2946,24 @@ msgid "invalid %%xn code"
 msgstr "ungültiger %%xn-Code"
 
 #: config/alpha/alpha.c:5489
-#, fuzzy, c-format
-#| msgid "invalid operand"
+#, c-format
 msgid "invalid operand address"
-msgstr "ungültiger Operand"
+msgstr "ungültige Operandenadresse"
 
 #: config/arc/arc.c:3082
-#, fuzzy, c-format
-#| msgid "invalid operand to %%s code"
+#, c-format
 msgid "invalid operand to %%Z code"
-msgstr "ungültiger Operand für Code %%s"
+msgstr "ungültiger Operand für Code %%Z"
 
 #: config/arc/arc.c:3090
-#, fuzzy, c-format
-#| msgid "invalid operand to %%s code"
+#, c-format
 msgid "invalid operand to %%z code"
-msgstr "ungültiger Operand für Code %%s"
+msgstr "ungültiger Operand für Code %%z"
 
 #: config/arc/arc.c:3098
-#, fuzzy, c-format
-#| msgid "invalid operand to %%s code"
+#, c-format
 msgid "invalid operand to %%M code"
-msgstr "ungültiger Operand für Code %%s"
+msgstr "ungültiger Operand für Code %%M"
 
 #: config/arc/arc.c:3106 config/m32r/m32r.c:2083
 #, c-format
@@ -3153,10 +2996,9 @@ msgid "invalid operand to %%V code"
 msgstr "Ungültiger Operand für %%V-Code"
 
 #: config/arc/arc.c:3418
-#, fuzzy, c-format
-#| msgid "invalid operand to %%s code"
+#, c-format
 msgid "invalid operand to %%O code"
-msgstr "ungültiger Operand für Code %%s"
+msgstr "ungültiger Operand für Code %%O"
 
 #. Unknown flag.
 #. Undocumented flag.
@@ -3167,10 +3009,9 @@ msgid "invalid operand output code"
 msgstr "Ungültiger Operanden-Ausgabecode"
 
 #: config/arc/arc.c:5081
-#, fuzzy, c-format
-#| msgid "invalid UNSPEC as operand"
+#, c-format
 msgid "invalid UNSPEC as operand: %d"
-msgstr "ungültiges UNSPEC als Operand"
+msgstr "ungültiges UNSPEC als Operand: %d"
 
 #: config/arm/arm.c:18786 config/arm/arm.c:18811 config/arm/arm.c:18821
 #: config/arm/arm.c:18830 config/arm/arm.c:18839
@@ -3281,12 +3122,13 @@ msgid "unsupported fixed-point conversion"
 msgstr "Festkommaumwandlung nicht unterstützt"
 
 #: config/avr/driver-avr.c:48
-#, fuzzy, c-format
-#| msgid "unknown spec function %qs"
+#, c-format
 msgid ""
 "Running spec function '%s' with %d args\n"
 "\n"
-msgstr "unbekannte Spezifikationsfunktion %qs"
+msgstr ""
+"unbekannte Spezifikationsfunktion »%s« mit %d Argumenten\n"
+"\n"
 
 #: config/bfin/bfin.c:1386
 #, c-format
@@ -3527,10 +3369,9 @@ msgid "invalid UNSPEC as operand"
 msgstr "ungültiges UNSPEC als Operand"
 
 #: config/i386/i386.c:17576
-#, fuzzy, c-format
-#| msgid "invalid type for make function"
+#, c-format
 msgid "invalid use of asm flag output"
-msgstr "ungültiger Typ für »make«-Funktion"
+msgstr "ungültige Benutzung der asm-Schalter-Ausgabe"
 
 #: config/i386/i386.c:17794
 #, c-format
@@ -3587,10 +3428,9 @@ msgid "unknown insn mode"
 msgstr "unbekannter Befehlsmodus"
 
 #: config/i386/djgpp.h:146
-#, fuzzy, c-format
-#| msgid "-f%s ignored for Unicos/Mk (not supported)"
+#, c-format
 msgid "-f%s ignored (not supported for DJGPP)\n"
-msgstr "-f%s für Unicos/Mk ignoriert (nicht unterstützt)"
+msgstr "-f%s ignoriert (nicht für DJGPP unterstützt)\n"
 
 #: config/ia64/ia64.c:5370
 #, c-format
@@ -3773,16 +3613,14 @@ msgid "MMIX Internal: This is not a constant:"
 msgstr "MMIX-intern: Dies ist keine Konstante:"
 
 #: config/msp430/msp430.c:3625
-#, fuzzy, c-format
-#| msgid "invalid operand prefix '%%%c'"
+#, c-format
 msgid "invalid operand prefix"
-msgstr "ungültiger Operandenpräfix »%%%c«"
+msgstr "ungültiges Operandenpräfix"
 
 #: config/msp430/msp430.c:3659
-#, fuzzy, c-format
-#| msgid "invalid operand"
+#, c-format
 msgid "invalid zero extract"
-msgstr "ungültiger Operand"
+msgstr "ungültige null-Extraktion"
 
 #: config/rl78/rl78.c:1887 config/rl78/rl78.c:1973
 #, c-format
@@ -3801,7 +3639,7 @@ msgstr "»%s« in der Shell könnte diese Beschränkung erhöhen.\n"
 
 #: config/rs6000/rs6000.c:4085
 msgid "-maltivec=le not allowed for big-endian targets"
-msgstr ""
+msgstr "-maltivec=le ist nicht für Big-Endian-Zielsysteme erlaubt"
 
 #: config/rs6000/rs6000.c:4097
 msgid "-mvsx requires hardware floating point"
@@ -3824,20 +3662,16 @@ msgid "-mno-altivec disables vsx"
 msgstr "-mno-altivec schaltet vsx aus"
 
 #: config/rs6000/rs6000.c:4274
-#, fuzzy
-#| msgid "--resource requires -o"
 msgid "-mquad-memory requires 64-bit mode"
-msgstr "--resource erfordert -o"
+msgstr "-mquad-memory benötigt 64-Bit-Modus"
 
 #: config/rs6000/rs6000.c:4277
 msgid "-mquad-memory-atomic requires 64-bit mode"
-msgstr ""
+msgstr "-mquad-memory-atomic benötigt 64-Bit-Modus"
 
 #: config/rs6000/rs6000.c:4289
-#, fuzzy
-#| msgid "Generate code in little endian mode"
 msgid "-mquad-memory is not available in little endian mode"
-msgstr "Code im »Little Endian«-Modus erzeugen"
+msgstr "-mquad-memory ist im Little-Endian-Modus nicht verfügbar"
 
 #: config/rs6000/rs6000.c:4361
 #, fuzzy
