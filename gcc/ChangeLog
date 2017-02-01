@@ -1,3 +1,11 @@
+2017-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71824
+	* graphite-scop-detection.c (scop_detection::build_scop_breadth):
+	Verify the loops are valid in the merged SESE region.
+	(scop_detection::can_represent_loop_1): Check analyzing the
+	evolution of the number of iterations in the region succeeds.
+
 2017-01-31  Ian Lance Taylor  <iant@golang.org>
 
 	* config/i386/i386.c (ix86_expand_split_stack_prologue): Add
