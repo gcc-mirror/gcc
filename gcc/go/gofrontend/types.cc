@@ -2175,11 +2175,26 @@ Type::make_gc_symbol_var(Gogo* gogo)
       is_common = true;
     }
 
+  // The current garbage collector requires that the GC symbol be
+  // aligned to at least a four byte boundary.  See the use of PRECISE
+  // and LOOP in libgo/runtime/mgc0.c.
+  int64_t align;
+  if (!sym_init->type()->backend_type_align(gogo, &align))
+    go_assert(saw_errors());
+  if (align < 4)
+    align = 4;
+  else
+    {
+      // Use default alignment.
+      align = 0;
+    }
+
   // Since we are building the GC symbol in this package, we must create the
   // variable before converting the initializer to its backend representation
   // because the initializer may refer to the GC symbol for this type.
   this->gc_symbol_var_ =
-    gogo->backend()->implicit_variable(sym_name, sym_btype, false, true, is_common, 0);
+    gogo->backend()->implicit_variable(sym_name, sym_btype, false, true,
+                                       is_common, align);
   if (phash != NULL)
     *phash = this->gc_symbol_var_;
 
