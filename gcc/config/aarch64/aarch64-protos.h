@@ -151,11 +151,17 @@ struct cpu_regmove_cost
 /* Cost for vector insn classes.  */
 struct cpu_vector_cost
 {
-  const int scalar_stmt_cost;		 /* Cost of any scalar operation,
+  const int scalar_int_stmt_cost;	 /* Cost of any int scalar operation,
+					    excluding load and store.  */
+  const int scalar_fp_stmt_cost;	 /* Cost of any fp scalar operation,
 					    excluding load and store.  */
   const int scalar_load_cost;		 /* Cost of scalar load.  */
   const int scalar_store_cost;		 /* Cost of scalar store.  */
-  const int vec_stmt_cost;		 /* Cost of any vector operation,
+  const int vec_int_stmt_cost;		 /* Cost of any int vector operation,
+					    excluding load, store, permute,
+					    vector-to-scalar and
+					    scalar-to-vector operation.  */
+  const int vec_fp_stmt_cost;		 /* Cost of any fp vector operation,
 					    excluding load, store, permute,
 					    vector-to-scalar and
 					    scalar-to-vector operation.  */
