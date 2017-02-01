@@ -1,3 +1,20 @@
+2017-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79254
+	* config/abi/pre/gnu.ver: Remove recently added symbols.
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign): Remove.
+	(basic_string::operator=(const basic_string&)): Don't dispatch to
+	_M_copy_assign. If source object is small just deallocate, otherwise
+	perform new allocation before making any changes.
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign(const basic_string&, true_type)):
+	Remove.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Test cases where the allocators are equal or the string is small.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Likewise.
+
 2017-01-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2825, LWG 2756 breaks class template argument

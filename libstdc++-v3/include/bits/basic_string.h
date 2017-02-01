@@ -393,15 +393,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_erase(size_type __pos, size_type __n);
 
-#if __cplusplus >= 201103L
-      void
-      _M_copy_assign(const basic_string& __str, /* pocca = */ true_type);
-
-      void
-      _M_copy_assign(const basic_string& __str, /* pocca = */ false_type)
-      { this->_M_assign(__str); }
-#endif
-
     public:
       // Construct/copy/destroy:
       // NB: We overload ctors in some cases instead of using default
@@ -636,12 +627,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       operator=(const basic_string& __str)
       {
 #if __cplusplus >= 201103L
-	_M_copy_assign(__str,
-	    typename _Alloc_traits::propagate_on_container_copy_assignment());
-#else
-	this->_M_assign(__str);
+	if (_Alloc_traits::_S_propagate_on_copy_assign())
+	  {
+	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
+		&& _M_get_allocator() != __str._M_get_allocator())
+	      {
+		// Propagating allocator cannot free existing storage so must
+		// deallocate it before replacing current allocator.
+		if (__str.size() <= _S_local_capacity)
+		  {
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(_M_local_data());
+		    _M_set_length(0);
+		  }
+		else
+		  {
+		    const auto __len = __str.size();
+		    auto __alloc = __str._M_get_allocator();
+		    // If this allocation throws there are no effects:
+		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(__ptr);
+		    _M_capacity(__len);
+		    _M_set_length(__len);
+		  }
+	      }
+	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
+	  }
 #endif
-	return *this;
+	return this->assign(__str);
       }
 
       /**
