@@ -3401,7 +3401,7 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
           /* read /proc/<PID>/stat */
 
-          if (strlen (d->d_name) >= sizeof (statfile) - sizeof ("/proc//stat"))
+          if (strlen (d->d_name) >= sizeof (statfile) - strlen ("/proc//stat"))
             continue;
           strcpy (statfile, "/proc/");
           strcat (statfile, d->d_name);
