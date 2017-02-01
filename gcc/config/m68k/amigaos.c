@@ -40,6 +40,12 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic-core.h"
 #include "config/m68k/amigaos.h"
 
+//#define MYDEBUG 1
+#ifdef MYDEBUG
+#define DPRINTF(x) printf x; fflush(stdout);
+#else
+#define DPRINTF(x)
+#endif
 
 //int amiga_declare_object;
 
@@ -379,8 +385,8 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype)
 {
   struct amigaos_args * cum = &mycum;
   lastcum = cump;
-  cum->num_of_regs = amigaos_regparm;
-//  printf("amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs); fflush(stdout);
+  cum->num_of_regs = amigaos_regparm > 0 ? amigaos_regparm : 0;
+  DPRINTF(("amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs));
 
   /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -396,7 +402,7 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype)
       else
 	{
 	  tree ratree = lookup_attribute ("regparm", TYPE_ATTRIBUTES(fntype));
-	  cum->num_of_regs = amigaos_regparm ?
+	  cum->num_of_regs = amigaos_regparm != 0 ?
 	      amigaos_regparm : AMIGAOS_DEFAULT_REGPARM;
 	  if (ratree)
 	    {
@@ -456,7 +462,7 @@ amigaos_function_arg_advance (cumulative_args_t cum_v, machine_mode, const_tree,
   CUMULATIVE_ARGS *cump = (CUMULATIVE_ARGS *) get_cumulative_args (cum_v);
   /* Update the data in CUM to advance over an argument.  */
 
-  // printf("amigaos_function_arg_advance1 %p\r\n", cump); fflush(stdout);
+  DPRINTF(("amigaos_function_arg_advance1 %p\r\n", cump));
   if (cump != lastcum)
     return;
 
@@ -490,7 +496,7 @@ static struct rtx_def *
 _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 {
   struct amigaos_args * cum = &mycum;
-  // printf("m68k_function_arg numOfRegs=%p\r\n", cum);
+  DPRINTF(("m68k_function_arg numOfRegs=%d\r\n", cum ? cum->num_of_regs : 0));
 
   if (cump != lastcum)
     return 0;
@@ -550,7 +556,7 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 
       if (cum->last_arg_reg != -1)
 	{
-	  // printf("-> gen_rtx_REG %d\r\n", cum->last_arg_reg);
+	  DPRINTF(("-> gen_rtx_REG %d\r\n", cum->last_arg_reg));
 	  return gen_rtx_REG (mode, cum->last_arg_reg);
 	}
     }
@@ -566,7 +572,7 @@ amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode,
 {
   struct amigaos_args * cum = &mycum;
 
-  // printf("amigaos_function_arg %p\r\n", cum_v.p); fflush(stdout);
+  DPRINTF(("amigaos_function_arg %p\r\n", cum_v.p));
 
   CUMULATIVE_ARGS *cump = (CUMULATIVE_ARGS *) get_cumulative_args (cum_v);
 
@@ -598,7 +604,7 @@ amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode,
 int
 amigaos_comp_type_attributes (const_tree type1, const_tree type2)
 {
-  printf("amigaos_comp_type_attributes\n");
+  DPRINTF(("amigaos_comp_type_attributes\n"));
   /* Functions or methods are incompatible if they specify mutually exclusive
    ways of passing arguments. */
   if (TREE_CODE(type1) == FUNCTION_TYPE || TREE_CODE(type1) == METHOD_TYPE)
@@ -688,7 +694,7 @@ amigaos_handle_type_attribute (tree *node, tree name, tree args,
 {
   tree nnn = *node;
   do { // while (0);
-//  printf("%p with treecode %d\n", node, TREE_CODE(nnn)); fflush(stdout);
+  DPRINTF(("%p with treecode %d\n", node, TREE_CODE(nnn)));
   if (TREE_CODE (nnn) == FUNCTION_DECL || TREE_CODE (nnn) == FUNCTION_TYPE
       || TREE_CODE (nnn) == METHOD_TYPE)
     {
@@ -696,7 +702,7 @@ amigaos_handle_type_attribute (tree *node, tree name, tree args,
        single class that should be used to pass arguments.  */
       if (is_attribute_p ("regparm", name))
 	{
-//	  printf ("regparm found\n"); fflush(stdout);
+	  DPRINTF(("regparm found\n"));
 
 	  if (lookup_attribute ("stkparm", TYPE_ATTRIBUTES(nnn)))
 	    {
@@ -706,7 +712,7 @@ amigaos_handle_type_attribute (tree *node, tree name, tree args,
 	  if (args && TREE_CODE (args) == TREE_LIST)
 	    {
 	      tree val = TREE_VALUE(args);
-//	      printf ("regparm with val: %d\n", TREE_CODE(val));
+	      DPRINTF(("regparm with val: %d\n", TREE_CODE(val)));
 	      if (TREE_CODE (val) == INTEGER_CST)
 		{
 		  int no = TREE_INT_CST_LOW(val);
@@ -765,7 +771,7 @@ bool
 amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 		   int *total, bool speed)
 {
-//  printf("outer: %d, opno: %d", outer_code, opno); fflush(stdout);
+  DPRINTF(("outer: %d, opno: %d", outer_code, opno));
 //  debug_rtx(x);
   bool r = m68k_rtx_costs (x, mode, outer_code, opno, total, speed);
   *total *= 4;

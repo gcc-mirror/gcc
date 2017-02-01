@@ -166,7 +166,7 @@ static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static bool m68k_ok_for_sibcall_p (tree, tree);
 static bool m68k_tls_symbol_p (rtx);
 static rtx m68k_legitimize_address (rtx, rtx, machine_mode);
-#ifndef TARGET_AMIGAOS
+#ifndef TARGET_AMIGA
 static
 #endif
 bool m68k_rtx_costs (rtx, machine_mode, int, int, int *, bool);
@@ -2803,7 +2803,7 @@ const_int_cost (HOST_WIDE_INT i)
     }
 }
 
-#ifndef TARGET_AMIGAOS
+#ifndef TARGET_AMIGA
 static
 #endif
 bool
@@ -4544,9 +4544,10 @@ m68k_get_reloc_decoration (enum m68k_reloc reloc)
   switch (reloc)
     {
     case RELOC_GOT:
-      if (TARGET_AMIGAOS)
-	return "";
-      else if (MOTOROLA)
+//      if (TARGET_AMIGA)
+//	return "";
+//      else
+	if (MOTOROLA)
 	{
 	  if (flag_pic == 1 && TARGET_68020)
 	    return "@GOT.w";

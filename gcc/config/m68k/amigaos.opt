@@ -1,6 +1,6 @@
 
 mregparm=
-Target RejectNegative Var(amigaos_regparm) Joined UInteger
+Target RejectNegative Var(amigaos_regparm) Joined UInteger Init(-1)
 Pass arguments through registers.
 
 noixemul
