@@ -321,7 +321,7 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
   s390_def_or_undef_macro (pfile, MASK_OPT_HTM, old_opts, opts,
 			   "__HTM__", "__HTM__");
   s390_def_or_undef_macro (pfile, MASK_OPT_VX, old_opts, opts,
-			   "__S390_VX__", "__S390_VX__");
+			   "__VX__", "__VX__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__VEC__=10301", "__VEC__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,

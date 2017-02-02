@@ -121,7 +121,7 @@ proc check_effective_target_s390_useable_hw { } {
 	    asm ("etnd %0" : "=d" (nd));
 	  }
 	#endif
-	#ifdef __S390_VX__
+	#ifdef __VX__
 	    asm ("vzero %%v0" : : );
 	#endif
 	  return 0;
