@@ -1,3 +1,7 @@
+2017-02-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr71078-3.c: Do not rely on math.h.
+
 2017-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69637
