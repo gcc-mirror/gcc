@@ -1,3 +1,10 @@
+2017-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/77445
+	* tree-ssa-threadbackward.c (profitable_jump_thread_path): Dump
+	statistics of the analyzed path; allow threading for speed when
+	any of BBs along the path are optimized for speed.
+
 2017-02-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/78468
