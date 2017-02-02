@@ -1,3 +1,9 @@
+2017-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/77445
+	* gcc.dg/tree-ssa/pr77445-2.c: Update testcase to check that all
+	threading is done.
+
 2017-02-02  Tamar Christina  <tamar.christina@arm.com>
 
 	PR middle-end/78142
