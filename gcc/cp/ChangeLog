@@ -1,3 +1,10 @@
+2017-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR cp/14179
+	* cp-gimplify.c (cp_fold): When folding a CONSTRUCTOR copy
+	it lazily on the first changed element only and copy it
+	fully upfront, only storing changed elements.
+
 2017-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69637
