@@ -1,5 +1,10 @@
 2017-02-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vx-builtins.md ("vec_ceil", "vec_floor")
+	("vec_trunc", "vec_roundc", "vec_round"): Remove expanders.
+
+2017-02-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md: Add missing comments with the expanded
 	mnemonics.
 	* config/s390/vector.md: Likewise.

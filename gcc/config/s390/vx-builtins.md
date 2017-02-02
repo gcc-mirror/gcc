@@ -1745,41 +1745,6 @@
   "vfidb\t%v0,%v1,%b2,%b3"
   [(set_attr "op_type" "VRR")])
 
-(define_expand "vec_ceil"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_TO_INF)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_floor"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_TO_MINF)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_trunc"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_TO_ZERO)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_roundc"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_CURRENT)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_round"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_NEAREST_TO_EVEN)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
 
 ; Vector load lengthened - V4SF -> V2DF
 
