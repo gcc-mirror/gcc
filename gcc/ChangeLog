@@ -1,3 +1,16 @@
+2017-02-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/78468
+	* emit-rtl.c (init_emit): Add ??? comment for problematic alignment
+	settings of the virtual registers.
+
+	Revert again
+	2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* explow.c (get_dynamic_stack_size): Take known alignment of stack
+	pointer + STACK_DYNAMIC_OFFSET into account when calculating the size
+	needed.
+
 2017-02-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vx-builtins.md ("vec_ceil", "vec_floor")
