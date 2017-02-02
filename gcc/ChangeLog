@@ -1,3 +1,10 @@
+2017-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79197
+	* config/rs6000/rs6000.md (*fixuns_trunc<mode>di2_fctiduz): Rename to ...
+	(fixuns_trunc<mode>di2): ... this, remove previous expander.  Put all
+	conditions on a single line.
+
 2017-02-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Rename
