@@ -1,5 +1,7 @@
 2017-02-02  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/plugin-nvptx.c (nvptx_exec): Make it static.
+
 	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_parallel): Rename to
 	GOMP_OFFLOAD_openacc_exec.  Adjust all users.
 	(GOMP_OFFLOAD_openacc_get_current_cuda_device): Rename to

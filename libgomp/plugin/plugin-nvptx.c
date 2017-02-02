@@ -1041,7 +1041,7 @@ event_add (enum ptx_event_type type, CUevent *e, void *h, int val)
   pthread_mutex_unlock (&ptx_event_lock);
 }
 
-void
+static void
 nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 	    int async, unsigned *dims, void *targ_mem_desc)
 {
