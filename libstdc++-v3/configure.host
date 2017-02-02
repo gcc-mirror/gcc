@@ -379,6 +379,14 @@ case "${host}" in
         abi_baseline_pair=solaris2.11
 	;;
     esac
+    case "${host_cpu}" in
+	i?86 | x86_64)
+	    abi_baseline_pair=i386-${abi_baseline_pair}
+	    ;;
+	sparc*)
+	    abi_baseline_pair=sparc-${abi_baseline_pair}
+	    ;;
+    esac
     abi_baseline_subdir_switch=--print-multi-os-directory
     ;;
 esac
