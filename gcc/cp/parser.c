@@ -12342,7 +12342,7 @@ static bool
 check_module_outermost (const cp_token *token, const char *msg)
 {
   if (current_scope () == global_namespace
-      && !module_exporting_p ()
+      && !module_exporting_level ()
       && !current_lang_depth ())
     return true;
 
@@ -12366,7 +12366,7 @@ cp_parser_module_declaration (cp_parser *parser, bool is_export)
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   module_name_t *name = cp_parser_module_name (parser);
-  tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  tree attrs = cp_parser_attributes_opt (parser);
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
   if (!name)
@@ -12377,12 +12377,11 @@ cp_parser_module_declaration (cp_parser *parser, bool is_export)
 				    : "module-declaration"))
     ;
   else if (is_import)
-    import_module (token->location, name);
+    import_module (token->location, name, attrs);
   else if (is_export)
-    export_module (token->location, name);
+    export_module (token->location, name, attrs);
   else
-    declare_module (token->location, name);
-  (void)std_attrs; // FIXME: process attributes?
+    declare_module (token->location, name, attrs);
 }
 
 /*  export-declaration.
@@ -12396,19 +12395,24 @@ cp_parser_module_export (cp_parser *parser)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT));
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  if (!module_purview_p ())
+  if (!module_interface_p ())
     error_at (token->location,
-	      "%qE may only occur after a module declaration",
+	      "%qE may only occur after an interface module declaration",
 	      token->u.value);
 
-  if (push_module_export ())
+  bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
+  int prev = push_module_export (!braced);
+
+  if (prev)
     error_at (token->location,
-	      "%qE may only occur once in an export declaration",
+	      prev < -1
+	      ? "%qE may not occur in a proclaimed-ownership declaration"
+	      : "%qE may only occur once in an export declaration",
 	      token->u.value);
 
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
     cp_parser_module_declaration (parser, true);
-  else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+  else if (braced)
     {
       cp_ensure_no_omp_declare_simd (parser);
       cp_ensure_no_oacc_routine (parser);
@@ -12420,7 +12424,7 @@ cp_parser_module_export (cp_parser *parser)
   else
     cp_parser_declaration (parser);
 
-  pop_module_export ();
+  pop_module_export (prev);
 }
 
 /* Proclaimed ownership declaration:
@@ -12438,11 +12442,9 @@ cp_parser_module_proclamation (cp_parser *parser)
       || !check_module_outermost (token, "proclaimed-ownership"))
     name = NULL;
 
-  if (name)
-    module_proclaim (name);
+  int prev = push_module_export (true, name);
   cp_parser_declaration (parser);
-  if (name)
-    module_proclaim (NULL);
+  pop_module_export (prev);
 }
 
 /* Declarations [gram.dcl.dcl] */

@@ -1,5 +1,5 @@
 
-module bob;
+module bob [[interface]];
 export void Foo ();
 export 
 {

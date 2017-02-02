@@ -1,3 +1,23 @@
+2017-02-02  Nathan Sidwell  <nathan@acm.org>
+
+	[[interface]]
+	gcc/cp
+	* cp-tree.h: Adjust module interface fns.
+	* modules.c (is_interface): New.
+	(push_module_export, pop_module_export, module_exporting_level):
+	Adjust.
+	(module_proclaim): Delete.
+	(module_interface_p): New.
+	(declare_module): Use 'interface' attrib.
+	(mport_module, export_module): Take attribs.
+	* parser.c (check_module_outermost, cp_parser_module_declaration,
+	cp_parser_module_export, cp_parser_module_proclamation): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-2_a.C: Adjust.
+	* g++.dg/modules/mod-decl-3_a.C: Adjust.
+	* g++.dg/modules/proclaim-1.C: Adjust.
+	* g++.dg/modules/mod-decl-4.C: New.
+
 2017-01-27  Nathan Sidwell  <nathan@acm.org>
 
 	Parse proclaimed ownership.

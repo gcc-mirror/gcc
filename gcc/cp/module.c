@@ -1,3 +1,4 @@
+
 /* -*- C++ -*- modules.  Experimental!
    Copyright (C) 2017 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org>
@@ -22,51 +23,50 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
+#include "stringpool.h"
 
 static module_name_t GTY(()) *declared_module;
+static bool is_interface; // Probably change for file handle?
 static module_name_t GTY(()) *proclaimer;
 static location_t module_location;
-static int export_depth;
+static int export_depth; /* -1 for singleton export.  */
 
 /* Nest a module export level.  Return true if we were already in a
    level.  */
 
-bool
-push_module_export ()
+int
+push_module_export (bool singleton, module_name_t *proclaiming)
 {
-  return export_depth++;
+  int previous = export_depth;
+
+  if (proclaiming)
+    {
+      proclaimer = proclaimer;
+      export_depth = -2;
+    }
+  else if (singleton)
+    export_depth = -1;
+  else
+    export_depth = +1;
+  return previous;
 }
 
 /* Unnest a module export level.  */
 
 void
-pop_module_export ()
+pop_module_export (int previous)
 {
-  export_depth--;
+  proclaimer = NULL;
+  export_depth = previous;
 }
 
-bool
-module_exporting_p ()
+int
+module_exporting_level ()
 {
-  return export_depth != 0;
+  return export_depth;
 }
 
-void
-module_proclaim (module_name_t *owner)
-{
-  if (owner)
-    {
-      push_module_export ();
-      proclaimer = owner;
-    }
-  else
-    {
-      proclaimer = NULL;
-      pop_module_export ();
-    }
-}
-
-/* Return true if we're in the purview of a named module.  */
+/* Return true iff we're in the purview of a named module.  */
 
 bool
 module_purview_p ()
@@ -74,29 +74,45 @@ module_purview_p ()
   return declared_module;
 }
 
-/* Declare the name of the current module to be NAME.  We do not know
-   at this point whether we're the interface TU or just one of the
-   regular members of the module.  */
+/* Return true iff we're the interface TU (this also means we're in a
+   module perview.  */
+
+bool
+module_interface_p ()
+{
+  return is_interface;
+}
+
+/* Declare the name of the current module to be NAME. ATTRS is used to
+   determine if this is the interface or not.  */
 
 void
-declare_module (location_t loc, module_name_t *name)
+declare_module (location_t loc, module_name_t *name, tree attrs)
 {
   if (declared_module)
     {
       error_at (loc, "module already declared");
       inform (module_location, "existing declaration");
+      return;
     }
+
+  /* Look for 'interface' attribute.  There's no point caching the
+     identifier, because module declaration occurs at most once.  */
+  if (lookup_attribute ("interface", attrs))
+    is_interface = true;
   else
     {
-      declared_module = name;
-      module_location = loc;
+      // FIXME: Command line switches or file suffix check?
     }
+
+  declared_module = name;
+  module_location = loc;
 }
 
 /* Import the module NAME into the current TU.  */
 
 void
-import_module (location_t loc, module_name_t *name)
+import_module (location_t loc, module_name_t *name, tree attrs)
 {
   // FIXME: some code needed here
 }
@@ -104,7 +120,7 @@ import_module (location_t loc, module_name_t *name)
 /* Import the module NAME into the current TU and re-export it.  */
 
 void
-export_module (location_t loc, module_name_t *name)
+export_module (location_t loc, module_name_t *name, tree attrs)
 {
   // FIXME: some code needed here
 }

@@ -1,7 +1,7 @@
 
-export void Foo (); // { dg-error "after a module" }
+export void Foo (); // { dg-error "after an interface module" }
 
-module bob;
+module bob [[interface]];
 
 export
 export // { dg-error "occur once" }
