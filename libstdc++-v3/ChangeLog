@@ -1,3 +1,7 @@
+2017-02-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
 2017-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.host: Separate Solaris/SPARC and x86 baselines.
