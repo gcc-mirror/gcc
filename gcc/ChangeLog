@@ -1,5 +1,7 @@
 2017-02-02  Martin Sebor  <msebor@redhat.com>
 
+	* doc/invoke.texi (-maccumulate-args): Fix bad grammar.
+
 	PR middle-end/32003
 	* doc/invoke.texi (-fdump-rtl-): Remove pass-specific options from
 	index.
