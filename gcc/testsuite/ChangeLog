@@ -1,5 +1,16 @@
 2017-02-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/asan/pr63316.c: Use dg-skip-if instead of dg-options.
+	* c-c++-common/asan/misalign-1.c: Likewise.
+	* c-c++-common/asan/misalign-2.c: Likewise.
+	* g++.dg/asan/pr69276.C: Add dg-skip-if, remove dg-additional-options.
+	* gcc.dg/asan/pr66314.c: Remove -Os from dg-options, add dg-skip-if.
+	* gcc.dg/asan/use-after-scope-3.c: Use dg-skip-if instead of dg-options.
+	* gcc.dg/asan/use-after-scope-9.c: Add dg-skip-if, remove -O2 and
+	add -ffat-lto-objects from/to dg-additional-options.
+	* gcc.dg/asan/use-after-scope-10.c: Add dg-skip-if, remove -O2 from
+	dg-additional-options.
+
 	PR target/79197
 	* gcc.target/powerpc/pr79197.c: New test.
 	* gcc.c-torture/compile/pr79197.c: New test.
