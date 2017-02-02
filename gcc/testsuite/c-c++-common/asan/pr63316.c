@@ -1,6 +1,6 @@
 /* PR sanitizer/63316 */
 /* { dg-do run } */
-/* { dg-options "-fsanitize=address -O2" } */
+/* { dg-skip-if "" { *-*-* }  { "*" } { "-O2" } } */
 
 #ifdef __cplusplus
 extern "C" {

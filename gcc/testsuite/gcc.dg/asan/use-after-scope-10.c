@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-shouldfail "asan" }
-// { dg-additional-options "-O2 -fdump-tree-asan1" }
+// { dg-skip-if "" { *-*-* }  { "*" } { "-O2" } }
+// { dg-additional-options "-fdump-tree-asan1" }
 
 int
 main (int argc, char **argv)
