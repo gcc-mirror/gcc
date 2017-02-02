@@ -882,7 +882,7 @@ typedef struct acc_dispatch_t
   struct target_mem_desc *data_environ;
 
   /* Execute.  */
-  __typeof (GOMP_OFFLOAD_openacc_parallel) *exec_func;
+  __typeof (GOMP_OFFLOAD_openacc_exec) *exec_func;
 
   /* Async cleanup callback registration.  */
   __typeof (GOMP_OFFLOAD_openacc_register_async_cleanup)
@@ -905,12 +905,12 @@ typedef struct acc_dispatch_t
 
   /* NVIDIA target specific routines.  */
   struct {
-    __typeof (GOMP_OFFLOAD_openacc_get_current_cuda_device)
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_current_device)
       *get_current_device_func;
-    __typeof (GOMP_OFFLOAD_openacc_get_current_cuda_context)
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_current_context)
       *get_current_context_func;
-    __typeof (GOMP_OFFLOAD_openacc_get_cuda_stream) *get_stream_func;
-    __typeof (GOMP_OFFLOAD_openacc_set_cuda_stream) *set_stream_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_stream) *get_stream_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_set_stream) *set_stream_func;
   } cuda;
 } acc_dispatch_t;
 

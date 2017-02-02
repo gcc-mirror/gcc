@@ -93,8 +93,8 @@ extern bool GOMP_OFFLOAD_dev2dev (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_can_run (void *);
 extern void GOMP_OFFLOAD_run (int, void *, void *, void **);
 extern void GOMP_OFFLOAD_async_run (int, void *, void *, void **, void *);
-extern void GOMP_OFFLOAD_openacc_parallel (void (*) (void *), size_t, void **,
-					   void **, int, unsigned *, void *);
+extern void GOMP_OFFLOAD_openacc_exec (void (*) (void *), size_t, void **,
+				       void **, int, unsigned *, void *);
 extern void GOMP_OFFLOAD_openacc_register_async_cleanup (void *, int);
 extern int GOMP_OFFLOAD_openacc_async_test (int);
 extern int GOMP_OFFLOAD_openacc_async_test_all (void);
@@ -105,10 +105,10 @@ extern void GOMP_OFFLOAD_openacc_async_wait_all_async (int);
 extern void GOMP_OFFLOAD_openacc_async_set_async (int);
 extern void *GOMP_OFFLOAD_openacc_create_thread_data (int);
 extern void GOMP_OFFLOAD_openacc_destroy_thread_data (void *);
-extern void *GOMP_OFFLOAD_openacc_get_current_cuda_device (void);
-extern void *GOMP_OFFLOAD_openacc_get_current_cuda_context (void);
-extern void *GOMP_OFFLOAD_openacc_get_cuda_stream (int);
-extern int GOMP_OFFLOAD_openacc_set_cuda_stream (int, void *);
+extern void *GOMP_OFFLOAD_openacc_cuda_get_current_device (void);
+extern void *GOMP_OFFLOAD_openacc_cuda_get_current_context (void);
+extern void *GOMP_OFFLOAD_openacc_cuda_get_stream (int);
+extern int GOMP_OFFLOAD_openacc_cuda_set_stream (int, void *);
 
 #ifdef __cplusplus
 }
