@@ -1,3 +1,9 @@
+2017-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/78142
+	* gcc.target/aarch64/vector_initialization_nostack.c
+	(f12): Use one vector
+
 2017-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/asan/pr63316.c: Use dg-skip-if instead of dg-options.
