@@ -2399,7 +2399,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
     }
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
     {
-      if (!DLSYM_OPT (openacc.exec, openacc_parallel)
+      if (!DLSYM_OPT (openacc.exec, openacc_exec)
 	  || !DLSYM_OPT (openacc.register_async_cleanup,
 			 openacc_register_async_cleanup)
 	  || !DLSYM_OPT (openacc.async_test, openacc_async_test)
@@ -2423,11 +2423,11 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
 
       unsigned cuda = 0;
       cuda += DLSYM_OPT (openacc.cuda.get_current_device,
-			 openacc_get_current_cuda_device);
+			 openacc_cuda_get_current_device);
       cuda += DLSYM_OPT (openacc.cuda.get_current_context,
-			 openacc_get_current_cuda_context);
-      cuda += DLSYM_OPT (openacc.cuda.get_stream, openacc_get_cuda_stream);
-      cuda += DLSYM_OPT (openacc.cuda.set_stream, openacc_set_cuda_stream);
+			 openacc_cuda_get_current_context);
+      cuda += DLSYM_OPT (openacc.cuda.get_stream, openacc_cuda_get_stream);
+      cuda += DLSYM_OPT (openacc.cuda.set_stream, openacc_cuda_set_stream);
       if (cuda && cuda != 4)
 	{
 	  /* Make sure all the CUDA functions are there if any of them are.  */

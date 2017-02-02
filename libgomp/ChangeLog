@@ -1,3 +1,16 @@
+2017-02-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_parallel): Rename to
+	GOMP_OFFLOAD_openacc_exec.  Adjust all users.
+	(GOMP_OFFLOAD_openacc_get_current_cuda_device): Rename to
+	GOMP_OFFLOAD_openacc_cuda_get_current_device.  Adjust all users.
+	(GOMP_OFFLOAD_openacc_get_current_cuda_context): Rename to
+	GOMP_OFFLOAD_openacc_cuda_get_current_context.  Adjust all users.
+	(GOMP_OFFLOAD_openacc_get_cuda_stream): Rename to
+	GOMP_OFFLOAD_openacc_cuda_get_stream.  Adjust all users.
+	(GOMP_OFFLOAD_openacc_set_cuda_stream): Rename to
+	GOMP_OFFLOAD_openacc_cuda_set_stream.  Adjust all users.
+
 2017-01-31  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp-plugin.h: #include <stdbool.h>.
