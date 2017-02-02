@@ -1,3 +1,9 @@
+2017-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79197
+	* gcc.target/powerpc/pr79197.c: New test.
+	* gcc.c-torture/compile/pr79197.c: New test.
+
 2017-02-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr71078-3.c: Do not rely on math.h.
