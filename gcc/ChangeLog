@@ -1,3 +1,10 @@
+2017-02-03  Walter Lee  <walt@tilera.com>
+
+	PR target/78862
+	* config/tilegx/tilegx.md (tilegx_expand_prologue): Add blockage
+	after initial stackframe link reg save.
+	* config/tilepro/tilepro.md (tilepro_expand_prologue): Likewise.
+
 2017-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79354
