@@ -762,7 +762,9 @@ tree_digits (tree x, int base, HOST_WIDE_INT prec, bool plus, bool prefix)
 
   res += prec < ndigs ? ndigs : prec;
 
-  if (prefix && absval)
+  /* Adjust a non-zero value for the base prefix, either hexadecimal,
+     or, unless precision has resulted in a leading zero, also octal.  */
+  if (prefix && absval && (base == 16 || prec <= ndigs))
     {
       if (base == 8)
 	res += 1;
@@ -1230,6 +1232,10 @@ format_integer (const directive &dir, tree arg)
        of the format string by returning [-1, -1].  */
     return fmtresult ();
 
+  /* True if the LIKELY counter should be adjusted upward from the MIN
+     counter to account for arguments with unknown values.  */
+  bool likely_adjust = false;
+
   fmtresult res;
 
   /* Using either the range the non-constant argument is in, or its
@@ -1259,6 +1265,14 @@ format_integer (const directive &dir, tree arg)
 
 	  res.argmin = argmin;
 	  res.argmax = argmax;
+
+	  /* Set the adjustment for an argument whose range includes
+	     zero since that doesn't include the octal or hexadecimal
+	     base prefix.  */
+	  wide_int wzero = wi::zero (wi::get_precision (min));
+	  if (wi::le_p (min, wzero, SIGNED)
+	      && !wi::neg_p (max))
+	    likely_adjust = true;
 	}
       else if (range_type == VR_ANTI_RANGE)
 	{
@@ -1293,6 +1307,11 @@ format_integer (const directive &dir, tree arg)
 
   if (!argmin)
     {
+      /* Set the adjustment for an argument whose range includes
+	 zero since that doesn't include the octal or hexadecimal
+	 base prefix.  */
+      likely_adjust = true;
+
       if (TREE_CODE (argtype) == POINTER_TYPE)
 	{
 	  argmin = build_int_cst (pointer_sized_int_node, 0);
@@ -1345,7 +1364,24 @@ format_integer (const directive &dir, tree arg)
       res.range.max = MAX (max1, max2);
     }
 
-  res.range.likely = res.knownrange ? res.range.max : res.range.min;
+  /* Add the adjustment for an argument whose range includes zero
+     since it doesn't include the octal or hexadecimal base prefix.  */
+  if (res.knownrange)
+    res.range.likely = res.range.max;
+  else
+    {
+      res.range.likely = res.range.min;
+      if (likely_adjust && maybebase && base != 10)
+	{
+	  if (res.range.min == 1)
+	    res.range.likely += base == 8 ? 1 : 2;
+	  else if (res.range.min == 2
+		   && base == 16
+		   && (dir.width[0] == 2 || dir.prec[0] == 2))
+	    ++res.range.likely;
+	}
+    }
+
   res.range.unlikely = res.range.max;
   res.adjust_for_width_or_precision (dir.width, dirtype, base,
 				     (sign | maybebase) + (base == 16));

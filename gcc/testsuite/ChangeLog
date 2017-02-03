@@ -1,3 +1,10 @@
+2017-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79327
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
+	* gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-13.c: New test.
+	* gcc/testsuite/gcc.dg/tree-ssa/pr79327-2.c: Ditto.
+
 2017-02-03  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Sebor  <msebor@redhat.com>
 

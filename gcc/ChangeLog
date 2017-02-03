@@ -1,3 +1,11 @@
+2017-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79327
+	* gimple-ssa-sprintf.c (tree_digits): Avoid adding the base prefix
+	when precision has resulted in leading zeros.
+	(format_integer): Adjust the likely counter to assume an unknown
+	argument that may be zero is non-zero.
+
 2017-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78689
