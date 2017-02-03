@@ -1,3 +1,8 @@
+2017-02-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (dimode_scalar_chain::convert_reg):
+	Use pextrd for TARGET_SSE4_1 when creating scalar copy.
+
 2017-02-03  Walter Lee  <walt@tilera.com>
 
 	PR target/78862
