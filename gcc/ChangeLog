@@ -1,3 +1,14 @@
+2017-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79327
+	* gimple-ssa-sprintf.c (adjust_range_for_overflow): If returning
+	true, always set *argmin and *argmax to TYPE_{MIN,MAX}_VALUE of
+	dirtype.
+	(format_integer): Use wide_int_to_tree instead of build_int_cst
+	+ to_?hwi.  If argmin is NULL, just set argmin and argmax to
+	TYPE_{MIN,MAX}_VALUE of argtype.  Simplify and fix computation
+	of shortest and longest sequence.
+
 2017-02-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (dimode_scalar_chain::convert_reg):

@@ -1014,8 +1014,8 @@ get_int_range (tree arg, tree type, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
    determined by checking for the actual argument being in the range
    of the type of the directive.  If it isn't it must be assumed to
    take on the full range of the directive's type.
-   Return true when the range has been adjusted to the full unsigned
-   range of DIRTYPE, or [0, DIRTYPE_MAX], and false otherwise.  */
+   Return true when the range has been adjusted to the full range
+   of DIRTYPE, and false otherwise.  */
 
 static bool
 adjust_range_for_overflow (tree dirtype, tree *argmin, tree *argmax)
@@ -1051,20 +1051,8 @@ adjust_range_for_overflow (tree dirtype, tree *argmin, tree *argmax)
 	return false;
     }
 
-  tree dirmin = TYPE_MIN_VALUE (dirtype);
-  tree dirmax = TYPE_MAX_VALUE (dirtype);
-
-  if (TYPE_UNSIGNED (dirtype))
-    {
-      *argmin = dirmin;
-      *argmax = dirmax;
-    }
-  else
-    {
-      *argmin = integer_zero_node;
-      *argmax = dirmin;
-    }
-
+  *argmin = TYPE_MIN_VALUE (dirtype);
+  *argmax = TYPE_MAX_VALUE (dirtype);
   return true;
 }
 
@@ -1260,10 +1248,8 @@ format_integer (const directive &dir, tree arg)
       enum value_range_type range_type = get_range_info (arg, &min, &max);
       if (range_type == VR_RANGE)
 	{
-	  argmin = build_int_cst (argtype, wi::fits_uhwi_p (min)
-				  ? min.to_uhwi () : min.to_shwi ());
-	  argmax = build_int_cst (argtype, wi::fits_uhwi_p (max)
-				  ? max.to_uhwi () : max.to_shwi ());
+	  argmin = wide_int_to_tree (argtype, min);
+	  argmax = wide_int_to_tree (argtype, max);
 
 	  /* Set KNOWNRANGE if the argument is in a known subrange
 	     of the directive's type (KNOWNRANGE may be reset below).  */
@@ -1307,47 +1293,16 @@ format_integer (const directive &dir, tree arg)
 
   if (!argmin)
     {
-      /* For an unknown argument (e.g., one passed to a vararg function)
-	 or one whose value range cannot be determined, create a T_MIN
-	 constant if the argument's type is signed and T_MAX otherwise,
-	 and use those to compute the range of bytes that the directive
-	 can output.  When precision may be zero, use zero as the minimum
-	 since it results in no bytes on output (unless width is specified
-	 to be greater than 0).  */
-      bool zero = dir.prec[0] <= 0 && dir.prec[1] >= 0;
-      argmin = build_int_cst (argtype, !zero);
-
-      int typeprec = TYPE_PRECISION (dirtype);
-      int argprec = TYPE_PRECISION (argtype);
-
-      if (argprec < typeprec)
+      if (TREE_CODE (argtype) == POINTER_TYPE)
 	{
-	  if (POINTER_TYPE_P (argtype))
-	    argmax = build_all_ones_cst (argtype);
-	  else if (TYPE_UNSIGNED (argtype))
-	    argmax = TYPE_MAX_VALUE (argtype);
-	  else
-	    argmax = TYPE_MIN_VALUE (argtype);
+	  argmin = build_int_cst (pointer_sized_int_node, 0);
+	  argmax = build_all_ones_cst (pointer_sized_int_node);
 	}
       else
 	{
-	  if (POINTER_TYPE_P (dirtype))
-	    argmax = build_all_ones_cst (dirtype);
-	  else if (TYPE_UNSIGNED (dirtype))
-	    argmax = TYPE_MAX_VALUE (dirtype);
-	  else
-	    argmax = TYPE_MIN_VALUE (dirtype);
+	  argmin = TYPE_MIN_VALUE (argtype);
+	  argmax = TYPE_MAX_VALUE (argtype);
 	}
-
-      res.argmin = argmin;
-      res.argmax = argmax;
-    }
-
-  if (tree_int_cst_lt (argmax, argmin))
-    {
-      tree tmp = argmax;
-      argmax = argmin;
-      argmin = tmp;
     }
 
   /* Clear KNOWNRANGE if the range has been adjusted to the maximum
@@ -1361,34 +1316,33 @@ format_integer (const directive &dir, tree arg)
       res.argmax = argmax;
     }
 
-  /* Recursively compute the minimum and maximum from the known range,
-     taking care to swap them if the lower bound results in longer
-     output than the upper bound (e.g., in the range [-1, 0].  */
-
-  if (TYPE_UNSIGNED (dirtype))
+  /* Recursively compute the minimum and maximum from the known range.  */
+  if (TYPE_UNSIGNED (dirtype) || tree_int_cst_sgn (argmin) >= 0)
     {
-      /* For unsigned conversions/directives, use the minimum (i.e., 0
-	 or 1) and maximum to compute the shortest and longest output,
-	 respectively.  */
+      /* For unsigned conversions/directives or signed when
+	 the minimum is positive, use the minimum and maximum to compute
+	 the shortest and longest output, respectively.  */
       res.range.min = format_integer (dir, argmin).range.min;
       res.range.max = format_integer (dir, argmax).range.max;
     }
-  else
+  else if (tree_int_cst_sgn (argmax) < 0)
     {
-      /* For signed conversions/directives, use the maximum (i.e., 0)
-	 to compute the shortest output and the minimum (i.e., TYPE_MIN)
-	 to compute the longest output.  This is important when precision
-	 is specified but unknown because otherwise both output lengths
-	 would reflect the largest possible precision (i.e., INT_MAX).  */
+      /* For signed conversions/directives if maximum is negative,
+	 use the minimum as the longest output and maximum as the
+	 shortest output.  */
       res.range.min = format_integer (dir, argmax).range.min;
       res.range.max = format_integer (dir, argmin).range.max;
     }
-
-  if (res.range.max < res.range.min)
+  else
     {
-      unsigned HOST_WIDE_INT tmp = res.range.max;
-      res.range.max = res.range.min;
-      res.range.min = tmp;
+      /* Otherwise, 0 is inside of the range and minimum negative.  Use 0
+	 as the shortest output and for the longest output compute the
+	 length of the output of both minimum and maximum and pick the
+	 longer.  */
+      unsigned HOST_WIDE_INT max1 = format_integer (dir, argmin).range.max;
+      unsigned HOST_WIDE_INT max2 = format_integer (dir, argmax).range.max;
+      res.range.min = format_integer (dir, integer_zero_node).range.min;
+      res.range.max = MAX (max1, max2);
     }
 
   res.range.likely = res.knownrange ? res.range.max : res.range.min;

@@ -1151,8 +1151,8 @@ void test_sprintf_chk_hh_nonconst (int w, int p, int a)
   T (2, "% hhu",        a);     /* { dg-warning ". . flag used with .%u." } */
   T (2, "% hhx",        a);     /* { dg-warning ". . flag used with .%x." } */
 
-  T (2, "%#hho",        a);     /* { dg-warning "nul past the end" } */
-  T (2, "%#hhx",        a);     /* { dg-warning ".%#hhx. directive writing between 3 and . bytes into a region of size 2" } */
+  T (2, "%#hho",        a);
+  T (2, "%#hhx",        a);
 
   T (3, "%0hhd",        a);
   T (3, "%1hhd",        a);
