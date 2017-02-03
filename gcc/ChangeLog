@@ -1,3 +1,9 @@
+2017-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79354
+	* config/rs6000/rs6000.md (movsi_from_sf): Use wb constraint instead of
+	wu for stxssp alternative.
+
 2017-02-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/79352
