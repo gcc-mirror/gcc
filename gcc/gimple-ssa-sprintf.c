@@ -1501,7 +1501,10 @@ format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
   mpfr_from_real (x, &rv, GMP_RNDN);
 
   /* Return a value one greater to account for the leading minus sign.  */
-  return 1 + get_mpfr_format_length (x, "", prec, spec, 'D');
+  unsigned HOST_WIDE_INT r
+    = 1 + get_mpfr_format_length (x, "", prec, spec, 'D');
+  mpfr_clear (x);
+  return r;
 }
 
 /* Return a range representing the minimum and maximum number of bytes
@@ -1739,6 +1742,7 @@ format_floating (const directive &dir, tree arg)
 	   of the result struct.  */
 	*minmax[i] = get_mpfr_format_length (mpfrval, fmtstr, prec[i],
 					     dir.specifier, rndspec);
+	mpfr_clear (mpfrval);
       }
   }
 
