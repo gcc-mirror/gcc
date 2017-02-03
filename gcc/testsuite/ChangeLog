@@ -1,3 +1,9 @@
+2017-02-03  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/79158
+	* gcc.target/powerpc/pr70669.c: Use 'r' in an expression to force back
+	to VSX reg.
+
 2017-02-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/ssa-ifcombine-1.c: Check for no profile mismatches.
