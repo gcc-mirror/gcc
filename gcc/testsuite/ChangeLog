@@ -1,3 +1,9 @@
+2017-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79354
+	* gcc.target/powerpc/pr79354.c: New test.
+	* gcc.c-torture/execute/pr79354.c: New test.
+
 2017-02-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/79352
