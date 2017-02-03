@@ -2066,6 +2066,28 @@ cgraph_node::dump (FILE *f)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
   fprintf (f, "  First run: %i\n", tp_first_run);
+  cgraph_function_version_info *vi = function_version ();
+  if (vi != NULL)
+    {
+      fprintf (f, "  Version info: ");
+      if (vi->prev != NULL)
+	{
+	  fprintf (f, "prev: ");
+	  fprintf (f, "%s/%i ", vi->prev->this_node->asm_name (),
+		   vi->prev->this_node->order);
+	}
+      if (vi->next != NULL)
+	{
+	  fprintf (f, "next: ");
+	  fprintf (f, "%s/%i ", vi->next->this_node->asm_name (),
+		   vi->next->this_node->order);
+	}
+      if (vi->dispatcher_resolver != NULL_TREE)
+	fprintf (f, "dispatcher: %s",
+		 lang_hooks.decl_printable_name (vi->dispatcher_resolver, 2));
+
+      fprintf (f, "\n");
+    }
   fprintf (f, "  Function flags:");
   if (count)
     fprintf (f, " executed %" PRId64"x",
