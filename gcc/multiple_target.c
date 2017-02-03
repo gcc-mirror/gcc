@@ -87,6 +87,7 @@ create_dispatcher_calls (struct cgraph_node *node)
 	inode->resolve_alias (cgraph_node::get (resolver_decl));
 
       e->redirect_callee (inode);
+      e->redirect_call_stmt_to_callee ();
       /*  Since REDIRECT_CALLEE modifies NEXT_CALLER field we move to
 	  previously set NEXT_CALLER.  */
       e = NULL;
@@ -283,6 +284,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
       create_new_asm_name (attr, suffix);
       /* Create new target clone.  */
       cgraph_node *new_node = create_target_clone (node, definition, suffix);
+      new_node->local.local = false;
       XDELETEVEC (suffix);
 
       /* Set new attribute for the clone.  */
@@ -334,17 +336,19 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   return ret;
 }
 
-static bool target_clone_pass;
-
 static unsigned int
 ipa_target_clone (void)
 {
   struct cgraph_node *node;
 
-  target_clone_pass = false;
+  bool target_clone_pass = false;
   FOR_EACH_FUNCTION (node)
-    if (node->definition)
-      target_clone_pass |= expand_target_clones (node, true);
+    target_clone_pass |= expand_target_clones (node, node->definition);
+
+  if (target_clone_pass)
+    FOR_EACH_FUNCTION (node)
+      create_dispatcher_calls (node);
+
   return 0;
 }
 
@@ -360,7 +364,7 @@ const pass_data pass_data_target_clone =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  0				/* todo_flags_finish */
+  TODO_update_ssa		/* todo_flags_finish */
 };
 
 class pass_target_clone : public simple_ipa_opt_pass
@@ -387,59 +391,4 @@ simple_ipa_opt_pass *
 make_pass_target_clone (gcc::context *ctxt)
 {
   return new pass_target_clone (ctxt);
-}
-
-static unsigned int
-ipa_dispatcher_calls (void)
-{
-  struct cgraph_node *node;
-
-  FOR_EACH_FUNCTION (node)
-    if (!node->definition)
-      target_clone_pass |= expand_target_clones (node, false);
-  if (target_clone_pass)
-    FOR_EACH_FUNCTION (node)
-      create_dispatcher_calls (node);
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_dispatcher_calls =
-{
-  SIMPLE_IPA_PASS,		/* type */
-  "dispatchercalls",		/* name */
-  OPTGROUP_NONE,		/* optinfo_flags */
-  TV_NONE,			/* tv_id */
-  ( PROP_ssa | PROP_cfg ),	/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  0				/* todo_flags_finish */
-};
-
-class pass_dispatcher_calls : public simple_ipa_opt_pass
-{
-public:
-  pass_dispatcher_calls (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_dispatcher_calls, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return ipa_dispatcher_calls (); }
-};
-
-bool
-pass_dispatcher_calls::gate (function *)
-{
-  return true;
-}
-
-} // anon namespace
-
-simple_ipa_opt_pass *
-make_pass_dispatcher_calls (gcc::context *ctxt)
-{
-  return new pass_dispatcher_calls (ctxt);
 }

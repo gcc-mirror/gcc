@@ -1,5 +1,18 @@
 2017-02-03  Martin Liska  <mliska@suse.cz>
 
+	PR lto/66295
+	* multiple_target.c (create_dispatcher_calls): Redirect edge
+	from a caller of a dispatcher.
+	(expand_target_clones): Make the clones local.
+	(ipa_target_clone): Do both target clones and resolvers.
+	(ipa_dispatcher_calls): Remove the pass.
+	(pass_dispatcher_calls::gate): Likewise.
+	(make_pass_dispatcher_calls): Likewise.
+	* passes.def (pass_target_clone): Put as very first IPA early
+	pass.
+
+2017-02-03  Martin Liska  <mliska@suse.cz>
+
 	* symtab.c (symtab_node::binds_to_current_def_p): Bail out
 	in case of a function with ifunc attribute.
 
