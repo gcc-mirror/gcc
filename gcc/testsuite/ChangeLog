@@ -1,3 +1,13 @@
+2017-02-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-01-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65484
+	* g++.dg/vect/pr36648.cc: Modify to reflect that the loop is not
+	vectorized on POWER unless hardware misaligned loads are
+	available.
+
 2017-01-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
