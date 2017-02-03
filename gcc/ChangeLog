@@ -1,5 +1,10 @@
 2017-02-03  Martin Liska  <mliska@suse.cz>
 
+	* doc/invoke.texi: Document default value for
+	use-after-scope-direct-emission-threshold.
+
+2017-02-03  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/79339
 	* gimple-ssa-sprintf.c (format_floating_max): Call mpfr_clear.
 	(format_floating): Likewise.
