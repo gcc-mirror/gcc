@@ -1800,7 +1800,7 @@ get_string_length (tree str)
      aren't known to point any such arrays result in LENRANGE[1] set
      to SIZE_MAX.  */
   tree lenrange[2];
-  get_range_strlen (str, lenrange);
+  bool flexarray = get_range_strlen (str, lenrange);
 
   if (lenrange [0] || lenrange [1])
     {
@@ -1843,7 +1843,11 @@ get_string_length (tree str)
 	  res.range.min = 0;
 	}
 
-      res.range.unlikely = res.range.max;
+      /* If the range of string length has been estimated from the size
+	 of an array at the end of a struct assume that it's longer than
+	 the array bound says it is in case it's used as a poor man's
+	 flexible array member, such as in struct S { char a[4]; };  */
+      res.range.unlikely = flexarray ? HOST_WIDE_INT_MAX : res.range.max;
 
       return res;
     }

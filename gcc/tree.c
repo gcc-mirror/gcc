@@ -13195,13 +13195,16 @@ array_ref_up_bound (tree exp)
 
 /* Returns true if REF is an array reference to an array at the end of
    a structure.  If this is the case, the array may be allocated larger
-   than its upper bound implies.  */
+   than its upper bound implies.  When ALLOW_COMPREF is true considers
+   REF when it's a COMPONENT_REF in addition ARRAY_REF and
+   ARRAY_RANGE_REF.  */
 
 bool
-array_at_struct_end_p (tree ref)
+array_at_struct_end_p (tree ref, bool allow_compref)
 {
   if (TREE_CODE (ref) != ARRAY_REF
-      && TREE_CODE (ref) != ARRAY_RANGE_REF)
+      && TREE_CODE (ref) != ARRAY_RANGE_REF
+      && (!allow_compref || TREE_CODE (ref) != COMPONENT_REF))
     return false;
 
   while (handled_component_p (ref))
