@@ -198,7 +198,7 @@ void test_sprintf_chk_range_schar (void)
   /* { dg-message "directive argument in the range \\\[1024, 1034\\\]" "note" { target *-*-* } .-1 } */
 
   T ( 0, "%hhi", R (1024, 2035));   /* { dg-warning ".%hhi. directive writing between 1 and 4 bytes into a region of size 0" } */
-  /* { dg-message "using the range \\\[0, -128\\\] for directive argument" "note" { target *-*-* } .-1 } */
+  /* { dg-message "using the range \\\[-128, 127\\\] for directive argument" "note" { target *-*-* } .-1 } */
 
 #undef R
 #define R(min, max) range_schar (min, max)

@@ -1,4 +1,16 @@
 2017-02-03  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79327
+	* gcc.dg/tree-ssa/pr79327.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c
+	(test_sprintf_chk_hh_nonconst): Don't expect 2 bogus warnings.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c
+	(test_sprintf_chk_range_schar): Adjust dg-message.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-12.c: New test.
+	* gcc.c-torture/execute/pr79327.c: New test.
+
+2017-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79354
 	* gcc.target/powerpc/pr79354.c: New test.
