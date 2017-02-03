@@ -28,6 +28,9 @@
 // Radar 6467884: 10.X systems are not robust when paging space is exceeded
 // { dg-skip-if "" { *-*-darwin* && lp64 } { "*" } { "" } } 
 
+// The library throws the new definition of std::ios::failure
+// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=1" }
+
 #include <sstream>
 #include <iostream>
 #include <limits>

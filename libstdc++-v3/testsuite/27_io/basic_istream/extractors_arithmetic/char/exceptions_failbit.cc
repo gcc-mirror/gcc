@@ -15,6 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// The library throws the new definition of std::ios::failure
+// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=1" }
+
 #include <sstream>
 #include <testsuite_hooks.h>
 
