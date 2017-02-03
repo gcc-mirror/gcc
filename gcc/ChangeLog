@@ -1,3 +1,14 @@
+2017-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79352
+	* gimple-fold.c (get_range_strlen): Add argument.
+	(get_range_strlen): Change return type to bool.
+	(get_maxval_strlen): Pass in a dummy argument.
+	* gimple-fold.h (get_range_strlen): Change return type to bool.
+	* gimple-ssa-sprintf.c (get_string_length): Set unlikely counter.
+	* tree.h (array_at_struct_end_p): Add argument.
+	* tree.c (array_at_struct_end_p): Handle it.
+
 2017-02-03  Martin Liska  <mliska@suse.cz>
 
 	PR lto/66295
