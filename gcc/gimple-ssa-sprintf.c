@@ -1832,10 +1832,11 @@ get_string_length (tree str)
 	}
       else
 	{
-	  /* When the upper bound is unknown (as assumed to be excessive)
+	  /* When the upper bound is unknown (it can be zero or excessive)
 	     set the likely length to the greater of 1 and the length of
-	     the shortest string.  */
+	     the shortest string and reset the lower bound to zero.  */
 	  res.range.likely = res.range.min ? res.range.min : warn_level > 1;
+	  res.range.min = 0;
 	}
 
       res.range.unlikely = res.range.max;
@@ -1986,43 +1987,89 @@ format_string (const directive &dir, tree arg)
     }
   else
     {
-      /* For a '%s' and '%ls' directive with a non-constant string,
-	 the minimum number of characters is the greater of WIDTH
-	 and either 0 in mode 1 or the smaller of PRECISION and 1
-	 in mode 2, and the maximum is PRECISION or -1 to disable
-	 tracking.  */
+      /* For a '%s' and '%ls' directive with a non-constant string (either
+	 one of a number of strings of known length or an unknown string)
+	 the minimum number of characters is lesser of PRECISION[0] and
+	 the length of the shortest known string or zero, and the maximum
+	 is the lessser of the length of the longest known string or
+	 PTRDIFF_MAX and PRECISION[1].  The likely length is either
+	 the minimum at level 1 and the greater of the minimum and 1
+	 at level 2.  This result is adjust upward for width (if it's
+	 specified).  */
+
+      if (dir.modifier == FMT_LEN_l)
+	{
+	  /* A wide character converts to as few as zero bytes.  */
+	  slen.range.min = 0;
+	  if (slen.range.max < target_int_max ())
+	    slen.range.max *= target_mb_len_max ();
+
+	  if (slen.range.likely < target_int_max ())
+	    slen.range.likely *= 2;
+
+	  if (slen.range.likely < target_int_max ())
+	    slen.range.unlikely *= target_mb_len_max ();
+	}
+
+      res.range = slen.range;
 
       if (dir.prec[0] >= 0)
 	{
+	  /* Adjust the minimum to zero if the string length is unknown,
+	     or at most the lower bound of the precision otherwise.  */
 	  if (slen.range.min >= target_int_max ())
-	    slen.range.min = 0;
+	    res.range.min = 0;
 	  else if ((unsigned HOST_WIDE_INT)dir.prec[0] < slen.range.min)
-	    {
-	      slen.range.min = dir.prec[0];
-	      slen.range.likely = slen.range.min;
-	    }
+	    res.range.min = dir.prec[0];
 
+	  /* Make both maxima no greater than the upper bound of precision.  */
 	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.max
 	      || slen.range.max >= target_int_max ())
 	    {
-	      slen.range.max = dir.prec[1];
-	      slen.range.likely = slen.range.max;
+	      res.range.max = dir.prec[1];
+	      res.range.unlikely = dir.prec[1];
 	    }
+
+	  /* If precision is constant, set the likely counter to the lesser
+	     of it and the maximum string length.  Otherwise, if the lower
+	     bound of precision is greater than zero, set the likely counter
+	     to the minimum.  Otherwise set it to zero or one based on
+	     the warning level.  */
+	  if (dir.prec[0] == dir.prec[1])
+	    res.range.likely
+	      = ((unsigned HOST_WIDE_INT)dir.prec[0] < slen.range.max
+		 ? dir.prec[0] : slen.range.max);
+	  else if (dir.prec[0] > 0)
+	    res.range.likely = res.range.min;
+	  else
+	    res.range.likely = warn_level > 1;
+	}
+      else if (dir.prec[1] >= 0)
+	{
+	  res.range.min = 0;
+	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.max)
+	    res.range.max = dir.prec[1];
+	  res.range.likely = dir.prec[1] ? warn_level > 1 : 0;
 	}
       else if (slen.range.min >= target_int_max ())
 	{
-	  slen.range.min = 0;
-	  slen.range.max = HOST_WIDE_INT_MAX;
-	  /* At level one strings of unknown length are assumed to be
+	  res.range.min = 0;
+	  res.range.max = HOST_WIDE_INT_MAX;
+	  /* At level 1 strings of unknown length are assumed to be
 	     empty, while at level 1 they are assumed to be one byte
 	     long.  */
-	  slen.range.likely = warn_level > 1;
+	  res.range.likely = warn_level > 1;
+	}
+      else
+	{
+	  /* A string of unknown length unconstrained by precision is
+	     assumed to be empty at level 1 and just one character long
+	     at higher levels.  */
+	  if (res.range.likely >= target_int_max ())
+	    res.range.likely = warn_level > 1;
 	}
 
-      slen.range.unlikely = slen.range.max;
-
-      res.range = slen.range;
-      res.knownrange = slen.knownrange;
+      res.range.unlikely = res.range.max;
     }
 
   /* Bump up the byte counters if WIDTH is greater.  */
