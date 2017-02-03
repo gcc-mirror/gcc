@@ -3534,8 +3534,11 @@ tilepro_expand_prologue (void)
   /* Save lr first in its special location because code after this
      might use the link register as a scratch register.  */
   if (df_regs_ever_live_p (TILEPRO_LINK_REGNUM) || crtl->calls_eh_return)
-    FRP (frame_emit_store (TILEPRO_LINK_REGNUM, TILEPRO_LINK_REGNUM,
-			   stack_pointer_rtx, stack_pointer_rtx, 0));
+    {
+      FRP (frame_emit_store (TILEPRO_LINK_REGNUM, TILEPRO_LINK_REGNUM,
+			     stack_pointer_rtx, stack_pointer_rtx, 0));
+      emit_insn (gen_blockage ());
+    }
 
   if (total_size == 0)
     {
