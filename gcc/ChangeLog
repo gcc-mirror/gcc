@@ -1,3 +1,8 @@
+2017-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): New function.
+	(ifcombine_ifandif): Use it.
+
 2017-02-03  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Document default value for
