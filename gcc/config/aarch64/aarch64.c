@@ -792,7 +792,7 @@ static const struct tune_params thunderx2t99_tunings =
   &generic_approx_modes,
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
-  AARCH64_FUSE_NOTHING, /* fuseable_ops.  */
+  (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
   16,	/* function_align.  */
   8,	/* jump_align.  */
   16,	/* loop_align.  */
