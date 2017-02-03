@@ -1,5 +1,10 @@
 2017-02-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/12245 - excessive memory use
+	* constexpr.c (maybe_constant_value): Fold maybe_constant_value_1
+	back in.  Don't cache constants.
+	(maybe_constant_init): Don't cache constants.
+
 	PR c++/79294 - ICE with invalid template argument
 	* pt.c (convert_nontype_argument_function): Check value-dependence.
 	(convert_nontype_argument): Don't check it here for function ptrs.
