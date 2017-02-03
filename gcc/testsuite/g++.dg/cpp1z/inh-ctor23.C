@@ -14,6 +14,9 @@ Z z(0); // OK: initialization of Y does not invoke default constructor of X
 // { dg-final { scan-assembler "_ZN1YCI21WEi" } }
 // { dg-final { scan-tree-dump "Y::Y ._2, _3.;" "gimple" } }
 
+// And that we aren't expecting the int, either.
+// { dg-final { scan-tree-dump-not "Y::Y.int\[^\n\]*int" "gimple" } }
+
 // And that we *are* passing the int along to V::V.
 // { dg-final { scan-assembler "_ZN1VCI21WEi" } }
 // { dg-final { scan-tree-dump "V::V .this, _1.;" "gimple" } }

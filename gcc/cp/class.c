@@ -4818,7 +4818,7 @@ build_clone (tree fn, tree name)
 
   /* A base constructor inheriting from a virtual base doesn't get the
      arguments.  */
-  if (ctor_omit_inherited_parms (fn))
+  if (ctor_omit_inherited_parms (clone))
     DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
 
   for (parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
