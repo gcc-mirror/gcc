@@ -1,3 +1,9 @@
+2017-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79294 - ICE with invalid template argument
+	* pt.c (convert_nontype_argument_function): Check value-dependence.
+	(convert_nontype_argument): Don't check it here for function ptrs.
+
 2017-02-02  Richard Biener  <rguenther@suse.de>
 
 	PR cp/14179

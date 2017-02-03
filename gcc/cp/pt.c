@@ -5966,6 +5966,9 @@ convert_nontype_argument_function (tree type, tree expr,
   if (fn == error_mark_node)
     return error_mark_node;
 
+  if (value_dependent_expression_p (fn))
+    return fn;
+
   fn_no_ptr = strip_fnptr_conv (fn);
   if (TREE_CODE (fn_no_ptr) == ADDR_EXPR)
     fn_no_ptr = TREE_OPERAND (fn_no_ptr, 0);
@@ -6698,8 +6701,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	/* Null pointer values are OK in C++11.  */
 	return perform_qualification_conversions (type, expr);
 
-      if (!value_dependent_expression_p (expr))
-	expr = convert_nontype_argument_function (type, expr, complain);
+      expr = convert_nontype_argument_function (type, expr, complain);
       if (!expr || expr == error_mark_node)
 	return expr;
     }
@@ -6723,8 +6725,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  return NULL_TREE;
 	}
 
-      if (!value_dependent_expression_p (expr))
-	expr = convert_nontype_argument_function (type, expr, complain);
+      expr = convert_nontype_argument_function (type, expr, complain);
       if (!expr || expr == error_mark_node)
 	return expr;
     }
