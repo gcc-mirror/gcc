@@ -37,7 +37,8 @@ class GTY((user)) function_summary <T *>
 public:
   /* Default construction takes SYMTAB as an argument.  */
   function_summary (symbol_table *symtab, bool ggc = false): m_ggc (ggc),
-    m_map (13, ggc), m_insertion_enabled (true), m_symtab (symtab)
+    m_map (13, ggc), m_insertion_enabled (true), m_released (false),
+    m_symtab (symtab)
   {
     m_symtab_insertion_hook =
       symtab->add_cgraph_insertion_hook
@@ -60,23 +61,19 @@ public:
   /* Destruction method that can be called for GGT purpose.  */
   void release ()
   {
-    if (m_symtab_insertion_hook)
-      m_symtab->remove_cgraph_insertion_hook (m_symtab_insertion_hook);
+    if (m_released)
+      return;
 
-    if (m_symtab_removal_hook)
-      m_symtab->remove_cgraph_removal_hook (m_symtab_removal_hook);
-
-    if (m_symtab_duplication_hook)
-      m_symtab->remove_cgraph_duplication_hook (m_symtab_duplication_hook);
-
-    m_symtab_insertion_hook = NULL;
-    m_symtab_removal_hook = NULL;
-    m_symtab_duplication_hook = NULL;
+    m_symtab->remove_cgraph_insertion_hook (m_symtab_insertion_hook);
+    m_symtab->remove_cgraph_removal_hook (m_symtab_removal_hook);
+    m_symtab->remove_cgraph_duplication_hook (m_symtab_duplication_hook);
 
     /* Release all summaries.  */
     typedef typename hash_map <map_hash, T *>::iterator map_iterator;
     for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
       release ((*it).second);
+
+    m_released = true;
   }
 
   /* Traverses all summarys with a function F called with
@@ -99,7 +96,9 @@ public:
   /* Allocates new data that are stored within map.  */
   T* allocate_new ()
   {
-    return m_ggc ? new (ggc_alloc <T> ()) T() : new T () ;
+    /* Call gcc_internal_because we do not want to call finalizer for
+       a type T.  We call dtor explicitly.  */
+    return m_ggc ? new (ggc_internal_alloc (sizeof (T))) T () : new T () ;
   }
 
   /* Release an item that is stored within map.  */
@@ -216,6 +215,8 @@ private:
   cgraph_2node_hook_list *m_symtab_duplication_hook;
   /* Indicates if insertion hook is enabled.  */
   bool m_insertion_enabled;
+  /* Indicates if the summary is released.  */
+  bool m_released;
   /* Symbol table the summary is registered to.  */
   symbol_table *m_symtab;
 

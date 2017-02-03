@@ -320,6 +320,12 @@ struct GTY(()) ipa_param_descriptor
 
 struct GTY((for_user)) ipa_node_params
 {
+  /* Default constructor.  */
+  ipa_node_params ();
+
+  /* Default destructor.  */
+  ~ipa_node_params ();
+
   /* Information about individual formal parameters that are gathered when
      summaries are generated. */
   vec<ipa_param_descriptor, va_gc> *descriptors;
@@ -355,6 +361,24 @@ struct GTY((for_user)) ipa_node_params
   /* False when there is something makes versioning impossible.  */
   unsigned versionable : 1;
 };
+
+inline
+ipa_node_params::ipa_node_params ()
+: descriptors (NULL), lattices (NULL), ipcp_orig_node (NULL),
+  known_csts (vNULL), known_contexts (vNULL), analysis_done (0),
+  node_enqueued (0), do_clone_for_all_contexts (0), is_all_contexts_clone (0),
+  node_dead (0), node_within_scc (0), node_calling_single_call (0),
+  versionable (0)
+{
+}
+
+inline
+ipa_node_params::~ipa_node_params ()
+{
+  free (lattices);
+  known_csts.release ();
+  known_contexts.release ();
+}
 
 /* Intermediate information that we get from alias analysis about a particular
    parameter in a particular basic_block.  When a parameter or the memory it
@@ -579,10 +603,6 @@ public:
   ipa_node_params_t (symbol_table *table, bool ggc):
     function_summary<ipa_node_params *> (table, ggc) { }
 
-  /* Hook that is called by summary when a node is deleted.  */
-  virtual void insert (cgraph_node *, ipa_node_params *info);
-  /* Hook that is called by summary when a node is deleted.  */
-  virtual void remove (cgraph_node *, ipa_node_params *info);
   /* Hook that is called by summary when a node is duplicated.  */
   virtual void duplicate (cgraph_node *node,
 			  cgraph_node *node2,

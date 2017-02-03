@@ -3736,38 +3736,6 @@ ipa_add_new_function (cgraph_node *node, void *data ATTRIBUTE_UNUSED)
     ipa_analyze_node (node);
 }
 
-/* Initialize a newly created param info.  */
-
-void
-ipa_node_params_t::insert (cgraph_node *, ipa_node_params *info)
-{
-  info->lattices = NULL;
-  info->ipcp_orig_node = NULL;
-  info->known_csts = vNULL;
-  info->known_contexts = vNULL;
-  info->analysis_done = 0;
-  info->node_enqueued = 0;
-  info->do_clone_for_all_contexts = 0;
-  info->is_all_contexts_clone = 0;
-  info->node_dead = 0;
-  info->node_within_scc = 0;
-  info->node_calling_single_call = 0;
-  info->versionable = 0;
-}
-
-/* Frees all dynamically allocated structures that the param info points
-   to.  */
-
-void
-ipa_node_params_t::remove (cgraph_node *, ipa_node_params *info)
-{
-  free (info->lattices);
-  /* Lattice values and their sources are deallocated with their alocation
-     pool.  */
-  info->known_csts.release ();
-  info->known_contexts.release ();
-}
-
 /* Hook that is called by summary when a node is duplicated.  */
 
 void
