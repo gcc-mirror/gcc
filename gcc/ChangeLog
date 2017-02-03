@@ -1,3 +1,8 @@
+2017-02-03  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Dump function version info.
+	* symtab.c (symtab_node::dump_base): Add missing new line.
+
 2017-02-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): New function.
