@@ -6103,16 +6103,15 @@ extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
 /* In module.c  */
-/* Module names are gc'd vectors of trees.  */
-typedef vec<tree, va_gc> GTY(()) module_name_t;
 extern bool module_purview_p ();
 extern bool module_interface_p ();
 extern int module_exporting_level ();
-extern int push_module_export (bool, module_name_t * = NULL);
+extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
-extern void declare_module (location_t, module_name_t *, tree);
-extern void import_module (location_t, module_name_t *, tree);
-extern void export_module (location_t, module_name_t *, tree);
+extern void declare_module (location_t, tree, tree);
+extern void finish_module ();
+extern bool import_module (location_t, tree, tree);
+extern void export_module (location_t, tree, tree);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);

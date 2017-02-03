@@ -1,3 +1,27 @@
+2017-02-03  Nathan Sidwell  <nathan@acm.org>
+
+	Module names are identifiers.
+	gcc/cp/
+	* config-lang.in (gtfiles): Add modules.c.
+	* c-tree.h (module_name_t): Delete.
+	(finish_module): Declare.
+	* decl2.c (c_pare_final_cleanups): Call finish_module.
+	* module.c: Change module_name_t to tree.
+	(imported_module): Hash of module names.
+	(import_add): New.
+	(import_module, declare_module): Use it.
+	(export_module): Import module.
+	(finish_module): New.
+	* parser.c (cp_parser_module_name): Build up identifier.  Adjust
+	callers.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-0.C: Adjust.
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/mod-decl-2_b.C: Adjust.
+	* g++.dg/modules/mod-decl-2_c.C: New.
+	* g++.dg/modules/mod-decl-5_a.C: New.
+	* g++.dg/modules/mod-decl-5_b.C: New.
+
 2017-02-02  Nathan Sidwell  <nathan@acm.org>
 
 	[[interface]]

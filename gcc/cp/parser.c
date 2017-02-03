@@ -12316,22 +12316,48 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
    identifier
    module-name . identifier
 
-   Returns a moudule_name pointer or NULL.  */
+   Returns an identifer, concatenating the components,  or NULL.
 
-static module_name_t *
+   If it turns out that flattening the module names this way is too
+   expensive, we'll have to use a vector of identifiers, and a trie to
+   hash the imported set.  */
+
+static tree
 cp_parser_module_name (cp_parser *parser)
 {
-  module_name_t *name = make_tree_vector ();
-
-  for (;;)
+  cp_token *token = cp_parser_require (parser, CPP_NAME, RT_NAME);
+  if (!token)
+    return NULL;
+  tree name = token->u.value;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_DOT))
     {
-      cp_token *token = cp_parser_require (parser, CPP_NAME, RT_NAME);
-      if (!token)
-	return NULL;
-      vec_safe_push (name, token->u.value);
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_DOT))
-	break;
-      cp_lexer_consume_token (parser->lexer);
+      /* Concatenate dotted identifiers.  */
+      auto_vec<char> buffer;
+      size_t len = 0;
+
+      for (;;)
+	{
+	  size_t l = IDENTIFIER_LENGTH (name);
+
+	  buffer.reserve (len + l + 2);
+	  if (len)
+	    {
+	      buffer.quick_push ('.');
+	      len++;
+	    }
+	  buffer.quick_grow (len + l);
+	  memcpy (&buffer[len], IDENTIFIER_POINTER (name), l);
+	  len += l;
+	  if (!cp_lexer_next_token_is (parser->lexer, CPP_DOT))
+	    break;
+	  cp_lexer_consume_token (parser->lexer);
+	  token = cp_parser_require (parser, CPP_NAME, RT_NAME);
+	  if (!token)
+	    return NULL;
+	  name = token->u.value;
+	}
+      buffer.quick_push (0);
+      name = get_identifier_with_length (&buffer[0], len);
     }
   return name;
 }
@@ -12365,7 +12391,7 @@ cp_parser_module_declaration (cp_parser *parser, bool is_export)
 	      || cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE));
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  module_name_t *name = cp_parser_module_name (parser);
+  tree name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
@@ -12436,7 +12462,7 @@ cp_parser_module_proclamation (cp_parser *parser)
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   cp_lexer_consume_token (parser->lexer);
 
-  module_name_t *name = cp_parser_module_name (parser);
+  tree name = cp_parser_module_name (parser);
   
   if (!cp_parser_require (parser, CPP_COLON, RT_COLON)
       || !check_module_outermost (token, "proclaimed-ownership"))

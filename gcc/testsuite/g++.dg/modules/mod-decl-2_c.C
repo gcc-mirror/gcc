@@ -1,9 +1,5 @@
+import bob;
 
-module bob;
-
-import bob; // idempotent import
-
-// module linkage
 void Baz ()
 {
   // FIXME: Implement modules

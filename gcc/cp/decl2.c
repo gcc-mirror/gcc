@@ -4813,7 +4813,7 @@ c_parse_final_cleanups (void)
   perform_deferred_noexcept_checks ();
 
   finish_repo ();
-
+  finish_module ();
   fini_constexpr ();
 
   /* The entire file is now complete.  If requested, dump everything
