@@ -6172,20 +6172,24 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  if (slp_node)
 	    {
 	      /* Get vec defs for all the operands except the reduction index,
-		ensuring the ordering of the ops in the vector is kept.  */
+		 ensuring the ordering of the ops in the vector is kept.  */
 	      auto_vec<tree, 3> slp_ops;
 	      auto_vec<vec<tree>, 3> vec_defs;
 
-	      slp_ops.quick_push ((reduc_index == 0) ? NULL : ops[0]);
-	      slp_ops.quick_push ((reduc_index == 1) ? NULL : ops[1]);
+	      slp_ops.quick_push (reduc_index == 0 ? NULL : ops[0]);
+	      slp_ops.quick_push (reduc_index == 1 ? NULL : ops[1]);
 	      if (op_type == ternary_op)
-		slp_ops.quick_push ((reduc_index == 2) ? NULL : ops[2]);
+		slp_ops.quick_push (reduc_index == 2 ? NULL : ops[2]);
 
 	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs, -1);
 
-	      vec_oprnds0.safe_splice (vec_defs[(reduc_index == 0) ? 1 : 0]);
+	      vec_oprnds0.safe_splice (vec_defs[reduc_index == 0 ? 1 : 0]);
+	      vec_defs[reduc_index == 0 ? 1 : 0].release ();
 	      if (op_type == ternary_op)
-		vec_oprnds1.safe_splice (vec_defs[(reduc_index == 2) ? 1 : 2]);
+		{
+		  vec_oprnds1.safe_splice (vec_defs[reduc_index == 2 ? 1 : 2]);
+		  vec_defs[reduc_index == 2 ? 1 : 2].release ();
+		}
 	    }
           else
 	    {
@@ -6194,7 +6198,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
               vec_oprnds0.quick_push (loop_vec_def0);
               if (op_type == ternary_op)
                {
-		 op1 = (reduc_index == 0) ? ops[2] : ops[1];
+		 op1 = reduc_index == 0 ? ops[2] : ops[1];
                  loop_vec_def1 = vect_get_vec_def_for_operand (op1, stmt);
                  vec_oprnds1.quick_push (loop_vec_def1);
                }
