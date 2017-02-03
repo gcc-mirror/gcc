@@ -1,3 +1,8 @@
+2017-02-03  Martin Liska  <mliska@suse.cz>
+
+	PR lto/66295
+	* gcc.target/i386/mvc9.c: New test.
+
 2017-02-03  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/79158
