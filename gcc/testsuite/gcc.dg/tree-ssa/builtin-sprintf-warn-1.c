@@ -1151,8 +1151,16 @@ void test_sprintf_chk_hh_nonconst (int w, int p, int a)
   T (2, "% hhu",        a);     /* { dg-warning ". . flag used with .%u." } */
   T (2, "% hhx",        a);     /* { dg-warning ". . flag used with .%x." } */
 
-  T (2, "%#hho",        a);
-  T (2, "%#hhx",        a);
+  /* The following results in between "0" and "0377" for -1.  Although
+     the minimum output would fit, given the '#' flag the likely output
+     (i.e., for any non-zero argument) includes a leading zero followed
+     by one or more octal digits, which results in the terminating nul
+     being written past the end.  Thus the "may write" warning.  */
+  T (2, "%#hho",        a);     /* { dg-warning "may write a terminating nul" } */
+  /* Similar to the above, but the likely output of the directive for
+     a non-zero argument overflows.  Thus the "writing X bytes" (as
+     opposed to "may write") warning.  */
+  T (2, "%#hhx",        a);     /* { dg-warning "writing between 1 and 4 bytes" } */
 
   T (3, "%0hhd",        a);
   T (3, "%1hhd",        a);
