@@ -30,27 +30,103 @@ load_lib mpx-dg.exp
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
-lappend DEFAULT_MODFLAGS "-fmodules"
+lappend DEFAULT_MODFLAGS "-std=c++14" "-fmodules"
 
 dg-init
 
+global module_specs
+
+proc mod_spec_to_file { spec } {
+    set mod $spec
+    if { [ string index $mod 0 ] == "!" } {
+	set mod [string range $mod 1 end]
+    }
+    return "g++-[regsub -all {\.} $mod {-}].nms"
+}
+
+# register a module interface leading '!' to expect it to NOT be present
+proc dg-module-if { args } {
+
+    if { [llength $args] > 3 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+
+    set mod [lindex $args 1]
+    # predelete file
+    set file [mod_spec_to_file $mod]
+    # FIXME: remote host?
+    file delete $file
+
+    if { [llength $args] >= 3 } {
+	switch -glob [dg-process-target [lindex $args 2]] {
+	    "S" { }
+	    "N" { return }
+	    "*" { error "[lindex $args 0]: `xfail' not allowed here"
+		return }
+	}
+    }
+
+    global module_specs
+    lappend module_specs $mod
+}
+
+# check the expected module files exist (or not)
+# return list to delete
+proc check_module_specs { src specs } {
+    set res {}
+    foreach spec $specs {
+	set absent [ string equal -length 1 $spec "!" ]
+	set file [mod_spec_to_file $spec]
+	# FIXME: remote host?
+	if { $absent != [file exists $file] } {
+	    pass "$src module $spec"
+	} else {
+	    fail "$src module $spec"
+	    set absent [expr ! $absent ]
+	}
+	if { ! $absent } {
+	    lappend res $file
+	}
+    }
+    return $res
+}
+
+# delete the specified set of module files
+proc cleanup_module_files { files } {
+    foreach file $files {
+	# FIXME: remote host?
+	file delete $file
+    }
+}
+
 # not grouped tests, sadly tcl doesn't have negated glob
 foreach src [prune [lsort [find $srcdir/$subdir "*.C"]] \
-	     "$srcdir/$subdir/*_?.C"] {
-    g++-dg-runtest $src "" $DEFAULT_MODFLAGS
+		 "$srcdir/$subdir/*_?.C"] {
+    if [runtest_file_p $runtests $src] {
+	set module_specs {}
+	# don't bother running these at each -std level
+	dg-test $src "" $DEFAULT_MODFLAGS
+	set subsrc [string range $src [string length $srcdir/] end]
+	cleanup_module_files [check_module_specs $subsrc $module_specs]
+    }
 }
 
 # grouped tests
 foreach src [lsort [find $srcdir/$subdir "*_a.C"]] {
     # use the FOO_a.C name as the parallelization key
     if [runtest_file_p $runtests $src] {
+	set mod_files {}
 	set srcs [lsort [find [file dirname $src] \
 			 [regsub {_a.C$} [file tail $src] {_[a-z].C}]]]
 	verbose "Modules $srcs" 1
 	foreach test $srcs {
+	    set module_specs {}
 	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
+	    set subtest [string range $test [string length $srcdir/] end]
+	    lappend mod_files [check_module_specs $subtest $module_specs]
 	}
-	# FIXME: deal with deleting module files
+	cleanup_module_files $mod_files
     }
 }
 

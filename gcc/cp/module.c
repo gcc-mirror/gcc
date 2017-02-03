@@ -25,14 +25,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "stringpool.h"
 
-static GTY(()) tree declared_module;
-static bool is_interface; // Probably change for file handle?
+static FILE *mstream;
+static char *mfname;
+static GTY(()) tree module_name;
+static location_t module_loc;
 static GTY(()) tree proclaimer;
-static location_t module_location;
+static bool is_interface; // Probably change for file handle?
 static int export_depth; /* -1 for singleton export.  */
 
 /* The set of imported modules.  The current declared module is
-   included in this set too.  */
+   included in this set too.
+
+   Use a flat hash set until proven inefficient.  Might want to map to
+   first import location?  */
 static GTY(()) hash_set<tree> *imported_modules;
 
 /* Nest a module export level.  Return true if we were already in a
@@ -75,7 +80,7 @@ module_exporting_level ()
 bool
 module_purview_p ()
 {
-  return declared_module;
+  return module_name;
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
@@ -95,6 +100,33 @@ import_add (tree name)
   return imported_modules->add (name);
 }
 
+/* Convert a module name into a file name.  The name is malloced.
+
+   (for the moment) this replaces '.' with '-' adds a prefix and
+   suffix.
+
+   FIXME: Add host-applicable hooks.  */
+
+static char *
+module_to_filename (tree id)
+{
+#define MOD_FNAME_PFX "g++-"
+#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
+#define MOD_FNAME_DOT_REPLACE '-'
+
+  char *name = concat (MOD_FNAME_PFX, IDENTIFIER_POINTER (id),
+		       MOD_FNAME_SFX, NULL);
+  char *ptr = name + strlen (MOD_FNAME_PFX);
+  size_t len = IDENTIFIER_LENGTH (id);
+
+  if (MOD_FNAME_DOT_REPLACE != '.')
+    for (; len--; ptr++)
+      if (*ptr == '.')
+	*ptr = MOD_FNAME_DOT_REPLACE;
+
+  return name;
+}
+
 /* Import the module NAME into the current TU.  Return true on
    success.  */
 
@@ -104,14 +136,27 @@ import_module (location_t loc, tree name, tree attrs)
   if (import_add (name))
     {
       /* Already imported or interface declared.  */
-      if (module_interface_p () && name == declared_module)
+      if (module_interface_p () && name == module_name)
 	error_at (loc, "module %qE already declared as interface", name);
       return true;
     }
 
-  // Path search along the -I path
+  // FIXME:Path search along the -I path
+  char *fname = module_to_filename (name);
+  FILE *fd = fopen (fname, "rb");
+  if (!fd)
+    {
+      error_at (loc, "cannot find module %qE (%qs): %m",
+		name, fname);
+      free (fname);
+      return false;
+    }
+
   // FIXME: some code needed here
   // FIXME: Think about make dependency generation
+  
+  fclose (fd);
+  free (fname);
   return true;
 }
 
@@ -123,7 +168,7 @@ export_module (location_t loc, tree name, tree attrs)
   if (!import_module (loc, name, attrs))
     return;
 
-  if (!declared_module)
+  if (!mstream)
     /* We've already emitted an error about this.  */
     return;
 
@@ -136,10 +181,10 @@ export_module (location_t loc, tree name, tree attrs)
 void
 declare_module (location_t loc, tree name, tree attrs)
 {
-  if (declared_module)
+  if (module_name)
     {
       error_at (loc, "module %qE already declared", name);
-      inform (module_location, "existing declaration");
+      inform (module_loc, "existing declaration");
       return;
     }
 
@@ -161,15 +206,24 @@ declare_module (location_t loc, tree name, tree attrs)
       return;
     }
 
-  declared_module = name;
-  module_location = loc;
+  module_name = name;
+  module_loc = loc;
 
   if (!inter)
     return;
 
   is_interface = true;
 
-  // FIXME:Open the module file
+  // FIXME:option to specify location? take dirname from output file?
+  mfname = module_to_filename (name);
+  mstream = fopen (mfname, "wb");
+  if (!mstream)
+    {
+      error_at (module_loc, "cannot open module interface %qE (%qs): %m",
+		module_name, mfname);
+      return;
+    }
+
   // FIXME:Write header
   // FIXME:Write 'important' flags etc
 }
@@ -182,10 +236,18 @@ finish_module ()
   delete imported_modules;
   imported_modules = NULL;
   
-  if (!declared_module)
+  if (!mstream)
     return;
 
-  // FIXME: flush and close the module file
+  // FIXME: flush the module file?
+  if (fclose (mstream))
+    error_at (module_loc, "error closing module interface %qE (%qs): %m",
+	      module_name, mfname);
+  if (errorcount)
+    unlink (mfname);
+  mstream = NULL;
+  free (mfname);
+  mfname = NULL;
 }
 
 #include "gt-cp-module.h"

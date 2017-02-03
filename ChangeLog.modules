@@ -1,5 +1,24 @@
 2017-02-03  Nathan Sidwell  <nathan@acm.org>
 
+	Module files open/closed.  Testsuite extension
+	gcc/cp/
+	* module.c (mstream, mfname): New.
+	(module_to_filename): New.
+	(import_module, declare_module, finish_module): Open/close module file.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp (mod_spec_to_file, dg-module-if,
+	check_module_specs, cleanup_module_files): New.
+	* g++.dg/modules/mod-decl-0.C: Adjust
+	* g++.dg/modules/mod-decl-1.C: Adjust
+	* g++.dg/modules/mod-decl-2_a.C: Adjust
+	* g++.dg/modules/mod-decl-3.C: New.
+	* g++.dg/modules/mod-decl-3_a.C: Delete.
+	* g++.dg/modules/mod-decl-3_b.C: Delete.
+	* g++.dg/modules/mod-decl-4.C: Adjust
+	* g++.dg/modules/mod-decl-5_a.C: Adjust
+	* g++.dg/modules/mod-decl-5_b.C: Adjust
+	* g++.dg/modules/proclaim-1.C: Adjust
+
 	Module names are identifiers.
 	gcc/cp/
 	* config-lang.in (gtfiles): Add modules.c.

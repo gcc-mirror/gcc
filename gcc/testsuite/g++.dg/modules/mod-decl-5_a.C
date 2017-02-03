@@ -1,2 +1,3 @@
 
-module thing.baz __attribute__((interface));
+module thing.baz [[interface]];
+// { dg-module-if "thing.baz" }

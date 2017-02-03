@@ -1,6 +1,7 @@
 module;  // { dg-error "expected" }
 
-module frist __attribute__((interface));
+module frist [[interface]];
+// { dg-module-if "!frist" }
 
 module foo.second; // { dg-error "already declared" }
 
