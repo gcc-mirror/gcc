@@ -1,5 +1,12 @@
 2017-02-02  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/79275
+	* gimple-ssa-sprintf.c (get_string_length): Set lower bound to zero.
+	(format_string): Tighten up the range of output for non-constant
+	strings and correct the expected range for wide non-constant strings.
+
+2017-02-02  Martin Sebor  <msebor@redhat.com>
+
 	* doc/invoke.texi (-maccumulate-args): Fix bad grammar.
 
 	PR middle-end/32003
