@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-ifcombine" } */
+/* { dg-options "-O -fdump-tree-ifcombine-details-blocks" } */
 
 int test1 (int i, int j)
 {
@@ -12,3 +12,4 @@ int test1 (int i, int j)
 /* The above should be optimized to a i > j test by ifcombine.  */
 
 /* { dg-final { scan-tree-dump " > " "ifcombine" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "ifcombine" } } */

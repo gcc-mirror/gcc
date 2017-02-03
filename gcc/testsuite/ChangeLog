@@ -1,3 +1,19 @@
+2017-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/ssa-ifcombine-1.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-2.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-3.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-4.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-5.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-6.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-7.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-8.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-9.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-10.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-11.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-12.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: Check for no profile mismatches.
+
 2017-02-02  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/79275
