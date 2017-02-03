@@ -1,5 +1,10 @@
 2017-02-03  Martin Liska  <mliska@suse.cz>
 
+	* symtab.c (symtab_node::binds_to_current_def_p): Bail out
+	in case of a function with ifunc attribute.
+
+2017-02-03  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.c (cgraph_node::dump): Dump function version info.
 	* symtab.c (symtab_node::dump_base): Add missing new line.
 
