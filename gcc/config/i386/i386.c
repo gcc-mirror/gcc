@@ -3622,11 +3622,26 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 
       if (scalar_copy)
 	{
-	  rtx vcopy = gen_reg_rtx (V2DImode);
-
 	  start_sequence ();
-	  if (TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	  if (TARGET_SSE4_1)
 	    {
+	      rtx tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const0_rtx));
+	      emit_insn
+		(gen_rtx_SET
+		 (gen_rtx_SUBREG (SImode, scopy, 0),
+		  gen_rtx_VEC_SELECT (SImode,
+				      gen_rtx_SUBREG (V4SImode, reg, 0), tmp)));
+
+	      tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const1_rtx));
+	      emit_insn
+		(gen_rtx_SET
+		 (gen_rtx_SUBREG (SImode, scopy, 4),
+		  gen_rtx_VEC_SELECT (SImode,
+				      gen_rtx_SUBREG (V4SImode, reg, 0), tmp)));
+	    }
+	  else if (TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	    {
+	      rtx vcopy = gen_reg_rtx (V2DImode);
 	      emit_move_insn (vcopy, gen_rtx_SUBREG (V2DImode, reg, 0));
 	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 0),
 			      gen_rtx_SUBREG (SImode, vcopy, 0));
