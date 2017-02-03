@@ -1,3 +1,17 @@
+2017-02-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/79337
+	* ipa-prop.c (ipa_node_params_t::insert): Remove current
+	implementation.
+	(ipa_node_params_t::remove): Likewise.
+	* ipa-prop.h (ipa_node_params::ipa_node_params): Make default
+	initialization from removed ipa_node_params_t::insert.
+	(ipa_node_params::~ipa_node_params): Move from removed
+	ipa_node_params_t::release.
+	* symbol-summary.h (symbol_summary::m_released): New member.
+	Do not release a summary twice.  Do not allow to call finalizer
+	for types of a summary that live in GGC memory.
+
 2017-02-02  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
 	* config/aarch64/aarch64.c (thunderx2t99_tunings): Enable AES and
