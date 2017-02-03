@@ -1,3 +1,8 @@
+2017-02-03  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR lto/79061
+	* asan.c (asan_add_global): Force has_dynamic_init to zero in LTO mode.
+
 2017-01-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
