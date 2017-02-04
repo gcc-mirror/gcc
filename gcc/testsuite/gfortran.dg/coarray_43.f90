@@ -1,5 +1,6 @@
 ! { dg-do link }
 ! { dg-options "-fcoarray=lib -lcaf_single" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 
 program coarray_43
   implicit none

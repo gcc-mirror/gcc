@@ -1,5 +1,8 @@
 2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gfortran.dg/coarray_43.f90: Add "-latomic" option if
+	libatomic_available.
+
 	* gcc.dg/pr77587.c: Require alias support.
 	* gcc.dg/pr77587a.c: Likewise.
 
