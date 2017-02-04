@@ -1,5 +1,6 @@
 /* PR target/77587 */
 /* { dg-do run } */
+/* { dg-require-alias "" } */
 /* { dg-require-weak-override "" } */
 /* { dg-additional-sources "pr77587a.c" } */
 
