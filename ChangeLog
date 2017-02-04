@@ -1,3 +1,9 @@
+2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+        * configure.ac: Add gcc/function-tests.o to compare_exclusions for
+	32-bit hppa*-*-hpux*.
+        * configure: Regenerate.
+
 2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* configure.ac: Moved the white list of enabling BRIG FE to
