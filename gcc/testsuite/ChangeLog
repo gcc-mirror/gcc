@@ -1,3 +1,12 @@
+2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-c++-common/Wunused-var-15.c: Add -fno-common additional option on
+	hppa*-*-hpux*.
+	* c-c++-common/Wunused-var-16.c: Likewise.
+	* c-c++-common/builtin-shuffle-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/align-[1-6].c Likewise.
+	* gcc.dg/debug/dwarf2/align-as-1.c: Likewise.
+
 2017-02-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/79327
