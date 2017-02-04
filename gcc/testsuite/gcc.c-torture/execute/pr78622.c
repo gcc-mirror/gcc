@@ -1,5 +1,6 @@
 /* PR middle-end/78622 - [7 Regression] -Wformat-overflow/-fprintf-return-value
    incorrect with overflow/wrapping
+   { dg-skip-if "Requires %hhd format" { hppa*-*-hpux* } { "*" } { "" } }
    { dg-additional-options "-Wformat-overflow=2" } */
 
 __attribute__((noinline, noclone)) int
