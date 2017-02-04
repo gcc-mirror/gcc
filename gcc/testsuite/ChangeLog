@@ -1,5 +1,8 @@
 2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/pr77587.c: Require alias support.
+	* gcc.dg/pr77587a.c: Likewise.
+
 	* g++.dg/pr78112-2.C: Skip on hppa*-*-hpux*.
 	* gcc.c-torture/execute/pr78622.c: Likewise.
 
