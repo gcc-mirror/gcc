@@ -1,5 +1,8 @@
 2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
 
+	* g++.dg/pr78112-2.C: Skip on hppa*-*-hpux*.
+	* gcc.c-torture/execute/pr78622.c: Likewise.
+
 	* c-c++-common/Wunused-var-15.c: Add -fno-common additional option on
 	hppa*-*-hpux*.
 	* c-c++-common/Wunused-var-16.c: Likewise.
