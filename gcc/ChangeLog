@@ -1,3 +1,10 @@
+2017-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/78985
+	* config/s390/s390.c (s390_gimplify_va_arg): Initialize local
+	variable to NULL.
+	(print_operand_address): Initialize a struct to zero.
+
 2017-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (x86 specific memory model extensions for
