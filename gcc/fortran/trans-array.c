@@ -8220,9 +8220,17 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  /* Shortcut to get the attributes of the component.  */
 	  if (c->ts.type == BT_CLASS)
-	    attr = &CLASS_DATA (c)->attr;
+	    {
+	      attr = &CLASS_DATA (c)->attr;
+	      if (attr->class_pointer)
+		continue;
+	    }
 	  else
-	    attr = &c->attr;
+	    {
+	      attr = &c->attr;
+	      if (attr->pointer)
+		continue;
+	    }
 
 	  if ((c->ts.type == BT_DERIVED && !c->attr.pointer)
 	     || (c->ts.type == BT_CLASS && !CLASS_DATA (c)->attr.class_pointer))
