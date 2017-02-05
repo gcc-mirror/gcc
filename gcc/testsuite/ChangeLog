@@ -1,3 +1,20 @@
+2017-02-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-ssa/79347
+	* gcc.dg/tree-ssa/ifc-10.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-11.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-12.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-20040816-1.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-20040816-2.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-5.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-8.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-9.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-cd.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-pr56541.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-pr68583.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-pr69489-1.c: Match for profile mismatches.
+	* gcc.dg/tree-ssa/ifc-pr69489-2.c: Match for profile mismatches.
+
 2017-02-05  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/79344

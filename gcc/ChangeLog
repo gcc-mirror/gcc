@@ -1,3 +1,17 @@
+2017-02-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-ssa/79347
+	* cfgloopmanip.c (lv_adjust_loop_entry_edge, loop_version): Add
+	ELSE_PROB.
+	* cfgloopmanip.h (loop_version): Update prototype.
+	* modulo-sched.c (sms_schedule): Update call of loop_version.
+	* tree-if-conv.c(version_loop_for_if_conversion): Likewise.
+	* tree-parloops.c (gen_parallel_loop): Likewise.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Likewise.
+	* tree-ssa-loop-split.c (split_loop): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_loop): Likewise.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Likewise.
+
 2017-02-05  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/78985

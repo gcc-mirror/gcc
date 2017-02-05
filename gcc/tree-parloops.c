@@ -2353,7 +2353,8 @@ gen_parallel_loop (struct loop *loop,
       /* We assume that the loop usually iterates a lot.  */
       prob = 4 * REG_BR_PROB_BASE / 5;
       loop_version (loop, many_iterations_cond, NULL,
-		    prob, prob, REG_BR_PROB_BASE - prob, true);
+		    prob, REG_BR_PROB_BASE - prob,
+		    prob, REG_BR_PROB_BASE - prob, true);
       update_ssa (TODO_update_ssa);
       free_original_copy_tables ();
     }
