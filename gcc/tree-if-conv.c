@@ -2533,7 +2533,11 @@ combine_blocks (struct loop *loop)
    will be if-converted, the new copy of the loop will not,
    and the LOOP_VECTORIZED internal call will be guarding which
    loop to execute.  The vectorizer pass will fold this
-   internal call into either true or false.  */
+   internal call into either true or false. 
+
+   Note that this function intentionally invalidates profile.  Both edges
+   out of LOOP_VECTORIZED must have 100% probability so the profile remains
+   consistent after the condition is folded in the vectorizer.  */
 
 static struct loop *
 version_loop_for_if_conversion (struct loop *loop)
@@ -2557,9 +2561,11 @@ version_loop_for_if_conversion (struct loop *loop)
     saved_preds[i] = ifc_bbs[i]->aux;
 
   initialize_original_copy_tables ();
+  /* At this point we invalidate porfile confistency until IFN_LOOP_VECTORIZED
+     is re-merged in the vectorizer.  */
   new_loop = loop_version (loop, cond, &cond_bb,
 			   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
-			   REG_BR_PROB_BASE, true);
+			   REG_BR_PROB_BASE, REG_BR_PROB_BASE, true);
   free_original_copy_tables ();
 
   for (unsigned i = 0; i < save_length; i++)

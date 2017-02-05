@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-ifcvt-details -ftree-loop-if-convert-stores" } */
+/* { dg-options "-O3 -fdump-tree-ifcvt-details-blocks-details -ftree-loop-if-convert-stores" } */
 
 void foo (int *x1, int *x2, int *x3, int *x4, int *y)
 {
@@ -26,3 +26,11 @@ void foo (int *x1, int *x2, int *x3, int *x4, int *y)
 }
 
 /* { dg-final { scan-tree-dump-times "Use predicate of bb" 4 "ifcvt" } } */
+
+/* We insert into code
+   if (LOOP_VECTORIZED (...))
+   which is folded by vectorizer.  Both outgoing edges must have probability
+   100% so the resulting profile match after folding.  */
+/* { dg-final { scan-tree-dump-times "Invalid sum of outgoing probabilities 200.0" 1 "ifcvt" } } */
+/* Sum is wrong here, but not enough for error to be reported.  */
+/* { dg-final { scan-tree-dump-times "Invalid sum of incoming frequencies" 0 "ifcvt" } } */

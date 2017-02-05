@@ -1645,11 +1645,14 @@ force_single_succ_latches (void)
 			|
 			+---------> [second_head]
 
-  THEN_PROB is the probability of then branch of the condition.  */
+  THEN_PROB is the probability of then branch of the condition.
+  ELSE_PROB is the probability of else branch. Note that they may be both
+  REG_BR_PROB_BASE when condition is IFN_LOOP_VECTORIZED.  */
 
 static basic_block
 lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
-			   edge e, void *cond_expr, unsigned then_prob)
+			   edge e, void *cond_expr, unsigned then_prob,
+			   unsigned else_prob)
 {
   basic_block new_head = NULL;
   edge e1;
@@ -1668,7 +1671,7 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
   e1 = make_edge (new_head, first_head,
 		  current_ir_type () == IR_GIMPLE ? EDGE_TRUE_VALUE : 0);
   e1->probability = then_prob;
-  e->probability = REG_BR_PROB_BASE - then_prob;
+  e->probability = else_prob;
   e1->count = apply_probability (e->count, e1->probability);
   e->count = apply_probability (e->count, e->probability);
 
@@ -1701,7 +1704,8 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
 struct loop *
 loop_version (struct loop *loop,
 	      void *cond_expr, basic_block *condition_bb,
-	      unsigned then_prob, unsigned then_scale, unsigned else_scale,
+	      unsigned then_prob, unsigned else_prob,
+	      unsigned then_scale, unsigned else_scale,
 	      bool place_after)
 {
   basic_block first_head, second_head;
@@ -1732,7 +1736,7 @@ loop_version (struct loop *loop,
 
   /* Split loop entry edge and insert new block with cond expr.  */
   cond_bb =  lv_adjust_loop_entry_edge (first_head, second_head,
-					entry, cond_expr, then_prob);
+					entry, cond_expr, then_prob, else_prob);
   if (condition_bb)
     *condition_bb = cond_bb;
 

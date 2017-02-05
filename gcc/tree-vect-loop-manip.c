@@ -2319,7 +2319,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
       /* We don't want to scale SCALAR_LOOP's frequencies, we need to
 	 scale LOOP's frequencies instead.  */
-      nloop = loop_version (scalar_loop, cond_expr, &condition_bb, prob,
+      nloop = loop_version (scalar_loop, cond_expr, &condition_bb,
+			    prob, REG_BR_PROB_BASE - prob,
 			    REG_BR_PROB_BASE, REG_BR_PROB_BASE - prob, true);
       scale_loop_frequencies (loop, prob, REG_BR_PROB_BASE);
       /* CONDITION_BB was created above SCALAR_LOOP's preheader,
@@ -2348,7 +2349,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     }
   else
     nloop = loop_version (loop, cond_expr, &condition_bb,
-			  prob, prob, REG_BR_PROB_BASE - prob, true);
+			  prob, REG_BR_PROB_BASE - prob,
+			  prob, REG_BR_PROB_BASE - prob, true);
 
   if (version_niter)
     {
