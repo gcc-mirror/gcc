@@ -1,5 +1,11 @@
 2017-02-05  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/78958
+	* trans-stmt.c (gfc_trans_allocate): Add the multiplying the _len
+	component of unlimited polymorphic objects when source-allocating.
+
+2017-02-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/79230
 	* trans-array.c (structure_alloc_comps): Ignore pointer components when
 	freeing structures.

@@ -6009,14 +6009,21 @@ gfc_trans_allocate (gfc_code * code)
 	 needs to be provided, which is done most of the time by the
 	 pre-evaluation step.  */
       nelems = NULL_TREE;
-      if (expr3_len && code->expr3->ts.type == BT_CHARACTER)
-	/* When al is an array, then the element size for each element
-	   in the array is needed, which is the product of the len and
-	   esize for char arrays.  */
-	tmp = fold_build2_loc (input_location, MULT_EXPR,
-			       TREE_TYPE (expr3_esize), expr3_esize,
-			       fold_convert (TREE_TYPE (expr3_esize),
-					     expr3_len));
+      if (expr3_len && (code->expr3->ts.type == BT_CHARACTER
+			|| code->expr3->ts.type == BT_CLASS))
+	{
+	  /* When al is an array, then the element size for each element
+	     in the array is needed, which is the product of the len and
+	     esize for char arrays.  For unlimited polymorphics len can be
+	     zero, therefore take the maximum of len and one.  */
+	  tmp = fold_build2_loc (input_location, MAX_EXPR,
+				 TREE_TYPE (expr3_len),
+				 expr3_len, fold_convert (TREE_TYPE (expr3_len),
+							  integer_one_node));
+	  tmp = fold_build2_loc (input_location, MULT_EXPR,
+				 TREE_TYPE (expr3_esize), expr3_esize,
+				 fold_convert (TREE_TYPE (expr3_esize), tmp));
+	}
       else
 	tmp = expr3_esize;
       if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen,
