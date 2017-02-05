@@ -5128,6 +5128,16 @@ generate_coarray_sym_init (gfc_symbol *sym)
   else
     reg_type = GFC_CAF_COARRAY_STATIC;
 
+  /* Compile the symbol attribute.  */
+  if (sym->ts.type == BT_CLASS)
+    {
+      attr = CLASS_DATA (sym)->attr;
+      /* The pointer attribute is always set on classes, overwrite it with the
+	 class_pointer attribute, which denotes the pointer for classes.  */
+      attr.pointer = attr.class_pointer;
+    }
+  else
+    attr = sym->attr;
   gfc_init_se (&se, NULL);
   desc = gfc_conv_scalar_to_descriptor (&se, decl, attr);
   gfc_add_block_to_block (&caf_init_block, &se.pre);
