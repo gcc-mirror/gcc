@@ -7347,6 +7347,7 @@ void
 print_operand_address (FILE *file, rtx addr)
 {
   struct s390_address ad;
+  memset (&ad, 0, sizeof (s390_address));
 
   if (s390_loadrelative_operand_p (addr, NULL, NULL))
     {
@@ -12195,7 +12196,7 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
   int indirect_p, size, n_reg, sav_ofs, sav_scale, max_reg;
-  tree lab_false, lab_over;
+  tree lab_false, lab_over = NULL_TREE;
   tree addr = create_tmp_var (ptr_type_node, "addr");
   bool left_align_p; /* How a value < UNITS_PER_LONG is aligned within
 			a stack slot.  */
