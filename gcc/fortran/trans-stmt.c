@@ -5572,7 +5572,8 @@ gfc_trans_allocate (gfc_code * code)
      expression.  */
   if (code->expr3)
     {
-      bool vtab_needed = false, temp_var_needed = false;
+      bool vtab_needed = false, temp_var_needed = false,
+	  temp_obj_created = false;
 
       is_coarray = gfc_is_coarray (code->expr3);
 
@@ -5645,7 +5646,7 @@ gfc_trans_allocate (gfc_code * code)
 				     code->expr3->ts,
 				     false, true,
 				     false, false);
-	  temp_var_needed = !VAR_P (se.expr);
+	  temp_obj_created = temp_var_needed = !VAR_P (se.expr);
 	}
       gfc_add_block_to_block (&block, &se.pre);
       gfc_add_block_to_block (&post, &se.post);
@@ -5714,11 +5715,12 @@ gfc_trans_allocate (gfc_code * code)
 	}
 
       /* Deallocate any allocatable components in expressions that use a
-	 temporary, i.e. are not of expr-type EXPR_VARIABLE or force the
-	 use of a temporary, after the assignment of expr3 is completed.  */
+	 temporary object, i.e. are not a simple alias of to an EXPR_VARIABLE.
+	 E.g. temporaries of a function call need freeing of their components
+	 here.  */
       if ((code->expr3->ts.type == BT_DERIVED
 	   || code->expr3->ts.type == BT_CLASS)
-	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_var_needed)
+	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_obj_created)
 	  && code->expr3->ts.u.derived->attr.alloc_comp)
 	{
 	  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
