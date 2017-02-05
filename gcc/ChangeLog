@@ -1,3 +1,10 @@
+2017-02-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/79353
+	* config/sparc/sync.md (atomic_loaddi_1): Replace 'U' constraint with
+	'r', 'm' constraint with 'T' and !TARGET_ARCH64 with TARGET_ARCH32.
+	(atomic_storedi_1): Likewise.
+
 2017-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79338
