@@ -299,7 +299,7 @@ available online, see @uref{http://gcc.gnu.org/readings.html}
 @section Go Language
 
 As of the GCC 4.7.1 release, GCC supports the Go 1 language standard,
-described at @uref{http://golang.org/doc/go1.html}.
+described at @uref{https://golang.org/doc/go1}.
 
 @section HSA Intermediate Language (HSAIL)
 
