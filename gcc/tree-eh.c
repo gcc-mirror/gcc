@@ -3248,6 +3248,8 @@ lower_resx (basic_block bb, gresx *stmt,
 	  e = single_succ_edge (bb);
 	  gcc_assert (e->flags & EDGE_EH);
 	  e->flags = (e->flags & ~EDGE_EH) | EDGE_FALLTHRU;
+	  e->probability = REG_BR_PROB_BASE;
+	  e->count = bb->count;
 
 	  /* If there are no more EH users of the landing pad, delete it.  */
 	  FOR_EACH_EDGE (e, ei, e->dest->preds)
@@ -4268,6 +4270,7 @@ cleanup_empty_eh_move_lp (basic_block bb, edge e_out,
   /* Clean up E_OUT for the fallthru.  */
   e_out->flags = (e_out->flags & ~EDGE_EH) | EDGE_FALLTHRU;
   e_out->probability = REG_BR_PROB_BASE;
+  e_out->count = e_out->src->count;
 }
 
 /* A subroutine of cleanup_empty_eh.  Handle more complex cases of
