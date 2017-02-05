@@ -26,6 +26,11 @@
 
 2017-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/contrib.texi (Contributors): Refer to Hans Boehm's
+	garbage collector only in textual form.
+
+2017-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/extend.texi (x86 specific memory model extensions for
 	transactional memory): Simplify a phrase.
 
