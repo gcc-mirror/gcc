@@ -1,3 +1,20 @@
+2017-02-06  Kito Cheng  <kito.cheng@gmail.com>
+
+	* lib/target-supports.exp: Define the RISC-V target.
+	* g++.dg/cpp0x/constexpr-rom.C: Skip on RISC-V
+	* gcc.dg/builtin-apply2.c: Likewise.
+	* gcc.dg/ifcvt-4.c: Likewise.
+	* gcc.dg/loop-8.c: Likewise.
+	* gcc.dg/sibcall-10.c: Likewise.
+	* gcc.dg/sibcall-9.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Likewise.
+	* gcc.dg/tree-ssa/20040204-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* gcc.c-torture/execute/20101011-1.c: Define DO_TEST on RISC-V.
+	* gcc.dg/20020312-2.c: Don't define PIC_REG on RISC-V.
+	* gcc.dg/stack-usage-1.c: Define SIZE on RISC-V.
+
 2017-02-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/66144
