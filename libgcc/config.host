@@ -167,6 +167,9 @@ powerpc*-*-*)
 	;;
 rs6000*-*-*)
 	;;
+riscv*-*-*)
+	cpu_type=riscv
+	;;
 sparc64*-*-*)
 	cpu_type=sparc
 	;;
@@ -1092,6 +1095,15 @@ powerpcle-*-eabisim*)
 powerpcle-*-eabi*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
+riscv*-*-linux*)
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
+	md_unwind_header=riscv/linux-unwind.h
+	;;
+riscv*-*-*)
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	md_unwind_header=rs6000/aix-unwind.h
