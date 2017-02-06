@@ -1028,17 +1028,17 @@ See RS/6000 and PowerPC Options.
 
 @emph{RISC-V Options}
 @gccoptlist{-mbranch-cost=@var{N-instruction} @gol
--mmemcpy -mno-memcpy @gol
--mplt -mno-plt @gol
+-mmemcpy  -mno-memcpy @gol
+-mplt  -mno-plt @gol
 -mabi=@var{ABI-string} @gol
--mfdiv -mno-fdiv @gol
--mdiv -mno-div @gol
+-mfdiv  -mno-fdiv @gol
+-mdiv  -mno-div @gol
 -march=@var{ISA-string} @gol
 -mtune=@var{processor-string} @gol
 -msmall-data-limit=@var{N-bytes} @gol
--msave-restore -mno-save-restore @gol
+-msave-restore  -mno-save-restore @gol
 -mcmodel=@var{code-model} @gol
--mexplicit-relocs -mno-explicit-relocs @gol}
+-mexplicit-relocs  -mno-explicit-relocs @gol}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
