@@ -390,13 +390,13 @@
 }")
 
 (define_expand "vcond<mode><mode>"
-  [(set (match_operand:VEC_I 0 "vint_operand" "")
+  [(set (match_operand:VEC_I 0 "vint_operand")
 	(if_then_else:VEC_I
 	 (match_operator 3 "comparison_operator"
-			 [(match_operand:VEC_I 4 "vint_operand" "")
-			  (match_operand:VEC_I 5 "vint_operand" "")])
-	 (match_operand:VEC_I 1 "vint_operand" "")
-	 (match_operand:VEC_I 2 "vint_operand" "")))]
+			 [(match_operand:VEC_I 4 "vint_operand")
+			  (match_operand:VEC_I 5 "vint_operand")])
+	 (match_operand:VEC_I 1 "vector_int_reg_or_same_bit")
+	 (match_operand:VEC_I 2 "vector_int_reg_or_same_bit")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
@@ -446,13 +446,13 @@
 }")
 
 (define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VEC_I 0 "vint_operand" "")
+  [(set (match_operand:VEC_I 0 "vint_operand")
 	(if_then_else:VEC_I
 	 (match_operator 3 "comparison_operator"
-			 [(match_operand:VEC_I 4 "vint_operand" "")
-			  (match_operand:VEC_I 5 "vint_operand" "")])
-	 (match_operand:VEC_I 1 "vint_operand" "")
-	 (match_operand:VEC_I 2 "vint_operand" "")))]
+			 [(match_operand:VEC_I 4 "vint_operand")
+			  (match_operand:VEC_I 5 "vint_operand")])
+	 (match_operand:VEC_I 1 "vector_int_reg_or_same_bit")
+	 (match_operand:VEC_I 2 "vector_int_reg_or_same_bit")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
