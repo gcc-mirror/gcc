@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-ldist-details" } */
+/* { dg-options "-O3 -fdump-tree-ldist-details --param max-completely-peel-times=8" } */
 
 typedef struct S {
     double z[8][25];
