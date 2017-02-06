@@ -4882,6 +4882,8 @@ them: try the first ones in this list first.
 
 @hook TARGET_SCHED_SET_SCHED_FLAGS
 
+@hook TARGET_SCHED_CAN_SPECULATE_INSN
+
 @hook TARGET_SCHED_SMS_RES_MII
 
 @hook TARGET_SCHED_DISPATCH

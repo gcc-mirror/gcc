@@ -1,3 +1,13 @@
+2017-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/68664
+	* target.def (can_speculate_insn): New hook.
+	* doc/tm.texi.in (TARGET_SCHED_CAN_SPECULATE_INSN): New hook.
+	* doc/tm.texi: Regenerate.
+	* sched-rgn.c (can_schedule_ready_p): Use the new hook.
+	* config/rs6000/rs6000.c (TARGET_SCHED_CAN_SPECULATE_INSN): New macro.
+	(rs6000_sched_can_speculate_insn): New function.
+
 2017-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79284

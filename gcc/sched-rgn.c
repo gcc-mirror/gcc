@@ -2147,12 +2147,19 @@ static int
 can_schedule_ready_p (rtx_insn *insn)
 {
   /* An interblock motion?  */
-  if (INSN_BB (insn) != target_bb
-      && IS_SPECULATIVE_INSN (insn)
-      && !check_live (insn, INSN_BB (insn)))
-    return 0;
-  else
-    return 1;
+  if (INSN_BB (insn) != target_bb && IS_SPECULATIVE_INSN (insn))
+    {
+      /* Cannot schedule this insn unless all operands are live.  */
+      if (!check_live (insn, INSN_BB (insn)))
+	return 0;
+
+      /* Should not move expensive instructions speculatively.  */
+      if (GET_CODE (PATTERN (insn)) != CLOBBER
+	  && !targetm.sched.can_speculate_insn (insn))
+	return 0;
+    }
+
+  return 1;
 }
 
 /* Updates counter and other information.  Split from can_schedule_ready_p ()

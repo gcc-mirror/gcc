@@ -7000,6 +7000,14 @@ The structure *@var{spec_info} should be filled in by the target.
 The structure describes speculation types that can be used in the scheduler.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SCHED_CAN_SPECULATE_INSN (rtx_insn *@var{insn})
+Some instructions should never be speculated by the schedulers, usually
+ because the instruction is too expensive to get this wrong.  Often such
+ instructions have long latency, and often they are not fully modeled in the
+ pipeline descriptions.  This hook should return @code{false} if @var{insn}
+ should not be speculated.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_SCHED_SMS_RES_MII (struct ddg *@var{g})
 This hook is called by the swing modulo scheduler to calculate a
 resource-based lower bound which is based on the resources available in
