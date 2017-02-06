@@ -13669,26 +13669,19 @@
 ;; vector modes into vec_extract*.
 (define_split
   [(set (match_operand:SWI48x 0 "nonimmediate_operand")
-	(match_operand:SWI48x 1 "register_operand"))]
+	(subreg:SWI48x (match_operand 1 "register_operand") 0))]
   "can_create_pseudo_p ()
-   && SUBREG_P (operands[1])
-   && REG_P (SUBREG_REG (operands[1]))
-   && (GET_MODE_CLASS (GET_MODE (SUBREG_REG (operands[1]))) == MODE_VECTOR_INT
-       || (GET_MODE_CLASS (GET_MODE (SUBREG_REG (operands[1])))
-	   == MODE_VECTOR_FLOAT))
-   && SUBREG_BYTE (operands[1]) == 0
-   && TARGET_SSE
-   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[1]))) == 16
-       || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[1]))) == 32
-	   && TARGET_AVX)
-       || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[1]))) == 64
-	   && TARGET_AVX512F))
+   && REG_P (operands[1])
+   && VECTOR_MODE_P (GET_MODE (operands[1]))
+   && ((TARGET_SSE && GET_MODE_SIZE (GET_MODE (operands[1])) == 16)
+       || (TARGET_AVX && GET_MODE_SIZE (GET_MODE (operands[1])) == 32)
+       || (TARGET_AVX512F && GET_MODE_SIZE (GET_MODE (operands[1])) == 64))
    && (<MODE>mode == SImode || TARGET_64BIT || MEM_P (operands[0]))"
   [(set (match_dup 0) (vec_select:SWI48x (match_dup 1)
 					 (parallel [(const_int 0)])))]
 {
   rtx tmp;
-  operands[1] = SUBREG_REG (operands[1]);
+
   switch (GET_MODE_SIZE (GET_MODE (operands[1])))
     {
     case 64:

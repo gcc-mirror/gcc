@@ -1,3 +1,9 @@
+2017-02-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vector modes -> vec_extract* splitter): Use
+	explicit subreg RTX with operand 1.  Use VECTOR_MODE_P predicate
+	to simplify split condition.
+
 2017-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-expand.c (oxpand_omp_atomic_fetch_op,
