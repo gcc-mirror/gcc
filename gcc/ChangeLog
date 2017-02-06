@@ -1,5 +1,9 @@
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
+	* docs/invoke.texi (RISC-V Options): Alphabetize.
+
+2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
+
 	* doc/invoke.texi (RISC-V Options): Use two spaces to separate
 	options.
 
