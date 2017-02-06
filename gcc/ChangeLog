@@ -1,5 +1,10 @@
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
+	* doc/invoke.texi (RISC-V Options): Use two spaces to separate
+	options.
+
+2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
+
 	* config/riscv/riscv.c: New file.
 	* gcc/common/config/riscv/riscv-common.c: Likewise.
 	* config.gcc: Likewise.
