@@ -89,7 +89,7 @@
 #define bit_AVX512CD	(1 << 28)
 #define bit_SHA		(1 << 29)
 #define bit_AVX512BW	(1 << 30)
-#define bit_AVX512VL	(1 << 31)
+#define bit_AVX512VL	(1u << 31)
 
 /* %ecx */
 #define bit_PREFETCHWT1	  (1 << 0)
