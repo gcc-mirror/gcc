@@ -7309,7 +7309,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 
   /* Enter the scope corresponding to the type of the object
      given by the POSTFIX_EXPRESSION.  */
-  if (!dependent_p && TREE_TYPE (postfix_expression) != NULL_TREE)
+  if (!dependent_p)
     {
       scope = TREE_TYPE (postfix_expression);
       /* According to the standard, no expression should ever have
@@ -7324,26 +7324,50 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	 required to be of complete type for purposes of class member
 	 access (5.2.5) outside the member function body.  */
       if (postfix_expression != current_class_ref
+	  && scope != error_mark_node
 	  && !(processing_template_decl
 	       && current_class_type
 	       && (same_type_ignoring_top_level_qualifiers_p
 		   (scope, current_class_type))))
-	scope = complete_type_or_else (scope, postfix_expression);
-      /* Let the name lookup machinery know that we are processing a
-	 class member access expression.  */
-      parser->context->object_type = scope;
-      /* If something went wrong, we want to be able to discern that case,
-	 as opposed to the case where there was no SCOPE due to the type
-	 of expression being dependent.  */
-      if (!scope)
-	scope = error_mark_node;
-      /* If the SCOPE was erroneous, make the various semantic analysis
-	 functions exit quickly -- and without issuing additional error
-	 messages.  */
-      if (scope == error_mark_node)
-	postfix_expression = error_mark_node;
+	{
+	  scope = complete_type (scope);
+	  if (!COMPLETE_TYPE_P (scope))
+	    {
+	      /* In a template, be permissive by treating an object expression
+		 of incomplete type as dependent (after a pedwarn).  */
+	      diagnostic_t kind = (processing_template_decl
+				   ? DK_PEDWARN
+				   : DK_ERROR);
+	      cxx_incomplete_type_diagnostic
+		(location_of (postfix_expression),
+		 postfix_expression, scope, kind);
+	      if (processing_template_decl)
+		{
+		  dependent_p = true;
+		  scope = TREE_TYPE (postfix_expression) = NULL_TREE;
+		}
+	    }
+	}
+
+      if (!dependent_p)
+	{
+	  /* Let the name lookup machinery know that we are processing a
+	     class member access expression.  */
+	  parser->context->object_type = scope;
+	  /* If something went wrong, we want to be able to discern that case,
+	     as opposed to the case where there was no SCOPE due to the type
+	     of expression being dependent.  */
+	  if (!scope)
+	    scope = error_mark_node;
+	  /* If the SCOPE was erroneous, make the various semantic analysis
+	     functions exit quickly -- and without issuing additional error
+	     messages.  */
+	  if (scope == error_mark_node)
+	    postfix_expression = error_mark_node;
+	}
     }
-  else
+
+  if (dependent_p)
     /* Tell cp_parser_lookup_name that there was an object, even though it's
        type-dependent.  */
     parser->context->object_type = unknown_type_node;
