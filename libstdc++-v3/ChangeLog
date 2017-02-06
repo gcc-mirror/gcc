@@ -1,3 +1,9 @@
+2017-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79323
+	* testsuite/20_util/duration/literals/range.cc: Prune extra output
+	at -O0.
+
 2017-02-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/documentation_hacking.xml: Update URL of the
