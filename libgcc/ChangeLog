@@ -1,3 +1,21 @@
+2017-02-06  Palmer Dabbelt <palmer@dabbelt.com>
+
+	* config.host: Add RISC-V tuples.
+	* config/riscv/atomic.c: New file.
+	* config/riscv/crti.S: Likewise.
+	* config/riscv/crtn.S: Likewise.
+	* config/riscv/div.S: Likewise.
+	* config/riscv/linux-unwind.h: Likewise.
+	* config/riscv/muldi3.S: Likewise.
+	* config/riscv/multi3.S: Likewise.
+	* config/riscv/save-restore.S: Likewise.
+	* config/riscv/sfp-machine.h: Likewise.
+	* config/riscv/t-elf: Likewise.
+	* config/riscv/t-elf32: Likewise.
+	* config/riscv/t-elf64: Likewise.
+	* config/riscv/t-softfp32: Likewise.
+	* config/riscv/t-softfp64: Likewise.
+
 2017-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* soft-fp/op-common.h (_FP_MUL, _FP_FMA, _FP_DIV): Add
