@@ -1,5 +1,9 @@
 2017-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79377
+	* tree.c (build_min_non_dep_op_overload): For POST{INC,DEC}REMENT_EXPR
+	allow one fewer than expected arguments if flag_permissive.
+
 	PR c++/79372
 	* decl.c (cp_finish_decomp): On error set decl type to error_mark_node.
 	* pt.c (tsubst_expr): Don't call tsubst_decomp_names on decompositions

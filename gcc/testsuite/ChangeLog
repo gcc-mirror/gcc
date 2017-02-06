@@ -1,5 +1,8 @@
 2017-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79377
+	* g++.dg/lookup/pr79377.C: New test.
+
 	PR c++/79372
 	* g++.dg/cpp1z/decomp25.C: New test.
 
