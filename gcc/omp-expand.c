@@ -6241,7 +6241,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
      matter is that (with the exception of i486 vs i586 and xadd) all targets
      that support any atomic operaton optab also implements compare-and-swap.
      Let optabs.c take care of expanding any compare-and-swap loop.  */
-  if (!can_compare_and_swap_p (imode, true))
+  if (!can_compare_and_swap_p (imode, true) || !can_atomic_load_p (imode))
     return false;
 
   gsi = gsi_last_bb (load_bb);
@@ -6318,7 +6318,8 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
   itype = TREE_TYPE (TREE_TYPE (cmpxchg));
 
-  if (!can_compare_and_swap_p (TYPE_MODE (itype), true))
+  if (!can_compare_and_swap_p (TYPE_MODE (itype), true)
+      || !can_atomic_load_p (TYPE_MODE (itype)))
     return false;
 
   /* Load the initial value, replacing the GIMPLE_OMP_ATOMIC_LOAD.  */
