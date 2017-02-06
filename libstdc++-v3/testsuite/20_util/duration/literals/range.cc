@@ -28,3 +28,4 @@ test01()
   auto h = 9223372036854775808h;
   // { dg-error "cannot be represented" "" { target *-*-* } 890 }
 }
+// { dg-prune-output "in constexpr expansion" } // needed for -O0
