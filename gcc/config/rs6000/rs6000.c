@@ -25125,7 +25125,6 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   machine_mode cc_mode = CCmode;
   rtx mask;
   rtx cond2;
-  rtx tmp;
   bool invert_move = false;
 
   if (VECTOR_UNIT_NONE_P (dest_mode))
@@ -25170,11 +25169,43 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
     return 0;
 
   if (invert_move)
+    std::swap (op_true, op_false);
+
+  /* Optimize vec1 == vec2, to know the mask generates -1/0.  */
+  if (GET_MODE_CLASS (dest_mode) == MODE_VECTOR_INT
+      && (GET_CODE (op_true) == CONST_VECTOR
+	  || GET_CODE (op_false) == CONST_VECTOR))
     {
-      tmp = op_true;
-      op_true = op_false;
-      op_false = tmp;
+      rtx constant_0 = CONST0_RTX (dest_mode);
+      rtx constant_m1 = CONSTM1_RTX (dest_mode);
+
+      if (op_true == constant_m1 && op_false == constant_0)
+	{
+	  emit_move_insn (dest, mask);
+	  return 1;
+	}
+
+      else if (op_true == constant_0 && op_false == constant_m1)
+	{
+	  emit_insn (gen_rtx_SET (dest, gen_rtx_NOT (dest_mode, mask)));
+	  return 1;
+	}
+
+      /* If we can't use the vector comparison directly, perhaps we can use
+	 the mask for the true or false fields, instead of loading up a
+	 constant.  */
+      if (op_true == constant_m1)
+	op_true = mask;
+
+      if (op_false == constant_0)
+	op_false = mask;
     }
+
+  if (!REG_P (op_true) && !SUBREG_P (op_true))
+    op_true = force_reg (dest_mode, op_true);
+
+  if (!REG_P (op_false) && !SUBREG_P (op_false))
+    op_false = force_reg (dest_mode, op_false);
 
   cond2 = gen_rtx_fmt_ee (NE, cc_mode, gen_lowpart (dest_mode, mask),
 			  CONST0_RTX (dest_mode));

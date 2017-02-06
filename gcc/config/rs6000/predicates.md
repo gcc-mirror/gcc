@@ -808,6 +808,21 @@
   (and (match_code "const_int,const_double,const_wide_int,const_vector")
        (match_test "op == CONSTM1_RTX (mode) && !FLOAT_MODE_P (mode)")))
 
+;; Return 1 if operand is a vector int register or is either a vector constant
+;; of all 0 bits of a vector constant of all 1 bits.
+(define_predicate "vector_int_reg_or_same_bit"
+  (match_code "reg,subreg,const_vector")
+{
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+    return 0;
+
+  else if (REG_P (op) || SUBREG_P (op))
+    return vint_operand (op, mode);
+
+  else
+    return op == CONST0_RTX (mode) || op == CONSTM1_RTX (mode);
+})
+
 ;; Return 1 if operand is 0.0.
 (define_predicate "zero_fp_constant"
   (and (match_code "const_double")
@@ -1260,8 +1275,8 @@
   (and (match_operand 0 "branch_comparison_operator")
        (match_code "ne,le,ge,leu,geu,ordered")))
 
-;; Return 1 if OP is a comparison operator suitable for vector/scalar
-;; comparisons that generate a -1/0 mask.
+;; Return 1 if OP is a comparison operator suitable for floating point
+;; vector/scalar comparisons that generate a -1/0 mask.
 (define_predicate "fpmask_comparison_operator"
   (match_code "eq,gt,ge"))
 
@@ -1270,6 +1285,11 @@
 ;; fpmask_comparison_operator).
 (define_predicate "invert_fpmask_comparison_operator"
   (match_code "ne,unlt,unle"))
+
+;; Return 1 if OP is a comparison operation suitable for integer vector/scalar
+;; comparisons that generate a -1/0 mask.
+(define_predicate "vecint_comparison_operator"
+  (match_code "eq,gt,gtu"))
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; insn, which is true if the corresponding bit in the CC register is set.
