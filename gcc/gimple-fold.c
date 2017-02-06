@@ -1244,8 +1244,9 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		return false;
 	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
 				 integer_one_node);
-	      /* Avoid using the array size as the minimum.  */
-	      minlen = NULL;
+	      /* Set the minimum size to zero since the string in
+		 the array could have zero length.  */
+	      *minlen = ssize_int (0);
 	    }
 	}
 
