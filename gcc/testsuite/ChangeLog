@@ -1,3 +1,8 @@
+2017-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70448
+	* g++.dg/cpp0x/pr70448.C: New.
+
 2017-02-06  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR 78348
