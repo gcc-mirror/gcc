@@ -3362,6 +3362,26 @@ The @code{X} register.
 
 @end table
 
+@item RISC-V---@file{config/riscv/constraints.md}
+@table @code
+
+@item f
+A floating-point register (if availiable).
+
+@item I
+An I-type 12-bit signed immediate.
+
+@item J
+Integer zero.
+
+@item K
+A 5-bit unsigned immediate for CSR access instructions.
+
+@item A
+An address that is held in a general-purpose register.
+
+@end table
+
 @item RX---@file{config/rx/constraints.md}
 @table @code
 @item Q

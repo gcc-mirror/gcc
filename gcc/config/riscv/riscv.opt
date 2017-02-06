@@ -1,0 +1,111 @@
+; Options for the RISC-V port of the compiler
+;
+; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/riscv/riscv-opts.h
+
+mbranch-cost=
+Target RejectNegative Joined UInteger Var(riscv_branch_cost)
+-mbranch-cost=N	Set the cost of branches to roughly N instructions.
+
+mplt
+Target Report Var(TARGET_PLT) Init(1)
+When generating -fpic code, allow the use of PLTs. Ignored for fno-pic.
+
+mabi=
+Target Report RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32)
+Specify integer and floating-point calling convention.
+
+Enum
+Name(abi_type) Type(enum riscv_abi_type)
+Supported ABIs (for use with the -mabi= option):
+
+EnumValue
+Enum(abi_type) String(ilp32) Value(ABI_ILP32)
+
+EnumValue
+Enum(abi_type) String(ilp32f) Value(ABI_ILP32F)
+
+EnumValue
+Enum(abi_type) String(ilp32d) Value(ABI_ILP32D)
+
+EnumValue
+Enum(abi_type) String(lp64) Value(ABI_LP64)
+
+EnumValue
+Enum(abi_type) String(lp64f) Value(ABI_LP64F)
+
+EnumValue
+Enum(abi_type) String(lp64d) Value(ABI_LP64D)
+
+mfdiv
+Target Report Mask(FDIV)
+Use hardware floating-point divide and square root instructions.
+
+mdiv
+Target Report Mask(DIV)
+Use hardware instructions for integer division.
+
+march=
+Target Report RejectNegative Joined
+-march=	Generate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be
+lower-case.
+
+mtune=
+Target RejectNegative Joined Var(riscv_tune_string)
+-mtune=PROCESSOR	Optimize the output for PROCESSOR.
+
+msmall-data-limit=
+Target Joined Separate UInteger Var(g_switch_value) Init(8)
+-msmall-data-limit=N	Put global and static data smaller than <number> bytes into a special section (on some targets).
+
+msave-restore
+Target Report Mask(SAVE_RESTORE)
+Use smaller but slower prologue and epilogue code.
+
+mcmodel=
+Target Report RejectNegative Joined Enum(code_model) Var(riscv_cmodel) Init(TARGET_DEFAULT_CMODEL)
+Specify the code model.
+
+Enum
+Name(code_model) Type(enum riscv_code_model)
+Known code models (for use with the -mcmodel= option):
+
+EnumValue
+Enum(code_model) String(medlow) Value(CM_MEDLOW)
+
+EnumValue
+Enum(code_model) String(medany) Value(CM_MEDANY)
+
+mexplicit-relocs
+Target Report Mask(EXPLICIT_RELOCS)
+Use %reloc() operators, rather than assembly macros, to load addresses.
+
+Mask(64BIT)
+
+Mask(MUL)
+
+Mask(ATOMIC)
+
+Mask(HARD_FLOAT)
+
+Mask(DOUBLE_FLOAT)
+
+Mask(RVC)
