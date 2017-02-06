@@ -451,6 +451,10 @@ powerpc*-*-*)
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	;;
+riscv*)
+	cpu_type=riscv
+	extra_objs="riscv-builtins.o riscv-c.o"
+	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	;;
@@ -2016,6 +2020,34 @@ microblaze*-*-elf)
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
 	tmake_file="${tmake_file} microblaze/t-microblaze"
         ;;
+riscv*-*-linux*)
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
+	case "x${enable_multilib}" in
+	xno) ;;
+	xyes) tmake_file="${tmake_file} riscv/t-linux-multilib" ;;
+	*) echo "Unknown value for enable_multilib"; exit 1
+	esac
+	tmake_file="${tmake_file} riscv/t-riscv riscv/t-linux"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
+riscv*-*-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
+	case "x${enable_multilib}" in
+	xno) ;;
+	xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
+	*) echo "Unknown value for enable_multilib"; exit 1
+	esac
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
@@ -3937,6 +3969,70 @@ case "${target}" in
 				;;
 			esac
 		done
+		;;
+
+	riscv*-*-*)
+		supported_defaults="abi arch tune"
+
+		case "${target}" in
+		riscv32*) xlen=32 ;;
+		riscv64*) xlen=64 ;;
+		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
+		esac
+
+		# Infer arch from --with-arch, --target, and --with-abi.
+		case "${with_arch}" in
+		rv32i* | rv32g* | rv64i* | rv64g*)
+			# OK.
+			;;
+		"")
+			# Infer XLEN, but otherwise assume GC.
+			case "${with_abi}" in
+			ilp32 | ilp32f | ilp32d) with_arch="rv32gc" ;;
+			lp64 | lp64f | lp64d) with_arch="rv64gc" ;;
+			*) with_arch="rv${xlen}gc" ;;
+			esac
+			;;
+		*)
+			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32i, rv32g, rv64i, or rv64g." 1>&2
+			exit 1
+			;;
+		esac
+
+		# Make sure --with-abi is valid.  If it was not specified,
+		# pick a default based on the ISA, preferring soft-float
+		# unless the D extension is present.
+		case "${with_abi}" in
+		ilp32 | ilp32f | ilp32d | lp64 | lp64f | lp64d)
+			;;
+		"")
+			case "${with_arch}" in
+			rv32*d* | rv32g*) with_abi=ilp32d ;;
+			rv32*) with_abi=ilp32 ;;
+			rv64*d* | rv64g*) with_abi=lp64d ;;
+			rv64*) with_abi=lp64 ;;
+			esac
+			;;
+		*)
+			echo "--with-abi=${with_abi} is not supported" 1>&2
+			exit 1
+			;;
+		esac
+
+		# Make sure ABI and ISA are compatible.
+		case "${with_abi},${with_arch}" in
+		ilp32,rv32* \
+		| ilp32f,rv32*f* | ilp32f,rv32g* \
+		| ilp32d,rv32*d* | ilp32d,rv32g* \
+		| lp64,rv64* \
+		| lp64f,rv64*f* | lp64f,rv64g* \
+		| lp64d,rv64*d* | lp64d,rv64g*)
+			;;
+		*)
+			echo "--with-abi=${with_abi} is not supported for ISA ${with_arch}" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	mips*-*-*)

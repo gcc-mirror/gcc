@@ -173,6 +173,10 @@ Denis Chertykov for contributing and maintaining the AVR port, the first GCC por
 for an 8-bit architecture.
 
 @item
+Kito Cheng for his work on the RISC-V port, including bringing up the test
+suite and maintenance.
+
+@item
 Scott Christley for his Objective-C contributions.
 
 @item
@@ -215,6 +219,9 @@ Ian Dall for major improvements to the NS32k port.
 @item
 Paul Dale for his work to add uClinux platform support to the
 m68k backend.
+
+@item
+Palmer Dabbelt for his work maintaining the RISC-V port.
 
 @item
 Dario Dariol contributed the four varieties of sample programs
@@ -1033,6 +1040,9 @@ associated configure steps.
 
 @item
 Todd Vierling for contributions for NetBSD ports.
+
+@item
+Andrew Waterman for contributing the RISC-V port, as well as maintaining it.
 
 @item
 Jonathan Wakely for contributing libstdc++ Doxygen notes and XHTML

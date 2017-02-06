@@ -1,3 +1,37 @@
+2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* config/riscv/riscv.c: New file.
+	* gcc/common/config/riscv/riscv-common.c: Likewise.
+	* config.gcc: Likewise.
+	* config/riscv/constraints.md: Likewise.
+	* config/riscv/elf.h: Likewise.
+	* config/riscv/generic.md: Likewise.
+	* config/riscv/linux.h: Likewise.
+	* config/riscv/multilib-generator: Likewise.
+	* config/riscv/peephole.md: Likewise.
+	* config/riscv/pic.md: Likewise.
+	* config/riscv/predicates.md: Likewise.
+	* config/riscv/riscv-builtins.c: Likewise.
+	* config/riscv/riscv-c.c: Likewise.
+	* config/riscv/riscv-ftypes.def: Likewise.
+	* config/riscv/riscv-modes.def: Likewise.
+	* config/riscv/riscv-opts.h: Likewise.
+	* config/riscv/riscv-protos.h: Likewise.
+	* config/riscv/riscv.h: Likewise.
+	* config/riscv/riscv.md: Likewise.
+	* config/riscv/riscv.opt: Likewise.
+	* config/riscv/sync.md: Likewise.
+	* config/riscv/t-elf-multilib: Likewise.
+	* config/riscv/t-linux: Likewise.
+	* config/riscv/t-linux-multilib: Likewise.
+	* config/riscv/t-riscv: Likewise.
+	* configure.ac: Likewise.
+	* doc/contrib.texi: Add Kito Cheng, Palmer Dabbelt, and Andrew
+	Waterman as RISC-V maintainers.
+	* doc/install.texi: Add RISC-V entries.
+	* doc/invoke.texi: Add RISC-V options section.
+	* doc/md.texi: Add RISC-V constraints section.
+
 2017-02-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/66144

@@ -4297,6 +4297,36 @@ This configuration is intended for embedded systems.
 @html
 <hr />
 @end html
+@anchor{riscv32-x-elf}
+@heading riscv32-*-elf
+The RISC-V RV32 instruction set.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
+@anchor{riscv64-x-elf}
+@heading riscv64-*-elf
+The RISC-V RV64 instruction set.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
+@anchor{riscv32-x-linux}
+@heading riscv32-*-linux
+The RISC-V RV32 instruction set running GNU/Linux.
+
+@html
+<hr />
+@end html
+@anchor{riscv64-x-linux}
+@heading riscv64-*-linux
+The RISC-V RV64 instruction set running GNU/Linux.
+
+@html
+<hr />
+@end html
 @anchor{rx-x-elf}
 @heading rx-*-elf
 The Renesas RX processor.  See
