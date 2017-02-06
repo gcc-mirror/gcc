@@ -31,6 +31,7 @@
 	* doc/install.texi: Add RISC-V entries.
 	* doc/invoke.texi: Add RISC-V options section.
 	* doc/md.texi: Add RISC-V constraints section.
+	* configure: Regenerated.
 
 2017-02-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
