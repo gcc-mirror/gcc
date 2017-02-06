@@ -1,3 +1,12 @@
+2017-02-06  Carl Love  <cel@us.ibm.com>
+
+	Backport of two commits from mainline, r244943 and r244904,
+	dated 2017-01-26 and 2017-01-25 respectively
+
+	* config/rs6000/rs6000-c (altivec_overloaded_builtins): Fix order
+	of entries for ALTIVEC_BUILTIN_VEC_PACKS.  Remove bogus entries
+	for P8V_BUILTIN_VEC_VGBBD.
+
 2017-02-03  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061
