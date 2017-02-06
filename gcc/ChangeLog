@@ -1,3 +1,9 @@
+2017-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (oxpand_omp_atomic_fetch_op,
+	expand_omp_atomic_pipeline): Return false if can_atomic_load_p is
+	false.
+
 2017-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/68664
