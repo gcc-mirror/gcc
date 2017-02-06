@@ -750,12 +750,12 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
       int bitwidth = bitwidths[op_flags - O_U1];
 
       if (!tree_fits_uhwi_p (arg)
-	  || tree_to_uhwi (arg) > ((unsigned HOST_WIDE_INT)1 << bitwidth) - 1)
+	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1)
 	{
 	  error("constant argument %d for builtin %qF is out of range (0.."
 		HOST_WIDE_INT_PRINT_UNSIGNED ")",
 		argnum, decl,
-		((unsigned HOST_WIDE_INT)1 << bitwidth) - 1);
+		(HOST_WIDE_INT_1U << bitwidth) - 1);
 	  return false;
 	}
     }
@@ -766,15 +766,15 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
       int bitwidth = bitwidths[op_flags - O_S2];
 
       if (!tree_fits_shwi_p (arg)
-	  || tree_to_shwi (arg) < -((HOST_WIDE_INT)1 << (bitwidth - 1))
-	  || tree_to_shwi (arg) > (((HOST_WIDE_INT)1 << (bitwidth - 1)) - 1))
+	  || tree_to_shwi (arg) < -(HOST_WIDE_INT_1 << (bitwidth - 1))
+	  || tree_to_shwi (arg) > ((HOST_WIDE_INT_1 << (bitwidth - 1)) - 1))
 	{
 	  error("constant argument %d for builtin %qF is out of range ("
 		HOST_WIDE_INT_PRINT_DEC ".."
 		HOST_WIDE_INT_PRINT_DEC ")",
 		argnum, decl,
-		-((HOST_WIDE_INT)1 << (bitwidth - 1)),
-		((HOST_WIDE_INT)1 << (bitwidth - 1)) - 1);
+		-(HOST_WIDE_INT_1 << (bitwidth - 1)),
+		(HOST_WIDE_INT_1 << (bitwidth - 1)) - 1);
 	  return false;
 	}
     }
@@ -1561,7 +1561,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	  && modesize <= HOST_BITS_PER_WIDE_INT)
 	{
 	  unsigned HOST_WIDE_INT block;
-	  block = ((unsigned HOST_WIDE_INT) 1 << len) - 1;
+	  block = (HOST_WIDE_INT_1U << len) - 1;
 	  block <<= modesize - pos - len;
 
 	  *op0 = gen_rtx_AND (GET_MODE (inner), inner,
@@ -1610,7 +1610,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && INTVAL (*op1) == 0xffff
       && SCALAR_INT_MODE_P (GET_MODE (*op0))
       && (nonzero_bits (*op0, GET_MODE (*op0))
-	  & ~(unsigned HOST_WIDE_INT) 0xffff) == 0)
+	  & ~HOST_WIDE_INT_UC (0xffff)) == 0)
     {
       *op0 = gen_lowpart (HImode, *op0);
       *op1 = constm1_rtx;
@@ -2212,14 +2212,13 @@ s390_extract_part (rtx op, machine_mode mode, int def)
   unsigned HOST_WIDE_INT value = 0;
   int max_parts = HOST_BITS_PER_WIDE_INT / GET_MODE_BITSIZE (mode);
   int part_bits = GET_MODE_BITSIZE (mode);
-  unsigned HOST_WIDE_INT part_mask
-    = ((unsigned HOST_WIDE_INT)1 << part_bits) - 1;
+  unsigned HOST_WIDE_INT part_mask = (HOST_WIDE_INT_1U << part_bits) - 1;
   int i;
 
   for (i = 0; i < max_parts; i++)
     {
       if (i == 0)
-	value = (unsigned HOST_WIDE_INT) INTVAL (op);
+	value = UINTVAL (op);
       else
 	value >>= part_bits;
 
@@ -2243,7 +2242,7 @@ s390_single_part (rtx op,
   unsigned HOST_WIDE_INT value = 0;
   int n_parts = GET_MODE_SIZE (mode) / GET_MODE_SIZE (part_mode);
   unsigned HOST_WIDE_INT part_mask
-    = ((unsigned HOST_WIDE_INT)1 << GET_MODE_BITSIZE (part_mode)) - 1;
+    = (HOST_WIDE_INT_1U << GET_MODE_BITSIZE (part_mode)) - 1;
   int i, part = -1;
 
   if (GET_CODE (op) != CONST_INT)
@@ -2252,7 +2251,7 @@ s390_single_part (rtx op,
   for (i = 0; i < n_parts; i++)
     {
       if (i == 0)
-	value = (unsigned HOST_WIDE_INT) INTVAL (op);
+	value = UINTVAL (op);
       else
 	value >>= GET_MODE_BITSIZE (part_mode);
 
@@ -2282,9 +2281,9 @@ s390_contiguous_bitmask_nowrap_p (unsigned HOST_WIDE_INT in, int size,
 {
   int start;
   int end = -1;
-  int lowbit = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT - 1;
-  int highbit = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT - size;
-  unsigned HOST_WIDE_INT bitmask = 1ULL;
+  int lowbit = HOST_BITS_PER_WIDE_INT - 1;
+  int highbit = HOST_BITS_PER_WIDE_INT - size;
+  unsigned HOST_WIDE_INT bitmask = HOST_WIDE_INT_1U;
 
   gcc_assert (!!pstart == !!pend);
   for (start = lowbit; start >= highbit; bitmask <<= 1, start--)
@@ -2314,7 +2313,8 @@ s390_contiguous_bitmask_nowrap_p (unsigned HOST_WIDE_INT in, int size,
       unsigned HOST_WIDE_INT mask;
 
       /* Calculate a mask for all bits beyond the contiguous bits.  */
-      mask = ((~(0ULL) >> highbit) & (~(0ULL) << (lowbit - start + 1)));
+      mask = ((~HOST_WIDE_INT_0U >> highbit)
+	      & (~HOST_WIDE_INT_0U << (lowbit - start + 1)));
       if (mask & in)
 	/* There are more bits set beyond the first range of one bits.  */
 	return false;
@@ -2343,11 +2343,11 @@ bool
 s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, bool wrap_p,
 			   int size, int *start, int *end)
 {
-  int bs = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT;
+  int bs = HOST_BITS_PER_WIDE_INT;
   bool b;
 
   gcc_assert (!!start == !!end);
-  if ((in & ((~(0ULL)) >> (bs - size))) == 0)
+  if ((in & ((~HOST_WIDE_INT_0U) >> (bs - size))) == 0)
     /* This cannot be expressed as a contiguous bitmask.  Exit early because
        the second call of s390_contiguous_bitmask_nowrap_p would accept this as
        a valid bitmask.  */
@@ -2406,10 +2406,8 @@ s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
     {
       if (start)
 	{
-	  int bs = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT;
-
-	  *start -= (bs - size);
-	  *end -= (bs - size);
+	  *start -= (HOST_BITS_PER_WIDE_INT - size);
+	  *end -= (HOST_BITS_PER_WIDE_INT - size);
 	}
       return true;
     }
@@ -3470,7 +3468,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && CONST_INT_P (XEXP (XEXP (x, 1), 1))
 	  && (UINTVAL (XEXP (XEXP (x, 0), 1)) ==
-	      (1UL << UINTVAL (XEXP (XEXP (x, 1), 1))) - 1))
+	      (HOST_WIDE_INT_1U << UINTVAL (XEXP (XEXP (x, 1), 1))) - 1))
 	{
 	  *total = COSTS_N_INSNS (2);
 	  return true;
@@ -4596,8 +4594,8 @@ legitimize_pic_address (rtx orig, rtx reg)
 
       if (TARGET_CPU_ZARCH
 	  && larl_operand (const_addr, VOIDmode)
-	  && INTVAL (addend) < (HOST_WIDE_INT)1 << 31
-	  && INTVAL (addend) >= -((HOST_WIDE_INT)1 << 31))
+	  && INTVAL (addend) < HOST_WIDE_INT_1 << 31
+	  && INTVAL (addend) >= -(HOST_WIDE_INT_1 << 31))
 	{
 	  if (INTVAL (addend) & 1)
 	    {

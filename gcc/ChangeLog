@@ -1,3 +1,17 @@
+2017-02-06  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/predicates.md ("larl_operand"): Use macros from hwint.h.
+	* config/s390/s390.c (s390_const_operand_ok)
+	(s390_canonicalize_comparison, s390_extract_part)
+	(s390_single_part, s390_contiguous_bitmask_nowrap_p)
+	(s390_contiguous_bitmask_p, s390_rtx_costs)
+	(legitimize_pic_address): Likewise.
+	* config/s390/s390.md ("clzdi2", "clztidi2"): Likewise.
+	* config/s390/vx-builtins.md ("vec_genbytemaskv16qi")
+	("vec_permi<mode>", "vfae<mode>", "*vfaes<mode>", "vstrc<mode>")
+	("*vstrcs<mode>"): Use UINTVAL() to set unsigned HOST_WIDE_INT.
+	* config/s390/vector.md ("vec_vfenes<mode>"): Likewise.
+
 2017-02-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (*addhi3_zero_extend): Add alternative where

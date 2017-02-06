@@ -126,7 +126,7 @@
   int i;
   unsigned mask = 0x8000;
   rtx const_vec[16];
-  unsigned HOST_WIDE_INT byte_mask = INTVAL (operands[1]);
+  unsigned HOST_WIDE_INT byte_mask = UINTVAL (operands[1]);
 
   for (i = 0; i < 16; i++)
     {
@@ -1232,7 +1232,7 @@
 			  UNSPEC_VEC_VFAE))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   if (flags & VSTRING_FLAG_ZS)
     {
@@ -1259,7 +1259,7 @@
 		      UNSPEC_VEC_VFAECC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   if (flags & VSTRING_FLAG_ZS)
     {
@@ -1338,7 +1338,7 @@
 		      UNSPEC_VEC_VFEECC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
   flags &= ~VSTRING_FLAG_CS;
@@ -1515,7 +1515,7 @@
 			  UNSPEC_VEC_VSTRC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[4]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[4]);
 
   if (flags & VSTRING_FLAG_ZS)
     {
@@ -1544,7 +1544,7 @@
 		      UNSPEC_VEC_VSTRCCC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[4]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[4]);
 
   if (flags & VSTRING_FLAG_ZS)
     {

@@ -1118,7 +1118,7 @@
 		      UNSPEC_VEC_VFENECC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
   flags &= ~VSTRING_FLAG_CS;
