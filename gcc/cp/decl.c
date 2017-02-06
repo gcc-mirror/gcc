@@ -7378,6 +7378,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    }
 	  first = DECL_CHAIN (first);
 	}
+      TREE_TYPE (decl) = error_mark_node;
       if (DECL_P (decl) && DECL_NAMESPACE_SCOPE_P (decl))
 	SET_DECL_ASSEMBLER_NAME (decl, get_identifier ("<decomp>"));
       return;

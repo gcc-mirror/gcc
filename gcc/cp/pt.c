@@ -15765,7 +15765,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
 				    (pattern_decl));
 		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
-		    if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+		    if (VAR_P (decl)
+			&& DECL_DECOMPOSITION_P (decl)
+			&& TREE_TYPE (pattern_decl) != error_mark_node)
 		      {
 			unsigned int cnt;
 			tree first;
