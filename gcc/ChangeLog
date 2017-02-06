@@ -1,4 +1,25 @@
+2017-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79284
+	* tree-vectorizer.h (VECT_SCALAR_BOOLEAN_TYPE_P): Define.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand,
+	vectorizable_mask_load_store, vectorizable_operation,
+	vect_is_simple_cond, get_same_sized_vectype): Use it instead
+	of comparing TREE_CODE of a type against BOOLEAN_TYPE.
+	* tree-vect-patterns.c (check_bool_pattern, search_type_for_mask_1,
+	vect_recog_bool_pattern, vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	Remove redundant gimple_code (stmt) == GIMPLE_ASSIGN test after
+	is_gimple_assign (stmt).  Replace another such test with
+	is_gimple_assign (stmt).
+
 2017-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/78883
+	* config/avr/avr.c (rtl-iter.h): Include it.
+	(TARGET_LEGITIMATE_COMBINED_INSN): New hook define...
+	(avr_legitimate_combined_insn): ...and implementation.
 
 2017-02-06  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 

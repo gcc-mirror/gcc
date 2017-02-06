@@ -1,3 +1,8 @@
+2017-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79284
+	* gcc.c-torture/compile/pr79284.c: New test.
+
 2017-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70448
@@ -67,8 +72,8 @@
 
 	PR tree-optimization/79327
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
-	* gcc/testsuite/gcc.dg/tree-ssa/builtin-sprintf-warn-13.c: New test.
-	* gcc/testsuite/gcc.dg/tree-ssa/pr79327-2.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-13.c: New test.
+	* gcc.dg/tree-ssa/pr79327-2.c: Ditto.
 
 2017-02-03  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Sebor  <msebor@redhat.com>
@@ -353,7 +358,7 @@
 2017-01-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR tree-optimization/71374
-	* testsuite/gcc.target/i386/pr71374.c: New.
+	* gcc.target/i386/pr71374.c: New.
 
 2017-01-27  Martin Sebor  <msebor@redhat.com>
 
@@ -531,9 +536,9 @@
 	* g++.dg/ext/flexary18.C: Same.
 	* g++.dg/ext/flexary19.C: Same.
 	* g++.dg/ext/flexary7.C: Same.
-	* gcc/testsuite/g++.dg/cpp1z/has-unique-obj-representations1.C: Same.
-	* gcc/testsuite/g++.dg/ubsan/object-size-1.C: Same.
-	* gcc/testsuite/obj-c++.dg/property/at-property-23.mm: Same.
+	* g++.dg/cpp1z/has-unique-obj-representations1.C: Same.
+	* g++.dg/ubsan/object-size-1.C: Same.
+	* obj-c++.dg/property/at-property-23.mm: Same.
 
 2017-01-25  Jakub Jelinek  <jakub@redhat.com>
 
@@ -921,10 +926,10 @@
 
 2017-01-20  Jiong Wang  <jiong.wang@arm.com>
 
-	* testsuite/gcc.target/aarch64/return_address_sign_1.c: Enable on LP64
+	* gcc.target/aarch64/return_address_sign_1.c: Enable on LP64
 	only.
-	* testsuite/gcc.target/aarch64/return_address_sign_2.c: Likewise.
-	* testsuite/gcc.target/aarch64/return_address_sign_3.c: Likewise.
+	* gcc.target/aarch64/return_address_sign_2.c: Likewise.
+	* gcc.target/aarch64/return_address_sign_3.c: Likewise.
 
 2017-01-20  Nathan Sidwell  <nathan@acm.org>
 
@@ -1039,7 +1044,7 @@
 
 2017-01-19  Tamar Christina  <tamar.christina@arm.com>
 
-	* gcc/testsuite/lib/target-supports.exp
+	* lib/target-supports.exp
 	(check_effective_target_vect_call_copysignf): Enable for AArch64.
 
 2017-01-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>

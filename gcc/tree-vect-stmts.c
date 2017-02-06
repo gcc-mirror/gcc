@@ -1420,7 +1420,7 @@ vect_get_vec_def_for_operand (tree op, gimple *stmt, tree vectype)
 
       if (vectype)
 	vector_type = vectype;
-      else if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE
+      else if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
 	       && VECTOR_BOOLEAN_TYPE_P (stmt_vectype))
 	vector_type = build_same_sized_truth_vector_type (stmt_vectype);
       else
@@ -2029,7 +2029,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 
   mask = gimple_call_arg (stmt, 2);
 
-  if (TREE_CODE (TREE_TYPE (mask)) != BOOLEAN_TYPE)
+  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
     return false;
 
   /* FORNOW. This restriction should be relaxed.  */
@@ -5275,9 +5275,9 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	 of booleans or vector of integers).  We use output
 	 vectype because operations on boolean don't change
 	 type.  */
-      if (TREE_CODE (TREE_TYPE (op0)) == BOOLEAN_TYPE)
+      if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op0)))
 	{
-	  if (TREE_CODE (TREE_TYPE (scalar_dest)) != BOOLEAN_TYPE)
+	  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (scalar_dest)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7666,7 +7666,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, tree *comp_vectype)
 
   /* Mask case.  */
   if (TREE_CODE (cond) == SSA_NAME
-      && TREE_CODE (TREE_TYPE (cond)) == BOOLEAN_TYPE)
+      && VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (cond)))
     {
       gimple *lhs_def_stmt = SSA_NAME_DEF_STMT (cond);
       if (!vect_is_simple_use (cond, vinfo, &lhs_def_stmt,
@@ -9059,7 +9059,7 @@ get_mask_type_for_scalar_type (tree scalar_type)
 tree
 get_same_sized_vectype (tree scalar_type, tree vector_type)
 {
-  if (TREE_CODE (scalar_type) == BOOLEAN_TYPE)
+  if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
     return build_same_sized_truth_vector_type (vector_type);
 
   return get_vectype_for_scalar_type_and_size
