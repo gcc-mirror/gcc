@@ -1,3 +1,7 @@
+2017-02-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/linux.h(SIZE_TYPE): Add comment.
+
 2017-02-06  Julian Brown  <julian@codesourcery.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 	    Virendra Pathak  <virendra.pathak@broadcom.com>
