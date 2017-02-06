@@ -1,3 +1,8 @@
+2017-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*addhi3_zero_extend): Add alternative where
+	REGNO($0) == REGNO($1).
+
 2017-02-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/linux.h(SIZE_TYPE): Add comment.

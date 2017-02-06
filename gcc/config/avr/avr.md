@@ -1200,12 +1200,14 @@
 
 
 (define_insn "*addhi3_zero_extend"
-  [(set (match_operand:HI 0 "register_operand"                         "=r")
-        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
-                 (match_operand:HI 2 "register_operand"                 "0")))]
+  [(set (match_operand:HI 0 "register_operand"                         "=r,*?r")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r  ,0"))
+                 (match_operand:HI 2 "register_operand"                 "0  ,r")))]
   ""
-  "add %A0,%1\;adc %B0,__zero_reg__"
-  [(set_attr "length" "2")
+  "@
+	add %A0,%1\;adc %B0,__zero_reg__
+	add %A0,%A2\;mov %B0,%B2\;adc %B0,__zero_reg__"
+  [(set_attr "length" "2,3")
    (set_attr "cc" "set_n")])
 
 (define_insn "*addhi3_zero_extend1"
