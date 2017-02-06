@@ -1607,6 +1607,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_SCHED_FREE_SCHED_CONTEXT
 #define TARGET_SCHED_FREE_SCHED_CONTEXT rs6000_free_sched_context
 
+#undef TARGET_SCHED_CAN_SPECULATE_INSN
+#define TARGET_SCHED_CAN_SPECULATE_INSN rs6000_sched_can_speculate_insn
+
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD rs6000_builtin_mask_for_load
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
@@ -34840,6 +34843,23 @@ rs6000_free_sched_context (void *_sc)
   free (_sc);
 }
 
+static bool
+rs6000_sched_can_speculate_insn (rtx_insn *insn)
+{
+  switch (get_attr_type (insn))
+    {
+    case TYPE_DIV:
+    case TYPE_SDIV:
+    case TYPE_DDIV:
+    case TYPE_VECDIV:
+    case TYPE_SSQRT:
+    case TYPE_DSQRT:
+      return false;
+
+    default:
+      return true;
+  }
+}
 
 /* Length in units of the trampoline for entering a nested function.  */
 
