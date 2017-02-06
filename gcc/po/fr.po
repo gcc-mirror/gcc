@@ -133,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:52+0000\n"
-"PO-Revision-Date: 2017-01-28 19:42+0100\n"
+"PO-Revision-Date: 2017-02-04 16:15+0100\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -20756,38 +20756,34 @@ msgid "non-function in gimple call"
 msgstr "non fonction dans un appel gimple"
 
 #: tree-cfg.c:3431
-#, fuzzy, gcc-internal-format
-#| msgid "invalid return type for function `%#D'"
+#, gcc-internal-format
 msgid "invalid pure const state for function"
-msgstr "type retourné invalide pour la fonction « %#D »"
+msgstr "type const pure invalide pour la fonction"
 
 #: tree-cfg.c:3440
-#, fuzzy, gcc-internal-format
-#| msgid "invalid PC in line number table"
+#, gcc-internal-format
 msgid "invalid LHS in gimple call"
-msgstr "PC invalide dans la numéro de ligne de la table"
+msgstr "membre de gauche invalide dans un appel gimple"
 
 #: tree-cfg.c:3448
 #, gcc-internal-format
 msgid "LHS in noreturn call"
-msgstr ""
+msgstr "membre de gauche dans un appel qui ne retourne rien"
 
 #: tree-cfg.c:3464
-#, fuzzy, gcc-internal-format
-#| msgid "invalid version number format"
+#, gcc-internal-format
 msgid "invalid conversion in gimple call"
-msgstr "format de numéro de version invalide"
+msgstr "conversion invalide dans un appel gimple"
 
 #: tree-cfg.c:3473
-#, fuzzy, gcc-internal-format
-#| msgid "invalid PC in line number table"
+#, gcc-internal-format
 msgid "invalid static chain in gimple call"
-msgstr "PC invalide dans la numéro de ligne de la table"
+msgstr "chaîne statique invalide dans un appel gimple"
 
 #: tree-cfg.c:3484
 #, gcc-internal-format
 msgid "static chain with function that doesn%'t use one"
-msgstr ""
+msgstr "chaîne statique avec une fonction qui n'en utilise pas"
 
 #. Built-in unreachable with parameters might not be caught by
 #. undefined behavior sanitizer.  Front-ends do check users do not
@@ -20796,181 +20792,159 @@ msgstr ""
 #. out a call cannot happen in a legal program.  In such cases,
 #. we must make sure arguments are stripped off.
 #: tree-cfg.c:3502
-#, fuzzy, gcc-internal-format
-#| msgid "`__builtin_next_arg' called without an argument"
+#, gcc-internal-format
 msgid "__builtin_unreachable or __builtin_trap call with arguments"
-msgstr "« __builtin_next_arg » appelé sans argument"
+msgstr "appel __builtin_unreachable ou __builtin_trap avec des arguments"
 
 #: tree-cfg.c:3525
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument of `%s' attribute"
+#, gcc-internal-format
 msgid "invalid argument to gimple call"
-msgstr "type d'argument invalide pour l'attribut « %s »"
+msgstr "argument invalide dans un appel gimple"
 
 #: tree-cfg.c:3545
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand in the instruction"
+#, gcc-internal-format
 msgid "invalid operands in gimple comparison"
-msgstr "opérande invalide dans l'instruction"
+msgstr "opérandes invalides dans une comparaison gimple"
 
 #: tree-cfg.c:3561
-#, fuzzy, gcc-internal-format
-#| msgid "incompatible operands to %s"
+#, gcc-internal-format
 msgid "mismatching comparison operand types"
-msgstr "type d'opérandes incompatibles pour %s"
+msgstr "types d'opérandes de comparaison non concordants"
 
 #: tree-cfg.c:3578
 #, gcc-internal-format
 msgid "unsupported operation or type for vector comparison returning a boolean"
-msgstr ""
+msgstr "opération ou type non supporté pour une comparaison vectorielle retournant un booléen"
 
 #: tree-cfg.c:3593
 #, gcc-internal-format
 msgid "non-vector operands in vector comparison"
-msgstr ""
+msgstr "opérandes non vectoriels dans une comparaison vectorielle"
 
 #: tree-cfg.c:3601
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid method declaration, return type required"
+#, gcc-internal-format
 msgid "invalid vector comparison resulting type"
-msgstr "Déclaration de méthode invalide, type retourné requis"
+msgstr "type invalide comme résultat d'une comparaison vectorielle"
 
 #: tree-cfg.c:3608
 #, gcc-internal-format
 msgid "bogus comparison result type"
-msgstr ""
+msgstr "type foireux pour le résultat d'une comparaison"
 
 #: tree-cfg.c:3630
 #, gcc-internal-format
 msgid "non-register as LHS of unary operation"
-msgstr ""
+msgstr "non registre comme membre de gauche d'une opération unaire"
 
 #: tree-cfg.c:3636
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand in the instruction"
+#, gcc-internal-format
 msgid "invalid operand in unary operation"
-msgstr "opérande invalide dans l'instruction"
+msgstr "opérande invalide dans l'opération unaire"
 
 #: tree-cfg.c:3668
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid type expression"
+#, gcc-internal-format
 msgid "invalid types in nop conversion"
-msgstr "Type d'expression invalide"
+msgstr "types invalides dans une conversion nop"
 
 #: tree-cfg.c:3683
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid types in address space conversion"
-msgstr "expression invalide comme opérande"
+msgstr "types invalides dans une conversion d'espace d'adresse"
 
 #: tree-cfg.c:3697
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid type expression"
+#, gcc-internal-format
 msgid "invalid types in fixed-point conversion"
-msgstr "Type d'expression invalide"
+msgstr "types invalides dans une conversion en virgule fixe"
 
 #: tree-cfg.c:3712
-#, fuzzy, gcc-internal-format
-#| msgid "invalid suffix \"%.*s\" on floating constant"
+#, gcc-internal-format
 msgid "invalid types in conversion to floating point"
-msgstr "suffixe « %.*s » invalide pour une constante flottante"
+msgstr "types invalides dans une conversion vers une virgule flottante"
 
 #: tree-cfg.c:3727
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type `void' for new"
+#, gcc-internal-format
 msgid "invalid types in conversion to integer"
-msgstr "type « void » invalide pour new"
+msgstr "types invalides dans une conversion vers un entier"
 
 #: tree-cfg.c:3741
 #, gcc-internal-format
 msgid "reduction should convert from vector to element type"
-msgstr ""
+msgstr "la réduction devrait convertir depuis un vecteur vers un type d'élément"
 
 #: tree-cfg.c:3769
-#, fuzzy, gcc-internal-format
-#| msgid "invalid version number format"
+#, gcc-internal-format
 msgid "non-trivial conversion in unary operation"
-msgstr "format de numéro de version invalide"
+msgstr "conversion non triviale dans une opération unaire"
 
 #: tree-cfg.c:3794
 #, gcc-internal-format
 msgid "non-register as LHS of binary operation"
-msgstr ""
+msgstr "non registre comme membre de gauche d'une opération binaire"
 
 #: tree-cfg.c:3801
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operands to binary %s"
+#, gcc-internal-format
 msgid "invalid operands in binary operation"
-msgstr "opérandes invalides pour le binaire %s"
+msgstr "opérandes invalides dans l'opération binaire"
 
 #: tree-cfg.c:3816
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in complex expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression complexe"
 
 #: tree-cfg.c:3845
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in shift expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression de décalage"
 
 #: tree-cfg.c:3862 tree-cfg.c:3883
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in widening vector shift expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression de décalage d'un vecteur avec élargissement"
 
 #: tree-cfg.c:3904
 #, gcc-internal-format
 msgid "invalid non-vector operands to vector valued plus"
-msgstr ""
+msgstr "opérandes non vectoriels invalides pour un vecteur plus valeur"
 
 #: tree-cfg.c:3915
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operands to binary %s"
+#, gcc-internal-format
 msgid "invalid (pointer) operands to plus/minus"
-msgstr "opérandes invalides pour le binaire %s"
+msgstr "opérandes (pointeurs) invalides pour plus/moins"
 
 #: tree-cfg.c:3929
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in pointer plus expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression plus pointeur"
 
 #: tree-cfg.c:4009
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in binary expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression binaire"
 
 #: tree-cfg.c:4037
 #, gcc-internal-format
 msgid "non-register as LHS of ternary operation"
-msgstr ""
+msgstr "non registre comme membre de gauche dans une opération ternaire"
 
 #: tree-cfg.c:4046
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand in the instruction"
+#, gcc-internal-format
 msgid "invalid operands in ternary operation"
-msgstr "opérande invalide dans l'instruction"
+msgstr "opérandes invalides dans l'opération ternaire"
 
 #: tree-cfg.c:4062
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in widening multiply-accumulate expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression multiplier et accumuler avec élargissement"
 
 #: tree-cfg.c:4076
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in fused multiply-add expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression multiplier et additionner fusionnée"
 
 #: tree-cfg.c:4090
 #, gcc-internal-format
 msgid "the first argument of a VEC_COND_EXPR must be of a boolean vector type of the same number of elements as the result"
-msgstr ""
+msgstr "le premier argument d'un VEC_COND_EXPR doit être d'un type vectoriel booléen du même nombre d'éléments que le résultat"
 
 #: tree-cfg.c:4102 c/c-typeck.c:5100
 #, gcc-internal-format
@@ -20978,581 +20952,524 @@ msgid "type mismatch in conditional expression"
 msgstr "non concordance de type dans une expression conditionnelle"
 
 #: tree-cfg.c:4114
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "type mismatch in vector permute expression"
-msgstr "non concordance de type dans une expression conditionnelle"
+msgstr "désaccord de type dans une expression de permutation vectorielle"
 
 #: tree-cfg.c:4126
-#, fuzzy, gcc-internal-format
-#| msgid "']' expected, invalid type expression"
+#, gcc-internal-format
 msgid "vector types expected in vector permute expression"
-msgstr "«]» attendu, type d'expression invalide"
+msgstr "types vectoriels attendus dans une expression de permutation vectorielle"
 
 #: tree-cfg.c:4140
 #, gcc-internal-format
 msgid "vectors with different element number found in vector permute expression"
-msgstr ""
+msgstr "des vecteurs avec un nombre d'éléments différents ont été trouvé dans une expression de permutation vectorielle"
 
 #: tree-cfg.c:4153
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of void expression"
+#, gcc-internal-format
 msgid "invalid mask type in vector permute expression"
-msgstr "utilisation invalide d'expression void"
+msgstr "type de masque invalide dans une expression de permutation vectorielle"
 
 #: tree-cfg.c:4169
-#, fuzzy, gcc-internal-format
-#| msgid "mode mismatch in %s expression"
+#, gcc-internal-format
 msgid "type mismatch in sad expression"
-msgstr "non concordance de mode dans l'expression %s"
+msgstr "désaccord de type dans une expression SAD (Sum of Absolute Difference = Somme des Différences Absolues)"
 
 #: tree-cfg.c:4181
-#, fuzzy, gcc-internal-format
-#| msgid "']' expected, invalid type expression"
+#, gcc-internal-format
 msgid "vector types expected in sad expression"
-msgstr "«]» attendu, type d'expression invalide"
+msgstr "types vectoriels attendus dans une expression SAD (Sum of Absolute Difference = Somme des Différences Absolues)"
 
 #: tree-cfg.c:4194
 #, gcc-internal-format
 msgid "type mismatch in BIT_INSERT_EXPR"
-msgstr ""
+msgstr "désaccord de type dans BIT_INSERT_EXPR"
 
 #: tree-cfg.c:4204
 #, gcc-internal-format
 msgid "not allowed type combination in BIT_INSERT_EXPR"
-msgstr ""
+msgstr "combinaison de types pas permise dans BIT_INSERT_EXPR"
 
 #: tree-cfg.c:4212
-#, fuzzy, gcc-internal-format
-#| msgid "invalid constraints for operand"
+#, gcc-internal-format
 msgid "invalid position or size in BIT_INSERT_EXPR"
-msgstr "contrainte invalide pour l'opérande"
+msgstr "position ou taille invalide dans BIT_INSERT_EXPR"
 
 #: tree-cfg.c:4222
 #, gcc-internal-format
 msgid "insertion out of range in BIT_INSERT_EXPR"
-msgstr ""
+msgstr "insertion hors limites dans BIT_INSERT_EXPR"
 
 #: tree-cfg.c:4232
 #, gcc-internal-format
 msgid "vector insertion not at element boundary"
-msgstr ""
+msgstr "insertion de vecteur pas à la frontière d'un élément"
 
 #: tree-cfg.c:4264
-#, fuzzy, gcc-internal-format
-#| msgid "invalid lvalue in assignment"
+#, gcc-internal-format
 msgid "non-trivial conversion at assignment"
-msgstr "membre gauche de l'affectation invalide"
+msgstr "conversion non triviale dans l'affectation"
 
 #: tree-cfg.c:4273
 #, gcc-internal-format
 msgid "non-decl/MEM_REF LHS in clobber statement"
-msgstr ""
+msgstr "membre de gauche non-decl/MEM_REF dans une instruction écrasée"
 
 #: tree-cfg.c:4291
-#, fuzzy, gcc-internal-format
-#| msgid "invalid number in #if expression"
+#, gcc-internal-format
 msgid "invalid operand in unary expression"
-msgstr "nombre invalide dans l'expression #if"
+msgstr "opérande invalide dans une expression unaire"
 
 #: tree-cfg.c:4305
-#, fuzzy, gcc-internal-format
-#| msgid "mode mismatch in %s expression"
+#, gcc-internal-format
 msgid "type mismatch in address expression"
-msgstr "non concordance de mode dans l'expression %s"
+msgstr "désaccord de type dans une expression d'adresse"
 
 #: tree-cfg.c:4331 tree-cfg.c:4357
-#, fuzzy, gcc-internal-format
-#| msgid "invalid indirect memory address"
+#, gcc-internal-format
 msgid "invalid rhs for gimple memory store"
-msgstr "adresse mémoire d'indirection invalide"
+msgstr "membre de droite invalide pour un stockage mémoire gimple"
 
 #: tree-cfg.c:4391 tree-cfg.c:4409 tree-cfg.c:4423
 #, gcc-internal-format
 msgid "incorrect type of vector CONSTRUCTOR elements"
-msgstr ""
+msgstr "type incorrect pour les éléments d'un vecteur CONSTRUCTOR"
 
 #: tree-cfg.c:4400 tree-cfg.c:4416
 #, gcc-internal-format
 msgid "incorrect number of vector CONSTRUCTOR elements"
-msgstr ""
+msgstr "nombre incorrect pour les éléments d'un vecteur CONSTRUCTOR"
 
 #: tree-cfg.c:4432
 #, gcc-internal-format
 msgid "vector CONSTRUCTOR with non-NULL element index"
-msgstr ""
+msgstr "vecteur CONSTRUCTOR avec un index d'élément non nul"
 
 #: tree-cfg.c:4438
 #, gcc-internal-format
 msgid "vector CONSTRUCTOR element is not a GIMPLE value"
-msgstr ""
+msgstr "l'élément d'un vecteur CONSTRUCTOR n'est pas une valeur GIMPLE"
 
 #: tree-cfg.c:4446
 #, gcc-internal-format
 msgid "non-vector CONSTRUCTOR with elements"
-msgstr ""
+msgstr "non vecteur CONSTRUCTOR avec des éléments"
 
 #: tree-cfg.c:4505
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand in the instruction"
+#, gcc-internal-format
 msgid "invalid operand in return statement"
-msgstr "opérande invalide dans l'instruction"
+msgstr "opérande invalide dans l'instruction de retour"
 
 #: tree-cfg.c:4520 c/gimple-parser.c:1438
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid init statement"
+#, gcc-internal-format
 msgid "invalid conversion in return statement"
-msgstr "Déclaration init invalide"
+msgstr "conversion invalide dans une instruction de retour"
 
 #: tree-cfg.c:4544
-#, fuzzy, gcc-internal-format
-#| msgid "subscripted value is neither array nor pointer"
+#, gcc-internal-format
 msgid "goto destination is neither a label nor a pointer"
-msgstr "la valeur indicée n'est ni un tableau ni un pointeur"
+msgstr "la destination du « goto » n'est ni une étiquette ni un pointeur"
 
 #: tree-cfg.c:4563
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand to %%s code"
+#, gcc-internal-format
 msgid "invalid operand to switch statement"
-msgstr "opérande invalide pour le code %%s"
+msgstr "opérande invalide pour l'instruction « switch »"
 
 #: tree-cfg.c:4571
-#, fuzzy, gcc-internal-format
-#| msgid "non-integral text length"
+#, gcc-internal-format
 msgid "non-integral type switch statement"
-msgstr "longueur de texte non entier"
+msgstr "instruction « switch » avec un type non entier"
 
 #: tree-cfg.c:4579
-#, fuzzy, gcc-internal-format
-#| msgid "`default' label not within a switch statement"
+#, gcc-internal-format
 msgid "invalid default case label in switch statement"
-msgstr "étiquette « default » en dehors de tout switch"
+msgstr "étiquette invalide pour le « case » par défaut dans l'instruction « switch »"
 
 #: tree-cfg.c:4591
-#, fuzzy, gcc-internal-format
-#| msgid "case label not within a switch statement"
+#, gcc-internal-format
 msgid "invalid case label in switch statement"
-msgstr "étiquette de « case » en dehors de tout switch"
+msgstr "étiquette invalide pour un « case » dans l'instruction « switch »"
 
 #: tree-cfg.c:4598
-#, fuzzy, gcc-internal-format
-#| msgid "invalid lvalue in asm statement"
+#, gcc-internal-format
 msgid "invalid case range in switch statement"
-msgstr "membre gauche invalide avec asm"
+msgstr "plage du « case » invalide dans l'instruction « switch »"
 
 #: tree-cfg.c:4608
-#, fuzzy, gcc-internal-format
-#| msgid "case label not within a switch statement"
+#, gcc-internal-format
 msgid "type mismatch for case label in switch statement"
-msgstr "étiquette de « case » en dehors de tout switch"
+msgstr "désaccord de type pour l'étiquette du « case » dans l'instruction « switch »"
 
 #: tree-cfg.c:4618
-#, fuzzy, gcc-internal-format
-#| msgid "case label not within a switch statement"
+#, gcc-internal-format
 msgid "type precision mismatch in switch statement"
-msgstr "étiquette de « case » en dehors de tout switch"
+msgstr "désaccord dans la précision du type dans l'instruction « switch »"
 
 #: tree-cfg.c:4627
-#, fuzzy, gcc-internal-format
-#| msgid "case label not within a switch statement"
+#, gcc-internal-format
 msgid "case labels not sorted in switch statement"
-msgstr "étiquette de « case » en dehors de tout switch"
+msgstr "les « case » ne sont pas triés dans l'instruction « switch »"
 
 #: tree-cfg.c:4670
 #, gcc-internal-format
 msgid "label's context is not the current function decl"
-msgstr ""
+msgstr "le contexte de l'étiquette n'est pas la déclaration de la fonction actuelle"
 
 #: tree-cfg.c:4679
 #, gcc-internal-format
 msgid "incorrect entry in label_to_block_map"
-msgstr ""
+msgstr "entrée incorrecte dans label_to_block_map"
 
 #: tree-cfg.c:4689
-#, fuzzy, gcc-internal-format
-#| msgid "format string has invalid operand number"
+#, gcc-internal-format
 msgid "incorrect setting of landing pad number"
-msgstr "la chaîne de format a un nombre invalide d'opérandes"
+msgstr "configuration incorrecte pour le numéro de la zone d'atterrissage des exceptions (landing pad)"
 
 #: tree-cfg.c:4705
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand to %%p code"
+#, gcc-internal-format
 msgid "invalid comparison code in gimple cond"
-msgstr "opérande invalide pour le code %%p"
+msgstr "code de comparaison invalide dans la condition gimple"
 
 #: tree-cfg.c:4713
-#, fuzzy, gcc-internal-format
-#| msgid "invalid lvalue in assignment"
+#, gcc-internal-format
 msgid "invalid labels in gimple cond"
-msgstr "membre gauche de l'affectation invalide"
+msgstr "étiquettes invalides dans la condition gimple"
 
 #: tree-cfg.c:4796 tree-cfg.c:4805
-#, fuzzy, gcc-internal-format
-#| msgid "invalid address"
+#, gcc-internal-format
 msgid "invalid PHI result"
-msgstr "adresse invalide"
+msgstr "résultat PHI invalide"
 
 #: tree-cfg.c:4815
-#, fuzzy, gcc-internal-format
-#| msgid "missing field"
+#, gcc-internal-format
 msgid "missing PHI def"
-msgstr "champ manquant"
+msgstr "définition PHI manquante"
 
 #: tree-cfg.c:4829
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type argument"
+#, gcc-internal-format
 msgid "invalid PHI argument"
-msgstr "type d'argument invalide"
+msgstr "argument PHI invalide"
 
 #: tree-cfg.c:4836
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "incompatible types in %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "incompatible types in PHI argument %u"
-msgstr "type incompatibles dans %s"
+msgstr "types incompatibles dans l'argument PHI %u"
 
 #: tree-cfg.c:4934 tree-cfg.c:5266
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_gimple failed"
-msgstr "verify_flow_info a échoué"
+msgstr "verify_gimple a échoué"
 
 #: tree-cfg.c:4994
 #, gcc-internal-format
 msgid "dead STMT in EH table"
-msgstr ""
+msgstr "instruction sans effet dans la table EH"
 
 #: tree-cfg.c:5010
 #, gcc-internal-format
 msgid "location references block not in block tree"
-msgstr ""
+msgstr "le bloc des références vers les emplacements n'est pas dans l'arbre des blocs"
 
 #: tree-cfg.c:5132
 #, gcc-internal-format
 msgid "gimple_bb (phi) is set to a wrong basic block"
-msgstr ""
+msgstr "gimple_bb (phi) est défini avec un mauvais bloc de base"
 
 #: tree-cfg.c:5141
-#, fuzzy, gcc-internal-format
-#| msgid "from this location"
+#, gcc-internal-format
 msgid "PHI node with location"
-msgstr "à partir de cette localisation"
+msgstr "nœud PHI avec emplacement"
 
 #: tree-cfg.c:5152 tree-cfg.c:5201
 #, gcc-internal-format
 msgid "incorrect sharing of tree nodes"
-msgstr ""
+msgstr "partage incorrect des nœuds de l'arbre"
 
 #: tree-cfg.c:5160
 #, gcc-internal-format
 msgid "virtual PHI with argument locations"
-msgstr ""
+msgstr "PHI virtuel avec des emplacements d'arguments"
 
 #: tree-cfg.c:5189
 #, gcc-internal-format
 msgid "gimple_bb (stmt) is set to a wrong basic block"
-msgstr ""
+msgstr "gimple_bb (stmt) est défini avec un mauvais bloc de base"
 
 #: tree-cfg.c:5225
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid init statement"
+#, gcc-internal-format
 msgid "in statement"
-msgstr "Déclaration init invalide"
+msgstr "dans l'instruction"
 
 #: tree-cfg.c:5242
 #, gcc-internal-format
 msgid "statement marked for throw, but doesn%'t"
-msgstr ""
+msgstr "l'instruction est marquée comme produisant une exception mais elle ne le fait pas"
 
 #: tree-cfg.c:5248
 #, gcc-internal-format
 msgid "statement marked for throw in middle of block"
-msgstr ""
+msgstr "une instruction est marquée comme produisant une exception au milieu du bloc"
 
 #: tree-cfg.c:5288
 #, gcc-internal-format
 msgid "ENTRY_BLOCK has IL associated with it"
-msgstr ""
+msgstr "ENTRY_BLOCK a un nœud dans le langage intermédiaire (IL) qui lui est associé"
 
 #: tree-cfg.c:5295
 #, gcc-internal-format
 msgid "EXIT_BLOCK has IL associated with it"
-msgstr ""
+msgstr "EXIT_BLOCK a un nœud dans le langage intermédiaire (IL) qui lui est associé"
 
 #: tree-cfg.c:5302
 #, gcc-internal-format, gfc-internal-format
 msgid "fallthru to exit from bb %d"
-msgstr ""
+msgstr "fallthru pour sortir du bloc de base %d"
 
 #: tree-cfg.c:5326
 #, gcc-internal-format
 msgid "nonlocal label "
-msgstr ""
+msgstr "étiquette non locale "
 
 #: tree-cfg.c:5335
 #, gcc-internal-format
 msgid "EH landing pad label "
-msgstr ""
+msgstr "étiquette de la zone d'atterrissage du gestionnaire d'exceptions "
 
 #: tree-cfg.c:5344 tree-cfg.c:5353 tree-cfg.c:5378
 #, gcc-internal-format
 msgid "label "
-msgstr ""
+msgstr "étiquette"
 
 #: tree-cfg.c:5368
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "flow control insn inside a basic block"
+#, gcc-internal-format, gfc-internal-format
 msgid "control flow in the middle of basic block %d"
-msgstr "insn de contrôle de flot à l'intérieur d'un bloc de base"
+msgstr "contrôle de flux au milieu du bloc de base %d"
 
 #: tree-cfg.c:5401
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Fallthru edge after unconditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge after a control statement in bb %d"
-msgstr "Arrête fallthru après le branchement inconditionnel %i"
+msgstr "arête fallthru après une instruction de contrôle dans le bb %d"
 
 #: tree-cfg.c:5414
 #, gcc-internal-format, gfc-internal-format
 msgid "true/false edge after a non-GIMPLE_COND in bb %d"
-msgstr ""
+msgstr "arête vrai/faux après un non GIMPLE_COND dans le bb %d"
 
 #: tree-cfg.c:5437 tree-cfg.c:5459 tree-cfg.c:5476 tree-cfg.c:5546
 #, gcc-internal-format, gfc-internal-format
 msgid "wrong outgoing edge flags at end of bb %d"
-msgstr ""
+msgstr "mauvais fanions d'une arête sortante à la fin du bb %d"
 
 #: tree-cfg.c:5447
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "explicit instantiation of `%#D'"
+#, gcc-internal-format, gfc-internal-format
 msgid "explicit goto at end of bb %d"
-msgstr "instantiation explicite de « %#D »"
+msgstr "« goto » explicite à la fin du bb %d"
 
 #: tree-cfg.c:5481
 #, gcc-internal-format, gfc-internal-format
 msgid "return edge does not point to exit in bb %d"
-msgstr ""
+msgstr "l'arête de retour ne pointe pas vers la sortie dans le bb %d"
 
 #: tree-cfg.c:5512
 #, gcc-internal-format
 msgid "found default case not at the start of case vector"
-msgstr ""
+msgstr "« case » par défaut rencontré mais pas au début du vecteur des « case »"
 
 #: tree-cfg.c:5520
-#, fuzzy, gcc-internal-format
-#| msgid "mode in label is not discrete"
+#, gcc-internal-format
 msgid "case labels not sorted: "
-msgstr "mode dans l'étiquette n'est pas discret"
+msgstr "étiquettes « case » pas triées: "
 
 #: tree-cfg.c:5537
 #, gcc-internal-format, gfc-internal-format
 msgid "extra outgoing edge %d->%d"
-msgstr ""
+msgstr "arête sortante supplémentaire %d->%d"
 
 #: tree-cfg.c:5560
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "missing field"
+#, gcc-internal-format, gfc-internal-format
 msgid "missing edge %i->%i"
-msgstr "champ manquant"
+msgstr "arête manquante %i->%i"
 
 #: tree-cfg.c:8889
-#, fuzzy, gcc-internal-format
-#| msgid "`noreturn' function does return"
+#, gcc-internal-format
 msgid "%<noreturn%> function does return"
-msgstr "fonction avec « noreturn » effectue des retour"
+msgstr "une fonction avec %<noreturn%> retourne une valeur"
 
 #: tree-cfg.c:8910
 #, gcc-internal-format
 msgid "control reaches end of non-void function"
-msgstr "contrôle a atteint la fin non void de la fonction"
+msgstr "le contrôle a atteint la fin d'une fonction non « void »"
 
 #: tree-cfg.c:8976 cp/cvt.c:1008
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring return value of `%D', declared with attribute warn_unused_result"
+#, gcc-internal-format
 msgid "ignoring return value of %qD, declared with attribute warn_unused_result"
-msgstr "valeur à retourner « %D » ignorée, déclaré avec l'attribut warn_unused_result"
+msgstr "la valeur retournée par %qD est ignorée alors qu'elle est déclarée avec l'attribut warn_unused_result"
 
 #: tree-cfg.c:8981 cp/cvt.c:1015
 #, gcc-internal-format
 msgid "ignoring return value of function declared with attribute warn_unused_result"
-msgstr "valeur à retourner d'une fonction ignorée, déclaré avec l'attribut warn_unused_result"
+msgstr "la valeur retournée est ignorée pour une fonction déclarée avec l'attribut warn_unused_result"
 
 #: tree-chkp-opt.c:718
 #, gcc-internal-format
 msgid "memory access check always fail"
-msgstr ""
+msgstr "le contrôle de l'accès mémoire échoue toujours"
 
 #: tree-chkp.c:1994
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-fdata-sections not supported for this target"
+#, gcc-internal-format, gfc-internal-format
 msgid "-fcheck-pointer-bounds requires '%s' name for internal usage"
-msgstr "-fdata-sections n'est pas supporté pour cette machine cible"
+msgstr "-fcheck-pointer-bounds exige le nom « %s » pour usage interne"
 
 #: tree-chkp.c:2771
 #, gcc-internal-format, gfc-internal-format
 msgid "pointer bounds were lost due to unexpected expression %s"
-msgstr ""
+msgstr "les limites du pointeur ont été perdues à cause de l'expression inattendue %s"
 
 #: tree-chkp.c:2859
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_get_bounds_by_definition: Unexpected var of type %s"
-msgstr ""
+msgstr "chkp_get_bounds_by_definition: Variable inattendue de type %s"
 
 #: tree-chkp.c:2902
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_get_bounds_by_definition: Unexpected GIMPLE code %s"
-msgstr ""
+msgstr "chkp_get_bounds_by_definition: Code GIMPLE %s inattendu"
 
 #: tree-chkp.c:3528
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_make_addressed_object_bounds: Unexpected tree code %s"
-msgstr ""
+msgstr "chkp_make_addressed_object_bounds: Code d'arbre %s inattendu"
 
 #: tree-chkp.c:3681
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_find_bounds: Unexpected tree code %s"
-msgstr ""
+msgstr "chkp_find_bounds: Code d'arbre %s inattendu"
 
 #: tree-chkp.c:3692
 #, gcc-internal-format
 msgid "chkp_find_bounds: Cannot find bounds for pointer"
-msgstr ""
+msgstr "chkp_find_bounds: Impossible de trouver les limites du pointeur"
 
 #: tree-chkp.c:3808
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_walk_pointer_assignments: unexpected RHS type: %s"
-msgstr ""
+msgstr "chkp_walk_pointer_assignments: type du membre de droite inattendu: %s"
 
 #: tree-diagnostic.c:202
-#, fuzzy, gcc-internal-format
-#| msgid "redefinition of `union %s'"
+#, gcc-internal-format
 msgid "in definition of macro %qs"
-msgstr "redéfinition de « union %s »"
+msgstr "dans la définition de la macro %qs"
 
 #: tree-diagnostic.c:219
-#, fuzzy, gcc-internal-format
-#| msgid "no args to macro `%s'"
+#, gcc-internal-format
 msgid "in expansion of macro %qs"
-msgstr "aucun argument pour la macro « %s »"
+msgstr "dans l'expansion de la macro %qs"
 
 #: tree-eh.c:4651
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "`B' operand has multiple bits set"
+#, gcc-internal-format, gfc-internal-format
 msgid "BB %i has multiple EH edges"
-msgstr "l'opérande « B » a de multiples jeux de bits"
+msgstr "le BB %i a plusieurs arêtes de gestion des exceptions"
 
 #: tree-eh.c:4663
 #, gcc-internal-format, gfc-internal-format
 msgid "BB %i can not throw but has an EH edge"
-msgstr ""
+msgstr "le BB %i ne peut pas produire d'exception mais il a une arête pour la gestion des exceptions"
 
 #: tree-eh.c:4671
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expression statement has incomplete type"
+#, gcc-internal-format, gfc-internal-format
 msgid "BB %i last statement has incorrectly set lp"
-msgstr "la déclaration de l'expression a un type incomplet"
+msgstr "la dernière instruction du BB %i a défini incorrectement la zone d'atterrissage des exceptions"
 
 #: tree-eh.c:4677
 #, gcc-internal-format, gfc-internal-format
 msgid "BB %i is missing an EH edge"
-msgstr ""
+msgstr "le BB %i n'a pas d'arête de gestion des exceptions"
 
 #: tree-eh.c:4683
 #, gcc-internal-format, gfc-internal-format
 msgid "Incorrect EH edge %i->%i"
-msgstr ""
+msgstr "arête incorrecte de gestions des exceptions %i->%i"
 
 #: tree-eh.c:4717 tree-eh.c:4736
 #, gcc-internal-format, gfc-internal-format
 msgid "BB %i is missing an edge"
-msgstr ""
+msgstr "il manque une arête dans le BB %i"
 
 #: tree-eh.c:4753
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "wrong insn in the fallthru edge"
+#, gcc-internal-format, gfc-internal-format
 msgid "BB %i too many fallthru edges"
-msgstr "insn erronée dans l'arête fallthru"
+msgstr "le BB %i a trop d'arêtes falltrhu"
 
 #: tree-eh.c:4762
 #, gcc-internal-format, gfc-internal-format
 msgid "BB %i has incorrect edge"
-msgstr ""
+msgstr "le BB %i a une arête incorrecte"
 
 #: tree-eh.c:4768
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "wrong insn in the fallthru edge"
+#, gcc-internal-format, gfc-internal-format
 msgid "BB %i has incorrect fallthru edge"
-msgstr "insn erronée dans l'arête fallthru"
+msgstr "le BB %i a une arête fallthru incorrecte"
 
 #: tree-inline.c:3572
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it contains a nonlocal goto"
+#, gcc-internal-format
 msgid "function %q+F can never be copied because it receives a non-local goto"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle contient un goto qui n'est pas local"
+msgstr "la fonction %q+F ne peut jamais être copiée car elle reçoit un « goto » non local"
 
 #: tree-inline.c:3579
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it uses variable sized variables"
+#, gcc-internal-format
 msgid "function %q+F can never be copied because it saves address of local label in a static variable"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle utilise une taille variable de variables"
+msgstr "la fonction %q+F ne peut jamais être copiée car elle sauvegarde l'adresse d'une étiquette locale dans une variable statique"
 
 #: tree-inline.c:3619
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it uses alloca (override using the always_inline attribute)"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses alloca (override using the always_inline attribute)"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle utilise alloca (écrasant l'utilisation de l'attribut always_inline)"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne car elle utilise « alloca » (ce qui sera outrepassé en utilisant l'attribut « always_inline »)"
 
 #: tree-inline.c:3633
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it uses setjmp"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses setjmp"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle utilise setjmp"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce qu'elle utilise setjmp"
 
 #: tree-inline.c:3647
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it uses variable argument lists"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses variable argument lists"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle utilise une liste variable d'arguments"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce qu'elle utilise une liste variable d'arguments"
 
 #: tree-inline.c:3659
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it uses setjmp-longjmp exception handling"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses setjmp-longjmp exception handling"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle utilise le traitement d'exception setjmp-longjmp"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce qu'elle utilise setjmp-longjmp pour gérer les exceptions"
 
 #: tree-inline.c:3667
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it contains a nonlocal goto"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses non-local goto"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle contient un goto qui n'est pas local"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce qu'elle utilise un « goto » qui n'est pas local"
 
 #: tree-inline.c:3679
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it uses variable sized variables"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses __builtin_return or __builtin_apply_args"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle utilise une taille variable de variables"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce qu'elle utilise __builtin_return ou __builtin_apply_args"
 
 #: tree-inline.c:3699
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it contains a computed goto"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it contains a computed goto"
-msgstr "fonction « %F » ne peut être enligne parce qu'elle contient un goto calculé"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce qu'elle contient un « goto » calculé"
 
 #: tree-inline.c:3800
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it is suppressed using -fno-inline"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it is suppressed using -fno-inline"
-msgstr "fonction « %F » ne jamais être enlignée parce qu'elle supprime l'utilisation de -fno-inline"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce que cela est supprimé par l'utilisation de -fno-inline"
 
 #: tree-inline.c:3808
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction '%F' can never be inlined because it uses attributes conflicting with inlining"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses attributes conflicting with inlining"
-msgstr "fonction « %F » ne jamais être enlignée parce qu'elle utilise un attribut en conflit avec l'enlignage"
+msgstr "la fonction %q+F ne peut jamais être mise en ligne parce qu'elle utilise des attributs en conflit avec la mise en ligne"
 
 #: tree-inline.c:4473
-#, fuzzy, gcc-internal-format
-#| msgid "%Jinlining failed in call to '%F': %s"
+#, gcc-internal-format
 msgid "inlining failed in call to always_inline %q+F: %s"
-msgstr "l'enlignage de l'appel à « %F »: %s a échoué"
+msgstr "la mise en ligne a échoué dans l'appel à always_inline %q+F: %s"
 
 #: tree-inline.c:4476 tree-inline.c:4496
 #, gcc-internal-format
@@ -21560,405 +21477,376 @@ msgid "called from here"
 msgstr "appelé d'ici"
 
 #: tree-inline.c:4479 tree-inline.c:4499
-#, fuzzy, gcc-internal-format
-#| msgid "call to non-function `%D'"
+#, gcc-internal-format
 msgid "called from this function"
-msgstr "appel à une non fonction « %D »"
+msgstr "appelé depuis cette fonction"
 
 #: tree-inline.c:4492
-#, fuzzy, gcc-internal-format
-#| msgid "%Jinlining failed in call to '%F': %s"
+#, gcc-internal-format
 msgid "inlining failed in call to %q+F: %s"
-msgstr "l'enlignage de l'appel à « %F »: %s a échoué"
+msgstr "la mise en ligne a échoué dans l'appel à %q+F: %s"
 
 #: tree-into-ssa.c:3209
 #, gcc-internal-format
 msgid "statement uses released SSA name:"
-msgstr ""
+msgstr "l'instruction utilise un nom SSA libéré:"
 
 #: tree-into-ssa.c:3221
 #, gcc-internal-format
 msgid "cannot update SSA form"
-msgstr ""
+msgstr "impossible de mettre à jour le formulaire SSA"
 
 #: tree-into-ssa.c:3312 tree-outof-ssa.c:824 tree-outof-ssa.c:883
 #: tree-ssa-coalesce.c:1010
 #, gcc-internal-format
 msgid "SSA corruption"
-msgstr ""
+msgstr "SSA corrompu"
 
+# « single » signifie que le profilage est mis à jour comme si l'application n'avait qu'un seul thread
 #: tree-profile.c:608
 #, gcc-internal-format
 msgid "target does not support atomic profile update, single mode is selected"
-msgstr ""
+msgstr "la cible ne supporte pas la mise à jour atomique du profilage, le mode simple est sélectionné"
 
 #: tree-ssa-ccp.c:3385
 #, gcc-internal-format, gfc-internal-format
 msgid "argument %u null where non-null expected"
-msgstr ""
+msgstr "argument %u nul où un non-nul est attendu"
 
 #: tree-ssa-ccp.c:3390
-#, fuzzy, gcc-internal-format
-#| msgid "unimplemented built-in function `%s'"
+#, gcc-internal-format
 msgid "in a call to built-in function %qD"
-msgstr "fonction interne non implantée « %s »"
+msgstr "dans un appel à la fonction interne %qD"
 
 #: tree-ssa-ccp.c:3394
-#, fuzzy, gcc-internal-format
-#| msgid "invalid function declaration"
+#, gcc-internal-format
 msgid "in a call to function %qD declared here"
-msgstr "déclaration de fonction invalide"
+msgstr "dans un appel à la fonction %qD déclarée ici"
 
 #: tree-ssa-loop-niter.c:2961
 #, gcc-internal-format, gfc-internal-format
 msgid "iteration %s invokes undefined behavior"
-msgstr ""
+msgstr "l'itération %s invoque un comportement indéfini"
 
 #: tree-ssa-loop-niter.c:2962
-#, fuzzy, gcc-internal-format
-#| msgid "within this context"
+#, gcc-internal-format
 msgid "within this loop"
-msgstr "à l'intérieur du contexte"
+msgstr "dans cette boucle"
 
 #: tree-ssa-operands.c:975
-#, fuzzy, gcc-internal-format
-#| msgid "No label definition for FORMAT statement at %0"
+#, gcc-internal-format
 msgid "virtual definition of statement not up-to-date"
-msgstr "pas de définition d'étiquette pour la déclaration de FORMAT à %0"
+msgstr "la définition virtuelle de l'instruction n'est pas à jour"
 
 #: tree-ssa-operands.c:982
 #, gcc-internal-format
 msgid "virtual def operand missing for stmt"
-msgstr ""
+msgstr "opérande « def » virtuel manquant pour l'instruction"
 
 #: tree-ssa-operands.c:992
 #, gcc-internal-format
 msgid "virtual use of statement not up-to-date"
-msgstr ""
+msgstr "« use » virtuel de l'instruction pas à jour"
 
 #: tree-ssa-operands.c:999
 #, gcc-internal-format
 msgid "virtual use operand missing for stmt"
-msgstr ""
+msgstr "opérande « use » virtuel manquant pour l'instruction"
 
 #: tree-ssa-operands.c:1016
 #, gcc-internal-format
 msgid "excess use operand for stmt"
-msgstr ""
+msgstr "trop d'opérandes « use » pour l'instruction"
 
 #: tree-ssa-operands.c:1026
-#, fuzzy, gcc-internal-format
-#| msgid "operand number missing after %%-letter"
+#, gcc-internal-format
 msgid "use operand missing for stmt"
-msgstr "numéro d'opérande manquant après %%-letter"
+msgstr "opérande « use » manquant pour l'instruction"
 
 #: tree-ssa-operands.c:1033
 #, gcc-internal-format
 msgid "stmt volatile flag not up-to-date"
-msgstr ""
+msgstr "fanion volatile de l'instruction pas à jour"
 
 #: tree-ssa-uninit.c:190 varasm.c:328
-#, fuzzy, gcc-internal-format
-#| msgid "  `%#D' declared here"
+#, gcc-internal-format
 msgid "%qD was declared here"
-msgstr "  « %#D » déclaré ici"
+msgstr "%qD a été déclaré ici"
 
 #: tree-ssa-uninit.c:230
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' might be used uninitialized in this function"
+#, gcc-internal-format
 msgid "%qD is used uninitialized in this function"
-msgstr "« %D » pourrait être utilisé sans être initialisé dans cette fonction"
+msgstr "%qD est utilisé sans être initialisé dans cette fonction"
 
 #: tree-ssa-uninit.c:235 tree-ssa-uninit.c:2471
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' might be used uninitialized in this function"
+#, gcc-internal-format
 msgid "%qD may be used uninitialized in this function"
-msgstr "« %D » pourrait être utilisé sans être initialisé dans cette fonction"
+msgstr "%qD pourrait être utilisé sans être initialisé dans cette fonction"
 
 #: tree-ssa-uninit.c:265
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' might be used uninitialized in this function"
+#, gcc-internal-format
 msgid "%qE is used uninitialized in this function"
-msgstr "« %D » pourrait être utilisé sans être initialisé dans cette fonction"
+msgstr "%qE est utilisé sans être initialisé dans cette fonction"
 
 #: tree-ssa-uninit.c:270
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' might be used uninitialized in this function"
+#, gcc-internal-format
 msgid "%qE may be used uninitialized in this function"
-msgstr "« %D » pourrait être utilisé sans être initialisé dans cette fonction"
+msgstr "%qE pourrait être utilisé sans être initialisé dans cette fonction"
 
 #: tree-ssa.c:641
 #, gcc-internal-format, gfc-internal-format
 msgid "multiple virtual PHI nodes in BB %d"
-msgstr ""
+msgstr "nœuds PHI virtuels multiples dans le BB %d"
 
 #: tree-ssa.c:655 tree-ssa.c:684
-#, fuzzy, gcc-internal-format
-#| msgid "No label definition for FORMAT statement at %0"
+#, gcc-internal-format
 msgid "virtual definition is not an SSA name"
-msgstr "pas de définition d'étiquette pour la déclaration de FORMAT à %0"
+msgstr "la définition virtuelle n'est pas un nom SSA"
 
 #: tree-ssa.c:671
 #, gcc-internal-format
 msgid "stmt with wrong VUSE"
-msgstr ""
+msgstr "instruction avec un mauvais VUSE"
 
 #: tree-ssa.c:701
 #, gcc-internal-format, gfc-internal-format
 msgid "PHI node with wrong VUSE on edge from BB %d"
-msgstr ""
+msgstr "nœud PHI avec un mauvais VUSE sur l'arête depuis le BB %d"
 
 #: tree-ssa.c:727
 #, gcc-internal-format
 msgid "expected an SSA_NAME object"
-msgstr ""
+msgstr "un objet SSA_NAME était attendu"
 
 #: tree-ssa.c:733
 #, gcc-internal-format
 msgid "found an SSA_NAME that had been released into the free pool"
-msgstr ""
+msgstr "un SSA_NAME a été rencontré qui avait été relâché dans le pool des éléments libres"
 
 #: tree-ssa.c:740
 #, gcc-internal-format
 msgid "type mismatch between an SSA_NAME and its symbol"
-msgstr ""
+msgstr "désaccord de type entre un SSA_NAME et son symbole"
 
 #: tree-ssa.c:746
 #, gcc-internal-format
 msgid "found a virtual definition for a GIMPLE register"
-msgstr ""
+msgstr "définition virtuelle trouvée pour un registre GIMPLE"
 
 #: tree-ssa.c:752
 #, gcc-internal-format
 msgid "virtual SSA name for non-VOP decl"
-msgstr ""
+msgstr "nom SSA virtuel pour une déclaration non VOP"
 
 #: tree-ssa.c:758
-#, fuzzy, gcc-internal-format
-#| msgid "function definition declared `register'"
+#, gcc-internal-format
 msgid "found a real definition for a non-register"
-msgstr "définition de fonction déclarée « register »"
+msgstr "définition réelle trouvée pour un non registre"
 
 #: tree-ssa.c:765
 #, gcc-internal-format
 msgid "found a default name with a non-empty defining statement"
-msgstr ""
+msgstr "nom par défaut trouvé avec une instruction de définition non vide"
 
 #: tree-ssa.c:795
 #, gcc-internal-format
 msgid "RESULT_DECL should be read only when DECL_BY_REFERENCE is set"
-msgstr ""
+msgstr "RESULT_DECL devrait être en lecture seule quand DECL_BY_REFERENCE est défini"
 
 #: tree-ssa.c:801
 #, gcc-internal-format, gfc-internal-format
 msgid "SSA_NAME created in two different blocks %i and %i"
-msgstr ""
+msgstr "SSA_NAME créé dans deux blocs différents %i et %i"
 
 #: tree-ssa.c:810 tree-ssa.c:1119
 #, gcc-internal-format
 msgid "SSA_NAME_DEF_STMT is wrong"
-msgstr ""
+msgstr "SSA_NAME_DEF_STMT est faux"
 
 #: tree-ssa.c:862
-#, fuzzy, gcc-internal-format
-#| msgid "missing defining occurrence"
+#, gcc-internal-format
 msgid "missing definition"
-msgstr "définition d'occurence manquante"
+msgstr "définition manquante"
 
 #: tree-ssa.c:868
 #, gcc-internal-format, gfc-internal-format
 msgid "definition in block %i does not dominate use in block %i"
-msgstr ""
+msgstr "la définition dans le bloc %i ne domine pas son utilisation dans le bloc %i"
 
 #: tree-ssa.c:876
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "definition follows action"
+#, gcc-internal-format, gfc-internal-format
 msgid "definition in block %i follows the use"
-msgstr "définition suit l'action"
+msgstr "la définition dans le bloc %i suit l'utilisation"
 
 #: tree-ssa.c:883
 #, gcc-internal-format
 msgid "SSA_NAME_OCCURS_IN_ABNORMAL_PHI should be set"
-msgstr ""
+msgstr "SSA_NAME_OCCURS_IN_ABNORMAL_PHI devrait être défini"
 
 #: tree-ssa.c:891
 #, gcc-internal-format
 msgid "no immediate_use list"
-msgstr ""
+msgstr "pas de liste immediate_use"
 
 #: tree-ssa.c:903
 #, gcc-internal-format
 msgid "wrong immediate use list"
-msgstr ""
+msgstr "liste d'utilisation immédiate erronée"
 
 #: tree-ssa.c:937
 #, gcc-internal-format
 msgid "incoming edge count does not match number of PHI arguments"
-msgstr ""
+msgstr "le nombre d'arêtes entrantes ne correspond pas au nombre d'arguments PHI"
 
 #: tree-ssa.c:951
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument missing after %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "PHI argument is missing for edge %d->%d"
-msgstr "argument manquant après %s"
+msgstr "l'argument PHI est manquant pour l'arête %d->%d"
 
 #: tree-ssa.c:960
-#, fuzzy, gcc-internal-format
-#| msgid "argument `%d' is not a constant"
+#, gcc-internal-format
 msgid "PHI argument is not SSA_NAME, or invariant"
-msgstr "l'argument de « %d » n'est pas une constante"
+msgstr "l'argument PHI n'est pas SSA_NAME ou invariant"
 
 #: tree-ssa.c:988
 #, gcc-internal-format, gfc-internal-format
 msgid "wrong edge %d->%d for PHI argument"
-msgstr ""
+msgstr "l'arête %d->%d est erronée pour l'argument PHI"
 
 #: tree-ssa.c:1065
 #, gcc-internal-format, gfc-internal-format
 msgid "AUX pointer initialized for edge %d->%d"
-msgstr ""
+msgstr "pointeur AUX initialisé pour l'arête %d->%d"
 
 #: tree-ssa.c:1091
 #, gcc-internal-format
 msgid "stmt (%p) marked modified after optimization pass: "
-msgstr ""
+msgstr "instruction (%p) marquée comme modifiée après l'étape d'optimisation: "
 
 #: tree-ssa.c:1158
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_ssa failed"
-msgstr "verify_flow_info a échoué"
+msgstr "verify_ssa a échoué"
 
 #: tree-streamer-in.c:342
-#, fuzzy, gcc-internal-format
-#| msgid "hex escape sequence out of range"
+#, gcc-internal-format
 msgid "machine independent builtin code out of range"
-msgstr "séquence d'échappement hexadécimale hors limite"
+msgstr "le code de la fonction intégrée indépendant de la machine est hors limite"
 
 #: tree-streamer-in.c:348
-#, fuzzy, gcc-internal-format
-#| msgid "Range specification at %0 invalid"
+#, gcc-internal-format
 msgid "target specific builtin not available"
-msgstr "spécification d'étendue à %0 invalide"
+msgstr "la fonction intégrée spécifique à la cible n'est pas disponible"
 
 #: tree-vect-generic.c:265
 #, gcc-internal-format
 msgid "vector operation will be expanded piecewise"
-msgstr ""
+msgstr "l'opération vectorielle sera développée à la pièce"
 
 #: tree-vect-generic.c:268
 #, gcc-internal-format
 msgid "vector operation will be expanded in parallel"
-msgstr ""
+msgstr "l'opération vectorielle sera développée en parallèle"
 
 #: tree-vect-generic.c:319
 #, gcc-internal-format
 msgid "vector operation will be expanded with a single scalar operation"
-msgstr ""
+msgstr "l'opération vectorielle sera développée avec une seule opération scalaire"
 
 #: tree-vect-generic.c:887
 #, gcc-internal-format
 msgid "vector condition will be expanded piecewise"
-msgstr ""
+msgstr "la condition vectorielle sera développée à la pièce"
 
 #: tree-vect-generic.c:1304
 #, gcc-internal-format
 msgid "vector shuffling operation will be expanded piecewise"
-msgstr ""
+msgstr "l'opération de brassage vectoriel sera développée à la pièce"
 
 #: tree-vect-loop.c:3505
 #, gcc-internal-format
 msgid "vectorization did not happen for a simd loop"
-msgstr ""
+msgstr "la vectorisation n'a pas eu lieu pour une boucle simd"
 
 #: tree-vrp.c:6590 tree-vrp.c:6630 tree-vrp.c:6711
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is not an integer"
+#, gcc-internal-format
 msgid "array subscript is above array bounds"
-msgstr "l'indice du tableau n'est pas un entier"
+msgstr "l'indice du tableau est au delà des limites du tableau"
 
 #: tree-vrp.c:6614
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is not an integer"
+#, gcc-internal-format
 msgid "array subscript is outside array bounds"
-msgstr "l'indice du tableau n'est pas un entier"
+msgstr "l'indice du tableau est en dehors des limites du tableau"
 
 #: tree-vrp.c:6643 tree-vrp.c:6698
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is not an integer"
+#, gcc-internal-format
 msgid "array subscript is below array bounds"
-msgstr "l'indice du tableau n'est pas un entier"
+msgstr "l'indice du tableau est en dessous des limites du tableau"
 
 #: tree-vrp.c:7479
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying conditional to constant"
-msgstr ""
+msgstr "on suppose qu'un débordement signé n'a pas lieu quand la condition est simplifiée en une constante"
 
 #: tree-vrp.c:7485 tree-vrp.c:9583 tree-vrp.c:9627 tree-vrp.c:9690
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying conditional"
-msgstr ""
+msgstr "on suppose qu'un débordement signé n'a pas lieu lors de la simplification de la condition"
 
 #: tree-vrp.c:7529
-#, fuzzy, gcc-internal-format
-#| msgid "comparison is always false due to limited range of data type"
+#, gcc-internal-format
 msgid "comparison always false due to limited range of data type"
-msgstr "comparaison est toujours fausse en raison d'une gamme limitée de type de données"
+msgstr "comparaison toujours fausse en raison d'une gamme limitée du type de données"
 
 #: tree-vrp.c:7531
-#, fuzzy, gcc-internal-format
-#| msgid "comparison is always true due to limited range of data type"
+#, gcc-internal-format
 msgid "comparison always true due to limited range of data type"
-msgstr "comparaison est toujours vraie en raison d'une gamme limitée de type de données"
+msgstr "comparaison toujours vraie en raison d'une gamme limitée du type de données"
 
 #: tree-vrp.c:9182
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying %</%> or %<%%%> to %<>>%> or %<&%>"
-msgstr ""
+msgstr "on suppose que le débordement signé n'a pas lieu lors de la simplification de %</%> ou %<%%%> en %<>>%> ou %<&%>"
 
 #: tree-vrp.c:9248
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying %<min/max (X,Y)%> to %<X%> or %<Y%>"
-msgstr ""
+msgstr "on suppose que le débordement signé n'a pas lieu lors de la simplification de %<min/max (X,Y)%> en %<X%> ou %<Y%>"
 
 #: tree-vrp.c:9299
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying %<abs (X)%> to %<X%> or %<-X%>"
-msgstr ""
+msgstr "on suppose que le débordement signé n'a pas lieu lors de la simplification de %<abs (X)%> en %<X%> ou %<-X%>"
 
 #: tree.c:1832
 #, gcc-internal-format
 msgid "non-constant element in constant CONSTRUCTOR"
-msgstr ""
+msgstr "élément non constant dans un CONSTRUCTOR constant"
 
 #: tree.c:1834
 #, gcc-internal-format
 msgid "side-effects element in no-side-effects CONSTRUCTOR"
-msgstr ""
+msgstr "élément avec des effets de bord dans un CONSTRUCTOR sans effets de bord"
 
 #: tree.c:4835
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute can only be applied to class definitions"
+#, gcc-internal-format
 msgid "ignoring attributes applied to %qT after definition"
-msgstr "attribut « %s » peut seulement être appliqué aux définitions de classes"
+msgstr "les attributs appliqués à %qT après sa définition sont ignorés"
 
 #: tree.c:6314
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' redeclared without dllimport attribute after being referenced with dllimport linkage"
+#, gcc-internal-format
 msgid "%q+D already declared with dllexport attribute: dllimport ignored"
-msgstr "« %D » redéclaré sans attribut dllimport après avoir été référencé avec lien dllimport."
+msgstr "%q+D déjà déclaré avec l'attribut dllexport: dllimport est ignoré"
 
 #: tree.c:6326
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' redeclared without dllimport attribute after being referenced with dllimport linkage"
+#, gcc-internal-format
 msgid "%q+D redeclared without dllimport attribute after being referenced with dll linkage"
-msgstr "« %D » redéclaré sans attribut dllimport après avoir été référencé avec lien dllimport."
+msgstr "%q+D redéclaré sans l'attribut dllimport après avoir été référencé avec une liaison pour une dll"
 
 #: tree.c:6340
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' redeclared without dllimport attribute after being referenced with dllimport linkage"
+#, gcc-internal-format
 msgid "%q+D redeclared without dllimport attribute: previous dllimport ignored"
-msgstr "« %D » redéclaré sans attribut dllimport après avoir été référencé avec lien dllimport."
+msgstr "%q+D redéclaré sans l'attribut dllimport: le dllimport précédent est ignoré"
 
 #: tree.c:6383 tree.c:6393 tree.c:6403 c-family/c-attribs.c:420
 #: c-family/c-attribs.c:439 c-family/c-attribs.c:457 c-family/c-attribs.c:487
@@ -21992,96 +21880,84 @@ msgstr "« %D » redéclaré sans attribut dllimport après avoir été réfé
 #: ada/gcc-interface/utils.c:6072 ada/gcc-interface/utils.c:6089
 #: ada/gcc-interface/utils.c:6105 ada/gcc-interface/utils.c:6131
 #: lto/lto-lang.c:243
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute ignored"
+#, gcc-internal-format
 msgid "%qE attribute ignored"
-msgstr "attribut « %s » ignoré"
+msgstr "attribut %qE ignoré"
 
 #: tree.c:6421
-#, fuzzy, gcc-internal-format
-#| msgid "%Jinline function '%D' is declared as dllimport: attribute ignored."
+#, gcc-internal-format
 msgid "inline function %q+D declared as  dllimport: attribute ignored"
-msgstr "fonction enligne « %D » est déclarée en tant que dllimport: attribut ignoré."
+msgstr "fonction « inline » %q+D déclarée en tant que dllimport: attribut ignoré"
 
 #: tree.c:6429
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfunction `%D' definition is marked dllimport."
+#, gcc-internal-format
 msgid "function %q+D definition is marked dllimport"
-msgstr "définition de la fonction « %D » est marquée dllimport"
+msgstr "la définition de la fonction %q+D est marquée dllimport"
 
 #: tree.c:6437
-#, fuzzy, gcc-internal-format
-#| msgid "%Jvariable `%D' definition is marked dllimport."
+#, gcc-internal-format
 msgid "variable %q+D definition is marked dllimport"
-msgstr "définition de la variable « %D » est marquée dllimport"
+msgstr "la définition de la variable %q+D est marquée dllimport"
 
 #: tree.c:6463
-#, fuzzy, gcc-internal-format
-#| msgid "%Jexternal linkage required for symbol '%D' because of '%s' attribute."
+#, gcc-internal-format
 msgid "external linkage required for symbol %q+D because of %qE attribute"
-msgstr "édition de lien externe requise pour le symbole « %D » en raison de l'attribut « %s »"
+msgstr "liaison externe requise pour le symbole %q+D en raison de l'attribut %qE"
 
 #: tree.c:6477
 #, gcc-internal-format
 msgid "%qE implies default visibility, but %qD has already been declared with a different visibility"
-msgstr ""
+msgstr "%qE implique la visibilité par défaut mais %qD a déjà été déclaré avec une visibilité différente"
 
 #: tree.c:8357
 #, gcc-internal-format
 msgid "arrays of functions are not meaningful"
-msgstr "tableaux de fonctions n'a pas grand sens"
+msgstr "les tableaux de fonctions ne sont pas pertinents"
 
 #: tree.c:8526
 #, gcc-internal-format
 msgid "function return type cannot be function"
-msgstr "Le type retourné d'une fonction ne peut être une fonction"
+msgstr "le type retourné par une fonction ne peut être une fonction"
 
 #: tree.c:9812 tree.c:9897 tree.c:9958
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
-msgstr "vérification de l'arbre: attendait %s, obtenu %s dans %s, à %s:%d"
+msgstr "vérification de l'arbre: %s, obtenu %s dans %s, à %s:%d"
 
 #: tree.c:9849
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
-msgstr "vérification de l'arbre: attendait %s, obtenu %s dans %s, à %s:%d"
+msgstr "vérification de l'arbre: n'attendait aucun parmi %s, obtenu %s dans %s, à %s:%d"
 
 #: tree.c:9862
-#, fuzzy, gcc-internal-format
-#| msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
+#, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "vérification de l'arbre: attendait classe « %c », obtenu « %c » (%s) dans %s, à %s:%d"
+msgstr "vérification de l'arbre: attendait la classe %qs, obtenu %qs (%s) dans %s, à %s:%d"
 
 #: tree.c:9911
-#, fuzzy, gcc-internal-format
-#| msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
+#, gcc-internal-format
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "vérification de l'arbre: attendait classe « %c », obtenu « %c » (%s) dans %s, à %s:%d"
+msgstr "vérification de l'arbre: on n'attendait pas la classe %qs, obtenu %qs (%s) dans %s, à %s:%d"
 
 #: tree.c:9924
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
-msgstr "vérification de l'arbre: attendait %s, obtenu %s dans %s, à %s:%d"
+msgstr "vérification de l'arbre: attendait omp_clause %s, obtenu %s dans %s, à %s:%d"
 
 #: tree.c:9984
-#, fuzzy, gcc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
-msgstr "vérification de l'arbre: attendait %s, obtenu %s dans %s, à %s:%d"
+msgstr "vérification de l'arbre: attendait un arbre contenant la structure %qs, obtenu %qs dans %s, à %s:%d"
 
 #: tree.c:9998
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
-msgstr "vérification de l'arbre: accès de elt %d de tree-vec avec %d elts dans %s, à %s:%d"
+msgstr "vérification de l'arbre: accès à elt %d de tree_int_cst avec %d elts dans %s, à %s:%d"
 
 #: tree.c:10010
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-msgstr "vérification de l'arbre: accès de elt %d de tree-vec avec %d elts dans %s, à %s:%d"
+msgstr "vérification de l'arbre: accès à elt %d de tree_vec avec %d elts dans %s, à %s:%d"
 
 #: tree.c:10023
 #, gcc-internal-format, gfc-internal-format
@@ -22089,45 +21965,39 @@ msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr "vérification de l'arbre: opérande accédé %d de %s avec %d opérandes dans %s, à %s:%d"
 
 #: tree.c:10036
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
-msgstr "vérification de l'arbre: opérande accédé %d de %s avec %d opérandes dans %s, à %s:%d"
+msgstr "vérification de l'arbre: opérande accédé %d de omp_clause %s avec %d opérandes dans %s, à %s:%d"
 
 #: tree.c:12848
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qD is deprecated: %s"
-msgstr "« %s » est obsolète"
+msgstr "%qD est obsolète: %s"
 
 #: tree.c:12851
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qD is deprecated"
-msgstr "« %s » est obsolète"
+msgstr "%qD est obsolète"
 
 #: tree.c:12875 tree.c:12897
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qE is deprecated: %s"
-msgstr "« %s » est obsolète"
+msgstr "%qE est obsolète: %s"
 
 #: tree.c:12878 tree.c:12900
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qE is deprecated"
-msgstr "« %s » est obsolète"
+msgstr "%qE est obsolète"
 
 #: tree.c:12884 tree.c:12905
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "type is deprecated"
+#, gcc-internal-format, gfc-internal-format
 msgid "type is deprecated: %s"
-msgstr "type est obsolète"
+msgstr "le type est obsolète: %s"
 
 #: tree.c:12887 tree.c:12908
 #, gcc-internal-format
 msgid "type is deprecated"
-msgstr "type est obsolète"
+msgstr "le type est obsolète"
 
 #. Type variant can differ by:
 #.
@@ -22154,444 +22024,418 @@ msgstr "type est obsolète"
 #: tree.c:13332
 #, gcc-internal-format
 msgid "type variant differs by "
-msgstr ""
+msgstr "la variante du type diffère sur "
 
 #: tree.c:13373
 #, gcc-internal-format
 msgid "type variant has different TYPE_SIZE_UNIT"
-msgstr ""
+msgstr "la variante du type a un TYPE_SIZE_UNIT différent"
 
 #: tree.c:13375
 #, gcc-internal-format
 msgid "type variant's TYPE_SIZE_UNIT"
-msgstr ""
+msgstr "TYPE_SIZE_UNIT de la variante du type"
 
 #: tree.c:13377
 #, gcc-internal-format
 msgid "type's TYPE_SIZE_UNIT"
-msgstr ""
+msgstr "TYPE_SIZE_UNIT du type"
 
 #: tree.c:13397
 #, gcc-internal-format
 msgid "type variant with TYPE_ALIAS_SET_KNOWN_P"
-msgstr ""
+msgstr "variante du type avec TYPE_ALIAS_SET_KNOWN_P"
 
 #: tree.c:13410
 #, gcc-internal-format
 msgid "type variant has different TYPE_VFIELD"
-msgstr ""
+msgstr "la variante du type a un TYPE_VFIELD différent"
 
 #: tree.c:13427
 #, gcc-internal-format
 msgid "type variant has TYPE_METHODS"
-msgstr ""
+msgstr "la variante du type a TYPE_METHODS"
 
 #: tree.c:13452
 #, gcc-internal-format
 msgid "type variant has different TYPE_BINFO"
-msgstr ""
+msgstr "la variante du type a un TYPE_BINFO différent"
 
 #: tree.c:13454
 #, gcc-internal-format
 msgid "type variant's TYPE_BINFO"
-msgstr ""
+msgstr "TYPE_BINFO de la variante du type"
 
 #: tree.c:13456
 #, gcc-internal-format
 msgid "type's TYPE_BINFO"
-msgstr ""
+msgstr "TYPE_BINFO du type"
 
 #: tree.c:13494
 #, gcc-internal-format
 msgid "type variant has different TYPE_FIELDS"
-msgstr ""
+msgstr "la variante du type a un TYPE_FIELDS différent"
 
 #: tree.c:13496
-#, fuzzy, gcc-internal-format
-#| msgid "%s:stamp mismatch with notes file\n"
+#, gcc-internal-format
 msgid "first mismatch is field"
-msgstr "%s : estampille ne concorde par avec le fichier de notes\n"
+msgstr "le premier désaccord est le champ"
 
 #: tree.c:13498
 #, gcc-internal-format
 msgid "and field"
-msgstr ""
+msgstr "et le champ"
 
 #: tree.c:13515
 #, gcc-internal-format
 msgid "type variant has different TREE_TYPE"
-msgstr ""
+msgstr "la variante du type a un TREE_TYPE différent"
 
 #: tree.c:13517 tree.c:13528
 #, gcc-internal-format
 msgid "type variant's TREE_TYPE"
-msgstr ""
+msgstr "TREE_TYPE de la variante du type"
 
 #: tree.c:13519 tree.c:13530
 #, gcc-internal-format
 msgid "type's TREE_TYPE"
-msgstr ""
+msgstr "TREE_TYPE du type"
 
 #: tree.c:13526
-#, fuzzy, gcc-internal-format
-#| msgid "-march=%s is not compatible with the selected ABI"
+#, gcc-internal-format
 msgid "type is not compatible with its vairant"
-msgstr "-march=%s n'est pas compatible avec l'ABI sélectionné"
+msgstr "le type n'est pas compatible avec sa variante"
 
 #: tree.c:13829
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable DJGPP not defined"
+#, gcc-internal-format
 msgid "Main variant is not defined"
-msgstr "variable d'environnement DJGPP non définie"
+msgstr "La variante principale n'est pas définie"
 
 #: tree.c:13834
 #, gcc-internal-format
 msgid "TYPE_MAIN_VARIANT has different TYPE_MAIN_VARIANT"
-msgstr ""
+msgstr "TYPE_MAIN_VARIANT a un TYPE_MAIN_VARIANT différent"
 
 #: tree.c:13846
 #, gcc-internal-format
 msgid "TYPE_CANONICAL has different TYPE_CANONICAL"
-msgstr ""
+msgstr "TYPE_CANONICAL a un TYPE_CANONICAL différent"
 
 #: tree.c:13864
 #, gcc-internal-format
 msgid "TYPE_CANONICAL is not compatible"
-msgstr ""
+msgstr "TYPE_CANONICAL n'est pas compatible"
 
 #: tree.c:13872
 #, gcc-internal-format
 msgid "TYPE_MODE of TYPE_CANONICAL is not compatible"
-msgstr ""
+msgstr "le TYPE_MODE de TYPE_CANONICAL n'est pas compatible"
 
 #: tree.c:13880
 #, gcc-internal-format
 msgid "TYPE_CANONICAL of main variant is not main variant"
-msgstr ""
+msgstr "le TYPE_CANONICAL de la variante principale n'est pas la variante principale"
 
 #: tree.c:13896
 #, gcc-internal-format
 msgid "TYPE_VFIELD is not FIELD_DECL nor TREE_LIST"
-msgstr ""
+msgstr "TYPE_VFIELD n'est pas FIELD_DECL ni TREE_LIST"
 
 #: tree.c:13906
 #, gcc-internal-format
 msgid "TYPE_NEXT_PTR_TO is not POINTER_TYPE"
-msgstr ""
+msgstr "TYPE_NEXT_PTR_TO n'est pas POINTER_TYPE"
 
 #: tree.c:13916
 #, gcc-internal-format
 msgid "TYPE_NEXT_REF_TO is not REFERENCE_TYPE"
-msgstr ""
+msgstr "TYPE_NEXT_REF_TO n'est pas REFERENCE_TYPE"
 
 #: tree.c:13934
 #, gcc-internal-format
 msgid "TYPE_MINVAL non-NULL"
-msgstr ""
+msgstr "TYPE_MINVAL non nul"
 
 #: tree.c:13946
 #, gcc-internal-format
 msgid "TYPE_METHODS is not FUNCTION_DECL, TEMPLATE_DECL nor error_mark_node"
-msgstr ""
+msgstr "TYPE_METHODS n'est pas FUNCTION_DECL, TEMPLATE_DECL ni error_mark_node"
 
 #: tree.c:13957
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not record nor union"
-msgstr ""
+msgstr "TYPE_METHOD_BASETYPE n'est pas un enregistrement ni une union"
 
 #: tree.c:13968
 #, gcc-internal-format
 msgid "TYPE_OFFSET_BASETYPE is not record nor union"
-msgstr ""
+msgstr "TYPE_OFFSET_BASETYPE n'est pas un enregistrement ni une union"
 
 #: tree.c:13986
 #, gcc-internal-format
 msgid "TYPE_ARRAY_MAX_SIZE not INTEGER_CST"
-msgstr ""
+msgstr "TYPE_ARRAY_MAX_SIZE pas INTEGER_CST"
 
 #: tree.c:13993
 #, gcc-internal-format
 msgid "TYPE_MAXVAL non-NULL"
-msgstr ""
+msgstr "TYPE_MAXVAL non NULL"
 
 #: tree.c:14005
 #, gcc-internal-format
 msgid "TYPE_BINFO is not TREE_BINFO"
-msgstr ""
+msgstr "TYPE_BINFO n'est pas TREE_BINFO"
 
 #: tree.c:14013
 #, gcc-internal-format
 msgid "TYPE_BINFO type is not TYPE_MAIN_VARIANT"
-msgstr ""
+msgstr "le type TYPE_BINFO n'est pas TYPE_MAIN_VARIANT"
 
 #: tree.c:14020
 #, gcc-internal-format
 msgid "TYPE_LANG_SLOT_1 (binfo) field is non-NULL"
-msgstr ""
+msgstr "le champ TYPE_LANG_SLOT_1 (binfo) est non NULL"
 
 #: tree.c:14036
 #, gcc-internal-format
 msgid "Enum value is not CONST_DECL or INTEGER_CST"
-msgstr ""
+msgstr "La valeur de l'enum n'est pas CONST_DECL ou INTEGER_CST"
 
 #: tree.c:14044
 #, gcc-internal-format
 msgid "Enum value type is not INTEGER_TYPE nor convertible to the enum"
-msgstr ""
+msgstr "Le type de la valeur de l'enum n'est pas INTEGER_TYPE et n'est pas convertible en l'enum"
 
 #: tree.c:14051
 #, gcc-internal-format
 msgid "Enum value name is not IDENTIFIER_NODE"
-msgstr ""
+msgstr "Le nom de la valeur de l'enum n'est pas IDENTIFIER_NODE"
 
 #: tree.c:14061
-#, fuzzy, gcc-internal-format
-#| msgid "size of array `%s' has non-integer type"
+#, gcc-internal-format
 msgid "Array TYPE_DOMAIN is not integer type"
-msgstr "la taille du tableau « %s » n'est pas de type entier"
+msgstr "le TYPE_DOMAIN du tableau n'est pas d'un type entier"
 
 #: tree.c:14070
-#, fuzzy, gcc-internal-format
-#| msgid "field `%s' has incomplete type"
+#, gcc-internal-format
 msgid "TYPE_FIELDS defined in incomplete type"
-msgstr "champ « %s » est de type incomplet"
+msgstr "TYPE_FIELDS défini dans un type incomplet"
 
 #: tree.c:14090
 #, gcc-internal-format
 msgid "Wrong tree in TYPE_FIELDS list"
-msgstr ""
+msgstr "Arbre erroné dans la liste TYPE_FIELDS"
 
 #: tree.c:14105
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is %i while TYPE_CACHED_VALUES is %p"
-msgstr ""
+msgstr "TYPE_CACHED_VALUES_P est %i tandis que TYPE_CACHED_VALUES est %p"
 
 #: tree.c:14111
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES is not TREE_VEC"
-msgstr ""
+msgstr "TYPE_CACHED_VALUES n'est pas TREE_VEC"
 
 #: tree.c:14124
 #, gcc-internal-format
 msgid "wrong TYPE_CACHED_VALUES entry"
-msgstr ""
+msgstr "mauvaise entrée TYPE_CACHED_VALUES"
 
 #: tree.c:14137
 #, gcc-internal-format
 msgid "TREE_PURPOSE is non-NULL in TYPE_ARG_TYPES list"
-msgstr ""
+msgstr "TREE_PURPOSE n'est pas NULL dans la liste TYPE_ARG_TYPES"
 
 #: tree.c:14143
 #, gcc-internal-format
 msgid "Wrong entry in TYPE_ARG_TYPES list"
-msgstr ""
+msgstr "Entrée erronée dans la liste TYPE_ARG_TYPES"
 
 #: tree.c:14150
 #, gcc-internal-format
 msgid "TYPE_VALUES_RAW field is non-NULL"
-msgstr ""
+msgstr "le champ TYPE_VALUES_RAW n'est pas NULL"
 
 #: tree.c:14162
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is set while it should not"
-msgstr ""
+msgstr "TYPE_CACHED_VALUES_P est défini alors qu'il ne le devrait pas"
 
 #: tree.c:14168
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on wrong type code"
-msgstr ""
+msgstr "TYPE_STRING_FLAG est défini sur le mauvais code de type"
 
 #: tree.c:14180
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on type that does not look like char nor array of chars"
-msgstr ""
+msgstr "TYPE_STRING_FLAG est défini sur un type qui ne ressemble pas à un « char » ou un tableau de « char »"
 
 #: tree.c:14192
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not main variant"
-msgstr ""
+msgstr "TYPE_METHOD_BASETYPE n'est pas la variante principale"
 
 #: tree.c:14199
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_type failed"
-msgstr "verify_flow_info a échoué"
+msgstr "verify_type a échoué"
 
 #: value-prof.c:505
 #, gcc-internal-format
 msgid "dead histogram"
-msgstr ""
+msgstr "histogramme mort"
 
 #: value-prof.c:534
 #, gcc-internal-format
 msgid "Histogram value statement does not correspond to the statement it is associated with"
-msgstr ""
+msgstr "L'instruction de la valeur de l'histogramme ne correspond pas à l'instruction à laquelle il est associé"
 
 #: value-prof.c:546
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_histograms failed"
-msgstr "verify_flow_info a échoué"
+msgstr "verify_histograms a échoué"
 
+# Le premier %s est le nom du compteur. Le reste de la ligne contient des infos sur ce compteur
 #: value-prof.c:603
 #, gcc-internal-format, gfc-internal-format
 msgid "corrupted value profile: %s profile counter (%d out of %d) inconsistent with basic-block count (%d)"
-msgstr ""
+msgstr "valeur de profilage corrompue: %s le compteur de profilage (%d sur %d) est inconsistant avec le décompte du bloc de base (%d)"
 
 #: var-tracking.c:7125
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without"
-msgstr ""
+msgstr "la limite de la taille de pistage des variables est dépassée avec -fvar-tracking-assignments, on réessaie sans"
 
 #: var-tracking.c:7129
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded"
-msgstr ""
+msgstr "la limite de la taille de pistage des variables est dépassée"
 
 #: varasm.c:323
-#, fuzzy, gcc-internal-format
-#| msgid "%J%D causes a section type conflict"
+#, gcc-internal-format
 msgid "%+D causes a section type conflict with %D"
-msgstr "%D cause un conflit du type de section"
+msgstr "%+D cause un conflit du type de section avec %D"
 
 #: varasm.c:326
-#, fuzzy, gcc-internal-format
-#| msgid "  conflict with `%D'"
+#, gcc-internal-format
 msgid "section type conflict with %D"
-msgstr "  en conflit avec « %D »"
+msgstr "conflit du type de section avec %D"
 
 #: varasm.c:331
-#, fuzzy, gcc-internal-format
-#| msgid "%J%D causes a section type conflict"
+#, gcc-internal-format
 msgid "%+D causes a section type conflict"
-msgstr "%D cause un conflit du type de section"
+msgstr "%+D cause un conflit du type de section"
 
 #: varasm.c:333
-#, fuzzy, gcc-internal-format
-#| msgid "%J%D causes a section type conflict"
+#, gcc-internal-format
 msgid "section type conflict"
-msgstr "%D cause un conflit du type de section"
+msgstr "conflit du type de section"
 
 #: varasm.c:1008
-#, fuzzy, gcc-internal-format
-#| msgid "%Jalignment of '%D' is greater than maximum object file alignment.  Using %d"
+#, gcc-internal-format
 msgid "alignment of %q+D is greater than maximum object file alignment %d"
-msgstr "alignement de « %D » est plus grand que l'alignement maximal du fichier objet. %d est utilisé."
+msgstr "l'alignement de %q+D est plus grand que l'alignement maximal du fichier objet %d"
 
 #: varasm.c:1160
-#, fuzzy, gcc-internal-format
-#| msgid "only uninitialized variables can be placed in a .bss section"
+#, gcc-internal-format
 msgid "only zero initializers are allowed in section %qs"
-msgstr "seules les variables non initialisées peuvent être placées dans une section .bss"
+msgstr "seuls les initialiseurs à zéro sont autorisés dans la section %qs"
 
 #: varasm.c:1367 varasm.c:1376
-#, fuzzy, gcc-internal-format
-#| msgid "%Jregister name not specified for '%D'"
+#, gcc-internal-format
 msgid "register name not specified for %q+D"
-msgstr "nom de registre n'est pas spécifié pour « %D »"
+msgstr "le nom du registre n'est pas spécifié pour %q+D"
 
 #: varasm.c:1378
-#, fuzzy, gcc-internal-format
-#| msgid "%Jinvalid register name for '%D'"
+#, gcc-internal-format
 msgid "invalid register name for %q+D"
-msgstr "nom de registre invalide pour « %D »"
+msgstr "nom de registre invalide pour %q+D"
 
 #: varasm.c:1380
-#, fuzzy, gcc-internal-format
-#| msgid "%Jdata type of '%D' isn't suitable for a register"
+#, gcc-internal-format
 msgid "data type of %q+D isn%'t suitable for a register"
-msgstr "type de données de « %D » n'est pas applicable pour un registre"
+msgstr "le type de données de %q+D ne convient pas pour un registre"
 
 #: varasm.c:1383
 #, gcc-internal-format
 msgid "the register specified for %q+D cannot be accessed by the current target"
-msgstr ""
+msgstr "le registre spécifié pour %q+D n'est pas accessible par la cible actuelle"
 
 #: varasm.c:1386
-#, fuzzy, gcc-internal-format
-#| msgid "register used for two global register variables"
+#, gcc-internal-format
 msgid "the register specified for %q+D is not general enough to be used as a register variable"
-msgstr "registre utilisé pour deux variables registres globales"
+msgstr "le registre spécifié pour %q+D n'est pas assez général pour être utilisé comme registre de variable"
 
 #: varasm.c:1389
-#, fuzzy, gcc-internal-format
-#| msgid "%Jregister specified for '%D' isn't suitable for data type"
+#, gcc-internal-format
 msgid "register specified for %q+D isn%'t suitable for data type"
-msgstr "registre spécifié pour « %D » n'est applicable à un type de données"
+msgstr "le registre spécifié pour %q+D ne convient pas pour un type de données"
 
 #: varasm.c:1399
 #, gcc-internal-format
 msgid "global register variable has initial value"
-msgstr "variable globale registre a une valeur initiale"
+msgstr "la variable-registre globale a une valeur initiale"
 
 #: varasm.c:1403
 #, gcc-internal-format
 msgid "optimization may eliminate reads and/or writes to register variables"
-msgstr ""
+msgstr "l'optimisation peut éliminer les lectures ou les écritures dans les variables-registres"
 
 #: varasm.c:1449
-#, fuzzy, gcc-internal-format
-#| msgid "%Jregister name given for non-register variable '%D'"
+#, gcc-internal-format
 msgid "register name given for non-register variable %q+D"
-msgstr "nom de registre donné pour une variable non registre « %D »"
+msgstr "nom de registre donné pour la variable non registre %q+D"
 
 #: varasm.c:2017
 #, gcc-internal-format
 msgid "thread-local COMMON data not implemented"
-msgstr "thread-local COMMON data n'est pas implanté"
+msgstr "les données COMMON locales au thread ne sont pas implémentées"
 
 #: varasm.c:2050
-#, fuzzy, gcc-internal-format
-#| msgid "%Jrequested alignment for '%D' is greater than implemented alignment of %d"
+#, gcc-internal-format
 msgid "requested alignment for %q+D is greater than implemented alignment of %wu"
-msgstr "requête d'alignement pour '%D' est plus grand que l'alignement implanté de %d"
+msgstr "l'alignement requis pour %q+D est plus grand que l'alignement implémenté de %wu"
 
 #: varasm.c:2153 c/c-decl.c:4979 c/c-parser.c:1354
-#, fuzzy, gcc-internal-format
-#| msgid "storage size of `%D' isn't known"
+#, gcc-internal-format
 msgid "storage size of %q+D isn%'t known"
-msgstr "taille de stockage de « %D » n'est pas connue"
+msgstr "la taille de stockage de %q+D est inconnue"
 
 #: varasm.c:4805
-#, fuzzy, gcc-internal-format
-#| msgid "initializer for integer value is too complicated"
+#, gcc-internal-format
 msgid "initializer for integer/fixed-point value is too complicated"
-msgstr "initialisation d'entier trop compliquée"
+msgstr "l'initialiseur pour les valeurs entières/virgules fixes est trop compliqué"
 
 #: varasm.c:4810
 #, gcc-internal-format
 msgid "initializer for floating value is not a floating constant"
-msgstr "l'initialisation d'une valeur à virgule flottante n'est pas une constante à virgule flottante"
+msgstr "l'initialiseur pour une valeur en virgule flottante n'est pas une constante en virgule flottante"
 
 #: varasm.c:5119
-#, fuzzy, gcc-internal-format
-#| msgid "invalid initial value for member `%s'"
+#, gcc-internal-format
 msgid "invalid initial value for member %qE"
-msgstr "valeur initiale invalide pour le membre « %s »"
+msgstr "valeur initiale invalide pour le membre %qE"
 
 #: varasm.c:5379
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' declared inline after being called"
+#, gcc-internal-format
 msgid "%+D declared weak after being used"
-msgstr "« %D » déclaré enligne après avoir été appelé"
+msgstr "%+D déclaré faible après avoir été utilisé"
 
 #: varasm.c:5431
-#, fuzzy, gcc-internal-format
-#| msgid "declaration of `%#D' outside of class is not definition"
+#, gcc-internal-format
 msgid "weak declaration of %q+D being applied to a already existing, static definition"
-msgstr "déclaration de « %#D » en dehors de la classe n'est pas une définition"
+msgstr "la déclaration faible de %q+D est appliquée à une définition statique qui existe déjà"
 
 #: varasm.c:5467
-#, fuzzy, gcc-internal-format
-#| msgid "%Jweak declaration of '%D' must be public"
+#, gcc-internal-format
 msgid "weak declaration of %q+D must be public"
-msgstr "déclaration faible de « %D » doit être publique"
+msgstr "la déclaration faible de %q+D doit être publique"
 
 #: varasm.c:5471
-#, fuzzy, gcc-internal-format
-#| msgid "%Jweak declaration of '%D' not supported"
+#, gcc-internal-format
 msgid "weak declaration of %q+D not supported"
-msgstr "déclaration faible de « %D » n'est pas supportée"
+msgstr "la déclaration faible de %q+D n'est pas supportée"
 
 #: varasm.c:5500 varasm.c:5804
 #, gcc-internal-format
@@ -22599,80 +22443,71 @@ msgid "only weak aliases are supported in this configuration"
 msgstr "seulement les alias faibles sont supportés dans cette configuration"
 
 #: varasm.c:5694
-#, fuzzy, gcc-internal-format
-#| msgid "-m%s not supported in this configuration"
+#, gcc-internal-format
 msgid "weakref is not supported in this configuration"
-msgstr "-m%s n'est pas supporté par cette configuration"
+msgstr "« weakref » n'est pas supporté par cette configuration"
 
 #: varasm.c:5726
-#, fuzzy, gcc-internal-format
-#| msgid "Profiling is not supported on this target."
+#, gcc-internal-format
 msgid "ifunc is not supported on this target"
-msgstr "le profilage n'est pas supporté sur cette cible"
+msgstr "« ifunc » n'est pas supporté sur cette cible"
 
 #: varasm.c:5784
 #, gcc-internal-format
 msgid "weakref %q+D ultimately targets itself"
-msgstr ""
+msgstr "weakref %q+D pointe vers lui-même en fin de compte"
 
 #: varasm.c:5786
-#, fuzzy, gcc-internal-format
-#| msgid "cannot declare member function `%D' to have static linkage"
+#, gcc-internal-format
 msgid "weakref %q+D must have static linkage"
-msgstr "ne peut déclarer la fonction membre « %D » comme ayant un lien statique"
+msgstr "weakref %q+D doit avoir un lien statique"
 
 #: varasm.c:5793
-#, fuzzy, gcc-internal-format
-#| msgid "alias definitions not supported in this configuration; ignored"
+#, gcc-internal-format
 msgid "alias definitions not supported in this configuration"
-msgstr "définitions d'alias ne sont pas supportés dans cette configuration; ignoré"
+msgstr "les définitions d'alias ne sont pas supportées dans cette configuration"
 
 #: varasm.c:5801
-#, fuzzy, gcc-internal-format
-#| msgid "-m%s not supported in this configuration"
+#, gcc-internal-format
 msgid "ifunc is not supported in this configuration"
-msgstr "-m%s n'est pas supporté par cette configuration"
+msgstr "« ifunc » n'est pas supporté par cette configuration"
 
 #: varasm.c:6019 config/sol2.c:158 config/i386/winnt.c:261
 #, gcc-internal-format
 msgid "visibility attribute not supported in this configuration; ignored"
-msgstr "visibilité de l'attribut n'est pas supporté dans cette configuration; ignoré"
+msgstr "l'attribut de visibilité n'est pas supporté dans cette configuration; ignoré"
 
 #. Print an error message for unrecognized stab codes.
 #: xcoffout.c:193
-#, fuzzy, gcc-internal-format
-#| msgid "no sclass for %s stab (0x%x)\n"
+#, gcc-internal-format
 msgid "no sclass for %s stab (0x%x)"
-msgstr "pas de sclass pour le stab %s (0x%x)\n"
+msgstr "pas de sclass pour le stab %s (0x%x)"
 
 #: lto-streamer.h:1014
 #, gcc-internal-format, gfc-internal-format
 msgid "bytecode stream: expected tag %s instead of %s"
-msgstr ""
+msgstr "flux bytecode: balise %s attendue au lieu de %s"
 
 #: lto-streamer.h:1024
 #, gcc-internal-format, gfc-internal-format
 msgid "bytecode stream: tag %s is not in the expected range [%s, %s]"
-msgstr ""
+msgstr "flux bytecode: la balise %s n'est pas dans la plage [%s, %s] attendue"
 
 #: c-family/array-notation-common.c:71
-#, fuzzy, gcc-internal-format
-#| msgid "case label must be a discrete constant expression"
+#, gcc-internal-format
 msgid "__sec_implicit_index parameter must be an integer constant expression"
-msgstr "l'étiquette du CASE doit être une expression de constante discrète"
+msgstr "le paramètre __sec_implicit_index doit être une expression constante entière"
 
 #: c-family/array-notation-common.c:107
-#, fuzzy, gcc-internal-format
-#| msgid "mode mismatch in %s expression"
+#, gcc-internal-format
 msgid "length mismatch in expression"
-msgstr "non concordance de mode dans l'expression %s"
+msgstr "désaccord de longueur dans l'expression"
 
 #: c-family/array-notation-common.c:282 c-family/array-notation-common.c:310
 #: c/c-array-notation.c:731 cp/cp-array-notation.c:611
-#, fuzzy, gcc-internal-format
-#| msgid "-mregparm=%d is not between 0 and %d"
+#, gcc-internal-format
 msgid "rank mismatch between %qE and %qE"
-msgstr "-mregparm=%d n'est pas entre 0 et %d"
+msgstr "désaccord de rang entre %qE et %qE"
 
 #. Here the original expression is printed as a "heads-up"
 #. to the programmer.  This is because since there is no
@@ -22681,438 +22516,385 @@ msgstr "-mregparm=%d n'est pas entre 0 et %d"
 #. not visible for the programmer.  Thus, the correct fix
 #. may lie in the original expression.
 #: c-family/array-notation-common.c:291
-#, fuzzy, gcc-internal-format
-#| msgid "mode mismatch in %s expression"
+#, gcc-internal-format
 msgid "rank mismatch in expression %qE"
-msgstr "non concordance de mode dans l'expression %s"
+msgstr "désaccord de rang dans l'expression %qE"
 
 #: c-family/array-notation-common.c:667
 #, gcc-internal-format
 msgid "__sec_implicit_index argument %d must be less than the rank of %qE"
-msgstr ""
+msgstr "l'argument %d de __sec_implicit_index doit être inférieur au rang de %qE"
 
 #: c-family/c-attribs.c:409
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute ignored for `%s'"
+#, gcc-internal-format
 msgid "%qE attribute ignored for field of type %qT"
-msgstr "attribut « %s » ignoré pour « %s »"
+msgstr "l'attribut %qE est ignoré pour le champ de type %qT"
 
+# %qs est remplacé par un texte non traduit: « hot », « cold », « always_inline ».
 #: c-family/c-attribs.c:506 c-family/c-attribs.c:534 c-family/c-attribs.c:640
 #: ada/gcc-interface/utils.c:6063
 #, gcc-internal-format
 msgid "%qE attribute ignored due to conflict with attribute %qs"
-msgstr ""
+msgstr "l'attribut %qE est ignoré à cause d'un conflit avec l'attribut %qs"
 
+# %qs est remplacé par un texte non traduit: « noinline », « target_clones », « always_inline », « target ».
 #: c-family/c-attribs.c:704 c-family/c-attribs.c:710 c-family/c-attribs.c:3024
 #: c-family/c-attribs.c:3046 c-family/c-attribs.c:3052
 #, gcc-internal-format
 msgid "%qE attribute ignored due to conflict with %qs attribute"
-msgstr ""
+msgstr "l'attribut %qE est ignoré à cause d'un conflit avec l'attribut %qs"
 
 #: c-family/c-attribs.c:766 lto/lto-lang.c:248
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%E' attribute applies only to functions"
+#, gcc-internal-format
 msgid "%qE attribute has no effect on unit local functions"
-msgstr "'%E l'attribut ne s'applique seulement qu'à des fonctions"
+msgstr "l'attribut %qE n'a pas d'effet sur les fonctions locales dans l'unité"
 
 #: c-family/c-attribs.c:920
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%E' attribute applies only to functions"
+#, gcc-internal-format
 msgid "%qE attribute have effect only on public objects"
-msgstr "'%E l'attribut ne s'applique seulement qu'à des fonctions"
+msgstr "l'attribut %qE n'a d'effet que sur les objets publics"
 
 #: c-family/c-attribs.c:949
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute only applies to variables"
+#, gcc-internal-format
 msgid "%qE attribute only affects top level objects"
-msgstr "attribut « %s » s'applique seulement aux variables"
+msgstr "l'attribut %qE affecte uniquement les objets au niveau le plus haut"
 
 #: c-family/c-attribs.c:1003
 #, gcc-internal-format
 msgid "scalar_storage_order is not supported because endianness is not uniform"
-msgstr ""
+msgstr "scalar_storage_order n'est pas supporté car le boutisme n'est pas uniforme"
 
 #: c-family/c-attribs.c:1020
 #, gcc-internal-format
 msgid "scalar_storage_order argument must be one of \"big-endian\" or \"little-endian\""
-msgstr ""
+msgstr "l'argument de scalar_storage_order doit être soit « big-endian » ou soit « little-endian »"
 
 #: c-family/c-attribs.c:1116
-#, fuzzy, gcc-internal-format
-#| msgid "trampolines not supported"
+#, gcc-internal-format
 msgid "destructor priorities are not supported"
-msgstr "trampolines ne sont pas supportées"
+msgstr "les priorités des destructeurs ne sont pas supportées"
 
 #: c-family/c-attribs.c:1118
-#, fuzzy, gcc-internal-format
-#| msgid "trampolines not supported"
+#, gcc-internal-format
 msgid "constructor priorities are not supported"
-msgstr "trampolines ne sont pas supportées"
+msgstr "les priorités des constructeurs ne sont pas supportées"
 
 #: c-family/c-attribs.c:1140
 #, gcc-internal-format, gfc-internal-format
 msgid "destructor priorities from 0 to %d are reserved for the implementation"
-msgstr ""
+msgstr "les priorités des destructeurs entre 0 et %d sont réservées pour l'implémentation"
 
 #: c-family/c-attribs.c:1145
 #, gcc-internal-format, gfc-internal-format
 msgid "constructor priorities from 0 to %d are reserved for the implementation"
-msgstr ""
+msgstr "les priorités des constructeurs entre 0 et %d sont réservées pour l'implémentation"
 
 #: c-family/c-attribs.c:1153
 #, gcc-internal-format, gfc-internal-format
 msgid "destructor priorities must be integers from 0 to %d inclusive"
-msgstr ""
+msgstr "les priorités des destructeurs doivent être des entiers entre 0 et %d inclus"
 
 #: c-family/c-attribs.c:1156
 #, gcc-internal-format, gfc-internal-format
 msgid "constructor priorities must be integers from 0 to %d inclusive"
-msgstr ""
+msgstr "les priorités des constructeurs doivent être des entiers entre 0 et %d inclus"
 
 #: c-family/c-attribs.c:1312
-#, fuzzy, gcc-internal-format
-#| msgid "unknown machine mode `%s'"
+#, gcc-internal-format
 msgid "unknown machine mode %qE"
-msgstr "mode machine « %s » inconnu"
+msgstr "mode machine %qE inconnu"
 
 #: c-family/c-attribs.c:1341
 #, gcc-internal-format
 msgid "specifying vector types with __attribute__ ((mode)) is deprecated"
-msgstr ""
+msgstr "spécifier les types vectoriels avec __attribute__ ((mode)) est obsolète"
 
 #: c-family/c-attribs.c:1344
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute directive ignored"
+#, gcc-internal-format
 msgid "use __attribute__ ((vector_size)) instead"
-msgstr "attribut de directive « %s » ignoré"
+msgstr "utilisez __attribute__ ((vector_size)) à la place"
 
 #: c-family/c-attribs.c:1353
-#, fuzzy, gcc-internal-format
-#| msgid "unable to emulate '%s'"
+#, gcc-internal-format
 msgid "unable to emulate %qs"
-msgstr "impossible d'émuler « %s »"
+msgstr "impossible d'émuler %qs"
 
 #: c-family/c-attribs.c:1364
-#, fuzzy, gcc-internal-format
-#| msgid "invalid pointer mode `%s'"
+#, gcc-internal-format
 msgid "invalid pointer mode %qs"
-msgstr "mode pointeur invalide « %s »"
+msgstr "mode pointeur %qs invalide"
 
 #: c-family/c-attribs.c:1381
-#, fuzzy, gcc-internal-format
-#| msgid "#-lines for entering and leaving files don't match"
+#, gcc-internal-format
 msgid "signedness of type and machine mode %qs don%'t match"
-msgstr "#-lines pour entrer et quitter les fichiers ne concordent pas"
+msgstr "la plage signée du type et le mode machine %qs ne correspondent pas"
 
 #: c-family/c-attribs.c:1392
-#, fuzzy, gcc-internal-format
-#| msgid "no data type for mode `%s'"
+#, gcc-internal-format
 msgid "no data type for mode %qs"
-msgstr "aucun type de données pour le mode « %s »"
+msgstr "aucun type de données pour le mode %qs"
 
 #: c-family/c-attribs.c:1402
-#, fuzzy, gcc-internal-format
-#| msgid "cannot convert to a pointer type"
+#, gcc-internal-format
 msgid "cannot use mode %qs for enumeral types"
-msgstr "ne peut convertir en un type pointeur"
+msgstr "impossible d'utiliser le mode %qs pour des types énumérés"
 
 #: c-family/c-attribs.c:1429
-#, fuzzy, gcc-internal-format
-#| msgid "mode `%s' applied to inappropriate type"
+#, gcc-internal-format
 msgid "mode %qs applied to inappropriate type"
-msgstr "mode « %s » appliqué à un type inapproprié"
+msgstr "mode %qs appliqué à un type inapproprié"
 
 #: c-family/c-attribs.c:1451
-#, fuzzy, gcc-internal-format
-#| msgid "%Jsection attributes are not supported for this target"
+#, gcc-internal-format
 msgid "section attributes are not supported for this target"
-msgstr "attributs de section ne sont pas supportés pour la cible"
+msgstr "les attributs de sections ne sont pas supportés pour cette cible"
 
 #: c-family/c-attribs.c:1457
-#, fuzzy, gcc-internal-format
-#| msgid "%Jsection attribute not allowed for '%D'"
+#, gcc-internal-format
 msgid "section attribute not allowed for %q+D"
-msgstr "attribut de section n'est pas permis pour « %D »"
+msgstr "l'attribut de section n'est pas permis pour %q+D"
 
 #: c-family/c-attribs.c:1463
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute argument not a string constant"
+#, gcc-internal-format
 msgid "section attribute argument not a string constant"
-msgstr "l'attribut « %s » de l'argument n'est pas une constante chaîne"
+msgstr "l'argument de l'attribut de section n'est pas une constante de type chaîne de caractères"
 
 #: c-family/c-attribs.c:1472
-#, fuzzy, gcc-internal-format
-#| msgid "%Jsection attribute cannot be specified for local variables"
+#, gcc-internal-format
 msgid "section attribute cannot be specified for local variables"
-msgstr "l'attribut de section ne peut être spécifié pour des variables locales"
+msgstr "l'attribut de section ne peut pas être spécifié pour des variables locales"
 
 #: c-family/c-attribs.c:1482 config/bfin/bfin.c:4774 config/bfin/bfin.c:4825
 #: config/bfin/bfin.c:4851 config/bfin/bfin.c:4864
-#, fuzzy, gcc-internal-format
-#| msgid "%Jsection of '%D' conflicts with previous declaration"
+#, gcc-internal-format
 msgid "section of %q+D conflicts with previous declaration"
-msgstr "section de « %D » en conflit avec une déclaration précédente"
+msgstr "la section de %q+D est en conflit avec la déclaration précédente"
 
 #: c-family/c-attribs.c:1490
-#, fuzzy, gcc-internal-format
-#| msgid "function `%D' cannot be declared friend"
+#, gcc-internal-format
 msgid "section of %q+D cannot be overridden"
-msgstr "fonction « %D » ne peut être déclarée amie"
+msgstr "la section de %q+D ne peut pas être contournée"
 
 #: c-family/c-attribs.c:1555
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "requested alignment is too large"
+#, gcc-internal-format, gfc-internal-format
 msgid "requested alignment %d is larger than %d"
-msgstr "l'alignement demandé est trop grand"
+msgstr "l'alignement %d demandé est plus grand que %d"
 
 #: c-family/c-attribs.c:1621
-#, fuzzy, gcc-internal-format
-#| msgid "%Jalignment may not be specified for '%D'"
+#, gcc-internal-format
 msgid "alignment may not be specified for %q+D"
-msgstr "l'alignement ne peut pas être spécifié pour « %D »"
+msgstr "l'alignement ne peut pas être spécifié pour %q+D"
 
 #: c-family/c-attribs.c:1639
 #, gcc-internal-format
 msgid "alignment for %q+D was previously specified as %d and may not be decreased"
-msgstr ""
+msgstr "l'alignement pour %q+D a été précédemment spécifié comme étant %d et ne peut plus être diminué"
 
 #: c-family/c-attribs.c:1643
-#, fuzzy, gcc-internal-format
-#| msgid "argument %d of %s must be a location"
+#, gcc-internal-format
 msgid "alignment for %q+D must be at least %d"
-msgstr "argument %d de %s doit être une localisation"
+msgstr "l'alignement pour %q+D doit être au moins %d"
 
 #: c-family/c-attribs.c:1668
-#, fuzzy, gcc-internal-format
-#| msgid "invalid function declaration"
+#, gcc-internal-format
 msgid "inline function %q+D declared weak"
-msgstr "déclaration de fonction invalide"
+msgstr "la fonction « inline » %q+D est déclarée faible"
 
 #: c-family/c-attribs.c:1673
-#, fuzzy, gcc-internal-format
-#| msgid "function `%D' cannot be declared friend"
+#, gcc-internal-format
 msgid "indirect function %q+D cannot be declared weak"
-msgstr "fonction « %D » ne peut être déclarée amie"
+msgstr "la fonction indirecte %q+D ne peut pas être déclarée faible"
 
 #: c-family/c-attribs.c:1697
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute only applies to functions"
+#, gcc-internal-format
 msgid "%qE attribute is only applicable on functions"
-msgstr "attribut « %s » s'applique seulement aux fonctions"
+msgstr "l'attribut %qE s'applique uniquement aux fonctions"
 
 #: c-family/c-attribs.c:1728
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' defined both normally and as an alias"
+#, gcc-internal-format
 msgid "%q+D defined both normally and as %qE attribute"
-msgstr "'%D défini à la fois normalement et en tant qu'alias"
+msgstr "%q+D est défini à la fois normalement et en tant qu'attribut %qE"
 
 #: c-family/c-attribs.c:1736
-#, fuzzy, gcc-internal-format
-#| msgid "`%#D' cannot be declared"
+#, gcc-internal-format
 msgid "weak %q+D cannot be defined %qE"
-msgstr "« %#D » ne peut être déclaré"
+msgstr "le %q+D faible ne peut pas être défini %qE"
 
 #: c-family/c-attribs.c:1753 c-family/c-attribs.c:2269
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute argument not a string constant"
+#, gcc-internal-format
 msgid "attribute %qE argument not a string"
-msgstr "l'attribut « %s » de l'argument n'est pas une constante chaîne"
+msgstr "l'argument de l'attribut %qE n'est pas une chaîne"
 
 #: c-family/c-attribs.c:1783
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' declared inline after being called"
+#, gcc-internal-format
 msgid "%+D declared alias after being used"
-msgstr "« %D » déclaré enligne après avoir été appelé"
+msgstr "%+D est déclaré comme un alias après avoir été utilisé"
 
 #: c-family/c-attribs.c:1785
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' declared inline after being called"
+#, gcc-internal-format
 msgid "%+D declared ifunc after being used"
-msgstr "« %D » déclaré enligne après avoir été appelé"
+msgstr "%+D est déclaré « ifunc » après avoir été utilisé"
 
 #: c-family/c-attribs.c:1836
-#, fuzzy, gcc-internal-format
-#| msgid "function `%D' cannot be declared friend"
+#, gcc-internal-format
 msgid "indirect function %q+D cannot be declared weakref"
-msgstr "fonction « %D » ne peut être déclarée amie"
+msgstr "la fonction indirecte %q+D ne peut pas être déclarée « weakref »"
 
 #: c-family/c-attribs.c:1858
 #, gcc-internal-format
 msgid "weakref attribute must appear before alias attribute"
-msgstr ""
+msgstr "l'attribut « weakref » doit apparaître avant l'attribut « alias »"
 
 #: c-family/c-attribs.c:1870
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' declared inline after being called"
+#, gcc-internal-format
 msgid "%+D declared weakref after being used"
-msgstr "« %D » déclaré enligne après avoir été appelé"
+msgstr "%+D est déclaré « weakref » après avoir été utilisé"
 
 #: c-family/c-attribs.c:1894
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute ignored for `%s'"
+#, gcc-internal-format
 msgid "%qE attribute ignored on non-class types"
-msgstr "attribut « %s » ignoré pour « %s »"
+msgstr "l'attribut %qE est ignoré pour un type qui n'est pas une classe"
 
 #: c-family/c-attribs.c:1900
-#, fuzzy, gcc-internal-format
-#| msgid "%s: not used because `%s' is defined"
+#, gcc-internal-format
 msgid "%qE attribute ignored because %qT is already defined"
-msgstr "%s: non utilisé parce que « %s » est défini"
+msgstr "l'attribut %qE est ignoré car %qT est déjà défini"
 
 #: c-family/c-attribs.c:1913
-#, fuzzy, gcc-internal-format
-#| msgid "visibility arg not a string"
+#, gcc-internal-format
 msgid "visibility argument not a string"
 msgstr "l'argument de visibilité n'est pas une chaîne"
 
 #: c-family/c-attribs.c:1925
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute ignored for `%s'"
+#, gcc-internal-format
 msgid "%qE attribute ignored on types"
-msgstr "attribut « %s » ignoré pour « %s »"
+msgstr "l'attribut %qE est ignoré sur les types"
 
 #: c-family/c-attribs.c:1941
-#, fuzzy, gcc-internal-format
-#| msgid "visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
+#, gcc-internal-format
 msgid "visibility argument must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
 msgstr "l'argument de visibilité doit être l'un de « default » (par défaut), « hidden » (masqué), « protected » (protégé) ou « internal » (interne)"
 
 #: c-family/c-attribs.c:1952
-#, fuzzy, gcc-internal-format
-#| msgid "%D redeclared with different access"
+#, gcc-internal-format
 msgid "%qD redeclared with different visibility"
-msgstr "« %#D » redéclaré avec un accès différent"
+msgstr "%qD est redéclaré avec une visibilité différente"
 
 #: c-family/c-attribs.c:1955 c-family/c-attribs.c:1959
 #, gcc-internal-format
 msgid "%qD was declared %qs which implies default visibility"
-msgstr ""
+msgstr "%qD a été déclaré %qs ce qui implique la visibilité par défaut"
 
 #: c-family/c-attribs.c:1997
-#, fuzzy, gcc-internal-format
-#| msgid "tls_model arg not a string"
+#, gcc-internal-format
 msgid "tls_model argument not a string"
 msgstr "l'argument de tls_model n'est pas une chaîne"
 
 #: c-family/c-attribs.c:2010
-#, fuzzy, gcc-internal-format
-#| msgid "tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
+#, gcc-internal-format
 msgid "tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-msgstr "l'argument de tls_model doit être l'un de « local-exec », « initial-exec », « local-dynamic » or « global-dynamic »"
+msgstr "l'argument de tls_model doit être l'une des valeurs « local-exec », « initial-exec », « local-dynamic » ou « global-dynamic »"
 
 #: c-family/c-attribs.c:2030 c-family/c-attribs.c:2346
 #: c-family/c-attribs.c:3120 config/m32c/m32c.c:2938
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%E' attribute applies only to functions"
+#, gcc-internal-format
 msgid "%qE attribute applies only to functions"
-msgstr "'%E l'attribut ne s'applique seulement qu'à des fonctions"
+msgstr "l'attribut %qE ne s'applique qu'à des fonctions"
 
 #: c-family/c-attribs.c:2094
-#, fuzzy, gcc-internal-format
-#| msgid "NUM's parameter is below its mode range"
+#, gcc-internal-format
 msgid "alloc_size parameter outside range"
-msgstr "paramètre NUMÉRIQUE est en dessous de l'étendue de son mode"
+msgstr "le paramètre alloc_size est hors limites"
 
 #: c-family/c-attribs.c:2120
 #, gcc-internal-format
 msgid "alloc_align parameter outside range"
-msgstr ""
+msgstr "le paramètre alloc_align est hors limites"
 
 #: c-family/c-attribs.c:2144
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute argument not an integer constant"
+#, gcc-internal-format
 msgid "assume_aligned parameter not integer constant"
-msgstr "l'attribut « %s » de l'argument n'est pas une constante entière"
+msgstr "le paramètre de assume_aligned n'est pas une constante entière"
 
 #: c-family/c-attribs.c:2255 c/c-parser.c:16688
 #, gcc-internal-format
 msgid "%<__simd__%> attribute cannot be used in the same function marked as a Cilk Plus SIMD-enabled function"
-msgstr ""
+msgstr "l'attribut %<__simd__%> ne peut pas être utilisé dans une fonction marquée comme étant Cilk Plus avec le support SIMD"
 
 #: c-family/c-attribs.c:2283
 #, gcc-internal-format
 msgid "only %<inbranch%> and %<notinbranch%> flags are allowed for %<__simd__%> attribute"
-msgstr ""
+msgstr "seuls les fanions %<inbranch%> et %<notinbranch%> sont permis pour l'attribut %<__simd__%>"
 
 #: c-family/c-attribs.c:2352 c-family/c-attribs.c:3126
-#, fuzzy, gcc-internal-format
-#| msgid "%Jcan't set '%E' attribute after definition"
+#, gcc-internal-format
 msgid "can%'t set %qE attribute after definition"
-msgstr "ne peut initialiser l'attribut « %E » après définition"
+msgstr "l'attribut %qE ne peut pas être appliqué après la définition"
 
 #: c-family/c-attribs.c:2410
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute ignored"
+#, gcc-internal-format
 msgid "%qE attribute duplicated"
-msgstr "attribut « %s » ignoré"
+msgstr "attribut %qE dupliqué"
 
 #: c-family/c-attribs.c:2412
 #, gcc-internal-format
 msgid "%qE attribute follows %qE"
-msgstr ""
+msgstr "l'attribut %qE suit %qE"
 
 #: c-family/c-attribs.c:2511
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' previously declared here"
+#, gcc-internal-format
 msgid "type was previously declared %qE"
-msgstr "« %s » précédemment déclaré ici"
+msgstr "le type a été précédemment déclaré %qE"
 
 #: c-family/c-attribs.c:2524 cp/class.c:4706
-#, fuzzy, gcc-internal-format
-#| msgid "`%D' can only be specified for functions"
+#, gcc-internal-format
 msgid "%<transaction_safe_dynamic%> may only be specified for a virtual function"
-msgstr "« %D » ne peut seulement être spécifier pour les fonctions"
+msgstr "%<transaction_safe_dynamic%> ne peut être spécifié que pour une fonction virtuelle"
 
 #: c-family/c-attribs.c:2582
-#, fuzzy, gcc-internal-format
-#| msgid "cleanup arg not an identifier"
+#, gcc-internal-format
 msgid "%qE argument not an identifier"
-msgstr "argument de nettoyage n'est pas un identificateur"
+msgstr "l'argument %qE n'est pas un identificateur"
 
 #: c-family/c-attribs.c:2593
-#, fuzzy, gcc-internal-format
-#| msgid "%s: not compatible with this GCC version"
+#, gcc-internal-format
 msgid "%qD is not compatible with %qD"
-msgstr "%s: n'est pas compatible avec cette version de GCC"
+msgstr "%qD n'est pas compatible avec %qD"
 
 #: c-family/c-attribs.c:2596
-#, fuzzy, gcc-internal-format
-#| msgid "no arguments for spec function"
+#, gcc-internal-format
 msgid "%qE argument is not a function"
-msgstr "aucun argument pour la spécification de fonction"
+msgstr "l'argument de %qE n'est pas une fonction"
 
 #: c-family/c-attribs.c:2644
-#, fuzzy, gcc-internal-format
-#| msgid "expected a name string here"
+#, gcc-internal-format
 msgid "deprecated message is not a string"
-msgstr "un nom de chaîne est attendu ici"
+msgstr "le message déprécié n'est pas une chaîne"
 
 #: c-family/c-attribs.c:2685
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute ignored for `%s'"
+#, gcc-internal-format
 msgid "%qE attribute ignored for %qE"
-msgstr "attribut « %s » ignoré pour « %s »"
+msgstr "l'attribut %qE est ignoré pour %qE"
 
 #: c-family/c-attribs.c:2748
-#, fuzzy, gcc-internal-format
-#| msgid "invalid vector type for attribute `%s'"
+#, gcc-internal-format
 msgid "invalid vector type for attribute %qE"
-msgstr "type de vecteur invalide pour l'attribut « %s »"
+msgstr "type de vecteur invalide pour l'attribut %qE"
 
 #: c-family/c-attribs.c:2754 ada/gcc-interface/utils.c:3779
 #, gcc-internal-format
 msgid "vector size not an integral multiple of component size"
-msgstr ""
+msgstr "la taille du vecteur n'est pas un multiple entier de la taille des éléments"
 
 #: c-family/c-attribs.c:2760 ada/gcc-interface/utils.c:3786
 #, gcc-internal-format
 msgid "zero vector size"
-msgstr ""
+msgstr "vecteur de taille nulle"
 
 #: c-family/c-attribs.c:2768
 #, gcc-internal-format
 msgid "number of components of the vector not a power of two"
-msgstr ""
+msgstr "le nombre d'éléments du vecteur n'est pas une puissance de deux"
 
 #: c-family/c-attribs.c:2801 ada/gcc-interface/utils.c:5920
 #, gcc-internal-format
@@ -23120,119 +22902,104 @@ msgid "nonnull attribute without arguments on a non-prototype"
 msgstr "attribut non nul sans argument sur un non-prototype"
 
 #: c-family/c-attribs.c:2820 ada/gcc-interface/utils.c:5934
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "nonnull argument has invalid operand number (arg %lu)"
+#, gcc-internal-format, gfc-internal-format
 msgid "nonnull argument has invalid operand number (argument %lu)"
-msgstr "un argument non nul a un nombre d'opérande invalide (argument %lu)"
+msgstr "un argument non nul a un numéro d'opérande invalide (argument %lu)"
 
 #: c-family/c-attribs.c:2842 ada/gcc-interface/utils.c:5956
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "nonnull argument with out-of-range operand number (arg %lu, operand %lu)"
+#, gcc-internal-format, gfc-internal-format
 msgid "nonnull argument with out-of-range operand number (argument %lu, operand %lu)"
-msgstr "un argument non nul a un nombre d'opérande hors des bornes (arg %lu, opérande %lu)"
+msgstr "un argument non nul a un numéro d'opérande hors des bornes (argument %lu, opérande %lu)"
 
 #: c-family/c-attribs.c:2851 ada/gcc-interface/utils.c:5965
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "nonnull argument references non-pointer operand (arg %lu, operand %lu)"
+#, gcc-internal-format, gfc-internal-format
 msgid "nonnull argument references non-pointer operand (argument %lu, operand %lu)"
-msgstr "un argument non nul référence une opérande qui n'est pas un pointeur (arg %lu, opérande %lu)"
+msgstr "un argument non nul référence un opérande qui n'est pas un pointeur (argument %lu, opérande %lu)"
 
 #: c-family/c-attribs.c:2909
-#, fuzzy, gcc-internal-format
-#| msgid "cleanup arg not an identifier"
+#, gcc-internal-format
 msgid "cleanup argument not an identifier"
-msgstr "argument de nettoyage n'est pas un identificateur"
+msgstr "l'argument de nettoyage n'est pas un identificateur"
 
 #: c-family/c-attribs.c:2916
-#, fuzzy, gcc-internal-format
-#| msgid "cleanup arg not a function"
+#, gcc-internal-format
 msgid "cleanup argument not a function"
-msgstr "argument de nettoyage n'est pas une fonction"
+msgstr "l'argument de nettoyage n'est pas une fonction"
 
 #: c-family/c-attribs.c:2953
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute requires an integer constant argument"
+#, gcc-internal-format
 msgid "%qE attribute requires prototypes with named arguments"
-msgstr "l'attribut « %s » requiert un argument de type constante entière"
+msgstr "l'attribut %qE exige des prototypes avec des arguments nommés"
 
 #: c-family/c-attribs.c:2961
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute only applies to functions"
+#, gcc-internal-format
 msgid "%qE attribute only applies to variadic functions"
-msgstr "attribut « %s » s'applique seulement aux fonctions"
+msgstr "l'attribut %qE s'applique uniquement aux fonctions variadiques"
 
 #: c-family/c-attribs.c:2977 ada/gcc-interface/utils.c:6007
-#, fuzzy, gcc-internal-format
-#| msgid "requested init_priority is not an integer constant"
+#, gcc-internal-format
 msgid "requested position is not an integer constant"
-msgstr "init_priority demandé n'est pas une constante entière"
+msgstr "la position demandée n'est pas une constante entière"
 
 #: c-family/c-attribs.c:2985 ada/gcc-interface/utils.c:6014
 #, gcc-internal-format
 msgid "requested position is less than zero"
-msgstr ""
+msgstr "la position demandée est plus petite que zéro"
 
 #: c-family/c-attribs.c:3143
-#, fuzzy, gcc-internal-format
-#| msgid "`return' with no value, in function returning non-void"
+#, gcc-internal-format
 msgid "returns_nonnull attribute on a function not returning a pointer"
-msgstr "« return » sans valeur dans une fonction retournant autre chose que void"
+msgstr "attribut returns_nonnull sur une fonction qui ne retourne pas un pointeur"
 
 #: c-family/c-attribs.c:3158
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute only applies to function types"
+#, gcc-internal-format
 msgid "%qE attribute is only valid on %<struct%> type"
-msgstr "l'attribut « %s » ne s'applique qu'à des types de fonction"
+msgstr "l'attribut %qE est uniquement valable sur un type %<struct%>"
 
 #: c-family/c-cilkplus.c:38
 #, gcc-internal-format
 msgid "iteration variable cannot be volatile"
-msgstr ""
+msgstr "une variable d'itération ne peut pas être volatile"
 
 #: c-family/c-common.c:723
-#, fuzzy, gcc-internal-format
-#| msgid "%J'%D' is not defined outside of function scope"
+#, gcc-internal-format
 msgid "%qD is not defined outside of function scope"
-msgstr "« %D » n'est pas défini à l'extérieur de la portée de la fonction"
+msgstr "%qD n'est pas défini à l'extérieur de la portée de la fonction"
 
 #: c-family/c-common.c:773
-#, fuzzy, gcc-internal-format
-#| msgid "string length `%d' is greater than the length `%d' ISO C%d compilers are required to support"
+#, gcc-internal-format
 msgid "string length %qd is greater than the length %qd ISO C%d compilers are required to support"
-msgstr "longueur de la chaîne « %d » plus grande que la longueur « %d » que les compilateurs ISO C%d doivent supporter"
+msgstr "la chaîne de longueur %qd est plus grande que la longueur %qd que les compilateurs ISO C%d doivent supporter"
 
 #: c-family/c-common.c:957
 #, gcc-internal-format
 msgid "use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts"
-msgstr ""
+msgstr "utilisez -flax-vector-conversions  pour autoriser les conversions entre des vecteurs comportant des types d'éléments ou des nombres de sous-parties différents"
 
 #: c-family/c-common.c:997
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_longjmp second argument must be 1"
+#, gcc-internal-format
 msgid "__builtin_shuffle last argument must be an integer vector"
-msgstr "le second argument de « __builtin_longjmp » doit être 1"
+msgstr "le dernier argument de __builtin_shuffle doit être un vecteur d'entiers"
 
 #: c-family/c-common.c:1006
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_longjmp second argument must be 1"
+#, gcc-internal-format
 msgid "__builtin_shuffle arguments must be vectors"
-msgstr "le second argument de « __builtin_longjmp » doit être 1"
+msgstr "les arguments de __builtin_shuffle doivent être des vecteurs"
 
 #: c-family/c-common.c:1013
-#, fuzzy, gcc-internal-format
-#| msgid "argument to `%s' must be of integer type"
+#, gcc-internal-format
 msgid "__builtin_shuffle argument vectors must be of the same type"
-msgstr "argument de « %s » doit être de type entier"
+msgstr "les arguments vectoriels de __builtin_shuffle doivent être du même type"
 
 #: c-family/c-common.c:1024
 #, gcc-internal-format
 msgid "__builtin_shuffle number of elements of the argument vector(s) and the mask vector should be the same"
-msgstr ""
+msgstr "le nombre d'éléments du/des argument(s) vectoriel(s) et du vecteur de masque de __builtin_shuffle doivent être les mêmes"
 
 #: c-family/c-common.c:1034
 #, gcc-internal-format
 msgid "__builtin_shuffle argument vector(s) inner type must have the same size as inner type of the mask"
-msgstr ""
+msgstr "le type intérieur du/des argument(s) vectoriel(s) de __builtin_shuffle doivent avoir la même taille que le type intérieur du masque"
 
 #: c-family/c-common.c:1261
 #, gcc-internal-format
@@ -23242,18 +23009,17 @@ msgstr "entier négatif implicitement converti en un type non signé"
 #: c-family/c-common.c:1267
 #, gcc-internal-format
 msgid "conversion of unsigned constant value to negative integer"
-msgstr ""
+msgstr "conversion d'une constante non signée en entier négatif"
 
 #: c-family/c-common.c:1418 c-family/c-common.c:1480
 #, gcc-internal-format
 msgid "conversion to %qT from %qT may change the sign of the result"
-msgstr ""
+msgstr "la conversion vers %qT depuis %qT peut changer le signe du résultat"
 
 #: c-family/c-common.c:1666
-#, fuzzy, gcc-internal-format
-#| msgid "operation on `%s' may be undefined"
+#, gcc-internal-format
 msgid "operation on %qE may be undefined"
-msgstr "l'opération portant sur « %s » est peut être indéfinie"
+msgstr "l'opération sur %qE est peut être indéfinie"
 
 #: c-family/c-common.c:1976
 #, gcc-internal-format
@@ -23261,113 +23027,104 @@ msgid "case label does not reduce to an integer constant"
 msgstr "l'étiquette du « case » ne se réduit pas en une constante entière"
 
 #: c-family/c-common.c:2022
-#, fuzzy, gcc-internal-format
-#| msgid "integer constant is larger than the maximum value for its type"
+#, gcc-internal-format
 msgid "case label value is less than minimum value for type"
-msgstr "constante entière est plus grande que la valeur maximale pour ce type"
+msgstr "la valeur de l'étiquette du « case » est plus petite que la valeur minimale du type"
 
 #: c-family/c-common.c:2032
-#, fuzzy, gcc-internal-format
-#| msgid "integer constant is larger than the maximum value for its type"
+#, gcc-internal-format
 msgid "case label value exceeds maximum value for type"
-msgstr "constante entière est plus grande que la valeur maximale pour ce type"
+msgstr "la valeur de l'étiquette du « case » est plus grande que la valeur maximale du type"
 
 #: c-family/c-common.c:2041
-#, fuzzy, gcc-internal-format
-#| msgid "integer constant is larger than the maximum value for its type"
+#, gcc-internal-format
 msgid "lower value in case label range less than minimum value for type"
-msgstr "constante entière est plus grande que la valeur maximale pour ce type"
+msgstr "la valeur la plus basse parmi les étiquettes des « case » est inférieure à la valeur minimale du type"
 
 #: c-family/c-common.c:2051
-#, fuzzy, gcc-internal-format
-#| msgid "integer constant is larger than the maximum value for its type"
+#, gcc-internal-format
 msgid "upper value in case label range exceeds maximum value for type"
-msgstr "constante entière est plus grande que la valeur maximale pour ce type"
+msgstr "la valeur la plus grande parmi les étiquettes des « case » est supérieure à la valeur maximale du type"
 
 #: c-family/c-common.c:2134
 #, gcc-internal-format
 msgid "GCC cannot support operators with integer types and fixed-point types that have too many integral and fractional bits together"
-msgstr ""
+msgstr "GCC ne supporte pas les opérateurs avec des types entiers et des types en virgule fixe qui, ensembles, ont trop de bits entiers et fractionnels"
 
 #: c-family/c-common.c:2674
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operands to binary %s"
+#, gcc-internal-format
 msgid "invalid operands to binary %s (have %qT and %qT)"
-msgstr "opérandes invalides pour le binaire %s"
+msgstr "opérandes invalides pour le %s binaire (avec les types %qT et %qT)"
 
 #: c-family/c-common.c:2923
 #, gcc-internal-format
 msgid "comparison is always false due to limited range of data type"
-msgstr "comparaison est toujours fausse en raison d'une gamme limitée de type de données"
+msgstr "la comparaison est toujours fausse en raison de la gamme limitée du type de données"
 
 #: c-family/c-common.c:2926
 #, gcc-internal-format
 msgid "comparison is always true due to limited range of data type"
-msgstr "comparaison est toujours vraie en raison d'une gamme limitée de type de données"
+msgstr "la comparaison est toujours vraie en raison de la gamme limitée du type de données"
 
 #: c-family/c-common.c:3016
 #, gcc-internal-format
 msgid "comparison of unsigned expression >= 0 is always true"
-msgstr "comparaison d'une expression non signée >=0 est toujours vraie"
+msgstr "la comparaison d'une expression non signée >= 0 est toujours vraie"
 
 #: c-family/c-common.c:3023
 #, gcc-internal-format
 msgid "comparison of unsigned expression < 0 is always false"
-msgstr "comparaison d'une expression non signée < 0 est toujours fausse"
+msgstr "la comparaison d'une expression non signée < 0 est toujours fausse"
 
 #: c-family/c-common.c:3066
-#, fuzzy, gcc-internal-format
-#| msgid "pointer of type `void *' used in arithmetic"
+#, gcc-internal-format
 msgid "pointer of type %<void *%> used in arithmetic"
-msgstr "usage en arithmétique d'un pointeur de type « void * »"
+msgstr "un pointeur du type %<void *%> est utilisé dans une arithmétique"
 
 #: c-family/c-common.c:3075
 #, gcc-internal-format
 msgid "pointer to a function used in arithmetic"
-msgstr "usage en arithmétique d'un pointeur vers une fonction"
+msgstr "un pointeur vers une fonction est utilisé dans une arithmétique"
 
 #: c-family/c-common.c:3265
 #, gcc-internal-format
 msgid "enum constant in boolean context"
-msgstr ""
+msgstr "constante « enum » dans un contexte booléen"
 
 #: c-family/c-common.c:3292
-#, fuzzy, gcc-internal-format
-#| msgid "the address of `%D', will always evaluate as `true'"
+#, gcc-internal-format
 msgid "the address of %qD will always evaluate as %<true%>"
-msgstr "l'adresse de « %D » sera toujours évaluée comme étant « true »"
+msgstr "l'adresse de %qD sera toujours évaluée comme étant %<true%>"
 
 #: c-family/c-common.c:3335
 #, gcc-internal-format
 msgid "%<*%> in boolean context, suggest %<&&%> instead"
-msgstr ""
+msgstr "%<*%> dans un contexte booléen, %<&&%> est suggéré à la place"
 
 #: c-family/c-common.c:3347
 #, gcc-internal-format
 msgid "%<<<%> in boolean context, did you mean %<<%> ?"
-msgstr ""
+msgstr "%<<<%> dans un contexte booléen, vouliez-vous plutôt utiliser %<<%> ?"
 
 #: c-family/c-common.c:3363
-#, fuzzy, gcc-internal-format
-#| msgid "the address of `%D', will always evaluate as `true'"
+#, gcc-internal-format
 msgid "?: using integer constants in boolean context, the expression will always evaluate to %<true%>"
-msgstr "l'adresse de « %D » sera toujours évaluée comme étant « true »"
+msgstr "?: utilisation de constantes entières dans un contexte booléen, l'expression sera toujours évaluée à %<true%>"
 
 #: c-family/c-common.c:3372
 #, gcc-internal-format
 msgid "?: using integer constants in boolean context"
-msgstr ""
+msgstr "?: utilisation de constantes entières dans un contexte booléen"
 
 #: c-family/c-common.c:3408
-#, fuzzy, gcc-internal-format
-#| msgid "the address of `%D', will always evaluate as `true'"
+#, gcc-internal-format
 msgid "the compiler can assume that the address of %qD will always evaluate to %<true%>"
-msgstr "l'adresse de « %D » sera toujours évaluée comme étant « true »"
+msgstr "le compilateur peut supposer que l'adresse de %qD sera toujours évaluée à %<true%>"
 
 #: c-family/c-common.c:3435 cp/semantics.c:660 cp/typeck.c:8515
 #, gcc-internal-format
 msgid "suggest parentheses around assignment used as truth value"
-msgstr "parenthèses suggérées autour de l'affectation utilisée comme valeur de vérité"
+msgstr "parenthèses suggérées autour de l'affectation utilisée comme valeur dans une condition"
 
 #: c-family/c-common.c:3515 c/c-decl.c:4286 c/c-decl.c:6367 c/c-typeck.c:13884
 #, fuzzy, gcc-internal-format
@@ -49152,22 +48909,19 @@ msgid "no context to resolve type of %qE"
 msgstr ""
 
 #: cp/typeck.c:6562
-#, fuzzy, gcc-internal-format
-#| msgid "%s from type `%T' to type `%T' casts away constness"
+#, gcc-internal-format
 msgid "cast from type %qT to type %qT casts away qualifiers"
-msgstr "%S à partir du « %T » vers le type « %T » provoque un transtypage sans constante"
+msgstr "le transtypage du type %qT vers le type %qT élimine les qualificatifs"
 
 #: cp/typeck.c:6568
-#, fuzzy, gcc-internal-format
-#| msgid "%s from type `%T' to type `%T' casts away constness"
+#, gcc-internal-format
 msgid "static_cast from type %qT to type %qT casts away qualifiers"
-msgstr "%S à partir du « %T » vers le type « %T » provoque un transtypage sans constante"
+msgstr "utiliser « static_cast » pour transtyper du type %qT vers le type %qT élimine les qualificatifs"
 
 #: cp/typeck.c:6574
-#, fuzzy, gcc-internal-format
-#| msgid "reinterpret_cast from `%T' to `%T' casts away const (or volatile)"
+#, gcc-internal-format
 msgid "reinterpret_cast from type %qT to type %qT casts away qualifiers"
-msgstr "reinterpret_cast de « %T » vers « %T » fait un transtypage écartant la constante (ou volatile)"
+msgstr "utiliser « reinterpret_cast » pour transtyper du type %qT vers le type %qT élimine les qualificatifs"
 
 #: cp/typeck.c:6597
 #, fuzzy, gcc-internal-format
