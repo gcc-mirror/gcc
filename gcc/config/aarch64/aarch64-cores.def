@@ -74,8 +74,8 @@ AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xge
 /* V8.1 Architecture Processors.  */
 
 /* Broadcom ('B') cores. */
-AARCH64_CORE("thunderx2t99",  thunderx2t99, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
-AARCH64_CORE("vulcan",  vulcan, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
+AARCH64_CORE("thunderx2t99",  thunderx2t99, thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
+AARCH64_CORE("vulcan",  vulcan, thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
 
 /* V8 big.LITTLE implementations.  */
 

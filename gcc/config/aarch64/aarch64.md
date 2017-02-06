@@ -225,6 +225,7 @@
 (include "../arm/exynos-m1.md")
 (include "thunderx.md")
 (include "../arm/xgene1.md")
+(include "thunderx2t99.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
