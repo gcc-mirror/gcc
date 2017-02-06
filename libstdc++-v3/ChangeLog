@@ -1,3 +1,11 @@
+2017-02-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Update URL of the
+	DocBook Element Reference.  Use that term as link description
+	instead of "online".
+	epubcheck has moved to GitHub.
+	Remove obsolete link to DocBook Publishing Tools.
+
 2017-02-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66145
