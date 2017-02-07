@@ -1,3 +1,11 @@
+2017-02-07  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline:
+	2017-01-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/78945
+	* config/arm/exch_n.c (libat_exchange): Check __ARM_FEATURE_SIMD32.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
