@@ -147,6 +147,7 @@ operator == (const cp_expr &lhs, tree rhs)
       FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
+      NAMESPACE_INLINE_P (NAMESPACE_DECL)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -311,6 +312,9 @@ operator == (const cp_expr &lhs, tree rhs)
 
 #define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE) \
   TREE_CHECK(NODE,BOUND_TEMPLATE_TEMPLATE_PARM)
+
+#define NAMESPACE_CHECK(NODE) \
+  TREE_CHECK(NODE,NAMESPACE_DECL)
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 #define THUNK_FUNCTION_CHECK(NODE) __extension__			\
@@ -2220,6 +2224,10 @@ struct GTY(()) lang_type {
    case for things declared noexcept(true) and, with -fnothrow-opt, for
    throw() functions.  */
 #define TYPE_NOEXCEPT_P(NODE) type_noexcept_p (NODE)
+
+/* Whether the namepace is an inline namespace.  */
+#define NAMESPACE_INLINE_P(NODE) \
+  TREE_LANG_FLAG_0 (NAMESPACE_CHECK (NODE))
 
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) \

@@ -1,3 +1,18 @@
+2017-02-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79369 inline namespaces
+	gcc/cp
+	* cp-tree.h (NAMESPACE_CHECK): New.
+	(NAMESPACE_INLINE_P): New.
+	* name-lookup.h (push_namespace): Return int.
+	* name-lookup.c (push_namespace): Return int. Adjust.
+	* parser.c (cp_parser_namespace_definition): Reorder nested
+	parsing.  Check inline redefinition.
+	gcc/testsuite/
+	* g++.dg/cpp0x/pr65558.C: Adjust error loc.
+	* g++.dg/cpp0x/pr79369.C: New.
+	* g++.dg/cpp1z/nested-namespace-def1.C: Adjust.
+
 2017-02-03  Nathan Sidwell  <nathan@acm.org>
 
 	Module files open/closed.  Testsuite extension

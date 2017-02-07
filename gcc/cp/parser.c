@@ -18325,114 +18325,120 @@ cp_parser_namespace_name (cp_parser* parser)
 static void
 cp_parser_namespace_definition (cp_parser* parser)
 {
-  tree identifier, attribs;
-  bool has_visibility;
-  bool is_inline;
-  cp_token* token;
+  tree identifier;
   int nested_definition_count = 0;
 
   cp_ensure_no_omp_declare_simd (parser);
   cp_ensure_no_oacc_routine (parser);
-  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_INLINE))
+
+  bool is_inline = cp_lexer_next_token_is_keyword (parser->lexer, RID_INLINE);
+
+  if (is_inline)
     {
       maybe_warn_cpp0x (CPP0X_INLINE_NAMESPACES);
       is_inline = true;
       cp_lexer_consume_token (parser->lexer);
     }
-  else
-    is_inline = false;
 
   /* Look for the `namespace' keyword.  */
-  token = cp_parser_require_keyword (parser, RID_NAMESPACE, RT_NAMESPACE);
+  cp_token* token
+    = cp_parser_require_keyword (parser, RID_NAMESPACE, RT_NAMESPACE);
 
   /* Parse any specified attributes before the identifier.  */
-  attribs = cp_parser_attributes_opt (parser);
+  tree attribs = cp_parser_attributes_opt (parser);
 
-  /* Get the name of the namespace.  We do not attempt to distinguish
-     between an original-namespace-definition and an
-     extension-namespace-definition at this point.  The semantic
-     analysis routines are responsible for that.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-    identifier = cp_parser_identifier (parser);
-  else
-    identifier = NULL_TREE;
-
-  /* Parse any specified attributes after the identifier.  */
-  tree post_ident_attribs = cp_parser_attributes_opt (parser);
-  if (post_ident_attribs)
+  for (;;)
     {
-      if (attribs)
-        attribs = chainon (attribs, post_ident_attribs);
-      else
-        attribs = post_ident_attribs;
-    }
+      identifier = NULL_TREE;
+      
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  identifier = cp_parser_identifier (parser);
 
-  /* Start the namespace.  */
-  bool ok = push_namespace (identifier);
+	  /* Parse any attributes specified after the identifier.  */
+	  attribs = chainon (attribs, cp_parser_attributes_opt (parser));
+	}
 
-  /* Parse any nested namespace definition. */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
-    {
-      if (attribs)
-        error_at (token->location, "a nested namespace definition cannot have attributes");
-      if (cxx_dialect < cxx1z)
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE))
+	break;
+  
+      if (!nested_definition_count && cxx_dialect < cxx1z)
         pedwarn (input_location, OPT_Wpedantic,
                  "nested namespace definitions only available with "
                  "-std=c++1z or -std=gnu++1z");
-      if (is_inline)
-        error_at (token->location, "a nested namespace definition cannot be inline");
-      while (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
-        {
-          cp_lexer_consume_token (parser->lexer);
-          if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-            identifier = cp_parser_identifier (parser);
-          else
-            {
-              cp_parser_error (parser, "nested identifier required");
-              break;
-            }
-	  if (push_namespace (identifier))
-	    ++nested_definition_count;
-        }
+
+      /* Nested namespace names can create new namespaces (unlike
+	 other qualified-ids).  */
+      if (identifier && push_namespace (identifier))
+	++nested_definition_count;
+      else
+	cp_parser_error (parser, "nested namespace name required");
+      cp_lexer_consume_token (parser->lexer);
     }
 
-  /* Look for the `{' to validate starting the namespace.  */
-  cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
+  if (nested_definition_count && !identifier)
+    cp_parser_error (parser, "namespace name required");
+  
+  if (nested_definition_count && attribs)
+    error_at (token->location,
+	      "a nested namespace definition cannot have attributes");
+  if (nested_definition_count && is_inline)
+    error_at (token->location,
+	      "a nested namespace definition cannot be inline");
 
-  /* "inline namespace" is equivalent to a stub namespace definition
-     followed by a strong using directive.  */
-  if (is_inline && ok)
+  /* Start the namespace.  */
+  int push = push_namespace (identifier);
+
+  if (!is_inline)
+    ;
+  else if (push < 0)
     {
+      /* "inline namespace" is equivalent to a stub namespace definition
+	 followed by a strong using directive.  */
       tree name_space = current_namespace;
+      NAMESPACE_INLINE_P (name_space) = true;
+
       /* Set up namespace association.  */
       DECL_NAMESPACE_ASSOCIATIONS (name_space)
 	= tree_cons (CP_DECL_CONTEXT (name_space), NULL_TREE,
 		     DECL_NAMESPACE_ASSOCIATIONS (name_space));
+
       /* Import the contents of the inline namespace.  */
       pop_namespace ();
       do_using_directive (name_space);
       push_namespace (identifier);
     }
+  else if (push > 0 && !NAMESPACE_INLINE_P (current_namespace))
+    {
+      error_at (token->location,
+		"an inline namespace must be specified at initial definition");
+      inform (DECL_SOURCE_LOCATION (current_namespace),
+	      "%qD defined here", current_namespace);
+    }
 
-  has_visibility = handle_namespace_attrs (current_namespace, attribs);
+  bool has_visibility = handle_namespace_attrs (current_namespace, attribs);
 
   warning  (OPT_Wnamespaces, "namespace %qD entered", current_namespace);
+
+  /* Look for the `{' to validate starting the namespace.  */
+  cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
 
   /* Parse the body of the namespace.  */
   cp_parser_namespace_body (parser);
 
+  /* Look for the final `}'.  */
+  cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+
   if (has_visibility)
     pop_visibility (1);
 
-  /* Finish the nested namespace definitions.  */
-  while (nested_definition_count--)
+  /* Finish the namespace.  */
+  if (push)
     pop_namespace ();
 
-  /* Finish the namespace.  */
-  if (ok)
+  /* Pop the nested namespace definitions.  */
+  while (nested_definition_count--)
     pop_namespace ();
-  /* Look for the final `}'.  */
-  cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
 }
 
 /* Parse a namespace-body.

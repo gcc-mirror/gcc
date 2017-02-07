@@ -3728,17 +3728,20 @@ handle_namespace_attrs (tree ns, tree attributes)
   return saw_vis;
 }
   
-/* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
-   select a name that is unique to this compilation unit.  Returns FALSE if
-   pushdecl fails, TRUE otherwise.  */
+/* Push into the scope of the NAME namespace.  If create_ok is true, a
+   new namespace can be created.  If NAME is NULL_TREE, then we
+   select a name that is unique to this compilation unit.  Returns 0 if
+   pushdecl fails, +1 if we pushed an existing namespace and -1 if we
+   created a new namespace.  */
 
-bool
+int
 push_namespace (tree name)
 {
   tree d = NULL_TREE;
   bool need_new = true;
   bool implicit_use = false;
   bool anon = !name;
+  int ret = 0;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
@@ -3795,40 +3798,47 @@ push_namespace (tree name)
 	}
     }
 
-  if (need_new)
+  if (!need_new)
+    {
+      resume_scope (NAMESPACE_LEVEL (d));
+      ret = 1;
+    }
+  else
     {
       /* Make a new namespace, binding the name to it.  */
       d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
       DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
+
       /* The name of this namespace is not visible to other translation
 	 units if it is an anonymous namespace or member thereof.  */
       if (anon || decl_anon_ns_mem_p (current_namespace))
 	TREE_PUBLIC (d) = 0;
       else
 	TREE_PUBLIC (d) = 1;
-      if (pushdecl (d) == error_mark_node)
-	{
-	  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-	  return false;
-	}
-      if (anon)
-	{
-	  /* Clear DECL_NAME for the benefit of debugging back ends.  */
-	  SET_DECL_ASSEMBLER_NAME (d, name);
-	  DECL_NAME (d) = NULL_TREE;
-	}
-      begin_scope (sk_namespace, d);
-    }
-  else
-    resume_scope (NAMESPACE_LEVEL (d));
 
-  if (implicit_use)
-    do_using_directive (d);
-  /* Enter the name space.  */
-  current_namespace = d;
+      if (pushdecl (d) != error_mark_node)
+	{
+	  ret = -1;
+	  if (anon)
+	    {
+	      /* Clear DECL_NAME for the benefit of debugging back ends.  */
+	      SET_DECL_ASSEMBLER_NAME (d, name);
+	      DECL_NAME (d) = NULL_TREE;
+	    }
+	  begin_scope (sk_namespace, d);
+	}
+    }
+
+  if (ret)
+    {
+      if (implicit_use)
+	do_using_directive (d);
+      /* Enter the name space.  */
+      current_namespace = d;
+    }
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return true;
+  return ret;
 }
 
 /* Pop from the scope of the current namespace.  */
