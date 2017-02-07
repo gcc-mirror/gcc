@@ -1,5 +1,23 @@
 2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/html/ext/lwg-active.html: Remove.
+	* doc/html/ext/lwg-closed.html: Ditto.
+	* doc/html/ext/lwg-defects.html: Ditto.
+
+	* doc/Makefile.am (xml_extradir): Remove.
+	(xml_extra): Ditto.
+	(stamp-html-docbook-lwg): Remove recipe...
+	(stamp-html-docbook-data): ...and its use here.
+	* doc/Makefile.in: Regenerate.
+
+	* doc/xml/manual/intro.xml: Shorten two paragraphs explaining
+	the relationship to the upstream working group.
+	Replace a local link to ../ext/lwg-active.html by the upstream one.
+	Replace all reference to ../ext/lwg-defects.html by a new entity
+	&DR; which refers to the upstream address.
+
+2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/xml/manual/status_cxx2017.xml: Fix link to N4284.
 
 2017-02-06  Jonathan Wakely  <jwakely@redhat.com>

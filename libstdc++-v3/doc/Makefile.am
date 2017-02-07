@@ -450,12 +450,6 @@ xml_image_generated = \
 
 xml_images = ${xml_image_basic} ${xml_image_generated}
 
-xml_extradir = ${glibcxx_srcdir}/doc/html/ext
-xml_extra = \
-	${xml_extradir}/lwg-active.html \
-	${xml_extradir}/lwg-closed.html \
-	${xml_extradir}/lwg-defects.html
-
 xml_noinst = \
 	${xml_dir}/book.txml \
 	${xml_dir}/chapter.txml \
@@ -538,11 +532,7 @@ stamp-html-docbook-images: stamp-html-docbook $(xml_images)
 	$(INSTALL_DATA)	$(xml_images) ${docbook_outdir}/html/images
 	$(STAMP) stamp-html-docbook-images
 
-stamp-html-docbook-lwg: stamp-html-docbook $(xml_extra)
-	$(INSTALL_DATA)	$(xml_extra) ${docbook_outdir}/html/ext
-	$(STAMP) stamp-html-docbook-lwg
-
-stamp-html-docbook-data: stamp-html-docbook-images stamp-html-docbook-lwg
+stamp-html-docbook-data: stamp-html-docbook-images
 	$(STAMP) stamp-html-docbook-data
 
 # HTML, "chunked" into index plus chapters as separate pages
