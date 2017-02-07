@@ -1,3 +1,9 @@
+2017-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79299
+	* gcc.target/i386/avx512vl-pr79299-1.c: New test.
+	* gcc.target/i386/avx512vl-pr79299-2.c: New test.
+
 2017-02-07  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/gimplefe-23.c: New testcase.
