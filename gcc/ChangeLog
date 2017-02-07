@@ -1,3 +1,11 @@
+2017-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79299
+	* config/i386/sse.md (xtg_mode, gatherq_mode): New mode attrs.
+	(*avx512f_gathersi<mode>, *avx512f_gathersi<mode>_2,
+	*avx512f_gatherdi<mode>, *avx512f_gatherdi<mode>_2): Use them,
+	fix -masm=intel patterns.
+
 2017-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79256
