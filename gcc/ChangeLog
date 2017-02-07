@@ -1,4 +1,12 @@
 2017-02-07  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79399
+	* ira-int.h (struct target_ira_int): Change x_max_struct_costs_size
+	type from int to size_t.
+	* ira-costs.c (struct_costs_size): Change type from int to size_t.
+
+2017-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79386
 	* cprop.c (bypass_conditional_jumps): Initialize
