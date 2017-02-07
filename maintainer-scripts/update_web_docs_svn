@@ -24,6 +24,7 @@ MANUALS="cpp
   gnat-style
   gnat_rm
   libgomp
+  libitm
   libquadmath
   libiberty
   porting"
