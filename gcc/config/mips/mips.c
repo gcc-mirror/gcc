@@ -16571,9 +16571,27 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
 {
   machine_mode imode;
   int rangelo = 0, rangehi = 0, error_opno = 0;
+  rtx sireg;
 
   switch (icode)
     {
+    /* The third operand of these instructions is in SImode, so we need to
+       bring the corresponding builtin argument from QImode into SImode.  */
+    case CODE_FOR_loongson_pshufh:
+    case CODE_FOR_loongson_psllh:
+    case CODE_FOR_loongson_psllw:
+    case CODE_FOR_loongson_psrah:
+    case CODE_FOR_loongson_psraw:
+    case CODE_FOR_loongson_psrlh:
+    case CODE_FOR_loongson_psrlw:
+      gcc_assert (has_target_p && nops == 3 && ops[2].mode == QImode);
+      sireg = gen_reg_rtx (SImode);
+      emit_insn (gen_zero_extendqisi2 (sireg,
+				       force_reg (QImode, ops[2].value)));
+      ops[2].value = sireg;
+      ops[2].mode = SImode;
+      break;
+
     case CODE_FOR_msa_addvi_b:
     case CODE_FOR_msa_addvi_h:
     case CODE_FOR_msa_addvi_w:

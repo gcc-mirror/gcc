@@ -1,3 +1,9 @@
+2017-02-07  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* config/mips/mips.c (mips_expand_builtin_insn): Convert the QImode
+	argument of the pshufh, psllh, psllw, psrah, psraw, psrlh, psrlw
+	builtins to SImode and emit a zero-extend, if necessary.
+
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* docs/invoke.texi (RISC-V Options): Alphabetize.
