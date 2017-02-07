@@ -1,3 +1,9 @@
+2017-02-07  Nathan Sidwell  <nathan@acm.org>
+
+	* method.c (synthesized_method_base_walk): New.  Broken out of ...
+	(synthesized_method_walk): ... here.  Call it.  Cleanup
+	initializations.
+
 2017-02-07  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/79360
