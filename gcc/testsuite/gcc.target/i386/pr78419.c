@@ -1,5 +1,6 @@
 /* PR middle-end/78419 */
 /* { dg-do compile } */
+/* { dg-require-ifunc "" } */
 
 static double bar (double *__restrict, double *__restrict, int)
 __attribute__ ((target_clones("avx,foo,avx2,avx512f,default")));

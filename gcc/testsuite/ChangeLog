@@ -1,3 +1,7 @@
+2017-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr78419.c: Require ifunc support.
+
 2017-02-07  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/torture/stackalign/builtin-apply-2.c: Fix skip-if syntax.
