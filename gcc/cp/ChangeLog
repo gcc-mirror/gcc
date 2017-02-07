@@ -1,3 +1,9 @@
+2017-02-07  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/79360
+	* typeck2.c (process_init_constructor_union): Consider only
+	FIELD_DECLs when looking for an NSDMI.
+
 2017-02-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71193 - incomplete types in templates
