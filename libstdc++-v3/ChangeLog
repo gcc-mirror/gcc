@@ -1,3 +1,7 @@
+2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Fix link to N4284.
+
 2017-02-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79323
