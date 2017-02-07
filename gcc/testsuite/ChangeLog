@@ -1,3 +1,15 @@
+2017-02-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/test_frame_1.c: Scan epilogue with
+	scan-assembler instead of scan-assembler-times.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+	* gcc.target/aarch64/test_frame_12.c: Likewise.
+	* gcc.target/aarch64/test_frame_2.c: Likewise.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+
 2017-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/pr78419.c: Require ifunc support.
