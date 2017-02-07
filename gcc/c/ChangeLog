@@ -1,3 +1,10 @@
+2017-02-07  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_expr_list): Simplify.
+	(c_parser_gimple_postfix_expression_after_primary):
+	Do not use c_build_function_call_vec to avoid folding and promotion.
+	Simplify.
+
 2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061

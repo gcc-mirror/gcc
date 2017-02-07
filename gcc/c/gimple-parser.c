@@ -73,8 +73,7 @@ static void c_parser_gimple_switch_stmt (c_parser *, gimple_seq *);
 static void c_parser_gimple_return_stmt (c_parser *, gimple_seq *);
 static void c_finish_gimple_return (location_t, tree);
 static tree c_parser_gimple_paren_condition (c_parser *);
-static vec<tree, va_gc> *c_parser_gimple_expr_list (c_parser *,
-		    vec<tree, va_gc> **, vec<location_t> *);
+static void c_parser_gimple_expr_list (c_parser *, vec<tree> *);
 
 
 /* Parse the body of a function declaration marked with "__GIMPLE".  */
@@ -898,10 +897,6 @@ c_parser_gimple_postfix_expression_after_primary (c_parser *parser,
 						  location_t expr_loc,
 						  struct c_expr expr)
 {
-  struct c_expr orig_expr;
-  vec<tree, va_gc> *exprlist;
-  vec<tree, va_gc> *origtypes = NULL;
-  vec<location_t> arg_loc = vNULL;
   location_t start;
   location_t finish;
   tree ident;
@@ -936,34 +931,16 @@ c_parser_gimple_postfix_expression_after_primary (c_parser *parser,
 	  {
 	    /* Function call.  */
 	    c_parser_consume_token (parser);
-	    if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	      exprlist = NULL;
-	    else
-	      exprlist = c_parser_gimple_expr_list (parser, &origtypes,
-						    &arg_loc);
+	    auto_vec<tree> exprlist;
+	    if (! c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	      c_parser_gimple_expr_list (parser, &exprlist);
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
-	    orig_expr = expr;
-	    start = expr.get_start ();
-	    finish = c_parser_tokens_buf (parser, 0)->get_finish ();
-	    expr.value = c_build_function_call_vec (expr_loc, arg_loc,
-						    expr.value,
-						    exprlist, origtypes);
-	    set_c_expr_source_range (&expr, start, finish);
-
+	    expr.value = build_call_array_loc
+		(expr_loc, TREE_TYPE (TREE_TYPE (expr.value)),
+		 expr.value, exprlist.length (), exprlist.address ());
 	    expr.original_code = ERROR_MARK;
-	    if (TREE_CODE (expr.value) == INTEGER_CST
-		&& TREE_CODE (orig_expr.value) == FUNCTION_DECL
-		&& DECL_BUILT_IN_CLASS (orig_expr.value) == BUILT_IN_NORMAL
-		&& DECL_FUNCTION_CODE (orig_expr.value) == BUILT_IN_CONSTANT_P)
-	      expr.original_code = C_MAYBE_CONST_EXPR;
 	    expr.original_type = NULL;
-	    if (exprlist)
-	      {
-		release_tree_vector (exprlist);
-		release_tree_vector (origtypes);
-	      }
-	    arg_loc.release ();
 	    break;
 	  }
 	case CPP_DOT:
@@ -1058,41 +1035,19 @@ c_parser_gimple_postfix_expression_after_primary (c_parser *parser,
 
  */
 
-static vec<tree, va_gc> *
-c_parser_gimple_expr_list (c_parser *parser, vec<tree, va_gc> **p_orig_types,
-			   vec<location_t> *locations)
+static void
+c_parser_gimple_expr_list (c_parser *parser, vec<tree> *ret)
 {
-  vec<tree, va_gc> *ret;
-  vec<tree, va_gc> *orig_types;
   struct c_expr expr;
-  location_t loc = c_parser_peek_token (parser)->location;
-
-  ret = make_tree_vector ();
-  if (p_orig_types == NULL)
-    orig_types = NULL;
-  else
-    orig_types = make_tree_vector ();
 
   expr = c_parser_gimple_unary_expression (parser);
-  vec_safe_push (ret, expr.value);
-  if (orig_types)
-    vec_safe_push (orig_types, expr.original_type);
-  if (locations)
-    locations->safe_push (loc);
+  ret->safe_push (expr.value);
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
-      loc = c_parser_peek_token (parser)->location;
       expr = c_parser_gimple_unary_expression (parser);
-      vec_safe_push (ret, expr.value);
-      if (orig_types)
-	vec_safe_push (orig_types, expr.original_type);
-      if (locations)
-	locations->safe_push (loc);
+      ret->safe_push (expr.value);
     }
-  if (orig_types)
-    *p_orig_types = orig_types;
-  return ret;
 }
 
 /* Parse gimple label.
