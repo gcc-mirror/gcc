@@ -1,3 +1,41 @@
+2017-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79256
+	PR middle-end/79278
+	* builtins.c (get_object_alignment_2): Use min_align_of_type
+	to extract alignment for MEM_REFs to honor BIGGEST_FIELD_ALIGNMENT
+	and ADJUST_FIELD_ALIGN.
+
+	* doc/tm.texi.in (ADJUST_FIELD_ALIGN): Adjust to take additional
+	type parameter.
+	* doc/tm.texi: Regenerate.
+	* stor-layout.c (layout_decl): Adjust.
+	(update_alignment_for_field): Likewise.
+	(place_field): Likewise.
+	(min_align_of_type): Likewise.
+	* config/arc/arc.h (ADJUST_FIELD_ALIGN): Adjust.
+	* config/epiphany/epiphany.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/epiphany/epiphany.c (epiphany_adjust_field_align): Likewise.
+	* config/frv/frv.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/frv/frv.c (frv_adjust_field_align): Likewise.
+	* config/i386/i386.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/i386/i386.c (x86_field_alignment): Likewise.
+	* config/rs6000/aix.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/darwin.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/freebsd64.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/sysv4.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align_p):
+	 Likewise.
+
+	Revert
+	2017-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79256
+	* targhooks.c (default_builtin_vector_alignment_reachable): Honor
+	BIGGEST_FIELD_ALIGNMENT and ADJUST_FIELD_ALIGN to fix up bogus
+	alignment on TYPE.
+
 2017-02-07  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* config/mips/mips.c (mips_expand_builtin_insn): Convert the QImode

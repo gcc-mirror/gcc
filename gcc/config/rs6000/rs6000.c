@@ -7975,9 +7975,9 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
 /* Previous GCC releases forced all vector types to have 16-byte alignment.  */
 
 bool
-rs6000_special_adjust_field_align_p (tree field, unsigned int computed)
+rs6000_special_adjust_field_align_p (tree type, unsigned int computed)
 {
-  if (TARGET_ALTIVEC && TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
+  if (TARGET_ALTIVEC && TREE_CODE (type) == VECTOR_TYPE)
     {
       if (computed != 128)
 	{

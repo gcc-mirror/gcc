@@ -317,8 +317,8 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
    construct.
 */
 
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-(TYPE_MODE (strip_array_types (TREE_TYPE (FIELD))) == DFmode \
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
+(TYPE_MODE (strip_array_types (TYPE)) == DFmode \
  ? MIN ((COMPUTED), 32) : (COMPUTED))
 
 

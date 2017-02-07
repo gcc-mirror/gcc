@@ -334,9 +334,11 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	 Do so only if get_pointer_alignment_1 did not reveal absolute
 	 alignment knowledge and if using that alignment would
 	 improve the situation.  */
+      unsigned int talign;
       if (!addr_p && !known_alignment
-	  && TYPE_ALIGN (TREE_TYPE (exp)) > align)
-	align = TYPE_ALIGN (TREE_TYPE (exp));
+	  && (talign = min_align_of_type (TREE_TYPE (exp)) * BITS_PER_UNIT)
+	  && talign > align)
+	align = talign;
       else
 	{
 	  /* Else adjust bitpos accordingly.  */
