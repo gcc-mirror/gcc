@@ -13,5 +13,5 @@ t_frame_pattern_outgoing (test8, 700, , 8, a[8])
 t_frame_run (test8)
 
 /* { dg-final { scan-assembler-times "str\tx30, \\\[sp, \[0-9\]+\\\]" 1 } } */
-/* { dg-final { scan-assembler-times "ldr\tx30, \\\[sp, \[0-9\]+\\\]" 1 } } */
+/* { dg-final { scan-assembler "ldr\tx30, \\\[sp, \[0-9\]+\\\]" } } */
 
