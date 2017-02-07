@@ -1416,6 +1416,61 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
     }
 }
 
+// Base walker helper for synthesized_method_walk.  Inspect a direct
+// or virtual base.  BINFO is the parent type's binfo.  BASE_BINFO is
+// the base binfo of interests.  All other parms are as for
+// synthesized_method_walk, or its local vars.
+
+static tree
+synthesized_method_base_walk (tree binfo, tree base_binfo, 
+			      int quals, bool copy_arg_p,
+			      bool move_p, bool ctor_p,
+			      tree inheriting_ctor, tree inherited_parms,
+			      tree fnname, int flags, bool diag,
+			      tree *spec_p, bool *trivial_p,
+			      bool *deleted_p, bool *constexpr_p)
+{
+  bool inherited_binfo = false;
+  tree argtype = NULL_TREE;
+  
+  if (copy_arg_p)
+    argtype = build_stub_type (BINFO_TYPE (base_binfo), quals, move_p);
+  else if ((inherited_binfo
+	    = binfo_inherited_from (binfo, base_binfo, inheriting_ctor)))
+    {
+      argtype = inherited_parms;
+      /* Don't check access on the inherited constructor.  */
+      if (flag_new_inheriting_ctors)
+	push_deferring_access_checks (dk_deferred);
+    }
+  tree rval = locate_fn_flags (base_binfo, fnname, argtype, flags,
+			       diag ? tf_warning_or_error : tf_none);
+  if (inherited_binfo && flag_new_inheriting_ctors)
+    pop_deferring_access_checks ();
+
+  process_subob_fn (rval, spec_p, trivial_p, deleted_p,
+		    constexpr_p, diag, BINFO_TYPE (base_binfo));
+  if (ctor_p &&
+      (!BINFO_VIRTUAL_P (base_binfo)
+       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))))
+    {
+      /* In a constructor we also need to check the subobject
+	 destructors for cleanup of partially constructed objects.  */
+      tree dtor = locate_fn_flags (base_binfo, complete_dtor_identifier,
+				   NULL_TREE, flags,
+				   diag ? tf_warning_or_error : tf_none);
+	  /* Note that we don't pass down trivial_p; the subobject
+	     destructors don't affect triviality of the constructor.  Nor
+	     do they affect constexpr-ness (a constant expression doesn't
+	     throw) or exception-specification (a throw from one of the
+	     dtors would be a double-fault).  */
+      process_subob_fn (dtor, NULL, NULL, deleted_p, NULL, false,
+			BINFO_TYPE (base_binfo), /*dtor_from_ctor*/true);
+    }
+
+  return rval;
+}
+
 /* The caller wants to generate an implicit declaration of SFK for
    CTYPE which is const if relevant and CONST_P is set.  If SPEC_P,
    TRIVIAL_P, DELETED_P or CONSTEXPR_P are non-null, set their
@@ -1429,12 +1484,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 			 bool *constexpr_p, bool diag,
 			 tree inheriting_ctor, tree inherited_parms)
 {
-  tree binfo, base_binfo, scope, fnname, rval, argtype;
-  bool move_p, copy_arg_p, assign_p, expected_trivial, check_vdtor;
-  vec<tree, va_gc> *vbases;
-  int i, quals, flags;
-  tsubst_flags_t complain;
-  bool ctor_p;
+  tree binfo, base_binfo, fnname;
+  int i;
 
   if (spec_p)
     *spec_p = (cxx_dialect >= cxx11 ? noexcept_true_spec : empty_except_spec);
@@ -1455,9 +1506,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       *deleted_p = false;
     }
 
-  ctor_p = false;
-  assign_p = false;
-  check_vdtor = false;
+  bool ctor_p = false;
+  bool assign_p = false;
+  bool check_vdtor = false;
   switch (sfk)
     {
     case sfk_move_assignment:
@@ -1497,19 +1548,18 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       - the assignment operator selected to copy/move each direct base class
 	subobject is a constexpr function, and
       - for each non-static data member of X that is of class type (or array
-	thereof), the assignment operator selected to copy/move that member is a
-	constexpr function.  */
+	thereof), the assignment operator selected to copy/move that
+	member is a constexpr function.  */
   if (constexpr_p)
-    *constexpr_p = ctor_p
-      || (assign_p && cxx_dialect >= cxx14);
+    *constexpr_p = ctor_p || (assign_p && cxx_dialect >= cxx14);
 
-  move_p = false;
+  bool move_p = false;
+  bool copy_arg_p = false;
   switch (sfk)
     {
     case sfk_constructor:
     case sfk_destructor:
     case sfk_inheriting_constructor:
-      copy_arg_p = false;
       break;
 
     case sfk_move_constructor:
@@ -1525,7 +1575,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       gcc_unreachable ();
     }
 
-  expected_trivial = type_has_trivial_fn (ctype, sfk);
+  bool expected_trivial = type_has_trivial_fn (ctype, sfk);
   if (trivial_p)
     *trivial_p = expected_trivial;
 
@@ -1559,92 +1609,55 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   ++c_inhibit_evaluation_warnings;
   push_deferring_access_checks (dk_no_deferred);
 
-  scope = push_scope (ctype);
+  tree scope = push_scope (ctype);
 
-  flags = LOOKUP_NORMAL|LOOKUP_SPECULATIVE;
+  int flags = LOOKUP_NORMAL | LOOKUP_SPECULATIVE;
   if (!inheriting_ctor)
     flags |= LOOKUP_DEFAULTED;
 
-  complain = diag ? tf_warning_or_error : tf_none;
-
-  if (const_p)
-    quals = TYPE_QUAL_CONST;
-  else
-    quals = TYPE_UNQUALIFIED;
-  argtype = NULL_TREE;
+  tsubst_flags_t complain = diag ? tf_warning_or_error : tf_none;
+  int quals = const_p ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED;
 
   for (binfo = TYPE_BINFO (ctype), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
-      tree basetype = BINFO_TYPE (base_binfo);
-
       if (!assign_p && BINFO_VIRTUAL_P (base_binfo))
 	/* We'll handle virtual bases below.  */
 	continue;
 
-      bool inherited_binfo = false;
-
-      if (copy_arg_p)
-	argtype = build_stub_type (basetype, quals, move_p);
-      else if ((inherited_binfo
-		= binfo_inherited_from (binfo, base_binfo, inheriting_ctor)))
-	{
-	  /* Don't check access on the inherited constructor.  */
-	  argtype = inherited_parms;
-	  if (flag_new_inheriting_ctors)
-	    push_deferring_access_checks (dk_deferred);
-	}
-      rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
-      if (inherited_binfo)
-	{
-	  if (flag_new_inheriting_ctors)
-	    pop_deferring_access_checks ();
-	  argtype = NULL_TREE;
-	}
-
-      process_subob_fn (rval, spec_p, trivial_p, deleted_p,
-			constexpr_p, diag, basetype);
-      if (ctor_p)
-	{
-	  /* In a constructor we also need to check the subobject
-	     destructors for cleanup of partially constructed objects.  */
-	  rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
-				  NULL_TREE, flags, complain);
-	  /* Note that we don't pass down trivial_p; the subobject
-	     destructors don't affect triviality of the constructor.  Nor
-	     do they affect constexpr-ness (a constant expression doesn't
-	     throw) or exception-specification (a throw from one of the
-	     dtors would be a double-fault).  */
-	  process_subob_fn (rval, NULL, NULL,
-			    deleted_p, NULL, false,
-			    basetype, /*dtor_from_ctor*/true);
-	}
-
-      if (check_vdtor && type_has_virtual_destructor (basetype))
-	{
-	  rval = locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
-				  ptr_type_node, flags, complain);
-	  /* Unlike for base ctor/op=/dtor, for operator delete it's fine
-	     to have a null rval (no class-specific op delete).  */
-	  if (rval && rval == error_mark_node && deleted_p)
-	    *deleted_p = true;
-	  check_vdtor = false;
-	}
+      tree fn = synthesized_method_base_walk (binfo, base_binfo, quals,
+					      copy_arg_p, move_p, ctor_p,
+					      inheriting_ctor,
+					      inherited_parms,
+					      fnname, flags, diag,
+					      spec_p, trivial_p,
+					      deleted_p, constexpr_p);
 
       if (diag && assign_p && move_p
 	  && BINFO_VIRTUAL_P (base_binfo)
-	  && rval && TREE_CODE (rval) == FUNCTION_DECL
-	  && move_fn_p (rval) && !trivial_fn_p (rval)
-	  && vbase_has_user_provided_move_assign (basetype))
+	  && fn && TREE_CODE (fn) == FUNCTION_DECL
+	  && move_fn_p (fn) && !trivial_fn_p (fn)
+	  && vbase_has_user_provided_move_assign (BINFO_TYPE (base_binfo)))
 	warning (OPT_Wvirtual_move_assign,
 		 "defaulted move assignment for %qT calls a non-trivial "
 		 "move assignment operator for virtual base %qT",
-		 ctype, basetype);
+		 ctype, BINFO_TYPE (base_binfo));
+
+      if (check_vdtor && type_has_virtual_destructor (BINFO_TYPE (base_binfo)))
+	{
+	  fn = locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
+				ptr_type_node, flags, complain);
+	  /* Unlike for base ctor/op=/dtor, for operator delete it's fine
+	     to have a null fn (no class-specific op delete).  */
+	  if (fn && fn == error_mark_node && deleted_p)
+	    *deleted_p = true;
+	  check_vdtor = false;
+	}
     }
 
-  vbases = CLASSTYPE_VBASECLASSES (ctype);
+  vec<tree, va_gc> *vbases = CLASSTYPE_VBASECLASSES (ctype);
   if (assign_p)
-    /* No need to examine vbases here.  */;
+    /* Already examined vbases above.  */;
   else if (vec_safe_is_empty (vbases))
     /* No virtual bases to worry about.  */;
   else if (ABSTRACT_CLASS_TYPE_P (ctype) && cxx_dialect >= cxx14)
@@ -1654,38 +1667,12 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       if (constexpr_p)
 	*constexpr_p = false;
       FOR_EACH_VEC_ELT (*vbases, i, base_binfo)
-	{
-	  tree basetype = BINFO_TYPE (base_binfo);
-	  bool inherited_binfo = false;
-
-	  if (copy_arg_p)
-	    argtype = build_stub_type (basetype, quals, move_p);
-	  else if ((inherited_binfo
-		    = binfo_inherited_from (binfo, base_binfo, inheriting_ctor)))
-	    {
-	      argtype = inherited_parms;
-	      if (flag_new_inheriting_ctors)
-		push_deferring_access_checks (dk_deferred);
-	    }
-	  rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
-	  if (inherited_binfo)
-	    {
-	      if (flag_new_inheriting_ctors)
-		pop_deferring_access_checks ();
-	      argtype = NULL_TREE;
-	    }
-
-	  process_subob_fn (rval, spec_p, trivial_p, deleted_p,
-			    constexpr_p, diag, basetype);
-	  if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
-	    {
-	      rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
-				      NULL_TREE, flags, complain);
-	      process_subob_fn (rval, NULL, NULL,
-				deleted_p, NULL, false,
-				basetype, /*dtor_from_ctor*/true);
-	    }
-	}
+	synthesized_method_base_walk (binfo, base_binfo, quals,
+				      copy_arg_p, move_p, ctor_p,
+				      inheriting_ctor, inherited_parms,
+				      fnname, flags, diag,
+				      spec_p, trivial_p,
+				      deleted_p, constexpr_p);
     }
 
   /* Now handle the non-static data members.  */
