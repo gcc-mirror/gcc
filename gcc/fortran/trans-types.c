@@ -234,27 +234,42 @@ gfc_get_int_kind_from_width_isofortranenv (int size)
   return -1;
 }
 
-/* Get the kind number corresponding to a real of given storage size,
-   following the required return values for ISO_FORTRAN_ENV REAL* constants:
-   -2 is returned if we support a kind of larger size, -1 otherwise.  */
+
+/* Get the kind number corresponding to a real of a given storage size.
+   If two real's have the same storage size, then choose the real with
+   the largest precision.  If a kind type is unavailable and a real
+   exists with wider storage, then return -2; otherwise, return -1.  */
+
 int
 gfc_get_real_kind_from_width_isofortranenv (int size)
 {
-  int i;
+  int digits, i, kind;
 
   size /= 8;
+
+  kind = -1;
+  digits = 0;
 
   /* Look for a kind with matching storage size.  */
   for (i = 0; gfc_real_kinds[i].kind != 0; i++)
     if (int_size_in_bytes (gfc_get_real_type (gfc_real_kinds[i].kind)) == size)
-      return gfc_real_kinds[i].kind;
+      {
+	if (gfc_real_kinds[i].digits > digits)
+	  {
+	    digits = gfc_real_kinds[i].digits;
+	    kind = gfc_real_kinds[i].kind;
+	  }
+      }
+
+  if (kind != -1)
+    return kind;
 
   /* Look for a kind with larger storage size.  */
   for (i = 0; gfc_real_kinds[i].kind != 0; i++)
     if (int_size_in_bytes (gfc_get_real_type (gfc_real_kinds[i].kind)) > size)
-      return -2;
+      kind = -2;
 
-  return -1;
+  return kind;
 }
 
 
