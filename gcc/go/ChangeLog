@@ -1,3 +1,9 @@
+2017-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79256
+	PR middle-end/79278
+	* go-backend.c (go_field_alignment): Adjust.
+
 2017-01-11  Than McIntosh  <thanm@google.com>
 
 	* go-gcc.cc (conditional_expression): Add Bfunction parameter.

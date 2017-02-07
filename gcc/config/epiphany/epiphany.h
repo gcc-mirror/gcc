@@ -187,8 +187,8 @@ along with GCC; see the file COPYING3.  If not see
 				       (SPECIFIED_ALIGN)) \
   : MAX ((MANGLED_ALIGN), (SPECIFIED_ALIGN)))
 
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  epiphany_adjust_field_align((FIELD), (COMPUTED))
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
+  epiphany_adjust_field_align((TYPE), (COMPUTED))
 
 /* Layout of source language data types.  */
 

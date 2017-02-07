@@ -847,8 +847,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define BIGGEST_FIELD_ALIGNMENT 32
 #endif
 #else
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  x86_field_alignment ((FIELD), (COMPUTED))
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
+  x86_field_alignment ((TYPE), (COMPUTED))
 #endif
 
 /* If defined, a C expression to compute the alignment given to a

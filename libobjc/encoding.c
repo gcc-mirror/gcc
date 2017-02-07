@@ -1159,7 +1159,7 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
   desired_align = MIN (desired_align, BIGGEST_FIELD_ALIGNMENT);
 #endif
 #ifdef ADJUST_FIELD_ALIGN
-  desired_align = ADJUST_FIELD_ALIGN (type, desired_align);
+  desired_align = ADJUST_FIELD_ALIGN (type, type, desired_align);
 #endif
 
   /* Record must have at least as much alignment as any field.
