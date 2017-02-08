@@ -12367,15 +12367,27 @@ cp_parser_module_name (cp_parser *parser)
 static bool
 check_module_outermost (const cp_token *token, const char *msg)
 {
-  if (current_scope () == global_namespace
-      && !module_exporting_level ()
-      && !current_lang_depth ())
-    return true;
+  tree scope = current_scope ();
+  bool result = true;
+  bool popped = TREE_CODE (scope) == NAMESPACE_DECL;
 
-  error_at (token->location,
-	    "%qs may only occur at outermost scope", msg);
-
-  return false;
+  /* Don't get confused by any module namespace.  */
+  if (popped)
+    {
+      pop_module_namespace ();
+      scope = current_scope ();
+    }
+  if (scope != global_namespace
+      || module_exporting_level ()
+      || current_lang_depth ())
+    {
+      error_at (token->location,
+		"%qs may only occur at outermost scope", msg);
+      result = false;
+    }
+  if (popped)
+    push_module_namespace ();
+  return result;
 }
 
 /* Module-declaration, import-declaration
@@ -12438,17 +12450,22 @@ cp_parser_module_export (cp_parser *parser)
 
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
     cp_parser_module_declaration (parser, true);
-  else if (braced)
-    {
-      cp_ensure_no_omp_declare_simd (parser);
-      cp_ensure_no_oacc_routine (parser);
-
-      cp_lexer_consume_token (parser->lexer);
-      cp_parser_declaration_seq_opt (parser);
-      cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
-    }
   else
-    cp_parser_declaration (parser);
+    {
+      pop_module_namespace ();
+      if (braced)
+	{
+	  cp_ensure_no_omp_declare_simd (parser);
+	  cp_ensure_no_oacc_routine (parser);
+
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_declaration_seq_opt (parser);
+	  cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+	}
+      else
+	cp_parser_declaration (parser);
+      pop_module_namespace ();
+    }
 
   pop_module_export (prev);
 }
@@ -12469,7 +12486,9 @@ cp_parser_module_proclamation (cp_parser *parser)
     name = NULL;
 
   int prev = push_module_export (true, name);
+  pop_module_namespace ();
   cp_parser_declaration (parser);
+  push_module_namespace ();
   pop_module_export (prev);
 }
 
@@ -18347,6 +18366,7 @@ cp_parser_namespace_definition (cp_parser* parser)
   /* Parse any specified attributes before the identifier.  */
   tree attribs = cp_parser_attributes_opt (parser);
 
+  pop_module_namespace ();
   for (;;)
     {
       identifier = NULL_TREE;
@@ -18405,6 +18425,8 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   warning  (OPT_Wnamespaces, "namespace %qD entered", current_namespace);
 
+  push_module_namespace ();
+
   /* Look for the `{' to validate starting the namespace.  */
   cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
 
@@ -18413,6 +18435,8 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   /* Look for the final `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+
+  pop_module_namespace ();
 
   if (has_visibility)
     pop_visibility (1);
@@ -18424,6 +18448,8 @@ cp_parser_namespace_definition (cp_parser* parser)
   /* Pop the nested namespace definitions.  */
   while (nested_definition_count--)
     pop_namespace ();
+
+  push_module_namespace ();
 }
 
 /* Parse a namespace-body.

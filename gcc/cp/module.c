@@ -1,4 +1,3 @@
-
 /* -*- C++ -*- modules.  Experimental!
    Copyright (C) 2017 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org>
@@ -25,8 +24,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "stringpool.h"
 
+/* Mangling for module files.  */
+#define MOD_FNAME_PFX "g++-"
+#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
+#define MOD_FNAME_DOT '-'
+
+/* Mangling for module symbol.  */
+#define MOD_SYM_PFX "_M"
+#if !defined (NO_DOT_IN_LABEL)
+#define MOD_SYM_DOT '.'
+#elif !defined (NO_DOLLAR_IN_LABEL)
+#define MOD_SYM_DOT '$'
+#else
+#define MOD_SYM_DOT '_'
+#endif
+
 static FILE *mstream;
 static char *mfname;
+static GTY(()) tree module_namespace_name;
 static GTY(()) tree module_name;
 static location_t module_loc;
 static GTY(()) tree proclaimer;
@@ -39,6 +54,25 @@ static int export_depth; /* -1 for singleton export.  */
    Use a flat hash set until proven inefficient.  Might want to map to
    first import location?  */
 static GTY(()) hash_set<tree> *imported_modules;
+
+void
+push_module_namespace ()
+{
+  gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL);
+  if (module_name && push_namespace (module_namespace_name) < 0)
+    {
+      NAMESPACE_MODULE_P (current_namespace) = true;
+      make_namespace_inline ();
+    }
+}
+
+void
+pop_module_namespace ()
+{
+  gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL);
+  if (NAMESPACE_MODULE_P (current_namespace))
+    pop_namespace ();
+}
 
 /* Nest a module export level.  Return true if we were already in a
    level.  */
@@ -108,23 +142,24 @@ import_add (tree name)
    FIXME: Add host-applicable hooks.  */
 
 static char *
-module_to_filename (tree id)
+module_to_ext (tree id, const char *pfx, const char *sfx, char dot)
 {
-#define MOD_FNAME_PFX "g++-"
-#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
-#define MOD_FNAME_DOT_REPLACE '-'
-
-  char *name = concat (MOD_FNAME_PFX, IDENTIFIER_POINTER (id),
-		       MOD_FNAME_SFX, NULL);
-  char *ptr = name + strlen (MOD_FNAME_PFX);
+  char *name = concat (pfx, IDENTIFIER_POINTER (id), sfx, NULL);
+  char *ptr = name + strlen (pfx);
   size_t len = IDENTIFIER_LENGTH (id);
 
-  if (MOD_FNAME_DOT_REPLACE != '.')
+  if (dot != '.')
     for (; len--; ptr++)
       if (*ptr == '.')
-	*ptr = MOD_FNAME_DOT_REPLACE;
+	*ptr = dot;
 
   return name;
+}
+
+static char *
+module_to_filename (tree id)
+{
+  return module_to_ext (id, MOD_FNAME_PFX, MOD_FNAME_SFX, MOD_FNAME_DOT);
 }
 
 /* Import the module NAME into the current TU.  Return true on
@@ -154,7 +189,7 @@ import_module (location_t loc, tree name, tree attrs)
 
   // FIXME: some code needed here
   // FIXME: Think about make dependency generation
-  
+
   fclose (fd);
   free (fname);
   return true;
@@ -208,7 +243,11 @@ declare_module (location_t loc, tree name, tree attrs)
 
   module_name = name;
   module_loc = loc;
+  char *sym = module_to_ext (name, MOD_SYM_PFX, NULL, MOD_SYM_DOT);
+  module_namespace_name = get_identifier (sym);
+  free (sym);
 
+  push_module_namespace ();
   if (!inter)
     return;
 

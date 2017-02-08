@@ -1,5 +1,23 @@
 2017-02-08  Nathan Sidwell  <nathan@acm.org>
 
+	Module namespaces
+	gcc/cp
+	* cp-tree.h (NAMESPACE_MODULE_P): New.
+	(push_module_namespace, pop_module_namespace): Declare.
+	* module.c (MOD_SYM_PFX, MOD_SYM_DOT): New.
+	(module_namespace_name): New.
+	(push_module_namespace, pop_module_namespace): New.
+	(module_to_ext): New. Broken out of ...
+	(module_to_filename): ... here. Call it.
+	(declare_module): Push to module namespace.
+	* parser.c (check_module_outermost): Deal with module namespace.
+	(cp_parser_module_export, cp_parser_module_proclaimation,
+	cp_parser_namespace_definition): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/mod-sym-1.C: New.
+	* g++.dg/modules/mod-sym-2.C: New.
+
 	Cleanup inline namespace creation.
 	gcc/cp
 	* name-lookup.h (make_namespace_inline): Declare.

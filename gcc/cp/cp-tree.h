@@ -147,7 +147,7 @@ operator == (const cp_expr &lhs, tree rhs)
       FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
-      NAMESPACE_INLINE_P (NAMESPACE_DECL)
+      NAMESPACE_INLINE_P (in NAMESPACE_DECL)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -165,6 +165,7 @@ operator == (const cp_expr &lhs, tree rhs)
       CONSTRUCTOR_NO_IMPLICIT_ZERO (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
+      MODULE_NAMESPACE_P (in NAMESPACE_DECL)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -2228,6 +2229,10 @@ struct GTY(()) lang_type {
 /* Whether the namepace is an inline namespace.  */
 #define NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_CHECK (NODE))
+
+/* Whether the namespace contains module-linkage objects.  */
+#define NAMESPACE_MODULE_P(NODE) \
+  TREE_LANG_FLAG_1 (NAMESPACE_CHECK (NODE))
 
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) \
@@ -6116,6 +6121,8 @@ extern bool module_interface_p ();
 extern int module_exporting_level ();
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
+extern void push_module_namespace ();
+extern void pop_module_namespace ();
 extern void declare_module (location_t, tree, tree);
 extern void finish_module ();
 extern bool import_module (location_t, tree, tree);
