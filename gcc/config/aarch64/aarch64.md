@@ -3779,6 +3779,39 @@
   }
 )
 
+;; Pop count be done via the "CNT" instruction in AdvSIMD.
+;;
+;; MOV	v.1d, x0
+;; CNT	v1.8b, v.8b
+;; ADDV b2, v1.8b
+;; MOV	w0, v2.b[0]
+
+(define_expand "popcount<mode>2"
+  [(match_operand:GPI 0 "register_operand")
+   (match_operand:GPI 1 "register_operand")]
+  "TARGET_SIMD"
+{
+  rtx v = gen_reg_rtx (V8QImode);
+  rtx v1 = gen_reg_rtx (V8QImode);
+  rtx r = gen_reg_rtx (QImode);
+  rtx in = operands[1];
+  rtx out = operands[0];
+  if(<MODE>mode == SImode)
+    {
+      rtx tmp;
+      tmp = gen_reg_rtx (DImode);
+      /* If we have SImode, zero extend to DImode, pop count does
+         not change if we have extra zeros. */
+      emit_insn (gen_zero_extendsidi2 (tmp, in));
+      in = tmp;
+    }
+  emit_move_insn (v, gen_lowpart (V8QImode, in));
+  emit_insn (gen_popcountv8qi2 (v1, v));
+  emit_insn (gen_reduc_plus_scal_v8qi (r, v1));
+  emit_insn (gen_zero_extendqi<mode>2 (out, r));
+  DONE;
+})
+
 (define_insn "clrsb<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (clrsb:GPI (match_operand:GPI 1 "register_operand" "r")))]
