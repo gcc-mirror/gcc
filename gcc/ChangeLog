@@ -1,3 +1,7 @@
+2016-02-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/riscv/riscv.c (riscv_build_integer_1): Avoid use of INT16_MAX.
+
 2017-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71824

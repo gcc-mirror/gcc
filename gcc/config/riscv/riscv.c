@@ -356,7 +356,9 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
   /* End with ADDI.  When constructing HImode constants, do not generate any
      intermediate value that is not itself a valid HImode constant.  The
      XORI case below will handle those remaining HImode constants.  */
-  if (low_part != 0 && (mode != HImode || value - low_part <= INT16_MAX))
+  if (low_part != 0
+      && (mode != HImode
+	  || value - low_part <= ((1 << (GET_MODE_BITSIZE (HImode) - 1)) - 1)))
     {
       alt_cost = 1 + riscv_build_integer_1 (alt_codes, value - low_part, mode);
       if (alt_cost < cost)
