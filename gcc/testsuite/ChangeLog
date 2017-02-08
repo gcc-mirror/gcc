@@ -1,3 +1,22 @@
+2017-02-08  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71824
+	PR tree-optimization/79409
+	* gcc.dg/graphite/pr71824-3.c: New testcase.
+
+	2017-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71824
+	* gcc.dg/graphite/pr71824-2.c: New testcase.
+
+	2017-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71824
+	* gcc.dg/graphite/pr71824.c: New testcase.
+
 2017-02-03  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3-p8.c:  Add new testfile for missing

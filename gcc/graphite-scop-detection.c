@@ -905,6 +905,18 @@ scop_detection::build_scop_breadth (sese_l s1, loop_p loop)
 
   sese_l combined = merge_sese (s1, s2);
 
+  /* Combining adjacent loops may add unrelated loops into the
+     region so we have to check all sub-loops of the outer loop
+     that are in the combined region.  */
+  if (combined)
+    for (l = loop_outer (loop)->inner; l; l = l->next)
+      if (bb_in_sese_p (l->header, combined)
+	  && ! loop_is_valid_in_scop (l, combined))
+	{
+	  combined = invalid_sese;
+	  break;
+	}
+
   if (combined)
     s1 = combined;
   else
@@ -931,6 +943,8 @@ scop_detection::can_represent_loop_1 (loop_p loop, sese_l scop)
     && niter_desc.control.no_overflow
     && (niter = number_of_latch_executions (loop))
     && !chrec_contains_undetermined (niter)
+    && !chrec_contains_undetermined (scalar_evolution_in_region (scop,
+								 loop, niter))
     && graphite_can_represent_expr (scop, loop, niter);
 }
 
