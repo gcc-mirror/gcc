@@ -1,3 +1,11 @@
+2017-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79408
+	* tree-vrp.c (simplify_div_or_mod_using_ranges): If op1 is not
+	constant, but SSA_NAME with a known integer range, use the minimum
+	of that range instead of op1 to determine if modulo can be replaced
+	with its first operand.
+
 2016-02-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/riscv/riscv.c (riscv_build_integer_1): Avoid use of INT16_MAX.

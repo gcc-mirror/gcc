@@ -1,3 +1,8 @@
+2017-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79408
+	* gcc.dg/tree-ssa/pr79408.c: New test.
+
 2017-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71824
