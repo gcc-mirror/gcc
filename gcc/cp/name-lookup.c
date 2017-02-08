@@ -3727,7 +3727,7 @@ handle_namespace_attrs (tree ns, tree attributes)
 
   return saw_vis;
 }
-  
+
 /* Push into the scope of the NAME namespace.  If create_ok is true, a
    new namespace can be created.  If NAME is NULL_TREE, then we
    select a name that is unique to this compilation unit.  Returns 0 if
@@ -4085,13 +4085,25 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
     binding->type = newtype;
 }
 
+/* A using directive in namespace USER_NS for namespace USING_NS.  */
+
+static void
+do_toplevel_using_directive (tree user_ns, tree using_ns)
+{
+  add_using_namespace (user_ns, using_ns, 0);
+
+  gcc_assert (!processing_template_decl);
+  
+  /* Emit debugging info.  */
+  tree context = user_ns != global_namespace ? user_ns : NULL_TREE;
+  debug_hooks->imported_module_or_decl (using_ns, NULL_TREE, context, false);
+}
+
 /* Process a using-directive.  */
 
 void
 do_using_directive (tree name_space)
 {
-  tree context = NULL_TREE;
-
   if (name_space == error_mark_node)
     return;
 
@@ -4101,22 +4113,10 @@ do_using_directive (tree name_space)
     add_stmt (build_stmt (input_location, USING_STMT, name_space));
   name_space = ORIGINAL_NAMESPACE (name_space);
 
-  if (!toplevel_bindings_p ())
-    {
-      push_using_directive (name_space);
-    }
+  if (toplevel_bindings_p ())
+    do_toplevel_using_directive (current_namespace, name_space);
   else
-    {
-      /* direct usage */
-      add_using_namespace (current_namespace, name_space, 0);
-      if (current_namespace != global_namespace)
-	context = current_namespace;
-
-      /* Emit debugging info.  */
-      if (!processing_template_decl)
-	(*debug_hooks->imported_module_or_decl) (name_space, NULL_TREE,
-						 context, false);
-    }
+    push_using_directive (name_space);
 }
 
 /* Deal with a using-directive seen by the parser.  Currently we only
@@ -4150,6 +4150,27 @@ parse_using_directive (tree name_space, tree attribs)
       else
 	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
     }
+}
+
+/* Make the current namespace an inline namespace.  
+
+   An inline namespace is equivalent to a stub namespace definition
+   followed by a strong using directive.  */
+
+void
+make_namespace_inline ()
+{
+  tree name_space = current_namespace;
+  tree parent = CP_DECL_CONTEXT (name_space);
+
+  NAMESPACE_INLINE_P (name_space) = true;
+
+  /* Set up namespace association.  */
+  DECL_NAMESPACE_ASSOCIATIONS (name_space)
+    = tree_cons (parent, NULL_TREE, DECL_NAMESPACE_ASSOCIATIONS (name_space));
+
+  /* Import the contents of the inline namespace.  */
+  do_toplevel_using_directive (parent, name_space);
 }
 
 /* Like pushdecl, only it places X in the global scope if appropriate.

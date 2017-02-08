@@ -1,3 +1,13 @@
+2017-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	Cleanup inline namespace creation.
+	gcc/cp
+	* name-lookup.h (make_namespace_inline): Declare.
+	* name-lookup.c (do_toplevel_using_directive): New.
+	(do_using_directive): Call it.
+	(make_namespace_inline): New.
+	* parser.c (cp_parser_namespace_definition): Call it.
+
 2017-02-07  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79369 inline namespaces

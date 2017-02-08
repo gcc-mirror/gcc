@@ -314,6 +314,7 @@ extern void push_binding_level (cp_binding_level *);
 
 extern int push_namespace (tree);
 extern void pop_namespace (void);
+extern void make_namespace_inline ();
 extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
 extern bool handle_namespace_attrs (tree, tree);

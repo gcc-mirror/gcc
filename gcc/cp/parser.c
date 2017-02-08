@@ -18392,22 +18392,7 @@ cp_parser_namespace_definition (cp_parser* parser)
   if (!is_inline)
     ;
   else if (push < 0)
-    {
-      /* "inline namespace" is equivalent to a stub namespace definition
-	 followed by a strong using directive.  */
-      tree name_space = current_namespace;
-      NAMESPACE_INLINE_P (name_space) = true;
-
-      /* Set up namespace association.  */
-      DECL_NAMESPACE_ASSOCIATIONS (name_space)
-	= tree_cons (CP_DECL_CONTEXT (name_space), NULL_TREE,
-		     DECL_NAMESPACE_ASSOCIATIONS (name_space));
-
-      /* Import the contents of the inline namespace.  */
-      pop_namespace ();
-      do_using_directive (name_space);
-      push_namespace (identifier);
-    }
+    make_namespace_inline ();
   else if (push > 0 && !NAMESPACE_INLINE_P (current_namespace))
     {
       error_at (token->location,
