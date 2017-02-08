@@ -1,3 +1,9 @@
+2017-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* trans-types.c	(gfc_get_int_kind_from_width_isofortranen):  Choose
+	REAL type with the widest precision if two (or more) have the same
+	storage size.
+
 2016-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
