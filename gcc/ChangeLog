@@ -1,3 +1,11 @@
+2017-02-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/79375
+	* ipa-prop.c (ipa_alloc_node_params): Make static, return bool
+	whether allocation happened.
+	(ipa_initialize_node_params): Do not call ipa_alloc_node_params if
+	nothing was allocated.
+
 2017-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79408
