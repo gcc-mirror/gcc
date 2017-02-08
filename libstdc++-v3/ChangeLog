@@ -1,3 +1,7 @@
+2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* src/c++11/snprintf_lite.cc (__err): Use https for bug reporting.
+
 2017-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/policy_data_structures.xml: Fix spelling of author's
@@ -12,7 +16,7 @@
 	* doc/html/*: Regenerate.
 
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-
+	
 	* doc/xml/manual/profile_mode.xml: Unbreak link to
 	"Optimizing Sorting with Machine Learning Algorithms".
 
