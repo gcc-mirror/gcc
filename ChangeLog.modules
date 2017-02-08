@@ -1,5 +1,10 @@
 2017-02-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (is_ancestor): Pop from module namespace root.
+	gcc/testsuite/
+	* g++.dg/modules/mod-sym-3.C: New.
+
 	Module namespaces
 	gcc/cp
 	* cp-tree.h (NAMESPACE_MODULE_P): New.

@@ -2795,6 +2795,11 @@ do_local_using_decl (tree decl, tree scope, tree name)
 bool
 is_ancestor (tree root, tree child)
 {
+  /* Strip module namespace from root.  */
+  if (TREE_CODE (root) == NAMESPACE_DECL
+      && NAMESPACE_MODULE_P (root))
+    root = CP_DECL_CONTEXT (root);
+
   gcc_assert ((TREE_CODE (root) == NAMESPACE_DECL
 	       || TREE_CODE (root) == FUNCTION_DECL
 	       || CLASS_TYPE_P (root)));
