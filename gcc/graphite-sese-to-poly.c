@@ -407,7 +407,7 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
 
     case SSA_NAME:
       gcc_assert (-1 != parameter_index_in_region_1 (e, s->scop_info)
-		  || !invariant_in_sese_p_rec (e, s->scop_info->region, NULL));
+		  || defined_in_sese_p (e, s->scop_info->region));
       res = extract_affine_name (s, e, space);
       break;
 
@@ -436,11 +436,11 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
 /* Returns a linear expression for tree T evaluated in PBB.  */
 
 static isl_pw_aff *
-create_pw_aff_from_tree (poly_bb_p pbb, tree t)
+create_pw_aff_from_tree (poly_bb_p pbb, loop_p loop, tree t)
 {
   scop_p scop = PBB_SCOP (pbb);
 
-  t = scalar_evolution_in_region (scop->scop_info->region, pbb_loop (pbb), t);
+  t = scalar_evolution_in_region (scop->scop_info->region, loop, t);
 
   gcc_assert (!chrec_contains_undetermined (t));
   gcc_assert (!automatically_generated_chrec_p (t));
@@ -455,8 +455,9 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
 static void
 add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
 {
-  isl_pw_aff *lhs = create_pw_aff_from_tree (pbb, gimple_cond_lhs (stmt));
-  isl_pw_aff *rhs = create_pw_aff_from_tree (pbb, gimple_cond_rhs (stmt));
+  loop_p loop = gimple_bb (stmt)->loop_father;
+  isl_pw_aff *lhs = create_pw_aff_from_tree (pbb, loop, gimple_cond_lhs (stmt));
+  isl_pw_aff *rhs = create_pw_aff_from_tree (pbb, loop, gimple_cond_rhs (stmt));
 
   isl_set *cond;
   switch (code)
