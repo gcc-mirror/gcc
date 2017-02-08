@@ -142,11 +142,11 @@ Use AltiVec instructions
 
 maltivec=le
 Target Report RejectNegative Var(rs6000_altivec_element_order, 1) Save
-Generate Altivec instructions using little-endian element order
+Generate AltiVec instructions using little-endian element order
 
 maltivec=be
 Target Report RejectNegative Var(rs6000_altivec_element_order, 2)
-Generate Altivec instructions using big-endian element order
+Generate AltiVec instructions using big-endian element order
 
 mhard-dfp
 Target Report Mask(DFP) Var(rs6000_isa_flags)
