@@ -905,9 +905,19 @@ scop_detection::build_scop_breadth (sese_l s1, loop_p loop)
 
   sese_l combined = merge_sese (s1, s2);
 
-  if (combined
-      && loop_is_valid_in_scop (loop, combined)
-      && loop_is_valid_in_scop (loop->next, combined))
+  /* Combining adjacent loops may add unrelated loops into the
+     region so we have to check all sub-loops of the outer loop
+     that are in the combined region.  */
+  if (combined)
+    for (l = loop_outer (loop)->inner; l; l = l->next)
+      if (bb_in_sese_p (l->header, combined)
+	  && ! loop_is_valid_in_scop (l, combined))
+	{
+	  combined = invalid_sese;
+	  break;
+	}
+
+  if (combined)
     s1 = combined;
   else
     add_scop (s2);

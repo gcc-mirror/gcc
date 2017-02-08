@@ -1,3 +1,9 @@
+2017-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71824
+	* graphite-scop-detection.c (scop_detection::build_scop_breadth):
+	Check all loops contained in the merged region.
+
 2017-02-07  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.md (popcount<mode>2): New pattern.
