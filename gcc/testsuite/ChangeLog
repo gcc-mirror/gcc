@@ -1,3 +1,8 @@
+2017-02-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/78604
+	* gcc.target/powerpc/pr78604.c: New.
+
 2017-02-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/68972

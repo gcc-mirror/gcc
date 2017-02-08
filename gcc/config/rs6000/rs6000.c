@@ -25150,12 +25150,29 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
 	return 0;
       break;
 
-      /* Mark unsigned tests with CCUNSmode.  */
+    case GE:
+    case LE:
+      if (GET_MODE_CLASS (mask_mode) == MODE_VECTOR_INT)
+	{
+	  /* Invert condition to avoid compound test.  */
+	  invert_move = true;
+	  rcode = reverse_condition (rcode);
+	}
+      break;
+
     case GTU:
     case GEU:
     case LTU:
     case LEU:
+      /* Mark unsigned tests with CCUNSmode.  */
       cc_mode = CCUNSmode;
+
+      /* Invert condition to avoid compound test if necessary.  */
+      if (rcode == GEU || rcode == LEU)
+	{
+	  invert_move = true;
+	  rcode = reverse_condition (rcode);
+	}
       break;
 
     default:
