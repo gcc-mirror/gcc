@@ -1,3 +1,10 @@
+2017-02-07  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def (thunderx): Disable LSE.
+	(thunderxt88): Likewise.
+	(thunderxt81): Disable LSE and change v8.1 to v8.
+	(thunderxt83): Likewise.
+
 2017-02-07  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
