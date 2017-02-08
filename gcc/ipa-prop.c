@@ -176,16 +176,21 @@ ipa_dump_param (FILE *file, struct ipa_node_params *info, int i)
     }
 }
 
-/* Initialize the ipa_node_params structure associated with NODE 
-   to hold PARAM_COUNT parameters.  */
+/* If necessary, allocate vector of parameter descriptors in info of NODE.
+   Return true if they were allocated, false if not.  */
 
-void
+static bool
 ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
   if (!info->descriptors && param_count)
-    vec_safe_grow_cleared (info->descriptors, param_count);
+    {
+      vec_safe_grow_cleared (info->descriptors, param_count);
+      return true;
+    }
+  else
+    return false;
 }
 
 /* Initialize the ipa_node_params structure associated with NODE by counting
@@ -197,11 +202,9 @@ ipa_initialize_node_params (struct cgraph_node *node)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
-  if (!info->descriptors)
-    {
-      ipa_alloc_node_params (node, count_formal_params (node->decl));
-      ipa_populate_param_decls (node, *info->descriptors);
-    }
+  if (!info->descriptors
+      && ipa_alloc_node_params (node, count_formal_params (node->decl)))
+    ipa_populate_param_decls (node, *info->descriptors);
 }
 
 /* Print the jump functions associated with call graph edge CS to file F.  */
