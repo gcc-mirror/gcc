@@ -1403,7 +1403,7 @@ foo.cc:1: advice: Change "list" to "forward_list".
   See papers:
   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://dl.acm.org/citation.cfm?doid=1065944.1065981">
   A framework for adaptive algorithm selection in STAPL</link> and
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227">
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/document/4228227/">
   Optimizing Sorting with Machine Learning Algorithms</link>.
   </para></listitem>
   <listitem><para><emphasis>Sample runtime reduction:</emphasis>60%.
