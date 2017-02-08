@@ -1,3 +1,16 @@
+2017-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Fix spelling of author's
+	name.
+	* doc/xml/manual/policy_data_structures_biblio.xml: Likewise. Remove
+	broken links to texts that are no longer online.
+	* doc/xml/manual/profile_mode.xml: Update links to CGO 2009 paper and
+	LCPC 2006 paper.
+	* doc/xml/manual/using.xml: Update links to memory model information.
+	* doc/xml/manual/using_exceptions.xml: Update link to "Appendix E:
+	Standard-Library Exception Safety".
+	* doc/html/*: Regenerate.
+
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/profile_mode.xml: Unbreak link to

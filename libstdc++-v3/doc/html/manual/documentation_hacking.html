@@ -359,16 +359,15 @@
 	For PDF output, something that transforms valid Docbook XML to PDF is
 	required. Possible solutions include <a class="link" href="http://dblatex.sourceforge.net" target="_top">dblatex</a>,
 	<span class="command"><strong>xmlto</strong></span>, or <span class="command"><strong>prince</strong></span>. Of
-	these, <span class="command"><strong>dblatex</strong></span> is the default. Other
-	options are listed on the DocBook web <a class="link" href="http://wiki.docbook.org/topic/DocBookPublishingTools" target="_top">pages</a>. Please
-	consult the <code class="email">&lt;<a class="email" href="mailto:libstdc++@gcc.gnu.org">libstdc++@gcc.gnu.org</a>&gt;</code> list when
+	these, <span class="command"><strong>dblatex</strong></span> is the default.
+	Please consult the <code class="email">&lt;<a class="email" href="mailto:libstdc++@gcc.gnu.org">libstdc++@gcc.gnu.org</a>&gt;</code> list when
 	preparing printed manuals for current best practice and
 	suggestions.
       </p><p>
 	For Texinfo output, something that transforms valid Docbook
 	XML to Texinfo is required. The default choice is <a class="link" href="http://docbook2x.sourceforge.net/" target="_top">docbook2X</a>.
       </p><p>
-	For epub output, the <a class="link" href="https://sourceforge.net/projects/docbook/files/epub3/" target="_top">stylesheets</a> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <a class="link" href="https://code.google.com/p/epubcheck/" target="_top">epubcheck</a> is necessary.
+	For epub output, the <a class="link" href="https://sourceforge.net/projects/docbook/files/epub3/" target="_top">stylesheets</a> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <a class="link" href="https://github.com/IDPF/epubcheck" target="_top">epubcheck</a> is necessary.
       </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.rules"></a>Generating the DocBook Files</h4></div></div></div><p>
 	The following Makefile rules generate (in order): an HTML
 	version of all the DocBook documentation, a PDF version of the
@@ -527,9 +526,8 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
 <br />
       &lt;/set&gt;<br />
     </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.markup"></a>Markup By Example</h4></div></div></div><p>
-	Complete details on Docbook markup can be found in the DocBook
-	Element Reference,
-	<a class="link" href="http://www.docbook.org/tdg/en/html/part2.html" target="_top">online</a>.
+	Complete details on Docbook markup can be found in the
+	<a class="link" href="http://tdg.docbook.org/tdg/5.0/ref-elements.html" target="_top">DocBook Element Reference</a>.
 	An incomplete reference for HTML to Docbook conversion is
 	detailed in the table below.
       </p><div class="table"><a id="table.docbook_cmp"></a><p class="title"><strong>Table B.4. HTML to Docbook XML Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Docbook XML Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Docbook</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;,
