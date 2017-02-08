@@ -1,3 +1,9 @@
+2017-02-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/78604
+	* config/rs6000/rs6000.c (rs6000_emit_vector_cond_expr): Invert
+	condition/operands for integer GE/LE/GEU/LEU operations.
+
 2017-02-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR translation/79397
