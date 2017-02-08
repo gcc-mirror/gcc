@@ -1,5 +1,9 @@
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* src/c++11/snprintf_lite.cc (__err): Update bug reporting URL.
+
+2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/xml/manual/abi.xml: Update link to "Sun Studio 11: C++
 	Migration Guide".
 
