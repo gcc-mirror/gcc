@@ -10253,6 +10253,7 @@ instantiate_class_template_1 (tree type)
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
   SET_TYPE_ALIGN (type, TYPE_ALIGN (pattern));
   TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (pattern);
+  CLASSTYPE_NON_AGGREGATE (type) = CLASSTYPE_NON_AGGREGATE (pattern);
   if (ANON_AGGR_TYPE_P (pattern))
     SET_ANON_AGGR_TYPE_P (type);
   if (CLASSTYPE_VISIBILITY_SPECIFIED (pattern))
