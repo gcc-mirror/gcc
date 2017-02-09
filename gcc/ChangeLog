@@ -1,5 +1,8 @@
 2017-02-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-offload.c (oacc_loop_auto_partitions): Use || instead of |
+	to avoid warning.
+
 	PR c/79413
 	* gimplify.h (is_gimple_sizepos): Only test for INTEGER_CST constants,
 	not arbitrary TREE_CONSTANT.
