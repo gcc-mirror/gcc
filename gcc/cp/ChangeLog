@@ -1,5 +1,13 @@
 2017-02-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79429
+	* parser.c (cp_parser_omp_ordered): Don't check for non-pragma_stmt
+	non-pragma_compound context here.
+	(cp_parser_omp_target): Likewise.
+	(cp_parser_pragma): Don't call push_omp_privatization_clauses and
+	parsing for ordered and target omp pragmas in non-pragma_stmt
+	non-pragma_compound contexts.
+
 	PR c/79431
 	* parser.c (cp_parser_oacc_declare): Formatting fix.
 	(cp_parser_omp_declare_target): Don't invoke symtab_node::get on
