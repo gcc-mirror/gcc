@@ -1,5 +1,11 @@
 2017-02-09  Andrew Burgess  <andrew.burgess@embecosm.com>
 
+	* config/arc/arc-c.def: Add __NPS400__ definition.
+	* config/arc/arc.h (CPP_SPEC): Don't define __NPS400__ here.
+	(TARGET_NPS400): Define.
+
+2017-02-09  Andrew Burgess  <andrew.burgess@embecosm.com>
+
 	* config/arc/arc-arch.h (arc_arch_t): Move unchanged to earlier in
 	file.
 	(arc_cpu_t): Change base_architecture field, arch, to a arc_arc_t
