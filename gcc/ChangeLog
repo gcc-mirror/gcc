@@ -1,3 +1,51 @@
+2017-02-09  Nathan Sidwell  <nathan@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): No special handling for
+	OMP_CLAUSE_TILE.
+	(gimplify_adjust_omp_clauses): Don't delete TILE.
+	(gimplify_omp_for): Deal with TILE.
+	* internal-fn.c (expand_GOACC_TILE): New function.
+	* internal-fn.def (GOACC_DIM_POS): Comment may be overly conservative.
+	(GOACC_TILE): New.
+	* omp-expand.c (struct oacc_collapse): Add tile and outer fields.
+	(expand_oacc_collapse_init): Add LOC paramter.  Initialize tile
+	element fields.
+	(expand_oacc_collapse_vars): Add INNER parm, adjust for tiling,
+	avoid DIV for outermost collapse var.
+	(expand_oacc_for): Insert tile element loop as needed.  Adjust.
+	Remove out of date comments, fix whitespace.
+	* omp-general.c (omp_extract_for_data): Deal with tiling.
+	* omp-general.h (enum oacc_loop_flags): Add OLF_TILE flag,
+	adjust OLF_DIM_BASE value.
+	(struct omp_for_data): Add tiling field.
+	* omp-low.c (scan_sharing_clauses): Allow OMP_CLAUSE_TILE.
+	(lower_oacc_head_mark): Add OLF_TILE as appropriate.  Ensure 2 levels
+	for auto loops.  Remove default auto determining, moved to
+	oacc_loop_fixed_partitions.
+	* omp-offload.c (struct oacc_loop): Change 'ifns' to vector of call
+	stmts, add e_mask field.
+	(oacc_dim_call): New function, abstracted out from oacc_thread_numbers.
+	(oacc_thread_numbers): Use oacc_dim_call.
+	(oacc_xform_tile): New.
+	(new_oacc_loop_raw): Initialize e_mask, adjust for ifns vector.
+	(finish_oacc_loop): Adjust for ifns vector.
+	(oacc_loop_discover_walk): Append loop abstraction sites to list,
+	add case for GOACC_TILE fns.
+	(oacc_loop_xform_loop): Delete.
+	(oacc_loop_process): Iterate over call list directly, and add
+	handling for GOACC_TILE fns.
+	(oacc_loop_fixed_partitions): Determine default auto, deal with TILE,
+	dump partitioning.
+	(oacc_loop_auto_partitions): Add outer_assign parm. Assign all but
+	vector partitioning to outer loops.  Assign 2 partitions to loops
+	when available. Add TILE handling.
+	(oacc_loop_partition): Adjust oacc_loop_auto_partitions call.
+	(execite_oacc_device_lower): Process GOACC_TILE fns, ignore unknown specs.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Allow OMP_CLAUSE_TILE.
+	* tree.c (omp_clause_num_ops): Adjust TILE ops.
+	* tree.h (OMP_CLAUSE_TILE_ITERVAR, OMP_CLAUSE_TILE_COUNT): New.
+
 2017-02-09  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* configure.ac (ACX_BUGURL): Update.

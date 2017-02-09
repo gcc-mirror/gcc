@@ -2479,6 +2479,14 @@ expand_GOACC_REDUCTION (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This is expanded by oacc_device_lower pass.  */
+
+static void
+expand_GOACC_TILE (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Set errno to EDOM.  */
 
 static void

@@ -133,13 +133,9 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 
   fd->for_stmt = for_stmt;
   fd->pre = NULL;
-  if (gimple_omp_for_collapse (for_stmt) > 1)
-    fd->loops = loops;
-  else
-    fd->loops = &fd->loop;
-
   fd->have_nowait = distribute || simd;
   fd->have_ordered = false;
+  fd->tiling = NULL_TREE;
   fd->collapse = 1;
   fd->ordered = 0;
   fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
@@ -184,9 +180,22 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	    collapse_count = &OMP_CLAUSE_COLLAPSE_COUNT (t);
 	  }
 	break;
+      case OMP_CLAUSE_TILE:
+	fd->tiling = OMP_CLAUSE_TILE_LIST (t);
+	fd->collapse = list_length (fd->tiling);
+	gcc_assert (fd->collapse);
+	collapse_iter = &OMP_CLAUSE_TILE_ITERVAR (t);
+	collapse_count = &OMP_CLAUSE_TILE_COUNT (t);
+	break;
       default:
 	break;
       }
+
+  if (fd->collapse > 1 || fd->tiling)
+    fd->loops = loops;
+  else
+    fd->loops = &fd->loop;
+
   if (fd->ordered && fd->collapse == 1 && loops != NULL)
     {
       fd->loops = loops;
@@ -205,7 +214,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
       gcc_assert (fd->chunk_size == NULL);
     }
-  gcc_assert (fd->collapse == 1 || collapse_iter != NULL);
+  gcc_assert ((fd->collapse == 1 && !fd->tiling) || collapse_iter != NULL);
   if (taskloop)
     fd->sched_kind = OMP_CLAUSE_SCHEDULE_RUNTIME;
   if (fd->sched_kind == OMP_CLAUSE_SCHEDULE_RUNTIME)
@@ -223,7 +232,10 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   int cnt = fd->ordered ? fd->ordered : fd->collapse;
   for (i = 0; i < cnt; i++)
     {
-      if (i == 0 && fd->collapse == 1 && (fd->ordered == 0 || loops == NULL))
+      if (i == 0
+	  && fd->collapse == 1
+	  && !fd->tiling
+	  && (fd->ordered == 0 || loops == NULL))
 	loop = &fd->loop;
       else if (loops != NULL)
 	loop = loops + i;
@@ -252,7 +264,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	  || (fd->sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	      && !fd->have_ordered))
 	{
-	  if (fd->collapse == 1)
+	  if (fd->collapse == 1 && !fd->tiling)
 	    iter_type = TREE_TYPE (loop->v);
 	  else if (i == 0
 		   || TYPE_PRECISION (iter_type)
@@ -383,7 +395,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	*collapse_count = create_tmp_var (iter_type, ".count");
     }
 
-  if (fd->collapse > 1 || (fd->ordered && loops))
+  if (fd->collapse > 1 || fd->tiling || (fd->ordered && loops))
     {
       fd->loop.v = *collapse_iter;
       fd->loop.n1 = build_int_cst (TREE_TYPE (fd->loop.v), 0);

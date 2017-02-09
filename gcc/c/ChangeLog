@@ -1,3 +1,11 @@
+2016-02-09  Nathan Sidwell  <nathan@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_collapse): Disallow tile.
+	(c_parser_oacc_clause_tile): Disallow collapse. Fix parsing and
+	semantic checking.
+	* c-parser.c (c_parser_omp_for_loop): Accept tiling constructs.
+
 2017-02-07  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_expr_list): Simplify.
