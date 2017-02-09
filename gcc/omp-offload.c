@@ -1252,7 +1252,7 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
   noisy = false;
 #endif
 
-  if (assign && (!outer_assign | loop->inner))
+  if (assign && (!outer_assign || loop->inner))
     {
       /* Allocate outermost and non-innermost loops at the outermost
 	 non-innermost available level.  */
