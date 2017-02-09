@@ -53,10 +53,11 @@ proc dg-module-if { args } {
     }
 
     set mod [lindex $args 1]
-    # predelete file
-    set file [mod_spec_to_file $mod]
-    # FIXME: remote host?
-    file delete $file
+    if { ! [ string equal -length 1 $mod "!" ] } {
+	# delete file, only if we expect to create it
+	set file [mod_spec_to_file $mod]
+	file_on_host delete $file
+    }
 
     if { [llength $args] >= 3 } {
 	switch -glob [dg-process-target [lindex $args 2]] {
@@ -78,8 +79,7 @@ proc check_module_specs { src specs } {
     foreach spec $specs {
 	set absent [ string equal -length 1 $spec "!" ]
 	set file [mod_spec_to_file $spec]
-	# FIXME: remote host?
-	if { $absent != [file exists $file] } {
+	if { $absent != [file_on_host exists $file] } {
 	    pass "$src module $spec"
 	} else {
 	    fail "$src module $spec"
@@ -95,8 +95,7 @@ proc check_module_specs { src specs } {
 # delete the specified set of module files
 proc cleanup_module_files { files } {
     foreach file $files {
-	# FIXME: remote host?
-	file delete $file
+	file_on_host delete $file
     }
 }
 
@@ -126,6 +125,8 @@ foreach src [lsort [find $srcdir/$subdir "*_a.C"]] {
 	    set subtest [string range $test [string length $srcdir/] end]
 	    lappend mod_files [check_module_specs $subtest $module_specs]
 	}
+	# FIXME: linking tests?
+	# FIXME: delete output?
 	cleanup_module_files $mod_files
     }
 }

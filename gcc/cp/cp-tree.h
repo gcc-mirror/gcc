@@ -184,6 +184,7 @@ operator == (const cp_expr &lhs, tree rhs)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
+      MODULE_EXPORT_P (in DECL_)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
@@ -291,6 +292,9 @@ operator == (const cp_expr &lhs, tree rhs)
      the old DECL_VINDEX.  */
 
 /* Language-specific tree checkers.  */
+
+#define DECL_CHECK(NODE) \
+  TREE_CLASS_CHECK (NODE,tcc_declaration)
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK2(NODE,VAR_DECL,FUNCTION_DECL)
@@ -1034,6 +1038,19 @@ check_constraint_info (tree t)
    attached for convenience.  */
 #define CONSTRAINED_PARM_PROTOTYPE(NODE) \
   DECL_INITIAL (TYPE_DECL_CHECK (NODE))
+
+/* Module defines.  */
+
+/* Whether the namespace contains module-linkage objects.  */
+#define MODULE_NAMESPACE_P(NODE) \
+  TREE_LANG_FLAG_1 (NAMESPACE_CHECK (NODE))
+
+#define CURRENT_MODULE_NAMESPACE_P(NODE) \
+  (MODULE_NAMESPACE_P (NODE) && NAMESPACE_INLINE_P (NODE))
+
+/* Whether this is an exported DECL.  */
+#define MODULE_EXPORT_P(NODE) \
+  TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
 
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
@@ -2229,10 +2246,6 @@ struct GTY(()) lang_type {
 /* Whether the namepace is an inline namespace.  */
 #define NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_CHECK (NODE))
-
-/* Whether the namespace contains module-linkage objects.  */
-#define NAMESPACE_MODULE_P(NODE) \
-  TREE_LANG_FLAG_1 (NAMESPACE_CHECK (NODE))
 
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) \
@@ -6125,7 +6138,7 @@ extern void push_module_namespace ();
 extern void pop_module_namespace ();
 extern void declare_module (location_t, tree, tree);
 extern void finish_module ();
-extern bool import_module (location_t, tree, tree);
+extern void import_module (location_t, tree, tree, bool = false);
 extern void export_module (location_t, tree, tree);
 
 /* In optimize.c */

@@ -1,3 +1,24 @@
+2017-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (DECL_CHECK): New.
+	(NAMESPACE_MODULE_P): Rename to ...
+	(MODULE_NAMESPACE_P): ... here.
+	(CURRENT_MODULE_NAMESPACE_P): New.
+	(MODULE_EXPORT_P): New.
+	(import_module): Add is_export param.
+	* module.c (mstream, mfname): Delete.
+	(imported_modules): Make hash_map.
+	(enum import_kind): New.
+	(push_module_namespace, pop_module_namespace): Adjust.
+	(import_add, import_module, export_module): Adjust.
+	(read_module, write_module): New.
+	(declare_module, finish_module): Adjust.
+	* name-lookup.c (is_ancestor): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-5_b.C: Adjust
+	* g++.dg/modules/modules.exp: Remote host, tweak module deletion.
+
 2017-02-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
@@ -6,7 +27,7 @@
 	* g++.dg/modules/mod-sym-3.C: New.
 
 	Module namespaces
-	gcc/cp
+	gcc/cp/
 	* cp-tree.h (NAMESPACE_MODULE_P): New.
 	(push_module_namespace, pop_module_namespace): Declare.
 	* module.c (MOD_SYM_PFX, MOD_SYM_DOT): New.
@@ -24,7 +45,7 @@
 	* g++.dg/modules/mod-sym-2.C: New.
 
 	Cleanup inline namespace creation.
-	gcc/cp
+	gcc/cp/
 	* name-lookup.h (make_namespace_inline): Declare.
 	* name-lookup.c (do_toplevel_using_directive): New.
 	(do_using_directive): Call it.
@@ -34,7 +55,7 @@
 2017-02-07  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79369 inline namespaces
-	gcc/cp
+	gcc/cp/
 	* cp-tree.h (NAMESPACE_CHECK): New.
 	(NAMESPACE_INLINE_P): New.
 	* name-lookup.h (push_namespace): Return int.

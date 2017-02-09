@@ -2795,9 +2795,8 @@ do_local_using_decl (tree decl, tree scope, tree name)
 bool
 is_ancestor (tree root, tree child)
 {
-  /* Strip module namespace from root.  */
-  if (TREE_CODE (root) == NAMESPACE_DECL
-      && NAMESPACE_MODULE_P (root))
+  /* Strip current module's local namespace from root.  */
+  if (TREE_CODE (root) == NAMESPACE_DECL && CURRENT_MODULE_NAMESPACE_P (root))
     root = CP_DECL_CONTEXT (root);
 
   gcc_assert ((TREE_CODE (root) == NAMESPACE_DECL
@@ -2810,19 +2809,18 @@ is_ancestor (tree root, tree child)
   if (root == global_namespace)
     return true;
 
-  while (true)
+  for (; child; child = DECL_CONTEXT (child))
     {
-      /* If we've run out of scopes, stop.  */
-      if (!child)
-	return false;
       /* If we've reached the ROOT, it encloses CHILD.  */
       if (root == child)
 	return true;
       /* Go out one level.  */
       if (TYPE_P (child))
 	child = TYPE_NAME (child);
-      child = DECL_CONTEXT (child);
     }
+
+  /* We failed to find root as an ancestor of chid.  */
+  return false;
 }
 
 /* Enter the class or namespace scope indicated by T suitable for name
