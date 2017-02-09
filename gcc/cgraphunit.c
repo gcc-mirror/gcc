@@ -541,6 +541,8 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 	node->local.local = false;
 	node->definition = true;
 	node->force_output = true;
+	if (TREE_PUBLIC (fndecl))
+	  node->externally_visible = true;
 	if (!lowered && symtab->state == EXPANSION)
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));

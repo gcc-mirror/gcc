@@ -1,5 +1,11 @@
 2017-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/70795
+	* cgraphunit.c (cgraph_node::add_new_function): Set externally_visible
+	flag if needed.
+
+2017-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-unswitch.c (hoist_guard): Update profile.
 
 2017-02-09  Jakub Jelinek  <jakub@redhat.com>
