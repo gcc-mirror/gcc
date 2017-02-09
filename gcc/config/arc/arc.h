@@ -215,15 +215,16 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
    use conditional execution?  */
 #define TARGET_AT_DBR_CONDEXEC  (!TARGET_ARC700 && !TARGET_V2)
 
-extern enum base_architecture arc_base_cpu;
-
-#define TARGET_ARC600 ((arc_base_cpu == BASE_ARCH_6xx)	\
+#define TARGET_ARC600 ((arc_selected_cpu->arch_info->arch_id	\
+			== BASE_ARCH_6xx)			\
 		       && (TARGET_BARREL_SHIFTER))
-#define TARGET_ARC601 ((arc_base_cpu == BASE_ARCH_6xx)	\
+#define TARGET_ARC601 ((arc_selected_cpu->arch_info->arch_id	\
+			== BASE_ARCH_6xx)			\
 		       && (!TARGET_BARREL_SHIFTER))
-#define TARGET_ARC700 (arc_base_cpu == BASE_ARCH_700)
-#define TARGET_EM (arc_base_cpu == BASE_ARCH_em)
-#define TARGET_HS (arc_base_cpu == BASE_ARCH_hs)
+#define TARGET_ARC700 (arc_selected_cpu->arch_info->arch_id	\
+		       == BASE_ARCH_700)
+#define TARGET_EM (arc_selected_cpu->arch_info->arch_id == BASE_ARCH_em)
+#define TARGET_HS (arc_selected_cpu->arch_info->arch_id == BASE_ARCH_hs)
 #define TARGET_V2 (TARGET_EM || TARGET_HS)
 
 #ifdef ARC_MULTILIB_CPU_DEFAULT
