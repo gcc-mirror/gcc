@@ -1015,7 +1015,7 @@ dump_decl_name (cxx_pretty_printer *pp, tree t, int flags)
   if (dguide_name_p (t))
     {
       dump_decl (pp, CLASSTYPE_TI_TEMPLATE (TREE_TYPE (t)),
-		 TFF_PLAIN_IDENTIFIER);
+		 TFF_UNQUALIFIED_NAME);
       return;
     }
 

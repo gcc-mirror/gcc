@@ -1,3 +1,21 @@
+2017-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79316 - default argument in deduction guide
+	PR c++/79350 - explicit deduction guide
+	* parser.c (cp_parser_constructor_declarator_p)
+	(cp_parser_direct_declarator): Parse deduction guides more like
+	constructors.
+	* cp-tree.h (enum special_function_kind): Add sfk_deduction_guide.
+	* tree.c (special_function_p): Return it.
+	* decl.c (check_special_function_return_type): Handle it.
+	(grokdeclarator, grokfndecl): Adjust.
+	(cp_finish_decl): Pass flags to do_auto_deduction.
+	* error.c (dump_decl_name): Use TFF_UNQUALIFIED_NAME.
+	* pt.c (dguide_name_p): Take a const_tree.
+	(do_class_deduction): Handle explicit.
+	(do_auto_deduction): Pass flags through.
+	(build_deduction_guide): Copy explicit flag.
+
 2017-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79429
