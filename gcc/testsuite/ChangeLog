@@ -1,3 +1,8 @@
+2017-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69823
+	* gcc.dg/graphite/pr69823.c: New testcase.
+
 2017-02-08  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/78604
