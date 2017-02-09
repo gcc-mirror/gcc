@@ -1,3 +1,8 @@
+2017-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/loop-unswitch-2.c: Update testcase.
+	* gcc.dg/loop-unswitch-1.c: Update testcase.
+
 2017-02-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79428
