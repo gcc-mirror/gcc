@@ -1,3 +1,9 @@
+2017-02-09  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/79143
+	* g++.dg/cpp1z/pr79143.C: New test.
+
 2017-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/loop-unswitch-2.c: Update testcase.
