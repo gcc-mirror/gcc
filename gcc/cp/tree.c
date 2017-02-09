@@ -4374,6 +4374,8 @@ special_function_p (const_tree decl)
     return sfk_deleting_destructor;
   if (DECL_CONV_FN_P (decl))
     return sfk_conversion;
+  if (deduction_guide_p (decl))
+    return sfk_deduction_guide;
 
   return sfk_none;
 }
