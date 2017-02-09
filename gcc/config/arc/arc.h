@@ -92,8 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 %{mmac-d16:-D__Xxmac_d16} %{mmac-24:-D__Xxmac_24} \
 %{mdsp-packa:-D__Xdsp_packa} %{mcrc:-D__Xcrc} %{mdvbf:-D__Xdvbf} \
 %{mtelephony:-D__Xtelephony} %{mxy:-D__Xxy} %{mmul64: -D__Xmult32} \
-%{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc} \
-%{mcpu=nps400:-D__NPS400__}"
+%{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc}"
 
 #define CC1_SPEC "\
 %{EB:%{EL:%emay not use both -EB and -EL}} \
@@ -223,6 +222,12 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 		       && (!TARGET_BARREL_SHIFTER))
 #define TARGET_ARC700 (arc_selected_cpu->arch_info->arch_id	\
 		       == BASE_ARCH_700)
+/* An NPS400 is a specialisation of ARC700, so it is correct for NPS400
+   TARGET_ARC700 is true, and TARGET_NPS400 is true.  */
+#define TARGET_NPS400 ((arc_selected_cpu->arch_info->arch_id	\
+			== BASE_ARCH_700)			\
+		       && (arc_selected_cpu->processor		\
+			   == PROCESSOR_nps400))
 #define TARGET_EM (arc_selected_cpu->arch_info->arch_id == BASE_ARCH_em)
 #define TARGET_HS (arc_selected_cpu->arch_info->arch_id == BASE_ARCH_hs)
 #define TARGET_V2 (TARGET_EM || TARGET_HS)
