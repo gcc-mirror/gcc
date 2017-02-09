@@ -294,7 +294,7 @@ package body Comperr is
                if Is_FSF_Version then
                   Write_Str
                     ("| Please submit a bug report; see" &
-                     " http://gcc.gnu.org/bugs.html.");
+                     " https://gcc.gnu.org/bugs/ .");
                   End_Line;
 
                elsif Is_GPL_Version then
