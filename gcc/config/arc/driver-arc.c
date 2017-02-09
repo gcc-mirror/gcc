@@ -47,7 +47,7 @@ arc_cpu_to_as (int argc, const char **argv)
 	}
     }
 
-  switch (arc_selected_cpu->arch)
+  switch (arc_selected_cpu->arch_info->arch_id)
     {
     case BASE_ARCH_em:
       if (arc_selected_cpu->flags & FL_CD)
