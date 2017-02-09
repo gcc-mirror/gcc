@@ -329,7 +329,10 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
     "%{resident:nrcrt0.o%s}"                                      \
     "%{!resident:"                                                \
       "%{fbaserel:nbcrt0.o%s}"                                    \
-      "%{!fbaserel:ncrt0.o%s}}}"
+      "%{!fbaserel:"						  \
+	"%{fbaserel32:nlbcrt0.o%s}"				  \
+	"%{!fbaserel32:ncrt0.o%s}}}}"
+
 #define STARTFILE_CLIB2_SPEC                                      \
   "%(sdk_root)clib2/lib/"                                         \
   "%{resident32:nr32crt0.o%s}"                                    \
@@ -430,6 +433,7 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{fbaserel32:%{!resident32:-m amiga_bss -fl libb32}} "         \
   "%{resident32:-m amiga_bss -amiga-datadata-reloc -fl libb32} "  \
   "%{g:-amiga-debug-hunk} "                                       \
+  "%{mcpu=68020:-fl libm020} "					  \
   "%{m68020:-fl libm020} "                                        \
   "%{mc68020:-fl libm020} "                                       \
   "%{m68030:-fl libm020} "                                        \
