@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
+  TDI_lang,			/* Lang-specific.  */
   TDI_cgraph,                   /* dump function call graph.  */
   TDI_inheritance,              /* dump type inheritance graph.  */
   TDI_clones,			/* dump IPA cloning decisions.  */
@@ -89,7 +90,7 @@ enum tree_dump_index
 #define MSG_NOTE                 (1 << 29)  /* general optimization info */
 #define MSG_ALL         (MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
                          | MSG_NOTE)
-
+#define TDF_LANG	(1 << 30)	/* Lang-specific dumper.  */
 
 /* Flags to control high-level -fopt-info dumps.  Usually these flags
    define a group of passes.  An optimization pass can be part of

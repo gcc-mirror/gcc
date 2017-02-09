@@ -6138,7 +6138,7 @@ extern void push_module_namespace ();
 extern void pop_module_namespace ();
 extern void declare_module (location_t, tree, tree);
 extern void finish_module ();
-extern void import_module (location_t, tree, tree, bool = false);
+extern void import_module (location_t, tree, tree);
 extern void export_module (location_t, tree, tree);
 
 /* In optimize.c */

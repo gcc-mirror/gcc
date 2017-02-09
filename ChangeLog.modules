@@ -1,5 +1,25 @@
 2017-02-09  Nathan Sidwell  <nathan@acm.org>
 
+	Dump file
+	gcc/
+	* dumpfile.h (tree_dump_index): Add TDI_lang.
+	(TDF_LANG): New.
+	* dumpfile.c (dump_files): Add front-end.
+	(dump_option_value_info): Add lang.  Adjust all.
+	gcc/cp/
+	* cp-tree.h (import_module): Lose is_export parm.
+	* module.c: Include dumpfile.h
+	(dopen, dclose): New.
+	(import_add): Absorb into ...
+	(do_import_module): ... here.  Broken out of ...
+	(import_module): ... here.  Call it.
+	(export_module, declare_module): Adjust.
+	(read_module, write_module): Write dump.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/mod-decl-2_b.C: Adjust.
+	* g++.dg/modules/mod-decl-5_b.C: Adjust.
+
 	gcc/cp/
 	* cp-tree.h (DECL_CHECK): New.
 	(NAMESPACE_MODULE_P): Rename to ...

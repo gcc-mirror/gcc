@@ -1,7 +1,7 @@
 
 module bob;
 
-import bob; // idempotent import
+import bob; // { dg-error "already declared" }
 
 // module linkage
 void Baz ()

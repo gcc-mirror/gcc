@@ -22,4 +22,4 @@ void Bink ()
 
 module a.; // { dg-error "expected" }
 
-import frist; // { dg-error "declared as interface" }
+import frist; // { dg-error "already declared" }

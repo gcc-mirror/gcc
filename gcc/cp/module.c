@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "stringpool.h"
+#include "dumpfile.h"
 
 /* Mangling for module files.  */
 #define MOD_FNAME_PFX "g++-"
@@ -51,11 +52,25 @@ static int export_depth; /* -1 for singleton export.  */
 static GTY(()) hash_map<tree, unsigned> *imported_modules;
 enum import_kind
 {
-  ik_new,     /* Newly inserted.  */
   ik_import,  /* Regular import.  */
   ik_export,  /* Exported import.  */
-  ik_module   /* The module.  */
+  ik_impl,    /* The implementation */
+  ik_inter    /* The interface.  */
 };
+
+/* Lazily open the dumping stream, if enabled. */
+static inline FILE *
+dopen ()
+{
+  return dump_begin (TDI_lang, NULL);
+}
+
+static inline void
+dclose (FILE *stream)
+{
+  if (stream)
+    dump_end (TDI_lang, stream);
+}
 
 /* If we're in the purview of a module, push its local namespace.  */
 
@@ -132,24 +147,6 @@ module_interface_p ()
   return is_interface;
 }
 
-/* Add NAME to the import table.  Set it's flag to MAX (KIND,
-   curval).  Return its old value.  */
-
-static int
-import_add (tree name, import_kind kind)
-{
-  if (!imported_modules)
-    imported_modules = new hash_map<tree, unsigned>;
-
-  bool existed;
-  unsigned *val = &imported_modules->get_or_insert (name, &existed);
-  int ret = existed ? import_kind (*val) : ik_new;
-
-  if (ret < kind)
-    *val = kind;
-  return ret;
-}
-
 /* Convert a module name into a file name.  The name is malloced.
 
    (for the moment) this replaces '.' with '-' adds a prefix and
@@ -180,24 +177,48 @@ module_to_filename (tree id)
 
 
 static void
-read_module (FILE *stream)
+read_module (FILE *stream, tree name)
 {
+  FILE *d =  dopen ();
+  
+  if (d)
+    fprintf (d, "importing '%s'\n", IDENTIFIER_POINTER (name));
+  
   // FIXME: some code needed here
+  dclose (d);
 }
 
-/* Import the module NAME into the current TU.  Return true on
-   success.  */
+/* Import the module NAME into the current TU. */
 
-void
-import_module (location_t loc, tree name, tree attrs, bool reexport)
+static void
+do_import_module (location_t loc, tree name, tree attrs, import_kind kind)
 {
-  if (int old = import_add (name, reexport ? ik_export : ik_import))
+  if (!imported_modules)
+    imported_modules = new hash_map<tree, unsigned>;
+
+  bool existed;
+  unsigned *val = &imported_modules->get_or_insert (name, &existed);
+
+  if (!existed)
+    *val = kind;
+  else
     {
-      /* Already imported or interface declared.  */
-      if (old == ik_module)
-	error_at (loc, "module %qE already declared as interface", name);
-      return;
+      if (*val >= ik_impl)
+	{
+	  error_at (loc, "already declared as module %qE", name);
+	  return;
+	}
+      else if (kind >= ik_impl)
+	{
+	  error_at (loc, "module %qE already imported", name);
+	  return;
+	}
+
+      if (*val < kind)
+	*val = kind;
     }
+  if (kind == ik_inter)
+    return;
 
   // FIXME:Path search along the -I path
   // FIXME: Think about make dependency generation
@@ -208,10 +229,17 @@ import_module (location_t loc, tree name, tree attrs, bool reexport)
     error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
   else
     {
-      read_module (stream);
+      read_module (stream, name);
       fclose (stream);
     }
   free (fname);
+  return;
+}
+
+void
+import_module (location_t loc, tree name, tree attrs)
+{
+  do_import_module (loc, name, attrs, ik_import);
 }
 
 /* Import the module NAME into the current TU and re-export it.  */
@@ -219,7 +247,7 @@ import_module (location_t loc, tree name, tree attrs, bool reexport)
 void
 export_module (location_t loc, tree name, tree attrs)
 {
-  import_module (loc, name, attrs, true);
+  do_import_module (loc, name, attrs, ik_export);
 }
 
 /* Declare the name of the current module to be NAME. ATTRS is used to
@@ -244,16 +272,13 @@ declare_module (location_t loc, tree name, tree attrs)
       // FIXME: Command line switches or file suffix check?
     }
 
-  if (!inter)
-    import_module (loc, name, attrs);
-  else if (import_add (name, ik_module) > ik_new)
-    error_at (loc, "module %qE already imported", name);
-
   module_name = name;
   module_loc = loc;
   char *sym = module_to_ext (name, MOD_SYM_PFX, NULL, MOD_SYM_DOT);
   module_namespace_name = get_identifier (sym);
   free (sym);
+
+  do_import_module (loc, name, attrs, inter ? ik_inter : ik_impl);
 
   push_module_namespace ();
   is_interface = inter;
@@ -262,9 +287,16 @@ declare_module (location_t loc, tree name, tree attrs)
 static void
 write_module (FILE *stream)
 {
+  FILE *d = dopen ();
+
+  if (d)
+    fprintf (d, "writing module '%s'\n", IDENTIFIER_POINTER (module_name));
+  
   // FIXME:Write header
   // FIXME:Write 'important' flags etc
   // FIXME:Write import table
+
+  dclose (d);
 }
 
 /* Finalize the module at end of parsing.  */
@@ -298,6 +330,7 @@ finish_module ()
 	unlink (fname);
       free (fname);
     }
+
   delete imported_modules;
   imported_modules = NULL;
 }

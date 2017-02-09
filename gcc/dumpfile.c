@@ -51,6 +51,8 @@ int dump_flags;
 static struct dump_file_info dump_files[TDI_end] =
 {
   {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, false, false},
+  {".fe", "front-end", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
+   OPTGROUP_OTHER, 0, 0, 0, -1, false, false},
   {".cgraph", "ipa-cgraph", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
    0, 0, 0, 0, 0, false, false},
   {".type-inheritance", "ipa-type-inheritance", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
@@ -115,10 +117,11 @@ static const struct dump_option_value_info dump_options[] =
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"optall", MSG_ALL},
+  {"lang", TDF_LANG},
   {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_TREE | TDF_RTL | TDF_IPA
 	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE
 	    | TDF_RHS_ONLY | TDF_NOUID | TDF_ENUMERATE_LOCALS | TDF_SCEV
-	    | TDF_GIMPLE)},
+	    | TDF_GIMPLE | TDF_LANG)},
   {NULL, 0}
 };
 
