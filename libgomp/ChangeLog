@@ -1,3 +1,11 @@
+2017-02-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: Skip on
+	hppa*-*-*.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-dbl.c: Don't
+	include complex.h on hppa*-*-hpux*.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt.c: Likewise.
+
 2017-02-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (nvptx_exec): Make it static.

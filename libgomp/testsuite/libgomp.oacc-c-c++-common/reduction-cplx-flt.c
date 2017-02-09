@@ -1,5 +1,7 @@
 
+#if !defined(__hppa__) || !defined(__hpux__)
 #include <complex.h>
+#endif
 
 /* Single float has 23 bits of fraction. */
 #define FRAC (1.0f / (1 << 20))
