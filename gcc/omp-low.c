@@ -1330,6 +1330,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__SIMT_:
 	  break;
 
@@ -1340,7 +1341,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	    install_var_local (decl, ctx);
 	  break;
 
-	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__CACHE_:
 	default:
 	  gcc_unreachable ();
@@ -1501,11 +1501,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__GRIDDIM_:
 	case OMP_CLAUSE__SIMT_:
 	  break;
 
-	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__CACHE_:
 	default:
 	  gcc_unreachable ();
@@ -5610,6 +5610,10 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
 	  tag |= OLF_INDEPENDENT;
 	  break;
 
+	case OMP_CLAUSE_TILE:
+	  tag |= OLF_TILE;
+	  break;
+
 	default:
 	  continue;
 	}
@@ -5627,14 +5631,20 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
   if (!tgt || is_oacc_parallel (tgt))
     tag |= OLF_INDEPENDENT;
 
-  /* A loop lacking SEQ, GANG, WORKER and/or VECTOR is implicitly AUTO.  */
-  if (!(tag & (((GOMP_DIM_MASK (GOMP_DIM_MAX) - 1) << OLF_DIM_BASE)
-	       | OLF_SEQ)))
-      tag |= OLF_AUTO;
+  if (tag & OLF_TILE)
+    /* Tiling could use all 3 levels.  */ 
+    levels = 3;
+  else
+    {
+      /* A loop lacking SEQ, GANG, WORKER and/or VECTOR could be AUTO.
+	 Ensure at least one level, or 2 for possible auto
+	 partitioning */
+      bool maybe_auto = !(tag & (((GOMP_DIM_MASK (GOMP_DIM_MAX) - 1)
+				  << OLF_DIM_BASE) | OLF_SEQ));
 
-  /* Ensure at least one level.  */
-  if (!levels)
-    levels++;
+      if (levels < 1u + maybe_auto)
+	levels = 1u + maybe_auto;
+    }
 
   args.quick_push (build_int_cst (integer_type_node, levels));
   args.quick_push (build_int_cst (integer_type_node, tag));

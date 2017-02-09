@@ -187,7 +187,7 @@ DEF_INTERNAL_FN (PHI, 0, NULL)
    dimension.  DIM_POS is pure (and not const) so that it isn't
    thought to clobber memory and can be gcse'd within a single
    parallel region, but not across FORK/JOIN boundaries.  They take a
-   single INTEGER_CST argument.  */
+   single INTEGER_CST argument.  This might be overly conservative.  */
 DEF_INTERNAL_FN (GOACC_DIM_SIZE, ECF_CONST | ECF_NOTHROW | ECF_LEAF, ".")
 DEF_INTERNAL_FN (GOACC_DIM_POS, ECF_PURE | ECF_NOTHROW | ECF_LEAF, ".")
 
@@ -196,6 +196,10 @@ DEF_INTERNAL_FN (GOACC_LOOP, ECF_PURE | ECF_NOTHROW, NULL)
 
 /* OpenACC reduction abstraction.  See internal-fn.h  for usage.  */
 DEF_INTERNAL_FN (GOACC_REDUCTION, ECF_NOTHROW | ECF_LEAF, NULL)
+
+/* Openacc tile abstraction. Describes the spans of the element loop.
+   GOACC_TILE (num-loops, loop-no, tile-arg, tile-mask, element-mask).  */
+DEF_INTERNAL_FN (GOACC_TILE, ECF_NOTHROW | ECF_LEAF, NULL)
 
 /* Set errno to EDOM, if GCC knows how to do that directly for the
    current target.  */

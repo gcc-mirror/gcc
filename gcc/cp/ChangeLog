@@ -1,3 +1,16 @@
+2016-02-09  Nathan Sidwell  <nathan@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_clause_tile): Disallow collapse.  Fix
+	parsing.  Parse constant expression. Remove semantic checking.
+	(cp_parser_omp_clause_collapse): Disallow tile.
+	(cp_parser_omp_for_loop): Deal with tile clause.  Don't emit a parse
+	error about missing for after already emitting one.  Use more
+	conventional for idiom for unbounded loop.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_TILE.
+	* semantics.c (finish_omp_clauses): Correct TILE semantic check.
+	(finish_omp_for): Deal with tile clause.
+
 2017-02-07  Nathan Sidwell  <nathan@acm.org>
 
 	* method.c (synthesized_method_base_walk): New.  Broken out of ...

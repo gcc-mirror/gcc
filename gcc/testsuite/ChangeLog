@@ -1,3 +1,21 @@
+2017-02-09  Nathan Sidwell  <nathan@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/combined-directives.c: Remove xfail.
+	* c-c++-common/goacc/loop-auto-1.c: Adjust and add additional case.
+	* c-c++-common/goacc/loop-auto-2.c: New.
+	* c-c++-common/goacc/tile.c: Include stdbool, fix expected errors.
+	* c-c++-common/goacc/tile-2.c: New.
+	* g++.dg/goacc/template.C: Test tile subst.  Adjust erroneous uses.
+	* g++.dg/goacc/tile-1.C: New, check tile subst.
+	* gcc.dg/goacc/loop-processing-1.c: Adjust dg-final pattern.
+	* gfortran.dg/goacc/combined-directives.f90: Remove xfail.
+	* gfortran.dg/goacc/tile-1.f90: New test.
+	* gfortran.dg/goacc/tile-2.f90: New test.
+	* gfortran.dg/goacc/tile-lowering.f95: New test.
+
 2017-02-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69823

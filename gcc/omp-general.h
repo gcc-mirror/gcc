@@ -31,9 +31,10 @@ enum oacc_loop_flags {
   OLF_AUTO	= 1u << 1,	/* Compiler chooses axes.  */
   OLF_INDEPENDENT = 1u << 2,	/* Iterations are known independent.  */
   OLF_GANG_STATIC = 1u << 3,	/* Gang partitioning is static (has op). */
-
+  OLF_TILE	= 1u << 4,	/* Tiled loop. */
+  
   /* Explicitly specified loop axes.  */
-  OLF_DIM_BASE = 4,
+  OLF_DIM_BASE = 5,
   OLF_DIM_GANG   = 1u << (OLF_DIM_BASE + GOMP_DIM_GANG),
   OLF_DIM_WORKER = 1u << (OLF_DIM_BASE + GOMP_DIM_WORKER),
   OLF_DIM_VECTOR = 1u << (OLF_DIM_BASE + GOMP_DIM_VECTOR),
@@ -58,7 +59,8 @@ struct omp_for_data
   tree chunk_size;
   gomp_for *for_stmt;
   tree pre, iter_type;
-  int collapse;
+  tree tiling;  /* Tiling values (if non null).  */
+  int collapse;  /* Collapsed loops, 1 for a non-collapsed loop.  */
   int ordered;
   bool have_nowait, have_ordered, simd_schedule;
   unsigned char sched_modifiers;
