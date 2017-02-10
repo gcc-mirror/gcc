@@ -524,9 +524,8 @@ c_parser_gimple_binary_expression (c_parser *parser)
   location_t ret_loc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   rhs = c_parser_gimple_postfix_expression (parser);
-  if (c_parser_error (parser))
-    return ret;
-  ret.value = build2_loc (ret_loc, code, ret_type, lhs.value, rhs.value);
+  if (lhs.value != error_mark_node && rhs.value != error_mark_node)
+    ret.value = build2_loc (ret_loc, code, ret_type, lhs.value, rhs.value);
   return ret;
 }
 
@@ -560,6 +559,8 @@ c_parser_gimple_unary_expression (c_parser *parser)
       {
 	c_parser_consume_token (parser);
 	op = c_parser_gimple_postfix_expression (parser);
+	if (op.value == error_mark_node)
+	  return ret;
 	finish = op.get_finish ();
 	location_t combined_loc = make_location (op_loc, op_loc, finish);
 	ret.value = build_simple_mem_ref_loc (combined_loc, op.value);
@@ -643,7 +644,7 @@ c_parser_parse_ssa_name (c_parser *parser,
 	{
 	  if (! type)
 	    {
-	      c_parser_error (parser, "SSA name not declared"); 
+	      c_parser_error (parser, "SSA name undeclared"); 
 	      return error_mark_node;
 	    }
 	  name = make_ssa_name_fn (cfun, type, NULL, version);
@@ -663,9 +664,9 @@ c_parser_parse_ssa_name (c_parser *parser,
 	  id = get_identifier (var_name);
 	  tree parent = lookup_name (id);
 	  XDELETEVEC (var_name);
-	  if (! parent)
+	  if (! parent || parent == error_mark_node)
 	    {
-	      c_parser_error (parser, "base variable or SSA name not declared"); 
+	      c_parser_error (parser, "base variable or SSA name undeclared"); 
 	      return error_mark_node;
 	    }
 	  if (VECTOR_TYPE_P (TREE_TYPE (parent))
@@ -1300,8 +1301,9 @@ c_parser_gimple_if_stmt (c_parser *parser, gimple_seq *seq)
       return;
     }
 
-  gimple_seq_add_stmt (seq, gimple_build_cond_from_tree (cond, t_label,
-							 f_label));
+  if (cond != error_mark_node)
+    gimple_seq_add_stmt (seq, gimple_build_cond_from_tree (cond, t_label,
+							   f_label));
 }
 
 /* Parse gimple switch-statement.
@@ -1441,10 +1443,13 @@ c_parser_gimple_switch_stmt (c_parser *parser, gimple_seq *seq)
     }
   if (! c_parser_require (parser, CPP_CLOSE_BRACE, "expected %<}%>"))
     return;
-  gimple_seq_add_stmt (seq, gimple_build_switch (cond_expr.value,
-						 default_label, labels));
-  gimple_seq_add_seq (seq, switch_body);
-  labels.release();
+
+  if (cond_expr.value != error_mark_node)
+    {
+      gimple_seq_add_stmt (seq, gimple_build_switch (cond_expr.value,
+						     default_label, labels));
+      gimple_seq_add_seq (seq, switch_body);
+    }
 }
 
 /* Parse gimple return statement.  */
@@ -1465,9 +1470,12 @@ c_parser_gimple_return_stmt (c_parser *parser, gimple_seq *seq)
     {
       location_t xloc = c_parser_peek_token (parser)->location;
       c_expr expr = c_parser_gimple_unary_expression (parser);
-      c_finish_gimple_return (xloc, expr.value);
-      ret = gimple_build_return (expr.value);
-      gimple_seq_add_stmt (seq, ret);
+      if (expr.value != error_mark_node)
+	{
+	  c_finish_gimple_return (xloc, expr.value);
+	  ret = gimple_build_return (expr.value);
+	  gimple_seq_add_stmt (seq, ret);
+	}
     }
 }
 
