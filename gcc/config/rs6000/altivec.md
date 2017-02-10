@@ -3710,10 +3710,10 @@
 (define_code_iterator BCD_TEST [eq lt gt unordered])
 
 (define_insn "bcd<bcd_add_sub>"
-  [(set (match_operand:V1TI 0 "register_operand" "")
-	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "")
-		      (match_operand:V1TI 2 "register_operand" "")
-		      (match_operand:QI 3 "const_0_to_1_operand" "")]
+  [(set (match_operand:V1TI 0 "gpc_reg_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "gpc_reg_operand" "v")
+		      (match_operand:V1TI 2 "gpc_reg_operand" "v")
+		      (match_operand:QI 3 "const_0_to_1_operand" "n")]
 		     UNSPEC_BCD_ADD_SUB))
    (clobber (reg:CCFP CR6_REGNO))]
   "TARGET_P8_VECTOR"
