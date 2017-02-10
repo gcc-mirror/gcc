@@ -1,5 +1,11 @@
 2017-02-10  Nathan Sidwell  <nathan@acm.org>
 
+	Start actually writing & reading module files. (headers only)
+	gcc/cp/
+	* module.c (seriator, reader, writer, streamer, in, out): New
+	classes.
+	(read_module, do_import_module, write_module, finish_module): Adjust.
+
 	gcc/
 	* gengtype-lex.l (<in_struct>): Add '/'.
 
