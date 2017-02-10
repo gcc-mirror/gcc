@@ -1,3 +1,16 @@
+2017-02-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c
+	(vget_lane_expected, vset_lane_expected, vtst_expected_poly64x1):
+	New.
+	(vmov_n_expected0, vmov_n_expected1, vmov_n_expected2)
+	(expected_vld_st2_0, expected_vld_st2_1, expected_vld_st3_0)
+	(expected_vld_st3_1, expected_vld_st3_2, expected_vld_st4_0)
+	(expected_vld_st4_1, expected_vld_st4_2, expected_vld_st4_3)
+	(vtst_expected_poly64x2): Move to aarch64-only section.
+	(vget_lane_p64, vgetq_lane_p64, vset_lane_p64, vsetq_lane_p64)
+	(vtst_p64, vtstq_p64): New tests.
+
 2017-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71737

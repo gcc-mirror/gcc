@@ -1,3 +1,15 @@
+2017-02-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/arm_neon.h (vtst_p8): Rewrite without asm.
+	(vtst_p16): Likewise.
+	(vtstq_p8): Likewise.
+	(vtstq_p16): Likewise.
+	(vtst_p64): New.
+	(vtstq_p64): Likewise.
+	* config/arm/arm_neon.h (vgetq_lane_p64): New.
+	(vset_lane_p64): New.
+	(vsetq_lane_p64): New.
+
 2017-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79411
