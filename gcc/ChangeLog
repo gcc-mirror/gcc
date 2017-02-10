@@ -1,3 +1,10 @@
+2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Use https for blackfin.uclinux.org.
+	(Specific): Update mingw-w64 reference.
+	(Binaries): Ditto.
+	(Specific): Remove broken link to Renesas RX processor.
+
 2017-02-10  Richard Biener  <rguenther@suse.de>
 
 	* toplev.c (process_options): Do not mention obsolete graphite

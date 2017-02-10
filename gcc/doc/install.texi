@@ -3078,7 +3078,7 @@ Microsoft Windows:
 The @uref{http://sourceware.org/cygwin/,,Cygwin} project;
 @item
 The @uref{http://www.mingw.org/,,MinGW} and
-@uref{http://mingw-w64.org/,,mingw-w64} projects.
+@uref{http://mingw-w64.org/doku.php,,mingw-w64} projects.
 @end itemize
 
 @item
@@ -3420,7 +3420,7 @@ See ``Blackfin Options'' in the main manual
 @end ifhtml
 
 More information, and a version of binutils with support for this processor,
-is available at @uref{http://blackfin.uclinux.org}
+is available at @uref{https://blackfin.uclinux.org}
 
 @html
 <hr />
@@ -4329,9 +4329,7 @@ The RISC-V RV64 instruction set running GNU/Linux.
 @end html
 @anchor{rx-x-elf}
 @heading rx-*-elf
-The Renesas RX processor.  See
-@uref{http://eu.renesas.com/fmwk.jsp?cnt=rx600_series_landing.jsp&fp=/products/mpumcu/rx_family/rx600_series}
-for more information about this processor.
+The Renesas RX processor.
 
 @html
 <hr />
@@ -4701,7 +4699,7 @@ the Win32 subsystem that provides a subset of POSIX.
 
 @subheading Intel 64-bit versions
 GCC contains support for x86-64 using the mingw-w64
-runtime library, available from @uref{http://mingw-w64.sourceforge.net/}.
+runtime library, available from @uref{http://mingw-w64.org/doku.php}.
 This library should be used with the target triple x86_64-pc-mingw32.
 
 Presently Windows for Itanium is not supported.
