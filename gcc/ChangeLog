@@ -1,3 +1,9 @@
+2017-02-10  Richard Biener  <rguenther@suse.de>
+
+	* toplev.c (process_options): Do not mention obsolete graphite
+	options when printing sorry message about missing graphite support.
+	Mention -floop-nest-optimize.
+
 2017-02-10  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/arm_neon.h (vtst_p8): Rewrite without asm.
