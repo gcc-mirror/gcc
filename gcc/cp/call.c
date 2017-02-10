@@ -6420,7 +6420,8 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
 	 accessible when used to construct an object of the corresponding base
 	 class.  */
       decl = strip_inheriting_ctors (decl);
-      basetype_path = TYPE_BINFO (DECL_CONTEXT (decl));
+      basetype_path = lookup_base (basetype_path, DECL_CONTEXT (decl),
+				   ba_any, NULL, complain);
     }
 
   if (!accessible_p (basetype_path, decl, true))
