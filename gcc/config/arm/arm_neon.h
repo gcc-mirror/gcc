@@ -6309,6 +6309,16 @@ vgetq_lane_s64 (int64x2_t __a, const int __b)
   return (int64_t)__builtin_neon_vget_lanev2di (__a, __b);
 }
 
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
+__extension__ extern __inline poly64_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vgetq_lane_p64 (poly64x2_t __a, const int __b)
+{
+  return (poly64_t)__builtin_neon_vget_lanev2di ((int64x2_t) __a, __b);
+}
+
+#pragma GCC pop_options
 __extension__ extern __inline uint64_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vgetq_lane_u64 (uint64x2_t __a, const int __b)
@@ -6405,6 +6415,16 @@ vset_lane_u64 (uint64_t __a, uint64x1_t __b, const int __c)
   return (uint64x1_t)__builtin_neon_vset_lanedi ((__builtin_neon_di) __a, (int64x1_t) __b, __c);
 }
 
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
+__extension__ extern __inline poly64x1_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vset_lane_p64 (poly64_t __a, poly64x1_t __b, const int __c)
+{
+  return (poly64x1_t)__builtin_neon_vset_lanedi ((__builtin_neon_di) __a, (int64x1_t) __b, __c);
+}
+
+#pragma GCC pop_options
 __extension__ extern __inline int8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsetq_lane_s8 (int8_t __a, int8x16_t __b, const int __c)
@@ -6496,6 +6516,13 @@ vsetq_lane_u64 (uint64_t __a, uint64x2_t __b, const int __c)
 
 #pragma GCC push_options
 #pragma GCC target ("fpu=crypto-neon-fp-armv8")
+__extension__ extern __inline poly64x2_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vsetq_lane_p64 (poly64_t __a, poly64x2_t __b, const int __c)
+{
+  return (poly64x2_t)__builtin_neon_vset_lanev2di ((__builtin_neon_di) __a, (int64x2_t) __b, __c);
+}
+
 __extension__ extern __inline poly64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_p64 (uint64_t __a)

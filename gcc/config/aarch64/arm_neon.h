@@ -10862,48 +10862,47 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_p8 (poly8x8_t a, poly8x8_t b)
 {
-  uint8x8_t result;
-  __asm__ ("cmtst %0.8b, %1.8b, %2.8b"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
+  return (uint8x8_t) ((((uint8x8_t) a) & ((uint8x8_t) b))
+		       != 0);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_p16 (poly16x4_t a, poly16x4_t b)
 {
-  uint16x4_t result;
-  __asm__ ("cmtst %0.4h, %1.4h, %2.4h"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
+  return (uint16x4_t) ((((uint16x4_t) a) & ((uint16x4_t) b))
+		       != 0);
+}
+
+__extension__ extern __inline uint64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vtst_p64 (poly64x1_t a, poly64x1_t b)
+{
+  return (uint64x1_t) ((a & b) != __AARCH64_INT64_C (0));
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_p8 (poly8x16_t a, poly8x16_t b)
 {
-  uint8x16_t result;
-  __asm__ ("cmtst %0.16b, %1.16b, %2.16b"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
+  return (uint8x16_t) ((((uint8x16_t) a) & ((uint8x16_t) b))
+		       != 0);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_p16 (poly16x8_t a, poly16x8_t b)
 {
-  uint16x8_t result;
-  __asm__ ("cmtst %0.8h, %1.8h, %2.8h"
-           : "=w"(result)
-           : "w"(a), "w"(b)
-           : /* No clobbers */);
-  return result;
+  return (uint16x8_t) ((((uint16x8_t) a) & ((uint16x8_t) b))
+		       != 0);
+}
+
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vtstq_p64 (poly64x2_t a, poly64x2_t b)
+{
+  return (uint64x2_t) ((((uint64x2_t) a) & ((uint64x2_t) b))
+		       != __AARCH64_INT64_C (0));
 }
 
 /* End of temporary inline asm implementations.  */
