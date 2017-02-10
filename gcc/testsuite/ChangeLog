@@ -3,6 +3,9 @@
 	PR c++/79435
 	* g++.dg/cpp1y/pr79435.C: New.
 
+	PR c++/79184
+	* g++.dg/warn/Wint-in-bool-context-1.C: New.
+
 2017-02-10  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c

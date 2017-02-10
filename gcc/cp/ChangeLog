@@ -4,6 +4,10 @@
 	* pt.c (type_dependent_expression_p): Check if the expression type
 	is null.
 
+	PR c++/79184
+	* cvt.c (ocp_convert): Add a sentinel against -Wint-in-bool-context
+	if warnings shouldn't be given.
+
 2017-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71737
