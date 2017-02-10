@@ -1,5 +1,9 @@
 2017-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/71285 - member of fold-expression
+	* semantics.c (finish_unary_fold_expr)
+	(finish_binary_fold_expr): Use null type for fold-expressions.
+
 	PR c++/79401 - protected inherited constructor
 	* call.c (enforce_access): For inheriting constructor, find a base
 	binfo in the path we already have.
