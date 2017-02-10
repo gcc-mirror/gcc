@@ -23818,6 +23818,7 @@ type_dependent_expression_p (tree expression)
      we couldn't determine its length in cp_complete_array_type because
      it is dependent.  */
   if (VAR_P (expression)
+      && TREE_TYPE (expression) != NULL_TREE
       && TREE_CODE (TREE_TYPE (expression)) == ARRAY_TYPE
       && !TYPE_DOMAIN (TREE_TYPE (expression))
       && DECL_INITIAL (expression))
