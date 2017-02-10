@@ -1,3 +1,8 @@
+2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/makefile.texi (profiledbootstrap): Refer to the
+	installation instructions only in textual form.
+
 2017-02-10  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/79295
