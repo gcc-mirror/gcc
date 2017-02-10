@@ -1,3 +1,9 @@
+2017-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79401 - protected inherited constructor
+	* call.c (enforce_access): For inheriting constructor, find a base
+	binfo in the path we already have.
+
 2017-02-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79435
