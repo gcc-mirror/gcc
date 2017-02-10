@@ -1,5 +1,9 @@
 2017-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78897 - constexpr union
+	* constexpr.c (cxx_eval_store_expression): A store to a union member
+	erases a previous store to another member.
+
 	PR c++/71285 - member of fold-expression
 	* semantics.c (finish_unary_fold_expr)
 	(finish_binary_fold_expr): Use null type for fold-expressions.
