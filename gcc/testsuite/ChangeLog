@@ -1,5 +1,10 @@
 2017-02-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/fold-vec-mult-longlong.c: Don't do the
+	scan-assembler unless lp64.
+
+2017-02-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR tree-optimization/66612
 	* gcc.target/powerpc/20050830-1.c: Don't xfail on 32-bit.
 
