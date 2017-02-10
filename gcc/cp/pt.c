@@ -12877,11 +12877,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 					args, complain, in_decl);
 
 	/* Preserve a typedef that names a type.  */
-	if (is_typedef_decl (r))
+	if (is_typedef_decl (r) && type != error_mark_node)
 	  {
 	    DECL_ORIGINAL_TYPE (r) = NULL_TREE;
 	    set_underlying_type (r);
-	    if (TYPE_DECL_ALIAS_P (r) && type != error_mark_node)
+	    if (TYPE_DECL_ALIAS_P (r))
 	      /* An alias template specialization can be dependent
 		 even if its underlying type is not.  */
 	      TYPE_DEPENDENT_P_VALID (TREE_TYPE (r)) = false;

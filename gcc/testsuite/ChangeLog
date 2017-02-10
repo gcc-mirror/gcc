@@ -1,5 +1,10 @@
+2017-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71737
+	* g++.dg/cpp0x/pr71737.C: New.
+
 2017-02-10  Prasad Ghangal  <prasad.ghangal@gmail.com>
-	Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/gimplefe-error-1.c: New testcase.
 	* gcc.dg/gimplefe-error-2.c: New testcase.
