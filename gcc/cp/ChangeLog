@@ -1,3 +1,9 @@
+2017-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71737
+	* pt.c (tsubst_decl): Don't try to preserve a typedef that names
+	an error_mark_node as type.
+
 2017-02-09  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
