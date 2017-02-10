@@ -1,5 +1,8 @@
 2017-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78908 - template ops and bitfields
+	* tree.c (build_min_non_dep): Use unlowered_expr_type.
+
 	PR c++/78897 - constexpr union
 	* constexpr.c (cxx_eval_store_expression): A store to a union member
 	erases a previous store to another member.
