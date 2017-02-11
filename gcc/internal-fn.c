@@ -1909,7 +1909,7 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
     {
       optab op;
       lhsr = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-      if (GET_MODE (lhsr) == BLKmode
+      if (!VECTOR_MODE_P (GET_MODE (lhsr))
 	  || (op = optab_for_tree_code (code, TREE_TYPE (arg0),
 					optab_default)) == unknown_optab
 	  || (optab_handler (op, TYPE_MODE (TREE_TYPE (arg0)))
