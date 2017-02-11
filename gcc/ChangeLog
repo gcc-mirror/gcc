@@ -1,5 +1,10 @@
 2017-02-11  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR tree-ssa/56727
+	* gcc.dg/tree-ssa/pr56727.c: New testcase.
+
+2017-02-11  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/79224
 	* ipa-inline-analysis.c (get_minimal_bb): New function.
 	(record_modified): Use it.
