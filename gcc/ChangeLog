@@ -1,3 +1,8 @@
+2017-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (fopenmp): Bump OpenMP version from 4.0 to
+	4.5.
+
 2017-02-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-ssa/56727
