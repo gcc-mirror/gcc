@@ -2275,6 +2275,24 @@ fix = {
 };
 
 /*
+ *  The HP-UX stddef.h is replaced by gcc's. It doesn't include sys/stdsyms.h.
+ *  As a result, we need to include sys/stdsyms.h in alloca.h.
+ */
+fix = {
+    hackname  = hppa_hpux11_alloca;
+    mach      = "hppa*-*-hpux11*";
+    files     = alloca.h;
+    select    = "#ifndef _STDDEF_INCLUDED";
+    c_fix     = format;
+    c_fix_arg = "#ifndef _SYS_STDSYMS_INCLUDED\n"
+		"#  include <sys/stdsyms.h>\n"
+		"#endif /* _SYS_STDSYMS_INCLUDED */\n\n"
+		"%0";
+
+    test_text = "#ifndef _STDDEF_INCLUDED";
+};
+
+/*
  *  Make sure hpux defines abs in header.
  */
 fix = {
