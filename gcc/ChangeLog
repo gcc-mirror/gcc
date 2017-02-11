@@ -1,3 +1,10 @@
+2017-02-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/79224
+	* ipa-inline-analysis.c (get_minimal_bb): New function.
+	(record_modified): Use it.
+	(remap_edge_change_prob): Handle also ancestor functions.
+
 2017-02-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Remove broken link into
