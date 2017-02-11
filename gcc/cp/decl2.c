@@ -5084,12 +5084,9 @@ mark_used (tree decl, tsubst_flags_t complain)
       || DECL_LANG_SPECIFIC (decl) == NULL
       || DECL_THUNK_P (decl))
     {
-      if (!processing_template_decl && type_uses_auto (TREE_TYPE (decl)))
-	{
-	  if (complain & tf_error)
-	    error ("use of %qD before deduction of %<auto%>", decl);
-	  return false;
-	}
+      if (!processing_template_decl
+	  && !require_deduced_type (decl, complain))
+	return false;
       return true;
     }
 
@@ -5117,12 +5114,8 @@ mark_used (tree decl, tsubst_flags_t complain)
       && uses_template_parms (DECL_TI_ARGS (decl)))
     return true;
 
-  if (undeduced_auto_decl (decl))
-    {
-      if (complain & tf_error)
-	error ("use of %qD before deduction of %<auto%>", decl);
-      return false;
-    }
+  if (!require_deduced_type (decl, complain))
+    return false;
 
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand || in_discarded_stmt)

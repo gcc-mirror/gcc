@@ -1,3 +1,11 @@
+2017-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77790 - ICE with auto function in C++11 mode
+	* decl.c (undeduced_auto_decl): Remove C++14 limitation.
+	(require_deduced_type): Add complain parm, return bool.
+	* cp-tree.h: Adjust.
+	* decl2.c (mark_used): Use require_deduced_type.
+
 2017-02-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78908 - template ops and bitfields
