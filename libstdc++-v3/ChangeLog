@@ -1,3 +1,7 @@
+2017-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h: Re-indent.
+
 2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com> 
 
 	* doc/xml/manual/profile_mode.xml: Update a paper reference. 
