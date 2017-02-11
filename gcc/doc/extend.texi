@@ -3516,7 +3516,7 @@ same as for the @option{-mcpu=} command-line option.
 @item sign-return-address
 @cindex @code{sign-return-address} function attribute, AArch64
 Select the function scope on which return address signing will be applied.  The
-behaviour and permissible arguments are the same as for the command-line option
+behavior and permissible arguments are the same as for the command-line option
 @option{-msign-return-address=}.  The default value is @code{none}.
 
 @end table
@@ -12657,7 +12657,7 @@ void __builtin_arm_set_fpscr (unsigned int)
 @subsection ARM ARMv8-M Security Extensions
 
 GCC implements the ARMv8-M Security Extensions as described in the ARMv8-M
-Security Extensions: Requiremenets on Development Tools Engineering
+Security Extensions: Requirements on Development Tools Engineering
 Specification, which can be found at
 @uref{http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf}.
 
@@ -13993,7 +13993,7 @@ data elements.  The following vectors typedefs are included in @code{msa.h}:
 @item @code{v2f64}, a vector of two 64-bit doubles.
 @end itemize
 
-Intructions and corresponding built-ins may have additional restrictions and/or
+Instructions and corresponding built-ins may have additional restrictions and/or
 input/output values manipulated:
 @itemize
 @item @code{imm0_1}, an integer literal in range 0 to 1;
