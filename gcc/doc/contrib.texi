@@ -632,9 +632,7 @@ Michael Matz for his work on dominance tree discovery, the x86-64 port,
 link-time optimization framework and general optimization improvements.
 
 @item
-All of the Mauve project
-@uref{http://sourceware.org/cgi-bin/cvsweb.cgi/~checkout~/mauve/THANKS?rev=1.2&cvsroot=mauve&only_with_tag=HEAD,,contributors},
-for Java test code.
+All of the Mauve project contributors for Java test code.
 
 @item
 Bryce McKinlay for numerous GCJ and libgcj fixes and improvements.
