@@ -1,5 +1,11 @@
 2017-02-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79467
+	* include/bits/shared_ptr_base.h (__shared_ptr(_Yp*, _Deleter))
+	(__shared_ptr(_Yp*, _Deleter, _Alloc)): Use lvalue types in
+	__is_callable check.
+	* testsuite/20_util/shared_ptr/cons/79467.cc: New.
+
 	* include/bits/atomic_base.h: Re-indent.
 
 2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com> 
