@@ -5,6 +5,7 @@
 // { dg-set-target-env-var ASAN_OPTIONS "malloc_context_size=120:redzone=512" }
 // { dg-options "-fno-omit-frame-pointer -fno-optimize-sibling-calls" }
 // { dg-additional-options "-mno-omit-leaf-frame-pointer" { target { i?86-*-* x86_64-*-* } } }
+// { dg-additional-options "-mbackchain" { target { s390*-*-* } } }
 // { dg-shouldfail "asan" }
 
 #include <stdlib.h>
