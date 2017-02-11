@@ -1,3 +1,8 @@
+2017-02-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: Remove
+	hppa*-*-* dg-skip-if directive.
+
 2017-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: Move
