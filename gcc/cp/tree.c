@@ -2728,13 +2728,20 @@ build_ctor_subob_ref (tree index, tree type, tree obj)
   return obj;
 }
 
+struct replace_placeholders_t
+{
+  tree obj;	    /* The object to be substituted for a PLACEHOLDER_EXPR.  */
+  bool seen;	    /* Whether we've encountered a PLACEHOLDER_EXPR.  */
+};
+
 /* Like substitute_placeholder_in_expr, but handle C++ tree codes and
    build up subexpressions as we go deeper.  */
 
 static tree
 replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 {
-  tree obj = static_cast<tree>(data_);
+  replace_placeholders_t *d = static_cast<replace_placeholders_t*>(data_);
+  tree obj = d->obj;
 
   if (TREE_CONSTANT (*t))
     {
@@ -2753,6 +2760,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 	  gcc_assert (TREE_CODE (x) == COMPONENT_REF);
 	*t = x;
 	*walk_subtrees = false;
+	d->seen = true;
       }
       break;
 
@@ -2778,9 +2786,10 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 		if (TREE_CODE (*valp) == TARGET_EXPR)
 		  valp = &TARGET_EXPR_INITIAL (*valp);
 	      }
-
+	    d->obj = subob;
 	    cp_walk_tree (valp, replace_placeholders_r,
-			  subob, NULL);
+			  data_, NULL);
+	    d->obj = obj;
 	  }
 	*walk_subtrees = false;
 	break;
@@ -2794,12 +2803,15 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 }
 
 tree
-replace_placeholders (tree exp, tree obj)
+replace_placeholders (tree exp, tree obj, bool *seen_p)
 {
   tree *tp = &exp;
+  replace_placeholders_t data = { obj, false };
   if (TREE_CODE (exp) == TARGET_EXPR)
     tp = &TARGET_EXPR_INITIAL (exp);
-  cp_walk_tree (tp, replace_placeholders_r, obj, NULL);
+  cp_walk_tree (tp, replace_placeholders_r, &data, NULL);
+  if (seen_p)
+    *seen_p = data.seen;
   return exp;
 }
 
