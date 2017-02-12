@@ -1,3 +1,8 @@
+2017-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65542
+	* gfortran.dg/spread_init_expr_2.f90:  New test case.
+
 2017-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/79341
