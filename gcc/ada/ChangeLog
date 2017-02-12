@@ -1,3 +1,12 @@
+2017-02-12  John Marino  <gnugcc@marino.st>
+
+	* system-freebsd-x86.ads: Rename into...
+	* system-freebsd.ads: ...this.
+	(Default_Bit_Order): Define using Standard'Default_Bit_Order.
+	* gcc-interface/Makefile.in: Support aarch64-freebsd.
+	(x86-64/FreeBSD): Adjust to above renaming.
+	(i386/FreeBSD): Likewise.
+
 2017-02-09  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* comperr.adb: Update FSF bug reporting URL.
