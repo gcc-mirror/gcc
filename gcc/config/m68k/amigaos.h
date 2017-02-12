@@ -122,7 +122,6 @@ amiga_named_section (const char *name, unsigned int flags, tree decl);
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION amiga_named_section
 
-#if 0
 /* Various ABI issues.  */
 
 /* This is (almost;-) BSD, so it wants DBX format.  */
@@ -183,12 +182,10 @@ amiga_named_section (const char *name, unsigned int flags, tree decl);
 //#define DEFAULT_MAIN_RETURN c_expand_return (integer_zero_node)
 
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "unsigned int"
+#define WCHAR_TYPE "unsigned short"
 
 /* XXX: section support */
-#if 0 
-
-
+#if 0
 /* We define TARGET_ASM_NAMED_SECTION, but we don't support arbitrary sections,
    including '.gcc_except_table', so we emulate the standard behaviour.  */
 #undef TARGET_ASM_EXCEPTION_SECTION
@@ -221,6 +218,8 @@ do									\
       fprintf ((FILE), "\t.align %d\n", (LOG));				\
   }									\
 while (0)
+
+#if 0
 
 /* Baserel support.  */
 

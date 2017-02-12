@@ -257,10 +257,10 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{malways-restore-a4:-Derrno=(*ixemul_errno)} "  \
   "%{mrestore-a4:-Derrno=(*ixemul_errno)}"
 #define CPP_LIBNIX_SPEC                             \
-  "-isystem %(sdk_root)libnix/include "             \
+  "-isystem %:sdk_root(libnix/include) "             \
   "%{!ansi:-Dlibnix} -D__libnix__ -D__libnix"
 #define CPP_CLIB2_SPEC                              \
-  "-isystem %(sdk_root)clib2/include "              \
+  "-isystem %:sdk_root(clib2/include) "              \
   "%{!ansi:-DCLIB2} -D__CLIB2__ -D__CLIB2"
 
 /* Define __HAVE_68881__ in preprocessor according to the -m flags.
@@ -320,7 +320,7 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{!resident:%{!fbaserel:%{!resident32:%{!fbaserel32:"          \
     "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}}}"
 #define STARTFILE_LIBNIX_SPEC                                     \
-  "%(sdk_root)lib/libnix/"                                 \
+  "%:sdk_root(libnix/lib/libnix/ "                                 \
   "%{ramiga-*:"                                                   \
     "%{ramiga-lib:libinit.o%s}"                                   \
     "%{ramiga-libr:libinitr.o%s}"                                 \
@@ -331,10 +331,11 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
       "%{fbaserel:nbcrt0.o%s}"                                    \
       "%{!fbaserel:"						  \
 	"%{fbaserel32:nlbcrt0.o%s}"				  \
-	"%{!fbaserel32:ncrt0.o%s}}}}"
+	"%{!fbaserel32:ncrt0.o%s}}}}" \
+   ")"
 
 #define STARTFILE_CLIB2_SPEC                                      \
-  "%(sdk_root)clib2/lib/"                                         \
+  "%:sdk_root(clib2/lib/ "                                         \
   "%{resident32:nr32crt0.o%s}"                                    \
   "%{!resident32:"                                                \
     "%{fbaserel32:nb32crt0.o%s}"                                  \
@@ -342,7 +343,8 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
       "%{resident:nrcrt0.o%s}"                                    \
       "%{!resident:"                                              \
         "%{fbaserel:nbcrt0.o%s}"                                  \
-        "%{!fbaserel:ncrt0.o%s}}}}"
+        "%{!fbaserel:ncrt0.o%s}}}}" \
+  ")"
 
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC                                            \
@@ -398,12 +400,11 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{mcrt=clib2:%(lib_clib2)}"
 
 #define LIBGCC_IXEMUL_SPEC ""
-#define LIBGCC_LIBNIX_SPEC "-lnix "                               \
+#define LIBGCC_LIBNIX_SPEC "-lnix -fl libnix "                    \
   "%{mcrt=*:-l%*} "                                               \
   "%{!mcrt=*:-lnix20}"
 #define LIBGCC_CLIB2_SPEC "-lc"
-//#define LIBGCC_SPEC "-lgcc "
-#define LIBGCC_SPEC " "                                      \
+#define LIBGCC_SPEC "-lgcc " \
   "%{noixemul:%(libgcc_libnix)} "                                 \
   "%{mcrt=nix*:%(libgcc_libnix)} "                                \
   "%{mcrt=ixemul:%(libgcc_ixemul)} "                              \
@@ -415,8 +416,8 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
    commandline options.  */
 
 #define LINK_IXEMUL_SPEC ""
-#define LINK_LIBNIX_SPEC "-L%(sdk_root)libnix/lib -fl libnix"
-#define LINK_CLIB2_SPEC "-L%(sdk_root)clib2/lib"
+#define LINK_LIBNIX_SPEC "-L%:sdk_root(libnix/lib) -fl libnix"
+#define LINK_CLIB2_SPEC "-L%:sdk_root(clib2/lib)"
 
 /* If debugging, tell the linker to output amiga-hunk symbols *and* a BSD
    compatible debug hunk.
@@ -428,10 +429,10 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{mcrt=nix*:%(link_libnix)} "                                  \
   "%{mcrt=ixemul:%(link_ixemul)} "                                \
   "%{mcrt=clib2:%(link_clib2)} "                                  \
-  "%{fbaserel:%{!resident:-m amiga_bss -fl libb}} "               \
-  "%{resident:-m amiga_bss -amiga-datadata-reloc -fl libb} "      \
-  "%{fbaserel32:%{!resident32:-m amiga_bss -fl libb32}} "         \
-  "%{resident32:-m amiga_bss -amiga-datadata-reloc -fl libb32} "  \
+  "%{fbaserel:%{!resident:-m amiga_bss -fl libb %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}}} "               \
+  "%{resident:-m amiga_bss -amiga-datadata-reloc -fl libb %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}} "      \
+  "%{fbaserel32:%{!resident32:-m amiga_bss -fl libb32 %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}}} "         \
+  "%{resident32:-m amiga_bss -amiga-datadata-reloc -fl libb32 %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}} "  \
   "%{g:-amiga-debug-hunk} "                                       \
   "%{mcpu=68020:-fl libm020} "					  \
   "%{m68020:-fl libm020} "                                        \
@@ -476,7 +477,10 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
 	      "%{!nostdlib:%{!nodefaultlibs:%G}} "                  \
 	      "%{T*} }}}}}} "                                       \
 
+extern const char * amiga_m68k_prefix_func(int, const char **);
 
+#define EXTRA_SPEC_FUNCTIONS \
+  { "sdk_root",	amiga_m68k_prefix_func },
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -489,10 +493,9 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
    Do not define this macro if it does not need to do anything.  */
 #undef EXTRA_SPECS
 #define EXTRA_SPECS							\
-  { "asm_cpu",		ASM_CPU_SPEC },					\
-  { "asm_cpu_default",	ASM_CPU_DEFAULT_SPEC },				\
-  { "link_cpu",		LINK_CPU_SPEC },                                \
-  {"sdk_root", TOOLDIR_BASE_PREFIX "m68k-amigaos/"},                \
+  {"asm_cpu",		ASM_CPU_SPEC },					\
+  {"asm_cpu_default",	ASM_CPU_DEFAULT_SPEC },				\
+  {"link_cpu",		LINK_CPU_SPEC },                                \
   {"cpp_ixemul", CPP_IXEMUL_SPEC},                                  \
   {"cpp_libnix", CPP_LIBNIX_SPEC},                                  \
   {"cpp_clib2", CPP_CLIB2_SPEC},                                    \
