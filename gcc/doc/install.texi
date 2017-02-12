@@ -3075,7 +3075,7 @@ Solaris 2 (SPARC, Intel):
 Microsoft Windows:
 @itemize
 @item
-The @uref{http://sourceware.org/cygwin/,,Cygwin} project;
+The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
 @item
 The @uref{http://www.mingw.org/,,MinGW} and
 @uref{http://mingw-w64.org/doku.php,,mingw-w64} projects.
@@ -4786,7 +4786,7 @@ modern targets.
 
 For some systems, old versions of GNU binutils may also be useful,
 and are available from @file{pub/binutils/old-releases} on
-@uref{http://sourceware.org/mirrors.html,,sourceware.org mirror sites}.
+@uref{https://sourceware.org/mirrors.html,,sourceware.org mirror sites}.
 
 Some of the information on specific systems above relates to
 such older systems, but much of the information

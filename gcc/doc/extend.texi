@@ -1446,7 +1446,7 @@ const __memx void *pfoo = &foo;
 
 @noindent
 Such code requires at least binutils 2.23, see
-@w{@uref{http://sourceware.org/PR13503,PR13503}}.
+@w{@uref{https://sourceware.org/PR13503,PR13503}}.
 
 @item
 On the reduced Tiny devices like ATtiny40, no address spaces are supported.
