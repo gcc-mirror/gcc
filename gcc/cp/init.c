@@ -3282,7 +3282,19 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      init_expr = cp_build_modify_expr (input_location, init_expr,
 						INIT_EXPR, ie, complain);
 	    }
-	  stable = stabilize_init (init_expr, &init_preeval_expr);
+	  /* If the initializer uses C++14 aggregate NSDMI that refer to the
+	     object being initialized, replace them now and don't try to
+	     preevaluate.  */
+	  bool had_placeholder = false;
+	  if (cxx_dialect >= cxx14
+	      && !processing_template_decl
+	      && TREE_CODE (init_expr) == INIT_EXPR)
+	    TREE_OPERAND (init_expr, 1)
+	      = replace_placeholders (TREE_OPERAND (init_expr, 1),
+				      TREE_OPERAND (init_expr, 0),
+				      &had_placeholder);
+	  stable = (!had_placeholder
+		    && stabilize_init (init_expr, &init_preeval_expr));
 	}
 
       if (init_expr == error_mark_node)
@@ -3454,7 +3466,17 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       orig_placement = make_tree_vector_copy (*placement);
       orig_nelts = nelts;
       if (*init)
-	orig_init = make_tree_vector_copy (*init);
+	{
+	  orig_init = make_tree_vector_copy (*init);
+	  /* Also copy any CONSTRUCTORs in *init, since reshape_init and
+	     digest_init clobber them in place.  */
+	  for (unsigned i = 0; i < orig_init->length(); ++i)
+	    {
+	      tree e = (**init)[i];
+	      if (TREE_CODE (e) == CONSTRUCTOR)
+		(**init)[i] = copy_node (e);
+	    }
+	}
 
       make_args_non_dependent (*placement);
       if (nelts)

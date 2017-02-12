@@ -1,5 +1,13 @@
 2017-02-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/77659 - ICE with new and C++14 aggregate NSDMI
+	* init.c (build_new): Make backups of any CONSTRUCTORs in init.
+	(build_new_1): Use replace_placeholders.
+	* tree.c (replace_placeholders_t): Also track whether we've seen a
+	placeholder.
+	(replace_placeholders, replace_placeholders_r): Adjust.
+	* cp-tree.h: Adjust.
+
 	PR c++/77790 - ICE with auto function in C++11 mode
 	* decl.c (undeduced_auto_decl): Remove C++14 limitation.
 	(require_deduced_type): Add complain parm, return bool.
