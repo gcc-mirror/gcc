@@ -1,5 +1,11 @@
 2017-02-11  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/cpp.texi: Replace "stringify"/"stringification" with C 
+	standard terminology "stringize"/"stringizing" throughout.
+	* doc/cppinternals.texi: Likewise.
+
+2017-02-11  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/extend.texi: Fix some spelling mistakes and typos.
 	* doc/invoke.texi: Likewise.
 

@@ -203,7 +203,7 @@ error about an unterminated macro argument list.
 
 The C standard also specifies that a new line in the middle of the
 arguments to a macro is treated as whitespace.  This white space is
-important in case the macro argument is stringified.  The state variable
+important in case the macro argument is stringized.  The state variable
 @code{parsing_args} is nonzero when the preprocessor is collecting the
 arguments to a macro call.  It is set to 1 when looking for the opening
 parenthesis to a function-like macro, and 2 when collecting the actual
@@ -374,7 +374,7 @@ the pointers to the tokens of its expansion that are returned will always
 remain valid.  However, macros are a little trickier than that, since
 they give rise to three sources of fresh tokens.  They are the built-in
 macros like @code{__LINE__}, and the @samp{#} and @samp{##} operators
-for stringification and token pasting.  I handled this by allocating
+for stringizing and token pasting.  I handled this by allocating
 space for these tokens from the lexer's token run chain.  This means
 they automatically receive the same lifetime guarantees as lexed tokens,
 and we don't need to concern ourselves with freeing them.
@@ -478,7 +478,7 @@ ways.
 I strongly recommend you have a good grasp of how the C and C++
 standards require macros to be expanded before diving into this
 section, let alone the code!.  If you don't have a clear mental
-picture of how things like nested macro expansion, stringification and
+picture of how things like nested macro expansion, stringizing and
 token pasting are supposed to work, damage to your sanity can quickly
 result.
 
@@ -744,7 +744,7 @@ We would then have it take its spacing from the first of these, which
 carries source token @samp{foo} with no leading space.
 
 It is vital that cpplib get spacing correct in these examples since any
-of these macro expansions could be stringified, where spacing matters.
+of these macro expansions could be stringized, where spacing matters.
 
 So, this demonstrates that not just entering macro and argument
 expansions, but leaving them requires special handling too.  I made
