@@ -1,5 +1,10 @@
 2017-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/standards.texi (Standards): Update reference to
+	Objective-C 2.0.
+
+2017-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/extend.texi (Named Address Spaces): sourceware.org now
 	defaults to https.
 	* doc/install.texi (Binaries): Ditto.
