@@ -1,3 +1,9 @@
+2016-02-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_print_tune_info): Use ASM_COMMENT_START instead
+	of explicit '@'.  Add missing assembly comment marker on branch costs
+	printout.
+
 2017-02-13  Nathan Sidwell  <nathan@acm.org>
 
 	* gengtype-lex.l (<in_struct>): Add '/'.

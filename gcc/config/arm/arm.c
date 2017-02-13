@@ -25948,46 +25948,55 @@ arm_emit_eabi_attribute (const char *name, int num, int val)
 void
 arm_print_tune_info (void)
 {
-  asm_fprintf (asm_out_file, "\t@.tune parameters\n");
-  asm_fprintf (asm_out_file, "\t\t@constant_limit:\t%d\n",
+  asm_fprintf (asm_out_file, "\t" ASM_COMMENT_START ".tune parameters\n");
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "constant_limit:\t%d\n",
 	       current_tune->constant_limit);
-  asm_fprintf (asm_out_file, "\t\t@max_insns_skipped:\t%d\n",
-	       current_tune->max_insns_skipped);
-  asm_fprintf (asm_out_file, "\t\t@prefetch.num_slots:\t%d\n",
-	       current_tune->prefetch.num_slots);
-  asm_fprintf (asm_out_file, "\t\t@prefetch.l1_cache_size:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "max_insns_skipped:\t%d\n", current_tune->max_insns_skipped);
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "prefetch.num_slots:\t%d\n", current_tune->prefetch.num_slots);
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "prefetch.l1_cache_size:\t%d\n",
 	       current_tune->prefetch.l1_cache_size);
-  asm_fprintf (asm_out_file, "\t\t@prefetch.l1_cache_line_size:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "prefetch.l1_cache_line_size:\t%d\n",
 	       current_tune->prefetch.l1_cache_line_size);
-  asm_fprintf (asm_out_file, "\t\t@prefer_constant_pool:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "prefer_constant_pool:\t%d\n",
 	       (int) current_tune->prefer_constant_pool);
-  asm_fprintf (asm_out_file, "\t\t@branch_cost:\t(s:speed, p:predictable)\n");
-  asm_fprintf (asm_out_file, "\t\t\t\ts&p\tcost\n");
-  asm_fprintf (asm_out_file, "\t\t\t\t00\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "branch_cost:\t(s:speed, p:predictable)\n");
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "\t\ts&p\tcost\n");
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "\t\t00\t%d\n",
 	       current_tune->branch_cost (false, false));
-  asm_fprintf (asm_out_file, "\t\t\t\t01\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "\t\t01\t%d\n",
 	       current_tune->branch_cost (false, true));
-  asm_fprintf (asm_out_file, "\t\t\t\t10\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "\t\t10\t%d\n",
 	       current_tune->branch_cost (true, false));
-  asm_fprintf (asm_out_file, "\t\t\t\t11\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "\t\t11\t%d\n",
 	       current_tune->branch_cost (true, true));
-  asm_fprintf (asm_out_file, "\t\t@prefer_ldrd_strd:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "prefer_ldrd_strd:\t%d\n",
 	       (int) current_tune->prefer_ldrd_strd);
-  asm_fprintf (asm_out_file, "\t\t@logical_op_non_short_circuit:\t[%d,%d]\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "logical_op_non_short_circuit:\t[%d,%d]\n",
 	       (int) current_tune->logical_op_non_short_circuit_thumb,
 	       (int) current_tune->logical_op_non_short_circuit_arm);
-  asm_fprintf (asm_out_file, "\t\t@prefer_neon_for_64bits:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "prefer_neon_for_64bits:\t%d\n",
 	       (int) current_tune->prefer_neon_for_64bits);
-  asm_fprintf (asm_out_file,
-	       "\t\t@disparage_flag_setting_t16_encodings:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "disparage_flag_setting_t16_encodings:\t%d\n",
 	       (int) current_tune->disparage_flag_setting_t16_encodings);
-  asm_fprintf (asm_out_file, "\t\t@string_ops_prefer_neon:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "string_ops_prefer_neon:\t%d\n",
 	       (int) current_tune->string_ops_prefer_neon);
-  asm_fprintf (asm_out_file, "\t\t@max_insns_inline_memset:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
+	       "max_insns_inline_memset:\t%d\n",
 	       current_tune->max_insns_inline_memset);
-  asm_fprintf (asm_out_file, "\t\t@fusible_ops:\t%u\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "fusible_ops:\t%u\n",
 	       current_tune->fusible_ops);
-  asm_fprintf (asm_out_file, "\t\t@sched_autopref:\t%d\n",
+  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START "sched_autopref:\t%d\n",
 	       (int) current_tune->sched_autopref);
 }
 
