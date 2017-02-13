@@ -1,3 +1,10 @@
+2017-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79232
+	* typeck.c (cp_build_modify_expr): Handle properly COMPOUND_EXPRs
+	on lhs that have {PRE{DEC,INC}REMENT,MODIFY,MIN,MAX,COND}_EXPR
+	in the rightmost operand.
+
 2017-02-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79296 - ICE mangling localized template instantiation
