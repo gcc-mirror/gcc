@@ -1,3 +1,7 @@
+2017-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* spellcheck.c (test_data): Add , in between "foo" and "food".
+
 2017-02-13  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/79449
