@@ -1,5 +1,9 @@
 2017-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/79341
+	* c-c++-common/ubsan/float-cast-overflow-8.c (TEST): Make min and max
+	variables volatile.
+
 	PR c++/79232
 	* g++.dg/cpp1z/eval-order4.C: New test.
 	* g++.dg/other/pr79232.C: New test.
