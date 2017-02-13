@@ -1,5 +1,10 @@
 2017-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* init.c (warn_placement_new_too_small): Add missing space in
+	diagnostics.
+	* parser.c (cp_parser_oacc_declare): Likewise.
+	* mangle.c (maybe_check_abi_tags): Likewise.
+
 	PR c++/79232
 	* typeck.c (cp_build_modify_expr): Handle properly COMPOUND_EXPRs
 	on lhs that have {PRE{DEC,INC}REMENT,MODIFY,MIN,MAX,COND}_EXPR

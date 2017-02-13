@@ -4274,8 +4274,9 @@ maybe_check_abi_tags (tree t, tree for_decl, int ver)
 		    for_decl, flag_abi_version, warn_abi_version);
       else
 	warning_at (DECL_SOURCE_LOCATION (t), OPT_Wabi,
-		    "the mangled name of the initialization guard variable for"
-		    "%qD changes between -fabi-version=%d and -fabi-version=%d",
+		    "the mangled name of the initialization guard variable "
+		    "for %qD changes between -fabi-version=%d and "
+		    "-fabi-version=%d",
 		    t, flag_abi_version, warn_abi_version);
     }
 }

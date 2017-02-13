@@ -2606,7 +2606,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			exact_size ?
 			"placement new constructing an object of type %qT "
 			"and size %qwu in a region of type %qT and size %qwi"
-			: "placement new constructing an object of type %qT"
+			: "placement new constructing an object of type %qT "
 			"and size %qwu in a region of type %qT and size "
 			"at most %qwu",
 			type, bytes_need, TREE_TYPE (oper),
