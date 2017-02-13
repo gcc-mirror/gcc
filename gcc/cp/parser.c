@@ -36177,7 +36177,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	       || !DECL_EXTERNAL (decl)))
 	    {
 	      error_at (loc,
-			"%qD must be a global variable in"
+			"%qD must be a global variable in "
 			"%<#pragma acc declare link%>",
 			decl);
 	      error = true;
