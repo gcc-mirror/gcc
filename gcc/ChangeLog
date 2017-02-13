@@ -1,5 +1,18 @@
 2017-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* cprop.c (cprop_jump): Add missing space in string literal.
+	* tree-ssa-structalias.c (rewrite_constraints): Likewise.
+	(get_constraint_for_component_ref): Likewise.
+	* df-core.c (df_worklist_dataflow_doublequeue): Likewise.
+	* tree-outof-ssa.c (insert_partition_copy_on_edge): Likewise.
+	* lra-constraints.c (process_alt_operands): Likewise.
+	* ipa-inline.c (inline_small_functions): Likewise.
+	* tree-ssa-sccvn.c (visit_reference_op_store): Likewise.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	* trans-mem.c (diagnose_tm_1_op): Likewise.
+	* omp-grid.c (grid_find_single_omp_among_assignments): Likewise.
+	(grid_parallel_clauses_gridifiable): Likewise.
+
 	* config/nvptx/mkoffload.c (process): Add space in between
 	, and %d.
 

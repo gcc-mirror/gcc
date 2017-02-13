@@ -2848,7 +2848,7 @@ process_alt_operands (int only_alternative)
 	      if (lra_dump_file != NULL)
 		fprintf
 		  (lra_dump_file,
-		   "            %d Matched conflict early clobber reloads:"
+		   "            %d Matched conflict early clobber reloads: "
 		   "reject--\n",
 		   i);
 	      reject--;

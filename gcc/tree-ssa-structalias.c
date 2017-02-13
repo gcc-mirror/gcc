@@ -2564,7 +2564,7 @@ rewrite_constraints (constraint_graph_t graph,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 
-	      fprintf (dump_file, "%s is a non-pointer variable,"
+	      fprintf (dump_file, "%s is a non-pointer variable, "
 		       "ignoring constraint:",
 		       get_varinfo (lhs.var)->name);
 	      dump_constraint (dump_file, c);
@@ -2579,7 +2579,7 @@ rewrite_constraints (constraint_graph_t graph,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 
-	      fprintf (dump_file, "%s is a non-pointer variable,"
+	      fprintf (dump_file, "%s is a non-pointer variable, "
 		       "ignoring constraint:",
 		       get_varinfo (rhs.var)->name);
 	      dump_constraint (dump_file, c);
@@ -3295,7 +3295,7 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       else if (bitmaxsize == 0)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Access to zero-sized part of variable,"
+	    fprintf (dump_file, "Access to zero-sized part of variable, "
 		     "ignoring\n");
 	}
       else

@@ -1314,7 +1314,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Expanding speculative call of %s/%i -> %s/%i count:"
+		     "Expanding speculative call of %s/%i -> %s/%i count: "
 		     "%" PRId64"\n",
 		     xstrdup_for_dump (e->caller->name ()),
 		     e->caller->order,
