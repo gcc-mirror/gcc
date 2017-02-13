@@ -10912,21 +10912,6 @@ aarch64_mangle_type (const_tree type)
   return NULL;
 }
 
-
-/* Return true if the rtx_insn contains a MEM RTX somewhere
-   in it.  */
-
-static bool
-has_memory_op (rtx_insn *mem_insn)
-{
-  subrtx_iterator::array_type array;
-  FOR_EACH_SUBRTX (iter, array, PATTERN (mem_insn), ALL)
-    if (MEM_P (*iter))
-      return true;
-
-  return false;
-}
-
 /* Find the first rtx_insn before insn that will generate an assembly
    instruction.  */
 
@@ -11019,7 +11004,7 @@ aarch64_madd_needs_nop (rtx_insn* insn)
      Restore recog state to INSN to avoid state corruption.  */
   extract_constrain_insn_cached (insn);
 
-  if (!prev || !has_memory_op (prev))
+  if (!prev || !contains_mem_rtx_p (PATTERN (prev)))
     return false;
 
   body = single_set (prev);
