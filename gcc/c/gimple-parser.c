@@ -844,6 +844,7 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 	      c_parser_consume_token (parser);
 	      expr.value = c_parser_parse_ssa_name (parser, id, NULL_TREE,
 						    version, ver_offset);
+	      set_c_expr_source_range (&expr, tok_range);
 	      /* For default definition SSA names.  */
 	      if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
 		  && c_parser_peek_2nd_token (parser)->type == CPP_NAME
