@@ -576,3 +576,5 @@ amigaos_prelink_hook((const char **)(LD1_ARGV), (STRIP))
 #undef FIXED_INCLUDE_DIR
 #define FIXED_INCLUDE_DIR CROSS_INCLUDE_DIR "/../../os-include"
 
+// this disables tree_loop_distribute_patterns
+#define C_COMMON_OVERRIDE_OPTIONS  flag_no_builtin = 1
