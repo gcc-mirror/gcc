@@ -972,7 +972,7 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
   if (dump_file != NULL)
     {
       fprintf (dump_file,
-	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with"
+	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with "
 	       "constant ", REGNO (from), INSN_UID (jump));
       print_rtl (dump_file, src);
       fprintf (dump_file, "\n");

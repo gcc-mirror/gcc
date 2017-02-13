@@ -2052,7 +2052,7 @@ inline_small_functions (void)
       if (dump_file)
 	{
 	  fprintf (dump_file,
-		   " Inlined into %s which now has time %i and size %i,"
+		   " Inlined into %s which now has time %i and size %i, "
 		   "net change of %+i.\n",
 		   edge->caller->name (),
 		   inline_summaries->get (edge->caller)->time,

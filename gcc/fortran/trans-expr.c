@@ -2277,7 +2277,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 	msg = xasprintf ("Substring out of bounds: lower bound (%%ld) of '%s' "
 			 "is less than one", name);
       else
-	msg = xasprintf ("Substring out of bounds: lower bound (%%ld)"
+	msg = xasprintf ("Substring out of bounds: lower bound (%%ld) "
 			 "is less than one");
       gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node,
