@@ -14288,6 +14288,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 					    NULL_RTX, NULL_RTX, NULL_RTX);
 			  distribute_links (LOG_LINKS (tem_insn));
 
+			  unsigned int regno = REGNO (XEXP (note, 0));
+			  reg_stat_type *rsp = &reg_stat[regno];
+			  if (rsp->last_set == tem_insn)
+			    record_value_for_reg (XEXP (note, 0), NULL, NULL_RTX);
+
 			  SET_INSN_DELETED (tem_insn);
 			  if (tem_insn == i2)
 			    i2 = NULL;

@@ -1,7 +1,14 @@
+2017-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/79388
+	PR rtl-optimization/79450
+	* gcc.c-torture/execute/pr79388.c: New test.
+	* gcc.c-torture/execute/pr79450.c: New test.
+
 2017-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/65542
-	* gfortran.dg/spread_init_expr_2.f90:  New test case.
+	* gfortran.dg/spread_init_expr_2.f90: New test case.
 
 2017-02-11  Jakub Jelinek  <jakub@redhat.com>
 
@@ -812,7 +819,8 @@
 	* gcc.dg/vect/vect-24.c: Remove xfail on ARM targets.
 
 2017-01-25  Carl Love  <cel@us.ibm.com>
-	* gcc.target/powerpc/builtins-3-p8.c:  Add missing tests for the
+
+	* gcc.target/powerpc/builtins-3-p8.c: Add missing tests for the
 	vec_packs built-ins
 
 2017-01-25  Christophe Lyon  <christophe.lyon@linaro.org>
@@ -1012,7 +1020,7 @@
 
 2017-01-23  Thomas Koenig  <tkoenig@netcologne.de>
 
-	* gfortran.dg/integer_exponentiation_7.f90:  New test.
+	* gfortran.dg/integer_exponentiation_7.f90: New test.
 
 2017-01-23  Bernd Schmidt  <bschmidt@redhat.com>
 
