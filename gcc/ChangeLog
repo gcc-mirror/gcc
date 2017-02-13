@@ -1,3 +1,11 @@
+2017-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/79388
+	PR rtl-optimization/79450
+	* combine.c (distribute_notes): When removing TEM_INSN for which
+	corresponding dest has last value recorded, invalidate that last
+	value.
+
 2016-02-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_print_tune_info): Use ASM_COMMENT_START instead
