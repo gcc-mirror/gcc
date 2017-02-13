@@ -1,3 +1,9 @@
+2017-02-13  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/79449
+	* config/rs6000/rs6000.c (expand_block_compare): Make sure runtime
+	boundary crossing check and subsequent code generation agree.
+
 2017-02-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (has_memory_op): Delete.
