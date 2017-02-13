@@ -1,3 +1,7 @@
+2017-02-13  Nathan Sidwell  <nathan@acm.org>
+
+	* gengtype-lex.l (<in_struct>): Add '/'.
+
 2017-02-13  Martin Liska  <mliska@suse.cz>
 
 	PR c/79471
