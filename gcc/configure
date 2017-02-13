@@ -29432,47 +29432,6 @@ $as_echo "#define HAVE_isl 1" >>confdefs.h
 
 fi
 
-# Check whether isl_options_set_schedule_serialize_sccs is available;
-# it's new in isl 0.15.
-if test "x${ISLLIBS}" != "x" ; then
-  saved_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS $ISLINC $GMPINC"
-  saved_LIBS="$LIBS"
-  LIBS="$LIBS $ISLLIBS $GMPLIBS"
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_options_set_schedule_serialize_sccs" >&5
-$as_echo_n "checking Checking for isl_options_set_schedule_serialize_sccs... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <isl/schedule.h>
-int
-main ()
-{
-isl_options_set_schedule_serialize_sccs (NULL, 0);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_has_isl_options_set_schedule_serialize_sccs=yes
-else
-  ac_has_isl_options_set_schedule_serialize_sccs=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_options_set_schedule_serialize_sccs" >&5
-$as_echo "$ac_has_isl_options_set_schedule_serialize_sccs" >&6; }
-
-  LIBS="$saved_LIBS"
-  CXXFLAGS="$saved_CXXFLAGS"
-
-  if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
-
-$as_echo "#define HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS 1" >>confdefs.h
-
-  fi
-fi
-
 # Check for plugin support
    # Check whether --enable-plugin was given.
 if test "${enable_plugin+set}" = set; then :

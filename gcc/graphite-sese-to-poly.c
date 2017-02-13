@@ -77,153 +77,6 @@ isl_id_for_pbb (scop_p s, poly_bb_p pbb)
   return isl_id_alloc (s->isl_context, name, pbb);
 }
 
-#ifndef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-/* Converts the STATIC_SCHEDULE of PBB into a scattering polyhedron.
-   We generate SCATTERING_DIMENSIONS scattering dimensions.
-
-   The scattering polyhedron consists of these dimensions: scattering,
-   loop_iterators, parameters.
-
-   Example:
-
-   | scattering_dimensions = 5
-   | nb_iterators = 1
-   | scop_nb_params = 2
-   |
-   | Schedule:
-   |   i
-   | 4 5
-   |
-   | Scattering polyhedron:
-   |
-   | scattering: {s1, s2, s3, s4, s5}
-   | loop_iterators: {i}
-   | parameters: {p1, p2}
-   |
-   | s1  s2  s3  s4  s5  i   p1  p2  1
-   | 1   0   0   0   0   0   0   0  -4  = 0
-   | 0   1   0   0   0  -1   0   0   0  = 0
-   | 0   0   1   0   0   0   0   0  -5  = 0  */
-
-static void
-build_pbb_scattering_polyhedrons (isl_aff *static_sched,
-				  poly_bb_p pbb)
-{
-  isl_val *val;
-
-  int scattering_dimensions = isl_set_dim (pbb->domain, isl_dim_set) * 2 + 1;
-
-  isl_space *dc = isl_set_get_space (pbb->domain);
-  isl_space *dm = isl_space_add_dims (isl_space_from_domain (dc),
-				      isl_dim_out, scattering_dimensions);
-  pbb->schedule = isl_map_universe (dm);
-
-  for (int i = 0; i < scattering_dimensions; i++)
-    {
-      /* Textual order inside this loop.  */
-      if ((i % 2) == 0)
-	{
-	  isl_constraint *c = isl_equality_alloc
-	      (isl_local_space_from_space (isl_map_get_space (pbb->schedule)));
-
-	  val = isl_aff_get_coefficient_val (static_sched, isl_dim_in, i / 2);
-	  gcc_assert (val && isl_val_is_int (val));
-
-	  val = isl_val_neg (val);
-	  c = isl_constraint_set_constant_val (c, val);
-	  c = isl_constraint_set_coefficient_si (c, isl_dim_out, i, 1);
-	  pbb->schedule = isl_map_add_constraint (pbb->schedule, c);
-	}
-
-      /* Iterations of this loop.  */
-      else /* if ((i % 2) == 1) */
-	{
-	  int loop = (i - 1) / 2;
-	  pbb->schedule = isl_map_equate (pbb->schedule, isl_dim_in, loop,
-					  isl_dim_out, i);
-	}
-    }
-
-  /* Simplify the original schedule.  */
-  pbb->schedule = isl_map_coalesce (pbb->schedule);
-
-  /* At the beginning, set the transformed schedule to the original.  */
-  pbb->transformed = isl_map_copy (pbb->schedule);
-}
-
-/* Build for BB the static schedule.
-
-   The static schedule is a Dewey numbering of the abstract syntax
-   tree: http://en.wikipedia.org/wiki/Dewey_Decimal_Classification
-
-   The following example informally defines the static schedule:
-
-   A
-   for (i: ...)
-     {
-       for (j: ...)
-         {
-           B
-           C
-         }
-
-       for (k: ...)
-         {
-           D
-           E
-         }
-     }
-   F
-
-   Static schedules for A to F:
-
-     DEPTH
-     0 1 2
-   A 0
-   B 1 0 0
-   C 1 0 1
-   D 1 1 0
-   E 1 1 1
-   F 2
-*/
-
-static void
-build_scop_scattering (scop_p scop)
-{
-  gimple_poly_bb_p previous_gbb = NULL;
-  isl_space *dc = isl_set_get_space (scop->param_context);
-  isl_aff *static_sched;
-
-  dc = isl_space_add_dims (dc, isl_dim_set, number_of_loops (cfun));
-  static_sched = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
-
-  /* We have to start schedules at 0 on the first component and
-     because we cannot compare_prefix_loops against a previous loop,
-     prefix will be equal to zero, and that index will be
-     incremented before copying.  */
-  static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in, 0, -1);
-
-  int i;
-  poly_bb_p pbb;
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    {
-      gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
-      int prefix = 0;
-
-      if (previous_gbb)
-	prefix = nb_common_loops (scop->scop_info->region, previous_gbb, gbb);
-
-      previous_gbb = gbb;
-
-      static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in,
-						 prefix, 1);
-      build_pbb_scattering_polyhedrons (static_sched, pbb);
-    }
-
-  isl_aff_free (static_sched);
-}
-#endif
-
 static isl_pw_aff *extract_affine (scop_p, tree, __isl_take isl_space *space);
 
 /* Extract an affine expression from the chain of recurrence E.  */
@@ -1009,9 +862,7 @@ build_iteration_domains (scop_p scop, __isl_keep isl_set *context,
       loop_p loop = pbb_loop (pbb);
       if (current == loop)
 	{
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 	  pbb->iterators = isl_set_copy (domain);
-#endif
 	  pbb->domain = isl_set_copy (domain);
 	  pbb->domain = isl_set_set_tuple_id (pbb->domain,
 					      isl_id_for_pbb (scop, pbb));
@@ -1068,8 +919,6 @@ build_scop_context (scop_p scop)
   for (p = 0; p < nbp; p++)
     add_param_constraints (scop, p);
 }
-
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 
 /* Return true when loop A is nested in loop B.  */
 
@@ -1350,8 +1199,6 @@ build_original_schedule (scop_p scop)
   return true;
 }
 
-#endif
-
 /* Builds the polyhedral representation for a SESE region.  */
 
 bool
@@ -1365,11 +1212,7 @@ build_poly_scop (scop_p scop)
     i = build_iteration_domains (scop, scop->param_context, i, NULL);
 
   build_scop_drs (scop);
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   build_original_schedule (scop);
-#else
-  build_scop_scattering (scop);
-#endif
   return true;
 }
 #endif  /* HAVE_isl */
