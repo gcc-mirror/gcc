@@ -19931,14 +19931,25 @@ expand_strn_compare (rtx operands[], int no_length)
 	 cmpldi	cr7,r8,4096-16
 	 bgt	cr7,L(pagecross) */
 
-      if (align1 < 8)
-	expand_strncmp_align_check (strncmp_label, src1, compare_length);
-      if (align2 < 8)
-	expand_strncmp_align_check (strncmp_label, src2, compare_length);
+      /* Make sure that the length we use for the alignment test and
+         the subsequent code generation are in agreement so we do not
+         go past the length we tested for a 4k boundary crossing.  */
+      unsigned HOST_WIDE_INT align_test = compare_length;
+      if (align_test < 8)
+        {
+          align_test = HOST_WIDE_INT_1U << ceil_log2 (align_test);
+          base_align = align_test;
+        }
+      else
+        {
+          align_test = ROUND_UP (align_test, 8);
+          base_align = 8;
+        }
 
-      /* After the runtime alignment checks, we can use any alignment we
-	 like as we know there is no 4k boundary crossing.  */
-      base_align = 8;
+      if (align1 < 8)
+        expand_strncmp_align_check (strncmp_label, src1, align_test);
+      if (align2 < 8)
+        expand_strncmp_align_check (strncmp_label, src2, align_test);
 
       /* Now generate the following sequence:
 	 - branch to begin_compare

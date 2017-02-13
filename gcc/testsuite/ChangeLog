@@ -1,3 +1,9 @@
+2017-02-13  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/79449
+	* gcc.dg/strncmp-2.c: New.  Test strncmp and memcmp builtin expansion
+	for reading beyond a 4k boundary.
+
 2017-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79388
