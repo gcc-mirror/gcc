@@ -1,5 +1,8 @@
 2017-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/nvptx/mkoffload.c (process): Add space in between
+	, and %d.
+
 	* config/i386/i386.h (REG_CLASS_NAMES): Add , in between
 	"MOD4_SSE_REGS" and "ALL_REGS".
 
