@@ -1,3 +1,9 @@
+2017-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79461 - ICE with lambda in constexpr constructor
+	* constexpr.c (build_data_member_initialization): Ignore
+	initialization of a local variable.
+
 2017-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (warn_placement_new_too_small): Add missing space in
