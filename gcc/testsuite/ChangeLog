@@ -1,5 +1,10 @@
 2017-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Do not xfail powerpc64*-*-*.
+	Instead, xfail powerpc*-*-* && lp64.
+
+2017-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/vec-adde-int128.c: Use p8vector_hw instead of
 	powerpc_p8vector_ok.
 	* gcc.target/powerpc/vec-addec-int128.c: Ditto.
