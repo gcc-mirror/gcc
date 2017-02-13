@@ -1,3 +1,20 @@
+2017-02-13  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac (HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS):
+	Remove.
+	* configure: Re-generate.
+	* config.in: Likewise.
+	* graphite-dependences.c: Simplify as if
+	HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS was defined.
+	* graphite-isl-ast-to-gimple.c: Likewise.
+	* graphite-optimize-isl.c: Likewise.
+	* graphite-poly.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* graphite.h: Likewise.
+	* toplev.c: Include isl/version.h and use isl_version () for
+	printing the ISL version.
+	* doc/install.texi: Update ISL requirement.
+
 2017-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/standards.texi (Standards): Update reference to

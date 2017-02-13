@@ -385,7 +385,7 @@ installed but it is not in your default library search path, the
 The in-tree build is only supported with the MPC version that
 download_prerequisites installs.
 
-@item isl Library version 0.16, 0.15, or 0.14.
+@item isl Library version 0.15 or later.
 
 Necessary to build GCC with the Graphite loop optimizations.
 It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.

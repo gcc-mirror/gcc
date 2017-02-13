@@ -1,3 +1,7 @@
+2017-02-13  Richard Biener  <rguenther@suse.de>
+
+	* isl.m4: Remove support for ISL 0.14.
+
 2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78478

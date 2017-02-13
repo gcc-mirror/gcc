@@ -92,6 +92,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "selftest.h"
 
+#ifdef HAVE_isl
+#include <isl/version.h>
+#endif
+
 static void general_init (const char *, bool);
 static void do_compile ();
 static void process_options (void);
@@ -678,10 +682,8 @@ print_version (FILE *file, const char *indent, bool show_global_state)
 	   GCC_GMP_STRINGIFY_VERSION, MPFR_VERSION_STRING, MPC_VERSION_STRING,
 #ifndef HAVE_isl
 	   "none"
-#elif HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-	   "0.15"
 #else
-	   "0.14 or 0.13"
+	   isl_version ()
 #endif
 	   );
   if (strcmp (GCC_GMP_STRINGIFY_VERSION, gmp_version))

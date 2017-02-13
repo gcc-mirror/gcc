@@ -1423,12 +1423,6 @@
 #endif
 
 
-/* Define if isl_options_set_schedule_serialize_sccs exists. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-#endif
-
-
 /* Define to 1 if you have the `kill' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_KILL
