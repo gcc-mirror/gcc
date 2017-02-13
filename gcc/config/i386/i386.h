@@ -1427,7 +1427,7 @@ enum reg_class
    "FLOAT_INT_SSE_REGS",		\
    "MASK_EVEX_REGS",			\
    "MASK_REGS",				\
-   "MOD4_SSE_REGS"			\
+   "MOD4_SSE_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
