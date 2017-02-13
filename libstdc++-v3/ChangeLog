@@ -1,3 +1,11 @@
+2017-02-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79486
+	* include/std/future (__future_base::_Task_state::_M_run)
+	(__future_base::_Task_state::_M_run_delayed): Use lvalue types in
+	result_of expressions.
+	* testsuite/30_threads/packaged_task/79486.cc: New.
+
 2017-02-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79467
