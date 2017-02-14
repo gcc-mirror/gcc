@@ -1,3 +1,9 @@
+2017-02-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/79448
+	* gimple-ssa-sprintf.c (format_directive): Avoid issuing INT_MAX
+	  warning for strings of unknown length.
+
 2017-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config.gcc (supported_defaults) [powerpc*-*-*]: Update.

@@ -2559,12 +2559,15 @@ format_directive (const pass_sprintf_length::call_info &info,
     res->range.max += fmtres.range.max;
 
   /* Raise the total unlikely maximum by the larger of the maximum
-     and the unlikely maximum.  It doesn't matter if the unlikely
-     maximum overflows.  */
+     and the unlikely maximum.  */
+  unsigned HOST_WIDE_INT save = res->range.unlikely;
   if (fmtres.range.max < fmtres.range.unlikely)
     res->range.unlikely += fmtres.range.unlikely;
   else
     res->range.unlikely += fmtres.range.max;
+
+  if (res->range.unlikely < save)
+    res->range.unlikely = HOST_WIDE_INT_M1U;
 
   res->range.min += fmtres.range.min;
   res->range.likely += fmtres.range.likely;
@@ -2616,7 +2619,12 @@ format_directive (const pass_sprintf_length::call_info &info,
 
   /* Has the likely and maximum directive output exceeded INT_MAX?  */
   bool likelyximax = *dir.beg && res->range.likely > target_int_max ();
-  bool maxximax = *dir.beg && res->range.max > target_int_max ();
+  /* Don't consider the maximum to be in excess when it's the result
+     of a string of unknown length (i.e., whose maximum has been set
+     to be greater than or equal to HOST_WIDE_INT_MAX.  */
+  bool maxximax = (*dir.beg
+		   && res->range.max > target_int_max ()
+		   && res->range.max < HOST_WIDE_INT_MAX);
 
   if (!warned
       /* Warn for the likely output size at level 1.  */
