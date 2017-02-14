@@ -673,7 +673,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	auto
 	count(const _Kt& __x) const
 	-> decltype(_M_t._M_count_tr(__x))
-	{ return _M_t._M_find_tr(__x) == _M_t.end() ? 0 : 1; }
+	{ return _M_t._M_count_tr(__x); }
 #endif
       //@}
 
