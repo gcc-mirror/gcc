@@ -586,6 +586,16 @@ check_pseudos_live_through_calls (int regno,
   SET_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs);
 }
 
+/* Return true if insn REG is an early clobber operand in alternative
+   NALT.  Negative NALT means that we don't know the current insn
+   alternative.  So assume the worst.  */
+static inline bool
+reg_early_clobber_p (const struct lra_insn_reg *reg, int n_alt)
+{
+  return (reg->early_clobber
+	  && (n_alt < 0 || TEST_BIT (reg->early_clobber_alts, n_alt)));
+}
+
 /* Process insns of the basic block BB to update pseudo live ranges,
    pseudo hard register conflicts, and insn notes.  We do it on
    backward scan of BB insns.  CURR_POINT is the program point where
@@ -638,7 +648,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   FOR_BB_INSNS_REVERSE_SAFE (bb, curr_insn, next)
     {
       bool call_p;
-      int dst_regno, src_regno;
+      int n_alt, dst_regno, src_regno;
       rtx set;
       struct lra_insn_reg *reg;
 
@@ -647,9 +657,10 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       curr_id = lra_get_insn_recog_data (curr_insn);
       curr_static_id = curr_id->insn_static_data;
+      n_alt = curr_id->used_insn_alternative;
       if (lra_dump_file != NULL)
-	fprintf (lra_dump_file, "   Insn %u: point = %d\n",
-		 INSN_UID (curr_insn), curr_point);
+	fprintf (lra_dump_file, "   Insn %u: point = %d, n_alt = %d\n",
+		 INSN_UID (curr_insn), curr_point, n_alt);
 
       set = single_set (curr_insn);
 
@@ -818,13 +829,15 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       /* See which defined values die here.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT && ! reg->early_clobber && ! reg->subreg_p)
+	if (reg->type == OP_OUT
+	    && ! reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
 	  need_curr_point_incr
 	    |= mark_regno_dead (reg->regno, reg->biggest_mode,
 				curr_point);
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT && ! reg->early_clobber && ! reg->subreg_p)
+	if (reg->type == OP_OUT
+	    && ! reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
 	  make_hard_regno_dead (reg->regno);
 
       if (curr_id->arg_hard_regs != NULL)
@@ -901,13 +914,15 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       /* Mark early clobber outputs dead.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT && reg->early_clobber && ! reg->subreg_p)
+	if (reg->type == OP_OUT
+	    && reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
 	  need_curr_point_incr
 	    |= mark_regno_dead (reg->regno, reg->biggest_mode,
 				curr_point);
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_OUT && reg->early_clobber && ! reg->subreg_p)
+	if (reg->type == OP_OUT
+	    && reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
 	  make_hard_regno_dead (reg->regno);
 
       if (need_curr_point_incr)
