@@ -425,7 +425,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     void* __any_caster(const any* __any)
     {
-      if (__any->_M_manager != &any::_Manager<decay_t<_Tp>>::_S_manage)
+      struct _None { };
+      using _Up = decay_t<_Tp>;
+      using _Vp = conditional_t<is_copy_constructible<_Up>::value, _Up, _None>;
+      if (__any->_M_manager != &any::_Manager<_Vp>::_S_manage)
 	return nullptr;
       any::_Arg __arg;
       __any->_M_manager(any::_Op_access, __any, &__arg);
