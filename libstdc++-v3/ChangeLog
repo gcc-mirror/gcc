@@ -1,6 +1,15 @@
 2017-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69321
+	* include/experimental/any (__any_caster): Avoid instantiating
+	manager function for types that can't be stored in any.
+	* testsuite/experimental/any/misc/any_cast.cc: Test non-copyable type.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+
+	Backport from mainline
 	2017-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69301
