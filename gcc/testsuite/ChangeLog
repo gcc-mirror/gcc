@@ -1,5 +1,11 @@
 2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR middle-end/61225
+	* gcc.target/i386/pr49095.c: Add -fno-shrink-wrap to dg-options.
+	Use dg-additional-options for ia32 target.  Remove XFAIL.
+
+2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/79495
 	* gcc.target/i386/pr79495.c: New test.
 
