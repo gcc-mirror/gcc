@@ -115,7 +115,7 @@ namespace std
     inline void
     throw_with_nested(_Tp&& __t)
     {
-      using _Up = typename remove_reference<_Tp>::type;
+      using _Up = typename decay<_Tp>::type;
       using _CopyConstructible
 	= __and_<is_copy_constructible<_Up>, is_move_constructible<_Up>>;
       static_assert(_CopyConstructible::value,
