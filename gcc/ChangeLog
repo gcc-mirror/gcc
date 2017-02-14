@@ -1,3 +1,9 @@
+2017-02-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/79496
+	* gimple-ssa-sprintf.c (pass_sprintf_length::handle_gimple_call): Avoid
+	clearing info.nowrite flag when snprintf size argument is a range.
+
 2017-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* cprop.c (cprop_jump): Add missing space in string literal.

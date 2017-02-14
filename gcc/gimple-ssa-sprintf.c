@@ -3443,6 +3443,10 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 
   info.format = gimple_call_arg (info.callstmt, idx_format);
 
+  /* True when the destination size is constant as opposed to the lower
+     or upper bound of a range.  */
+  bool dstsize_cst_p = true;
+
   if (idx_dstsize == HOST_WIDE_INT_M1U)
     {
       /* For non-bounded functions like sprintf, determine the size
@@ -3483,8 +3487,8 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
       else if (TREE_CODE (size) == SSA_NAME)
 	{
 	  /* Try to determine the range of values of the argument
-	     and use the greater of the two at -Wformat-level 1 and
-	     the smaller of them at level 2.  */
+	     and use the greater of the two at level 1 and the smaller
+	     of them at level 2.  */
 	  wide_int min, max;
 	  enum value_range_type range_type
 	    = get_range_info (size, &min, &max);
@@ -3495,6 +3499,11 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 		   ? wi::fits_uhwi_p (max) ? max.to_uhwi () : max.to_shwi ()
 		   : wi::fits_uhwi_p (min) ? min.to_uhwi () : min.to_shwi ());
 	    }
+
+	  /* The destination size is not constant.  If the function is
+	     bounded (e.g., snprintf) a lower bound of zero doesn't
+	     necessarily imply it can be eliminated.  */
+	  dstsize_cst_p = false;
 	}
     }
 
@@ -3511,7 +3520,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	 without actually producing any.  Pretend the size is
 	 unlimited in this case.  */
       info.objsize = HOST_WIDE_INT_MAX;
-      info.nowrite = true;
+      info.nowrite = dstsize_cst_p;
     }
   else
     {
