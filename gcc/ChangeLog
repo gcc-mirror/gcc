@@ -1,3 +1,8 @@
+2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79495
+	* config/i386/i386.md (*movxf_internal): Add (o,rC) alternative.
+
 2017-02-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
@@ -545,11 +550,11 @@
 	Backport from mainline
 	2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
 
-        PR rtl-optimization/77309
-        * combine.c (make_compound_operation): Allow EQ for IN_CODE, and
-        don't assume an equality comparison for plain COMPARE.
-        (simplify_comparison): Pass a more accurate code to
-        make_compound_operation.
+	PR rtl-optimization/77309
+	* combine.c (make_compound_operation): Allow EQ for IN_CODE, and
+	don't assume an equality comparison for plain COMPARE.
+	(simplify_comparison): Pass a more accurate code to
+	make_compound_operation.
 
 2016-12-12 Thomas Preud'homme <thomas.preudhomme@arm.com>
 
