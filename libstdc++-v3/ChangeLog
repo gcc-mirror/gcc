@@ -1,6 +1,15 @@
 2017-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78702
+	* include/bits/locale_classes.h (locale::facet::__shim): Change from
+	private to protected.
+	* src/c++11/cxx11-shim_facets.cc (__shim_accessor): Define helper to
+	make locale::facet::__shim accessible.
+
+	Backport from mainline
 	2017-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78134

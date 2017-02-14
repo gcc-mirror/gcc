@@ -453,10 +453,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     facet&
     operator=(const facet&);  // Not defined.
 
-    class __shim;
-
     const facet* _M_sso_shim(const id*) const;
     const facet* _M_cow_shim(const id*) const;
+
+  protected:
+    class __shim; // For internal use only.
   };
 
 
