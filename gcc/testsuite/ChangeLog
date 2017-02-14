@@ -1,3 +1,8 @@
+2017-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79432
+	* gcc.dg/torture/pr79432.c: New testcase.
+
 2017-02-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/79496

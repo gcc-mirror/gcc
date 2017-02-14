@@ -1,3 +1,10 @@
+2017-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79432
+	* tree-into-ssa.c (insert_phi_nodes): When the function can
+	have abnormal edges rewrite SSA names with broken use-def
+	dominance out of SSA and register them for PHI insertion.
+
 2017-02-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/79496
