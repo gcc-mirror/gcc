@@ -1,3 +1,14 @@
+2017-02-14  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/79095
+	* g++.dg/pr79095-1.C: New test
+	* g++.dg/pr79095-2.C: New test
+	* g++.dg/pr79095-3.C: New test
+	* g++.dg/pr79095-4.C: New test
+	* g++.dg/pr79095-5.C: New test
+	* gcc.c-torture/execute/arith-1.c: Update with more cases.
+	* gcc.dg/tree-ssa/pr79095-1.c: New test.
+
 2017-02-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect_fp16_1.c: New.
