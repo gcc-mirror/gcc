@@ -325,6 +325,13 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
   /* Unary expression.  */
   switch (c_parser_peek_token (parser)->type)
     {
+    case CPP_NAME:
+      {
+	tree id = c_parser_peek_token (parser)->value;
+	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0)
+	  goto build_unary_expr;
+	break;
+      }
     case CPP_KEYWORD:
       if (c_parser_peek_token (parser)->keyword != RID_REALPART
 	  && c_parser_peek_token (parser)->keyword != RID_IMAGPART)
@@ -336,6 +343,7 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
     case CPP_COMPL:
     case CPP_NOT:
     case CPP_MULT: /* pointer deref */
+    build_unary_expr:
       rhs = c_parser_gimple_unary_expression (parser);
       if (rhs.value != error_mark_node)
 	{
@@ -536,7 +544,7 @@ c_parser_gimple_binary_expression (c_parser *parser)
      unary-operator gimple-postfix-expression
 
    unary-operator: one of
-     & * + - ~
+     & * + - ~ abs_expr
 */
 
 static c_expr
@@ -599,6 +607,18 @@ c_parser_gimple_unary_expression (c_parser *parser)
 	  return parser_build_unary_op (op_loc, IMAGPART_EXPR, op);
 	default:
 	  return c_parser_gimple_postfix_expression (parser);
+	}
+    case CPP_NAME:
+	{
+	  tree id = c_parser_peek_token (parser)->value;
+	  if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0)
+	    {
+	      c_parser_consume_token (parser);
+	      op = c_parser_gimple_postfix_expression (parser);
+	      return parser_build_unary_op (op_loc, ABS_EXPR, op);
+	    }
+	  else
+	    return c_parser_gimple_postfix_expression (parser);
 	}
     default:
       return c_parser_gimple_postfix_expression (parser);

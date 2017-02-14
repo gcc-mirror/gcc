@@ -323,9 +323,17 @@ dump_unary_rhs (pretty_printer *buffer, gassign *gs, int spc, int flags)
       break;
 
     case ABS_EXPR:
-      pp_string (buffer, "ABS_EXPR <");
-      dump_generic_node (buffer, rhs, spc, flags, false);
-      pp_greater (buffer);
+      if (flags & TDF_GIMPLE)
+	{
+	  pp_string (buffer, "__ABS ");
+	  dump_generic_node (buffer, rhs, spc, flags, false);
+	}
+      else
+	{
+	  pp_string (buffer, "ABS_EXPR <");
+	  dump_generic_node (buffer, rhs, spc, flags, false);
+	  pp_greater (buffer);
+	}
       break;
 
     default:
