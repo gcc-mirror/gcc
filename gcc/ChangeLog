@@ -1,5 +1,8 @@
 2017-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79462
+	* config/sh/sh.c (expand_cbranchdi4): Don't clear operands[4].
+
 	PR tree-optimization/79408
 	* tree-vrp.c (simplify_div_or_mod_using_ranges): Handle also the
 	case when on TRUNC_MOD_EXPR op0 is INTEGER_CST.
