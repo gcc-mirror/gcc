@@ -7331,7 +7331,9 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 		   (scope, current_class_type))))
 	{
 	  scope = complete_type (scope);
-	  if (!COMPLETE_TYPE_P (scope))
+	  if (!COMPLETE_TYPE_P (scope)
+	      /* Avoid clobbering e.g. OVERLOADs or DECLs.  */
+	      && EXPR_P (postfix_expression))
 	    {
 	      /* In a template, be permissive by treating an object expression
 		 of incomplete type as dependent (after a pedwarn).  */
