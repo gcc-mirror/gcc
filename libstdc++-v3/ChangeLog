@@ -3,6 +3,23 @@
 	Backport from mainline
 	2017-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/78134
+	* include/bits/stl_map.h (map::lower_bound, map::upper_bound)
+	(map::equal_range): Fix return type of heterogeneous overloads.
+	* include/bits/stl_multimap.h (multimap::lower_bound)
+	(multimap::upper_bound, multimap::equal_range): Likewise.
+	* include/bits/stl_multiset.h (multiset::lower_bound)
+	(multiset::upper_bound, multiset::equal_range): Likewise.
+	* include/bits/stl_set.h (set::lower_bound, set::upper_bound)
+	(set::equal_range): Likewise.
+	* testsuite/23_containers/map/operations/2.cc: Check return types.
+	* testsuite/23_containers/multimap/operations/2.cc: Likewise.
+	* testsuite/23_containers/multiset/operations/2.cc: Likewise.
+	* testsuite/23_containers/set/operations/2.cc: Likewise.
+
+	Backport from mainline
+	2017-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/78273
 	* include/bits/stl_map.h (map::count<_Kt>(const _Kt&)): Don't assume
 	the heterogeneous comparison can only find one match.
