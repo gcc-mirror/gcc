@@ -1,3 +1,8 @@
+2017-01-14  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vsx-builtin-3.c: Add missing test case for the
+	xvcvsxdsp and xvcvuxdsp instructions.
+
 2017-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/vec-adde-int128.c: Only run if int128 exists.
