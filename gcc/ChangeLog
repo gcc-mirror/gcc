@@ -1,3 +1,21 @@
+2017-02-14 Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/79095
+	* tree-vrp.c (extract_range_from_binary_expr_1): For EXACT_DIV_EXPR,
+	if the numerator has the range ~[0,0] make the resultant range ~[0,0].
+	(extract_range_from_binary_expr): For MINUS_EXPR with no derived range,
+	if the operands are known to be not equal, then the resulting range
+	is ~[0,0].
+	(intersect_ranges): If the new range is ~[0,0] and the old range is
+	wide, then prefer ~[0,0].
+	* tree-vrp.c (overflow_comparison_p_1): New function.
+	(overflow_comparison_p): New function.
+	* tree-vrp.c (register_edge_assert_for_2): Register additional asserts
+	if NAME is used in an overflow test.
+	(vrp_evaluate_conditional_warnv_with_ops): If the ops represent an
+	overflow check that can be expressed as an equality test, then adjust
+	ops to be that equality test.
+
 2017-02-14  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-builtin-types.def: Remove flags argument.
