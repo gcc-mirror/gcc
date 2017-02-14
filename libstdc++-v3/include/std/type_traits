@@ -2576,12 +2576,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __detected_or_t
       = typename __detected_or<_Default, _Op, _Args...>::type;
 
-  // _Op<_Args...> if that is a valid type, otherwise _Default<_Args...>.
-  template<template<typename...> class _Default,
-	   template<typename...> class _Op, typename... _Args>
-    using __detected_or_t_ =
-      __detected_or_t<_Default<_Args...>, _Op, _Args...>;
-
   /// @} group metaprogramming
 
   /**

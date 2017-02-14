@@ -3,6 +3,41 @@
 	Backport from mainline
 	2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/72792
+	* include/bits/alloc_traits.h (__allocator_traits_base::__diff_type)
+	(__allocator_traits_base::__size_type): Remove.
+	(allocator_traits::_Ptr): New class template to detect const and void
+	pointer types without instantiating pointer_traits::rebind
+	unnecessarily.
+	(allocator_traits::_Diff): Likewise for detecting difference_type.
+	(allocator_traits::_Size): New class template to detect size_type
+	without instantiating make_unsigned unnecessarily.
+	* include/bits/ptr_traits.h (pointer_traits::element_type): Use
+	__detected_or_t instead of __detected_or_t_.
+	* include/std/type_traits (__detected_or_t_): Remove.
+	* testsuite/20_util/allocator_traits/members/pointers.cc: New test.
+
+	Backport from mainline
+	2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/72792
+	PR libstdc++/72793
+	* include/bits/alloc_traits.h (__allocator_traits_base::__rebind):
+	Replace with class template using void_t.
+	(__alloc_rebind): Define in terms of
+	__allocator_traits_base::__rebind.
+	(allocator_traits): Remove unconditional static_assert for
+	rebind_alloc.
+	* include/bits/ptr_traits.h (__replace_first_arg): Remove type member.
+	(pointer_traits::__rebind): Replace with class template using void_t.
+	(pointer_traits::rebind): Define in terms of __rebind.
+	(pointer_traits): Remove unconditional static_assert for rebind.
+	* testsuite/20_util/allocator_traits/members/rebind_alloc.cc: New test.
+	* testsuite/20_util/pointer_traits/rebind.cc: New test.
+
+	Backport from mainline
+	2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/69321
 	* include/experimental/any (__any_caster): Avoid instantiating
 	manager function for types that can't be stored in any.
