@@ -1,3 +1,11 @@
+2017-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79408
+	* tree-vrp.c (simplify_div_or_mod_using_ranges): Handle also the
+	case when on TRUNC_MOD_EXPR op0 is INTEGER_CST.
+	(simplify_stmt_using_ranges): Call simplify_div_or_mod_using_ranges
+	also if rhs1 is INTEGER_CST.
+
 2017-02-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/79432

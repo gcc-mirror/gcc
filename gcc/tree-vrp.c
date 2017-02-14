@@ -9241,8 +9241,24 @@ simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   tree val = NULL;
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
+  tree op0min = NULL_TREE, op0max = NULL_TREE;
   tree op1min = op1;
-  value_range *vr = get_value_range (op0);
+  value_range *vr = NULL;
+
+  if (TREE_CODE (op0) == INTEGER_CST)
+    {
+      op0min = op0;
+      op0max = op0;
+    }
+  else
+    {
+      vr = get_value_range (op0);
+      if (range_int_cst_p (vr))
+	{
+	  op0min = vr->min;
+	  op0max = vr->max;
+	}
+    }
 
   if (rhs_code == TRUNC_MOD_EXPR
       && TREE_CODE (op1) == SSA_NAME)
@@ -9254,13 +9270,13 @@ simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   if (rhs_code == TRUNC_MOD_EXPR
       && TREE_CODE (op1min) == INTEGER_CST
       && tree_int_cst_sgn (op1min) == 1
-      && range_int_cst_p (vr)
-      && tree_int_cst_lt (vr->max, op1min))
+      && op0max
+      && tree_int_cst_lt (op0max, op1min))
     {
       if (TYPE_UNSIGNED (TREE_TYPE (op0))
-	  || tree_int_cst_sgn (vr->min) >= 0
+	  || tree_int_cst_sgn (op0min) >= 0
 	  || tree_int_cst_lt (fold_unary (NEGATE_EXPR, TREE_TYPE (op1min), op1min),
-			      vr->min))
+			      op0min))
 	{
 	  /* If op0 already has the range op0 % op1 has,
 	     then TRUNC_MOD_EXPR won't change anything.  */
@@ -9268,6 +9284,9 @@ simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 	  return true;
 	}
     }
+
+  if (TREE_CODE (op0) != SSA_NAME)
+    return false;
 
   if (!integer_pow2p (op1))
     {
@@ -10377,7 +10396,8 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	 range.  */
 	case TRUNC_DIV_EXPR:
 	case TRUNC_MOD_EXPR:
-	  if (TREE_CODE (rhs1) == SSA_NAME
+	  if ((TREE_CODE (rhs1) == SSA_NAME
+	       || TREE_CODE (rhs1) == INTEGER_CST)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_div_or_mod_using_ranges (gsi, stmt);
 	  break;
