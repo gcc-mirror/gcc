@@ -1,3 +1,12 @@
+2017-02-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/vec-adde-int128.c: Only run if int128 exists.
+	* gcc.target/powerpc/vec-addec-int128.c: Ditto.
+	* gcc.target/powerpc/vec-adde.c: Require vsx_hw, don't require a
+	64-bit default target.
+	* gcc.target/powerpc/vec-addec.c: Require p8vector_hw, don't require
+	a 64-bit default target.
+
 2017-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79481
