@@ -129,8 +129,9 @@ private:
   void flush ();
 
 public:
+  bool peek_u (unsigned u);
   bool b ();
-  unsigned char c ();
+  int c ();
   int i ();
   unsigned u ();
   size_t s ();
@@ -172,10 +173,10 @@ void writer::c (unsigned char x)
   buffer[pos++] = x;
 }
 
-unsigned char reader::c ()
+int reader::c ()
 {
   if (reserve (1))
-    return buffer[pos++];
+    return (unsigned char)buffer[pos++];
   bad (EILSEQ);
   return 0;
 }
@@ -230,6 +231,16 @@ inline void writer::u (unsigned x)
 inline unsigned reader::u ()
 {
   return unsigned (i ());
+}
+
+/* Peek at the next char and return true, if it matches U.  */
+inline bool reader::peek_u (unsigned u)
+{
+  gcc_assert (u < 128);
+
+  if (reserve (1))
+    return ((unsigned char)buffer[pos]) == u;
+  return false;
 }
 
 void writer::wi (HOST_WIDE_INT x)
@@ -329,7 +340,14 @@ const char *reader::str (size_t *len_p)
 {
   size_t len = s ();
   *len_p = len;
-  return buf (len + 1);
+  const char *str = buf (len + 1);
+  if (str[len])
+    {
+      /* Force read string to be not totally broken.  */
+      buffer[pos-1] = 0;
+      bad (EILSEQ);
+    }
+  return str;
 }
 
 bool
@@ -358,10 +376,11 @@ writer::flush_bits ()
 {
   if (bit_pos)
     {
-      reserve (1);
-      c (bits);
+      int v = bits;
+
       bit_pos = 0;
       bits = 0;
+      c (v);
     }
 }
 
@@ -407,16 +426,41 @@ reader::reserve (size_t want)
 class streamer
 {
 public:
+  /* Record tags.  */
   enum tags
   {
+    /* Module-specific records.  */
     t_eof,
-    t_ref,
-    t_decl
+    t_conf,
+    t_flags,
+    t_import,
+    /* Tree codes.  */
+    t_tree_base = 0x100,
+    t_tree_hwm = 0xfff,
+    /* First reference index.  */
+    t_ref_base
   };
+
+private:
+  unsigned index;
+
+public:
+  streamer () : index (t_ref_base)
+  {
+  }
+
+protected:
+  /* Allocate a new reference index.  */
+  unsigned next ()
+  {
+    return index++;
+  }
 
 public:
   static const char *ident ();
   static int version ();
+
+  /* Version to date. */
   static unsigned v2d (int v)
   {
     if (EXPERIMENTAL && v < 0)
@@ -424,6 +468,8 @@ public:
     else
       return v;
   }
+
+  /* Version to time. */
   static unsigned v2t (int v)
   {
     if (EXPERIMENTAL && v < 0)
@@ -499,6 +545,9 @@ public:
 
 public:
   void header (FILE *, tree);
+  void eof ();
+  void rec_conf (FILE *);
+  void rec_import (FILE *, tree, bool);
   bool done ()
   {
     return w.flush ();
@@ -517,17 +566,9 @@ out::~out ()
 }
 
 void
-out::header (FILE *d, tree name)
+out::eof ()
 {
-  char const *id = ident ();
-  w.buf (id, strlen (id));
-
-  int v = version ();
-  gcc_assert (v < 0); /* Not ready for prime-time.  */
-  if (d)
-    fprintf (d, "writing \"%s\" %d:%04d\n", id, v2d (v), v2t (v));
-  w.i (v);
-  w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+  w.c (t_eof);
 }
 
 /* Streamer in.  */
@@ -536,22 +577,40 @@ class in : public streamer
   reader r;
   typedef unbounded_int_hashmap_traits<unsigned,tree> traits;
   hash_map<unsigned,tree,traits> map; /* ids to trees  */
+  bool impl;
 
 public:
-  in (FILE *, const char *);
+  in (FILE *, const char *, bool);
   ~in ();
 
 public:
   bool header (FILE *, tree);
+  bool rec_conf (FILE *);
+  int rec_import (FILE *, tree &);
+  int read_one (FILE *, tree &);
 };
 
-in::in (FILE *s, const char *n)
-  :r (s, n)
+in::in (FILE *s, const char *n, bool is_impl)
+  :r (s, n), impl (is_impl)
 {
 }
 
 in::~in ()
 {
+}
+
+void
+out::header (FILE *d, tree name)
+{
+  char const *id = ident ();
+  w.buf (id, strlen (id));
+
+  int v = version ();
+  gcc_assert (v < 0); /* Not ready for prime-time.  */
+  if (d)
+    fprintf (d, "Writing \"%s\" %d:%04d\n", id, v2d (v), v2t (v));
+  w.i (v);
+  w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
 }
 
 bool
@@ -592,9 +651,8 @@ in::header (FILE *d, tree name)
 	}
     }
   if (d)
-    fprintf (d, "Reading %d:%04d\n", v_date, v_time);
-  if (d)
-    fprintf (d, "Expecting %d:%04d\n", ver_date, ver_time);
+    fprintf (d, "Expecting %d:%04d found %d:%04\n", ver_date, ver_time,
+	     v_date, v_time);
 
   size_t l;
   const char *n = r.str (&l);
@@ -607,7 +665,115 @@ in::header (FILE *d, tree name)
 
   return true;
 }
-  
+
+/* Record config info
+   str:<target-triplet>
+   str:<host-triplet>  ; lock this for now.
+*/
+
+void
+out::rec_conf (FILE *d)
+{
+  if (d)
+    fprintf (d, "Writing target='%s', host='%s'\n",
+	     TARGET_MACHINE, HOST_MACHINE);
+  w.c (t_conf);
+  w.str (TARGET_MACHINE, strlen (TARGET_MACHINE));
+  w.str (HOST_MACHINE, strlen (HOST_MACHINE));
+}
+
+bool
+in::rec_conf (FILE *d)
+{
+  size_t l;
+  const char *targ = r.str (&l);
+  if (strcmp (targ, TARGET_MACHINE))
+    {
+      error ("%qs is target %qs, expected %qs", r.name, targ, TARGET_MACHINE);
+      return false;
+    }
+  const char *host = r.str (&l);
+  if (strcmp (host, HOST_MACHINE))
+    {
+      error ("%qs is host %qs, expected %qs", r.name, host, HOST_MACHINE);
+      return false;
+    }
+
+  if (d)
+    fprintf (d, "Read target='%s', host='%s'\n", TARGET_MACHINE, HOST_MACHINE);
+
+  return true;
+}
+
+/* Record import
+   b:is_export
+   str:module_name  */
+
+void
+out::rec_import (FILE *d, tree name, bool is_export)
+{
+  if (d)
+    fprintf (d, "Writing %s '%s'\n", is_export ? "export module" : "import",
+	     IDENTIFIER_POINTER (name));
+  w.c (t_import);
+  w.b (is_export);
+  w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+}
+
+int
+in::rec_import (FILE *d, tree &imp)
+{
+  bool is_exp = r.b ();
+  size_t l;
+  const char *mod = r.str (&l);
+
+  /* Validate name.  Dotted sequence of identifiers.  */
+  size_t dot = 0;
+  for (size_t ix = 0; ix != l; ix++)
+    if (ISALPHA (mod[ix]) || mod[ix] == '_')
+      continue;
+    else if (dot == ix)
+      goto bad;
+    else if (mod[ix] == '.')
+      dot = ix + 1;
+    else if (!ISDIGIT (mod[ix]))
+      goto bad;
+  if (!l || dot == l)
+    goto bad;
+
+  imp = get_identifier_with_length (mod, l);
+  return (is_exp ? 1 : 0) | 0x10;
+ bad:
+  error ("module name '%qs' is malformed", mod);
+  return false;
+}
+
+int
+in::read_one (FILE *d, tree &imp)
+{
+  unsigned key = r.c ();
+  switch (key)
+    {
+    default:
+      error ("unknown key %qd", key);
+      return false;
+
+    case t_eof:
+      if (d)
+	fprintf (d, "Read eof\n");
+      return -1; /* Denote EOF.  */
+
+    case t_conf:
+      return rec_conf (d);
+
+    case t_import:
+      return rec_import (d, imp);
+
+      // FIXME: some code needed here
+    }
+  return false;
+}
+
 }
 		  
 /* Mangling for module files.  */
@@ -629,7 +795,7 @@ static GTY(()) tree module_namespace_name;
 static GTY(()) tree module_name;
 static location_t module_loc;
 static GTY(()) tree proclaimer;
-static bool is_interface; // Probably change for file handle?
+static bool is_interface;
 static int export_depth; /* -1 for singleton export.  */
 
 /* The set of imported modules.  The current declared module is
@@ -637,6 +803,7 @@ static int export_depth; /* -1 for singleton export.  */
 static GTY(()) hash_map<tree, unsigned> *imported_modules;
 enum import_kind
 {
+  ik_indirect,/* Import via import.  */
   ik_import,  /* Regular import.  */
   ik_export,  /* Exported import.  */
   ik_impl,    /* The implementation */
@@ -760,27 +927,62 @@ module_to_filename (tree id)
   return module_to_ext (id, MOD_FNAME_PFX, MOD_FNAME_SFX, MOD_FNAME_DOT);
 }
 
+static bool
+do_import_module (location_t, tree, tree, import_kind);
 
-static void
-read_module (FILE *stream, const char *fname, tree name)
+/* Read a module NAME file name FNAME on STREAM.  */
+
+static bool
+read_module (FILE *stream, const char *fname, tree name, import_kind kind)
 {
-  in in (stream, fname);
+  in in (stream, fname, kind == ik_impl);
   FILE *d =  dopen ();
-  
-  if (d)
-    fprintf (d, "importing '%s'\n", IDENTIFIER_POINTER (name));
 
-  if (!in.header (d, name))
-    goto done;
-  
-  // FIXME: some code needed here
- done:
+  if (d)
+    fprintf (d, "Importing '%s'\n", IDENTIFIER_POINTER (name));
+
+  int ok = in.header (d, name);
+  if (ok)
+    {
+      tree imp;
+      while ((ok = in.read_one (d, imp)) > 0)
+	if (ok & 0x10)
+	  {
+	    /* We close the dump file around the inner import, as that
+	       will reopen it.  We don't close the module file we're
+	       reading from.  This could lead to a lot of concurrent
+	       open files.  Should that be a problem, we should adjust
+	       read_one to cope with reading a series of imports
+	       before we then save & close file state.  */
+	    if (d)
+	      fprintf (d, "Begin nested import '%s'\n",
+		       IDENTIFIER_POINTER (imp));
+	    dclose (d);
+	    // FIXME: importing is undoubtabtly more complicated,
+	    // I have not got things right
+	    ok = do_import_module (UNKNOWN_LOCATION, imp, NULL_TREE,
+				   kind == ik_impl ? ik_import : ik_indirect);
+	    d = dopen ();
+	    if (d)
+	      fprintf (d, "Completed nested import '%s' %s\n",
+		       IDENTIFIER_POINTER (imp), ok ? "ok" : "failed");
+	    if (!ok)
+	      {
+		inform (UNKNOWN_LOCATION, "while importing %qE (%qs)",
+			name, fname);
+		/* Bail now, things are likely to go really bad.  */
+		break;
+	      }
+	  }
+    }
+
   dclose (d);
+  return ok != 0;
 }
 
 /* Import the module NAME into the current TU. */
 
-static void
+static bool
 do_import_module (location_t loc, tree name, tree attrs, import_kind kind)
 {
   if (!imported_modules)
@@ -796,35 +998,36 @@ do_import_module (location_t loc, tree name, tree attrs, import_kind kind)
       if (*val >= ik_impl)
 	{
 	  error_at (loc, "already declared as module %qE", name);
-	  return;
+	  return false;
 	}
       else if (kind >= ik_impl)
 	{
 	  error_at (loc, "module %qE already imported", name);
-	  return;
+	  return false;
 	}
 
       if (*val < kind)
 	*val = kind;
-      return;
+      return true;
     }
   if (kind == ik_inter)
-    return;
+    return true;
 
   // FIXME:Path search along the -I path
   // FIXME: Think about make dependency generation
   char *fname = module_to_filename (name);
   FILE *stream = fopen (fname, "rb");
+  bool ok = false;
 
   if (!stream)
     error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
   else
     {
-      read_module (stream, fname, name);
+      ok = read_module (stream, fname, name, kind);
       fclose (stream);
     }
   free (fname);
-  return;
+  return ok;
 }
 
 void
@@ -875,6 +1078,17 @@ declare_module (location_t loc, tree name, tree attrs)
   is_interface = inter;
 }
 
+typedef std::pair<out *, FILE *> write_import_cl;
+inline bool /* Cannot be static, due to c++-98 external linkage
+	       requirement. */
+write_import (const tree &name, const unsigned &kind,
+	      write_import_cl const &cl)
+{
+  if (kind == ik_import || kind == ik_export)
+    cl.first->rec_import (cl.second, name, kind == ik_export);
+  return false;
+}
+
 static void
 write_module (FILE *stream, const char *fname, tree name)
 {
@@ -882,14 +1096,19 @@ write_module (FILE *stream, const char *fname, tree name)
   FILE *d = dopen ();
 
   if (d)
-    fprintf (d, "writing module '%s'\n", IDENTIFIER_POINTER (name));
+    fprintf (d, "Writing module '%s'\n", IDENTIFIER_POINTER (name));
 
   out.header (d, name);
-  
+  out.rec_conf (d);
   // FIXME:Write 'important' flags etc
-  // FIXME:Write import table
+
+  /* Write the import table.  */
+  imported_modules->traverse<const write_import_cl &, write_import>
+    (write_import_cl (&out, d));
+  
   // FIXME:Write decls & defns
 
+  out.eof ();
   if (!out.done ())
     error ("failed to write module file %qE (%qs): %m", name, fname);
   dclose (d);

@@ -53,6 +53,9 @@ c++: cc1plus$(exeext)
 
 CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 
+CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
+	-DTARGET_MACHINE=\"$(target)\"
+
 # Create the compiler driver for g++.
 GXX_OBJS = $(GCC_OBJS) cp/g++spec.o
 xg++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
