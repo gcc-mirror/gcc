@@ -1,3 +1,7 @@
+2017-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc (supported_defaults) [powerpc*-*-*]: Update.
+
 2017-02-14 Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/79095
