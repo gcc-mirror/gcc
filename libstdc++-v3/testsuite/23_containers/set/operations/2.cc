@@ -150,6 +150,28 @@ test06()
   s.find(i);
 }
 
+void
+test07()
+{
+  // PR libstdc++/78273
+
+  struct C {
+    bool operator()(int l, int r) const { return l < r; }
+
+    struct Partition { };
+
+    bool operator()(int l, Partition) const { return l < 2; }
+    bool operator()(Partition, int r) const { return 4 < r; }
+
+    using is_transparent = void;
+  };
+
+  std::set<int, C> s{ 1, 2, 3, 4, 5 };
+
+  auto n = s.count(C::Partition{});
+  VERIFY( n == 3 );
+}
+
 int
 main()
 {
@@ -159,4 +181,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }
