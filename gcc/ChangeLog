@@ -1,3 +1,19 @@
+2017-02-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/79282
+	* lra-int.h (struct lra_operand_data, struct lra_insn_reg): Add
+	member early_clobber_alts.
+	* lra-lives.c (reg_early_clobber_p): New.
+	(process_bb_lives): Use it.
+	* lra.c (new_insn_reg): New arg early_clobber_alts.  Use it.
+	(debug_operand_data): Initialize early_clobber_alts.
+	(setup_operand_alternative): Set up early_clobber_alts.
+	(collect_non_operand_hard_regs): Ditto.  Pass early clobber
+	alternatives to new_insn_reg.
+	(add_regs_to_insn_regno_info): Add arg early_clobber_alts.  Use
+	it.
+	(lra_update_insn_regno_info): Pass the new arg.
+
 2017-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79505
