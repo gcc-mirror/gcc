@@ -1,5 +1,9 @@
 2017-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/79505
+	* omp-offload.c (free_oacc_loop): Release loop->ifns vector.
+	(new_oacc_loop_raw): Don't clear already cleared fields.
+
 	PR target/79481
 	* config/i386/avx512pfintrin.h (_mm512_prefetch_i32gather_pd,
 	_mm512_prefetch_i32gather_ps, _mm512_prefetch_i64gather_pd,

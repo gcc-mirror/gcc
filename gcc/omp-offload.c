@@ -681,7 +681,6 @@ new_oacc_loop_raw (oacc_loop *parent, location_t loc)
   oacc_loop *loop = XCNEW (oacc_loop);
 
   loop->parent = parent;
-  loop->child = loop->sibling = NULL;
 
   if (parent)
     {
@@ -690,15 +689,6 @@ new_oacc_loop_raw (oacc_loop *parent, location_t loc)
     }
 
   loop->loc = loc;
-  loop->marker = NULL;
-  memset (loop->heads, 0, sizeof (loop->heads));
-  memset (loop->tails, 0, sizeof (loop->tails));
-  loop->routine = NULL_TREE;
-
-  loop->mask = loop->e_mask = loop->flags = loop->inner = 0;
-  loop->chunk_size = 0;
-  loop->head_end = NULL;
-
   return loop;
 }
 
@@ -773,6 +763,7 @@ free_oacc_loop (oacc_loop *loop)
   if (loop->child)
     free_oacc_loop (loop->child);
 
+  loop->ifns.release ();
   free (loop);
 }
 
