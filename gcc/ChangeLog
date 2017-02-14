@@ -4,6 +4,10 @@
 
 2017-02-14 Jeff Law  <law@redhat.com>
 
+	PR target/79404
+	* ira-costs.c (scan_one_insn): Initialize register move costs
+	for pseudos seen in USE/CLOBBER insns.
+
 	PR tree-optimization/79095
 	* tree-vrp.c (extract_range_from_binary_expr_1): For EXACT_DIV_EXPR,
 	if the numerator has the range ~[0,0] make the resultant range ~[0,0].
