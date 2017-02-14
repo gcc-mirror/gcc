@@ -673,37 +673,37 @@ s390_init_builtins (void)
     c_uint64_type_node = long_long_unsigned_type_node;
 
 #undef DEF_TYPE
-#define DEF_TYPE(INDEX, BFLAGS, NODE, CONST_P)		\
+#define DEF_TYPE(INDEX, NODE, CONST_P)			\
   if (s390_builtin_types[INDEX] == NULL)		\
     s390_builtin_types[INDEX] = (!CONST_P) ?		\
       (NODE) : build_type_variant ((NODE), 1, 0);
 
 #undef DEF_POINTER_TYPE
-#define DEF_POINTER_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
+#define DEF_POINTER_TYPE(INDEX, INDEX_BASE)				\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_pointer_type (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_DISTINCT_TYPE
-#define DEF_DISTINCT_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
+#define DEF_DISTINCT_TYPE(INDEX, INDEX_BASE)				\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_distinct_type_copy (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_VECTOR_TYPE
-#define DEF_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)		\
+#define DEF_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)			\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_OPAQUE_VECTOR_TYPE
-#define DEF_OPAQUE_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)	\
+#define DEF_OPAQUE_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)		\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_opaque_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_FN_TYPE
-#define DEF_FN_TYPE(INDEX, BFLAGS, args...)			\
+#define DEF_FN_TYPE(INDEX, args...)				\
   if (s390_builtin_fn_types[INDEX] == NULL)			\
     s390_builtin_fn_types[INDEX] =				\
       build_function_type_list (args, NULL_TREE);
