@@ -1,3 +1,11 @@
+2017-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79420
+	PR c++/79463
+	* g++.dg/cpp1y/pr79463.C: New.
+	* g++.dg/template/incomplete10.C: New.
+	* g++.dg/template/incomplete9.C: New.
+
 2017-02-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/79498
