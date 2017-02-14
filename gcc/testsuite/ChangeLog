@@ -1,3 +1,8 @@
+2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79495
+	* gcc.target/i386/pr79495.c: New test.
+
 2017-02-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79420

@@ -1,3 +1,8 @@
+2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79495
+	* config/i386/i386.md (*movxf_internal): Add (o,rC) alternative.
+
 2017-02-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/79498
