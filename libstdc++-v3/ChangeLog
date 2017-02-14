@@ -1,6 +1,14 @@
 2017-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79114
+	* libsupc++/nested_exception.h (throw_with_nested): Use decay instead
+	of remove_reference.
+	* testsuite/18_support/nested_exception/79114.cc: New test.
+
+	Backport from mainline
 	2017-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78702
