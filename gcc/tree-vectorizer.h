@@ -1134,9 +1134,8 @@ extern bool vect_analyze_data_ref_accesses (vec_info *);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_check_gather_scatter (gimple *, loop_vec_info,
 				       gather_scatter_info *);
-extern tree vect_check_gather_scatter_1 (gimple *, tree, bool, struct loop *,
-					 tree, tree *, tree *, int *);
-
+extern bool vect_check_gather_scatter_1 (gimple *, tree, bool, struct loop *,
+					 tree, tree *, tree *, int *, tree *);
 extern bool vect_analyze_data_refs (vec_info *, int *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
@@ -1178,7 +1177,7 @@ extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *, bool);
 extern struct loop *vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
 extern bool vect_analyze_loop_form_1 (struct loop *, gcond **, tree *, tree *,
-				      gcond **);
+				      tree *, gcond **);
 extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
 					 slp_tree, int, gimple **);
 extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,

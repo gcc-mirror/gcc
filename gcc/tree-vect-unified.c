@@ -222,14 +222,13 @@ new_stmt_attr ()
 static struct ITER_node *
 vect_populate_iter_node_from_loop (struct loop *loop)
 {
-  tree number_of_iterations, number_of_iterationsm1;
+  tree number_of_iterations, number_of_iterationsm1, assumptions;
   basic_block *bbs;
   gcond *loop_cond, *inner_loop_cond = NULL;
   int i;
   gimple_stmt_iterator si;
 
-  if (! vect_analyze_loop_form_1 (loop, &loop_cond, &number_of_iterationsm1,
-	    &number_of_iterations, &inner_loop_cond))
+  if (! vect_analyze_loop_form_1 (loop, &loop_cond, &assumptions, &number_of_iterationsm1, &number_of_iterations, &inner_loop_cond))
     return NULL;
 
   struct ITER_node * t_iter_node = new_iter_node (loop);
@@ -2067,7 +2066,7 @@ is_ptree_complete (struct ITER_node *inode)
 static bool
 create_ptree (struct ITER_node *inode)
 {
-  auto_vec<gimple *, 64> worklist;
+  vec<gimple *> worklist;
   bool is_ok;
 
   mark_probable_root_nodes (inode);
