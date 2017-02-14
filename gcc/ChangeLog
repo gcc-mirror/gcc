@@ -1,6 +1,16 @@
 2017-02-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70022
+	PR target/79498
+	* fold-const.c (fold_indirect_ref_1): Fix range checking for
+	vector BIT_FIELD_REF extract.
+
+2017-02-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-02-13  Martin Liska  <mliska@suse.cz>
 
 	PR c/79471
