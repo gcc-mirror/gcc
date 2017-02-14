@@ -133,6 +133,27 @@ test05()
   VERIFY( Cmp::count == 0);
 }
 
+void
+test06()
+{
+  // PR libstdc++/78273
+
+  struct C {
+    bool operator()(int l, int r) const { return l < r; }
+
+    struct Partition { };
+
+    bool operator()(int l, Partition) const { return l < 2; }
+    bool operator()(Partition, int r) const { return 4 < r; }
+
+    using is_transparent = void;
+  };
+
+  std::map<int, int, C> m{ {1,0}, {2,0}, {3,0}, {4, 0}, {5, 0} };
+
+  auto n = m.count(C::Partition{});
+  VERIFY( n == 3 );
+}
 
 int
 main()
@@ -142,4 +163,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }
