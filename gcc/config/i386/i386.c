@@ -3956,8 +3956,13 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	  /* Since there are no instructions to store 128-bit constant,
 	     temporary register usage is required.  */
 	  rtx tmp = gen_reg_rtx (V1TImode);
+	  start_sequence ();
 	  src = gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec (1, src));
 	  src = validize_mem (force_const_mem (V1TImode, src));
+	  rtx_insn *seq = get_insns ();
+	  end_sequence ();
+	  if (seq)
+	    emit_insn_before (seq, insn);
 	  emit_conversion_insns (gen_rtx_SET (dst, tmp), insn);
 	  dst = tmp;
 	}

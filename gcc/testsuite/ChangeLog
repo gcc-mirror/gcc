@@ -1,3 +1,8 @@
+2017-02-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/79498
+	* gcc.target/i386/pr79498.c: New test.
+
 2017-02-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/79448
