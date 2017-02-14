@@ -4260,8 +4260,9 @@ case "${target}" in
 				eval "with_$which=405"
 				;;
 			"" | common | native \
-			| power | power[23456789] | power6x | powerpc | powerpc64 \
-			| rios | rios1 | rios2 | rsc | rsc1 | rs64a \
+			| power[3456789] | power5+ | power6x \
+			| powerpc | powerpc64 | powerpc64le \
+			| rs64 \
 			| 401 | 403 | 405 | 405fp | 440 | 440fp | 464 | 464fp \
 			| 476 | 476fp | 505 | 601 | 602 | 603 | 603e | ec603e \
 			| 604 | 604e | 620 | 630 | 740 | 750 | 7400 | 7450 \
