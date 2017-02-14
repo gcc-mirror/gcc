@@ -230,35 +230,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const noexcept
-      { 
-        _Tp tmp;
-	__atomic_load(&_M_i, &tmp, __m);
-	return tmp;
+      {
+	alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
+	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
+	__atomic_load(&_M_i, __ptr, __m);
+	return *__ptr;
       }
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
-      { 
-        _Tp tmp;
-	__atomic_load(&_M_i, &tmp, __m);
-	return tmp;
+      {
+        alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
+	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
+	__atomic_load(&_M_i, __ptr, __m);
+	return *__ptr;
       }
 
       _Tp
       exchange(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
-      { 
-        _Tp tmp;
-	__atomic_exchange(&_M_i, &__i, &tmp, __m);
-	return tmp;
+      {
+        alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
+	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
+	__atomic_exchange(&_M_i, &__i, __ptr, __m);
+	return *__ptr;
       }
 
       _Tp
       exchange(_Tp __i, 
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
-      { 
-        _Tp tmp;
-	__atomic_exchange(&_M_i, &__i, &tmp, __m);
-	return tmp;
+      {
+        alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
+	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
+	__atomic_exchange(&_M_i, &__i, __ptr, __m);
+	return *__ptr;
       }
 
       bool
