@@ -240,6 +240,7 @@ static bool arm_can_inline_p (tree, tree);
 static void arm_relayout_function (tree);
 static bool arm_valid_target_attribute_p (tree, tree, tree, int);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (machine_mode);
+static bool arm_sched_can_speculate_insn (rtx_insn *);
 static bool arm_macro_fusion_p (void);
 static bool arm_cannot_copy_insn_p (rtx_insn *);
 static int arm_issue_rate (void);
@@ -418,6 +419,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
+
+#undef TARGET_SCHED_CAN_SPECULATE_INSN
+#define TARGET_SCHED_CAN_SPECULATE_INSN arm_sched_can_speculate_insn
 
 #undef TARGET_SCHED_MACRO_FUSION_P
 #define TARGET_SCHED_MACRO_FUSION_P arm_macro_fusion_p
@@ -30076,6 +30080,35 @@ bool
 arm_fusion_enabled_p (tune_params::fuse_ops op)
 {
   return current_tune->fusible_ops & op;
+}
+
+/* Implement TARGET_SCHED_CAN_SPECULATE_INSN.  Return true if INSN can be
+   scheduled for speculative execution.  Reject the long-running division
+   and square-root instructions.  */
+
+static bool
+arm_sched_can_speculate_insn (rtx_insn *insn)
+{
+  switch (get_attr_type (insn))
+    {
+      case TYPE_SDIV:
+      case TYPE_UDIV:
+      case TYPE_FDIVS:
+      case TYPE_FDIVD:
+      case TYPE_FSQRTS:
+      case TYPE_FSQRTD:
+      case TYPE_NEON_FP_SQRT_S:
+      case TYPE_NEON_FP_SQRT_D:
+      case TYPE_NEON_FP_SQRT_S_Q:
+      case TYPE_NEON_FP_SQRT_D_Q:
+      case TYPE_NEON_FP_DIV_S:
+      case TYPE_NEON_FP_DIV_D:
+      case TYPE_NEON_FP_DIV_S_Q:
+      case TYPE_NEON_FP_DIV_D_Q:
+	return false;
+      default:
+	return true;
+    }
 }
 
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */

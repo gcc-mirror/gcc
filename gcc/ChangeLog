@@ -1,6 +1,13 @@
 2017-02-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68664
+	* config/arm/arm.c (arm_sched_can_speculate_insn):
+	New function.  Declare prototype.
+	(TARGET_SCHED_CAN_SPECULATE_INSN): Define.
+
+2017-02-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68664
 	* config/aarch64/aarch64.c (aarch64_sched_can_speculate_insn):
 	New function.
 	(TARGET_SCHED_CAN_SPECULATE_INSN): Define.
